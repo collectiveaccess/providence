@@ -1,15 +1,16 @@
 DV.Schema.events.ViewSearch = {
   next: function(e){
+  	console.log("next!", e);
     var nextPage = this.models.document.nextPage();
-    this.loadText(nextPage);
+    this.helpers.jump(nextPage);
 
-    this.viewer.open('ViewText');
+    // this.viewer.history.save('document/p'+(nextPage+1));
   },
   previous: function(e){
     var previousPage = this.models.document.previousPage();
-    this.loadText(previousPage);
+    this.helpers.jump(previousPage);
 
-    this.viewer.open('ViewText');
+    // this.viewer.history.save('document/p'+(previousPage+1));
   },
   search: function(e){
     e.preventDefault();

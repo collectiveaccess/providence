@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2012 Whirl-i-Gig
+ * Copyright 2000-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,6 +37,7 @@
 require_once(__CA_LIB_DIR__."/core/Error.php");
 require_once(__CA_LIB_DIR__."/core/Configuration.php");
 require_once(__CA_LIB_DIR__."/core/Db.php");
+require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 
 class Session {
 	# ----------------------------------------
@@ -47,6 +48,8 @@ class Session {
 	private $name = "";		# application name
 
 	private $start_time = 0;	# microtime session object was created - used for page performance measurements
+	private $sessionData = null;
+	
 	# ----------------------------------------
 	# --- Constructor
 	# ----------------------------------------
@@ -69,10 +72,15 @@ class Session {
 		$this->lifetime = $o_config->get("session_lifetime");
 		
 		if (!$pb_dont_create_new_session) {
+			session_save_path(__CA_APP_DIR__."/tmp");
 			session_name($this->name);
 			ini_set("session.gc_maxlifetime", $this->lifetime); 
 			session_set_cookie_params($this->lifetime, '/', $this->domain);
 			session_start();
+			$_SESSION['last_activity'] = $this->start_time;
+			session_write_close();
+			
+			$this->sessionData = caGetCacheObject("ca_session_".md5(session_id()), ($this->lifetime > 0) ? $this->lifetime : 7 * 24 * 60 * 60);
 		}
 	}
 
@@ -83,7 +91,7 @@ class Session {
 	 * Returns client's session_id. 
 	 */
 	public function getSessionID () {
-		return $this->session_id;
+		return md5(session_id());
 	}
 	# ----------------------------------------
 	/**
@@ -91,10 +99,11 @@ class Session {
 	 * Useful for logging out users (destroying the session destroys the login)
 	 */
 	public function deleteSession() {
-		$_SESSION = array();
 		if (isset($_COOKIE[session_name()])) {
 			setcookie(session_name(), '', time()- (24 * 60 * 60),'/');
 		}
+		// Delete session data
+		$this->sessionData->remove(Zend_Cache::CLEANING_MODE_ALL);
 		session_destroy();
 	}
 	# ----------------------------------------
@@ -105,20 +114,23 @@ class Session {
 	public function setVar($ps_key, $pm_val, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
-		if ($ps_key) {
+		if ($ps_key && $this->sessionData) {
+			$va_vars = $this->sessionData->load('vars');
 			if (isset($pa_options["ENTITY_ENCODE_INPUT"]) && $pa_options["ENTITY_ENCODE_INPUT"]) {
 				if (is_string($pm_val)) {
-					$_SESSION['session_vars'][$ps_key] = htmlentities(html_entity_decode($pm_val));
+					$vm_val = html_entity_decode($pm_val);
 				} else {
-					$_SESSION['session_vars'][$ps_key] = $pm_val;
+					$vm_val = $pm_val;
 				}
 			} else {
 				if (isset($pa_options["URL_ENCODE_INPUT"]) && $pa_options["URL_ENCODE_INPUT"]) {
-					$_SESSION['session_vars'][$ps_key] = urlencode($pm_val);
+					$vm_val = urlencode($pm_val);
 				} else {
-					$_SESSION['session_vars'][$ps_key] = $pm_val;
+					$vm_val = $pm_val;
 				}
 			}
+			$va_vars[$ps_key] = $vm_val;
+			$this->sessionData->save($va_vars, 'vars');
 			return true;
 		}
 		return false;
@@ -128,29 +140,34 @@ class Session {
 	 * Delete session variable
 	 */
 	public function delete ($ps_key) {
-		unset($_SESSION['session_vars'][$ps_key]);
+		$va_vars = $this->sessionData->load('vars');
+		unset($va_vars[$ps_key]);
+		$this->sessionData->save($va_vars, 'vars');
 	}
 	# ----------------------------------------
 	/**
 	 * Get value of session variable. Var may be number, string or array.
 	 */
 	public function getVar($ps_key) {
-		return isset($_SESSION['session_vars'][$ps_key]) ? $_SESSION['session_vars'][$ps_key] : '';
+		if (!$this->sessionData) { return null; }
+		$va_vars = $this->sessionData->load('vars');
+		return isset($va_vars[$ps_key]) ? $va_vars[$ps_key] : null;
 	}
 	# ----------------------------------------
 	/**
 	 * Return names of all session vars
 	 */
 	public function getVarKeys() {
-		return (isset($_SESSION['session_vars']) && is_array($_SESSION['session_vars'])) ? array_keys($_SESSION['session_vars']) : array();
+		if (!$this->sessionData) { return null; }
+		$va_vars = $this->sessionData->load('vars');
+		return array_keys($va_vars);
 	}
 	# ----------------------------------------
 	/**
-	 * Close session and save vars
-	 * You must call this at the end of the page or any changed session vars will not be saved!
+	 * Close session
 	 */
 	public function close() {
-		session_write_close();
+		// NOOP
 	}
 	# ----------------------------------------
 	# --- Page performance

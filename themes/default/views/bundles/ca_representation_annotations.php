@@ -47,6 +47,7 @@
 	$o_properties 		= $t_subject->getAnnotationPropertyCoderInstance($vs_annotation_type);
 	$vs_goto_property 	= $o_properties->getAnnotationGotoProperty();
 	$va_prop_list 		= $va_init_props = array();
+	if(!is_array($va_initial_values	= $this->getVar('initialValues'))) { $va_initial_values = array(); }
 	
 	foreach(($va_properties = $o_properties->getPropertyList()) as $vs_property) { 
 		$va_prop_list[] = "'".$vs_property."'"; $va_init_props[$vs_property] = ''; 
@@ -75,8 +76,9 @@
 			}
 		}
 	}
+	
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_annotations');
 ?>
-
 <!-- BEGIN Media Player -->
 <div class="bundleContainer" style="text-align:center; padding:5px;">
 <?php
@@ -151,6 +153,7 @@
 		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 		templateValues: ['status', 'access', 'locale_id', 'label', <?php print join(',', $va_prop_list); ?>],
 		initialValues: <?php print json_encode($va_inital_values); ?>,
+		initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
 		sortInitialValuesBy: 'startTimecode_raw',
 		errors: <?php print json_encode($va_errors); ?>,
 		forceNewValues: <?php print json_encode($va_failed_inserts); ?>,

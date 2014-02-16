@@ -39,15 +39,10 @@
  		# -------------------------------------------------------
 		public function Get($pa_additional_query_params=null, $pa_options=null) {
 			$ps_query = trim($this->request->getParameter('term', pString));
+			$vo_conf = Configuration::load();
 			$va_items = array();
 			if (unicode_strlen($ps_query) >= 3) {
 				try {
-					$vo_ctx = stream_context_create(array(
-						'http' => array(
-							'timeout' => 5
-						)
-					));
-
 					/* // ITIS
 					$i = 0;
 					$vo_doc = new DOMDocument();
@@ -103,9 +98,34 @@
 					$vo_conf = new Configuration();
 					$vs_ubio_keycode = trim($vo_conf->get("ubio_keycode"));
 					if(strlen($vs_ubio_keycode)>0){
+
+						$vs_url = "http://www.ubio.org/webservices/service.php?function=namebank_search&searchName={$ps_query}&sci=1&vern=1&keyCode={$vs_ubio_keycode}";
+
+						if($vs_proxy = $vo_conf->get('web_services_proxy_url')){ /* proxy server is configured */
+
+							if(($vs_proxy_user = $vo_conf->get('web_services_proxy_auth_user')) && ($vs_proxy_pass = $vo_conf->get('web_services_proxy_auth_pw'))){
+								$vs_proxy_auth = base64_encode("{$vs_proxy_user}:{$vs_proxy_pass}");
+							}
+
+							$va_context_options = array( 'http' => array(
+								'proxy' => $vs_proxy,
+								'request_fulluri' => true,
+								'timeout' => 5,
+								'header' => 'User-agent: CollectiveAccess web service lookup',
+							));
+
+							if($vs_proxy_auth){
+								$va_context_options['http']['header'] = "Proxy-Authorization: Basic {$vs_proxy_auth}";
+							}
+
+							$vo_context = stream_context_create($va_context_options);
+							$vs_result = @file_get_contents($vs_url, false, $vo_context);
+
+						} else {
+							$vs_result = @file_get_contents($vs_url);
+						}
+
 						$vo_doc = new DOMDocument();
-						//$t = new Timer();
-						$vs_result = @file_get_contents("http://www.ubio.org/webservices/service.php?function=namebank_search&searchName={$ps_query}&sci=1&vern=1&keyCode={$vs_ubio_keycode}",0,$vo_ctx);
 					
 						if(strlen($vs_result)>0){
 							$vo_doc->loadXML($vs_result);

@@ -47,6 +47,8 @@
 		protected $ops_type = '__default__';
 		protected $ops_value;
 		
+		protected $opb_is_child = false;
+		
 		# -------------------------------------------------------
 		public function __construct() {
 			$this->opo_datamodel = Datamodel::load();
@@ -65,6 +67,15 @@
 		# -------------------------------------------------------
 		public function getFormat() {
 			return $this->ops_format;
+		}
+		# -------------------------------------------------------
+		# Child number generation
+		# -------------------------------------------------------
+		public function isChild($pb_is_child=null) {
+			if (!is_null($pb_is_child)) {
+				$this->opb_is_child = (bool)$pb_is_child;
+			}
+			return $this->opb_is_child;
 		}
 		# -------------------------------------------------------
 		# Types

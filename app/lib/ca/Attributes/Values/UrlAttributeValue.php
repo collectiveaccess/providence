@@ -200,7 +200,7 @@
 			return $this->ops_text_value;
 		}
  		# ------------------------------------------------------------------
- 		public function parseValue($ps_value, $pa_element_info) {
+ 		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			$ps_value = trim($ps_value);
  			$va_settings = $this->getSettingValuesFromElementArray(
  				$pa_element_info, 
@@ -266,8 +266,8 @@
  			if (isset($pa_options['t_subject']) && is_object($pa_options['t_subject'])) {
  				$vs_bundle_name = $pa_options['t_subject']->tableName().'.'.$pa_element_info['element_code'];
  				
- 				if ($pa_options['po_request']) {
- 					$vs_lookup_url	= caNavUrl($pa_options['po_request'], 'lookup', 'AttributeValue', 'Get', array('bundle' => $vs_bundle_name, 'max' => 500));
+ 				if ($pa_options['request']) {
+ 					$vs_lookup_url	= caNavUrl($pa_options['request'], 'lookup', 'AttributeValue', 'Get', array('bundle' => $vs_bundle_name, 'max' => 500));
  				}
  			}
  			
@@ -289,7 +289,7 @@
  			return $vs_element;
  		}
  		# ------------------------------------------------------------------
- 		public function getAvailableSettings() {
+ 		public function getAvailableSettings($pa_element_info=null) {
  			global $_ca_attribute_settings;
  			
  			return $_ca_attribute_settings['UrlAttributeValue'];

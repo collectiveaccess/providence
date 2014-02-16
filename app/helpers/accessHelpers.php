@@ -55,7 +55,7 @@
 		$va_public_access_settings = isset($pa_options['public_access_settings']) && is_array($pa_options['public_access_settings']) ? $pa_options['public_access_settings'] : (array)$po_request->config->getList('public_access_settings');
 	
 		if (!$vb_dont_enforce_access_settings) {
-			$vb_is_privileged = caUserIsPrivileged($po_request, $po_config);
+			$vb_is_privileged = caUserIsPrivileged($po_request, $pa_options);
 			if($vb_is_privileged) {
 				return $va_privileged_access_settings;
 			} else {
@@ -115,7 +115,7 @@
 	 *			__CA_BUNDLE_ACCESS_EDIT__ (2)
 	 *			If not specified types are returned for which the user has at least __CA_BUNDLE_ACCESS_READONLY__
 	 *
-	 * @return array List of numeric type_ids for which the user has access
+	 * @return array List of numeric type_ids for which the user has access, or null if there are no restrictions at all
 	 */
 	function caGetTypeRestrictionsForUser($pm_table_name_or_num, $pa_options=null) {
 		global $g_access_helpers_type_restriction_cache;
@@ -138,9 +138,11 @@
 		
 		// get types user has at least read-only access to
 		global $g_request;
+		$va_type_ids = null;
 		if ((bool)$t_instance->getAppConfig()->get('perform_type_access_checking') && $g_request && $g_request->isLoggedIn()) {
-			$va_type_ids = $g_request->user->getTypesWithAccess($t_instance->tableName(), $vn_min_access);
-			$va_type_ids = caMakeTypeIDList($pm_table_name_or_num, $va_type_ids, array_merge($pa_options, array('dont_include_subtypes_in_type_restriction' => true)));
+			if (is_array($va_type_ids = $g_request->user->getTypesWithAccess($t_instance->tableName(), $vn_min_access))) {
+				$va_type_ids = caMakeTypeIDList($pm_table_name_or_num, $va_type_ids, array_merge($pa_options, array('dont_include_subtypes_in_type_restriction' => true)));
+			}
 		} 
 		// get types from config file
 		if ($va_config_types = $t_instance->getAppConfig()->getList($vs_table_name.'_restrict_to_types')) {
@@ -149,12 +151,13 @@
 			}
 			$va_config_type_ids = caMakeTypeIDList($pm_table_name_or_num, $va_config_types, $pa_options);
 			
-			if (is_array($va_type_ids) && sizeof($va_type_ids)) {
-				$va_type_ids = array_intersect($va_type_ids, $va_config_type_ids);
-			} else {
-				$va_type_ids = $va_config_type_ids;
+			if (is_array($va_config_type_ids)) {
+				if (is_array($va_type_ids) && sizeof($va_type_ids)) {
+					$va_type_ids = array_intersect($va_type_ids, $va_config_type_ids);
+				} else {
+					$va_type_ids = $va_config_type_ids;
+				}
 			}
-			
 		}
 		
 		return $g_access_helpers_type_restriction_cache[$vs_cache_key] = $g_access_helpers_type_restriction_cache[$vs_cache_key]= $va_type_ids;
@@ -216,6 +219,28 @@
 			}
 		}
 		return array_keys($va_type_ids);
+	}
+	# ------------------------------------------------------
+	/**
+	 * Converts the given list of relationship type names or relationship type_ids into an expanded list of numeric type_ids suitable for enforcing relationship type restrictions. Processing
+	 * includes expansion of types to include subtypes and conversion of any type codes to type_ids.
+	 *
+	 * @param mixed $pm_table_name_or_num Table name or number to which types apply
+	 * @param array $pa_types List of type codes and/or type_ids that are the basis of the list
+	 * @param array $pa_options Array of options:
+	 * 		dont_include_subtypes_in_type_restriction = if set, returned list is not expanded to include subtypes
+	 *		dontIncludeSubtypesInTypeRestriction = synonym for dont_include_subtypes_in_type_restriction
+	 *
+	 * @return array List of numeric type_ids
+	 */
+	function caMakeRelationshipTypeIDList($pm_table_name_or_num, $pa_types, $pa_options=null) {
+		$o_dm = Datamodel::load();
+		if(isset($pa_options['dontIncludeSubtypesInTypeRestriction']) && (!isset($pa_options['dont_include_subtypes_in_type_restriction']) || !$pa_options['dont_include_subtypes_in_type_restriction'])) { $pa_options['dont_include_subtypes_in_type_restriction'] = $pa_options['dontIncludeSubtypesInTypeRestriction']; }
+	 	
+		$pa_options['includeChildren'] = (isset($pa_options['dont_include_subtypes_in_type_restriction']) && $pa_options['dont_include_subtypes_in_type_restriction']) ? false : true;
+		
+		$t_rel_type = new ca_relationship_types();
+		return $t_rel_type->relationshipTypeListToIDs($pm_table_name_or_num, $pa_types, $pa_options);
 	}
 	# ---------------------------------------------------------------------------------------------
 	/**
@@ -294,6 +319,51 @@
 		
 		$o_config = Configuration::load();
 		return (int)$o_config->get('default_type_access_level');
+	}
+	# ---------------------------------------------------------------------------------------------
+	/**
+	 * Determines if the specified item (and optionally a specific bundle in that item) are readable by the user
+	 *
+	 * @param int $pn_user_id
+	 * @param mixed $pm_table A table name or number
+	 * @param int $pn_id The primary key value of the row
+	 * @param string $ps_bundle_name An optional bundle to check access for
+	 *
+	 * @return True if user has read access, otherwise false if the user does not have access or null if one or more parameters are invalid
+	 */
+	function caCanRead($pn_user_id, $pm_table, $pn_id, $ps_bundle_name=null) {
+		$o_dm = Datamodel::load();
+		$ps_table_name = (is_numeric($pm_table)) ? $o_dm->getTableName($pm_table) : $pm_table;
+		
+		if (!($t_instance = $o_dm->getInstanceByTableName($ps_table_name, true))) { return null; }
+		if (!$t_instance->load($pn_id)) { return null; }
+		
+		$t_user = new ca_users($pn_user_id);
+		if (!$t_user->getPrimaryKey()) { return null; }
+		
+		list($ps_table_name, $ps_bundle_name) = caTranslateBundlesForAccessChecking($ps_table_name, $ps_bundle_name);
+		
+		// Check type restrictions
+ 		if ((bool)$t_instance->getAppConfig()->get('perform_type_access_checking')) {
+			$vn_type_access = $t_user->getTypeAccessLevel($ps_table_name, $t_instance->getTypeID());
+			if ($vn_type_access < __CA_BUNDLE_ACCESS_READONLY__) {
+				return false;
+			}
+		}
+		
+		// Check item level restrictions
+		if ((bool)$t_instance->getAppConfig()->get('perform_item_level_access_checking')) {
+			$vn_item_access = $t_instance->checkACLAccessForUser($t_user);
+			if ($vn_item_access < __CA_ACL_READONLY_ACCESS__) {
+				return false;
+			}
+		}
+		
+		if ($ps_bundle_name) {
+			if ($t_user->getBundleAccessLevel($ps_table_name, $ps_bundle_name) < __CA_BUNDLE_ACCESS_READONLY__) { return false; }
+		}
+		
+		return true;
 	}
 	# ---------------------------------------------------------------------------------------------
 	/**

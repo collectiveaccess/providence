@@ -8,6 +8,7 @@ DV.Schema.events = {
       var ranges = viewer.models.document.ZOOM_RANGES;
       viewer.dragReporter.sensitivity = ranges[ranges.length-1] == level ? 1.5 : 1;
       viewer.notifyChangedState();
+      viewer.api.redraw(true);	// need to do this so annotations are in the correct location after the change in zoom
       return true;
     };
     viewer.confirmStateChange ? viewer.confirmStateChange(continuation) : continuation();
@@ -35,6 +36,7 @@ DV.Schema.events = {
     var first = index == 0;
     var last  = index == this.models.document.totalPages - 1;
     if (first) index += 1;
+    //console.log(pageIds, index);
     var pages = [
       { label: pageIds[0], index: index - 1 },
       { label: pageIds[1], index: index },
@@ -57,6 +59,13 @@ DV.Schema.events = {
   },
 
   loadText: function(pageIndex,afterLoad){
+  	//
+	// TODO: Are we going to totally rip out the text panel?
+	//
+	return null; // don't actually try to load text any longer... (we're going to get rid of the notion of the text layer)
+	//
+	//
+	//
 
     pageIndex = (!pageIndex) ? this.models.document.currentIndex() : parseInt(pageIndex,10);
     this._previousTextIndex = pageIndex;

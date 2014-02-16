@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -32,6 +32,7 @@
 	$va_sections 			= $this->getVar('sections');
 	$vs_content_mode 		= $this->getVar('content_mode');
 	$vs_title 				= $this->getVar('title');
+	$vb_is_searchable 		= (bool)$this->getVar('is_searchable');
 	
 	header("Content-type: application/json");
 	print json_encode(array(
@@ -43,11 +44,13 @@
 		'sections' => $va_sections,
 		'resources' => array(
 			'page' => array(
-				'image' => '',
+				'image' => '', 
+				//'text' => caNavUrl($this->request,  'editor/objects', 'ObjectEditor', 'GetRepresentationAsText', array('object_id' => $pn_object_id, 'representation_id' => $pn_representation_id))."/page/{page}",
 				'object_id' => $pn_object_id, 'representation_id' => $pn_representation_id
 			),
 			'pageList' => $va_pages,
-			'downloadUrl' => in_array($vs_content_mode, array('multiple_representations', 'hierarchy_of_representations')) ? caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'DownloadMedia', array('object_id' => $pn_object_id, 'representation_id' => $pn_representation_id, 'download' => 1, 'version' => 'original')) : caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'DownloadRepresentation', array('object_id' => $pn_object_id, 'representation_id' => $pn_representation_id, 'download' => 1, 'version' => 'original'))
+			'downloadUrl' => in_array($vs_content_mode, array('multiple_representations', 'hierarchy_of_representations')) ? caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'DownloadMedia', array('object_id' => $pn_object_id, 'representation_id' => $pn_representation_id, 'download' => 1, 'version' => 'original')) : caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'DownloadRepresentation', array('object_id' => $pn_object_id, 'representation_id' => $pn_representation_id, 'download' => 1, 'version' => 'original')),
+			'search' => $vb_is_searchable ? caNavUrl($this->request,  'editor/objects', 'ObjectEditor', 'SearchWithinMedia', array('object_id' => $pn_object_id, 'representation_id' => $pn_representation_id))."/q/{query}" : null
 		)
 	));
 ?>

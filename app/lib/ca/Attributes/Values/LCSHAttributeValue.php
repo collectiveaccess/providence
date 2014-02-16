@@ -37,6 +37,7 @@
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
+	require_once(__CA_LIB_DIR__."/core/Zend/Http/Client.php");
  	require_once(__CA_LIB_DIR__.'/core/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
  	
  	global $_ca_attribute_settings;
@@ -177,13 +178,16 @@
 			return $this->ops_uri_value;
 		}
  		# ------------------------------------------------------------------
- 		public function parseValue($ps_value, $pa_element_info) {
+ 		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			$o_config = Configuration::load();
  			
  			$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
  			
  			// Try to convert LCSH display format into parse-able format, to avoid unwanted lookups
  			if(preg_match("!^([^\[]+)[ ]*\[(info:lc[^\]]+)\]!", $ps_value, $va_matches)) {
+ 				$ps_value = $va_matches[0]."|".$va_matches[1];
+ 			} elseif (preg_match("!^([^\[]+)[ ]*\[(sh[^\]]+)\]!", $ps_value, $va_matches)) {
+ 				// Convert old-style "[sh*]" format identifiers
  				$ps_value = $va_matches[0]."|".$va_matches[1];
  			}
  			
@@ -196,34 +200,40 @@
 					$va_tmp1 = explode('/', $va_tmp[1]);
 					$vs_id = array_pop($va_tmp1);
 					return array(
-						'value_longtext1' => $va_tmp[0],						// text
-						'value_longtext2' => $vs_url,							// uri
+						'value_longtext1' => trim($va_tmp[0]),						// text
+						'value_longtext2' => trim($vs_url),							// uri
 						'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
 					);
 				} else {
-					$vs_data = @file_get_contents("http://id.loc.gov/search/?q=".urlencode($ps_value).'&format=atom&count=5');
-					if ($vs_data) {
-						$o_xml = @simplexml_load_string($vs_data);
+					$ps_value = str_replace(array("‘", "’", "“", "”"), array("'", "'", '"', '"'), $ps_value);
+					$vs_service_url = "http://id.loc.gov/authorities/label/".rawurlencode($ps_value);
+					$o_client = new Zend_Http_Client($vs_service_url);
+					$o_client->setConfig(array(
+						'maxredirects' => 0,
+						'timeout'      => 30));
+						
+					try {
+						$o_response = $o_client->request(Zend_Http_Client::HEAD);
+					} catch (Exception $e) {
+						$this->postError(1970, _t('Could not connect to LCSH service for %1: %2', $ps_value, $e->getMessage()), 'LCSHAttributeValue->parseValue()');
+						return false;
+					}
 	
-						$vs_label = $vs_url = $vs_id = null;
-						if ($o_xml) {
-							$o_entries = $o_xml->{'entry'};
-							if ($o_entries && sizeof($o_entries)) {
-								foreach($o_entries as $o_entry) {
-									$o_links = $o_entry->{'link'};
-									$va_attr = $o_links[0]->attributes();
-									
-									$vs_label = (string)$o_entry->{'title'};
-									
-									$vs_url = str_replace('http://id.loc.gov/', 'info:lc/', (string)$va_attr->{'href'});
-									$vs_id = (string)$o_entry->{'id'};
-								}
-							}
-						}
+					$vn_status = $o_response->getStatus();
+					$va_headers = $o_response->getHeaders();
+					
+					if (($vn_status == 302) && (isset($va_headers['X-preflabel'])) && $va_headers['X-preflabel']) {
+						$vs_url = $va_headers['Location'];
+						$va_url = explode("/", $vs_url);
+						$vs_id = array_pop($va_url);
+						$vs_label = $va_headers['X-preflabel'];
+						
+						$vs_url = str_replace('http://id.loc.gov/', 'info:lc/', $vs_url);
+						
 						if ($vs_url) {
 							return array(
-								'value_longtext1' => $vs_label." [{$vs_url}]",						// text
-								'value_longtext2' => $vs_url,							// uri
+								'value_longtext1' => trim($vs_label)." [{$vs_url}]",						// text
+								'value_longtext2' => trim($vs_url),							// uri
 								'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
 							);
 						} else {
@@ -271,14 +281,14 @@
 					)
 				);
 				
-			if ($pa_options['po_request']) {
-				$vs_url = caNavUrl($pa_options['po_request'], 'lookup', 'LCSH', 'Get', array('max' => 100, 'element_id' => (int)$pa_element_info['element_id']));
+			if ($pa_options['request']) {
+				$vs_url = caNavUrl($pa_options['request'], 'lookup', 'LCSH', 'Get', array('max' => 100, 'element_id' => (int)$pa_element_info['element_id']));
 			} else {
 				// hardcoded default for testing.
 				$vs_url = '/index.php/lookup/LCSH/Get';	
 			}
 			
-			$vs_element .= " <a href='#' style='display: none;' id='{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}' target='_lcsh_details'>"._t("More &rsaquo;")."</a>";
+			$vs_element .= " <a href='#' class='caLCSHServiceMoreLink' id='{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}' target='_lcsh_details'>"._t("More &rsaquo;")."</a>";
 		
 			$vs_element .= '</div>';
 			$vs_element .= "
@@ -314,7 +324,7 @@
  			return $vs_element;
  		}
  		# ------------------------------------------------------------------
- 		public function getAvailableSettings() {
+ 		public function getAvailableSettings($pa_element_info=null) {
  			global $_ca_attribute_settings;
  			
  			return $_ca_attribute_settings['LCSHAttributeValue'];

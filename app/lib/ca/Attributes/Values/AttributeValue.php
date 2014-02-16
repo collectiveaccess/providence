@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -44,6 +44,7 @@
  		private $ops_element_code;
  		private $opn_value_id;
  		private $opa_source_info;
+ 		private $ops_sort_value;
  		
  		# ------------------------------------------------------------------
  		public function __construct($pa_value_array=null) {
@@ -60,6 +61,11 @@
  			$this->opa_source_info = isset($pa_value_array['source_info']) ? $pa_value_array['source_info'] : null;
  			
  			$this->loadTypeSpecificValueFromRow($pa_value_array);
+ 			
+ 			$this->ops_sort_value = null;
+ 			if ($vs_sort_field = $this->sortField()) {
+ 				$this->ops_sort_value = $pa_value_array[$vs_sort_field];
+ 			}
  		}
  		# ------------------------------------------------------------------
  		/**
@@ -73,7 +79,7 @@
  		 * @param array An array of information about the attribute for which we are parsing the value, including settings
  		 * @param mixed An array of parsed component values on success, false on failure and null on "silent" failure (eg. failed but don't show an error message to the user)
  		 */
- 		public function parseValue($ps_value, $pa_element_info) {
+ 		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			return null;
  		}
  		# ------------------------------------------------------------------
@@ -123,6 +129,15 @@
 		 */
 		public function sortField() {
 			return null;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns value suitable for sorting
+		 * 
+		 * @return string Sortable value
+		 */
+		public function getSortValue() {
+			return $this->ops_sort_value;
 		}
 		# ------------------------------------------------------------------
 		/**

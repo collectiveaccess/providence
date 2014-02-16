@@ -33,7 +33,7 @@
  /**
    *
    */
-require_once(__CA_LIB_DIR__.'/core/BaseRelationshipModel.php');
+require_once(__CA_LIB_DIR__.'/ca/ObjectRelationshipBaseModel.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_objects_x_entities'] = array(
@@ -48,21 +48,21 @@ BaseModel::$s_ca_models_definitions['ca_objects_x_entities'] = array(
 				'LABEL' => 'Relation id', 'DESCRIPTION' => 'Identifier for Relation'
 		),
 		'entity_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => 'Entity id', 'DESCRIPTION' => 'Identifier for Entity'
 		),
 		'object_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => 'Object id', 'DESCRIPTION' => 'Identifier for Object'
 		),
 		'type_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
@@ -94,7 +94,7 @@ BaseModel::$s_ca_models_definitions['ca_objects_x_entities'] = array(
  	)
 );
 
-class ca_objects_x_entities extends BaseRelationshipModel {
+class ca_objects_x_entities extends ObjectRelationshipBaseModel {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------

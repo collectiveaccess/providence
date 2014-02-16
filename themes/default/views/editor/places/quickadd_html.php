@@ -50,9 +50,11 @@
 	}
 ?>
 	</div>
+	
+	<div class="quickAddErrorContainer" id="<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>"> </div>
+	
 	<div class="quickAddSectionBox" id="{$vs_form_name}Container<?php print $vs_field_name_prefix.$vs_n; ?>">
 		<div class="quickAddFormTopPadding"><!-- empty --></div>
-			<div class="quickAddErrorContainer" id="<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>"> </div>
 <?php
 			// Output hierarchy browser
 			$va_lookup_urls = caJSONLookupServiceUrl($this->request, 'ca_places');
@@ -135,6 +137,10 @@
 
 		<script type="text/javascript">
 			function caSave<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>(e) {
+				jQuery.each(CKEDITOR.instances, function(k, instance) {
+					instance.updateElement();
+				});
+						
 				jQuery.post('<?php print caNavUrl($this->request, "editor/places", "PlaceQuickAdd", "Save"); ?>', jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").serialize(), function(resp, textStatus) {
 				
 					if (resp.status == 0) {

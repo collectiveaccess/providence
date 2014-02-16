@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -184,12 +184,12 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$va_status['available'] = true;
 		}
 		
-		if (!($this->opb_abiword_installed)) { 
-			$va_status['warnings'][] = _t("ABIWord cannot be found: indexing of text in non-XML Microsoft Word files will not be performed; you can obtain ABIWord at http://www.abisource.com/");
-		}
-		
 		if (!($this->opb_libre_office_installed)) { 
 			$va_status['warnings'][] = _t("LibreOffice cannot be found: conversion to PDF and generation of page previews will not be performed; you can obtain LibreOffice at http://www.libreoffice.org/");
+		}
+		
+		if (!$this->opb_libre_office_installed && !$this->opb_abiword_installed) { 
+			$va_status['warnings'][] = _t("ABIWord cannot be found: indexing of text in non-XML Microsoft Word files will not be performed; you can obtain ABIWord at http://www.abisource.com/");
 		}
 		
 		return $va_status;
@@ -307,10 +307,10 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 								)
 							);
 							$this->handle['content'] = $o_doc->getFieldUtf8Value('body');
-							return 'WORD';
 						} catch (Exception $e) {
 							// noop
 						}
+						return 'WORD';
 					}
 					if (substr($vs_file, 0, 3) == 'xl/') {
 						try {
@@ -323,11 +323,11 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 								)
 							);
 							$this->handle['content'] = $o_doc->getFieldUtf8Value('body');
-							return 'EXCEL';
+							
 						} catch (Exception $e) {
 							// noop
-							
 						}
+						return 'EXCEL';
 					}
 					
 					if (substr($vs_file, 0, 4) == 'ppt/') {
@@ -341,10 +341,10 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 								)
 							);
 							$this->handle['content'] = $o_doc->getFieldUtf8Value('body');
-							return 'PPT';
 						} catch (Exception $e) {
 							// noop
 						}
+						return 'PPT';
 					}
 				}
 			}

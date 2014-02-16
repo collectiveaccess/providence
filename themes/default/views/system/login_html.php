@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2010 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -71,8 +71,14 @@
 						</div>
 						<div class="loginSubmitButton"><?php print caFormSubmitButton($this->request, __CA_NAV_BUTTON_LOGIN__, _t("Login"),"login", array('icon_position' => __CA_NAV_BUTTON_ICON_POS_RIGHT__)); ?></div>
 						<script type="text/javascript">
-							document.write("<input type='hidden' name='_screen_width' value='"+ screen.width + "'/>");
-							document.write("<input type='hidden' name='_screen_height' value='"+ screen.height + "'/>");
+							jQuery(document).ready(function() {
+								var pdfInfo = caUI.utils.getAcrobatInfo();
+								jQuery("#login").append(
+									"<input type='hidden' name='_screen_width' value='"+ screen.width + "'/>" +
+									"<input type='hidden' name='_screen_height' value='"+ screen.height + "'/>" +
+									"<input type='hidden' name='_has_pdf_plugin' value='"+ ((pdfInfo && pdfInfo['acrobat'] && (pdfInfo['acrobat'] === 'installed')) ? 1 : 0) + "'/>"
+								);
+							});
 						</script>
 					</form>
 				</div><!-- end loginForm -->

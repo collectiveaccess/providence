@@ -126,7 +126,33 @@
 		'label' => _t('Value delimiter'),
 		'validForRootOnly' => 1,
 		'description' => _t('Delimiter to use between multiple values when used in a display.')
-	)
+	),
+	'maxResults' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_FIELD,
+		'default' => 20,
+		'width' => 5, 'height' => 1,
+		'label' => _t('Maximum number of GeoNames results'),
+		'description' => _t('Determines the maximum number of results returned by GeoNames. Tweak this number if you want to speed up lookups.')
+	),
+	'gnElements' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_FIELD,
+		'default' => 'name,countryName,continentCode',
+		'width' => 90, 'height' => 4,
+		'label' => _t('GeoNames elements'),
+		'validForRootOnly' => 1,
+		'description' => _t('Comma-separated list of GeoNames attributes to be pulled from the service to build the text representation for the selected location. See http://www.geonames.org/export/geonames-search.html for further reference, including the available element names. Note that latitude and longitude are always added to the text value to enable map display.')
+	),
+	'gnDelimiter' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_FIELD,
+		'default' => ', ',
+		'width' => 10, 'height' => 1,
+		'label' => _t('GeoNames element delimiter'),
+		'validForRootOnly' => 1,
+		'description' => _t('Delimiter to use between multiple values pulled from GeoNames service.')
+	),
 );
 
 class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
@@ -180,7 +206,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 	/**
 	 *
 	 */
-	public function parseValue($ps_value, $pa_element_info) {
+	public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  		$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
 		$vo_conf = Configuration::load();
 		$vs_user = trim($vo_conf->get("geonames_user"));
@@ -226,9 +252,15 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 		}
  		$o_config = Configuration::load();
 
- 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'disableMap'));
+ 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'disableMap', 'maxResults', 'gnElements', 'gnDelimiter'));
 
-		JavascriptLoadManager::register('maps');
+ 		$vn_max_results = (isset($va_settings['maxResults']) ? intval($va_settings['maxResults']) : 20);
+ 		$vs_gn_elements = $va_settings['gnElements'];
+ 		$vs_gn_delimiter = $va_settings['gnDelimiter'];
+
+ 		if ($pa_options['request']) {
+			$vs_url = caNavUrl($pa_options['request'], 'lookup', 'GeoNames', 'Get', array('maxRows' => $vn_max_results, 'gnElements' => urlencode($vs_gn_elements), 'gnDelimiter' => urlencode($vs_gn_delimiter)));
+		}
 
  		$vs_element = '<div id="geonames_'.$pa_element_info['element_id'].'_input{n}">'.
  			caHTMLTextInput(
@@ -250,11 +282,8 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 				)
 			);
 
-		if ($pa_options['po_request']) {
-			$vs_url = caNavUrl($pa_options['po_request'], 'lookup', 'GeoNames', 'Get', array('max' => 100));
-		}
-
 		$vs_element .= '</div>';
+
 		$vs_element .= "
 			<script type='text/javascript'>
 				jQuery(document).ready(function() {
@@ -272,6 +301,9 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 		";
 
 		if(!$va_settings["disableMap"]){
+
+			JavascriptLoadManager::register('maps');
+
 			$vs_element .= "
 				<div id='map_".$pa_element_info['element_id']."{n}' style='width:700px; height:160px;'>
 
@@ -285,7 +317,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 
 			$vs_element .= "
 					var re = /\[([\d\.\-,; ]+)\]/;
-					var r = re.exec('{".$pa_element_info['element_id']."}');
+					var r = re.exec('{{".$pa_element_info['element_id']."}}');
 					var latlong = (r) ? r[1] : null;
 
 					if (latlong) {
@@ -314,7 +346,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
  		return $vs_element;
  	}
  	# ------------------------------------------------------------------
- 	public function getAvailableSettings() {
+ 	public function getAvailableSettings($pa_element_info=null) {
  		global $_ca_attribute_settings;
 
  		return $_ca_attribute_settings['GeoNamesAttributeValue'];

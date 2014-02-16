@@ -18,7 +18,7 @@ getid3_lib::IncludeDependency(GETID3_INCLUDEPATH.'module.audio-video.riff.php', 
 class getid3_la extends getid3_handler
 {
 
-	function Analyze() {
+	public function Analyze() {
 		$info = &$this->getid3->info;
 
 		$offset = 0;
@@ -112,7 +112,7 @@ class getid3_la extends getid3_handler
 				$info['la']['original_crc']         = getid3_lib::LittleEndian2Int(substr($rawdata, $offset, 4));
 				$offset += 4;
 
-				// mikeØbevin*de
+				// mikeÃ˜bevin*de
 				// Basically, the blocksize/seekevery are 61440/19 in La0.4 and 73728/16
 				// in earlier versions. A seekpoint is added every blocksize * seekevery
 				// samples, so 4 * int(totalSamples / (blockSize * seekEvery)) should
@@ -193,7 +193,6 @@ class getid3_la extends getid3_handler
 				$info['avdataend']    = $info['avdataoffset'] + $info['la']['footerstart'];
 				$info['avdataoffset'] = $info['avdataoffset'] + $offset;
 
-				//$info['la']['codec']                = RIFFwFormatTagLookup($info['la']['raw']['format']);
 				$info['la']['compression_ratio']    = (float) (($info['avdataend'] - $info['avdataoffset']) / $info['la']['uncompressed_size']);
 				$info['playtime_seconds']           = (float) ($info['la']['samples'] / $info['la']['sample_rate']) / $info['la']['channels'];
 				if ($info['playtime_seconds'] == 0) {
@@ -224,6 +223,3 @@ class getid3_la extends getid3_handler
 	}
 
 }
-
-
-?>

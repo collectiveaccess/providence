@@ -60,6 +60,9 @@
  	define('__CA_NAV_BUTTON_PAN__', 21);
  	define('__CA_NAV_BUTTON_CHANGE__', 22);
  	define('__CA_NAV_BUTTON_BATCH_EDIT__', 23);
+ 	define('__CA_NAV_BUTTON_INTERSTITIAL_EDIT_BUNDLE__', 24);
+ 	define('__CA_NAV_BUTTON_MAKE_PRIMARY__', 25);
+ 	define('__CA_NAV_BUTTON_UPDATE__', 26);
  		
  	define('__CA_NAV_BUTTON_ICON_POS_LEFT__', 0);
  	define('__CA_NAV_BUTTON_ICON_POS_RIGHT__', 1);
@@ -71,7 +74,14 @@
 	 */
 	function caNavUrl($po_request, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null) {
 
-		$vs_url = $po_request->getBaseUrlPath().'/'.$po_request->getScriptName();
+		if(defined('__CA_USE_CLEAN_URLS__') && (__CA_USE_CLEAN_URLS__)) {
+			$vs_url = $po_request->getBaseUrlPath();
+		} else {
+			$vs_url = $po_request->getBaseUrlPath().'/'.$po_request->getScriptName();
+		}
+		if ($ps_module_path == '*') { $ps_module_path = $po_request->getModulePath(); }
+		if ($ps_controller == '*') { $ps_controller = $po_request->getController(); }
+		if ($ps_action == '*') { $ps_action = $po_request->getAction(); }
 		
 		if ($ps_module_path) {
 			$vs_url .= '/'.$ps_module_path;
@@ -492,6 +502,12 @@
 			case __CA_NAV_BUTTON_DOWNLOAD__:
 				$vs_img_name = 'download';
 				break;
+			case __CA_NAV_BUTTON_MAKE_PRIMARY__:
+				$vs_img_name = 'primary';
+				break;
+			case __CA_NAV_BUTTON_UPDATE__:
+				$vs_img_name = 'updatemedia';
+				break;
 			case __CA_NAV_BUTTON_MESSAGE__:
 				$vs_img_name = 'msg';
 				break;
@@ -539,6 +555,9 @@
 				break;
 			case __CA_NAV_BUTTON_CHANGE__:
 				$vs_img_name = 'change';
+				break;
+			case __CA_NAV_BUTTON_INTERSTITIAL_EDIT_BUNDLE__:
+				$vs_img_name = 'interstitial';
 				break;
 			default:
 				$vs_img_name = '';
@@ -634,7 +653,7 @@
 			if (!($t_table = $o_dm->getInstanceByTableName($ps_table, true))) { return null; }
 		}
 		$vs_pk = $t_table->primaryKey();
-		$vs_table = $ps_table;
+		$vs_table = $t_table->tableName();
 		if ($vs_table == 'ca_list_items') { $vs_table = 'ca_lists'; }
 		
 		switch($ps_table) {
@@ -755,7 +774,7 @@
 			default:
 				if(isset($pa_options['action'])){
 					$vs_action = $pa_options['action'];
-				} else if($po_request->isLoggedIn() && $po_request->user->canAccess($vs_module,$vs_controller,"Edit",array($vs_pk => $pn_id))) {
+				} elseif($po_request->isLoggedIn() && $po_request->user->canAccess($vs_module,$vs_controller,"Edit",array($vs_pk => $pn_id)) && !(bool)$po_request->config->get($vs_table.'_editor_defaults_to_summary_view')) {
 					$vs_action = 'Edit';
 				} else {
 					$vs_action = 'Summary';

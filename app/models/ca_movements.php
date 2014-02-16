@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2012 Whirl-i-Gig
+ * Copyright 2010-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,7 +35,7 @@
    */
 
 require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
-require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
+require_once(__CA_LIB_DIR__."/ca/RepresentableBaseModel.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_movements'] = array(
@@ -115,7 +115,7 @@ BaseModel::$s_ca_models_definitions['ca_movements'] = array(
  	)
 );
 
-class ca_movements extends BundlableLabelableBaseModelWithAttributes implements IBundleProvider {
+class ca_movements extends RepresentableBaseModel implements IBundleProvider {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -250,8 +250,9 @@ class ca_movements extends BundlableLabelableBaseModelWithAttributes implements 
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
-	protected function initLabelDefinitions() {
-		parent::initLabelDefinitions();
+	protected function initLabelDefinitions($pa_options=null) {
+		parent::initLabelDefinitions($pa_options);
+		$this->BUNDLES['ca_object_representations'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Media representations'));
 		$this->BUNDLES['ca_objects'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects'));
 		$this->BUNDLES['ca_object_lots'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related lots'));
 		$this->BUNDLES['ca_entities'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related entities'));

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2012 Whirl-i-Gig
+ * Copyright 2007-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,7 +38,8 @@ require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
 require_once(__CA_LIB_DIR__.'/core/Configuration.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/ZipFile.php');
 require_once(__CA_LIB_DIR__.'/core/Logging/Eventlog.php');
-
+require_once(__CA_LIB_DIR__.'/core/Utils/Encoding.php');
+require_once(__CA_LIB_DIR__.'/core/Zend/Measure/Length.php');
 
 # ----------------------------------------------------------------------
 # String localization functions (getText)
@@ -54,32 +55,35 @@ global $ca_translation_cache;
 $ca_translation_cache = array();
 function _t($ps_key) {
 	global $ca_translation_cache, $_;
-	global $_;
 	
-	if (!sizeof(func_get_args()) && isset($ca_translation_cache[$ps_key])) { return $ca_translation_cache[$ps_key]; }
-	
-	if (is_array($_)) {
-		$vs_str = $ps_key;
-		foreach($_ as $o_locale) {
-			if ($o_locale->isTranslated($ps_key)) {
-				$vs_str = $o_locale->_($ps_key);
-				break;
-			}
-		}
-	} else {
-		if (!is_object($_)) { 
+	if (!isset($ca_translation_cache[$ps_key])) {
+		if (is_array($_)) {
 			$vs_str = $ps_key;
+			foreach($_ as $o_locale) {
+				if ($o_locale->isTranslated($ps_key)) {
+					$vs_str = $o_locale->_($ps_key);
+					break;
+				}
+			}
 		} else {
-			$vs_str = $_->_($ps_key);
-		} 
+			if (!is_object($_)) { 
+				$vs_str = $ps_key;
+			} else {
+				$vs_str = $_->_($ps_key);
+			} 
+		}
+		$ca_translation_cache[$ps_key] = $vs_str;
+	} else {
+		$vs_str = $ca_translation_cache[$ps_key];
 	}
+	
 	if (sizeof($va_args = func_get_args()) > 1) {
 		$vn_num_args = sizeof($va_args) - 1;
 		for($vn_i=$vn_num_args; $vn_i >= 1; $vn_i--) {
 			$vs_str = str_replace("%{$vn_i}", $va_args[$vn_i], $vs_str);
 		}
 	}
-	return $ca_translation_cache[$ps_key] = $vs_str;
+	return $vs_str;
 }
 
 /**
@@ -294,9 +298,10 @@ function caFileIsIncludable($ps_file) {
 	 * @param bool $pb_recursive Optional. By default caGetDirectoryContentsAsList() will recurse through all sub-directories of $dir; set this to false to only consider files that are in $dir itself.
 	 * @param bool $pb_include_hidden_files Optional. By default caGetDirectoryContentsAsList() does not consider hidden files (files starting with a '.') when calculating file counts. Set this to true to include hidden files in counts. Note that the special UNIX '.' and '..' directory entries are *never* counted as files.
 	 * @param bool $pb_sort Optional. If set paths are returns sorted alphabetically. Default is false.
+	 * @param bool $pb_include_directories. If set paths to directories are included. Default is false (only files are returned).
 	 * @return array An array of file paths.
 	 */
-	function &caGetDirectoryContentsAsList($dir, $pb_recursive=true, $pb_include_hidden_files=false, $pb_sort=false) {
+	function &caGetDirectoryContentsAsList($dir, $pb_recursive=true, $pb_include_hidden_files=false, $pb_sort=false, $pb_include_directories=false) {
 		$va_file_list = array();
 		if(substr($dir, -1, 1) == "/"){
 			$dir = substr($dir, 0, strlen($dir) - 1);
@@ -306,8 +311,11 @@ function caFileIsIncludable($ps_file) {
 			foreach($va_paths as $item) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
 					$vb_is_dir = is_dir("{$dir}/{$item}");
+					if ($pb_include_directories && $vb_is_dir) {
+						$va_file_list["{$dir}/{$item}"] = true;
+					}
 					if ($pb_recursive && $vb_is_dir) { 
-						$va_file_list = array_merge($va_file_list, array_flip(caGetDirectoryContentsAsList("{$dir}/{$item}", true, $pb_include_hidden_files)));
+						$va_file_list = array_merge($va_file_list, array_flip(caGetDirectoryContentsAsList("{$dir}/{$item}", true, $pb_include_hidden_files, false, $pb_include_directories)));
 					} else { 
 						if (!$vb_is_dir) { 
 							$va_file_list["{$dir}/{$item}"] = true;
@@ -416,6 +424,15 @@ function caFileIsIncludable($ps_file) {
 		unlink ($vs_new_file);
 		
 		return true;
+	}
+	# ----------------------------------------
+	function caIsArchive($ps_filename){
+		// what once was the PHAR extension is built in since PHP 5.3
+		// can actually handle zip and tar.gz (and probably a lot more)
+		if(!class_exists("PharData")) return false; 
+		$list = @scandir('phar://'.$ps_filename);
+	
+		return (bool)$list;
 	}
 	# ----------------------------------------
 	function caGetOSFamily() {
@@ -696,7 +713,7 @@ function caFileIsIncludable($ps_file) {
 			if(isset($pa_options['html']) && $pa_options['html']) {
 				$va_buf[] = array($va_line['file'], $va_line['class'], $va_line['function'], $va_line['line']);
 			} else {
-				$va_buf[] = $va_line['file'].':'.($va_line['class'] ? $va_line['class'].':' : '').$va_line['function'].'@'.$va_line['line'];
+				$va_buf[] = $va_line['file'].':'.($va_line['class'] ? $va_line['class'].':' : '').$va_line['function'].'@'.$va_line['line']."<br/>\n";
 			}
 		}
 		
@@ -731,9 +748,10 @@ function caFileIsIncludable($ps_file) {
 	 * Both text fractions (ex. 3/4) and Unicode fraction glyphs (ex. ¾) may be used.
 	 *
 	 * @param string $ps_fractional_expression String including fractional expression to convert
+	 * @param string $locale The locale of the string to use the right decimal separator
 	 * @return string $ps_fractional_expression with fractions replaced with decimal equivalents
 	 */
-	function caConvertFractionalNumberToDecimal($ps_fractional_expression) {
+	function caConvertFractionalNumberToDecimal($ps_fractional_expression, $locale="en_US") {
 		// convert ascii fractions (eg. 1/2) to decimal
 		if (preg_match('!^([\d]*)[ ]*([\d]+)/([\d]+)!', $ps_fractional_expression, $va_matches)) {
 			if ((float)$va_matches[2] > 0) {
@@ -743,13 +761,15 @@ function caFileIsIncludable($ps_file) {
 			}
 			$vn_val = sprintf("%4.3f", ((float)$va_matches[1] + $vn_val));
 			
+			$vn_val = caConvertFloatToLocale($vn_val, $locale);
 			$ps_fractional_expression = str_replace($va_matches[0], $vn_val, $ps_fractional_expression);
 		} else {
+			$sep = caGetDecimalSeparator($locale);
 			// replace unicode fractions with decimal equivalents
 			foreach(array(
-				'½' => '.5','⅓' => '.333',
-				'⅔' => '.667','¼' => '.25',
-				'¾' => '.75') as $vs_glyph => $vs_val
+				'½' => $sep.'5', '⅓' => $sep.'333',
+				'⅔' => $sep.'667', '¼' => $sep.'25',
+				'¾'	=> $sep.'75') as $vs_glyph => $vs_val
 			) {
 				$ps_fractional_expression = preg_replace('![ ]*'.$vs_glyph.'!u', $vs_val, $ps_fractional_expression);	
 			}
@@ -782,22 +802,50 @@ function caFileIsIncludable($ps_file) {
 	 * format needed for calculations (eg 54.33)
 	 *
 	 * @param string $ps_value The value to convert
+	 * @param string $locale The locale of the value
 	 * @return float The converted value
 	 */
-	function caConvertLocaleSpecificFloat($ps_value) {
-		$va_locale = localeconv();
-		$va_search = array(
-			$va_locale['decimal_point'], 
-			$va_locale['mon_decimal_point'], 
-			$va_locale['thousands_sep'], 
-			$va_locale['mon_thousands_sep'], 
-			$va_locale['currency_symbol'], 
-			$va_locale['int_curr_symbol']
-		);
-		$va_replace = array('.', '.', '', '', '', '');
-	
-		$vs_converted_value = str_replace($va_search, $va_replace, $ps_value);
-		return (float)$vs_converted_value;
+	function caConvertLocaleSpecificFloat($ps_value, $locale = "en_US") {
+		$vo_locale = new Zend_Locale($locale);
+
+		try {
+			return Zend_Locale_Format::getNumber($ps_value, array('locale' => $locale));
+		} catch (Zend_Locale_Exception $e) { // happens when you enter 54.33 but 54,33 is expected in the current locale
+			return floatval($ps_value);
+		}
+	}
+	# ---------------------------------------
+	/**
+	 * Takes a standard formatted float (eg. 54.33) and converts it to the locale
+	 * format needed for display (eg 54,33)
+	 *
+	 * @param string $pn_value The value to convert
+	 * @param string $locale Which locale is to be used to return the value
+	 * @return float The converted value
+	 */
+	function caConvertFloatToLocale($pn_value, $locale = "en_US") {
+		$vo_locale = new Zend_Locale($locale);
+
+		try {
+			return Zend_Locale_Format::toNumber($pn_value, array('locale' => $locale));
+		} catch (Zend_Locale_Exception $e) {
+			return $pn_value;
+		}
+	}
+	# ---------------------------------------
+	/**
+	 * Get the decimal separator
+	 *
+	 * @param string $locale Which locale is to be used to determine the value
+	 * @return string The separator
+	 */
+	function caGetDecimalSeparator($locale = "en_US") {
+		$va_symbols = Zend_Locale_Data::getList($locale,'symbols');
+		if(isset($va_symbols['decimal'])){
+			return $va_symbols['decimal'];
+		} else {
+			return '.';
+		}
 	}
 	# ---------------------------------------
 	/**
@@ -986,7 +1034,7 @@ function caFileIsIncludable($ps_file) {
 			'file_locking' => true,				/* cache corruption avoidance */
 			'read_control' => false,			/* no read control */
 			'file_name_prefix' => $ps_prefix,	/* prefix of cache files */
-			'cache_file_umask' => 0700			/* permissions of cache files */
+			'cache_file_perm' => 0700			/* permissions of cache files */
 		);
 
 
@@ -1166,42 +1214,26 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ---------------------------------------
 	function caFormatXML($ps_xml){  
-		// add marker linefeeds to aid the pretty-tokeniser (adds a linefeed between all tag-end boundaries)
-		$xml = preg_replace('/(>)(<)(\/*)/', "$1\n$2$3", $ps_xml);
-		
-		// now indent the tags
-		$token = strtok($xml, "\n");
-		$result	= ''; // holds formatted version as it is built
-		$pad = 0; // initial indent
-		$matches = array(); // returns from preg_matches()
-		
-		// scan each line and adjust indent based on opening/closing tags
-		while ($token !== false) : 
-			$indent = 0;
-			// test for the various tag states
-			
-			// 1. open and closing tags on same line - no change
-			if (preg_match('/.+<\/\w[^>]*>$/', $token, $matches)) : 
-				$indent = 0;
-			// 2. closing tag - outdent now
-			elseif (preg_match('/^<\/\w/', $token, $matches)) :
-				$pad -= 2;
-			// 3. opening tag - don't pad this one, only subsequent tags
-			elseif (preg_match('/^<\w[^>]*[^\/]>.*$/', $token, $matches)) :
-				$indent = 2;
-			// 4. no indentation needed
-			else :
-				$indent = 0; 
-			endif;
-			
-			// pad the line with the required number of leading spaces
-			$line = str_pad($token, strlen($token)+$pad, ' ', STR_PAD_LEFT);
-			$result .= $line . "\n"; // add to the cumulative result, with linefeed
-			$token = strtok("\n"); // get the next token
-			$pad += $indent; // update the pad size for subsequent lines
-		endwhile; 
-		
-		return $result;
+		require_once(__CA_LIB_DIR__.'/core/Parsers/XMLFormatter.php');
+
+		$va_options = array(
+			"paddingString" => " ",
+			"paddingMultiplier" => 2,
+			"wordwrapCData" => false,
+		);
+
+		$vr_input = fopen('data://text/plain,'.$ps_xml, 'r');
+		$vr_output = fopen('php://temp', 'w+');
+
+		$vo_formatter = new XML_Formatter($vr_input, $vr_output, $va_options);
+
+		try {
+			$vo_formatter->format();
+			rewind($vr_output);
+			return stream_get_contents($vr_output)."\n";
+		} catch (EXception $e) {
+			return false;
+		}
 	}
 	# ---------------------------------------
 	/**
@@ -1267,6 +1299,31 @@ function caFileIsIncludable($ps_file) {
 			}
 		}
 		return true;
+	}
+	# ---------------------------------------
+	/**
+	 * Recursively encode array (or string) as UTF8 text
+	 *
+	 * @param mixed $pm_input Array or string to encode
+	 * @return mixed Encoded array or string
+	 */
+	function caEncodeUTF8Deep(&$pm_input) {
+		if (is_string($pm_input)) {
+			$pm_input = Encoding::toUTF8($pm_input);
+		} else if (is_array($pm_input)) {
+			foreach ($pm_input as &$vm_value) {
+				caEncodeUTF8Deep($vm_value);
+			}
+
+			unset($vm_value);
+		} else if (is_object($pm_input)) {
+			$va_keys = array_keys(get_object_vars($pm_input));
+
+			foreach ($va_keys as $vs_key) {
+				caEncodeUTF8Deep($pm_input->$vs_key);
+			}
+		}
+		return $pm_input;
 	}
 	# ---------------------------------------
 	/**
@@ -1474,6 +1531,87 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ---------------------------------------
 	/**
+	 * Determines if current request was via service.php
+	 *
+	 * @return boolean true if request addressed service.php, false if not
+	 */
+	function caIsServiceRequest() {
+		if(isset($_SERVER['SCRIPT_NAME']) && ($_SERVER['SCRIPT_NAME'] == '/service.php')){
+			return true;
+		} else {
+			return false;
+		}
+	}
+	# ---------------------------------------
+	/**
+	 * Extract specified option from an options array. 
+	 * An options array is simply an associative array where keys are option names and values are option values.
+	 * caGetOption() provides a simple interface to grab values, force default values for non-existent settings and enforce simple validation rules.
+	 *
+	 * @param mixed $ps_option The option to extract
+	 * @param array $pa_options The options array to extract values from
+	 * @param mixed $pm_default An optional default value to return if $ps_option is not set in $pa_options 
+	 * @param array $pa_parse_options Option parser options (cross your eyes now) include:
+	 *		forceLowercase = transform option value to all lowercase [default=false]
+	 *		forceUppercase = transform option value to all uppercase [default=false]
+	 *		validValues = array of values that are possible for this option. If the option value is not in the list then the default is returned. If no default is set then the first value in the validValues list is returned. Note that by default all comparisons are case-insensitive. 
+	 *		caseSensitive = do case sensitive comparisons when checking the option value against the validValues list [default=false]
+	 *		castTo = array|int|string
+	 * @return mixed
+	 */
+	function caGetOption($ps_option, $pa_options, $pm_default=null, $pa_parse_options=null) {
+		$va_valid_values = null;
+		$vb_case_insensitive = false;
+		if (isset($pa_parse_options['validValues']) && is_array($pa_parse_options['validValues'])) {
+			$va_valid_values = $pa_parse_options['validValues'];
+			if (!isset($pa_parse_options['caseSensitive']) || !$pa_parse_options['caseSensitive']) {
+				$va_valid_values = array_map(function($v) { return mb_strtolower($v); }, $va_valid_values);
+				$vb_case_insensitive = true;
+			}
+		}
+		$vm_val = (isset($pa_options[$ps_option]) && !is_null($pa_options[$ps_option])) ? $pa_options[$ps_option] : $pm_default;
+		
+		if(is_array($va_valid_values)) {
+			if (!in_array($vb_case_insensitive ? mb_strtolower($vm_val) : $vm_val, $va_valid_values)) {
+				$vm_val = $pm_default;
+				if (!in_array($vb_case_insensitive ? mb_strtolower($vm_val) : $vm_val, $va_valid_values)) {
+					$vm_val = array_shift($va_valid_values);
+				}
+			}
+		}
+		
+		if (isset($pa_parse_options['forceLowercase']) && $pa_parse_options['forceLowercase']) {
+			$vm_val = mb_strtolower($vm_val);
+		} elseif (isset($pa_parse_options['forceUppercase']) && $pa_parse_options['forceUppercase']) {
+			$vm_val = mb_strtoupper($vm_val);
+		}
+		
+		$vs_cast_to = (isset($pa_parse_options['castTo']) && ($pa_parse_options['castTo'])) ? strtolower($pa_parse_options['castTo']) : '';
+		switch($vs_cast_to) {
+			case 'int':
+				$vm_val = (int)$vm_val;
+				break;
+			case 'float':
+				$vm_val = (float)$vm_val;
+				break;
+			case 'string':
+				$vm_val = (string)$vm_val;
+				break;
+			case 'array':
+				if(!is_array($vm_val)) {
+					if (strlen($vm_val)) {
+						$vm_val = array($vm_val);
+					} else {
+						$vm_val = array();
+					}
+				}
+				break;
+		}
+		
+		return $vm_val;
+	}
+	# ---------------------------------------
+	/**
 	 * 
 	 *
 	 * @param array $pa_options
@@ -1481,7 +1619,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return array
 	 */
 	function caGetOptions($pa_options, $pa_defaults) {
-		$va_proc_options = $pa_options;
+		$va_proc_options = is_array($pa_options) ? $pa_options : array();
 		
 		foreach($pa_defaults as $vs_opt => $vs_opt_default_val) {
 			if (!isset($va_proc_options[$vs_opt])) { $va_proc_options[$vs_opt] = $vs_opt_default_val; }
@@ -1505,7 +1643,7 @@ function caFileIsIncludable($ps_file) {
 			if (is_array($vm_v)) {
 				$pa_array[$vn_k] = caSanitizeArray($vm_v);
 			} else {
-				if (!preg_match("!^[\p{L}\p{N}\p{P}]+!", $vm_v)) {
+				if ((!preg_match("!^[\p{L}\p{N}\p{P}]+!", $vm_v)) || (!mb_detect_encoding($vm_v))) {
 					unset($pa_array[$vn_k]);
 				}
 			}
@@ -1635,24 +1773,7 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caDebug($vm_data, $vs_label = null, $print_r = false) {
 		if(defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) {
-			if(!caIsRunFromCLI()){
-				$vs_string = htmlspecialchars(($print_r ? print_r($vm_data, TRUE) : var_export($vm_data, TRUE)), ENT_QUOTES, 'UTF-8');
-				$vs_string = '<pre>' . $vs_string . '</pre>';
-				$vs_string = trim($vs_label ? "<div id='debugLabel'>$vs_label:</div> $vs_string" : $vs_string);
-				$vs_string = '<div id="debug">'. $vs_string . '</div>';
-
-				global $g_response;
-				if(is_object($g_response)){
-					$g_response->prependContent($vs_string,'debug');
-				} else {
-					// on the off chance that someone wants to debug something that happens before 
-					// the response object is generated (like config checks), print content
-					// to output buffer to avoid headers already sent warning. The output is sent
-					// when someone (e.g. View.php) starts a new buffer.
-					ob_start();
-					print $vs_string;
-				}
-			} else {
+			if(caIsRunFromCLI()){
 				// simply dump stuff on command line
 				if($vs_label) { print $vs_label.":\n"; }
 				if($print_r) {
@@ -1661,6 +1782,33 @@ function caFileIsIncludable($ps_file) {
 					var_export($vm_data);
 				}
 				print "\n";
+				return;
+			} else if (caIsServiceRequest()){
+				$vs_data = ($print_r ? print_r($vm_data, TRUE) : var_export($vm_data, TRUE));
+				if($vs_label){
+					$vs_string = '<debugLabel>' . $vs_label . '</debugLabel>' . "\n";
+				} else {
+					$vs_string = "";
+				}
+				$vs_string .= '<debug>' . $vs_data . '</debug>';
+				$vs_string .= "\n\n";
+			} else {
+				$vs_string = htmlspecialchars(($print_r ? print_r($vm_data, TRUE) : var_export($vm_data, TRUE)), ENT_QUOTES, 'UTF-8');
+				$vs_string = '<pre>' . $vs_string . '</pre>';
+				$vs_string = trim($vs_label ? "<div class='debugLabel'>$vs_label:</div> $vs_string" : $vs_string);
+				$vs_string = '<div class="debug">'. $vs_string . '</div>';
+			}
+
+			global $g_response;
+			if(is_object($g_response)){
+				$g_response->addContent($vs_string,'default');
+			} else {
+				// on the off chance that someone wants to debug something that happens before 
+				// the response object is generated (like config checks), print content
+				// to output buffer to avoid headers already sent warning. The output is sent
+				// when someone (e.g. View.php) starts a new buffer.
+				ob_start();
+				print $vs_string;
 			}
 		}
 	}
@@ -1675,6 +1823,141 @@ function caFileIsIncludable($ps_file) {
 			return $t_instance->makeSearchResult($ps_table, $pa_ids);
 		}
 		return null;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caExtractValuesFromArrayList($pa_array, $ps_key, $pa_options=null) {
+		$vb_preserve_keys = (isset($pa_options['preserveKeys'])) ? (bool)$pa_options['preserveKeys'] : true;
+		$vb_include_blanks = (isset($pa_options['includeBlanks'])) ? (bool)$pa_options['includeBlanks'] : false;
+		
+		$va_extracted_values = array();
+		foreach($pa_array as $vs_k => $va_v) {
+			if (!$vb_include_blanks && (!isset($va_v[$ps_key]) ||(strlen($va_v[$ps_key]) == 0))) { continue; }
+			if ($vb_preserve_keys) {
+				$va_extracted_values[$vs_k] = $va_v[$ps_key];
+			} else {
+				$va_extracted_values[] = $va_v[$ps_key];
+			}
+		}
+		
+		return $va_extracted_values;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caIsAssociativeArray($pa_array) {
+	  return (bool)count(array_filter(array_keys($pa_array), 'is_string'));
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caIsIndexedArray($pa_array) {
+		return (is_array($pa_array) && !caIsAssociativeArray($pa_array));
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caGetProcessUserID() {
+	  if (function_exists("posix_geteuid")) {
+	  	return posix_geteuid();
+	  }
+	  return null;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caGetProcessUserName() {
+	  if (function_exists("posix_getpwuid")) {
+	  	if (is_array($va_user = posix_getpwuid(caGetProcessUserID()))) {
+	  		return $va_user['name'];
+	  	}
+	  }
+	  return null;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caGetProcessGroupID() {
+	  if (function_exists("posix_getegid")) {
+	  	return posix_geteuid();
+	  }
+	  return null;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caGetProcessGroupName() {
+	  if (function_exists("posix_getgrgid")) {
+	  	if (is_array($va_group = posix_getgrgid(caGetProcessGroupID()))) {
+	  		return $va_group['name'];
+	  	}
+	  }
+	  return null;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caDetermineWebServerUser() {
+	  if (!caIsRunFromCLI() && ($vs_user = caGetProcessUserName())) {	// we're running on the web server
+	  	return $vs_user;
+	  }
+	  
+	  if(function_exists("posix_getpwnam")) {
+		  // Not running in web server so try to guess
+		  foreach(array('apache', 'www-data', 'www', 'httpd', 'nobody') as $vs_possible_user) {
+			if (posix_getpwnam($vs_possible_user)) {
+				return $vs_possible_user;
+			}
+		  }
+	  }
+	  
+	  return null;
+	}
+	# ----------------------------------------
+	/**
+	 * Convert currency value to another currency.
+	 *
+	 * @param $ps_value string Currency value with specifier (Ex. $500, USD 500, ¥1200, CAD 750)
+	 * @param $ps_to string Specifier of currency to convert value to (Ex. USD, CAD, EUR)
+	 * @param $pa_options array Options are:
+	 *		numericValue = return floating point numeric value only, without currency specifier. Default is false.
+	 *
+	 * @return string Converted value with currency specifier, unless numericValue option is set. Returns null if value could not be converted.
+	 */
+	function caConvertCurrencyValue($ps_value, $ps_to, $pa_options=null) {
+		require_once(__CA_LIB_DIR__."/core/Plugins/CurrencyConversion/EuroBank.php");
+		
+		try {
+			return WLPlugCurrencyConversionEuroBank::convert($ps_value, $ps_to, $pa_options);
+		} catch (Exception $e) {
+			return null;
+		}
+	}
+	# ----------------------------------------
+	/**
+	 * Returns list of currencies for which conversion can be done.
+	 *
+	 * @return array List of three character currency codes, or null if conversion is not available.
+	 */
+	function caAvailableCurrenciesForConversion() {
+		require_once(__CA_LIB_DIR__."/core/Plugins/CurrencyConversion/EuroBank.php");
+		
+		try {
+			$va_currency_list = WLPlugCurrencyConversionEuroBank::getCurrencyList();
+			sort($va_currency_list);
+			return $va_currency_list;
+		} catch (Exception $e) {
+			return null;
+		}
 	}
 	# ----------------------------------------
 ?>

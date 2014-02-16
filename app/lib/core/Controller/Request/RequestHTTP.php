@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2012 Whirl-i-Gig
+ * Copyright 2007-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -166,6 +166,7 @@ class RequestHTTP extends Request {
 			$this->ops_script_name = array_pop($va_tmp);
 		}
 		
+		/* allow authentication via URL for web service API like so: http://user:pw@example.com/ */
 		if($this->ops_script_name=="service.php"){
 			$this->ops_raw_post_data = file_get_contents("php://input");
 
@@ -182,8 +183,12 @@ class RequestHTTP extends Request {
 		}
 		
 		$this->ops_base_path = join('/', $va_tmp);
-		$this->ops_full_path = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : null;
-		$this->ops_path_info = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '';
+		$this->ops_full_path = $_SERVER['REQUEST_URI'];
+		if (!preg_match("!/index.php!", $this->ops_full_path) && !preg_match("!/service.php!", $this->ops_full_path)) { $this->ops_full_path = rtrim($this->ops_full_path, "/")."/index.php"; }
+		$vs_path_info = str_replace($_SERVER['SCRIPT_NAME'], "", str_replace("?".$_SERVER['QUERY_STRING'], "", $this->ops_full_path));
+		
+		$this->ops_path_info = $vs_path_info ? $vs_path_info : (isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '');
+		if (__CA_URL_ROOT__) { $this->ops_path_info = preg_replace("!^".__CA_URL_ROOT__."/!", "", $this->ops_path_info); }
 	}
 	# -------------------------------------------------------
 	/** 
@@ -280,7 +285,8 @@ class RequestHTTP extends Request {
 		if ($this->config->get('always_use_default_theme')) { $pb_use_default = true; }
 		if (!$pb_use_default && $this->isLoggedIn()) {
 			$vs_theme = $this->user->getPreference('ui_theme');
-		} else {
+		} 
+		if (!$vs_theme) {
 			$vs_theme = $this->config->get('theme');		// default theme
 		}
 		return $this->config->get('themes_url').'/'.$vs_theme;
@@ -290,7 +296,8 @@ class RequestHTTP extends Request {
 		if ($this->config->get('always_use_default_theme')) { $pb_use_default = true; }
 		if (!$pb_use_default && $this->isLoggedIn()) {
 			$vs_theme = $this->user->getPreference('ui_theme');
-		} else {
+		} 
+		if (!$vs_theme) {
 			$vs_theme = $this->config->get('theme');		// default theme
 		}
 		return $this->config->get('themes_directory').'/'.$vs_theme;
@@ -468,6 +475,20 @@ class RequestHTTP extends Request {
 		die("Invalid parameter type for $ps_name\n");
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getParameters($pa_http_methods=null) {
+		if($pa_http_methods && !is_array($pa_http_methods)) { $pa_http_methods = array($pa_http_methods); }
+		$va_params = array();
+		foreach($pa_http_methods as $vs_http_method) {
+			if (isset($this->opa_params[$vs_http_method]) && is_array($this->opa_params[$vs_http_method])) {
+				$va_params = array_merge($va_params, $this->opa_params[$vs_http_method]);
+			}
+		}
+		return $va_params;
+	}
+	# -------------------------------------------------------
 	function setParameter($ps_name, $pm_value, $ps_http_method='GET') {
 		if (in_array($ps_http_method, array('GET', 'POST', 'COOKIE', 'PATH', 'REQUEST'))) {
 			$this->opa_params[$ps_http_method][$ps_name] = $pm_value;
@@ -595,7 +616,7 @@ class RequestHTTP extends Request {
 					if (caFileIsIncludable($vs_user_class_name.".php")) {
 						require_once($vs_user_class_name.".php"); 
 						$va_options = $pa_options["options"];
-						eval("\$this->user = new $vs_user_class_name($vn_user_id,\$va_options);");			// add user object
+						$this->user = new $vs_user_class_name($vn_user_id, $va_options);		// add user object
 				
 						if ((!$this->user->isActive()) || ($this->user->numErrors()) || ($pa_options['noPublicUsers'] && $this->user->isPublicUser())) {			// error means user_id in session is invalid
 							$vb_login_successful = false;
@@ -622,7 +643,7 @@ class RequestHTTP extends Request {
 					if (!caFileIsIncludable($vs_user_class_name.".php")) { continue; }
 					
 					require_once($vs_user_class_name.".php");
-					 eval("\$this->user = new $vs_user_class_name();");						// add user object
+					$this->user = new $vs_user_class_name();		// add user object
 					
 					$vs_tmp1 = $vs_tmp2 = null;
 					if (($vn_auth_type = $this->user->authenticate($vs_tmp1, $vs_tmp2, $pa_options["options"]))) {	# error means user_id in session is invalid
@@ -657,7 +678,8 @@ class RequestHTTP extends Request {
 				
 				if (!caFileIsIncludable($vs_user_class_name.".php")) { continue; }
 				require_once($vs_user_class_name.".php");
-				 eval("\$this->user = new $vs_user_class_name();");		
+				$this->user = new $vs_user_class_name();
+					
 				if (($vn_auth_type = $this->user->authenticate($pa_options["user_name"], $pa_options["password"], $pa_options["options"]))) {	# error means user_id in session is invalid
 					if (($pa_options['noPublicUsers'] && $this->user->isPublicUser()) || !$this->user->isActive()) {
 						$vb_login_successful = false;
@@ -695,6 +717,7 @@ class RequestHTTP extends Request {
 			
 			$this->session->setVar("screen_width",isset($_REQUEST["_screen_width"]) ? intval($_REQUEST["_screen_width"]): 0);
 			$this->session->setVar("screen_height",isset($_REQUEST["_screen_height"]) ? intval($_REQUEST["_screen_height"]) : 0);
+			$this->session->setVar("has_pdf_plugin",isset($_REQUEST["_has_pdf_plugin"]) ? intval($_REQUEST["_has_pdf_plugin"]) : 0);
 			
 			$this->user->setVar('last_login', time(), array('volatile' => true));
 			$this->user->setLastLogout($this->user->getLastPing(), array('volatile' => true));
@@ -784,24 +807,6 @@ class RequestHTTP extends Request {
 		}
 		
 		return false;
-	}
-	# ----------------------------------------
-	# Authorization
-	# ----------------------------------------
-	public function userActionIsAllowed($ps_user_action) {
-	
-	}
-	# ----------------------------------------
-	public function fieldAccessIsAllowed($pm_table, $pm_field) {
-	
-	}
-	# ----------------------------------------
-	public function rowAccessIsAllowed($pm_table, $pm_field, $pn_row_id) {
-	
-	}
-	# ----------------------------------------
-	public function canAccessTab($ps_tabname) {
-	
 	}
 	# ----------------------------------------
  }

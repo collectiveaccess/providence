@@ -30,10 +30,14 @@
  * ----------------------------------------------------------------------
  */
 	require_once('PHPUnit/Autoload.php');
-	require_once('./setup.php');
 	require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 	
 	class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
+
+		public function setUp() {
+			// most of the comparisons below rely on Eastern time zone
+			date_default_timezone_set('America/New_York');
+		}
 	
 		public function testQuarterCentryDates() {
 			$o_tep = new TimeExpressionParser();
@@ -218,6 +222,18 @@
 			$this->assertEquals($va_parse[0], "1945.050800000000");
 			$this->assertEquals($va_parse[1], "1945.050823595900");
 		}
+
+		public function testCenturyDatesForGermanLocale() {
+			$o_tep = new TimeExpressionParser();
+			$o_tep->setLanguage('de_DE');
+			$vb_res = $o_tep->parse('20. Jahrhundert');
+			$this->assertEquals($vb_res, true);
+			$va_parse = $o_tep->getHistoricTimestamps();
+			$this->assertEquals($va_parse['start'], "1900.010100000000");
+			$this->assertEquals($va_parse['end'], "1999.123123595900");
+			$this->assertEquals($va_parse[0], "1900.010100000000");
+			$this->assertEquals($va_parse[1], "1999.123123595900");
+		}
 		
 		public function testHistoricYearRanges() {
 			$o_tep = new TimeExpressionParser();
@@ -289,6 +305,33 @@
 			$this->assertEquals($va_parse['end'], "1955.123123595910");
 			$this->assertEquals($va_parse[0], "1950.060100000010");
 			$this->assertEquals($va_parse[1], "1955.123123595910");
+		}
+		
+		public function testDecadeRanges() {
+			$o_tep = new TimeExpressionParser();
+			$o_tep->setLanguage('en_US');
+			$vb_res = $o_tep->parse('1950s to 1970s');
+			$this->assertEquals($vb_res, true);
+			
+			$va_parse = $o_tep->getHistoricTimestamps(); 
+			$this->assertEquals($va_parse['start'], "1950.010100000000");
+			$this->assertEquals($va_parse['end'], "1979.123123595900");
+			$this->assertEquals($va_parse[0], "1950.010100000000");
+			$this->assertEquals($va_parse[1], "1979.123123595900");
+		}
+		
+		
+		public function testCircaDecadeRanges() {
+			$o_tep = new TimeExpressionParser();
+			$o_tep->setLanguage('en_US');
+			$vb_res = $o_tep->parse('circa 1950s to 1970s');
+			$this->assertEquals($vb_res, true);
+			
+			$va_parse = $o_tep->getHistoricTimestamps(); 
+			$this->assertEquals($va_parse['start'], "1950.010100000010");
+			$this->assertEquals($va_parse['end'], "1979.123123595910");
+			$this->assertEquals($va_parse[0], "1950.010100000010");
+			$this->assertEquals($va_parse[1], "1979.123123595910");
 		}
 		
 		public function testHistoricCircaYearDate() {

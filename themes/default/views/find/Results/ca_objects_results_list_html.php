@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -32,7 +32,7 @@
 	$vn_items_per_page 		= $this->getVar('current_items_per_page');
 	$vs_current_sort 		= $this->getVar('current_sort');
 	$vs_default_action		= $this->getVar('default_action');
-	$vo_ar				= $this->getVar('access_restrictions');
+	$vo_ar					= $this->getVar('access_restrictions');
 	
 ?>
 <div id="scrollingResults">
@@ -53,10 +53,10 @@
 				if ($va_display_item['is_sortable']) {
 					if ($vs_current_sort == $va_display_item['bundle_sort']) {
 						print "<th class='list-header-sorted-asc'><span id='listHeader".$vn_id_count."'><nobr>".((unicode_strlen($va_display_item['display']) > 30) ? strip_tags(mb_substr($va_display_item['display'], 0, 27))."..." : $va_display_item['display'])."</nobr></span></th>";
-						TooltipManager::add('#listHeader'.$vn_id_count , 'Currently sorting by '.$va_display_item['display']);
+						TooltipManager::add('#listHeader'.$vn_id_count , _t("Currently sorting by ").$va_display_item['display']);
 					} else {
 						print "<th class='list-header-unsorted'><span id='listHeader1".$vn_id_count."'><nobr>".caNavLink($this->request, ((unicode_strlen($va_display_item['display']) > 30) ? strip_tags(mb_substr($va_display_item['display'], 0, 27))."..." : $va_display_item['display']), '', $this->request->getModulePath(), $this->request->getController(), 'Index', array('sort' => $va_display_item['bundle_sort'])) ."</nobr></span></th>";
-						TooltipManager::add('#listHeader1'.$vn_id_count , 'Click to sort by '.$va_display_item['display']);
+						TooltipManager::add('#listHeader1'.$vn_id_count , _t("Click to sort by ").$va_display_item['display']);
 					}
 				} else {
 					print "<th class='list-header-nosort'><span id='listHeader2".$vn_id_count."'><nobr>".((unicode_strlen($va_display_item['display']) > 30) ? strip_tags(mb_substr($va_display_item['display'], 0, 27))."..." : $va_display_item['display'])."</nobr></span></th>";
@@ -79,16 +79,12 @@
 					<td style="width:10px">
 						<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_object_id; ?>' class="addItemToSetControl" />
 					</td>
-	<?php
-					if($vo_ar->userCanAccess($this->request->user->getUserID(), array("editor","objects"), "ObjectEditor", "Edit", array("object_id" => $vn_object_id))){
-						print "<td style='width:5%;'>".caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'editor/objects', 'ObjectEditor', "Edit", array('object_id' => $vn_object_id))."</td>";
-					} else {
-						print "<td style='width:5%;'>".caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'editor/objects', 'ObjectEditor', "Summary", array('object_id' => $vn_object_id))."</td>";
-					}
-					
+<?php
+					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_objects', $vn_object_id, array(), array())."</td>";;
+						
 					foreach($va_display_list as $vn_placement_id => $va_display_item) {
-						print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request))."</td>";
-					}
+                        print "<td><span class=\"read-more\">".$t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request))."</span></td>";
+                    }
 ?>	
 				</tr>
 <?php
@@ -96,6 +92,23 @@
 				$vn_item_count++;
 			}
 ?>
-		</tbody></table>
+			</tbody>
+<?php
+			if (is_array($va_bottom_line = $this->getVar('bottom_line'))) {
+?>
+				<tfoot>
+					<tr>
+						<td colspan="2" class="listtableTotals"><?php print _t('Totals'); ?></td>
+<?php
+						foreach($va_bottom_line as $vn_placement_id => $vs_bottom_line_value) {
+							print "<td>{$vs_bottom_line_value}</td>";
+						}
+?>
+					</tr>
+				</tfoot>
+<?php
+			}
+?>
+		</table>
 	</form><!--end caFindResultsForm -->
 </div><!--end scrollingResults -->

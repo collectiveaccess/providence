@@ -172,6 +172,15 @@ abstract class BaseDataReader {
 	}
 	# -------------------------------------------------------
 	/**
+	 * Override to return true if your format can return multiple values per spec
+	 * 
+	 * @return bool
+	 */
+	public function valuesCanRepeat() {
+		return false;
+	}
+	# -------------------------------------------------------
+	/**
 	 * Indicates whether the reader takes a file or URL as input. The 
 	 * __CA_DATA_READER_INPUT_FILE__ constant is returned if file input is required, 
 	 * __CA_DATA_READER_INPUT_URL__ if a URL is required

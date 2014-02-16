@@ -50,13 +50,35 @@
 					$vs_voc_query .= '&q='.urlencode($vs_voc);
 				}
 			}
+			$vo_conf = Configuration::load();
 			$va_items = array();
 			if (unicode_strlen($ps_query) >= 3) {
 				try {
-					//
-					// Get up to 150 suggestions as ATOM feed
-					//
-					$vs_data = @file_get_contents("http://id.loc.gov/search/?q=".urlencode($ps_query).$vs_voc_query.'&format=atom&count=150');
+					$vs_url = "http://id.loc.gov/search/?q=".urlencode($ps_query).$vs_voc_query.'&format=atom&count=150';
+
+					if($vs_proxy = $vo_conf->get('web_services_proxy_url')){ /* proxy server is configured */
+
+						if(($vs_proxy_user = $vo_conf->get('web_services_proxy_auth_user')) && ($vs_proxy_pass = $vo_conf->get('web_services_proxy_auth_pw'))){
+							$vs_proxy_auth = base64_encode("{$vs_proxy_user}:{$vs_proxy_pass}");
+						}
+
+						$va_context_options = array( 'http' => array(
+							'proxy' => $vs_proxy,
+							'request_fulluri' => true,
+							'header' => 'User-agent: CollectiveAccess web service lookup',
+						));
+
+						if($vs_proxy_auth){
+							$va_context_options['http']['header'] = "Proxy-Authorization: Basic {$vs_proxy_auth}";
+						}
+
+						$vo_context = stream_context_create($va_context_options);
+						$vs_data = @file_get_contents($vs_url, false, $vo_context);
+
+					} else {
+						$vs_data = @file_get_contents($vs_url);
+					}
+
 					if ($vs_data) {
 						$o_xml = @simplexml_load_string($vs_data);
 	

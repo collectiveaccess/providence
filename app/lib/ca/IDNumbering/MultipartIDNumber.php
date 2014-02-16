@@ -37,7 +37,6 @@
 	require_once(__CA_LIB_DIR__."/core/Configuration.php");
 	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
 	require_once(__CA_LIB_DIR__."/core/Db.php");
-	require_once(__CA_LIB_DIR__."/core/ApplicationVars.php");
 	require_once(__CA_LIB_DIR__."/ca/IDNumbering/IDNumber.php");
 	require_once(__CA_LIB_DIR__."/ca/IDNumbering/IIDNumbering.php");
 	require_once(__CA_APP_DIR__."/helpers/navigationHelpers.php");
@@ -211,7 +210,15 @@
 		# -------------------------------------------------------
 		private function getElements() {
 			if (($vs_format = $this->getFormat()) && ($vs_type = $this->getType())) {
-				return $this->opa_formats[$vs_format][$vs_type]['elements'];
+				if (is_array($this->opa_formats[$vs_format][$vs_type]['elements'])) {
+					$vb_is_child = $this->isChild();
+					$va_elements = array();
+					foreach($this->opa_formats[$vs_format][$vs_type]['elements'] as $vs_k => $va_element_info) {
+						if (!$vb_is_child && isset($va_element_info['child_only']) && (bool)$va_element_info['child_only']) { continue; }
+						$va_elements[$vs_k] = $va_element_info;
+					}
+				}
+				return $va_elements;
 			}
 			return null;
 		}
@@ -479,6 +486,9 @@
 		# -------------------------------------------------------
 		/**
 		 * Returns sortable value padding according to the format of the specified format and type
+		 *
+		 * @param string $ps_value
+		 * @return string
 		 */
 		public function getSortableValue($ps_value=null) {
 			$vs_separator = $this->getSeparator();
@@ -577,6 +587,126 @@
 			return join($vs_separator, $va_output);
 		}
 		# -------------------------------------------------------
+		/**
+		 * Return a list of modified identifier values suitable for search indexing according to the format of the specified format and type
+		 * Modifications include removal of leading zeros, stemming and more.
+		 *
+		 * @param string $ps_value
+		 * @return array
+		 */
+		public function getIndexValues($ps_value=null) {
+			$vs_separator = $this->getSeparator();
+			if (!is_array($va_elements_normal_order = $this->getElements())) { $va_elements_normal_order = array(); }
+			$va_element_names_normal_order = array_keys($va_elements_normal_order);
+			
+			if (!($va_elements = $this->getElementOrderForSort())) { $va_elements = $va_element_names_normal_order; }
+			if($vs_separator) {
+				$va_element_vals = explode($vs_separator, $ps_value ? $ps_value : $this->getValue());
+			} else {
+				$va_element_vals = array($ps_value ? $ps_value : $this->getValue());
+			}
+			$va_output = array();
+		
+			$vn_i = 0;
+			
+			$va_output = array(join($vs_separator, $va_element_vals));
+			$vn_max_value_count = 0;
+			
+			// element-specific processing
+			foreach($va_elements as $vn_x => $vs_element) {
+				$va_element_info = $va_elements_normal_order[$vs_element];
+				$vn_i = array_search($vs_element, $va_element_names_normal_order);
+				
+				switch($va_element_info['type']) {
+					case 'LIST':
+						$va_output[$vn_i] = array($va_element_vals[$vn_i]);
+						break;
+					case 'CONSTANT':
+						$va_output[$vn_i] = array($va_element_vals[$vn_i]);
+						break;
+					case 'FREE':
+					case 'ALPHANUMERIC':
+						$va_output[$vn_i] = array($va_element_vals[$vn_i]);
+						if ((int)$va_element_vals[$vn_i] > 0) {
+							$va_output[$vn_i][] = (int)$va_element_vals[$vn_i];
+						}
+						
+						break;
+					case 'SERIAL':
+					case 'NUMERIC':
+					case 'MONTH':
+					case 'DAY':
+					case 'YEAR':
+						$va_output[$vn_i] = array($va_element_vals[$vn_i]);
+						if (preg_match('!^([0]+)([\d]+)$!', $va_element_vals[$vn_i], $va_matches)) {
+							for($vn_i=0; $vn_i < sizeof($va_matches[1]); $vn_i++) {
+								$va_output[$vn_i][] = substr($va_element_vals[$vn_i], $vn_i);
+							}
+						}
+						break;
+					default:
+						$va_output[$vn_i] = array($va_element_vals[$vn_i]);
+						break;
+				}
+				
+				if ($vn_max_value_count < sizeof($va_output[$vn_i])) { $vn_max_value_count = sizeof($va_output[$vn_i]); }
+			}
+			
+			$va_output_values = array();
+			
+			// Generate permutations from element-specific processing
+			for($vn_c=0; $vn_c < $vn_max_value_count; $vn_c++) {
+				$va_output_values_buf = array();
+				
+				foreach($va_elements as $vn_x => $vs_element) {
+					if (!isset($va_output[$vn_i][0])) { continue; }
+					
+					$vn_i = array_search($vs_element, $va_element_names_normal_order);
+					if (isset($va_output[$vn_i][$vn_c])) {
+						$va_output_values_buf[] = $va_output[$vn_i][$vn_c];
+					} else {
+						$va_output_values_buf[] = $va_output[$vn_i][0];
+					}
+				}
+				
+				$va_output_values[] = join($vs_separator, $va_output_values_buf);
+			}
+			
+			// generate incremental "stems" of identifier by exploding on punctuation
+			if(preg_match_all("![^A-Za-z0-9]+!", $ps_value, $va_delimiters)) {
+				$va_element_values = preg_split("![^A-Za-z0-9]+!", $ps_value);
+				$va_acc = array();
+				foreach($va_element_values as $vn_x => $vs_element_value) {
+					$va_acc[] = $vs_element_value;
+					$va_output_values[] = join('', $va_acc);
+					if (is_numeric($vs_element_value)) {
+						array_pop($va_acc);
+						$va_acc[] = (int)$vs_element_value;
+						$va_output_values[] = join('', $va_acc);
+					}
+					if (sizeof($va_delimiters[0]) > 0) { $va_acc[] = array_shift($va_delimiters[0]); }
+				}
+			}
+			
+			// generate versions without leading zeros
+			$va_output_values[] = preg_replace("!^[0]+!", "", $ps_value);	// remove leading zeros
+			if (preg_match_all("!([^0-9]+)([0]+)!", $ps_value, $va_matches)) {
+				$vs_value_proc = $ps_value;
+				for($vn_x=0; $vn_x < sizeof($va_matches[0]); $vn_x++) {
+					$vs_value_proc = str_replace($va_matches[0][$vn_x], $va_matches[1][$vn_x], $vs_value_proc);
+				}
+				$va_output_values[] = $vs_value_proc;
+			}
+			
+			// generate version without trailing letters after number (eg. KHF-134b => KHF-134)
+			$va_tmp = $va_output_values;
+			foreach($va_tmp as $vs_value_proc) {
+				$va_output_values[] = preg_replace("!([\d]+)[A-Za-z]+$!", "$1", $vs_value_proc);
+			}
+			
+			return array_unique($va_output_values);
+		}
+		# -------------------------------------------------------
 		# User interace (HTML)
 		# -------------------------------------------------------
 		public function htmlFormElement($ps_name, &$pa_errors=null, $pa_options=null) {
@@ -659,15 +789,67 @@
 			return join($vs_separator, $va_element_controls).$vs_js;
 		}
 		# -------------------------------------------------------
-		public function htmlFormValue($ps_name, $vs_value=null, $pb_dont_mark_serial_value_as_used=false, $pb_generate_for_search_form=false, $pb_always_generate_serial_values=false) {
-			$va_tmp = $this->htmlFormValuesAsArray($ps_name, $vs_value, $pb_dont_mark_serial_value_as_used, $pb_generate_for_search_form, $pb_always_generate_serial_values);
+		public function htmlFormValue($ps_name, $ps_value=null, $pb_dont_mark_serial_value_as_used=false, $pb_generate_for_search_form=false, $pb_always_generate_serial_values=false) {
+			$va_tmp = $this->htmlFormValuesAsArray($ps_name, $ps_value, $pb_dont_mark_serial_value_as_used, $pb_generate_for_search_form, $pb_always_generate_serial_values);
 			if (!($vs_separator = $this->getSeparator())) { $vs_separator = ''; }
 			
 			return (is_array($va_tmp)) ? join($vs_separator, $va_tmp) : null;	
 		}
 		# -------------------------------------------------------
-		public function htmlFormValuesAsArray($ps_name, $vs_value=null, $pb_dont_mark_serial_value_as_used=false, $pb_generate_for_search_form=false, $pb_always_generate_serial_values=false) {
-			if (is_null($vs_value)) {
+		/**
+		 * Generates an id numbering template (text with "%" characters where serial values should be inserted)
+		 * from a value. The elements in the value that are generated as SERIAL incrementing numbers will be replaced
+		 * with "%" characters, resulting is a template suitable for use with BundlableLabelableBaseModelWithAttributes::setIdnoTWithTemplate
+		 * If the $pb_no_placeholders parameter is set to true then SERIAL values are omitted altogether from the returned template.
+		 *
+		 * Note that when the number of element replacements is limited, the elements are counted right-to-left. This means that
+		 * if you limit the template to two replacements, the *rightmost* two SERIAL elements will be replaced with placeholders.
+		 *
+		 * @see BundlableLabelableBaseModelWithAttributes::setIdnoTWithTemplate
+		 *
+		 * @param string $ps_value The id number to use as the basis of the template
+		 * @param int $pn_max_num_replacements The maximum number of elements to replace with placeholders. Set to 0 (or omit) to replace all SERIAL elements.
+		 * @param bool $pb_no_placeholders If set SERIAL elements are omitted altogether rather than being replaced with placeholder values
+		 *
+		 * @return string A template
+		 */
+		public function makeTemplateFromValue($ps_value, $pn_max_num_replacements=0, $pb_no_placeholders=false) {
+			$vs_separator = $this->getSeparator();
+			$va_values = $vs_separator ? explode($vs_separator, $ps_value) : array($ps_value);
+			
+			$va_elements = $this->getElements();
+			$vn_num_serial_elements = 0;
+			foreach($va_elements as $vs_element_name => $va_element_info) {
+				if ($va_element_info['type'] == 'SERIAL') { $vn_num_serial_elements++; }
+			}
+			
+			$vn_i = 0;
+			$vn_num_serial_elements_seen = 0;
+			foreach($va_elements as $vs_element_name => $va_element_info) {
+				if ($vn_i >= sizeof($va_values)) { break; }
+				
+				if ($va_element_info['type'] == 'SERIAL') {
+					$vn_num_serial_elements_seen++;
+						
+					if ($pn_max_num_replacements <= 0) {	// replace all
+						if ($pb_no_placeholders) { unset($va_values[$vn_i]); $vn_i++; continue; }
+						$va_values[$vn_i] = '%';
+					} else {
+						if (($vn_num_serial_elements - $vn_num_serial_elements_seen) < $pn_max_num_replacements) {
+							if ($pb_no_placeholders) { unset($va_values[$vn_i]); $vn_i++; continue; }
+							$va_values[$vn_i] = '%';
+						}
+					}
+				}
+				
+				$vn_i++;
+			}
+			
+			return join($vs_separator, $va_values);
+		}
+		# -------------------------------------------------------
+		public function htmlFormValuesAsArray($ps_name, $ps_value=null, $pb_dont_mark_serial_value_as_used=false, $pb_generate_for_search_form=false, $pb_always_generate_serial_values=false) {
+			if (is_null($ps_value)) {
 				if(isset($_REQUEST[$ps_name]) && $_REQUEST[$ps_name]) { return $_REQUEST[$ps_name]; }
 			}
 			if (!is_array($va_element_list = $this->getElements())) { return null; }
@@ -675,11 +857,11 @@
 			$va_element_names = array_keys($va_element_list);
 			$vs_separator = $this->getSeparator();
 			$va_element_values = array();
-			if ($vs_value) {
+			if ($ps_value) {
 				if ($vs_separator) {
-					$va_tmp = explode($vs_separator, $vs_value);
+					$va_tmp = explode($vs_separator, $ps_value);
 				} else {
-					$va_tmp = array($vs_value);
+					$va_tmp = array($ps_value);
 				}
 				foreach($va_element_names as $vs_element_name) {
 					if (!sizeof($va_tmp)) { break; }
@@ -770,9 +952,9 @@
 						if ($pb_generate_for_search_form) {
 							$vs_element .= "<option value='' SELECTED='1'>-</option>";
 						}
-						foreach($va_element_info['values'] as $vs_value) {
-							if ($vs_value == $vs_element_value) { $SELECTED = 'SELECTED="1"'; } else { $SELECTED = ''; }
-							$vs_element .= '<option '.$SELECTED.'>'.$vs_value.'</option>';
+						foreach($va_element_info['values'] as $ps_value) {
+							if ($ps_value == $vs_element_value) { $SELECTED = 'SELECTED="1"'; } else { $SELECTED = ''; }
+							$vs_element .= '<option '.$SELECTED.'>'.$ps_value.'</option>';
 						}
 						
 						if (!$pb_generate_for_search_form) {

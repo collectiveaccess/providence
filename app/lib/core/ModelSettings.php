@@ -114,8 +114,6 @@
 				(isset($va_setting_info['showLists']) && $va_setting_info['showLists'])
 				||
 				(isset($va_setting_info['showVocabularies']) && $va_setting_info['showVocabularies'])
-				||
-				(isset($va_setting_info['showSortableBundlesFor']) && $va_setting_info['showSortableBundlesFor'])
 			) { 
 				if (!is_array($pm_value)) { $pm_value = array($pm_value); }
 				
@@ -201,6 +199,7 @@
 			$va_settings = $this->getAvailableSettings();
 			$va_setting_values = is_array($pa_options['settings']) ? $pa_options['settings'] : array();
 			
+			$va_options = array('id_prefix' => $pa_options['id']);
 			foreach($va_settings as $vs_setting => $va_setting_info) {
 				$va_options['id'] = $pa_options['id']."_{$vs_setting}";
 				$va_options['label_id'] = $va_options['id'].'_label';
@@ -241,7 +240,7 @@
 		 * 	'name' => sets the name of the HTML form element explicitly, otherwise 'setting_<name_of_setting>' is used
 		 * 	'id' => sets the id of the HTML form element explicitly, otherwise 'setting_<name_of_setting>' is used
 		 *  'value' => sets the value of the HTML form element explicitly, otherwise the current value for the setting in the loaded row is used
-		 * 'label_id' => sets the id of the label for the setting form element (used to link tools tips to the label); if not set then the default is to set it to  'setting_<name_of_setting>_label'
+		 *  'label_id' => sets the id of the label for the setting form element (used to link tools tips to the label); if not set then the default is to set it to  'setting_<name_of_setting>_label'
 		 */ 
 		public function settingHTMLFormElement($ps_setting, $pa_options=null) {
 			if(!$this->isValidSetting($ps_setting)) {
@@ -272,7 +271,7 @@
 				$vs_label_id = "setting_{$ps_setting}_label";
 			}
 			
-			$vs_return = "\n".'<div class="formLabel">'."\n";
+			$vs_return = "\n".'<div class="formLabel" id="'.$vs_input_id.'_container">'."\n";
 			$vs_return .= '<span id="'.$vs_label_id.'"  class="'.$vs_label_id.'">'.$va_properties['label'].'</span>';
 			
 			
@@ -326,7 +325,42 @@
 					if ((int)$vs_value === 1) {
 						$va_attributes['checked'] = '1';
 					}
+					if (isset($va_properties['hideOnSelect'])) {
+						if (!is_array($va_properties['hideOnSelect'])) { $va_properties['hideOnSelect'] = array($va_properties['hideOnSelect']); }
+						
+						$va_ids = array();
+						foreach($va_properties['hideOnSelect'] as $vs_n) {
+							$va_ids[] = "#".$pa_options['id_prefix']."_{$vs_n}_container";
+						}
+						$va_attributes['onchange'] = 'jQuery(this).prop("checked") ? jQuery("'.join(",", $va_ids).'").slideUp(250).find("input, textarea").val("") : jQuery("'.join(",", $va_ids).'").slideDown(250);';
+						
+					}
 					$vs_return .= caHTMLCheckboxInput($vs_input_name, $va_attributes, array());
+					break;
+				
+				# --------------------------------------------
+				case DT_COLORPICKER:
+					$va_attributes = array('value' => $vs_value, 'id' => $vs_input_id);
+					$vs_return .= caHTMLHiddenInput($vs_input_name, $va_attributes, array());
+					$vs_return .= "<div id='{$vs_input_id}_colorchip' class='colorpicker_chip' style='background-color: #{$vs_value}'><!-- empty --></div>";
+					$vs_return .= "<script type='text/javascript'>jQuery(document).ready(function() { jQuery('#{$vs_input_name}_colorchip').ColorPicker({
+								onShow: function (colpkr) {
+									jQuery(colpkr).fadeIn(500);
+									return false;
+								},
+								onHide: function (colpkr) {
+									jQuery(colpkr).fadeOut(500);
+									return false;
+								},
+								onChange: function (hsb, hex, rgb) {
+									jQuery('#{$vs_input_name}').val(hex);
+									jQuery('#{$vs_input_name}_colorchip').css('backgroundColor', '#' + hex);
+								},
+								color: jQuery('#".$pa_options["name"]."').val()
+							})}); </script>\n";
+							
+							JavascriptLoadManager::register('jquery', 'colorpicker');
+							
 					break;
 				# --------------------------------------------
 				case DT_SELECT:
@@ -398,7 +432,7 @@
 							$vs_select_element = caHTMLSelect($vs_input_name, $va_rel_opts, $va_attr, $va_opts);
 						}
 					} else {
-						if ($va_properties['showSortableBundlesFor']) {
+						if (strlen($va_properties['showSortableBundlesFor']) > 0) {
  							require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
  							
  							$o_dm = Datamodel::load();
@@ -409,6 +443,7 @@
 							
 							$va_select_opts = array(
 								_t('User defined sort order') => '',
+								_t('Order created') => 'relation_id',		// forces sorting by relationship primary key  - aka order relationships were created
 								_t('Preferred label') => $va_properties['showSortableBundlesFor'].".preferred_labels.".$t_rel->getLabelDisplayField()
 							);
 							foreach($va_elements as $vn_element_id => $va_element) {
@@ -418,6 +453,37 @@
 							
 							$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
 							$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts, array(), $va_opts);
+						} elseif((int)$va_properties['showSortableElementsFor'] > 0) {
+							require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
+							
+ 							$t_element = new ca_metadata_elements($va_properties['showSortableElementsFor']);
+ 							if (!$t_element->getPrimaryKey()) { return ''; }
+ 							$va_elements = $t_element->getElementsInSet();
+							
+							$va_select_opts = array(
+								_t('Order created') => '',
+							);
+							foreach($va_elements as $vn_i => $va_element) {
+								if ((int)$va_element['element_id'] == (int)$va_properties['showSortableElementsFor']) { continue; }
+								if(!$va_element['display_label']) { continue; }
+								$va_select_opts[_t('Element: %1', $va_element['display_label'])] = $va_element['element_code'];
+							}
+							
+							$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
+							$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts, array(), $va_opts);
+						} elseif ((int)$va_properties['showMetadataElementsWithDataType'] > 0) {
+							require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
+							
+							$va_rep_elements = ca_metadata_elements::getElementsAsList(true, $va_properties['table'], null, true, false, true, array($va_properties['showMetadataElementsWithDataType']));
+							
+							if (is_array($va_rep_elements)) {
+								$va_select_opts = array();
+								foreach($va_rep_elements as $vs_element_code => $va_element_info) {
+									$va_select_opts[$va_element_info['display_label']] = $vs_element_code;
+								}
+								$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
+								$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts, array(), $va_opts);
+							}
 						} else {
 							// Regular drop-down with configured options
 							if ($vn_height > 1) { $va_attr['multiple'] = 1; $vs_input_name .= '[]'; }

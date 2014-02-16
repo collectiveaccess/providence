@@ -1905,124 +1905,6 @@
         </item>
       </items>
     </list>
-    <list code="object_event_types" hierarchical="1" system="0" vocabulary="0">
-      <labels>
-        <label locale="en_US">
-          <name>Object event types</name>
-        </label>
-        <label locale="en_CA">
-          <name>Object event types</name>
-        </label>
-        <label locale="fr_FR">
-          <name>Types d\'événements d\'objet</name>
-        </label>
-        <label locale="sv_SE">
-          <name>Objekt händelsetyper</name>
-        </label>
-      </labels>
-      <items>
-        <item idno="movement" enabled="1" default="1">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>movement</name_singular>
-              <name_plural>movements</name_plural>
-            </label>
-            <label locale="en_CA" preferred="1">
-              <name_singular>movement</name_singular>
-              <name_plural>movements</name_plural>
-            </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>mouvement</name_singular>
-              <name_plural>mouvements</name_plural>
-            </label>
-            <label locale="sv_SE" preferred="1">
-              <name_singular>förflyttning</name_singular>
-              <name_plural>förflyttningar</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="condition_assessment" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>condition assessment</name_singular>
-              <name_plural>condition assessments</name_plural>
-            </label>
-            <label locale="en_CA" preferred="1">
-              <name_singular>condition assessment</name_singular>
-              <name_plural>condition assessments</name_plural>
-            </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>évaluation de l\'état</name_singular>
-              <name_plural>évaluations de l\'état</name_plural>
-            </label>
-            <label locale="sv_SE" preferred="1">
-              <name_singular>tillståndsbedömning</name_singular>
-              <name_plural>tillståndsbedömningar</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="loss" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>loss</name_singular>
-              <name_plural>losses</name_plural>
-            </label>
-            <label locale="en_CA" preferred="1">
-              <name_singular>loss</name_singular>
-              <name_plural>losses</name_plural>
-            </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>perte</name_singular>
-              <name_plural>pertes</name_plural>
-            </label>
-            <label locale="sv_SE" preferred="1">
-              <name_singular>förlust</name_singular>
-              <name_plural>förluster</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="damage" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>damage</name_singular>
-              <name_plural>damages</name_plural>
-            </label>
-            <label locale="en_CA" preferred="1">
-              <name_singular>damage</name_singular>
-              <name_plural>damages</name_plural>
-            </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>dommage</name_singular>
-              <name_plural>dommages</name_plural>
-            </label>
-            <label locale="sv_SE" preferred="1">
-              <name_singular>skada</name_singular>
-              <name_plural>skador</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="deaccession" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>deaccession</name_singular>
-              <name_plural>deaccessions</name_plural>
-            </label>
-            <label locale="en_CA" preferred="1">
-              <name_singular>deaccession</name_singular>
-              <name_plural>deaccessions</name_plural>
-            </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>retrait d\'inventaire</name_singular>
-              <name_plural>retraits d\'inventaire</name_plural>
-            </label>
-            <label locale="sv_SE" preferred="1">
-              <name_singular>avyttring</name_singular>
-              <name_plural>avyttring</name_plural>
-            </label>
-          </labels>
-        </item>
-      </items>
-    </list>
     <list code="object_representation_types" hierarchical="1" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -3267,6 +3149,9 @@
             <placement code="validation_format">
               <bundle>validation_format</bundle>
             </placement>
+            <placement code="ca_settings">
+              <bundle>settings</bundle>
+            </placement>
             <placement code="access">
               <bundle>access</bundle>
             </placement>
@@ -3656,6 +3541,9 @@
             <placement code="settings">
               <bundle>settings</bundle>
             </placement>
+            <placement code="ca_bundle_display_type_restrictions">
+              <bundle>ca_bundle_display_type_restrictions</bundle>
+            </placement>
             <placement code="ca_users">
               <bundle>ca_users</bundle>
             </placement>
@@ -3903,129 +3791,6 @@
           <bundlePlacements>
             <placement code="ca_list_items">
               <bundle>ca_list_items</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
-      </screens>
-    </userInterface>
-    
-    
-    <userInterface code="bundle_mappings_editor_ui" type="ca_bundle_mappings">
-      <labels>
-        <label locale="en_US">
-          <name>Import/export mapping editor</name>
-        </label>
-        <label locale="en_CA">
-          <name>Import/export mapping editor</name>
-        </label>
-        <label locale="fr_FR">
-          <name>Import/export mapping editor</name>
-        </label>
-        <label locale="sv_SE">
-          <name>Import/export mappning redigerare</name>
-        </label>
-      </labels>
-      <screens>
-        <screen idno="basic" default="1">
-          <labels>
-            <label locale="en_US">
-              <name>Basic info</name>
-            </label>
-            <label locale="en_CA">
-              <name>Basic info</name>
-            </label>
-            <label locale="fr_FR">
-              <name>Informations basiques</name>
-            </label>
-            <label locale="sv_SE">
-              <name>Grundläggande info</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="preferred_labels">
-              <bundle>preferred_labels</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Mapping title</setting>
-                <setting name="label" locale="en_CA">Mapping title</setting>
-                <setting name="label" locale="fr_FR">Mapping title</setting>
-                <setting name="add_label" locale="en_US">Add title</setting>
-                <setting name="add_label" locale="en_CA">Add title</setting>
-                <setting name="add_label" locale="fr_FR">Add title</setting>
-              </settings>
-            </placement>
-            <placement code="ca_bundle_mapping_groups">
-              <bundle>ca_bundle_mapping_groups</bundle>
-            </placement>
-            <placement code="mapping_code">
-              <bundle>mapping_code</bundle>
-            </placement>
-            <placement code="settings">
-              <bundle>settings</bundle>
-            </placement>
-            <placement code="access">
-              <bundle>access</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
-      </screens>
-    </userInterface>
-    
-    <userInterface code="bundle_mapping_groups_editor_ui" type="ca_bundle_mapping_groups">
-      <labels>
-        <label locale="en_US">
-          <name>Import/export mapping unit editor</name>
-        </label>
-        <label locale="en_CA">
-          <name>Import/export mapping unit editor</name>
-        </label>
-        <label locale="fr_FR">
-          <name>Import/export mapping unit editor</name>
-        </label>
-        <label locale="sv_SE">
-          <name>Import/export mappning enhets redigerare</name>
-        </label>
-      </labels>
-      <screens>
-        <screen idno="basic" default="1">
-          <labels>
-            <label locale="en_US">
-              <name>Basic info</name>
-            </label>
-            <label locale="en_CA">
-              <name>Basic info</name>
-            </label>
-            <label locale="fr_FR">
-              <name>Informations basiques</name>
-            </label>
-            <label locale="sv_SE">
-              <name>Grundläggande info</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="preferred_labels">
-              <bundle>preferred_labels</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Mapping unit title</setting>
-                <setting name="label" locale="en_CA">Mapping unit title</setting>
-                <setting name="label" locale="fr_FR">Mapping unit title</setting>
-                <setting name="label" locale="sv_SE">Mappning enhets titel</setting>
-                <setting name="add_label" locale="en_US">Add title</setting>
-                <setting name="add_label" locale="en_CA">Add title</setting>
-                <setting name="add_label" locale="fr_FR">Add title</setting>
-                <setting name="add_label" locale="sv_SE">Lägg till titel</setting>
-              </settings>
-            </placement>
-            <placement code="ca_bundle_mapping_rules">
-              <bundle>ca_bundle_mapping_rules</bundle>
-            </placement>
-            <placement code="group_code">
-              <bundle>group_code</bundle>
-            </placement>
-            <placement code="settings">
-              <bundle>settings</bundle>
-            </placement>
-            <placement code="notes">
-              <bundle>notes</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -5186,6 +4951,60 @@
             <label locale="sv_SE">
               <typename>har som en del av</typename>
               <typename_reverse>är en del av</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+      </types>
+    </relationshipTable>
+    
+    <relationshipTable name="ca_object_lots_x_object_lots">
+      <types>
+        <type code="related" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is related to</typename>
+              <typename_reverse>is related to</typename_reverse>
+            </label>
+            <label locale="en_CA">
+              <typename>is related to</typename>
+              <typename_reverse>is related to</typename_reverse>
+            </label>
+            <label locale="fr_FR">
+              <typename>est lié à</typename>
+              <typename_reverse>est lié à</typename_reverse>
+            </label>
+            <label locale="sv_SE">
+              <typename>är relaterad till</typename>
+              <typename_reverse>är relaterad till</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+      </types>
+    </relationshipTable>
+    
+    <relationshipTable name="ca_object_lots_x_occurrences">
+      <types>
+        <type code="related" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>is related to</typename>
+              <typename_reverse>is related to</typename_reverse>
+            </label>
+            <label locale="en_CA">
+              <typename>is related to</typename>
+              <typename_reverse>is related to</typename_reverse>
+            </label>
+            <label locale="fr_FR">
+              <typename>est lié à</typename>
+              <typename_reverse>est lié à</typename_reverse>
+            </label>
+            <label locale="sv_SE">
+              <typename>är relaterad till</typename>
+              <typename_reverse>är relaterad till</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>

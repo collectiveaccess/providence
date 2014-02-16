@@ -163,11 +163,19 @@
                       <name_plural>Publications</name_plural>
                     </label>
                   </labels>
-                </item>                
+                </item> 
+                <item idno="video" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>Video</name_singular>
+                      <name_plural>Videos</name_plural>
+                    </label>
+                  </labels>
+                </item>
               </items>
             </item>
           </items>
-        </item>
+        </item>     
       </items>
     </list>
     <list code="source" hierarchical="1" system="0" vocabulary="0">
@@ -210,43 +218,45 @@
             </label>
           </labels>
         </item>
-        <item idno="Lithograph" enabled="1" default="0">
+        <item idno="Aluminum" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Lithograph</name_singular>
-              <name_plural>Lithograph</name_plural>
+              <name_singular>Aluminum</name_singular>
+              <name_plural>Aluminum</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="brushed_aluminum" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Brushed aluminum</name_singular>
+                  <name_plural>Brushed aluminum</name_plural>
+                </label>
+              </labels>
+            </item>   
+            <item idno="painted_aluminum" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Painted aluminum</name_singular>
+                  <name_plural>Painted aluminum</name_plural>
+                </label>
+              </labels>
+            </item>             
+          </items>
+        </item>
+        <item idno="Chalk" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Chalk</name_singular>
+              <name_plural>Chalk</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="ColoredPencil" enabled="1" default="0">
+        <item idno="Collage" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Colored Pencil</name_singular>
-              <name_plural>Colored Pencils</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="FeltTipMarker" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Felt-tip marker</name_singular>
-              <name_plural>Felt-tip markers</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="FeltTipPen" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Felt-tip pen</name_singular>
-              <name_plural>Felt-tip pens</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="Enamel" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Enamel</name_singular>
-              <name_plural>Enamels</name_plural>
+              <name_singular>Collage</name_singular>
+              <name_plural>Collage</name_plural>
             </label>
           </labels>
         </item>
@@ -258,11 +268,27 @@
             </label>
           </labels>
         </item>
-        <item idno="Graphite" enabled="1" default="0">
+        <item idno="Foamcore" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Graphite</name_singular>
-              <name_plural>Graphites</name_plural>
+              <name_singular>Foamcore</name_singular>
+              <name_plural>Foamcore</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Glass" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Glass</name_singular>
+              <name_plural>Glass</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Glue" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Glue</name_singular>
+              <name_plural>Glue</name_plural>
             </label>
           </labels>
         </item>
@@ -273,20 +299,280 @@
               <name_plural>Inks</name_plural>
             </label>
           </labels>
-        </item>
-        <item idno="PaperCollage" enabled="1" default="0">
+          <items>
+            <item idno="SumiInk" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Sumi Ink</name_singular>
+                  <name_plural>Sumi Ink</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>                
+        <item idno="Lithograph" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Paper Collage</name_singular>
-              <name_plural>Paper Collages</name_plural>
+              <name_singular>Lithograph</name_singular>
+              <name_plural>Lithograph</name_plural>
             </label>
           </labels>
+          <items>
+            <item idno="offSet" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Off-set lithograph</name_singular>
+                  <name_plural>Off-set lithograph</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="Mixed_media" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Mixed media</name_singular>
+              <name_plural>Mixed media</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Paint" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Paint</name_singular>
+              <name_plural>Paint</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="Acrylic_paint" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Acrylic paint</name_singular>
+                  <name_plural>Acrylic paint</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Dayglo" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Dayglo</name_singular>
+                  <name_plural>Dayglo</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Enamel_paint" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Enamel paint</name_singular>
+                  <name_plural>Enamel paint</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="Polyurethane_enamel" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>Polyurethane enamel</name_singular>
+                      <name_plural>Polyurethane enamel</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Baked_enamel" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>Baked enamel</name_singular>
+                      <name_plural>Baked enamel</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="Gouache" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Gouache</name_singular>
+                  <name_plural>Gouache</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Oilpaint" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Oil paint</name_singular>
+                  <name_plural>Oil paint</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Spray_paint" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Spray paint</name_singular>
+                  <name_plural>Spray paint</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Vinyl_paint" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Vinyl paint</name_singular>
+                  <name_plural>Vinyl paint</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="Paper" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Paper</name_singular>
+              <name_plural>Paper</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="Book" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Book</name_singular>
+                  <name_plural>Book</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Bristol_board" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Bristol board</name_singular>
+                  <name_plural>Bristol board</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Cardboard" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Cardboard</name_singular>
+                  <name_plural>Cardboard</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Construction_paper" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Construction paper</name_singular>
+                  <name_plural>Construction paper</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Folder" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Folder</name_singular>
+                  <name_plural>Folder</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Graph_paper" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Graph paper</name_singular>
+                  <name_plural>Graph paper</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Newspaper" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Newspaper</name_singular>
+                  <name_plural>Newspaper</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Notebook" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Notebook</name_singular>
+                  <name_plural>Notebook</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Notebook_paper_lined" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Notebook paper lined</name_singular>
+                  <name_plural>Notebook paper lined</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Notebook_paper_unlined" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Notebook paper unlined</name_singular>
+                  <name_plural>Notebook paper unlined</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Magazine_print" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Magazine print</name_singular>
+                  <name_plural>Magazine print</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Sketchpad" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Sketchpad</name_singular>
+                  <name_plural>Sketchpad</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Tracing_paper" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Tracing paper</name_singular>
+                  <name_plural>Tracing paper</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
         </item>
         <item idno="Pen" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Pen</name_singular>
               <name_plural>Pens</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="FeltTipPenBlk" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Felt-tip pen black</name_singular>
+                  <name_plural>Felt-tip pen black</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="FeltTipPenWht" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Felt-tip pen white</name_singular>
+                  <name_plural>Felt-tip pen white</name_plural>
+                </label>
+              </labels>
+            </item>  
+            <item idno="Marker" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Marker</name_singular>
+                  <name_plural>Marker</name_plural>
+                </label>
+              </labels>
+            </item>            
+          </items>
+        </item>
+        <item idno="Pencil" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Pencil/Graphite</name_singular>
+              <name_plural>Pencil/Graphite</name_plural>
             </label>
           </labels>
         </item>
@@ -298,27 +584,11 @@
             </label>
           </labels>
         </item>
-        <item idno="Plywood" enabled="1" default="0">
+        <item idno="Plexiglass" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Plywood</name_singular>
-              <name_plural>Plywoods</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="Wood" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Wood</name_singular>
-              <name_plural>Wood</name_plural>
-            </label>
-          </labels>
-        </item>
-    	<item idno="Woodcut" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Woodcut</name_singular>
-              <name_plural>Woodcut</name_plural>
+              <name_singular>Plexiglass</name_singular>
+              <name_plural>Plexiglass</name_plural>
             </label>
           </labels>
         </item>
@@ -330,27 +600,146 @@
             </label>
           </labels>
         </item>
-    	 <item idno="Canvas" enabled="1" default="0">
+        <item idno="Steel" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Canvas</name_singular>
-              <name_plural>Canvas</name_plural>
+              <name_singular>Steel</name_singular>
+              <name_plural>Steel</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="SumiInk" enabled="1" default="0">
+        <item idno="Tape" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Sumi Ink</name_singular>
-              <name_plural>Sumi Inks</name_plural>
+              <name_singular>Tape</name_singular>
+              <name_plural>Tape</name_plural>
             </label>
           </labels>
+          <items>
+            <item idno="Duct_tape" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Duct tape</name_singular>
+                  <name_plural>Duct tape</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Masking_tape" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Masking tape</name_singular>
+                  <name_plural>Masking tape</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Scotch_tape" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Scotch tape</name_singular>
+                  <name_plural>Scotch tape</name_plural>
+                </label>
+              </labels>
+            </item>                        
+          </items>
         </item>
-        <item idno="Aquatint" enabled="1" default="0">
+        <item idno="Terracotta" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Aquatint</name_singular>
-              <name_plural>Aquatint</name_plural>
+              <name_singular>Terracotta</name_singular>
+              <name_plural>Terracotta</name_plural>
+            </label>
+          </labels>
+        </item>        
+        <item idno="Textile" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Textile</name_singular>
+              <name_plural>Textile</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="Canvas" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Canvas</name_singular>
+                  <name_plural>Canvas</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Clothing" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Clothing</name_singular>
+                  <name_plural>Clothing</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Cotton" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Cotton</name_singular>
+                  <name_plural>Cotton</name_plural>
+                </label>
+              </labels>
+            </item> 
+            <item idno="Leather" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Leather</name_singular>
+                  <name_plural>Leather</name_plural>
+                </label>
+              </labels>
+            </item> 
+            <item idno="Muslin" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Muslin</name_singular>
+                  <name_plural>Muslin</name_plural>
+                </label>
+              </labels>
+            </item> 
+            <item idno="Tarp" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Tarp</name_singular>
+                  <name_plural>Tarp</name_plural>
+                </label>
+              </labels>
+            </item> 
+            <item idno="VinylTarp" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Vinyl Tarp</name_singular>
+                  <name_plural>Vinyl Tarp</name_plural>
+                </label>
+              </labels>
+            </item>             
+          </items>
+        </item>
+        
+        <item idno="Wood" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wood</name_singular>
+              <name_plural>Wood</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="InWood" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Incised wood</name_singular>
+                  <name_plural>Incised ood</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+    	  <item idno="Woodcut" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Woodcut</name_singular>
+              <name_plural>Woodcut</name_plural>
             </label>
           </labels>
         </item>
@@ -2747,7 +3136,7 @@
         </item>        
       </items>
     </list>    
-    <list code="keywords" hierarchical="1" system="0" vocabulary="1">
+    <list code="keywords" hierarchical="1" system="1" vocabulary="1">
       <labels>
         <label locale="en_US">
           <name>Keywords</name>
@@ -3684,6 +4073,438 @@
         </item>        
       </items>
     </list>
+    <list code="genre_terms" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Genre terms</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="experimental" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Experimental</name_singular>
+              <name_plural>Experimental</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="raw" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Raw footage</name_singular>
+              <name_plural>Raw footage</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="tv" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>TV broadcast</name_singular>
+              <name_plural>TV broadcasts</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="documentary" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Documentary</name_singular>
+              <name_plural>Documentary</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="interview" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Interview</name_singular>
+              <name_plural>Interview</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="animation" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Animation</name_singular>
+              <name_plural>Animation</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="music_video" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Music video</name_singular>
+              <name_plural>Music videos</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="performance" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Performance</name_singular>
+              <name_plural>Performance</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="commercial" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Commercial</name_singular>
+              <name_plural>Commercial</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="original_format_types" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Original format types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="vhs" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>VHS</name_singular>
+              <name_plural>VHS</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="u_matic" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>3/4 inch U-Matic</name_singular>
+              <name_plural>3/4 inch U-Matic</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="sony" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Sony KCA-60</name_singular>
+              <name_plural>Sony KCA-60</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="video_30" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Videocassette 30</name_singular>
+              <name_plural>Videocassette 30</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="ampex_30" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>AMPEX BCA-30</name_singular>
+              <name_plural>AMPEX BCA-30</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="videocassette" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Videocassette</name_singular>
+              <name_plural>Videocassette</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="sony_10" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Sony KCS-10</name_singular>
+              <name_plural>Sony KCS-10</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="sony_30xbr" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Sony KCA-30XBR</name_singular>
+              <name_plural>Sony KCA-30XBR</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="sony_30brs" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Sony KCA-30BRS</name_singular>
+              <name_plural>Sony KCA-30BRS</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="sony_20k" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Sony KCS-20K</name_singular>
+              <name_plural>Sony KCS-20K</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="ampex_398" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>AMPEX 398</name_singular>
+              <name_plural>AMPEX 398</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="sony_30sp" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Sony KCA-30SP</name_singular>
+              <name_plural>Sony KCA-30SP</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="sony_20xbr" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Sony KCS-20XBR</name_singular>
+              <name_plural>Sony KCS-20XBR</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="apex_bca10" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>APEX 107</name_singular>
+              <name_plural>APEX 107</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="color_types" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Color types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="color" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Color</name_singular>
+              <name_plural>Color</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="bw" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>B&amp;amp;W</name_singular>
+              <name_plural>B&amp;amp;W</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="available_format_types" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Available format types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="master_vhs" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Master VHS</name_singular>
+              <name_plural>Master VHS</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="digital_betacam" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Digital Betacam</name_singular>
+              <name_plural>Digital Betacam</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="vhs_copy" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>VHS (copy)</name_singular>
+              <name_plural>VHS (copy)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="jpeg_2000" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>JPEG 2000</name_singular>
+              <name_plural>JPEG 2000</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="DV50" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>DV50</name_singular>
+              <name_plural>DV50</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="h264" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>H.264</name_singular>
+              <name_plural>H.264</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="video_condition_types" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Condition types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="good" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Good</name_singular>
+              <name_plural>Good</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="perfect" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Perfect</name_singular>
+              <name_plural>Perfect</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="ok" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>OK</name_singular>
+              <name_plural>OK</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="bad" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Bad</name_singular>
+              <name_plural>Bad</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="restriction_types" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Restriction types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="none" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>None</name_singular>
+              <name_plural>None</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="restricted" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Restricted – Nudity</name_singular>
+              <name_plural>Restricted – Nudity</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="storage_format_types" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Storage format types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="master_vhs" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Master VHS</name_singular>
+              <name_plural>Master VHS</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="digital_betacam" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Digital Betacam</name_singular>
+              <name_plural>Digital Betacam</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="vhs_copy" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>VHS (copy)</name_singular>
+              <name_plural>VHS (copy)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="jpeg_2000" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>JPEG 2000</name_singular>
+              <name_plural>JPEG 2000</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="DV50" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>DV50</name_singular>
+              <name_plural>DV50</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="h264" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>H.264</name_singular>
+              <name_plural>H.264</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="kha_storage_types" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>KHA Storage Location Types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="sri" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>SRI</name_singular>
+              <name_plural>SRI</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="bvdm" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>BVDM</name_singular>
+              <name_plural>BVDM</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
     
   </lists>
   <elementSets>
@@ -4578,6 +5399,15 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+        <restriction code="r7">
+          <table>ca_objects</table>
+          <type>video</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="condition_notes" datatype="Container">
@@ -4945,7 +5775,7 @@
     </metadataElement>
     
 
-    <metadataElement code="number" datatype="Numeric">
+    <metadataElement code="number" datatype="Text">
       <labels>
         <label locale="en_US">
           <name>Number</name>
@@ -4969,7 +5799,7 @@
         </restriction>        
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="no_paper" datatype="Numeric">
+    <metadataElement code="no_paper" datatype="Text">
       <labels>
         <label locale="en_US">
           <name>No. Paper</name>
@@ -5265,7 +6095,7 @@
             <metadataElement code="hc" datatype="Text">
               <labels>
                 <label locale="en_US">
-                  <name>HC</name>
+                  <name>Hors de Commerce</name>
                 </label>
               </labels>
               <settings>
@@ -6724,6 +7554,381 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>    
+
+    <metadataElement code="tapeNumber" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Tape number</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">30</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>video</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="genre" datatype="List" list="genre_terms">
+      <labels>
+        <label locale="en_US">
+          <name>Genre</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">checklist</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>video</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="length" datatype="TimeCode">
+      <labels>
+        <label locale="en_US">
+          <name>Length</name>
+          <description>Length of time hh:mm:ss.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>video</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="originalFormat" datatype="List" list="original_format_types">
+      <labels>
+        <label locale="en_US">
+          <name>Original Format</name>
+          <description>The original format of the resource.</description>
+        </label>
+      </labels>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>video</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="color" datatype="List" list="color_types">
+      <labels>
+        <label locale="en_US">
+          <name>Color/B&amp;amp;W</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">select</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>video</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="originallyAired" datatype="DateRange">
+      <labels>
+        <label locale="en_US">
+          <name>Originally Aired</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>video</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="availableFormats" datatype="List" list="available_format_types">
+      <labels>
+        <label locale="en_US">
+          <name>Available Formats</name>
+          <description>The available formats of the resource.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">checklist</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>video</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="video_condition" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>Condition information</name>
+        </label>
+      </labels>
+      <elements>
+        <metadataElement code="condition_line1" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Audiovisual Condition</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="conditionList" datatype="List" list="video_condition_types">
+              <labels>
+                <label locale="en_US">
+                  <name>Condition</name>
+                </label>
+              </labels>
+              <settings/>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="condition_line2" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Condition notes</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="conditionNote" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Condition notes</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">90</setting>
+                <setting name="fieldHeight">5</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">255</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>video</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="transcription" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Transcription</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">90</setting>
+        <setting name="fieldHeight">5</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>video</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="restrictions" datatype="List" list="restriction_types">
+      <labels>
+        <label locale="en_US">
+          <name>Restrictions</name>
+        </label>
+      </labels>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>video</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="kha_storage" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>Storage information</name>
+        </label>
+      </labels>
+      <elements>
+        <metadataElement code="storage_line1" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Format</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="storageFormat" datatype="List" list="storage_format_types">
+              <labels>
+                <label locale="en_US">
+                  <name>Format</name>
+                </label>
+              </labels>
+              <settings/>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="storage_line2" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Storage Location</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="storageLocation" datatype="List" list="kha_storage_types">
+              <labels>
+                <label locale="en_US">
+                  <name>Storage Location</name>
+                </label>
+              </labels>
+              <settings/>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="location" datatype="Geocode">
+      <labels>
+        <label locale="en_US">
+          <name>Location</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">90</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>video</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="locationText" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Location (Legacy Text)</name>
+          <description>Legacy text from data import.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">90</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>video</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="legacy_internal_notes" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Internal Notes</name>
+          <description>Notes regarding item.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">90</setting>
+        <setting name="fieldHeight">6</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>video</type>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    
   </elementSets>
   <userInterfaces>
     <userInterface code="object_cataloguers_ui" type="ca_objects">
@@ -7190,6 +8395,82 @@
           </placement>              
           </bundlePlacements>
         </screen>        
+        <screen idno="video_basic" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction code="video" type="video"/>  
+          </typeRestrictions> 
+          <bundlePlacements>
+            <placement code="ca_attribute_tapeNumber">
+              <bundle>ca_attribute_tapeNumber</bundle>
+            </placement>
+            <placement code="idno">
+              <bundle>idno</bundle>
+              <settings>
+                <setting name="label" locale="en_US">KHA number</setting>
+              </settings>
+            </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Title</setting>
+                <setting name="add_label" locale="en_US">Add title</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_date">
+              <bundle>ca_attribute_date</bundle>
+            </placement>
+             <placement code="ca_list_items">
+              <bundle>ca_list_items</bundle>
+               <settings>
+                 <setting name="restrict_to_lists">keywords</setting> 
+               </settings>
+            </placement>               
+            <placement code="ca_attribute_genre">
+              <bundle>ca_attribute_genre</bundle>
+            </placement>
+            <placement code="ca_attribute_location">
+              <bundle>ca_attribute_location</bundle>
+            </placement>
+            <placement code="ca_attribute_locationText">
+              <bundle>ca_attribute_locationText</bundle>
+            </placement>
+            <placement code="ca_attribute_length">
+              <bundle>ca_attribute_length</bundle>
+            </placement>
+            <placement code="ca_attribute_originalFormat">
+              <bundle>ca_attribute_originalFormat</bundle>
+            </placement>
+            <placement code="ca_attribute_color">
+              <bundle>ca_attribute_color</bundle>
+            </placement>
+            <placement code="ca_attribute_originallyAired">
+              <bundle>ca_attribute_originallyAired</bundle>
+            </placement>
+            <placement code="ca_attribute_availableFormats">
+              <bundle>ca_attribute_availableFormats</bundle>
+            </placement>
+            <placement code="ca_attribute_condition_ranking">
+              <bundle>ca_attribute_condition_ranking</bundle>
+            </placement> 
+            <placement code="ca_attribute_condition_notes">
+              <bundle>ca_attribute_condition_notes</bundle>
+            </placement>
+            <placement code="ca_attribute_internal_notes">
+              <bundle>ca_attribute_internal_notes</bundle>
+            </placement>            
+            <placement code="status">
+              <bundle>status</bundle>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
         
         <screen idno="administrative" default="0">
           <labels>
@@ -7223,9 +8504,6 @@
             </placement> 
             <placement code="ca_attribute_valuation">
               <bundle>ca_attribute_valuation</bundle>
-            </placement> 
-            <placement code="ca_attribute_packing">
-              <bundle>ca_attribute_packing</bundle>
             </placement>             
             <placement code="ca_storage_locations">
               <bundle>ca_storage_locations</bundle>
@@ -7256,7 +8534,7 @@
             </placement>             
           </bundlePlacements>
         </screen>
-        
+  
         <screen idno="rights" default="0">
           <labels>
             <label locale="en_US">
@@ -7294,7 +8572,7 @@
             </label>
           </labels>
           <typeRestrictions>             
-            <restriction code="archival_item1" type="archival_photograph"/>  
+            <restriction code="archival_item1" type="archival_photograph"/> 
           </typeRestrictions>  
           <bundlePlacements>
             <placement code="ca_attribute_credit_line">
@@ -7305,9 +8583,39 @@
             </placement>
             <placement code="ca_attribute_perm_request_log">
               <bundle>ca_attribute_perm_request_log</bundle>
+            </placement>              
+          </bundlePlacements>
+        </screen>
+        <screen idno="rights_arch_video" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Rights</name>
+            </label>
+          </labels>
+          <typeRestrictions>             
+            <restriction code="video" type="video"/>             
+          </typeRestrictions>  
+          <bundlePlacements>
+            <placement code="ca_attribute_credit_line">
+              <bundle>ca_attribute_credit_line</bundle>
+            </placement>
+            <placement code="ca_attribute_perm_request_log">
+              <bundle>ca_attribute_perm_request_log</bundle>
+            </placement>   
+            <placement code="ca_rights">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="restrict_to__types" locale="en_US">video</setting>
+                <setting name="label" locale="en_US">Rights Holder</setting>
+                <setting name="add_label" locale="en_US">Add Rights Holder</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_restrictions">
+              <bundle>ca_attribute_restrictions</bundle>
             </placement>            
           </bundlePlacements>
         </screen>
+        
         <screen idno="print" default="0">
           <labels>
             <label locale="en_US">
@@ -7391,6 +8699,47 @@
             </placement> 
           </bundlePlacements>
         </screen>
+
+        <screen idno="video_legacy" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Legacy</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction code="video" type="video"/>  
+          </typeRestrictions>           
+          <bundlePlacements>
+            <placement code="ca_attribute_transcription">
+              <bundle>ca_attribute_transcription</bundle>
+            </placement>
+            <placement code="ca_attribute_description">
+              <bundle>ca_attribute_description</bundle>
+            </placement>
+            <placement code="ca_attribute_legacy_internal_notes">
+              <bundle>ca_attribute_legacy_internal_notes</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="video_storage" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Storage Location</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction code="video" type="video"/>  
+          </typeRestrictions> 
+          <bundlePlacements>
+            <placement code="ca_attribute_kha_storage">
+              <bundle>ca_attribute_kha_storage</bundle>
+            </placement>
+            <placement code="ca_storage_locations">
+              <bundle>ca_storage_locations</bundle>
+            </placement>              
+          </bundlePlacements>
+        </screen>
+        
         <screen idno="media" default="0">
           <labels>
             <label locale="en_US">
@@ -7463,7 +8812,7 @@
               </settings>
             </placement>
           </bundlePlacements>
-        </screen>
+        </screen>     
       </screens>
     </userInterface>
     <userInterface code="standard_entity_ui" type="ca_entities">
@@ -8696,57 +10045,6 @@
         </screen>
       </screens>
     </userInterface>
-    <userInterface code="object_event_ui" type="ca_object_events">
-      <labels>
-        <label locale="en_US">
-          <name>Object event editor</name>
-        </label>
-        <label locale="fr_FR">
-          <name>Editeur d\'événement d\'objet</name>
-        </label>
-      </labels>
-      <screens>
-        <screen idno="basic" default="1">
-          <labels>
-            <label locale="en_US">
-              <name>Basic info</name>
-            </label>
-            <label locale="fr_FR">
-              <name>Informations basiques</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_attribute_description">
-              <bundle>ca_attribute_description</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="relationships" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Relationships</name>
-            </label>
-            <label locale="fr_FR">
-              <name>Relations</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_entities">
-              <bundle>ca_entities</bundle>
-            </placement>
-            <placement code="ca_places">
-              <bundle>ca_places</bundle>
-            </placement>
-            <placement code="ca_occurrences">
-              <bundle>ca_occurrences</bundle>
-            </placement>
-            <placement code="ca_storage_locations">
-              <bundle>ca_storage_locations</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
-      </screens>
-    </userInterface>
   </userInterfaces>
   <relationshipTypes>
     <relationshipTable name="ca_objects_x_entities">
@@ -8911,6 +10209,38 @@
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
         </type>
+        <type code="creator" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>was created by</typename>
+              <typename_reverse>is creator</typename_reverse>
+            </label>
+          </labels>
+        </type>
+        <type code="appears" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>appears</typename>
+              <typename_reverse>appears in</typename_reverse>
+            </label>
+          </labels>
+        </type>
+        <type code="copyright" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>copyright held by</typename>
+              <typename_reverse>is copyright holder</typename_reverse>
+            </label>
+          </labels>
+        </type>
+        <type code="related_rights" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>rights held by</typename>
+              <typename_reverse>rights holder</typename_reverse>
+            </label>
+          </labels>
+        </type>        
       </types>
     </relationshipTable>
     <relationshipTable name="ca_objects_x_collections">
@@ -10088,9 +11418,6 @@
         <placement code="ranking">
           <bundle>ca_objects.ranking</bundle>
         </placement>    
-        <placement code="packing">
-          <bundle>ca_objects.packing</bundle>
-        </placement> 
       </bundlePlacements>
     </display>
     <display code="general_notes" type="ca_objects" system="1">

@@ -198,6 +198,8 @@
 2570 = Can't change access control list for this item
 2580 = You do not have access to this item
 2585 = You cannot quickadd
+2590 = Item does not have the minimum number of relationships specified
+2591 = Item has more than the maximum number of relationships specified
 
 # --- Object representation errors
 2700 = Could not update primary flag for representation
@@ -231,4 +233,14 @@
 3200 = Invalid set
 3210 = Batch editing is not allowed
 3220 = Set is empty
+3230 = Batch deleting is not allowed
 3250 = Invalid directory
+3260 = Batch type change is not allowed
+
+# --- Media replication errors
+3300 = Media replication failed
+3310 = Deletion of replicated media failed
+
+# --- Import/export errors
+3400 = Import of metadata is not allowed
+3410 = Import of media is not allowed

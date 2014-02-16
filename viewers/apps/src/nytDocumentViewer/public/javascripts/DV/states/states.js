@@ -34,6 +34,8 @@ DV.Schema.states = {
     this.helpers.startCheckTimer();
     this.helpers.handleInitialState();
     _.defer(_.bind(this.helpers.autoZoomPage, this.helpers));
+    
+    this.api.setState('ViewDocument'); // MOD
   },
 
   ViewAnnotation: function(){
@@ -42,11 +44,11 @@ DV.Schema.states = {
     this.activeAnnotationId = null;
     this.acceptInput.deny();
     // Nudge IE to force the annotations to repaint.
-    if (DV.jQuery.browser.msie) {
-      this.elements.annotations.css({zoom : 0});
-      this.elements.annotations.css({zoom : 1});
-    }
-
+   // if (DV.jQuery.browser.msie) {
+   //   this.elements.annotations.css({zoom : 0});
+   //   this.elements.annotations.css({zoom : 1});
+   // }
+    
     this.helpers.toggleContent('viewAnnotations');
     this.compiled.next();
     return true;
@@ -84,8 +86,11 @@ DV.Schema.states = {
 
     this.helpers.getSearchResponse(searchRequest);
     this.acceptInput.deny();
+    
+    this.helpers.addObserver('drawPages');
+    this.helpers.toggleContent('viewDocument');
 
-    this.helpers.toggleContent('viewSearch');
+   // this.helpers.toggleContent('viewSearch');
 
     return true;
   },

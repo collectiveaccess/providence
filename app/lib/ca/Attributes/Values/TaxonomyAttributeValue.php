@@ -128,29 +128,29 @@
 			return $this->ops_uri_value;
 		}
  		# ------------------------------------------------------------------
- 		public function parseValue($ps_value, $pa_element_info) {
+ 		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
 			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('uBioKeyCode'));
  			$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
+ 			$va_return = "";
 
 			if (trim($ps_value)) {
-				$va_tmp = explode('|', $ps_value);
-				$vs_text = $va_tmp[0];
-				if(stripos($va_tmp[1], "ITIS:")!==false){
-					$vs_id = str_replace("ITIS:", "", $va_tmp[1]);
-					$vs_detail_uri = "http://www.itis.gov/ITISWebService/services/ITISService/getFullRecordFromTSN?tsn={$vs_id}";
-				} elseif(stripos($va_tmp[0],"uBio:")!==false) {
-					$vs_id = str_replace("uBio:", "", $va_tmp[1]);
+				$va_matches = array();
+				if(preg_match("/^.+\[uBio\:([0-9]+)\]/",$ps_value,$va_matches)){
+					$vs_id = trim($va_matches[1]);
+					$vs_text = trim($ps_value);
 					$vo_conf = new Configuration();
 					$vs_ubio_keycode = trim($vo_conf->get("ubio_keycode"));
 					$vs_detail_uri = "http://www.ubio.org/webservices/service.php?function=namebank_object&namebankID={$vs_id}&keyCode={$vs_ubio_keycode}";
+
+					$va_return = array(
+						'value_longtext1' => $vs_text,	// text
+						'value_longtext2' => $vs_detail_uri,
+						'value_decimal1' => intval($vs_id),	// id
+					);
 				}
-				
 			}
-			return array(
-				'value_longtext1' => $vs_text,	// text
-				'value_longtext2' => $vs_detail_uri,
-				'value_decimal1' => $vs_id,	// id
-			);
+
+			return $va_return;
  		}
  		# ------------------------------------------------------------------
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
@@ -176,8 +176,8 @@
 					)
 				);
 
-			if ($pa_options['po_request']) {
-				$vs_url = caNavUrl($pa_options['po_request'], 'lookup', 'Taxonomy', 'Get', array('max' => 100));
+			if ($pa_options['request']) {
+				$vs_url = caNavUrl($pa_options['request'], 'lookup', 'Taxonomy', 'Get', array('max' => 100));
 			} else {
 				// hardcoded default for testing.
 				$vs_url = '/index.php/lookup/Taxonomy/Get';
@@ -194,7 +194,7 @@
 								source: '{$vs_url}', minLength: 3, delay: 800,
 								select: function(event, ui) {
 									if (ui.item.id) {
-										jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(ui.item.label + '|' + ui.item.id);
+										jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(ui.item.label);
 									} else {
 										event.preventDefault();
 									}
@@ -208,7 +208,7 @@
  			return $vs_element;
  		}
  		# ------------------------------------------------------------------
- 		public function getAvailableSettings() {
+ 		public function getAvailableSettings($pa_element_info=null) {
  			global $_ca_attribute_settings;
 
  			return $_ca_attribute_settings['TaxonomyAttributeValue'];

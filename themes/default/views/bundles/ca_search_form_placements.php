@@ -37,8 +37,11 @@
 	
 	//getTemplatePlaceholderListForBundle
 	$va_to_display_items  				= $t_form->getPlacementsInForm(array('noCache' => true));
+	
+	
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'searchFormPlacements');
 ?>
-<div class="bundleDisplayPlacementEditorContainer">
+<div class="bundleDisplayPlacementEditorContainer" id="<?php print $vs_id_prefix; ?>searchFormPlacements">
 	<div id="bundleDisplayPlacementEditor" class="bundleDisplayPlacementEditor">
 		<div class="bundleDisplayPlacementEditorHelpText"><?php print _t("Drag your selection from column to column to edit the contents of the search form."); ?></div>
 		<table>

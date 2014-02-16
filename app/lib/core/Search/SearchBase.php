@@ -47,6 +47,8 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 		protected $opo_search_config;
 		protected $opo_search_indexing_config;
 		protected $opo_engine;
+		
+		static $s_fields_to_index_cache = array();
 		# ------------------------------------------------
 		public function __construct($opo_db=null, $ps_engine=null) {			
 			$this->opo_datamodel = Datamodel::load();
@@ -81,24 +83,44 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 		# ------------------------------------------------
 		# Utils
 		# ------------------------------------------------
+		/**
+		 *
+		 */
 		public function getFieldsToIndex($pm_subject_table, $pm_content_table=null) {
+			if (isset(SearchBase::$s_fields_to_index_cache[$pm_subject_table.'/'.$pm_content_table])) {
+				return SearchBase::$s_fields_to_index_cache[$pm_subject_table.'/'.$pm_content_table];
+			}
 			if (is_numeric($pm_subject_table)) {
-				$pm_subject_table = $this->opo_datamodel->getTableName($pm_subject_table);
+				$vs_subject_table = $this->opo_datamodel->getTableName($pm_subject_table);
+			} else {
+				$vs_subject_table = $pm_subject_table;
 			}
 	
 			if ($pm_content_table == null) {
-				$pm_content_table = $pm_subject_table;
+				$vs_content_table = $vs_subject_table;
 			} else {
 				if (is_numeric($pm_content_table)) {
-					$pm_content_table = $this->opo_datamodel->getTableName($pm_content_table);
+					$vs_content_table = $this->opo_datamodel->getTableName($pm_content_table);
+				} else {
+					$vs_content_table = $pm_content_table;
 				}
 			}
-	
-			if(!$va_info = $this->opo_search_indexing_config->get($pm_subject_table)) {
-				return null;
+			if(!($va_info = $this->opo_search_indexing_config->getAssoc($vs_subject_table))) {
+				return SearchBase::$s_fields_to_index_cache[$pm_subject_table.'/'.$pm_content_table] = SearchBase::$s_fields_to_index_cache[$vs_subject_table.'/'.$vs_content_table] = null;
 			}
 	
-			return $va_info[$pm_content_table]['fields'];
+			$va_fields_to_index = $va_info[$vs_content_table]['fields'];
+			if (isset($va_fields_to_index['_metadata'])) {
+				$va_data = $va_fields_to_index['_metadata'];
+				unset($va_fields_to_index['_metadata']);
+				
+				$t_subject = $this->opo_datamodel->getInstanceByTableName($vs_content_table, false);
+				$va_field_data = $t_subject->getApplicableElementCodes(null, false, false);
+				foreach($va_field_data as $vn_element_id => $vs_element_code) {
+					$va_fields_to_index['_ca_attribute_'.$vn_element_id] = $va_data;
+				}
+			}
+			return SearchBase::$s_fields_to_index_cache[$pm_subject_table.'/'.$pm_content_table] = SearchBase::$s_fields_to_index_cache[$vs_subject_table.'/'.$vs_content_table] = $va_fields_to_index;
 	
 		}
 		# ------------------------------------------------
@@ -162,6 +184,9 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 				return null;
 			}
 			$va_access_points =  $va_info['_access_points'];
+			foreach($va_access_points as $vs_k => $va_v) {
+				$va_access_points[mb_strtolower($vs_k)] = $va_v;
+			}
 			return is_array($va_access_points) ? $va_access_points : array();
 		}
 		# -------------------------------------------------

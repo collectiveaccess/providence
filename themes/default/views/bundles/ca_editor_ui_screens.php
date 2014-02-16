@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,8 +37,9 @@
 	$va_errors = array();
 	$va_failed_inserts = array();
  
- ?>
- <div id="<?php print $vs_id_prefix.$t_ui->tableNum().'_rel'; ?>">
+ 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_ui->tableNum().'_rel');
+?>
+<div id="<?php print $vs_id_prefix.$t_ui->tableNum().'_rel'; ?>">
 <?php
 	//
 	// The bundle template - used to generate each bundle in the form
@@ -93,6 +94,7 @@
 		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 		templateValues: ['name', 'locale_id', 'rank', 'screen_id', 'numPlacements', 'typeRestrictionsForDisplay', 'isDefault'],
 		initialValues: <?php print json_encode($va_initial_values); ?>,
+		initialValueOrder: <?php print json_encode(is_array($va_initial_values) ? array_keys($va_initial_values) : null); ?>,
 		errors: <?php print json_encode($va_errors); ?>,
 		forceNewValues: <?php print json_encode($va_failed_inserts); ?>,
 		itemID: '<?php print $vs_id_prefix; ?>Item_',

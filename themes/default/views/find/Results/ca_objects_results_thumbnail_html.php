@@ -41,12 +41,6 @@
 		
 		while(($vn_item_count < $vn_items_per_page) && ($vo_result->nextHit())) {
 			$vn_object_id = $vo_result->get('object_id');
-
-			if($vo_ar->userCanAccess($this->request->user->getUserID(), array("editor","objects"), "ObjectEditor", "Edit", array("object_id" => $vn_object_id))){
-				$vs_action = "Edit";
-			} else {
-				$vs_action = "Summary";
-			}
 			
 			if (!$vn_col) { 
 				print "<tr>";
@@ -68,16 +62,15 @@
 			
 			print "<td align='center' valign='top' style='padding:20px 2px 2px 2px;'><div class='objectThumbnailsImageContainer' style='padding: ".$vn_padding_top_bottom."px 0px ".$vn_padding_top_bottom."px 0px;'>"; 
 ?>
-				<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_object_id; ?>' class="addItemToSetControl addItemToSetControlInThumbnails" />
-					
+			<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_object_id; ?>' class="addItemToSetControl addItemToSetControlInThumbnails" />		
 <?php
 			$va_tmp = $vo_result->getMediaTags('ca_object_representations.media', 'preview170');
-			print caNavLink($this->request, array_shift($va_tmp), '', 'editor/objects', 'ObjectEditor', $vs_action, array('object_id' => $vn_object_id), array('onmouseover' => 'jQuery(".qlButtonContainerThumbnail").css("display", "none"); jQuery("#ql_'.$vn_object_id.'").css("display", "block");', 'onmouseout' => 'jQuery(".qlButtonContainerThumbnail").css("display", "none");'));
-			
+			print caEditorLink($this->request, array_shift($va_tmp), '', 'ca_objects', $vn_object_id, array(), array('onmouseover' => 'jQuery(".qlButtonContainerThumbnail").css("display", "none"); jQuery("#ql_'.$vn_object_id.'").css("display", "block");', 'onmouseout' => 'jQuery(".qlButtonContainerThumbnail").css("display", "none");'));
+		
 			print "<div class='qlButtonContainerThumbnail' id='ql_".$vn_object_id."' onmouseover='jQuery(\"#ql_".$vn_object_id."\").css(\"display\", \"block\");'><a class='qlButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($this->request, 'find', 'SearchObjects', 'QuickLook', array('object_id' => $vn_object_id))."\"); return false;' >Quick Look</a></div>";
 			
 			print "</div><div style='width:185px; overflow:hidden;'".$vs_caption;
-			print "<br/>[".caNavLink($this->request, $vs_idno, '', 'editor/objects', 'ObjectEditor', $vs_action, array('object_id' => $vn_object_id))."]\n";
+			print "<br/>[".caEditorLink($this->request, $vs_idno, '', 'ca_objects', $vn_object_id, array())."]\n";
 			print "</div></td>";
 			$vn_col++;
 			if($vn_col == $vn_display_cols){

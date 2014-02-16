@@ -163,7 +163,7 @@ class ca_attributes extends BaseModel {
 		)
 	);
 	
-	static $s_attribute_cache_size = 1024;
+	static $s_attribute_cache_size = 8192;
 	static $s_get_attributes_cache = array();
 	static $s_ca_attributes_element_instance_cache = array();
 	
@@ -198,7 +198,7 @@ class ca_attributes extends BaseModel {
 	/**
 	 *
 	 */
-	public function addAttribute($pn_table_num, $pn_row_id, $pm_element_code_or_id, $pa_values) {
+	public function addAttribute($pn_table_num, $pn_row_id, $pm_element_code_or_id, $pa_values, $pa_options=null) {
 		require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');	// defer inclusion until runtime to ensure baseclasses are already loaded, otherwise you get circular dependencies
 		
 		unset(ca_attributes::$s_get_attributes_cache[$pn_table_num.'/'.$pn_row_id]);
@@ -241,6 +241,7 @@ class ca_attributes extends BaseModel {
 		$va_elements = $t_element->getElementsInSet();
 		
 		$vb_dont_create_attribute = true;
+		
 		foreach($va_elements as $va_element) {
 			if ($va_element['datatype'] == 0) { continue; }	// 0 is always 'container' ...
 			
@@ -249,7 +250,7 @@ class ca_attributes extends BaseModel {
 			} else {
 				$vm_value = isset($pa_values[$va_element['element_code']]) ? $pa_values[$va_element['element_code']] : null;
 			}
-			if (($vb_status = $t_attr_val->addValue($vm_value, $va_element, $vn_attribute_id)) === false) {
+			if (($vb_status = $t_attr_val->addValue($vm_value, $va_element, $vn_attribute_id, $pa_options)) === false) {
 				$this->postError(1972, join('; ', $t_attr_val->getErrors()), 'ca_attributes->addAttribute()');
 				$vb_dont_create_attribute = false;	// this causes an error to be displayed to the user, which is what we want here
 				break;
@@ -293,7 +294,7 @@ class ca_attributes extends BaseModel {
 	/**
 	 *
 	 */
-	public function editAttribute($pa_values) {
+	public function editAttribute($pa_values, $pa_options=null) {
 		if (!$this->getPrimaryKey()) { return null; }
 		
 		$vb_already_in_transaction = $this->inTransaction();
@@ -337,7 +338,7 @@ class ca_attributes extends BaseModel {
 				} else {
 					$vm_value = $pa_values[$o_attr_val->getElementCode()];
 				}
-				if ($t_attr_val->editValue($vm_value) === false) {
+				if ($t_attr_val->editValue($vm_value, $pa_options) === false) {
 					$this->postError(1973, join('; ', $t_attr_val->getErrors()), 'ca_attributes->editAttribute()');
 				}
 				
@@ -363,7 +364,7 @@ class ca_attributes extends BaseModel {
 				$vm_value = $pa_values[$va_element['element_code']];
 			}
 			
-			if ($t_attr_val->addValue($vm_value, $va_element, $vn_attribute_id) === false) {
+			if ($t_attr_val->addValue($vm_value, $va_element, $vn_attribute_id, $pa_options) === false) {
 				$this->postError(1972, join('; ', $t_attr_val->getErrors()), 'ca_attributes->editAttribute()');
 				break;
 			}
@@ -433,7 +434,7 @@ class ca_attributes extends BaseModel {
 	static public function getElementInstance($pm_element_code_or_id) {
 		if (isset(ca_attributes::$s_ca_attributes_element_instance_cache[$pm_element_code_or_id])) { return ca_attributes::$s_ca_attributes_element_instance_cache[$pm_element_code_or_id]; }
 		
-		require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');	// defer inclusion until runtime to ensure baseclasses are already loaded, otherwise you get circular dependencies
+		//require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');	// defer inclusion until runtime to ensure baseclasses are already loaded, otherwise you get circular dependencies
 		$t_element = new ca_metadata_elements();
 		
 		if (!is_numeric($pm_element_code_or_id)) {
@@ -518,7 +519,7 @@ class ca_attributes extends BaseModel {
 			if ($vn_element_id) { $va_element_ids[] = $vn_element_id; }
 		}
 		if(!is_array($va_element_ids) || !sizeof($va_element_ids)) { return true; }
-	
+
 		$qr_attrs = $po_db->query("
 			SELECT 
 				caa.attribute_id, caa.locale_id, caa.element_id element_set_id, caa.row_id,
@@ -533,6 +534,7 @@ class ca_attributes extends BaseModel {
 			ORDER BY
 				caa.attribute_id
 		", array((int)$pn_table_num, $pa_row_ids, $va_element_ids));
+		
 		if ($po_db->numErrors()) {
 			return false;
 		}
@@ -550,7 +552,6 @@ class ca_attributes extends BaseModel {
 				$vn_last_attribute_id = $va_raw_row['attribute_id'];
 				$vn_last_row_id = $va_raw_row['row_id'];
 				$vn_last_element_id = $va_raw_row['element_set_id'];
-				
 				// when creating the attribute you want element_id = to the "set" id (ie. the element_id in the ca_attributes row) so we overwrite
 				// the element_id of the ca_attribute_values row before we pass the array to Attribute() below
 				$o_attr = new Attribute(array_merge($va_raw_row, array('element_id' => $va_raw_row['element_set_id'])));
@@ -566,11 +567,16 @@ class ca_attributes extends BaseModel {
 		foreach($va_attrs as $vn_row_id => $va_attrs_by_element) {
 			foreach($va_attrs_by_element as $vn_element_id => $va_attrs_for_element) {
 				unset($va_row_id_with_no_attributes[$vn_row_id]);
-				ca_attributes::$s_get_attributes_cache[$pn_table_num.'/'.$vn_row_id][$vn_element_id] = $va_attrs_for_element;
-				
+				ca_attributes::$s_get_attributes_cache[(int)$pn_table_num.'/'.(int)$vn_row_id][(int)$vn_element_id] = $va_attrs_for_element;
 				// Limit cache size
 				if (sizeof(ca_attributes::$s_get_attributes_cache) > ca_attributes::$s_attribute_cache_size) {
 					array_shift(ca_attributes::$s_get_attributes_cache);
+				}
+			}
+			
+			foreach($pa_element_ids as $vn_id) {
+				if(!isset(ca_attributes::$s_get_attributes_cache[(int)$pn_table_num.'/'.(int)$vn_row_id][$vn_id])) {
+					ca_attributes::$s_get_attributes_cache[(int)$pn_table_num.'/'.(int)$vn_row_id][$vn_id] = false;
 				}
 			}
 		}
@@ -579,7 +585,7 @@ class ca_attributes extends BaseModel {
 		// to avoid repeated checks for values that don't exist
 		foreach($va_row_id_with_no_attributes as $vn_row_id => $vn_dummy) {
 			foreach($va_element_ids as $vn_element_id) {
-				ca_attributes::$s_get_attributes_cache[$pn_table_num.'/'.$vn_row_id][$vn_element_id] = array();
+				ca_attributes::$s_get_attributes_cache[(int)$pn_table_num.'/'.(int)$vn_row_id][(int)$vn_element_id] = array();
 			}
 				
 			// Limit cache size
@@ -595,6 +601,7 @@ class ca_attributes extends BaseModel {
 	 * Returns a list (indexed array) of Attribute objects.
 	 */
 	static public function getAttributes($po_db, $pn_table_num, $pn_row_id, $pa_element_ids, $pa_options=null) {
+		
 		$va_element_ids = array();
 		foreach($pa_element_ids as $vn_element_id) {
 			if (!is_array(ca_attributes::$s_get_attributes_cache[$pn_table_num.'/'.$pn_row_id][$vn_element_id])) {

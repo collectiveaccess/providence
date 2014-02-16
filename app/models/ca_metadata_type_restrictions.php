@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -79,7 +79,7 @@ BaseModel::$s_ca_models_definitions['ca_metadata_type_restrictions'] = array(
 		),
 		'table_num' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => 50, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Bind attribute to'), 'DESCRIPTION' => _t('Type of item to bind element to.'),
@@ -93,10 +93,8 @@ BaseModel::$s_ca_models_definitions['ca_metadata_type_restrictions'] = array(
 					_t('storage_locations') => 89,
 					_t('loans') => 133,
 					_t('movements') => 137,
-					_t('object events') => 45,
 					_t('object representations') => 56,
 					_t('representation annotations') => 82,
-					_t('object lot events') => 38,
 					_t('sets') => 103,
 					_t('set items') => 105,
 					_t('lists') => 36,
@@ -218,7 +216,7 @@ class ca_metadata_type_restrictions extends BaseModel {
 	# Change logging
 	# ------------------------------------------------------
 	protected $UNIT_ID_FIELD = null;
-	protected $LOG_CHANGES_TO_SELF = false;
+	protected $LOG_CHANGES_TO_SELF = true;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
 		
@@ -238,6 +236,9 @@ class ca_metadata_type_restrictions extends BaseModel {
 	 */
 	public $SETTINGS;
 	
+	
+	static $s_loaded_relationship_tables = false;
+	
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -252,12 +253,27 @@ class ca_metadata_type_restrictions extends BaseModel {
 	/**
 	 * 
 	 */
-	public function __construct($pn_id=null) {
+	public function __construct($pn_id=null, $pb_filter_tables=false) {
 		global $_ca_metadata_type_restriction_settings;
 		parent::__construct($pn_id);	# call superclass constructor
 		
 		//
 		$this->SETTINGS = new ModelSettings($this, 'settings', $_ca_metadata_type_restriction_settings);
+		
+		if (!ca_metadata_type_restrictions::$s_loaded_relationship_tables) {
+			require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
+			$t_rel = new ca_relationship_types();
+			$va_rels = $t_rel->getRelationshipsUsingTypes();
+			
+			$o_dm = Datamodel::load();
+			foreach($va_rels as $vn_table_num => $va_rel_table_info) {
+				BaseModel::$s_ca_models_definitions['ca_metadata_type_restrictions']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'][$va_rel_table_info['name']] = $vn_table_num;
+			}
+			if ($pb_filter_tables) {
+				BaseModel::$s_ca_models_definitions['ca_metadata_type_restrictions']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = caFilterTableList(BaseModel::$s_ca_models_definitions['ca_metadata_type_restrictions']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'], array('sort' => true));
+			}
+			ca_metadata_type_restrictions::$s_loaded_relationship_tables = true;
+		}
 	}
 	# ------------------------------------------------------
 	public function __destruct() {
@@ -280,15 +296,24 @@ class ca_metadata_type_restrictions extends BaseModel {
 	public function getTypeListsForTables() {
 		$va_tables = $this->getFieldInfo('table_num', 'BOUNDS_CHOICE_LIST');
 		
+		$t_rel_types = new ca_relationship_types();
+		
 		$va_types = array();
 		foreach($va_tables as $vs_table_name => $vn_table_num) {
 			$t_instance = $this->_DATAMODEL->getInstanceByTableNum($vn_table_num, true);
 			$va_types[$vn_table_num] = array('' => '-');
-			if (method_exists($t_instance, 'getTypeList')) {
-				$va_items = $t_instance->getTypeList();
-				foreach($va_items as $vn_item_id => $va_item) {
-					$va_types[$vn_table_num][$vn_item_id] = $va_item['name_plural'];
+			if (is_a($t_instance, "BaseRelationshipModel")) {
+				$va_rel_types = $t_rel_types->getRelationshipInfo($vn_table_num);
+				foreach($va_rel_types as $vn_type_id => $va_type) {
+					$va_types[$vn_table_num][$vn_type_id] = $va_type['typename'];
 				}
+			} else {
+				if (method_exists($t_instance, 'getTypeList')) {
+					$va_items = $t_instance->getTypeList();
+					foreach($va_items as $vn_item_id => $va_item) {
+						$va_types[$vn_table_num][$vn_item_id] = $va_item['name_plural'];
+					}
+				} 
 			}
 		}
 		return $va_types;

@@ -84,7 +84,7 @@ class BaseJSONService {
 
 		if(strlen($ps_table)>0){
 			if(!in_array($ps_table, $this->opa_valid_tables)){
-				$this->addError(_t("Table name does not exist"));
+				$this->addError(_t("Table does not exist"));
 			}
 		}
 	}

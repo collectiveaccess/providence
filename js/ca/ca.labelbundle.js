@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2011 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -126,7 +126,7 @@ var caUI = caUI || {};
 			for (i=0; i < this.templateValues.length; i++) {
 				if (this.templateValues[i] === 'locale_id') { continue; }
 				if (jQuery(this.container + " select#" + this.fieldNamePrefix + this.templateValues[i] + "_" + id).length) {
-					jQuery(this.container + " select#" + this.fieldNamePrefix + this.templateValues[i] + "_" + id + " option[value=" + templateValues[this.templateValues[i]] +"]").attr('selected', true);
+					jQuery(this.container + " select#" + this.fieldNamePrefix + this.templateValues[i] + "_" + id + " option[value=" + templateValues[this.templateValues[i]] +"]").prop('selected', true);
 				}
 			}
 			if(!templateValues.locale_id) { templateValues.locale_id = that.defaultLocaleID; }
@@ -134,7 +134,7 @@ var caUI = caUI || {};
 			if (isNew) {
 				if (jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option:eq(" + defaultLocaleSelectedIndex + ")").length) {
 					// There's a locale drop-dow to mess with
-					jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option:eq(" + defaultLocaleSelectedIndex + ")").attr('selected', true);
+					jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option:eq(" + defaultLocaleSelectedIndex + ")").prop('selected', true);
 				} else {
 					// No locale drop-down, or it somehow doesn't include the locale we want
 					jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n).after("<input type='hidden' name='" + this.fieldNamePrefix + "locale_id_" + templateValues.n + "' value='" + that.defaultLocaleID + "'/>");
@@ -142,7 +142,7 @@ var caUI = caUI || {};
 					
 				}
 			} else {
-				jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option:eq(" + defaultLocaleSelectedIndex + ")").attr('selected', true);
+				jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n +" option:eq(" + defaultLocaleSelectedIndex + ")").prop('selected', true);
 			
 				// attach onchange function to locale_id
 				jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n).change(function() { that.updateLabelBundleFormState(); });
@@ -196,8 +196,8 @@ var caUI = caUI || {};
 			}
 			
 			if (this.readonly) {
-				jQuery(this.container + " input").attr("disabled", true);
-				jQuery(this.container + " select").attr("disabled", true);
+				jQuery(this.container + " input").prop("disabled", true);
+				jQuery(this.container + " select").prop("disabled", true);
 			}
 			
 			return this;

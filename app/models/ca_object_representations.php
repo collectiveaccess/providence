@@ -39,6 +39,7 @@ require_once(__CA_MODELS_DIR__."/ca_object_representation_labels.php");
 require_once(__CA_MODELS_DIR__."/ca_representation_annotations.php");
 require_once(__CA_MODELS_DIR__."/ca_representation_annotation_labels.php");
 require_once(__CA_MODELS_DIR__."/ca_object_representation_multifiles.php");
+require_once(__CA_MODELS_DIR__."/ca_object_representation_captions.php");
 require_once(__CA_MODELS_DIR__."/ca_commerce_order_items.php");
 require_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
@@ -103,7 +104,7 @@ BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
 		'media_metadata' => array(
 				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
+				'IS_NULL' => true, 
 				'DEFAULT' => '',
 				'DONT_PROCESS_DURING_INSERT_UPDATE' => true,
 				
@@ -114,7 +115,7 @@ BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
 		'media_content' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
+				'IS_NULL' => true, 
 				'DEFAULT' => '',
 				'DONT_PROCESS_DURING_INSERT_UPDATE' => true,
 				
@@ -332,8 +333,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
-	protected function initLabelDefinitions() {
-		parent::initLabelDefinitions();
+	protected function initLabelDefinitions($pa_options=null) {
+		parent::initLabelDefinitions($pa_options);
 		$this->BUNDLES['ca_objects'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects'));
 		$this->BUNDLES['ca_entities'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related entities'));
 		$this->BUNDLES['ca_places'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related places'));
@@ -346,6 +347,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$this->BUNDLES['ca_object_lots'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related lot'));
 		
 		$this->BUNDLES['ca_object_representations_media_display'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media and preview images'));
+		$this->BUNDLES['ca_object_representation_captions'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Captions/subtitles'));
 	}
 	# ------------------------------------------------------
 	public function insert($pa_options=null) {
@@ -357,12 +359,14 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		
 		// do insert
 		if ($vn_rc = parent::insert($pa_options)) {
-			$va_media_info = $this->getMediaInfo('media', 'original');
-			$this->set('md5', $va_media_info['MD5']);
-			$this->set('mimetype', $va_media_info['MIMETYPE']);
-			$va_media_info = $this->getMediaInfo('media');
-			$this->set('original_filename', $va_media_info['ORIGINAL_FILENAME']);
+			if (is_array($va_media_info = $this->getMediaInfo('media', 'original'))) {
+				$this->set('md5', $va_media_info['MD5']);
+				$this->set('mimetype', $va_media_info['MIMETYPE']);
 			
+				if(is_array($va_media_info = $this->getMediaInfo('media'))) {
+					$this->set('original_filename', $va_media_info['ORIGINAL_FILENAME']);
+				}
+			}
 			$va_metadata = $this->get('media_metadata', array('binary' => true));
 			caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));
 			
@@ -375,12 +379,13 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	public function update($pa_options=null) {
 		$vb_media_has_changed = $this->changed('media');
 		if ($vn_rc = parent::update($pa_options)) {
-			$va_media_info = $this->getMediaInfo('media', 'original');
-			$this->set('md5', $va_media_info['MD5']);
-			$this->set('mimetype', $va_media_info['MIMETYPE']);
-			$va_media_info = $this->getMediaInfo('media');
-			$this->set('original_filename', $va_media_info['ORIGINAL_FILENAME']);
-			
+			if(is_array($va_media_info = $this->getMediaInfo('media', 'original'))) {
+				$this->set('md5', $va_media_info['MD5']);
+				$this->set('mimetype', $va_media_info['MIMETYPE']);
+				if (is_array($va_media_info = $this->getMediaInfo('media'))) {
+					$this->set('original_filename', $va_media_info['ORIGINAL_FILENAME']);
+				}
+			}
 			if ($vb_media_has_changed) {
 				$va_metadata = $this->get('media_metadata', array('binary' => true));
 				caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));
@@ -390,6 +395,55 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		}
 		
 		return $vn_rc;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 *
+	 * @param bool $pb_delete_related
+	 * @param array $pa_options
+	 *		dontCheckPrimaryValue = if set the is_primary state of other related representations is not considered during the delete
+	 * @param array $pa_fields
+	 * @param array $pa_table_list
+	 *
+	 * @return bool
+	 */
+	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+		if (!isset($pa_options['dontCheckPrimaryValue']) && !$pa_options['dontCheckPrimaryValue']) {
+			// make some other row primary
+			$o_db = $this->getDb();
+			if ($vn_representation_id = $this->getPrimaryKey()) {
+				$qr_res = $o_db->query("
+					SELECT oxor.relation_id
+					FROM ca_objects_x_object_representations oxor
+					INNER JOIN ca_object_representations AS o_r ON o_r.representation_id = oxor.representation_id
+					WHERE
+						oxor.representation_id = ? AND oxor.is_primary = 1 AND o_r.deleted = 0
+					ORDER BY
+						oxor.rank, oxor.relation_id
+				", (int)$vn_representation_id);
+				while($qr_res->nextRow()) {
+					// nope - force this one to be primary
+					$t_rep_link = new ca_objects_x_object_representations();
+					$t_rep_link->setTransaction($this->getTransaction());
+					if ($t_rep_link->load($qr_res->get('relation_id'))) {
+						$t_rep_link->setMode(ACCESS_WRITE);
+						$t_rep_link->set('is_primary', 0);
+						$t_rep_link->update();
+			
+						if ($t_rep_link->numErrors()) {
+							$this->postError(2700, _t('Could not update primary flag for representation: %1', join('; ', $t_rep_link->getErrors())), 'ca_objects_x_object_representations->delete()');
+							return false;
+						}
+					} else {
+						$this->postError(2700, _t('Could not load object-representation link'), 'ca_objects_x_object_representations->delete()');
+						return false;
+					}				
+				}
+			}
+		}
+
+		return parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 	}
 	# ------------------------------------------------------
 	/**
@@ -476,14 +530,17 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  				cra.representation_id = ? {$vs_access_sql}
  		", (int)$vn_representation_id);
  		
- 		return $qr_annotations->numRows();
+ 		return (int)$qr_annotations->numRows();
  	}
  	# ------------------------------------------------------
  	/**
  	 * Returns data for annotations attached to current representation
  	 *
  	 * @param array $pa_options Optional array of options. Supported options are:
- 	 *			checkAccess - array of access codes to filter count by. Only annotations with an access value set to one of the specified values will be returned
+ 	 *			checkAccess = array of access codes to filter count by. Only annotations with an access value set to one of the specified values will be returned
+ 	 *			start =
+ 	 *			max = 
+ 	 *			labelsOnly =
  	 * @return array List of annotations attached to the current representation, key'ed on annotation_id. Value is an array will all values; annotation labels are returned in the current locale.
  	 */
  	public function getAnnotations($pa_options=null) {
@@ -511,12 +568,18 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		
  		$vs_sort_by_property = $this->getAnnotationSortProperty();
  		$va_annotations = array();
+ 		
+ 		$vn_start = caGetOption('start', $pa_options, 0, array('castTo' => 'int'));
+ 		$vn_max = caGetOption('max', $pa_options, 100, array('castTo' => 'int'));
+ 		
  		while($qr_annotations->nextRow()) {
  			$va_tmp = $qr_annotations->getRow();
+ 			unset($va_tmp['props']);
  			$o_coder->setPropertyValues($qr_annotations->getVars('props'));
  			foreach($o_coder->getPropertyList() as $vs_property) {
  				$va_tmp[$vs_property] = $o_coder->getProperty($vs_property);
  				$va_tmp[$vs_property.'_raw'] = $o_coder->getProperty($vs_property, true);
+ 				if ($va_tmp[$vs_property] == $va_tmp[$vs_property.'_raw']) { unset($va_tmp[$vs_property.'_raw']); }
  			}
  			
  			if (!($vs_sort_key = $va_tmp[$vs_sort_by_property])) {
@@ -525,6 +588,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  			
  			$va_annotations[$vs_sort_key][$qr_annotations->get('annotation_id')] = $va_tmp;
  		}
+ 		
+ 		ksort($va_annotations, SORT_NUMERIC);
  		
  		// get annotation labels
  		$qr_annotation_labels = $o_db->query("
@@ -537,22 +602,30 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		
  		$va_labels = array();
  		while($qr_annotation_labels->nextRow()) {
- 			$va_labels[$qr_annotation_labels->get('annotation_id')][$qr_annotation_labels->get('locale_id')] = $qr_annotation_labels->get('name');
+ 			$va_labels[$qr_annotation_labels->get('annotation_id')][$qr_annotation_labels->get('locale_id')][] = $qr_annotation_labels->get('name');
  		}
  		
- 		if (!isset($pa_options['dontExtractValuesByUserLocale']) || !$pa_options['dontExtractValuesByUserLocale']) {
- 			$va_labels = caExtractValuesByUserLocale($va_labels);
- 		}
+ 		$va_labels_for_locale = caExtractValuesByUserLocale($va_labels);
  		
- 		ksort($va_annotations);
  		
  		$va_sorted_annotations = array();
  		foreach($va_annotations as $vs_key => $va_values) {
  			foreach($va_values as $va_val) {
+ 				$vs_label = is_array($va_labels_for_locale[$va_val['annotation_id']]) ? array_shift($va_labels_for_locale[$va_val['annotation_id']]) : '';
  				$va_val['labels'] = $va_labels[$va_val['annotation_id']] ? $va_labels[$va_val['annotation_id']] : array();
+ 				$va_val['label'] = $vs_label;
  				$va_sorted_annotations[$va_val['annotation_id']] = $va_val;
  			}
  		}
+ 		
+ 		if (($vn_start > 0) || ($vn_max > 0)) {
+ 			if ($vn_max > 0) {
+ 				$va_sorted_annotations = array_slice($va_sorted_annotations, $vn_start, $vn_max);
+ 			} else {
+ 				$va_sorted_annotations = array_slice($va_sorted_annotations, $vn_start);
+ 			}
+ 		}
+ 		
  		return $va_sorted_annotations;
  	} 
  	# ------------------------------------------------------
@@ -579,7 +652,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			$this->errors = $o_coder->errors;
 			return false;
 		}
- 		
+		
  		$t_annotation = new ca_representation_annotations();
  		$t_annotation->setMode(ACCESS_WRITE);
  		
@@ -597,6 +670,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			return false;
 		}
 		
+		if (!$ps_title) { $ps_title = "[BLANK]"; }
 		$t_annotation->addLabel(array('name' => $ps_title), $pn_locale_id, null, true);
 		if ($t_annotation->numErrors()) {
 			$this->errors = $t_annotation->errors;
@@ -715,7 +789,9 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 				$this->errors = $t_annotation->errors;
 				return false;
 			}
-			
+			if (is_array($pa_properties) && isset($pa_properties['label'])) {
+				$t_annotation->replaceLabel(array('name' => $pa_properties['label']), $pn_locale_id, null, true);
+			}
 			if (isset($pa_options['returnAnnotation']) && (bool)$pa_options['returnAnnotation']) {
 				return $t_annotation;
 			}
@@ -798,11 +874,11 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$o_view->setVar('settings', $pa_bundle_settings);
 		
 		$va_inital_values = array();
-		if (sizeof($va_items = $this->getAnnotations(array('dontExtractValuesByUserLocale' => true)))) {
+		if (sizeof($va_items = $this->getAnnotations())) {
 			$t_rel = $this->getAppDatamodel()->getInstanceByTableName('ca_representation_annotations', true);
 			$vs_rel_pk = $t_rel->primaryKey();
 			foreach ($va_items as $vn_id => $va_item) {
-				if (!($vs_label = $va_item['labels'][$va_item['locale_id']])) { $vs_label = ''; }
+				if (!($vs_label = $va_item['label'])) { $vs_label = ''; }
 				$va_inital_values[$va_item[$t_item->primaryKey()]] = array_merge($va_item, array('id' => $va_item[$vs_rel_pk], 'item_type_id' => $va_item['item_type_id'], 'relationship_type_id' => $va_item['relationship_type_id'], 'label' => $vs_label));
 			}
 		}
@@ -816,7 +892,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  	 *
  	 */
  	protected function _processRepresentationAnnotations($po_request, $ps_form_prefix, $ps_placement_code) {
- 		$va_rel_items = $this->getAnnotations(array('dontExtractValuesByUserLocale' => true));
+ 		$va_rel_items = $this->getAnnotations();
 		$o_coder = $this->getAnnotationPropertyCoderInstance($this->getAnnotationType());
 		foreach($va_rel_items as $vn_id => $va_rel_item) {
 			$this->clearErrors();
@@ -1109,6 +1185,188 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		}
  		return 0;
  	}
+ 	# ------------------------------------------------------
+ 	# Captions/subtitles
+ 	# ------------------------------------------------------
+ 	/**
+ 	 *
+ 	 */
+ 	public function addCaptionFile($ps_filepath, $pn_locale_id, $pa_options=null) {
+ 		if(!$this->getPrimaryKey()) { return null; }
+ 		
+ 		$t_caption = new ca_object_representation_captions();
+ 		if ($t_caption->load(array('representation_id' => $this->getPrimaryKey(), 'locale_id' => $pn_locale_id))) {
+ 			return null;
+ 		}
+ 		
+ 		$t_caption->setMode(ACCESS_WRITE);
+ 		$t_caption->set('representation_id', $this->getPrimaryKey());
+ 		$va_tmp = explode("/", $ps_filepath);
+ 		$t_caption->set('caption_file', $ps_filepath, array('original_filename' => caGetOption('originalFilename', $pa_options, array_pop($va_tmp))));
+ 		$t_caption->set('locale_id', $pn_locale_id);
+ 		
+ 		$t_caption->insert();
+ 		
+ 		if ($t_caption->numErrors()) {
+ 			$this->errors = array_merge($this->errors, $t_caption->errors);
+ 			return false;
+ 		}
+ 		
+ 		return $t_caption;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 *
+ 	 */
+ 	public function removeCaptionFile($pn_caption_id) {
+ 		if(!$this->getPrimaryKey()) { return null; }
+ 		
+ 		$t_caption = new ca_object_representation_captions($pn_caption_id);
+ 		
+ 		if ($t_caption->get('representation_id') == $this->getPrimaryKey()) {
+ 			$t_caption->setMode(ACCESS_WRITE);
+ 			$t_caption->delete();
+ 			
+			if ($t_caption->numErrors()) {
+				$this->errors = array_merge($this->errors, $t_caption->errors);
+				return false;
+			}
+		} else {
+			$this->postError(2720, _t('Caption file is not part of this representation'), 'ca_object_representations->removeCaptionFile()');
+			return false;
+		}
+		return true;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 *
+ 	 */
+ 	public function removeAllCaptionFiles() {
+ 		if(!$this->getPrimaryKey()) { return null; }
+ 		
+ 		$va_file_ids = array_keys($this->getCaptionFileList());
+ 		
+ 		foreach($va_file_ids as $vn_id) {
+ 			$this->removeCaptionFile($vn_id);
+ 			
+ 			if($this->numErrors()) {
+ 				return false;
+ 			}
+ 		}
+ 		
+ 		return true;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * Returns list of caption/subtitle files attached to a representation
+ 	 * The return value is an array key'ed on the caption_id; array values are arrays
+ 	 * with keys set to values for each file returned. They keys are:
+ 	 *		path = The absolute file path to the file
+ 	 *		url = The URL for the file
+ 	 *		caption_id = a unique identifier for each attached caption file
+ 	 *
+ 	 * @param int $pn_representation_id The representation_id of the representation to return files for. If omitted the currently loaded representation is used. If no representation_id is specified and no row is loaded null will be returned.
+ 	 * @param array $pa_locale_ids 
+ 	 * @param array $pa_options
+ 	 * @return array A list of caption files attached to the representations. If no files are associated an empty array is returned.
+ 	 */
+ 	public function getCaptionFileList($pn_representation_id=null, $pa_locale_ids=null, $pa_options=null) {
+ 		if(!($vn_representation_id = $pn_representation_id)) { 
+ 			if (!($vn_representation_id = $this->getPrimaryKey())) {
+ 				return null; 
+ 			}
+ 		}
+ 		
+ 		$t_locale = new ca_locales();
+ 		$va_locale_ids = array();
+ 		if ($pa_locale_ids) {
+ 			if (!is_array($pa_locale_ids)) { $pa_locale_ids = array($pa_locale_ids); }
+ 			foreach($pa_locale_ids as $vn_i => $vm_locale) {
+ 				if (is_numeric($vm_locale) && (int)$vm_locale) {
+ 					$va_locale_ids[] = (int)$vm_locale;
+ 				} else {
+ 					if ($vn_locale_id = $t_locale->localeCodeToID($vm_locale)) {
+ 						$va_locale_ids[] = $vn_locale_id;
+ 					}
+ 				}
+ 			}	
+ 			
+ 		}
+ 		
+ 		$vs_locale_sql = '';
+ 		$va_params = array((int)$vn_representation_id);
+ 		if (sizeof($va_locale_ids) > 0) {
+ 			$vs_locale_sql = " AND locale_id IN (?)";
+ 			$va_params[] = $va_locale_ids;
+ 		}
+ 		
+ 		$o_db= $this->getDb();
+ 		$qr_res = $o_db->query("
+ 			SELECT *
+ 			FROM ca_object_representation_captions
+ 			WHERE
+ 				representation_id = ?
+ 			{$vs_locale_sql}
+ 		", $va_params);
+ 		
+ 		$va_files = array();
+ 		while($qr_res->nextRow()) {
+ 			$vn_caption_id = $qr_res->get('caption_id');
+ 			$vn_locale_id = $qr_res->get('locale_id');
+ 			
+ 			$va_files[$vn_caption_id] = $qr_res->getRow();
+ 			unset($va_files[$vn_caption_id]['caption_file']);
+ 			
+ 			$va_files[$vn_caption_id]['path'] = $qr_res->getFilePath('caption_file');
+ 			$va_files[$vn_caption_id]['url'] = $qr_res->getFileUrl('caption_file');
+ 			$va_files[$vn_caption_id]['filesize'] = caFormatFileSize(filesize($va_files[$vn_caption_id]['path']));
+ 			$va_files[$vn_caption_id]['caption_id'] = $vn_caption_id;
+ 			$va_files[$vn_caption_id]['locale_id'] = $vn_locale_id;
+ 			$va_files[$vn_caption_id]['locale'] = $t_locale->localeIDToName($vn_locale_id);
+ 			$va_files[$vn_caption_id]['locale_code'] = $t_locale->localeIDToCode($vn_locale_id);
+ 		}
+ 		return $va_files;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 *
+ 	 */
+ 	public function getCaptionFileInstance($pn_caption_id) {
+ 		if(!$this->getPrimaryKey()) { return null; }
+ 	
+ 		$t_caption = new ca_object_representation_captions($pn_caption_id);
+ 		
+ 		if ($t_caption->get('representation_id') == $this->getPrimaryKey()) {
+ 			return $t_caption;
+ 		}
+ 		return null;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 *
+ 	 */
+ 	public function numCaptionFiles($pn_representation_id=null) { 		
+ 		if(!($vn_representation_id = $pn_representation_id)) { 
+ 			if (!($vn_representation_id = $this->getPrimaryKey())) {
+ 				return null; 
+ 			}
+ 		}
+ 		
+ 		$o_db= $this->getDb();
+ 		$qr_res = $o_db->query("
+ 			SELECT count(*) c
+ 			FROM ca_object_representation_captions
+ 			WHERE
+ 				representation_id = ?
+ 		", (int)$vn_representation_id);
+ 		
+ 		if($qr_res->nextRow()) {
+ 			return intval($qr_res->get('c'));
+ 		}
+ 		return 0;
+ 	}
+ 	# ------------------------------------------------------
+ 	#
  	# ------------------------------------------------------
  	/**
  	 * Matching method to ca_objects::getRepresentations(), except this one only returns a single representation - the currently loaded one
@@ -1417,6 +1675,42 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		
 		
 		return $o_view->render('ca_object_representations_media_display.php');
+	}
+	# ------------------------------------------------------
+	/** 
+	 * Returns HTML form bundle (for use in a ca_object_representations editor form) for captions
+	 *
+	 * @param HTTPRequest $po_request The current request
+	 * @param string $ps_form_name
+	 * @param string $ps_placement_code
+	 * @param array $pa_bundle_settings
+	 * @param array $pa_options Array of options. Supported options are 
+	 *			noCache = If set to true then label cache is bypassed; default is true
+	 *
+	 * @return string Rendered HTML bundle
+	 */
+	public function getCaptionHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
+		global $g_ui_locale;
+		
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+		
+		if(!is_array($pa_options)) { $pa_options = array(); }
+		
+		$o_view->setVar('id_prefix', $ps_form_name.'_captions');
+		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
+		
+		$o_view->setVar('settings', $pa_bundle_settings);
+		
+		$o_view->setVar('t_subject', $this);
+		$o_view->setVar('t_caption', new ca_object_representation_captions());
+		
+		//$va_media_info = $this->getMediaInfo('media');
+		//if (!is_array($va_media_info)) { $va_media_info = array('original' => array('PROPERTIES' => array('typename' => null))); }
+		//$o_view->setVar('representation_typename', $va_media_info['original']['PROPERTIES']['typename']);
+		$o_view->setVar('representation_num_caption_files', $this->numCaptionFiles());
+		$o_view->setVar('initialValues', $this->getCaptionFileList());
+		
+		return $o_view->render('ca_object_representation_captions.php');
 	}
 	# ------------------------------------------------------
 	/** 

@@ -710,16 +710,8 @@ class ca_commerce_orders extends BaseModel {
 					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_processed_awaiting_digitization.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
 					break;
 				case 'PROCESSED_AWAITING_MEDIA_ACCESS':
-					$vs_subject = _t('Payment for order (%2) posted on %1 has been processed; your downloads are now pending digitization of transfer of media to the server', $vs_order_date, $this->getOrderNumber());
+					$vs_subject = _t('Payment for order (%2) posted on %1 has been processed; your downloads are now pending transfer of media to the server', $vs_order_date, $this->getOrderNumber());
 					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_processed_awaiting_media_access.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
-					break;
-				case 'PROCESSED_AWAITING_MEDIA_ACCESS':
-					$vs_subject = _t('Payment for order (%2) posted on %1 has been processed; your downloads are now pending digitization of transfer of media to the server', $vs_order_date, $this->getOrderNumber());
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_processed_awaiting_media_access.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
-					break;
-				case 'PROCESSED_AWAITING_MEDIA_ACCESS':
-					$vs_subject = _t('Payment for order (%2) posted on %1 has been processed; your downloads are now pending digitization of transfer of media to the server', $vs_order_date, $this->getOrderNumber());
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_processed_awaiting_media_access.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
 					break;
 				case 'PROCESSED':
 					$vs_subject = _t('Payment for order (%2) posted on %1 has been processed', $vs_order_date, $this->getOrderNumber());

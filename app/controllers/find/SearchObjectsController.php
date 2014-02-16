@@ -70,7 +70,8 @@
 			$this->opa_views = array(
 				'thumbnail' => _t('thumbnails'),
 				'full' => _t('full'),
-				'list' => _t('list')
+				'list' => _t('list'),
+				'editable' => _t('editable')
 			 );
 			 
 			 $this->opa_sorts = array_merge(array(
@@ -93,7 +94,7 @@
  			JavascriptLoadManager::register('imageScroller');
  			JavascriptLoadManager::register('tabUI');
  			JavascriptLoadManager::register('panel');
- 			return parent::Index($pa_options);
+            return parent::Index($pa_options);
  		}
  		# -------------------------------------------------------
  		/**

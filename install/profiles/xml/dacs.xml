@@ -2,9 +2,8 @@
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base"
   infoUrl="http://wiki.collectiveaccess.org/index.php?title=DACS_profile">
-  <profileName>[Standard] DACS - Describing Archives: A Content Standard</profileName>
-  <profileDescription>Use this profile if you want a system that is compliant with DACS and
-    EAD</profileDescription>
+  <profileName>[Standard] DACS</profileName>
+  <profileDescription>Use this profile if you want a system that is compliant with DACS.  Make sure to set "ca_objects_x_collections_hierarchy_enabled" and "ca_collections_show_add_child_control_in_inspector" to 1 in /app/conf/app.conf</profileDescription>
   <locales>
     <locale lang="en" country="US">English</locale>
   </locales>
@@ -33,51 +32,21 @@
           </labels>
         </item>
       </items>
-    </list>
-    <list code="object_types" hierarchical="1" system="0" vocabulary="1">
+    </list> 
+    <list code="object_types" hierarchical="1" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
           <name>Object Types</name>
         </label>
       </labels>
       <items>
-        <item idno="record_group" enabled="1" default="1">
+        <item idno="item" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Record group</name_singular>
-              <name_plural>Record groups</name_plural>
+              <name_singular>Item</name_singular>
+              <name_plural>Items</name_plural>
             </label>
           </labels>
-          <items>
-            <item idno="series" enabled="1" default="1">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Series</name_singular>
-                  <name_plural>Series</name_plural>
-                </label>
-              </labels>
-              <items>
-                <item idno="file" enabled="1" default="1">
-                  <labels>
-                    <label locale="en_US" preferred="1">
-                      <name_singular>File</name_singular>
-                      <name_plural>File</name_plural>
-                    </label>
-                  </labels>
-                  <items>
-                    <item idno="item" enabled="1" default="1">
-                      <labels>
-                        <label locale="en_US" preferred="1">
-                          <name_singular>Item</name_singular>
-                          <name_plural>Item</name_plural>
-                        </label>
-                      </labels>
-                    </item>
-                  </items>
-                </item>
-              </items>
-            </item>
-          </items>
         </item>
       </items>
     </list>
@@ -189,7 +158,7 @@
           </labels>
         </item>
       </items>
-    </list>
+    </list>   
     <list code="collection_types" hierarchical="1" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -197,21 +166,73 @@
         </label>
       </labels>
       <items>
-        <item idno="internal" enabled="1" default="1">
+        <item idno="collection" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Internal collection</name_singular>
-              <name_plural>Internal collections</name_plural>
+              <name_singular>Collection</name_singular>
+              <name_plural>Collections</name_plural>
             </label>
           </labels>
+          <items>
+        <item idno="record_group" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Record group</name_singular>
+              <name_plural>Record groups</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="series" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Series</name_singular>
+                  <name_plural>Series</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="subseries" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_US" preferred="1">
+                      <name_singular>Sub-Series</name_singular>
+                      <name_plural>Sub-Series</name_plural>
+                    </label>
+                  </labels>
+                  <items>
+                    <item idno="file" enabled="1" default="0">
+                      <labels>
+                        <label locale="en_US" preferred="1">
+                          <name_singular>File</name_singular>
+                          <name_plural>File</name_plural>
+                        </label>
+                      </labels>
+                      <items>
+                        <item idno="box" enabled="1" default="0">
+                          <labels>
+                            <label locale="en_US" preferred="1">
+                              <name_singular>Box</name_singular>
+                              <name_plural>Box</name_plural>
+                            </label>
+                          </labels>
+                          <items>
+                            <item idno="folder" enabled="1" default="0">
+                              <labels>
+                                <label locale="en_US" preferred="1">
+                                  <name_singular>Folder</name_singular>
+                                  <name_plural>Folder</name_plural>
+                                </label>
+                              </labels>
+                            </item>
+                          </items>
+                        </item>
+                      </items>
+                    </item>
+                  </items>
+                </item>
+              </items>
+            </item>
+          </items>
         </item>
-        <item idno="external" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>External collection</name_singular>
-              <name_plural>External collections</name_plural>
-            </label>
-          </labels>
+        </items>
         </item>
       </items>
     </list>
@@ -338,6 +359,14 @@
         </label>
       </labels>
       <items>
+        <item idno="null" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular> </name_singular>
+              <name_plural> </name_plural>
+            </label>
+          </labels>
+        </item>
         <item idno="available" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -346,7 +375,7 @@
             </label>
           </labels>
         </item>
-        <item idno="creation" enabled="1" default="1">
+        <item idno="creation" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Date(s) of creation</name_singular>
@@ -411,11 +440,11 @@
         </label>
       </labels>
       <items>
-        <item idno="option0" enabled="1" default="1">
+        <item idno="null" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>-</name_singular>
-              <name_plural>-</name_plural>
+              <name_singular> </name_singular>
+              <name_plural> </name_plural>
             </label>
           </labels>
         </item>
@@ -525,124 +554,137 @@
         </item>
       </items>
     </list>
+    <list code="title_types" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Title Types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="null" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular> </name_singular>
+              <name_plural> </name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="corpname" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Corporate Name</name_singular>
+              <name_plural>Corporate Names</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="date" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Date</name_singular>
+              <name_plural>Dates</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="emph" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Emphasis</name_singular>
+              <name_plural>Emphasis</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="extref" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Extended Reference</name_singular>
+              <name_plural>Extended References</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="famname" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Family Name</name_singular>
+              <name_plural>Family Names</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="function" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Function</name_singular>
+              <name_plural>Functions</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="genreform" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Genre/Physical Characteristic</name_singular>
+              <name_plural>Genre/Physical Characteristics</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="geoname" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Geographic Name</name_singular>
+              <name_plural>Geographic Names</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="name" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Name</name_singular>
+              <name_plural>Names</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="occupation" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Occupation</name_singular>
+              <name_plural>Occupations</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="persname" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Personal Name</name_singular>
+              <name_plural>Personal Names</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="ref" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Reference</name_singular>
+              <name_plural>Reference</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="subject" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Subject</name_singular>
+              <name_plural>Subject</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="title" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Title</name_singular>
+              <name_plural>Title</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
   </lists>
   <elementSets>
-    <metadataElement code="description" datatype="Text">
-      <labels>
-        <label locale="en_US">
-          <name>Description</name>
-          <description>An account of the resource.</description>
-        </label>
-      </labels>
-      <documentationUrl>http://dublincore.org/documents/dcmi-terms/#terms-description</documentationUrl>
-      <settings>
-        <setting name="usewysiwygeditor">1</setting>
-        <setting name="fieldWidth">70</setting>
-        <setting name="fieldHeight">6</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r2">
-          <table>ca_places</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r3">
-          <table>ca_occurrences</table>
-          <type>event</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r4">
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r5">
-          <table>ca_storage_locations</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r6">
-          <table>ca_object_lots</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r7">
-          <table>ca_object_events</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="description_source" datatype="Text">
-      <labels>
-        <label locale="en_US">
-          <name>Source of description</name>
-          <description>Source of item description. This should be a formal citation if possible. For
-            informal sources a narrative description is acceptable.</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">70</setting>
-        <setting name="fieldHeight">3</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r2">
-          <table>ca_places</table>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r3">
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
     <metadataElement code="caption" datatype="Text">
       <labels>
         <label locale="en_US">
@@ -880,62 +922,6 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="lcsh_terms" datatype="LCSH">
-      <labels>
-        <label locale="en_US">
-          <name>Library of Congress Subject Headings</name>
-          <description>Library of Congress Subject headings describing this object. To add a new
-            heading simply type the first few letters of the heading and choose the desired one from
-            the displayed list of possible matches.</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">50</setting>
-        <setting name="fieldHeight">1</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction code="ca_objects">
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="ca_entities">
-          <table>ca_entities</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="ca_places">
-          <table>ca_places</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="ca_occurrences">
-          <table>ca_occurrences</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="ca_collections">
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
     <metadataElement code="repository" datatype="Container">
       <labels>
         <label locale="en_US">
@@ -967,7 +953,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">80</setting>
+                <setting name="fieldWidth">90</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -990,7 +976,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">80</setting>
+                <setting name="fieldWidth">90</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -1531,225 +1517,6 @@
           <description>This element identifies any other finding aids to
             the materials being described particularly if they are available to the user, and
             provides information about the form and content of those finding aids.</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">80</setting>
-        <setting name="fieldHeight">5</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction code="objects">
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="collections">
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="occurrences">
-          <table>ca_occurrences</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="custohist" datatype="Text">
-      <labels>
-        <label locale="en_US">
-          <name>Custodial History</name>
-          <description>This element provides information on changes of ownership or custody of the
-            material being described, from the time it left the possession of the creator until it
-            was acquired by the repository that is significant for its authenticity, integrity, and
-            interpretation.</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">80</setting>
-        <setting name="fieldHeight">3</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction code="objects">
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="collections">
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="occurrences">
-          <table>ca_occurrences</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="acqinfo" datatype="Container">
-      <labels>
-        <label locale="en_US">
-          <name>Immediate Source of Acquisition</name>
-          <description>Record information about changes of ownership or custody of the materials
-            being described that do not involve direct acquisition by the repository and that are
-            significant for its authenticity, integrity, and interpretation in the Custodial History
-            Element.</description>
-        </label>
-      </labels>
-      <documentationUrl>http://purl.org/dc/terms/abstract</documentationUrl>
-      <settings>
-        <setting name="fieldWidth">80</setting>
-        <setting name="fieldHeight">3</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
-      </settings>
-      <elements>
-        <metadataElement code="acqinfo_line1" datatype="Container">
-          <labels>
-            <label locale="en_US">
-              <name>Aqcuisition date(s)</name>
-            </label>
-          </labels>
-          <settings/>
-          <elements>
-            <metadataElement code="acqinfoDate" datatype="DateRange">
-              <labels>
-                <label locale="en_US">
-                  <name>Aqcuisition date(s)</name>
-                </label>
-              </labels>
-              <settings>
-                <setting name="fieldWidth">80</setting>
-                <setting name="fieldHeight">1</setting>
-                <setting name="minChars">0</setting>
-                <setting name="maxChars">255</setting>
-              </settings>
-            </metadataElement>
-          </elements>
-        </metadataElement>
-        <metadataElement code="acqinfo_line2" datatype="Container">
-          <labels>
-            <label locale="en_US">
-              <name>Aqcuisition details</name>
-            </label>
-          </labels>
-          <settings/>
-          <elements>
-            <metadataElement code="acqinfoDetail" datatype="Text">
-              <labels>
-                <label locale="en_US">
-                  <name>Aqcuisition details</name>
-                </label>
-              </labels>
-              <settings>
-                <setting name="fieldWidth">80</setting>
-                <setting name="fieldHeight">3</setting>
-                <setting name="minChars">0</setting>
-                <setting name="maxChars">255</setting>
-              </settings>
-            </metadataElement>
-          </elements>
-        </metadataElement>
-      </elements>
-      <typeRestrictions>
-        <restriction code="objects">
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">255</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="collections">
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">255</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="occurrences">
-          <table>ca_occurrences</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">255</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="appraisal" datatype="Text">
-      <labels>
-        <label locale="en_US">
-          <name>Appraisal</name>
-          <description>This element provides information about the rationale for appraisal
-            decisions, destruction actions, and disposition schedules that are relevant to the
-            understanding and use of the materials being described.</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">80</setting>
-        <setting name="fieldHeight">5</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction code="objects">
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="collections">
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="occurrences">
-          <table>ca_occurrences</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="accruals" datatype="Text">
-      <labels>
-        <label locale="en_US">
-          <name>Accruals</name>
-          <description>This element informs the user of anticipated additions to the unit being
-            described. An accrual is an acquisition of archival materials additional to that already
-            in the custody of the repository.</description>
         </label>
       </labels>
       <settings>
@@ -2561,12 +2328,500 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-  </elementSets>
-  <userInterfaces>
-    <userInterface code="standard_object_ui" type="ca_objects">
+    <metadataElement code="agencyHistory" datatype="Text">
       <labels>
         <label locale="en_US">
-          <name>Standard object editor</name>
+          <name>Agency History</name>
+          <description/>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">8</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">6355</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_collections</table>
+          <type>collection</type>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="abstract" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Abstract</name>
+          <description/>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">8</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">6355</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_collections</table>
+          <type>collection</type>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="processInfo" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Processing Note</name>
+          <description/>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">5</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">6355</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_collections</table>
+          <type>collection</type>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="preferCite" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Preferred Citation</name>
+          <description/>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">5</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">6355</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_collections</table>
+          <type>collection</type>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="LcshNames" datatype="LCSH">
+      <labels>
+        <label locale="en_US">
+          <name>Library of Congress Names Authority</name>
+          <description>Library of Congress Subject headings describing this object. To add a new heading simply type the first few letters of the heading and choose the desired one from the displayed list of possible matches.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="vocabulary">cs:http://id.loc.gov/authorities/names</setting>
+        <setting name="fieldWidth">60</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_collections</table>
+          <type>collection</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="LcshTopical" datatype="LCSH">
+      <labels>
+        <label locale="en_US">
+          <name>Library of Congress Topical Authority</name>
+          <description>Library of Congress Subject headings describing this object. To add a new heading simply type the first few letters of the heading and choose the desired one from the displayed list of possible matches.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="vocabulary">cs:http://id.loc.gov/authorities/subjects</setting>
+        <setting name="fieldWidth">60</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_collections</table>
+          <type>collection</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="LcshGeo" datatype="LCSH">
+      <labels>
+        <label locale="en_US">
+          <name>Library of Congress Geographic Areas Authority</name>
+          <description>Library of Congress Subject headings describing this object. To add a new heading simply type the first few letters of the heading and choose the desired one from the displayed list of possible matches.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="vocabulary">cs:http://id.loc.gov/vocabulary/geographicAreas</setting>
+        <setting name="fieldWidth">60</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_collections</table>
+          <type>collection</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="custodhist" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Provenance</name>
+          <description/>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">5</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">6355</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_collections</table>
+          <type>collection</type>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="description" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>Description</name>
+          <description>An account of the resource.</description>
+        </label>
+      </labels>
+      <documentationUrl>http://dublincore.org/documents/dcmi-terms/#terms-description</documentationUrl>
+      <settings>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <elements>
+        <metadataElement code="description_line1" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Description Line 1</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="description_text" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Description</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="usewysiwygeditor">1</setting>
+                <setting name="fieldWidth">90</setting>
+                <setting name="fieldHeight">6</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="description_line2" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Description Line 2</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="description_source" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Source</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">90</setting>
+                <setting name="fieldHeight">1</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r2">
+          <table>ca_places</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r3">
+          <table>ca_occurrences</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r4">
+          <table>ca_collections</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r5">
+          <table>ca_storage_locations</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r6">
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="custohist" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Custodial History</name>
+          <description>This element provides information on changes of ownership or custody of the
+            material being described, from the time it left the possession of the creator until it
+            was acquired by the repository that is significant for its authenticity, integrity, and
+            interpretation.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">3</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="object_lots">
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="acqinfo" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>Immediate Source of Acquisition</name>
+          <description>Record information about changes of ownership or custody of the materials
+            being described that do not involve direct acquisition by the repository and that are
+            significant for its authenticity, integrity, and interpretation in the Custodial History
+            Element.</description>
+        </label>
+      </labels>
+      <documentationUrl>http://purl.org/dc/terms/abstract</documentationUrl>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">3</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <elements>
+        <metadataElement code="acqinfo_line1" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Aqcuisition date(s)</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="acqinfoDate" datatype="DateRange">
+              <labels>
+                <label locale="en_US">
+                  <name>Aqcuisition date(s)</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">80</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">255</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="acqinfo_line2" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Aqcuisition details</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="acqinfoDetail" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Aqcuisition details</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">80</setting>
+                <setting name="fieldHeight">3</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">255</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction code="object_lots">
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="appraisal" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Appraisal</name>
+          <description>This element provides information about the rationale for appraisal
+            decisions, destruction actions, and disposition schedules that are relevant to the
+            understanding and use of the materials being described.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">5</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="object_lots">
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="accruals" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Accruals</name>
+          <description>This element informs the user of anticipated additions to the unit being
+            described. An accrual is an acquisition of archival materials additional to that already
+            in the custody of the repository.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">5</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="object_lots">
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+  </elementSets>
+  <userInterfaces>
+    <userInterface code="object_ui" type="ca_objects">
+      <labels>
+        <label locale="en_US">
+          <name>Object editor</name>
         </label>
       </labels>
       <screens>
@@ -2577,8 +2832,8 @@
             </label>
           </labels>
           <bundlePlacements>
-            <placement code="hierarchy_navigation">
-              <bundle>hierarchy_navigation</bundle>
+             <placement code="hierarchy_location">
+              <bundle>hierarchy_location</bundle>
             </placement>
             <placement code="idno">
               <bundle>idno</bundle>
@@ -2649,27 +2904,6 @@
             </placement>
           </bundlePlacements>
         </screen>
-        <screen idno="acquisition" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Acquisition and Appraisal</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_attribute_custohist">
-              <bundle>ca_attribute_custohist</bundle>
-            </placement>
-            <placement code="ca_attribute_acqinfo">
-              <bundle>ca_attribute_acqinfo</bundle>
-            </placement>
-            <placement code="ca_attribute_appraisal">
-              <bundle>ca_attribute_appraisal</bundle>
-            </placement>
-            <placement code="ca_attribute_accruals">
-              <bundle>ca_attribute_accruals</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
         <screen idno="related" default="0">
           <labels>
             <label locale="en_US">
@@ -2686,14 +2920,36 @@
             <placement code="ca_attribute_relatedmaterial">
               <bundle>ca_attribute_relatedmaterial</bundle>
             </placement>
-            <placement code="ca_objects">
-              <bundle>ca_objects</bundle>
-            </placement>
-            <placement code="ca_collections">
-              <bundle>ca_collections</bundle>
-            </placement>
             <placement code="ca_attribute_bibliography">
               <bundle>ca_attribute_bibliography</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="relationships" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Other Relationships</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_places">
+              <bundle>ca_places</bundle>
+            </placement>
+            <placement code="ca_object_lots">
+              <bundle>ca_object_lots</bundle>
+            </placement>
+            <placement code="ca_storage_locations">
+              <bundle>ca_storage_locations</bundle>
+            </placement>
+             <placement code="ca_entities">
+              <bundle>ca_entities</bundle>
+            </placement>
+            <placement code="ca_events">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="restrict_to_type">event</setting>
+                <setting name="label" locale="en_US">Related events</setting>
+              </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -2722,35 +2978,18 @@
             <placement code="ca_list_items">
               <bundle>ca_list_items</bundle>
               <settings>
-                <setting name="label" locale="en_US">CA Custom Subject Authority</setting>
+                <setting name="label" locale="en_US">Custom Subject Authority</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_lcsh_terms">
-              <bundle>ca_attribute_lcsh_terms</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Library of Congress Subject Headings</setting>
-                <setting name="add_label" locale="en_US">Add new subject heading</setting>
-              </settings>
+             <placement code="ca_attribute_LcshNames">
+              <bundle>ca_attribute_LcshNames</bundle>
             </placement>
-            <placement code="ca_collections">
-              <bundle>ca_collections</bundle>
-            </placement>
-            <placement code="ca_objects">
-              <bundle>ca_objects</bundle>
-            </placement>
-            <placement code="ca_entities">
-              <bundle>ca_entities</bundle>
-            </placement>
-            <placement code="ca_events">
-              <bundle>ca_occurrences</bundle>
-              <settings>
-                <setting name="restrict_to_type">event</setting>
-                <setting name="label" locale="en_US">Related events</setting>
-              </settings>
-            </placement>
-            <placement code="ca_places">
-              <bundle>ca_places</bundle>
-            </placement>
+             <placement code="ca_attribute_LcshTopical">
+              <bundle>ca_attribute_LcshTopical</bundle>
+             </placement>
+             <placement code="ca_attribute_LcshGeo">
+              <bundle>ca_attribute_LcshGeo</bundle>
+             </placement>
           </bundlePlacements>
         </screen>
         <screen idno="media" default="0">
@@ -2768,7 +3007,7 @@
         <screen idno="admin" default="0">
           <labels>
             <label locale="en_US">
-              <name>Record admin</name>
+              <name>Record Admin</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3076,7 +3315,7 @@
         </screen>
       </screens>
     </userInterface>
-    <userInterface code="standard_collection_ui" type="ca_collections">
+    <userInterface code="collection_ui" type="ca_collections">
       <labels>
         <label locale="en_US">
           <name>Collection editor</name>
@@ -3090,11 +3329,14 @@
             </label>
           </labels>
           <bundlePlacements>
-            <placement code="hierarchy_navigation">
-              <bundle>hierarchy_navigation</bundle>
+            <placement code="hierarchy_location">
+              <bundle>hierarchy_location</bundle>
             </placement>
             <placement code="idno">
               <bundle>idno</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Identifier</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_repository">
               <bundle>ca_attribute_repository</bundle>
@@ -3114,9 +3356,40 @@
             </placement>
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Creators</setting>
+                <setting name="add_label" locale="en_US">Add creators</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_adminbiohist">
               <bundle>ca_attribute_adminbiohist</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="FA_front_matter" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Finding Aid Front Matter</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction code="collection" type="collection"/>
+          </typeRestrictions>
+          <bundlePlacements>
+            <placement code="ca_attribute_agencyHistory">
+              <bundle>ca_attribute_agencyHistory</bundle>
+            </placement>
+            <placement code="ca_attribute_abstract">
+              <bundle>ca_attribute_abstract</bundle>
+            </placement>
+             <placement code="ca_attribute_custodhist">
+              <bundle>ca_attribute_custodhist</bundle>
+            </placement>
+            <placement code="ca_attribute_processInfo">
+              <bundle>ca_attribute_processInfo</bundle>
+            </placement>
+            <placement code="ca_attribute_preferCite">
+              <bundle>ca_attribute_preferCite</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -3162,27 +3435,6 @@
             </placement>
           </bundlePlacements>
         </screen>
-        <screen idno="acquisition" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Acquisition and Appraisal</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_attribute_custohist">
-              <bundle>ca_attribute_custohist</bundle>
-            </placement>
-            <placement code="ca_attribute_acqinfo">
-              <bundle>ca_attribute_acqinfo</bundle>
-            </placement>
-            <placement code="ca_attribute_appraisal">
-              <bundle>ca_attribute_appraisal</bundle>
-            </placement>
-            <placement code="ca_attribute_accruals">
-              <bundle>ca_attribute_accruals</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
         <screen idno="related" default="0">
           <labels>
             <label locale="en_US">
@@ -3199,14 +3451,26 @@
             <placement code="ca_attribute_relatedmaterial">
               <bundle>ca_attribute_relatedmaterial</bundle>
             </placement>
-            <placement code="ca_objects">
-              <bundle>ca_objects</bundle>
-            </placement>
-            <placement code="ca_collections">
-              <bundle>ca_collections</bundle>
-            </placement>
             <placement code="ca_attribute_bibliography">
               <bundle>ca_attribute_bibliography</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="relationships" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Other Relationships</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_places">
+              <bundle>ca_places</bundle>
+            </placement>
+             <placement code="ca_object_lots">
+              <bundle>ca_object_lots</bundle>
+            </placement>
+            <placement code="ca_storage_locations">
+              <bundle>ca_storage_locations</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -3235,41 +3499,24 @@
             <placement code="ca_list_items">
               <bundle>ca_list_items</bundle>
               <settings>
-                <setting name="label" locale="en_US">CA Custom Subject Authority</setting>
+                <setting name="label" locale="en_US">Custom Subject Authority</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_lcsh_terms">
-              <bundle>ca_attribute_lcsh_terms</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Library of Congress Subject Headings</setting>
-                <setting name="add_label" locale="en_US">Add new subject heading</setting>
-              </settings>
+            <placement code="ca_attribute_LcshNames">
+              <bundle>ca_attribute_LcshNames</bundle>
             </placement>
-            <placement code="ca_collections">
-              <bundle>ca_collections</bundle>
-            </placement>
-            <placement code="ca_objects">
-              <bundle>ca_objects</bundle>
-            </placement>
-            <placement code="ca_entities">
-              <bundle>ca_entities</bundle>
-            </placement>
-            <placement code="ca_events">
-              <bundle>ca_occurrences</bundle>
-              <settings>
-                <setting name="restrict_to_type">event</setting>
-                <setting name="label" locale="en_US">Related events</setting>
-              </settings>
-            </placement>
-            <placement code="ca_places">
-              <bundle>ca_places</bundle>
-            </placement>
+             <placement code="ca_attribute_LcshTopical">
+              <bundle>ca_attribute_LcshTopical</bundle>
+             </placement>
+             <placement code="ca_attribute_LcshGeo">
+              <bundle>ca_attribute_LcshGeo</bundle>
+             </placement>
           </bundlePlacements>
         </screen>
         <screen idno="admin" default="0">
           <labels>
             <label locale="en_US">
-              <name>Record admin</name>
+              <name>Record Admin</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -3371,8 +3618,8 @@
           </bundlePlacements>
         </screen>
       </screens>
-    </userInterface>
-    <userInterface code="standard_object_lots_ui" type="ca_object_lots">
+    </userInterface>   
+    <userInterface code="object_lots_ui" type="ca_object_lots">
       <labels>
         <label locale="en_US">
           <name>Object lots editor</name>
@@ -3416,6 +3663,27 @@
             </placement>
             <placement code="status">
               <bundle>status</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="acquisition" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Acquisition and Appraisal</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_attribute_custohist">
+              <bundle>ca_attribute_custohist</bundle>
+            </placement>
+            <placement code="ca_attribute_acqinfo">
+              <bundle>ca_attribute_acqinfo</bundle>
+            </placement>
+            <placement code="ca_attribute_appraisal">
+              <bundle>ca_attribute_appraisal</bundle>
+            </placement>
+            <placement code="ca_attribute_accruals">
+              <bundle>ca_attribute_accruals</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -3705,45 +3973,6 @@
                 <setting name="label" locale="en_US">Alternate names</setting>
                 <setting name="add_label" locale="en_US">Add name</setting>
               </settings>
-            </placement>
-          </bundlePlacements>
-        </screen>
-      </screens>
-    </userInterface>
-    <userInterface code="standard_object_event_ui" type="ca_object_events">
-      <labels>
-        <label locale="en_US">
-          <name>Object event editor</name>
-        </label>
-      </labels>
-      <screens>
-        <screen idno="basic" default="1">
-          <labels>
-            <label locale="en_US">
-              <name>Basic info</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_attribute_description">
-              <bundle>ca_attribute_description</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="relationships" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Relationships</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_entities">
-              <bundle>ca_entities</bundle>
-            </placement>
-            <placement code="ca_places">
-              <bundle>ca_places</bundle>
-            </placement>
-            <placement code="ca_storage_locations">
-              <bundle>ca_storage_locations</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -4584,4 +4813,78 @@
       </types>
     </relationshipTable>
   </relationshipTypes>
+  <displays>
+  <display code="finding_aid" type="ca_collections" system="1">
+    <labels>
+      <label locale="en_US">
+        <name>Basic Collection-Level Finding Aid</name>
+      </label>
+    </labels>
+    <bundlePlacements>
+      <placement code="preferred_labels">
+        <bundle>ca_collections.preferred_labels</bundle>
+        <settings>
+          <setting name="label" locale="en_US">Title</setting>
+        </settings>
+      </placement>
+      <placement code="entities">
+        <bundle>ca_entities</bundle>
+        <settings>
+          <setting name="render">makeEditorLink</setting>
+          <setting name="label" locale="en_US">Creator</setting>
+          <setting name="delimiter">;</setting>
+          <setting name="format">^preferred_labels</setting>
+        </settings>
+      </placement>
+      <placement code="unitdate">
+        <bundle>ca_collections.unitdate</bundle>
+      </placement>
+      <placement code="abstract">
+        <bundle>ca_collections.abstract</bundle>
+      </placement>
+      <placement code="extent">
+        <bundle>ca_collections.extent</bundle>
+      </placement>
+      <placement code="repository">
+        <bundle>ca_collections.repository</bundle>
+      </placement>
+      <placement code="adminbiohist">
+        <bundle>ca_collections.adminbiohist</bundle>
+      </placement>
+      <placement code="agencyHistory">
+        <bundle>ca_collections.agencyHistory</bundle>
+      </placement>
+      <placement code="scopecontent">
+        <bundle>ca_collections.scopecontent</bundle>
+      </placement>
+      <placement code="LcshNames">
+        <bundle>ca_collections.LcshNames</bundle>
+        <settings>
+          <setting name="label" locale="en_US">Subject Names</setting>
+        </settings>
+      </placement>
+      <placement code="LcshTopical">
+        <bundle>ca_collections.LcshTopical</bundle>
+        <settings>
+          <setting name="label" locale="en_US">Subject Topics</setting>
+        </settings>
+      </placement>
+      <placement code="LcshGeo">
+        <bundle>ca_collections.LcshGeo</bundle>
+        <settings>
+          <setting name="label" locale="en_US">Subject Places</setting>
+        </settings>
+      </placement>
+      <placement code="custodhist">
+        <bundle>ca_collections.custodhist</bundle>
+      </placement>
+      <placement code="processInfo">
+        <bundle>ca_collections.processInfo</bundle>
+      </placement>
+      <placement code="preferCite">
+        <bundle>ca_collections.preferCite</bundle>
+      </placement>
+    </bundlePlacements>
+  </display>
+  </displays>
 </profile>

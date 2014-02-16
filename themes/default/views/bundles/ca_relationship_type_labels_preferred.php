@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,7 +36,8 @@
 	$vs_add_label =		$this->getVar('add_label');
 	
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_relationship_types', 'preferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
-	
+
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'Labels');	
 ?>
 <div id="<?php print $vs_id_prefix; ?>Labels">
 <?php
@@ -55,24 +56,24 @@
 						<table>
 							<tr>
 								<td>
-									<?php print $t_label->htmlFormElement('typename', null, array('name' => "{fieldNamePrefix}typename_{n}", 'id' => "{fieldNamePrefix}typename_{n}", "value" => "{{typename}}", 'no_tooltips' => false, 'textAreaTagName' => 'textentry', 'readonly' => $vb_read_only)); ?>
+									<?php print $t_label->htmlFormElement('typename', null, array('name' => "{fieldNamePrefix}typename_{n}", 'id' => "{fieldNamePrefix}typename_{n}", "value" => "{{typename}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $vb_read_only)); ?>
 								</td>
 							</tr>
 							<tr>
 								<td>
-									<?php print $t_label->htmlFormElement('description', null, array('name' => "{fieldNamePrefix}description_{n}", 'id' => "{fieldNamePrefix}description_{n}", "value" => "{{description}}", 'no_tooltips' => false, 'textAreaTagName' => 'textentry', 'readonly' => $vb_read_only)); ?>
+									<?php print $t_label->htmlFormElement('description', null, array('name' => "{fieldNamePrefix}description_{n}", 'id' => "{fieldNamePrefix}description_{n}", "value" => "{{description}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $vb_read_only)); ?>
 								</td>
 							</tr>
 							<tr>
 								<td>
-									<?php print $t_label->htmlFormElement('typename_reverse', null, array('name' => "{fieldNamePrefix}typename_reverse_{n}", 'id' => "{fieldNamePrefix}typename_reverse{n}", "value" => "{{typename_reverse}}", 'no_tooltips' => false, 'textAreaTagName' => 'textentry', 'readonly' => $vb_read_only)); ?>
+									<?php print $t_label->htmlFormElement('typename_reverse', null, array('name' => "{fieldNamePrefix}typename_reverse_{n}", 'id' => "{fieldNamePrefix}typename_reverse{n}", "value" => "{{typename_reverse}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $vb_read_only)); ?>
 								</td>
 							</tr>
 							<tr>
 								<td>
-									<?php print $t_label->htmlFormElement('description_reverse', null, array('name' => "{fieldNamePrefix}description_reverse{n}", 'id' => "{fieldNamePrefix}description_reverse_{n}", "value" => "{{description_reverse}}", 'no_tooltips' => false, 'textAreaTagName' => 'textentry', 'readonly' => $vb_read_only)); ?><br/>
+									<?php print $t_label->htmlFormElement('description_reverse', null, array('name' => "{fieldNamePrefix}description_reverse{n}", 'id' => "{fieldNamePrefix}description_reverse_{n}", "value" => "{{description_reverse}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $vb_read_only)); ?><br/>
 									
-									<?php print '<div class="formLabel">'.$t_label->htmlFormElement('locale_id', '^LABEL ^ELEMENT', array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}locale_id_{n}", 'name' => "{fieldNamePrefix}locale_id_{n}", "value" => "{locale_id}", 'no_tooltips' => false, 'dont_show_null_value' => true, 'hide_select_if_only_one_option' => true, 'WHERE' => array('(dont_use_for_cataloguing = 0)'))).'</div>'; ?>
+									<?php print '<div class="formLabel">'.$t_label->htmlFormElement('locale_id', '^LABEL ^ELEMENT', array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}locale_id_{n}", 'name' => "{fieldNamePrefix}locale_id_{n}", "value" => "{locale_id}", 'no_tooltips' => true, 'dont_show_null_value' => true, 'hide_select_if_only_one_option' => true, 'WHERE' => array('(dont_use_for_cataloguing = 0)'))).'</div>'; ?>
 								</td>
 							<tr>
 						</table>

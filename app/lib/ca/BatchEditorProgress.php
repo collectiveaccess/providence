@@ -69,8 +69,14 @@
 			//
 			if ($req->isLoggedIn()) {
 				set_time_limit(3600*24); // if it takes more than 24 hours we're in trouble
-				
-				$va_errors = BatchProcessor::saveBatchEditorFormForSet($this->request, $this->ot_set, $this->ot_subject, array_merge($this->opa_options, array('progressCallback' => 'caIncrementBatchEditorProgress', 'reportCallback' => 'caCreateBatchEditorResultsReport')));
+
+				if(isset($this->opa_options['isBatchDelete']) && $this->opa_options['isBatchDelete']) {
+					$va_errors = BatchProcessor::deleteBatchForSet($this->request, $this->ot_set, $this->ot_subject, array_merge($this->opa_options, array('progressCallback' => 'caIncrementBatchEditorProgress', 'reportCallback' => 'caCreateBatchEditorResultsReport')));	
+				} elseif(isset($this->opa_options['isBatchTypeChange']) && $this->opa_options['isBatchTypeChange']) {
+					$va_errors = BatchProcessor::changeTypeBatchForSet($this->request, $this->opa_options['type_id'], $this->ot_set, $this->ot_subject, array_merge($this->opa_options, array('progressCallback' => 'caIncrementBatchEditorProgress', 'reportCallback' => 'caCreateBatchEditorResultsReport')));	
+				} else {
+					$va_errors = BatchProcessor::saveBatchEditorFormForSet($this->request, $this->ot_set, $this->ot_subject, array_merge($this->opa_options, array('progressCallback' => 'caIncrementBatchEditorProgress', 'reportCallback' => 'caCreateBatchEditorResultsReport')));	
+				}
 			}
 		}	
 		# -------------------------------------------------------

@@ -92,10 +92,8 @@ BaseModel::$s_ca_models_definitions['ca_editor_uis'] = array(
 					_t('movements') => 137,
 					_t('tours') => 153,
 					_t('tour stops') => 155,
-					_t('object events') => 45,
 					_t('object representations') => 56,
 					_t('representation annotations') => 82,
-					_t('object lot events') => 38,
 					_t('sets') => 103,
 					_t('set items') => 105,
 					_t('lists') => 36,
@@ -104,9 +102,7 @@ BaseModel::$s_ca_models_definitions['ca_editor_uis'] = array(
 					_t('displays') => 124,
 					_t('relationship types') => 79,
 					_t('user interfaces') => 101,
-					_t('user interface screens') => 100,
-					_t('import/export mappings') => 128,
-					_t('import/export mapping groups') => 130
+					_t('user interface screens') => 100
 				)
 		),
 		'color' => array(
@@ -196,7 +192,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		
 		),
 		"RELATED_TABLES" => array(
-		
+			
 		)
 	);	
 	
@@ -221,13 +217,29 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 
 	protected $FIELDS;
 	
+	
+	static $s_loaded_relationship_tables = false;
+	
 	# ----------------------------------------
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);
+		
+		if (!ca_editor_uis::$s_loaded_relationship_tables) {
+			require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
+			$t_rel = new ca_relationship_types();
+			$va_rels = $t_rel->getRelationshipsUsingTypes();
+			
+			$o_dm = Datamodel::load();
+			foreach($va_rels as $vn_table_num => $va_rel_table_info) {
+				BaseModel::$s_ca_models_definitions['ca_editor_uis']['FIELDS']['editor_type']['BOUNDS_CHOICE_LIST'][$va_rel_table_info['name']] = $vn_table_num;
+			}
+			
+			ca_editor_uis::$s_loaded_relationship_tables = true;
+		}
 	}
 	# ------------------------------------------------------
-	protected function initLabelDefinitions() {
-		parent::initLabelDefinitions();
+	protected function initLabelDefinitions($pa_options=null) {
+		parent::initLabelDefinitions($pa_options);
 		
 		$this->BUNDLES['ca_users'] = array('type' => 'special', 'repeating' => true, 'label' => _t('User access'));
 		$this->BUNDLES['ca_user_groups'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Group access'));
@@ -267,7 +279,6 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 				$this->errors = array_merge($this->errors, $t_item_root->errors);
 			}
 		}
-		unset($_SESSION['screen_cache']);
 		return $vn_rc;
 	}
 	# ----------------------------------------
@@ -350,7 +361,6 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		if (!$this->getPrimaryKey()) { return false; }
 		
 		$vs_opts_md5 = caMakeCacheKeyFromOptions($pa_options);
-		//if (isset($_SESSION['screen_cache'][$this->getPrimaryKey().'/'.$pn_type_id.'/'.$vs_opts_md5])) { return $_SESSION['screen_cache'][$this->getPrimaryKey().'/'.$pn_type_id.'/'.$vs_opts_md5]; }
 		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->get('editor_type')))) { return null; }
 		
 		$va_types = $t_instance->getTypeList();
@@ -412,11 +422,11 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		foreach($va_screens as $vn_screen_id => $va_screen_labels_by_locale) {
 			if (is_array($va_screens_with_bundles) && !isset($va_screens_with_bundles[$vn_screen_id])) { unset($va_screens[$vn_screen_id]); continue; }
 			foreach($va_screen_labels_by_locale as $vn_locale_id => $va_restriction_info) {
-				if (!is_array($va_screens[$vn_screen_id][$vn_screen_locale_id]['typeRestrictions'])) { continue; }
+				if (!is_array($va_screens[$vn_screen_id][$vn_locale_id]['typeRestrictions'])) { continue; }
 				$va_screens[$vn_screen_id][$vn_locale_id]['typeRestrictionsForDisplay'] = join(', ', $va_screens[$vn_screen_id][$vn_locale_id]['typeRestrictions']);
 			}
 		}
-		return $_SESSION['screen_cache'][$this->getPrimaryKey().'/'.$pn_type_id.'/'.$vs_opts_md5] = caExtractValuesByUserLocale($va_screens);
+		return caExtractValuesByUserLocale($va_screens);
 	}
 	# ----------------------------------------
 	/**
@@ -428,7 +438,6 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	public function getScreenCount($pn_type_id=null) {
 		if (!$this->getPrimaryKey()) { return 0; }
 		$vs_opts_md5 = md5(print_r(array('showAll' => true), true));
-		if ($_SESSION['screen_cache'][$this->getPrimaryKey().'/'.$pn_type_id.'/'.$vs_opts_md5]) { return sizeof($_SESSION['screen_cache'][$this->getPrimaryKey().'/'.$pn_type_id.'/'.$vs_opts_md5]); }
 		
 		return sizeof($this->getScreens(null, $pn_type_id, array('showAll' => true)));
 	}
@@ -506,10 +515,9 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		if (!($va_screens = $this->getScreens($po_request, $pn_type_id))) { return false; }
 		
 		$va_nav = array();
-		
 		$vn_default_screen_id = null;
 		foreach($va_screens as $va_screen) {
-			if(isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes'] && is_array($va_screen['typeRestrictions']) && (sizeof($va_screen['typeRestrictions']) > 0))) {
+			if(isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes']) && is_array($va_screen['typeRestrictions']) && (sizeof($va_screen['typeRestrictions']) > 0)) {
 				$vb_skip = true;
 				foreach($pa_options['restrictToTypes'] as $vn_res_type_id => $vs_res_type) {
 					if (isset($va_screen['typeRestrictions'][$vn_res_type_id]) && $va_screen['typeRestrictions'][$vn_res_type_id]) {
@@ -708,7 +716,6 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			$o_trans->commit();
 		}
 		
-		unset($_SESSION['screen_cache']);
 		return $va_errors;
 	}
 	# ------------------------------------------------------
@@ -741,7 +748,6 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			return false;
 		}
 		
-		unset($_SESSION['screen_cache']);
 		return $t_screen;
 	}
 	# ------------------------------------------------------
@@ -754,7 +760,6 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		
 		if (!$t_screen->load(array('ui_id' => $vn_ui_id, 'screen_id' => $pn_screen_id))) { return false; }
 		$t_screen->setMode(ACCESS_WRITE);
-		unset($_SESSION['screen_cache']);
 		return $t_screen->delete(true);
 	}
 	# ----------------------------------------

@@ -28,6 +28,20 @@
 var caUI = caUI || {};
 
 (function ($) {
+	$.widget("ui.relationshipLookup", $.ui.autocomplete, {
+		_renderItem: function( ul, item ) {
+			var li = jQuery("<li>")
+				.attr("data-value", item.value)
+				.append(jQuery("<a>").html(item.label))
+				.appendTo(ul);
+			
+			if (item.id <= 0) {
+				jQuery(li).find("a").removeClass().addClass("quickaddMenuItem");
+				jQuery(li).removeClass().addClass("quickaddMenuItem");
+			}
+			return li;
+		}
+	});
 	caUI.initRelationBundle = function(container, options) {
 		options.onInitializeItem = function(id, values, options) { 
 			jQuery("#" + options.itemID + id + " select").css('display', 'inline');
@@ -73,7 +87,7 @@ var caUI = caUI || {};
 			
 			var autocompleter_id = options.itemID + id + ' #' + options.fieldNamePrefix + 'autocomplete' + id;
 
-			jQuery('#' + autocompleter_id).autocomplete( 
+			jQuery('#' + autocompleter_id).relationshipLookup( 
 				jQuery.extend({ minLength: ((parseInt(options.minChars) > 0) ? options.minChars : 3), delay: 800, html: true,
 					source: function( request, response ) {
 						$.ajax({
@@ -92,17 +106,19 @@ var caUI = caUI || {};
 						
 						if(!parseInt(ui.item.id) && options.quickaddPanel) {
 							var panelUrl = options.quickaddUrl;
-							if (ui.item._query) { panelUrl += '/q/' + escape(ui.item._query); }
+							//if (ui.item._query) { panelUrl += '/q/' + escape(ui.item._query); }
 							if (options && options.types) {
-								options.types = options.types.join(",");
+								if(Object.prototype.toString.call(options.types) === '[object Array]') {
+									options.types = options.types.join(",");
+								}
 								if (options.types.length > 0) {
 									panelUrl += '/types/' + options.types;
 								}
 							}
-							if (options.fieldNamePrefix && (options.fieldNamePrefix.length > 0)) {
-								panelUrl += '/field_name_prefix/' + options.fieldNamePrefix;
-							}
-							options.quickaddPanel.showPanel(panelUrl);
+							//if (options.fieldNamePrefix && (options.fieldNamePrefix.length > 0)) {
+							//	panelUrl += '/field_name_prefix/' + options.fieldNamePrefix;
+							//}
+							options.quickaddPanel.showPanel(panelUrl, null, null, {q: ui.item._query, field_name_prefix: options.fieldNamePrefix});
 							jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteInputID', autocompleter_id);
 							jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteItemIDID', options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id);
 							jQuery('#' + options.quickaddPanel.getPanelContentID()).data('autocompleteTypeIDID', options.itemID + id + ' #' + options.fieldNamePrefix + 'type_id' + id);

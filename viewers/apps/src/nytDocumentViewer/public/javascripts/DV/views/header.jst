@@ -15,7 +15,7 @@
     <div class="DV-views">
       <div class="DV-documentView"><span class="DV-trigger DV-selected">Document</span></div>
       <div class="DV-thumbnailsView"><span class="DV-trigger">Pages</span></div>
-      <div style="display:none;" class="DV-annotationView"><span class="DV-trigger">Notes</span></div>
+      <div style="display:none;" class="DV-annotationView"><span class="DV-trigger">Results</span></div>
       <div class="DV-textView"><span class="DV-trigger">Text</span></div>
     </div>
 
@@ -24,7 +24,7 @@
 	  <div class="DV-close">
       	<span class="DV-closeLabel"><a href="#" onclick="caMediaPanel.hidePanel(); return false;"><%= closeButton %></a></span>
       </div>
-      
+<% if (searchUrl) { %>        
       <div class="DV-searchBox DV-clearfix">
         <form action="#" method="get" class="DV-searchDocument">
           <div class="DV-searchInputWrap">
@@ -33,6 +33,7 @@
           </div>
         </form>
       </div>
+<% } %>
       
       <div class="DV-zoomControls">
         <span class="DV-zoomLabel">Zoom</span>

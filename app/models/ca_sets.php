@@ -95,7 +95,10 @@ BaseModel::$s_ca_models_definitions['ca_sets'] = array(
 					_t('Storage locations') => 89,
 					_t('Object representations') => 56,
 					_t('Loans') => 133,
-					_t('Movements') => 137
+					_t('Movements') => 137,
+					_t('List items') => 33,
+					_t('Tours') => 153,
+					_t('Tour stops') => 155
 				)
 		),
 		'type_id' => array(
@@ -104,7 +107,6 @@ BaseModel::$s_ca_models_definitions['ca_sets'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LIST_CODE' => 'set_types',
-				'BOUNDS_VALUE' => array(1,255),
 				'LABEL' => _t('Type'), 'DESCRIPTION' => _t('The type of the set determines what sorts of information the set and each item in the set can have associated with them.')
 		),
 		'set_code' => array(
@@ -311,8 +313,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	/**
 	 *
 	 */
-	protected function initLabelDefinitions() {
-		parent::initLabelDefinitions();
+	protected function initLabelDefinitions($pa_options=null) {
+		parent::initLabelDefinitions($pa_options);
 		$this->BUNDLES['ca_users'] = array('type' => 'special', 'repeating' => true, 'label' => _t('User access'));
 		$this->BUNDLES['ca_user_groups'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Group access'));
 		$this->BUNDLES['ca_set_items'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Set items'));
@@ -568,6 +570,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			while($qr_table_nums->nextRow()) {
 				$o_dm = $this->getAppDatamodel();
 				$t_instance = $o_dm->getInstanceByTableNum($vn_table_num = (int)$qr_table_nums->get('table_num'), true);
+				if (!$t_instance) { continue; }
 				
 				$va_item_wheres = $va_sql_wheres;
 				$va_item_wheres[] = "(cs.table_num = {$vn_table_num})";

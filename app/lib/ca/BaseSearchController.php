@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -173,9 +173,8 @@
  					
  					$this->opo_result_context->setParameter('show_type_id', null);
  				}
- 				
  				if ($this->opn_type_restriction_id) {
- 					$po_search->setTypeRestrictions(array($this->opn_type_restriction_id));
+ 					$po_search->setTypeRestrictions(array($this->opn_type_restriction_id), array('includeSubtypes' => false));
  				}
  				
  				$vb_criteria_have_changed = false;
@@ -222,10 +221,11 @@
 					$this->view->setVar('show_type_id', $vn_show_type_id);
 					$vo_result->filterResult('ca_objects.type_id', $vn_show_type_id);
 				}
+		
  				if($vb_is_new_search || $vb_criteria_have_changed) {
 					$this->opo_result_context->setResultList($vo_result->getPrimaryKeyValues());
 					$this->opo_result_context->setParameter('availableVisualizationChecked', 0);
-					$vn_page_num = 1;
+					if ($vs_search) { $vn_page_num = 1; }
 				}
  				$this->view->setVar('num_hits', $vo_result->numHits());
  				$this->view->setVar('num_pages', $vn_num_pages = ceil($vo_result->numHits()/$vn_items_per_page));
@@ -264,6 +264,54 @@
 			
 			$this->view->setVar('access_values', $va_access_values);
 			$this->view->setVar('browse', $po_search);
+			
+			$t_display = $this->view->getVar('t_display');
+			$va_display_list = $this->view->getVar('display_list');
+			if ($vs_view == 'editable') {
+				
+				$va_initial_data = array();
+				$va_row_headers = array();
+				
+ 				$vn_item_count = 0;
+ 				
+ 				if ($vo_result) {
+					$vs_pk = $vo_result->primaryKey();
+				
+					while(($vn_item_count < 100) && $vo_result->nextHit()) {
+						$va_result = array('item_id' => $vn_id = $vo_result->get($vs_pk));
+	
+						foreach($va_display_list as $vn_placement_id => $va_bundle_info) {
+							$va_result[str_replace(".", "-", $va_bundle_info['bundle_name'])] = $t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request));
+						}
+	
+						$va_initial_data[] = $va_result;
+	
+						$vn_item_count++;
+	
+						$va_row_headers[] = ($vn_item_count)." ".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), 'caResultsEditorEditLink', $vs_subject_table, $vn_id);
+	
+					}
+				}
+				
+				$this->view->setVar('initialData', $va_initial_data);
+				$this->view->setVar('rowHeaders', $va_row_headers);
+			}
+			
+			//
+			// Bottom line
+			//
+			$va_bottom_line = array();
+			$vb_bottom_line_is_set = false;
+			foreach($va_display_list as $vn_placement_id => $va_placement) {
+				if(isset($va_placement['settings']['bottom_line']) && $va_placement['settings']['bottom_line']) {
+					$va_bottom_line[$vn_placement_id] = caProcessBottomLineTemplate($this->request, $va_placement, $vo_result, array('pageStart' => ($vn_page_num - 1) * $vn_items_per_page, 'pageEnd' => (($vn_page_num - 1) * $vn_items_per_page) + $vn_items_per_page));
+					$vb_bottom_line_is_set = true;
+				} else {
+					$va_bottom_line[$vn_placement_id] = '';
+				}
+			}
+			$this->view->setVar('bottom_line', $vb_bottom_line_is_set ? $va_bottom_line : null);
+			
 			
  			switch($pa_options['output_format']) {
  				# ------------------------------------
@@ -338,10 +386,12 @@
  			if (is_array($va_hier)) {
  				
  				$va_types_by_parent_id = array();
- 				$vn_root_id = null;
+ 				$vn_root_id = $t_list->getRootItemIDForList($t_subject->getTypeListCode());
+
+ 				// organize items by parent id, exclude root
 				foreach($va_hier as $vn_item_id => $va_item) {
+					if ($vn_item_id == $vn_root_id) { continue; } // skip root
 					if (is_array($va_restrict_to_types) && !in_array($vn_item_id, $va_restrict_to_types)) { continue; }
-					if (!$vn_root_id) { $vn_root_id = $va_item['parent_id']; continue; }
 					$va_types_by_parent_id[$va_item['parent_id']][] = $va_item;
 				}
 				foreach($va_hier as $vn_item_id => $va_item) {
@@ -434,6 +484,14 @@
  			
  			$this->view->setVar('matches', $va_data);
  			$this->render('Search/ajax_search_lookup_json.php');
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */ 
+ 		public function getPartialResult($pa_options=null) {
+ 			$pa_options['search'] = $this->opo_browse;
+ 			return parent::getPartialResult($pa_options);
  		}
  		# -------------------------------------------------------
  		/**

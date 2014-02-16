@@ -184,7 +184,7 @@
 			return $this->ops_text_value;
 		}
  		# ------------------------------------------------------------------
- 		public function parseValue($ps_value, $pa_element_info) {
+ 		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			$va_settings = $this->getSettingValuesFromElementArray(
  				$pa_element_info, 
  				array('minChars', 'maxChars', 'regex')
@@ -242,24 +242,20 @@
  				$o_config = Configuration::load();
  				if (!is_array($va_toolbar_config = $o_config->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = array(); }
  				JavascriptLoadManager::register("ckeditor");
- 				$vs_class = 'jqueryCkeditor';
  				
  				$vs_element = "<script type='text/javascript'>jQuery(document).ready(function() {
- 			var e = CKEDITOR.instances['{fieldNamePrefix}".$pa_element_info['element_id']."_{n}'];
-    		if (e) { e.destroy(true); }
-			jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').ckeditor(function() {
-				this.on( 'change', function(e) { 
-					if (caUI && caUI.utils) { caUI.utils.showUnsavedChangesWarning(true);  }
-				 });
-			},
-			{
-				toolbar: ".json_encode(array_values($va_toolbar_config)).",
-				width: '{$vs_width}',
-				height: '{$vs_height}',
-				toolbarLocation: 'top',
-				enterMode: CKEDITOR.ENTER_BR
-			}
-		);
+						var ckEditor = CKEDITOR.replace( '{fieldNamePrefix}".$pa_element_info['element_id']."_{n}',
+						{
+							toolbar : ".json_encode(array_values($va_toolbar_config)).", /* this does the magic */
+							width: '{$vs_width}',
+							height: '{$vs_height}',
+							toolbarLocation: 'top',
+							enterMode: CKEDITOR.ENTER_BR
+						});
+						
+						ckEditor.on('instanceReady', function(){ 
+							 ckEditor.document.on( 'keydown', function(e) {if (caUI && caUI.utils) { caUI.utils.showUnsavedChangesWarning(true); } });
+						});
  	});									
 </script>";
 			}
@@ -271,7 +267,7 @@
  					'height' => $vs_height, 
  					'value' => '{{'.$pa_element_info['element_id'].'}}', 
  					'maxlength' => $va_settings['maxChars'],
- 					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 'class' => $vs_class
+ 					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 'class' => "{$vs_class}".($va_settings['usewysiwygeditor'] ? " ckeditor" : '')
  				)
  			);
  			
@@ -279,11 +275,11 @@
  			if (isset($pa_options['t_subject']) && is_object($pa_options['t_subject'])) {
  				$vs_bundle_name = $pa_options['t_subject']->tableName().'.'.$pa_element_info['element_code'];
  				
- 				if ($pa_options['po_request']) {
+ 				if ($pa_options['request']) {
  					if (isset($pa_options['lookupUrl']) && $pa_options['lookupUrl']) {
  						$vs_lookup_url = $pa_options['lookupUrl'];
  					} else {
- 						$vs_lookup_url	= caNavUrl($pa_options['po_request'], 'lookup', 'AttributeValue', 'Get', array('max' => 500, 'bundle' => $vs_bundle_name));
+ 						$vs_lookup_url	= caNavUrl($pa_options['request'], 'lookup', 'AttributeValue', 'Get', array('max' => 500, 'bundle' => $vs_bundle_name));
  					}
  				}
  			}
@@ -302,7 +298,7 @@
  			return $vs_element;
  		}
  		# ------------------------------------------------------------------
- 		public function getAvailableSettings() {
+ 		public function getAvailableSettings($pa_element_info=null) {
  			global $_ca_attribute_settings;
  			
  			return $_ca_attribute_settings['TextAttributeValue'];

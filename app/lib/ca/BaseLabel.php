@@ -48,6 +48,12 @@
 		# -------------------------------------------------------
 		public function update($pa_options=null) {
 			$this->_generateSortableValue();	// populate sort field
+			
+			// Invalid entire labels-by-id cache since we can't know what entries pertain to the label we just changed
+			LabelableBaseModelWithAttributes::$s_labels_by_id_cache = array();		
+			
+			// Unset label cache entry for modified label only
+			unset(LabelableBaseModelWithAttributes::$s_label_cache[$this->getSubjectTableName()][$this->get($this->getSubjectKey())]);
 			return parent::update($pa_options);
 		}
 		# -------------------------------------------------------
@@ -71,13 +77,31 @@
 		public function getSubjectTableName() {
 			return $this->LABEL_SUBJECT_TABLE;
 		}
+		# -------------------------------------------------------
+		/**
+		 * Returns name of field that is foreign key of subject
+		 */
+		public function getSubjectKey() {
+			if (!($t_subject = $this->getSubjectTableInstance())) { return null; }
+			return $t_subject->primaryKey();
+		}
 		# ------------------------------------------------------------------
 		/**
 		 * Returns instance of table this table contains label for
+		 *
+		 * @param array $pa_options Options are.
+		 *		dontLoadInstance = If set returned instance is not preloaded with subject. Default is false - load subject data
+		 *
+		 * @return BaseModel Instance of subject table
 		 */
-		public function getSubjectTableInstance() {
+		public function getSubjectTableInstance($pa_options=null) {
 			if ($vs_subject_table_name = $this->getSubjectTableName()) {
-				return $this->_DATAMODEL->getInstanceByTableName($vs_subject_table_name, true);
+				$t_subject =  $this->_DATAMODEL->getInstanceByTableName($vs_subject_table_name, true);
+				
+				if (!caGetOption("dontLoadInstance", $pa_options, false) && ($vn_id = $this->get($t_subject->primaryKey()))) {
+					$t_subject->load($vn_id);
+				}
+				return $t_subject;
 			}
 			return null;
 		}
@@ -104,11 +128,8 @@
 				$vs_display_field = $this->getProperty('LABEL_DISPLAY_FIELD');
 				
 				$o_tep = new TimeExpressionParser();
-				$vn_locale_id = $this->get('locale_id');
 				
-				$t_locale = new ca_locales($vn_locale_id);
-				
-				$o_tep->setLanguage($t_locale->getCode());
+				$o_tep->setLanguage(ca_locales::localeIDToCode($this->get('locale_id')));
 				$o_lang_settings = $o_tep->getLanguageSettings();
 				$vs_display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $this->get($vs_display_field)));
 				

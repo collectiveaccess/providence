@@ -177,6 +177,9 @@ DV.Api.prototype = {
       this.viewer.models.document.computeOffsets();
     }
     this.viewer.helpers.renderNavigation();
+    
+    // TODO: Re-rendering components seems to break the next and previous buttons
+    // For now we just skip it but am not sure if this will break something else?
     this.viewer.helpers.renderComponents();
     if (redrawAll) {
       this.viewer.elements.window.removeClass('DV-coverVisible');
@@ -198,12 +201,19 @@ DV.Api.prototype = {
   },
 
   // Add a new annotation to the document, prefilled to any extent.
-  addAnnotation : function(anno) {
+  addAnnotation : function(anno, show, redraw) {
+  	if (show == undefined) { show = true; }
+  	if (redraw == undefined) { redraw = true; }
+  	
     anno = this.viewer.schema.loadAnnotation(anno);
     this.viewer.models.annotations.sortAnnotations();
-    this.redraw(true);
-    this.viewer.pageSet.showAnnotation(anno, {active: true, edit : true});
+    if (redraw) { this.redraw(true); }
+   // if (show) { this.viewer.pageSet.showAnnotation(anno, {active: true, edit : true}); }
     return anno;
+  },
+  
+  removeAllAnnotations : function() {
+  	this.viewer.models.annotations.removeAllAnnotations();
   },
 
   // Register a callback for when an annotation is saved.

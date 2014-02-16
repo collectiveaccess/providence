@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -76,7 +76,7 @@ BaseModel::$s_ca_models_definitions['ca_object_representation_labels'] = array(
 				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 3,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Name'), 'DESCRIPTION' => _t('Name of representation'),
+				'LABEL' => _t('Representation label'), 'DESCRIPTION' => _t('Label/caption for representation.'),
 				'BOUNDS_LENGTH' => array(1,1024)
 		),
 		'name_sort' => array(

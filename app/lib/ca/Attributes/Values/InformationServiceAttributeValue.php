@@ -34,6 +34,7 @@
   *
   */
  	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
+ 	require_once(__CA_LIB_DIR__.'/core/InformationServiceManager.php');
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
@@ -42,14 +43,14 @@
  	global $_ca_attribute_settings;
  		
  	$_ca_attribute_settings['InformationServiceAttributeValue'] = array(		// global
-	 	'serviceUrl' => array(
+	 	'service' => array(
 			'formatType' => FT_TEXT,
-			'displayType' => DT_FIELD,
+			'displayType' => DT_SELECT,
 			'default' => '',
-			'width' => 90, 'height' => 2,
-			'label' => _t('Service URL'),
-			'validForRootOnly' => 1,
-			'description' => _t('URL for access to information service.')
+			'width' => 90, 'height' => 1,
+			'refreshOnChange' => 1,
+			'label' => _t('Service'),
+			'description' => _t('The type of information service to be accessed.')
 		),
 		'fieldWidth' => array(
 			'formatType' => FT_NUMBER,
@@ -73,7 +74,7 @@
 			'default' => 1,
 			'width' => 1, 'height' => 1,
 			'label' => _t('Does not use locale setting'),
-			'description' => _t('Check this option if you don\'t want your LCSH values to be locale-specific. (The default is to not be.)')
+			'description' => _t('Check this option if you don\'t want your values to be locale-specific. (The default is to not be.)')
 		),
 		'canBeUsedInSort' => array(
 			'formatType' => FT_NUMBER,
@@ -123,29 +124,54 @@
  		# ------------------------------------------------------------------
  		private $ops_text_value;
  		private $ops_uri_value;
+ 		private $opo_plugin;
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 *
+ 		 */
  		public function __construct($pa_value_array=null) {
  			parent::__construct($pa_value_array);
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 *
+ 		 */
  		public function loadTypeSpecificValueFromRow($pa_value_array) {
  			$this->ops_text_value = $pa_value_array['value_longtext1'];
  			$this->ops_uri_value =  $pa_value_array['value_longtext2'];
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 *
+ 		 */
 		public function getDisplayValue($pa_options=null) {
-			return $this->ops_text_value;
+			return $this->ops_text_value.($this->ops_uri_value ? " [".$this->ops_uri_value."]" : "");
 		}
 		# ------------------------------------------------------------------
+		/**
+ 		 *
+ 		 *
+ 		 */
 		public function getTextValue(){
 			return $this->ops_text_value;
 		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 *
+ 		 */
 		public function getUri(){
 			return $this->ops_uri_value;
 		}
  		# ------------------------------------------------------------------
- 		public function parseValue($ps_value, $pa_element_info) {
+ 		/**
+ 		 *
+ 		 *
+ 		 */
+ 		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			$o_config = Configuration::load();
  			
  			$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
@@ -157,15 +183,11 @@
 
 			if (trim($ps_value)) {
 				$va_tmp = explode('|', $ps_value);
-				
-				$vs_url = str_replace('info:lc/', 'http://id.loc.gov/authorities/', $va_tmp[1]);
-				
-				$va_tmp1 = explode('/', $va_tmp[1]);
-				$vs_id = array_pop($va_tmp1);
+				if(sizeof($va_tmp) != 3) {  return array('_dont_save' => true); }	// don't save if value hasn't changed
 				return array(
 					'value_longtext1' => $va_tmp[0],	// text
-					'value_longtext2' => $vs_url,		// uri
-					'value_decimal1' => $vs_id			// id
+					'value_longtext2' => $va_tmp[2],	// uri
+					'value_decimal1' => $va_tmp[1] 		// id
 				);
 			}
 			return array(
@@ -175,12 +197,16 @@
 			);
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 *
+ 		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
  			$o_config = Configuration::load();
  			
  			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight'));
  			
- 			$vs_element = '<div id="lcsh_'.$pa_element_info['element_id'].'_input{n}">'.
+ 			$vs_element = '<div id="infoservice_'.$pa_element_info['element_id'].'_input{n}">'.
  				caHTMLTextInput(
  					'{fieldNamePrefix}'.$pa_element_info['element_id'].'_autocomplete{n}', 
 					array(
@@ -188,7 +214,7 @@
 						'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight'], 
 						'value' => '{{'.$pa_element_info['element_id'].'}}', 
 						'maxlength' => 512,
-						'id' => "lcsh_".$pa_element_info['element_id']."_autocomplete{n}",
+						'id' => "infoservice_".$pa_element_info['element_id']."_autocomplete{n}",
 						'class' => 'lookupBg'
 					)
 				).
@@ -200,33 +226,50 @@
 					)
 				);
 				
-			if ($pa_options['po_request']) {
-				$vs_url = caNavUrl($pa_options['po_request'], 'lookup', 'LCSH', 'Get', array('max' => 100));
+			if ($pa_options['request']) {
+				$vs_url = caNavUrl($pa_options['request'], 'lookup', 'InformationService', 'Get', array('max' => 100, 'element_id' => $pa_element_info['element_id']));
+				$vs_detail_url = caNavUrl($pa_options['request'], 'lookup', 'InformationService', 'GetDetail', array('element_id' => $pa_element_info['element_id']));
 			} else {
 				// hardcoded default for testing.
-				$vs_url = '/index.php/lookup/LCSH/Get';	
+				$vs_url = '/index.php/lookup/InformationService/Get';	
+				$vs_detail_url = '/index.php/lookup/InformationService/GetDetail';
 			}
 			
-			$vs_element .= " <a href='#' style='display: none;' id='{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}' target='_lcsh_details'>"._t("More")."</a>";
-		
-			$vs_element .= '</div>';
+			$vs_element .= " <a href='#' class='caInformationServiceMoreLink' id='{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}'>"._t("More &rsaquo;")."</a>";
+			$vs_element .= "<div id='{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}' class='caInformationServiceDetail'>".($pa_options['request'] ? caBusyIndicatorIcon($pa_options['request']) : '')."</div></div>";
 			$vs_element .= "
 				<script type='text/javascript'>
 					jQuery(document).ready(function() {
-						jQuery('#lcsh_".$pa_element_info['element_id']."_autocomplete{n}').autocomplete(
+						jQuery('#infoservice_".$pa_element_info['element_id']."_autocomplete{n}').autocomplete(
 							{
 								minLength: 3,delay: 800,
 								source: '{$vs_url}',
 								select: function(event, ui) {
-									jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(ui.item.label + '|' + ui.item.id);
+									jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(ui.item.label + '|' + ui.item.idno + '|' + ui.item.url);
+									
 								}
 							}
-						);
+						).click(function() { this.select(); });
 						
 						if ('{{".$pa_element_info['element_id']."}}') {
-							var re = /\[sh([^\]]+)\]/; 
-							var lcsh_id = re.exec('{".$pa_element_info['element_id']."}')[1];
-							jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}').css('display', 'inline').attr('href', 'http://id.loc.gov/authorities/sh' + lcsh_id);
+							var re = /\[([A-Za-z]+:\/\/[^\]]+)\]/; 
+							var infoservice = re.exec('{{".$pa_element_info['element_id']."}}');
+							if (infoservice && infoservice.length > 1) { 
+								jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}').css('display', 'inline').on('click', function(e) {
+									if (jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}').css('display') == 'none') {
+										jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}').slideToggle(250, function() { 
+											jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}').load('{$vs_detail_url}/id/{n}');
+										});
+										jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}').html('".addslashes(_t("Less &rsaquo;"))."');
+									} else {
+										jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_detail{n}').slideToggle(250);
+										jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}').html('".addslashes(_t("More &rsaquo;"))."');
+									}
+									return false;
+								});
+							}
+							
+							
 						}
 					});
 				</script>
@@ -235,10 +278,29 @@
  			return $vs_element;
  		}
  		# ------------------------------------------------------------------
- 		public function getAvailableSettings() {
+ 		/**
+ 		 *
+ 		 *
+ 		 */
+ 		public function getAvailableSettings($pa_element_info=null) {
  			global $_ca_attribute_settings;
  			
- 			return $_ca_attribute_settings['InformationServiceAttributeValue'];
+ 			$vs_service = isset($pa_element_info['service']) ? $pa_element_info['service'] : null;
+ 			$va_names = InformationServiceManager::getInformationServiceNames();
+ 			if (!in_array($vs_service, $va_names)) {
+ 				$vs_service = $va_names[0];
+ 			}
+ 			
+ 			if ($this->opo_plugin = InformationServiceManager::getInformationServiceInstance($vs_service)) {
+ 				$va_settings = $this->opo_plugin->getAvailableSettings() +  $_ca_attribute_settings['InformationServiceAttributeValue'] ;
+ 				$va_settings['service']['options'] = InformationServiceManager::getInformationServiceNamesOptionList();
+ 				$va_service = $va_settings['service'];
+ 				unset($va_settings['service']);
+ 				$va_settings = array('service' => $va_service) + $va_settings;
+ 			} else {
+ 				$va_settings = array();
+ 			}	
+ 			return $va_settings;
  		}
  		# ------------------------------------------------------------------
 		/**

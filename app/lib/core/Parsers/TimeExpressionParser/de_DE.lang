@@ -52,19 +52,20 @@ dateMYA = [mya]
 dateADIndicator = ad
 dateBCIndicator = bc
 ADBCTable = {
-	a.d. = ad, n.Chr. = ad,
-	b.c. = bc, v.Chr. = bc, v.u.Z = bc
+	a.d. = ad, n.chr. = ad,
+	b.c. = bc, v.chr. = bc, v.u.z = bc
 }
 
 nowDate = [jetzt,now]
 todayDate = [heute]
 yesterdayDate = [gestern]
 tomorrowDate = [morgen]
+undatedDate = [undated, unknown]
 
 presentDate = [gegenwart, ?, ??, ???, ????]
 beforeQualifier = [vor]
 diedQualifier = [gestorben, gest., gest, d, d.]
-afterQualifier = [nach]
+afterQualifier = [nach, ab, seit]
 bornQualifier = [geboren, geb., geb, b, b.]
 
 # Text to indicate century (as in "20th century")

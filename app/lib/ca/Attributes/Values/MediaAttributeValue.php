@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -192,14 +192,14 @@
 				
 				$vs_tag = $this->opo_media_info_coder->getMediaTag($this->opa_media_data, $vs_version, $pa_options);
 				
-				if (is_object($pa_options['po_request'])) {
-					$vs_view_url = urldecode(caNavUrl($pa_options['po_request'], $pa_options['po_request']->getModulePath(), $pa_options['po_request']->getController(), 'GetMediaInfo', array('value_id' => $this->opn_value_id)));
+				if (is_object($pa_options['request'])) {
+					$vs_view_url = urldecode(caNavUrl($pa_options['request'], $pa_options['request']->getModulePath(), $pa_options['request']->getController(), 'GetMediaInfo', array('value_id' => $this->opn_value_id)));
 					$vs_val = "<div id='caMediaAttribute".$this->opn_value_id."' class='attributeMediaInfoContainer'>";
 					
 					
 					$vs_val .= "<div class='attributeMediaThumbnail'>";
 					$vs_val .= "<a href='#' onclick='caMediaPanel.showPanel(\"{$vs_view_url}\"); return false;'>{$vs_tag}</a>";
-					$vs_val .= urlDecode(caNavLink($pa_options['po_request'], caNavIcon($pa_options['po_request'], __CA_NAV_BUTTON_DOWNLOAD__, null, array('align' => 'middle')), '', $pa_options['po_request']->getModulePath(), $pa_options['po_request']->getController(), 'DownloadMedia', array('download' => 1, 'value_id' => $this->opn_value_id), array('class' => 'attributeDownloadButton')));
+					$vs_val .= urlDecode(caNavLink($pa_options['request'], caNavIcon($pa_options['request'], __CA_NAV_BUTTON_DOWNLOAD__, null, array('align' => 'middle')), '', $pa_options['request']->getModulePath(), $pa_options['request']->getController(), 'DownloadMedia', array('download' => 1, 'value_id' => $this->opn_value_id), array('class' => 'attributeDownloadButton')));
 					$vs_val .= "</div>";
 					
 					if ($pa_options['showMediaInfo']) {
@@ -218,7 +218,7 @@
 			return $vs_val;
 		}
  		# ------------------------------------------------------------------
- 		public function parseValue($ps_value, $pa_element_info) {
+ 		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			if (
  				(is_array($ps_value) && $ps_value['_uploaded_file'] && file_exists($ps_value['tmp_name']) && (filesize($ps_value['tmp_name']) > 0))
  				||
@@ -258,14 +258,14 @@
  		}
  		# ------------------------------------------------------------------
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
- 			$vs_element = '<table><tr>';
- 			$vs_element .= '<td><div id="{fieldNamePrefix}upload_control_{n}" class="attributeMediaDownloadControl">'._t("Select a media file").': <input type="file" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}"></div></td>' ;
- 			$vs_element .= '<td>{'.$pa_element_info['element_id'].'}</td>';
- 			$vs_element .= '</tr></table>';
+ 			$vs_element = '<div>';
+ 			$vs_element .= '<div>{'.$pa_element_info['element_id'].'}</div>';
+ 			$vs_element .= '<div id="{fieldNamePrefix}upload_control_{n}" class="attributeMediaDownloadControl">'._t("Set media").': <input type="file" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}"></div>' ;
+ 			$vs_element .= '</div>';
  			return $vs_element;
  		}
  		# ------------------------------------------------------------------
- 		public function getAvailableSettings() {
+ 		public function getAvailableSettings($pa_element_info=null) {
  			global $_ca_attribute_settings;
  			
  			return $_ca_attribute_settings['MediaAttributeValue'];

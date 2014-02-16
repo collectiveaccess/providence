@@ -92,6 +92,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"video/mpeg" 						=> "mp4",
 			"audio/mpeg"						=> "mp3",
 			"image/jpeg"						=> "jpg",
+			"image/png"							=> "png",
 			"video/mp4" 						=> "m4v",
 			"video/ogg"							=> "ogg",
 			"video/x-matroska"					=> "webm"
@@ -154,6 +155,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		"video/mpeg" 						=> "MPEG",
 		"audio/mpeg"						=> "MP3 audio",
 		"image/jpeg"						=> "JPEG",
+		"image/png"							=> "PNG",
 		"video/mp4" 						=> "MPEG-4",
 		"video/ogg"							=> "Ogg Theora",
 		"video/x-matroska"					=> "WebM"
@@ -298,15 +300,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		} else {
 			return '';
 		}
-	}
-	# ------------------------------------------------
-	/**
-	 * Returns text content for indexing, or empty string if plugin doesn't support text extraction
-	 *
-	 * @return String Extracted text
-	 */
-	public function getExtractedText() {
-		return '';
 	}
 	# ------------------------------------------------
 	/**
@@ -682,6 +675,34 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 				break;
 			# ------------------------------------
+			case 'image/png':
+				$vn_preview_width = $this->properties["width"];
+				$vn_preview_height = $this->properties["height"];
+
+				if ((caMediaPluginFFfmpegInstalled($this->ops_path_to_ffmpeg)) && ($this->handle["mime_type"] != "application/x-shockwave-flash")) {
+					if (($vn_start_secs = $this->properties["duration"]/8) > 120) { 
+						$vn_start_secs = 120;		// always take a frame from the first two minutes to ensure performance (ffmpeg gets slow if it has to seek far into a movie to extract a frame)
+					}
+					
+					
+					exec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($this->filepath)." -vcodec png -ss ".($vn_start_secs)." -t 0.04 -s {$vn_preview_width}x{$vn_preview_height} -y ".caEscapeShellArg($filepath.".".$ext). ((caGetOSFamily() == OS_POSIX) ? " 2> /dev/null" : ""), $va_output, $vn_return);
+					if (($vn_return < 0) || ($vn_return > 1) || (!@filesize($filepath.".".$ext))) {
+						@unlink($filepath.".".$ext);
+						// try again, with -ss 1 (seems to work consistently on some files where other -ss values won't work)
+						exec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($this->filepath)." -vcodec png -ss ".($vn_start_secs)." -t 1 -s {$vn_preview_width}x{$vn_preview_height} -y ".caEscapeShellArg($filepath.".".$ext). ((caGetOSFamily() == OS_POSIX) ? " 2> /dev/null" : ""), $va_output, $vn_return);
+					}
+
+					if (($vn_return < 0) || ($vn_return > 1) || (!@filesize($filepath.".".$ext))) {
+						@unlink($filepath.".".$ext);
+						// don't throw error as ffmpeg cannot generate frame still from all file
+					}
+				}
+
+				$this->properties["mimetype"] = $mimetype;
+				$this->properties["typename"] = isset($this->typenames[$mimetype]) ? $this->typenames[$mimetype] : $mimetype;
+
+				break;
+			# ------------------------------------
 			case 'video/x-flv':
 				if (caMediaPluginFFfmpegInstalled($this->ops_path_to_ffmpeg)) {
 					$vn_video_bitrate = $this->get('video_bitrate');
@@ -801,8 +822,9 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$vs_cwd = getcwd();
 					chdir(__CA_APP_DIR__."/tmp/");
 					
+					$vs_cmd = '';
 					if ($vs_ffmpeg_command) {
-						exec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($this->filepath)." {$vs_ffmpeg_command} ".caEscapeShellArg($filepath.".".$ext). ((caGetOSFamily() == OS_POSIX) ? " 2> /dev/null" : ""), $va_output, $vn_return);
+						exec($vs_cmd .= $this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($this->filepath)." {$vs_ffmpeg_command} ".caEscapeShellArg($filepath.".".$ext). ((caGetOSFamily() == OS_POSIX) ? " 2> /dev/null" : ""), $va_output, $vn_return);
 					} else {
 						if ($vs_vpreset) {
 							$vs_other_params = "";
@@ -815,13 +837,13 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 							if($vs_res && $vs_res!=''){
 								$vs_other_params.="-s ".$vs_res;
 							}
-							exec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -acodec libfaac {$vs_other_params} -vpre {$vs_vpreset} -y ".caEscapeShellArg($filepath.".".$ext). ((caGetOSFamily() == OS_POSIX) ? " 2> /dev/null" : ""), $va_output, $vn_return);
+							exec($vs_cmd .= $this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -acodec libfaac {$vs_other_params} -vpre {$vs_vpreset} -y ".caEscapeShellArg($filepath.".".$ext). ((caGetOSFamily() == OS_POSIX) ? " 2> /dev/null" : ""), $va_output, $vn_return);
 						} else {
 							if(!$vb_twopass) {
-								exec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -acodec libfaac ".join(" ",$va_ffmpeg_params)." -y ".caEscapeShellArg($filepath.".".$ext). ((caGetOSFamily() == OS_POSIX) ? " 2> /dev/null" : ""), $va_output, $vn_return);
+								exec($vs_cmd .= $this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -acodec libfaac ".join(" ",$va_ffmpeg_params)." -y ".caEscapeShellArg($filepath.".".$ext). ((caGetOSFamily() == OS_POSIX) ? " 2> /dev/null" : ""), $va_output, $vn_return);
 							} else {
-								exec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -pass 1 -acodec libfaac ".join(" ",$va_ffmpeg_params)." -y ".caEscapeShellArg($filepath.".".$ext). ((caGetOSFamily() == OS_POSIX) ? " 2> /dev/null" : ""), $va_output, $vn_return);
-								exec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -pass 2 -acodec libfaac ".join(" ",$va_ffmpeg_params)." -y ".caEscapeShellArg($filepath.".".$ext). ((caGetOSFamily() == OS_POSIX) ? " 2> /dev/null" : ""), $va_output, $vn_return);
+								exec($vs_cmd .= $this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -pass 1 -acodec libfaac ".join(" ",$va_ffmpeg_params)." -y ".caEscapeShellArg($filepath.".".$ext). ((caGetOSFamily() == OS_POSIX) ? " 2> /dev/null" : ""), $va_output, $vn_return);
+								exec($vs_cmd .= $this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($this->filepath)." -f mp4 -vcodec libx264 -pass 2 -acodec libfaac ".join(" ",$va_ffmpeg_params)." -y ".caEscapeShellArg($filepath.".".$ext). ((caGetOSFamily() == OS_POSIX) ? " 2> /dev/null" : ""), $va_output, $vn_return);
 								// probably cleanup logfiles here
 							}
 						}
@@ -831,9 +853,9 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 					if (@filesize($filepath.".".$ext) == 0) {
 						@unlink($filepath.".".$ext);
 						if ($vs_vpreset) {
-							$this->postError(1610, _t("Couldn't convert file to MPEG4 format [%1]; does the ffmpeg preset '%2' exist?", $vn_return, $vs_vpreset), "WLPlugVideo->write()");
+							$this->postError(1610, _t("Couldn't convert file to MPEG4 format [%1]; does the ffmpeg preset '%2' exist? (command was %3)", $vn_return, $vs_vpreset, $vs_cmd), "WLPlugVideo->write()");
 						} else {
-							$this->postError(1610, _t("Couldn't convert file to MPEG4 format [%1]", $vn_return), "WLPlugVideo->write()");
+							$this->postError(1610, _t("Couldn't convert file to MPEG4 format [%1] (command was %2)", $vn_return, $vs_cmd), "WLPlugVideo->write()");
 						}
 						return false;
 					}
@@ -1223,6 +1245,9 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 				$vn_width =				$pa_options["viewer_width"] ? $pa_options["viewer_width"] : $pa_properties["width"];
 				$vn_height =			$pa_options["viewer_height"] ? $pa_options["viewer_height"] : $pa_properties["height"];
+				
+				$va_captions = 			caGetOption("captions", $pa_options, array(), array('castTo' => 'array'));
+				
 				ob_start();
 	
 			$vs_config = 'config={"playlist":[{"url":"'.$vs_poster_frame_url.'", "scaling": "fit"}, {"url": "'.$ps_url.'","autoPlay":false,"autoBuffering":true, "scaling": "fit"}]};';
@@ -1274,6 +1299,13 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				  poster="<?php print $vs_poster_frame_url; ?>"  
 				  data-setup='{}'>  
 				 <source src="<?php print $ps_url; ?>" type='video/mp4' />  
+<?php
+	if(is_array($va_captions)) {
+		foreach($va_captions as $vn_locale_id => $va_caption_track) {
+			print "<track kind=\"captions\" src=\"".$va_caption_track['url']."\" srclang=\"".$va_caption_track["locale_code"]."\" label=\"".$va_caption_track['locale']."\">\n";	
+		}
+	}
+?>
 				</video>
 			<script type="text/javascript">
 				_V_.players["<?php print $vs_id; ?>"] = undefined;	// make sure VideoJS doesn't think it has already loaded the viewer

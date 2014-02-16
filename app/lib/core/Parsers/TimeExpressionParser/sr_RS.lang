@@ -60,6 +60,7 @@ nowDate = [сада]
 todayDate = [данас]
 yesterdayDate = [јуче]
 tomorrowDate = [сутра]
+undatedDate = [undated, unknown]
 
 presentDate = [данас, ?, ??, ???, ????]
 beforeQualifier = [пре]

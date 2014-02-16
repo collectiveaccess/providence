@@ -39,6 +39,7 @@ require_once(__CA_APP_DIR__.'/models/ca_user_roles.php');
 include_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__.'/models/ca_user_groups.php');
 require_once(__CA_APP_DIR__.'/models/ca_locales.php');
+require_once(__CA_LIB_DIR__.'/core/Zend/Currency.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_users'] = array(
@@ -846,12 +847,13 @@ class ca_users extends BaseModel {
 					FROM ca_user_roles wur
 					INNER JOIN ca_users_x_roles AS wuxr ON wuxr.role_id = wur.role_id
 					WHERE wuxr.user_id = ?
-					ORDER BY wur.rank
 				", (int)$pn_user_id);
 				
 				$va_roles = array();
 				while($qr_res->nextRow()) {
-					$va_roles[$qr_res->get("role_id")] = $qr_res->getRow();
+					$va_row = $qr_res->getRow();
+					$va_row['vars'] = caUnserializeForDatabase($va_row['vars']);
+					$va_roles[$va_row['role_id']] = $va_row;
 				}
 				
 				return ca_users::$s_user_role_cache[$pn_user_id] = $va_roles;
@@ -1146,14 +1148,14 @@ class ca_users extends BaseModel {
 					INNER JOIN ca_groups_x_roles AS wgxr ON wgxr.role_id = wur.role_id
 					INNER JOIN ca_users_x_groups AS wuxg ON wuxg.group_id = wgxr.group_id
 					WHERE wuxg.user_id = ?
-					ORDER BY wur.rank
 				", (int)$pn_user_id);
 				
 				$va_roles = array();
 				while($qr_res->nextRow()) {
-					$va_roles[$qr_res->get("role_id")] = $qr_res->getRow();
+					$va_row = $qr_res->getRow();
+					$va_row['vars'] = caUnserializeForDatabase($va_row['vars']);
+					$va_roles[$va_row['role_id']] = $va_row;
 				}
-				
 				return ca_users::$s_group_role_cache[$pn_user_id] = $va_roles;
 			}
 		} else {
@@ -1350,16 +1352,79 @@ class ca_users extends BaseModel {
 			$va_pref_info = $this->getPreferenceInfo($ps_pref);
 			
 			if (!isset($va_prefs)) {
-				return isset($va_pref_info["default"]) ? $va_pref_info["default"] : null;
+				return $this->getPreferenceDefault($ps_pref);
 			}
 			if(isset($va_prefs[$ps_pref])) {
-				return (!is_null($va_prefs[$ps_pref])) ? $va_prefs[$ps_pref] : ($va_pref_info["default"] ? $va_pref_info["default"] : null);
+				return (!is_null($va_prefs[$ps_pref])) ? $va_prefs[$ps_pref] : $this->getPreferenceDefault($ps_pref);
 			}
-			return ($va_pref_info["default"] ? $va_pref_info["default"] : null);
+			return $this->getPreferenceDefault($ps_pref);
 		} else {
 			$this->postError(920, _t("%1 is not a valid user preference", $ps_pref),"User->getPreference()");
 			return null;
 		}
+	}
+	# ----------------------------------------
+	/**
+	 * Returns default value for a preference
+	 *
+	 * @param string $ps_pref Preference code
+	 * @param array $pa_options No options supported yet
+	 * @return mixed Type returned varies by preference
+	 */
+	public function getPreferenceDefault($ps_pref, $pa_options=null) {
+		if (!is_array($va_pref_info = $this->getPreferenceInfo($ps_pref))) { return null; }
+		
+		switch($va_pref_info["formatType"]) {
+				# ---------------------------------
+				case 'FT_OBJECT_EDITOR_UI':
+				case 'FT_OBJECT_LOT_EDITOR_UI':
+				case 'FT_ENTITY_EDITOR_UI':
+				case 'FT_PLACE_EDITOR_UI':
+				case 'FT_OCCURRENCE_EDITOR_UI':
+				case 'FT_COLLECTION_EDITOR_UI':
+				case 'FT_STORAGE_LOCATION_EDITOR_UI':
+				case 'FT_OBJECT_REPRESENTATION_EDITOR_UI':
+				case 'FT_REPRESENTATION_ANNOTATION_EDITOR_UI':
+				case 'FT_SET_EDITOR_UI':
+				case 'FT_SET_ITEM_EDITOR_UI':
+				case 'FT_LIST_EDITOR_UI':
+				case 'FT_LIST_ITEM_EDITOR_UI':
+				case 'FT_LOAN_EDITOR_UI':
+				case 'FT_MOVEMENT_EDITOR_UI':
+				case 'FT_TOUR_EDITOR_UI':
+				case 'FT_TOUR_STOP_EDITOR_UI':
+				case 'FT_SEARCH_FORM_EDITOR_UI':
+				case 'FT_BUNDLE_DISPLAY_EDITOR_UI':
+				case 'FT_RELATIONSHIP_TYPE_EDITOR_UI':
+				case 'FT_USER_INTERFACE_EDITOR_UI':
+				case 'FT_USER_INTERFACE_SCREEN_EDITOR_UI':
+				case 'FT_IMPORT_EXPORT_MAPPING_EDITOR_UI':
+				case 'FT_IMPORT_EXPORT_MAPPING_GROUP_EDITOR_UI':
+					$vn_type_id = (is_array($pa_options) && isset($pa_options['type_id']) && (int)$pa_options['type_id']) ? (int)$pa_options['type_id'] : null;
+					$vn_table_num = $this->_editorPrefFormatTypeToTableNum($va_pref_info["formatType"]);
+					$va_uis = $this->_getUIListByType($vn_table_num);
+					
+					$va_defaults = array();
+					foreach($va_uis as $vn_type_id => $va_editor_info) {
+						foreach($va_editor_info as $vn_ui_id => $va_editor_labels) {
+							$va_defaults[$vn_type_id] = $vn_ui_id;
+						}
+					}
+					return $va_defaults;
+					break;
+				case 'FT_TEXT':
+					if ($va_pref_info['displayType'] == 'DT_CURRENCIES') {
+						// this respects the global UI locale which is set using Zend_Locale
+						$o_currency = new Zend_Currency();
+						return ($vs_currency_specifier = $o_currency->getShortName()) ? $vs_currency_specifier : "CAD";
+					}
+					break;
+				# ---------------------------------
+				default:
+					return $va_pref_info["default"] ? $va_pref_info["default"] : null;
+					break;
+				# ---------------------------------
+			}
 	}
 	# ----------------------------------------
 	/**
@@ -1520,6 +1585,14 @@ class ca_users extends BaseModel {
 					break;
 				# ---------------------------------
 				case 'FT_TEXT':
+					if ($va_pref_info['displayType'] == 'DT_CURRENCIES') {
+						if (!is_array($va_currencies = caAvailableCurrenciesForConversion())) {
+							return false;
+						}
+						if (!in_array($ps_value, $va_currencies)) {
+							return false;
+						}	
+					}
 					if (isset($va_pref_info["length"]) && is_array($va_pref_info["length"])) { 
 						# make sure value within length bounds
 						
@@ -1860,6 +1933,10 @@ class ca_users extends BaseModel {
 						
 						$vs_output .="</script>\n";
 					}
+					break;
+				# ---------------------------------
+				case 'DT_CURRENCIES':
+					$vs_output .= caHTMLSelect("pref_{$ps_pref}", caAvailableCurrenciesForConversion(), array('id' => "pref_{$ps_pref}"), array('value' => $vs_current_value));
 					break;
 				# ---------------------------------
 				case 'DT_RADIO_BUTTONS':
@@ -2276,7 +2353,7 @@ class ca_users extends BaseModel {
 	 * @return boolean True if user exists, false if not
 	 */
 	public function exists($ps_user_name_or_id) {
-		$t_user = new User();
+		$t_user = new ca_users();
 		if ($t_user->load($ps_user_name_or_id)) {
 			return true;
 		} else {
@@ -2440,7 +2517,9 @@ class ca_users extends BaseModel {
 		}
 		
 		if($this->opo_auth_config->get("use_extdb")){
-			return $this->authenticateExtDB($ps_username,$ps_password);
+			if($vn_rc = $this->authenticateExtDB($ps_username,$ps_password)) {
+				return $vn_rc;
+			}
 		}
 		
 		if ((strlen($ps_username) > 0) && $this->load(array("user_name" => $ps_username))) {
@@ -2683,7 +2762,7 @@ class ca_users extends BaseModel {
 					$this->insert();
 					if(!$this->getPrimaryKey()){
 						// log record creation failed
-						$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 after authentication from external database because creation of user record failed: %2', $ps_username, join("; ", $this->getErrors()))));
+						$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 after authentication from external database because creation of user record failed: %2 [%3]', $ps_username, join("; ", $this->getErrors()), $_SERVER['REMOTE_ADDR'])));
 						return false;
 					} 
 					
@@ -2726,20 +2805,20 @@ class ca_users extends BaseModel {
 					$this->setMode($vn_mode);
 					
 					// TODO: log user creation
-					$o_log->log(array('CODE' => 'LOGN', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Created new login for user %1 after authentication from external database', $ps_username)));
+					$o_log->log(array('CODE' => 'LOGN', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Created new login for user %1 after authentication from external database [%2]', $ps_username, $_SERVER['REMOTE_ADDR'])));
 						
 				}		
 			
 				return true;
 			} else {
 				// authentication failed
-				$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 using external database because external authentication failed', $ps_username)));
+				//$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 using external database because external authentication failed [%2]', $ps_username, $_SERVER['REMOTE_ADDR'])));
 						
 				return false;
 			}
 		} else {
 			// couldn't connect to external database
-			$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 using external database because login to external database failed', $ps_username)));
+			$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 using external database because login to external database failed [%2]', $ps_username, $_SERVER['REMOTE_ADDR'])));
 						
 			return false;
 		}
@@ -2843,7 +2922,7 @@ class ca_users extends BaseModel {
 			return $vn_locale_id;
 		}
 		
-		return __CA_DEFAULT_LOCALE__;
+		return $t_locale->localeCodeToID(__CA_DEFAULT_LOCALE__);
 	}
 	# ----------------------------------------
 	/**
@@ -2941,12 +3020,10 @@ class ca_users extends BaseModel {
 	public function getBundleAccessLevel($ps_table_name, $ps_bundle_name) {
 		$vs_cache_key = $ps_table_name.'/'.$ps_bundle_name."/".$this->getPrimaryKey();
 		if (isset(ca_users::$s_user_bundle_access_cache[$vs_cache_key])) { return ca_users::$s_user_bundle_access_cache[$vs_cache_key]; }
-		
 		$va_roles = array_merge($this->getUserRoles(), $this->getGroupRoles());
-		
 		$vn_access = -1;
 		foreach($va_roles as $vn_role_id => $va_role_info) {
-			$va_vars = caUnserializeForDatabase($va_role_info['vars']);
+			$va_vars = $va_role_info['vars'];
 			
 			if (is_array($va_vars['bundle_access_settings'])) {
 				if (isset($va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name]) && ((int)$va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name] > $vn_access)) {
@@ -2962,11 +3039,12 @@ class ca_users extends BaseModel {
 				}
 			}
 		}
-		
 		if ($vn_access < 0) {
 			$vn_access = (int)$this->getAppConfig()->get('default_bundle_access_level');
 		}
+		
 		ca_users::$s_user_bundle_access_cache[$vs_cache_key] = $vn_access;
+		
 		return $vn_access;
 	}
 	# ----------------------------------------
@@ -2991,7 +3069,7 @@ class ca_users extends BaseModel {
 		}
 		$vn_access = -1;
 		foreach($va_roles as $vn_role_id => $va_role_info) {
-			$va_vars = caUnserializeForDatabase($va_role_info['vars']);
+			$va_vars = $va_role_info['vars'];
 			
 			if (is_array($va_vars['type_access_settings'])) {
 				if (isset($va_vars['type_access_settings'][$ps_table_name.'.'.$vn_type_id]) && ((int)$va_vars['type_access_settings'][$ps_table_name.'.'.$vn_type_id] > $vn_access)) {
@@ -3024,15 +3102,16 @@ class ca_users extends BaseModel {
 		
 		$vn_default_access = (int)$this->getAppConfig()->get('default_type_access_level');
 		
-		$va_type_ids = array();
+		$va_type_ids = null;
 		foreach($va_roles as $vn_role_id => $va_role_info) {
-			$va_vars = caUnserializeForDatabase($va_role_info['vars']);
+			$va_vars = $va_role_info['vars'];
 			
 			if (is_array($va_vars['type_access_settings'])) {
 				foreach($va_vars['type_access_settings'] as $vs_key => $vn_access) {
 					list($vs_table, $vn_type_id) = explode(".", $vs_key);
 					
 					if ($vs_table != $ps_table_name) { continue; }
+					if (!is_array($va_type_ids)) { $va_type_ids = array(); }
 					if($vn_access >= $pn_access) {
 						$va_type_ids[] = $vn_type_id;
 					}

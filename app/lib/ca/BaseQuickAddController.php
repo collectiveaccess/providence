@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2013 Whirl-i-Gig
+ * Copyright 2012-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -68,9 +68,9 @@
  			list($t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView($pa_options);
  			$vs_field_name_prefix = $this->request->getParameter('fieldNamePrefix', pString);
  			$vs_n = $this->request->getParameter('n', pString);
- 			
+ 		
  			// Is user allowed to quickadd?
- 			if (!$this->request->user->canDoAction('can_quickadd_'.$t_subject->tableName())) {
+ 			if (!(is_array($pa_options) && isset($pa_options['dontCheckQuickAddAction']) && (bool)$pa_options['dontCheckQuickAddAction']) && (!$this->request->user->canDoAction('can_quickadd_'.$t_subject->tableName()))) {
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2585?r='.urlencode($this->request->getFullUrlPath()));
 				return;
  			}
@@ -86,7 +86,8 @@
  			if ($t_subject->getAppConfig()->get('perform_type_access_checking')) {
  				$va_restrict_to_types = caGetTypeRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_EDIT__));
  			}
- 			if (is_array($va_restrict_to_types) && !in_array($t_subject->get('type_id'), $va_restrict_to_types)) {
+ 			
+ 			if (($vn_type_id = $t_subject->get('type_id')) && is_array($va_restrict_to_types) && !in_array($vn_type_id, $va_restrict_to_types)) {
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2560?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
@@ -115,15 +116,15 @@
  						$vn_type_id = array_shift($va_tmp);
  					}
  					if (!$vn_type_id) {
- 						$va_tmp = array_keys($t_subject->getTypeList());
- 						$vn_type_id = array_shift($va_tmp);
+ 						$vn_type_id = $t_subject->getDefaultTypeID();
+ 						$t_subject->set('type_id', $vn_type_id);
  					}
  				}
  			}
  			
  			// Set type restrictions of bundle that spawned quickadd form
  			if ($vs_restrict_to_types = trim($this->request->getParameter('types', pString))) {
- 				$this->view->setVar('restrict_to_types', $va_restrict_to_type_ids = caMakeTypeIDList($t_subject->tableName(), explode(',', $vs_restrict_to_types)));
+ 				$this->view->setVar('restrict_to_types', $va_restrict_to_type_ids = caMakeTypeIDList($t_subject->tableName(), explode(',', $vs_restrict_to_types), array('dont_include_subtypes_in_type_restriction' => (bool)$this->request->getParameter('dont_include_subtypes_in_type_restriction', pString))));
  				
  				if (!in_array($vn_type_id, $va_restrict_to_type_ids)) {
  					$vn_type_id = $va_restrict_to_type_ids[0];		// get first type on list since default isn't part of restriction
@@ -165,9 +166,16 @@
 			}
 			
 			
-			// Set preferred labels
+			// Set nonpreferred labels
 			if (is_array($va_field_values['nonpreferred_label'])) {
 				$t_subject->setFailedNonPreferredLabelInserts($va_field_values['nonpreferred_label']);		
+			}
+			
+			// Set annotation properties
+			if (is_array($va_field_values['annotation_properties']) && method_exists($t_subject, 'setPropertyValue')) {
+				foreach($va_field_values['annotation_properties'] as $vs_property => $vs_property_value) {
+					$t_subject->setPropertyValue($vs_property, $vs_property_value);	
+				}	
 			}
 			
 			
@@ -186,6 +194,8 @@
 			
 			$this->view->setVar('default_parent_id', $this->opo_result_context->getParameter($t_subject->tableName().'_last_parent_id'));
 			
+			$this->view->setVar('notifications', $this->notification->getNotifications());
+			
 			$this->render('quickadd_html.php');
  		}
  		# -------------------------------------------------------
@@ -199,7 +209,7 @@
  			if (!is_array($pa_options)) { $pa_options = array(); }
  			
  			// Is user allowed to quickadd?
- 			if (!$this->request->user->canDoAction('can_quickadd_'.$t_subject->tableName())) {
+ 			if (!(is_array($pa_options) && isset($pa_options['dontCheckQuickAddAction']) && (bool)$pa_options['dontCheckQuickAddAction']) && (!$this->request->user->canDoAction('can_quickadd_'.$t_subject->tableName()))) {
  				$va_response = array(
 					'status' => 30,
 					'id' => null,
@@ -360,6 +370,15 @@
  			
  			$t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
  			
+ 			if (is_array($pa_options) && isset($pa_options['loadSubject']) && (bool)$pa_options['loadSubject'] && ($vn_subject_id = (int)$this->request->getParameter($t_subject->primaryKey(), pInteger))) {
+ 				$t_subject->load($vn_subject_id);
+ 			}
+ 			if (is_array($pa_options) && isset($pa_options['forceSubjectValues']) && is_array($pa_options['forceSubjectValues'])) {
+				foreach($pa_options['forceSubjectValues'] as $vs_f => $vs_v) {
+					$t_subject->set($vs_f, $vs_v);
+				}
+			}
+ 			
 			// empty (ie. new) rows don't have a type_id set, which means we'll have no idea which attributes to display
 			// so we get the type_id off of the request
 			if (!$vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pString)) {
@@ -387,8 +406,8 @@
  				$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, $t_subject->getTypeID(), array('editorPref' => 'quickadd'));
  			}
  			
- 			$this->view->setVar($t_subject->primaryKey(), null);
- 			$this->view->setVar('subject_id', null);
+ 			$this->view->setVar($t_subject->primaryKey(), $t_subject->getPrimaryKey());
+ 			$this->view->setVar('subject_id', $t_subject->getPrimaryKey());
  			$this->view->setVar('t_subject', $t_subject);
  			
  			//MetaTagManager::setWindowTitle(_t("Editing %1 : %2", ($vs_type = $t_subject->getTypeName()) ? $vs_type : $t_subject->getProperty('NAME_SINGULAR'), ($vn_subject_id) ? $t_subject->getLabelForDisplay(true) : _t('new %1', $t_subject->getTypeName())));

@@ -140,7 +140,7 @@ class PlaceAttributeValue extends AttributeValue implements IAttributeValue {
 		return $this->opn_place_id;
 	}
  	# ------------------------------------------------------------------
- 	public function parseValue($ps_value, $pa_element_info) {
+ 	public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('canBeEmpty'));
 
 		$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
@@ -196,13 +196,13 @@ class PlaceAttributeValue extends AttributeValue implements IAttributeValue {
 			);
 
 		$va_params = array('max' => 50);
-		if ($pa_options['po_request']) {
+		if ($pa_options['request']) {
 			if($va_settings['restrictToPlaceTypeIdno'] && $va_settings['restrictToPlaceTypeIdno'] != ''){
 				$va_params = array_merge($va_params, array("type" => $va_settings['restrictToPlaceTypeIdno']));
 			} else {
 				$va_params = null;
 			}
-			$vs_url = caNavUrl($pa_options['po_request'], 'lookup', 'Place', 'Get', $va_params);
+			$vs_url = caNavUrl($pa_options['request'], 'lookup', 'Place', 'Get', $va_params);
 		} else {
 			// hardcoded default for testing.
 			$vs_url = '/index.php/lookup/Place/Get';
@@ -228,7 +228,7 @@ class PlaceAttributeValue extends AttributeValue implements IAttributeValue {
  		return $vs_element;
  	}
  	# ------------------------------------------------------------------
- 	public function getAvailableSettings() {
+ 	public function getAvailableSettings($pa_element_info=null) {
  		global $_ca_attribute_settings;
 
  		return $_ca_attribute_settings['PlaceAttributeValue'];

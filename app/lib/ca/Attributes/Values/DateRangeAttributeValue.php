@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2011 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -182,11 +182,19 @@
  		 * Options:
  		 * 		rawDate - if true, returns date as an array of start and end historic timestames
  		 *		sortable - if true a language-independent sortable representation is returned.
+ 		 *		getDirectDate - get underlying historic timestamp (floatval)
  		 */
 		public function getDisplayValue($pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if (isset($pa_options['rawDate']) && $pa_options['rawDate']) {
 				return array(0 => $this->opn_start_date, 1 =>$this->opn_end_date, 'start' => $this->opn_start_date, 'end' =>$this->opn_end_date);
+			}
+			if (	
+				(isset($pa_options['GET_DIRECT_DATE']) && $pa_options['GET_DIRECT_DATE'])
+				||
+				(isset($pa_options['getDirectDate']) && $pa_options['getDirectDate'])
+			) {
+				return $this->opn_start_date;
 			}
 			
 			if (isset($pa_options['sortable']) && $pa_options['sortable']) {
@@ -216,7 +224,7 @@
 			return array(0 => $this->opn_start_date, 1 => $this->opn_end_date, 'start' => $this->opn_start_date, 'end' => $this->opn_end_date);
 		}
  		# ------------------------------------------------------------------
- 		public function parseValue($ps_value, $pa_element_info) {
+ 		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			$ps_value = trim($ps_value);
  			$va_settings = $this->getSettingValuesFromElementArray(
  				$pa_element_info, 
@@ -251,7 +259,14 @@
 					$this->postError(1970, _t('%1 must not be empty', $pa_element_info['displayLabel']), 'DateRangeAttributeValue->parseValue()');
 					return false;
 				} else {
-					return null;
+					// Default to "undated" date for blanks
+					$o_config = $o_tep->getLanguageSettings();
+					$va_undated_dates = $o_config->getList('undatedDate');
+					return array(
+						'value_longtext1' => $va_undated_dates[0],
+						'value_decimal1' => null,
+						'value_decimal2' => null
+					);
 				}
 			}
 			return array(
@@ -287,8 +302,8 @@
  			if (isset($pa_options['t_subject']) && is_object($pa_options['t_subject'])) {
  				$vs_bundle_name = $pa_options['t_subject']->tableName().'.'.$pa_element_info['element_code'];
  				
- 				if ($pa_options['po_request']) {
- 					$vs_lookup_url	= caNavUrl($pa_options['po_request'], 'lookup', 'AttributeValue', 'Get', array('bundle' => $vs_bundle_name, 'max' => 500));
+ 				if ($pa_options['request']) {
+ 					$vs_lookup_url	= caNavUrl($pa_options['request'], 'lookup', 'AttributeValue', 'Get', array('bundle' => $vs_bundle_name, 'max' => 500));
  				}
  			}
  			
@@ -311,7 +326,7 @@
  			return $vs_element;
  		}
  		# ------------------------------------------------------------------
- 		public function getAvailableSettings() {
+ 		public function getAvailableSettings($pa_element_info=null) {
  			global $_ca_attribute_settings;
  			return $_ca_attribute_settings['DateRangeAttributeValue'];
  		}

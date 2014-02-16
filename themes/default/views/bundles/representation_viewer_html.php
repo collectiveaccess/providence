@@ -48,12 +48,43 @@
 	$va_pages = $va_sections = array();
 	$vb_use_book_reader = false;
 	$vb_use_pdfjs_viewer = false;
+	$vb_should_use_native_pdf_viewer = false;
+	
 	$vn_open_to_page = 1;
 
-
+	if ($t_rep->get('mimetype') ==  'application/pdf') {
+		switch($vs_pdf_pref = $this->request->user->getPreference('pdf_viewer')) {
+			case 'pdfjs':
+				$vb_use_pdfjs_viewer = true;
+				break;
+			case 'native_plus_pdfjs':
+				if ($this->request->session->getVar('has_pdf_plugin')) { 
+					$vb_should_use_native_pdf_viewer = true;
+				} else {
+					$vb_use_pdfjs_viewer = true;	
+				}
+				break;
+			case 'native_plus_book_viewer':
+				if ($this->request->session->getVar('has_pdf_plugin')) { 
+					$vb_should_use_native_pdf_viewer = true;
+				} else {
+					$vb_should_use_book_viewer = true;	
+				}
+				break;
+			case 'book_viewer':
+				$vb_should_use_book_viewer = true;
+				break;
+			default:
+				$vb_should_use_book_viewer = isset($va_display_options['use_book_viewer']) && (bool)$va_display_options['use_book_viewer'];
+				$vb_should_use_pdfjs_viewer = isset($va_display_options['use_pdfjs_viewer']) && (bool)$va_display_options['use_pdfjs_viewer'];
+				break;
+		}
+	} else {
 		$vb_should_use_book_viewer = isset($va_display_options['use_book_viewer']) && (bool)$va_display_options['use_book_viewer'];
 		$vb_should_use_pdfjs_viewer = isset($va_display_options['use_pdfjs_viewer']) && (bool)$va_display_options['use_pdfjs_viewer'];
-
+		$vb_should_use_native_pdf_viewer = false;
+	}
+	
 		$vs_book_viewer_content_mode = null;
 		$vn_object_id = $vn_rep_id = null;
 		if (
@@ -248,6 +279,7 @@
 						} 
 						$vb_use_book_reader = true;
 				
+						$vn_object_id = $t_object->getPrimaryKey();
 						foreach($t_rep->getFileList(null, 0, null, array('preview', 'large_preview', 'page_preview')) as $vn_id => $va_file) {
 							$va_pages[] = array(
 								'object_id' => $vn_object_id, 'representation_id' => $t_rep->getPrimaryKey(),
@@ -270,9 +302,6 @@
 		if ($vb_use_pdfjs_viewer && $this->request->config->get('use_pdfjs_viewer')) {
 			// PDFjs
 ?>
-<script type="text/javascript">
-	
-</script>
 <div id="outerContainer">
 
       <div id="sidebarContainer">
@@ -470,6 +499,62 @@
 			
 			print $o_view->render('bookviewer_html.php');
 			return;
+		} elseif ($vb_should_use_native_pdf_viewer) {
+?>
+	<div class="caMediaOverlayControls">
+			<div class='close'><a href="#" onclick="caMediaPanel.hidePanel(); return false;" title="close">&nbsp;&nbsp;&nbsp;</a></div>
+<?php
+	if ($this->request->user->canDoAction('can_download_media')) {
+?>
+				<div class='download'>
+<?php 
+					if (is_array($va_versions = $this->request->config->getList('ca_object_representation_download_versions'))) {
+						// -- provide user with a choice of versions to download
+						print caFormTag($this->request, 'DownloadMedia', 'caMediaDownloadForm', 'editor/objects/ObjectEditor', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
+						print caHTMLSelect('version', $va_versions, array('style' => 'font-size: 9px;'));
+						print caFormSubmitLink($this->request, "<img src='".$this->request->getThemeUrlPath()."/graphics/buttons/downloadWhite.png' border='0' title='"._t("Download media")."' valign='bottom'/>", '', 'caMediaDownloadForm', 'caMediaDownloadFormButton');
+						print caHTMLHiddenInput("object_id", array('value' => $t_object->getPrimaryKey()));
+						print caHTMLHiddenInput("representation_id", array('value' => $t_rep->getPrimaryKey()));
+						print caHTMLHiddenInput("download", array('value' => 1));
+						print "</form>\n";
+					}
+?>				
+				</div>
+<?php
+	}
+?>
+			<div class='objectInfo'>
+<?php
+				$vs_label = $t_object->getLabelForDisplay();
+				print (mb_strlen($vs_label) > 80) ? mb_substr($vs_label, 0, 80)."..." : $vs_label;
+			
+				if($t_object->get("idno")){
+					print " [".$t_object->get("idno")."]";
+				}
+?>			
+			</div>
+			<div class='repNav'>
+<?php
+				if ($vn_id = $this->getVar('previous_representation_id')) {
+					print "<a href='#' onClick='jQuery(\"#{$vs_container_id}\").load(\"".caNavUrl($this->request, 'editor/objects', 'ObjectEditor', $this->request->getAction(), array('representation_id' => (int)$vn_id, 'object_id' => (int)$t_object->getPrimaryKey()))."\");'>←</a>";
+				}
+				if (sizeof($va_reps) > 1) {
+					print ' '._t("%1 of %2", $this->getVar('representation_index'), sizeof($va_reps)).' ';
+				}
+				if ($vn_id = $this->getVar('next_representation_id')) {
+					print "<a href='#' onClick='jQuery(\"#{$vs_container_id}\").load(\"".caNavUrl($this->request, 'editor/objects', 'ObjectEditor', $this->request->getAction(), array('representation_id' => (int)$vn_id, 'object_id' => (int)$t_object->getPrimaryKey()))."\");'>→</a>";
+				}
+?>
+			</div>
+	</div><!-- end caMediaOverlayControls -->
+	
+	<div id='caMediaOverlayContent'> </div>
+	<script type="text/javascript">
+		jQuery(document).ready(function() {
+			var pdfObj = new PDFObject({ url: '<?php print $t_rep->getMediaUrl('media', 'original'); ?>' }).embed('caMediaOverlayContent');
+		});
+	</script>
+<?php
 		} else {
 		
 			if (!$vb_no_controls) {
@@ -546,7 +631,11 @@
 	if (!is_array($va_display_options)) { $va_display_options = array(); }
 	$vs_tag = $t_rep->getMediaTag('media', $vs_show_version, array_merge($va_display_options, array(
 		'id' => ($vs_display_type == 'media_overlay') ? 'caMediaOverlayContentMedia' : 'caMediaDisplayContentMedia', 
-		'viewer_base_url' => $this->request->getBaseUrlPath()
+		'viewer_base_url' => $this->request->getBaseUrlPath(),
+		'annotation_load_url' => caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetAnnotations', array('representation_id' => (int)$t_rep->getPrimaryKey(), 'object_id' => (int)$t_object->getPrimaryKey())),
+		'annotation_save_url' => caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'SaveAnnotations', array('representation_id' => (int)$t_rep->getPrimaryKey(), 'object_id' => (int)$t_object->getPrimaryKey())),
+		'help_load_url' => caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'ViewerHelp', array()),
+		'captions' => $t_rep->getCaptionFileList()
 	)));
 	# --- should the media be clickable to open the overlay?
 	if($va_display_options['no_overlay'] || ($vs_display_type == 'media_overlay') || ($vs_display_type == 'media_editor')){

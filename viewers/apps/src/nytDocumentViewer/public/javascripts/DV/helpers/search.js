@@ -4,17 +4,58 @@ _.extend(DV.Schema.helpers, {
       this.viewer.searchResponse = response;
       var hasResults = (response.results.length > 0) ? true : false;
 
-      var text = hasResults ? 'of '+response.results.length + ' ' : ' ';
+      var text = hasResults ? ' Found '+ response.results.length + ' matches' : 'No matches found';
+ 
       this.viewer.$('span.DV-totalSearchResult').text(text);
       this.viewer.$('span.DV-searchQuery').text(response.query);
+      
+      if (response.results.length > 1) {
+      	 $(".DV-resultPrevious").show().css('opacity', 0.3);
+         $(".DV-resultNext").show().css('opacity', 1.0);
+      } else {
+      	 $(".DV-resultPrevious").hide();
+		 $(".DV-resultNext").hide();
+      }
+      
+      $('.DV-searchBar').fadeIn(250);
+          
       if (hasResults) {
         // this.viewer.history.save('search/p'+response.results[0]+'/'+response.query);
         var currentPage = this.viewer.models.document.currentPage();
         var page = (_.include(response.results, currentPage)) ? currentPage : response.results[0];
-        this.events.loadText(page - 1, this.highlightSearchResponses);
+        	 
+//
+// Plot search hits as annotations
+//
+		// Remove any existing annotations 
+		this.viewer.api.removeAllAnnotations();
+
+		// Add ones for the current search
+		var firstPage = null;
+		for(var p in response.locations) {
+			if (firstPage == null) { firstPage = p; }
+			for(var l in response.locations[p]) {
+				var loc = response.locations[p][l];
+				var locStr = parseInt(loc.x1) + ", " + parseInt(loc.y1) + ", " + parseInt(loc.x2) + ", " + parseInt(loc.y2);
+				
+				this.viewer.api.addAnnotation({
+				  title     : response.query,
+				  page      : p,
+				  content   : '',
+				  location  : { 'image': locStr }
+				}, false, false);
+			}
+		}
+	
+		this.viewer.api.setCurrentPage(firstPage);
       } else {
-        this.highlightSearchResponses();
+//
+// No results found
+//
+        this.viewer.api.removeAllAnnotations();
       }
+      
+	  this.viewer.api.redraw(true);
     }, this);
 
     var failResponse = function() {
@@ -38,7 +79,7 @@ _.extend(DV.Schema.helpers, {
 
     this.elements.currentPage.text(pageNumber);
     this.viewer.$('.DV-pageNumberContainer input').val(pageNumber);
-
+    
     if(this.viewer.state === 'ViewDocument' ||
        this.viewer.state === 'ViewThumbnails'){
       // this.viewer.history.save('document/p'+pageNumber);
@@ -152,6 +193,8 @@ _.extend(DV.Schema.helpers, {
     this.elements.window[0].scrollTop = match.position().top - 50;
     if (searchResponse) searchResponse.highlighted = index;
 
+	if (firstPage != null) { this.viewer.api.setCurrentPage(firstPage); }
+
     // cleanup
     highlightsOnThisPage = null;
     match = null;
@@ -169,12 +212,57 @@ _.extend(DV.Schema.helpers, {
     }
   },
   highlightPreviousMatch: function(e){
-    e.preventDefault();
-    this.highlightMatch(this.viewer.searchResponse.highlighted-1);
+  	var prevPage = this.getPreviousPageWithMatches();
+  	if (prevPage > 0) {
+  		this.viewer.api.setCurrentPage(prevPage);
+  		
+  		var prevPrevPage = this.getPreviousPageWithMatches();
+  		$('.DV-resultPrevious').css('opacity', prevPrevPage ? 1.0 : 0.3);
+  	} else {
+  		$('.DV-resultPrevious').css('opacity', 0.3);
+  	}
+  	$('.DV-resultNext').css('opacity', 1.0);
+    e.preventDefault(e);
   },
   highlightNextMatch: function(e){
+  	var nextPage = this.getNextPageWithMatches();
+  	if (nextPage > 0) {
+  		this.viewer.api.setCurrentPage(nextPage);
+  		
+  		var nextNextPage = this.getNextPageWithMatches();
+  		$('.DV-resultNext').css('opacity', nextNextPage ? 1.0 : 0.3);
+  	} else {
+  		$('.DV-resultNext').css('opacity', 0.3);
+  	}
+  	$('.DV-resultPrevious').css('opacity', 1.0);
     e.preventDefault(e);
-    this.highlightMatch(this.viewer.searchResponse.highlighted+1);
+  },
+  
+  getNextPageWithMatches: function() {
+  	var p = this.viewer.api.currentPage();
+  	var nextPage = null;
+  	for(var i in this.viewer.searchResponse.locations) {
+  		if (i > p) {
+  			nextPage = i;
+  			break;
+  		}
+  	}
+  	
+  	return nextPage;
+  },
+  
+  getPreviousPageWithMatches: function() {
+  	var p = this.viewer.api.currentPage();
+  	var prevPage = null;
+  	for(var i in this.viewer.searchResponse.locations) {
+  		if (i < p) {
+  			prevPage = i;
+  		} else {
+  			break;
+  		}
+  	}
+  	
+  	return prevPage;
   },
 
   clearSearch: function(e) {
@@ -189,7 +277,7 @@ _.extend(DV.Schema.helpers, {
   },
   cleanUpSearch: function(){
     var viewer            = this.viewer;
-    viewer.searchResponse = null;
+    //viewer.searchResponse = null;
     viewer.toHighLight    = null;
     if (this.elements) this.elements.searchInput.keyup().blur();
   }

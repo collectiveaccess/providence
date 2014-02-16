@@ -14,9 +14,9 @@
  *
  * @category  Zend
  * @package   Zend_Uri
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd     New BSD License
- * @version   $Id: Uri.php 22539 2010-07-08 12:47:44Z shahar $
+ * @version   $Id: Uri.php 24593 2012-01-05 20:35:02Z matthew $
  */
 
 /**
@@ -24,7 +24,7 @@
  *
  * @category  Zend
  * @package   Zend_Uri
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_Uri
@@ -53,7 +53,12 @@ abstract class Zend_Uri
      */
     public function __toString()
     {
-        return $this->getUri();
+        try {
+            return $this->getUri();
+        } catch (Exception $e) {
+            trigger_error($e->getMessage(), E_USER_WARNING);
+            return '';
+        }
     }
 
     /**

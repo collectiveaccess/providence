@@ -12,7 +12,7 @@ wordsWithSpacesReplacements = [apjc,apjc,apjc,apjc,apjc,apjc,apjc,apjc,apjc,apjc
 monthList = [janvier, février, mars, avril, mai, juin, juillet, août, septembre, octobre, novembre, décembre]
 
 # *** the following list of months is for display and *SHOULD* be capitalized where appropriate
-monthListDisplay = [janvier, février, mars, avril, mai, juin, juillet, août, septembre, octobre, novembre, décembre]
+monthListDisplay = [Janvier, Février, Mars, Avril, Mai, Juin, Juillet, Août, Septembre, Octobre, Novembre, Décembre]
 
 # Hash table mapping acceptable month names to the display names defined in 'monthList'
 # http://fr.wikipedia.org/wiki/Mois
@@ -89,6 +89,7 @@ todayDate = [aujourd'hui]
 yesterdayDate = [hier]
 #tomorrowDate = [tomorrow]
 tomorrowDate = [demain]
+undatedDate = [undated, unknown]
 
 #presentDate = [present, ?, ??, ???, ????]
 presentDate = [présent, ?, ??, ???, ????]

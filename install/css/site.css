@@ -25,12 +25,8 @@ a:hover{
 	margin:50px auto 50px auto;
 }
 #logo{
-	background-color: #134959;
 	text-align:center;
 	padding:5px 0px 5px 0px;
-	background-image: url("../graphics/corner.gif");
-	background-position: right bottom;
-	background-repeat:no-repeat;
 }
 #content{
 	padding:10px 20px 20px 20px;
@@ -95,15 +91,34 @@ H2{
 	padding: 20px;
 	line-height:1.3em;
 	overflow: hidden;
-	height: 90px;
+	height: 200px;
 }
-.contentFailure, .contentSuccess{
+.contentSuccess{
 	color: #333333;
 	font-size:14px;
 	text-align: center;
 	text-decoration: none;
 	margin: 20px 0px 20px 0px;
 }
+
+.contentFailureHead {
+	color: #333333;
+	font-size:14px;
+	text-align: center;
+	text-decoration: none;
+	margin: 10px 0px 10px 0px;
+}
+
+.contentFailure{
+	color: #333333;
+	font-size:12px;
+	text-align: left;
+	text-decoration: none;
+	margin: 20px 0px 20px 0px;
+	height: 100%;
+	overflow: auto;
+}
+
 .contentHighlight {
 	color: #1FAA99;
 }

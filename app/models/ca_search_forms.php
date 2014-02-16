@@ -201,7 +201,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	# Change logging
 	# ------------------------------------------------------
 	protected $UNIT_ID_FIELD = null;
-	protected $LOG_CHANGES_TO_SELF = false;
+	protected $LOG_CHANGES_TO_SELF = true;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
 		
@@ -314,8 +314,8 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		return parent::set($pa_fields, $pm_value, $pa_options);
 	}
 	# ------------------------------------------------------
-	protected function initLabelDefinitions() {
-		parent::initLabelDefinitions();
+	protected function initLabelDefinitions($pa_options=null) {
+		parent::initLabelDefinitions($pa_options);
 		$this->BUNDLES['ca_users'] = array('type' => 'special', 'repeating' => true, 'label' => _t('User access'));
 		$this->BUNDLES['ca_user_groups'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Group access'));
 		$this->BUNDLES['ca_search_form_placements'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Search form contents'));

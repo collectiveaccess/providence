@@ -79,9 +79,10 @@ class TaskQueue extends BaseObject {
 	function getHandlerName($ps_handler) {
 		if (sizeof($this->opa_handler_plugin_dirs)) {
 			foreach($this->opa_handler_plugin_dirs as $vs_handler_dir) {
-				if (file_exists($vs_handler_dir."/".$ps_handler.".php")) {
-					require_once($vs_handler_dir."/".$ps_handler.".php");
-					eval("\$h = new WLPlugTaskQueueHandler".$ps_handler."();");
+				if (file_exists("{$vs_handler_dir}/{$ps_handler}.php")) {
+					require_once("{$vs_handler_dir}/{$ps_handler}.php");
+					$ps_handler_class = "WLPlugTaskQueueHandler{$ps_handler}";
+					$h = new $ps_handler_class();
 			
 					return $h->getHandlerName();
 				}
@@ -117,9 +118,10 @@ class TaskQueue extends BaseObject {
 		
 		if (sizeof($this->opa_handler_plugin_dirs)) {
 			foreach($this->opa_handler_plugin_dirs as $vs_handler_dir) {
-				if (file_exists($vs_handler_dir."/".$vs_handler.".php")) {
-					require_once($vs_handler_dir."/".$vs_handler.".php");
-					eval("\$h = new WLPlugTaskQueueHandler".$vs_handler."();");
+				if (file_exists("{$vs_handler_dir}/{$vs_handler}.php")) {
+					require_once("{$vs_handler_dir}/{$vs_handler}.php");					
+					$ps_handler_class = "WLPlugTaskQueueHandler{$vs_handler}";
+					$h = new $ps_handler_class();
 					
 					return $h->getParametersForDisplay($va_rec);
 				}
@@ -275,8 +277,9 @@ class TaskQueue extends BaseObject {
 				$proc_parameters = unserialize(base64_decode($qr_tasks->get("parameters")));
 				
 				# load handler
-				require_once($vs_handler_dir."/".$proc_handler.".php");
-				eval("\$h = new WLPlugTaskQueueHandler".$proc_handler."();");
+				require_once("{$vs_handler_dir}/{$proc_handler}.php");
+				$proc_handler_class = "WLPlugTaskQueueHandler{$proc_handler}";
+				$h = new $proc_handler_class();
 				
 				$vn_start_time = $this->_microtime2float();
 				if ($va_report = $h->process($proc_parameters)) {
@@ -382,8 +385,9 @@ class TaskQueue extends BaseObject {
 			}
 			
 			# load handler
-			require_once($vs_handler_dir."/".$proc_handler.".php");
-			eval("\$h = new WLPlugTaskQueueHandler".$proc_handler."();");
+			require_once("{$vs_handler_dir}/{$proc_handler}.php");
+			$proc_handler_class = "WLPlugTaskQueueHandler{$proc_handler}";
+			$h = new $proc_handler_class();
 			
 			$proc_parameters = unserialize(base64_decode($qr_tasks->get("parameters")));
 			if (!($h->cancel($qr_tasks->get("task_id"), $proc_parameters))) {
@@ -485,8 +489,9 @@ class TaskQueue extends BaseObject {
 			}
 			
 			# load handler
-			require_once($vs_handler_dir."/".$proc_handler.".php");
-			eval("\$h = new WLPlugTaskQueueHandler".$proc_handler."();");
+			require_once("{$vs_handler_dir}/{$proc_handler}.php");
+			$proc_handler_class = "WLPlugTaskQueueHandler{$proc_handler}";
+			$h = new $proc_handler_class();
 			
 			$proc_parameters = unserialize(base64_decode($qr_tasks->get("parameters")));
 			if (!($h->cancel($qr_tasks->get("task_id"), $proc_parameters))) {

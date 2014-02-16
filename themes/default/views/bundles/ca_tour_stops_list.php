@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,6 +37,7 @@
 	$va_errors = array();
 	$va_failed_inserts = array();
  
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_tour->tableNum().'_rel');
  ?>
  <div id="<?php print $vs_id_prefix.$t_tour->tableNum().'_rel'; ?>">
 <?php
@@ -92,6 +93,7 @@
 		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 		templateValues: ['name', 'locale_id', 'rank', 'stop_id', 'typename'],
 		initialValues: <?php print json_encode($va_initial_values); ?>,
+		initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
 		errors: <?php print json_encode($va_errors); ?>,
 		forceNewValues: <?php print json_encode($va_failed_inserts); ?>,
 		itemID: '<?php print $vs_id_prefix; ?>Item_',

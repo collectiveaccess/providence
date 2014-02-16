@@ -35,7 +35,7 @@
    */
 
 require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
-require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
+require_once(__CA_LIB_DIR__."/ca/RepresentableBaseModel.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_occurrences'] = array(
@@ -173,10 +173,10 @@ BaseModel::$s_ca_models_definitions['ca_occurrences'] = array(
  	)
 );
 
-class ca_occurrences extends BundlableLabelableBaseModelWithAttributes implements IBundleProvider {
-	# ---------------------------------
+class ca_occurrences extends RepresentableBaseModel implements IBundleProvider {
+	# ------------------------------------------------------
 	# --- Object attribute properties
-	# ---------------------------------
+	# ------------------------------------------------------
 	# Describe structure of content object's properties - eg. database fields and their
 	# associated types, what modes are supported, et al.
 	#
@@ -308,8 +308,9 @@ class ca_occurrences extends BundlableLabelableBaseModelWithAttributes implement
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
-	protected function initLabelDefinitions() {
-		parent::initLabelDefinitions();
+	protected function initLabelDefinitions($pa_options=null) {
+		parent::initLabelDefinitions($pa_options);
+		$this->BUNDLES['ca_object_representations'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Media representations'));
 		$this->BUNDLES['ca_entities'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related entities'));
 		$this->BUNDLES['ca_objects'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects'));
 		$this->BUNDLES['ca_object_lots'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related lot'));
@@ -317,9 +318,10 @@ class ca_occurrences extends BundlableLabelableBaseModelWithAttributes implement
 		$this->BUNDLES['ca_collections'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related collections'));
 		$this->BUNDLES['ca_places'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related places'));
 		$this->BUNDLES['ca_storage_locations'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related storage locations'));
-		
 		$this->BUNDLES['ca_loans'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related loans'));
 		$this->BUNDLES['ca_movements'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related movements'));
+		
+		$this->BUNDLES['ca_tour_stops'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related tour stops'));
 		
 		$this->BUNDLES['ca_list_items'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related vocabulary terms'));
 		$this->BUNDLES['ca_sets'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Sets'));
@@ -397,12 +399,7 @@ class ca_occurrences extends BundlableLabelableBaseModelWithAttributes implement
 					'name' => $vs_name = caProcessTemplateForIDs($vs_template, 'ca_occurrences', array($vn_pk)),
 					'hierarchy_id' => $vn_hier_id,
 					'children' => sizeof($va_children)
-				),
-				'occurrence_id' => $vn_pk,
-	 			'item_id' => $vn_pk,
-				'name' => $vs_name,
-				'hierarchy_id' => $vn_hier_id,
-				'children' => sizeof($va_children)
+				)
 			);
 				
 	 		return $va_occurrence_hierarchy_root;

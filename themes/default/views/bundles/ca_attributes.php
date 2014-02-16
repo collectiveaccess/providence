@@ -30,6 +30,7 @@
 	$vs_error_source_code 		= 	$this->getVar('error_source_code');
 	$vs_render_mode 			=	$this->getVar('render_mode');
 	
+	$t_element					=	$this->getVar('t_element');
 	$va_elements 				=	$this->getVar('elements');
 	$va_element_ids 			= 	$this->getVar('element_ids');
 	$va_element_info 			= 	$this->getVar('element_info');
@@ -67,7 +68,7 @@
 					// copy value from failed update into form (so user can correct it)
 					$vs_display_val = $va_failed_updates[$vn_attr_id][$vn_element_id];
 				} else {
-					$vs_display_val = $o_value->getDisplayValue(array('po_request' => $this->request));
+					$vs_display_val = $o_value->getDisplayValue(array('request' => $this->request));
 				}
 				
 				$va_initial_values[$vn_attr_id][$vn_element_id] = $vs_display_val;
@@ -100,8 +101,10 @@
 		}
 	} else {
 		// set labels for replacement in blank lookups	
-		foreach($va_element_ids as $vn_element_id) {
-			$va_template_tags[] = "{$vn_element_id}_label";
+		if (is_array($va_element_ids)) {
+			foreach($va_element_ids as $vn_element_id) {
+				$va_template_tags[] = "{$vn_element_id}_label";
+			}
 		}
 	}
 	
@@ -113,6 +116,8 @@
 	
 	if ($vb_batch) {
 		print caBatchEditorAttributeModeControl($vs_id_prefix);
+	} else {
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 	}
 ?>
 <div id="<?php print $vs_id_prefix; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
@@ -132,6 +137,11 @@
 			</div>				
 <?php
 	}
+		
+	if (!$vb_batch && ($vs_presets = $t_element->getPresetsAsHTMLFormElement(array('width' => '100px')))) {
+		print "<div style='float: right; margin-right: 10px;'>{$vs_presets}</div>\n";
+	}
+	
 			foreach($va_elements as $vn_container_id => $va_element_list) {
 				if ($vn_container_id === '_locale_id') { continue; }
 ?>
@@ -147,6 +157,7 @@
 				</table>
 <?php
 			}
+		
 
 			if (isset($va_elements['_locale_id'])) {
 				print ($va_elements['_locale_id']['hidden']) ? $va_elements['_locale_id']['element'] : '<div class="formLabel">'._t('Locale').' '.$va_elements['_locale_id']['element'].'</div>';
@@ -171,12 +182,16 @@
 			
 <script type="text/javascript">
 <?php
+	if (!$vb_batch) {
+		print $t_element->getPresetsJavascript($vs_id_prefix);
+	}
 	if ($vs_render_mode === 'checklist') {
 ?>
 	caUI.initChecklistBundle('#<?php print $vs_id_prefix; ?>', {
 		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 		templateValues: [<?php print join(',', caQuoteList($va_template_tags)); ?>],
 		initialValues: <?php print json_encode($va_initial_values); ?>,
+		initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
 		errors: <?php print json_encode($va_errors); ?>,
 		itemID: '<?php print $vs_id_prefix; ?>Item_',
 		templateClassName: 'caItemTemplate',
@@ -193,6 +208,7 @@
 		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 		templateValues: [<?php print join(',', caQuoteList($va_template_tags)); ?>],
 		initialValues: <?php print json_encode($va_initial_values); ?>,
+		initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
 		forceNewValues: <?php print json_encode($va_failed_inserts); ?>,
 		errors: <?php print json_encode($va_errors); ?>,
 		itemID: '<?php print $vs_id_prefix; ?>Item_',

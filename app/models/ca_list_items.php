@@ -34,7 +34,8 @@
    *
    */
  
-require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
+require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
+require_once(__CA_LIB_DIR__.'/ca/RepresentableBaseModel.php');
 require_once(__CA_LIB_DIR__.'/ca/IHierarchy.php');
 require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 require_once(__CA_MODELS_DIR__.'/ca_locales.php');
@@ -169,6 +170,13 @@ BaseModel::$s_ca_models_definitions['ca_list_items'] = array(
 				'LIST' => 'access_statuses',
 				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates if the list item is accessible to the public or not. ')
 		),
+		'settings' => array(
+				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('List item settings')
+		),
 		'status' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
@@ -194,10 +202,31 @@ BaseModel::$s_ca_models_definitions['ca_list_items'] = array(
  	)
 );
 
-class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements IHierarchy {
-	# ---------------------------------
+global $_ca_list_items_settings;
+
+// These are settings per-list. They do not apply to lists universally.
+$_ca_list_items_settings = array(
+	'entity_types' => array(		// global
+		'entity_class' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('Individual person') => 'IND',
+				_t('Organization') => 'ORG',
+			),
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 'IND',
+			'label' => _t('Entity class'),
+			'description' => _t('The class of entity the type represents. Use <em>Individual person</em> for entities that require a fully articulated personal name. Use <em>organization</em> for group entities such as corporations, clubs and families.')
+		)
+	)
+);
+
+class ca_list_items extends RepresentableBaseModel implements IHierarchy {
+	# ------------------------------------------------------
 	# --- Object attribute properties
-	# ---------------------------------
+	# ------------------------------------------------------
 	# Describe structure of content object's properties - eg. database fields and their
 	# associated types, what modes are supported, et al.
 	#
@@ -316,6 +345,12 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 
 	protected $FIELDS;
 	
+	
+	/**
+	 * Settings delegate - implements methods for setting, getting and using 'settings' var field
+	 */
+	public $SETTINGS;
+	
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -328,11 +363,13 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 	#
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
+		$this->SETTINGS = new ModelSettings($this, 'settings', array());
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
-	protected function initLabelDefinitions() {
-		parent::initLabelDefinitions();
+	protected function initLabelDefinitions($pa_options=null) {
+		parent::initLabelDefinitions($pa_options);
+		$this->BUNDLES['ca_object_representations'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Media representations'));
 		$this->BUNDLES['ca_objects'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects'));
 		$this->BUNDLES['ca_object_lots'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related lots'));
 		$this->BUNDLES['ca_entities'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related entities'));
@@ -348,6 +385,22 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 		
 		$this->BUNDLES['hierarchy_navigation'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Hierarchy navigation'));
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
+		
+		$this->BUNDLES['settings'] = array('type' => 'special', 'repeating' => false, 'label' => _t('List item settings'));
+	}
+	# ------------------------------------------------------
+	public function load($pm_id=null, $pb_use_cache=true) {
+		if ($vn_rc = parent::load($pm_id, $pb_use_cache)) {
+			$this->_setSettingsForList();
+		}
+		return $vn_rc;
+	}
+	# ------------------------------------------------------
+	private function _setSettingsForList() {
+		global $_ca_list_items_settings;
+		if (isset($_ca_list_items_settings[$vs_list_code = caGetListCode($this->get('list_id'))])) {
+			$this->SETTINGS = new ModelSettings($this, 'settings', $_ca_list_items_settings[$vs_list_code]);
+		}
 	}
  	# ------------------------------------------------------
 	public function insert($pa_options=null) {
@@ -405,6 +458,7 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 			$this->getTransaction()->rollback();
 		} else {
 			$this->getTransaction()->commit();
+			$this->_setSettingsForList();
 		}
 		return $vn_rc;
 	}
@@ -413,12 +467,12 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 		if (!$this->inTransaction()) {
 			$this->setTransaction(new Transaction());
 		}
-		if ($this->get('is_default')) {
+		if ($this->get('is_default') == 1) {
 			$this->getDb()->query("
 				UPDATE ca_list_items 
 				SET is_default = 0 
-				WHERE list_id = ?
-			", (int)$this->get('list_id'));
+				WHERE list_id = ? AND item_id <> ?
+			", (int)$this->get('list_id'), $this->getPrimaryKey());
 		}
 		$vn_rc = parent::update($pa_options);
 		
@@ -426,8 +480,63 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 			$this->getTransaction()->rollback();
 		} else {
 			$this->getTransaction()->commit();
+			$this->_setSettingsForList();
 		}
 		return $vn_rc;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+		$vb_web_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
+		
+		if (!$this->inTransaction()) {
+			$o_trans = new Transaction($this->getDb());
+			$this->setTransaction($o_trans);
+		}
+		if (!is_array($pa_options)) { $pa_options = array(); }
+		
+		$vn_id = $this->getPrimaryKey();
+		if(parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
+			// Delete any associated attribute values that use this list item
+			if (!($qr_res = $this->getDb()->query("
+				DELETE FROM ca_attribute_values 
+				WHERE item_id = ?
+			", (int)$vn_id))) { 
+				$this->errors = $this->getDb()->errors();
+				if ($o_trans) { $o_trans->rollback(); }
+				
+				if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
+				return false; 
+			}
+			
+			// Kill any attributes that no longer have values
+			// This cleans up attributes that had a single list value (and now have nothing)
+			// in a relatively efficient way
+			//
+			// We should not need to reindex for search here because the delete of the list item itself
+			// should have triggered reindexing
+			// 
+			if (!($qr_res = $this->getDb()->query("
+				DELETE FROM ca_attributes WHERE attribute_id not in (SELECT distinct attribute_id FROM ca_attribute_values)
+			"))) {
+				$this->errors = $this->getDb()->errors();
+				if ($o_trans) { $o_trans->rollback(); }
+				
+				if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
+				return false;
+			}
+			
+			if ($o_trans) { $o_trans->commit(); }
+				
+			if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
+			return true;
+		}
+		
+		if ($o_trans) { $o_trans->rollback(); }
+		if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
+		return false;
 	}
 	# ------------------------------------------------------
 	/**
@@ -476,7 +585,7 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
 			if ($qr_children->nextRow()) {
 				$vn_children_count = $qr_children->get('children');
 			}
-			$va_hierarchies[$vn_hierarchy_id]['name'] = caProcessTemplateForIDs($vs_template, 'ca_lists', array($vn_hierarchy_id));
+			$va_hierarchies[$vn_hierarchy_id]['name'] = caProcessTemplateForIDs($vs_template, 'ca_lists', array($vn_hierarchy_id), array('requireLinkTags' => true));
 			$va_hierarchies[$vn_hierarchy_id]['children'] = intval($vn_children_count);
 			$va_hierarchies[$vn_hierarchy_id]['has_children'] = ($vn_children_count > 0) ? 1 : 0;
 		}
@@ -664,13 +773,17 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
  	 * @param RequestHTTP $po_request
  	 * @return bool True if record can be saved, false if not
  	 */
- 	public function isSaveable($po_request) {
+ 	public function isSaveable($po_request, $ps_bundle_name=null) {
  		// Is row loaded?
- 		if (!($vn_list_id = $this->get('list_id'))) { return false; }
+ 		if (!($vn_list_id = $this->get('list_id'))) { // this happens when a new list item is about to be created. in those cases we extract the list from the request.
+ 			$vn_list_id = $this->_getListIDFromRequest($po_request);
+ 		}
+
+ 		if(!$vn_list_id) { return false; }
  		
  		$t_list = new ca_lists($vn_list_id);
  		if (!$t_list->getPrimaryKey()) { return false; }
- 		return $t_list->isSaveable($po_request);
+ 		return $t_list->isSaveable($po_request, $ps_bundle_name);
  	}
  	# ------------------------------------------------------
  	/**
@@ -678,13 +791,49 @@ class ca_list_items extends BundlableLabelableBaseModelWithAttributes implements
  	 */
  	public function isDeletable($po_request) {
  		// Is row loaded?
- 		if (!$this->getPrimaryKey()) { return false; }
+ 		if (!$this->getPrimaryKey()) { // this happens when a new list item is about to be created. in those cases we extract the list from the request.
+ 			$vn_list_id = $this->_getListIDFromRequest($po_request);
+ 		} else {
+ 			$vn_list_id = $this->get('list_id');
+ 		}
+
+ 		if(!$vn_list_id) { return false; }
  		
- 		$t_list = new ca_lists($this->get('list_id'));
+ 		$t_list = new ca_lists($vn_list_id);
  		if (!$t_list->getPrimaryKey()) { return false; }
  		
  		return $t_list->isDeletable($po_request);
  	}
+	# ------------------------------------------------------
+	/**
+	 * Helper to extract the list a new item is about to be inserted in from the request.
+	 * This is usually not passed as simple list_id parameter by the UI but through the parent_id.
+	 */
+	private function _getListIDFromRequest($po_request){
+		if($vn_list_id = $po_request->getParameter('list_id',pInteger)){ return $vn_list_id; }
+
+		if($vn_parent_id = $po_request->getParameter('parent_id',pInteger)){
+			$t_item = new ca_list_items($vn_parent_id);
+			if($t_item->getPrimaryKey()){
+				return $t_item->get('list_id');	
+			}
+		}
+
+		return false;
+	}
+	
+	# ------------------------------------------------------
+	# Settings
+	# ------------------------------------------------------
+	/**
+	 * Reroutes calls to method implemented by settings delegate to the delegate class
+	 */
+	public function __call($ps_name, $pa_arguments) {
+		if (method_exists($this->SETTINGS, $ps_name)) {
+			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
+		}
+		die($this->tableName()." does not implement method {$ps_name}");
+	}
 	# ------------------------------------------------------
 }
 ?>

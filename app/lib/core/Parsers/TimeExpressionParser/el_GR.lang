@@ -60,6 +60,7 @@ nowDate = [τώρα]
 todayDate = [σήμερα]
 yesterdayDate = [χτες]
 tomorrowDate = [αύριο]
+undatedDate = [undated, unknown]
 
 presentDate = [τωρινός, τωρινή, ?, ??, ???, ????]
 beforeQualifier = [πριν]

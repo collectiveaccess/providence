@@ -156,7 +156,7 @@ class ca_metadata_element_labels extends BaseLabel {
 	protected $LOG_CHANGES_TO_SELF = false;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
-		
+			"element_id"
 		),
 		"RELATED_TABLES" => array(
 		

@@ -59,6 +59,9 @@
 		 *
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
+			$o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;
+			$o_trans = (isset($pa_options['transaction']) && ($pa_options['transaction'] instanceof Transaction)) ? $pa_options['transaction'] : null;
+			
 			$va_group_dest = explode(".", $pa_group['destination']);
 			$vs_terminal = array_pop($va_group_dest);
 			
@@ -87,9 +90,9 @@
 			$va_defaults = $pa_item['settings']['ATRelatedGetter_defaults'];
 			$vs_rel_table = $pa_item['settings']['ATRelatedGetter_table'];
 			$vs_rel_table = $pa_item['settings']['ATRelatedGetter_table'];
-			//print_R($va_map);
+			
 			if (!is_array($va_map)) {
-				print "Invalid map!\n";
+				if ($o_log) { $o_log->logError(_t("[ATRelatedGetterRefinery] Invalid map")); }
 				return array();
 			}
 			
@@ -113,7 +116,6 @@
 			
 				ATRelatedGetterRefinery::$s_sql_field_cache[$vs_rel_table] = array('fields' => $va_sql_field_list, 'bitfields' => $va_bit_fields);
 			}
-			
 			
 			// Load relationships (arghhhhhhhhhhhhhhhhhhhhhh)
 			$va_relationship_map_tmp = $pa_item['settings']['ATRelatedGetter_relationships'];
@@ -188,7 +190,7 @@
 					}
 					if (!strlen($va_val[$vs_ca_key])) { $va_val[$vs_ca_key] = $va_defaults[$vs_ca_key]; }
 				}
-				$va_vals[] = array($vs_terminal => $va_val);
+				$va_vals[] = $va_val;
 			}
 			
 			return $va_vals;

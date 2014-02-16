@@ -182,8 +182,12 @@ class RequestDispatcher extends BaseObject {
 				if(!$this->opo_request->user->canAccess($this->opa_module_path, $this->ops_controller, $this->ops_action)){
 					switch($this->opo_request->getScriptName()){
 						case "service.php":
+							// service auth requests for deprecated service API are allowed to go through to
+							// dispatch because in that case logging in requires running actual controller code. 
+							// this is bad practice and should be removed once the old API is no longer supported.
 							if(!$this->opo_request->isServiceAuthRequest()) {
 								$this->opo_response->setHTTPResponseCode(401,_t("Access denied"));
+								$this->opo_response->addHeader('WWW-Authenticate','Basic realm="CollectiveAccess Service API"');
 								return true; // this is kinda stupid but otherwise the "error redirect" code of AppController kicks in, which is not what we want here!
 							}
 							break;

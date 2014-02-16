@@ -52,12 +52,13 @@ DV.Schema.helpers = {
         context.open('ViewText');
       });
       viewer.$('.DV-allAnnotations').delegate('.DV-annotationGoto .DV-trigger','click', DV.jQuery.proxy(this.gotoPage, this));
+      viewer.$('.DV-allAnnotations').delegate('.DV-annotationTitle .DV-trigger','click', DV.jQuery.proxy(this.gotoPage, this));
 
       viewer.$('form.DV-searchDocument').submit(this.events.compile('search'));
       viewer.$('.DV-searchBar').delegate('.DV-closeSearch','click',function(e){
+      	viewer.$('.DV-searchBar').fadeOut(250);
         e.preventDefault();
         // history.save('text/p'+context.models.document.currentPage());
-        context.open('ViewText');
       });
       viewer.$('.DV-searchBox').delegate('.DV-searchInput-cancel', 'click', DV.jQuery.proxy(this.clearSearch, this));
 
@@ -131,13 +132,13 @@ DV.Schema.helpers = {
 
       var docId = viewer.schema.document.id;
 
-      if(DV.jQuery.browser.msie == true){
-        this.elements.browserDocument.bind('focus.' + docId, DV.jQuery.proxy(this.focusWindow,this));
-        this.elements.browserDocument.bind('focusout.' + docId, DV.jQuery.proxy(this.focusOut,this));
-      }else{
+      //if(DV.jQuery.browser.msie == true){
+      //  this.elements.browserDocument.bind('focus.' + docId, DV.jQuery.proxy(this.focusWindow,this));
+      //  this.elements.browserDocument.bind('focusout.' + docId, DV.jQuery.proxy(this.focusOut,this));
+     // }else{
         this.elements.browserWindow.bind('focus.' + docId, DV.jQuery.proxy(this.focusWindow,this));
         this.elements.browserWindow.bind('blur.' + docId, DV.jQuery.proxy(this.blurWindow,this));
-      }
+     // }
 
       // When the document is scrolled, even in the background, resume polling.
       this.elements.window.bind('scroll.' + docId, DV.jQuery.proxy(this.focusWindow, this));
@@ -359,25 +360,6 @@ DV.Schema.helpers = {
         }
       }
     },
-
-    // TODO: This function is not currently being called. Candidate for removal.
-
-    // setWindowSize: function(windowDimensions){
-    //   var viewer          = this.viewer;
-    //   var elements        = this.elements;
-    //   var headerHeight    = elements.header.outerHeight() + 15;
-    //   var offset          = DV.jQuery(this.viewer.options.container).offset().top;
-    //   var uiHeight        = Math.round((windowDimensions.height) - headerHeight - offset);
-    //
-    //   // doc window
-    //   elements.window.css({ height: uiHeight, width: windowDimensions.width-267 });
-    //
-    //   // well
-    //   elements.well.css( { height: uiHeight });
-    //
-    //   // store this for later
-    //   viewer.windowDimensions = windowDimensions;
-    // },
 
     toggleContent: function(toggleClassName){
       this.elements.viewer.removeClass('DV-viewText DV-viewSearch DV-viewDocument DV-viewAnnotations DV-viewThumbnails').addClass('DV-'+toggleClassName);

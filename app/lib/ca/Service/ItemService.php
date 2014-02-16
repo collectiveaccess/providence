@@ -49,6 +49,20 @@ class ItemService extends BaseJSONService {
 			case "GET":
 				if($this->opn_id){	// we allow that this might be a string here for idno-based fetching
 					if(sizeof($this->getRequestBodyArray())==0){
+						// allow different format specifications
+						if($vs_format = $this->opo_request->getParameter("format",pString)){
+							switch($vs_format){
+								// this one is tailored towards editing/adding the item
+								// later, using the PUT variant of this service
+								case 'edit':
+									return $this->getItemInfoForEdit();
+								case 'import':
+									return $this->getItemInfoForImport();
+								default:
+									break;
+							}
+						}
+						// fall back on default format
 						return $this->getAllItemInfo();
 					} else {
 						return $this->getSpecificItemInfo();
@@ -91,6 +105,13 @@ class ItemService extends BaseJSONService {
 		$va_post = $this->getRequestBodyArray();
 
 		$va_return = array();
+		
+		// allow user-defined template to be passed; allows flexible formatting of returned "display" value
+		if (!($vs_template = $this->opo_request->getParameter('template', pString))) { $vs_template = ''; }
+		if ($vs_template) {
+			$va_return['display'] = caProcessTemplateForIDs($vs_template, $this->ops_table, array($this->opn_id));
+		}
+		
 		if(!is_array($va_post["bundles"])){
 			return false;
 		}
@@ -110,7 +131,7 @@ class ItemService extends BaseJSONService {
 	}
 	# -------------------------------------------------------
 	/**
-	 * Try to return everything useful for the specified record
+	 * Try to return a generic summary for the specified record
 	 */
 	protected function getAllItemInfo(){
 		if(!($t_instance = $this->_getTableInstance($this->ops_table,$this->opn_id))){	// note that $this->opn_id might be a string if we're fetching by idno; you can only use an idno for getting an item, not for editing or deleting
@@ -123,6 +144,12 @@ class ItemService extends BaseJSONService {
 		
 		$va_return = array();
 
+		// allow user-defined template to be passed; allows flexible formatting of returned "display" value
+		if (!($vs_template = $this->opo_request->getParameter('template', pString))) { $vs_template = ''; }
+		if ($vs_template) {
+			$va_return['display'] = caProcessTemplateForIDs($vs_template, $this->ops_table, array($this->opn_id));
+		}
+		
 		// labels
 
 		$va_labels = $t_instance->get($this->ops_table.".preferred_labels",array("returnAllLocales" => true));
@@ -172,9 +199,20 @@ class ItemService extends BaseJSONService {
 			}
 		}
 
-		// representations for objects
-		if($this->ops_table == "ca_objects"){
-			$va_return['representations'] = $t_instance->getRepresentations();
+		// representations for representable stuff
+		if($t_instance instanceof RepresentableBaseModel){
+			$va_reps = $t_instance->getRepresentations(array('preview170','original'));
+			if(is_array($va_reps) && (sizeof($va_reps)>0)){
+				$va_return['representations'] = $va_reps;	
+			}
+		}
+
+		// captions for representations
+		if($this->ops_table == "ca_object_representations"){
+			$va_captions = $t_instance->getCaptionFileList();
+			if(is_array($va_captions) && (sizeof($va_captions)>0)){
+				$va_return['captions'] = $va_captions;	
+			}
 		}
 
 		// attributes
@@ -183,7 +221,7 @@ class ItemService extends BaseJSONService {
 			if($va_vals = $t_instance->get($this->ops_table.".".$vs_code,
 				array("convertCodesToDisplayText" => true,"returnAllLocales" => true)))
 			{
-				$va_vals_by_locale = end($va_vals); // i seriously have no idea what that additional level of nesting in the return format is for
+				$va_vals_by_locale = end($va_vals); // I seriously have no idea what that additional level of nesting in the return format is for
 				$va_attribute_values = array();
 				foreach($va_vals_by_locale as $vn_locale_id => $va_locale_vals) {
 					foreach($va_locale_vals as $vs_val_id => $va_actual_data){
@@ -223,11 +261,363 @@ class ItemService extends BaseJSONService {
 			//
 
 			$va_related_items = $t_instance->get($vs_rel_table,array("returnAsArray" => true));
+			
 			if(is_array($va_related_items) && sizeof($va_related_items)>0){
 				$va_return["related"][$vs_rel_table] = array_values($va_related_items);
 			}
 		}
 
+		return $va_return;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Get a record summary that looks reasonably close to what we expect to be passed to the
+	 * PUT portion of this very service. With this hack editing operations should be easier to handle.
+	 */
+	private function getItemInfoForEdit(){
+		if(!($t_instance = $this->_getTableInstance($this->ops_table,$this->opn_id))){
+			return false;
+		}
+		$t_list = new ca_lists();
+		$t_locales = new ca_locales();
+
+		$va_locales = $t_locales->getLocaleList(array("available_for_cataloguing_only" => true));
+		
+		$va_return = array();
+		
+		// allow user-defined template to be passed; allows flexible formatting of returned "display" value
+		if (!($vs_template = $this->opo_request->getParameter('template', pString))) { $vs_template = ''; }
+		if ($vs_template) {
+			$va_return['display'] = caProcessTemplateForIDs($vs_template, $this->ops_table, array($this->opn_id));
+		}
+
+		// "intrinsic" fields
+		foreach($t_instance->getFieldsArray() as $vs_field_name => $va_field_info){
+			$vs_list = null;
+			if(!is_null($vs_val = $t_instance->get($vs_field_name))){
+				if(preg_match("/^hier\_/",$vs_field_name)){ continue; }
+				if(preg_match("/\_sort$/",$vs_field_name)){ continue; }
+				if($vs_field_name == $t_instance->primaryKey()){ continue; }
+				$va_return['intrinsic_fields'][$vs_field_name] = $vs_val;
+			}
+		}
+
+		// preferred labels
+		$va_labels = $t_instance->get($this->ops_table.".preferred_labels",array("returnAllLocales" => true));
+		$va_labels = end($va_labels);
+		if(is_array($va_labels)){
+			foreach($va_labels as $vn_locale_id => $va_labels_by_locale){
+				foreach($va_labels_by_locale as $va_tmp){
+					$va_label = array();
+					$va_label['locale'] = $va_locales[$vn_locale_id]["code"];
+
+					// add only UI fields to return
+					foreach($t_instance->getLabelUIFields() as $vs_label_fld){
+						$va_label[$vs_label_fld] = $va_tmp[$vs_label_fld];
+					}
+					
+					$va_return["preferred_labels"][] = $va_label;
+				}
+			}
+		}
+
+		// nonpreferred labels
+		$va_labels = $t_instance->get($this->ops_table.".nonpreferred_labels",array("returnAllLocales" => true));
+		$va_labels = end($va_labels);
+		if(is_array($va_labels)){
+			foreach($va_labels as $vn_locale_id => $va_labels_by_locale){
+				foreach($va_labels_by_locale as $va_tmp){
+					$va_label = array();
+					$va_label['locale'] = $va_locales[$vn_locale_id]["code"];
+
+					// add only UI fields to return
+					foreach($t_instance->getLabelUIFields() as $vs_label_fld){
+						$va_label[$vs_label_fld] = $va_tmp[$vs_label_fld];
+					}
+					
+					$va_return["nonpreferred_labels"][] = $va_label;
+				}
+			}
+		}
+
+		// representations for representable stuff
+		if($t_instance instanceof RepresentableBaseModel){
+			$va_reps = $t_instance->getRepresentations();
+			if(is_array($va_reps) && (sizeof($va_reps)>0)){
+				$va_return['representations'] = $va_reps;	
+			}
+		}
+
+		// captions for representations
+		if($this->ops_table == "ca_object_representations"){
+			$va_captions = $t_instance->getCaptionFileList();
+			if(is_array($va_captions) && (sizeof($va_captions)>0)){
+				$va_return['captions'] = $va_captions;	
+			}
+		}
+
+		// attributes
+		$va_codes = $t_instance->getApplicableElementCodes();
+		foreach($va_codes as $vs_code){
+			if($va_vals = $t_instance->get($this->ops_table.".".$vs_code,
+				array("convertCodesToDisplayText" => false,"returnAllLocales" => true))
+			){
+				$va_vals_by_locale = end($va_vals); // I seriously have no idea what that additional level of nesting in the return format is for
+				foreach($va_vals_by_locale as $vn_locale_id => $va_locale_vals) {
+					foreach($va_locale_vals as $vs_val_id => $va_actual_data){
+						if(!is_array($va_actual_data)){
+							continue;
+						}
+						$vs_locale_code = isset($va_locales[$vn_locale_id]["code"]) ? $va_locales[$vn_locale_id]["code"] : "none";
+
+						$va_return['attributes'][$vs_code][] = array_merge(array('locale' => $vs_locale_code),$va_actual_data);
+					}
+
+				}
+			}
+		}
+
+		// relationships
+		// yes, not all combinations between these tables have 
+		// relationships but it also doesn't hurt to query
+		foreach($this->opa_valid_tables as $vs_rel_table){
+
+			//
+			// set-related hacks
+			if($this->ops_table == "ca_sets" && $vs_rel_table=="ca_tours"){ // throw SQL error in getRelatedItems
+				continue;
+			}
+
+			$va_related_items = $t_instance->get($vs_rel_table,array("returnAsArray" => true));
+			
+			if(is_array($va_related_items) && sizeof($va_related_items)>0){
+				// most of the fields are usually empty because they are not supported on UI level
+				foreach($va_related_items as $va_rel_item){
+					$va_item_add = array();
+					foreach($va_rel_item as $vs_fld => $vs_val){
+						if((!is_array($vs_val)) && strlen(trim($vs_val))>0){
+							// rewrite and ignore certain field names
+							switch($vs_fld){
+								case 'relationship_type_id':
+									$va_item_add['type_id'] = $vs_val;
+									break;
+								default:
+									$va_item_add[$vs_fld] = $vs_val;
+									break;		
+							}
+						}
+					}
+					$va_return["related"][$vs_rel_table][] = $va_item_add;
+				}
+			}
+		}
+
+		return $va_return;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Get a record summary that is easier to parse when importing to another system
+	 */
+	private function getItemInfoForImport(){
+		if(!($t_instance = $this->_getTableInstance($this->ops_table,$this->opn_id))){
+			return false;
+		}
+		
+		$o_dm = Datamodel::load();
+		
+		$t_list = new ca_lists();
+		$t_locales = new ca_locales();
+		
+		//
+		// Options
+		//
+		if (!($vs_delimiter = $this->opo_request->getParameter('delimiter', pString))) { $vs_delimiter = "; "; }
+		if (!($vs_flatten = $this->opo_request->getParameter('flatten', pString))) { $vs_flatten = null; }
+		$va_flatten = preg_split("![ ]*[;]+[ ]*!", $vs_flatten);
+		$va_flatten = array_flip($va_flatten);
+		
+		$va_locales = $t_locales->getLocaleList(array("available_for_cataloguing_only" => true));
+		
+		$va_return = array();
+		
+		// allow user-defined template to be passed; allows flexible formatting of returned "display" value
+		if (!($vs_template = $this->opo_request->getParameter('template', pString))) { $vs_template = ''; }
+		if ($vs_template) {
+			$va_return['display'] = caProcessTemplateForIDs($vs_template, $this->ops_table, array($this->opn_id));
+		}
+
+		// "intrinsic" fields
+		foreach($t_instance->getFieldsArray() as $vs_field_name => $va_field_info){
+			$vs_list = null;
+			if(!is_null($vs_val = $t_instance->get($vs_field_name))){
+				if(preg_match("/^hier\_/",$vs_field_name)){ continue; }
+				if(preg_match("/\_sort$/",$vs_field_name)){ continue; }
+				if($vs_field_name == $t_instance->primaryKey()){ continue; }
+				
+				if(isset($va_field_info["LIST_CODE"])){ // typical example: type_id
+					$va_item = $t_list->getItemFromListByItemID($va_field_info["LIST_CODE"],$vs_val);
+					if ($t_item = new ca_list_items($va_item["item_id"])) {
+						$vs_val = $t_item->get('idno');
+					}
+				}
+				
+				$va_return['intrinsic'][$vs_field_name] = $vs_val;
+			}
+		}
+
+		// preferred labels
+		$va_labels = $t_instance->get($this->ops_table.".preferred_labels",array("returnAllLocales" => true));
+		$va_labels = end($va_labels);
+		
+		$vs_display_field_name = $t_instance->getLabelDisplayField();
+		
+		if(is_array($va_labels)){
+			foreach($va_labels as $vn_locale_id => $va_labels_by_locale){
+				foreach($va_labels_by_locale as $va_tmp){
+					$va_label = array();
+					$va_label['locale'] = $va_locales[$vn_locale_id]["code"];
+
+					// add only UI fields to return
+					foreach(array_merge($t_instance->getLabelUIFields(), array('type_id')) as $vs_label_fld){
+						$va_label[$vs_label_fld] = $va_tmp[$vs_label_fld];
+					}
+					$va_label[$vs_label_fld] = $va_tmp[$vs_label_fld];
+					$va_label['label'] = $va_tmp[$vs_display_field_name];
+					
+					$va_return["preferred_labels"][$va_label['locale']] = $va_label;
+				}
+			}
+						
+			if (isset($va_flatten['locales'])) {
+				$va_return["preferred_labels"] = array_pop(caExtractValuesByUserLocale(array($va_return["preferred_labels"])));
+			}
+		}
+
+		// nonpreferred labels
+		$va_labels = $t_instance->get($this->ops_table.".nonpreferred_labels",array("returnAllLocales" => true));
+		$va_labels = end($va_labels);
+		if(is_array($va_labels)){
+			foreach($va_labels as $vn_locale_id => $va_labels_by_locale){
+				foreach($va_labels_by_locale as $va_tmp){
+					$va_label = array();
+					$va_label['locale'] = $va_locales[$vn_locale_id]["code"];
+
+					// add only UI fields to return
+					foreach(array_merge($t_instance->getLabelUIFields(), array('type_id')) as $vs_label_fld){
+						$va_label[$vs_label_fld] = $va_tmp[$vs_label_fld];
+					}
+					
+					$va_return["nonpreferred_labels"][$va_label['locale']] = $va_label;
+				}
+			}
+			
+			if (isset($va_flatten['locales'])) {
+				$va_return["nonpreferred_labels"] = array_pop(caExtractValuesByUserLocale(array($va_return["nonpreferred_labels"])));
+			}
+		}
+
+		// attributes
+		$va_codes = $t_instance->getApplicableElementCodes();
+		foreach($va_codes as $vs_code){
+		
+			if($va_vals = $t_instance->get($this->ops_table.".".$vs_code,
+				array("convertCodesToDisplayText" => false,"returnAllLocales" => true))
+			){
+				$va_vals_as_text = end($t_instance->get($this->ops_table.".".$vs_code,
+					array("convertCodesToDisplayText" => true,"returnAllLocales" => true)));
+				$va_vals_by_locale = end($va_vals); 
+				foreach($va_vals_by_locale as $vn_locale_id => $va_locale_vals) {
+					foreach($va_locale_vals as $vs_val_id => $va_actual_data){
+						if(!is_array($va_actual_data)){
+							continue;
+						}
+					
+						$vs_locale_code = isset($va_locales[$vn_locale_id]["code"]) ? $va_locales[$vn_locale_id]["code"] : "none";
+
+						foreach($va_actual_data as $vs_f => $vs_v) {
+							if (isset($va_vals_as_text[$vn_locale_id][$vs_val_id][$vs_f]) && ($vs_v != $va_vals_as_text[$vn_locale_id][$vs_val_id][$vs_f])) {
+								$va_actual_data[$vs_f.'_display'] = $va_vals_as_text[$vn_locale_id][$vs_val_id][$vs_f];
+								
+								if ($vs_item_idno = caGetListItemIdno($va_actual_data[$vs_f])) {
+									$va_actual_data[$vs_f] = $vs_item_idno;
+								}
+							}
+						}
+						
+
+						$va_return['attributes'][$vs_code][$vs_locale_code][] = array_merge(array('locale' => $vs_locale_code),$va_actual_data);
+					}
+				}
+			}
+		}
+		if (isset($va_flatten['locales'])) {
+			$va_return['attributes'] = caExtractValuesByUserLocale($va_return['attributes']);
+		}
+
+		// relationships
+		// yes, not all combinations between these tables have 
+		// relationships but it also doesn't hurt to query
+		foreach($this->opa_valid_tables as $vs_rel_table){
+			$t_rel = $o_dm->getInstanceByTableName($vs_rel_table, true);
+			
+			//
+			// set-related hacks
+			if(($this->ops_table == "ca_sets") && ($vs_rel_table=="ca_tours")){ // throw SQL error in getRelatedItems
+				continue;
+			}
+
+			$va_related_items = $t_instance->get($vs_rel_table,array("returnAsArray" => true, 'returnLocaleCodes' => true, 'groupFields' => true));
+			
+			if(($this->ops_table == "ca_objects") && ($vs_rel_table=="ca_object_representations")) {
+				$va_versions = $t_instance->getMediaVersions('media'); 
+				
+				if (isset($va_flatten['all'])) {
+					$va_reps = $t_instance->getRepresentations(array('original'));
+					$va_urls = array();
+					foreach($va_reps as $vn_i => $va_rep) {
+						$va_urls[] = $va_rep['urls']['original'];
+					}
+					$va_return['representations'] = join($vs_delimiter, $va_urls);
+				} else {
+					$va_return['representations'] = $t_instance->getRepresentations($va_versions);
+				}
+				
+				foreach($va_return['representations'] as $vn_i => $va_rep) {
+					unset($va_return['representations'][$vn_i]['media']);
+					unset($va_return['representations'][$vn_i]['media_metadata']);
+				}
+			}
+			
+			if(is_array($va_related_items) && sizeof($va_related_items)>0){
+				foreach($va_related_items as $va_rel_item){
+					$va_item_add = array();
+					foreach($va_rel_item as $vs_fld => $vs_val){
+						if((!is_array($vs_val)) && strlen(trim($vs_val))>0){
+							// rewrite and ignore certain field names
+							switch($vs_fld){
+								case 'item_type_id':
+									$va_item_add[$vs_fld] = $vs_val;
+									$va_item_add['type_id'] = $vs_val;
+									break;
+								default:
+									$va_item_add[$vs_fld] = $vs_val;
+									break;		
+							}
+						} else {
+							if (in_array($vs_fld, array('preferred_labels', 'intrinsic'))) {
+								$va_item_add[$vs_fld] = $vs_val;
+							}
+						}
+					}
+					if ($vs_rel_table=="ca_object_representations") {
+						$t_rep = new ca_object_representations($va_rel_item['representation_id']);
+						$va_item_add['media'] = $t_rep->getMediaUrl('media', 'original');
+					}
+					$va_return["related"][$vs_rel_table][] = $va_item_add;
+				}
+			}
+		}
+		
 		return $va_return;
 	}
 	# -------------------------------------------------------
@@ -264,6 +654,11 @@ class ItemService extends BaseJSONService {
 
 		$t_instance->setMode(ACCESS_WRITE);
 		$t_instance->insert();
+
+		if(!$t_instance->getPrimaryKey()){
+			$this->opa_errors = array_merge($t_instance->getErrors(),$this->opa_errors);
+			return false;
+		}
 
 		// AFTER INSERT STUFF
 

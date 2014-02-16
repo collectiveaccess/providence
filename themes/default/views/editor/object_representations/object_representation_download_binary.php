@@ -25,6 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
+	
 	$vs_show_version = $this->getVar('version');
 	$vs_file_path = $this->getVar('version_path');
 	
@@ -35,7 +36,7 @@
 	header("Pragma: no-cache");
 	header("Cache-control: private");
 	
+	header("Content-Disposition: attachment; filename=".$this->getVar('version_download_name'));
 	while(ob_get_level() > 0) { ob_end_flush(); }	// need to do this in order to not have read file use request memory due to buffering
-	
 	readfile($vs_file_path);
 ?>

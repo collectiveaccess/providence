@@ -26,6 +26,8 @@
  * ----------------------------------------------------------------------
  */
  	define("__CA_DONT_DO_SEARCH_INDEXING__", 1);
+ 	define("__CA_DONT_LOG_CHANGES__", 1);
+ 	
 	require_once("../../../setup.php");
 	
 	if (!file_exists('./tgn_xml_12')) {
@@ -39,7 +41,7 @@
 	//
 	// Code for metadata element to insert description for places into. 
 	// Set to null to not import descriptions.
-	$vs_description_element_code = 'description';
+	$vs_description_element_code = 'generalNotes';
 	
 	// Code for metadata element to insert georeferences for places into. 
 	// Set to null to not import georefs.
@@ -52,6 +54,7 @@
 	// ---------------------------------------------------------------------------
 
 	require_once(__CA_LIB_DIR__.'/core/Db.php');
+	require_once(__CA_LIB_DIR__.'/core/Utils/CLIProgressBar.php');
 	require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
 	require_once(__CA_MODELS_DIR__.'/ca_locales.php');
 	require_once(__CA_MODELS_DIR__.'/ca_places.php');
@@ -126,6 +129,8 @@
 	
 	$t_place = new ca_places();
 	$t_place->setMode(ACCESS_WRITE);
+	$t_place->logChanges(false);		// Don't log changes to records during import – takes time and we don't need the logs
+	
 	
 if (true) {	
 	for($vn_file_index=1; $vn_file_index <= 15; $vn_file_index++) {
@@ -160,11 +165,10 @@ if (true) {
 					
 					
 						$t_place->clear();
-						$t_place->set('parent_id', $pn_parent_id);
+						$t_place->set('parent_id', null);
 						$t_place->set('type_id', $vn_type_id);
 						$t_place->set('idno', $va_subject['subject_id']);
 						$t_place->set('hierarchy_id', $vn_tgn_id);
-						$t_place->set('parent_id', $pn_parent_id);
 												
 						// Add description
 						if ($vs_description_element_code && $va_subject['description']) {
@@ -173,6 +177,18 @@ if (true) {
 								$vs_description_element_code
 							);
 						}
+						
+							// Add georeference
+						if ($vs_georef_element_code && ($va_coords['latitude']['decimal'] && $va_coords['longitude']['decimal'])) {
+							
+							$t_place->addAttribute(
+								array($vs_georef_element_code => "[".$va_coords['latitude']['decimal'].$va_coords['latitude']['direction'].",".$va_coords['longitude']['decimal'].$va_coords['longitude']['direction']."]", 'locale_id' => $pn_en_locale_id),
+								$vs_georef_element_code
+							);
+							DataMigrationUtils::postError($t_place, "[Error] While adding georeference to place");
+						}
+						
+						
 						if ($vn_place_id = $t_place->insert(array('dontSetHierarchicalIndexing' => true))) {
 						
 							if (!($t_place->addLabel(
@@ -183,6 +199,7 @@ if (true) {
 							}
 							
 							// add alternate labels
+							
 							if(is_array($va_subject['non_preferred_terms'])) {
 								for($vn_i=0; $vn_i < sizeof($va_subject['non_preferred_terms']); $vn_i++) {
 									$vs_np_label = $va_subject['non_preferred_terms'][$vn_i];
@@ -202,28 +219,18 @@ if (true) {
 									}
 								}
 							}
-						
-							// Add georeference
-							if ($vs_georef_element_code && ($va_coords['latitude']['decimal'] && $va_coords['longitude']['decimal'])) {
-								$t_place->addAttribute(
-									array($vs_georef_element_code => $x="[".$va_coords['latitude']['decimal'].$va_coords['latitude']['direction'].",".$va_coords['longitude']['decimal'].$va_coords['longitude']['direction']."]", 'locale_id' => $pn_en_locale_id),
-									$vs_georef_element_code
-								);
-								$t_place->update(array('dontSetHierarchicalIndexing' => true));
-								DataMigrationUtils::postError($t_place, "[Error] While adding georeference to place");
-							}
 							
 							// Add place types
 							if ($vs_place_type_relationship_code && $va_subject['place_type_id']) {
 								$va_tmp = explode('/', $va_subject['place_type_id']);
 								if ($vn_item_id = DataMigrationUtils::getListItemID('tgn_place_types', $va_tmp[0], null, $pn_en_locale_id, array('name_singular' => $va_tmp[1], 'name_plural' => $va_tmp[1]), array())) {
-									$t_place->addRelationship('ca_list_items', $vn_item_id, $vs_place_type_relationship_code);
+									
+									$t_place->addRelationship('ca_list_items', $vn_item_id, $vs_place_type_relationship_code, null, null, null, null, array('allowDuplicates' => true));
 									
 									DataMigrationUtils::postError($t_place, "[Error] While adding place type to place");
 								}
-								
 							}
-							
+						
 							$vn_term_count++;
 						} else {
 							print "[Error] Could not import TGN term [".$va_subject['subject_id']."] ".$vs_preferred_term.": ".join("; ", $t_list->getErrors())."\n";
@@ -466,13 +473,18 @@ if (true) {
 	}
 }
 
+	$t_place = new ca_places();
+	$t_parent = new ca_places();
+	$t_place->setMode(ACCESS_WRITE);
+	$vn_tgn_root_id = $t_parent->getHierarchyRootID($vn_tgn_id);
+	
 if (true) {	
 	print "[Notice] LINKING TERMS IN HIERARCHY...\n";
 	$vn_last_message_length = 0;
 
-	$t_place = new ca_places();
-	$t_parent = new ca_places();
-	$t_place->setMode(ACCESS_WRITE);
+	
+
+	$va_place_id_cache = array();
 	
 	for($vn_file_index=1; $vn_file_index <= 15; $vn_file_index++) {
 		$o_xml->open("tgn_xml_12/TGN{$vn_file_index}.xml");
@@ -502,18 +514,24 @@ if (true) {
 						}
 						
 						if ($vs_parent_id == '100000000') {
-							$t_parent->load($t_parent->getHierarchyRootID($vn_tgn_id));	// get root_id
+							//$t_parent->load($vn_tgn_root_id);	// get root_id
+							$vn_parent_id = $vn_tgn_root_id;
 						} else {
-							if(!$t_parent->load(array('idno' => $vs_parent_id))) {
-								print "[Error] No list item id for parent_id {$vs_parent_id} (were there previous errors?)\n";
-								continue;
+							if (!isset($va_place_id_cache[$vs_parent_id])) {
+								if(!$t_parent->load(array('idno' => $vs_parent_id))) {
+									print "[Error] No list item id for parent_id {$vs_parent_id} (were there previous errors?)\n";
+									continue;
+								}
+								$vn_parent_id = $va_place_id_cache[$vs_parent_id] = $t_parent->getPrimaryKey();
+							} else {
+								$vn_parent_id = $va_place_id_cache[$vs_parent_id];
 							}
 						
-							$t_place->set('parent_id', $t_parent->getPrimaryKey());
-							$t_place->update(array('dontSetHierarchicalIndexing' => true));
+							$t_place->set('parent_id', $vn_parent_id);
+							$t_place->update(array('dontSetHierarchicalIndexing' => true, 'dontCheckCircularReferences' => true));
 		
 							if ($t_place->numErrors()) {
-								print "[Error] could not set parent_id for {$vs_child_id} (was translated to item_id=".$t_place_id->getPrimaryKey()."): ".join('; ', $t_place->getErrors())."\n";
+								print "[Error] could not set parent_id for {$vs_child_id} (was translated to item_id=".$t_place->getPrimaryKey()."): ".join('; ', $t_place->getErrors())."\n";
 							}
 						}
 					} else {
@@ -559,7 +577,9 @@ if (true) {
 			}
 		}
 	}
-}	
+}
+	// TODO: Fix self-referencing root problem (TGN imports "top of hierarchy" record as having itself as a parent)
+
 	print "[Notice] Rebuilding hier indices for hierarchy_id={$vn_tgn_id}...\n";
 	$t_place->rebuildHierarchicalIndex($vn_tgn_id);
 

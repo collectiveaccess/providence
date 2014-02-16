@@ -63,10 +63,11 @@
  		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
- 			$this->opo_browse = new ObjectLotBrowse($po_request->session->getVar($this->opo_result_context->getSearchExpression(), 'providence'));
+ 			$this->opo_browse = new ObjectLotBrowse($this->opo_result_context->getSearchExpression(), 'providence');
 
  			$this->opa_views = array(
-				'list' => _t('list')
+				'list' => _t('list'),
+				'editable' => _t('editable')
 			);
 			 
 			$this->opa_sorts = array_merge(array(

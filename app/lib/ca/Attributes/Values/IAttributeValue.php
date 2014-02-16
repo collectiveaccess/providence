@@ -54,7 +54,7 @@
  		// Parses the value and, if valid, returns a populated associative array with keys equal to the value fields 
  		// in the ca_attribute_values table. The returned value is intended to be written into a ca_attribute_values
  		// row. If the row is not valid, will return null and set errors
- 		public function parseValue($ps_value, $pa_element_info);
+ 		public function parseValue($ps_value, $pa_element_info, $pa_options=null);
  		
  		// Return an HTML form element for the attribute value with the passed element info (an associative array
  		// containing a row from the ca_metadata_elements table
@@ -66,7 +66,7 @@
  		// normally no need to call this yourself
  		public function loadTypeSpecificValueFromRow($pa_value_array);
  		
- 		public function getAvailableSettings();
+ 		public function getAvailableSettings($pa_element_info=null);
  		
  		// Checks validity of setting value for attribute; used by ca_metadata_elements to validate settings before they are saved.
 		public function validateSetting($pa_element_info, $ps_key, $ps_value, &$ps_error);

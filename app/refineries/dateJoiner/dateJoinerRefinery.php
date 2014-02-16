@@ -35,7 +35,7 @@
 		public function __construct() {
 			$this->ops_name = 'dateJoiner';
 			$this->ops_title = _t('Date joiner');
-			$this->ops_description = _t('Joins date fields');
+			$this->ops_description = _t('Joins data with partial date values into a single valid date expression for import.');
 			
 			parent::__construct();
 		}
@@ -56,16 +56,16 @@
 		 *
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
-			//$va_group_dest = explode(".", $pa_group['destination']);
-			//$vs_terminal = array_pop($va_group_dest);
-			$pm_value = $pa_source_data[$pa_item['source']];
+			$o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;
+			
+			$pm_value = $pa_source_data[$pa_item['source']];	// not actually used
 			
 			$va_item_dest = explode(".", $pa_item['destination']);
 			$vs_item_terminal = array_pop($va_item_dest);
 			$vs_group_terminal = array_pop($va_item_dest);
 			
-			$pm_value = preg_replace("![^\d\.A-Za-z\"\"’”]+!", "", $pm_value);
-			
+			$o_tep = new TimeExpressionParser();
+			$o_tep->setLanguage('en_US');
 			
 			switch($vs_mode = $pa_item['settings']['dateJoiner_mode']) {
 				default:
@@ -74,11 +74,11 @@
 					$vs_date_start = $pa_item['settings']['dateJoiner_start'];
 					$vs_date_end = $pa_item['settings']['dateJoiner_end'];
 			
-					$o_tep = new TimeExpressionParser();
-			
 					if ($vs_date_expression && ($vs_exp = BaseRefinery::parsePlaceholder($vs_date_expression, $pa_source_data, $pa_item))) {
 						if ($o_tep->parse($vs_exp)) {
 							return $o_tep->getText();
+						} else {
+							if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not parse date expression %1 assembled from range', $vs_exp)); }
 						}
 					}
 			
@@ -89,12 +89,13 @@
 					if ($vs_date_expression && ($vs_exp = BaseRefinery::parsePlaceholder($vs_date_expression, $pa_source_data, $pa_item))) {
 						if ($o_tep->parse($vs_exp)) {
 							return $o_tep->getText();
+						} else {
+							if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not parse date expression %1 assembled from range', $vs_exp)); }
 						}
 					}
 					break;
 					
 				case 'multiColumnDate':
-					$o_tep = new TimeExpressionParser();
 					$va_month_list = $o_tep->getMonthList();
 					
 					$va_date = array();
@@ -110,13 +111,14 @@
 					if(sizeof($va_date)) {							// TODO: this is assuming US-style dates for now
 						if ($o_tep->parse(join("/", $va_date))) {
 							return $o_tep->getText();
+						} else {
+							if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not parse date expression %1 assembled from multiColumnDate', join("/", $va_date))); }
 						}
 					}
 					break;
 				case 'multiColumnRange':
 					$va_dates = array();
 					
-					$o_tep = new TimeExpressionParser();
 					$va_month_list = $o_tep->getMonthList();
 					
 					// Process start date
@@ -133,6 +135,8 @@
 					if(sizeof($va_date)) {
 						if ($o_tep->parse(join("/", $va_date))) {	// TODO: this is assuming US-style dates for now
 							$va_dates[] = $o_tep->getText();
+						} else {
+							if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not parse date expression %1 assembled from multiColumnRange', join("/", $va_date))); }
 						}
 					}
 					
@@ -150,6 +154,8 @@
 					if(sizeof($va_date)) {
 						if ($o_tep->parse(join("/", $va_date))) {	// TODO: this is assuming US-style dates for now
 							$va_dates[] = $o_tep->getText();
+						} else {
+							if ($o_log) { $o_log->logWarn(_t('[dateJoinerRefinery] Could not parse date expression %1 assembled from multiColumnRange', join("/", $va_date))); }
 						}
 					}
 					
@@ -172,8 +178,6 @@
 		}
 		# -------------------------------------------------------
 	}
-	
-	//{ "mode": multiColumn, "dateMonth": "^4", "dateDay": "^5", "dateYear": "^6"}
 	
 	 BaseRefinery::$s_refinery_settings['dateJoiner'] = array(	
 	 		'dateJoiner_mode' => array(

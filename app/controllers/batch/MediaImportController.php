@@ -55,11 +55,16 @@
  		#
  		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+ 			parent::__construct($po_request, $po_response, $pa_view_paths);
+ 			
+ 			// Can user batch import media?
+ 			if (!$po_request->user->canDoAction('can_batch_import_media')) {
+ 				$po_response->setRedirect($po_request->config->get('error_display_url').'/n/3410?r='.urlencode($po_request->getFullUrlPath()));
+ 				return;
+ 			}
  			
  			JavascriptLoadManager::register('bundleableEditor');
  			JavascriptLoadManager::register('panel');
- 			
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
  			$this->opo_datamodel = Datamodel::load();
  			$this->opo_app_plugin_manager = new ApplicationPluginManager();
@@ -87,12 +92,6 @@
  			$t_rep->set('status', $va_last_settings['ca_object_representations_status']);
  			$t_rep->set('access', $va_last_settings['ca_object_representations_access']);
  			
- 			// Can user batch import media?
- 			if (!$this->request->user->canDoAction('can_batch_import_media')) {
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
- 			
  			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 				array(),
 				array()
@@ -107,6 +106,12 @@
 				_t('Import only media that can be matched with existing records') => 'ALWAYS_MATCH',
 				_t('Import all media, creating new records for each') => 'DONT_MATCH'
 			), array(), array('value' => $va_last_settings['importMode'])));
+			
+			$this->view->setVar('match_mode', caHTMLSelect('match_mode', array(
+				_t('Match using file name') => 'FILE_NAME',
+				_t('Match using directory name') => 'DIRECTORY_NAME',
+				_t('Match using directory name, then file name') => 'FILE_AND_DIRECTORY_NAMES'
+			), array(), array('value' => $va_last_settings['matchMode'])));
  			
  			$this->view->setVar('ca_objects_type_list', $t_object->getTypeListAsHTMLFormElement('ca_objects_type_id', null, array('value' => $va_last_settings['ca_objects_type_id'])));
  			$this->view->setVar('ca_object_representations_type_list', $t_rep->getTypeListAsHTMLFormElement('ca_object_representations_type_id', null, array('value' => $va_last_settings['ca_object_representations_type_id'])));
@@ -154,12 +159,6 @@
  				return;
  			}
  			
- 			// Can user batch import media?
- 			if (!$this->request->user->canDoAction('can_batch_import_media')) {
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
- 			
  			$va_options = array(
  				'sendMail' => (bool)$this->request->getParameter('send_email_when_done', pInteger), 
  				'sendSMS' => (bool)$this->request->getParameter('send_sms_when_done', pInteger), 
@@ -167,7 +166,9 @@
  				
  				'importFromDirectory' => $vs_batch_media_import_root_directory.'/'.$vs_directory,
  				'includeSubDirectories' => (bool)$this->request->getParameter('include_subdirectories', pInteger),
+ 				'deleteMediaOnImport' => (bool)$this->request->getParameter('delete_media_on_import', pInteger),
  				'importMode' => $this->request->getParameter('import_mode', pString),
+ 				'matchMode' => $this->request->getParameter('match_mode', pString),
  				'ca_objects_type_id' => $this->request->getParameter('ca_objects_type_id', pInteger),
  				'ca_object_representations_type_id' => $this->request->getParameter('ca_object_representations_type_id', pInteger),
  				'ca_objects_status' => $this->request->getParameter('ca_objects_status', pInteger),
@@ -179,9 +180,18 @@
  				'set_id' => $this->request->getParameter('set_id', pInteger),
  				'idnoMode' => $this->request->getParameter('idno_mode', pString),
  				'idno' => $this->request->getParameter('idno', pString),
+ 				'idno' => $this->request->getParameter('idno', pString),
  				'locale_id' => $g_ui_locale_id,
- 				'user_id' => $this->request->getUserID()
+ 				'user_id' => $this->request->getUserID(),
+ 				'skipFileList' => $this->request->getParameter('skip_file_list', pString)
  			);
+ 			
+ 			if (is_array($va_create_relationships_for = $this->request->getParameter('create_relationship_for', pArray))) {
+ 				$va_options['create_relationship_for'] = $va_create_relationships_for;
+ 				foreach($va_create_relationships_for as $vs_rel_table) {
+ 					$va_options['relationship_type_id_for_'.$vs_rel_table] = $this->request->getParameter('relationship_type_id_for_'.$vs_rel_table, pString);
+ 				}
+ 			}
  			
  			$va_last_settings = $va_options;
  			$va_last_settings['importFromDirectory'] = preg_replace("!{$vs_batch_media_import_root_directory}[/]*!", "", $va_last_settings['importFromDirectory']); 
@@ -403,12 +413,6 @@
  			
  			if (!is_dir($vs_batch_media_import_root_directory.'/'.$ps_directory)) {
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3250?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
- 			
- 			// Can user batch import media?
- 			if (!$this->request->user->canDoAction('can_batch_import_media')) {
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
  			

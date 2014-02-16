@@ -164,6 +164,7 @@
  		 * 			list_id = if set then the numeric item_id value is translated into label text in the current locale. If not set then the numeric item_id is returned.
  		 *			useSingular = If list_id is set then by default the returned text is the plural label. Setting this option to true will force use of the singular label.
  		 *			showHierarchy = If true then hierarchical parents of list item will be returned and hierarchical options described below will be used to control the output
+ 		 *			returnIdno = If true list item idno is returned rather than preferred label
  		 *			HIERARCHICAL OPTIONS: 
  		 *				direction - For hierarchy specifications (eg. ca_objects.hierarchy) this determines the order in which the hierarchy is returned. ASC will return the hierarchy root first while DESC will return it with the lowest node first. Default is ASC.
  		 *				top - For hierarchy specifications (eg. ca_objects.hierarchy) this option, if set, will limit the returned hierarchy to the first X nodes from the root down. Default is to not limit.
@@ -178,11 +179,19 @@
 			if ($vn_list_id > 0) {
 				$t_list = new ca_lists();
 				
+				$vb_return_idno = ((isset($pa_options['returnIdno']) && (bool)$pa_options['returnIdno']));
+				if ($vb_return_idno) {
+					$vs_get_spec = 'idno';
+				} else {
+					$vs_get_spec = ((isset($pa_options['useSingular']) && $pa_options['useSingular']) ? 'name_singular' : 'name_plural');
+				}
 				// do we need to get the hierarchy?
 				if ($pa_options['showHierarchy']) {
 					$t_item = new ca_list_items($this->ops_text_value);
-					
-					return $t_item->get('ca_list_items.hierarchy.'.((isset($pa_options['useSingular']) && $pa_options['useSingular']) ? 'name_singular' : 'name_plural'), $pa_options);
+					return $t_item->get('ca_list_items.hierarchy.'.$vs_get_spec, $pa_options);
+				} elseif($vb_return_idno) {
+					$t_item = new ca_list_items($this->ops_text_value);
+					return $t_item->get('ca_list_items.'.$vs_get_spec, $pa_options);
 				}
 				
 				return $t_list->getItemFromListForDisplayByItemID($vn_list_id, $this->ops_text_value, (isset($pa_options['useSingular']) && $pa_options['useSingular']) ? false : true);
@@ -194,10 +203,20 @@
 			return $this->opn_item_id;
 		}
  		# ------------------------------------------------------------------
- 		public function parseValue($ps_value, $pa_element_info) {
- 			$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? true : (bool)$pa_element_info['settings']['requireValue'];
+ 		/**
+ 		 * @param mixed $ps_value
+ 		 * @param array $pa_element_info
+ 		 * @param array $pa_options Options are:
+ 		 *		alwaysTreatValueAsIdno = Always try to convert $ps_value to a list idno value, even if it is numeric
+ 		 *
+ 		 * @return array
+ 		 */
+ 		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
+ 			$vb_treat_value_as_idno = caGetOption('alwaysTreatValueAsIdno', $pa_options, false);
  			
- 			if (preg_match('![^\d]+!', $ps_value)) {
+ 			$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? true : (bool)$pa_element_info['settings']['requireValue'];
+
+ 			if ($vb_treat_value_as_idno || preg_match('![^\d]+!', $ps_value)) {
  				// try to convert idno to item_id
  				if ($vn_id = ca_lists::getItemID($pa_element_info['list_id'], $ps_value)) {
  					$ps_value = $vn_id;
@@ -224,7 +243,7 @@
 				return false;
  			}
  			if ((int)$t_item->get('list_id') != (int)$pa_element_info['list_id']) {
- 				$this->postError(1970, _t('Item is not in the correct list'), 'ListAttributeValue->parseValue()');
+ 				$this->postError(1970, _t('Item is not in the correct list for element %1. List id is %2 but should be %3', $pa_element_info["element_code"], $t_item->get('list_id'), $pa_element_info['list_id']), 'ListAttributeValue->parseValue()');
 				return false;
  			}
  			return array(
@@ -256,7 +275,7 @@
  			return ca_lists::getListAsHTMLFormElement($pa_element_info['list_id'], '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', array('id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}'), array_merge($pa_options, array('render' => isset($pa_element_info['settings']['render']) ? $pa_element_info['settings']['render'] : '', 'maxColumns' => $pa_element_info['settings']['maxColumns'], 'element_id' => $pa_element_info['element_id'], 'nullOption' => $vb_null_option)));
  		}
  		# ------------------------------------------------------------------
- 		public function getAvailableSettings() {
+ 		public function getAvailableSettings($pa_element_info=null) {
  			global $_ca_attribute_settings;
  			
  			return $_ca_attribute_settings['ListAttributeValue'];

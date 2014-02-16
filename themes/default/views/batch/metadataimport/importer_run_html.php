@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,7 +26,8 @@
  * ----------------------------------------------------------------------
  */
 
-$t_importer = $this->getVar('t_importer');
+$t_importer 			= $this->getVar('t_importer');
+$va_last_settings 		= $this->getVar('last_settings');
 
 print $vs_control_box = caFormControlBox(
 		caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute data import"), 'caBatchMetadataImportForm', array('onclick' => 'caShowConfirmBatchExecutionPanel(); return false;')).' '.
@@ -38,14 +39,93 @@ print $vs_control_box = caFormControlBox(
 <div class="sectionBox">
 <?php
 		print caFormTag($this->request, 'ImportData/'.$this->request->getActionExtra(), 'caBatchMetadataImportForm', null, 'POST', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
-
-		print "<div class='formLabel'>"._t('Importer')."<br>\n".ca_data_importers::getImporterListAsHTMLFormElement('importer_id', null, array('id' => 'caImporterList', 'onchange' => 'caSetBatchMetadataImportFormState();'), array('value' => $t_importer->getPrimaryKey()))."</div>\n";
-		print "<div class='formLabel'>"._t('Data format')."<br>\n".ca_data_importers::getInputFormatListAsHTMLFormElement('inputFormat', array('id' => 'caInputFormatList', 'onchange' => 'caSetBatchMetadataImportFormState();'))."</div>\n";
-		
-		print "<div class='formLabel' id='caSourceFileContainer'>"._t('Data file')."<br>\n"."<input type='file' name='sourceFile' id='caSourceFile'/>"."</div>\n";
-		print "<div class='formLabel' id='caSourceUrlContainer'>"._t('Data URL')."<br>\n".caHTMLTextInput('sourceUrl', array('id' => 'caSourceUrl', 'class' => 'urlBg'), array('width' => '300px'))."</div>\n";
-
-
+?>
+		<div class='bundleLabel'>
+			<span class="formLabelText"><?php print _t('Importer'); ?></span> 
+			<div class="bundleContainer">
+				<div class="caLabelList" >
+					<p>
+<?php
+		print ca_data_importers::getImporterListAsHTMLFormElement('importer_id', null, array('id' => 'caImporterList', 'onchange' => 'caSetBatchMetadataImportFormState(true);'), array('value' => $t_importer->getPrimaryKey()));
+?>
+					</p>
+				</div>
+			</div>
+		</div>
+		<div class='bundleLabel'>
+			<span class="formLabelText"><?php print _t('Data format'); ?></span> 
+			<div class="bundleContainer">
+				<div class="caLabelList" >
+					<p>
+<?php
+		print ca_data_importers::getInputFormatListAsHTMLFormElement('inputFormat', array('id' => 'caInputFormatList', 'onchange' => 'caSetBatchMetadataImportFormState(true);'));
+?>	
+					</p>
+				</div>
+			</div>
+		</div>
+		<div class='bundleLabel' id="caSourceFileContainer">
+			<span class="formLabelText"><?php print _t('Data file'); ?></span> 
+			<div class="bundleContainer">
+				<div class="caLabelList" >
+					<p>
+<?php	
+		print "<input type='file' name='sourceFile' id='caSourceFile'/>";
+?>
+					</p>
+				</div>
+			</div>
+		</div>
+		<div class='bundleLabel' id="caSourceUrlContainer">
+			<span class="formLabelText"><?php print _t('Data URL'); ?></span> 
+			<div class="bundleContainer">
+				<div class="caLabelList" >
+					<p>
+<?php
+		print caHTMLTextInput('sourceUrl', array('id' => 'caSourceUrl', 'class' => 'urlBg'), array('width' => '300px'));
+?>
+					</p>
+				</div>
+			</div>
+		</div>
+		<div class='bundleLabel'>
+			<span class="formLabelText"><?php print _t('Log level'); ?></span> 
+			<div class="bundleContainer">
+				<div class="caLabelList" >
+					<p>
+<?php
+		print caHTMLSelect('logLevel', caGetLogLevels(), array('id' => 'caLogLevel'), array('value' => $va_last_settings['logLevel']));
+?>
+					</p>
+				</div>
+			</div>
+		</div>
+		<div class='bundleLabel'>
+			<span class="formLabelText"><?php print _t('Testing options'); ?></span> 
+			<div class="bundleContainer">
+				<div class="caLabelList" >
+					<p>
+						<div style="float: left;" class="formLabelPlain">
+<?php	
+		$va_attr = array('id' => 'caDryRun', 'value' => 1);
+		if ($va_last_settings['dryRun'] == 1) { $va_attr['checked'] = 1; }
+		print caHTMLCheckboxInput('dryRun', $va_attr)." "._t('Dry run');
+?>
+						</div>
+						<div style="float: left; margin-left: 15px;" class="formLabelPlain">
+<?php	
+		$va_attr = array('id' => 'caDebug', 'value' => 1);
+		if ($va_last_settings['debug'] == 1) { $va_attr['checked'] = 1; }
+		print caHTMLCheckboxInput('debug', $va_attr)." "._t('Debugging output');
+?>					
+						</div>
+						<br class="clear"/>
+					</p>
+					
+				</div>
+			</div>
+		</div>
+<?php	
 		print $this->render("metadataimport/confirm_html.php");	
 ?>
 		</form>
@@ -97,9 +177,9 @@ print $vs_control_box = caFormControlBox(
 		jQuery("#caInputFormatList").html(opts.join("\n")).val(currentFormat);
 		
 		currentFormat = jQuery("#caInputFormatList").val();
+		if(!currentFormat) { currentFormat = relevantFormats[0]; jQuery("#caInputFormatList").val(currentFormat); }
 		
 		// Set visibility of source input field based upon format
-		
 		if (info = formatInfo[currentFormat.toLowerCase()]) {
 			if (info['inputType'] == 0) {
 				// file

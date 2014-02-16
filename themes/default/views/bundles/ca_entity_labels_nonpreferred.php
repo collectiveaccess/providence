@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,9 +40,13 @@
 	
 	if ($vb_batch) {
 		print caBatchEditorNonPreferredLabelsModeControl($t_label, $vs_id_prefix);
+	} else {
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'NPLabels');
 	}
+	$t_subject = $this->getVar('t_subject'); 
+	$vs_entity_class = $t_subject->getTypeSetting('entity_class');
 ?>
-<div id="<?php print $vs_id_prefix; ?>Labels" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
+<div id="<?php print $vs_id_prefix; ?>NPLabels" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
 	//
 	// The bundle template - used to generate each bundle in the form
@@ -56,6 +60,31 @@
 			<table class="objectRepresentationListItem">
 				<tr valign="middle">
 					<td>
+<?php
+	switch($vs_entity_class) {
+		case 'ORG':
+?>
+						<table>
+							<tr>
+								<td>
+									<?php print $t_label->htmlFormElement('surname', null, array('label' => _t('Name'), 'description' => _t('The full name of the organization, excluding for suffixes.'), 'width' => '500px', 'name' => "{fieldNamePrefix}surname_{n}", 'id' => "{fieldNamePrefix}surname_{n}", "value" => "{{surname}}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_entity_labels_preferred')); ?>
+								</td>
+								<td>
+									<?php print $t_label->htmlFormElement('suffix', null, array('name' => "{fieldNamePrefix}suffix_{n}", 'id' => "{fieldNamePrefix}suffix_{n}", "value" => "{{suffix}}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_entity_labels_preferred')); ?>
+								</td>
+							</tr>
+							<tr>
+								<td colspan="2">
+									<?php print '<div class="formLabel">'.$t_label->htmlFormElement('locale_id', "^LABEL ^ELEMENT", array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}locale_id_{n}", 'name' => "{fieldNamePrefix}locale_id_{n}", "value" => "{locale_id}", 'no_tooltips' => true, 'dont_show_null_value' => true, 'hide_select_if_only_one_option' => true, 'WHERE' => array('(dont_use_for_cataloguing = 0)'))); ?>
+									<?php print $t_label->htmlFormElement('type_id', "^LABEL ^ELEMENT", array('classname' => 'labelType', 'id' => "{fieldNamePrefix}type_id_{n}", 'name' => "{fieldNamePrefix}type_id_{n}", "value" => "{type_id}", 'no_tooltips' => true, 'list_code' => $this->request->config->get('ca_entities_nonpreferred_label_type_list'), 'dont_show_null_value' => true, 'hide_select_if_no_options' => true)).'</div>'; ?>
+								</td>
+							</tr>
+						</table>
+<?php
+			break;
+		case 'IND':
+		default:
+?>
 						<table>
 							<tr>
 								<td>
@@ -83,8 +112,13 @@
 									<?php print $t_label->htmlFormElement('other_forenames', null, array('name' => "{fieldNamePrefix}other_forenames_{n}", 'id' => "{fieldNamePrefix}other_forenames_{n}", "value" => "{{other_forenames}}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_entity_labels_nonpreferred')); ?>
 								</td>
 								<td colspan="3"><?php print $t_label->htmlFormElement('displayname', null, array('name' => "{fieldNamePrefix}displayname_{n}", 'id' => "{fieldNamePrefix}displayname_{n}", "value" => "{{displayname}}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_entity_labels_nonpreferred', 'textAreaTagName' => 'textentry', 'readonly' => $vb_read_only)); ?><td>
-							<tr>
+							</tr>
 						</table>
+
+<?php
+			break;
+		}
+?>
 					</td>
 				</tr>
 			</table>
@@ -102,7 +136,7 @@
 	</div>
 </div>
 <script type="text/javascript">
-	caUI.initLabelBundle('#<?php print $vs_id_prefix; ?>Labels', {
+	caUI.initLabelBundle('#<?php print $vs_id_prefix; ?>NPLabels', {
 		mode: 'nonpreferred',
 		fieldNamePrefix: '<?php print $vs_id_prefix; ?>',
 		templateValues: ['displayname', 'prefix', 'forename', 'other_forenames', 'middlename', 'surname', 'suffix', 'type_id', 'locale_id'],

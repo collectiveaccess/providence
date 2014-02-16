@@ -90,4 +90,8 @@
 		 */
 		abstract public function getMappingErrors($t_mapping);
 		# -------------------------------------------------------
+		abstract public function getFileExtension($pa_settings);
+		# -------------------------------------------------------
+		abstract public function getContentType($pa_setting);
+		# -------------------------------------------------------
 	}

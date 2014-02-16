@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,7 +35,7 @@
    */
 
 require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
-require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
+require_once(__CA_LIB_DIR__."/ca/RepresentableBaseModel.php");
 require_once(__CA_MODELS_DIR__."/ca_objects.php");
 
 
@@ -149,7 +149,7 @@ BaseModel::$s_ca_models_definitions['ca_object_lots'] = array(
  	)
 );
 
-class ca_object_lots extends BundlableLabelableBaseModelWithAttributes {
+class ca_object_lots extends RepresentableBaseModel {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -248,6 +248,11 @@ class ca_object_lots extends BundlableLabelableBaseModelWithAttributes {
 	protected $ID_NUMBERING_SORT_FIELD = 'idno_stub_sort';		// name of field containing version of identifier for sorting (is normalized with padding to sort numbers properly)
 
 	# ------------------------------------------------------
+	# Self-relations
+	# ------------------------------------------------------
+	protected $SELF_RELATION_TABLE_NAME = 'ca_object_lots_x_object_lots';
+	
+	# ------------------------------------------------------
 	# Search
 	# ------------------------------------------------------
 	protected $SEARCH_CLASSNAME = 'ObjectLotSearch';
@@ -279,8 +284,9 @@ class ca_object_lots extends BundlableLabelableBaseModelWithAttributes {
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
-	protected function initLabelDefinitions() {
-		parent::initLabelDefinitions();
+	protected function initLabelDefinitions($pa_options=null) {
+		parent::initLabelDefinitions($pa_options);
+		$this->BUNDLES['ca_object_representations'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Media representations'));
 		$this->BUNDLES['ca_entities'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related entities'));
 		$this->BUNDLES['ca_places'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related places'));
 		$this->BUNDLES['ca_occurrences'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related occurrences'));
@@ -289,12 +295,12 @@ class ca_object_lots extends BundlableLabelableBaseModelWithAttributes {
 		
 		$this->BUNDLES['ca_loans'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related loans'));
 		$this->BUNDLES['ca_movements'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related movements'));
+		$this->BUNDLES['ca_object_lots'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related lots'));
 		
 		$this->BUNDLES['ca_list_items'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related vocabulary terms'));
 		$this->BUNDLES['ca_sets'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Sets'));
 		
 		$this->BUNDLES['ca_objects'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects'));
-		$this->BUNDLES['ca_object_lot_events'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related events'));
 	}
  	# ------------------------------------------------------
  	/**

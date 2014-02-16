@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2010 Whirl-i-Gig
+ * Copyright 2006-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -234,6 +234,18 @@ class MediaProcessingSettings {
 		return $vs_field_name;
 	}
 	# ---------------------------------------------------
+	public function getMetadataContentLocationsName() {
+		$vs_field_name = null;
+		if ($this->opa_table_settings) {
+			$vs_field_name = $this->opa_table_settings['MEDIA_CONTENT_LOCATIONS'];
+		} else {
+			if($this->opo_config_settings) {
+				$vs_field_name = $this->opa_config_settings_as_array['MEDIA_CONTENT_LOCATIONS'];
+			}
+		}
+		return $vs_field_name;
+	}
+	# ---------------------------------------------------
 	/**
 	 * Returns the name of the media version that should be used as the default for display for the specified mimetype
 	 * This is only a suggestion - it's the version to display in the absence of any overriding value provided by the user
@@ -246,6 +258,23 @@ class MediaProcessingSettings {
 		return null;
 	}
 	# ---------------------------------------------------
+	/**
+	 * Get list of mimetypes accepted by specified volume
+	 *
+	 * @param string $ps_volume The name of the volume
+	 * @return array List of mimetypes accepted by volume
+	 */
+	public function getMimetypesForVolume($ps_volume) {
+		$va_media_accept = $this->getAcceptedMediaTypes();
+		if(!is_array($va_media_accept)) { return null; }
+		
+		$va_mimetypes = array();
+		foreach($va_media_accept as $vs_mimetype => $vs_volume) {
+			if ($ps_volume != $vs_volume) { continue; }
+			$va_mimetypes[$vs_mimetype] = true;
+		}
+		return array_keys($va_mimetypes);
+	}
+	# ---------------------------------------------------
 }
-# ----------------------------------------------------------------------
 ?>

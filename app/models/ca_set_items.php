@@ -68,9 +68,14 @@ BaseModel::$s_ca_models_definitions['ca_set_items'] = array(
 					_t('Places') => 72,
 					_t('Occurrences') => 67,
 					_t('Collections') => 13,
-					_t('Storage locations') => 89
-				),
-				'BOUNDS_LENGTH' => array(1,100)
+					_t('Storage locations') => 89,
+					_t('Object representations') => 56,
+					_t('Loans') => 133,
+					_t('Movements') => 137,
+					_t('List items') => 33,
+					_t('Tours') => 153,
+					_t('Tour stops') => 155
+				)
 		),
 		'row_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -284,8 +289,8 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 		return parent::update($pa_options);
 	}
 	# ------------------------------------------------------
-	protected function initLabelDefinitions() {
-		parent::initLabelDefinitions();
+	protected function initLabelDefinitions($pa_options=null) {
+		parent::initLabelDefinitions($pa_options);
 		$this->BUNDLES['preferred_labels'] = array('type' => 'preferred_label', 'repeating' => true, 'label' => _t("Item captions"));
 	}
 	# ------------------------------------------------------

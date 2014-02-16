@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,6 +46,8 @@
 	
 	if ($vb_batch) {
 		print caBatchEditorSetsModeControl($vn_table_num, $vs_id_prefix);
+	} else {
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$vn_table_num.'_sets');
 	}
 ?>
 <div id="<?php print $vs_id_prefix.$vn_table_num.'_sets'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
@@ -96,6 +98,7 @@
 		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 		templateValues: ['set_id'],
 		initialValues: <?php print json_encode($va_initial_values); ?>,
+		initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
 		errors: <?php print json_encode($va_errors); ?>,
 		itemID: '<?php print $vs_id_prefix; ?>Item_',
 		templateClassName: 'caItemTemplate',

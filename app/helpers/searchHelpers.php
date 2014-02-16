@@ -93,6 +93,10 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 				require_once(__CA_LIB_DIR__.'/ca/Search/ObjectRepresentationSearch.php');
 				return new ObjectRepresentationSearch();
 				break;
+			case 'ca_representation_annotations':
+				require_once(__CA_LIB_DIR__.'/ca/Search/RepresentationAnnotationSearch.php');
+				return new RepresentationAnnotationSearch();
+				break;
 			case 'ca_item_comments':
 				require_once(__CA_LIB_DIR__.'/ca/Search/ItemCommentSearch.php');
 				return new ItemCommentSearch();
@@ -212,6 +216,12 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 				$vs_controller = ($vb_return_advanced) ? 'SearchObjectRepresentationsAdvanced' : 'SearchObjectRepresentations';
 				$vs_action = 'Index';
 				break;
+			case 'ca_representation_annotations':
+			case 82:
+				$vs_module = 'find';
+				$vs_controller = ($vb_return_advanced) ? 'SearchRepresentationAnnotationsAdvanced' : 'SearchRepresentationAnnotations';
+				$vs_action = 'Index';
+				break;
 			case 'ca_relationship_types':
 			case 79:
 				$vs_module = 'administrate/setup';
@@ -257,6 +267,44 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 			$pa_additional_parameters = array_merge(array('search' => $ps_search), $pa_additional_parameters);
 			return caNavUrl($po_request, $vs_module, $vs_controller, $vs_action, $pa_additional_parameters);
 		}
+	}
+	# ---------------------------------------
+	/**
+	 * 
+	 *
+	 * @return array 
+	 */
+	function caSearchGetAccessPoints($ps_search_expression) {
+		if(preg_match("!\b([A-Za-z0-9\-\_]+):!", $ps_search_expression, $va_matches)) {
+			array_shift($va_matches);
+			return $va_matches;
+		}
+		return array();
+	}
+	# ---------------------------------------
+	/**
+	 * 
+	 *
+	 * @return array 
+	 */
+	function caSearchGetTablesForAccessPoints($pa_access_points) {
+		$o_config = Configuration::load();
+		$o_search_config = Configuration::load($o_config->get("search_config"));
+		$o_search_indexing_config = Configuration::load($o_search_config->get("search_indexing_config"));	
+			
+		$va_tables = $o_search_indexing_config->getAssocKeys();
+		
+		$va_aps = array();
+		foreach($va_tables as $vs_table) {
+			$va_config = $o_search_indexing_config->getAssoc($vs_table);
+			if(is_array($va_config) && is_array($va_config['_access_points'])) {
+				if (array_intersect($pa_access_points, array_keys($va_config['_access_points']))) {
+					$va_aps[$vs_table] = true;	
+				}
+			}
+		}
+		
+		return array_keys($va_aps);
 	}
 	# ---------------------------------------
 ?>

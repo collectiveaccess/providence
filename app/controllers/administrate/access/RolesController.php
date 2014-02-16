@@ -34,7 +34,7 @@
  		# -------------------------------------------------------
  		private $pt_role;
  		
- 		private $opa_bundleable_tables = array('ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops', 'ca_object_representations', 'ca_representation_annotations');
+ 		private $opa_bundleable_tables = array('ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_object_lots', 'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops', 'ca_object_representations', 'ca_representation_annotations');
  		# -------------------------------------------------------
  		#
  		# -------------------------------------------------------
@@ -142,6 +142,7 @@
 				$va_type_access_settings = array();
 				
 				foreach($this->opa_bundleable_tables as $vs_table) {
+					if ((!caTableIsActive($vs_table)) && ($vs_table != 'ca_object_representations')) { continue; }
 					$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
 					if (!($vs_list_code = $t_instance->getTypeListCode())) { continue; }
 					$va_type_ids = $t_list->getItemsForList($vs_list_code, array('idsOnly' => true));
@@ -158,14 +159,19 @@
 				$va_vars['type_access_settings'] = $va_type_access_settings;
 			} 			
  			
- 			$t_role->set('vars', $va_vars);
- 			
+ 			$t_role->set('vars', $va_vars);	
+			
  			// save actions
-			$va_role_action_list = $t_role->getRoleActionList(true);
+			$va_role_action_list = $t_role->getRoleActionList();
 			$va_new_role_action_settings = array();
-			foreach($va_role_action_list as $vs_action => $va_action_info) {
-				if ($this->request->getParameter($vs_action, pInteger) > 0) {
-					$va_new_role_action_settings[] = $vs_action;
+			
+			foreach($va_role_action_list as $vs_group => $va_group_info) {
+				if ((caTableIsActive($vs_group) === false) && ($vs_group != 'ca_object_representations')) { continue; }		// will return null if group name is not a table name; true if it's an enabled table and false if it's a disabled table
+			
+				foreach($va_group_info['actions'] as $vs_action => $va_action_info) {
+					if ($this->request->getParameter($vs_action, pInteger) > 0) {
+						$va_new_role_action_settings[] = $vs_action;
+					}
 				}
 			}
 			$t_role->setRoleActions($va_new_role_action_settings);

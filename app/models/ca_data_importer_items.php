@@ -185,8 +185,8 @@ class ca_data_importer_items extends BaseModel {
 		$this->initSettings();
 	}
 	# ------------------------------------------------------
-	protected function initLabelDefinitions() {
-		parent::initLabelDefinitions();
+	protected function initLabelDefinitions($pa_options=null) {
+		parent::initLabelDefinitions($pa_options);
 		
 		// TODO
 	}
@@ -234,6 +234,19 @@ class ca_data_importer_items extends BaseModel {
 			),
 			'label' => _t('Skip group if empty'),
 			'description' => _t('Skip all of the elements in the group if value for this element is empty.  For example, a field called Description Type would be irrelevant if the Description field is empty.')
+		);
+		$va_settings['skipIfEmpty'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Skip mapping if empty'),
+			'description' => _t('Skip mapping if value for this element is empty.')
 		);
 		$va_settings['skipGroupIfValue'] = array(
 			'formatType' => FT_TEXT,
@@ -283,6 +296,15 @@ class ca_data_importer_items extends BaseModel {
 			'default' => 0,
 			'label' => _t('Skip row if value is not'),
 			'description' => _t('Skip the row if value for this element is not equal to any of the specified value(s).')
+		);
+		$va_settings['skipGroupIfExpression'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Skip group if expression'),
+			'description' => _t('Skip all of the elements in the group if value for the expression is true.')
 		);
 		$va_settings['default'] = array(
 			'formatType' => FT_TEXT,
