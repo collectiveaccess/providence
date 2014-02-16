@@ -29,12 +29,13 @@
  *
  * ----------------------------------------------------------------------
  */
- 
+
  /**
   *
   */
 
 	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
+	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 
 	/*
 	 * Globals used by Javascript load manager
@@ -148,6 +149,7 @@
 			
 			if (!$g_javascript_config) { JavascriptLoadManager::init(); }
 			$vs_buf = '';
+
 			if (is_array($g_javascript_load_list)) {
 				foreach($g_javascript_load_list as $vs_lib => $vn_x) { 
 					if (preg_match('!(http[s]{0,1}://.*)!', $vs_lib, $va_matches)) { 
@@ -165,9 +167,36 @@
 					}
 				}
 			}
+
 			if (is_array($g_javascript_complementary)) {
 				foreach($g_javascript_complementary as $vs_code) { 
 					$vs_buf .= "<script type='text/javascript'>\n".$vs_code."</script>\n";
+				}
+			}
+
+			$o_app_plugin_manager = new ApplicationPluginManager();
+			$va_hook_javascript_css_list = $o_app_plugin_manager->hookJavascriptCssLoadManager();
+
+			if (is_array($va_hook_javascript_css_list) && sizeof($va_hook_javascript_css_list)) {
+				foreach($va_hook_javascript_css_list as $vs_lib) {
+					if (preg_match('!(http[s]{0,1}://.*)!', $vs_lib, $va_matches_http)) {
+						// Full URL to JS, CSS or properties file ...
+						$vs_url = $va_matches_http[1];
+					} elseif (preg_match('!^/(/.*)!', $vs_lib, $va_matches_slash)) {
+						// ... or relative path from root directory only if double-slashed ...
+						$vs_url = $va_matches_slash[1];
+					} else {
+						// ... or relative path inside plugin dir, starting with plugin dir name (slashed or not)
+						$vs_url = $ps_baseurlpath."/app/plugins".((substr($vs_lib, 0, 1) != "/") ? "/" : "").$vs_lib;
+					}
+
+					if (preg_match('!\.css$!', $vs_lib)) {
+						$vs_buf .= "<link rel='stylesheet' href='{$vs_url}' type='text/css' media='screen'/>\n";
+					} elseif(preg_match('!\.properties$!', $vs_lib)) {
+						$vs_buf .= "<link rel='resource' href='{$vs_url}' type='application/l10n' />\n";
+					} else {
+						$vs_buf .= "<script src='{$vs_url}' type='text/javascript'></script>\n";
+					}
 				}
 			}
 			return $vs_buf;
