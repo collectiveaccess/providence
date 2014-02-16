@@ -3468,6 +3468,7 @@ $ca_relationship_lookup_parse_cache = array();
 					$va_tag_values[$vs_subelement]['AVG'] = ($vn_c > 0) ? sprintf("%1.2f", $va_tag_values[$vs_subelement]['SUM']/$vn_c) : 0;
 					
 					foreach($va_tag_values[$vs_subelement] as $vs_tag => $vn_val) {
+						if (!$vb_has_timecode) { $va_tag_values[$vs_subelement][$vs_tag] = ''; continue; }
 						$o_tcp->setParsedValueInSeconds($vn_val);
 						$va_tag_values[$vs_subelement][$vs_tag] = $o_tcp->getText($vs_timecode_format); 
 					}
