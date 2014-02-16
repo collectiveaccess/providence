@@ -126,7 +126,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('List'),
-				'description' => _t('Identifies the root node of the list item list to add items to.')
+				'description' => _t('List to add items to')
 			),
 			'listItemSplitter_relationshipTypeDefault' => array(
 				'formatType' => FT_TEXT,

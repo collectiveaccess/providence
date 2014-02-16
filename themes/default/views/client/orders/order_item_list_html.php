@@ -80,8 +80,8 @@
 					</td>
 				</tr>
 				<tr>
-					<td><?php print $t_order_item->htmlFormElement('service', null, array('value' => '{service}', 'name' => $vs_id_prefix.'_service_{n}', 'id' => $vs_id_prefix.'_service_{n}')); ?></td>
-					<td><?php print $t_order_item->htmlFormElement('fullfillment_method',  null, array('value' => '{fullfillment_method}', 'name' => $vs_id_prefix.'_fullfillment_method_{n}', 'id' => $vs_id_prefix.'_fullfillment_method_{n}')); ?></td>
+					<td><?php print $t_order_item->htmlFormElement('service', null, array('value' => '{service}', 'name' => $vs_id_prefix.'_service_{n}', 'id' => $vs_id_prefix.'_service_{n}', 'tooltip_namespace' => 'item_list')); ?></td>
+					<td><?php print $t_order_item->htmlFormElement('fullfillment_method',  null, array('value' => '{fullfillment_method}', 'name' => $vs_id_prefix.'_fullfillment_method_{n}', 'id' => $vs_id_prefix.'_fullfillment_method_{n}', 'tooltip_namespace' => 'item_list')); ?></td>
 					<td rowspan='3' valign='top' width='125'>
 						<a href='#' onclick='caMediaPanel.showPanel("<?php print urldecode(caNavUrl($this->request, 'client/orders', 'OrderEditor', 'SelectRepresentations', array('object_id' => "{object_id}", 'item_id' => "{item_id}"))); ?>", function() { jQuery("#orderItemRepresentationSelect{n}").load("<?php print urldecode(caNavUrl($this->request, 'client/orders', 'OrderEditor', 'GetSelectedRepresentationCount', array('item_id' => '{item_id}'))); ?>"); }); return false;' >{thumbnail_tag}</a>
 						<br/>
@@ -89,12 +89,12 @@
 					</td>
 				</tr>
 				<tr>
-					<td><?php print $t_order_item->htmlFormElement('fee', $vs_currency_input_format, array('classname' => 'currencyBg', 'value' => '{fee}', 'name' => $vs_id_prefix.'_fee_{n}', 'id' => $vs_id_prefix.'_fee_{n}')); ?></td>
-					<td><?php print $t_order_item->htmlFormElement('tax',  $vs_currency_input_format, array('classname' => 'currencyBg', 'value' => '{tax}', 'name' => $vs_id_prefix.'_tax_{n}', 'id' => $vs_id_prefix.'_tax_{n}')); ?></td>
+					<td><?php print $t_order_item->htmlFormElement('fee', $vs_currency_input_format, array('classname' => 'currencyBg', 'value' => '{fee}', 'name' => $vs_id_prefix.'_fee_{n}', 'id' => $vs_id_prefix.'_fee_{n}', 'tooltip_namespace' => 'item_list')); ?></td>
+					<td><?php print $t_order_item->htmlFormElement('tax',  $vs_currency_input_format, array('classname' => 'currencyBg', 'value' => '{tax}', 'name' => $vs_id_prefix.'_tax_{n}', 'id' => $vs_id_prefix.'_tax_{n}', 'tooltip_namespace' => 'item_list')); ?></td>
 				</tr>
 				<tr>
-					<td width='260'><?php print str_replace('textarea', 'textentry', $t_order_item->htmlFormElement('notes', null, array('value' => '{notes}', 'name' => $vs_id_prefix.'_notes_{n}', 'id' => $vs_id_prefix.'_notes_{n}', 'width' => '250px'))); ?></td>
-					<td width='330'><?php print str_replace('textarea', 'textentry', $t_order_item->htmlFormElement('restrictions',  null, array('value' => '{restrictions}', 'name' => $vs_id_prefix.'_restrictions_{n}', 'id' => $vs_id_prefix.'_restrictions_{n}', 'width' => '250px'))); ?></td>
+					<td width='260'><?php print str_replace('textarea', 'textentry', $t_order_item->htmlFormElement('notes', null, array('value' => '{notes}', 'name' => $vs_id_prefix.'_notes_{n}', 'id' => $vs_id_prefix.'_notes_{n}', 'width' => '250px', 'tooltip_namespace' => 'item_list'))); ?></td>
+					<td width='330'><?php print str_replace('textarea', 'textentry', $t_order_item->htmlFormElement('restrictions',  null, array('value' => '{restrictions}', 'name' => $vs_id_prefix.'_restrictions_{n}', 'id' => $vs_id_prefix.'_restrictions_{n}', 'width' => '250px', 'tooltip_namespace' => 'item_list'))); ?></td>
 				</tr>
 <?php
 	if ($vs_additional_fees = $this->getVar('additional_fees')) {
@@ -112,6 +112,9 @@
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
 			
 		</div>
+<?php
+	print TooltipManager::getLoadHTML('item_list');
+?>
 	</textarea>
 <?php
 	//
@@ -133,16 +136,16 @@
 					</td>
 				</tr>
 				<tr>
-					<td><?php print $t_order_item->htmlFormElement('service', null, array('value' => '{service}', 'name' => $vs_id_prefix.'_service_{n}', 'id' => $vs_id_prefix.'_service_{n}', 'onchange' => 'caGetDefaultFee("'.$vs_id_prefix.'_service_{n}", "'.$vs_id_prefix.'_fee_{n}", "{n}")')); ?></td>
-					<td><?php print $t_order_item->htmlFormElement('fullfillment_method',  null, array('value' => '{fullfillment_method}', 'name' => $vs_id_prefix.'_fullfillment_method_{n}', 'id' => $vs_id_prefix.'_fullfillment_method_{n}')); ?></td>
+					<td><?php print $t_order_item->htmlFormElement('service', null, array('value' => '{service}', 'name' => $vs_id_prefix.'_service_{n}', 'id' => $vs_id_prefix.'_service_{n}', 'onchange' => 'caGetDefaultFee("'.$vs_id_prefix.'_service_{n}", "'.$vs_id_prefix.'_fee_{n}", "{n}")', 'tooltip_namespace' => 'new_item_list')); ?></td>
+					<td><?php print $t_order_item->htmlFormElement('fullfillment_method',  null, array('value' => '{fullfillment_method}', 'name' => $vs_id_prefix.'_fullfillment_method_{n}', 'id' => $vs_id_prefix.'_fullfillment_method_{n}', 'tooltip_namespace' => 'new_item_list')); ?></td>
 				</tr>
 				<tr>
-					<td><?php print $t_order_item->htmlFormElement('fee', $vs_currency_input_format, array('classname' => 'currencyBg', 'value' => '{fee}', 'name' => $vs_id_prefix.'_fee_{n}', 'id' => $vs_id_prefix.'_fee_{n}')); ?></td>
-					<td><?php print $t_order_item->htmlFormElement('tax',  $vs_currency_input_format, array('classname' => 'currencyBg', 'value' => '{tax}', 'name' => $vs_id_prefix.'_tax_{n}', 'id' => $vs_id_prefix.'_tax_{n}')); ?></td>
+					<td><?php print $t_order_item->htmlFormElement('fee', $vs_currency_input_format, array('classname' => 'currencyBg', 'value' => '{fee}', 'name' => $vs_id_prefix.'_fee_{n}', 'id' => $vs_id_prefix.'_fee_{n}', 'tooltip_namespace' => 'new_item_list')); ?></td>
+					<td><?php print $t_order_item->htmlFormElement('tax',  $vs_currency_input_format, array('classname' => 'currencyBg', 'value' => '{tax}', 'name' => $vs_id_prefix.'_tax_{n}', 'id' => $vs_id_prefix.'_tax_{n}', 'tooltip_namespace' => 'new_item_list')); ?></td>
 				</tr>
 				<tr>
-					<td><?php print str_replace('textarea', 'textentry', $t_order_item->htmlFormElement('notes', null, array('value' => '{notes}', 'name' => $vs_id_prefix.'_notes_{n}', 'id' => $vs_id_prefix.'_notes_{n}'))); ?></td>
-					<td><?php print str_replace('textarea', 'textentry', $t_order_item->htmlFormElement('restrictions',  null, array('value' => '{restrictions}', 'name' => $vs_id_prefix.'_restrictions_{n}', 'id' => $vs_id_prefix.'_restrictions_{n}'))); ?></td>
+					<td><?php print str_replace('textarea', 'textentry', $t_order_item->htmlFormElement('notes', null, array('value' => '{notes}', 'name' => $vs_id_prefix.'_notes_{n}', 'id' => $vs_id_prefix.'_notes_{n}', 'tooltip_namespace' => 'new_item_list'))); ?></td>
+					<td><?php print str_replace('textarea', 'textentry', $t_order_item->htmlFormElement('restrictions',  null, array('value' => '{restrictions}', 'name' => $vs_id_prefix.'_restrictions_{n}', 'id' => $vs_id_prefix.'_restrictions_{n}', 'tooltip_namespace' => 'new_item_list'))); ?></td>
 				</tr>
 <?php
 	if ($vs_additional_fees = $this->getVar('additional_fees_for_new_items')) {
@@ -161,6 +164,9 @@
 		<script type="text/javascript"><?php
 			print 'caGetDefaultFee("'.$vs_id_prefix.'_service_{n}", "'.$vs_id_prefix.'_fee_{n}", "{n}")';
 		?></script>
+<?php
+	print TooltipManager::getLoadHTML('new_item_list');
+?>
 	</textarea>
 	
 	<div class="bundleContainer">

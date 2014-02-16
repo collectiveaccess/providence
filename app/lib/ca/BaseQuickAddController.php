@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2013 Whirl-i-Gig
+ * Copyright 2012-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -171,6 +171,13 @@
 				$t_subject->setFailedNonPreferredLabelInserts($va_field_values['nonpreferred_label']);		
 			}
 			
+			// Set annotation properties
+			if (is_array($va_field_values['annotation_properties']) && method_exists($t_subject, 'setPropertyValue')) {
+				foreach($va_field_values['annotation_properties'] as $vs_property => $vs_property_value) {
+					$t_subject->setPropertyValue($vs_property, $vs_property_value);	
+				}	
+			}
+			
 			
 			if (!$t_ui->getPrimaryKey()) {
 				$this->notification->addNotification(_t('There is no configuration available for this editor. Check your system configuration and ensure there is at least one valid configuration for this type of editor.'), __NOTIFICATION_TYPE_ERROR__);
@@ -186,6 +193,8 @@
 			$this->view->setVar('q', $this->request->getParameter('q', pString));
 			
 			$this->view->setVar('default_parent_id', $this->opo_result_context->getParameter($t_subject->tableName().'_last_parent_id'));
+			
+			$this->view->setVar('notifications', $this->notification->getNotifications());
 			
 			$this->render('quickadd_html.php');
  		}

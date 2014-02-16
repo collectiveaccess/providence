@@ -30,7 +30,6 @@
  * ----------------------------------------------------------------------
  */
 	require_once('PHPUnit/Autoload.php');
-	require_once('../../../setup.php');
 	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
 	
 	class DatamodelTest extends PHPUnit_Framework_TestCase {

@@ -1154,13 +1154,18 @@ class SearchResult extends BaseObject {
 									foreach($va_values as $vn_i => $va_value) {
 										$va_ids[] = $va_value[$vs_pk];
 					
-										$this->opo_tep->init();
-										if ($va_field_info['FIELD_TYPE'] == FT_DATERANGE) {
-											$this->opo_tep->setUnixTimestamps($va_value[$va_field_info['START']], $va_value[$va_field_info['END']]);
+										if ((isset($pa_options['sortable']) && $pa_options['sortable'])) {
+											$vs_prop = $va_value[$va_field_info['START']].'/'.$va_value[$va_field_info['END']];
 										} else {
-											$this->opo_tep->setHistoricTimestamps($va_value[$va_field_info['START']], $va_value[$va_field_info['END']]);
+											$this->opo_tep->init();
+											if ($va_field_info['FIELD_TYPE'] == FT_DATERANGE) {
+												$this->opo_tep->setUnixTimestamps($va_value[$va_field_info['START']], $va_value[$va_field_info['END']]);
+											} else {
+												$this->opo_tep->setHistoricTimestamps($va_value[$va_field_info['START']], $va_value[$va_field_info['END']]);
+											}
+											$vs_prop = $this->opo_tep->getText($pa_options);
 										}
-										$vs_prop = $this->opo_tep->getText($pa_options);
+										
 										if ($vb_return_all_locales) {
 											$va_return_values[$vn_row_id][$vn_locale_id][] = $vs_prop;
 										} else {
@@ -1376,14 +1381,22 @@ class SearchResult extends BaseObject {
 								}
 								break;
 							case FT_DATERANGE:
-								$this->opo_tep->init();
-								$this->opo_tep->setUnixTimestamps($va_value[$va_field_info['START']], $va_value[$va_field_info['END']]);
-								$va_value[$va_path_components['field_name']] = $this->opo_tep->getText($pa_options);
+								if ((isset($pa_options['sortable']) && $pa_options['sortable'])) {
+									$va_value[$va_path_components['field_name']] = $va_value[$va_field_info['START']].'/'.$va_value[$va_field_info['END']];
+								} else {
+									$this->opo_tep->init();
+									$this->opo_tep->setUnixTimestamps($va_value[$va_field_info['START']], $va_value[$va_field_info['END']]);
+									$va_value[$va_path_components['field_name']] = $this->opo_tep->getText($pa_options);
+								}
 								break;
 							case FT_HISTORIC_DATERANGE:
-								$this->opo_tep->init();
-								$this->opo_tep->setHistoricTimestamps($va_value[$va_field_info['START']], $va_value[$va_field_info['END']]);
-								$va_value[$va_path_components['field_name']] = $this->opo_tep->getText($pa_options);
+								if ((isset($pa_options['sortable']) && $pa_options['sortable'])) {
+									$va_value[$va_path_components['field_name']] = $va_value[$va_field_info['START']].'/'.$va_value[$va_field_info['END']];
+								} else {
+									$this->opo_tep->init();
+									$this->opo_tep->setHistoricTimestamps($va_value[$va_field_info['START']], $va_value[$va_field_info['END']]);
+									$va_value[$va_path_components['field_name']] = $this->opo_tep->getText($pa_options);
+								}
 								break;
 							case FT_MEDIA:
 								if(!$vs_version = $va_path_components['subfield_name']) {

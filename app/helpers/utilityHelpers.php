@@ -39,6 +39,7 @@ require_once(__CA_LIB_DIR__.'/core/Configuration.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/ZipFile.php');
 require_once(__CA_LIB_DIR__.'/core/Logging/Eventlog.php');
 require_once(__CA_LIB_DIR__.'/core/Utils/Encoding.php');
+require_once(__CA_LIB_DIR__.'/core/Zend/Measure/Length.php');
 
 # ----------------------------------------------------------------------
 # String localization functions (getText)
@@ -805,39 +806,46 @@ function caFileIsIncludable($ps_file) {
 	 * @return float The converted value
 	 */
 	function caConvertLocaleSpecificFloat($ps_value, $locale = "en_US") {
-		if (!function_exists("NumberFormatter")) { return $ps_value; }
-		$fmt = new NumberFormatter($locale, NumberFormatter::DECIMAL );
-		return (float)$fmt->parse($ps_value);
+		$vo_locale = new Zend_Locale($locale);
+
+		try {
+			return Zend_Locale_Format::getNumber($ps_value, array('locale' => $locale));
+		} catch (Zend_Locale_Exception $e) { // happens when you enter 54.33 but 54,33 is expected in the current locale
+			return floatval($ps_value);
+		}
 	}
 	# ---------------------------------------
 	/**
 	 * Takes a standard formatted float (eg. 54.33) and converts it to the locale
 	 * format needed for display (eg 54,33)
 	 *
-	 * @param string $ps_value The value to convert
+	 * @param string $pn_value The value to convert
 	 * @param string $locale Which locale is to be used to return the value
 	 * @return float The converted value
 	 */
-	function caConvertFloatToLocale($ps_value, $locale = "en_US") {
-		if (!function_exists("NumberFormatter")) { return $ps_value; }
-		$fmt = new NumberFormatter($locale, NumberFormatter::DECIMAL );
-		return $fmt->format($ps_value);
+	function caConvertFloatToLocale($pn_value, $locale = "en_US") {
+		$vo_locale = new Zend_Locale($locale);
+
+		try {
+			return Zend_Locale_Format::toNumber($pn_value, array('locale' => $locale));
+		} catch (Zend_Locale_Exception $e) {
+			return $pn_value;
+		}
 	}
 	# ---------------------------------------
 	/**
 	 * Get the decimal separator
 	 *
-	 * @param string $ps_value The value to convert
-	 * @param string $locale Which locale is to be used to return the value
-	 * @return float The converted value
+	 * @param string $locale Which locale is to be used to determine the value
+	 * @return string The separator
 	 */
 	function caGetDecimalSeparator($locale = "en_US") {
-		if (!function_exists("NumberFormatter")) { return $ps_value; }
-		if ($locale != "en_US") {
-			$fmt = new NumberFormatter($locale, NumberFormatter::DECIMAL );
-			return $fmt->getSymbol(NumberFormatter::DECIMAL_SEPARATOR_SYMBOL);
+		$va_symbols = Zend_Locale_Data::getList($locale,'symbols');
+		if(isset($va_symbols['decimal'])){
+			return $va_symbols['decimal'];
+		} else {
+			return '.';
 		}
-		return ".";
 	}
 	# ---------------------------------------
 	/**
@@ -1548,6 +1556,7 @@ function caFileIsIncludable($ps_file) {
 	 *		forceUppercase = transform option value to all uppercase [default=false]
 	 *		validValues = array of values that are possible for this option. If the option value is not in the list then the default is returned. If no default is set then the first value in the validValues list is returned. Note that by default all comparisons are case-insensitive. 
 	 *		caseSensitive = do case sensitive comparisons when checking the option value against the validValues list [default=false]
+	 *		castTo = array|int|string
 	 * @return mixed
 	 */
 	function caGetOption($ps_option, $pa_options, $pm_default=null, $pa_parse_options=null) {
@@ -1575,6 +1584,28 @@ function caFileIsIncludable($ps_file) {
 			$vm_val = mb_strtolower($vm_val);
 		} elseif (isset($pa_parse_options['forceUppercase']) && $pa_parse_options['forceUppercase']) {
 			$vm_val = mb_strtoupper($vm_val);
+		}
+		
+		$vs_cast_to = (isset($pa_parse_options['castTo']) && ($pa_parse_options['castTo'])) ? strtolower($pa_parse_options['castTo']) : '';
+		switch($vs_cast_to) {
+			case 'int':
+				$vm_val = (int)$vm_val;
+				break;
+			case 'float':
+				$vm_val = (float)$vm_val;
+				break;
+			case 'string':
+				$vm_val = (string)$vm_val;
+				break;
+			case 'array':
+				if(!is_array($vm_val)) {
+					if (strlen($vm_val)) {
+						$vm_val = array($vm_val);
+					} else {
+						$vm_val = array();
+					}
+				}
+				break;
 		}
 		
 		return $vm_val;
@@ -1612,7 +1643,7 @@ function caFileIsIncludable($ps_file) {
 			if (is_array($vm_v)) {
 				$pa_array[$vn_k] = caSanitizeArray($vm_v);
 			} else {
-				if (!preg_match("!^[\p{L}\p{N}\p{P}]+!", $vm_v)) {
+				if ((!preg_match("!^[\p{L}\p{N}\p{P}]+!", $vm_v)) || (!mb_detect_encoding($vm_v))) {
 					unset($pa_array[$vn_k]);
 				}
 			}
@@ -1819,6 +1850,13 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caIsAssociativeArray($pa_array) {
 	  return (bool)count(array_filter(array_keys($pa_array), 'is_string'));
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caIsIndexedArray($pa_array) {
+		return (is_array($pa_array) && !caIsAssociativeArray($pa_array));
 	}
 	# ----------------------------------------
 	/**

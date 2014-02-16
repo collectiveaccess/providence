@@ -94,7 +94,6 @@
  			JavascriptLoadManager::register('imageScroller');
  			JavascriptLoadManager::register('tabUI');
  			JavascriptLoadManager::register('panel');
-            JavascriptLoadManager::register('jquery', 'expander');
             return parent::Index($pa_options);
  		}
  		# -------------------------------------------------------

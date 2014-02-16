@@ -1883,7 +1883,7 @@ caResizeSideNav();
 			// DomDocument messes with white space and encodes entities so we normalize the directive here so the str_ireplace() replacement below doesn't fail
 			$va_units[] = $va_unit = array(
 				'tag' => $vs_unit_tag = "[[#{$vn_unit_id}]]",
-				'directive' => preg_replace("![\r\n\t]+!", "", html_entity_decode($vs_html)),
+				'directive' => preg_replace("![\r\n\t\"]+!", "", html_entity_decode($vs_html)),
 				'content' => $vs_content, 'relativeTo' => (string)$o_unit->getAttribute("relativeto"),
 				'delimiter' => (string)$o_unit->getAttribute("delimiter"),
 				'restrictToTypes' => (string)$o_unit->getAttribute("restricttotypes"),
@@ -2074,7 +2074,7 @@ caResizeSideNav();
 							break;
 					}
 				}
-				$vs_tmpl_val = caProcessTemplateForIDs($va_unit['content'], $va_relative_to_tmp[0], $va_relative_ids, array_merge($pa_options, array('delimiter' => $vs_unit_delimiter, 'resolveLinksUsing' => null)));
+				$vs_tmpl_val = caProcessTemplateForIDs($va_unit['content'], $va_relative_to_tmp[0], $va_relative_ids, array_merge($pa_options, array('restrictToTypes' => caGetOption('restrictToTypes', $va_get_options, null), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $va_get_options, null)), array('delimiter' => $vs_unit_delimiter, 'resolveLinksUsing' => null)));
 				
 				$va_proc_templates[$vn_i] = str_ireplace($va_unit['tag'], $vs_tmpl_val, $va_proc_templates[$vn_i]);
 			}
@@ -3033,32 +3033,35 @@ $ca_relationship_lookup_parse_cache = array();
 		}
 		
 		if($vb_include_inline_add_message && $ps_inline_create_message) {
-			$va_initial_values[] = 
-				array(
-					'label' => $ps_inline_create_message,
-					'id' => 0,
-					$vs_rel_pk => 0,
-					'_query' => $ps_inline_create_query
-				);
+			array_push($va_initial_values, 
+					array(
+						'label' => $ps_inline_create_message,
+						'id' => 0,
+						$vs_rel_pk => 0,
+						'_query' => $ps_inline_create_query
+					)
+			);
 		} elseif ($vb_include_inline_add_does_not_exist_message && $ps_inline_create_does_not_exist_message) {
-			$va_initial_values[] = 
-				array(
-					'label' => $ps_inline_create_does_not_exist_message,
-					'id' => 0,
-					$vs_rel_pk => 0,
-					'_query' => $ps_inline_create_query
-				);
+			array_push($va_initial_values, 
+					array(
+						'label' => $ps_inline_create_does_not_exist_message,
+						'id' => 0,
+						$vs_rel_pk => 0,
+						'_query' => $ps_inline_create_query
+					)
+			);
 		} elseif ($vb_include_empty_result_message) {
-			$va_initial_values[] = 
+			array_push($va_initial_values, 
 				array(
 					'label' => $ps_empty_result_message,
 					'id' => -1,
 					$vs_rel_pk => -1,
 					'_query' => $ps_empty_result_query
-				);
+				)
+			);
 		}
 		
-		return array_values($va_initial_values);		
+		return $va_initial_values;		
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -3433,7 +3436,7 @@ $ca_relationship_lookup_parse_cache = array();
 			switch($vn_subelement_datatype) {
 				case 6:		// currency
 					$va_tag_values[$vs_subelement]['PAGEAVG'] = ($vn_page_len > 0) ? sprintf("%1.2f", $va_tag_values[$vs_subelement]['PAGESUM']/$vn_page_len) : 0;
-					$va_tag_values[$vs_subelement]['AVG'] = sprintf("%1.2f", $va_tag_values[$vs_subelement]['SUM']/$vn_c);
+					$va_tag_values[$vs_subelement]['AVG'] = ($vn_c > 0) ? sprintf("%1.2f", $va_tag_values[$vs_subelement]['SUM']/$vn_c) : "0.00";
 					
 					foreach($va_tag_values[$vs_subelement] as $vs_tag => $vn_val) {
 						$va_tag_values[$vs_subelement][$vs_tag] = "{$vs_user_currency} ".$va_tag_values[$vs_subelement][$vs_tag];
@@ -3442,7 +3445,7 @@ $ca_relationship_lookup_parse_cache = array();
 					break;
 				case 8:		// length
 					$va_tag_values[$vs_subelement]['PAGEAVG'] = ($vn_page_len > 0) ? sprintf("%1.2f", $va_tag_values[$vs_subelement]['PAGESUM']/$vn_page_len) : 0;
-					$va_tag_values[$vs_subelement]['AVG'] = sprintf("%1.2f", $va_tag_values[$vs_subelement]['SUM']/$vn_c);
+					$va_tag_values[$vs_subelement]['AVG'] = ($vn_c > 0) ? sprintf("%1.2f", $va_tag_values[$vs_subelement]['SUM']/$vn_c) : "0.00";
 					
 					foreach($va_tag_values[$vs_subelement] as $vs_tag => $vn_val) {
 						$vo_measurement = new Zend_Measure_Length((float)$vn_val, 'METER', $g_ui_locale);
@@ -3452,7 +3455,7 @@ $ca_relationship_lookup_parse_cache = array();
 					break;
 				case 9:		// weight
 					$va_tag_values[$vs_subelement]['PAGEAVG'] = ($vn_page_len > 0) ? sprintf("%1.2f", $va_tag_values[$vs_subelement]['PAGESUM']/$vn_page_len) : 0;
-					$va_tag_values[$vs_subelement]['AVG'] = sprintf("%1.2f", $va_tag_values[$vs_subelement]['SUM']/$vn_c);
+					$va_tag_values[$vs_subelement]['AVG'] = ($vn_c > 0) ? sprintf("%1.2f", $va_tag_values[$vs_subelement]['SUM']/$vn_c) : "0.00";
 					
 					foreach($va_tag_values[$vs_subelement] as $vs_tag => $vn_val) {
 						$vo_measurement = new Zend_Measure_Length((float)$vn_val, 'KILOGRAM', $g_ui_locale);
@@ -3462,7 +3465,7 @@ $ca_relationship_lookup_parse_cache = array();
 					break;
 				case 10:	// timecode
 					$va_tag_values[$vs_subelement]['PAGEAVG'] = ($vn_page_len > 0) ? sprintf("%1.2f", $va_tag_values[$vs_subelement]['PAGESUM']/$vn_page_len) : 0;
-					$va_tag_values[$vs_subelement]['AVG'] = sprintf("%1.2f", $va_tag_values[$vs_subelement]['SUM']/$vn_c);
+					$va_tag_values[$vs_subelement]['AVG'] = ($vn_c > 0) ? sprintf("%1.2f", $va_tag_values[$vs_subelement]['SUM']/$vn_c) : 0;
 					
 					foreach($va_tag_values[$vs_subelement] as $vs_tag => $vn_val) {
 						$o_tcp->setParsedValueInSeconds($vn_val);

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -214,12 +214,26 @@
 		if (is_array($pa_attributes)) {
 			$va_attr_vals = array();
 			foreach($pa_attributes as $vs_element_code => $va_attrs) {
+				$vb_is_repeating = false;
+				$vn_num_repeats = null;
 				if(is_array($va_attrs)) {
 					foreach($va_attrs as $vs_k => $vs_v) {
 						// BaseRefinery::parsePlaceholder may return an array if the input format supports repeated values (as XML does)
-						// DataMigrationUtils::getCollectionID(), which ca_data_importers::importDataFromSource() uses to create related collections
-						// only supports non-repeating attribute values, so we join any values here and call it a day.
-						$va_attr_vals[$vs_element_code][$vs_k] = (is_array($vm_v = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $ps_delimiter, $pn_c))) ? join(" ", $vm_v) : $vm_v;
+						$va_vals = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $ps_delimiter, $pn_c);
+						if (sizeof($va_vals) > 1) { $vb_is_repeating = true; }
+						
+						if ($vb_is_repeating) {
+							if (is_null($vn_num_repeats)) { $vn_num_repeats = sizeof($va_vals); }
+							
+							$vn_c = 0;
+							foreach($va_vals as $vn_x => $va_v) {
+								$va_attr_vals[$vs_element_code][$vn_x][$vs_k] = $va_v;
+								$vn_c++;
+								if ($vn_c >= $vn_num_repeats) { break; }
+							}
+						} else {
+							$va_attr_vals[$vs_element_code][$vs_k] = (is_array($vm_v = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $ps_delimiter, $pn_c))) ? join(" ", $vm_v) : $vm_v;
+						}
 					}
 				} else {
 					$va_attr_vals[$vs_element_code][$vs_element_code] = (is_array($vm_v = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $ps_delimiter, $pn_c))) ? join(" ", $vm_v) : $vm_v;

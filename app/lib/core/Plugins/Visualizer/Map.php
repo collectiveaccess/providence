@@ -75,10 +75,10 @@ class WLPlugVisualizerMap Extends BaseVisualizerPlugIn Implements IWLPlugVisuali
 		if (!($vo_data = $this->getData())) { return null; }
 		
 		$po_request = (isset($pa_options['request']) && $pa_options['request']) ? $pa_options['request'] : null;
-		if (!isset($pa_options['width']) || ((int)$pa_options['width'] < 50)) { $pa_options['width'] = 500; }
-		if (!isset($pa_options['height']) || ((int)$pa_options['height'] < 50)) { $pa_options['height'] = 500; }
 		
-		$o_map = new GeographicMap($pa_options['width'], $pa_options['height'], $pa_options['id']);
+		list($vs_width, $vs_height) = $this->_parseDimensions(caGetOption('width', $pa_options, 500), caGetOption('height', $pa_options, 500));
+		
+		$o_map = new GeographicMap($vs_width, $vs_height, $pa_options['id']);
 		$this->opn_num_items_rendered = 0;
 		
 		foreach($pa_viz_settings['sources'] as $vs_source_code => $va_source_info) {
@@ -143,6 +143,17 @@ class WLPlugVisualizerMap Extends BaseVisualizerPlugIn Implements IWLPlugVisuali
 		$po_data->seek($vn_cur_pos);
 		return false;
 	}
-	# ------------------------------------------------
+	# --------------------------------------------------------------------------------
+	/**
+	 * Register any required javascript and CSS for loading
+	 *
+	 * @return void 
+	 */
+	public function registerDependencies() {
+		$va_packages = array("openlayers", "maps");
+		foreach($va_packages as $vs_package) { JavascriptLoadManager::register($vs_package); }
+		return $va_packages;
+	}
+	# --------------------------------------------------------------------------------
 }
 ?>

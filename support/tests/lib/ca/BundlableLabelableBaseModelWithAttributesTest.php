@@ -30,7 +30,6 @@
  * ----------------------------------------------------------------------
  */
 	require_once('PHPUnit/Autoload.php');
-	require_once('../../setup.php');
 	require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 	require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 	require_once(__CA_LIB_DIR__.'/ca/Search/ObjectSearch.php');
@@ -76,7 +75,7 @@
 			), 'description');
 			
 			$vb_res = $t_object->insert();
-			$this->assertTrue($vb_res, 'Insert returned non-true value');
+			$this->assertTrue($vb_res !== false, 'Insert returned non-true value'); // insert() returns false OR the primary key, therefore simply asserting $vb_res being true doesn't cut it
 			$this->assertEquals($t_object->numErrors(), 0, "Errors on insert: ".join('; ', $t_object->getErrors()));
 			
 			$vb_res = $t_object->addLabel(

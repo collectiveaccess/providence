@@ -3,6 +3,7 @@
 .DV-docViewer {
   border: 1px solid #aaa;
   line-height: normal;
+  z-index: 100;
 }
 .DV-headerHat, .DV-title, .DV-contentsHeader {
   display: none !important;

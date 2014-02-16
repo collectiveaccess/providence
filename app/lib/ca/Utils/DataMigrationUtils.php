@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -130,7 +130,7 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
-						if ($pb_match_on_displayname) {
+						if ($pb_match_on_displayname && (strlen(trim($pa_entity_name['displayname'])) > 0)) {
 							$vn_id = ca_entities::find(array('preferred_labels' => array('displayname' => $pa_entity_name['displayname']),'type_id' => $pn_type_id, 'parent_id' => $vn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
 						} else {
 							$vn_id = ca_entities::find(array('preferred_labels' => array('forename' => $pa_entity_name['forename'], 'surname' => $pa_entity_name['surname']), 'type_id' => $pn_type_id, 'parent_id' => $vn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
@@ -138,7 +138,7 @@
 						if ($vn_id) { break(2); }
 						break;
 					case 'idno':
-						if ($vn_id = (ca_entities::find(array('idno' => $vs_idno ? $vs_idno : $pa_entity_name['displayname']), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+						if (($vs_idno || trim($pa_entity_name['displayname'])) && ($vn_id = (ca_entities::find(array('idno' => $vs_idno ? $vs_idno : $pa_entity_name['displayname']), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
 							break(2);
 						}
 						break;
@@ -191,20 +191,25 @@
 				
 				$vb_attr_errors = false;
 				if (is_array($pa_values)) {
-					foreach($pa_values as $vs_element => $va_value) { 					
-						if (is_array($va_value)) {
-							// array of values (complex multi-valued attribute)
-							$t_entity->addAttribute(
-								array_merge($va_value, array(
-									'locale_id' => $pn_locale_id
-								)), $vs_element);
-						} else {
-							// scalar value (simple single value attribute)
-							if ($va_value) {
-								$t_entity->addAttribute(array(
-									'locale_id' => $pn_locale_id,
-									$vs_element => $va_value
-								), $vs_element);
+					foreach($pa_values as $vs_element => $va_values) {
+						if (!caIsIndexedArray($va_values)) {
+							$va_values = array($va_values);
+						}	
+						foreach($va_values as $va_value) {			 					
+							if (is_array($va_value)) {
+								// array of values (complex multi-valued attribute)
+								$t_entity->addAttribute(
+									array_merge($va_value, array(
+										'locale_id' => $pn_locale_id
+									)), $vs_element);
+							} else {
+								// scalar value (simple single value attribute)
+								if ($va_value) {
+									$t_entity->addAttribute(array(
+										'locale_id' => $pn_locale_id,
+										$vs_element => $va_value
+									), $vs_element);
+								}
 							}
 						}
 					}
@@ -320,10 +325,12 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
-						if ($vn_id = (ca_places::find(array('preferred_labels' => array('name' => $ps_place_name), 'type_id' => $pn_type_id, 'parent_id' => $pn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
-							break(2);
+						if (trim($ps_place_name)) {
+							if ($vn_id = (ca_places::find(array('preferred_labels' => array('name' => $ps_place_name), 'type_id' => $pn_type_id, 'parent_id' => $pn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+								break(2);
+							}
+							break;
 						}
-						break;
 					case 'idno':
 						if ($vn_id = (ca_places::find(array('idno' => $vs_idno ? $vs_idno  : $ps_place_name), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 							break(2);
@@ -381,20 +388,25 @@
 				
 				$vb_attr_errors = false;
 				if (is_array($pa_values)) {
-					foreach($pa_values as $vs_element => $va_value) { 					
-						if (is_array($va_value)) {
-							// array of values (complex multi-valued attribute)
-							$t_place->addAttribute(
-								array_merge($va_value, array(
-									'locale_id' => $pn_locale_id
-								)), $vs_element);
-						} else {
-							// scalar value (simple single value attribute)
-							if ($va_value) {
-								$t_place->addAttribute(array(
-									'locale_id' => $pn_locale_id,
-									$vs_element => $va_value
-								), $vs_element);
+					foreach($pa_values as $vs_element => $va_values) { 
+						if (!caIsIndexedArray($va_values)) {
+							$va_values = array($va_values);
+						}	
+						foreach($va_values as $va_value) {					
+							if (is_array($va_value)) {
+								// array of values (complex multi-valued attribute)
+								$t_place->addAttribute(
+									array_merge($va_value, array(
+										'locale_id' => $pn_locale_id
+									)), $vs_element);
+							} else {
+								// scalar value (simple single value attribute)
+								if ($va_value) {
+									$t_place->addAttribute(array(
+										'locale_id' => $pn_locale_id,
+										$vs_element => $va_value
+									), $vs_element);
+								}
 							}
 						}
 					}
@@ -513,10 +525,12 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
-						if ($vn_id = ca_occurrences::find(array('preferred_labels' => array('name' => $ps_occ_name), 'parent_id' => $pn_parent_id, 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))) {
-							break(2);
+						if (trim($ps_occ_name)) {
+							if ($vn_id = ca_occurrences::find(array('preferred_labels' => array('name' => $ps_occ_name), 'parent_id' => $pn_parent_id, 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))) {
+								break(2);
+							}
+							break;
 						}
-						break;
 					case 'idno':
 						// TODO: should we filter on type_id here?
 						if ($vn_id = ca_occurrences::find(array('idno' => $vs_idno ?  $vs_idno : $ps_occ_name), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))) {
@@ -573,20 +587,25 @@
 				
 				$vb_attr_errors = false;
 				if (is_array($pa_values)) {
-					foreach($pa_values as $vs_element => $va_value) { 					
-						if (is_array($va_value)) {
-							// array of values (complex multi-valued attribute)
-							$t_occurrence->addAttribute(
-								array_merge($va_value, array(
-									'locale_id' => $pn_locale_id
-								)), $vs_element);
-						} else {
-							// scalar value (simple single value attribute)
-							if ($va_value) {
-								$t_occurrence->addAttribute(array(
-									'locale_id' => $pn_locale_id,
-									$vs_element => $va_value
-								), $vs_element);
+					foreach($pa_values as $vs_element => $va_values) { 	
+						if (!caIsIndexedArray($va_values)) {
+							$va_values = array($va_values);
+						}	
+						foreach($va_values as $va_value) {					
+							if (is_array($va_value)) {
+								// array of values (complex multi-valued attribute)
+								$t_occurrence->addAttribute(
+									array_merge($va_value, array(
+										'locale_id' => $pn_locale_id
+									)), $vs_element);
+							} else {
+								// scalar value (simple single value attribute)
+								if ($va_value) {
+									$t_occurrence->addAttribute(array(
+										'locale_id' => $pn_locale_id,
+										$vs_element => $va_value
+									), $vs_element);
+								}
 							}
 						}
 					}
@@ -721,16 +740,18 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
-						if ($vn_item_id = (ca_list_items::find(array('preferred_labels' => array('name_singular' => $vs_singular_label), 'parent_id' => $vn_parent_id, 'list_id' => $vn_list_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
-							if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using singular label %3", $ps_item_idno, $pm_list_code_or_id, $vs_singular_label)); }
-							break(2);
-						} else {
-							if ($vn_item_id = (ca_list_items::find(array('preferred_labels' => array('name_plural' => $vs_plural_label), 'parent_id' => $vn_parent_id, 'list_id' => $vn_list_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
-								if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using plural label %3", $ps_item_idno, $pm_list_code_or_id, $vs_plural_label)); }
+						if (trim($vs_singular_label) || trim($vs_plural_label)) {
+							if ($vn_item_id = (ca_list_items::find(array('preferred_labels' => array('name_singular' => $vs_singular_label), 'parent_id' => $vn_parent_id, 'list_id' => $vn_list_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+								if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using singular label %3", $ps_item_idno, $pm_list_code_or_id, $vs_singular_label)); }
 								break(2);
+							} else {
+								if ($vn_item_id = (ca_list_items::find(array('preferred_labels' => array('name_plural' => $vs_plural_label), 'parent_id' => $vn_parent_id, 'list_id' => $vn_list_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+									if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using plural label %3", $ps_item_idno, $pm_list_code_or_id, $vs_plural_label)); }
+									break(2);
+								}
 							}
+							break;
 						}
-						break;
 					case 'idno':
 						if ($vn_item_id = (ca_list_items::find(array('idno' => $ps_item_idno ? $ps_item_idno : $vs_plural_label, 'list_id' => $vn_list_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 							if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using idno with %3", $ps_item_idno, $pm_list_code_or_id)); }
@@ -875,10 +896,12 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
-						if ($vn_id = (ca_collections::find(array('preferred_labels' => array('name' => $ps_collection_name), 'parent_id' => $pn_parent_id, 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
-							break(2);
+						if (trim($ps_collection_name)) {
+							if ($vn_id = (ca_collections::find(array('preferred_labels' => array('name' => $ps_collection_name), 'parent_id' => $pn_parent_id, 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+								break(2);
+							}
+							break;
 						}
-						break;
 					case 'idno':
 						if ($vn_id = (ca_collections::find(array('idno' => $vs_idno ? $vs_idno : $ps_collection_name), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 							break(2);
@@ -931,20 +954,25 @@
 				
 				$vb_attr_errors = false;
 				if (is_array($pa_values)) {
-					foreach($pa_values as $vs_element => $va_value) { 					
-						if (is_array($va_value)) {
-							// array of values (complex multi-valued attribute)
-							$t_collection->addAttribute(
-								array_merge($va_value, array(
-									'locale_id' => $pn_locale_id
-								)), $vs_element);
-						} else {
-							// scalar value (simple single value attribute)
-							if ($va_value) {
-								$t_collection->addAttribute(array(
-									'locale_id' => $pn_locale_id,
-									$vs_element => $va_value
-								), $vs_element);
+					foreach($pa_values as $vs_element => $va_values) {
+						if (!caIsIndexedArray($va_values)) {
+							$va_values = array($va_values);
+						}	
+						foreach($va_values as $va_value) {	 					
+							if (is_array($va_value)) {
+								// array of values (complex multi-valued attribute)
+								$t_collection->addAttribute(
+									array_merge($va_value, array(
+										'locale_id' => $pn_locale_id
+									)), $vs_element);
+							} else {
+								// scalar value (simple single value attribute)
+								if ($va_value) {
+									$t_collection->addAttribute(array(
+										'locale_id' => $pn_locale_id,
+										$vs_element => $va_value
+									), $vs_element);
+								}
 							}
 						}
 					}
@@ -1064,10 +1092,12 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
-						if ($vn_id = (ca_storage_locations::find(array('preferred_labels' => array('name' => $ps_location_name), 'parent_id' => $pn_parent_id, 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
-							break(2);
+						if (trim($ps_location_name)) {
+							if ($vn_id = (ca_storage_locations::find(array('preferred_labels' => array('name' => $ps_location_name), 'parent_id' => $pn_parent_id, 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+								break(2);
+							}
+							break;
 						}
-						break;
 					case 'idno':
 						if ($vn_id = (ca_storage_locations::find(array('idno' => $vs_idno ? $vs_idno : $ps_location_name), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 							break(2);
@@ -1118,20 +1148,25 @@
 				
 				$vb_attr_errors = false;
 				if (is_array($pa_values)) {
-					foreach($pa_values as $vs_element => $va_value) { 					
-						if (is_array($va_value)) {
-							// array of values (complex multi-valued attribute)
-							$t_location->addAttribute(
-								array_merge($va_value, array(
-									'locale_id' => $pn_locale_id
-								)), $vs_element);
-						} else {
-							// scalar value (simple single value attribute)
-							if ($va_value) {
-								$t_location->addAttribute(array(
-									'locale_id' => $pn_locale_id,
-									$vs_element => $va_value
-								), $vs_element);
+					foreach($pa_values as $vs_element => $va_values) {
+						if (!caIsIndexedArray($va_values)) {
+							$va_values = array($va_values);
+						}	
+						foreach($va_values as $va_value) {	 					
+							if (is_array($va_value)) {
+								// array of values (complex multi-valued attribute)
+								$t_location->addAttribute(
+									array_merge($va_value, array(
+										'locale_id' => $pn_locale_id
+									)), $vs_element);
+							} else {
+								// scalar value (simple single value attribute)
+								if ($va_value) {
+									$t_location->addAttribute(array(
+										'locale_id' => $pn_locale_id,
+										$vs_element => $va_value
+									), $vs_element);
+								}
 							}
 						}
 					}
@@ -1249,8 +1284,10 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
-						if ($vn_id = (ca_objects::find(array('preferred_labels' => array('name' => $ps_object_name), 'parent_id' => $pn_parent_id, 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
-							break(2);
+						if (trim($ps_object_name)) {
+							if ($vn_id = (ca_objects::find(array('preferred_labels' => array('name' => $ps_object_name), 'parent_id' => $pn_parent_id, 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+								break(2);
+							}
 						}
 						break;
 					case 'idno':
@@ -1308,20 +1345,25 @@
 				
 				$vb_attr_errors = false;
 				if (is_array($pa_values)) {
-					foreach($pa_values as $vs_element => $va_value) { 					
-						if (is_array($va_value)) {
-							// array of values (complex multi-valued attribute)
-							$t_object->addAttribute(
-								array_merge($va_value, array(
-									'locale_id' => $pn_locale_id
-								)), $vs_element);
-						} else {
-							// scalar value (simple single value attribute)
-							if ($va_value) {
-								$t_object->addAttribute(array(
-									'locale_id' => $pn_locale_id,
-									$vs_element => $va_value
-								), $vs_element);
+					foreach($pa_values as $vs_element => $va_values) {
+						if (!caIsIndexedArray($va_values)) {
+							$va_values = array($va_values);
+						}	
+						foreach($va_values as $va_value) {	 					
+							if (is_array($va_value)) {
+								// array of values (complex multi-valued attribute)
+								$t_object->addAttribute(
+									array_merge($va_value, array(
+										'locale_id' => $pn_locale_id
+									)), $vs_element);
+							} else {
+								// scalar value (simple single value attribute)
+								if ($va_value) {
+									$t_object->addAttribute(array(
+										'locale_id' => $pn_locale_id,
+										$vs_element => $va_value
+									), $vs_element);
+								}
 							}
 						}
 					}
@@ -1410,6 +1452,7 @@
 		static function getObjectLotID($ps_idno_stub, $ps_lot_name, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = false; }
+			$pa_match_on = caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
 			
 			$t_lot = new ca_object_lots();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
@@ -1421,11 +1464,14 @@
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 			
 			$vn_id = null;
+			
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
-						if ($vn_id = (ca_object_lots::find(array('preferred_labels' => array('name' => $ps_lot_name), 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
-							break(2);
+						if (trim($ps_lot_name)) {
+							if ($vn_id = (ca_object_lots::find(array('preferred_labels' => array('name' => $ps_lot_name), 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+								break(2);
+							}
 						}
 						break;
 					case 'idno':
@@ -1479,20 +1525,25 @@
 				
 				$vb_attr_errors = false;
 				if (is_array($pa_values)) {
-					foreach($pa_values as $vs_element => $va_value) { 					
-						if (is_array($va_value)) {
-							// array of values (complex multi-valued attribute)
-							$t_lot->addAttribute(
-								array_merge($va_value, array(
-									'locale_id' => $pn_locale_id
-								)), $vs_element);
-						} else {
-							// scalar value (simple single value attribute)
-							if ($va_value) {
-								$t_lot->addAttribute(array(
-									'locale_id' => $pn_locale_id,
-									$vs_element => $va_value
-								), $vs_element);
+					foreach($pa_values as $vs_element => $va_values) { 
+						if (!caIsIndexedArray($va_values)) {
+							$va_values = array($va_values);
+						}	
+						foreach($va_values as $va_value) {		
+							if (is_array($va_value)) {
+								// array of values (complex multi-valued attribute)
+								$t_lot->addAttribute(
+									array_merge($va_value, array(
+										'locale_id' => $pn_locale_id
+									)), $vs_element);
+							} else {
+								// scalar value (simple single value attribute)
+								if ($va_value) {
+									$t_lot->addAttribute(array(
+										'locale_id' => $pn_locale_id,
+										$vs_element => $va_value
+									), $vs_element);
+								}
 							}
 						}
 					}
@@ -1609,10 +1660,12 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
-						if ($vn_id = (ca_loans::find(array('preferred_labels' => array('name' => $ps_loan_name), 'type_id' => $pn_type_id, 'parent_id' => $pn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
-							break(2);
+						if (trim($ps_loan_name)) {
+							if ($vn_id = (ca_loans::find(array('preferred_labels' => array('name' => $ps_loan_name), 'type_id' => $pn_type_id, 'parent_id' => $pn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+								break(2);
+							}
+							break;
 						}
-						break;
 					case 'idno':
 						if ($vn_id = (ca_loans::find(array('idno' => $vs_idno ? $vs_idno : $ps_loan_name), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 							break(2);
@@ -1663,20 +1716,25 @@
 				
 				$vb_attr_errors = false;
 				if (is_array($pa_values)) {
-					foreach($pa_values as $vs_element => $va_value) { 					
-						if (is_array($va_value)) {
-							// array of values (complex multi-valued attribute)
-							$t_loan->addAttribute(
-								array_merge($va_value, array(
-									'locale_id' => $pn_locale_id
-								)), $vs_element);
-						} else {
-							// scalar value (simple single value attribute)
-							if ($va_value) {
-								$t_loan->addAttribute(array(
-									'locale_id' => $pn_locale_id,
-									$vs_element => $va_value
-								), $vs_element);
+					foreach($pa_values as $vs_element => $va_values) {
+						if (!caIsIndexedArray($va_values)) {
+							$va_values = array($va_values);
+						}	
+						foreach($va_values as $va_value) {	 					
+							if (is_array($va_value)) {
+								// array of values (complex multi-valued attribute)
+								$t_loan->addAttribute(
+									array_merge($va_value, array(
+										'locale_id' => $pn_locale_id
+									)), $vs_element);
+							} else {
+								// scalar value (simple single value attribute)
+								if ($va_value) {
+									$t_loan->addAttribute(array(
+										'locale_id' => $pn_locale_id,
+										$vs_element => $va_value
+									), $vs_element);
+								}
 							}
 						}
 					}
@@ -1793,10 +1851,12 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
-						if ($vn_id = (ca_movements::find(array('preferred_labels' => array('name' => $ps_movement_name), 'type_id' => $pn_type_id, 'parent_id' => $pn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
-							break(2);
+						if (trim($ps_movement_name)) {
+							if ($vn_id = (ca_movements::find(array('preferred_labels' => array('name' => $ps_movement_name), 'type_id' => $pn_type_id, 'parent_id' => $pn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+								break(2);
+							}
+							break;
 						}
-						break;
 					case 'idno':
 						if ($vn_id = (ca_movements::find(array('idno' => $vs_idno ? $vs_idno : $ps_movement_name), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 							break(2);
@@ -1847,20 +1907,25 @@
 				
 				$vb_attr_errors = false;
 				if (is_array($pa_values)) {
-					foreach($pa_values as $vs_element => $va_value) { 					
-						if (is_array($va_value)) {
-							// array of values (complex multi-valued attribute)
-							$t_movement->addAttribute(
-								array_merge($va_value, array(
-									'locale_id' => $pn_locale_id
-								)), $vs_element);
-						} else {
-							// scalar value (simple single value attribute)
-							if ($va_value) {
-								$t_movement->addAttribute(array(
-									'locale_id' => $pn_locale_id,
-									$vs_element => $va_value
-								), $vs_element);
+					foreach($pa_values as $vs_element => $va_values) {
+						if (!caIsIndexedArray($va_values)) {
+							$va_values = array($va_values);
+						}	
+						foreach($va_values as $va_value) {	 					
+							if (is_array($va_value)) {
+								// array of values (complex multi-valued attribute)
+								$t_movement->addAttribute(
+									array_merge($va_value, array(
+										'locale_id' => $pn_locale_id
+									)), $vs_element);
+							} else {
+								// scalar value (simple single value attribute)
+								if ($va_value) {
+									$t_movement->addAttribute(array(
+										'locale_id' => $pn_locale_id,
+										$vs_element => $va_value
+									), $vs_element);
+								}
 							}
 						}
 					}

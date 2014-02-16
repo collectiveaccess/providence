@@ -278,10 +278,12 @@ var methods = {
                     	if (!options.use_annotations) { return; }
                     	
                     	for(var i in toSave) {
+                    		if (!jQuery.isNumeric(i)) { continue; }
                     		view.annotationsToSave.push(view.annotations[toSave[i]]);
                     	}
                     	
                     	for(var i in toDelete) {
+                    		if (!jQuery.isNumeric(i)) { continue; }
                     		view.annotationsToDelete.push(view.annotations[toDelete[i]].annotation_id);
                     	}
                     	
@@ -316,6 +318,7 @@ var methods = {
                     	jQuery.getJSON(options.annotationSaveUrl, { save: annotationsToSave, delete: view.annotationsToDelete }, function(data) {
                     		if (data['annotation_ids']) {
                     			for(var index in data['annotation_ids']) {
+                    				if (!jQuery.isNumeric(index)) { continue; }
                     				if (!view.annotations[index]) { continue; }
                     				view.annotations[index]['annotation_id'] = data['annotation_ids'][index];
                     				var i = view.changedAnnotations.indexOf(index);
@@ -327,6 +330,8 @@ var methods = {
 								// put new text into overlays
                     			for(var i in annotationsToSave) {
                     				var index = annotationsToSave[i]['index'];
+                    				if (!jQuery.isNumeric(i)) { continue; }
+                    				if (!jQuery.isNumeric(index)) { continue; }
                     				if (data['annotation_ids'][index]) {
                     					jQuery("#tileviewerAnnotationTextBlock_" + index).html(options.annotation_prefix_text + (annotationsToSave[i]['label'] ? annotationsToSave[i]['label'] : (options.show_empty_annotation_label_text_in_text_boxes ? options.empty_annotation_label_text : '')));
                     				}
@@ -429,6 +434,7 @@ var methods = {
                        // }
                        
                         for(var i in annotationsToDraw) {
+                        	if (!jQuery.isNumeric(i)) { continue; }
                         	var annotation = annotationsToDraw[i];
                         	if (!annotation) { continue; }
                         	
@@ -594,6 +600,8 @@ var methods = {
 									
 										// Draw points
 										for(var pointIndex in annotation.points) {
+											if (!jQuery.isNumeric(pointIndex)) { continue; }
+											
 											var c = annotation.points[pointIndex];
 											x = (((parseFloat(c.x))/100) * layerWidth * layerMag) + layer.xpos;
 											y = (((parseFloat(c.y))/100) * layerHeight * layerMag) + layer.ypos;
@@ -609,6 +617,8 @@ var methods = {
 										var startY = y = (((parseFloat(annotation.points[0].y))/100) * layerHeight * layerMag) + layer.ypos;
 										ctx.moveTo(x, y);
 										for(var pointIndex in annotation.points) {
+											if (!jQuery.isNumeric(pointIndex)) { continue; }
+											
 											var c = annotation.points[pointIndex];
 											x = (((parseFloat(c.x))/100) * layerWidth * layerMag) + layer.xpos;
 											y = (((parseFloat(c.y))/100) * layerHeight * layerMag) + layer.ypos;
@@ -628,6 +638,8 @@ var methods = {
 										var minD = null;
 										var extents = {minX: null, minY: null, maxX: null, maxY: null};
 										for(var pointIndex in annotation.points) {
+											if (!jQuery.isNumeric(pointIndex)) { continue; }
+											
 											var c = annotation.points[pointIndex];
 											
 											var px = (((parseFloat(c.x))/100) * layerWidth * layerMag) + layer.xpos;
@@ -724,6 +736,8 @@ var methods = {
 						var inAnnotation = null;
 						
 						for(var i in view.annotationAreas) {
+							if (!jQuery.isNumeric(i)) { continue; }
+							
 							var inAnnotation = view.annotationAreas[i];
 							if(!inAnnotation) { continue; }
 							var sx = ((inAnnotation['tstartX']/100) * ((layer.info.width/factor) * (layer.tilesize/256))) + layer.xpos;
@@ -1005,6 +1019,8 @@ var methods = {
 								
 								if (view.annotations[i].points && jQuery.isArray(view.annotations[i].points)) {
 									for(var pointIndex in view.annotations[i].points) {
+										if (!jQuery.isNumeric(pointIndex)) { continue; }
+											
 										view.annotations[i].points[pointIndex].x = parseFloat(view.annotations[i].points[pointIndex].x) + dx - view.dragOffsetX;
 										view.annotations[i].points[pointIndex].y = parseFloat(view.annotations[i].points[pointIndex].y) + dy - view.dragOffsetY;
 									}
@@ -1188,6 +1204,8 @@ var methods = {
                     				var segments = points.slice();
                     				segments.push({x: segments[0].x, y: segments[0].y});	// add end point so auto-added final segment can be clicked-upon
                     				for(var pointIndex in segments) {
+										if (!jQuery.isNumeric(pointIndex)) { continue; }
+										
                     					pointIndex = parseInt(pointIndex);
                     					if (pointIndex+1 > segments.length) { break; }
                     					var p1 = segments[pointIndex];

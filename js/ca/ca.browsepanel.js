@@ -40,7 +40,7 @@ var caUI = caUI || {};
 			
 			facetSelectID: "browseFacetSelect",
 			
-			useExpose: !((jQuery.browser.msie) && (jQuery.browser.version == 7.0)),
+			useExpose: true,
 			useStaticDiv: false,									/* set if you want to use a visible <div> for the browse panel rather than a show/hide overlay <div> */
 			
 			isChanging: false,
