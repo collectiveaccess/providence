@@ -10,9 +10,9 @@ CollectiveAccess is a collaboration between Whirl-i-Gig and partner institutions
 
 ----Useful Links:----
 
-   Documentation: http://docs.collectiveaccess.org/wiki/Main_Page
+   Web site: http://collectiveaccess.org
    
-   Tour: http://collectiveaccess.org/tour
+   Documentation: http://docs.collectiveaccess.org/wiki/Main_Page
    
    Demo: http://demo.collectiveaccess.org/
 
@@ -24,11 +24,9 @@ CollectiveAccess is a collaboration between Whirl-i-Gig and partner institutions
 
    Forum: http://www.collectiveaccess.org/support/forum
 
-   Bug Tracker: http://clangers.collectiveaccess.org/jira/secure/Dashboard.jspa
+   Bug Tracker: http://clangers.collectiveaccess.org/jira
 
 
 ----Other modules:----
 
    Pawtucket: https://github.com/collectiveaccess/pawtucket (The public access front-end application for Providence)
-    
-   Tiverton: https://github.com/collectiveaccess/tiverton (A simple map-based data browser for Providence)
