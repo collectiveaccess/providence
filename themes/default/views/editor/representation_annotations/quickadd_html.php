@@ -38,6 +38,8 @@
 	$vb_can_edit	 	= $t_subject->isSaveable($this->request);
 	
 	$vs_form_name = "RepresentationAnnotationQuickAddForm";
+	
+	$va_notifications = $this->getVar('notifications');
 ?>		
 <form action="#" class="quickAddSectionForm" name="<?php print $vs_form_name; ?>" method="POST" enctype="multipart/form-data" id="<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>">
 	<div class='dialogHeader' style='position: width: 100%; padding: 8px;'><?php 
@@ -91,17 +93,6 @@
 						jQuery('#' + inputID).val(resp.display);
 						jQuery('#' + itemIDID).val(resp.id);
 						
-						
-						var content = 	'<div class="notification-info-box rounded"><ul class="notification-info-box">' + 
-										'<li class="notification-info-box"><?php print addslashes(_t('Saved annotation')); ?></li>' +
-										'</ul></div>';
-						
-						jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").html(content).slideDown(200);
-						
-						var quickAddClearErrorInterval = setInterval(function() {
-							jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").slideUp(500);
-							clearInterval(quickAddClearErrorInterval);
-						}, 3000);
 <?php
 	if ($vn_subject_id) {
 ?>
@@ -114,9 +105,9 @@
 						caAnnoEditorTlLoad(jQuery("#caAnnoEditorTlCarousel"), 0);
 <?php
 	}
-?>					
-						jQuery("#caAnnoEditorNewInButton").show();		// show "new in" button
-						jQuery("#caAnnoEditorAnnotationID").val(resp.id);
+?>
+						// Get new form with current in-point
+						caAnnoEditorEdit(0, caAnnoEditorGetPlayerTime(), caAnnoEditorGetPlayerTime() + 10);
 					} else {
 						// error
 						var content = '<div class="notification-error-box rounded"><ul class="notification-error-box">';
@@ -150,7 +141,7 @@
 			}
 			
 			function caDeleteAnnotation() {
-				jQuery.getJSON('<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'deleteAnnotation'); ?>', {annotation_id: <?php print (int)$vn_subject_id; ?>}, function(resp) {
+				jQuery.getJSON('<?php print caNavUrl($this->request, '*', '*', 'deleteAnnotation'); ?>', {annotation_id: <?php print (int)$vn_subject_id; ?>}, function(resp) {
 					if (resp.code == 0) {
 						// delete succeeded... so update clip list
 						caAnnoEditorTlRemove(jQuery("#caAnnoEditorTlCarousel"), <?php print (int)$vn_subject_id; ?>);
@@ -167,6 +158,44 @@
 					}
 				});
 			}
+			
+<?php
+			//
+			// If any notifications are set by the controller loading this form we want to display them
+			//
+			if(is_array($va_notifications) && sizeof($va_notifications)) {
+?>
+				jQuery(document).ready(function() {
+					var content = '<div class="notification-info-box rounded"><ul class="notification-info-box">';
+<?php
+					$vs_content = '';
+					foreach($va_notifications as $va_notification) {
+						switch($va_notification['type']) {
+							case __NOTIFICATION_TYPE_ERROR__:
+								$vs_content .= "<li class='notification-error-box'>".$va_notification['message']."</li>";
+								break;
+							case __NOTIFICATION_TYPE_WARNING__:
+								$vs_content .= "<li class='notification-warning-box'>".$va_notification['message']."</li>";
+								break;
+							case __NOTIFICATION_TYPE_INFO__:
+							default:
+								$vs_content .= "<li class='notification-info-box'>".$va_notification['message']."</li>";
+								break;
+						}
+					}
+?>	
+					content += '<?php print addslashes($vs_content); ?>';
+					content += '</ul></div>';
+					jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").hide().html(content).slideDown(200);
+						
+					var quickAddClearErrorInterval = setInterval(function() {
+						jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").slideUp(500);
+						clearInterval(quickAddClearErrorInterval);
+					}, 3000);
+				});
+<?php
+			}
+?>
 		</script>
 	</div>
 </form>

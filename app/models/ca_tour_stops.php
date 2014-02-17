@@ -413,7 +413,7 @@ class ca_tour_stops extends BundlableLabelableBaseModelWithAttributes {
  	 * @param RequestHTTP $po_request
  	 * @return bool True if record can be saved, false if not
  	 */
- 	public function isSaveable($po_request) {
+ 	public function isSaveable($po_request, $ps_bundle_name=null) {
  		// Check actions
  		if (!$this->getPrimaryKey() && !$po_request->user->canDoAction('can_create_ca_tours')) {
  			return false;

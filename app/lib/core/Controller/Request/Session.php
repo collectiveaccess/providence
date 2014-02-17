@@ -72,10 +72,12 @@ class Session {
 		$this->lifetime = $o_config->get("session_lifetime");
 		
 		if (!$pb_dont_create_new_session) {
+			session_save_path(__CA_APP_DIR__."/tmp");
 			session_name($this->name);
 			ini_set("session.gc_maxlifetime", $this->lifetime); 
 			session_set_cookie_params($this->lifetime, '/', $this->domain);
 			session_start();
+			$_SESSION['last_activity'] = $this->start_time;
 			session_write_close();
 			
 			$this->sessionData = caGetCacheObject("ca_session_".md5(session_id()), ($this->lifetime > 0) ? $this->lifetime : 7 * 24 * 60 * 60);

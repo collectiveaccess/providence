@@ -5735,30 +5735,22 @@ div.caRepresentationMediaReplicationControls {
 .caAnnoEditorTlInfo {
     float:left;
     width: 90px;
+    height: 90px;
     background-color:#dedede;
     clear:left;
     position:relative;
+    outline: 2px solid #dedede;
 }
 .caAnnoEditorTlInfo div.caAnnoEditorInfo {
     margin:5px 5px 0px 5px;
     height: 20px;
 }
-.caAnnoEditorTlInfo div.caAnnoEditorAdd {
-    margin:5px 5px 0px 5px;
-    height: 62px;
-}
-
 .caAnnoEditorTlSlider {
 	margin: 15px 0 0 0;
 }
 .caAnnoEditorTlSyncControl {
     position:absolute;
     right: 3px;
-    bottom: 3px;
-}
-.caAnnoEditorAddButton {
-	position:absolute;
-    left: 3px;
     bottom: 3px;
 }
 .caAnnoEditorTl {
@@ -5807,6 +5799,11 @@ div.caRepresentationMediaReplicationControls {
 	right: 3px;
 	bottom: 3px;
 }
+.caAnnoEditorTlAnnotationContainer div.deleteAnnoButton {
+	position: absolute;
+	right: 3px;
+	top: 3px;
+}
 
 .caAnnoMediaPlayerContainer {	/*  media player container */
 	float: left;
@@ -5844,15 +5841,6 @@ div.caRepresentationMediaReplicationControls {
 	overflow: auto;
 	margin: 0 10px 0 0;
 	background-color: #ededed;
-}
-
-
-.caAnnoEditorAdd {				/* full-window panel */
-    
-}
-.caAnnoEditorAdd a {
-    font-weight: bold;
-    text-decoration: none;
 }
 .caAnnoEditorInfo {
     font-weight: bold;

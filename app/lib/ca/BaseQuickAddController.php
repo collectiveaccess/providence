@@ -194,6 +194,8 @@
 			
 			$this->view->setVar('default_parent_id', $this->opo_result_context->getParameter($t_subject->tableName().'_last_parent_id'));
 			
+			$this->view->setVar('notifications', $this->notification->getNotifications());
+			
 			$this->render('quickadd_html.php');
  		}
  		# -------------------------------------------------------
