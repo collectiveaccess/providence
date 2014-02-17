@@ -1342,7 +1342,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					array(
 						'width' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width']: 300, 
 						'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : 1, 
-						'value' => "{".$pa_options['element_id']."_label}", 
+						'value' => ($pa_options['request']->getController() === 'SearchObjectsAdvanced') ? "" : "{".$pa_options['element_id']."_label}",
 						'maxlength' => 512,
 						'id' => $ps_name."_autocomplete",
 						'class' => 'lookupBg'
@@ -1351,7 +1351,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				caHTMLHiddenInput(
 					$ps_name,
 					array(
-						'value' => "{".$pa_options['element_id']."}", 
+						'value' => ($pa_options['request']->getController() === 'SearchObjectsAdvanced') ? "" : "{".$pa_options['element_id']."}", 
 						'id' => $ps_name
 					)
 				);
