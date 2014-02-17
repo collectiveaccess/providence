@@ -182,8 +182,11 @@ class Installer {
 	# UTILITIES
 	# --------------------------------------------------
 	private static function getAttribute($po_simplexml, $ps_attr) {
-		if(isset($po_simplexml[$ps_attr]))
+		if(isset($po_simplexml[$ps_attr])){
 			return (string) $po_simplexml[$ps_attr];
+		} else {
+			return false;
+		}
 	}
 	# --------------------------------------------------
 	private static function getRandomPassword() {
@@ -1298,22 +1301,31 @@ class Installer {
 		$va_settings = array();
 		if($po_settings_node){ 
 			foreach($po_settings_node->children() as $vo_setting) {
+				$vn_locale_id = null;
 				$vs_locale = self::getAttribute($vo_setting, "locale");
-				$vn_locale_id = $this->opa_locales[$vs_locale];
+
+				if($vs_locale && isset($this->opa_locales[$vs_locale])) {
+					$vn_locale_id = $this->opa_locales[$vs_locale];
+				}
+
 				$vs_setting_name = self::getAttribute($vo_setting, "name");
 				$vs_option = self::getAttribute($vo_setting, "option");
 				$vs_value = (string) $vo_setting;
 				
-				if ($vn_locale_id) { 
-					$va_settings[$vs_setting_name][$vs_locale] = $vs_value;
-				} else {
-					if (!isset($va_settings[$vs_setting_name])) {
-						$va_settings[$vs_setting_name] = $vs_value;
-					} else {
-						if (!is_array($va_settings[$vs_setting_name])) {
-							$va_settings[$vs_setting_name] = array($va_settings[$vs_setting_name]);
+				if(strlen($vs_value)>0){
+					if ($vn_locale_id) {
+						if(strlen($vs_setting_name)>0) {
+							$va_settings[$vs_setting_name][$vs_locale] = $vs_value;
 						}
-						$va_settings[$vs_setting_name][] = $vs_value;
+					} else {
+						if (!isset($va_settings[$vs_setting_name])) {
+							$va_settings[$vs_setting_name] = $vs_value;
+						} else {
+							if (!is_array($va_settings[$vs_setting_name])) {
+								$va_settings[$vs_setting_name] = array($va_settings[$vs_setting_name]);
+							}
+							$va_settings[$vs_setting_name][] = $vs_value;
+						}
 					}
 				}
 			}
