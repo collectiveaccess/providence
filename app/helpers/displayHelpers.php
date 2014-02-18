@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,6 +39,7 @@ require_once(__CA_LIB_DIR__.'/core/Configuration.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
 require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
+require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 	
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -1851,39 +1852,22 @@ caResizeSideNav();
 		$va_relationship_values = (isset($pa_options['relationshipValues']) && is_array($pa_options['relationshipValues'])) ? $pa_options['relationshipValues'] : array();
 		
 		
-		// Set up DomDocument XML parser
-		$o_dom = new DOMDocument('1.0', 'utf-8');
-		$o_dom->preserveWhiteSpace = true;
-		libxml_use_internal_errors(true);								// don't reported mangled HTML errors
-		$o_dom->loadHTML('<?xml encoding="utf-8">'.$ps_template);
-		libxml_clear_errors();
+		$o_doc = str_get_dom($ps_template);	// parse template
+		$ps_template = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_doc->html()));	// replace template with parsed version; this allows us to do text find/replace later
 		
 		// Parse units from template
-		$o_xpath = new DOMXPath($o_dom);
-		$o_units = $o_xpath->query('//unit[not(ancestor::unit)]');	// only find units not nested within other units (allows for units with units...)
+		$o_units = $o_doc('unit:not(unit > unit)');	// only process non-nested <unit> tags
 		$va_units = array();
-		
-		$ps_template = preg_replace("![\r\n\t]+!", "", html_entity_decode($ps_template));		//DomDocument kills newlines and tabs so we do the same to the template
-		$ps_template = preg_replace("!relativeTo[ ]*\=!i", "relativeto=", $ps_template);		//DomDocument forces attribute names to all lower case so we need to adjust the template to match 
-		$ps_template = preg_replace("!restrictToTypes[ ]*\=!i", "restricttotypes=", $ps_template);
-		$ps_template = preg_replace("!restrictToRelationshipTypes[ ]*\=!i", "restricttorelationshiptypes=", $ps_template);
-		$ps_template = preg_replace("!([A-Za-z0-9]+)='([^']*)'!", "$1=\"$2\"", $ps_template);	//DomDocument converts quotes around attributes from single to double quotes, so we need to normalize the template to match 
-		$ps_template = preg_replace("!\>[ ]+\<!", "><", $ps_template);
-			
 		$vn_unit_id = 1;
 		foreach($o_units as $o_unit) {
 			if (!$o_unit) { continue; }
 			
-			$vs_html = (string)$o_dom->saveXML($o_unit);
+			$vs_html = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_unit->html()));
+			$vs_content = $o_unit->getInnerText();
 			
-			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
-			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
-			$vs_content = preg_replace("!>[ ]+<$!", "><", $vs_content);
-			
-			// DomDocument messes with white space and encodes entities so we normalize the directive here so the str_ireplace() replacement below doesn't fail
 			$va_units[] = $va_unit = array(
 				'tag' => $vs_unit_tag = "[[#{$vn_unit_id}]]",
-				'directive' => preg_replace("![\r\n\t\"]+!", "", html_entity_decode($vs_html)),
+				'directive' => $vs_html,
 				'content' => $vs_content, 'relativeTo' => (string)$o_unit->getAttribute("relativeto"),
 				'delimiter' => (string)$o_unit->getAttribute("delimiter"),
 				'restrictToTypes' => (string)$o_unit->getAttribute("restricttotypes"),
@@ -1893,8 +1877,12 @@ caResizeSideNav();
 			$vn_unit_id++;
 		}
 		
+		
+		$o_doc = str_get_dom($ps_template);		// parse template again with units replaced by unit tags in the format [[#X]]
+		$ps_template = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_doc->html()));	// replace template with parsed version; this allows us to do text find/replace later
+		
 		$va_tags = array();
-		if (preg_match_all("!\^([A-Za-z0-9_\.]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/\[\]]*|[A-Za-z0-9_\.]+)!", $ps_template, $va_matches)) {
+		if (preg_match_all("!\^([A-Za-z0-9_\.]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.]+)!", $ps_template, $va_matches)) {
 			$va_tags = $va_matches[1];
 		}
 		
@@ -1903,115 +1891,113 @@ caResizeSideNav();
 		$va_proc_templates = array();
 		$vn_i = 0;
 		
-		// Parse template
-		$o_dom->loadHTML('<?xml encoding="utf-8">'.$ps_template);
-		libxml_clear_errors();
-		
-		$o_if = $o_dom->getElementsByTagName("if");						// if 
-		$o_ifdefs = $o_dom->getElementsByTagName("ifdef");				// if defined
-		$o_ifnotdefs = $o_dom->getElementsByTagName("ifnotdef");		// if not defined
-		$o_mores = $o_dom->getElementsByTagName("more");				// more tags – content suppressed if there are no defined values following the tag pair
-		$o_betweens = $o_dom->getElementsByTagName("between");			// between tags – content suppressed if there are not defined values on both sides of the tag pair
-		
-		$o_options = $o_dom->getElementsByTagName("options");
-		
+		$o_if = $o_doc("if");						// if 
+		$o_ifdefs = $o_doc("ifdef");				// if defined
+		$o_ifnotdefs = $o_doc("ifnotdef");			// if not defined
+		$o_mores = $o_doc("more");					// more tags – content suppressed if there are no defined values following the tag pair
+		$o_betweens = $o_doc("between");			// between tags – content suppressed if there are not defined values on both sides of the tag pair
+		$o_ifcounts = $o_doc("ifcount");			// if count - conditionally return template if # of items is in-bounds
 		
 		$va_if = array();
 		foreach($o_if as $o_if) {
 			if (!$o_if) { continue; }
 			
-			$vs_html = $o_dom->saveXML($o_if);
-			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
-			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
-			
-			//
-			// Hack to get around DomDocument trimming leading spaces off of parsed HTML
-			// We try here to detect the trimming and shunt those spaces back where they belong. Seems to work :-)
-			//
-			if (preg_match("!([ ]+){$vs_content}!", $ps_template, $va_match_spaces)) {
-				$vs_html = preg_replace("!{$vs_content}!", $va_match_spaces[1].$vs_content, $vs_html);
-				$vs_content = $va_match_spaces[1].$vs_content;
-			}
+			$vs_html = $o_if->html();
+			$vs_content = $o_f->getInnerText();
 			
 			$va_if[] = array('directive' => $vs_html, 'content' => $vs_content, 'rule' => $vs_rule = (string)$o_if->getAttribute('rule'));
-			
-			//$vs_code = preg_replace("!%(.*)$!", '', $vs_code);
-			//if (!in_array($vs_code, $va_tags)) { $va_tags[] = $vs_code; }
 		}
-		//print_r($va_if);
 		
 		$va_ifdefs = array();
 		foreach($o_ifdefs as $o_ifdef) {
 			if (!$o_ifdef) { continue; }
 			
-			$vs_html = $o_dom->saveXML($o_ifdef);
-			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
-			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
+			$vs_code = (string)$o_ifdef->getAttribute('code');
+			$vs_code_proc = preg_replace("!%(.*)$!", '', $vs_code);
+			if (!in_array($vs_code_proc, $va_tags)) { $va_tags[] = $vs_code_proc; }
 			
-			//
-			// Hack to get around DomDocument trimming leading spaces off of parsed HTML
-			// We try here to detect the trimming and shunt those spaces back where they belong. Seems to work :-)
-			//
-			if (preg_match("!([ ]+){$vs_content}!", $ps_template, $va_match_spaces)) {
-				$vs_html = preg_replace("!{$vs_content}!", $va_match_spaces[1].$vs_content, $vs_html);
-				$vs_content = $va_match_spaces[1].$vs_content;
-			}
+			$vs_html = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_ifdef->html()));
+			$vs_content = $o_ifdef->getInnerText();
 			
-			$va_ifdefs[$vs_code = (string)$o_ifdef->getAttribute('code')][] = array('directive' => $vs_html, 'content' => $vs_content);
+			$vs_content = str_replace($vs_code, $vs_code_proc, $vs_content);
+			$vs_html = str_replace($vs_code, $vs_code_proc, $vs_html);
 			
-			$vs_code = preg_replace("!%(.*)$!", '', $vs_code);
-			if (!in_array($vs_code, $va_tags)) { $va_tags[] = $vs_code; }
+			$va_ifdefs[$vs_code][] = array('directive' => $vs_html, 'content' => $vs_content);
 		}
 		
 		$va_ifnotdefs = array();
 		foreach($o_ifnotdefs as $o_ifnotdef) {
 			if (!$o_ifnotdef) { continue; }
 			
-			$vs_html = $o_dom->saveXML($o_ifnotdef);
-			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
-			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
+			$vs_code = (string)$o_ifnotdef->getAttribute('code');
+			$vs_code_proc = preg_replace("!%(.*)$!", '', $vs_code);
+			if (!in_array($vs_code_proc, $va_tags)) { $va_tags[] = $vs_code_proc; }
 			
-			//
-			// Hack to get around DomDocument trimming leading spaces off of parsed HTML
-			// We try here to detect the trimming and shunt those spaces back where they belong. Seems to work :-)
-			//
-			if (preg_match("!([ ]+){$vs_content}!", $ps_template, $va_match_spaces)) {
-				$vs_html = preg_replace("!{$vs_content}!", $va_match_spaces[1].$vs_content, $vs_html);
-				$vs_content = $va_match_spaces[1].$vs_content;
-			}
+			$vs_html = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_ifnotdef->html()));
+			$vs_content = $o_ifnotdef->getInnerText();
 			
-			$va_ifnotdefs[$vs_code = (string)$o_ifnotdef->getAttribute('code')][] = array('directive' => $vs_html, 'content' => $vs_content);
-		
-			$vs_code = preg_replace("!%(.*)$!", '', $vs_code);
-			if (!in_array($vs_code, $va_tags)) { $va_tags[] = $vs_code; }
+			$vs_content = str_replace($vs_code, $vs_code_proc, $vs_content);
+			$vs_html = str_replace($vs_code, $vs_code_proc, $vs_html);
+			
+			$va_ifnotdefs[$vs_code][] = array('directive' => $vs_html, 'content' => $vs_content);
 		}
 		
 		$va_mores = array();
 		foreach($o_mores as $o_more) {
 			if (!$o_more) { continue; }
-			$vs_html = $o_dom->saveXML($o_more);
-			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
-			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
+			
+			$vs_html = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_more->html()));
+			$vs_content = $o_more->getInnerText();
+			
 			$va_mores[] = array('directive' => $vs_html, 'content' => $vs_content);
 		}
 		
 		$va_betweens = array();
 		foreach($o_betweens as $o_between) {
 			if (!$o_between) { continue; }
-			$vs_html = $o_dom->saveXML($o_between);
-			$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
-			$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
+			$vs_html = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_between->html()));
+			$vs_content = $o_between->getInnerText();
+			
 			$va_betweens[] = array('directive' => $vs_html, 'content' => $vs_content);
 		}
 		
+		$va_ifcounts = array();
+		foreach($o_ifcounts as $o_ifcount) {
+			if (!$o_ifcount) { continue; }
+			
+			$vs_code = (string)$o_ifcount->getAttribute('code');
+			
+			$vs_html = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_ifcount->html()));
+			$vs_content = $o_ifcount->getInnerText();
+			
+			
+			$vn_min = (int)$o_ifcount->getAttribute('min');
+			if (!($vn_max = (int)$o_ifcount->getAttribute('max'))) { $vn_max = null; }
+			
+			$va_ifcounts[] = array('directive' => $vs_html, 'content' => $vs_content, 'min' => $vn_min, 'max' => $vn_max, 'code' => $vs_code);
+		}
 		
 		$va_resolve_links_using_row_ids = array();
-		
+		$x = 0;
 		$va_tag_val_list = $va_defined_tag_list = array();
 		while($qr_res->nextHit()) {
 			$vs_pk_val = $qr_res->get($vs_pk);
-			$va_proc_templates[$vn_i] = preg_replace("![\r\n\t]+!", "", html_entity_decode($ps_template));	// DomDocument messes with white space and encodes entities so we normalize things here so the str_ireplace() replacement below doesn't fail
-			
+			$va_proc_templates[$vn_i] = $ps_template;
+		
+			// Process <ifcount> directives
+			foreach($va_ifcounts as $va_ifcount) {
+				if($t_table = $o_dm->getInstanceByTableName($va_ifcount['code'], true)) {
+					$vn_count = sizeof($qr_res->get($va_ifcount['code'].".".$t_table->primaryKey(), array('returnAsArray' => true)));
+				} else {
+					$vn_count = sizeof($qr_res->get($va_ifcount['code'], array('returnAsArray' => true)));
+				}	
+				if (($va_ifcount['min'] <= $vn_count) && (($va_ifcount['max'] >= $vn_count) || !$va_ifcount['max'])) {
+					$va_proc_templates[$vn_i]  = str_replace($va_ifcount['directive'], $va_ifcount['content'], $va_proc_templates[$vn_i] );
+				} else {
+					$va_proc_templates[$vn_i]  = str_replace($va_ifcount['directive'], '', $va_proc_templates[$vn_i] );
+				}
+			}
+		
 			foreach($va_units as $va_unit) {
 				if (!$va_unit['content']) { continue; }
 				$va_relative_to_tmp = $va_unit['relativeTo'] ? explode(".", $va_unit['relativeTo']) : array($ps_tablename);
@@ -2074,7 +2060,7 @@ caResizeSideNav();
 							break;
 					}
 				}
-				$vs_tmpl_val = caProcessTemplateForIDs($va_unit['content'], $va_relative_to_tmp[0], $va_relative_ids, array_merge($pa_options, array('restrictToTypes' => caGetOption('restrictToTypes', $va_get_options, null), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $va_get_options, null)), array('delimiter' => $vs_unit_delimiter, 'resolveLinksUsing' => null)));
+				$vs_tmpl_val = caProcessTemplateForIDs($va_unit['content'], $va_relative_to_tmp[0], $va_relative_ids, array_merge($pa_options, array('delimiter' => $vs_unit_delimiter, 'resolveLinksUsing' => null)));
 				
 				$va_proc_templates[$vn_i] = str_ireplace($va_unit['tag'], $vs_tmpl_val, $va_proc_templates[$vn_i]);
 			}
@@ -2082,7 +2068,7 @@ caResizeSideNav();
 			if (!strlen(trim($va_proc_templates[$vn_i]))) { $va_proc_templates[$vn_i] = null; }
 			
 			if(!sizeof($va_tags)) { continue; } 	// if there are no tags in the template then we don't need to process further
-			
+		
 			if ($ps_resolve_links_using != $ps_tablename) {
 				$va_resolve_links_using_row_ids[] = $qr_res->get("{$ps_resolve_links_using}.{$vs_resolve_links_using_pk}");
 			}
@@ -2090,7 +2076,7 @@ caResizeSideNav();
 			$va_tag_val_list[$vn_i] = array();
 			$va_defined_tag_list[$vn_i] = array();
 			
-			$va_tag_opts = array();
+			$va_tag_opts = $va_tag_filters = array();
 			foreach($va_tags as $vs_tag) {
 				$va_tmp = explode('.', $vs_tag);
 				$vs_last_element = $va_tmp[sizeof($va_tmp)-1];
@@ -2098,6 +2084,12 @@ caResizeSideNav();
 				if (sizeof($va_tag_opt_tmp) > 1) {
 					$vs_tag_bit = array_shift($va_tag_opt_tmp); // get rid of getspec
 					foreach($va_tag_opt_tmp as $vs_tag_opt_raw) {
+						if (preg_match("!^\[([^\]]+)\]$!", $vs_tag_opt_raw, $va_matches)) {
+							if(sizeof($va_filter = explode("=", $va_matches[1])) == 2) {
+								$va_tag_filters[$va_filter[0]] = $va_filter[1];
+							}
+							continue;
+						}
 						$va_tag_tmp = explode("=", $vs_tag_opt_raw);
 						$va_tag_tmp[0] = trim($va_tag_tmp[0]);
 						$va_tag_tmp[1] = trim($va_tag_tmp[1]);
@@ -2174,10 +2166,11 @@ caResizeSideNav();
 								}
 								
 								if ($va_spec_bits[1] != '_hierarchyName') {
-									$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_additional_options, array("returnAsArray" => true, "returnAllLocales" => true)));
+									$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_additional_options, array("returnAsArray" => true, "returnAllLocales" => true, 'filters' => $va_tag_filters)));
 								} else {
 									$va_val = array();
 								}
+								
 								if(is_array($va_primary_ids) && isset($va_primary_ids[$va_spec_bits[0]]) && is_array($va_primary_ids[$va_spec_bits[0]])) {
 									foreach($va_primary_ids[$va_spec_bits[0]] as $vn_primary_id) {
 										unset($va_val[$vn_primary_id]);
@@ -2271,7 +2264,7 @@ caResizeSideNav();
 								if (in_array($va_tmp[0], array('parent'))) {
 									$va_val[] = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_tag_opts, array('returnAsArray' => false)));
 								} else {
-									$va_val_tmp = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_tag_opts, array('returnAsArray' => true)));
+									$va_val_tmp = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_tag_opts, array('returnAsArray' => true, 'filters' => $va_tag_filters)));
 									
 									$va_val = array();
 								
@@ -2362,7 +2355,13 @@ caResizeSideNav();
 					}
 			
 					foreach($va_tag_list as $vs_tag_to_test) {
-						$vb_value_is_set = (bool)(isset($va_tags[$vs_tag_to_test]) && (sizeof($va_tags[$vs_tag_to_test]) > 1) || ((sizeof($va_tags[$vs_tag_to_test]) == 1) && (strlen($va_tags[$vs_tag_to_test][0]) > 0)));
+						$vs_tag_to_test = preg_replace("!%.*$!", "", $vs_tag_to_test);
+						
+						$vb_value_is_set = (
+							(isset($va_tags[$vs_tag_to_test]) && (sizeof($va_tags[$vs_tag_to_test]) > 1)) 
+							|| 
+							((sizeof($va_tags[$vs_tag_to_test]) == 1) && (strlen($va_tags[$vs_tag_to_test][0]) > 0)));
+							
 						switch($vs_bool) {
 							case 'OR':
 								if ($vb_value_is_set) { $vb_output = true; break(2); }			// any must be defined; if any is defined output
@@ -2513,6 +2512,9 @@ caResizeSideNav();
 		// Kill any lingering tags (just in case)
 		foreach($va_proc_templates as $vn_i => $vs_proc_template) {
 			$va_proc_templates[$vn_i] = preg_replace("!\^([A-Za-z0-9_\.]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/\[\]]*|[A-Za-z0-9_\.]+)!", "", $vs_proc_template); 
+			
+			$va_proc_templates[$vn_i] = str_replace("<![CDATA[", "", $va_proc_templates[$vn_i]);
+			$va_proc_templates[$vn_i] = str_replace("]]>", "", $va_proc_templates[$vn_i]);
 		}
 		
 		if ($pb_return_as_array) {
@@ -2629,6 +2631,9 @@ caResizeSideNav();
 		
 		$va_start = $o_tep->getHistoricDateParts($pa_historic_timestamps[0]);
 		$va_end = $o_tep->getHistoricDateParts($pa_historic_timestamps[1]);
+		
+		if ($va_start['year'] < 0) { $va_start['year'] = 1900; }
+		if ($va_end['year'] >= 2000000) { $va_end['year'] = date("Y"); }
 		
 		return array(
 			'start' => $va_start['year'].','.$va_start['month'].','.$va_start['day'],
