@@ -1500,7 +1500,8 @@ caResizeSideNav();
 			if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}")) {
 				
 				$vs_buf .= "<div id='inspectorChangeType'><div id='inspectorChangeTypeButton'><a href='#' onclick='caTypeChangePanel.showPanel(); return false;'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_CHANGE__, array('title' => _t('Change type')))."</a></div></div>\n";
-				
+				TooltipManager::add("#inspectorChangeType", _t('Change Record Type')); 
+
 				$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
 				$vo_change_type_view->setVar('t_item', $t_item);
 				$vo_change_type_view->setVar('t_set', $t_set);
@@ -3468,6 +3469,7 @@ $ca_relationship_lookup_parse_cache = array();
 					$va_tag_values[$vs_subelement]['AVG'] = ($vn_c > 0) ? sprintf("%1.2f", $va_tag_values[$vs_subelement]['SUM']/$vn_c) : 0;
 					
 					foreach($va_tag_values[$vs_subelement] as $vs_tag => $vn_val) {
+						if (!$vb_has_timecode) { $va_tag_values[$vs_subelement][$vs_tag] = ''; continue; }
 						$o_tcp->setParsedValueInSeconds($vn_val);
 						$va_tag_values[$vs_subelement][$vs_tag] = $o_tcp->getText($vs_timecode_format); 
 					}

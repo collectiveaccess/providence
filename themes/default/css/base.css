@@ -664,7 +664,7 @@ ul.sf-menu li li li.sfHover ul {
 }
 .sf-menu a {
     border-top:		0px solid #134959;
-    padding-top: .6em;
+    padding-top: .55em;
     padding-bottom: .40em;
     padding-left: .6em;
     padding-right: 5px;
@@ -675,7 +675,7 @@ ul.sf-menu li li li.sfHover ul {
     color:			#333;
     font-weight:normal;
 }
-
+ 
 .sf-menu li {
 
 
