@@ -327,12 +327,16 @@ h5 {
 	clear: both;
 	min-height: 26px;
 }
-#leftNav .watchThis, #leftNav #inspectorChangeType, #leftNav #inspectorCreateChild, #leftNav #caDuplicateItemButton {
+#leftNav .watchThis, #leftNav #inspectorChangeType, #leftNav #inspectorCreateChild, #leftNav #caDuplicateItemButton, #leftNav #inspectorLotMediaDownloadButton {
 	float: left;
 	margin-right: 10px;
 	width: 28px;
 	text-align: center;
 }
+#leftNav #inspectorLotMediaDownloadButton {
+	margin-top:5px;
+	margin-right:8px;
+} 
 #leftNav #inspectorChangeType img {
 	width: 26px;
 	padding-top: 1px;
