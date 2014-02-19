@@ -31,6 +31,7 @@ require_once(__CA_LIB_DIR__."/core/Datamodel.php");
 require_once(__CA_LIB_DIR__."/core/Db.php");
 require_once(__CA_LIB_DIR__."/core/Media/MediaVolumes.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
+require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
 
 class Installer {
 	# --------------------------------------------------
@@ -182,8 +183,11 @@ class Installer {
 	# UTILITIES
 	# --------------------------------------------------
 	private static function getAttribute($po_simplexml, $ps_attr) {
-		if(isset($po_simplexml[$ps_attr]))
+		if(isset($po_simplexml[$ps_attr])){
 			return (string) $po_simplexml[$ps_attr];
+		} else {
+			return false;
+		}
 	}
 	# --------------------------------------------------
 	private static function getRandomPassword() {
@@ -892,6 +896,8 @@ class Installer {
 			$t_role->set('name', trim((string) $vo_role->name));
 			$t_role->set('description', trim((string) $vo_role->description));
 			$t_role->set('code', $vs_role_code);
+
+			// add actions
 			$va_actions = array();
 			if($vo_role->actions){
 				foreach($vo_role->actions->children() as $vo_action){
@@ -905,6 +911,37 @@ class Installer {
 				$this->addError("Errors inserting access role {$vs_role_code}: ".join("; ",$t_role->getErrors()));
 				return false;
 			}
+
+			// add bundle level ACL items
+			if($vo_role->bundleLevelAccessControl) {
+				foreach($vo_role->bundleLevelAccessControl->children() as $vo_permission) {
+					$vs_permission_table = self::getAttribute($vo_permission, 'table');
+					$vs_permission_bundle = self::getAttribute($vo_permission, 'bundle');
+					$vn_permission_access = $this->_convertACLStringToConstant(self::getAttribute($vo_permission, 'access'));
+
+					if(!$t_role->setAccessSettingForBundle($vs_permission_table, $vs_permission_bundle, $vn_permission_access)){
+						$this->addError("Could not add bundle level access control for table '{$vs_permission_table}' and bundle '{$vs_permission_bundle}'. Check the table and bundle names.");
+						return false;
+					}
+				}
+			}
+
+			// add type level ACL items
+			if($vo_role->typeLevelAccessControl) {
+				foreach($vo_role->typeLevelAccessControl->children() as $vo_permission) {
+					$vs_permission_table = self::getAttribute($vo_permission, 'table');
+					$vs_permission_type = self::getAttribute($vo_permission, 'type');
+					$vn_permission_access = $this->_convertACLStringToConstant(self::getAttribute($vo_permission, 'access'));
+
+					if(!$t_role->setAccessSettingForType($vs_permission_table, $vs_permission_type, $vn_permission_access)){
+						$this->addError("Could not add type level access control for table '{$vs_permission_table}' and type '{$vs_permission_type}'. Check the table name and the type code.");
+						return false;
+					}
+				}
+			}
+			
+			// @TODO add source level ACL items once that feature is done
+			//
 		}
 		return true;
 	}
@@ -1298,22 +1335,31 @@ class Installer {
 		$va_settings = array();
 		if($po_settings_node){ 
 			foreach($po_settings_node->children() as $vo_setting) {
+				// some settings like 'label' or 'add_label' have 'locale' as sub-setting
 				$vs_locale = self::getAttribute($vo_setting, "locale");
-				$vn_locale_id = $this->opa_locales[$vs_locale];
-				$vs_setting_name = self::getAttribute($vo_setting, "name");
-				$vs_option = self::getAttribute($vo_setting, "option");
-				$vs_value = (string) $vo_setting;
-				
-				if ($vn_locale_id) { 
-					$va_settings[$vs_setting_name][$vs_locale] = $vs_value;
+				if($vs_locale && isset($this->opa_locales[$vs_locale])) {
+					$vn_locale_id = $this->opa_locales[$vs_locale];
 				} else {
-					if (!isset($va_settings[$vs_setting_name])) {
-						$va_settings[$vs_setting_name] = $vs_value;
+					$vn_locale_id = null;
+				}
+
+				$vs_setting_name = self::getAttribute($vo_setting, "name");
+				$vs_value = trim((string) $vo_setting);
+				
+				if((strlen($vs_setting_name)>0) && (strlen($vs_value)>0)){ // settings need at least name and value
+					if ($vs_locale) { // settings with locale (those can't repeat)
+						$va_settings[$vs_setting_name][$vs_locale] = $vs_value;
 					} else {
-						if (!is_array($va_settings[$vs_setting_name])) {
-							$va_settings[$vs_setting_name] = array($va_settings[$vs_setting_name]);
+						// some settings allow multiple values under the same key, for instance restrict_to_types.
+						// in those cases $va_settings[$vs_setting_name] becomes an array of values
+						if (isset($va_settings[$vs_setting_name])) {
+							if (!is_array($va_settings[$vs_setting_name])) {
+								$va_settings[$vs_setting_name] = array($va_settings[$vs_setting_name]);
+							}
+							$va_settings[$vs_setting_name][] = $vs_value;
+						} else {
+							$va_settings[$vs_setting_name] = $vs_value;
 						}
-						$va_settings[$vs_setting_name][] = $vs_value;
 					}
 				}
 			}
@@ -1324,7 +1370,20 @@ class Installer {
 				}
 			}
 		}
+
 		return $va_settings;
+	}
+	# --------------------------------------------------
+	private function _convertACLStringToConstant($ps_name){
+		switch($ps_name) {
+			case 'edit':
+				return __CA_BUNDLE_ACCESS_EDIT__;
+			case 'read':
+				return __CA_BUNDLE_ACCESS_READONLY__;
+			case 'none':
+			default:
+				return __CA_BUNDLE_ACCESS_NONE__;
+		}
 	}
 	# --------------------------------------------------
 }
