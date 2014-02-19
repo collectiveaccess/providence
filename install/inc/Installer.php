@@ -934,7 +934,7 @@ class Installer {
 					$vn_permission_access = $this->_convertACLStringToConstant(self::getAttribute($vo_permission, 'access'));
 
 					if(!$t_role->setAccessSettingForType($vs_permission_table, $vs_permission_type, $vn_permission_access)){
-						$this->addError("Could not add type level access control for table '{$vs_permission_table}' and type '{$vs_permission_type}'. Check the table name and the type reference code.");
+						$this->addError("Could not add type level access control for table '{$vs_permission_table}' and type '{$vs_permission_type}'. Check the table name and the type code.");
 						return false;
 					}
 				}
