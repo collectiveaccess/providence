@@ -817,6 +817,12 @@
 				
 				$va_tmp = explode(':', $vs_requirement);
 				switch(strtolower($va_tmp[0])) {
+					case 'availabletypes':
+						$vn_min_access = (sizeof($va_tmp) >= 3) ? constant($va_tmp[2]) : __CA_BUNDLE_ACCESS_EDIT__;
+						$vn_min_types = (sizeof($va_tmp) >= 4) ? (int)$va_tmp[3] : 1;
+						$va_types = caGetTypeListForUser($va_tmp[1], array('access' => $vn_min_access));
+						$vs_value = (sizeof($va_types) >= $vn_min_types) ? true : false;
+						break;
 					case 'session':
 						if (isset($va_tmp[2])) {
 							$vs_value = ($this->opo_request->session->getVar($va_tmp[1]) == $va_tmp[2]) ? true : false;
