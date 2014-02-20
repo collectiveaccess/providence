@@ -668,7 +668,7 @@ ul.sf-menu li li li.sfHover ul {
 }
 .sf-menu a {
     border-top:		0px solid #134959;
-    padding-top: .6em;
+    padding-top: .55em;
     padding-bottom: .40em;
     padding-left: .6em;
     padding-right: 5px;
@@ -679,7 +679,7 @@ ul.sf-menu li li li.sfHover ul {
     color:			#333;
     font-weight:normal;
 }
-
+ 
 .sf-menu li {
 
 
@@ -788,6 +788,14 @@ a.sf-menu-disabled {
     text-indent: 	-999em;
     overflow:		hidden;
     background:		url('../graphics/icons/arrows_white.png') no-repeat -10px -100px; /* 8-bit indexed alpha png. IE6 gets solid image only */
+}
+
+ul.sf-menu li a.sf-with-ul .sf-sub-indicator{
+	display:none;
+}
+ul.sf-menu li ul li a.sf-with-ul .sf-sub-indicator{
+	display:block;
+	margin-top: -2px;
 }
 a > .sf-sub-indicator {  /* give all except IE6 the correct values */
     top:			.7em;
