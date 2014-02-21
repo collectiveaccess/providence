@@ -840,14 +840,24 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 							}
 						}
 						if ($vb_show_add_child_control) {
-
-							$vs_buf .= "<div id='inspectorCreateChild'><div id='inspectorCreateChildButton'><a href='#' onclick='caCreateChildPanel.showPanel(); return false;'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_CHILD__, array('title' => _t('Create Child Record')))."</a></div></div>\n";
+							if ((bool)$po_view->request->config->get($vs_table_name.'_enforce_strict_type_hierarchy')) {
+								// strict menu
+								$vs_type_list = $t_item->getTypeListAsHTMLFormElement('type_id', array('style' => 'width: 90px; font-size: 9px;'), array('childrenOfCurrentTypeOnly' => true, 'directChildrenOnly' => ($po_view->request->config->get($vs_table_name.'_enforce_strict_type_hierarchy') == '~') ? false : true, 'returnHierarchyLevels' => true, 'access' => __CA_BUNDLE_ACCESS_EDIT__));
+							} else {
+								// all types
+								$vs_type_list = $t_item->getTypeListAsHTMLFormElement('type_id', array('style' => 'width: 90px; font-size: 9px;'), array('access' => __CA_BUNDLE_ACCESS_EDIT__));
+							}
+							
+							if ($vs_type_list) {
+								$vs_buf .= "<div id='inspectorCreateChild'><div id='inspectorCreateChildButton'><a href='#' onclick='caCreateChildPanel.showPanel(); return false;'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_CHILD__, array('title' => _t('Create Child Record')))."</a></div></div>\n";
 						
-							$vo_create_child_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
-							$vo_create_child_view->setVar('t_item', $t_item);
+								$vo_create_child_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
+								$vo_create_child_view->setVar('t_item', $t_item);
+								$vo_create_child_view->setVar('type_list', $vs_type_list);
 						
-							FooterManager::add($vo_create_child_view->render("create_child_html.php"));
-							TooltipManager::add("#inspectorCreateChildButton", _t('Create a child record under this one'));
+								FooterManager::add($vo_create_child_view->render("create_child_html.php"));
+								TooltipManager::add("#inspectorCreateChildButton", _t('Create a child record under this one'));
+							}
 						}
 					}
 			}
