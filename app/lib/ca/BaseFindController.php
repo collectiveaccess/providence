@@ -88,7 +88,7 @@
  			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
  			
  			// Make sure user has access to at least one type
- 			if (!is_array($va_types = caGetTypeListForUser($this->ops_tablename, array('access' => __CA_BUNDLE_ACCESS_READONLY__))) || !sizeof($va_types)) {
+ 			if ($t_model->getTypeFieldName() && (!is_array($va_types = caGetTypeListForUser($this->ops_tablename, array('access' => __CA_BUNDLE_ACCESS_READONLY__))) || !sizeof($va_types))) {
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
