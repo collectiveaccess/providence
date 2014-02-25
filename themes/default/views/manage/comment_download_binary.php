@@ -33,6 +33,7 @@
 	header("Cache-Control: post-check=0, pre-check=0", false);
 	header("Pragma: no-cache");
 	header("Cache-control: private");
+	header('Content-Length: ' . filesize($vs_file_path));
 	
 	header("Content-Disposition: attachment; filename=".$this->getVar('version_download_name'));
 	
