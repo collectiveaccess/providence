@@ -1026,7 +1026,9 @@ class SearchEngine extends SearchBase {
 	 * @return boolean True on success, false on failure
 	 */
 	public function setTypeRestrictions($pa_type_codes_or_ids, $pa_options=null) {
-		$t_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+		$t_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);		
+		$o_config = Configuration::load();
+		$ps_plugin_name = $o_config->get('search_engine_plugin');
 		
 		if (!$pa_type_codes_or_ids) { return false; }
 		if (is_array($pa_type_codes_or_ids) && !sizeof($pa_type_codes_or_ids)) { return false; }
@@ -1053,7 +1055,14 @@ class SearchEngine extends SearchBase {
 					// See if there are any child types
 					$t_item = new ca_list_items($vn_type_id);
 					$va_ids = $t_item->getHierarchyChildren(null, array('idsOnly' => true));
-					$va_ids[] = $vn_type_id;
+					
+					if(strtoupper($ps_plugin_name) === 'SOLR'){
+						$va_type_list_item = $va_type_list[$vn_type_id];
+						$va_ids[] ="\"". $va_type_list_item['name_singular']. ' '.$va_type_list_item['idno']. ' '.$vn_type_id. "\"";
+					}
+					else
+						$va_ids[] = $vn_type_id;
+					
 					$this->opa_search_type_ids = array_merge($this->opa_search_type_ids, $va_ids);
 				}
 			}
