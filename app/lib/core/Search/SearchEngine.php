@@ -1026,7 +1026,8 @@ class SearchEngine extends SearchBase {
 	 * @return boolean True on success, false on failure
 	 */
 	public function setTypeRestrictions($pa_type_codes_or_ids, $pa_options=null) {
-		$t_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);		
+		$t_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);	
+		
 		$o_config = Configuration::load();
 		$ps_plugin_name = $o_config->get('search_engine_plugin');
 		
