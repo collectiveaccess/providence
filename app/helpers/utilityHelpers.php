@@ -1935,7 +1935,7 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caConvertCurrencyValue($ps_value, $ps_to, $pa_options=null) {
 		require_once(__CA_LIB_DIR__."/core/Plugins/CurrencyConversion/EuroBank.php");
-		
+		if ((!$ps_value) || is_numeric($ps_value)) return null;
 		try {
 			return WLPlugCurrencyConversionEuroBank::convert($ps_value, $ps_to, $pa_options);
 		} catch (Exception $e) {
