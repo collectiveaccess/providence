@@ -719,6 +719,9 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 			
 				$vs_idno = $t_item->get($t_item->getProperty('ID_NUMBERING_ID_FIELD'));
 				$vs_buf .= "<div style='width:190px; overflow:hidden;'>{$vs_label}"."<a title='$vs_idno'>".($vs_idno ? " ({$vs_idno})" : '')."</a></div>";
+				if (($vs_table_name === 'ca_object_lots') && $t_item->getPrimaryKey()) {
+					$vs_buf .= "<div id='inspectorLotMediaDownload'><strong>".((($vn_num_objects = $t_item->numObjects()) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
+				} 
 			} else {
 				$vs_parent_name = '';
 				if ($vn_parent_id = $po_view->request->getParameter('parent_id', pInteger)) {
@@ -838,14 +841,24 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 							}
 						}
 						if ($vb_show_add_child_control) {
-
-							$vs_buf .= "<div id='inspectorCreateChild'><div id='inspectorCreateChildButton'><a href='#' onclick='caCreateChildPanel.showPanel(); return false;'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_CHILD__, array('title' => _t('Create Child Record')))."</a></div></div>\n";
+							if ((bool)$po_view->request->config->get($vs_table_name.'_enforce_strict_type_hierarchy')) {
+								// strict menu
+								$vs_type_list = $t_item->getTypeListAsHTMLFormElement('type_id', array('style' => 'width: 90px; font-size: 9px;'), array('childrenOfCurrentTypeOnly' => true, 'directChildrenOnly' => ($po_view->request->config->get($vs_table_name.'_enforce_strict_type_hierarchy') == '~') ? false : true, 'returnHierarchyLevels' => true, 'access' => __CA_BUNDLE_ACCESS_EDIT__));
+							} else {
+								// all types
+								$vs_type_list = $t_item->getTypeListAsHTMLFormElement('type_id', array('style' => 'width: 90px; font-size: 9px;'), array('access' => __CA_BUNDLE_ACCESS_EDIT__));
+							}
+							
+							if ($vs_type_list) {
+								$vs_buf .= "<div id='inspectorCreateChild'><div id='inspectorCreateChildButton'><a href='#' onclick='caCreateChildPanel.showPanel(); return false;'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_CHILD__, array('title' => _t('Create Child Record')))."</a></div></div>\n";
 						
-							$vo_create_child_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
-							$vo_create_child_view->setVar('t_item', $t_item);
+								$vo_create_child_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
+								$vo_create_child_view->setVar('t_item', $t_item);
+								$vo_create_child_view->setVar('type_list', $vs_type_list);
 						
-							FooterManager::add($vo_create_child_view->render("create_child_html.php"));
-							TooltipManager::add("#inspectorCreateChildButton", _t('Create a child record under this one'));
+								FooterManager::add($vo_create_child_view->render("create_child_html.php"));
+								TooltipManager::add("#inspectorCreateChildButton", _t('Create a child record under this one'));
+							}
 						}
 					}
 			}
@@ -862,10 +875,14 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 				$vs_buf .= "</form>";
 				$vs_buf .= "</div>";
 			
-				TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($vs_type_name, 'UTF-8')).". "._t("<br/> You can control what information will be duplicated by setting user preferences under 'Duplication.'", mb_strtolower($vs_type_name, 'UTF-8'), mb_strtolower($vs_type_name, 'UTF-8')));
+				TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($vs_type_name, 'UTF-8')));
 			}
-			
-			
+			if ($vn_num_objects > 0) {
+				$vs_buf .= caNavLink($po_view->request, caNavIcon($po_view->request, __CA_NAV_BUTTON_DOWNLOAD__), "button", $po_view->request->getModulePath(), $po_view->request->getController(), 'getLotMedia', array('lot_id' => $t_item->getPrimaryKey(), 'download' => 1), array('id' => 'inspectorLotMediaDownloadButton'));
+			}
+			TooltipManager::add('#inspectorLotMediaDownloadButton', _t("Download all media associated with objects in this lot"));
+		
+		
 			$vs_more_info = '';
 			
 			// list of sets in which item is a member
@@ -971,15 +988,9 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 			// Output lot info for ca_object_lots
 			//
 			if (($vs_table_name === 'ca_object_lots') && $t_item->getPrimaryKey()) {
-				$vs_buf .= "<div id='inspectorLotMediaDownload'><strong>".((($vn_num_objects = $t_item->numObjects()) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
-				
-				if ($vn_num_objects > 0) {
-					$vs_buf .= caNavLink($po_view->request, caNavIcon($po_view->request, __CA_NAV_BUTTON_DOWNLOAD__), "button", $po_view->request->getModulePath(), $po_view->request->getController(), 'getLotMedia', array('lot_id' => $t_item->getPrimaryKey(), 'download' => 1), array('id' => 'inspectorLotMediaDownloadButton'));
-				}
-				$vs_buf .= "</div>\n";
-				
-				TooltipManager::add('#inspectorLotMediaDownloadButton', _t("Download all media associated with objects in this lot."));
 			
+				$vs_buf .= "</div>\n";
+
 				if (((bool)$po_view->request->config->get('allow_automated_renumbering_of_objects_in_a_lot')) && ($va_nonconforming_objects = $t_item->getObjectsWithNonConformingIdnos())) {
 				
 					$vs_buf .= '<br/><br/><em>'. ((($vn_c = sizeof($va_nonconforming_objects)) == 1) ? _t('There is %1 object with non-conforming numbering', $vn_c) : _t('There are %1 objects with non-conforming numbering', $vn_c))."</em>\n";
