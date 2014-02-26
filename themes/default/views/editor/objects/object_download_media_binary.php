@@ -33,6 +33,7 @@
 	header("Cache-Control: post-check=0, pre-check=0", false);
 	header("Pragma: no-cache");
 	header("Cache-control: private");
+	header('Content-Length: ' . filesize($vs_file_path));
 	
 	header("Content-Disposition: attachment; filename=".$this->getVar('archive_name'));
 	while(ob_get_level() > 0) { ob_end_flush(); }	// need to do this in order to not have read file use request memory due to buffering

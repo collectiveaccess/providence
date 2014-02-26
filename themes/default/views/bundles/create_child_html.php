@@ -29,6 +29,8 @@
 	JavascriptLoadManager::register("panel");
 	$t_item = $this->getVar('t_item');
 	//if (sizeof($t_item->getTypeList()) <= 1) { return ''; }
+	
+	$vs_table_name = $t_item->tableName();
 ?>
 <script type="text/javascript">
 	var caCreateChildPanel;
@@ -57,14 +59,8 @@
 	<div id="caCreateChildPanelContentArea">
 <?php	
 			$vs_buf = "";
-				if ((bool)$this->request->config->get($vs_table_name.'_enforce_strict_type_hierarchy')) {
-					// strict menu
-					$vs_type_list = $t_item->getTypeListAsHTMLFormElement('type_id', array('style' => 'width: 90px; font-size: 9px;'), array('childrenOfCurrentTypeOnly' => true, 'directChildrenOnly' => ($this->request->config->get($vs_table_name.'_enforce_strict_type_hierarchy') == '~') ? false : true, 'returnHierarchyLevels' => true, 'access' => __CA_BUNDLE_ACCESS_EDIT__));
-				} else {
-					// all types
-					$vs_type_list = $t_item->getTypeListAsHTMLFormElement('type_id', array('style' => 'width: 90px; font-size: 9px;'), array('access' => __CA_BUNDLE_ACCESS_EDIT__));
-				}
-				if ($vs_type_list) {
+				
+				if ($vs_type_list = $this->getVar('type_list')) {
 					$vs_buf .= '<div class="addChild">';
 					$vs_buf .= '<div class="addChildMessage">'._t('Select a record type to add a child record under this one').'</div>';
 					$vs_buf .= caFormTag($this->request, 'Edit', 'NewChildForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
