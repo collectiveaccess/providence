@@ -18424,89 +18424,250 @@
     <role code="archive">
       <name>Archive</name>
       <description>Access control actions defined for Archival users</description>
-      <typeLevelAccessControl>
-        <permission table="ca_objects" code="image" access="edit" />
-        <permission table="ca_objects" code="document" access="edit" />
-        <permission table="ca_objects" code="audio" access="edit" />
-        <permission table="ca_objects" code="moving_image" access="edit" />
-        <permission table="ca_objects" code="ephemera" access="edit" />
-        <permission table="ca_objects" code="artwork" access="read" />
-        <permission table="ca_objects" code="book" access="read" />
-        <permission table="ca_objects" code="element" access="read" />
-        <permission table="ca_occurrences" code="exhibition" access="read" />
-        <permission table="ca_loans" code="archive" access="edit" />
-        <permission table="ca_loans" code="collection" access="read" />
-        <permission table="ca_object_lots" code="archive" access="edit" />
-        <permission table="ca_object_lots" code="collection" access="none" />
-        <permission table="ca_object_lots" code="library" access="none" />
-        <permission table="ca_movements" code="collection" access="none" />
-        <permission table="ca_collections" code="collection" access="edit" />
-        <permission table="ca_collections" code="series" access="edit" />
-        <permission table="ca_collections" code="sub_series" access="edit" />
-        <permission table="ca_collections" code="sub_sub_series" access="edit" />
-        <permission table="ca_collections" code="box" access="edit" />
-        <permission table="ca_collections" code="folder" access="edit" />
-      </typeLevelAccessControl>
+      <actions>
+        <action>can_set_access_control</action>
+        <action>can_view_logs</action>
+        <action>can_configure_user_interfaces</action>
+        <action>can_configure_metadata_elements</action>
+        <action>can_configure_relationship_types</action>
+        <action>can_configure_bundle_mappings</action>
+        <action>can_configure_locales</action>
+        <action>can_view_configuration_check</action>
+        <action>can_manage_system_search_forms</action>
+        <action>can_manage_system_bundle_displays</action>
+        <action>can_administrate_sets</action>
+        <action>can_do_search_reindex</action>
+        <action>can_manage_clients</action>
+        <action>can_quicksearch</action>
+        <action>can_batch_import_media</action>
+        <action>can_batch_import_metadata</action>
+        <action>can_batch_export_metadata</action>
+        <action>can_set_preferences</action>
+        <action>can_create_adv_search_forms</action>
+        <action>can_edit_adv_search_forms</action>
+        <action>can_delete_adv_search_forms</action>
+        <action>can_use_adv_search_forms</action>
+        <action>can_create_ca_bundle_displays</action>
+        <action>can_edit_ca_bundle_displays</action>
+        <action>can_delete_ca_bundle_displays</action>
+        <action>can_use_ca_bundle_displays</action>
+        <action>can_duplicate_ca_bundle_displays</action>
+        <action>can_create_user_groups</action>
+        <action>can_create_sets</action>
+        <action>can_edit_sets</action>
+        <action>can_delete_sets</action>
+        <action>can_delete_own_sets</action>
+        <action>can_view_sets</action>
+        <action>can_duplicate_ca_sets</action>
+        <action>can_manage_user_comments</action>
+        <action>can_manage_user_tags</action>
+ <!-- Begin table-specific -->
+        <action>can_create_ca_objects</action>
+        <action>can_edit_ca_objects</action>
+        <action>can_delete_ca_objects</action>
+        <action>can_search_ca_objects</action>
+        <action>can_browse_ca_objects</action>
+        <action>can_download_ca_object_representations</action>
+        <action>can_duplicate_ca_objects</action>
+        <action>can_quickadd_ca_objects</action>
+        <action>can_export_ca_objects</action>
+        <action>can_change_type_ca_objects</action>
+        <action>can_change_acl_ca_objects</action>
+        <action>can_batch_edit_ca_objects</action>
+        <action>can_batch_delete_ca_objects</action>
+        <action>can_create_ca_object_representations</action>
+        <action>can_edit_ca_object_representations</action>
+        <action>can_delete_ca_object_representations</action>
+        <action>can_search_ca_object_representations</action>
+        <action>can_browse_ca_object_representations</action>
+        <action>can_duplicate_ca_object_representations</action>
+        <action>can_export_ca_object_representations</action>
+        <action>can_change_type_ca_object_representations</action>
+        <action>can_change_acl_ca_object_representations</action>
+        <action>can_batch_edit_ca_object_representations</action>
+        <action>can_batch_delete_ca_object_representations</action>
+        <action>can_create_ca_representation_annotations</action>
+        <action>can_edit_ca_representation_annotations</action>
+        <action>can_delete_ca_representation_annotations</action>
+        <action>can_search_ca_representation_annotations</action>
+        <action>can_browse_ca_representation_annotations</action>
+        <action>can_duplicate_ca_representation_annotations</action>
+        <action>can_change_acl_ca_representation_annotations</action>
+        <action>can_create_ca_object_lots</action>
+        <action>can_edit_ca_object_lots</action>
+        <action>can_delete_ca_object_lots</action>
+        <action>can_search_ca_object_lots</action>
+        <action>can_browse_ca_object_lots</action>
+        <action>can_duplicate_ca_object_lots</action>
+        <action>can_export_ca_object_lots</action>
+        <action>can_quickadd_ca_object_lots</action>
+        <action>can_change_type_ca_object_lots</action>
+        <action>can_change_acl_ca_object_lots</action>
+        <action>can_batch_edit_ca_object_lots</action>
+        <action>can_batch_delete_ca_object_lots</action>
+        <action>can_create_ca_entities</action>
+        <action>can_edit_ca_entities</action>
+        <action>can_delete_ca_entities</action>
+        <action>can_search_ca_entities</action>
+        <action>can_browse_ca_entities</action>
+        <action>can_duplicate_ca_entities</action>
+        <action>can_export_ca_entities</action>
+        <action>can_quickadd_ca_entities</action>
+        <action>can_change_type_ca_entities</action>
+        <action>can_change_acl_ca_entities</action>
+        <action>can_batch_edit_ca_entities</action>
+        <action>can_batch_delete_ca_entities</action>
+        <action>can_create_ca_occurrences</action>
+        <action>can_edit_ca_occurrences</action>
+        <action>can_delete_ca_occurrences</action>
+        <action>can_search_ca_occurrences</action>
+        <action>can_browse_ca_occurrences</action>
+        <action>can_duplicate_ca_occurrences</action>
+        <action>can_export_ca_occurrences</action>
+        <action>can_quickadd_ca_occurrences</action>
+        <action>can_change_type_ca_occurrences</action>
+        <action>can_change_acl_ca_occurrences</action>
+        <action>can_batch_edit_ca_occurrences</action>
+        <action>can_batch_delete_ca_occurrences</action>
+        <action>can_create_ca_collections</action>
+        <action>can_edit_ca_collections</action>
+        <action>can_delete_ca_collections</action>
+        <action>can_search_ca_collections</action>
+        <action>can_browse_ca_collections</action>
+        <action>can_duplicate_ca_collections</action>
+        <action>can_export_ca_collections</action>
+        <action>can_quickadd_ca_collections</action>
+        <action>can_change_type_ca_collections</action>
+        <action>can_change_acl_ca_collections</action>
+        <action>can_batch_edit_ca_collections</action>
+        <action>can_batch_delete_ca_collections</action>
+        <action>can_create_ca_storage_locations</action>
+        <action>can_edit_ca_storage_locations</action>
+        <action>can_delete_ca_storage_locations</action>
+        <action>can_search_ca_storage_locations</action>
+        <action>can_browse_ca_storage_locations</action>
+        <action>can_duplicate_ca_storage_locations</action>
+        <action>can_export_ca_storage_locations</action>
+        <action>can_quickadd_ca_storage_locations</action>
+        <action>can_change_type_ca_storage_locations</action>
+        <action>can_change_acl_ca_storage_locations</action>
+        <action>can_batch_edit_ca_storage_locations</action>
+        <action>can_batch_delete_ca_storage_locations</action>
+        <action>can_create_ca_loans</action>
+        <action>can_edit_ca_loans</action>
+        <action>can_delete_ca_loans</action>
+        <action>can_search_ca_loans</action>
+        <action>can_browse_ca_loans</action>
+        <action>can_duplicate_ca_loans</action>
+        <action>can_export_ca_loans</action>
+        <action>can_quickadd_ca_loans</action>
+        <action>can_change_type_ca_loans</action>
+        <action>can_change_acl_ca_loans</action>
+        <action>can_batch_edit_ca_loans</action>
+        <action>can_batch_delete_ca_loans</action>
+        <action>can_create_ca_lists</action>
+        <action>can_edit_ca_lists</action>
+        <action>can_edit_system_lists</action>
+        <action>can_delete_ca_lists</action>
+        <action>can_delete_system_lists</action>
+        <action>can_duplicate_ca_lists</action>
+        <action>can_duplicate_ca_list_items</action>
+        <action>can_export_ca_list_items</action>
+        <action>can_change_type_ca_list_items</action>
+        <action>can_change_acl_ca_lists</action>
+        <action>can_change_acl_ca_list_items</action>
+        <action>can_batch_edit_ca_list_items</action>
+        <action>can_batch_delete_ca_list_items</action>
+        <action>can_download_media</action>
+        <action>can_share_via_email</action>
+        <action>can_share_via_facebook</action>
+        <action>can_replicate_media</action>
+      </actions>
       <bundleLevelAccessControl>
         <permission table="ca_objects" bundle="ca_attribute_accession_number" access="none" />
       </bundleLevelAccessControl>
+      <typeLevelAccessControl>
+        <permission table="ca_objects" type="image" access="edit" />
+        <permission table="ca_objects" type="document" access="edit" />
+        <permission table="ca_objects" type="audio" access="edit" />
+        <permission table="ca_objects" type="moving_image" access="edit" />
+        <permission table="ca_objects" type="ephemera" access="edit" />
+        <permission table="ca_objects" type="artwork" access="read" />
+        <permission table="ca_objects" type="book" access="read" />
+        <permission table="ca_objects" type="element" access="read" />
+        <permission table="ca_occurrences" type="exhibition" access="read" />
+        <permission table="ca_loans" type="archive" access="edit" />
+        <permission table="ca_loans" type="collection" access="read" />
+        <permission table="ca_object_lots" type="archive" access="edit" />
+        <permission table="ca_object_lots" type="collection" access="none" />
+        <permission table="ca_object_lots" type="library" access="none" />
+        <permission table="ca_movements" type="collection" access="none" />
+        <permission table="ca_collections" type="collection" access="edit" />
+        <permission table="ca_collections" type="series" access="edit" />
+        <permission table="ca_collections" type="sub_series" access="edit" />
+        <permission table="ca_collections" type="sub_sub_series" access="edit" />
+        <permission table="ca_collections" type="box" access="edit" />
+        <permission table="ca_collections" type="folder" access="edit" />
+      </typeLevelAccessControl>  
     </role>
     <role code="collection">
       <name>Collection</name>
       <description>Access control actions defined for Collection users</description>
+      <actions/>
       <typeLevelAccessControl>
-        <permission table="ca_objects" code="image" access="read" />
-        <permission table="ca_objects" code="document" access="read" />
-        <permission table="ca_objects" code="audio" access="read" />
-        <permission table="ca_objects" code="moving_image" access="read" />
-        <permission table="ca_objects" code="ephemera" access="read" />
-        <permission table="ca_objects" code="artwork" access="edit" />
-        <permission table="ca_objects" code="book" access="read" />
-        <permission table="ca_objects" code="element" access="edit" />
-        <permission table="ca_occurrences" code="exhibition" access="edit" />
-        <permission table="ca_loans" code="archive" access="read" />
-        <permission table="ca_loans" code="collection" access="edit" />
-        <permission table="ca_object_lots" code="archive" access="none" />
-        <permission table="ca_object_lots" code="collection" access="edit" />
-        <permission table="ca_object_lots" code="library" access="none" />
-        <permission table="ca_movements" code="collection" access="edit" />
-        <permission table="ca_collections" code="collection" access="read" />
-        <permission table="ca_collections" code="series" access="read" />
-        <permission table="ca_collections" code="sub_series" access="read" />
-        <permission table="ca_collections" code="sub_sub_series" access="read" />
-        <permission table="ca_collections" code="box" access="read" />
-        <permission table="ca_collections" code="folder" access="read" />
+        <permission table="ca_objects" type="image" access="read" />
+        <permission table="ca_objects" type="document" access="read" />
+        <permission table="ca_objects" type="audio" access="read" />
+        <permission table="ca_objects" type="moving_image" access="read" />
+        <permission table="ca_objects" type="ephemera" access="read" />
+        <permission table="ca_objects" type="artwork" access="edit" />
+        <permission table="ca_objects" type="book" access="read" />
+        <permission table="ca_objects" type="element" access="edit" />
+        <permission table="ca_occurrences" type="exhibition" access="edit" />
+        <permission table="ca_loans" type="archive" access="read" />
+        <permission table="ca_loans" type="collection" access="edit" />
+        <permission table="ca_object_lots" type="archive" access="none" />
+        <permission table="ca_object_lots" type="collection" access="edit" />
+        <permission table="ca_object_lots" type="library" access="none" />
+        <permission table="ca_movements" type="collection" access="edit" />
+        <permission table="ca_collections" type="collection" access="read" />
+        <permission table="ca_collections" type="series" access="read" />
+        <permission table="ca_collections" type="sub_series" access="read" />
+        <permission table="ca_collections" type="sub_sub_series" access="read" />
+        <permission table="ca_collections" type="box" access="read" />
+        <permission table="ca_collections" type="folder" access="read" />
       </typeLevelAccessControl>
     </role>
     <role code="library">
       <name>Library</name>
       <description>Access control actions defined for Library users</description>
-      <typeLevelAccessControl>
-        <permission table="ca_objects" code="image" access="read" />
-        <permission table="ca_objects" code="document" access="read" />
-        <permission table="ca_objects" code="audio" access="read" />
-        <permission table="ca_objects" code="moving_image" access="read" />
-        <permission table="ca_objects" code="ephemera" access="read" />
-        <permission table="ca_objects" code="artwork" access="read" />
-        <permission table="ca_objects" code="book" access="edit" />
-        <permission table="ca_objects" code="element" access="read" />
-        <permission table="ca_occurrences" code="exhibition" access="read" />
-        <permission table="ca_loans" code="archive" access="read" />
-        <permission table="ca_loans" code="collection" access="read" />
-        <permission table="ca_object_lots" code="archive" access="read" />
-        <permission table="ca_object_lots" code="collection" access="none" />
-        <permission table="ca_object_lots" code="library" access="edit" />
-        <permission table="ca_movements" code="collection" access="none" />
-        <permission table="ca_collections" code="collection" access="read" />
-        <permission table="ca_collections" code="series" access="read" />
-        <permission table="ca_collections" code="sub_series" access="read" />
-        <permission table="ca_collections" code="sub_sub_series" access="read" />
-        <permission table="ca_collections" code="box" access="read" />
-        <permission table="ca_collections" code="folder" access="read" />
-      </typeLevelAccessControl>
+      <actions/>
       <bundleLevelAccessControl>
         <permission table="ca_objects" bundle="ca_attribute_accession_number" access="none" />
       </bundleLevelAccessControl>
+      <typeLevelAccessControl>
+        <permission table="ca_objects" type="image" access="read" />
+        <permission table="ca_objects" type="document" access="read" />
+        <permission table="ca_objects" type="audio" access="read" />
+        <permission table="ca_objects" type="moving_image" access="read" />
+        <permission table="ca_objects" type="ephemera" access="read" />
+        <permission table="ca_objects" type="artwork" access="read" />
+        <permission table="ca_objects" type="book" access="edit" />
+        <permission table="ca_objects" type="element" access="read" />
+        <permission table="ca_occurrences" type="exhibition" access="read" />
+        <permission table="ca_loans" type="archive" access="read" />
+        <permission table="ca_loans" type="collection" access="read" />
+        <permission table="ca_object_lots" type="archive" access="read" />
+        <permission table="ca_object_lots" type="collection" access="none" />
+        <permission table="ca_object_lots" type="library" access="edit" />
+        <permission table="ca_movements" type="collection" access="none" />
+        <permission table="ca_collections" type="collection" access="read" />
+        <permission table="ca_collections" type="series" access="read" />
+        <permission table="ca_collections" type="sub_series" access="read" />
+        <permission table="ca_collections" type="sub_sub_series" access="read" />
+        <permission table="ca_collections" type="box" access="read" />
+        <permission table="ca_collections" type="folder" access="read" />
+      </typeLevelAccessControl>
     </role>
   </roles>
   <logins>
