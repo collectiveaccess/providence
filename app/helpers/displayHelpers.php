@@ -453,7 +453,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		}
 		
 		$vs_buf = '';
-		if (is_array($va_found_ids) && sizeof($va_found_ids) && $vn_item_id) {
+		if (is_array($va_found_ids) && sizeof($va_found_ids)) {
 			if ($vn_prev_id > 0) {
 				if($po_request->user->canAccess($po_request->getModulePath(),$po_request->getController(),"Edit",array($vs_pk => $vn_prev_id))){
 					$vs_buf .= caNavLink($po_request, '&#60; prev', 'prev', $po_request->getModulePath(), $po_request->getController(), 'Edit'.'/'.$po_request->getActionExtra(), array($vs_pk => $vn_prev_id)).'&nbsp;';
@@ -616,7 +616,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 
 		// action extra to preserve currently open screen across next/previous links
 		$vs_screen_extra 	= ($po_view->getVar('screen')) ? '/'.$po_view->getVar('screen') : '';
-		if ($vn_item_id) {
+		if (($vn_item_id) | ($po_view->request->getAction() === 'Delete')) {
 			$vs_buf = '<h3 class="nextPrevious">'.caEditorFindResultNavigation($po_view->request, $t_item, $o_result_context, $pa_options)."</h3>\n";
 		}
 		
@@ -636,6 +636,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		}
 		
 		if (($po_view->request->getAction() === 'Delete') && ($po_view->request->getParameter('confirm', pInteger))) { 
+
 			$vs_buf .= "<strong>"._t("Deleted %1", $vs_type_name)."</strong>\n";
 			$vs_buf .= "<br style='clear: both;'/></div></h4>\n";
 		} else {	
