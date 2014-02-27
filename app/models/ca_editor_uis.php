@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -356,6 +356,10 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 * @param RequestHTTP $po_request The current request
 	 * @param int $pn_type_id Optional type to restrict screens to
+	 * @param array $pa_options Options include:
+	 *		showAll = Include screens that do not have placements. Default is false.
+	 *
+	 * @return array List of screens for this user interface
 	 */
 	public function getScreens($po_request=null, $pn_type_id=null, $pa_options=null) {
 		if (!$this->getPrimaryKey()) { return false; }
@@ -427,6 +431,26 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		return caExtractValuesByUserLocale($va_screens);
+	}
+	# ----------------------------------------
+	/**
+	  * Return information about default screen
+	  *
+	  * @param RequestHTTP $po_request The current request
+	  * @param int $pn_type_id Optional type to restrict screens to
+	  * @param array $pa_options Options are those available for ca_editor_uis::getScreens()
+	  *
+	  * @return array Default screen information as an array
+	  */
+	public function getDefaultScreen($po_request=null, $pn_type_id=null, $pa_options=null) {
+		$va_screens = $this->getScreens($po_request, $pn_type_id, $pa_options);
+		
+		foreach($va_screens as $vn_screen_id => $va_screen) {
+			if (isset($va_screen['isDefault']) && $va_screen['isDefault']) {
+				return $va_screen;
+			}
+		}
+		return array_shift($va_screens);
 	}
 	# ----------------------------------------
 	/**

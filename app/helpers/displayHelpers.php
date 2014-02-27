@@ -851,6 +851,19 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 			}
 			
 			//
+			// Add component link for ca_objects
+			//
+			$va_object_component_types = $po_view->request->config->getList('ca_objects_component_types');
+			if (($vs_table_name === 'ca_objects') && $t_item->getPrimaryKey() && ($po_view->request->user->canDoAction('can_create_ca_objects')) && (sizeof($va_object_component_types))) {
+				$vs_buf .= "<div>".caJSButton($po_view->request, __CA_NAV_BUTTON_ADD__, _t('Add component'), 'caAddComponent', array('onclick' => 'caObjectComponentPanel.showPanel("'.caNavUrl($po_view->request, '*', 'ObjectComponent', 'Form', array('parent_id' => $t_item->getPrimaryKey())).'")'), array())."</div>";
+				
+				$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
+				$vo_change_type_view->setVar('t_item', $t_item);
+				
+				FooterManager::add($vo_change_type_view->render("create_component_html.php"));
+			}
+			
+			//
 			// Output related objects for ca_object_representations
 			//
 			if ($vs_table_name === 'ca_object_representations') {

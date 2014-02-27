@@ -1108,6 +1108,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *	limitToItemsRelatedToCollections = an array of collection_ids or collection idno's; returned items will be restricted to those attached to the specified collections
 	 *	limitToItemsRelatedToCollectionWithRelationshipTypes = array of collection type names or type_ids; returned items will be restricted to those attached to the specified collectionss with the specified relationship type
 	 *	limitToListIDs = array of list_ids to restrict returned items to when using "limitToItemsRelatedToCollections"
+	 *
+	 *  indentForHierarchy = indicate hierarchy with indentation. Default is true. 
 	 * 
 	 * @return string - HTML code for the <select> element; empty string if the list is empty
 	 */
@@ -1180,7 +1182,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					}
 				}
 			} else {
-				$va_list_items = $t_list->getItemsForList($pm_list_name_or_id, array_merge($pa_options, array('returnHierarchyLevels' => true, 'item_id' => $vn_root_id, 'extractValuesByUserLocale' => true, 'sort' => $vn_sort_type)));
+				$va_list_items = $t_list->getItemsForList($pm_list_name_or_id, array_merge($pa_options, array('returnHierarchyLevels' => caGetOption('indentForHierarchy', $pa_options, true), 'item_id' => $vn_root_id, 'extractValuesByUserLocale' => true, 'sort' => $vn_sort_type)));
 			}
 		}
 		

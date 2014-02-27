@@ -199,7 +199,11 @@
 			
 			# trigger "EditItem" hook 
 			$this->opo_app_plugin_manager->hookEditItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject));
-			$this->render('screen_html.php');
+			
+			if (!($vs_view = caGetOption('view', $pa_options, null))) {
+				$vs_view = 'screen_html';
+			} 
+			$this->render("{$vs_view}.php");
  		}
  		# -------------------------------------------------------
  		/**
