@@ -244,7 +244,7 @@
 		
 		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-			templateValues: ['label', 'id', 'type_id', 'typename', 'label', 'idno_sort'],
+			templateValues: ['label', 'id', 'type_id', 'typename', 'idno_sort'],
 			initialValues: <?php print json_encode($this->getVar('initialValues')); ?>,
 			initialValueOrder: <?php print json_encode(array_keys($this->getVar('initialValues'))); ?>,
 			itemID: '<?php print $vs_id_prefix; ?>Item_',

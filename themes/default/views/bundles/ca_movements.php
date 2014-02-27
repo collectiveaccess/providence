@@ -241,7 +241,7 @@
 		
 		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-			templateValues: ['label', 'type_id', 'id'],
+			templateValues: ['label', 'id', 'type_id', 'typename', 'idno_sort'],
 			initialValues: <?php print json_encode($this->getVar('initialValues')); ?>,
 			initialValueOrder: <?php print json_encode(array_keys($this->getVar('initialValues'))); ?>,
 			itemID: '<?php print $vs_id_prefix; ?>Item_',
@@ -261,6 +261,7 @@
 			isSortable: <?php print ($vb_read_only || $vs_sort) ? "false" : "true"; ?>,
 			listSortOrderID: '<?php print $vs_id_prefix; ?>BundleList',
 			listSortItems: 'div.roundedRel',
+			autocompleteInputID: '<?php print $vs_id_prefix; ?>_autocomplete',
 			quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
 			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/movements', 'MovementQuickAdd', 'Form', array('movement_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'])); ?>',
 			
