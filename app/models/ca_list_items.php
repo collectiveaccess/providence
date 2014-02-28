@@ -198,6 +198,22 @@ BaseModel::$s_ca_models_definitions['ca_list_items'] = array(
  				'IS_NULL' => false, 
  				'DEFAULT' => 0,
  				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if list item is deleted or not.')
+		),
+		'source_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'LIST_CODE' => 'list_item_sources',
+				'LABEL' => _t('Source'), 'DESCRIPTION' => _t('Administrative source of list item. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed.')
+		),
+		'source_info' => array(
+				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => 'Source information', 'DESCRIPTION' => 'Serialized array used to store source information for list item information retrieved via web services [NOT IMPLEMENTED YET].'
 		)
  	)
 );

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -80,6 +80,15 @@ BaseModel::$s_ca_models_definitions['ca_loans'] = array(
 				'DEFAULT' => '',
 				'LABEL' => 'Idno sort', 'DESCRIPTION' => 'Sortable version of value in idno',
 				'BOUNDS_LENGTH' => array(0,255)
+		),
+		'source_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'LIST_CODE' => 'loan_sources',
+				'LABEL' => _t('Source'), 'DESCRIPTION' => _t('Administrative source of loan. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed.')
 		),
 		'source_info' => array(
 				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
