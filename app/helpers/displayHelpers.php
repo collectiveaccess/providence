@@ -2115,6 +2115,14 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 					
 					$vs_tag = $vs_tag_proc;
 				}
+				
+				switch($vs_tag) {
+					case 'DATE':
+						$vs_format = urldecode(caGetOption('format', $va_tag_opts, 'm/d/Y'));
+						$va_proc_templates[$vn_i] = str_replace("^{$vs_tag}", date($vs_format), $va_proc_templates[$vn_i]);
+						continue(2);
+						break;
+				}
 			
 				$pa_options = array_merge($pa_options, $va_tag_opts);
 				
@@ -2140,7 +2148,26 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 							//
 							// see if this is a reference to a related table
 							//
-							if (($ps_tablename != $va_tmp[0]) && ($t_tmp = $o_dm->getInstanceByTableName($va_tmp[0], true))) {	// if the part of the tag before a "." (or the tag itself if there are no periods) is a related table then try to fetch it as related to the current record
+							if (in_array($vs_tag, array("relationship_typename", "relationship_type_id", "relationship_typecode", "relationship_type_code"))) {
+								$vb_is_related = true;
+								
+								switch($vs_tag) {
+									case 'relationship_typename':
+										$vs_spec = 'preferred_labels.'.((caGetOption('orientation', $pa_options, 'LTOR') == 'LTOR') ? 'typename' : 'typename_reverse');
+										break;
+									case 'relationship_type_id':
+										$vs_spec = 'type_id';
+										break;
+									case 'relationship_typecode':
+									case 'relationship_type_code':
+									default:
+										$vs_spec = 'type_code';
+										break;
+								}
+								
+								$vs_rel = $qr_res->get("ca_relationship_types.{$vs_spec}", array_merge($pa_options, $va_tag_opts, array('returnAsArray' => false)));
+								$va_val = array($vs_rel);
+							} elseif (($ps_tablename != $va_tmp[0]) && ($t_tmp = $o_dm->getInstanceByTableName($va_tmp[0], true))) {	// if the part of the tag before a "." (or the tag itself if there are no periods) is a related table then try to fetch it as related to the current record
 								if (isset($pa_options['placeholderPrefix']) && $pa_options['placeholderPrefix'] && ($va_tmp[0] != $pa_options['placeholderPrefix']) && (sizeof($va_tmp) == 1)) {
 									$vs_get_spec = array_shift($va_tmp).".".$pa_options['placeholderPrefix'];
 									if(sizeof($va_tmp) > 0) {
