@@ -619,6 +619,8 @@ class SearchResult extends BaseObject {
 					$va_relationship_values[$va_relation_info[$vs_rel_pk]][$vn_relation_id] = array(
 						'relationship_typename' => $va_relation_info['relationship_typename'],
 						'relationship_type_id' => $va_relation_info['relationship_type_id'],
+						'relationship_type_code' => $va_relation_info['relationship_type_code'],
+						'relationship_typecode' => $va_relation_info['relationship_type_code'],
 						'label' => $va_relation_info['label']
 					);
 				}

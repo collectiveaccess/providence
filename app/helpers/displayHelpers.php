@@ -2120,7 +2120,6 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 					case 'DATE':
 						$vs_format = urldecode(caGetOption('format', $va_tag_opts, 'm/d/Y'));
 						$va_proc_templates[$vn_i] = str_replace("^{$vs_tag}", date($vs_format), $va_proc_templates[$vn_i]);
-						continue(2);
 						break;
 				}
 			
@@ -2140,6 +2139,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 					$va_val = null;
 					
 					if (isset($va_relationship_value_array[$vs_tag]) && !(isset($pa_options['showHierarchicalLabels']) && $pa_options['showHierarchicalLabels'] && ($vs_tag == 'label'))) {
+						$va_val = array($vs_val = $va_relationship_value_array[$vs_tag]);
+					} elseif (isset($va_relationship_value_array[$vs_tag])) {
 						$va_val = array($vs_val = $va_relationship_value_array[$vs_tag]);
 					} else {
 						if (isset($va_related_values[$vs_pk_val][$vs_tag])) {

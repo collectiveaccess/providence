@@ -1707,11 +1707,11 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		
 		
 		$vs_val = '';
-		if($pa_options['template']) { 
+		if($pa_options['template']) {
 			if ($t_instance = $this->getAppDatamodel()->getInstanceByTableName($va_tmp[0], true)) {
 				$va_tmp2 = $va_tmp;
 				$vb_is_related = false;
-				if (sizeof($va_tmp) == 1) {
+				if ((sizeof($va_tmp) == 1) || ((sizeof($va_tmp) == 2) && $va_tmp[1] == 'related')) {
 					$vb_is_related = true;
 				} elseif ((sizeof($va_tmp2) > 1) && (in_array($vs_tmp = array_pop($va_tmp2), array('related')))) {
 					$va_tmp2[] = $vs_tmp;
