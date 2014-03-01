@@ -836,6 +836,109 @@
 		/**
 		 *
 		 */
+		public function getSourceID() {
+			if (!isset($this->SOURCE_ID_FLD) || !$this->SOURCE_ID_FLD) { return null; }
+			return $this->get($this->SOURCE_ID_FLD);
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Field in this table that defines the source of the row
+		 */
+		public function getSourceFieldName() {
+			return $this->SOURCE_ID_FLD;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * List code (from ca_lists.list_code) of list defining sources for this table
+		 */
+		public function getSourceListCode() {
+			return isset($this->SOURCE_LIST_CODE) ? $this->SOURCE_LIST_CODE : null;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 *
+		 */
+		public function getSourceName($pn_source_id=null) {
+			if ($t_list_item = $this->getTypeInstance($pn_source_id)) {
+				return $t_list_item->getLabelForDisplay(false);
+			}
+			return null;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns ca_list_items.idno (aka "item code") for the source of the currently loaded row
+		 *
+		 * @return string - idno (aka "item code") for current row's source or null if no row is loaded or model does not support sources
+		 */
+		public function getSourceCode() {
+			if ($t_list_item = $this->getSourceInstance()) {
+				return $t_list_item->get('idno');
+			}
+			return null;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns ca_list_items.item_id (aka "source_id") for $ps_type_code
+		 *
+		 * @param string $ps_type_code Alphanumeric code for the type
+		 * @return int - item_id (aka "source_id") for specified list item idno (aka "source code")
+		 */
+		public function getSourceIDForCode($ps_source_code) {
+			$va_sources = $this->getSourceList();
+			
+			foreach($va_sources as $vn_source_id => $va_source_info) {
+				if ($va_source_info['idno'] == $ps_source_code) {
+					return $vn_source_id;
+				}
+			}
+			
+			return null;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns default ca_list_items.item_id (aka "source_id") for this model
+		 *
+		 * @return int - item_id (aka "source_id") for default type
+		 */
+		public function getDefaultSourceID() {
+			$t_list = new ca_lists();
+			return $t_list->getDefaultItemID($this->getSourceListCode());
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns list of sources for this table with locale-appropriate labels, keyed by source_id
+		 *
+		 * @param array $pa_options Array of options, passed as-is to ca_lists::getItemsForList() [the underlying implemenetation]
+		 * @return array List of types
+		 */ 
+		public function getSourceList($pa_options=null) {
+			$t_list = new ca_lists();
+			if (isset($pa_options['childrenOfCurrentTypeOnly']) && $pa_options['childrenOfCurrentTypeOnly']) {
+				$pa_options['item_id'] = $this->get('type_id');
+			}
+			
+			$va_list = $t_list->getItemsForList($this->getSourceListCode(), $pa_options);
+			return is_array($va_list) ? caExtractValuesByUserLocale($va_list): array();
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Return ca_list_item instance for the source of the currently loaded row
+		 */ 
+		public function getSourceInstance($pn_source_id=null) {
+			if (!isset($this->SOURCE_ID_FLD) || !$this->SOURCE_ID_FLD) { return null; }
+			if ($pn_source_id) { 
+				$vn_source_id = $pn_source_id; 
+			} else {
+				if (!($vn_source_id = $this->get($this->SOURCE_ID_FLD))) { return null; }
+			}
+			
+			$t_list_item = new ca_list_items($vn_source_id);
+			return ($t_list_item->getPrimaryKey()) ? $t_list_item : null;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 *
+		 */
 		public function getTypeID() {
 			if (!isset($this->ATTRIBUTE_TYPE_ID_FLD) || !$this->ATTRIBUTE_TYPE_ID_FLD) { return null; }
 			return $this->get($this->ATTRIBUTE_TYPE_ID_FLD);
@@ -855,6 +958,9 @@
 			return isset($this->ATTRIBUTE_TYPE_LIST_CODE) ? $this->ATTRIBUTE_TYPE_LIST_CODE : null;
 		}
 		# ------------------------------------------------------------------
+		/**
+		 *
+		 */
 		public function getTypeName($pn_type_id=null) {
 			if ($t_list_item = $this->getTypeInstance($pn_type_id)) {
 				return $t_list_item->getLabelForDisplay(false);

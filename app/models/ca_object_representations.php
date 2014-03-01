@@ -312,6 +312,12 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	protected $ATTRIBUTE_TYPE_LIST_CODE = 'object_representation_types';		// list code (ca_lists.list_code) of list defining types for this table
 
 	# ------------------------------------------------------
+	# Sources
+	# ------------------------------------------------------
+	protected $SOURCE_ID_FLD = 'source_id';								// name of source field for this table
+	protected $SOURCE_LIST_CODE = 'object_representation_sources';		// list code (ca_lists.list_code) of list defining sources for this table
+
+	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
 	# are listed here is the order in which they will be returned using getFields()
 

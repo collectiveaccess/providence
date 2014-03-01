@@ -242,7 +242,13 @@ class ca_loans extends RepresentableBaseModel implements IBundleProvider {
 	# Attributes
 	# ------------------------------------------------------
 	protected $ATTRIBUTE_TYPE_ID_FLD = 'type_id';			// name of type field for this table - attributes system uses this to determine via ca_metadata_type_restrictions which attributes are applicable to rows of the given type
-	protected $ATTRIBUTE_TYPE_LIST_CODE = 'loan_types';	// list code (ca_lists.list_code) of list defining types for this table
+	protected $ATTRIBUTE_TYPE_LIST_CODE = 'loan_types';		// list code (ca_lists.list_code) of list defining types for this table
+
+	# ------------------------------------------------------
+	# Sources
+	# ------------------------------------------------------
+	protected $SOURCE_ID_FLD = 'source_id';				// name of source field for this table
+	protected $SOURCE_LIST_CODE = 'loan_sources';		// list code (ca_lists.list_code) of list defining sources for this table
 
 	# ------------------------------------------------------
 	# Self-relations

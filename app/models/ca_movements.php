@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -215,6 +215,12 @@ class ca_movements extends RepresentableBaseModel implements IBundleProvider {
 	# ------------------------------------------------------
 	protected $ATTRIBUTE_TYPE_ID_FLD = 'type_id';			// name of type field for this table - attributes system uses this to determine via ca_metadata_type_restrictions which attributes are applicable to rows of the given type
 	protected $ATTRIBUTE_TYPE_LIST_CODE = 'movement_types';	// list code (ca_lists.list_code) of list defining types for this table
+
+	# ------------------------------------------------------
+	# Sources
+	# ------------------------------------------------------
+	protected $SOURCE_ID_FLD = 'source_id';					// name of source field for this table
+	protected $SOURCE_LIST_CODE = 'movement_sources';		// list code (ca_lists.list_code) of list defining sources for this table
 
 	# ------------------------------------------------------
 	# Self-relations

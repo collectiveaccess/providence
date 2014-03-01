@@ -251,6 +251,12 @@ class ca_object_lots extends RepresentableBaseModel {
 	protected $ATTRIBUTE_TYPE_LIST_CODE = 'object_lot_types';	// list code (ca_lists.list_code) of list defining types for this table
 
 	# ------------------------------------------------------
+	# Sources
+	# ------------------------------------------------------
+	protected $SOURCE_ID_FLD = 'source_id';					// name of source field for this table
+	protected $SOURCE_LIST_CODE = 'object_lot_sources';		// list code (ca_lists.list_code) of list defining sources for this table
+
+	# ------------------------------------------------------
 	# ID numbering
 	# ------------------------------------------------------
 	protected $ID_NUMBERING_ID_FIELD = 'idno_stub';				// name of field containing user-defined identifier

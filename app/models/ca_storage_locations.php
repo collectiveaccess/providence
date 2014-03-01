@@ -259,6 +259,12 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 	protected $ATTRIBUTE_TYPE_LIST_CODE = 'storage_location_types';	// list code (ca_lists.list_code) of list defining types for this table
 
 	# ------------------------------------------------------
+	# Sources
+	# ------------------------------------------------------
+	protected $SOURCE_ID_FLD = 'source_id';							// name of source field for this table
+	protected $SOURCE_LIST_CODE = 'storage_location_sources';		// list code (ca_lists.list_code) of list defining sources for this table
+
+	# ------------------------------------------------------
 	# ID numbering
 	# ------------------------------------------------------
 	protected $ID_NUMBERING_ID_FIELD = 'idno';				// name of field containing user-defined identifier
