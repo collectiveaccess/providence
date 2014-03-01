@@ -3145,7 +3145,7 @@ class ca_users extends BaseModel {
 		$vn_access = -1;
 		foreach($va_roles as $vn_role_id => $va_role_info) {
 			$va_vars = $va_role_info['vars'];
-			print_R($va_role_info);
+			
 			if (is_array($va_vars['source_access_settings'])) {
 				if (isset($va_vars['source_access_settings'][$ps_table_name.'.'.$vn_source_id]) && ((int)$va_vars['source_access_settings'][$ps_table_name.'.'.$vn_source_id] > $vn_access)) {
 					$vn_access = (int)$va_vars['source_access_settings'][$ps_table_name.'.'.$vn_source_id];
@@ -3180,7 +3180,7 @@ class ca_users extends BaseModel {
 		$va_source_ids = null;
 		foreach($va_roles as $vn_role_id => $va_role_info) {
 			$va_vars = $va_role_info['vars'];
-			print_R($va_vars['source_access_settings']);
+			
 			if (is_array($va_vars['source_access_settings'])) {
 				foreach($va_vars['source_access_settings'] as $vs_key => $vn_access) {
 					list($vs_table, $vn_source_id) = explode(".", $vs_key);

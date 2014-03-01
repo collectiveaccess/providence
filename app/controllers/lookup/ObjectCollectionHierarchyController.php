@@ -372,7 +372,7 @@
 						if(sizeof($va_ids)) {
 							$va_child_counts = $t_object->getHierarchyChildCountsForIDs($va_ids);
 							$va_templates = caProcessTemplateForIDs($vs_item_template, 'ca_objects', $va_ids, array('returnAsArray' => true));
-						//print_R($va_templates);
+
 							foreach($va_child_counts as $vn_id => $vn_c) {
 								$va_items[$vn_id][$va_x_item['locale_id']]['children'] = $vn_c;
 							}
