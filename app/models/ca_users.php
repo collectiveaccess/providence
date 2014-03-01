@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -289,9 +289,11 @@ class ca_users extends BaseModel {
 	static $s_user_role_cache = array();
 	static $s_group_role_cache = array();
 	static $s_user_type_access_cache = array();
+	static $s_user_source_access_cache = array();
 	static $s_user_bundle_access_cache = array();
 	static $s_user_action_access_cache = array();
 	static $s_user_type_with_access_cache = array();
+	static $s_user_source_with_access_cache = array();
 	
 	# ------------------------------------------------------
 	# --- Constructor
@@ -3119,6 +3121,79 @@ class ca_users extends BaseModel {
 			}
 		}
 		return ca_users::$s_user_type_with_access_cache[$vs_cache_key] = $va_type_ids;
+	}
+	# ----------------------------------------
+	/**
+	 * Returns the type of access the user has to the specified source.
+	 * Types of access are:
+	 *		__CA_BUNDLE_ACCESS_EDIT__ (implies ability to view and change bundle content)
+	 *		__CA_BUNDLE_ACCESS_READONLY__ (implies ability to view bundle content only)
+	 *		__CA_BUNDLE_ACCESS_NONE__ (indicates that the user has no access to bundle)
+	 */
+	public function getSourceAccessLevel($ps_table_name, $pm_source_code_or_id) {
+		$vs_cache_key = $ps_table_name.'/'.$pm_source_code_or_id."/".$this->getPrimaryKey();
+		if (isset(ca_users::$s_user_source_access_cache[$vs_cache_key])) { return ca_users::$s_user_source_access_cache[$vs_cache_key]; }
+		$va_roles = array_merge($this->getUserRoles(), $this->getGroupRoles());
+		
+		if (is_numeric($pm_source_code_or_id)) { 
+			$vn_source_id = (int)$pm_source_code_or_id; 
+		} else {
+			$t_list = new ca_lists();
+			$t_instance = $this->getAppDatamodel()->getInstanceByTableName($ps_table_name, true);
+			$vn_source_id = (int)$t_list->getItemIDFromList($t_instance->getSourceListCode(), $pm_source_code_or_id);
+		}
+		$vn_access = -1;
+		foreach($va_roles as $vn_role_id => $va_role_info) {
+			$va_vars = $va_role_info['vars'];
+			print_R($va_role_info);
+			if (is_array($va_vars['source_access_settings'])) {
+				if (isset($va_vars['source_access_settings'][$ps_table_name.'.'.$vn_source_id]) && ((int)$va_vars['source_access_settings'][$ps_table_name.'.'.$vn_source_id] > $vn_access)) {
+					$vn_access = (int)$va_vars['source_access_settings'][$ps_table_name.'.'.$vn_source_id];
+					
+					if ($vn_access == __CA_BUNDLE_ACCESS_EDIT__) { break; }	// already at max
+				}
+			}
+		}
+		
+		if ($vn_access < 0) {
+			$vn_access = (int)$this->getAppConfig()->get('default_source_access_level');
+		}
+		
+		ca_users::$s_user_source_access_cache[$ps_table_name.'/'.$vn_source_id."/".$this->getPrimaryKey()] = ca_users::$s_user_source_access_cache[$vs_cache_key] = $vn_access;
+		return $vn_access;
+	}
+	# ----------------------------------------
+	/**
+	 * Returns list of source_ids for specified table for which user has at least the specified access
+	 * Types of access are:
+	 *		__CA_BUNDLE_ACCESS_EDIT__ (implies ability to view and change bundle content)
+	 *		__CA_BUNDLE_ACCESS_READONLY__ (implies ability to view bundle content only)
+	 *		__CA_BUNDLE_ACCESS_NONE__ (indicates that the user has no access to bundle)
+	 */
+	public function getSourcesWithAccess($ps_table_name, $pn_access) {
+		$vs_cache_key = $ps_table_name."/".(int)$pn_access."/".$this->getPrimaryKey();
+		if (isset(ca_users::$s_user_source_with_access_cache[$vs_cache_key])) { return ca_users::$s_user_source_with_access_cache[$vs_cache_key]; }
+		$va_roles = array_merge($this->getUserRoles(), $this->getGroupRoles());
+		
+		$vn_default_access = (int)$this->getAppConfig()->get('default_source_access_level');
+		
+		$va_source_ids = null;
+		foreach($va_roles as $vn_role_id => $va_role_info) {
+			$va_vars = $va_role_info['vars'];
+			print_R($va_vars['source_access_settings']);
+			if (is_array($va_vars['source_access_settings'])) {
+				foreach($va_vars['source_access_settings'] as $vs_key => $vn_access) {
+					list($vs_table, $vn_source_id) = explode(".", $vs_key);
+					
+					if ($vs_table != $ps_table_name) { continue; }
+					if (!is_array($va_source_ids)) { $va_source_ids = array(); }
+					if($vn_access >= $pn_access) {
+						$va_source_ids[] = $vn_source_id;
+					}
+				}
+			}
+		}
+		return ca_users::$s_user_source_with_access_cache[$vs_cache_key] = $va_source_ids;
 	}
 	# ----------------------------------------
 	/**

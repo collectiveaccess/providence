@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2013 Whirl-i-Gig
+ * Copyright 2007-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -58,9 +58,14 @@ class SearchEngine extends SearchBase {
 	private $opa_result_filters;
 	
 	/**
-	 * @var subject type_id to limit browsing to (eg. only search ca_objects with type_id = 10)
+	 * @var subject type_id to limit searach to (eg. only search ca_objects with type_id = 10)
 	 */
-	private $opa_search_type_ids = null;	
+	private $opa_search_type_ids = null;
+	
+	/**
+	 * @var subject source_id to limit search to (eg. only search ca_objects with source_id = 10)
+	 */
+	private $opa_search_source_ids = null;	
 	
 	# ------------------------------------------------------------------
 	public function __construct($opo_db=null, $ps_tablename=null) {
@@ -217,10 +222,17 @@ class SearchEngine extends SearchBase {
 				$va_access_values = $pa_options['checkAccess'];
 				$this->addResultFilter($this->ops_tablename.'.access', 'IN', join(",",$va_access_values));
 			} 
-					
+				
+			// Filter on type	
 			if (is_array($va_type_ids = $this->getTypeRestrictionList()) && sizeof($va_type_ids)) {
 				$this->addResultFilter($this->ops_tablename.'.type_id', 'IN', join(",",$va_type_ids));
 			}
+			
+			// Filter on source
+			if (is_array($va_source_ids = $this->getSourceRestrictionList()) && sizeof($va_source_ids)) {
+				$this->addResultFilter($this->ops_tablename.'.source_id', 'IN', join(",",$va_source_ids));
+			}
+			
 			$o_res =  $this->opo_engine->search($this->opn_tablenum, $vs_search, $this->opa_result_filters, $o_rewritten_query);
 
 			// cache the results
@@ -1094,6 +1106,90 @@ class SearchEngine extends SearchBase {
 	 */
 	public function clearTypeRestrictionList() {
 		$this->opa_search_type_ids = null;
+		return true;
+	}
+	# ------------------------------------------------------
+	# Source filtering
+	# ------------------------------------------------------
+	/**
+	 * When source restrictions are specified, the search will only consider items of the given sources. 
+	 * If you specify a source that has hierarchical children then the children will automatically be included
+	 * in the restriction. You may pass numeric source_id and alphanumeric source codes interchangeably.
+	 *
+	 * @param array $pa_source_codes_or_ids List of source_id or code values to filter search by. When set, the search will only consider items of the specified sources. Using a hierarchical parent source will automatically include its children in the restriction. 
+	 * @param array $pa_options Options include
+	 *		includeSubsources = include any child sources in the restriction. Default is true.
+	 * @return boolean True on success, false on failure
+	 */
+	public function setSourceRestrictions($pa_source_codes_or_ids, $pa_options=null) {
+		$t_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+		
+		if (!$pa_source_codes_or_ids) { return false; }
+		if (is_array($pa_source_codes_or_ids) && !sizeof($pa_source_codes_or_ids)) { return false; }
+		if (!is_array($pa_source_codes_or_ids)) { $pa_source_codes_or_ids = array($pa_source_codes_or_ids); }
+		
+		$t_list = new ca_lists();
+		if (!method_exists($t_instance, 'getSourceListCode')) { return false; }
+		if (!($vs_list_name = $t_instance->getSourceListCode())) { return false; }
+		$va_source_list = $t_instance->getSourceList();
+		
+		$this->opa_search_source_ids = array();
+		foreach($pa_source_codes_or_ids as $vs_code_or_id) {
+			if (!strlen($vs_code_or_id)) { continue; }
+			if (!is_numeric($vs_code_or_id)) {
+				$vn_source_id = $t_list->getItemIDFromList($vs_list_name, $vs_code_or_id);
+			} else {
+				$vn_source_id = (int)$vs_code_or_id;
+			}
+			
+			if (!$vn_source_id) { return false; }
+			
+			if (isset($va_source_list[$vn_source_id]) && $va_source_list[$vn_source_id]) {	// is valid source for this subject
+				if (caGetOption('includeSubsources', $pa_options, true)) {
+					// See if there are any child sources
+					$t_item = new ca_list_items($vn_source_id);
+					$va_ids = $t_item->getHierarchyChildren(null, array('idsOnly' => true));
+					$va_ids[] = $vn_source_id;
+					$this->opa_search_source_ids = array_merge($this->opa_search_source_ids, $va_ids);
+				}
+			}
+		}
+		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns list of source_id values to restrict search to. Return values are always numeric sources, 
+	 * never codes, and will include all source_ids to filter on, including children of hierarchical sources.
+	 *
+	 * @return array List of source_id values to restrict search to.
+	 */
+	public function getSourceRestrictionList() {
+		if (function_exists("caGetSourceRestrictionsForUser")) {
+			$va_pervasive_sources = caGetSourceRestrictionsForUser($this->ops_tablename);	// restrictions set in app.conf or by associated user role
+			if (!is_array($va_pervasive_sources) || !sizeof($va_pervasive_sources)) { return $this->opa_search_source_ids; }
+				
+			if (is_array($this->opa_search_source_ids) && sizeof($this->opa_search_source_ids)) {
+				$va_filtered_sources = array();
+				foreach($this->opa_search_source_ids as $vn_id) {
+					if (in_array($vn_id, $va_pervasive_sources)) {
+						$va_filtered_sources[] = $vn_id;
+					}
+				}
+				return $va_filtered_sources;
+			} else {
+				return $va_pervasive_sources;
+			}
+		}
+		return $this->opa_search_source_ids;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Removes any specified source restrictions on the search
+	 *
+	 * @return boolean Always returns true
+	 */
+	public function clearSourceRestrictionList() {
+		$this->opa_search_source_ids = null;
 		return true;
 	}
 	# ------------------------------------------------------------------
