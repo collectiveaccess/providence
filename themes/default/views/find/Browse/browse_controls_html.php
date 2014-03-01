@@ -129,7 +129,7 @@
 ?>
 
 	
-	<div id="splashBrowsePanel" class="XXX" style="z-index:1000;">
+	<div id="splashBrowsePanel" style="z-index:1000;">
 		<div id="splashBrowsePanelContent">
 		
 		</div>
@@ -140,6 +140,8 @@
 	if (sizeof($va_criteria) > 0) {
 		# --- show results
 		print $this->render('Results/search_options_html.php');
+		
+		print $this->render('Results/paging_controls_html.php');
 		print $this->render('Results/'.$this->getVar('target').'_results_'.$vs_view.'_html.php');
 	}
 	if (!$this->request->isAjax()) {
