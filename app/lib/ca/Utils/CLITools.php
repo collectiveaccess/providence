@@ -93,14 +93,22 @@
 				}
 			}
 			
+			$vs_locale = 'en_US';
+			
 			print "<list code=\"LIST_CODE_HERE\" hierarchical=\"0\" system=\"0\" vocabulary=\"0\">\n";
-			print CLITools::_makeList($va_list, 1);
+			print "\t<labels>
+\t\t<label locale=\"{$vs_locale}\">
+\t\t\t<name>LIST NAME HERE</name>
+\t\t</label>
+\t</labels>
+\t<items>\n";
+			print CLITools::_makeList($va_list, 1, $vs_locale);
+			print "\t</items>\n";
 			print "</list>\n";
 			return true;
 		}
 		# -------------------------------------------------------
-		private static function _makeList($pa_list, $pn_indent=0) {
-			$vs_locale = 'en_US';
+		private static function _makeList($pa_list, $pn_indent=0, $ps_locale="en_US") {
 			$vn_ident = $pn_indent ? str_repeat("\t", $pn_indent) : '';
 			$vs_buf = '';
 			foreach($pa_list as $vn_i => $va_item) {
@@ -108,12 +116,12 @@
 				$vs_label_proc = preg_replace("![^A-Za-z0-9]+!", "_", $vs_label);
 				$vs_buf .= "{$vn_ident}<item idno=\"{$vs_label_proc}\" enabled=\"1\" default=\"0\">
 {$vn_ident}\t<labels>
-{$vn_ident}\t\t<label locale=\"{$vs_locale}\" preferred=\"1\">
+{$vn_ident}\t\t<label locale=\"{$ps_locale}\" preferred=\"1\">
 {$vn_ident}\t\t\t<name_singular>{$vs_label}</name_singular>
 {$vn_ident}\t\t\t<name_plural>{$vs_label}</name_plural>
 {$vn_ident}\t\t</label>
 {$vn_ident}\t</labels>".
-	((is_array($va_item['subitems']) && sizeof($va_item['subitems'])) ? "{$vn_ident}\t<items>\n{$vn_indent}".CLITools::_makeList($va_item['subitems'], $pn_indent + 2)."{$vn_ident}\t</items>" : '')."
+	((is_array($va_item['subitems']) && sizeof($va_item['subitems'])) ? "{$vn_ident}\t<items>\n{$vn_indent}".CLITools::_makeList($va_item['subitems'], $pn_indent + 2, $ps_locale)."{$vn_ident}\t</items>" : '')."
 {$vn_ident}</item>\n";
 				
 			}
