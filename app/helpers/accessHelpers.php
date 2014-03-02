@@ -121,7 +121,7 @@
 		global $g_request, $g_access_helpers_type_restriction_cache;
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
-		if ($g_request->isLoggedIn() && ($g_request->user->canDoAction('is_administrator'))) { return null; }
+		if ($g_request && $g_request->isLoggedIn() && ($g_request->user->canDoAction('is_administrator'))) { return null; }
 		
 		$vs_cache_key = md5($pm_table_name_or_num."/".print_r($pa_options, true));
 		if (isset($g_access_helpers_type_restriction_cache[$vs_cache_key])) { return $g_access_helpers_type_restriction_cache[$vs_cache_key]; }
@@ -186,7 +186,7 @@
 		global $g_request, $g_access_helpers_source_restriction_cache;
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
-		if ($g_request->isLoggedIn() && ($g_request->user->canDoAction('is_administrator'))) { return null; }
+		if ($g_request && $g_request->isLoggedIn() && ($g_request->user->canDoAction('is_administrator'))) { return null; }
 		
 		$vs_cache_key = md5($pm_table_name_or_num."/".print_r($pa_options, true));
 		if (isset($g_access_helpers_source_restriction_cache[$vs_cache_key])) { return $g_access_helpers_source_restriction_cache[$vs_cache_key]; }
