@@ -118,8 +118,10 @@
 	 * @return array List of numeric type_ids for which the user has access, or null if there are no restrictions at all
 	 */
 	function caGetTypeRestrictionsForUser($pm_table_name_or_num, $pa_options=null) {
-		global $g_access_helpers_type_restriction_cache;
+		global $g_request, $g_access_helpers_type_restriction_cache;
 		if (!is_array($pa_options)) { $pa_options = array(); }
+		
+		if ($g_request->isLoggedIn() && ($g_request->user->canDoAction('is_administrator'))) { return null; }
 		
 		$vs_cache_key = md5($pm_table_name_or_num."/".print_r($pa_options, true));
 		if (isset($g_access_helpers_type_restriction_cache[$vs_cache_key])) { return $g_access_helpers_type_restriction_cache[$vs_cache_key]; }
@@ -137,7 +139,6 @@
 		if (!$t_instance) { return null; }	// bad table
 		
 		// get types user has at least read-only access to
-		global $g_request;
 		$va_type_ids = null;
 		if ((bool)$t_instance->getAppConfig()->get('perform_type_access_checking') && $g_request && $g_request->isLoggedIn()) {
 			if (is_array($va_type_ids = $g_request->user->getTypesWithAccess($t_instance->tableName(), $vn_min_access))) {
@@ -186,7 +187,6 @@
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
 		if ($g_request->isLoggedIn() && ($g_request->user->canDoAction('is_administrator'))) { return null; }
-		
 		
 		$vs_cache_key = md5($pm_table_name_or_num."/".print_r($pa_options, true));
 		if (isset($g_access_helpers_source_restriction_cache[$vs_cache_key])) { return $g_access_helpers_source_restriction_cache[$vs_cache_key]; }
