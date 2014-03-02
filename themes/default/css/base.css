@@ -6600,8 +6600,15 @@ div.caRepresentationMediaReplicationControls {
 	top: 3px;
 }
 
+.caAnnoEditorPlayerAndFormContainer {
+	position: relative;
+}
+
 .caAnnoMediaPlayerContainer {	/*  media player container */
-	float: left;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	
     width: 500px;
     height: 375px;
     
@@ -6630,7 +6637,10 @@ div.caRepresentationMediaReplicationControls {
 }
 
 .caAnnoEditorEditorScreen {
-	float: right;
+	position: absolute;
+	top: 0px;
+	left: 515px;
+	
 	width: 720px;
 	height: 500px;
 	overflow: auto;
