@@ -223,7 +223,7 @@ class SearchResult extends BaseObject {
 			$va_fields[] = $this->ops_table_name.'.'.$this->ops_table_pk;
 			
 			// Include type_id field for item table (eg. ca_entities.type_id)
-			if (method_exists($t_rel_instance, "getTypeFieldName") && ($t_rel_instance->getTypeFieldName()) && ($vs_type_fld_name = $t_rel_instance->getTypeFieldName())) {
+			if (method_exists($t_rel_instance, "getTypeFieldName") && ($vs_type_fld_name = $t_rel_instance->getTypeFieldName())) {
 				$va_fields[] = $t_rel_instance->tableName().'.'.$vs_type_fld_name.' item_type_id';
 			} else {
 				// Include type_id field for item table (eg. ca_entities.type_id) when fetching labels
@@ -231,6 +231,19 @@ class SearchResult extends BaseObject {
 					$t_label_subj_instance = $t_rel_instance->getSubjectTableInstance();
 					if (method_exists($t_label_subj_instance, "getTypeFieldName") && ($vs_type_fld_name = $t_label_subj_instance->getTypeFieldName())) {
 						$va_fields[] = $t_label_subj_instance->tableName().'.'.$vs_type_fld_name.' item_type_id';
+					}
+				}
+			}
+			
+			// Include source_id field for item table (eg. ca_entities.source_id)
+			if (method_exists($t_rel_instance, "getSourceFieldName") && ($vs_source_id_fld_name = $t_rel_instance->getSourceFieldName())) {
+				$va_fields[] = $t_rel_instance->tableName().'.'.$vs_source_id_fld_name.' item_source_id';
+			} else {
+				// Include source_id field for item table (eg. ca_entities.source_id) when fetching labels
+				if (method_exists($t_rel_instance, "getSubjectTableInstance")) {
+					$t_label_subj_instance = $t_rel_instance->getSubjectTableInstance();
+					if (method_exists($t_label_subj_instance, "getSourceFieldName") && ($vs_source_id_fld_name = $t_label_subj_instance->getSourceFieldName())) {
+						$va_fields[] = $t_label_subj_instance->tableName().'.'.$vs_source_id_fld_name.' item_source_id';
 					}
 				}
 			}
@@ -1101,6 +1114,36 @@ class SearchResult extends BaseObject {
 					foreach($va_by_locale as $vn_locale_id => $va_values) {
 						foreach($va_values as $vn_i => $va_value) {
 							if (!$va_value[$vs_type_fld ? $vs_type_fld : 'item_type_id'] || in_array($va_value[$vs_type_fld ? $vs_type_fld : 'item_type_id'], $va_type_ids)) {
+								$va_tmp[$vn_id][$vn_locale_id][$vn_i] = $va_value;
+							}
+						}
+					}
+				}
+				$va_value_list = $va_tmp;
+			}
+			
+			
+			// Restrict to sources (related)
+			$va_source_ids = $vs_source_id_fld = null;
+			if (method_exists($t_instance, "getSourceFieldName")) {
+				$va_source_ids = caMergeSourceRestrictionLists($t_instance, $pa_options);
+				$vs_source_id_fld = $t_instance->getSourceFieldName();
+			} else {
+				if (method_exists($t_instance, "getSubjectTableInstance")) {
+					$t_label_subj_instance = $t_instance->getSubjectTableInstance();
+					if (method_exists($t_label_subj_instance, "getSourceFieldName")) {
+						$va_source_ids = caMergeSourceRestrictionLists($t_label_subj_instance, $pa_options);
+						$vs_source_id_fld = 'item_source_id';
+					}
+				}
+			}
+			
+			if (is_array($va_source_ids) && sizeof($va_source_ids)) {
+				$va_tmp = array(); 
+				foreach($va_value_list as $vn_id => $va_by_locale) {
+					foreach($va_by_locale as $vn_locale_id => $va_values) {
+						foreach($va_values as $vn_i => $va_value) {
+							if (!$va_value[$vs_source_id_fld ? $vs_source_id_fld : 'item_source_id'] || in_array($va_value[$vs_source_id_fld ? $vs_source_id_fld : 'item_source_id'], $va_source_ids)) {
 								$va_tmp[$vn_id][$vn_locale_id][$vn_i] = $va_value;
 							}
 						}

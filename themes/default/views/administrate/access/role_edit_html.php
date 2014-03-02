@@ -181,9 +181,7 @@
 		</div>
 <?php
 	}
-?>
-	</div>
-<?php
+	
 	if ($t_role->getAppConfig()->get('perform_source_access_checking')) { 
 ?>
 		<div id="source_list">
@@ -192,15 +190,20 @@
 		foreach($va_source_list as $vs_table => $va_sources_by_table) {
 			print "<table width='100%'>\n";
 			print "<tr><td colspan='4'><h1>".$va_table_names[$vs_table]."</h1></td></tr>\n";	
-			print "<tr align='center' valign='middle'><th width='180' align='left'>"._t('Source')."</th><th width='180'>"._t('No access')."</th><th width='180'>"._t('Read-only access')."</th><th>"._t('Read/edit access')."</th></tr>\n";
+			print "<tr align='center' valign='middle'><th>"._t('Default')."</th><th width='180' align='left'>"._t('Source')."</th><th width='180'>"._t('No access')."</th><th width='180'>"._t('Read-only access')."</th><th>"._t('Read/edit access')."</th></tr>\n";
 			
 			$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
 			$vs_pk = $t_instance->primaryKey();
 			
 			foreach($va_sources_by_table as $vn_id => $va_source) {
 				if (!$va_source['source_info']['parent_id']) { continue; } 
+				$vb_is_default = (isset($va_source['default']) && $va_source['default']) ? true : false;
+				
 				print "<tr align='center' valign='middle'>";
-				if (($vn_indent = 5*((int)$va_source['source_info']['level'])) < 0) { $vn_indent = 0; }
+				$va_opts = array('value' => $va_source['source_info']['item_id']);
+				if ($vb_is_default) { $va_opts['checked'] = 1; }
+				print "<td>".caHTMLRadioButtonInput($vs_table.'_default_source', $va_opts)."</td>";
+				if (($vn_indent = 5 * ((int)$va_source['source_info']['level'])) < 0) { $vn_indent = 0; }
 				print "<td align='left'>".str_repeat("&nbsp;", $vn_indent).$va_source['source_info']['name_plural']."</td>";
 				
 				$vs_access = $va_source['access'];

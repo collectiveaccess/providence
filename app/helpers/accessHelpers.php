@@ -182,8 +182,11 @@
 	 * @return array List of numeric source_ids for which the user has access, or null if there are no restrictions at all
 	 */
 	function caGetSourceRestrictionsForUser($pm_table_name_or_num, $pa_options=null) {
-		global $g_access_helpers_source_restriction_cache;
+		global $g_request, $g_access_helpers_source_restriction_cache;
 		if (!is_array($pa_options)) { $pa_options = array(); }
+		
+		if ($g_request->isLoggedIn() && ($g_request->user->canDoAction('is_administrator'))) { return null; }
+		
 		
 		$vs_cache_key = md5($pm_table_name_or_num."/".print_r($pa_options, true));
 		if (isset($g_access_helpers_source_restriction_cache[$vs_cache_key])) { return $g_access_helpers_source_restriction_cache[$vs_cache_key]; }
@@ -201,7 +204,6 @@
 		if (!$t_instance) { return null; }	// bad table
 		
 		// get sources user has at least read-only access to
-		global $g_request;
 		$va_source_ids = null;
 		if ((bool)$t_instance->getAppConfig()->get('perform_source_access_checking') && $g_request && $g_request->isLoggedIn()) {
 			if (is_array($va_source_ids = $g_request->user->getSourcesWithAccess($t_instance->tableName(), $vn_min_access))) {

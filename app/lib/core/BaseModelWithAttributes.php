@@ -900,7 +900,22 @@
 		 *
 		 * @return int - item_id (aka "source_id") for default type
 		 */
-		public function getDefaultSourceID() {
+		public function getDefaultSourceID($pa_options=null) {
+			global $g_request;
+			if (!($po_request = caGetOption('request', $pa_options, null))) { $po_request = $g_request; }
+			
+			// Try to load default for user
+			if ($po_request && ($po_request->isLoggedIn())) {
+				$va_roles = $po_request->user->getUserRoles(); 
+				foreach($va_roles as $vn_i => $va_role) {
+					$va_vars = $va_role['vars'];
+					if ($vn_id = $va_vars['source_access_settings'][$this->tableName().'_default_id']) {
+						return $vn_id;
+					}
+				}	
+			}
+			
+			// Bail and return list default
 			$t_list = new ca_lists();
 			return $t_list->getDefaultItemID($this->getSourceListCode());
 		}
@@ -934,6 +949,36 @@
 			
 			$t_list_item = new ca_list_items($vn_source_id);
 			return ($t_list_item->getPrimaryKey()) ? $t_list_item : null;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns HTML <select> form element with source list
+		 *
+		 * @param string $ps_name The name of the returned form element
+		 * @param array $pa_attributes An optional array of HTML attributes to place into the returned <select> tag
+		 * @param array $pa_options An array of options. Supported options are anything supported by ca_lists::getListAsHTMLFormElement as well as:
+		 *		childrenOfCurrentSourceOnly = Returns only sourcs below the current source
+		 *		restrictToSources = Array of source_ids to restrict source list to
+		 * @return string HTML for list element
+		 */ 
+		public function getSourceListAsHTMLFormElement($ps_name, $pa_attributes=null, $pa_options=null) {
+			if(!($vs_source_id_fld_name = $this->getSourceFieldName())) { return null; }
+			$t_list = new ca_lists();
+			if (isset($pa_options['childrenOfCurrentSourceOnly']) && $pa_options['childrenOfCurrentSourceOnly']) {
+				$pa_options['childrenOnlyForItemID'] = $this->get($vs_source_id_fld_name);
+			}
+			
+			$pa_options['limitToItemsWithID'] = caGetSourceRestrictionsForUser($this->tableName(), $pa_options);
+			
+			if (isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes'])) {
+				if (!$pa_options['limitToItemsWithID'] || !is_array($pa_options['limitToItemsWithID'])) {
+					$pa_options['limitToItemsWithID'] = $pa_options['restrictToSources'];
+				} else {
+					$pa_options['limitToItemsWithID'] = array_intersect($pa_options['limitToItemsWithID'], $pa_options['restrictToSources']);
+				}
+			}
+			
+			return $t_list->getListAsHTMLFormElement($this->getSourceListCode(), $ps_name, $pa_attributes, $pa_options);
 		}
 		# ------------------------------------------------------------------
 		/**
@@ -1444,6 +1489,22 @@
 		public function getReferencedAttributeValues($pm_element_code_or_id, $pa_reference_limit_ids) {
 			if (!($vn_element_id = $this->_getElementID($pm_element_code_or_id))) { return null; }
 			return ca_attributes::getReferencedAttributes($this->getDb(), $this->tableNum(), $pa_reference_limit_ids, array('element_id' => $vn_element_id));s;
+		}
+		# ------------------------------------------------------------------
+		/** 
+		 *
+		 */
+		public function htmlFormElement($ps_field, $ps_format=null, $pa_options=null) {
+			switch($ps_field) {
+				case $this->getSourceFieldName():
+					if ((bool)$this->getAppConfig()->get('perform_source_access_checking')) {
+						$pa_options['value'] = $this->get($ps_field);
+						return $this->getSourceListAsHTMLFormElement($ps_field, array(), $pa_options);
+					}
+					break;
+			}
+			
+			return parent::htmlFormElement($ps_field, $ps_format, $pa_options);
 		}
 		# ------------------------------------------------------------------
 		// --- Retrieval

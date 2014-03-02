@@ -115,7 +115,8 @@
 						
 						$va_source_list[$vs_table][$vn_item_id] = array(
 							'source_info' => $va_source_info['NODE'],
-							'access' => $vn_access
+							'access' => $vn_access,
+							'default' => ($vn_item_id == $va_source_access_settings[$vs_table.'_default_id'])
 						);
 					}
 				}
@@ -204,6 +205,8 @@
 							$va_source_access_settings[$vs_table.'.'.$vn_item_id] = $vn_access;
 						}
 					}
+					$va_source_access_settings[$vs_table.'_default_id'] = $this->request->getParameter($vs_table.'_default_source', pInteger);
+					
 				}
 				
 				$va_vars['source_access_settings'] = $va_source_access_settings;
