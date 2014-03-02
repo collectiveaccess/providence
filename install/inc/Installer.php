@@ -186,7 +186,7 @@ class Installer {
 		if(isset($po_simplexml[$ps_attr])){
 			return (string) $po_simplexml[$ps_attr];
 		} else {
-			return false;
+			return null;
 		}
 	}
 	# --------------------------------------------------
@@ -206,7 +206,7 @@ class Installer {
 		}
 	}
 	# --------------------------------------------------
-	private static function addLabelsFromXMLElement($t_instance,$po_labels,$pa_locales){
+	private static function addLabelsFromXMLElement($t_instance,$po_labels,$pa_locales, $pb_force_preferred=false){
 		require_once(__CA_LIB_DIR__."/ca/LabelableBaseModelWithAttributes.php");
 
 		if(!($t_instance instanceof LabelableBaseModelWithAttributes)){
@@ -219,7 +219,7 @@ class Installer {
 			$vn_locale_id = $pa_locales[$vs_locale];
 
 			$vb_preferred = self::getAttribute($vo_label, "preferred");
-			if((bool)$vb_preferred || is_null($vb_preferred)){
+			if($pb_force_preferred || (bool)$vb_preferred || is_null($vb_preferred)){
 				$vb_preferred = true;
 			} else {
 				$vb_preferred = false;
@@ -1001,7 +1001,7 @@ class Installer {
 			$t_display->setMode(ACCESS_WRITE);
 
 			$t_display->set("display_code", $vs_display_code);
-			$t_display->set("is_system",$vb_system);
+			$t_display->set("is_system", $vb_system);
 			$t_display->set("table_num",$vo_dm->getTableNum($vs_table));
 			$t_display->set("user_id", 1);		// let administrative user own these
 			
