@@ -921,7 +921,7 @@ class Installer {
 
 					if(!$t_role->setAccessSettingForBundle($vs_permission_table, $vs_permission_bundle, $vn_permission_access)){
 						$this->addError("Could not add bundle level access control for table '{$vs_permission_table}' and bundle '{$vs_permission_bundle}'. Check the table and bundle names.");
-						return false;
+						//return false;
 					}
 				}
 			}
@@ -935,13 +935,25 @@ class Installer {
 
 					if(!$t_role->setAccessSettingForType($vs_permission_table, $vs_permission_type, $vn_permission_access)){
 						$this->addError("Could not add type level access control for table '{$vs_permission_table}' and type '{$vs_permission_type}'. Check the table name and the type code.");
-						return false;
+						//return false;
 					}
 				}
 			}
 			
-			// @TODO add source level ACL items once that feature is done
-			//
+			// add source level ACL items
+			if($vo_role->sourceLevelAccessControl) {
+				foreach($vo_role->sourceLevelAccessControl->children() as $vo_permission) {
+					$vs_permission_table = self::getAttribute($vo_permission, 'table');
+					$vs_permission_source = self::getAttribute($vo_permission, 'source');
+					$vs_permission_default = self::getAttribute($vo_permission, 'default');
+					$vn_permission_access = $this->_convertACLStringToConstant(self::getAttribute($vo_permission, 'access'));
+
+					if(!$t_role->setAccessSettingForSource($vs_permission_table, $vs_permission_source, $vn_permission_access, (bool)$vs_permission_default)){
+						$this->addError("Could not add source level access control for table '{$vs_permission_table}' and source '{$vs_permission_source}'. Check the table name and the source code.");
+						//return false;
+					}
+				}
+			}
 		}
 		return true;
 	}
