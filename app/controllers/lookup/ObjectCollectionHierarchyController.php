@@ -348,46 +348,48 @@
 							if (!is_null($vn_max_items_per_page) && ($vn_c >= $vn_max_items_per_page)) { break; }
 						}
 						
-						$va_cross_table_items = $t_item->getRelatedItems('ca_objects');
+						if ($t_item->tableName() == 'ca_collections') {
+							$va_cross_table_items = $t_item->getRelatedItems('ca_objects');
 					
-						$va_ids = array();
-						foreach($va_cross_table_items as $vn_x_item_id => $va_x_item) {
-							$va_items[$vn_x_item_id][$va_x_item['locale_id']] = $va_x_item;
-							//$va_x_item_extracted = caExtractValuesByUserLocale(array(0 => $va_x_item['labels']));
-							//$va_items[$va_x_item['object_id']][$va_x_item['locale_id']]['name'] = $va_x_item_extracted[0];
+							$va_ids = array();
+							foreach($va_cross_table_items as $vn_x_item_id => $va_x_item) {
+								$va_items[$vn_x_item_id][$va_x_item['locale_id']] = $va_x_item;
+								//$va_x_item_extracted = caExtractValuesByUserLocale(array(0 => $va_x_item['labels']));
+								//$va_items[$va_x_item['object_id']][$va_x_item['locale_id']]['name'] = $va_x_item_extracted[0];
 							
-							$va_items[$va_x_item['object_id']][$va_x_item['locale_id']]['item_id'] = 'ca_objects-'.$va_x_item['object_id'];
-							$va_items[$va_x_item['object_id']][$va_x_item['locale_id']]['parent_id'] = $vn_id;
+								$va_items[$va_x_item['object_id']][$va_x_item['locale_id']]['item_id'] = 'ca_objects-'.$va_x_item['object_id'];
+								$va_items[$va_x_item['object_id']][$va_x_item['locale_id']]['parent_id'] = $vn_id;
 							
-							unset($va_items[$vn_x_item_id][$va_x_item['locale_id']]['labels']);
+								unset($va_items[$vn_x_item_id][$va_x_item['locale_id']]['labels']);
 							 
-							$va_items[$va_x_item['object_id']][$va_x_item['locale_id']]['children'] = 0;
+								$va_items[$va_x_item['object_id']][$va_x_item['locale_id']]['children'] = 0;
 							
-							$va_ids[] = $va_x_item['object_id'];
-						}
-						
-						if (!($vs_item_template = trim($o_config->get("ca_objects_hierarchy_browser_display_settings")))) {
-							$vs_item_template = "^ca_objects.preferred_labels.name";
-						}
-						if(sizeof($va_ids)) {
-							$va_child_counts = $t_object->getHierarchyChildCountsForIDs($va_ids);
-							$va_templates = caProcessTemplateForIDs($vs_item_template, 'ca_objects', $va_ids, array('returnAsArray' => true));
-
-							foreach($va_child_counts as $vn_id => $vn_c) {
-								$va_items[$vn_id][$va_x_item['locale_id']]['children'] = $vn_c;
+								$va_ids[] = $va_x_item['object_id'];
 							}
-							foreach($va_ids as $vn_i => $vn_id) {
-								$va_items[$vn_id][$va_x_item['locale_id']]['name'] = $va_templates[$vn_i];
+						
+							if (!($vs_item_template = trim($o_config->get("ca_objects_hierarchy_browser_display_settings")))) {
+								$vs_item_template = "^ca_objects.preferred_labels.name";
+							}
+							if(sizeof($va_ids)) {
+								$va_child_counts = $t_object->getHierarchyChildCountsForIDs($va_ids);
+								$va_templates = caProcessTemplateForIDs($vs_item_template, 'ca_objects', $va_ids, array('returnAsArray' => true));
+
+								foreach($va_child_counts as $vn_id => $vn_c) {
+									$va_items[$vn_id][$va_x_item['locale_id']]['children'] = $vn_c;
+								}
+								foreach($va_ids as $vn_i => $vn_id) {
+									$va_items[$vn_id][$va_x_item['locale_id']]['name'] = $va_templates[$vn_i];
+								}
 							}
 						}
 						
 						$va_items_for_locale = caExtractValuesByUserLocale($va_items);
 						$vs_rank_fld = $t_item->getProperty('RANK');
-						
+					
 						$va_sorted_items = array();
 						foreach($va_items_for_locale as $vn_id => $va_node) {
 							$vs_key = preg_replace('![^A-Za-z0-9]!', '_', $va_node['name']);
-						
+					
 							if (isset($va_node['sort']) && $va_node['sort']) {
 								$va_sorted_items[$va_node['sort']][$vs_key] = $va_node;
 							} else {
@@ -401,14 +403,13 @@
 						ksort($va_sorted_items);
 						if ($vs_sort_dir == 'desc') { $va_sorted_items = array_reverse($va_sorted_items); }
 						$va_items_for_locale = array();
-						
+					
 						foreach($va_sorted_items as $vs_k => $va_v) {
 							ksort($va_v);
 							if ($vs_sort_dir == 'desc') { $va_v = array_reverse($va_v); }
 							$va_items_for_locale = array_merge($va_items_for_locale, $va_v);
 						}
 					}
-					
 				}
 				$vn_item_count += sizeof($va_items_for_locale);
 				$va_items_for_locale['_primaryKey'] = $t_item->primaryKey();	// pass the name of the primary key so the hierbrowser knows where to look for item_id's
