@@ -5367,14 +5367,14 @@ $pa_options["display_form_field_tips"] = true;
 	 			$va_params[] = $va_source_ids;
 	 			$va_wheres[] = "(o.{$vs_source_fld} IN (?))";
 	 		}
-			$qr_res = $o_db->query($x="
+			$qr_res = $o_db->query("
 				SELECT o.{$vs_pk}, count(*) c
 				FROM {$vs_table} o
 				INNER JOIN {$vs_table} AS p ON p.{$vs_parent_fld} = o.{$vs_pk}
 				WHERE ".(join(" AND ", $va_wheres))."
 				GROUP BY o.{$vs_pk}
 			", $va_params);
-			print $x;
+			
 	 		$va_hiers = array();
 	 		
 	 		$va_ids = $qr_res->getAllFieldValues($vs_pk);
