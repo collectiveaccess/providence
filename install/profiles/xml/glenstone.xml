@@ -468,7 +468,7 @@
         </item>
       </items>
     </list>
-    <list code="object_statuses" hierarchical="0" system="0" vocabulary="0">
+    <list code="object_lot_statuses" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
           <name>Object statuses</name>
@@ -1421,47 +1421,6 @@
             <label locale="en_US" preferred="1">
               <name_singular>Ephemera</name_singular>
               <name_plural>Ephemera</name_plural>
-            </label>
-          </labels>
-        </item>
-      </items>
-    </list>
-    <list code="wt_image" hierarchical="0" system="0" vocabulary="0">
-      <labels>
-        <label locale="en_US">
-          <name>Format: Image</name>
-        </label>
-      </labels>
-      <items>
-        <item idno="null" enabled="1" default="1">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="Promotional" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Promotional Image</name_singular>
-              <name_plural>Promotional Image</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="Administrative" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Administrative Image</name_singular>
-              <name_plural>Administrative Image</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="Documentation" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Documentation</name_singular>
-              <name_plural>Documentation</name_plural>
             </label>
           </labels>
         </item>
@@ -5090,6 +5049,1897 @@
         </item>
       </items>
     </list>
+    <list code="image_format" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Image Format</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="negatives_photographic_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>negatives (photographic)</name_singular>
+              <name_plural>negatives (photographic)</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="color_separation_negatives" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>color separation negatives</name_singular>
+                  <name_plural>color separation negatives</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="halftone_negatives" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>halftone negatives</name_singular>
+                  <name_plural>halftone negatives</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="internegatives" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>internegatives</name_singular>
+                  <name_plural>internegatives</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="black_and_white_negatives" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>black-and-white negatives</name_singular>
+                  <name_plural>black-and-white negatives</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="color_negatives" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>color negatives</name_singular>
+                  <name_plural>color negatives</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="calotypes_negatives_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>calotypes (negatives)</name_singular>
+                  <name_plural>calotypes (negatives)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="clich_s_verre_negatives_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>clichés-verre (negatives)</name_singular>
+                  <name_plural>clichés-verre (negatives)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="dry_collodion_negatives" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>dry collodion negatives</name_singular>
+                  <name_plural>dry collodion negatives</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="gelatin_silver_negatives" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>gelatin silver negatives</name_singular>
+                  <name_plural>gelatin silver negatives</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="gelatin_dry_plate_negatives" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>gelatin dry plate negatives</name_singular>
+                  <name_plural>gelatin dry plate negatives</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="photogenic_drawings_photographs_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>photogenic drawings (photographs)</name_singular>
+                  <name_plural>photogenic drawings (photographs)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="wet_collodion_negatives" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>wet collodion negatives</name_singular>
+                  <name_plural>wet collodion negatives</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="paper_negatives" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>paper negatives</name_singular>
+                  <name_plural>paper negatives</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="positives_photographs_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>positives (photographs)</name_singular>
+              <name_plural>positives (photographs)</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="direct_positives" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>direct positives</name_singular>
+                  <name_plural>direct positives</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="ambrotypes_photographs_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>ambrotypes (photographs)</name_singular>
+                  <name_plural>ambrotypes (photographs)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="daguerreotypes_photographs_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>daguerreotypes (photographs)</name_singular>
+                  <name_plural>daguerreotypes (photographs)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="diffusion_transfer_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>diffusion transfer prints</name_singular>
+                  <name_plural>diffusion transfer prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="dye_diffusion_transfer_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>dye diffusion transfer prints</name_singular>
+                  <name_plural>dye diffusion transfer prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="emulsion_transfers" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>emulsion transfers</name_singular>
+                  <name_plural>emulsion transfers</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Hillotypes_photographs_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Hillotypes (photographs)</name_singular>
+                  <name_plural>Hillotypes (photographs)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="image_transfers" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>image transfers</name_singular>
+                  <name_plural>image transfers</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="pannotypes" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>pannotypes</name_singular>
+                  <name_plural>pannotypes</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="tintypes_prints_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>tintypes (prints)</name_singular>
+                  <name_plural>tintypes (prints)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="holograms" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>holograms</name_singular>
+                  <name_plural>holograms</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="reflection_holograms" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>reflection holograms</name_singular>
+                  <name_plural>reflection holograms</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="transmission_holograms" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>transmission holograms</name_singular>
+                  <name_plural>transmission holograms</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="photographic_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>photographic prints</name_singular>
+                  <name_plural>photographic prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="copy_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>copy prints</name_singular>
+                  <name_plural>copy prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="later_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>later prints</name_singular>
+                  <name_plural>later prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="negative_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>negative prints</name_singular>
+                  <name_plural>negative prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="albumen_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>albumen prints</name_singular>
+                  <name_plural>albumen prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="crystalotypes" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>crystalotypes</name_singular>
+                  <name_plural>crystalotypes</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="hyalotypes_albumen_prints_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>hyalotypes (albumen prints)</name_singular>
+                  <name_plural>hyalotypes (albumen prints)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="aristotypes_photographs_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>aristotypes (photographs)</name_singular>
+                  <name_plural>aristotypes (photographs)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="chromogenic_color_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>chromogenic color prints</name_singular>
+                  <name_plural>chromogenic color prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="chrysotypes" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>chrysotypes</name_singular>
+                  <name_plural>chrysotypes</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="collodion_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>collodion prints</name_singular>
+                  <name_plural>collodion prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="collodion_transfers" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>collodion transfers</name_singular>
+                  <name_plural>collodion transfers</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="cyanotypes_photographic_prints_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>cyanotypes (photographic prints)</name_singular>
+                  <name_plural>cyanotypes (photographic prints)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="gelatin_silver_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>gelatin silver prints</name_singular>
+                  <name_plural>gelatin silver prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="palladium_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>palladium prints</name_singular>
+                  <name_plural>palladium prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="pigment_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>pigment prints</name_singular>
+                  <name_plural>pigment prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="carbon_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>carbon prints</name_singular>
+                  <name_plural>carbon prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="chromotypes_carbon_prints_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>chromotypes (carbon prints)</name_singular>
+                  <name_plural>chromotypes (carbon prints)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="gum_bichromate_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>gum bichromate prints</name_singular>
+                  <name_plural>gum bichromate prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="oil_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>oil prints</name_singular>
+                  <name_plural>oil prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="bromoil_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>bromoil prints</name_singular>
+                  <name_plural>bromoil prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="platinum_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>platinum prints</name_singular>
+                  <name_plural>platinum prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="salted_paper_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>salted paper prints</name_singular>
+                  <name_plural>salted paper prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="silver_dye_bleach_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>silver-dye bleach prints</name_singular>
+                  <name_plural>silver-dye bleach prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="solarized_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>solarized prints</name_singular>
+                  <name_plural>solarized prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="stabilization_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>stabilization prints</name_singular>
+                  <name_plural>stabilization prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="vintage_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>vintage prints</name_singular>
+                  <name_plural>vintage prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="work_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>work prints</name_singular>
+                  <name_plural>work prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="color_separation_positives" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>color separation positives</name_singular>
+                  <name_plural>color separation positives</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="interpositives" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>interpositives</name_singular>
+                  <name_plural>interpositives</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="masks_transparencies_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>masks (transparencies)</name_singular>
+                  <name_plural>masks (transparencies)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="black_and_white_transparencies" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>black-and-white transparencies</name_singular>
+                  <name_plural>black-and-white transparencies</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="color_transparencies" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>color transparencies</name_singular>
+                  <name_plural>color transparencies</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Autochromes_photographs_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Autochromes (photographs)</name_singular>
+                  <name_plural>Autochromes (photographs)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="gelatin_silver_transparencies" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>gelatin silver transparencies</name_singular>
+                  <name_plural>gelatin silver transparencies</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="orotones" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>orotones</name_singular>
+                  <name_plural>orotones</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="photographs" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>photographs</name_singular>
+              <name_plural>photographs</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="black_and_white_photographs" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>black-and-white photographs</name_singular>
+                  <name_plural>black-and-white photographs</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="color_photographs" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>color photographs</name_singular>
+                  <name_plural>color photographs</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="card_photographs_photographs_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>card photographs (photographs)</name_singular>
+              <name_plural>card photographs (photographs)</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="boudoir_midget_mounts" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>boudoir midget mounts</name_singular>
+                  <name_plural>boudoir midget mounts</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="boudoir_photographs" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>boudoir photographs</name_singular>
+                  <name_plural>boudoir photographs</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="cabinet_photographs" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>cabinet photographs</name_singular>
+                  <name_plural>cabinet photographs</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="cartes_de_visite_card_photographs_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>cartes-de-visite (card photographs)</name_singular>
+                  <name_plural>cartes-de-visite (card photographs)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="cameo_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>cameo prints</name_singular>
+                  <name_plural>cameo prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="imperial_photographs" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>imperial photographs</name_singular>
+                  <name_plural>imperial photographs</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="panel_photographs" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>panel photographs</name_singular>
+                  <name_plural>panel photographs</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="promenade_photographs" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>promenade photographs</name_singular>
+                  <name_plural>promenade photographs</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="victoria_cards_photographs_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>victoria cards (photographs)</name_singular>
+                  <name_plural>victoria cards (photographs)</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="gem_photographs" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>gem photographs</name_singular>
+              <name_plural>gem photographs</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="lantern_slides" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>lantern slides</name_singular>
+              <name_plural>lantern slides</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="slides_photographs_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>slides (photographs)</name_singular>
+              <name_plural>slides (photographs)</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="black_and_white_slides" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>black-and-white slides</name_singular>
+                  <name_plural>black-and-white slides</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="color_slides" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>color slides</name_singular>
+                  <name_plural>color slides</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="digital_prints" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>digital prints</name_singular>
+              <name_plural>digital prints</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="dye_diffusion_thermal_transfer_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>dye diffusion thermal transfer prints</name_singular>
+                  <name_plural>dye diffusion thermal transfer prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="electrophotographic_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>electrophotographic prints</name_singular>
+                  <name_plural>electrophotographic prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="inkjet_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>inkjet prints</name_singular>
+                  <name_plural>inkjet prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="gicl_e_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>giclée prints</name_singular>
+                  <name_plural>giclée prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Piezo_R_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Piezo (R) prints</name_singular>
+                  <name_plural>Piezo (R) prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="laser_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>laser prints</name_singular>
+                  <name_plural>laser prints</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="photothermographic_transfer_prints" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>photothermographic transfer prints</name_singular>
+                  <name_plural>photothermographic transfer prints</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="Digital_Images" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Digital Images</name_singular>
+              <name_plural>Digital Images</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="JPEG" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>JPEG</name_singular>
+                  <name_plural>JPEG</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="PDF" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>PDF</name_singular>
+                  <name_plural>PDF</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="TIFF" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>TIFF</name_singular>
+                  <name_plural>TIFF</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+      </items>
+    </list>
+    <list code="image_presentation" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Image Processing or Presentation Technique</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="cameotypes" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>cameotypes</name_singular>
+              <name_plural>cameotypes</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="cased_photographs" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>cased photographs</name_singular>
+              <name_plural>cased photographs</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="clich_s_verre_photographic_prints_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>clichés-verre (photographic prints)</name_singular>
+              <name_plural>clichés-verre (photographic prints)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="contact_prints" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>contact prints</name_singular>
+              <name_plural>contact prints</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="contact_sheets" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>contact sheets</name_singular>
+              <name_plural>contact sheets</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="crayon_enlargements" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>crayon enlargements</name_singular>
+              <name_plural>crayon enlargements</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="crystoleums_photographs_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>crystoleums (photographs)</name_singular>
+              <name_plural>crystoleums (photographs)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Hallotypes_photographs_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Hallotypes (photographs)</name_singular>
+              <name_plural>Hallotypes (photographs)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="ivorytypes" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>ivorytypes</name_singular>
+              <name_plural>ivorytypes</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="macrophotographs_life_size_photographs_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>macrophotographs (life-size photographs)</name_singular>
+              <name_plural>macrophotographs (life-size photographs)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="manipulated_photographs" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>manipulated photographs</name_singular>
+              <name_plural>manipulated photographs</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="composite_photographs" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>composite photographs</name_singular>
+              <name_plural>composite photographs</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="microphotographs" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>microphotographs</name_singular>
+              <name_plural>microphotographs</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="stanhopes_photographs_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>stanhopes (photographs)</name_singular>
+              <name_plural>stanhopes (photographs)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="opalotypes" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>opalotypes</name_singular>
+              <name_plural>opalotypes</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="photograms" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>photograms</name_singular>
+              <name_plural>photograms</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="photomosaics_photographs_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>photomosaics (photographs)</name_singular>
+              <name_plural>photomosaics (photographs)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="photomurals" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>photomurals</name_singular>
+              <name_plural>photomurals</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="physautotypes" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>physautotypes</name_singular>
+              <name_plural>physautotypes</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="wire_photographs" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>wire photographs</name_singular>
+              <name_plural>wire photographs</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="image_technique" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Image Picture-Taking Technique</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="aerial_photographs" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>aerial photographs</name_singular>
+              <name_plural>aerial photographs</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="motion_photographs" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>motion photographs</name_singular>
+              <name_plural>motion photographs</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="instantaneous_photographs" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>instantaneous photographs</name_singular>
+              <name_plural>instantaneous photographs</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="photobooth_pictures" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>photobooth pictures</name_singular>
+              <name_plural>photobooth pictures</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="photomicrographs" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>photomicrographs</name_singular>
+              <name_plural>photomicrographs</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="radiographs" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>radiographs</name_singular>
+              <name_plural>radiographs</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="snapshots" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>snapshots</name_singular>
+              <name_plural>snapshots</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="space_photographs" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>space photographs</name_singular>
+              <name_plural>space photographs</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="staged_photographs" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>staged photographs</name_singular>
+              <name_plural>staged photographs</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="stereographs" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>stereographs</name_singular>
+              <name_plural>stereographs</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="anaglyphs" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>anaglyphs</name_singular>
+              <name_plural>anaglyphs</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="half_stereographs" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>half stereographs</name_singular>
+              <name_plural>half stereographs</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="parallax_stereograms" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>parallax stereograms</name_singular>
+              <name_plural>parallax stereograms</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="tissue_stereographs" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>tissue stereographs</name_singular>
+              <name_plural>tissue stereographs</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="cameotypes" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>cameotypes</name_singular>
+              <name_plural>cameotypes</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="chronophotographs" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>chronophotographs</name_singular>
+              <name_plural>chronophotographs</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="stroboscopic_photography" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>stroboscopic photography</name_singular>
+                  <name_plural>stroboscopic photography</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="time_lapse_photography" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>time-lapse photography</name_singular>
+                  <name_plural>time-lapse photography</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="high_speed_photography_still_photography_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>high-speed photography (still photography)</name_singular>
+              <name_plural>high-speed photography (still photography)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Kirlian_photography" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Kirlian photography</name_singular>
+              <name_plural>Kirlian photography</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="multiple_exposure" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>multiple exposure</name_singular>
+              <name_plural>multiple exposure</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="telephotography" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>telephotography</name_singular>
+              <name_plural>telephotography</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="close_up_photography" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>close-up photography</name_singular>
+              <name_plural>close-up photography</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="indoor_photography" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>indoor photography</name_singular>
+              <name_plural>indoor photography</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="night_photography" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>night photography</name_singular>
+              <name_plural>night photography</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="space_photography" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>space photography</name_singular>
+              <name_plural>space photography</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="available_light_photography" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>available light photography</name_singular>
+              <name_plural>available light photography</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="flash_photography" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>flash photography</name_singular>
+              <name_plural>flash photography</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="fluoroscopy" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>fluoroscopy</name_singular>
+              <name_plural>fluoroscopy</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="infrared_photography" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>infrared photography</name_singular>
+              <name_plural>infrared photography</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="infrared_reflectography" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>infrared reflectography</name_singular>
+              <name_plural>infrared reflectography</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="radiography" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>radiography</name_singular>
+              <name_plural>radiography</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="schlieren_photography" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>schlieren photography</name_singular>
+              <name_plural>schlieren photography</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="ultraviolet_photography" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>ultraviolet photography</name_singular>
+              <name_plural>ultraviolet photography</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="pinhole_photography" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>pinhole photography</name_singular>
+              <name_plural>pinhole photography</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="repeat_photography" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>repeat photography</name_singular>
+              <name_plural>repeat photography</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="stereoscopy" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>stereoscopy</name_singular>
+              <name_plural>stereoscopy</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="panoramic_photography" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>panoramic photography</name_singular>
+              <name_plural>panoramic photography</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="microphotography" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>microphotography</name_singular>
+              <name_plural>microphotography</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="image_process" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Image Process</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="additive_color_processes_photography_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>additive color processes (photography)</name_singular>
+              <name_plural>additive color processes (photography)</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="Autochrome_process" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Autochrome process</name_singular>
+                  <name_plural>Autochrome process</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="screen_processes" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>screen processes</name_singular>
+                  <name_plural>screen processes</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="albumen_process" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>albumen process</name_singular>
+              <name_plural>albumen process</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="aristotype_process_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>aristotype (process)</name_singular>
+              <name_plural>aristotype (process)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="clich_verre_photographic_process_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>cliché-verre (photographic process)</name_singular>
+              <name_plural>cliché-verre (photographic process)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="collodion_processes" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>collodion processes</name_singular>
+              <name_plural>collodion processes</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="dry_collodion_process" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>dry collodion process</name_singular>
+                  <name_plural>dry collodion process</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="wet_collodion_process" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>wet collodion process</name_singular>
+                  <name_plural>wet collodion process</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="diffusion_transfer_process" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>diffusion transfer process</name_singular>
+              <name_plural>diffusion transfer process</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="dye_diffusion_transfer_process" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>dye diffusion transfer process</name_singular>
+                  <name_plural>dye diffusion transfer process</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="direct_positive_processes" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>direct positive processes</name_singular>
+              <name_plural>direct positive processes</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="Bayard_apos_s_process" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Bayard&apos;s process</name_singular>
+                  <name_plural>Bayard&apos;s process</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="daguerreotype_process_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>daguerreotype (process)</name_singular>
+                  <name_plural>daguerreotype (process)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="heliography" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>heliography</name_singular>
+                  <name_plural>heliography</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Hillotype_process_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Hillotype (process)</name_singular>
+                  <name_plural>Hillotype (process)</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="electrophotography" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>electrophotography</name_singular>
+              <name_plural>electrophotography</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="gelatin_silver_process" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>gelatin silver process</name_singular>
+              <name_plural>gelatin silver process</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="gelatin_dry_plate_process" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>gelatin dry plate process</name_singular>
+                  <name_plural>gelatin dry plate process</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="interference_processes" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>interference processes</name_singular>
+              <name_plural>interference processes</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="holography" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>holography</name_singular>
+                  <name_plural>holography</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Lippmann_process" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>Lippmann process</name_singular>
+                  <name_plural>Lippmann process</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="iron_processes" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>iron processes</name_singular>
+              <name_plural>iron processes</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="blueprint_process" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>blueprint process</name_singular>
+                  <name_plural>blueprint process</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="ferrogallic_process" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>ferrogallic process</name_singular>
+                  <name_plural>ferrogallic process</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="kallitype" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>kallitype</name_singular>
+                  <name_plural>kallitype</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="palladium_process" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>palladium process</name_singular>
+                  <name_plural>palladium process</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="platinum_process" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>platinum process</name_singular>
+                  <name_plural>platinum process</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="lenticular_processes" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>lenticular processes</name_singular>
+              <name_plural>lenticular processes</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="pigment_processes" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>pigment processes</name_singular>
+              <name_plural>pigment processes</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="bichromate_processes" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>bichromate processes</name_singular>
+                  <name_plural>bichromate processes</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="carbro_process" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>carbro process</name_singular>
+                  <name_plural>carbro process</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="salted_paper_processes" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>salted paper processes</name_singular>
+              <name_plural>salted paper processes</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="calotype_paper_process_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>calotype (paper process)</name_singular>
+                  <name_plural>calotype (paper process)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="photogenic_drawing_process_" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>photogenic drawing (process)</name_singular>
+                  <name_plural>photogenic drawing (process)</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="waxed_paper_process" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>waxed-paper process</name_singular>
+                  <name_plural>waxed-paper process</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="stabilization_process" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>stabilization process</name_singular>
+              <name_plural>stabilization process</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="subtractive_color_processes_photography_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>subtractive color processes (photography)</name_singular>
+              <name_plural>subtractive color processes (photography)</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="chromogenic_processes" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>chromogenic processes</name_singular>
+                  <name_plural>chromogenic processes</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="silver_dye_bleach_process" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>silver-dye bleach process</name_singular>
+                  <name_plural>silver-dye bleach process</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="three_color_processes_photography_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>three-color processes (photography)</name_singular>
+              <name_plural>three-color processes (photography)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="two_color_processes" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>two-color processes</name_singular>
+              <name_plural>two-color processes</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Wothlytype" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Wothlytype</name_singular>
+              <name_plural>Wothlytype</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="photographic_materials" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Photographic Materials</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="Photographic_film" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Photographic film</name_singular>
+              <name_plural>Photographic film</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="black_and_white_film" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>black-and-white film</name_singular>
+              <name_plural>black-and-white film</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="collodion_pellicle" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>collodion pellicle</name_singular>
+              <name_plural>collodion pellicle</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="color_film_film_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>color film (film)</name_singular>
+              <name_plural>color film (film)</name_plural>
+            </label>
+          </labels>		<items>
+            <item idno="bipack" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>bipack</name_singular>
+                  <name_plural>bipack</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="integral_bipack" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>integral bipack</name_singular>
+                  <name_plural>integral bipack</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="integral_tripack" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>integral tripack</name_singular>
+                  <name_plural>integral tripack</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="tripack" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>tripack</name_singular>
+                  <name_plural>tripack</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="cut_film" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>cut film</name_singular>
+              <name_plural>cut film</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="disk_film" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>disk film</name_singular>
+              <name_plural>disk film</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="infrared_film" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>infrared film</name_singular>
+              <name_plural>infrared film</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="panchromatic_film" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>panchromatic film</name_singular>
+              <name_plural>panchromatic film</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="reversal_film" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>reversal film</name_singular>
+              <name_plural>reversal film</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="roll_film" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>roll film</name_singular>
+              <name_plural>roll film</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="safety_film" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>safety film</name_singular>
+              <name_plural>safety film</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="photographic_plates" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>photographic plates</name_singular>
+              <name_plural>photographic plates</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="photographic_paper" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>photographic paper</name_singular>
+              <name_plural>photographic paper</name_plural>
+            </label>
+          </labels>		<items>
+            <item idno="baryta_paper" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>baryta paper</name_singular>
+                  <name_plural>baryta paper</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="developing_out_paper" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>developing-out paper</name_singular>
+                  <name_plural>developing-out paper</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="gaslight_paper" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>gaslight paper</name_singular>
+                  <name_plural>gaslight paper</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="aristo_paper" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>aristo paper</name_singular>
+                  <name_plural>aristo paper</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="solio_paper" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>solio paper</name_singular>
+                  <name_plural>solio paper</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="resin_coated_paper" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>resin-coated paper</name_singular>
+                  <name_plural>resin-coated paper</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="reversal_paper" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>reversal paper</name_singular>
+                  <name_plural>reversal paper</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="salted_paper" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>salted paper</name_singular>
+                  <name_plural>salted paper</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="single_weight_paper" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>single-weight paper</name_singular>
+                  <name_plural>single-weight paper</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="stripping_film" enabled="1" default="0">
+              <labels>
+                <label locale="en_US" preferred="1">
+                  <name_singular>stripping film</name_singular>
+                  <name_plural>stripping film</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="acetate_film" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>acetate film</name_singular>
+              <name_plural>acetate film</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="cellulose_nitrate_film" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>cellulose nitrate film</name_singular>
+              <name_plural>cellulose nitrate film</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="stencil_film_film_" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>stencil film (film)</name_singular>
+              <name_plural>stencil film (film)</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
     <!-- Artwork Lists -->
     <list code="object_label_types" hierarchical="0" system="0" vocabulary="0">
       <labels>
@@ -7010,11 +8860,19 @@
             </label>
           </labels>
         </item>
+        <item idno="face_up" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Packed Face Up</name_singular>
+              <name_plural>Packed Face Up</name_plural>
+            </label>
+          </labels>
+        </item>
         <item idno="face_down" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Packed Face Up/Down Straps</name_singular>
-              <name_plural>Packed Face Up/Down Straps</name_plural>
+              <name_singular>Packed Face Down Straps</name_singular>
+              <name_plural>Packed Face Down Straps</name_plural>
             </label>
           </labels>
         </item>
@@ -7565,6 +9423,63 @@
             <label locale="en_US" preferred="1">
               <name_singular>Scratches/Damage</name_singular>
               <name_plural>Scratches/Damage</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="dust" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Dust/Grime/Fingerprints/Smudge/Spots</name_singular>
+              <name_plural>Dust/Grime/Fingerprints/Smudge/Spots</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="mount_condition" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Mount Condition</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="null" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular> </name_singular>
+              <name_plural> </name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="warping" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Warping/Bulges/Depressions</name_singular>
+              <name_plural>Warping/Bulges/Depressions</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="tear" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Tears/Punctures</name_singular>
+              <name_plural>>Tears/Punctures</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="splits" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Splits</name_singular>
+              <name_plural>Splits</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="mold" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Infestation/Mold</name_singular>
+              <name_plural>Infestation/Mold</name_plural>
             </label>
           </labels>
         </item>
@@ -9240,7 +11155,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">50</setting>
+        <setting name="fieldWidth">90</setting>
         <setting name="fieldHeight">1</setting>
       </settings>
       <typeRestrictions>
@@ -9912,7 +11827,7 @@
       </labels>
       <settings>
         <setting name="vocabulary">cs:http://id.loc.gov/authorities/names</setting>
-        <setting name="fieldWidth">60</setting>
+        <setting name="fieldWidth">90</setting>
         <setting name="fieldHeight">1</setting>
       </settings>
       <typeRestrictions>
@@ -9945,7 +11860,7 @@
       </labels>
       <settings>
         <setting name="vocabulary">cs:http://id.loc.gov/authorities/subjects</setting>
-        <setting name="fieldWidth">60</setting>
+        <setting name="fieldWidth">90</setting>
         <setting name="fieldHeight">1</setting>
       </settings>
       <typeRestrictions>
@@ -9978,7 +11893,7 @@
       </labels>
       <settings>
         <setting name="vocabulary">cs:http://id.loc.gov/vocabulary/geographicAreas</setting>
-        <setting name="fieldWidth">60</setting>
+        <setting name="fieldWidth">90</setting>
         <setting name="fieldHeight">1</setting>
       </settings>
       <typeRestrictions>
@@ -10011,7 +11926,7 @@
       </labels>
       <settings>
         <setting name="vocabulary">cs:http://id.loc.gov/authorities/genreForms</setting>
-        <setting name="fieldWidth">60</setting>
+        <setting name="fieldWidth">90</setting>
         <setting name="fieldHeight">1</setting>
       </settings>
       <typeRestrictions>
@@ -10391,16 +12306,89 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="format_image" datatype="List" list="wt_image">
+    <metadataElement code="format_image" datatype="List" list="image_format">
       <labels>
         <label locale="en_US">
           <name>Format</name>
         </label>
       </labels>
-      <settings>
-        <setting name="listWidth">40</setting>
-        <setting name="listHeight">1</setting>
-      </settings>
+      <settings/>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>image</type> 
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="image_presentation" datatype="List" list="image_presentation">
+      <labels>
+        <label locale="en_US">
+          <name>Image Processing or Presentation Technique</name>
+        </label>
+      </labels>
+      <settings/>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>image</type> 
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="image_technique" datatype="List" list="image_technique">
+      <labels>
+        <label locale="en_US">
+          <name>Image Picture-Taking Technique</name>
+        </label>
+      </labels>
+      <settings/>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>image</type> 
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="image_process" datatype="List" list="image_process">
+      <labels>
+        <label locale="en_US">
+          <name>Image Process</name>
+        </label>
+      </labels>
+      <settings/>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>image</type> 
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="photographic_materials" datatype="List" list="photographic_materials">
+      <labels>
+        <label locale="en_US">
+          <name>Photographic Materials</name>
+        </label>
+      </labels>
+      <settings/>
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
@@ -11910,26 +13898,56 @@
       </typeRestrictions>
     </metadataElement>
     <!-- Artwork Collection Elements -->
-    <metadataElement code="object_dates" datatype="DateRange">
+    <metadataElement code="object_dates" datatype="Container">
       <labels>
         <label locale="en_US">
-          <name>Date</name>
+          <name>Dates</name>
         </label>
       </labels>
-      <settings>
-        <setting name="useDatePicker">1</setting>
-        <setting name="fieldWidth">70</setting>
-        <setting name="fieldHeight">1</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
-      </settings>
+      <elements>
+        <metadataElement code="object_dates_line1" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Object Dates Line 1</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="object_date" datatype="DateRange">
+              <labels>
+                <label locale="en_US">
+                  <name>Date</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+              </settings>
+            </metadataElement>
+            <metadataElement code="date_note" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Date Note</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">60</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">255</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+      </elements>
       <typeRestrictions>
         <restriction code="ca_objects">
           <table>ca_objects</table>
-          <type>artwork</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">3</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -12870,6 +14888,88 @@
           <settings/>
           <elements>
             <metadataElement code="vitrine_notes" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Assessment Notes</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">100</setting>
+                <setting name="fieldHeight">3</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>artwork</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="mount_condition" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>Mount Condition</name>
+          <description/>
+        </label>
+      </labels>
+      <settings/>
+      <elements>
+        <metadataElement code="mount_line1" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Mount Condition (Line 1)</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="mount_value" datatype="List" list="mount_condition">
+              <labels>
+                <label locale="en_US">
+                  <name>Assessment</name>
+                </label>
+              </labels>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="mount_line2" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Mount Condition (Line 2)</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="mount_date" datatype="DateRange">
+              <labels>
+                <label locale="en_US">
+                  <name>Assessment Date</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="useDatePicker">1</setting>
+                <setting name="fieldWidth">70</setting>
+                <setting name="fieldHeight">1</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="mount_line3" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Mount Condition (Line 3)</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="mount_notes" datatype="Text">
               <labels>
                 <label locale="en_US">
                   <name>Assessment Notes</name>
@@ -14559,6 +16659,26 @@
       <labels>
         <label locale="en_US">
           <name>Installation Materials</name>
+          <description/>
+        </label>
+      </labels>
+      <documentationUrl/>
+      <settings/>
+      <typeRestrictions>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="packing_documents" datatype="Media">
+      <labels>
+        <label locale="en_US">
+          <name>Packing Documents</name>
           <description/>
         </label>
       </labels>
@@ -17622,6 +19742,24 @@
                  <setting name="restrict_to_types">library</setting>
               </settings>
             </placement>
+            <placement code="ca_loans">
+              <bundle>ca_loans</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Archival Loans</setting>
+                <setting name="add_label" locale="en_US">Add loans</setting>
+                <setting name="restrict_to_types">archive</setting>
+                <setting name="restrict_to_relationship_types">related</setting>
+              </settings>
+             </placement>
+            <placement code="ca_loans">
+              <bundle>ca_loans</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Artwork Loans</setting>
+                <setting name="add_label" locale="en_US">Add loans</setting>
+                <setting name="restrict_to_types">collection</setting>
+                <setting name="restrict_to_relationship_types">related</setting>
+              </settings>
+             </placement>
           </bundlePlacements>
         </screen>
         <!-- Archival -->
@@ -17679,6 +19817,18 @@
             </placement>
             <placement code="ca_attribute_format_image">
               <bundle>ca_attribute_format_image</bundle>
+            </placement>
+            <placement code="ca_attribute_image_presentation">
+              <bundle>ca_attribute_image_presentation</bundle>
+            </placement>
+            <placement code="ca_attribute_image_technique">
+              <bundle>ca_attribute_image_technique</bundle>
+            </placement>
+            <placement code="ca_attribute_image_process">
+              <bundle>ca_attribute_image_process</bundle>
+            </placement>
+            <placement code="ca_attribute_photographic_materials">
+              <bundle>ca_attribute_photographic_materials</bundle>
             </placement>
              <placement code="ca_attribute_quantity">
               <bundle>ca_attribute_quantity</bundle>
@@ -18286,9 +20436,6 @@
                 <setting name="label" locale="en_US">Title</setting>
               </settings>
             </placement>
-              <placement code="ca_attribute_kramarsky_status">
-              <bundle>ca_attribute_kramarsky_status</bundle>
-            </placement>
             <placement code="ca_attribute_acquired">
               <bundle>ca_attribute_acquired</bundle>
             </placement>
@@ -18481,6 +20628,13 @@
               <bundle>ca_attribute_vitrine_condition</bundle>
               <settings>
                 <setting name="sort">vitrine_date</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_mount_condition">
+              <bundle>ca_attribute_mount_condition</bundle>
+               <settings>
+                <setting name="sort">mount_date</setting>
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
@@ -18724,6 +20878,9 @@
             </placement>
              <placement code="ca_attribute_base_description">
               <bundle>ca_attribute_base_description</bundle>
+            </placement>
+            <placement code="ca_attribute_packing_documents">
+              <bundle>ca_attribute_packing_documents</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -19184,6 +21341,17 @@
                 <setting name="restrict_to_types">audio</setting>
                 <setting name="restrict_to_types">moving_image</setting>
                 <setting name="restrict_to_types">ephemera</setting>
+                <setting name="list_format">list</setting>
+                <setting name="display_template"><![CDATA[<l>^ca_objects.preferred_labels</l>]]></setting>
+              </settings>
+            </placement>
+             <placement code="ca_books">
+              <bundle>ca_objects</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Bookss</setting>
+                <setting name="add_label" locale="en_US">Add book</setting>
+                <setting name="restrict_to_relationship_types">related</setting>
+                <setting name="restrict_to_types">book</setting>
                 <setting name="list_format">list</setting>
                 <setting name="display_template"><![CDATA[<l>^ca_objects.preferred_labels</l>]]></setting>
               </settings>
@@ -21538,6 +23706,16 @@
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
         </type>
+        <type code="related" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>related</typename>
+              <typename_reverse>related</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft/>
+          <subTypeRight>book</subTypeRight>
+        </type>
       </types>
     </relationshipTable>
     <relationshipTable name="ca_movements_x_entities">
@@ -21721,95 +23899,101 @@
     <role code="archive">
       <name>Archive</name>
       <description>Access control actions defined for Archival users</description>
-      <actions/>
+      <actions>
+        <action>is_administrator</action>
+      </actions>
       <bundleLevelAccessControl>
-        <permission table="ca_objects" bundle="ca_attribute_accession_number" access="none" />
+        <permission table="ca_objects" bundle="ca_attribute_accession_number" access="none"/>
       </bundleLevelAccessControl>
       <typeLevelAccessControl>
-        <permission table="ca_objects" type="image" access="edit" />
-        <permission table="ca_objects" type="document" access="edit" />
-        <permission table="ca_objects" type="audio" access="edit" />
-        <permission table="ca_objects" type="moving_image" access="edit" />
-        <permission table="ca_objects" type="ephemera" access="edit" />
-        <permission table="ca_objects" type="artwork" access="read" />
-        <permission table="ca_objects" type="book" access="read" />
-        <permission table="ca_objects" type="element" access="read" />
-        <permission table="ca_occurrences" type="exhibition" access="read" />
-        <permission table="ca_loans" type="archive" access="edit" />
-        <permission table="ca_loans" type="collection" access="read" />
-        <permission table="ca_object_lots" type="archive" access="edit" />
-        <permission table="ca_object_lots" type="collection" access="none" />
-        <permission table="ca_object_lots" type="library" access="none" />
-        <permission table="ca_movements" type="collection" access="none" />
-        <permission table="ca_collections" type="collection" access="edit" />
-        <permission table="ca_collections" type="series" access="edit" />
-        <permission table="ca_collections" type="sub_series" access="edit" />
-        <permission table="ca_collections" type="sub_sub_series" access="edit" />
-        <permission table="ca_collections" type="box" access="edit" />
-        <permission table="ca_collections" type="folder" access="edit" />
-      </typeLevelAccessControl>  
+        <permission table="ca_objects" type="image" access="edit"/>
+        <permission table="ca_objects" type="document" access="edit"/>
+        <permission table="ca_objects" type="audio" access="edit"/>
+        <permission table="ca_objects" type="moving_image" access="edit"/>
+        <permission table="ca_objects" type="ephemera" access="edit"/>
+        <permission table="ca_objects" type="artwork" access="read"/>
+        <permission table="ca_objects" type="book" access="read"/>
+        <permission table="ca_objects" type="element" access="read"/>
+        <permission table="ca_occurrences" type="exhibition" access="read"/>
+        <permission table="ca_loans" type="archive" access="edit"/>
+        <permission table="ca_loans" type="collection" access="read"/>
+        <permission table="ca_object_lots" type="archive" access="edit"/>
+        <permission table="ca_object_lots" type="collection" access="none"/>
+        <permission table="ca_object_lots" type="library" access="none"/>
+        <permission table="ca_movements" type="collection" access="none"/>
+        <permission table="ca_collections" type="collection" access="edit"/>
+        <permission table="ca_collections" type="series" access="edit"/>
+        <permission table="ca_collections" type="sub_series" access="edit"/>
+        <permission table="ca_collections" type="sub_sub_series" access="edit"/>
+        <permission table="ca_collections" type="box" access="edit"/>
+        <permission table="ca_collections" type="folder" access="edit"/>
+      </typeLevelAccessControl>
     </role>
     <role code="collection">
       <name>Collection</name>
       <description>Access control actions defined for Collection users</description>
-      <actions/>
+      <actions>
+        <action>is_administrator</action>
+      </actions>
       <typeLevelAccessControl>
-        <permission table="ca_objects" type="image" access="read" />
-        <permission table="ca_objects" type="document" access="read" />
-        <permission table="ca_objects" type="audio" access="read" />
-        <permission table="ca_objects" type="moving_image" access="read" />
-        <permission table="ca_objects" type="ephemera" access="read" />
-        <permission table="ca_objects" type="artwork" access="edit" />
-        <permission table="ca_objects" type="book" access="read" />
-        <permission table="ca_objects" type="element" access="edit" />
-        <permission table="ca_occurrences" type="exhibition" access="edit" />
-        <permission table="ca_loans" type="archive" access="read" />
-        <permission table="ca_loans" type="collection" access="edit" />
-        <permission table="ca_object_lots" type="archive" access="none" />
-        <permission table="ca_object_lots" type="collection" access="edit" />
-        <permission table="ca_object_lots" type="library" access="none" />
-        <permission table="ca_movements" type="collection" access="edit" />
-        <permission table="ca_collections" type="collection" access="read" />
-        <permission table="ca_collections" type="series" access="read" />
-        <permission table="ca_collections" type="sub_series" access="read" />
-        <permission table="ca_collections" type="sub_sub_series" access="read" />
-        <permission table="ca_collections" type="box" access="read" />
-        <permission table="ca_collections" type="folder" access="read" />
+        <permission table="ca_objects" type="image" access="read"/>
+        <permission table="ca_objects" type="document" access="read"/>
+        <permission table="ca_objects" type="audio" access="read"/>
+        <permission table="ca_objects" type="moving_image" access="read"/>
+        <permission table="ca_objects" type="ephemera" access="read"/>
+        <permission table="ca_objects" type="artwork" access="edit"/>
+        <permission table="ca_objects" type="book" access="read"/>
+        <permission table="ca_objects" type="element" access="edit"/>
+        <permission table="ca_occurrences" type="exhibition" access="edit"/>
+        <permission table="ca_loans" type="archive" access="read"/>
+        <permission table="ca_loans" type="collection" access="edit"/>
+        <permission table="ca_object_lots" type="archive" access="none"/>
+        <permission table="ca_object_lots" type="collection" access="edit"/>
+        <permission table="ca_object_lots" type="library" access="none"/>
+        <permission table="ca_movements" type="collection" access="edit"/>
+        <permission table="ca_collections" type="collection" access="read"/>
+        <permission table="ca_collections" type="series" access="read"/>
+        <permission table="ca_collections" type="sub_series" access="read"/>
+        <permission table="ca_collections" type="sub_sub_series" access="read"/>
+        <permission table="ca_collections" type="box" access="read"/>
+        <permission table="ca_collections" type="folder" access="read"/>
       </typeLevelAccessControl>
     </role>
     <role code="library">
       <name>Library</name>
       <description>Access control actions defined for Library users</description>
-      <actions/>
+      <actions>
+        <action>is_administrator</action>
+      </actions>
       <bundleLevelAccessControl>
-        <permission table="ca_objects" bundle="ca_attribute_accession_number" access="none" />
+        <permission table="ca_objects" bundle="ca_attribute_accession_number" access="none"/>
       </bundleLevelAccessControl>
       <typeLevelAccessControl>
-        <permission table="ca_objects" type="image" access="read" />
-        <permission table="ca_objects" type="document" access="read" />
-        <permission table="ca_objects" type="audio" access="read" />
-        <permission table="ca_objects" type="moving_image" access="read" />
-        <permission table="ca_objects" type="ephemera" access="read" />
-        <permission table="ca_objects" type="artwork" access="read" />
-        <permission table="ca_objects" type="book" access="edit" />
-        <permission table="ca_objects" type="element" access="read" />
-        <permission table="ca_occurrences" type="exhibition" access="read" />
-        <permission table="ca_loans" type="archive" access="read" />
-        <permission table="ca_loans" type="collection" access="read" />
-        <permission table="ca_object_lots" type="archive" access="read" />
-        <permission table="ca_object_lots" type="collection" access="none" />
-        <permission table="ca_object_lots" type="library" access="edit" />
-        <permission table="ca_movements" type="collection" access="none" />
-        <permission table="ca_collections" type="collection" access="read" />
-        <permission table="ca_collections" type="series" access="read" />
-        <permission table="ca_collections" type="sub_series" access="read" />
-        <permission table="ca_collections" type="sub_sub_series" access="read" />
-        <permission table="ca_collections" type="box" access="read" />
-        <permission table="ca_collections" type="folder" access="read" />
+        <permission table="ca_objects" type="image" access="read"/>
+        <permission table="ca_objects" type="document" access="read"/>
+        <permission table="ca_objects" type="audio" access="read"/>
+        <permission table="ca_objects" type="moving_image" access="read"/>
+        <permission table="ca_objects" type="ephemera" access="read"/>
+        <permission table="ca_objects" type="artwork" access="read"/>
+        <permission table="ca_objects" type="book" access="edit"/>
+        <permission table="ca_objects" type="element" access="read"/>
+        <permission table="ca_occurrences" type="exhibition" access="read"/>
+        <permission table="ca_loans" type="archive" access="read"/>
+        <permission table="ca_loans" type="collection" access="read"/>
+        <permission table="ca_object_lots" type="archive" access="read"/>
+        <permission table="ca_object_lots" type="collection" access="none"/>
+        <permission table="ca_object_lots" type="library" access="edit"/>
+        <permission table="ca_movements" type="collection" access="none"/>
+        <permission table="ca_collections" type="collection" access="read"/>
+        <permission table="ca_collections" type="series" access="read"/>
+        <permission table="ca_collections" type="sub_series" access="read"/>
+        <permission table="ca_collections" type="sub_sub_series" access="read"/>
+        <permission table="ca_collections" type="box" access="read"/>
+        <permission table="ca_collections" type="folder" access="read"/>
       </typeLevelAccessControl>
     </role>
   </roles>
-  <displays> 
+  <displays>
     <display code="object_type" type="ca_objects" system="1">
       <labels>
         <label locale="en_US">
@@ -21822,7 +24006,7 @@
           <settings>
             <setting name="label" locale="en_US">Title</setting>
           </settings>
-        </placement>     
+        </placement>
         <placement code="idno">
           <bundle>ca_objects.idno</bundle>
           <settings>
@@ -21846,7 +24030,7 @@
           <settings>
             <setting name="label" locale="en_US">Title</setting>
           </settings>
-        </placement>     
+        </placement>
         <placement code="idno">
           <bundle>ca_loans.idno</bundle>
           <settings>
@@ -21870,7 +24054,7 @@
           <settings>
             <setting name="label" locale="en_US">Title</setting>
           </settings>
-        </placement>     
+        </placement>
         <placement code="idno">
           <bundle>ca_object_lots.idno</bundle>
           <settings>
