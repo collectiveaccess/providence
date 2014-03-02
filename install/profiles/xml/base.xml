@@ -2086,6 +2086,7 @@
 			  </labels>
         </item>
     </items>
+    </list>
     <list code="tour_sources" hierarchical="1" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -2096,7 +2097,6 @@
         </label>
       </labels>
       <items/>
-    </list>
     </list>
     <list code="tour_stop_types" hierarchical="1" system="0" vocabulary="0">
       <labels>
