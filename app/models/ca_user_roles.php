@@ -344,7 +344,7 @@ class ca_user_roles extends BaseModel {
 	public function setAccessSettingForType($ps_table, $pm_type_id_or_code, $pn_access) {
 		if(!in_array($pn_access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__))) { return false; }
 		if(!$this->getPrimaryKey()) { return false; }
-		if(!$this->getAppConfig()->get('perform_type_access_checking')) { return false; }
+		//if(!$this->getAppConfig()->get('perform_type_access_checking')) { return false; }
 		$o_dm = Datamodel::load();
 		$t_list = new ca_lists();	
 
@@ -407,7 +407,7 @@ class ca_user_roles extends BaseModel {
 	public function setAccessSettingForSource($ps_table, $pm_source_id_or_code, $pn_access, $pb_is_default=false) {
 		if(!in_array($pn_access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__))) { return false; }
 		if(!$this->getPrimaryKey()) { return false; }
-		if(!$this->getAppConfig()->get('perform_source_access_checking')) { return false; }
+		//if(!$this->getAppConfig()->get('perform_source_access_checking')) { return false; }
 		$o_dm = Datamodel::load();
 		$t_list = new ca_lists();	
 
