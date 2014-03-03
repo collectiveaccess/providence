@@ -1707,18 +1707,30 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		
 		
 		$vs_val = '';
-		if($pa_options['template']) { 
+		if($pa_options['template']) {
 			if ($t_instance = $this->getAppDatamodel()->getInstanceByTableName($va_tmp[0], true)) {
 				$va_tmp2 = $va_tmp;
-				if ((sizeof($va_tmp2) > 1) && (in_array($vs_tmp = array_pop($va_tmp2), array('related')))) {
+				$vb_is_related = false;
+				if ((sizeof($va_tmp) == 1) || ((sizeof($va_tmp) == 2) && $va_tmp[1] == 'related')) {
+					$vb_is_related = true;
+				} elseif ((sizeof($va_tmp2) > 1) && (in_array($vs_tmp = array_pop($va_tmp2), array('related')))) {
 					$va_tmp2[] = $vs_tmp;
+				} else {
+					$va_tmp2[] = $t_instance->primaryKey();
 				}
-				$va_tmp2[] = $t_instance->primaryKey();
-		
+				
 				$va_ids = $po_result->get(join('.', $va_tmp2), array('returnAsArray' => true));
 				$va_links = array();
 				if (is_array($va_ids)) {
-					$vs_val = caProcessTemplateForIDs($pa_options['template'], $va_tmp2[0], $va_ids, array_merge($pa_options, array('returnAsArray' => false)));
+					if ($vb_is_related) {
+						$va_ids = caExtractValuesFromArrayList($va_ids, 'relation_id'); 
+						if ($t_rel = $t_instance->getRelationshipInstance($po_result->tableName())) {
+							
+							$vs_val = caProcessTemplateForIDs($pa_options['template'], $t_rel->tableName(), $va_ids, array_merge($pa_options, array('orientation' => (($t_rel->getLeftTableName() == $po_result->tableName()) ? "LTOR" : "RTOL"),'returnAsArray' => false)));
+						}
+					} else {
+						$vs_val = caProcessTemplateForIDs($pa_options['template'], $va_tmp2[0], $va_ids, array_merge($pa_options, array('returnAsArray' => false)));
+					}
 				}
 			}
 		} else {
