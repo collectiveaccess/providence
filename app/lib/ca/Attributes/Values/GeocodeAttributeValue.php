@@ -258,7 +258,7 @@
  				||
  				preg_match("!^([^\[]*)[\[]{1}([^\]]+)[\]]{1}$!", $ps_value, $va_matches)
  			) {
- 			
+
  				$va_feature_list = preg_split("/[:]+/", $va_matches[2]);
  				
  				$va_feature_list_proc = array();
@@ -304,26 +304,33 @@
  			} else {
 				$ps_value = preg_replace("!\[[\d,\-\.]+\]!", "", $ps_value);
 				if ($ps_value) {
-					if (!($r_fp = @fopen("http://maps.google.com/maps/geo?q=".urlencode($ps_value)."&key=$vs_google_map_key&sensor=false&output=csv&oe=utf8","r"))) {
+					$vs_google_response = @file_get_contents('https://maps.googleapis.com/maps/api/geocode/json?address='.urlencode($ps_value).'&sensor=false');
+					if(!($va_google_response = json_decode($vs_google_response,true)) || !isset($va_google_response['status'])){
 						$this->postError(1970, _t('Could not connect to Google for geocoding'), 'GeocodeAttributeValue->parseValue()');
 						return false;
 					}
-					$vs_geocoding = @fread($r_fp, 8192);
 
-					$va_geocoding = explode(",", $vs_geocoding);
-					if (($va_geocoding[0] == 200) && ($va_geocoding[2] != 0) && ($va_geocoding[3] != 0)) {
+					if(($va_google_response['status'] != 'OK') || !isset($va_google_response['results']) || sizeof($va_google_response['results'])==0){
+						$this->postError(1970, _t('Could not geocode address "%1": [%2]', $ps_value, $va_google_response['status']), 'GeocodeAttributeValue->parseValue()');
+						return false;
+					}
+
+					$va_first_result = array_shift($va_google_response['results']);
+
+					if(isset($va_first_result['geometry']['location']) && is_array($va_first_result['geometry']['location'])) {
 						return array(
 							'value_longtext1' => $ps_value,
-							'value_longtext2' => $va_geocoding[2].','.$va_geocoding[3],
-							'value_decimal1' => $va_geocoding[2],		// latitude
-							'value_decimal2' => $va_geocoding[3]		// longitude
+							'value_longtext2' => $va_first_result['geometry']['location']['lat'].','.$va_first_result['geometry']['location']['lng'],
+							'value_decimal1' => $va_first_result['geometry']['location']['lat'],
+							'value_decimal2' => $va_first_result['geometry']['location']['lng']
 						);
 					} else {
-						$this->postError(1970, _t('Could not geocode address: [%1] %2', $va_geocoding[0], $va_geocoding[1]), 'GeocodeAttributeValue->parseValue()');
+						$this->postError(1970, _t('Could not geocode address "%1"', $ps_value), 'GeocodeAttributeValue->parseValue()');
 						return false;
 					}
 				}
 			}
+
 			return array(
 				'value_longtext1' => '',
 				'value_longtext2' => '',

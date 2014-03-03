@@ -64,12 +64,17 @@ class TEIReader extends BaseXMLDataReader {
 	protected $ops_xpath = '//n:TEI';
 	
 	/**
+	 * 
+	 */
+	protected $ops_root_tag = 'TEI';
+	
+	/**
 	 * Merge attributes of row-level tag into record as regular values?
 	 *
 	 * This is useful for formats that encode row_ids as attributes that are more easily
 	 * referred to in import mappings as plain old record values
 	 */
-	protected $opb_use_row_tag_attributes_as_row_level_values = true;
+	protected $opb_use_row_tag_attributes_as_row_level_values = false;
 	
 	/**
 	 * Treat tag names as case insensitive?
