@@ -619,7 +619,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 				$pa_fields[$vs_field] = $vn_list_id;
 			}
 		}
-		print_R($pa_fields);
+
 		return parent::set($pa_fields, null, $pa_options);
 	}
 	 # ------------------------------------------------------
