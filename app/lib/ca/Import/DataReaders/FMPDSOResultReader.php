@@ -93,5 +93,37 @@ class FMPDSOResultReader extends BaseXMLDataReader {
 		$this->opa_formats = array('fmpdso');	// must be all lowercase to allow for case-insensitive matching
 	}
 	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @param string $ps_spec
+	 * @param array $pa_options
+	 * @return mixed
+	 */
+	public function get($ps_spec, $pa_options=null) {
+		$vb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
+		$vs_delimiter = caGetOption('delimiter', $pa_options, ';');
+		
+		//$ps_spec = str_replace("/", "", $ps_spec);
+		if ($this->opb_tag_names_as_case_insensitive) { $ps_spec = strtolower($ps_spec); }
+		if (is_array($this->opa_row_buf) && ($ps_spec) && (isset($this->opa_row_buf[$ps_spec]))) {
+			if($vb_return_as_array) {
+				return $this->opa_row_buf[$ps_spec];
+			} else {
+				return join($vs_delimiter, $this->opa_row_buf[$ps_spec]);
+			}
+		}
+		return null;	
+	}
+	# -------------------------------------------------------
+	/**
+	 * Values can repeat for XML files
+	 * 
+	 * @return bool
+	 */
+	public function valuesCanRepeat() {
+		return true;
+	}
+	# -------------------------------------------------------
 }
 ?>

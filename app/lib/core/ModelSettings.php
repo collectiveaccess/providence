@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -446,6 +446,10 @@
 								_t('Order created') => 'relation_id',		// forces sorting by relationship primary key  - aka order relationships were created
 								_t('Preferred label') => $va_properties['showSortableBundlesFor'].".preferred_labels.".$t_rel->getLabelDisplayField()
 							);
+							if ($vs_idno_fld = $t_rel->getProperty('ID_NUMBERING_ID_FIELD')) {
+								$va_select_opts[$t_rel->getFieldInfo($vs_idno_fld, 'LABEL')] = $vs_idno_fld;
+							}
+							
 							foreach($va_elements as $vn_element_id => $va_element) {
 								if(!$va_element['display_label']) { continue; }
 								$va_select_opts[_t('Element: %1', $va_element['display_label'])] = $va_properties['showSortableBundlesFor'].".".$va_element['element_code'];
