@@ -792,7 +792,7 @@ class SearchResult extends BaseObject {
 								foreach($va_ids as $vn_id) {
 									// TODO: This is too slow
 									if($t_instance->load($vn_id)) {
-										$va_vals = $t_instance->get($vs_field_spec.".preferred_labels", $pa_options);
+										$va_vals = $t_instance->get($vs_field_spec.".preferred_labels", array_merge($pa_options, array('returnAsArray' => true, 'returnAllLocales' => false)));
 									}
 								}
 							}
