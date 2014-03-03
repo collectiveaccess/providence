@@ -138,6 +138,7 @@
 						if ($vn_id) { break(2); }
 						break;
 					case 'idno':
+						if ($vs_idno == '%') { break; }	// don't try to match on an unreplaced idno placeholder
 						if (($vs_idno || trim($pa_entity_name['displayname'])) && ($vn_id = (ca_entities::find(array('idno' => $vs_idno ? $vs_idno : $pa_entity_name['displayname']), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
 							break(2);
 						}
@@ -332,6 +333,7 @@
 							break;
 						}
 					case 'idno':
+						if ($vs_idno == '%') { break; }	// don't try to match on an unreplaced idno placeholder
 						if ($vn_id = (ca_places::find(array('idno' => $vs_idno ? $vs_idno  : $ps_place_name), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 							break(2);
 						}
@@ -532,6 +534,8 @@
 							break;
 						}
 					case 'idno':
+						if ($vs_idno == '%') { break; }	// don't try to match on an unreplaced idno placeholder
+						
 						// TODO: should we filter on type_id here?
 						if ($vn_id = ca_occurrences::find(array('idno' => $vs_idno ?  $vs_idno : $ps_occ_name), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))) {
 							break(2);
@@ -753,6 +757,7 @@
 							break;
 						}
 					case 'idno':
+						if ($vs_idno == '%') { break; }	// don't try to match on an unreplaced idno placeholder
 						if ($vn_item_id = (ca_list_items::find(array('idno' => $ps_item_idno ? $ps_item_idno : $vs_plural_label, 'list_id' => $vn_list_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 							if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using idno with %3", $ps_item_idno, $pm_list_code_or_id)); }
 							break(2);
@@ -903,6 +908,7 @@
 							break;
 						}
 					case 'idno':
+						if ($vs_idno == '%') { break; }	// don't try to match on an unreplaced idno placeholder
 						if ($vn_id = (ca_collections::find(array('idno' => $vs_idno ? $vs_idno : $ps_collection_name), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 							break(2);
 						}
@@ -1099,6 +1105,7 @@
 							break;
 						}
 					case 'idno':
+						if ($vs_idno == '%') { break; }	// don't try to match on an unreplaced idno placeholder
 						if ($vn_id = (ca_storage_locations::find(array('idno' => $vs_idno ? $vs_idno : $ps_location_name), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 							break(2);
 						}
@@ -1291,6 +1298,7 @@
 						}
 						break;
 					case 'idno':
+						if ($vs_idno == '%') { break; }	// don't try to match on an unreplaced idno placeholder
 						if ($vn_id = (ca_objects::find(array('idno' => $vs_idno ? $vs_idno : $ps_object_name), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 							break(2);
 						}
@@ -1475,6 +1483,7 @@
 						}
 						break;
 					case 'idno':
+						if ($vs_idno == '%') { break; }	// don't try to match on an unreplaced idno placeholder
 						if ($vn_id = (ca_object_lots::find(array('idno_stub' => $ps_idno_stub ? $ps_idno_stub : $ps_lot_name), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 							break(2);
 						}
@@ -1667,6 +1676,7 @@
 							break;
 						}
 					case 'idno':
+						if ($vs_idno == '%') { break; }	// don't try to match on an unreplaced idno placeholder
 						if ($vn_id = (ca_loans::find(array('idno' => $vs_idno ? $vs_idno : $ps_loan_name), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 							break(2);
 						}
@@ -1858,6 +1868,7 @@
 							break;
 						}
 					case 'idno':
+						if ($vs_idno == '%') { break; }	// don't try to match on an unreplaced idno placeholder
 						if ($vn_id = (ca_movements::find(array('idno' => $vs_idno ? $vs_idno : $ps_movement_name), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 							break(2);
 						}
