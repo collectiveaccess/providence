@@ -1,0 +1,12 @@
+Order allow,deny
+Deny from all
+
+<FilesMatch "^(index\.php)?$">
+        Allow from all
+</FilesMatch>
+<FilesMatch "install$">
+	Allow from all
+</FilesMatch>
+<FilesMatch "^.*\.(css|gif|jpg|png|js)$">
+        Allow from all
+</FilesMatch>
