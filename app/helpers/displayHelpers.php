@@ -3011,7 +3011,7 @@ $ca_relationship_lookup_parse_cache = array();
 				}
 				
 				if (!isset($va_items[$va_relation[$vs_rel_pk]][$vs_rel_pk]) || !$va_items[$va_relation[$vs_rel_pk]][$vs_rel_pk]) {
-					$va_items[$va_relation[$vs_rel_pk]][$vs_rel_pk] = $va_relation[$vs_rel_pk];
+					$va_items[$va_relation[$vs_rel_pk]][$vs_rel_pk] = $va_items[$va_relation[$vs_rel_pk]]['id'] = $va_relation[$vs_rel_pk];
 				}
 				
 				if (!isset($va_items[$va_relation[$vs_rel_pk]]['_display']) || !$va_items[$va_relation[$vs_rel_pk]]['_display']) {
