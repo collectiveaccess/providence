@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,7 +40,7 @@ var caUI = caUI || {};
 			
 			facetSelectID: "browseFacetSelect",
 			
-			useExpose: !((jQuery.browser.msie) && (jQuery.browser.version == 7.0)),
+			useExpose: true,
 			useStaticDiv: false,									/* set if you want to use a visible <div> for the browse panel rather than a show/hide overlay <div> */
 			
 			isChanging: false,

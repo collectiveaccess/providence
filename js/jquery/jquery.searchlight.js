@@ -50,11 +50,11 @@
            // height: '100%'
         });
 
-        if ($.browser.msie && parseFloat($.browser.version) <= 7) {
-            results.css({
-                width: '100%'
-            });
-        }
+        //if ($.browser.msie && parseFloat($.browser.version) <= 7) {
+        //    results.css({
+        //        width: '100%'
+        //    });
+        //}
 
         container.append(results);
         $(document.body).append(container);

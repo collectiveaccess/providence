@@ -66,7 +66,7 @@
  		// normally no need to call this yourself
  		public function loadTypeSpecificValueFromRow($pa_value_array);
  		
- 		public function getAvailableSettings();
+ 		public function getAvailableSettings($pa_element_info=null);
  		
  		// Checks validity of setting value for attribute; used by ca_metadata_elements to validate settings before they are saved.
 		public function validateSetting($pa_element_info, $ps_key, $ps_value, &$ps_error);

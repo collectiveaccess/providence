@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -226,7 +226,7 @@ if (that.uiStyle == 'horizontal') {
 				if (!item_id) {
 					that.clearLevelsStartingAt(level + 1);
 				} else {
-					that.setUpHierarchyLevel(level + 1, item_id, 0, undefined, fetchData);
+					that.setUpHierarchyLevel(level + 1, item_id, 0, undefined, true);
 					that.selectItem(level, item_id, jQuery('#' + newLevelDivID).data('parent_id'), 0, {});
 				}
 			});
@@ -275,7 +275,6 @@ if (that.uiStyle == 'horizontal') {
 		that.loadHierarchyLevelData = function() {
 			var id_list = [];
 			var itemIDsToLevelInfo = {};
-			
 			var is_init = false;
 			for(var l = 0; l < that._queuedLoadsForLevel.length; l++) {
 				for(var i = 0; i < that._queuedLoadsForLevel[l].length; i++) {
@@ -436,7 +435,7 @@ if (that.uiStyle == 'horizontal') {
 		}
 	}
 							// Pass item_id to caller if required
-							if (is_init && that.selectOnLoad && that.onSelection && is_init && item['item_id'] == selected_item_id) {
+							if (is_init && that.selectOnLoad && that.onSelection && item['item_id'] == selected_item_id) {
 								var formattedDisplayString = that.currentSelectionDisplayFormat.replace('%1', item.name);
 								that.onSelection(item['item_id'], item.parent_id, item.name, formattedDisplayString, item.type_id);
 							}
@@ -487,7 +486,7 @@ if (that.uiStyle == 'horizontal') {
 			} else {
 				if (is_init) {
 					if (that.selectedItemIDs[level] !== undefined) {
-						jQuery("#" + newLevelListID + " option[value=" + that.selectedItemIDs[level] + "]").attr('selected', 1);
+						jQuery("#" + newLevelListID + " option[value=" + that.selectedItemIDs[level] + "]").prop('selected', 1);
 					}
 				}
 				

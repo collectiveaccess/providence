@@ -214,7 +214,7 @@ final class ConfigurationExporter {
 	private function getListItemsAsDOM($pn_parent_id){
 		$qr_items = $this->opo_db->query("SELECT * FROM ca_list_items WHERE parent_id=? AND deleted=0",$pn_parent_id);
 
-		if(!$qr_items->numRows()){
+		if(!($qr_items->numRows()>0)){
 			return false;
 		}
 
@@ -934,7 +934,7 @@ final class ConfigurationExporter {
 	# -------------------------------------------------------
 	private function makeIDNO($ps_idno){
 		if(strlen($ps_idno)>0){
-			return preg_replace("/[^_a-zA-Z0-9]/","_",$ps_idno);
+			return substr(preg_replace("/[^_a-zA-Z0-9]/","_",$ps_idno),0,30);
 		} else {
 			return "default";
 		}

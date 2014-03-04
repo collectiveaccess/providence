@@ -47,7 +47,7 @@ class ItemService extends BaseJSONService {
 	public function dispatch(){
 		switch($this->getRequestMethod()){
 			case "GET":
-				if($this->opn_id>0){
+				if($this->opn_id){	// we allow that this might be a string here for idno-based fetching
 					if(sizeof($this->getRequestBodyArray())==0){
 						// allow different format specifications
 						if($vs_format = $this->opo_request->getParameter("format",pString)){
@@ -98,13 +98,20 @@ class ItemService extends BaseJSONService {
 	}
 	# -------------------------------------------------------
 	protected function getSpecificItemInfo(){
-		if(!($t_instance = $this->_getTableInstance($this->ops_table,$this->opn_id))){
+		if(!($t_instance = $this->_getTableInstance($this->ops_table,$this->opn_id))){	// note that $this->opn_id might be a string if we're fetching by idno; you can only use an idno for getting an item, not for editing or deleting
 			return false;
 		}
 
 		$va_post = $this->getRequestBodyArray();
 
 		$va_return = array();
+		
+		// allow user-defined template to be passed; allows flexible formatting of returned "display" value
+		if (!($vs_template = $this->opo_request->getParameter('template', pString))) { $vs_template = ''; }
+		if ($vs_template) {
+			$va_return['display'] = caProcessTemplateForIDs($vs_template, $this->ops_table, array($this->opn_id));
+		}
+		
 		if(!is_array($va_post["bundles"])){
 			return false;
 		}
@@ -127,7 +134,7 @@ class ItemService extends BaseJSONService {
 	 * Try to return a generic summary for the specified record
 	 */
 	protected function getAllItemInfo(){
-		if(!($t_instance = $this->_getTableInstance($this->ops_table,$this->opn_id))){
+		if(!($t_instance = $this->_getTableInstance($this->ops_table,$this->opn_id))){	// note that $this->opn_id might be a string if we're fetching by idno; you can only use an idno for getting an item, not for editing or deleting
 			return false;
 		}
 		$t_list = new ca_lists();
@@ -137,6 +144,12 @@ class ItemService extends BaseJSONService {
 		
 		$va_return = array();
 
+		// allow user-defined template to be passed; allows flexible formatting of returned "display" value
+		if (!($vs_template = $this->opo_request->getParameter('template', pString))) { $vs_template = ''; }
+		if ($vs_template) {
+			$va_return['display'] = caProcessTemplateForIDs($vs_template, $this->ops_table, array($this->opn_id));
+		}
+		
 		// labels
 
 		$va_labels = $t_instance->get($this->ops_table.".preferred_labels",array("returnAllLocales" => true));
@@ -186,9 +199,20 @@ class ItemService extends BaseJSONService {
 			}
 		}
 
-		// representations for objects
-		if($this->ops_table == "ca_objects"){
-			$va_return['representations'] = $t_instance->getRepresentations();
+		// representations for representable stuff
+		if($t_instance instanceof RepresentableBaseModel){
+			$va_reps = $t_instance->getRepresentations(array('preview170','original'));
+			if(is_array($va_reps) && (sizeof($va_reps)>0)){
+				$va_return['representations'] = $va_reps;	
+			}
+		}
+
+		// captions for representations
+		if($this->ops_table == "ca_object_representations"){
+			$va_captions = $t_instance->getCaptionFileList();
+			if(is_array($va_captions) && (sizeof($va_captions)>0)){
+				$va_return['captions'] = $va_captions;	
+			}
 		}
 
 		// attributes
@@ -238,10 +262,6 @@ class ItemService extends BaseJSONService {
 
 			$va_related_items = $t_instance->get($vs_rel_table,array("returnAsArray" => true));
 			
-			if($this->ops_table == "ca_objects" && $vs_rel_table=="ca_object_representations") {
-				$va_return['representations'] = $t_instance->getRepresentations(array('preview170', 'medium'));
-			}
-			
 			if(is_array($va_related_items) && sizeof($va_related_items)>0){
 				$va_return["related"][$vs_rel_table] = array_values($va_related_items);
 			}
@@ -264,6 +284,12 @@ class ItemService extends BaseJSONService {
 		$va_locales = $t_locales->getLocaleList(array("available_for_cataloguing_only" => true));
 		
 		$va_return = array();
+		
+		// allow user-defined template to be passed; allows flexible formatting of returned "display" value
+		if (!($vs_template = $this->opo_request->getParameter('template', pString))) { $vs_template = ''; }
+		if ($vs_template) {
+			$va_return['display'] = caProcessTemplateForIDs($vs_template, $this->ops_table, array($this->opn_id));
+		}
 
 		// "intrinsic" fields
 		foreach($t_instance->getFieldsArray() as $vs_field_name => $va_field_info){
@@ -314,9 +340,20 @@ class ItemService extends BaseJSONService {
 			}
 		}
 
-		// representations for objects
-		if($this->ops_table == "ca_objects"){
-			$va_return['representations'] = $t_instance->getRepresentations();
+		// representations for representable stuff
+		if($t_instance instanceof RepresentableBaseModel){
+			$va_reps = $t_instance->getRepresentations();
+			if(is_array($va_reps) && (sizeof($va_reps)>0)){
+				$va_return['representations'] = $va_reps;	
+			}
+		}
+
+		// captions for representations
+		if($this->ops_table == "ca_object_representations"){
+			$va_captions = $t_instance->getCaptionFileList();
+			if(is_array($va_captions) && (sizeof($va_captions)>0)){
+				$va_return['captions'] = $va_captions;	
+			}
 		}
 
 		// attributes
@@ -352,10 +389,6 @@ class ItemService extends BaseJSONService {
 			}
 
 			$va_related_items = $t_instance->get($vs_rel_table,array("returnAsArray" => true));
-			
-			if($this->ops_table == "ca_objects" && $vs_rel_table=="ca_object_representations") {
-				$va_return['representations'] = $t_instance->getRepresentations(array('preview170', 'medium'));
-			}
 			
 			if(is_array($va_related_items) && sizeof($va_related_items)>0){
 				// most of the fields are usually empty because they are not supported on UI level
@@ -402,10 +435,16 @@ class ItemService extends BaseJSONService {
 		if (!($vs_flatten = $this->opo_request->getParameter('flatten', pString))) { $vs_flatten = null; }
 		$va_flatten = preg_split("![ ]*[;]+[ ]*!", $vs_flatten);
 		$va_flatten = array_flip($va_flatten);
-
+		
 		$va_locales = $t_locales->getLocaleList(array("available_for_cataloguing_only" => true));
 		
 		$va_return = array();
+		
+		// allow user-defined template to be passed; allows flexible formatting of returned "display" value
+		if (!($vs_template = $this->opo_request->getParameter('template', pString))) { $vs_template = ''; }
+		if ($vs_template) {
+			$va_return['display'] = caProcessTemplateForIDs($vs_template, $this->ops_table, array($this->opn_id));
+		}
 
 		// "intrinsic" fields
 		foreach($t_instance->getFieldsArray() as $vs_field_name => $va_field_info){

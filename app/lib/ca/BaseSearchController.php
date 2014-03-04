@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -221,10 +221,11 @@
 					$this->view->setVar('show_type_id', $vn_show_type_id);
 					$vo_result->filterResult('ca_objects.type_id', $vn_show_type_id);
 				}
+		
  				if($vb_is_new_search || $vb_criteria_have_changed) {
 					$this->opo_result_context->setResultList($vo_result->getPrimaryKeyValues());
 					$this->opo_result_context->setParameter('availableVisualizationChecked', 0);
-					if ($ps_search) { $vn_page_num = 1; }
+					if ($vs_search) { $vn_page_num = 1; }
 				}
  				$this->view->setVar('num_hits', $vo_result->numHits());
  				$this->view->setVar('num_pages', $vn_num_pages = ceil($vo_result->numHits()/$vn_items_per_page));
@@ -264,9 +265,9 @@
 			$this->view->setVar('access_values', $va_access_values);
 			$this->view->setVar('browse', $po_search);
 			
+			$t_display = $this->view->getVar('t_display');
+			$va_display_list = $this->view->getVar('display_list');
 			if ($vs_view == 'editable') {
-				$t_display = $this->view->getVar('t_display');
-				$va_display_list = $this->view->getVar('display_list');
 				
 				$va_initial_data = array();
 				$va_row_headers = array();
@@ -295,6 +296,22 @@
 				$this->view->setVar('initialData', $va_initial_data);
 				$this->view->setVar('rowHeaders', $va_row_headers);
 			}
+			
+			//
+			// Bottom line
+			//
+			$va_bottom_line = array();
+			$vb_bottom_line_is_set = false;
+			foreach($va_display_list as $vn_placement_id => $va_placement) {
+				if(isset($va_placement['settings']['bottom_line']) && $va_placement['settings']['bottom_line']) {
+					$va_bottom_line[$vn_placement_id] = caProcessBottomLineTemplate($this->request, $va_placement, $vo_result, array('pageStart' => ($vn_page_num - 1) * $vn_items_per_page, 'pageEnd' => (($vn_page_num - 1) * $vn_items_per_page) + $vn_items_per_page));
+					$vb_bottom_line_is_set = true;
+				} else {
+					$va_bottom_line[$vn_placement_id] = '';
+				}
+			}
+			$this->view->setVar('bottom_line', $vb_bottom_line_is_set ? $va_bottom_line : null);
+			
 			
  			switch($pa_options['output_format']) {
  				# ------------------------------------

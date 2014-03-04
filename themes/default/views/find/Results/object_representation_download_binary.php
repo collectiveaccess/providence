@@ -26,6 +26,7 @@
  * ----------------------------------------------------------------------
  */
  	$o_zip = $this->getVar('zip');
+ 	$vs_file_path = $o_zip->output(ZIPFILE_FILEPATH);
  
 	header("Content-type: application/zip");
 	header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
@@ -33,8 +34,9 @@
 	header("Cache-Control: post-check=0, pre-check=0", false);
 	header("Pragma: no-cache");
 	header("Cache-control: private");
+	header('Content-Length: ' . filesize($vs_file_path));
 	
 	header("Content-Disposition: attachment; filename=".$this->getVar('download_name'));
 	ob_end_flush();	// need to do this in order to not have read file use request memory due to buffering
-	readfile($o_zip->output(ZIPFILE_FILEPATH))
+	readfile($vs_file_path);
 ?>

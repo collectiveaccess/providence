@@ -367,8 +367,8 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
-	protected function initLabelDefinitions() {
-		parent::initLabelDefinitions();
+	protected function initLabelDefinitions($pa_options=null) {
+		parent::initLabelDefinitions($pa_options);
 		$this->BUNDLES['ca_object_representations'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Media representations'));
 		$this->BUNDLES['ca_objects'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects'));
 		$this->BUNDLES['ca_object_lots'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related lots'));
@@ -484,6 +484,60 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		}
 		return $vn_rc;
 	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+		$vb_web_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
+		
+		if (!$this->inTransaction()) {
+			$o_trans = new Transaction($this->getDb());
+			$this->setTransaction($o_trans);
+		}
+		if (!is_array($pa_options)) { $pa_options = array(); }
+		
+		$vn_id = $this->getPrimaryKey();
+		if(parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
+			// Delete any associated attribute values that use this list item
+			if (!($qr_res = $this->getDb()->query("
+				DELETE FROM ca_attribute_values 
+				WHERE item_id = ?
+			", (int)$vn_id))) { 
+				$this->errors = $this->getDb()->errors();
+				if ($o_trans) { $o_trans->rollback(); }
+				
+				if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
+				return false; 
+			}
+			
+			// Kill any attributes that no longer have values
+			// This cleans up attributes that had a single list value (and now have nothing)
+			// in a relatively efficient way
+			//
+			// We should not need to reindex for search here because the delete of the list item itself
+			// should have triggered reindexing
+			// 
+			if (!($qr_res = $this->getDb()->query("
+				DELETE FROM ca_attributes WHERE attribute_id not in (SELECT distinct attribute_id FROM ca_attribute_values)
+			"))) {
+				$this->errors = $this->getDb()->errors();
+				if ($o_trans) { $o_trans->rollback(); }
+				
+				if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
+				return false;
+			}
+			
+			if ($o_trans) { $o_trans->commit(); }
+				
+			if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
+			return true;
+		}
+		
+		if ($o_trans) { $o_trans->rollback(); }
+		if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
+		return false;
+	}
 	# ------------------------------------------------------
 	/**
 	 * Return array containing information about all lists, including their root_id's
@@ -550,6 +604,24 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		}
 		return $va_sorted_hierarchies;
 	 }
+	 # ------------------------------------------------------------------
+	/**
+	 * Set field value(s) for the table row represented by this object
+	 *
+	 */
+	public function set($pa_fields, $pm_value="", $pa_options=null) {
+		if(!is_array($pa_fields)) {
+			$pa_fields = array($pa_fields => $pm_value);
+		}
+		
+		foreach($pa_fields as $vs_field => $vm_value) {
+			if(($vs_field == 'list_id') && (!is_numeric($vm_value)) && ($vn_list_id = caGetListID($vm_value))) {
+				$pa_fields[$vs_field] = $vn_list_id;
+			}
+		}
+
+		return parent::set($pa_fields, null, $pa_options);
+	}
 	 # ------------------------------------------------------
 	 /**
 	 * Returns name of hierarchy for currently loaded item or, if specified, item with item_id = to optional $pn_id parameter
@@ -719,7 +791,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
  	 * @param RequestHTTP $po_request
  	 * @return bool True if record can be saved, false if not
  	 */
- 	public function isSaveable($po_request) {
+ 	public function isSaveable($po_request, $ps_bundle_name=null) {
  		// Is row loaded?
  		if (!($vn_list_id = $this->get('list_id'))) { // this happens when a new list item is about to be created. in those cases we extract the list from the request.
  			$vn_list_id = $this->_getListIDFromRequest($po_request);
@@ -729,7 +801,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
  		
  		$t_list = new ca_lists($vn_list_id);
  		if (!$t_list->getPrimaryKey()) { return false; }
- 		return $t_list->isSaveable($po_request);
+ 		return $t_list->isSaveable($po_request, $ps_bundle_name);
  	}
  	# ------------------------------------------------------
  	/**

@@ -94,7 +94,7 @@
  			JavascriptLoadManager::register('imageScroller');
  			JavascriptLoadManager::register('tabUI');
  			JavascriptLoadManager::register('panel');
- 			return parent::Index($pa_options);
+            return parent::Index($pa_options);
  		}
  		# -------------------------------------------------------
  		/**

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -108,10 +108,14 @@
 				$vm_val = $ps_placeholder;
 			}
 			
+			if (is_array($vm_val) && !is_null($pn_index)) {
+				$vm_val = isset($vm_val[$pn_index]) ? $vm_val[$pn_index] : null;
+			}
+			
 			if(is_array($vm_val)) {
 				foreach($vm_val as $vn_i => $vs_val) {
-					if (is_array($pa_item['settings']['original_values']) && (($vn_i = array_search(mb_strtolower($vs_val), $pa_item['settings']['original_values'])) !== false)) {
-						$vs_val = $pa_item['settings']['replacement_values'][$vn_i];
+					if (is_array($pa_item['settings']['original_values']) && (($vn_ix = array_search(mb_strtolower($vs_val), $pa_item['settings']['original_values'])) !== false)) {
+						$vs_val = $pa_item['settings']['replacement_values'][$vn_ix];
 					}
 					$vm_val[$vn_i] = trim($vs_val);
 				}

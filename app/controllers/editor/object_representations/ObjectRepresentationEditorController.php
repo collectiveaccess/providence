@@ -88,7 +88,10 @@
  			list($pn_representation_id, $t_rep) = $this->_initView();
  			
  			// Get player
- 			$this->view->setVar('player', $t_rep->getMediaTag('media', 'mp3', array('viewer_width' => '952px', 'viewer_height' => '36px', 'id' => 'caAnnotationEditorMediaPlayer', 'class' => 'caAnnotationEditorMediaPlayer')));
+ 			$va_display_info = caGetMediaDisplayInfo('annotation_editor', $t_rep->getMediaInfo("media", "original", "MIMETYPE"));
+ 			$this->view->setVar('player', $t_rep->getMediaTag('media', $va_display_info['display_version'], array('viewer_width' => $vn_player_width = $va_display_info['viewer_width'], 'viewer_height' => $vn_player_height = $va_display_info['viewer_height'], 'id' => 'caAnnoEditorMediaPlayer', 'class' => 'caAnnoEditorMediaPlayer'.((true) ? ' caAnnoEditorAudioMediaPlayer': ' caAnnoEditorVideoMediaPlayer'))));
+ 			$this->view->setVar('player_width', $vn_player_width);
+ 			$this->view->setVar('player_height', $vn_player_height);
  			
  			// Get # clips
  			$this->view->setVar('annotation_count', (int)$t_rep->getAnnotationCount());
@@ -107,8 +110,8 @@
  			$vn_start = $this->request->getParameter('s', pInteger);
  			$vn_max = $this->request->getParameter('n', pInteger);
  		 	
- 			$this->view->setVar('annotation_count', (int)$t_rep->getAnnotationCount());
- 			$this->view->setVar('annotation_list', $t_rep->getAnnotations(array('start' => $vn_start, 'max' => $vn_max)));
+ 			$this->view->setVar('annotation_count', $vn_total =(int)$t_rep->getAnnotationCount());
+ 			$this->view->setVar('annotation_list', array('start' => $vn_start, 'max' => $vn_max, 'total' => $vn_total, 'list' => array_values($t_rep->getAnnotations(array('start' => $vn_start, 'max' => $vn_max)))));
  			
  			return $this->render('ajax_representation_annotation_list_json.php');
  		}
@@ -152,6 +155,49 @@
  			} 
  			
  			return $this->render('object_representation_download_binary.php');
+ 		}
+ 		# -------------------------------------------------------
+ 		public function downloadCaptionFile() {
+ 			list($pn_representation_id, $t_rep) = $this->_initView();
+ 			
+ 			$pn_caption_id = $this->request->getParameter('caption_id', pString);
+ 			
+ 			$this->view->setVar('representation_id', $pn_representation_id);
+ 			$this->view->setVar('caption_id', $pn_caption_id);
+ 			$this->view->setVar('t_object_representation', $t_rep);
+ 			
+ 			$t_caption = new ca_object_representation_captions($pn_caption_id);
+ 			if (!$t_caption->getPrimaryKey() || ((int)$t_caption->get('representation_id') !== (int)$pn_representation_id)) {
+ 				die(_t("Invalid caption file"));
+ 			}
+ 			
+ 			$t_locale = new ca_locales();
+ 			$vn_locale_id = $t_caption->get('locale_id');
+ 			$vs_locale = $t_locale->localeIDToCode($vn_locale_id);
+ 			$this->view->setVar('file_path', $t_caption->getFilePath('caption_file'));
+ 			$va_info = $t_caption->getFileInfo("caption_file");
+ 			
+ 			switch($this->request->user->getPreference('downloaded_file_naming')) {
+ 				case 'idno':
+ 					$this->view->setVar('download_name', (str_replace(' ', '_', $t_rep->get('idno')))."_captions_{$vs_locale}.vtt");
+ 					break;
+ 				case 'idno_and_version':
+ 					$this->view->setVar('download_name', (str_replace(' ', '_', $t_rep->get('idno')))."_captions_{$vs_locale}.vtt");
+ 					break;
+ 				case 'idno_and_rep_id_and_version':
+ 					$this->view->setVar('download_name', (str_replace(' ', '_', $t_rep->get('idno')))."_representation_{$pn_representation_id}_captions_{$vs_locale}.vtt");
+ 					break;
+ 				case 'original_name':
+ 				default:
+ 					if ($va_info['ORIGINAL_FILENAME']) {
+ 						$this->view->setVar('download_name', $va_info['ORIGINAL_FILENAME']."_captions_{$vs_locale}.vtt");
+ 					} else {
+ 						$this->view->setVar('download_name', (str_replace(' ', '_', $t_rep->get('idno')))."_representation_{$pn_representation_id}_captions_{$vs_locale}.vtt");
+ 					}
+ 					break;
+ 			} 
+ 			
+ 			return $this->render('caption_download_binary.php');
  		}
  		# -------------------------------------------------------
  		# Sidebar info handler

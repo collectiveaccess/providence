@@ -265,16 +265,28 @@
 							<div class='caObjectRepresentationListActionButton'>
 								<span id="{fieldNamePrefix}download_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_DOWNLOAD__).' '._t('Download'), '', 'editor/objects', 'ObjectEditor', 'DownloadRepresentation', array('version' => 'original', 'representation_id' => "{n}", 'object_id' => $t_subject->getPrimaryKey(), 'download' => 1), array('id' => "{fieldNamePrefix}download_button_{n}"))); ?></span>
 							</div>
-							<div class="caAnnotationEditorLaunchButton annotationType{annotation_type} caObjectRepresentationListActionButton">
-								<span id="{fieldNamePrefix}edit_annotations_{n}"><a href="#" onclick="caAnnotationEditor<?php print $vs_id_prefix; ?>.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/object_representations', 'ObjectRepresentationEditor', 'GetAnnotationEditor', array('representation_id' => '{n}'))); ?>'); return false;" id="{fieldNamePrefix}edit_annotations_button_{n}"><img src='<?php print $this->request->getThemeUrlPath()."/graphics/buttons/clock.png"; ?>' border='0'/> <?php print _t('Annotations'); ?></a></span>
+							<div class="caAnnoEditorLaunchButton annotationType{annotation_type} caObjectRepresentationListActionButton">
+								<span id="{fieldNamePrefix}edit_annotations_{n}"><a href="#" onclick="caAnnoEditor<?php print $vs_id_prefix; ?>.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/object_representations', 'ObjectRepresentationEditor', 'GetAnnotationEditor', array('representation_id' => '{n}'))); ?>'); return false;" id="{fieldNamePrefix}edit_annotations_button_{n}"><img src='<?php print $this->request->getThemeUrlPath()."/graphics/buttons/clock.png"; ?>' border='0'/> <?php print _t('Annotations'); ?></a></span>
 							</div>
 						</div>	
 					</div>
 				</div>
 			
 				<br class="clear"/>
+				
 			
-				<div id="{fieldNamePrefix}media_metadata_container_{n}" >	
+				<div id="{fieldNamePrefix}media_replication_container_{n}" style="display: none;">
+					<div class="caRepresentationMediaReplicationButton">
+						<a href="#" id="{fieldNamePrefix}caRepresentationMediaReplicationButton_{n}" onclick="caToggleDisplayMediaReplication('{fieldNamePrefix}media_replication{n}', '{fieldNamePrefix}caRepresentationMediaReplicationButton_{n}', '{n}'); return false;" class="caRepresentationMediaReplicationButton"><?php print "<div style='margin-top:5px; width:11px; float:left;'><img src='".$this->request->getThemeUrlPath()."/graphics/icons/downarrow.jpg' border='0' height='11px' width='11px'/></div>"?><?php print _t('Replication'); ?></a>
+					</div>
+					<div>
+						<div id="{fieldNamePrefix}media_replication{n}" class="caRepresentationMediaReplication">
+							<?php print caBusyIndicatorIcon($this->request).' '._t('Loading'); ?>
+						</div>
+					</div>
+				</div>
+			
+				<div id="{fieldNamePrefix}media_metadata_container_{n}">	
 					<div class="caObjectRepresentationMetadataButton">
 						<a href="#" id="{fieldNamePrefix}caObjectRepresentationMetadataButton_{n}" onclick="caToggleDisplayObjectRepresentationMetadata('{fieldNamePrefix}media_metadata_{n}', '{fieldNamePrefix}caObjectRepresentationMetadataButton_{n}'); return false;" class="caObjectRepresentationMetadataButton"><?php print "<img src='".$this->request->getThemeUrlPath()."/graphics/icons/downarrow.jpg' border='0' height='11px' width='11px'/>"; ?><?php print _t('Media metadata'); ?></a>
 					</div>
@@ -289,6 +301,13 @@
 	
 				<br class="clear"/>
 			</div>
+			<script type="text/javascript">
+				jQuery(document).ready(function() {
+					if (caMediaReplicationMimeTypes.indexOf('{mimetype}') !== -1) {	// is replication configured for this media?
+						jQuery("#{fieldNamePrefix}media_replication_container_{n}").css("display", "block");
+					}
+				});
+			</script>
 <?php
 			print TooltipManager::getLoadHTML('bundle_ca_object_representations');
 ?>
@@ -416,6 +435,17 @@
 		jQuery('#' + media_metadata_button_id + ' img').rotate({ duration:500, angle: m ? 0 : 180, animateTo: m ? 180 : 0 });
 	}
 	
+	function caToggleDisplayMediaReplication(media_replication_id, media_replication_button_id, n) {
+		var m = jQuery('#' + media_replication_id).is(':hidden');
+		jQuery('#' + media_replication_button_id + ' img').rotate({ duration:500, angle: m ? 0 : 180, animateTo: m ? 180 : 0 });
+		
+		jQuery('#' + media_replication_id).slideToggle(300, function() { 
+			if(jQuery('#' + media_replication_id).css('display') == 'block') {
+				jQuery('#' + media_replication_id).load('<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'MediaReplicationControls', array('representation_id' => '')); ?>' + n); 
+			} 
+		});
+	}
+	
 	function caOpenRepresentationDetailEditor(id) {
 		jQuery('#<?php print $vs_id_prefix; ?>_detail_editor_' + id).slideDown(250);
 		jQuery('#<?php print $vs_id_prefix; ?>_rep_info_ro' + id).slideUp(250);
@@ -436,11 +466,13 @@
 		}
 	}
 	
-	var caAnnotationEditor<?php print $vs_id_prefix; ?>;
+	var caMediaReplicationMimeTypes = <?php print json_encode(MediaReplicator::getMediaReplicationMimeTypes()); ?>;
+	
+	var caAnnoEditor<?php print $vs_id_prefix; ?>;
 	jQuery(document).ready(function() {
 		caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-			templateValues: ['status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'media', 'locale_id', 'icon', 'type', 'dimensions', 'filename', 'num_multifiles', 'metadata', 'rep_type_id', 'type_id', 'typename', 'fetched', 'label', 'rep_label', 'id'],
+			templateValues: ['status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'media', 'locale_id', 'icon', 'type', 'dimensions', 'filename', 'num_multifiles', 'metadata', 'rep_type_id', 'type_id', 'typename', 'fetched', 'label', 'rep_label', 'id', 'fetched_from','mimetype'],
 			initialValues: <?php print json_encode($va_inital_values); ?>,
 			errors: <?php print json_encode($va_errors); ?>,
 			forceNewValues: <?php print json_encode($va_failed_inserts); ?>,
@@ -471,9 +503,9 @@
 		
 		});
 		if (caUI.initPanel) {
-			caAnnotationEditor<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
-				panelID: "caAnnotationEditor<?php print $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
-				panelContentID: "caAnnotationEditor<?php print $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
+			caAnnoEditor<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
+				panelID: "caAnnoEditor<?php print $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
+				panelContentID: "caAnnoEditor<?php print $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
 				exposeBackgroundColor: "#000000",				
 				exposeBackgroundOpacity: 0.7,					
 				panelTransitionSpeed: 400,						
@@ -488,10 +520,10 @@
 			});
 		}
 		
-		jQuery("body").append('<div id="caAnnotationEditor<?php print $vs_id_prefix; ?>" class="caAnnotationEditorPanel"><div id="caAnnotationEditor<?php print $vs_id_prefix; ?>ContentArea" class="caAnnotationEditorPanelContentArea"></div></div>');
+		jQuery("body").append('<div id="caAnnoEditor<?php print $vs_id_prefix; ?>" class="caAnnoEditorPanel"><div id="caAnnoEditor<?php print $vs_id_prefix; ?>ContentArea" class="caAnnoEditorPanelContentArea"></div></div>');
 	
 		// Hide annotation editor links for non-timebased media
-		jQuery(".caAnnotationEditorLaunchButton").hide();
+		jQuery(".caAnnoEditorLaunchButton").hide();
 		jQuery(".annotationTypeTimeBasedVideo, .annotationTypeTimeBasedAudio").show();
 	});
 </script>

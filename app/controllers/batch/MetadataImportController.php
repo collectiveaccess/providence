@@ -54,15 +54,16 @@
  		#
  		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+ 			parent::__construct($po_request, $po_response, $pa_view_paths);
+ 			
  			if (!$po_request->user->canDoAction('can_batch_import_metadata')) {
- 				$po_response->setRedirect($po_request->config->get('error_display_url').'/n/3210?r='.urlencode($po_request->getFullUrlPath()));
+ 				$po_response->setRedirect($po_request->config->get('error_display_url').'/n/3400?r='.urlencode($po_request->getFullUrlPath()));
  				return;
  			}
  			
  			JavascriptLoadManager::register('bundleableEditor');
  			JavascriptLoadManager::register('panel');
  			
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
  			$this->opo_datamodel = Datamodel::load();
  			$this->opo_app_plugin_manager = new ApplicationPluginManager();
@@ -169,7 +170,8 @@
  				'user_id' => $this->request->getUserID(),
  				
  				'logLevel' => $this->request->getParameter("logLevel", pInteger),
- 				'dryRun' => $this->request->getParameter("dryRun", pInteger)
+ 				'dryRun' => $this->request->getParameter("dryRun", pInteger),
+ 				'debug' => $this->request->getParameter("debug", pInteger)
  			);
  			
  			$va_last_settings = $va_options;
@@ -177,6 +179,7 @@
  			$va_last_settings['inputFormat'] = $this->request->getParameter("inputFormat", pString); 
  			$va_last_settings['logLevel'] = $this->request->getParameter("logLevel", pInteger); 
  			$va_last_settings['dryRun'] = $this->request->getParameter("dryRun", pInteger); 
+ 			$va_last_settings['debug'] = $this->request->getParameter("debug", pInteger); 
  			$this->request->user->setVar('batch_metadata_last_settings', $va_last_settings);
  			
  			$this->view->setVar("t_subject", $t_subject);

@@ -178,6 +178,7 @@ class ca_locales extends BaseModel {
 	public static $s_locale_id_to_code = array();
 	public static $s_locale_list_cache = array();
 	public static $s_locale_count_cache = array();
+	public static $s_locale_id_to_name = array();
 	
 	public static $s_default_locale_id = null;
 	
@@ -249,8 +250,9 @@ class ca_locales extends BaseModel {
 		$va_locales = array();
 		while($qr_locales->nextRow()) {
 			if ($vb_available_for_cataloguing_only && $qr_locales->get('dont_use_for_cataloguing')) { continue; }
+			$vs_name = $qr_locales->get('name');
 			if ($vb_return_display_values) {
-				$vm_val = $qr_locales->get('name');
+				$vm_val = $vs_name;
 			} else {
 				$vm_val = $qr_locales->getRow();
 			}
@@ -268,6 +270,7 @@ class ca_locales extends BaseModel {
  			
  			ca_locales::$s_locale_code_to_id[$vs_code] = $vn_id;
  			ca_locales::$s_locale_id_to_code[$vn_id] = $vs_code;
+ 			ca_locales::$s_locale_id_to_name[$vn_id] = $vs_name;
  		}
 		
 		ca_locales::$s_locale_list_cache[$vs_cache_key] = $va_locales;
@@ -369,6 +372,20 @@ class ca_locales extends BaseModel {
 			ca_locales::getLocaleList();
 		}
 		return ca_locales::$s_locale_id_to_code[$pn_id];
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns the locale name of the specified locale_id, or null if the id is invalid. Note that this does not
+	 * change the state of the model - it just returns the locale.
+	 *
+	 * @param int $pn_id The locale_id of the locale, or null if the code is invalid
+	 * @return string The name of the locale
+	 */
+	public function localeIDToName($pn_id) {
+		if(!isset(ca_locales::$s_locale_id_to_name[$pn_id])){
+			ca_locales::getLocaleList();
+		}
+		return ca_locales::$s_locale_id_to_name[$pn_id];
 	}
 	# ------------------------------------------------------
 }

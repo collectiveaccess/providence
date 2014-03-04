@@ -184,10 +184,11 @@ class RequestHTTP extends Request {
 		
 		$this->ops_base_path = join('/', $va_tmp);
 		$this->ops_full_path = $_SERVER['REQUEST_URI'];
-		if (!preg_match("!/index.php!", $this->ops_full_path)) { $this->ops_full_path = rtrim($this->ops_full_path, "/")."/index.php"; }
+		if (!preg_match("!/index.php!", $this->ops_full_path) && !preg_match("!/service.php!", $this->ops_full_path)) { $this->ops_full_path = rtrim($this->ops_full_path, "/")."/index.php"; }
 		$vs_path_info = str_replace($_SERVER['SCRIPT_NAME'], "", str_replace("?".$_SERVER['QUERY_STRING'], "", $this->ops_full_path));
 		
 		$this->ops_path_info = $vs_path_info ? $vs_path_info : (isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '');
+		if (__CA_URL_ROOT__) { $this->ops_path_info = preg_replace("!^".__CA_URL_ROOT__."/!", "", $this->ops_path_info); }
 	}
 	# -------------------------------------------------------
 	/** 
@@ -284,7 +285,8 @@ class RequestHTTP extends Request {
 		if ($this->config->get('always_use_default_theme')) { $pb_use_default = true; }
 		if (!$pb_use_default && $this->isLoggedIn()) {
 			$vs_theme = $this->user->getPreference('ui_theme');
-		} else {
+		} 
+		if (!$vs_theme) {
 			$vs_theme = $this->config->get('theme');		// default theme
 		}
 		return $this->config->get('themes_url').'/'.$vs_theme;
@@ -294,7 +296,8 @@ class RequestHTTP extends Request {
 		if ($this->config->get('always_use_default_theme')) { $pb_use_default = true; }
 		if (!$pb_use_default && $this->isLoggedIn()) {
 			$vs_theme = $this->user->getPreference('ui_theme');
-		} else {
+		} 
+		if (!$vs_theme) {
 			$vs_theme = $this->config->get('theme');		// default theme
 		}
 		return $this->config->get('themes_directory').'/'.$vs_theme;
@@ -613,7 +616,7 @@ class RequestHTTP extends Request {
 					if (caFileIsIncludable($vs_user_class_name.".php")) {
 						require_once($vs_user_class_name.".php"); 
 						$va_options = $pa_options["options"];
-						eval("\$this->user = new $vs_user_class_name($vn_user_id,\$va_options);");			// add user object
+						$this->user = new $vs_user_class_name($vn_user_id, $va_options);		// add user object
 				
 						if ((!$this->user->isActive()) || ($this->user->numErrors()) || ($pa_options['noPublicUsers'] && $this->user->isPublicUser())) {			// error means user_id in session is invalid
 							$vb_login_successful = false;
@@ -640,7 +643,7 @@ class RequestHTTP extends Request {
 					if (!caFileIsIncludable($vs_user_class_name.".php")) { continue; }
 					
 					require_once($vs_user_class_name.".php");
-					 eval("\$this->user = new $vs_user_class_name();");						// add user object
+					$this->user = new $vs_user_class_name();		// add user object
 					
 					$vs_tmp1 = $vs_tmp2 = null;
 					if (($vn_auth_type = $this->user->authenticate($vs_tmp1, $vs_tmp2, $pa_options["options"]))) {	# error means user_id in session is invalid
@@ -675,7 +678,8 @@ class RequestHTTP extends Request {
 				
 				if (!caFileIsIncludable($vs_user_class_name.".php")) { continue; }
 				require_once($vs_user_class_name.".php");
-				 eval("\$this->user = new $vs_user_class_name();");		
+				$this->user = new $vs_user_class_name();
+					
 				if (($vn_auth_type = $this->user->authenticate($pa_options["user_name"], $pa_options["password"], $pa_options["options"]))) {	# error means user_id in session is invalid
 					if (($pa_options['noPublicUsers'] && $this->user->isPublicUser()) || !$this->user->isActive()) {
 						$vb_login_successful = false;

@@ -65,7 +65,7 @@ undatedDate = [undated, unknown]
 presentDate = [gegenwart, ?, ??, ???, ????]
 beforeQualifier = [vor]
 diedQualifier = [gestorben, gest., gest, d, d.]
-afterQualifier = [nach]
+afterQualifier = [nach, ab, seit]
 bornQualifier = [geboren, geb., geb, b, b.]
 
 # Text to indicate century (as in "20th century")

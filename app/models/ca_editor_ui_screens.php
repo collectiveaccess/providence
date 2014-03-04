@@ -189,7 +189,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		
 		),
 		"RELATED_TABLES" => array(
-		
+			
 		)
 	);
 	# ------------------------------------------------------
@@ -212,8 +212,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		parent::__construct($pn_id);
 	}
 	# ------------------------------------------------------
-	protected function initLabelDefinitions() {
-		parent::initLabelDefinitions();
+	protected function initLabelDefinitions($pa_options=null) {
+		parent::initLabelDefinitions($pa_options);
 		
 		$this->BUNDLES['ca_editor_ui_bundle_placements'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Screen content'));
 		$this->BUNDLES['ca_editor_ui_screen_type_restrictions'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Type restrictions'));
@@ -377,7 +377,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 * @param mixed $pm_table_name_or_num The table name or number specifying the content type to fetch bundles for. If omitted the content table of the currently loaded display will be used.
 	 * @param array $pa_options Supported options are:
-	 *		NONE YET
+	 *		dontCache = disable caching when fetching model properties
 	 * @return array And array of bundles keyed on display label. Each value is an array with these keys:
 	 *		bundle = The bundle name (eg. ca_objects.idno)
 	 *		display = Display label for each available bundle
@@ -386,11 +386,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	 * Will return null if table name or number is invalid.
 	 */
 	public function getAvailableBundles($pm_table_name_or_num=null, $pa_options=null) {
+		$pb_dont_cache = caGetOption('dontCache', $pa_options, false);
 		if (!$pm_table_name_or_num) { $pm_table_name_or_num = $this->getTableNum(); }
 		
 		if (!is_numeric($pm_table_name_or_num)) { $pm_table_name_or_num = $this->_DATAMODEL->getTableNum($pm_table_name_or_num); }
 		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($pm_table_name_or_num, false))) { return null; }
 		$vs_table = $t_instance->tableName();
+
+		// if cache is disabled, make sure bundle definitions are up-to-date for this instance. they are usually cached.
+		if($pb_dont_cache) { $t_instance->reloadLabelDefinitions(); }
+
 		$vs_table_display_name = $t_instance->getProperty('NAME_PLURAL');
 		
 		$t_placement = new ca_editor_ui_bundle_placements(null, array());
@@ -398,7 +403,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_available_bundles = array();
 		
-		$va_elements = ca_metadata_elements::getElementsAsList(true, $pm_table_name_or_num, null, true, false, true);
+		$va_elements = ca_metadata_elements::getElementsAsList(true, $pm_table_name_or_num, null, !$pb_dont_cache, false, true);
 		foreach($va_defined_bundles as $vs_bundle => $va_info) {
 			$vs_bundle_proc = preg_replace('!^ca_attribute_!', '', $vs_bundle);
 			$va_additional_settings = array();

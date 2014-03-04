@@ -28,6 +28,20 @@
 var caUI = caUI || {};
 
 (function ($) {
+	$.widget("ui.relationshipLookup", $.ui.autocomplete, {
+		_renderItem: function( ul, item ) {
+			var li = jQuery("<li>")
+				.attr("data-value", item.value)
+				.append(jQuery("<a>").html(item.label))
+				.appendTo(ul);
+			
+			if (item.id <= 0) {
+				jQuery(li).find("a").removeClass().addClass("quickaddMenuItem");
+				jQuery(li).removeClass().addClass("quickaddMenuItem");
+			}
+			return li;
+		}
+	});
 	caUI.initRelationBundle = function(container, options) {
 		options.onInitializeItem = function(id, values, options) { 
 			jQuery("#" + options.itemID + id + " select").css('display', 'inline');
@@ -73,7 +87,7 @@ var caUI = caUI || {};
 			
 			var autocompleter_id = options.itemID + id + ' #' + options.fieldNamePrefix + 'autocomplete' + id;
 
-			jQuery('#' + autocompleter_id).autocomplete( 
+			jQuery('#' + autocompleter_id).relationshipLookup( 
 				jQuery.extend({ minLength: ((parseInt(options.minChars) > 0) ? options.minChars : 3), delay: 800, html: true,
 					source: function( request, response ) {
 						$.ajax({

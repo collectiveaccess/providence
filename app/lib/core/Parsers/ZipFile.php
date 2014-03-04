@@ -192,11 +192,13 @@ class ZipFile {
         $name     = str_replace('\\', '/', $name);
 
         $dtime    = dechex($this->unix2DosTime($time));
-        $hexdtime = '\x' . $dtime[6] . $dtime[7]
-                  . '\x' . $dtime[4] . $dtime[5]
-                  . '\x' . $dtime[2] . $dtime[3]
-                  . '\x' . $dtime[0] . $dtime[1];
-        eval('$hexdtime = "' . $hexdtime . '";');
+        $hex      = $dtime[6] . $dtime[7] . $dtime[4] . $dtime[5] . $dtime[2] . $dtime[3] . $dtime[0] . $dtime[1];
+        
+        if(function_exists('hex2bin')) { // this is only available in PHP 5.4+
+            $hexdtime = hex2bin($hex);
+        } else {
+            $hexdtime = pack("H*" , $hex);    
+        }
 
         $fr   = "\x50\x4b\x03\x04";
         $fr   .= "\x14\x00";            // ver needed to extract

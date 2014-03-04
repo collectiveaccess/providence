@@ -40,8 +40,8 @@
  
 	class ObjectRelationshipBaseModel extends BaseRelationshipModel {
 		# ------------------------------------------------------
-		protected function initLabelDefinitions() {
-			parent::initLabelDefinitions();
+		protected function initLabelDefinitions($pa_options=null) {
+			parent::initLabelDefinitions($pa_options);
 			$this->BUNDLES['ca_object_representation_chooser'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media representation chooser'));
 		}
 		# ------------------------------------------------------

@@ -75,10 +75,10 @@ class WLPlugVisualizerMap Extends BaseVisualizerPlugIn Implements IWLPlugVisuali
 		if (!($vo_data = $this->getData())) { return null; }
 		
 		$po_request = (isset($pa_options['request']) && $pa_options['request']) ? $pa_options['request'] : null;
-		if (!isset($pa_options['width']) || ((int)$pa_options['width'] < 50)) { $pa_options['width'] = 500; }
-		if (!isset($pa_options['height']) || ((int)$pa_options['height'] < 50)) { $pa_options['height'] = 500; }
 		
-		$o_map = new GeographicMap($pa_options['width'], $pa_options['height'], $pa_options['id']);
+		list($vs_width, $vs_height) = $this->_parseDimensions(caGetOption('width', $pa_options, 500), caGetOption('height', $pa_options, 500));
+		
+		$o_map = new GeographicMap($vs_width, $vs_height, $pa_options['id']);
 		$this->opn_num_items_rendered = 0;
 		
 		foreach($pa_viz_settings['sources'] as $vs_source_code => $va_source_info) {
@@ -115,18 +115,45 @@ class WLPlugVisualizerMap Extends BaseVisualizerPlugIn Implements IWLPlugVisuali
 		if ($vn_cur_pos < 0) { $vn_cur_pos = 0; }
 		$po_data->seek(0);
 		
+		$o_dm = Datamodel::load();
+		
+		//
+		// Make sure sources actually exist
+		//
 		$va_sources = $pa_viz_settings['sources'];
-		while($po_data->nextHit()) {
+		foreach($va_sources as $vs_source_code => $va_source_info) {
+			$va_tmp = explode('.', $va_source_info['data']);
+			if (!($t_instance = $o_dm->getInstanceByTableName($va_tmp[0], true))) { unset($va_sources[$vs_source_code]); continue; } 
+			if (!$t_instance->hasField($va_tmp[1]) && (!$t_instance->hasElement($va_tmp[1]))) { unset($va_sources[$vs_source_code]); }
+		}
+		
+		$vn_c = 0;
+		//
+		// Only check the first 10,000 returned rows before giving up, to avoid timeouts
+		//
+		while($po_data->nextHit() && ($vn_c < 10000)) {
 			foreach($va_sources as $vs_source_code => $va_source_info) {
 				if (trim($po_data->get($va_source_info['data']))) {
 					$po_data->seek($vn_cur_pos);
 					return true;
 				}
 			}
+			$vn_c++;
 		}
 		$po_data->seek($vn_cur_pos);
 		return false;
 	}
-	# ------------------------------------------------
+	# --------------------------------------------------------------------------------
+	/**
+	 * Register any required javascript and CSS for loading
+	 *
+	 * @return void 
+	 */
+	public function registerDependencies() {
+		$va_packages = array("openlayers", "maps");
+		foreach($va_packages as $vs_package) { JavascriptLoadManager::register($vs_package); }
+		return $va_packages;
+	}
+	# --------------------------------------------------------------------------------
 }
 ?>

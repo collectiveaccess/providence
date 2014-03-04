@@ -62,7 +62,7 @@ class BaseJSONService {
 			$this->addError(("Invalid HTTP request method"));
 		}
 		
-		$this->opn_id = intval($this->opo_request->getParameter("id",pInteger));
+		$this->opn_id = $this->opo_request->getParameter("id",pString);	// we allow for a string to support fetching by idno; typically it's a numeric id
 
 		$vs_post_data = $this->opo_request->getRawPostData();
 		if(strlen(trim($vs_post_data))>0){
@@ -84,7 +84,7 @@ class BaseJSONService {
 
 		if(strlen($ps_table)>0){
 			if(!in_array($ps_table, $this->opa_valid_tables)){
-				$this->addError(_t("Table name does not exist"));
+				$this->addError(_t("Table does not exist"));
 			}
 		}
 	}
@@ -121,10 +121,10 @@ class BaseJSONService {
 	/**
 	 * Get BaseModel instance for given table and optionally load the record with the specified ID
 	 * @param string $ps_table table name, e.g. "ca_objects"
-	 * @param int $pn_id primary key value of the record to load
+	 * @param mixed $pn_id integer primary key value of the record to load, or string idno value for the record to load 
 	 * @return BaseModel
 	 */
-	protected function _getTableInstance($ps_table,$pn_id=null){
+	protected function _getTableInstance($ps_table,$pn_id=null){		// $pn_id might be a string if the user is fetching by idno
 		if(!in_array($ps_table, $this->opa_valid_tables)){
 			$this->opa_errors[] = _t("Accessing this table directly is not allowed");
 			return false;
@@ -134,16 +134,26 @@ class BaseJSONService {
 
 		$t_instance = $this->opo_dm->getInstanceByTableName($ps_table);
 
-		if($pn_id > 0){
-			if(!$t_instance->load($pn_id)){
-				$this->opa_errors[] = _t("ID does not exist");
-				return false;
-			} else if(!$vb_include_deleted && $t_instance->get("deleted")){
-				$this->opa_errors[] = _t("ID does not exist");
-				return false;
+		if ($pn_id && !is_numeric($pn_id) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD')) && preg_match("!^[A-Za-z0-9_\-\.,\[\]]+$!", $pn_id)) {
+			// User is loading by idno
+			if(!$t_instance->load(array($vs_idno_fld => $pn_id))){
+					$this->opa_errors[] = _t("idno does not exist");
+					return false;
+				} else if(!$vb_include_deleted && $t_instance->get("deleted")){
+					$this->opa_errors[] = _t("idno does not exist");
+					return false;
+				}
+		} else {
+			if($pn_id > 0){
+				if(!$t_instance->load($pn_id)){
+					$this->opa_errors[] = _t("ID does not exist");
+					return false;
+				} else if(!$vb_include_deleted && $t_instance->get("deleted")){
+					$this->opa_errors[] = _t("ID does not exist");
+					return false;
+				}
 			}
 		}
-
 		return $t_instance;
 	}
 	# -------------------------------------------------------

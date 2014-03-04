@@ -203,7 +203,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	# Change logging
 	# ------------------------------------------------------
 	protected $UNIT_ID_FIELD = null;
-	protected $LOG_CHANGES_TO_SELF = false;
+	protected $LOG_CHANGES_TO_SELF = true;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
 		
@@ -348,7 +348,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 */
 	public function getAvailableSettings() {
 		$t_attr_val = Attribute::getValueInstance((int)$this->get('datatype'));
-		return $t_attr_val ? $t_attr_val->getAvailableSettings() : null;
+		return $t_attr_val ? $t_attr_val->getAvailableSettings($this->getSettings()) : null;
 	}
 	# ------------------------------------------------------
 	/**
@@ -445,6 +445,10 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 				}
 				break;
 			# --------------------------------------------
+			case DT_PASSWORD:
+				$vs_return .= '<input name="'.$vs_input_name.'" type="password" size="'.$va_properties["width"].'" value="'.$this->getSetting($ps_setting).'" />'."\n";
+				break;
+			# --------------------------------------------
 			case DT_CHECKBOXES:
 				$va_attributes = array('value' => '1');
 				if (trim($this->getSetting($ps_setting))) {
@@ -457,6 +461,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
  				$vn_width = (isset($va_properties['width']) && (strlen($va_properties['width']) > 0)) ? $va_properties['width'] : "100px";
 				$vn_height = (isset($va_properties['height']) && (strlen($va_properties['height']) > 0)) ? $va_properties['height'] : "50px";
 				
+				if (!$vs_input_id) { $vs_input_id = $vs_input_name; }
 				if ($vn_height > 1) { $va_attr['multiple'] = 1; $vs_input_name .= '[]'; }
 				$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height);
 				
@@ -468,7 +473,11 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 					$va_opts['value'] = $vm_value;
 					if(!isset($va_opts['value'])) { $va_opts['value'] = -1; }		// make sure default list item is never selected
 				}
-			
+				
+				// reload settings form when value for this element changes
+				if (isset($va_properties['refreshOnChange']) && (bool)$va_properties['refreshOnChange']) {
+					$va_attr['onchange'] = "caSetElementsSettingsForm({ {$vs_input_id} : jQuery(this).val() }); return false;";
+				}
 				$vs_return .= caHTMLSelect($vs_input_name, $va_properties['options'], $va_attr, $va_opts);
 				break;			
 			# --------------------------------------------
@@ -719,15 +728,18 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	/*
 	 *
 	 */
-	public static function getSortableElements($pm_table_name_or_num, $pm_type_name_or_id=null){
+	public static function getSortableElements($pm_table_name_or_num, $pm_type_name_or_id=null, $pa_options=null){
 		$va_elements = ca_metadata_elements::getElementsAsList(false, $pm_table_name_or_num, $pm_type_name_or_id);
 		if (!is_array($va_elements) || !sizeof($va_elements)) { return array(); }
 		
 		$va_sortable_elements = array();
+		
+		$vs_key = caGetOption('indexByElementCode', $pa_options, false) ? 'element_code' : 'element_id';
 		foreach($va_elements as $vn_id => $va_element) {
+			if ((int)$va_element['datatype'] === 0) { continue; }
 			if (!isset($va_element['settings']['canBeUsedInSort'])) { $va_element['settings']['canBeUsedInSort'] = true; }
 			if ($va_element['settings']['canBeUsedInSort']) {
-				$va_sortable_elements[$va_element['element_id']] = $va_element;
+				$va_sortable_elements[$va_element[$vs_key]] = $va_element;
 			}
 		}
 		return $va_sortable_elements;

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -52,6 +52,7 @@
 	 */
 	function caProcessRefineryParents($ps_refinery_name, $ps_table, $pa_parents, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, $o_log=null, $pa_options=null) {
 		global $g_ui_locale_id;
+		if (!is_array($pa_options)) { $pa_options = array(); }
 		
 		$vn_list_id = caGetOption('list_id', $pa_options, null);
 		$vb_hierarchy_mode = caGetOption('hierarchyMode', $pa_options, false);
@@ -124,6 +125,8 @@
 				}
 			}
 			
+			$pa_options = array_merge(array_merge(array('matchOn' => array('idno', 'label')), $pa_options));
+			
 			switch($ps_table) {
 				case 'ca_objects':
 					$vn_id = DataMigrationUtils::getObjectID($vs_name, $vn_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
@@ -135,6 +138,12 @@
 					$va_attributes['_preferred_labels'] = $vs_name;
 					break;
 				case 'ca_places':
+					if(!$vn_id) {	// get place hierarchy root
+						require_once(__CA_MODELS_DIR__."/ca_places.php");
+						$t_place = new ca_places();
+						$vn_id = $t_place->getHierarchyRootID($va_attributes['hierarchy_id']);
+						$va_attributes['parent_id'] = $vn_id;
+					}
 					$vn_id = DataMigrationUtils::getPlaceID($vs_name, $vn_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
 					$va_attributes['preferred_labels']['name'] = $va_attributes['_preferred_labels'] = $vs_name;
 					break;
@@ -155,10 +164,22 @@
 					$va_attributes['preferred_labels']['name'] = $va_attributes['_preferred_labels'] = $vs_name;
 					break;
 				case 'ca_list_items':
+					if(!$vn_id) {	// get place hierarchy root
+						require_once(__CA_MODELS_DIR__."/ca_lists.php");
+						$t_list = new ca_lists();
+						$vn_id = $t_list->getRootItemIDForList($vn_list_id);
+						$va_attributes['parent_id'] = $vn_id;
+					}
 					$vn_id = DataMigrationUtils::getListItemID($vn_list_id, $vs_name, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
 					$va_attributes['preferred_labels']['name_singular'] = $va_attributes['preferred_labels']['name_plural'] = $vs_name;
 					break;
 				case 'ca_storage_locations':
+					if(!$vn_id) {	// get storage location hierarchy root
+						require_once(__CA_MODELS_DIR__."/ca_storage_locations.php");
+						$t_loc = new ca_storage_locations();
+						$vn_id = $t_loc->getHierarchyRootID();
+						$va_attributes['parent_id'] = $vn_id;
+					}
 					$vn_id = DataMigrationUtils::getStorageLocationID($vs_name, $vn_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
 					$va_attributes['preferred_labels']['name'] = $va_attributes['_preferred_labels'] = $vs_name;
 					break;
@@ -193,12 +214,26 @@
 		if (is_array($pa_attributes)) {
 			$va_attr_vals = array();
 			foreach($pa_attributes as $vs_element_code => $va_attrs) {
+				$vb_is_repeating = false;
+				$vn_num_repeats = null;
 				if(is_array($va_attrs)) {
 					foreach($va_attrs as $vs_k => $vs_v) {
 						// BaseRefinery::parsePlaceholder may return an array if the input format supports repeated values (as XML does)
-						// DataMigrationUtils::getCollectionID(), which ca_data_importers::importDataFromSource() uses to create related collections
-						// only supports non-repeating attribute values, so we join any values here and call it a day.
-						$va_attr_vals[$vs_element_code][$vs_k] = (is_array($vm_v = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $ps_delimiter, $pn_c))) ? join(" ", $vm_v) : $vm_v;
+						$va_vals = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $ps_delimiter, $pn_c);
+						if (sizeof($va_vals) > 1) { $vb_is_repeating = true; }
+						
+						if ($vb_is_repeating) {
+							if (is_null($vn_num_repeats)) { $vn_num_repeats = sizeof($va_vals); }
+							
+							$vn_c = 0;
+							foreach($va_vals as $vn_x => $va_v) {
+								$va_attr_vals[$vs_element_code][$vn_x][$vs_k] = $va_v;
+								$vn_c++;
+								if ($vn_c >= $vn_num_repeats) { break; }
+							}
+						} else {
+							$va_attr_vals[$vs_element_code][$vs_k] = (is_array($vm_v = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $ps_delimiter, $pn_c))) ? join(" ", $vm_v) : $vm_v;
+						}
 					}
 				} else {
 					$va_attr_vals[$vs_element_code][$vs_element_code] = (is_array($vm_v = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $ps_delimiter, $pn_c))) ? join(" ", $vm_v) : $vm_v;
@@ -343,6 +378,9 @@
 			} else {
 				$vs_idno_stub = BaseRefinery::parsePlaceholder($pa_related_options['idno_stub'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));	
 			}	
+			
+			$pa_options = array_merge(array_merge(array('matchOn' => array('idno', 'label')), $pa_options));
+			
 			switch($ps_related_table) {
 				case 'ca_objects':
 					$vn_id = DataMigrationUtils::getObjectID($vs_name, $vn_parent_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
@@ -557,6 +595,8 @@
 					$vs_item = BaseRefinery::parsePlaceholder($vs_item, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));
 					if(!is_array($va_attr_vals)) { $va_attr_vals = array(); }
 					$va_attr_vals_with_parent = array_merge($va_attr_vals, array('parent_id' => $va_val['_parent_id']));
+					
+					$pa_options = array_merge(array_merge(array('matchOn' => array('idno', 'label')), $pa_options));
 					
 					switch($ps_table) {
 						case 'ca_objects':

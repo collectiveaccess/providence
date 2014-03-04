@@ -57,7 +57,7 @@
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
 			// Set place hierarchy
-			if ($vs_hierarchy = $pa_item['settings']['placeSplitter_hierarchy']) {
+			if ($vs_hierarchy = $pa_item['settings']['placeSplitter_placeHierarchy']) {
 				$vn_hierarchy_id = caGetListItemID('place_hierarchies', $vs_hierarchy);
 			} else {
 				// Default to first place hierarchy
@@ -143,7 +143,16 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Hierarchy'),
-				'description' => _t('Identifies the root node of the place hierarchy to add places to.')
+				'description' => _t('Place hierarchy to create, if required.')
+			),
+			'placeSplitter_placeHierarchy' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Hierarchy'),
+				'description' => _t('Identifier of the place hierarchy to add places under.')
 			),
 			'placeSplitter_relationshipTypeDefault' => array(
 				'formatType' => FT_TEXT,

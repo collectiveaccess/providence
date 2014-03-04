@@ -12,7 +12,7 @@
 		<fieldType name="daterange" class="solr.DateField" multiValued="true" />
 		<fieldType name="int" class="solr.IntField" />
 		<fieldType name="float" class="solr.FloatField" />
-		<fieldType name="geocode" class="solr.LatLonType" subFieldType="double" multiValued="true"/>
+		<fieldType name="geocode" class="solr.LatLonType" subFieldSuffix="_coordinate" multiValued="true"/>
 		<fieldType name="bool" class="solr.BoolField" />
 		<fieldtype name="ignored" stored="false" indexed="false" class="solr.StrField" /> 
 	</types>
@@ -24,6 +24,7 @@
 		<field name="modified" type="daterange" indexed="true" stored="false" multiValued="false"/>
 		<field name="modified_user_id" type="int" indexed="true" stored="false" multiValued="false"/>
 		<dynamicField name="*" type="ignored" />
+		<dynamicField name="*_coordinate"  type="float" indexed="true" stored="false"/>
 	</fields>
 	<uniqueKey><!--KEY--></uniqueKey>
 	<defaultSearchField>text</defaultSearchField>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -199,6 +199,7 @@
 			$va_settings = $this->getAvailableSettings();
 			$va_setting_values = is_array($pa_options['settings']) ? $pa_options['settings'] : array();
 			
+			$va_options = array('id_prefix' => $pa_options['id']);
 			foreach($va_settings as $vs_setting => $va_setting_info) {
 				$va_options['id'] = $pa_options['id']."_{$vs_setting}";
 				$va_options['label_id'] = $va_options['id'].'_label';
@@ -270,7 +271,7 @@
 				$vs_label_id = "setting_{$ps_setting}_label";
 			}
 			
-			$vs_return = "\n".'<div class="formLabel">'."\n";
+			$vs_return = "\n".'<div class="formLabel" id="'.$vs_input_id.'_container">'."\n";
 			$vs_return .= '<span id="'.$vs_label_id.'"  class="'.$vs_label_id.'">'.$va_properties['label'].'</span>';
 			
 			
@@ -323,6 +324,16 @@
 					$va_attributes = array('value' => '1', 'id' => $vs_input_id);
 					if ((int)$vs_value === 1) {
 						$va_attributes['checked'] = '1';
+					}
+					if (isset($va_properties['hideOnSelect'])) {
+						if (!is_array($va_properties['hideOnSelect'])) { $va_properties['hideOnSelect'] = array($va_properties['hideOnSelect']); }
+						
+						$va_ids = array();
+						foreach($va_properties['hideOnSelect'] as $vs_n) {
+							$va_ids[] = "#".$pa_options['id_prefix']."_{$vs_n}_container";
+						}
+						$va_attributes['onchange'] = 'jQuery(this).prop("checked") ? jQuery("'.join(",", $va_ids).'").slideUp(250).find("input, textarea").val("") : jQuery("'.join(",", $va_ids).'").slideDown(250);';
+						
 					}
 					$vs_return .= caHTMLCheckboxInput($vs_input_name, $va_attributes, array());
 					break;
@@ -435,6 +446,10 @@
 								_t('Order created') => 'relation_id',		// forces sorting by relationship primary key  - aka order relationships were created
 								_t('Preferred label') => $va_properties['showSortableBundlesFor'].".preferred_labels.".$t_rel->getLabelDisplayField()
 							);
+							if ($vs_idno_fld = $t_rel->getProperty('ID_NUMBERING_ID_FIELD')) {
+								$va_select_opts[$t_rel->getFieldInfo($vs_idno_fld, 'LABEL')] = $vs_idno_fld;
+							}
+							
 							foreach($va_elements as $vn_element_id => $va_element) {
 								if(!$va_element['display_label']) { continue; }
 								$va_select_opts[_t('Element: %1', $va_element['display_label'])] = $va_properties['showSortableBundlesFor'].".".$va_element['element_code'];

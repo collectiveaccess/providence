@@ -164,6 +164,29 @@
 	}
 	# ---------------------------------------------------------------------------------------------
 	/**
+	 * Return list of types for which user has access
+	 *
+	 * @param mixed $pm_table_name_or_num Table name of number to fetch types for
+	 * @param array $pa_options Array of options:
+	 *		access = minimum access level user must have to a type for it to be returned. Values are:
+	 *			__CA_BUNDLE_ACCESS_NONE__ (0)
+	 *			__CA_BUNDLE_ACCESS_READONLY__ (1)
+	 *			__CA_BUNDLE_ACCESS_EDIT__ (2)
+	 *			If not specified types are returned for which the user has at least __CA_BUNDLE_ACCESS_READONLY__
+	 *
+	 * @return array List of numeric type_ids for which the user has access, or null if there are no restrictions at all
+	 */
+	function caGetTypeListForUser($pm_table_name_or_num, $pa_options=null) {
+		if(is_null($va_types = caGetTypeRestrictionsForUser($pm_table_name_or_num, $pa_options))) {
+			$o_dm = Datamodel::load();
+			$t_instance = $o_dm->getInstanceByTableName($pm_table_name_or_num, true);
+			if (!$t_instance) { return null; }	// bad table
+			$va_types = array_keys($t_instance->getTypeList());
+		}
+		return $va_types;
+	}
+	# ---------------------------------------------------------------------------------------------
+	/**
 	 * Converts the given list of type names or type_ids into an expanded list of numeric type_ids suitable for enforcing type restrictions. Processing
 	 * includes expansion of types to include subtypes and conversion of any type codes to type_ids.
 	 *
@@ -319,6 +342,51 @@
 		
 		$o_config = Configuration::load();
 		return (int)$o_config->get('default_type_access_level');
+	}
+	# ---------------------------------------------------------------------------------------------
+	/**
+	 * Determines if the specified item (and optionally a specific bundle in that item) are readable by the user
+	 *
+	 * @param int $pn_user_id
+	 * @param mixed $pm_table A table name or number
+	 * @param int $pn_id The primary key value of the row
+	 * @param string $ps_bundle_name An optional bundle to check access for
+	 *
+	 * @return True if user has read access, otherwise false if the user does not have access or null if one or more parameters are invalid
+	 */
+	function caCanRead($pn_user_id, $pm_table, $pn_id, $ps_bundle_name=null) {
+		$o_dm = Datamodel::load();
+		$ps_table_name = (is_numeric($pm_table)) ? $o_dm->getTableName($pm_table) : $pm_table;
+		
+		if (!($t_instance = $o_dm->getInstanceByTableName($ps_table_name, true))) { return null; }
+		if (!$t_instance->load($pn_id)) { return null; }
+		
+		$t_user = new ca_users($pn_user_id);
+		if (!$t_user->getPrimaryKey()) { return null; }
+		
+		list($ps_table_name, $ps_bundle_name) = caTranslateBundlesForAccessChecking($ps_table_name, $ps_bundle_name);
+		
+		// Check type restrictions
+ 		if ((bool)$t_instance->getAppConfig()->get('perform_type_access_checking')) {
+			$vn_type_access = $t_user->getTypeAccessLevel($ps_table_name, $t_instance->getTypeID());
+			if ($vn_type_access < __CA_BUNDLE_ACCESS_READONLY__) {
+				return false;
+			}
+		}
+		
+		// Check item level restrictions
+		if ((bool)$t_instance->getAppConfig()->get('perform_item_level_access_checking')) {
+			$vn_item_access = $t_instance->checkACLAccessForUser($t_user);
+			if ($vn_item_access < __CA_ACL_READONLY_ACCESS__) {
+				return false;
+			}
+		}
+		
+		if ($ps_bundle_name) {
+			if ($t_user->getBundleAccessLevel($ps_table_name, $ps_bundle_name) < __CA_BUNDLE_ACCESS_READONLY__) { return false; }
+		}
+		
+		return true;
 	}
 	# ---------------------------------------------------------------------------------------------
 	/**

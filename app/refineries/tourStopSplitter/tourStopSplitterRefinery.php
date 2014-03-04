@@ -33,7 +33,7 @@
 		public function __construct() {
 			$this->ops_name = 'tourStopSplitter';
 			$this->ops_title = _t('Tour stop splitter');
-			$this->ops_description = _t('Provides several tourstop location-related import functions: splitting of multiple locations in a string into individual values, mapping of type and relationship type for related locations, building location hierarchies and merging location data with names.');
+			$this->ops_description = _t('Provides several tourstop location-related import functions.');
 			
 			$this->opb_returns_multiple_values = true;
 			

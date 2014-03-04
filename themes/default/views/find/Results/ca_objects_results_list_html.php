@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -79,13 +79,12 @@
 					<td style="width:10px">
 						<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_object_id; ?>' class="addItemToSetControl" />
 					</td>
-	<?php
+<?php
 					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_objects', $vn_object_id, array(), array())."</td>";;
-		
-					
+						
 					foreach($va_display_list as $vn_placement_id => $va_display_item) {
-						print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request))."</td>";
-					}
+                        print "<td><span class=\"read-more\">".$t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request))."</span></td>";
+                    }
 ?>	
 				</tr>
 <?php
@@ -93,6 +92,23 @@
 				$vn_item_count++;
 			}
 ?>
-		</tbody></table>
+			</tbody>
+<?php
+			if (is_array($va_bottom_line = $this->getVar('bottom_line'))) {
+?>
+				<tfoot>
+					<tr>
+						<td colspan="2" class="listtableTotals"><?php print _t('Totals'); ?></td>
+<?php
+						foreach($va_bottom_line as $vn_placement_id => $vs_bottom_line_value) {
+							print "<td>{$vs_bottom_line_value}</td>";
+						}
+?>
+					</tr>
+				</tfoot>
+<?php
+			}
+?>
+		</table>
 	</form><!--end caFindResultsForm -->
 </div><!--end scrollingResults -->

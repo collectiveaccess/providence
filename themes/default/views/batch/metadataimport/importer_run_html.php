@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -101,16 +101,27 @@ print $vs_control_box = caFormControlBox(
 			</div>
 		</div>
 		<div class='bundleLabel'>
-			<span class="formLabelText"><?php print _t('Dry run'); ?></span> 
+			<span class="formLabelText"><?php print _t('Testing options'); ?></span> 
 			<div class="bundleContainer">
 				<div class="caLabelList" >
 					<p>
+						<div style="float: left;" class="formLabelPlain">
 <?php	
 		$va_attr = array('id' => 'caDryRun', 'value' => 1);
 		if ($va_last_settings['dryRun'] == 1) { $va_attr['checked'] = 1; }
-		print caHTMLCheckboxInput('dryRun', $va_attr);
+		print caHTMLCheckboxInput('dryRun', $va_attr)." "._t('Dry run');
 ?>
+						</div>
+						<div style="float: left; margin-left: 15px;" class="formLabelPlain">
+<?php	
+		$va_attr = array('id' => 'caDebug', 'value' => 1);
+		if ($va_last_settings['debug'] == 1) { $va_attr['checked'] = 1; }
+		print caHTMLCheckboxInput('debug', $va_attr)." "._t('Debugging output');
+?>					
+						</div>
+						<br class="clear"/>
 					</p>
+					
 				</div>
 			</div>
 		</div>
@@ -166,9 +177,9 @@ print $vs_control_box = caFormControlBox(
 		jQuery("#caInputFormatList").html(opts.join("\n")).val(currentFormat);
 		
 		currentFormat = jQuery("#caInputFormatList").val();
+		if(!currentFormat) { currentFormat = relevantFormats[0]; jQuery("#caInputFormatList").val(currentFormat); }
 		
 		// Set visibility of source input field based upon format
-		
 		if (info = formatInfo[currentFormat.toLowerCase()]) {
 			if (info['inputType'] == 0) {
 				// file

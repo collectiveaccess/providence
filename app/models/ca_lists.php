@@ -567,7 +567,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$va_items = $pa_items[$pn_root_id];
 		if (!is_array($va_items)) { return; }
 		if (isset($pa_options['extractValuesByUserLocale']) && $pa_options['extractValuesByUserLocale']) {
-			ksort($va_items);
+			uksort($va_items, "strnatcasecmp");
 			foreach($va_items as $vs_key => $va_items_by_item_id) {
 				foreach($va_items_by_item_id as $vn_item_id => $va_item_level) {
 					// output this item
@@ -1014,7 +1014,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * If no list is specified the currently loaded list is used.
 	 *
 	 * @param mixed $pm_list_name_or_id List code or list_id of list to return default item_id for. If omitted the currently loaded list will be used.
-	 * @return int The item_id of the default element or null if no list was specified or loaded, or if no default is set for the list in question.
+	 * @return int The item_id of the default element or null if no list was specified or loaded. If no default is set for the list in question the first item found is returned.
 	 */
 	public function getDefaultItemID($pm_list_name_or_id=null) {
 		if($pm_list_name_or_id) {
@@ -1031,7 +1031,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			return $t_list_item->getPrimaryKey();
 		}
 		
-		return null;
+		return array_shift($this->getItemsForList($vn_list_id, array('idsOnly' => true)));
 	}
 	# ------------------------------------------------------
 	/**
@@ -1627,8 +1627,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 * Overrides BundlableLabelableBaseModelWithAttributes:isSaveable to implement system list access restrictions
 	 */
-	public function isSaveable($po_request) {
-		if(parent::isSaveable($po_request)){ // user could save this list
+	public function isSaveable($po_request, $ps_bundle_name=null) {
+		if(parent::isSaveable($po_request, $ps_bundle_name)){ // user could save this list
 			if($this->getPrimaryKey()){
 				if($this->get('is_system_list')){
 					if(!$po_request->user->canDoAction('can_edit_system_lists')){

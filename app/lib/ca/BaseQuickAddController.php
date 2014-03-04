@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2013 Whirl-i-Gig
+ * Copyright 2012-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -116,15 +116,15 @@
  						$vn_type_id = array_shift($va_tmp);
  					}
  					if (!$vn_type_id) {
- 						$va_tmp = array_keys($t_subject->getTypeList());
- 						$vn_type_id = array_shift($va_tmp);
+ 						$vn_type_id = $t_subject->getDefaultTypeID();
+ 						$t_subject->set('type_id', $vn_type_id);
  					}
  				}
  			}
  			
  			// Set type restrictions of bundle that spawned quickadd form
  			if ($vs_restrict_to_types = trim($this->request->getParameter('types', pString))) {
- 				$this->view->setVar('restrict_to_types', $va_restrict_to_type_ids = caMakeTypeIDList($t_subject->tableName(), explode(',', $vs_restrict_to_types)));
+ 				$this->view->setVar('restrict_to_types', $va_restrict_to_type_ids = caMakeTypeIDList($t_subject->tableName(), explode(',', $vs_restrict_to_types), array('dont_include_subtypes_in_type_restriction' => (bool)$this->request->getParameter('dont_include_subtypes_in_type_restriction', pString))));
  				
  				if (!in_array($vn_type_id, $va_restrict_to_type_ids)) {
  					$vn_type_id = $va_restrict_to_type_ids[0];		// get first type on list since default isn't part of restriction
@@ -171,6 +171,13 @@
 				$t_subject->setFailedNonPreferredLabelInserts($va_field_values['nonpreferred_label']);		
 			}
 			
+			// Set annotation properties
+			if (is_array($va_field_values['annotation_properties']) && method_exists($t_subject, 'setPropertyValue')) {
+				foreach($va_field_values['annotation_properties'] as $vs_property => $vs_property_value) {
+					$t_subject->setPropertyValue($vs_property, $vs_property_value);	
+				}	
+			}
+			
 			
 			if (!$t_ui->getPrimaryKey()) {
 				$this->notification->addNotification(_t('There is no configuration available for this editor. Check your system configuration and ensure there is at least one valid configuration for this type of editor.'), __NOTIFICATION_TYPE_ERROR__);
@@ -186,6 +193,8 @@
 			$this->view->setVar('q', $this->request->getParameter('q', pString));
 			
 			$this->view->setVar('default_parent_id', $this->opo_result_context->getParameter($t_subject->tableName().'_last_parent_id'));
+			
+			$this->view->setVar('notifications', $this->notification->getNotifications());
 			
 			$this->render('quickadd_html.php');
  		}
