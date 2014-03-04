@@ -1804,7 +1804,11 @@ caResizeSideNav();
 			if ($t_instance && ($vs_gotten_val = $t_instance->get($vs_proc_tag, $pa_options))) {
 				$ps_template = str_replace('^'.$vs_tag, $vs_gotten_val, $ps_template);
 			} else {
-				$ps_template = str_replace('^'.$vs_tag, isset($pa_values[$vs_proc_tag]) ? $pa_values[$vs_proc_tag] : '', $ps_template);
+				if (is_array($vs_val = isset($pa_values[$vs_proc_tag]) ? $pa_values[$vs_proc_tag] : '')) {
+					// If value is an array try to make a string of it
+					$vs_val = join(" ", $vs_val);
+				}
+				$ps_template = str_replace('^'.$vs_tag, $vs_val, $ps_template);
 			}
 		}
 		return $ps_template;
