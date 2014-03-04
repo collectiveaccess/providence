@@ -604,6 +604,24 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		}
 		return $va_sorted_hierarchies;
 	 }
+	 # ------------------------------------------------------------------
+	/**
+	 * Set field value(s) for the table row represented by this object
+	 *
+	 */
+	public function set($pa_fields, $pm_value="", $pa_options=null) {
+		if(!is_array($pa_fields)) {
+			$pa_fields = array($pa_fields => $pm_value);
+		}
+		
+		foreach($pa_fields as $vs_field => $vm_value) {
+			if(($vs_field == 'list_id') && (!is_numeric($vm_value)) && ($vn_list_id = caGetListID($vm_value))) {
+				$pa_fields[$vs_field] = $vn_list_id;
+			}
+		}
+
+		return parent::set($pa_fields, null, $pa_options);
+	}
 	 # ------------------------------------------------------
 	 /**
 	 * Returns name of hierarchy for currently loaded item or, if specified, item with item_id = to optional $pn_id parameter

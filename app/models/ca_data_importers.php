@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2013 Whirl-i-Gig
+ * Copyright 2012-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -361,6 +361,16 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			),
 			'label' => _t('Error policy'),
 			'description' => _t('Determines how errors are handled for the import.  Options are to ignore the error, stop the import when an error is encountered and to receive a prompt when the error is encountered.')
+		);
+		
+		$va_settings['basePath'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 60, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Base path'),
+			'description' => _t('For XML data formats, an XPath expression selecting nodes to be treated as individual records. If left blank, each XML document will be treated as a single record.')
 		);
 		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
@@ -1214,7 +1224,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$o_trans->rollback();
 			return false;
 		}
-		if (!$o_reader->read($ps_source)) {
+		if (!$o_reader->read($ps_source, array('basePath' => $t_mapping->getSetting('basePath')))) {
 			ca_data_importers::logImportError(_t("Could not read source %1 (format=%2)", $ps_source, $ps_format), $va_log_import_error_opts);
 			if($vb_use_ncurses) { ncurses_end(); }
 			$o_trans->rollback();
@@ -1644,6 +1654,16 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							$vm_val = caProcessTemplate($va_item['settings']['formatWithTemplate'], array_replace($va_row, array((string)$va_item['source'] => ca_data_importers::replaceValue($vm_val, $va_item))));
 							$va_row[$va_item['source']] = $vm_val;	// copy formatted data into row so refineries can pick it up
 						}
+						
+						if (isset($va_item['settings']['applyRegularExpressions']) && is_array($va_item['settings']['applyRegularExpressions'])) {
+							if(is_array($va_item['settings']['applyRegularExpressions'])) {
+								foreach($va_item['settings']['applyRegularExpressions'] as $vn_i => $va_regex) {
+									if (!strlen($va_regex['match'])) { continue; }
+									$vm_val = preg_replace("!".str_replace("!", "\\!", $va_regex['match'])."!", $va_regex['replaceWith'], $vm_val);
+								}
+							}
+							$va_row[$va_item['source']] = $vm_val;
+						}
 					
 					
 						// Get mapping error policy
@@ -1805,6 +1825,24 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$t_subject->setIdnoWithTemplate($vs_idno);
 				} else {
 					$t_subject->set($vs_idno_fld, $vs_idno, array('assumeIdnoStubForLotID' => true));	// assumeIdnoStubForLotID forces ca_objects.lot_id values to always be considered as a potential idno_stub first, before use as a ca_objects.lot_di
+				}
+				
+				// Look for parent_id in the content tree
+				$vs_parent_id_fld = $t_subject->getProperty('HIERARCHY_PARENT_ID_FLD');
+				foreach($va_content_tree as $vs_table_name => $va_content) {
+					if ($vs_table_name == $vs_subject_table) {		
+						foreach($va_content as $vn_i => $va_element_data) {
+							foreach($va_element_data as $vs_element => $va_element_content) {	
+								switch($vs_element) {
+									case $vs_parent_id_fld:
+										if ($va_element_content[$vs_parent_id_fld]) {
+											$t_subject->set($vs_parent_id_fld, $va_element_content[$vs_parent_id_fld]);
+										}
+										break;
+								}
+							}
+						}
+					}
 				}
 				
 				foreach($va_mandatory_field_mapping_ids as $vs_mandatory_field => $vn_mandatory_mapping_item_id) {
@@ -2032,6 +2070,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								case 'ca_entities':
 									if ($vn_rel_id = DataMigrationUtils::getEntityID($va_element_data['preferred_labels'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('matchOn' => array('idno', 'label'), 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
 										if (!($vs_rel_type = $va_element_data['_relationship_type']) && !($vs_rel_type = $va_element_data['idno']['_relationship_type'])) { break; }
+										
 										$t_subject->addRelationship($vs_table_name, $vn_rel_id, trim($va_element_data['_relationship_type']), null, null, null, null, array('interstitialValues' => $va_element_data['_interstitial']));
 										
 										if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related entity with relationship %2", $vs_idno, trim($va_element_data['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {

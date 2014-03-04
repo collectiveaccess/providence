@@ -8809,7 +8809,6 @@ $pa_options["display_form_field_tips"] = true;
 				$va_to_reindex_relations[(int)$qr_res->get('relation_id')] = $qr_res->getRow();	
 			}
 			if (!sizeof($va_to_reindex_relations)) { return 0; }
-			print_r($va_to_reindex_relations);
 			$va_new_relations = array();
 			foreach($va_to_reindex_relations as $vn_relation_id => $va_row) {
 				$t_item_rel->clear();

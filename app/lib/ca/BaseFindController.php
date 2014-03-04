@@ -617,10 +617,8 @@
 					case '_xlsx':
 						require_once(__CA_LIB_DIR__."/core/Parsers/PHPExcel/PHPExcel.php");
 						require_once(__CA_LIB_DIR__."/core/Parsers/PHPExcel/PHPExcel/Writer/Excel2007.php");
-						$vs_content = $this->render('Results/'.$this->ops_tablename.'_xlsx_results.php');
-						$vb_printed_properly = true;
+						$vs_content = $this->render('Results/xlsx_results.php');
 						return;
-						break;
 					case '_csv':
 						$vs_delimiter = ",";
 						$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename.'_csv'), 0, 30);
