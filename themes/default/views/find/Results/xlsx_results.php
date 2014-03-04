@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * themes/default/views/find/Results/ca_objects_xlsx_results.php
+ * themes/default/views/find/Results/xlsx_results.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -33,8 +33,8 @@
 	$vs_current_sort 		= $this->getVar('current_sort');
 	$vo_ar					= $this->getVar('access_restrictions');
 
-	$vn_ratio_pixels_to_excel_height = 0.95 ;
-	$vn_ratio_pixels_to_excel_width = 0.135 ;
+	$vn_ratio_pixels_to_excel_height = 0.85;
+	$vn_ratio_pixels_to_excel_width = 0.135;
 
 	$va_a_to_z = range('A', 'Z');
 	
@@ -43,7 +43,7 @@
 	// more accurate (but slower) automatic cell size calculation
 	PHPExcel_Shared_Font::setAutoSizeMethod(PHPExcel_Shared_Font::AUTOSIZE_METHOD_EXACT);
 
-	$sheet = $workbook->getActiveSheet();
+	$o_sheet = $workbook->getActiveSheet();
 	// mise en forme
 	$columntitlestyle = array(
 			'font'=>array(
@@ -72,72 +72,95 @@
 					'allborders'=>array(
 							'style' => PHPExcel_Style_Border::BORDER_THIN)));
 	
-	$sheet->getDefaultStyle()->applyFromArray($cellstyle);
-	$sheet->setTitle("CollectiveAccess");
+	$o_sheet->getDefaultStyle()->applyFromArray($cellstyle);
+	$o_sheet->setTitle("CollectiveAccess");
 	
-	$line = 1;
+	$vn_line = 1;
 
 	$vs_column = reset($va_a_to_z);
 	
-	
 	// Column headers
-	$sheet->getRowDimension($line)->setRowHeight(30);
+	$o_sheet->getRowDimension($vn_line)->setRowHeight(30);
 	foreach($va_display_list as $vn_placement_id => $va_display_item) {
 		if($vs_column) {
-			$sheet->setCellValue($vs_column.$line,$va_display_item['display']);
-			$sheet->getStyle($vs_column.$line)->applyFromArray($columntitlestyle);
+			$o_sheet->setCellValue($vs_column.$vn_line,$va_display_item['display']);
+			$o_sheet->getStyle($vs_column.$vn_line)->applyFromArray($columntitlestyle);
 			$vs_column = next($va_a_to_z);
 		}
 	}
 
 	
-	$line = 2 ;
+	$vn_line = 2 ;
 
 	// Other lines
 	while($vo_result->nextHit()) {
-		$column = reset($va_a_to_z);
+		$vs_column = reset($va_a_to_z);
+
+		// default to automatic row height. works pretty well in Excel but not so much in LibreOffice/OOo :-(
+		$o_sheet->getRowDimension($vn_line)->setRowHeight(-1);
 
 		foreach($va_display_list as $vn_placement_id => $va_display_item) {
 
-			if (strpos($va_display_item['bundle_name'], 'ca_object_representations.media') !== false) {
-				$media = str_replace("ca_object_representations.media.", "", $va_display_item['bundle_name']);
-				$vs_display_text = $vo_result->getMediaPath('ca_object_representations.media',$media);
+			if (
+				(strpos($va_display_item['bundle_name'], 'ca_object_representations.media') !== false)
+				&&
+				($va_display_item['settings']['display_mode'] == 'media') // make sure that for the 'url' mode we don't insert the image here
+			) {
+				$vs_version = str_replace("ca_object_representations.media.", "", $va_display_item['bundle_name']);
+				$va_info = $vo_result->getMediaInfo('ca_object_representations.media',$vs_version);
 				
-				if (is_file($vs_display_text)) {
-					$image = "image".$column.$line;
-					$drawing = new PHPExcel_Worksheet_Drawing();
-					$drawing->setName($image);
-					$drawing->setDescription($image);
-					$drawing->setPath($vs_display_text);
-					$drawing->setCoordinates($column.$line);
-					$drawing->setWorksheet($sheet);
+				if($va_info['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
+				
+					if (is_file($vs_path = $vo_result->getMediaPath('ca_object_representations.media',$vs_version))) {
+						$image = "image".$vs_column.$vn_line;
+						$drawing = new PHPExcel_Worksheet_Drawing();
+						$drawing->setName($image);
+						$drawing->setDescription($image);
+						$drawing->setPath($vs_path);
+						$drawing->setCoordinates($vs_column.$vn_line);
+						$drawing->setWorksheet($o_sheet);
+						$drawing->setOffsetX(10);
+						$drawing->setOffsetY(10);
+					}
+
+					$vn_width = floor(intval($va_info['PROPERTIES']['width']) * $vn_ratio_pixels_to_excel_width);
+					$vn_height = floor(intval($va_info['PROPERTIES']['height']) * $vn_ratio_pixels_to_excel_height);
+
+					// set the calculated withs for the current row and column,
+					// but make sure we don't make either smaller than they already are
+					if($vn_width > $o_sheet->getColumnDimension($vs_column)->getWidth()) {
+						$o_sheet->getColumnDimension($vs_column)->setWidth($vn_width);	
+					}
+					if($vn_height > $o_sheet->getRowDimension($vn_line)->getRowHeight()){
+						$o_sheet->getRowDimension($vn_line)->setRowHeight($vn_height);
+					}
+
 				}
 
 			} elseif ($vs_display_text = $t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request))) {
-				$sheet->setCellValue($column.$line,$vs_display_text);
+				$o_sheet->setCellValue($vs_column.$vn_line,$vs_display_text);
 				// We trust the autosizing up to a certain point, but
-				// since Arial is not fixed-with and font rendering
+				// we want column widths to be finite :-).
+				// Since Arial is not fixed-with and font rendering
 				// is different from system to system, this can get a
 				// little dicey. The values come from experimentation.
-				if ($sheet->getColumnDimension($column)->getWidth() == -1 ) {  // don't overwrite existing settings
+				if ($o_sheet->getColumnDimension($vs_column)->getWidth() == -1) {  // don't overwrite existing settings
 					if(strlen($vs_display_text)>55) {
-						$sheet->getColumnDimension($column)->setWidth(50);
+						$o_sheet->getColumnDimension($vs_column)->setWidth(50);
 					}
 				}
 			}
 
-			$column = next($va_a_to_z);
+			$vs_column = next($va_a_to_z);
 		}
 
-		// automatic row height. works pretty well in Excel but not so much in LibreOffice/OOo :-(
-		$sheet->getRowDimension($line)->setRowHeight(-1);
-		$line ++;
+		$vn_line++;
 	}
 
 	// set column width to auto for all columns where we haven't set width manually yet
 	foreach(range('A','Z') as $vs_chr) {
-		if ($sheet->getColumnDimension($vs_chr)->getWidth() == -1) {
-			$sheet->getColumnDimension($vs_chr)->setAutoSize(true);	
+		if ($o_sheet->getColumnDimension($vs_chr)->getWidth() == -1) {
+			$o_sheet->getColumnDimension($vs_chr)->setAutoSize(true);	
 		}
 	}
 	
