@@ -360,6 +360,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Format with template'),
 			'description' => _t('Format imported value with provided template. Template may include caret (^) prefixed placeholders that refer to data source values.')
 		);
+		$va_settings['applyRegularExpressions'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 4,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Apply one or more regular expression-based substitutions to a soruce value prior to import.'),
+			'description' => _t('A list of Perl-compatible regular expressions. Each expression has two parts, a matching expression and a substitution expression, and is expressed as a JSON object with <em>match</em> and <em>replaceWith</em> keys. Ex. [{"match": "([\\d]+)\\.([\\d]+)", "replaceWith": "\\1:\\2"}, {"match": "[^\\d:]+", "replaceWith": ""}] ')
+		);
 		$va_settings['maxLength'] = array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_FIELD,
