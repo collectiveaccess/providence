@@ -812,6 +812,7 @@ create table ca_storage_locations
    icon                           longblob                       not null,
    hier_left                      decimal(30,20)                 not null,
    hier_right                     decimal(30,20)                 not null,
+   access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
    rank                             int unsigned                     not null default 0,
@@ -883,6 +884,7 @@ create table ca_loans (
    hier_left                      decimal(30,20)                 not null,
    hier_right                     decimal(30,20)                 not null,
    hier_loan_id                   int unsigned                   not null,
+   access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
    rank                             int unsigned                     not null default 0,
@@ -953,6 +955,7 @@ create table ca_movements (
    is_template                    tinyint unsigned               not null default 0,
    source_id                      int unsigned,
    source_info                    longtext                       not null,
+   access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
    rank                             int unsigned                     not null default 0,
@@ -1262,8 +1265,8 @@ create table ca_representation_annotations
    props                          longtext                       not null,
    preview                        longblob                       not null,
    source_info                    longtext                       not null,
-   status                         tinyint unsigned               not null default 0,
    access                         tinyint unsigned               not null default 0,
+   status                         tinyint unsigned               not null default 0,
    primary key (annotation_id),
    constraint fk_ca_rep_annot_locale_id foreign key (locale_id)
       references ca_locales (locale_id) on delete restrict on update restrict,
@@ -4266,8 +4269,8 @@ create table ca_sets (
     rating_status tinyint unsigned not null default 0,
 	set_code    varchar(100) null,
 	table_num	tinyint unsigned not null,
-	status		tinyint unsigned not null,
 	access		tinyint unsigned not null default 0,	
+	status		tinyint unsigned not null default 0,
 	hier_left	decimal(30,20) unsigned not null,
 	hier_right	decimal(30,20) unsigned not null,
     deleted     tinyint unsigned not null default 0,
@@ -6470,5 +6473,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 98 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (98, unix_timestamp());
+/* CURRENT MIGRATION: 99 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (99, unix_timestamp());
