@@ -6169,9 +6169,12 @@ div.dialogHeader {
     display: none;
     margin: 0px;
     padding:0px !important;
-    border: 2px solid #999999;
+    border: 2px solid #eee;
     z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
     background-color: #FFFFFF;
+    border-radius:4px;
+    -moz-border-radius:4px;
+    -webkit-border-radius:4px;
 }
 
 #caRelationQuickAddPanel .close a{
