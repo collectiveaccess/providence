@@ -1483,7 +1483,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 						break;
 					case 'skip_on_preferred_labels':
-						if (is_array($va_ids = $t_subject->getIDsByLabel($va_pref_label_values, null, $vs_type)) && sizeof($va_ids)) {
+						$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
+							array('type_id' => $vs_type, 'preferred_labels' => $va_pref_label_values),
+							array('returnAs' => 'ids')
+						));
+						if (is_array($va_ids) && sizeof($va_ids)) {
 							$o_log->logInfo(_t('[%1] Skipped import because of existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy));
 							ca_data_importers::$s_num_records_skipped++;
 							continue(2);	// skip because label matched
@@ -1500,7 +1504,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						if ($vs_existing_record_policy == 'merge_on_idno') { break; }	// fall through if merge_on_idno_and_preferred_labels
 					case 'merge_on_preferred_labels':
 					case 'merge_on_preferred_labels_with_replace':
-						if (is_array($va_ids = $t_subject->getIDsByLabel($va_pref_label_values, null, $vs_type)) && sizeof($va_ids)) {
+						$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
+							array('type_id' => $vs_type, 'preferred_labels' => $va_pref_label_values),
+							array('returnAs' => 'ids')
+						));
+						if (is_array($va_ids) && sizeof($va_ids)) {
 							$t_subject->load($va_ids[0]);
 							$o_log->logInfo(_t('[%1] Merged with existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy));
 						}
@@ -1522,7 +1530,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 						if ($vs_existing_record_policy == 'overwrite_on_idno') { break; }	// fall through if overwrite_on_idno_and_preferred_labels
 					case 'overwrite_on_preferred_labels':
-						if (is_array($va_ids = $t_subject->getIDsByLabel($va_pref_label_values, null, $vs_type)) && sizeof($va_ids)) {
+						$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
+							array('type_id' => $vs_type, 'preferred_labels' => $va_pref_label_values),
+							array('returnAs' => 'ids')
+						));
+						if (is_array($va_ids) && sizeof($va_ids)) {
 							$t_subject->load($va_ids[0]);
 							$t_subject->setMode(ACCESS_WRITE);
 							$t_subject->delete(true, array('hard' => true));

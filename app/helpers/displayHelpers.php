@@ -738,8 +738,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		if($t_item->getPrimaryKey()) {
 			if (sizeof($va_reps) > 0) {	
 				$va_imgs = array();
-				$vs_buf .= "<div class='button'><a href='#' id='inspectorShowMedia' class='open'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_IMAGE__)."</a></div><div id='inspectorMedia' >";
-			
+				
+				$vs_buf .= "<div id='inspectorMedia'>";
 			
 				foreach($va_reps as $va_rep) {
 					if (!($va_rep['info']['preview170']['WIDTH'] && $va_rep['info']['preview170']['HEIGHT'])) { continue; }
@@ -758,7 +758,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 									
 				if (sizeof($va_imgs) > 0) {
 					$vs_buf .= "
-				<div id='inspectorInfoRepScrollingViewer'>
+				<div id='inspectorInfoRepScrollingViewer' style='position: relative;'>
 					<div id='inspectorInfoRepScrollingViewerContainer'>
 						<div id='inspectorInfoRepScrollingViewerImageContainer'></div>
 					</div>
@@ -771,8 +771,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 					</div>
 		";
 					}
-					TooltipManager::add(".leftScroll", _t('3/10'));
-					TooltipManager::add(".rightScroll", _t('5/10'));
+					TooltipManager::add(".leftScroll", _t('Previous'));
+					TooltipManager::add(".rightScroll", _t('Next'));
 
 					$vs_buf .= "<script type='text/javascript'>";
 					$vs_buf .= "
@@ -877,6 +877,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 			
 				TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($vs_type_name, 'UTF-8')));
 			}
+			
 			if ($vn_num_objects > 0) {
 				$vs_buf .= caNavLink($po_view->request, caNavIcon($po_view->request, __CA_NAV_BUTTON_DOWNLOAD__), "button", $po_view->request->getModulePath(), $po_view->request->getController(), 'getLotMedia', array('lot_id' => $t_item->getPrimaryKey(), 'download' => 1), array('id' => 'inspectorLotMediaDownloadButton'));
 			}
@@ -949,6 +950,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 				TooltipManager::add("#inspectorMoreInfo", _t('See more information about this record'));
 
 			}
+			
 			$vs_buf .= "</div><!--End tooIcons-->";
 		}
 	
@@ -1368,8 +1370,6 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		// -------------------------------------------------------------------------------------
 		// Export
 		
-
-
 		if($po_view->request->user->canDoAction('can_export_'.$vs_table_name) && $t_item->getPrimaryKey() && (sizeof(ca_data_exporters::getExporters($t_item->tableNum()))>0)) {
 			$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" id="caExportItemButton">';
 				
@@ -1423,20 +1423,21 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 	
 				if (sizeof($va_reps)) {
 					$vs_buf .= "
-						if (inspectorCookieJar.get('inspectorShowMediaIsOpen') == undefined) {		// default is to have media open
+		if (inspectorCookieJar.get('inspectorShowMediaIsOpen') == undefined) {		// default is to have media open
 			inspectorCookieJar.set('inspectorShowMediaIsOpen', 1);
 		}
+		
 		if (inspectorCookieJar.get('inspectorShowMediaIsOpen') == 1) {
-			jQuery('#inspectorMedia').toggle(0);
-			jQuery('#inspectorShowMedia').html('".addslashes(caNavIcon($po_view->request, __CA_NAV_BUTTON_COLLAPSE__))."').addClass('closed');
+			jQuery('#inspectorMedia').toggle();
 		}
 	
-		jQuery('#inspectorShowMedia').click(function() {
-			jQuery('#inspectorMedia').slideToggle(350, function() { 
-				inspectorCookieJar.set('inspectorShowMediaIsOpen', (this.style.display == 'block') ? 1 : 0); 
-jQuery('#inspectorShowMedia').html((this.style.display == 'block') ? '".addslashes(caNavIcon($po_view->request, __CA_NAV_BUTTON_COLLAPSE__))."' : '".addslashes(caNavIcon($po_view->request, __CA_NAV_BUTTON_IMAGE__))."').removeClass((this.style.display == 'block') ? 'open' : 'closed').addClass((this.style.display == 'block') ? 'closed' : 'open');				
-caResizeSideNav();
-			}); 
+		jQuery('#caColorbox').on('click', function(e) {
+			if (e.altKey) {
+				jQuery('#inspectorMedia').slideToggle(200, function() { 
+					inspectorCookieJar.set('inspectorShowMediaIsOpen', (this.style.display == 'block') ? 1 : 0); 
+						caResizeSideNav();
+				}); 
+			}
 			return false;
 		});
 					";
@@ -1444,7 +1445,6 @@ caResizeSideNav();
 			}
 
 			$vs_buf .= "</script>\n";
-			TooltipManager::addFunction("#inspectorShowMedia", "return (jQuery('#inspectorMedia').is(':visible')) ? '".addslashes(_t('Hide media'))."' : '".addslashes(_t('Show media'))."';");
 		}
 
         $o_app_plugin_manager = new ApplicationPluginManager();

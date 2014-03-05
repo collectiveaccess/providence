@@ -930,7 +930,6 @@ final class ConfigurationExporter {
 			
 			
 			$va_placements = $t_display->getPlacements();
-			//print_R(($va_placements));
 			
 			$vs_buf .= "<bundlePlacements>\n";
 			foreach($va_placements as $vn_placement_id => $va_placement_info) {
@@ -969,8 +968,6 @@ final class ConfigurationExporter {
 			$vs_buf .= "\t</display>\n";
 		}
 		$vs_buf .= "</displays>\n";
-		
-		//print_R($va_displays);
 		
 		return $vs_buf;
 	}
