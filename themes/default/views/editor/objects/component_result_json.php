@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * views/manage/comment_download_binary.php : 
+ * app/views/editor/objects/quickadd_result_json.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,17 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
-	$vs_file_path = $this->getVar('version_path');
-	
-	header("Content-type: application/octet-stream");
-	header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
-	header("Cache-Control: no-store, no-cache, must-revalidate");
-	header("Cache-Control: post-check=0, pre-check=0", false);
-	header("Pragma: no-cache");
-	header("Cache-control: private");
-	header('Content-Length: ' . filesize($vs_file_path));
-	
-	header("Content-Disposition: attachment; filename=".$this->getVar('version_download_name'));
-	
-	readfile($vs_file_path);
+ 
+	print json_encode($this->getVar('response'));
 ?>

@@ -86,6 +86,12 @@
  			
  			$t_model 				= $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
  			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
+ 			
+ 			// Make sure user has access to at least one type
+ 			if ($t_model->getTypeFieldName() && (!is_array($va_types = caGetTypeListForUser($this->ops_tablename, array('access' => __CA_BUNDLE_ACCESS_READONLY__))) || !sizeof($va_types))) {
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
 			
 			$va_display_list = array();
 			$t_display = $this->opo_datamodel->getInstanceByTableName('ca_bundle_displays', true); 
@@ -611,10 +617,8 @@
 					case '_xlsx':
 						require_once(__CA_LIB_DIR__."/core/Parsers/PHPExcel/PHPExcel.php");
 						require_once(__CA_LIB_DIR__."/core/Parsers/PHPExcel/PHPExcel/Writer/Excel2007.php");
-						$vs_content = $this->render('Results/'.$this->ops_tablename.'_xlsx_results.php');
-						$vb_printed_properly = true;
+						$vs_content = $this->render('Results/xlsx_results.php');
 						return;
-						break;
 					case '_csv':
 						$vs_delimiter = ",";
 						$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename.'_csv'), 0, 30);

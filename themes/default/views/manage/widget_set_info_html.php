@@ -28,7 +28,7 @@
  
 	$va_sets = $this->getVar('sets');
 	
-	if ($this->request->user->canDoAction("is_administrator")) {
+	if ($this->request->user->canDoAction('is_administrator') || $this->request->user->canDoAction('can_administrate_sets')) {
 ?>
 <h3><?php print _t('Set Statistics'); ?>:
 <div><?php

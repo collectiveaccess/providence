@@ -359,6 +359,9 @@
 		 *
 		 *			The default is AND
 		 *
+		 *		sort = field to sort on. Must be in <table>.<field> format and be an intrinsic field in either the primary table or the label table. Sort order can be set using the sortDirection option.
+		 *		sortDirection = the direction of the sort. Values are ASC (ascending) and DESC (descending). Default is ASC.
+		 *
 		 * @return mixed Depending upon the returnAs option setting, an array, subclass of LabelableBaseModelWithAttributes or integer may be returned.
 		 */
 		public static function find($pa_values, $pa_options=null) {
@@ -405,19 +408,30 @@
 				//
 				if ($t_instance->ATTRIBUTE_TYPE_LIST_CODE) {
 					if (isset($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD]) && !is_numeric($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD])) {
-						if ($vn_id = ca_lists::getItemID($t_instance->ATTRIBUTE_TYPE_LIST_CODE, $pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD])) {
-							$pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD] = $vn_id;
+						if(!is_array($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD])) { $pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD] = array($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD]); }
+						
+						foreach($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD] as $vn_i => $vm_value) {
+							if (!is_numeric($vm_value)) {
+								if ($vn_id = ca_lists::getItemID($t_instance->ATTRIBUTE_TYPE_LIST_CODE, $vm_value)) {
+									$pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD][$vn_i] = $vn_id;
+								}
+							}
 						}
 					}
 				}
-
+			
 				//
 				// Convert other intrinsic list references
 				//
 				foreach($pa_values as $vs_field => $vm_value) {
+					if ($vs_field == $t_instance->ATTRIBUTE_TYPE_ID_FLD) { continue; }
 					if($vs_list_code = $t_instance->getFieldInfo($vs_field, 'LIST_CODE')) {
-						if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) {
-							$pa_values[$vs_field] = $vn_id;
+						if(!is_array($vm_value)) { $pa_values[$vs_field] = $vm_value = array($vm_value); }
+						foreach($vm_value as $vn_i => $vm_ivalue) {
+							if (is_numeric($vm_ivalue)) { continue; }
+							if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_ivalue)) {
+								$pa_values[$vs_field][$vn_i] = $vn_id;
+							}
 						}
 					}
 				}
@@ -491,7 +505,7 @@
 			
 			if ($vb_has_simple_fields) {
 				foreach ($pa_values as $vs_field => $vm_value) {
-					if (is_array($vm_value)) { continue; }
+					//if (is_array($vm_value)) { continue; }
 
 					if (!$t_instance->hasField($vs_field)) {
 						continue;
@@ -499,7 +513,13 @@
 
 					if ($t_instance->_getFieldTypeType($vs_field) == 0) {
 						if (!is_numeric($vm_value) && !is_null($vm_value)) {
-							$vm_value = intval($vm_value);
+							if (is_array($vm_value)) {
+								foreach($vm_value as $vn_i => $vm_ivalue) {
+									$vm_value[$vn_i] = intval($vm_ivalue);
+								}
+							} else {
+								$vm_value = intval($vm_value);
+							}
 						}
 					}
 
@@ -507,7 +527,12 @@
 						$va_label_sql[] = "({$vs_table}.{$vs_field} IS NULL)";
 					} else {
 						if ($vm_value === '') { continue; }
-						$va_label_sql[] = "({$vs_table}.{$vs_field} = ?)";
+						if (is_array($vm_value)) {
+							if (!sizeof($vm_value)) { continue; }
+							$va_label_sql[] = "({$vs_table}.{$vs_field} IN (?))";
+						} else {
+							$va_label_sql[] = "({$vs_table}.{$vs_field} = ?)";
+						}
 						$va_sql_params[] = $vm_value;
 					}
 				}
@@ -563,6 +588,27 @@
 			$vs_sql = "SELECT * FROM {$vs_table}";
 			$vs_sql .= join("\n", $va_joins);
 			$vs_sql .=" WHERE {$vs_deleted_sql} ".join(" {$ps_boolean} ", $va_label_sql);
+			
+			$vs_orderby = '';
+			if ($vs_sort = caGetOption('sort', $pa_options, null)) {
+				$vs_sort_direction = caGetOption('sortDirection', $pa_options, 'ASC', array('validValues' => array('ASC', 'DESC')));
+				$va_tmp = explode(".", $vs_sort);
+				if (sizeof($va_tmp) == 2) {
+					switch($va_tmp[0]) {
+						case $vs_table:
+							if ($t_instance->hasField($va_tmp[1])) {
+								$vs_orderby = " ORDER BY {$vs_sort} {$vs_sort_direction}";
+							}
+							break;
+						case $vs_label_table:
+							if ($t_label->hasField($va_tmp[1])) {
+								$vs_orderby = " ORDER BY {$vs_sort} {$vs_sort_direction}";
+							}
+							break;
+					}
+				}
+				if ($vs_orderby) { $vs_sql .= $vs_orderby; }
+			}
 
 			if (isset($pa_options['transaction']) && ($pa_options['transaction'] instanceof Transaction)) {
 				$o_db = $pa_options['transaction']->getDb();
@@ -571,7 +617,7 @@
 			}
 		
 			$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
-		
+	
 			$qr_res = $o_db->query($vs_sql, $va_sql_params);
 			$vn_c = 0;
 		

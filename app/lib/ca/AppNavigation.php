@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2013 Whirl-i-Gig
+ * Copyright 2007-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -613,12 +613,12 @@
 					$vb_submenu_set = $this->_evaluateRequirements($va_req);
 					if ($vb_submenu_set && isset($pa_navinfo[$vs_nav]) && isset($pa_navinfo[$vs_nav]['submenu']) && $pa_navinfo[$vs_nav]['submenu']) {
 						if ($pa_navinfo[$vs_nav]['submenu']['type'] == 'dynamic') {
-							$vs_buf .= "<li>".caHTMLLink($vs_display_name, array('class' => (($vs_cur_selection == $ps_base_path.'/'.$vs_nav) ? 'sf-menu-selected' : ''), 'href' => '#'));
 							$va_submenu_nav = $this->getDynamicSubmenu($pa_navinfo[$vs_nav]['submenu']);
 							if (sizeof($va_submenu_nav)) {
+								$vs_buf .= "<li>".caHTMLLink($vs_display_name, array('class' => (($vs_cur_selection == $ps_base_path.'/'.$vs_nav) ? 'sf-menu-selected' : ''), 'href' => '#'));
 								$vs_buf .= $this->_genSubMenu($va_submenu_nav, $vs_cur_selection, $va_additional_params, $ps_base_path, $va_defaults);
+								$vs_buf .= "</li>\n";
 							}
-							$vs_buf .= "</li>\n";
 						} else {
 							$vs_link = (is_array($va_defaults) && $va_defaults['module']) ? caNavLink($this->opo_request, $vs_display_name, (($vs_cur_selection == $ps_base_path.'/'.$vs_nav) ? 'sf-menu-selected' : ''), $va_defaults['module'], $va_defaults['controller'], $va_defaults['action'], $va_additional_params) : "<a href='#'>{$vs_display_name}</a>";
 							$vs_buf .= "<li>{$vs_link}\n";
@@ -817,6 +817,12 @@
 				
 				$va_tmp = explode(':', $vs_requirement);
 				switch(strtolower($va_tmp[0])) {
+					case 'availabletypes':
+						$vn_min_access = (sizeof($va_tmp) >= 3) ? constant($va_tmp[2]) : __CA_BUNDLE_ACCESS_EDIT__;
+						$vn_min_types = (sizeof($va_tmp) >= 4) ? (int)$va_tmp[3] : 1;
+						$va_types = caGetTypeListForUser($va_tmp[1], array('access' => $vn_min_access));
+						$vs_value = (sizeof($va_types) >= $vn_min_types) ? true : false;
+						break;
 					case 'session':
 						if (isset($va_tmp[2])) {
 							$vs_value = ($this->opo_request->session->getVar($va_tmp[1]) == $va_tmp[2]) ? true : false;

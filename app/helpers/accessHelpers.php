@@ -164,6 +164,29 @@
 	}
 	# ---------------------------------------------------------------------------------------------
 	/**
+	 * Return list of types for which user has access
+	 *
+	 * @param mixed $pm_table_name_or_num Table name of number to fetch types for
+	 * @param array $pa_options Array of options:
+	 *		access = minimum access level user must have to a type for it to be returned. Values are:
+	 *			__CA_BUNDLE_ACCESS_NONE__ (0)
+	 *			__CA_BUNDLE_ACCESS_READONLY__ (1)
+	 *			__CA_BUNDLE_ACCESS_EDIT__ (2)
+	 *			If not specified types are returned for which the user has at least __CA_BUNDLE_ACCESS_READONLY__
+	 *
+	 * @return array List of numeric type_ids for which the user has access, or null if there are no restrictions at all
+	 */
+	function caGetTypeListForUser($pm_table_name_or_num, $pa_options=null) {
+		if(is_null($va_types = caGetTypeRestrictionsForUser($pm_table_name_or_num, $pa_options))) {
+			$o_dm = Datamodel::load();
+			$t_instance = $o_dm->getInstanceByTableName($pm_table_name_or_num, true);
+			if (!$t_instance) { return null; }	// bad table
+			$va_types = array_keys($t_instance->getTypeList());
+		}
+		return $va_types;
+	}
+	# ---------------------------------------------------------------------------------------------
+	/**
 	 * Converts the given list of type names or type_ids into an expanded list of numeric type_ids suitable for enforcing type restrictions. Processing
 	 * includes expansion of types to include subtypes and conversion of any type codes to type_ids.
 	 *

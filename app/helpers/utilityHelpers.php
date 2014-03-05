@@ -940,7 +940,7 @@ function caFileIsIncludable($ps_file) {
 		$va_sort_keys = array();
 		foreach ($pa_sort_keys as $vs_field) {
 			$va_tmp = explode('.', $vs_field);
-			array_shift($va_tmp);
+			if (sizeof($va_tmp) > 1) { array_shift($va_tmp); }
 			$va_sort_keys[] = join(".", $va_tmp);
 		}
 		$va_sorted_by_key = array();
@@ -1935,7 +1935,7 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caConvertCurrencyValue($ps_value, $ps_to, $pa_options=null) {
 		require_once(__CA_LIB_DIR__."/core/Plugins/CurrencyConversion/EuroBank.php");
-		
+		if ((!$ps_value) || is_numeric($ps_value)) return null;
 		try {
 			return WLPlugCurrencyConversionEuroBank::convert($ps_value, $ps_to, $pa_options);
 		} catch (Exception $e) {

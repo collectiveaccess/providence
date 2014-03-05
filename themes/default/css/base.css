@@ -5370,11 +5370,7 @@ div.dialogHeader {
     font-size: 13px;
     font-weight: bold !important;
     padding: 5px;
-    margin: 0 8px 3px 8px !important;
-    
-    -moz-border-radius-: 8px;
-    -webkit-border-radius: 8px;
-    border-radius: 8px;
+    margin: 0 0px 8px 0px !important;
 }
 
 /* Quick add */
@@ -5437,6 +5433,11 @@ input[type='text'].ui-autocomplete-loading {
     background: white url('../graphics/icons/indicator.gif') right center no-repeat;
 }
 
+
+div.componentAddTypeList {
+    float: left;
+    margin-top: 6px;
+}
 
 /** Debug **/
 
