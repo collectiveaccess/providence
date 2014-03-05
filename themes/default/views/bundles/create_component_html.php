@@ -33,20 +33,25 @@
 	</div>
 </div>
 <script type="text/javascript">
-	caObjectComponentPanel<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
-		panelID: "caObjectComponentPanel",						/* DOM ID of the <div> enclosing the panel */
-		panelContentID: "caObjectComponentPanelContentArea",		/* DOM ID of the content area <div> in the panel */
-		exposeBackgroundColor: "#000000",				
-		exposeBackgroundOpacity: 0.7,					
-		panelTransitionSpeed: 400,						
-		closeButtonSelector: ".close",
-		center: true,
-		onOpenCallback: function() {
-		jQuery("#topNavContainer").hide(250);
-		},
-		onCloseCallback: function() {
-			jQuery("#topNavContainer").show(250);
+	var caObjectComponentPanel;
+	jQuery(document).ready(function() {
+		if (caUI.initPanel) {
+			caObjectComponentPanel = caUI.initPanel({ 
+				panelID: "caObjectComponentPanel",						/* DOM ID of the <div> enclosing the panel */
+				panelContentID: "caObjectComponentPanelContentArea",		/* DOM ID of the content area <div> in the panel */
+				exposeBackgroundColor: "#000000",				
+				exposeBackgroundOpacity: 0.7,					
+				panelTransitionSpeed: 400,						
+				closeButtonSelector: ".close",
+				center: true,
+				onOpenCallback: function() {
+					jQuery("#topNavContainer").hide(250);
+				},
+				onCloseCallback: function() {
+					jQuery("#topNavContainer").show(250);
+				}
+			});
 		}
+		jQuery("#caObjectComponentPanelContentArea").data("panel", caObjectComponentPanel<?php print $vs_id_prefix; ?>);
 	});
-	jQuery("#caObjectComponentPanelContentArea").data("panel", caObjectComponentPanel<?php print $vs_id_prefix; ?>);
 </script>

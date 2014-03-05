@@ -405,19 +405,30 @@
 				//
 				if ($t_instance->ATTRIBUTE_TYPE_LIST_CODE) {
 					if (isset($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD]) && !is_numeric($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD])) {
-						if ($vn_id = ca_lists::getItemID($t_instance->ATTRIBUTE_TYPE_LIST_CODE, $pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD])) {
-							$pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD] = $vn_id;
+						if(!is_array($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD])) { $pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD] = array($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD]); }
+						
+						foreach($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD] as $vn_i => $vm_value) {
+							if (!is_numeric($vm_value)) {
+								if ($vn_id = ca_lists::getItemID($t_instance->ATTRIBUTE_TYPE_LIST_CODE, $vm_value)) {
+									$pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD][$vn_i] = $vn_id;
+								}
+							}
 						}
 					}
 				}
-
+			
 				//
 				// Convert other intrinsic list references
 				//
 				foreach($pa_values as $vs_field => $vm_value) {
+					if ($vs_field == $t_instance->ATTRIBUTE_TYPE_ID_FLD) { continue; }
 					if($vs_list_code = $t_instance->getFieldInfo($vs_field, 'LIST_CODE')) {
-						if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) {
-							$pa_values[$vs_field] = $vn_id;
+						if(!is_array($vm_value)) { $pa_values[$vs_field] = $vm_value = array($vm_value); }
+						foreach($vm_value as $vn_i => $vm_ivalue) {
+							if (is_numeric($vm_ivalue)) { continue; }
+							if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_ivalue)) {
+								$pa_values[$vs_field][$vn_i] = $vn_id;
+							}
 						}
 					}
 				}
@@ -491,7 +502,7 @@
 			
 			if ($vb_has_simple_fields) {
 				foreach ($pa_values as $vs_field => $vm_value) {
-					if (is_array($vm_value)) { continue; }
+					//if (is_array($vm_value)) { continue; }
 
 					if (!$t_instance->hasField($vs_field)) {
 						continue;
@@ -499,7 +510,13 @@
 
 					if ($t_instance->_getFieldTypeType($vs_field) == 0) {
 						if (!is_numeric($vm_value) && !is_null($vm_value)) {
-							$vm_value = intval($vm_value);
+							if (is_array($vm_value)) {
+								foreach($vm_value as $vn_i => $vm_ivalue) {
+									$vm_value[$vn_i] = intval($vm_ivalue);
+								}
+							} else {
+								$vm_value = intval($vm_value);
+							}
 						}
 					}
 
@@ -507,7 +524,12 @@
 						$va_label_sql[] = "({$vs_table}.{$vs_field} IS NULL)";
 					} else {
 						if ($vm_value === '') { continue; }
-						$va_label_sql[] = "({$vs_table}.{$vs_field} = ?)";
+						if (is_array($vm_value)) {
+							if (!sizeof($vm_value)) { continue; }
+							$va_label_sql[] = "({$vs_table}.{$vs_field} IN (?))";
+						} else {
+							$va_label_sql[] = "({$vs_table}.{$vs_field} = ?)";
+						}
 						$va_sql_params[] = $vm_value;
 					}
 				}
@@ -571,7 +593,7 @@
 			}
 		
 			$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
-		
+	
 			$qr_res = $o_db->query($vs_sql, $va_sql_params);
 			$vn_c = 0;
 		

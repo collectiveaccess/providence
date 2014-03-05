@@ -55,7 +55,7 @@
 	
 	<div class="componentAddErrorContainer" id="<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>"> </div>
 	
-	<div class="componentAddSectionBox" id="{$vs_form_name}Container<?php print $vs_field_name_prefix.$vs_n; ?>">
+	<div class="componentAddSectionBox" id="<?php print $vs_form_name; ?>Container<?php print $vs_field_name_prefix.$vs_n; ?>">
 		<div class="componentAddFormTopPadding"><!-- empty --></div>
 <?php
 
@@ -91,9 +91,11 @@
 				jQuery.post('<?php print caNavUrl($this->request, "editor/objects", "ObjectComponent", "Save"); ?>', jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").serialize(), function(resp, textStatus) {
 					if (resp.status == 0) {
 						
-						// TODO: reload components bundle in parent form
-						
-						// TODO: reload any hierarchy bundles in parent form
+						// Reload inspector and components bundle in parent form
+						if(caBundleUpdateManager) { 
+							caBundleUpdateManager.reloadBundle('ca_objects_components_list'); 
+							caBundleUpdateManager.reloadInspector(); 
+						}
 						
 						jQuery.jGrowl('<?php print addslashes(_t('Created %1 ', $t_subject->getTypeName())); ?> <em>' + resp.display + '</em>', { header: '<?php print addslashes(_t('Component add %1', $t_subject->getTypeName())); ?>' }); 
 						jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('panel').hidePanel();
@@ -106,7 +108,6 @@
 						content += '</ul></div>';
 						
 						jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").html(content).slideDown(200);
-						jQuery('.rounded').corner('round 8px');
 						
 						var componentAddClearErrorInterval = setInterval(function() {
 							jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").slideUp(500);
