@@ -33,6 +33,9 @@
 	$va_settings 				= $this->getVar('settings');
 
 	$vb_read_only				=	(isset($va_settings['readonly']) && $va_settings['readonly']);
+	
+	if (!($vs_add_label 		= $this->getVar('add_label'))) { $vs_add_label = _t('Add component'); }
+	$vs_display_template		= caGetOption('display_template', $va_settings, $t_subject->getAppConfig()->get('ca_objects_component_display_settings'));
 
 	$va_errors = array();
 	
@@ -43,29 +46,32 @@
 
 <div id="<?php print $vs_id_prefix; ?>">
 	<div class="bundleContainer">
-		<div>
+		<div class="caItemList">
+			<div>
 <?php
-	print ($vn_num_components == 1) ? _t('%1 component', $vn_num_components) : _t('%1 components', $vn_num_components);
-?>
-		</div>
+				print ($vn_num_components == 1) ? _t('%1 component', $vn_num_components) : _t('%1 components', $vn_num_components);
+?>	
+			</div>
+			<div class="labelInfo">	
 <?php
 	if ($vn_num_components) {
 		while($qr_components->nextHit()) {
 ?>
-		<div>
-			<?php print $qr_components->getWithTemplate("<l>^ca_objects.preferred_labels.name</l> ^ca_objects.idno <br/>"); ?>
-		</div>
+				<div style="font-weight: normal;">
+					<?php print $qr_components->getWithTemplate($vs_display_template); ?>
+				</div>
 <?php
 		}
 	} else {
 ?>
-		<div><?php print _t('No components defined'); ?></div>
+				<div><?php print _t('No components defined'); ?></div>
 <?php
 	}
-	
-	print _t('Add component').' <a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($this->request, '*', 'ObjectComponent', 'Form', array('parent_id' => $t_subject->getPrimaryKey())).'"); return false;\')>'.caNavIcon($this->request, __CA_NAV_BUTTON_ADD__).'</a>';
 			
 ?>
+	<div class='button labelInfo caAddItemButton'><?php print '<a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($this->request, '*', 'ObjectComponent', 'Form', array('parent_id' => $t_subject->getPrimaryKey())).'"); return false;\')>'; ?><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print $vs_add_label; ?></a></div>
 
+			</div>
+		</div>
 	</div>
 </div>

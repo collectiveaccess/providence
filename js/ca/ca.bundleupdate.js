@@ -58,15 +58,17 @@ var caBundleUpdateManager = null;
 			for(l in list) {
 				that.registerBundle(list[l].id, list[l].bundle, list[l].placement_id);
 			}
+			//console.log("list", list);
 		}
 		
 		// --------------------------------------------------------------------------------
 		that.reloadBundle = function(bundle) {
 			var b = that.byBundle[bundle];
 			if (b) {
-				var loadURL = that.url + "/" + that.key + "/" + that.id + "/bundle/" + b.bundle;
+				var loadURL = that.url + "/" + that.key + "/" + that.id + "/bundle/" + b.bundle + "/placement_id/" + b.placement_id;
 				jQuery("#" + b.id).load(loadURL);
 			}
+			//console.log("reload", bundle);
 		}
 		
 		// --------------------------------------------------------------------------------

@@ -1263,7 +1263,8 @@
  		}
  		# ------------------------------------------------------------------
  		/**
- 		 *
+ 		 * Returns content for a bundle or the inspector. Used to dynamically and selectively
+ 		 * reload an editing form.
  		 */
  		public function reload() {
  			list($vn_subject_id, $t_subject) = $this->_initView();
@@ -1271,13 +1272,27 @@
  			if (!$this->_checkAccess($t_subject)) { return false; }
  			
  			$ps_bundle = $this->request->getParameter("bundle", pString);
+ 			$pn_placement_id = $this->request->getParameter("placement_id", pInteger);
+ 			
  			
  			switch($ps_bundle) {
  				case '__inspector__':
  					$this->response->addContent($this->info(array($t_subject->primaryKey() => $vn_subject_id, 'type_id' => $this->request->getParameter("type_id", pInteger))));
  					break;
  				default:
- 					$this->response->addContent($t_subject->getBundleFormHTML($ps_bundle, 'PXX', array(), array('request' => $this->request, 'contentOnly' => true), $vs_label));
+ 					$t_placement = new ca_editor_ui_bundle_placements($pn_placement_id);
+ 			
+					if (!$t_placement->getPrimaryKey()) {
+						$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
+						return;
+					}
+			
+					if ($t_placement->get('bundle_name') != $ps_bundle) {
+						$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
+						return;
+					}
+					
+ 					$this->response->addContent($t_subject->getBundleFormHTML($ps_bundle, $pn_placement_id, $t_placement->get('settings'), array('request' => $this->request, 'contentOnly' => true), $vs_label));
  					break;
  			}
  		}

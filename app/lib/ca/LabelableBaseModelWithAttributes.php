@@ -359,6 +359,9 @@
 		 *
 		 *			The default is AND
 		 *
+		 *		sort = field to sort on. Must be in <table>.<field> format and be an intrinsic field in either the primary table or the label table. Sort order can be set using the sortDirection option.
+		 *		sortDirection = the direction of the sort. Values are ASC (ascending) and DESC (descending). Default is ASC.
+		 *
 		 * @return mixed Depending upon the returnAs option setting, an array, subclass of LabelableBaseModelWithAttributes or integer may be returned.
 		 */
 		public static function find($pa_values, $pa_options=null) {
@@ -585,6 +588,27 @@
 			$vs_sql = "SELECT * FROM {$vs_table}";
 			$vs_sql .= join("\n", $va_joins);
 			$vs_sql .=" WHERE {$vs_deleted_sql} ".join(" {$ps_boolean} ", $va_label_sql);
+			
+			$vs_orderby = '';
+			if ($vs_sort = caGetOption('sort', $pa_options, null)) {
+				$vs_sort_direction = caGetOption('sortDirection', $pa_options, 'ASC', array('validValues' => array('ASC', 'DESC')));
+				$va_tmp = explode(".", $vs_sort);
+				if (sizeof($va_tmp) == 2) {
+					switch($va_tmp[0]) {
+						case $vs_table:
+							if ($t_instance->hasField($va_tmp[1])) {
+								$vs_orderby = " ORDER BY {$vs_sort} {$vs_sort_direction}";
+							}
+							break;
+						case $vs_label_table:
+							if ($t_label->hasField($va_tmp[1])) {
+								$vs_orderby = " ORDER BY {$vs_sort} {$vs_sort_direction}";
+							}
+							break;
+					}
+				}
+				if ($vs_orderby) { $vs_sql .= $vs_orderby; }
+			}
 
 			if (isset($pa_options['transaction']) && ($pa_options['transaction'] instanceof Transaction)) {
 				$o_db = $pa_options['transaction']->getDb();

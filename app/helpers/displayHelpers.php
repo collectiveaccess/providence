@@ -497,7 +497,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		if ($pt_subject && $pt_subject->isHierarchical()) {
 			$vs_buf .= caEditorHierarchyOverview($po_request, $pt_subject->tableName(), $pt_subject->getPrimaryKey(), $pa_options);
 		}
-		$vs_buf .= caEditorFieldList($po_request, $pa_bundle_list, $pa_options);	
+		$vs_buf .= caEditorFieldList($po_request, $pt_subject, $pa_bundle_list, $pa_options);	
 		
 		return $vs_buf;
 	}
@@ -511,7 +511,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 	 *
 	 * @return string 
 	 */
-	function caEditorFieldList($po_request, $pa_bundle_list, $pa_options=null) {
+	function caEditorFieldList($po_request, $pt_subject, $pa_bundle_list, $pa_options=null) {
 		$vs_buf = "<script type=\"text/javascript\">
 		jQuery(document).ready(function() {
 			jQuery(document).bind('keydown.ctrl_f', function() {
@@ -528,6 +528,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 			});
 			
 			if (typeof caBundleVisibilityManager !== 'undefined') { caBundleVisibilityManager.setAll(); }
+			if (typeof caBundleUpdateManager !== 'undefined') { caBundleUpdateManager = caUI.initBundleUpdateManager({url:'".caNavUrl($po_request, '*', '*', 'reload')."', screen:'".$po_request->getActionExtra()."', key:'".$pt_subject->primaryKey()."', id: ".(int)$pt_subject->getPrimaryKey()."}); }
+			caBundleUpdateManager.registerBundles(".json_encode($pa_bundle_list).");
 		});
 </script>
 <div id=\"editorFieldListHTML\">";
@@ -745,7 +747,15 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		</script>\n";
 				}		
 				
-				$vs_buf .= "<div style='width:190px; overflow:hidden;'>{$vs_watch}{$vs_label}"."<a title='$vs_idno'>".($vs_idno ? " ({$vs_idno})" : '')."</a></div>\n";
+				$vs_buf .= "<div style='width:190px; overflow:hidden;'>{$vs_watch}{$vs_label}"."<a title='$vs_idno'>".($vs_idno ? " ({$vs_idno})" : '')."</a>";
+				
+				if (method_exists($t_item, 'getComponentCount')) {
+					if ($vn_component_count = $t_item->getComponentCount()) {
+						$vs_buf .= ' ('.(($vn_component_count == 1) ? _t('%1 component', $vn_component_count) : _t('%1 components', $vn_component_count)).')';
+					}
+				}
+				
+				$vs_buf .= "</div>\n";
 			} else {
 				$vs_parent_name = '';
 				if ($vn_parent_id = $po_view->request->getParameter('parent_id', pInteger)) {
@@ -851,18 +861,6 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 				}
 			}
 			
-			//
-			// Add component link for ca_objects
-			//
-			$va_object_component_types = $po_view->request->config->getList('ca_objects_component_types');
-			if (($vs_table_name === 'ca_objects') && $t_item->getPrimaryKey() && ($po_view->request->user->canDoAction('can_create_ca_objects')) && (sizeof($va_object_component_types))) {
-				$vs_buf .= "<div>".caJSButton($po_view->request, __CA_NAV_BUTTON_ADD__, _t('Add component'), 'caAddComponent', array('onclick' => 'caObjectComponentPanel.showPanel("'.caNavUrl($po_view->request, '*', 'ObjectComponent', 'Form', array('parent_id' => $t_item->getPrimaryKey())).'")'), array())."</div>";
-				
-				$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
-				$vo_change_type_view->setVar('t_item', $t_item);
-				
-				FooterManager::add($vo_change_type_view->render("create_component_html.php"));
-			}
 			
 			//
 			// Output related objects for ca_object_representations
@@ -1235,11 +1233,21 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 			}
 		}
 		
-		if($po_view->request->user->canDoAction('can_duplicate_'.$vs_table_name) && $t_item->getPrimaryKey()) {
-			$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" id="caDuplicateItemButton">';
+		$vb_can_duplicate = ($po_view->request->user->canDoAction('can_duplicate_'.$vs_table_name) && $t_item->getPrimaryKey());
+		
+		$va_object_container_types = $po_view->request->config->getList('ca_objects_container_types');
+		$va_object_component_types = $po_view->request->config->getList('ca_objects_component_types');
+		$vb_can_add_component = (($vs_table_name === 'ca_objects') && $t_item->getPrimaryKey() && ($po_view->request->user->canDoAction('can_create_ca_objects')) && (sizeof($va_object_component_types)) && in_array($t_item->getTypeCode(), $va_object_container_types));
+		
+		if ($vb_can_duplicate || $vb_can_add_component) {
+			$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; border-bottom: 1px solid #aaaaaa;  margin: 5px 0 0 0; padding: 0 0 5px 0; font-size: 10px;">';
+		}
+		
+		if($vb_can_duplicate) {
+			$vs_buf .= '<div style="float: right;" id="caDuplicateItemButton">';
 			
 			$vs_buf .= caFormTag($po_view->request, 'Edit', 'DuplicateItemForm', $po_view->request->getModulePath().'/'.$po_view->request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
-			$vs_buf .= _t('Duplicate this %1', mb_strtolower($vs_type_name, 'UTF-8')).' '.caFormSubmitLink($po_view->request, caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__), '', 'DuplicateItemForm');
+			$vs_buf .= _t('Duplicate').' '.caFormSubmitLink($po_view->request, caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__), '', 'DuplicateItemForm');
 				
 			$vs_buf .= caHTMLHiddenInput($t_item->primaryKey(), array('value' => $t_item->getPrimaryKey()));
 			$vs_buf .= caHTMLHiddenInput('mode', array('value' => 'dupe'));
@@ -1250,7 +1258,24 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 			TooltipManager::add("#caDuplicateItemButton", "<h2>"._t('Duplicate this %1', mb_strtolower($vs_type_name, 'UTF-8'))."</h2>
 			"._t("Click the [+] button to create and open for editing a duplicate of this %1. By default virtually all aspects of the %2 will be duplicated. You can exclude certain types of content from duplicates using settings in your user preferences under 'Duplication.'", mb_strtolower($vs_type_name, 'UTF-8'), mb_strtolower($vs_type_name, 'UTF-8')));
 		}
-
+		
+		//
+		// Add component link for ca_objects
+		//
+		if ($vb_can_add_component) {
+			$vs_buf .= '<div style="float: left;" id="caAddComponentButton">';
+			$vs_buf .= _t('Add component').' <a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($po_view->request, '*', 'ObjectComponent', 'Form', array('parent_id' => $t_item->getPrimaryKey())).'"); return false;\')>'.caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__).'</a>';
+			$vs_buf .= "</div>\n";
+			
+			$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
+			$vo_change_type_view->setVar('t_item', $t_item);
+			
+			FooterManager::add($vo_change_type_view->render("create_component_html.php"));
+		}
+		
+		if ($vb_can_duplicate || $vb_can_add_component) {
+			$vs_buf .= '<br style="clear: both;"/></div>';
+		}
 
 		if($po_view->request->user->canDoAction('can_export_'.$vs_table_name) && $t_item->getPrimaryKey() && (sizeof(ca_data_exporters::getExporters($t_item->tableNum()))>0)) {
 			$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" id="caExportItemButton">';

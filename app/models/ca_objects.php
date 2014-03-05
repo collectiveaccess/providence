@@ -807,6 +807,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		
 		$o_view->setVar('settings', $pa_bundle_settings);
 		
+		$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
 		$o_view->setVar('t_subject', $this);
 		
 		
@@ -863,7 +864,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$va_component_types = $this->getAppConfig()->getList('ca_objects_component_types');
 		if (!is_array($va_component_types) || !sizeof($va_component_types)) { return 0; }
 		
-		$vm_res = ca_objects::find(array('parent_id' => $pn_object_id, 'type_id' => $va_component_types), array('returnAs' => ($vs_return_as == 'info') ? 'searchResult' : $vs_return_as));
+		$vm_res = ca_objects::find(array('parent_id' => $pn_object_id, 'type_id' => $va_component_types), array('sort' => 'ca_objects.idno', 'returnAs' => ($vs_return_as == 'info') ? 'searchResult' : $vs_return_as));
 	
 		if ($vs_return_as == 'info') {
 			$va_data = array();
@@ -877,7 +878,8 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 					'source_id' => $vm_res->get('ca_objects.source_id')
 				);
 			}
-			return $va_data;
+			
+			return caSortArrayByKeyInValue($va_data, array('idno'));
 		}
 		return $vm_res;	
 	}

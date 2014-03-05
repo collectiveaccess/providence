@@ -718,6 +718,18 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									)		
 								);
 								break;
+							case 'ca_objects_components_list':
+								$va_additional_settings = array(
+									'display_template' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '<l>^ca_objects.preferred_labels.name</l> (^ca_objects.idno)',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Component display template'),
+										'description' => _t('Layout for component when displayed in list (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.idno</i>.')
+									),	
+								);
+								break;
 						}
 					}
 					break;
@@ -1020,7 +1032,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ----------------------------------------
 	public function savePlacementsFromHTMLForm($po_request, $ps_form_prefix) {
-		if ($vs_bundles = $po_request->getParameter($ps_form_prefix.'_ca_editor_ui_bundle_placementsdisplayBundleList', pString)) {
+		if ($vs_bundles = $po_request->getParameter($ps_form_prefix.'displayBundleList', pString)) {
 			$va_bundles = explode(';', $vs_bundles);
 			
 			$t_screen = new ca_editor_ui_screens($this->getPrimaryKey());

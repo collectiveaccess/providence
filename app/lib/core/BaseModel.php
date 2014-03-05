@@ -10381,6 +10381,9 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 *			The default is AND
 	 *
+	 *		sort = field to sort on. Must be in <table>.<field> or <field> format and be an intrinsic field in the primary table. Sort order can be set using the sortDirection option.
+	 *		sortDirection = the direction of the sort. Values are ASC (ascending) and DESC (descending). Default is ASC.
+	 *
 	 * @return mixed Depending upon the returnAs option setting, an array, subclass of BaseModel or integer may be returned.
 	 */
 	public static function find($pa_values, $pa_options=null) {
@@ -10396,11 +10399,16 @@ $pa_options["display_form_field_tips"] = true;
 		//
 		// Convert type id
 		//
+		$vs_type_field_name = null;
 		if (method_exists($this, "getTypeFieldName")) {
 			$vs_type_field_name = $this->getTypeFieldName();
-			if (isset($pa_values[$vs_type_field_name]) && !is_numeric($pa_values[$vs_type_field_name])) {
-				if ($vn_id = ca_lists::getItemID($this->getTypeListCode(), $pa_values[$vs_type_field_name])) {
-					$pa_values[$vs_type_field_name] = $vn_id;
+			if(!is_array($pa_values[$vs_type_field_name])) { $pa_values[$vs_type_field_name] = array($pa_values[$vs_type_field_name]); }
+			
+			foreach($pa_values[$vs_type_field_name] as $vn_i => $vm_value) {
+				if (!is_numeric($vm_value)) {
+					if ($vn_id = ca_lists::getItemID($this->getTypeListCode(), $vm_value)) {
+						$pa_values[$vs_type_field_name][$vn_i] = $vn_id;
+					}
 				}
 			}
 		}
@@ -10409,15 +10417,21 @@ $pa_options["display_form_field_tips"] = true;
 		// Convert other intrinsic list references
 		//
 		foreach($pa_values as $vs_field => $vm_value) {
+			if ($vs_field == $vs_type_field_name) { continue; }
 			if($vs_list_code = $t_instance->getFieldInfo($vs_field, 'LIST_CODE')) {
-				if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) {
-					$pa_values[$vs_field] = $vn_id;
+				if(!is_array($vm_value)) { $pa_values[$vs_field] = $vm_value = array($vm_value); }
+				
+				foreach($vm_value as $vn_i => $vm_ivalue) {
+					if (is_numeric($vm_ivalue)) { continue; }
+					if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_ivalue)) {
+						$pa_values[$vs_field][$vn_i] = $vn_id;
+					}
 				}
 			}
 		}
 		
 		foreach ($pa_values as $vs_field => $vm_value) {
-			if (is_array($vm_value)) { continue; }
+			//if (is_array($vm_value)) { continue; }
 		
 			# support case where fieldname is in format table.fieldname
 			if (preg_match("/([\w_]+)\.([\w_]+)/", $vs_field, $va_matches)) {
@@ -10437,22 +10451,62 @@ $pa_options["display_form_field_tips"] = true;
 
 			if ($t_instance->_getFieldTypeType($vs_field) == 0) {
 				if (!is_numeric($vm_value) && !is_null($vm_value)) {
-					$vm_value = intval($vm_value);
+					if (is_array($vm_value)) {
+						foreach($vm_value as $vn_i => $vm_ivalue) {
+							$vm_value[$vn_i] = intval($vm_ivalue);
+						}
+					} else {
+						$vm_value = intval($vm_value);
+					}
 				}
 			} else {
-				$vm_value = $t_instance->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
+				if (is_array($vm_value) && sizeof($vm_value)) {
+					foreach($vm_value as $vn_i => $vm_ivalue) {
+						$vm_value[$vn_i] = $this->quote($vs_field, $vm_ivalue);
+					}
+				} else {
+					$vm_value = $t_instance->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
+				}
 			}
 
 			if (is_null($vm_value)) {
 				$va_sql_wheres[] = "({$vs_field} IS NULL)";
 			} else {
 				if ($vm_value === '') { continue; }
-				$va_sql_wheres[] = "({$vs_field} = {$vm_value})";
+				if (is_array($vm_value)) {
+					if(!sizeof($vm_value)) { continue; }
+					$va_sql_wheres[] = "({$vs_field} IN (".join(",", $vm_value)."))";
+				} else {
+					$va_sql_wheres[] = "({$vs_field} = {$vm_value})";
+				}
 			}
 		}
 		if(!sizeof($va_sql_wheres)) { return null; }
 		$vs_deleted_sql = ($t_instance->hasField('deleted')) ? '(deleted = 0) AND ' : '';
 		$vs_sql = "SELECT * FROM {$vs_table} WHERE {$vs_deleted_sql} (".join(" {$ps_boolean} ", $va_sql_wheres).")";
+		
+		$vs_orderby = '';
+		if ($vs_sort = caGetOption('sort', $pa_options, null)) {
+			$vs_sort_direction = caGetOption('sortDirection', $pa_options, 'ASC', array('validValues' => array('ASC', 'DESC')));
+			$va_tmp = explode(".", $vs_sort);
+			if (sizeof($va_tmp) > 0) {
+				switch($va_tmp[0]) {
+					case $vs_table:
+						if ($t_instance->hasField($va_tmp[1])) {
+							$vs_orderby = " ORDER BY {$vs_sort} {$vs_sort_direction}";
+						}
+						break;
+					default:
+						if (sizeof($va_tmp) == 1) {
+							if ($t_instance->hasField($va_tmp[0])) {
+								$vs_orderby = " ORDER BY {$vs_sort} {$vs_sort_direction}";
+							}
+						}
+						break;
+				}
+			}
+			if ($vs_orderby) { $vs_sql .= $vs_orderby; }
+		}
 		
 		if (isset($pa_options['transaction']) && ($pa_options['transaction'] instanceof Transaction)) {
 			$o_db = $pa_options['transaction']->getDb();

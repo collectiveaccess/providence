@@ -94,6 +94,8 @@
 						// Reload inspector and components bundle in parent form
 						if(caBundleUpdateManager) { 
 							caBundleUpdateManager.reloadBundle('ca_objects_components_list'); 
+							caBundleUpdateManager.reloadBundle('hierarchy_location'); 
+							caBundleUpdateManager.reloadBundle('hierarchy_navigation'); 
 							caBundleUpdateManager.reloadInspector(); 
 						}
 						
