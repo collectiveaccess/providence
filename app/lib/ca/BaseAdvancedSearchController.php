@@ -43,7 +43,6 @@
  	class BaseAdvancedSearchController extends BaseRefineableSearchController {
  		# -------------------------------------------------------
  		protected $opb_uses_hierarchy_browser = false;
-		protected $va_element_codes = array(); 
  		protected $opo_datamodel;
  		protected $ops_find_type;
  		# -------------------------------------------------------
@@ -57,7 +56,6 @@
  			$this->opa_sorts = array();
  			foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
  				$this->opa_sorts[$this->ops_tablename.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
-				$this->va_element_codes[$this->ops_tablename.'.'.$va_sortable_element['element_code']] = $this->ops_tablename.'.A'.$va_sortable_element['element_id'];
  			}
  		}
  		# -------------------------------------------------------
@@ -147,15 +145,6 @@
 				if ($vb_is_new_search ||isset($pa_options['saved_search']) || (is_subclass_of($po_search, "BrowseEngine") && !$po_search->numCriteria()) ) {
 					$vs_browse_classname = get_class($po_search);
  					$this->opo_browse = $po_search = new $vs_browse_classname;
-					
-					//Replace element name with corresponding element code
-	                $va_temp_str = explode(':', $vs_search);
-                    if(isset($va_temp_str[0])){
-                        $va_element = str_replace('(', '', $va_temp_str[0]);
-                        if(array_key_exists($va_element, $this->va_element_codes))
-                            $vs_search = str_replace($va_element, $this->va_element_codes[$va_element], $vs_search);
-                    }				
-							
  					$po_search->addCriteria('_search', $vs_search);
  				}
  				
