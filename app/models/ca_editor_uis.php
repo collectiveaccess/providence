@@ -956,12 +956,13 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 * @return string Rendered HTML bundle for display
 	 */
-	public function getScreenHTMLFormBundle($po_request, $ps_form_name) {
+	public function getScreenHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null) {
 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 		
 		$o_view->setVar('t_ui', $this);		
 		$o_view->setVar('t_screen', new ca_editor_ui_screens());		
 		$o_view->setVar('id_prefix', $ps_form_name);		
+		$o_view->setVar('placement_code', $ps_placement_code);
 		$o_view->setVar('request', $po_request);
 		
 		if ($this->getPrimaryKey()) {
@@ -981,11 +982,12 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 * @return string Rendered HTML bundle for display
 	 */
-	public function getTypeRestrictionsHTMLFormBundle($po_request, $ps_form_name) {
+	public function getTypeRestrictionsHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null) {
 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 		
 		$o_view->setVar('t_ui', $this);			
-		$o_view->setVar('id_prefix', $ps_form_name);		
+		$o_view->setVar('id_prefix', $ps_form_name);	
+		$o_view->setVar('placement_code', $ps_placement_code);	
 		$o_view->setVar('request', $po_request);
 		
 		$va_type_restrictions = $this->getTypeRestrictions();
@@ -1003,7 +1005,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		return $o_view->render('ca_editor_ui_type_restrictions.php');
 	}
 	# ----------------------------------------
-	public function saveTypeRestrictionsFromHTMLForm($po_request, $ps_form_prefix) {
+	public function saveTypeRestrictionsFromHTMLForm($po_request, $ps_form_prefix, $ps_placement_code) {
 		if (!$this->getPrimaryKey()) { return null; }
 		
 		return $this->setTypeRestrictions($po_request->getParameter('type_restrictions', pArray));

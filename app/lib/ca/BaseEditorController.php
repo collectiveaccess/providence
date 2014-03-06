@@ -1317,7 +1317,10 @@
  			
  			$t_item->load($vn_item_id);
  			
- 			if (!$this->_checkAccess($t_item)) { return false; }
+ 			if (!$this->_checkAccess($t_item, array('dontRedirectOnDelete' => true))) { 
+ 				$t_item->clear(); 
+ 				$t_item->clearErrors();
+ 			}
  			
  			if ($t_item->getPrimaryKey()) {
  				if (method_exists($t_item, "getRepresentations")) {
@@ -1449,8 +1452,10 @@
  			// Is record deleted?
  			//
  			if ($pt_subject->hasField('deleted') && $pt_subject->get('deleted')) { 
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2550?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
+ 				if (!caGetOption('dontRedirectOnDelete', $pa_options, false)) {
+ 					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2550?r='.urlencode($this->request->getFullUrlPath()));
+ 				}
+ 				return false;
  			}
  			
 			//

@@ -158,7 +158,7 @@
 	});
 </script>
 <?php
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_subject->tableNum().'HierLocation');
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 ?>
 <div id="<?php print $vs_id_prefix; ?>">
 	<div class="bundleContainer">
@@ -262,7 +262,39 @@
 					<div class="clear"><!-- empty --></div>
 					<div id="<?php print $vs_id_prefix; ?>MoveHierarchyBrowser" class="hierarchyBrowserSmall">
 						<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
-					</div><!-- end hierbrowser -->
+					</div><!-- end hierbrowser -->				
+<?php
+if (($t_subject->tableName() == 'ca_storage_locations') && (bool)$t_subject->getAppConfig()->get('record_movement_information_when_moving_storage_location')) {
+	//
+	// Add movement form
+	//
+?>
+	<div id="<?php print $vs_id_prefix; ?>StorageLocationMovementForm" style="width: 98%; margin: 5px 0px 2px 6px;">
+		<h3>Movement details</h3>
+<?php
+	$t_ui = ca_editor_uis::loadDefaultUI('ca_movements', $this->request, null, array('editorPref' => 'quickadd'));
+	$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, null, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
+		array(),
+		array()
+	);
+	
+	$t_movement = new ca_movements();
+	
+	$va_form_elements = $t_movement->getBundleFormHTMLForScreen($va_nav['defaultScreen'], array(
+			'request' => $this->request, 
+			'formName' => 'mv',
+			'omit' => array('ca_storage_locations')
+	));
+	print caHTMLHiddenInput('_movement_screen', array('value' => $va_nav['defaultScreen']));
+	print join("\n", $va_form_elements);
+?>
+	</div>
+	<script type="text/javascript">
+		jQuery("#<?php print $vs_id_prefix; ?>StorageLocationMovementForm textarea, #<?php print $vs_id_prefix; ?>StorageLocationMovementForm input").css("max-width", "600px");
+	</script>
+<?php
+}
+?>
 				</div>
 <?php
 	}

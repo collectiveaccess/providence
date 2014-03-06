@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010 Whirl-i-Gig
+ * Copyright 2010-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -83,6 +83,13 @@ BaseModel::$s_ca_models_definitions['ca_movements_x_objects'] = array(
 				'DEFAULT' => '',
 				'START' => 'sdatetime', 'END' => 'edatetime',
 				'LABEL' => _t('Effective dates'), 'DESCRIPTION' => _t('Period of time for which this relationship was in effect. This is an option qualification for the relationship. If left blank, this relationship is implied to have existed for as long as the related items have existed.')
+		),
+		'is_current' => array(
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Is current?'), 'DESCRIPTION' => _t('Indicates that this is latest recorded movement for the object.')
 		),
 		'rank' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
@@ -204,6 +211,54 @@ class ca_movements_x_objects extends ObjectRelationshipBaseModel {
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);	# call superclass constructor
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function insert($pa_options=null) {
+		if ($vn_rc = parent::insert($pa_options)) {
+			$this->getDb()->query("
+				UPDATE ca_movements_x_objects SET is_current = 0 WHERE object_id = ?
+			", array((int)$this->get('object_id')));
+			
+			$this->getDb()->query("
+				UPDATE ca_movements_x_objects SET is_current = 1 WHERE relation_id = ?
+			", array((int)$this->get('relation_id')));
+		}
+		return $vn_rc;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function update($pa_options=null) {
+		return parent::update($pa_options);
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+		$vn_object_id = (int)$this->get('object_id');
+		if ($vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
+			$this->getDb()->query("
+				UPDATE ca_movements_x_objects SET is_current = 0 WHERE object_id = ?
+			", array((int)$this->get('movement_id')));
+			
+			$qr_res = $this->getDb()->query("
+				SELECT relation_id 
+				FROM ca_movements_x_objects 
+				WHERE object_id = ?
+				ORDER BY object_id DESC
+			", array($vn_object_id));
+			if ($qr_res->nextRow()) {
+				$this->getDb()->query("
+					UPDATE ca_movements_x_objects SET is_current = 1 WHERE relation_id = ?
+				", array((int)$qr_res->get('relation_id')));
+			}
+		}
+		return $vn_rc;
 	}
 	# ------------------------------------------------------
 }

@@ -883,6 +883,17 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		}
 		return $vm_res;	
 	}
+	# ------------------------------------------------------
+	/** 
+	 * Check if currently loaded object is a component container
+	 *	
+	 * @return bool 
+	 */
+	public function canTakeComponents() {
+		$va_component_types = $this->getAppConfig()->getList('ca_objects_container_types');
+		if (!is_array($va_component_types) || !sizeof($va_component_types)) { return false; }
+		return in_array($this->getTypeCode(), $va_component_types);
+	}
  	# ------------------------------------------------------
 }
 ?>

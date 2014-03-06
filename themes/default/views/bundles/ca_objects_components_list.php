@@ -47,11 +47,17 @@
 <div id="<?php print $vs_id_prefix; ?>">
 	<div class="bundleContainer">
 		<div class="caItemList">
+<?php
+	if ($vn_num_components) {
+?>
 			<div>
 <?php
 				print ($vn_num_components == 1) ? _t('%1 component', $vn_num_components) : _t('%1 components', $vn_num_components);
 ?>	
 			</div>
+<?php
+	}
+?>
 			<div class="labelInfo">	
 <?php
 	if ($vn_num_components) {

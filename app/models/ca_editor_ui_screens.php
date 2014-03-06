@@ -632,6 +632,79 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						
 						);
 					}
+					
+					if (($vs_bundle == 'ca_movements') && ($t_instance->tableName() == 'ca_objects')) {
+						$va_additional_settings['showCurrentOnly'] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_CHECKBOXES,
+							'width' => "10", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '1',
+							'label' => _t('Show current only?'),
+							'description' => _t('If checked only current movements are displayed.')
+						);
+					}
+					
+					if (($vs_bundle == 'ca_objects') && ($t_instance->tableName() == 'ca_movements')) {
+						$va_additional_settings['showCurrentOnly'] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_CHECKBOXES,
+							'width' => "10", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '1',
+							'label' => _t('Show current only?'),
+							'description' => _t('If checked only current objects are displayed.')
+						);
+					}
+					
+					if (($vs_bundle == 'ca_movements') && ($t_instance->tableName() == 'ca_storage_locations')) {
+						$va_additional_settings['showCurrentOnly'] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_CHECKBOXES,
+							'width' => "10", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '1',
+							'label' => _t('Show current only?'),
+							'description' => _t('If checked only current movements are displayed.')
+						);
+					}
+					
+					if (($vs_bundle == 'ca_storage_locations') && ($t_instance->tableName() == 'ca_movements')) {
+						$va_additional_settings['showCurrentOnly'] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_CHECKBOXES,
+							'width' => "10", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '1',
+							'label' => _t('Show current only?'),
+							'description' => _t('If checked only current objects are displayed.')
+						);
+					}
+					
+					if (($vs_bundle == 'ca_storage_locations') && ($t_instance->tableName() == 'ca_objects')) {
+						$va_additional_settings['showCurrentOnly'] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_CHECKBOXES,
+							'width' => "10", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '1',
+							'label' => _t('Show current only?'),
+							'description' => _t('If checked only current storage locations are displayed.')
+						);
+					}
+					
+					if (($vs_bundle == 'ca_objects') && ($t_instance->tableName() == 'ca_storage_locations')) {
+						$va_additional_settings['showCurrentOnly'] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_CHECKBOXES,
+							'width' => "10", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '1',
+							'label' => _t('Show current only?'),
+							'description' => _t('If checked only current objects are displayed.')
+						);
+					}
+					
 					if (($t_instance->tableName() == 'ca_objects') && in_array($vs_bundle, array('ca_list_items'))) {
 						$va_additional_settings['restrictToTermsRelatedToCollection'] = array(
 							'formatType' => FT_TEXT,
@@ -1020,19 +1093,20 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 * @return string Rendered HTML bundle for display
 	 */
-	public function getPlacementsHTMLFormBundle($po_request, $ps_form_name) {
+	public function getPlacementsHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null) {
 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 		
 		$o_view->setVar('t_screen', $this);		
 		$o_view->setVar('t_placement', new ca_editor_ui_bundle_placements());		
-		$o_view->setVar('id_prefix', $ps_form_name);		
+		$o_view->setVar('id_prefix', $ps_form_name);	
+		$o_view->setVar('placement_code', $ps_placement_code);	
 		$o_view->setVar('request', $po_request);
 		
 		return $o_view->render('ca_editor_ui_bundle_placements.php');
 	}
 	# ----------------------------------------
-	public function savePlacementsFromHTMLForm($po_request, $ps_form_prefix) {
-		if ($vs_bundles = $po_request->getParameter($ps_form_prefix.'displayBundleList', pString)) {
+	public function savePlacementsFromHTMLForm($po_request, $ps_form_prefix, $ps_placement_code) {
+		if ($vs_bundles = $po_request->getParameter("{$ps_placement_code}{$ps_form_prefix}displayBundleList", pString)) {
 			$va_bundles = explode(';', $vs_bundles);
 			
 			$t_screen = new ca_editor_ui_screens($this->getPrimaryKey());
@@ -1124,11 +1198,12 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 * @return string Rendered HTML bundle for display
 	 */
-	public function getTypeRestrictionsHTMLFormBundle($po_request, $ps_form_name) {
+	public function getTypeRestrictionsHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null) {
 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 		
 		$o_view->setVar('t_screen', $this);			
-		$o_view->setVar('id_prefix', $ps_form_name);		
+		$o_view->setVar('id_prefix', $ps_form_name);	
+		$o_view->setVar('placement_code', $ps_placement_code);		
 		$o_view->setVar('request', $po_request);
 		
 		$va_type_restrictions = $this->getTypeRestrictions();
@@ -1144,7 +1219,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		return $o_view->render('ca_editor_ui_screen_type_restrictions.php');
 	}
 	# ----------------------------------------
-	public function saveTypeRestrictionsFromHTMLForm($po_request, $ps_form_prefix) {
+	public function saveTypeRestrictionsFromHTMLForm($po_request, $ps_form_prefix, $ps_placement_code) {
 		if (!$this->getPrimaryKey()) { return null; }
 		
 		return $this->setTypeRestrictions($po_request->getParameter('type_restrictions', pArray));

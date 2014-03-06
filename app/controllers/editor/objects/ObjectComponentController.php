@@ -95,14 +95,15 @@
  			}
  			
  			// Set "context" id from those editors that need to restrict idno lookups to within the context of another field value (eg. idno's for ca_list_items are only unique within a given list_id)
- 			if ($vs_idno_context_field = $t_subject->getProperty('ID_NUMBERING_CONTEXT_FIELD')) {
-				if ($vn_parent_id > 0) {
-					$t_parent = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
-					if ($t_parent->load($vn_parent_id)) {
+			if ($vn_parent_id > 0) {
+				$t_parent = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
+				if ($t_parent->load($vn_parent_id)) {
+					if ($vs_idno_context_field = $t_subject->getProperty('ID_NUMBERING_CONTEXT_FIELD')) {
 						$this->view->setVar('_context_id', $t_parent->get($vs_idno_context_field));
 					}
+					$t_subject->set('idno', $t_parent->get('idno'));
 				}
- 			}
+			}
  			
  			// Get type
 			if (!($vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pString))) {
@@ -135,6 +136,7 @@
 					$t_subject->set($vs_f, $vs_v);
 				}
 			}	
+			$t_subject->set('idno', $t_parent->get('idno'));
 			
 			// Set attributes
 			if (is_array($va_field_values['attributes'])) {

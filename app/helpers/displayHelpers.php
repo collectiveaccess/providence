@@ -590,7 +590,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		require_once(__CA_MODELS_DIR__.'/ca_sets.php');
 		require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
 		
-		$t_item 				= $po_view->getVar('t_item');
+		$t_item 				= $po_view->getVar('t_item'); if (!$t_item) print caPrintStacktrace();
 		$vs_table_name = $t_item->tableName();
 		if (($vs_priv_table_name = $vs_table_name) == 'ca_list_items') {
 			$vs_priv_table_name = 'ca_lists';
