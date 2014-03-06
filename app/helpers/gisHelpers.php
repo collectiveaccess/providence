@@ -376,7 +376,19 @@
 			_t("Quebec") => "QC",
 			_t("Saskatchewan") => "SK",
 			_t("Yukon Territory") => "YT"
-		)
+		),
+		'AU' => array(
+			_t("Australian Capital Territory") => "ACT",
+			_t("Jervis Bay Territory") => "JBT",
+			_t("New South Wales") => "NSW",
+			_t("Northern Territory") => "NT",
+			_t("Queensland") => "QLD",
+			_t("South Australia") => "SA",
+			_t("Tasmania") => "TAS",
+			_t("Victoria") => "VIC",
+			_t("Western Australia") => "WA",
+			)
+
 	);
     
     # --------------------------------------------------------------------------------------------
