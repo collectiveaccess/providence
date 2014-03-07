@@ -68,7 +68,7 @@
 		<input type='hidden' name='download' value='1'/></form>
 	</div>
 <?php
-	if (in_array($t_subject->tableName(), array('ca_objects', 'ca_object_representations')) && ($this->request->user->canDoAction('can_download_media')) && is_array($va_download_versions = $this->request->config->getList('ca_object_representation_download_versions'))) {
+	if (in_array($t_subject->tableName(), array('ca_objects', 'ca_object_representations')) && ($this->request->user->canDoAction('can_download_ca_object_representations')) && is_array($va_download_versions = $this->request->config->getList('ca_object_representation_download_versions'))) {
 ?>	
 	<div class="col">
 <?php
