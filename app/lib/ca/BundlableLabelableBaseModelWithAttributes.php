@@ -4567,9 +4567,10 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 * @param mixed $pm_rel_table_name_or_num The name or table number of the table for which to create the result set. Must be a searchable/browsable table
 	 * @param array $pa_ids List of primary key values to create result set for. Result set will contain specified keys in the order in which that are passed in the array.
+	 * @param array $pa_options Optional array of options to pass through to SearchResult::init()
 	 * @return SearchResult A search result of for the specified table
 	 */
-	public function makeSearchResult($pm_rel_table_name_or_num, $pa_ids) {
+	public function makeSearchResult($pm_rel_table_name_or_num, $pa_ids, $pa_options = null) {
 		if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
 		$pn_table_num = $this->getAppDataModel()->getTableNum($pm_rel_table_name_or_num);
 		if (!($t_instance = $this->getAppDataModel()->getInstanceByTableNum($pn_table_num))) { return null; }
@@ -4585,7 +4586,7 @@ $pa_options["display_form_field_tips"] = true;
 		require_once(__CA_LIB_DIR__.'/ca/Search/'.$vs_search_result_class.'.php');
 		$o_data = new WLPlugSearchEngineCachedResult($va_ids, $t_instance->tableNum());
 		$o_res = new $vs_search_result_class($t_instance->tableName());	// we pass the table name here so generic multi-table search classes such as InterstitialSearch know what table they're operating over
-		$o_res->init($o_data, array());
+		$o_res->init($o_data, array(), $pa_options);
 		
 		return $o_res;
 	}
