@@ -1235,7 +1235,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 								'readonly' 					=> $vb_read_only,						
 								'error_icon' 				=> $pa_options['request']->getThemeUrlPath()."/graphics/icons/warning_small.gif",
 								'progress_indicator'		=> $pa_options['request']->getThemeUrlPath()."/graphics/icons/indicator.gif",
-								'lookup_url' 				=> $va_lookup_url_info['intrinsic']
+								'lookup_url' 				=> $va_lookup_url_info['intrinsic'],
+								
+								'name'						=> $ps_placement_code.$pa_options['formName'].$ps_bundle_name
 							),
 							$pa_options
 						)
@@ -2463,11 +2465,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	*/
 	public function saveBundlesForScreen($pm_screen, $po_request, &$pa_options) {
 		$vb_we_set_transaction = false;
-		
 		$vs_form_prefix = caGetOption('formName', $pa_options, $po_request->getParameter('_formName', pString));
 		
-		$vb_dryrun = (isset($pa_options['dryRun']) && $pa_options['dryRun']) ? true : false;
-		$vb_batch = (isset($pa_options['batch']) && $pa_options['batch']) ? true : false;
+		$vb_dryrun = caGetOption('dryRun', $pa_options, false);
+		$vb_batch = caGetOption('batch', $pa_options, false); 
 		
 		if (!$this->inTransaction()) {
 			$this->setTransaction(new Transaction($this->getDb()));
@@ -2482,11 +2483,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 
 		BaseModel::setChangeLogUnitID();
 		// get items on screen
-		if (isset($pa_options['ui_instance']) && ($pa_options['ui_instance'])) {
- 			$t_ui = $pa_options['ui_instance'];
- 		} else {
-			$t_ui = ca_editor_uis::loadDefaultUI($this->tableName(), $po_request, $this->getTypeID());
- 		}
+		$t_ui = caGetOption('ui_instance', $pa_options, ca_editor_uis::loadDefaultUI($this->tableName(), $po_request, $this->getTypeID()));
 		
 		$va_bundle_lists = $this->getBundleListsForScreen($pm_screen, $po_request, $t_ui, $pa_options);
 		
@@ -2496,14 +2493,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		// save intrinsic fields
 		if (is_array($va_fields_by_type['intrinsic'])) {
 			$vs_idno_field = $this->getProperty('ID_NUMBERING_ID_FIELD');
-			foreach($va_fields_by_type['intrinsic'] as $vs_f) {
+			foreach($va_fields_by_type['intrinsic'] as $vs_placement_code => $vs_f) {
 				if ($vb_batch) { 
 					$vs_batch_mode = $po_request->getParameter("{$vs_f}_batch_mode", pString);
 					if($vs_batch_mode == '_disabled_') { continue; }
 				}
-				if (isset($_FILES[$vs_f]) && $_FILES[$vs_f]) {
+				if (isset($_FILES["{$vs_placement_code}{$vs_form_prefix}{$vs_f}"]) && $_FILES["{$vs_placement_code}{$vs_form_prefix}{$vs_f}"]) {
 					// media field
-					$this->set($vs_f, $_FILES[$vs_f]['tmp_name'], array('original_filename' => $_FILES[$vs_f]['name']));
+					$this->set($vs_f, $_FILES["{$vs_placement_code}{$vs_form_prefix}{$vs_f}"]['tmp_name'], array('original_filename' => $_FILES["{$vs_placement_code}{$vs_form_prefix}{$vs_f}"]['name']));
 				} else {
 					switch($vs_f) {
 						case $vs_idno_field:
@@ -2511,11 +2508,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 								$this->opo_idno_plugin_instance->setDb($this->getDb());
 								$this->set($vs_f, $vs_tmp = $this->opo_idno_plugin_instance->htmlFormValue($vs_idno_field));
 							} else {
-								$this->set($vs_f, $po_request->getParameter($vs_f, pString));
+								$this->set($vs_f, $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}{$vs_f}", pString));
 							}
 							break;
 						default:
-							$this->set($vs_f, $po_request->getParameter($vs_f, pString));
+							$this->set($vs_f, $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}{$vs_f}", pString));
 							break;
 					}
 				}
@@ -3422,7 +3419,7 @@ if (!$vb_batch) {
 					# -------------------------------------
 					case 'settings':
 						if ($vb_batch) { break; } // not supported in batch mode
-						$this->setSettingsFromHTMLForm($po_request);
+						$this->setSettingsFromHTMLForm($po_request, array('id' => $vs_form_prefix, 'placement_code' => $vs_placement_code));
 						break;
 					# -------------------------------
 					// This bundle is only available when editing objects of type ca_object_representations

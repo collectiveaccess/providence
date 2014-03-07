@@ -32,13 +32,13 @@
 	
 	$t_subject					= $this->getVar('t_subject');
 	
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$vn_table_num.'Settings');
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 ?>
 <div id="<?php print $vs_id_prefix; ?>">
 	<div class="bundleContainer">
 		<div class="caItemList settingsBundle">
 <?php 
-				if ($vs_form = $t_subject->getHTMLSettingForm(array('id' => 'setting'))) {
+				if ($vs_form = $t_subject->getHTMLSettingForm(array('id' => $this->getVar('id_prefix'), 'placement_code' => $this->getVar('placement_code')))) {
 					print $vs_form;
 				} else {
 					print _t('No settings');
@@ -47,8 +47,3 @@
 		</div>
 	</div>
 </div>
-<script type="text/javascript">
-	jQuery(document).ready(function() {
-		jQuery("#<?php print $vs_id_prefix; ?> input").change();
-	});
-</script>

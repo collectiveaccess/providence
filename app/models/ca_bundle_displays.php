@@ -1425,15 +1425,15 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function getPlacementsInDisplay($pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
-		$pb_no_cache = isset($pa_options['noCache']) ? (bool)$pa_options['noCache'] : false;
-		$pn_user_id = isset($pa_options['user_id']) ? $pa_options['user_id'] : null;
+		$pb_no_cache = caGetOption('noCache', $pa_options, false);
+		$pn_user_id = caGetOption('user_id', $pa_options, null);
 		
 		if ($pn_user_id && !$this->haveAccessToDisplay($pn_user_id, __CA_BUNDLE_DISPLAY_READ_ACCESS__)) {
 			return array();
 		}
 		
-		$vb_show_tooltips = (isset($pa_options['no_tooltips']) && (bool)$pa_options['no_tooltips']) ? false : true;
-		$vs_format = (isset($pa_options['format']) && in_array($pa_options['format'], array('simple', 'full'))) ? $pa_options['format'] : 'full';
+		$vb_show_tooltips = !caGetOption('no_tooltips', $pa_options, false);
+		$vs_format = caGetOption('format', $pa_options, 'full', array('validValues' => array('simple', 'full')));
 		
 		if (!($pn_table_num = $this->getAppDatamodel()->getTableNum($this->get('table_num')))) { return null; }
 		
