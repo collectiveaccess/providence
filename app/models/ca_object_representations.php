@@ -1661,7 +1661,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		
-		$o_view->setVar('id_prefix', $ps_form_name.'_media_display');
+		$o_view->setVar('id_prefix', $ps_form_name);
 		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
 		
 		$o_view->setVar('settings', $pa_bundle_settings);
@@ -1696,7 +1696,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		
-		$o_view->setVar('id_prefix', $ps_form_name.'_captions');
+		$o_view->setVar('id_prefix', $ps_form_name);
 		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
 		
 		$o_view->setVar('settings', $pa_bundle_settings);

@@ -39,7 +39,7 @@
 		$va_selected_rep_ids = caExtractValuesFromArrayList($va_selected_rep_ids, $vs_element_code, array('preserveKeys' => false));
 ?>
 
-	<div class="caObjectRepresentationChooserContainer" id="<?php print $vs_id_prefix; ?>caObjectRepresentationChooserContainer">
+	<div class="caObjectRepresentationChooserContainer" id="<?php print $vs_id_prefix; ?>">
 <?php
 		foreach($va_reps as $va_rep) {
 			$va_attributes = array('value' => $va_rep['representation_id']);
@@ -57,7 +57,7 @@
 <?php
 	} else {
 ?>
-	<div class="caObjectRepresentationChooserContainer" id="<?php print $vs_id_prefix; ?>caObjectRepresentationChooserContainer">
+	<div class="caObjectRepresentationChooserContainer" id="<?php print $vs_id_prefix; ?>">
 		<?php print _t("No metadata element is configured"); ?>
 	</div>	
 <?php

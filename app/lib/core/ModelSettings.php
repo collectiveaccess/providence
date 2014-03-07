@@ -225,9 +225,11 @@
 		 *		settings = 
 		 * @return string HTML code for bundle
 		 */
-		public function getHTMLSettingFormBundle($po_request, $pa_options=null) {
+		public function getHTMLSettingFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null) {
 				$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 				$o_view->setVar('t_subject', $this);
+				$o_view->setVar('id_prefix', $ps_form_name);
+				$o_view->setVar('placement_code', $ps_placement_code);
 				
 				return $o_view->render('settings.php');
 		}

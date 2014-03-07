@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1261,7 +1261,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	 * @param $ps_form_name The name of the HTML form this bundle will be part of
 	 * @return string HTML for bundle
 	 */
-	public function getSearchFormHTMLFormBundle($po_request, $ps_form_name, $pa_options=null) {
+	public function getSearchFormHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null) {
 		if (!$this->haveAccessToForm($po_request->getUserID(), __CA_SEARCH_FORM_EDIT_ACCESS__)) {
 			return null;
 		}
@@ -1271,13 +1271,14 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		
 		$o_view->setVar('lookup_urls', caJSONLookupServiceUrl($po_request, $this->_DATAMODEL->getTableName($this->get('table_num'))));
 		$o_view->setVar('t_form', $this);
-		$o_view->setVar('id_prefix', $ps_form_name);		
+		$o_view->setVar('id_prefix', $ps_form_name);	
+		$o_view->setVar('placement_code', $ps_placement_code);		
 		
 		return $o_view->render('ca_search_form_placements.php');
 	}
 	# ----------------------------------------
-	public function savePlacementsFromHTMLForm($po_request, $ps_form_prefix) {
-		if ($vs_bundles = $po_request->getParameter($ps_form_prefix.'_ca_search_form_placementsdisplayBundleList', pString)) {
+	public function savePlacementsFromHTMLForm($po_request, $ps_form_name, $ps_placement_code, $pa_options=null) {
+		if ($vs_bundles = $po_request->getParameter("{$ps_placement_code}{$ps_form_name}displayBundleList", pString)) {
 			$va_bundles = explode(';', $vs_bundles);
 			
 			$t_form = new ca_search_forms($this->getPrimaryKey());

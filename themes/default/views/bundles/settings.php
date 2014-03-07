@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2013 Whirl-i-Gig
+ * Copyright 2011-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,14 +27,14 @@
  */
  
  
-	$vs_id_prefix 					= $this->getVar('placement_code').$this->getVar('id_prefix');
+	$vs_id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$vn_table_num 				= $this->getVar('table_num');
 	
-	$t_subject							= $this->getVar('t_subject');
+	$t_subject					= $this->getVar('t_subject');
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$vn_table_num.'Settings');
 ?>
-<div id="<?php print $vs_id_prefix.$vn_table_num.'Settings'; ?>">
+<div id="<?php print $vs_id_prefix; ?>">
 	<div class="bundleContainer">
 		<div class="caItemList settingsBundle">
 <?php 
@@ -49,6 +49,6 @@
 </div>
 <script type="text/javascript">
 	jQuery(document).ready(function() {
-		jQuery("#<?php print $vs_id_prefix.$vn_table_num.'Settings'; ?> input").change();
+		jQuery("#<?php print $vs_id_prefix; ?> input").change();
 	});
 </script>

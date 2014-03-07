@@ -171,19 +171,19 @@
 	 * 
 	 * @return string HTML implementing the control
 	 */
-	function caBatchEditorIntrinsicModeControl($t_item, $ps_bundle_name) {
+	function caBatchEditorIntrinsicModeControl($t_item, $ps_id_prefix) {
 		$vs_buf = "<div class='editorBatchModeControl'>"._t("In batch")." ".
-			caHTMLSelect("{$ps_bundle_name}_batch_mode", array(
+			caHTMLSelect("{$ps_id_prefix}_batch_mode", array(
 				_t("do not use") => "_disabled_", 
 				_t('set for each item') => '_replace_'
-		), array("id" => "{$ps_bundle_name}_batch_mode_select"))."</div>\n
+		), array("id" => "{$ps_id_prefix}_batch_mode_select"))."</div>\n
 	<script type=\"text/javascript\">
 		jQuery(document).ready(function() {
-			jQuery('#{$ps_bundle_name}_batch_mode_select').change(function() {
+			jQuery('#{$ps_id_prefix}_batch_mode_select').change(function() {
 				if (jQuery(this).val() == '_disabled_') {
-					jQuery('#intrinsic_{$ps_bundle_name}').slideUp(250);
+					jQuery('#{$ps_id_prefix}').slideUp(250);
 				} else {
-					jQuery('#intrinsic_{$ps_bundle_name}').slideDown(250);
+					jQuery('#{$ps_id_prefix}').slideDown(250);
 				}
 			});
 		});

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2012 Whirl-i-Gig
+ * Copyright 2010-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,9 +40,9 @@
  		}
  	}
  	if ($vb_batch) {
-		print caBatchEditorIntrinsicModeControl($t_instance, $vs_bundle_name);
+		print caBatchEditorIntrinsicModeControl($t_instance, $vs_id_prefix);
 	} else {
-		print caEditorBundleShowHideControl($this->request, "{$vs_id_prefix}intrinsic_{$vs_bundle_name}");
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 	}
 ?>
 	<div>
@@ -55,7 +55,7 @@
 <?php
 	} else {
 ?>
-		<div class="bundleContainer <?php print $vb_batch ? "editorBatchBundleContent" : ''; ?>" id="<?php print $vs_id_prefix; ?>intrinsic_<?php print $vs_bundle_name; ?>">
+		<div class="bundleContainer <?php print $vb_batch ? "editorBatchBundleContent" : ''; ?>" id="<?php print $vs_id_prefix; ?>">
 			<div class="caItemList">
 				<div class="labelInfo">	
 <?php
