@@ -920,7 +920,7 @@
  				}
  				if (is_array($pa_ids) && sizeof($pa_ids)) {
  					$ps_version = $this->request->getParameter('version', pString);
-					if ($qr_res = $t_subject->makeSearchResult($t_subject->tableName(), $pa_ids)) {
+					if ($qr_res = $t_subject->makeSearchResult($t_subject->tableName(), $pa_ids, array('filterNonPrimaryRepresentations' => false))) {
 						$o_zip = new ZipFile();
 						if (!($vn_limit = ini_get('max_execution_time'))) { $vn_limit = 30; }
 						set_time_limit($vn_limit * 2);
@@ -940,6 +940,9 @@
 								$vs_original_name = $va_infos[$vn_i]['ORIGINAL_FILENAME'];
 								$vn_index = (sizeof($va_paths) > 1) ? "_".($vn_i + 1) : '';
 								$vn_representation_id = $va_representation_ids[$vn_i];
+
+								// make sure we don't download representations the user isn't allowed to read
+								if(!caCanRead($this->request->user->getPrimaryKey(), 'ca_object_representations', $vn_representation_id)){ continue; }
 								
 								switch($this->request->user->getPreference('downloaded_file_naming')) {
 									case 'idno':
