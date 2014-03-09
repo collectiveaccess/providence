@@ -1023,8 +1023,16 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	function isReadable($po_request, $ps_bundle_name=null) {
 		// Check type restrictions
  		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
-			$vn_type_access = $po_request->user->getTypeAccessLevel($ps_table_name, $this->getTypeID());
+			$vn_type_access = $po_request->user->getTypeAccessLevel($this->tableName(), $this->getTypeID());
 			if ($vn_type_access < __CA_BUNDLE_ACCESS_READONLY__) {
+				return false;
+			}
+		}
+		
+		// Check source restrictions
+ 		if ((bool)$this->getAppConfig()->get('perform_source_access_checking')) {
+			$vn_source_access = $po_request->user->getSourceAccessLevel($this->tableName(), $this->getSourceID());
+			if ($vn_source_access < __CA_BUNDLE_ACCESS_READONLY__) {
 				return false;
 			}
 		}
@@ -1056,6 +1064,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
 			$vn_type_access = $po_request->user->getTypeAccessLevel($this->tableName(), $this->getTypeID());
 			if ($vn_type_access != __CA_BUNDLE_ACCESS_EDIT__) {
+				return false;
+			}
+		}
+		
+		// Check source restrictions
+ 		if ((bool)$this->getAppConfig()->get('perform_source_access_checking')) {
+			$vn_source_access = $po_request->user->getSourceAccessLevel($this->tableName(), $this->getSourceID());
+			if ($vn_source_access < __CA_BUNDLE_ACCESS_EDIT__) {
 				return false;
 			}
 		}
@@ -1094,6 +1110,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
 			$vn_type_access = $po_request->user->getTypeAccessLevel($this->tableName(), $this->getTypeID());
 			if ($vn_type_access != __CA_BUNDLE_ACCESS_EDIT__) {
+				return false;
+			}
+		}
+		
+		// Check source restrictions
+ 		if ((bool)$this->getAppConfig()->get('perform_source_access_checking')) {
+			$vn_source_access = $po_request->user->getSourceAccessLevel($this->tableName(), $this->getSourceID());
+			if ($vn_source_access < __CA_BUNDLE_ACCESS_EDIT__) {
 				return false;
 			}
 		}
@@ -1141,6 +1165,17 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				return;
 			}
 			if ($vn_type_access == __CA_BUNDLE_ACCESS_READONLY__) {
+				$pa_bundle_settings['readonly'] = true;
+			}
+		}
+		
+		// Check if user has access to this source
+		if ((bool)$this->getAppConfig()->get('perform_source_access_checking')) {
+			$vn_source_access = $pa_options['request']->user->getSourceAccessLevel($this->tableName(), $this->getSourceID());
+			if ($vn_source_access == __CA_BUNDLE_ACCESS_NONE__) {
+				return;
+			}
+			if ($vn_source_access == __CA_BUNDLE_ACCESS_READONLY__) {
 				$pa_bundle_settings['readonly'] = true;
 			}
 		}

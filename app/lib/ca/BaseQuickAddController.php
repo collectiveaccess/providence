@@ -92,6 +92,23 @@
  				return;
  			}
  			
+ 			//
+ 			// Is record from correct source?
+ 			// 
+ 			$va_restrict_to_sources = null;
+ 			if ($t_subject->getAppConfig()->get('perform_source_access_checking')) {
+ 				$va_restrict_to_sources = caGetSourceRestrictionsForUser($this->ops_table_name, array('access' => $vn_subject_id ? __CA_BUNDLE_ACCESS_READONLY__ : __CA_BUNDLE_ACCESS_EDIT__));
+ 			
+ 				if (!$t_subject->get('source_id')) {
+ 					$t_subject->set('source_id', $t_subject->getDefaultSourceID(array('request' => $this->request)));
+ 				}
+ 			
+				if (is_array($va_restrict_to_sources) && !in_array($t_subject->get('source_id'), $va_restrict_to_sources)) {
+					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2562?r='.urlencode($this->request->getFullUrlPath()));
+					return;
+				}
+			}
+ 			
  			if(is_array($pa_values)) {
  				foreach($pa_values as $vs_key => $vs_val) {
  					$t_subject->set($vs_key, $vs_val);
@@ -236,6 +253,29 @@
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2560?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
+ 			
+ 			//
+ 			// Is record from correct source?
+ 			// 
+ 			$va_restrict_to_sources = null;
+ 			if ($t_subject->getAppConfig()->get('perform_source_access_checking')) {
+ 				if (is_array($va_restrict_to_sources = caGetSourceRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_EDIT__)))) {
+					if (
+						(!$t_subject->get('source_id'))
+						||
+						($t_subject->get('source_id') && !in_array($t_subject->get('source_id'), $va_restrict_to_sources))
+						||
+						((strlen($vn_source_id = $this->request->getParameter('source_id', pInteger))) && !in_array($vn_source_id, $va_restrict_to_sources))
+					) {
+						$t_subject->set('source_id', $t_subject->getDefaultSourceID(array('request' => $this->request)));
+					}
+			
+					if (is_array($va_restrict_to_sources) && !in_array($t_subject->get('source_id'), $va_restrict_to_sources)) {
+						$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2562?r='.urlencode($this->request->getFullUrlPath()));
+						return;
+					}
+				}
+			}
  			
  			// Make sure request isn't empty
  			if(!sizeof($_POST)) {

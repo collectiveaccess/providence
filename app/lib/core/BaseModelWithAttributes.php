@@ -933,6 +933,7 @@
 			}
 			
 			$va_list = $t_list->getItemsForList($this->getSourceListCode(), $pa_options);
+			if (caGetOption('idsOnly', $pa_options, false)) { return $va_list; }
 			return is_array($va_list) ? caExtractValuesByUserLocale($va_list): array();
 		}
 		# ------------------------------------------------------------------
@@ -1066,6 +1067,7 @@
 			}
 			
 			$va_list = $t_list->getItemsForList($this->getTypeListCode(), $pa_options);
+			if (caGetOption('idsOnly', $pa_options, false)) { return $va_list; }
 			return is_array($va_list) ? caExtractValuesByUserLocale($va_list): array();
 		}
 		# ------------------------------------------------------------------
@@ -1495,13 +1497,17 @@
 		 *
 		 */
 		public function htmlFormElement($ps_field, $ps_format=null, $pa_options=null) {
-			switch($ps_field) {
-				case $this->getSourceFieldName():
-					if ((bool)$this->getAppConfig()->get('perform_source_access_checking')) {
-						$pa_options['value'] = $this->get($ps_field);
-						return $this->getSourceListAsHTMLFormElement($ps_field, array(), $pa_options);
-					}
-					break;
+			if ($vs_source_id_fld_name = $this->getSourceFieldName()) {
+				switch($ps_field) {
+					case $vs_source_id_fld_name:
+						if ((bool)$this->getAppConfig()->get('perform_source_access_checking')) {
+							$pa_options['value'] = $this->get($ps_field);
+							$pa_options['disableItemsWithID'] = caGetSourceRestrictionsForUser($this->tableName(), array('access' => __CA_BUNDLE_ACCESS_READONLY__, 'exactAccess' => true));
+							
+							return $this->getSourceListAsHTMLFormElement($ps_field, array(), $pa_options);
+						}
+						break;
+				}
 			}
 			
 			return parent::htmlFormElement($ps_field, $ps_format, $pa_options);
