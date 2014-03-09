@@ -124,7 +124,16 @@
           <name>List item sources</name>
         </label>
       </labels>
-      <items/>
+      <items>
+      	 <item idno="local" enabled="1" default="0">
+			  <labels>
+				<label locale="en_US" preferred="1">
+				  <name_singular>Local</name_singular>
+				  <name_plural>Local</name_plural>
+				</label>
+			  </labels>
+        </item>
+      </items>
     </list>
     <list code="list_item_label_types" hierarchical="1" system="0" vocabulary="0">
       <labels>

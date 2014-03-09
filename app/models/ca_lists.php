@@ -1104,7 +1104,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *	width = the display width of the list in characters or pixels
 	 *  limitToItemsWithID = An optional array of list item_ids. Item_ids not in the array will be omitted from the returned list.
 	 *  omitItemsWithID = An optional array of list item_ids. Item_ids in the array will be omitted from the returned list.
-	 *	
+	 *  disableItemsWithID = An optional array of list item_ids. Item_ids in the array will be disabled in the returned list.	
+	 *
 	 *	limitToItemsRelatedToCollections = an array of collection_ids or collection idno's; returned items will be restricted to those attached to the specified collections
 	 *	limitToItemsRelatedToCollectionWithRelationshipTypes = array of collection type names or type_ids; returned items will be restricted to those attached to the specified collectionss with the specified relationship type
 	 *	limitToListIDs = array of list_ids to restrict returned items to when using "limitToItemsRelatedToCollections"
@@ -1120,6 +1121,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			$t_list->load($vn_list_id);
 		}
 		$vn_root_id = (isset($pa_options['childrenOnlyForItemID']) && $pa_options['childrenOnlyForItemID']) ? $pa_options['childrenOnlyForItemID'] : null;
+		
+		$va_disabled_item_ids = caGetOption('disableItemsWithID', $pa_options, null);
 		
 		$vs_render_as = isset($pa_options['render']) ? $pa_options['render'] : ''; 
 		$vn_sort_type = $t_list->get('default_sort');
@@ -1209,7 +1212,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			if (is_array($pa_options['omitItemsWithID']) && in_array($vn_item_id, $pa_options['omitItemsWithID'])) { continue; }
 			
 			$va_options[$va_item[$pa_options['key']]] = str_repeat('&nbsp;', intval($va_item['LEVEL']) * 3).' '.$va_item['name_singular'];
-			if (!$va_item['is_enabled']) { $va_disabled_options[$va_item[$pa_options['key']]] = true; }
+			if (!$va_item['is_enabled'] || (is_array($va_disabled_item_ids) && in_array($vn_item_id, $va_disabled_item_ids))) { $va_disabled_options[$va_item[$pa_options['key']]] = true; }
 			$va_colors[$vn_item_id] = $va_item['color'];
 			
 			if ($va_item['is_default']) { $vn_default_val = $va_item[$pa_options['key']]; }		// get default value

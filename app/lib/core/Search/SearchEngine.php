@@ -224,12 +224,12 @@ class SearchEngine extends SearchBase {
 			} 
 				
 			// Filter on type	
-			if (is_array($va_type_ids = $this->getTypeRestrictionList()) && sizeof($va_type_ids)) {
+			if (is_array($va_type_ids = $this->getTypeRestrictionList())) {
 				$this->addResultFilter($this->ops_tablename.'.type_id', 'IN', join(",",$va_type_ids));
 			}
 			
 			// Filter on source
-			if (is_array($va_source_ids = $this->getSourceRestrictionList()) && sizeof($va_source_ids)) {
+			if (is_array($va_source_ids = $this->getSourceRestrictionList())) {
 				$this->addResultFilter($this->ops_tablename.'.source_id', 'IN', join(",",$va_source_ids));
 			}
 			
@@ -1082,7 +1082,7 @@ class SearchEngine extends SearchBase {
 	public function getTypeRestrictionList() {
 		if (function_exists("caGetTypeRestrictionsForUser")) {
 			$va_pervasive_types = caGetTypeRestrictionsForUser($this->ops_tablename);	// restrictions set in app.conf or by associated user role
-			if (!is_array($va_pervasive_types) || !sizeof($va_pervasive_types)) { return $this->opa_search_type_ids; }
+			if (!is_array($va_pervasive_types)) { return $this->opa_search_type_ids; }
 				
 			if (is_array($this->opa_search_type_ids) && sizeof($this->opa_search_type_ids)) {
 				$va_filtered_types = array();
@@ -1166,7 +1166,7 @@ class SearchEngine extends SearchBase {
 	public function getSourceRestrictionList() {
 		if (function_exists("caGetSourceRestrictionsForUser")) {
 			$va_pervasive_sources = caGetSourceRestrictionsForUser($this->ops_tablename);	// restrictions set in app.conf or by associated user role
-			if (!is_array($va_pervasive_sources) || !sizeof($va_pervasive_sources)) { return $this->opa_search_source_ids; }
+			if (!is_array($va_pervasive_sources)) { return $this->opa_search_source_ids; }
 				
 			if (is_array($this->opa_search_source_ids) && sizeof($this->opa_search_source_ids)) {
 				$va_filtered_sources = array();
