@@ -188,6 +188,7 @@
 <?php
 		$t_list = new ca_lists();
 		foreach($va_source_list as $vs_table => $va_sources_by_table) {
+			if(!is_array($va_sources_by_table) || (sizeof($va_sources_by_table) <= 1)) { continue; }
 			print "<table width='100%'>\n";
 			print "<tr><td colspan='4'><h1>".$va_table_names[$vs_table]."</h1></td></tr>\n";	
 			print "<tr align='center' valign='middle'><th>"._t('Default')."</th><th width='180' align='left'>"._t('Source')."</th><th width='180'>"._t('No access')."</th><th width='180'>"._t('Read-only access')."</th><th>"._t('Read/edit access')."</th></tr>\n";
