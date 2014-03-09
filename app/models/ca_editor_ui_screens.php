@@ -815,7 +815,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			if (is_numeric($pa_type_ids)) { 
 				$pa_type_ids = array($pa_type_ids); 
 			} else {
-				return null;
+				$pa_type_ids = array();
 			}
 		}
 		
