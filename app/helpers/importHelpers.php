@@ -669,6 +669,7 @@
 					switch($ps_table) {
 						case 'ca_entities':
 							$va_val['preferred_labels'] = DataMigrationUtils::splitEntityName($vs_item);
+							$va_val['idno'] = $vs_item;
 							break;
 						case 'ca_list_items':
 							$va_val['preferred_labels'] = array('name_singular' => $vs_item, 'name_plural' => $vs_item);
