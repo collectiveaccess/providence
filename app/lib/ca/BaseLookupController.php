@@ -314,9 +314,10 @@
 						}
 					}
 				}
+				
 				$va_items_for_locale['_primaryKey'] = $t_item->primaryKey();	// pass the name of the primary key so the hierbrowser knows where to look for item_id's
  				$va_items_for_locale['_itemCount'] = $qr_children ? $qr_children->numHits() : 0;
- 			
+ 				$va_items_for_locale['_sortOrder'] = array_keys($va_items_for_locale);
  				$va_level_data[$pn_id] = $va_items_for_locale;
  			}
  			
