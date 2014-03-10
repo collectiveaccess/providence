@@ -100,10 +100,18 @@
 		 *
 		 */
 		public static function parsePlaceholder($ps_placeholder, $pa_source_data, $pa_item, $ps_delimiter=null, $pn_index=0, $pa_options=null) {
+			$o_reader = caGetOption('reader', $pa_options, null);
+			
 			$ps_placeholder = trim($ps_placeholder);
+			$vs_key = substr($ps_placeholder, 1);
+			
 			if ($ps_placeholder[0] == '^') {
-				if (!isset($pa_source_data[substr($ps_placeholder, 1)])) { return null; }
-				$vm_val = $pa_source_data[substr($ps_placeholder, 1)];
+				if ($o_reader) {
+					$vm_val = $o_reader->get($vs_key, array('returnAsArray' => true));
+				} else {
+					if (!isset($pa_source_data[substr($ps_placeholder, 1)])) { return null; }
+					$vm_val = $pa_source_data[substr($ps_placeholder, 1)];
+				}
 			} else {
 				$vm_val = $ps_placeholder;
 			}
