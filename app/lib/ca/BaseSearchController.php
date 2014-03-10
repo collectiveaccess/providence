@@ -102,7 +102,7 @@
  			// Get elements of result context
  			$vn_page_num 			= $this->opo_result_context->getCurrentResultsPageNumber();
  			$vs_search 				= $this->opo_result_context->getSearchExpression();
- 			$vb_is_new_search		= $this->opo_result_context->isNewSearch();
+			$vb_is_new_search		= $this->opo_result_context->isNewSearch();
  			
  			if ((bool)$this->request->getParameter('reset', pString) && ($this->request->getParameter('reset', pString) != 'save')) {
  				$vs_search = '';
