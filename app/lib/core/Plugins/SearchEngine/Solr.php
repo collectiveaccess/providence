@@ -122,12 +122,19 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 				}
 			}
 			if ($vn_i == 0) { $vs_op = 'OR'; }
-			
+
+			// advanced search queries are for some reason nested 1-element boolean queries in boolean queries
+			if(get_class($o_lucene_query_element) == 'Zend_Search_Lucene_Search_Query_Boolean') {
+				$va_subqueries = $o_lucene_query_element->getSubqueries();
+				if(sizeof($va_subqueries) == 1) {
+					$o_lucene_query_element = array_shift($va_subqueries);
+				}
+			}
+
 			switch($vs_class = get_class($o_lucene_query_element)) {
 				case 'Zend_Search_Lucene_Search_Query_Term':
 				case 'Zend_Search_Lucene_Search_Query_MultiTerm':
 				case 'Zend_Search_Lucene_Search_Query_Phrase':
-					
 					if ($vs_class != 'Zend_Search_Lucene_Search_Query_Term') {
 						$va_raw_terms = array();
 						foreach($o_lucene_query_element->getQueryTerms() as $o_term) {
