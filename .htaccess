@@ -2,7 +2,7 @@ Order allow,deny
 Allow from all
 
 <FilesMatch ".*\.[A-Za-z0-9]+">
-        Deny from all
+	Deny from all
 </FilesMatch>
 <FilesMatch "^(index\.php)?$">
         Allow from all
@@ -10,9 +10,6 @@ Allow from all
 <FilesMatch "^(index|service|tilepic)\.php$">
         Allow from all
 </FilesMatch>
-<FilesMatch "^(index\.php)?$">
-	Allow from all
-</FilesMatch>
 <FilesMatch "^.*\.(css|gif|jpg|png|js|woff|ttf|swf)$">
-	Allow from all
+        Allow from all
 </FilesMatch>
