@@ -303,6 +303,47 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 			$o_rewritten_query = new Zend_Search_Lucene_Search_Query_Boolean($va_terms, $va_signs);	
 			$ps_search_expression = $this->_queryToString($o_rewritten_query);
 		}
+		
+        //Elements name to code conversion for solr
+        $va_search_query_split = explode('AND', $ps_search_expression );
+        $vs_search_query = "";
+        $va_query_start = true;
+
+        foreach($va_search_query_split as $vs_search_temp){
+            $va_search_split = preg_split( '/[.:]/', $vs_search_temp );
+
+            if(isset($va_search_split[1])){
+                $va_elements_list = ca_metadata_elements::getElementsAsList(false, null, null, true, false, true);
+                $va_element_name = $va_search_split[1];
+                $va_element_data = $va_elements_list[$va_element_name];
+
+                if(array_key_exists($va_element_name, $va_elements_list)){
+                    if($va_query_start ===  true){
+                        $vs_search_query .= str_replace($va_element_name, 'A'.$va_element_data['element_id'], $vs_search_temp);
+                        $va_query_start = false;
+                    }
+                    else
+                        $vs_search_query .= 'AND'. str_replace($va_element_name, 'A'.$va_element_data['element_id'], $vs_search_temp);
+
+                    $va_element_datatype = $va_element_data['datatype'];
+                    $va_datatypes = Attribute::getAttributeTypes();
+                    if (isset($va_datatypes[$va_element_datatype]) && $va_datatypes[$va_element_datatype] === 'DateRange') {
+                        $va_date_value = trim(str_replace(')', '', $va_search_split[2]));
+
+                        $t_texp = new TimeExpressionParser(null, null, true);
+                        $va_search_date = $t_texp->parseDate($va_date_value);
+                        if($va_search_date !== false)
+                            $vs_search_query = str_replace($va_date_value,"\"".
+                                $t_texp->getISODateTime($t_texp->getHistoricDateParts($va_search_date['end'])).
+                                "\"" , $vs_search_query);
+                    }
+
+                }
+            }
+        }
+        if($va_query_start === false)
+            $ps_search_expression = $vs_search_query;		
+		
 		if (is_array($pa_filters) && sizeof($pa_filters) && ($vs_filter_query = $this->_filterValueToQueryValue($pa_filters))) {
 			$ps_search_expression .= ' AND ('.$vs_filter_query.')';
 		}
