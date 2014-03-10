@@ -526,8 +526,25 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 			$ps_content_tablename = $this->opo_datamodel->getTableName($pn_content_tablenum);
 			$vn_field_num_proc = (int)substr($ps_content_fieldname, 1);
 			$ps_content_fieldname = $this->opo_datamodel->getFieldName($ps_content_tablename, $vn_field_num_proc);
+
+			// Type fields need a little special attention because we index their plain ids, their type codes AND their preferred label,
+			// like so: "Publication publication 102".
+			// That doesn't work too well with Solr. Solr does, however, have proper support for  multivalued fields, so we split the string
+			// to make sure "publication" and "102" become two distinct values in the index.
+			// The getTableInstance call is cached, so in theory it should be cheap after it is issued once.
+			$t_instance = $this->opo_datamodel->getTableInstance($ps_content_tablename,true);
+			if(($t_instance instanceof BaseModelWithAttributes) && ($ps_content_fieldname == $t_instance->getTypeFieldName())){
+				$va_tmp = explode(' ', $pm_content);
+				$pm_content = array();
+				// this is the type_id
+				$pm_content[] = array_pop($va_tmp);
+				// this is the type code - lets just assume it doesn't have spaces
+				$pm_content[] = array_pop($va_tmp);
+				// this is label information, which may have spaces. So we have to make sure that "Film & Media" doesn't become 3 values
+				$pm_content[] = join(' ', $va_tmp);
+			}
 		}
-		
+
 		$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname][] = $pm_content;
 	}
 	# -------------------------------------------------------
