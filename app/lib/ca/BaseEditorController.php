@@ -356,7 +356,6 @@
  				}
  			} else {
 				$this->notification->addNotification($vs_message, __NOTIFICATION_TYPE_INFO__);	
- 				$this->opo_result_context->invalidateCache();
   				$this->opo_result_context->saveContext();
  			}
  			# trigger "SaveItem" hook 
