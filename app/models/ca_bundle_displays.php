@@ -476,7 +476,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				if (!$pb_settings_only) {
 					$t_placement->setSettingDefinitionsForPlacement($va_available_bundles[$vs_bundle_name]['settings']);
 					$va_placements[$vn_placement_id]['display'] = $va_available_bundles[$vs_bundle_name]['display'];
-					$va_placements[$vn_placement_id]['settingsForm'] = $t_placement->getHTMLSettingForm(array('id' => $vs_bundle_name.'_'.$vn_placement_id, 'settings' => $va_settings));
+					$va_placements[$vn_placement_id]['settingsForm'] = $t_placement->getHTMLSettingForm(array('id' => $vs_bundle_name.'_'.$vn_placement_id.'_', 'settings' => $va_settings));
 				} else {
 					$va_tmp = explode('.', $vs_bundle_name);
 					$t_instance = $o_dm->getInstanceByTableName($va_tmp[0], true);
@@ -1274,58 +1274,62 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 					'default' => '',
 					'label' => _t('Delimiter'),
 					'description' => _t('Text to place in-between repeating values.')
-				),
-				'show_hierarchy' => array(
-					'formatType' => FT_NUMBER,
-					'displayType' => DT_CHECKBOXES,
-					'width' => 10, 'height' => 1,
-					'hideOnSelect' => array('format'),
-					'takesLocale' => false,
-					'default' => '0',
-					'label' => _t('Show hierarchy?'),
-					'description' => _t('If checked the full hierarchical path will be shown.')
-				),
-				'remove_first_items' => array(
-					'formatType' => FT_NUMBER,
-					'displayType' => DT_FIELD,
-					'width' => 10, 'height' => 1,
-					'takesLocale' => false,
-					'default' => '0',
-					'label' => _t('Remove first items from hierarchy?'),
-					'description' => _t('If set to a non-zero value, the specified number of items at the top of the hierarchy will be omitted. For example, if set to 2, the root and first child of the hierarchy will be omitted.')
-				),
-				'hierarchy_order' => array(
-					'formatType' => FT_TEXT,
-					'displayType' => DT_SELECT,
-					'options' =>array(
-						_t('top first') => 'ASC',
-						_t('bottom first') => 'DESC'
-					),
-					'width' => 35, 'height' => 1,
-					'takesLocale' => false,
-					'default' => '',
-					'label' => _t('Order hierarchy'),
-					'description' => _t('Determines order in which hierarchy is displayed.')
-				),
-				'hierarchy_limit' => array(
-					'formatType' => FT_NUMBER,
-					'displayType' => DT_FIELD,
-					'width' => 10, 'height' => 1,
-					'takesLocale' => false,
-					'default' => '',
-					'label' => _t('Maximum length of hierarchy'),
-					'description' => _t('Maximum number of items to show in the hierarchy. Leave blank to show the unabridged hierarchy.')
-				),
-				'hierarchical_delimiter' => array(
-					'formatType' => FT_TEXT,
-					'displayType' => DT_FIELD,
-					'width' => 35, 'height' => 1,
-					'takesLocale' => false,
-					'default' => ' ➔ ',
-					'label' => _t('Hierarchical delimiter'),
-					'description' => _t('Text to place in-between elements of a hierarchical value.')
 				)
 			);
+			if ($t_rel_instance->isHierarchical()) {
+				$va_additional_settings += array(
+					'show_hierarchy' => array(
+						'formatType' => FT_NUMBER,
+						'displayType' => DT_CHECKBOXES,
+						'width' => 10, 'height' => 1,
+						'hideOnSelect' => array('format'),
+						'takesLocale' => false,
+						'default' => '0',
+						'label' => _t('Show hierarchy?'),
+						'description' => _t('If checked the full hierarchical path will be shown.')
+					),
+					'remove_first_items' => array(
+						'formatType' => FT_NUMBER,
+						'displayType' => DT_FIELD,
+						'width' => 10, 'height' => 1,
+						'takesLocale' => false,
+						'default' => '0',
+						'label' => _t('Remove first items from hierarchy?'),
+						'description' => _t('If set to a non-zero value, the specified number of items at the top of the hierarchy will be omitted. For example, if set to 2, the root and first child of the hierarchy will be omitted.')
+					),
+					'hierarchy_order' => array(
+						'formatType' => FT_TEXT,
+						'displayType' => DT_SELECT,
+						'options' =>array(
+							_t('top first') => 'ASC',
+							_t('bottom first') => 'DESC'
+						),
+						'width' => 35, 'height' => 1,
+						'takesLocale' => false,
+						'default' => '',
+						'label' => _t('Order hierarchy'),
+						'description' => _t('Determines order in which hierarchy is displayed.')
+					),
+					'hierarchy_limit' => array(
+						'formatType' => FT_NUMBER,
+						'displayType' => DT_FIELD,
+						'width' => 10, 'height' => 1,
+						'takesLocale' => false,
+						'default' => '',
+						'label' => _t('Maximum length of hierarchy'),
+						'description' => _t('Maximum number of items to show in the hierarchy. Leave blank to show the unabridged hierarchy.')
+					),
+					'hierarchical_delimiter' => array(
+						'formatType' => FT_TEXT,
+						'displayType' => DT_FIELD,
+						'width' => 35, 'height' => 1,
+						'takesLocale' => false,
+						'default' => ' ➔ ',
+						'label' => _t('Hierarchical delimiter'),
+						'description' => _t('Text to place in-between elements of a hierarchical value.')
+					)
+				);
+			}
 			
 			//$va_additional_settings['format']['helpText'] = $this->getTemplatePlaceholderDisplayListForBundle($vs_bundle);
 		
@@ -1707,37 +1711,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			$pa_options['template'] = ($va_settings['format']) ? $va_settings['format'] : null;
 		}
 		
-		
-		$vs_val = '';
-		if($pa_options['template']) {
-			if ($t_instance = $this->getAppDatamodel()->getInstanceByTableName($va_tmp[0], true)) {
-				$va_tmp2 = $va_tmp;
-				$vb_is_related = false;
-				if ((sizeof($va_tmp) == 1) || ((sizeof($va_tmp) == 2) && $va_tmp[1] == 'related')) {
-					$vb_is_related = true;
-				} elseif ((sizeof($va_tmp2) > 1) && (in_array($vs_tmp = array_pop($va_tmp2), array('related')))) {
-					$va_tmp2[] = $vs_tmp;
-				} else {
-					$va_tmp2[] = $t_instance->primaryKey();
-				}
-				
-				$va_ids = $po_result->get(join('.', $va_tmp2), array_merge($va_settings, array('returnAsArray' => true)));
-				$va_links = array();
-				if (is_array($va_ids)) {
-					if ($vb_is_related) {
-						$va_ids = caExtractValuesFromArrayList($va_ids, 'relation_id'); 
-						if ($t_rel = $t_instance->getRelationshipInstance($po_result->tableName())) {
-							
-							$vs_val = caProcessTemplateForIDs($pa_options['template'], $t_rel->tableName(), $va_ids, array_merge($pa_options, $va_settings, array('orientation' => (($t_rel->getLeftTableName() == $po_result->tableName()) ? "LTOR" : "RTOL"),'returnAsArray' => false)));
-						}
-					} else {
-						$vs_val = caProcessTemplateForIDs($pa_options['template'], $va_tmp2[0], $va_ids, array_merge($pa_options, $va_settings, array('returnAsArray' => false)));
-					}
-				}
-			}
-		} else {
-			$vs_val = $po_result->get(join(".", $va_tmp), $pa_options);
-		}
+		$vs_val = $po_result->get(join(".", $va_tmp), $pa_options);
 		
 		if (isset($pa_options['purify']) && $pa_options['purify']) {
 			$o_purifier = new HTMLPurifier();
@@ -1767,7 +1741,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			$va_locale_list = ca_locales::getLocaleList(array('index_by_code' => true));
-			
+
 			$va_available_bundles = $t_display->getAvailableBundles();
 			foreach($va_bundles as $vn_i => $vs_bundle) {
 				// get settings
@@ -1783,7 +1757,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				$va_settings = array();
 				
 				foreach($_REQUEST as $vs_key => $vs_val) {
-					if (preg_match("!^{$vs_bundle_proc}_([\d]+)_(.*)$!", $vs_key, $va_matches)) {
+					if (preg_match("!^{$vs_bundle_proc}_([\d]+)_([^\d]+.*)$!", $vs_key, $va_matches)) {
 						
 						// is this locale-specific?
 						if (preg_match('!(.*)_([a-z]{2}_[A-Z]{2})$!', $va_matches[2], $va_locale_matches)) {

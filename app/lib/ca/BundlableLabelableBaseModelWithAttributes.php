@@ -521,228 +521,61 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		switch(sizeof($va_tmp)) {
 			# -------------------------------------
-			case 1:		// table_name
-				if ($t_instance = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true)) {
-					$vs_pk = $t_instance->primaryKey();
-					$va_related_items = $this->getRelatedItems($va_tmp[0], $pa_options);
-					if (!is_array($va_related_items)) { return null; }
-					
-					if (!$vs_template && !$vb_return_all_locales && !$vb_return_as_array) {
-						$vs_template = "^preferred_labels";
-					}
-					
-					if ($vb_return_all_locales) { 
-						$va_related_tmp = array();
-						foreach($va_related_items as $vn_i => $va_related_item) {
-							$va_related_tmp[$vn_i][$va_related_item['locale_id']] = $va_related_item;
-						}
-						$va_related_items = $va_related_tmp;
-					} else {
-						if ($vs_template) {
-							$va_template_opts = $pa_options;
-							unset($va_template_opts['request']);
-							unset($va_template_opts['template']);
-							$va_template_opts['returnAsLink'] = false;
-							$va_template_opts['returnAsArray'] = true;
-							$va_template_opts['requireLinkTags'] = true;
-						
-							$va_ids = array();
-							if (is_array($va_rel_items = $this->get($va_tmp[0], $va_template_opts))) {
-								foreach($va_rel_items as $vn_rel_id => $va_rel_item) {
-									$va_ids[] = $va_rel_item[$vs_pk];
-									$va_template_opts['relationshipValues'][$va_rel_item[$vs_pk]][$va_rel_item['relation_id']]['relationship_typename'] = $va_rel_item['relationship_typename'];
-									$va_template_opts['relationshipValues'][$va_rel_item[$vs_pk]][$va_rel_item['relation_id']]['relationship_type_id'] = $va_rel_item['relationship_type_id'];
-									$va_template_opts['relationshipValues'][$va_rel_item[$vs_pk]][$va_rel_item['relation_id']]['label'] = $va_rel_item['label'];
-								}
-							} else {
-								$va_rel_items = array();
-							}
-						
-							$va_text = caProcessTemplateForIDs($vs_template, $va_tmp[0], $va_ids, $va_template_opts);
-						
-							if ($vb_return_as_link) {
-								$va_text = caCreateLinksFromText($va_text, $va_tmp[0], $va_ids, $vs_return_as_link_class, $vs_return_as_link_target);
-							} 
-						
-							if ($vb_return_as_array) {
-								return $va_text;
-							}
-							return join($vs_delimiter, $va_text);
-						}
-					}
-					
-					return $va_related_items;
-				}
-				break;
-			# -------------------------------------
+			case 1:
 			case 2:		// table_name.field_name || table_name.related
 			case 3:		// table_name.field_name.sub_element || table_name.related.field_name
 			case 4:		// table_name.related.field_name.sub_element
-				//
-				// TODO: this code is compact, relatively simple and works but is slow since it
-				// generates a lot more identical database queries than we'd like
-				// We will need to add some notion of caching so that multiple calls to get() 
-				// for various fields in the same list of related items don't cause repeated queries
-				//
-				$vb_is_related = false;
-				$vb_is_hierarchy = false;
-				if ($va_tmp[1] === 'related') {
-					array_splice($va_tmp, 1, 1);
-					$vb_is_related = true;
-				}
+				if ($t_instance = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true)) {
+					//
+					// TODO: this code is compact, relatively simple and works but is slow since it
+					// generates a lot more identical database queries than we'd like
+					// We will need to add some notion of caching so that multiple calls to get() 
+					// for various fields in the same list of related items don't cause repeated queries
+					//
 				
-				if ($vb_is_related || ($va_tmp[0] !== $this->tableName())) {		// must be related table			
-					$t_instance = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true);
-					$vs_pk = $t_instance->primaryKey();
+					$va_opts = array();
 					
-					if ($vs_template && !$vb_return_all_locales) {
-						$va_template_opts = $pa_options;
-						unset($va_template_opts['request']);
-						unset($va_template_opts['template']);
-						$va_template_opts['returnAsLink'] = false;
-						$va_template_opts['returnAsArray'] = true;
-						$va_template_opts['requireLinkTags'] = true;
-						
-						$va_ids = array();
-						if (is_array($va_rel_items = $this->get($va_tmp[0], $va_template_opts))) {
-							foreach($va_rel_items as $vn_rel_id => $va_rel_item) {
-								$va_ids[] = $va_rel_item[$vs_pk];
-								$va_template_opts['relationshipValues'][$va_rel_item[$vs_pk]][$va_rel_item['relation_id']]['relationship_typename'] = $va_rel_item['relationship_typename'];
-							}
-						} else {
-							$va_rel_items = array();
-						}
-						
-						$va_text = caProcessTemplateForIDs($vs_template, $va_tmp[0], $va_ids, $va_template_opts);
-						
-						if ($vb_return_as_link) {
-							$va_text = caCreateLinksFromText($va_text, $va_tmp[0], $va_ids, $vs_return_as_link_class, $vs_return_as_link_target);
-						} 
-						
-						if ($vb_return_as_array) {
-							return $va_text;
-						}
-						return join($vs_delimiter, $va_text);
+					$vb_is_related = false;
+					$vb_is_hierarchy = false;
+					if ($va_tmp[1] === 'related') {
+						array_splice($va_tmp, 1, 1);
+						$vb_is_related = true;
 					}
-					
-					$va_related_items = $this->getRelatedItems($va_tmp[0], array_merge($pa_options, array('returnLabelsAsArray' => true)));
+					if (($va_tmp[1] == 'hierarchy') && (sizeof($va_tmp) == 2)) {
+						$va_tmp[] = "preferred_labels";
+						$va_opts['hierarchicalDelimiter'] = caGetOption('hierarchicalDelimiter', $pa_options, '; ');
+					}
 				
-					if (is_array($va_restrict_to_rel_types) && sizeof($va_restrict_to_rel_types)) {
-						require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
-						$t_rel_types = new ca_relationship_types();
-						
-						$va_restrict_to_rel_types = $t_rel_types->relationshipTypeListToIDs($t_rel_types->getRelationshipTypeTable($this->tableName(), $va_tmp[0]), $va_restrict_to_rel_types, array('includeChildren' => true));
-					}
-					
-				 	$vb_field_is_specified = (
-				 		((sizeof($va_tmp) == 2) && (!$vb_is_hierarchy && ($va_tmp[1] != 'related')))
-				 		||
-				 		((sizeof($va_tmp) >= 3))
-				 	);
-					
-					$va_ids = array();
-					$va_items = array();
-					if(is_array($va_related_items) && (sizeof($va_related_items) > 0)) {
-						foreach($va_related_items as $vn_rel_id => $va_related_item) {
-							$va_ids[] = $va_related_item[$vs_pk];
-							if (is_array($va_restrict_to_rel_types) && !in_array($va_related_item['relationship_type_id'], $va_restrict_to_rel_types)) { continue; }
-							
-							if ($va_tmp[1] == 'relationship_typename') {
-								$va_items[] = $va_related_item['relationship_typename'];
-								continue;
-							}
-							
-							if ($va_tmp[1] == 'hierarchy') {
-								$vb_is_hierarchy = true;
-								if ($t_instance->load($va_related_item[$t_instance->primaryKey()])) {
-									$va_items[] = $t_instance->get(join('.', $va_tmp), $pa_options);
-								}
-								continue;
-							}
-							
-							// is field directly returned by getRelatedItems()?
-							if (isset($va_tmp[1]) && isset($va_related_item[$va_tmp[1]]) && $t_instance->hasField($va_tmp[1])) {
-								if ($vb_return_as_array) {
-									if ($vb_return_all_locales) {
-										// for return as locale-index array
-										$va_items[$va_related_item['relation_id']][$va_related_item['locale_id']][] = $va_related_item[$va_tmp[1]];
-									} else {
-										// for return as simple array
-										$va_items[] = $va_related_item[$va_tmp[1]];
-									}
-								} else {
-									// for return as string
-									$va_items[] = $va_related_item[$va_tmp[1]];
-								}
-								continue;
-							}
-							
-							// is field preferred labels?
-							if ($va_tmp[1] === 'preferred_labels') {
-								if (!isset($va_tmp[2])) {
-									if ($vb_return_as_array || $vb_return_all_locales) {
-										if ($vb_return_all_locales) {
-											// for return as locale-index array
-											$va_items[$va_related_item['relation_id']][] = $va_related_item['labels'];
-										} else {
-											// for return as simple array
-											$va_item_list = caExtractValuesByUserLocale(array($va_related_item['labels']));
-											foreach($va_item_list as $vn_x => $va_item) {
-												$va_items[] = $va_item[$t_instance->getLabelDisplayField()];
-											}
-										}
-									} else {
-										// for return as string
-										$va_items[] = $va_related_item['label'][$t_instance->getLabelDisplayField()];
-									}
-								} else {
-									if ($vb_return_all_locales) {
-										// for return as locale-index array
-										foreach($va_related_item['labels'] as $vn_locale_id => $va_label) {
-											$va_items[$va_related_item['relation_id']][$vn_locale_id][] = $va_label[$va_tmp[2]];
-										}
-									} else {
-										foreach(caExtractValuesByUserLocale(array($va_related_item['labels'])) as $vn_i => $va_label) {
-											// for return as string or simple array
-											$va_items[] = $va_label[$va_tmp[2]];
-										}
-									}
-								}
+					if (sizeof($va_tmp) == 1) { $va_tmp[] = 'preferred_labels'; }
+					if ($vb_is_related || ($va_tmp[0] !== $this->tableName())) {		// must be related table
+						$t_instance = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true);
+						$vs_pk = $t_instance->primaryKey();
 								
-								continue;
-							}
-							
-							// TODO: add support for nonpreferred labels
-							
-							
-							
-							// Get related attributes
-							if ($t_instance->load($va_related_item[$t_instance->primaryKey()])) {
-								if (isset($va_tmp[1])) {
-									if ($vm_val = $t_instance->get(join(".", $va_tmp), $pa_options)) {
-										if ($vb_return_as_link && !$vb_return_as_array && !$vb_return_all_locales) {
-											$va_items[] = $vm_val;
-										} else {
-											return $vm_val;
-										}
-									}
-								} else {
-									$va_items[]  = $this->get($va_tmp[0], $pa_options);
-								}
-							} else {
-								$va_items[] = null;
-							}
-						}
-					}
-			
-					if ($vb_return_as_link && !$vb_return_all_locales) {
-						$va_items = caCreateLinksFromText($va_items, $va_tmp[0], $va_ids, $vs_return_as_link_class, $vs_return_as_link_target);
-					}
+						$va_related_items = $this->getRelatedItems($va_tmp[0], $pa_options);
 					
-					if($vb_return_as_array) {
-						return $va_items;
-					} else {
-						return join($vs_delimiter, $va_items);
+						$va_ids = array();
+						foreach($va_related_items as $vn_relation_id => $va_relation) {
+							$va_ids[] = $va_relation[$vs_pk];
+						}
+						$qr_res = caMakeSearchResult($va_tmp[0], $va_ids);
+				
+						$va_vals = array();
+					
+					
+						if ($vs_template = caGetOption('template', $pa_options, null)) {
+							$va_opts['template'] = $vs_template;
+							$vs_get_spec = $va_tmp[0];
+						} else {
+							$vs_get_spec = join(".", $va_tmp);
+						}
+						while($qr_res->nextHit()) {
+							$va_vals[] = $qr_res->get($vs_get_spec, $pa_options);
+						}
+						if($vb_return_as_array) {
+							return $va_vals;
+						} else {
+							return join($vs_delimiter, $va_vals);
+						}
 					}
 				}
 				break;
