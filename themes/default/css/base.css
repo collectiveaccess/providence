@@ -180,6 +180,7 @@ h5 {
     width: 215px;
     height: 100%;
     border-top: 2px solid #ddd;
+    padding-bottom: 10px;
 }
 
 #leftNav h2 {
@@ -393,6 +394,9 @@ div.inspectorLotObjectTypeControls {
 	text-align: center;
 	width:100%;
 	padding-left: 0px;
+}
+#leftNav #searchSetTools .button {
+	width:auto;
 }
 #leftNav #toolIcons .button {
 	text-align:left;
@@ -2174,6 +2178,7 @@ select.searchToolsSelect {
 }
 #searchSetTools .col{
 	margin-bottom:15px;
+	clear: both;
 }
 #searchSetTools .header {
 	font-family: 'din-regular', helvetica, sans-serif;
@@ -2188,7 +2193,7 @@ select.searchToolsSelect {
 #searchSetTools .searchSetsToggle a{
 	float: left;
 	clear: right;
-	width: 100%;
+	width: auto;
 	text-align: left;
 	margin-bottom: 15px;
 	margin-top: -14px;
@@ -5121,7 +5126,7 @@ a.quickaddMenuItem {
 div.roundedRel {
     font-size: 10px;
     font-weight: normal;
-    padding: 2px 4px 4px 8px;
+    padding: 5px 4px 1px 8px;
     margin: 5px;
     float: left;
     border: 1px solid #ddd;
