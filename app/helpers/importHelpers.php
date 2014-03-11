@@ -50,9 +50,12 @@
 	 * 
 	 * @return int
 	 */
-	function caProcessRefineryParents($ps_refinery_name, $ps_table, $pa_parents, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, $o_log=null, $pa_options=null) {
+	function caProcessRefineryParents($ps_refinery_name, $ps_table, $pa_parents, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, $pa_options=null) {
 		global $g_ui_locale_id;
 		if (!is_array($pa_options)) { $pa_options = array(); }
+		
+		$o_log = caGetOption('log', $pa_options, null);
+		$o_reader = caGetOption('reader', $pa_options, null);
 		
 		$vn_list_id = caGetOption('list_id', $pa_options, null);
 		$vb_hierarchy_mode = caGetOption('hierarchyMode', $pa_options, false);
@@ -62,9 +65,9 @@
 		
 		$pa_parents = array_reverse($pa_parents);
 		foreach($pa_parents as $vn_i => $va_parent) {
-			$vs_name = BaseRefinery::parsePlaceholder($va_parent['name'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));
-			$vs_idno = BaseRefinery::parsePlaceholder($va_parent['idno'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));
-			$vs_type = BaseRefinery::parsePlaceholder($va_parent['type'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));
+			$vs_name = BaseRefinery::parsePlaceholder($va_parent['name'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
+			$vs_idno = BaseRefinery::parsePlaceholder($va_parent['idno'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
+			$vs_type = BaseRefinery::parsePlaceholder($va_parent['type'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 			if (!$vs_name && !$vs_idno) { continue; }
 			if (!$vs_name) { $vs_name = $vs_idno; }
 			
@@ -76,10 +79,10 @@
 						// BaseRefinery::parsePlaceholder may return an array if the input format supports repeated values (as XML does)
 						// DataMigrationUtils::getCollectionID(), which ca_data_importers::importDataFromSource() uses to create related collections
 						// only supports non-repeating attribute values, so we join any values here and call it a day.
-						$va_attributes[$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));
+						$va_attributes[$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 					}
 				} else {
-					$va_attributes[$vs_element_code] = array($vs_element_code => BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' ')));
+					$va_attributes[$vs_element_code] = array($vs_element_code => BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' ')));
 				}
 			}
 			
@@ -98,13 +101,13 @@
 								case 'set':
 									switch($va_action['target']) {
 										case 'name':
-											$vs_name = BaseRefinery::parsePlaceholder($va_action['value'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));
+											$vs_name = BaseRefinery::parsePlaceholder($va_action['value'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 											break;
 										case 'type':
-											$vs_type = BaseRefinery::parsePlaceholder($va_action['value'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));
+											$vs_type = BaseRefinery::parsePlaceholder($va_action['value'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 											break;
 										default:
-											$va_attributes[$va_action['target']] = BaseRefinery::parsePlaceholder($va_action['value'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));
+											$va_attributes[$va_action['target']] = BaseRefinery::parsePlaceholder($va_action['value'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 											break;
 									}
 									break;
@@ -210,7 +213,10 @@
 	 * 
 	 * @return array
 	 */
-	function caProcessRefineryAttributes($pa_attributes, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, $o_log=null) {
+	function caProcessRefineryAttributes($pa_attributes, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, $pa_options=null) {
+		$o_log = caGetOption('log', $pa_options, null);
+		$o_reader = caGetOption('reader', $pa_options, null);
+		
 		if (is_array($pa_attributes)) {
 			$va_attr_vals = array();
 			foreach($pa_attributes as $vs_element_code => $va_attrs) {
@@ -219,7 +225,7 @@
 				if(is_array($va_attrs)) {
 					foreach($va_attrs as $vs_k => $vs_v) {
 						// BaseRefinery::parsePlaceholder may return an array if the input format supports repeated values (as XML does)
-						$va_vals = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $ps_delimiter, $pn_c);
+						$va_vals = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('reader' => $o_reader));
 						if (sizeof($va_vals) > 1) { $vb_is_repeating = true; }
 						
 						if ($vb_is_repeating) {
@@ -232,11 +238,11 @@
 								if ($vn_c >= $vn_num_repeats) { break; }
 							}
 						} else {
-							$va_attr_vals[$vs_element_code][$vs_k] = (is_array($vm_v = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $ps_delimiter, $pn_c))) ? join(" ", $vm_v) : $vm_v;
+							$va_attr_vals[$vs_element_code][$vs_k] = (is_array($vm_v = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('reader' => $o_reader)))) ? join(" ", $vm_v) : $vm_v;
 						}
 					}
 				} else {
-					$va_attr_vals[$vs_element_code][$vs_element_code] = (is_array($vm_v = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $ps_delimiter, $pn_c))) ? join(" ", $vm_v) : $vm_v;
+					$va_attr_vals[$vs_element_code][$vs_element_code] = (is_array($vm_v = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('reader' => $o_reader)))) ? join(" ", $vm_v) : $vm_v;
 				}
 			}
 			return $va_attr_vals;
@@ -258,7 +264,10 @@
 	 * 
 	 * @return array
 	 */
-	function caProcessInterstitialAttributes($ps_refinery_name, $pm_import_tablename_or_num, $pm_target_tablename_or_num, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, $o_log=null) {
+	function caProcessInterstitialAttributes($ps_refinery_name, $pm_import_tablename_or_num, $pm_target_tablename_or_num, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, $pa_options=null) {
+		$o_reader = caGetOption('reader', $pa_options, null);
+		$o_log = caGetOption('log', $pa_options, null);
+		
 		if (is_array($pa_item['settings']["{$ps_refinery_name}_interstitial"])) {
 			$o_dm = Datamodel::load();
 			if (!($ps_import_tablename = $o_dm->getTableName($pm_import_tablename_or_num))) { return null; }
@@ -282,10 +291,10 @@
 				if ($vs_linking_table) {
 					foreach($pa_item['settings']["{$ps_refinery_name}_interstitial"] as $vs_element_code => $va_attrs) {
 						if(!is_array($va_attrs)) { 
-							$va_attr_vals['_interstitial'][$vs_element_code] = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $ps_delimiter, $pn_c);
+							$va_attr_vals['_interstitial'][$vs_element_code] = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('reader' => $o_reader));
 						} else {
 							foreach($va_attrs as $vs_k => $vs_v) {
-								$va_attr_vals['_interstitial'][$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $ps_delimiter, $pn_c);
+								$va_attr_vals['_interstitial'][$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('reader' => $o_reader));
 							}
 						}
 					}
@@ -310,7 +319,10 @@
 	 * 
 	 * @return array
 	 */
-	function caProcessRefineryRelated($ps_refinery_name, $ps_related_table, $pa_related_option_list, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, $o_log=null, $pa_options=null) {
+	function caProcessRefineryRelated($ps_refinery_name, $ps_related_table, $pa_related_option_list, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, $pa_options=null) {
+		$o_reader = caGetOption('reader', $pa_options, null);
+		$o_log = caGetOption('log', $pa_options, null);
+		
 		global $g_ui_locale_id;
 		$va_attr_vals = array();
 		
@@ -324,10 +336,10 @@
 			$va_name = null;
 			$vs_name = caGetOption('name', $pa_related_options, null);
 		
-			$vs_name = BaseRefinery::parsePlaceholder($pa_related_options['name'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));
-			$vs_idno = BaseRefinery::parsePlaceholder($pa_related_options['idno'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));
-			$vs_type = BaseRefinery::parsePlaceholder($pa_related_options['type'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));
-			$vn_parent_id = BaseRefinery::parsePlaceholder($pa_related_options['parent_id'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));
+			$vs_name = BaseRefinery::parsePlaceholder($pa_related_options['name'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
+			$vs_idno = BaseRefinery::parsePlaceholder($pa_related_options['idno'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
+			$vs_type = BaseRefinery::parsePlaceholder($pa_related_options['type'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
+			$vn_parent_id = BaseRefinery::parsePlaceholder($pa_related_options['parent_id'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 		
 			if (!$vs_name) { $vs_name = $vs_idno; }
 		
@@ -338,7 +350,7 @@
 					$va_name = array();
 					foreach($t_entity->getLabelUIFields() as $vs_label_fld) {
 						if (!isset($pa_related_options[$vs_label_fld])) { $pa_related_options[$vs_label_fld] = ''; }
-						$va_name[$vs_label_fld] = BaseRefinery::parsePlaceholder($pa_related_options[$vs_label_fld], $pa_source_data, $pa_item, $ps_delimiter, $pn_c);
+						$va_name[$vs_label_fld] = BaseRefinery::parsePlaceholder($pa_related_options[$vs_label_fld], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('reader' => $o_reader));
 					}
 				} else {
 					$va_name = DataMigrationUtils::splitEntityName($vs_name);
@@ -355,7 +367,7 @@
 				return null;
 			} 
 		
-			$vs_name = BaseRefinery::parsePlaceholder($vs_name, $pa_source_data, $pa_item, $ps_delimiter, $pn_c);
+			$vs_name = BaseRefinery::parsePlaceholder($vs_name, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('reader' => $o_reader));
 		
 			$va_attributes = (isset($pa_related_options['attributes']) && is_array($pa_related_options['attributes'])) ? $pa_related_options['attributes'] : array();
 			
@@ -365,10 +377,10 @@
 						// BaseRefinery::parsePlaceholder may return an array if the input format supports repeated values (as XML does)
 						// DataMigrationUtils::getCollectionID(), which ca_data_importers::importDataFromSource() uses to create related collections
 						// only supports non-repeating attribute values, so we join any values here and call it a day.
-						$va_attributes[$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));
+						$va_attributes[$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 					}
 				} else {
-					$va_attributes[$vs_element_code] = array($vs_element_code => BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' ')));
+					$va_attributes[$vs_element_code] = array($vs_element_code => BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' ')));
 				}
 			}
 			
@@ -376,7 +388,7 @@
 				$va_attributes['idno'] = $vs_idno;
 				$va_attributes['parent_id'] = $vn_parent_id;
 			} else {
-				$vs_idno_stub = BaseRefinery::parsePlaceholder($pa_related_options['idno_stub'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));	
+				$vs_idno_stub = BaseRefinery::parsePlaceholder($pa_related_options['idno_stub'], $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));	
 			}	
 			
 			$pa_options = array_merge(array_merge(array('matchOn' => array('idno', 'label')), $pa_options));
@@ -441,14 +453,15 @@
 		$o_dm = Datamodel::load();
 		
 		$po_refinery_instance->setReturnsMultipleValues(true);
-		$o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;
+		$o_log = caGetOption('log', $pa_options, null);
+		$o_reader = caGetOption('reader', $pa_options, null);
 		
 		$va_group_dest = explode(".", $pa_group['destination']);
 		$vs_terminal = array_pop($va_group_dest);
 		$vs_dest_table = $va_group_dest[0];
 		$va_group_dest[] = $vs_terminal;
 		
-		$pm_value = $pa_source_data[$pa_item['source']];
+		$pm_value = $o_reader ? $o_reader->get($pa_item['source'], array('returnAsArray'=> true)) : $pa_source_data[$pa_item['source']];
 		
 		if (is_array($pm_value)) {
 			$va_items = $pm_value;	// for input formats that support repeating values
@@ -483,7 +496,7 @@
 				
 				// Set value as hierachy
 				if ($va_parents = $pa_item['settings']["{$ps_refinery_name}_hierarchy"]) {
-					$va_attr_vals = $va_val = caProcessRefineryParents($ps_refinery_name, $ps_table, $va_parents, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log, array_merge($pa_options, array('hierarchyMode' => true)));
+					$va_attr_vals = $va_val = caProcessRefineryParents($ps_refinery_name, $ps_table, $va_parents, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, array_merge($pa_options, array('hierarchyMode' => true)));
 					$vs_item = $va_val['_preferred_label'];
 				} else {
 		
@@ -491,27 +504,26 @@
 					if (
 						($vs_type_opt = $pa_item['settings']["{$ps_refinery_name}_{$ps_item_prefix}Type"])
 					) {
-						$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+						$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, array('reader' => $o_reader));
 					}
 			
 					if((!isset($va_val['_type']) || !$va_val['_type']) && ($vs_type_opt = $pa_item['settings']["{$ps_refinery_name}_{$ps_item_prefix}TypeDefault"])) {
-						$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+						$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, array('reader' => $o_reader));
 					}
 				
 					// Set lot_status
 					if (
 						($vs_type_opt = $pa_item['settings']["{$ps_refinery_name}_{$ps_item_prefix}Status"])
 					) {
-						$va_val['_status'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+						$va_val['_status'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, array('reader' => $o_reader));
 					}
 					if((!isset($va_val['_status']) || !$va_val['_status']) && ($vs_type_opt = $pa_item['settings']["{$ps_refinery_name}_{$ps_item_prefix}StatusDefault"])) {
-						$va_val['_status'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+						$va_val['_status'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, array('reader' => $o_reader));
 					}
 			
 					if ((!isset($va_val['_type']) || !$va_val['_type']) && $o_log) {
 						$o_log->logWarn(_t("[{$ps_refinery_name}] No %2 type is set for %2 %1", $vs_item, $ps_item_prefix));
 					}
-				
 				
 					//
 					// Storage location specific options
@@ -547,13 +559,12 @@
 					} else {
 						// Set parents
 						if ($va_parents = $pa_item['settings']["{$ps_refinery_name}_parents"]) {
-							$va_val['parent_id'] = $va_val['_parent_id'] = caProcessRefineryParents($ps_refinery_name, $ps_table, $va_parents, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log, $pa_options);
+							$va_val['parent_id'] = $va_val['_parent_id'] = caProcessRefineryParents($ps_refinery_name, $ps_table, $va_parents, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $pa_options);
 						}
 				
 						if (isset($pa_options['defaultParentID']) && (!isset($va_val['parent_id']) || !$va_val['parent_id'])) {
 							$va_val['parent_id'] = $va_val['_parent_id'] = $pa_options['defaultParentID'];
 						}
-				
 					}
 				
 					if(isset($pa_options['hierarchyID']) && $pa_options['hierarchyID'] && ($vs_hier_id_fld = $t_instance->getProperty('HIERARCHY_ID_FLD'))) {
@@ -561,18 +572,18 @@
 					}
 		
 					// Set attributes
-					if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']["{$ps_refinery_name}_attributes"], $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log))) {
+					if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']["{$ps_refinery_name}_attributes"], $pa_source_data, $pa_item, $vs_delimiter, $vn_c, array('log' => $o_log, 'reader' => $o_reader)))) {
 						$va_val = array_merge($va_val, $va_attr_vals);
 					}
 			
 					// Set interstitials
-					if (isset($pa_options['mapping']) && is_array($va_attr_vals = caProcessInterstitialAttributes($ps_refinery_name, $pa_options['mapping']->get('table_num'), $ps_table, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log))) {
+					if (isset($pa_options['mapping']) && is_array($va_attr_vals = caProcessInterstitialAttributes($ps_refinery_name, $pa_options['mapping']->get('table_num'), $ps_table, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, array('log' => $o_log, 'reader' => $o_reader)))) {
 						$va_val = array_merge($va_val, $va_attr_vals);
 					}
 				
 					// Set relatedEntities
 					// TODO generalize for all of types of records
-					if (is_array($va_attr_vals = caProcessRefineryRelated($ps_refinery_name, "ca_entities", $pa_item['settings']["{$ps_refinery_name}_relatedEntities"], $pa_source_data, $pa_item, null, $vn_c, $o_log))) {
+					if (is_array($va_attr_vals = caProcessRefineryRelated($ps_refinery_name, "ca_entities", $pa_item['settings']["{$ps_refinery_name}_relatedEntities"], $pa_source_data, $pa_item, null, $vn_c, array('log' => $o_log, 'reader' => $o_reader)))) {
 						$va_val = array_merge($va_val, $va_attr_vals);
 					}
 				
@@ -581,7 +592,7 @@
 						$pa_options['nonPreferredLabels'] = array();
 						foreach($va_non_preferred_labels as $va_label) {
 							foreach($va_label as $vs_k => $vs_v) {
-								$va_label[$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));
+								$va_label[$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 							}
 							$pa_options['nonPreferredLabels'][] = $va_label;
 						}
@@ -592,7 +603,7 @@
 					(($vs_dest_table != $ps_table) && (sizeof($va_group_dest) > 1))
 				) {	
 				
-					$vs_item = BaseRefinery::parsePlaceholder($vs_item, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('returnAsString' => true, 'delimiter' => ' '));
+					$vs_item = BaseRefinery::parsePlaceholder($vs_item, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 					if(!is_array($va_attr_vals)) { $va_attr_vals = array(); }
 					$va_attr_vals_with_parent = array_merge($va_attr_vals, array('parent_id' => $va_val['_parent_id']));
 					
@@ -635,6 +646,9 @@
 						case 'ca_storage_locations':
 							$vn_item_id = DataMigrationUtils::getStorageLocationID($vs_item, $va_val['parent_id'], $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
 							break;
+						case 'ca_object_representations':
+							if ($o_log) { $o_log->logDebug(_t('[importHelpers:caGenericImportSplitter] Only media paths can be mapped for object representations.')); }
+							continue(2);
 						default:
 							if ($o_log) { $o_log->logDebug(_t('[importHelpers:caGenericImportSplitter] Invalid table %1', $ps_table)); }
 							continue(2);
@@ -651,7 +665,7 @@
 					if (
 						($vs_rel_type_opt = $pa_item['settings']["{$ps_refinery_name}_relationshipType"])
 					) {
-						$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+						$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, array('reader' => $o_reader));
 					}
 			
 					if (
@@ -659,7 +673,7 @@
 						&& 
 						($vs_rel_type_opt = $pa_item['settings']["{$ps_refinery_name}_relationshipTypeDefault"])	
 					) {
-						$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+						$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, array('reader' => $o_reader));
 					}
 			
 					if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log) {
@@ -669,6 +683,7 @@
 					switch($ps_table) {
 						case 'ca_entities':
 							$va_val['preferred_labels'] = DataMigrationUtils::splitEntityName($vs_item);
+							$va_val['idno'] = $vs_item;
 							break;
 						case 'ca_list_items':
 							$va_val['preferred_labels'] = array('name_singular' => $vs_item, 'name_plural' => $vs_item);
@@ -690,6 +705,16 @@
 								$va_val['lot_status_id'] = $va_val['_status'];
 							}
 							unset($va_val['_status']);
+							break;
+						case 'ca_object_representations':
+							if (!($vs_batch_media_directory = $t_instance->getAppConfig()->get('batch_media_import_root_directory'))) { break; }
+							
+							if(!isset($va_val['preferred_labels'])) { $va_val['preferred_labels'] = array('name' => $vs_item); }
+							if (!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
+							
+							if (isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) && $pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] && isset($va_val['media']['media']) && ($va_val['media']['media'])) {
+								$va_val['media']['media'] = $vs_batch_media_directory.'/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'].'/'.$va_val['media']['media'];
+							}
 							break;
 						default:
 							if ($o_log) { $o_log->logDebug(_t('[importHelpers:caGenericImportSplitter] Invalid table %1', $ps_table)); }
@@ -720,6 +745,9 @@
 						case 'ca_object_lots':
 							$va_val = array('name' => $vs_item);
 							break;
+						case 'ca_object_representations':
+							if ($o_log) { $o_log->logDebug(_t('[importHelpers:caGenericImportSplitter] Cannot map preferred labels to object representations. Only media paths can be mapped.')); }
+							continue(2);
 						default:
 							if ($o_log) { $o_log->logDebug(_t('[importHelpers:caGenericImportSplitter] Invalid table %1', $ps_table)); }
 							continue(2);
