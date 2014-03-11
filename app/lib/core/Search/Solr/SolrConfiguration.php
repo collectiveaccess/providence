@@ -232,6 +232,7 @@ class SolrConfiguration {
 
 					if(is_array($va_table_fields)){
 						foreach($va_table_fields as $vs_field_name => $va_field_options){
+							$vb_multival = false;
 							
 							if(in_array("STORE",$va_field_options)){
 								$vb_field_is_stored = true;
@@ -284,6 +285,8 @@ class SolrConfiguration {
 											$va_field_options['type'] = null;
 											break;
 									}
+
+									$vb_multival = ($t_instance instanceof BaseModelWithAttributes) && ($vs_field_name == $t_instance->getTypeFieldName());
 								}
 								$vs_type = (isset($va_field_options['type']) && $va_field_options['type']) ? $va_field_options['type'] : 'text';
 							}
@@ -292,6 +295,7 @@ class SolrConfiguration {
 
 							$vs_field_schema.='" indexed="true" ';
 							$vb_field_is_stored ? $vs_field_schema.='stored="true" ' : $vs_field_schema.='stored="false" ';
+							if($vb_multival) { $vs_field_schema.='multiValued="true" '; }
 							$vs_field_schema.='/>'.SolrConfiguration::nl();
 						}
 					}
