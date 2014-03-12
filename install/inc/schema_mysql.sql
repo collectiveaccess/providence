@@ -142,6 +142,8 @@ create table ca_list_items
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
+   source_id                      int unsigned,
+   source_info                    longtext                       not null,
    primary key (item_id),
    
    constraint fk_ca_list_items_type_id foreign key (type_id)
@@ -149,6 +151,9 @@ create table ca_list_items
       
    constraint fk_ca_list_items_list_id foreign key (list_id)
       references ca_lists (list_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_list_items_source_id foreign key (source_id)
+      references ca_list_items (item_id) on delete restrict on update restrict,
       
    constraint fk_ca_list_items_parent_id foreign key (parent_id)
       references ca_list_items (item_id) on delete restrict on update restrict
@@ -163,6 +168,7 @@ create index i_hier_left on ca_list_items(hier_left);
 create index i_hier_right on ca_list_items(hier_right);
 create index i_value_text on ca_list_items(item_value);
 create index i_type_id on ca_list_items(type_id);
+create index i_source_id on ca_list_items(source_id);
 
 
 /*==========================================================================*/
@@ -395,12 +401,16 @@ create table ca_object_lots
    extent_units                   varchar(255)                   not null,
    access                         tinyint                        not null default 0,
    status                         tinyint unsigned               not null default 0,
+   source_id                      int unsigned,
    source_info                    longtext                       not null,
    deleted                        tinyint unsigned               not null default 0,
    rank                             int unsigned                     not null default 0,
    primary key (lot_id),
    
    constraint fk_ca_object_lots_type_id foreign key (type_id)
+      references ca_list_items (item_id) on delete restrict on update restrict,
+      
+    constraint fk_ca_object_lots_source_id foreign key (source_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
       
    constraint fk_ca_object_lots_lot_status_id foreign key (lot_status_id)
@@ -410,6 +420,7 @@ create table ca_object_lots
 
 create index i_admin_idno_stub on ca_object_lots(idno_stub);
 create index i_type_id on ca_object_lots(type_id);
+create index i_source_id on ca_object_lots(source_id);
 create index i_admin_idno_stub_sort on ca_object_lots(idno_stub_sort);
 create index i_lot_status_id on ca_object_lots(lot_status_id);
 
@@ -435,9 +446,15 @@ create table ca_object_representations
    rating_status                  tinyint unsigned               not null default 0,
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
-   rank                             int unsigned                 not null default 0,
+   rank                           int unsigned                   not null default 0,
+   source_id                      int unsigned,
+   source_info                    longtext                       not null,
+   
    primary key (representation_id),
    constraint fk_ca_object_representations_type_id foreign key (type_id)
+      references ca_list_items (item_id) on delete restrict on update restrict,
+   
+   constraint fk_ca_object_representations_source_id foreign key (source_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
       
    constraint fk_ca_object_representations_locale_id foreign key (locale_id)
@@ -453,6 +470,7 @@ create index i_md5 on ca_object_representations(md5);
 create index i_mimetype on ca_object_representations(mimetype);
 create index i_original_filename on ca_object_representations(original_filename(128));
 create index i_rank on ca_object_representations(rank);
+create index i_source_id on ca_object_representations(source_id);
 
 
 /*==========================================================================*/
@@ -788,6 +806,7 @@ create table ca_storage_locations
    idno                           varchar(255)                   not null,
    idno_sort                      varchar(255)                   not null,
    is_template                    tinyint unsigned               not null default 0,
+   source_id                      int unsigned,
    source_info                    longtext                       not null,
    color                          char(6)                        null,
    icon                           longblob                       not null,
@@ -800,11 +819,15 @@ create table ca_storage_locations
    constraint fk_ca_storage_locations_type_id foreign key (type_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
       
+   constraint fk_ca_storage_locations_source_id foreign key (source_id)
+      references ca_list_items (item_id) on delete restrict on update restrict,
+      
    constraint fk_ca_storage_locations_parent_id foreign key (parent_id)
       references ca_storage_locations (location_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_parent_id on ca_storage_locations(parent_id);
+create index i_source_id on ca_storage_locations(source_id);
 create index idno on ca_storage_locations(idno);
 create index idno_sort on ca_storage_locations(idno_sort);
 create index i_type_id on ca_storage_locations(type_id);
@@ -855,6 +878,7 @@ create table ca_loans (
    idno                           varchar(255)                   not null,
    idno_sort                      varchar(255)                   not null,
    is_template                    tinyint unsigned               not null default 0,
+   source_id                      int unsigned,
    source_info                    longtext                       not null,
    hier_left                      decimal(30,20)                 not null,
    hier_right                     decimal(30,20)                 not null,
@@ -867,6 +891,9 @@ create table ca_loans (
    constraint fk_ca_loans_type_id foreign key (type_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
       
+   constraint fk_ca_loans_source_id foreign key (source_id)
+      references ca_list_items (item_id) on delete restrict on update restrict,
+      
    constraint fk_ca_loans_parent_id foreign key (parent_id)
       references ca_loans (loan_id) on delete restrict on update restrict,
       
@@ -877,6 +904,7 @@ create table ca_loans (
 
 create index i_parent_id on ca_loans(parent_id);
 create index i_type_id on ca_loans(type_id);
+create index i_source_id on ca_loans(source_id);
 create index i_locale_id on ca_loans(locale_id);
 create index idno on ca_loans(idno);
 create index idno_sort on ca_loans(idno_sort);
@@ -923,6 +951,7 @@ create table ca_movements (
    idno                           varchar(255)                   not null,
    idno_sort                      varchar(255)                   not null,
    is_template                    tinyint unsigned               not null default 0,
+   source_id                      int unsigned,
    source_info                    longtext                       not null,
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
@@ -931,12 +960,16 @@ create table ca_movements (
    
     constraint fk_ca_movements_type_id foreign key (type_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
+    
+    constraint fk_ca_movements_source_id foreign key (source_id)
+      references ca_list_items (item_id) on delete restrict on update restrict,
       
-       constraint fk_ca_movements_locale_id foreign key (locale_id)
+    constraint fk_ca_movements_locale_id foreign key (locale_id)
       references ca_locales (locale_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_type_id on ca_movements(type_id);
+create index i_source_id on ca_movements(source_id);
 create index i_locale_id on ca_movements(locale_id);
 create index idno on ca_movements(idno);
 create index idno_sort on ca_movements(idno_sort);
@@ -4678,8 +4711,13 @@ create table ca_tours
    access                        tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    user_id                        int unsigned                   null,
+   source_id                      int unsigned,
+   source_info                    longtext                       not null,
    primary key (tour_id),
    
+   constraint fk_ca_tours_source_id foreign key (source_id)
+      references ca_list_items (item_id) on delete restrict on update restrict,
+      
    constraint fk_ca_tours_user_id foreign key (user_id)
       references ca_users (user_id) on delete restrict on update restrict
       
@@ -4688,6 +4726,7 @@ create table ca_tours
 create index i_type_id on ca_tours(type_id);
 create index i_user_id on ca_tours(user_id);
 create index i_tour_code on ca_tours(tour_code);
+create index i_source_id on ca_tours(source_id);
 
 
 /*==========================================================================*/
@@ -6431,5 +6470,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 97 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (97, unix_timestamp());
+/* CURRENT MIGRATION: 98 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (98, unix_timestamp());

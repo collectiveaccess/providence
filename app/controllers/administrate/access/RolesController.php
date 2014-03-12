@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -95,7 +95,36 @@
 				}
 			}
 			
+			$vn_default_source_access_level = (int)$this->request->config->get('default_source_access_level');
+			
+			$va_source_list = array();
+			$va_source_access_settings = $va_role_vars['source_access_settings'];
+			
+			foreach($this->opa_bundleable_tables as $vs_table) {
+				$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
+				if (!($vs_list_code = $t_instance->getSourceListCode())) { continue; }
+				
+				$va_table_names[$vs_table] = caUcFirstUTF8Safe($t_instance->getProperty('NAME_PLURAL'));
+				$va_sources = $t_list->getListItemsAsHierarchy($vs_list_code, array('additionalTableToJoin' => 'ca_list_item_labels'));
+				
+				if (is_array($va_sources)) {
+					foreach($va_sources as $vn_i => $va_source_info) {
+						$vn_item_id = $va_source_info['NODE']['item_id'];
+						$vn_access = isset($va_source_access_settings[$vs_table.'.'.$vn_item_id]) ? $va_source_access_settings[$vs_table.'.'.$vn_item_id] : $vn_default_source_access_level;
+						$va_source_info['NODE']['level'] = $va_source_info['LEVEL'];
+						
+						$va_source_list[$vs_table][$vn_item_id] = array(
+							'source_info' => $va_source_info['NODE'],
+							'access' => $vn_access,
+							'default' => ($vn_item_id == $va_source_access_settings[$vs_table.'_default_id'])
+						);
+					}
+				}
+			}
+			
+			
 			$this->view->setVar('type_list', $va_type_list);
+			$this->view->setVar('source_list', $va_source_list);
 			$this->view->setVar('table_display_names', $va_table_names);
 			
  			
@@ -157,6 +186,30 @@
 				}
 				
 				$va_vars['type_access_settings'] = $va_type_access_settings;
+			} 	
+			
+			if ($t_role->getAppConfig()->get('perform_source_access_checking')) { 
+				// save source access settings
+				$va_source_access_settings = array();
+				
+				foreach($this->opa_bundleable_tables as $vs_table) {
+					if ((!caTableIsActive($vs_table)) && ($vs_table != 'ca_object_representations')) { continue; }
+					$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
+					if (!($vs_list_code = $t_instance->getSourceListCode())) { continue; }
+					$va_source_ids = $t_list->getItemsForList($vs_list_code, array('idsOnly' => true));
+					
+					if (is_array($va_source_ids)) {
+						foreach($va_source_ids as $vn_i => $vn_item_id) {
+							$vn_access = $this->request->getParameter($vs_table.'_source_'.$vn_item_id, pInteger);
+							
+							$va_source_access_settings[$vs_table.'.'.$vn_item_id] = $vn_access;
+						}
+					}
+					$va_source_access_settings[$vs_table.'_default_id'] = $this->request->getParameter($vs_table.'_default_source', pInteger);
+					
+				}
+				
+				$va_vars['source_access_settings'] = $va_source_access_settings;
 			} 			
  			
  			$t_role->set('vars', $va_vars);	

@@ -118,10 +118,11 @@ var caUI = caUI || {};
 			}
 			
 			output =  "<div id='displayElement_" + id +"' class='" + that.displayItemClass + "'>";
-			output += " <div class='bundleDisplayElementSettingsControl'><a href='#' onclick='jQuery(\"#displayElementSettings_" +  id.replace(/\./g, "\\\\.") +"\").slideToggle(250); return false; '>" + that.settingsIcon + "</a></div>";
-			output += "<div style='width:75%'>" + label + " <div class='bundleDisplayElementBundleName'>(" + placement_info.bundle + ")</div></div>";
-			output += "<div id='displayElementSettings_" + id +"' style='display: none;'>" +settingsForm + "</div>";
-			output += "</div>\n";
+			output += " <div class='bundleDisplayElementSettingsControl'><a href='#' onclick='jQuery(\".elementSettingsUI\").fadeOut(250); jQuery(\"#displayElementSettings_" +  id.replace(/\./g, "\\\\.") +"\").fadeIn(250); return false; '>" + that.settingsIcon + "</a></div>";
+			output += "<div style='width:75%'>" + label + " </div>";
+			output += "</div>\n";			
+			output += "<div id='displayElementSettings_" + id +"' class='elementSettingsUI' style='display: none;'>"+ label + settingsForm + "<a href='#' onclick='jQuery(\"#displayElementSettings_" +  id.replace(/\./g, "\\\\.") +"\").fadeOut(250); return false; '>" + that.settingsIcon + "</a></div>";
+
 			
 			return output;
 		}

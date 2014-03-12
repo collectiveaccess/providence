@@ -74,7 +74,7 @@
 				
 				displayBundleListID: '<?php print $vs_id_prefix; ?>displayBundleList',
 				
-				settingsIcon: "<img src='<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/edit.gif' alt='<?php print _t('Settings'); ?>' border='0' width='16' height='16'/>"
+				settingsIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_INFO2__); ?>"
 			});		
 		});
 	</script>

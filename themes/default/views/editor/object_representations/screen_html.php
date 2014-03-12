@@ -34,9 +34,9 @@
 	if ($vb_can_edit) {
 		print $vs_control_box = caFormControlBox(
 			caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'ObjectRepresentationEditorForm').' '.
-			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'editor/object_representations', 'ObjectRepresentationEditor', 'Edit/'.$this->request->getActionExtra(), array('representation_id' => $vn_representation_id)),
+			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'editor/object_representations', 'ObjectRepresentationEditor', 'Edit/'.$this->request->getActionExtra(), array('representation_id' => $vn_representation_id)),
 			'', 
-			((intval($vn_representation_id) > 0) && $vb_can_delete) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'editor/object_representations', 'ObjectRepresentationEditor', 'Delete/'.$this->request->getActionExtra(), array('representation_id' => $vn_representation_id)) : ''
+			((intval($vn_representation_id) > 0) && $vb_can_delete) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'editor/object_representations', 'ObjectRepresentationEditor', 'Delete/'.$this->request->getActionExtra(), array('representation_id' => $vn_representation_id)) : ''
 		);
 	}
 ?>

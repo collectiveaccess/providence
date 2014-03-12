@@ -29,17 +29,12 @@
 	$vo_result 					= $this->getVar('result');
  	$vo_result_context 			= $this->getVar('result_context');
 ?>
-<a href='#' id='showOptions' onclick='jQuery("#searchOptionsBox").slideDown(250); jQuery("#showOptions").hide();  jQuery("#searchRefineBox").slideUp(250); jQuery("#showRefine").show(); jQuery("input.addItemToSetControl").hide();  jQuery("#searchToolsBox").slideUp(250); jQuery("#showTools").show(); return false;'><?php print _t("Display Options"); ?> <img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/arrows/arrow_right_gray.gif" width="6" height="7" border="0"></a>
+<a href='#' id='showOptions' onclick='jQuery("#browse").hide(); jQuery("#searchOptionsBox").slideDown(250); jQuery("#showOptions").hide(); jQuery("input.addItemToSetControl").hide();  jQuery("#searchToolsBox").slideUp(250); jQuery("#showTools").show(); '><?php print caNavIcon($this->request, __CA_NAV_BUTTON_SETTINGS__); ?> </a>
 
 <?php
 	if($vo_result->numHits() > 0) {
-		if($this->getVar('mode') === 'search'){
 ?>
-			<a href='#' id='showRefine' onclick='jQuery("#searchRefineBox").slideDown(250); jQuery("#showRefine").hide(); jQuery("#searchOptionsBox").slideUp(250); jQuery("input.addItemToSetControl").hide(); jQuery("#showOptions").show(); jQuery("#searchToolsBox").slideUp(250); jQuery("#showTools").show(); return false;'><?php print _t("Filter Search"); ?> <img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/arrows/arrow_right_gray.gif" width="6" height="7" border="0"></a>
-<?php
-		}
-?>
-		<a href='#' id='showTools' onclick='jQuery("#searchToolsBox").slideDown(250); jQuery("input.addItemToSetControl").show(); jQuery("#showTools").hide(); jQuery("#searchOptionsBox").slideUp(250); jQuery("#showOptions").show(); jQuery("#searchRefineBox").slideUp(250); jQuery("#showRefine").show(); return false;'><?php print _t("Tools"); ?> <img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/arrows/arrow_right_gray.gif" width="6" height="7" border="0"></a>
+		<a href='#' id='showTools' onclick='jQuery("#browse").hide(); jQuery("#searchToolsBox").slideDown(250); jQuery("input.addItemToSetControl").show(); jQuery("#showTools").hide(); jQuery("#searchOptionsBox").slideUp(250); jQuery("#showOptions").show(); '><?php print caNavIcon($this->request, __CA_NAV_BUTTON_EXPORT__); ?> </a>
 <?php
 	}
 ?>
@@ -107,15 +102,13 @@
 		print "</div>";		
 		print "</form>\n";
 ?>
-		<a href='#' id='hideOptions' onclick='jQuery("#searchOptionsBox").slideUp(250); jQuery("input.addItemToSetControl").hide(); jQuery("#showOptions").slideDown(1); return false;'><img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/collapse.gif" width="11" height="11" border="0"></a>
+		<a href='#' id='hideOptions' onclick='jQuery("#searchOptionsBox").slideUp(250); jQuery("input.addItemToSetControl").hide(); jQuery("#showOptions").slideDown(1); return false;'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_COLLAPSE__); ?></a>
 		<div style='clear:both;height:1px;'>&nbsp;</div>
 	</div><!-- end bg -->
 </div><!-- end searchOptionsBox -->
 <?php
 if($vo_result->numHits() > 0) {
-	if($this->getVar('mode') === 'search'){
-		print $this->render('Search/search_refine_html.php');
-	}
+
 	print $this->render('Search/search_tools_html.php');
 }
 ?>

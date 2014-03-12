@@ -259,11 +259,19 @@
 					$this->postError(1970, _t('%1 must not be empty', $pa_element_info['displayLabel']), 'DateRangeAttributeValue->parseValue()');
 					return false;
 				} else {
+					
+					$o_config = Configuration::load();
+					$o_date_config = Configuration::load($o_config->get('datetime_config'));
+			
 					// Default to "undated" date for blanks
-					$o_config = $o_tep->getLanguageSettings();
-					$va_undated_dates = $o_config->getList('undatedDate');
+					$vs_undated_date = '';
+					if ((bool)$o_date_config->get('showUndated')) {
+						$o_lang_config = $o_tep->getLanguageSettings();
+						$vs_undated_date = array_shift($o_lang_config->getList('undatedDate'));
+					}
+					
 					return array(
-						'value_longtext1' => $va_undated_dates[0],
+						'value_longtext1' => $vs_undated_date,
 						'value_decimal1' => null,
 						'value_decimal2' => null
 					);

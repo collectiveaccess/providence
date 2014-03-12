@@ -423,7 +423,9 @@
 				readOnly: <?php print $vb_read_only ? 1 : 0; ?>,
 				
 				editUrl: '<?php print $vs_edit_url; ?>',
-				editButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/arrow_grey_right.gif" border="0" title="Edit">',
+				editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
+				disabledButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__); ?>",
+
 				
 				initItemID: '<?php print $vn_init_id; ?>',
 				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
@@ -448,7 +450,9 @@
 				
 				initItemID: '<?php print $vn_init_id; ?>',
 				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
-				editButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/arrow_grey_right.gif" border="0" title="<?php print _t("Edit"); ?>">',
+				editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
+				disabledButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__); ?>",
+
 				
 					
 				currentSelectionIDID: '<?php print $ps_id_prefix; ?>_new_parent_id',

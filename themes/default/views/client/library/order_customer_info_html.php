@@ -35,9 +35,9 @@
 	
 	print $vs_control_box = caFormControlBox(
 		(caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'caClientOrderCustomerForm')).' '.
-		(caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'client/library', 'OrderEditor', 'CustomerInfo', array('order_id' => $vn_order_id))),
+		(caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'client/library', 'OrderEditor', 'CustomerInfo', array('order_id' => $vn_order_id))),
 		'',
-		(caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'client/library', 'OrderEditor', 'Delete', array('order_id' => $vn_order_id)))
+		(caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'client/library', 'OrderEditor', 'Delete', array('order_id' => $vn_order_id)))
 	);
 	
 	print caFormTag($this->request, 'SaveCustomerInfo', 'caClientOrderCustomerForm', null, 'post', 'multipart/form-data', '_top', array());

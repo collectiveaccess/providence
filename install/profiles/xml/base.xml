@@ -115,6 +115,17 @@
         </item>
       </items>
     </list>
+    <list code="list_item_sources" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>List item sources</name>
+        </label>
+        <label locale="en_CA">
+          <name>List item sources</name>
+        </label>
+      </labels>
+      <items/>
+    </list>
     <list code="list_item_label_types" hierarchical="1" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -1029,6 +1040,17 @@
         </item>
       </items>
     </list>
+    <list code="object_lot_sources" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Object lot sources</name>
+        </label>
+        <label locale="en_CA">
+          <name>Object lot sources</name>
+        </label>
+      </labels>
+      <items/>
+    </list>
     <list code="object_lot_statuses" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -1243,6 +1265,17 @@
         </item>
       </items>
     </list>
+    <list code="loan_sources" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Loan sources</name>
+        </label>
+        <label locale="en_CA">
+          <name>Loan sources</name>
+        </label>
+      </labels>
+      <items/>
+    </list>
     <list code="movement_types" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -1280,6 +1313,17 @@
           </labels>
         </item>
       </items>
+    </list>
+    <list code="movement_sources" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Movement sources</name>
+        </label>
+        <label locale="en_CA">
+          <name>Movement sources</name>
+        </label>
+      </labels>
+      <items/>
     </list>
     <list code="entity_types" hierarchical="1" system="0" vocabulary="0">
       <labels>
@@ -1847,6 +1891,17 @@
       </labels>
       <items/>
     </list>
+    <list code="storage_location_sources" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Storage location sources</name>
+        </label>
+        <label locale="en_CA">
+          <name>Storage location sources</name>
+        </label>
+      </labels>
+      <items/>
+    </list>
     <list code="storage_location_label_types" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -1963,6 +2018,17 @@
         </item>
       </items>
     </list>
+    <list code="object_representation_sources" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Object representation sources</name>
+        </label>
+        <label locale="en_CA">
+          <name>Object representation sources</name>
+        </label>
+      </labels>
+      <items/>
+    </list>
     <list code="tour_types" hierarchical="1" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -2020,6 +2086,17 @@
 			  </labels>
         </item>
     </items>
+    </list>
+    <list code="tour_sources" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Tour sources</name>
+        </label>
+        <label locale="en_CA">
+          <name>Tour sources</name>
+        </label>
+      </labels>
+      <items/>
     </list>
     <list code="tour_stop_types" hierarchical="1" system="0" vocabulary="0">
       <labels>

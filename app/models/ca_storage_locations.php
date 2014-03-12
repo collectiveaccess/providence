@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -81,6 +81,15 @@ BaseModel::$s_ca_models_definitions['ca_storage_locations'] = array(
 				'DEFAULT' => '',
 				'LABEL' => 'Sortable location identifier', 'DESCRIPTION' => 'Value used for sorting locations on identifier value.',
 				'BOUNDS_LENGTH' => array(0,255)
+		),
+		'source_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'LIST_CODE' => 'storage_location_sources',
+				'LABEL' => _t('Source'), 'DESCRIPTION' => _t('Administrative source of storage location. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed.')
 		),
 		'source_info' => array(
 				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
@@ -250,6 +259,12 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 	protected $ATTRIBUTE_TYPE_LIST_CODE = 'storage_location_types';	// list code (ca_lists.list_code) of list defining types for this table
 
 	# ------------------------------------------------------
+	# Sources
+	# ------------------------------------------------------
+	protected $SOURCE_ID_FLD = 'source_id';							// name of source field for this table
+	protected $SOURCE_LIST_CODE = 'storage_location_sources';		// list code (ca_lists.list_code) of list defining sources for this table
+
+	# ------------------------------------------------------
 	# ID numbering
 	# ------------------------------------------------------
 	protected $ID_NUMBERING_ID_FIELD = 'idno';				// name of field containing user-defined identifier
@@ -328,49 +343,6 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 	 public function getHierarchyName($pn_id=null) {
 	 	return _t('Storage locations');
 	 }
-	 # ------------------------------------------------------
-	/**
-	 *
-	 */
-	public function getLocationIDsByName($ps_name, $pn_parent_id=null, $pn_type_id=null) {
-		$o_db = $this->getDb();
-		
-		$va_params = array((string)$ps_name);
-		
-		$vs_type_sql = '';
-		if ($pn_type_id) {
-			if(sizeof($va_type_ids = caMakeTypeIDList('ca_storage_locations', array($pn_type_id)))) {
-				$vs_type_sql = " AND casl.type_id IN (?)";
-				$va_params[] = $va_type_ids;
-			}
-		}
-		
-		if ($pn_parent_id) {
-			$vs_parent_sql = " AND casl.parent_id = ?";
-			$va_params[] = (int)$pn_parent_id;
-		} 
-		
-		$qr_res = $o_db->query("
-			SELECT DISTINCT casl.location_id
-			FROM ca_storage_locations casl
-			INNER JOIN ca_storage_location_labels AS casll ON casll.location_id = casl.location_id
-			WHERE
-				casll.name = ? {$vs_type_sql} {$vs_parent_sql} AND casl.deleted = 0
-		", $va_params);
-		
-		$va_location_ids = array();
-		while($qr_res->nextRow()) {
-			$va_location_ids[] = $qr_res->get('location_id');
-		}
-		return $va_location_ids;
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public function getIDsByLabel($pa_label_values, $pn_parent_id=null, $pn_type_id=null) {
-		return $this->getLocationIDsByName($pa_label_values['name'], $pn_parent_id, $pn_type_id);
-	}
 	# ------------------------------------------------------
 }
 ?>

@@ -1437,7 +1437,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				}
 				if (!is_array($vs_idno) && ($vs_idno[0] == '^') && preg_match("!^\^[^ ]+$!", $vs_idno)) {
 					// Parse placeholder when it's at the beginning of the value
-					if (!is_null($vm_parsed_val = BaseRefinery::parsePlaceholder($vs_idno, $va_row, $va_item, $vs_delimiter, $vn_c, array('returnAsString' => true)))) {
+					if (!is_null($vm_parsed_val = BaseRefinery::parsePlaceholder($vs_idno, $va_row, $va_item, $vs_delimiter, $vn_c, array('reader' => $o_reader, 'returnAsString' => true)))) {
 						$vs_idno = $vm_parsed_val;
 					}
 				}
@@ -1483,7 +1483,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 						break;
 					case 'skip_on_preferred_labels':
-						if (is_array($va_ids = $t_subject->getIDsByLabel($va_pref_label_values, null, $vs_type)) && sizeof($va_ids)) {
+						$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
+							array('type_id' => $vs_type, 'preferred_labels' => $va_pref_label_values),
+							array('returnAs' => 'ids')
+						));
+						if (is_array($va_ids) && sizeof($va_ids)) {
 							$o_log->logInfo(_t('[%1] Skipped import because of existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy));
 							ca_data_importers::$s_num_records_skipped++;
 							continue(2);	// skip because label matched
@@ -1500,7 +1504,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						if ($vs_existing_record_policy == 'merge_on_idno') { break; }	// fall through if merge_on_idno_and_preferred_labels
 					case 'merge_on_preferred_labels':
 					case 'merge_on_preferred_labels_with_replace':
-						if (is_array($va_ids = $t_subject->getIDsByLabel($va_pref_label_values, null, $vs_type)) && sizeof($va_ids)) {
+						$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
+							array('type_id' => $vs_type, 'preferred_labels' => $va_pref_label_values),
+							array('returnAs' => 'ids')
+						));
+						if (is_array($va_ids) && sizeof($va_ids)) {
 							$t_subject->load($va_ids[0]);
 							$o_log->logInfo(_t('[%1] Merged with existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy));
 						}
@@ -1522,7 +1530,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 						if ($vs_existing_record_policy == 'overwrite_on_idno') { break; }	// fall through if overwrite_on_idno_and_preferred_labels
 					case 'overwrite_on_preferred_labels':
-						if (is_array($va_ids = $t_subject->getIDsByLabel($va_pref_label_values, null, $vs_type)) && sizeof($va_ids)) {
+						$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
+							array('type_id' => $vs_type, 'preferred_labels' => $va_pref_label_values),
+							array('returnAs' => 'ids')
+						));
+						if (is_array($va_ids) && sizeof($va_ids)) {
 							$t_subject->load($va_ids[0]);
 							$t_subject->setMode(ACCESS_WRITE);
 							$t_subject->delete(true, array('hard' => true));
@@ -1629,7 +1641,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 						if (!is_array($vm_val) && ($vm_val[0] == '^') && preg_match("!^\^[^ ]+$!", $vm_val)) {
 							// Parse placeholder when it's at the beginning of the value
-							if (!is_null($vm_parsed_val = BaseRefinery::parsePlaceholder($vm_val, $va_row, $va_item, $vs_delimiter, $vn_c, array('returnAsString' => true)))) {
+							if (!is_null($vm_parsed_val = BaseRefinery::parsePlaceholder($vm_val, $va_row, $va_item, $vs_delimiter, $vn_c, array('reader' => $o_reader, 'returnAsString' => true)))) {
 								$vm_val = $vm_parsed_val;
 							}
 						}
@@ -1694,7 +1706,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								if (!$vs_refinery) { continue; }
 								
 								if ($o_refinery = RefineryManager::getRefineryInstance($vs_refinery)) {
-									$va_refined_values = $o_refinery->refine($va_content_tree, $va_group, $va_item, $va_row, array('mapping' => $t_mapping, 'source' => $ps_source, 'subject' => $t_subject, 'locale_id' => $vn_locale_id, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row));
+									$va_refined_values = $o_refinery->refine($va_content_tree, $va_group, $va_item, $va_row, array('mapping' => $t_mapping, 'source' => $ps_source, 'subject' => $t_subject, 'locale_id' => $vn_locale_id, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'reader' => $o_reader));
 									if (!$va_refined_values || (is_array($va_refined_values) && !sizeof($va_refined_values))) { continue(2); }
 									
 									if ($o_refinery->returnsMultipleValues()) {
@@ -2171,7 +2183,17 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									if (($vs_subject_table_name == 'ca_objects') && $va_element_data['media']['media']) {
 										$va_attributes = $va_element_data;
 										unset($va_attributes['media']);
-										if (!($t_subject->addRepresentation($va_element_data['media']['media'], isset($va_element_data['_type']) ? $va_element_data['_type'] : caGetDefaultItemID('object_representation_types'), $vn_locale_id, 0, 0, true, $va_attributes))) {
+										
+										foreach($va_attributes as $vs_key => $vm_val) {
+											// Attributes, including intrinsics are in two-level format, eg. idno is $va_attributes['idno']['idno'] 
+											// but addRepresentations() expects intrinsics to be single level (eg. $va_attributes['idno']) so
+											// we do some rewriting here
+											if (is_array($vm_val) && isset($vm_val[$vs_key])) { 
+												$va_attributes[$vs_key] = $vm_val[$vs_key];
+											}
+										}
+										
+										if (!($t_subject->addRepresentation($va_element_data['media']['media'], isset($va_element_data['_type']) ? $va_element_data['_type'] : caGetDefaultItemID('object_representation_types'), $vn_locale_id, 0, 0, true, $va_attributes, array('matchOn' => array('idno'))))) {
 											$vs_error = join("; ", $t_subject->getErrors());
 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 											if ($vs_item_error_policy == 'stop') {

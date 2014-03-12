@@ -5,7 +5,7 @@
 	<div id="topNav" style="background-color:#<?php print $va_menu_color; ?>;">
 		<div class="roundedNav" >
 			<div id="logo" onclick='document.location="<?php print $this->request->getBaseUrlPath().'/'; ?>";'><?php print "<img src='".$this->request->getThemeUrlPath()."/graphics/logos/".$this->request->config->get('header_img')."' border='0' alt='"._t("Search")."'/>" ?></div>
-	
+				<div id="navWrapper">
 <?php
 		if ($this->request->isLoggedIn()) {
 			if ($this->request->user->canDoAction('can_quicksearch')) {
@@ -45,6 +45,7 @@
 	<?php
 		}
 ?>	
+			</div><!-- END navWrapper -->
 		</div><!-- END roundedNav -->
 		<div style="clear:both;"><!--EMPTY--></div>
 	</div><!-- END topNav -->

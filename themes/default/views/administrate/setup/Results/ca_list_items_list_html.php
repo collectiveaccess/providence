@@ -83,8 +83,8 @@ if (!$this->getVar('no_hierarchies_defined')) {
 				foreach($va_display_list as $vn_placement_id => $va_display_item) {
 					print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id)."</td>";
 				}
-				print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_list_items', $vn_item_id, array());
-				print " <a href='#' onclick='caOpenBrowserWith(".$vn_item_id.");'>".caNavIcon($this->request, __CA_NAV_BUTTON_GO__, null, array('title' => _t('View in hierarchy')))."</a>";
+				print "<td style='width:5%;'><span class='editIcon'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_list_items', $vn_item_id, array())."</span>";
+				print " <a href='#' class='hierarchyIcon' onclick='caOpenBrowserWith(".$vn_item_id.");'>".caNavIcon($this->request, __CA_NAV_BUTTON_GO__, array('title' => _t('View in hierarchy')))."</a>";
 				print "</td>";		
 ?>	
 			</tr>
@@ -114,6 +114,8 @@ if (!$this->getVar('no_hierarchies_defined')) {
 </form><!--end caFindResultsForm -->
 </div><!--end scrollingResults -->
 <?php
+	TooltipManager::add('.hierarchyIcon', _t("View in Hierarchy"));
+	TooltipManager::add('.editIcon', _t("Edit List Item"));
 }
 ?>
 <div class="editorBottomPadding"><!-- empty --></div>

@@ -37,7 +37,7 @@
 		$va_status = WidgetManager::checkWidgetStatus($vs_widget_name);
 		if(!$va_status["available"]) continue;
 		
-		print "<a href='#' onclick='jQuery(\"#caWidgetManagerFormWidgetValue\").val(\"{$vs_widget_name}\"); jQuery(\"#caWidgetManagerForm\").submit();'><img src='".$this->request->getThemeUrlPath()."/graphics/buttons/addwidget.jpg' style='height:10px; width:10px; border:0px;'> ".$o_widget_manager->getWidgetTitle($vs_widget_name)."</a><br/>\n";
+		print "<a href='#' onclick='jQuery(\"#caWidgetManagerFormWidgetValue\").val(\"{$vs_widget_name}\"); jQuery(\"#caWidgetManagerForm\").submit();'>".caNavIcon($this->request, __CA_NAV_BUTTON_ADD_WIDGET__)."  ".$o_widget_manager->getWidgetTitle($vs_widget_name)."</a><br/>\n";
 		print "<div id='widgetDescription'>".$o_widget_manager->getWidgetDescription($vs_widget_name)."</div>";
 	}
 ?>

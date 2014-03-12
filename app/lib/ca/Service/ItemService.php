@@ -599,6 +599,10 @@ class ItemService extends BaseJSONService {
 									$va_item_add[$vs_fld] = $vs_val;
 									$va_item_add['type_id'] = $vs_val;
 									break;
+								case 'item_source_id':
+									$va_item_add[$vs_fld] = $vs_val;
+									$va_item_add['source_id'] = $vs_val;
+									break;
 								default:
 									$va_item_add[$vs_fld] = $vs_val;
 									break;		

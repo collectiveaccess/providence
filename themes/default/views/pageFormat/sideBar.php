@@ -46,8 +46,16 @@
 			$i++;
 		}
 	}
-	
-?>
+	if (substr($this->request->getModulePath(), 0, 7) == 'editor/') {
+		print "<div class='expandCollapse'>";
+		print "<div style='padding: 5px; text-align: center;'><a href='#' id='expandAll' onclick='caBundleVisibilityManager.open(); return false;' style='margin-right: 5px;'><img src='".$this->request->getThemeUrlPath()."/graphics/arrows/collapsedown.png' width='16' height='12' border='0'></a> ";
+		print "<a href='#' id='collapseAll' onclick='caBundleVisibilityManager.close(); return false;'><img src='".$this->request->getThemeUrlPath()."/graphics/arrows/collapseup.png' width='16' height='12' border='0'></a></div>";
+		print "</div><!-- end expandCollapse-->";
+		
+			TooltipManager::add('#expandAll', _t("Expand all metadata elements"));
+			TooltipManager::add('#collapseAll', _t("Collapse all metadata elements"));
+	}
+?>	
 	</div><!-- end navBreadCrumbs-->
 </div><!-- end navBreadCrumbContainer -->
 <?php

@@ -91,12 +91,12 @@
 <?php
 							//print caHTMLCheckboxInput('debug', array('value' => 1))." "._p("Output debugging information?");
 ?>
-				</div><!-- end formItem -->
+				</div><!-- end formItem --> 
 <?php
 			}
 ?>
 				
-				<div class="loginSubmitButton"><a href='#' onclick='jQuery("#page1form").submit();' class='form-button'><span class='form-button'><img src='<?php print $vs_url_path; ?>/graphics/login.gif' border='0' alt='<?php _p('Begin installation'); ?>' class='form-button-left' style='padding-right: 10px;'/> <?php _p('Begin installation'); ?></span></a></div>
+				<div class="loginSubmitButton"><a href='#' onclick='jQuery("#page1form").submit();' class='form-button'><span class='form-button'><img src='<?php print $vs_url_path; ?>/graphics/glyphicons_206_ok_2.png' border='0' alt='<?php _p('Begin installation'); ?>' class='form-button-left' style='padding-right: 10px;'/> <?php _p('Begin installation'); ?></span></a></div>
 				<input type='hidden' name='page' value='2'/>
 			</form>
 		</div><!-- end installForm -->

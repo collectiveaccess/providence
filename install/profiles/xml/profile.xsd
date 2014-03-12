@@ -54,6 +54,13 @@
 		</xs:restriction>
 	</xs:simpleType>
 
+	<xs:simpleType name="acPermissionList">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="read"/>
+			<xs:enumeration value="edit"/>
+			<xs:enumeration value="none"/>
+		</xs:restriction>
+	</xs:simpleType>
 
 	<xs:simpleType name="datatypeList">
 		<xs:restriction base="xs:string">
@@ -597,6 +604,56 @@
 												</xs:sequence>
 											</xs:complexType>
 										</xs:element>
+
+										<!-- BUNDLE-LEVEL ACCESS CONTROL -->
+
+										<xs:element name="bundleLevelAccessControl" minOccurs="0" maxOccurs="1">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="permission" minOccurs="1" maxOccurs="unbounded">
+														<xs:complexType>
+															<xs:attribute name="table" type="xs:string" use="required"/>
+															<xs:attribute name="bundle" type="xs:string" use="required"/>
+															<xs:attribute name="access" type="acPermissionList" use="required"/>
+														</xs:complexType>
+													</xs:element>
+												</xs:sequence>
+											</xs:complexType>
+										</xs:element>
+
+										<!-- TYPE-LEVEL ACCESS CONTROL -->
+
+										<xs:element name="typeLevelAccessControl" minOccurs="0" maxOccurs="1">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="permission" minOccurs="1" maxOccurs="unbounded">
+														<xs:complexType>
+															<xs:attribute name="table" type="xs:string" use="required"/>
+															<xs:attribute name="type" type="xs:string" use="required"/>
+															<xs:attribute name="access" type="acPermissionList" use="required"/>
+														</xs:complexType>
+													</xs:element>
+												</xs:sequence>
+											</xs:complexType>
+										</xs:element>
+
+										<!-- SOURCE-LEVEL ACCESS CONTROL -->
+
+										<xs:element name="sourceLevelAccessControl" minOccurs="0" maxOccurs="1">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="permission" minOccurs="1" maxOccurs="unbounded">
+														<xs:complexType>
+															<xs:attribute name="table" type="xs:string" use="required"/>
+															<xs:attribute name="source" type="xs:string" use="required"/>
+															<xs:attribute name="access" type="acPermissionList" use="required"/>
+															<xs:attribute name="default" type="xs:string" use="optional"/>
+														</xs:complexType>
+													</xs:element>
+												</xs:sequence>
+											</xs:complexType>
+										</xs:element>
+
 									</xs:sequence>
 									<xs:attribute name="code" type="codeType" use="required"/>
 								</xs:complexType>

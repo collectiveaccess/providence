@@ -79,6 +79,7 @@ var caUI = caUI || {};
 			
 			indicatorUrl: '',
 			editButtonIcon: '',
+			disabledButtonIcon: '',
 			
 			hasChildrenIndicator: 'has_children',	/* name of key in data to use to determine if an item has children */
 			alwaysShowChildCount: true,
@@ -347,7 +348,7 @@ if (that.uiStyle == 'horizontal') {
 								if (item.children > 0) {
 									moreButton = "<div style='float: right;'><a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "_edit' >" + that.editButtonIcon + "</a></div>";
 								} else {
-									moreButton = "<div style='float: right;'><a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "_edit'  style='opacity: 0.3;'>" + that.editButtonIcon + "</a></div>";
+									moreButton = "<div style='float: right;'><a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "_edit'  class='noChildren'>" + that.disabledButtonIcon + "</a></div>";
 								}
 							}
 							

@@ -53,7 +53,7 @@
 <?php
 	print $vs_control_box = caFormControlBox(
 		(caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Check-out"), 'caClientLibraryCheckoutForm')).' '.
-		(caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'client/library', 'CheckOut', 'Index', array('order_id' => 0))),
+		(caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'client/library', 'CheckOut', 'Index', array('order_id' => 0))),
 		'',
 		''
 	);

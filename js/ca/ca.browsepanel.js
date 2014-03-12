@@ -57,13 +57,15 @@ var caUI = caUI || {};
 		// --------------------------------------------------------------------------------
 		// Define methods
 		// --------------------------------------------------------------------------------
-		that.showBrowsePanel = function(facet, modifyMode, modifyID, grouping, clear, target) {
+		that.showBrowsePanel = function(facet, modifyMode, modifyID, grouping, clear, target, options) {
 			if (that.singleFacetValues[facet]) {
 				document.location = that.addCriteriaUrl + "/facet/" + facet + "/id/" + that.singleFacetValues[facet];
 				return true;
 			}
 			that.isChanging = true;
 			if (!facet) { return; }
+			
+			var panelContentID = (options && options.panelContentID) ? options.panelContentID : that.panelContentID;
 			
 			if (!that.useStaticDiv) {
 				jQuery("#" + that.panelID).fadeIn(that.panelTransitionSpeed, function() { that.isChanging = false; });
@@ -77,7 +79,7 @@ var caUI = caUI || {};
 			var options = { facet: facet, modify: (modifyMode ? 1 : ''), id: modifyID, grouping: grouping, clear: clear ? 1 : 0 };
 			if (that.browseID) { options['browse_id'] = that.browseID; }
 			if (target) { options['target'] = target; }
-			jQuery("#" + that.panelContentID).load(that.facetUrl, options);
+			jQuery("#" + panelContentID).load(that.facetUrl, options);
 		}
 		
 		that.hideBrowsePanel = function() {
@@ -90,7 +92,7 @@ var caUI = caUI || {};
 					jQuery.mask.close();
 				}
 			}
-			jQuery("#" + that.panelContentID).empty();
+			jQuery("#" + panelContentID).empty();
 		}
 		
 		that.browsePanelIsVisible = function() {

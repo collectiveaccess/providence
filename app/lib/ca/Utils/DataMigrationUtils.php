@@ -2055,7 +2055,7 @@
 				}
 			} else {
 				// check for titles
-				$ps_text = preg_replace('/[^\p{L}\p{N} \-]+/u', '', $ps_text);
+				$ps_text = preg_replace('/[^\p{L}\p{N} \-]+/u', ' ', $ps_text);
 				foreach($va_titles as $vs_title) {
 					if (preg_match("!^({$vs_title})!", $ps_text, $va_matches)) {
 						$va_name['prefix'] = $va_matches[1];

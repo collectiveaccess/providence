@@ -155,7 +155,6 @@
 								break;
 						}
 					
-						//print_r($va_subject);
 						print str_repeat(chr(8), $vn_last_message_length);
 						$vs_message = "\tIMPORTING #".($vn_term_count+1)." [".$va_subject['subject_id']."] ".$vs_preferred_term;
 						if (($vn_l = 100-strlen($vs_message)) < 1) { $vn_l = 1; }

@@ -30,6 +30,9 @@
 	$va_facet_info 			= $this->getVar('facet_info');
 	$vs_grouping_field		= $this->getVar('grouping');
 	$vs_group_mode 			= $va_facet_info["group_mode"];
+	$va_row_size = $this->request->config->get('browse_row_size');
+	$va_td_width = intval(100/$va_row_size);
+
 
 	if (!$va_facet||!$vs_facet_name) { 
 		print 'No facet defined'; 
@@ -54,10 +57,9 @@
 	}
 ?>
 </div>
-<h2><?php print unicode_ucfirst($va_facet_info['label_plural']); ?></h2>
-
 
 <div class="browseSelectPanelContentArea">
+	<h2 class='browse'><?php print unicode_ucfirst($va_facet_info['label_plural']); ?></h2>
 
 <?php
 	switch($vs_group_mode) {
@@ -71,7 +73,7 @@
 			foreach($va_facet as $vn_i => $va_item) {
 ?>
 <?php
-				$va_row[] = "<td class='browseSelectPanelListCell'>".caNavLink($this->request, $va_item['label'], 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id)) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => $va_item['id'], 'mod_id' => $vm_modify_id))."</td>";
+				$va_row[] = "<td class='browseSelectPanelListCell' width='{$va_td_width}%;'>".caNavLink($this->request, $va_item['label'], 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id)) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => $va_item['id'], 'mod_id' => $vm_modify_id))."</td>";
 				
 				if (sizeof($va_row) == 5) {
 					print "<tr valign='top'>".join('', $va_row)."</tr>\n";
@@ -99,13 +101,13 @@
 ?>
 
 	<div class="browseSelectPanelHeader">
-<?php 
-	print _t("Jump to").': '; 
-	
+		<div class="jumpToGroup">
+<?php 	
 	foreach($va_groups as $vs_group) {
 		print " <a href='#".(($vs_group === '~') ? '~' : $vs_group)."'>{$vs_group}</a> ";
 	}
 ?>
+		</div>
 	</div>
 	<div class="browseSelectPanelList">
 <?php
@@ -119,7 +121,7 @@
 		<table class='browseSelectPanelListTable'>
 <?php
 				foreach($va_items as $va_item) {
-					$va_row[] = "<td class='browseSelectPanelListCell'>".caNavLink($this->request, $va_item['label'], 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id) > 0) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => $va_item['id'], 'mod_id' => $vm_modify_id))."</td>";
+					$va_row[] = "<td class='browseSelectPanelListCell' width='{$va_td_width}%;'>".caNavLink($this->request, $va_item['label'], 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id) > 0) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => $va_item['id'], 'mod_id' => $vm_modify_id))."</td>";
 					
 					if (sizeof($va_row) == 5) {
 						print "<tr valign='top'>".join('', $va_row)."</tr>\n";
@@ -146,4 +148,7 @@
 		# ------------------------------------------------------------
 	}
 ?>
+	<a href="#" onclick="$('#showRefine').show(); caUIBrowsePanel.hideBrowsePanel(); " class="browseSelectPanelButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_COLLAPSE__); ?></a>
+	<div style='clear:both;width:100%'></div>
+
 </div>

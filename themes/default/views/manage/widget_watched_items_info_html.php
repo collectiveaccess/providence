@@ -26,4 +26,4 @@
  * ----------------------------------------------------------------------
  */
 ?>
-	<h3><?php print _t('Your watched items'); ?></h3>
+	<h3 class='watchedItems'><?php print _t('Your watched items'); ?></h3>
