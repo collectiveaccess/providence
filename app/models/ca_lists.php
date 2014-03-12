@@ -1336,9 +1336,12 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				return $vs_buf;
 				break;
 			case 'lookup':
-				if(caGetOption('forSearch',$pa_options) && ($vs_val_id = caGetOption('value',$pa_options))){
-					$vs_value = $t_list->getItemFromListForDisplayByItemID($pm_list_name_or_id, $vs_val_id);
-					$vs_hidden_value = $vs_val_id;
+				$vs_value = $vs_hidden_value = "";
+				if(caGetOption('forSearch',$pa_options)) {
+					if($vs_val_id = caGetOption('value',$pa_options)) {
+						$vs_value = $t_list->getItemFromListForDisplayByItemID($pm_list_name_or_id, $vs_val_id);
+						$vs_hidden_value = $vs_val_id;
+					}
 				} else {
 					$vs_value = "{".$pa_options['element_id']."_label}";
 					$vs_hidden_value = "{".$pa_options['element_id']."}";
