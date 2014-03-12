@@ -3,6 +3,8 @@ app/tmp/*
 app/conf/local/*
 setup.php
 /media/*
+!/media/.htaccess
+!/media/README.md
 .DS_Store
 .settings
 .project
