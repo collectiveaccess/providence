@@ -128,6 +128,8 @@
 					$vm_val[$vn_i] = trim($vs_val);
 				}
 				
+				$vm_val = caProcessImportItemSettingsForValue($vm_val, $pa_item['settings']);
+				
 				if (caGetOption("returnAsString", $pa_options, false)) {
 					$vs_delimiter = caGetOption("delimiter", $pa_options, '');
 					return join($vs_delimiter, $vm_val);
@@ -148,6 +150,8 @@
 			if (is_array($pa_item['settings']['original_values']) && (($vn_i = array_search(mb_strtolower($vm_val), $pa_item['settings']['original_values'])) !== false)) {
 				$vm_val = $pa_item['settings']['replacement_values'][$vn_i];
 			}
+			
+			$vm_val = caProcessImportItemSettingsForValue($vm_val, $pa_item['settings']);
 			
 			return trim($vm_val);
 		}

@@ -1674,7 +1674,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$vm_val = preg_replace("!".str_replace("!", "\\!", $va_regex['match'])."!", $va_regex['replaceWith'], $vm_val);
 								}
 							}
-							$va_row[$va_item['source']] = $vm_val;
+							$va_row[$va_item['source']] = $va_row[mb_strtolower($va_item['source'])] = $vm_val;
 						}
 					
 					
