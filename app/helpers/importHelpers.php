@@ -461,7 +461,7 @@
 		$vs_dest_table = $va_group_dest[0];
 		$va_group_dest[] = $vs_terminal;
 		
-		$pm_value = $o_reader ? $o_reader->get($pa_item['source'], array('returnAsArray'=> true)) : $pa_source_data[$pa_item['source']];
+		$pm_value = $o_reader ? caProcessImportItemSettingsForValue($o_reader->get($pa_item['source'], array('returnAsArray'=> true)), $pa_item['settings']) : $pa_source_data[$pa_item['source']];
 		
 		if (is_array($pm_value)) {
 			$va_items = $pm_value;	// for input formats that support repeating values
@@ -765,6 +765,36 @@
 			return array();
 		}
 		return $va_vals;
+	}
+	# ---------------------------------------
+	/**
+	 * Apply item settings to value; used by refineries to apply regular expressions to values get()'ed from reader class
+	 *
+	 * @param mixed $pm_value
+	 * @param array $pa_item_settings
+	 *
+	 * @return mixed
+	 */
+	function caProcessImportItemSettingsForValue($pm_value, $pa_item_settings) {
+		if (isset($pa_item_settings['applyRegularExpressions']) && is_array($pa_item_settings['applyRegularExpressions'])) {
+			if(is_array($pa_item_settings['applyRegularExpressions'])) {
+				if (is_array($pm_value)) {
+					foreach($pm_value as $vn_i => $vs_value) {
+						foreach($pa_item_settings['applyRegularExpressions'] as $vn_i => $va_regex) {
+							if (!strlen($va_regex['match'])) { continue; }
+							$vs_value = preg_replace("!".str_replace("!", "\\!", $va_regex['match'])."!", $va_regex['replaceWith'], $vs_value);
+						}
+						$pm_value[$vn_i] = $vs_value;
+					}
+				} else {
+					foreach($pa_item_settings['applyRegularExpressions'] as $vn_i => $va_regex) {
+						if (!strlen($va_regex['match'])) { continue; }
+						$pm_value = preg_replace("!".str_replace("!", "\\!", $va_regex['match'])."!", $va_regex['replaceWith'], $pm_value);
+					}
+				}
+			}
+		}
+		return $pm_value;
 	}
 	# ---------------------------------------
 	/**
