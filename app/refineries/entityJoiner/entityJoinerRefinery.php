@@ -128,17 +128,17 @@
 				}
 			
 				// Set attributes
-				if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']['entityJoiner_attributes'], $pa_source_data, $pa_item, null, $vn_c, $o_log))) {
+				if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']['entityJoiner_attributes'], $pa_source_data, $pa_item, null, $vn_c, array('log' => $o_log)))) {
 					$va_val = array_merge($va_val, $va_attr_vals);
 				}
 				
 				// Set interstitials
-				if (isset($pa_options['mapping']) && is_array($va_attr_vals = caProcessInterstitialAttributes('entityJoiner', $pa_options['mapping']->get('table_num'), 'ca_entities', $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log))) {
+				if (isset($pa_options['mapping']) && is_array($va_attr_vals = caProcessInterstitialAttributes('entityJoiner', $pa_options['mapping']->get('table_num'), 'ca_entities', $pa_source_data, $pa_item, $vs_delimiter, $vn_c, array('log' => $o_log)))) {
 					$va_val = array_merge($va_val, $va_attr_vals);
 				}
 				
 				// Set relatedEntities
-				if (is_array($va_attr_vals = caProcessRefineryRelated("entityJoiner", "ca_entities", $pa_item['settings']['entityJoiner_relatedEntities'], $pa_source_data, $pa_item, null, $vn_c, $o_log))) {
+				if (is_array($va_attr_vals = caProcessRefineryRelated("entityJoiner", "ca_entities", $pa_item['settings']['entityJoiner_relatedEntities'], $pa_source_data, $pa_item, null, $vn_c, array('log' => $o_log)))) {
 					$va_val = array_merge($va_val, $va_attr_vals);
 				}
 				
