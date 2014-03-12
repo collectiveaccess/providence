@@ -480,17 +480,18 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 */
 	public function get($ps_field, $pa_options=null) {
 		if(!is_array($pa_options)) { $pa_options = array(); }
-		$vs_template = 				(isset($pa_options['template'])) ? $pa_options['template'] : null;
-		$vb_return_as_array = 		(isset($pa_options['returnAsArray'])) ? (bool)$pa_options['returnAsArray'] : false;
 		
-		$vb_return_as_link = 		(isset($pa_options['returnAsLink'])) ? (bool)$pa_options['returnAsLink'] : false;
-		$vs_return_as_link_text = 	(isset($pa_options['returnAsLinkText'])) ? (string)$pa_options['returnAsLinkText'] : '';
-		$vs_return_as_link_target = (isset($pa_options['returnAsLinkTarget'])) ? (string)$pa_options['returnAsLinkTarget'] : '';
-		$vs_return_as_link_attributes = (isset($pa_options['returnAsLinkAttributes']) && is_array($pa_options['returnAsLinkAttributes'])) ? $pa_options['returnAsLinkAttributes'] : array();
+		$vs_template =				caGetOption('template', $pa_options, null);
+		$vb_return_as_array =		caGetOption('returnAsArray', $pa_options, null, array('castTo' => 'bool'));
+	
+		$vb_return_as_link =		caGetOption('returnAsLink', $pa_options, false);
+		$vs_return_as_link_text =	caGetOption('returnAsLinkText', $pa_options, false);
+		$vs_return_as_link_target =	caGetOption('returnAsLinkTarget', $pa_options, '');
+		$vs_return_as_link_target =	caGetOption('returnAsLinkAttributes', $pa_options, null, array('castTo' => 'array'));
 		
-		$vb_return_all_locales = 	(isset($pa_options['returnAllLocales'])) ? (bool)$pa_options['returnAllLocales'] : false;
-		$vs_delimiter = 			(isset($pa_options['delimiter'])) ? $pa_options['delimiter'] : ' ';
-		$va_restrict_to_rel_types = (isset($pa_options['restrictToRelationshipTypes']) && is_array($pa_options['restrictToRelationshipTypes'])) ? $pa_options['restrictToRelationshipTypes'] : false;
+		$vb_return_all_locales =	caGetOption('returnAllLocales', $pa_options, false);
+		$vs_delimiter =				caGetOption('delimiter', $pa_options, '; ');
+		$va_restrict_to_rel_types =	caGetOption('restrictToRelationshipTypes', $pa_options, null, array('castTo' => 'array'));
 		
 		if ($vb_return_all_locales && !$vb_return_as_array) { $vb_return_as_array = true; }
 		
@@ -525,13 +526,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			case 2:		// table_name.field_name || table_name.related
 			case 3:		// table_name.field_name.sub_element || table_name.related.field_name
 			case 4:		// table_name.related.field_name.sub_element
+			case 5:		// table_name.related.hierarchy.field_name.sub_element
+			
 				if ($t_instance = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true)) {
-					//
-					// TODO: this code is compact, relatively simple and works but is slow since it
-					// generates a lot more identical database queries than we'd like
-					// We will need to add some notion of caching so that multiple calls to get() 
-					// for various fields in the same list of related items don't cause repeated queries
-					//
 				
 					$va_opts = array();
 					
@@ -541,27 +538,47 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						array_splice($va_tmp, 1, 1);
 						$vb_is_related = true;
 					}
-					if (($va_tmp[1] == 'hierarchy') && (sizeof($va_tmp) == 2)) {
-						$va_tmp[] = "preferred_labels";
-						$va_opts['hierarchicalDelimiter'] = caGetOption('hierarchicalDelimiter', $pa_options, '; ');
-					}
-				
-					if (sizeof($va_tmp) == 1) { $va_tmp[] = 'preferred_labels'; }
 					if ($vb_is_related || ($va_tmp[0] !== $this->tableName())) {		// must be related table
-						$t_instance = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true);
-						$vs_pk = $t_instance->primaryKey();
-								
+						
 						$va_related_items = $this->getRelatedItems($va_tmp[0], $pa_options);
-					
-						$va_ids = array();
-						foreach($va_related_items as $vn_relation_id => $va_relation) {
-							$va_ids[] = $va_relation[$vs_pk];
+						
+						if ($vb_return_as_array && (sizeof($va_tmp) == 1)) {
+							//
+							// When spec is a related table to be returned as arrray
+							// Just return the getRelatedItems() output
+							//
+							if ($vb_return_all_locales) { 
+								$va_related_tmp = array();
+								foreach($va_related_items as $vn_i => $va_related_item) {
+									$va_related_tmp[$vn_i][$va_related_item['locale_id']] = $va_related_item;
+								}
+								return $va_related_tmp;
+							} else {
+								return $va_related_items;
+							}
 						}
+							
+						if (!$vb_return_as_array) {
+							//
+							// Adjust specs non-array gets(), adding preferred labels if no specific element is specified
+							//
+							
+							if (($va_tmp[1] == 'hierarchy') && (sizeof($va_tmp) == 2)) {
+								$va_tmp[] = "preferred_labels";
+								$va_opts['hierarchicalDelimiter'] = caGetOption('hierarchicalDelimiter', $pa_options, '; ');
+							}
+				
+							if (sizeof($va_tmp) == 1) { $va_tmp[] = 'preferred_labels'; }
+						}
+					
+						$vs_pk = $t_instance->primaryKey();
+						$va_ids = caExtractValuesFromArrayList($va_related_items, $vs_pk, array('preserveKeys' => false));
+						if (!is_array($va_ids) || !sizeof($va_ids)) { return null; }
+					
 						$qr_res = caMakeSearchResult($va_tmp[0], $va_ids);
 				
 						$va_vals = array();
-					
-					
+						
 						if ($vs_template = caGetOption('template', $pa_options, null)) {
 							$va_opts['template'] = $vs_template;
 							$vs_get_spec = $va_tmp[0];
@@ -569,7 +586,19 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							$vs_get_spec = join(".", $va_tmp);
 						}
 						while($qr_res->nextHit()) {
-							$va_vals[] = $qr_res->get($vs_get_spec, $pa_options);
+							if ($vb_return_all_locales) {
+								// Return all locales get
+								if (is_array($va_vals_by_locale_list = $qr_res->get($vs_get_spec, array_merge($pa_options, array('returnAsArray' => true, 'returnAllLocales' => true))))) {
+									foreach($va_vals_by_locale_list as $vn_attr_id => $va_vals_by_locale) {
+										$va_vals[] = $va_vals_by_locale;
+									}
+								}
+								continue;
+							} elseif($va_tmp[1] == 'hierarchy') {
+								$va_vals[] = $qr_res->get($vs_get_spec, $pa_options);
+							} else {
+								$va_vals[] = $qr_res->get($vs_get_spec, array_merge($pa_options, array('returnAsArray' => false)));
+							}
 						}
 						if($vb_return_as_array) {
 							return $va_vals;
