@@ -122,12 +122,19 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 				}
 			}
 			if ($vn_i == 0) { $vs_op = 'OR'; }
-			
+
+			// advanced search queries are for some reason nested 1-element boolean queries in boolean queries
+			if(get_class($o_lucene_query_element) == 'Zend_Search_Lucene_Search_Query_Boolean') {
+				$va_subqueries = $o_lucene_query_element->getSubqueries();
+				if(sizeof($va_subqueries) == 1) {
+					$o_lucene_query_element = array_shift($va_subqueries);
+				}
+			}
+
 			switch($vs_class = get_class($o_lucene_query_element)) {
 				case 'Zend_Search_Lucene_Search_Query_Term':
 				case 'Zend_Search_Lucene_Search_Query_MultiTerm':
 				case 'Zend_Search_Lucene_Search_Query_Phrase':
-					
 					if ($vs_class != 'Zend_Search_Lucene_Search_Query_Term') {
 						$va_raw_terms = array();
 						foreach($o_lucene_query_element->getQueryTerms() as $o_term) {
@@ -526,8 +533,25 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 			$ps_content_tablename = $this->opo_datamodel->getTableName($pn_content_tablenum);
 			$vn_field_num_proc = (int)substr($ps_content_fieldname, 1);
 			$ps_content_fieldname = $this->opo_datamodel->getFieldName($ps_content_tablename, $vn_field_num_proc);
+
+			// Type fields need a little special attention because we index their plain ids, their type codes AND their preferred label,
+			// like so: "Publication publication 102".
+			// That doesn't work too well with Solr. Solr does, however, have proper support for  multivalued fields, so we split the string
+			// to make sure "publication" and "102" become two distinct values in the index.
+			// The getTableInstance call is cached, so in theory it should be cheap after it is issued once.
+			$t_instance = $this->opo_datamodel->getTableInstance($ps_content_tablename,true);
+			if(($t_instance instanceof BaseModelWithAttributes) && ($ps_content_fieldname == $t_instance->getTypeFieldName())){
+				$va_tmp = explode(' ', $pm_content);
+				$pm_content = array();
+				// this is the type_id
+				$pm_content[] = array_pop($va_tmp);
+				// this is the type code - lets just assume it doesn't have spaces
+				$pm_content[] = array_pop($va_tmp);
+				// this is label information, which may have spaces. So we have to make sure that "Film & Media" doesn't become 3 values
+				$pm_content[] = join(' ', $va_tmp);
+			}
 		}
-		
+
 		$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname][] = $pm_content;
 	}
 	# -------------------------------------------------------
