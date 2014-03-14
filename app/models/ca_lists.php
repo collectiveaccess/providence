@@ -1336,13 +1336,23 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				return $vs_buf;
 				break;
 			case 'lookup':
+				$vs_value = $vs_hidden_value = "";
+				if(caGetOption('forSearch',$pa_options)) {
+					if($vs_val_id = caGetOption('value',$pa_options)) {
+						$vs_value = $t_list->getItemFromListForDisplayByItemID($pm_list_name_or_id, $vs_val_id);
+						$vs_hidden_value = $vs_val_id;
+					}
+				} else {
+					$vs_value = "{".$pa_options['element_id']."_label}";
+					$vs_hidden_value = "{".$pa_options['element_id']."}";
+				}
 				$vs_buf =
  				caHTMLTextInput(
  					$ps_name.'_autocomplete', 
 					array(
 						'width' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width']: 300, 
 						'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : 1, 
-						'value' => "{".$pa_options['element_id']."_label}", 
+						'value' => $vs_value, 
 						'maxlength' => 512,
 						'id' => $ps_name."_autocomplete",
 						'class' => 'lookupBg'
@@ -1351,7 +1361,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				caHTMLHiddenInput(
 					$ps_name,
 					array(
-						'value' => "{".$pa_options['element_id']."}", 
+						'value' => $vs_hidden_value, 
 						'id' => $ps_name
 					)
 				);
