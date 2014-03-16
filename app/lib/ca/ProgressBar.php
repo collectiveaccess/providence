@@ -1,0 +1,297 @@
+<?php
+/** ---------------------------------------------------------------------
+ * app/lib/ca/ProgressBar.php : 
+ * ----------------------------------------------------------------------
+ * CollectiveAccess
+ * Open-source collections management software
+ * ----------------------------------------------------------------------
+ *
+ * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
+ * Copyright 2014 Whirl-i-Gig
+ *
+ * For more information visit http://www.CollectiveAccess.org
+ *
+ * This program is free software; you may redistribute it and/or modify it under
+ * the terms of the provided license as published by Whirl-i-Gig
+ *
+ * CollectiveAccess is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ *
+ * This source code is free and modifiable under the terms of 
+ * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
+ * the "license.txt" file for details, or visit the CollectiveAccess web site at
+ * http://www.CollectiveAccess.org
+ *
+ * @package CollectiveAccess
+ * @subpackage AppPlugin
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ *
+ * ----------------------------------------------------------------------
+ */
+ 
+ /**
+  *
+  */
+ 
+ require_once(__CA_LIB_DIR__.'/core/Configuration.php');
+ 
+	class ProgressBar {
+		# -------------------------------------------------------
+		/**
+		 * Maximum value of progress bar
+		 */
+		private $opn_total;
+		
+		/**
+		 * Current progress message
+		 */
+		private $ops_message;
+		
+		/**
+		 * Start time
+		 */
+		private $opn_start;
+		
+		/**
+		 * Current run mode. One of: CLI (command line interface) or WebUI (web-based user interface)
+		 */
+		private $ops_mode = 'CLI';
+		
+		/**
+		 * Display properties. Includes:
+		 *		outputToTerminal = print messages to the terminal when in CLI run mode [default=false]
+		 */
+		private $opa_properties = array(
+			'outputToTerminal' => false
+		);
+		
+		# -------------------------------------------------------
+		/**
+		 * Set up progress bar
+		 *
+		 * @param string $ps_mode Display mode. One of: CLI, WebUI
+		 * @param int $pn_total Maximum value of the progress bar
+		 */
+		public function __construct($ps_mode='CLI', $pn_total=null) {
+			if ($pn_total > 0) { $this->setTotal($pn_total); }
+			if ($ps_mode) { $this->setMode($ps_mode); }
+		}
+		# -------------------------------------------------------
+		/**
+		 * Get current display mode
+		 * 
+		 * @return string
+		 */
+		public function getMode() {
+			return $this->ops_mode;
+		}
+		# -------------------------------------------------------
+		/**
+		 * Set current display mode. 
+		 *
+		 * @param string $ps_mode One of: CLI, WebUI
+		 * @return bool Return true if mode was valid and set, false if not
+		 */
+		public function setMode($ps_mode) {
+			if(in_array($ps_mode, array('CLI', 'WebUI'))) {
+				$this->ops_mode = $ps_mode;
+				return true;
+			}
+			return false;
+		}
+		# -------------------------------------------------------
+		/**
+		 * Get display property
+		 *
+		 * @param string $ps_property The name of the property
+		 * @return mixed The property value or null if property does not exist
+		 */
+		public function get($ps_property) {
+			if(isset($this->opa_properties[$ps_property])) {
+				return $this->opa_properties[$ps_property];
+			}
+			return null;
+		}
+		# -------------------------------------------------------
+		/**
+		 * Set display property
+		 *
+		 * @param string $ps_property The name of the property
+		 * @param mixed $pm_value The property value
+		 * @return bool True if property was valid and set, false if not
+		 */
+		public function set($ps_property, $pm_value) {
+			if(isset($this->opa_properties[$ps_property])) {
+				$this->opa_properties[$ps_property] = $pm_value;
+				return true;
+			}
+			return false;
+		}
+		# -------------------------------------------------------
+		/**
+		 * Start the progress bar. Call this before attempting to use the bar
+		 *
+		 * @param string $ps_message Initial message to display
+		 * @return string Progress bar output. If mode is CLI and outputToTerminal property is set, output will also be printed to terminal.
+		 */
+		public function start($ps_message=null) {
+			if (!is_null($ps_message)) { $this->setMessage($ps_message); }
+			$this->opn_start = time();
+			
+			switch($vs_mode = $this->getMode()) {
+				case 'CLI':
+					$vs_output = CLIProgressBar::start($this->getTotal(), $this->getMessage());
+					if ($this->get('outputToTerminal')) { print $vs_output; }
+					break;
+				default:
+					$vs_output = _t("Invalid mode %1", $vs_mode);
+					break;
+			}
+			
+			return $vs_output;
+		}
+		# -------------------------------------------------------
+		/**
+		 * Finish the progress bar. Call this when you are done using the progress bar.
+		 *
+		 * @param string $ps_message New message to display. If omitted current message is maintained.
+		 * @return string Progress bar output. If mode is CLI and outputToTerminal property is set, output will also be printed to terminal.
+		 */
+		public function finish($ps_message=null) {
+			if (!is_null($ps_message)) { $this->setMessage($ps_message); }
+			
+			switch($vs_mode = $this->getMode()) {
+				case 'CLI':
+					$vs_output = CLIProgressBar::finish($this->getMessage());
+					if ($this->get('outputToTerminal')) { print $vs_output; }
+					break;
+				default:
+					$vs_output = _t("Invalid mode %1", $vs_mode);
+					break;
+			}
+			
+			return $vs_output;
+		}
+		# -------------------------------------------------------
+		/**
+		 * Increment the progress bar and redraw.
+		 *
+		 * @param string $ps_message New message to display. If omitted current message is maintained.
+		 * @return string Progress bar output. If mode is CLI and outputToTerminal property is set, output will also be printed to terminal.
+		 */
+		public function next($ps_message=null) {
+			if (!is_null($ps_message)) { $this->setMessage($ps_message); }
+			
+			switch($vs_mode = $this->getMode()) {
+				case 'CLI':
+					$vs_output = CLIProgressBar::next(1, $this->getMessage());
+					if ($this->get('outputToTerminal')) { print $vs_output; }
+					break;
+				default:
+					$vs_output = _t("Invalid mode %1", $vs_mode);
+					break;
+			}
+			
+			return $vs_output;
+		}
+		# -------------------------------------------------------
+		/**
+		 * Force a redraw the progress bar using the current state.
+		 *
+		 * @return string Progress bar output. If mode is CLI and outputToTerminal property is set, output will also be printed to terminal.
+		 */
+		public function redraw() {
+			
+			switch($vs_mode = $this->getMode()) {
+				case 'CLI':
+					$vs_output = CLIProgressBar::next(0);
+					if ($this->get('outputToTerminal')) { print $vs_output; }
+					break;
+				default:
+					$vs_output = _t("Invalid mode %1", $vs_mode);
+					break;
+			}
+			
+			return $vs_output;
+		}
+		# -------------------------------------------------------
+		/**
+		 * Reset the progress bar, finishing any existing progress.
+		 *
+		 * @param string $ps_message New message to set on bar.  If omitted current message is maintained.
+		 * @return string Progress bar output. If mode is CLI and outputToTerminal property is set, output will also be printed to terminal.
+		 */
+		public function reset($ps_message=null) {
+			if (!is_null($ps_message)) { $this->setMessage($ps_message); }
+			$vs_output = $this->finish($ps_message);
+			$vs_output .= $this->start($ps_message);
+			
+			return $vs_output;
+		}
+		# -------------------------------------------------------
+		/**
+		 * Set the maximum value of the progress bar
+		 *
+		 * @param int $pn_total The maximum value of the progress bar.
+		 * @return bool True if value was valid and set, false if not.
+		 */
+		public function setTotal($pn_total) {
+			if ($pn_total >= 0) { 
+				$this->opn_total = $pn_total;
+				return true;
+			}
+			return false;
+		}
+		# -------------------------------------------------------
+		/**
+		 * Get the current maximum value of the progress bar
+		 *
+		 * @return int 
+		 */
+		public function getTotal() {
+			return $this->opn_total;
+		}
+		# -------------------------------------------------------
+		/**
+		 * Set the current progress bar message
+		 *
+		 * @param string $ps_message The message to set.
+		 * @param bool $pb_refresh Force the progress bar to display the new message. Default is true.
+		 *
+		 * @return bool True if message was set, false if not.
+		 */
+		public function setMessage($ps_message, $pb_refresh=true) {
+			$this->ops_message = $ps_message;
+			
+			switch($vs_mode = $this->getMode()) {
+				case 'CLI':
+					CLIProgressBar::setMessage($ps_message);
+					break;
+			}
+			
+			if ($pb_refresh) { $this->redraw(); }
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 * Get the current progress bar message
+		 *
+		 * @return string
+		 */
+		public function getMessage() {
+			return $this->ops_message;
+		}
+		# -------------------------------------------------------
+		/**
+		 * Display an error on the progress bar
+		 *
+		 * @param string $ps_message The error message
+		 * @return bool Returns true if message was set, false if not.
+		 */
+		public function setError($ps_message) {
+			return $this->setMessage(_t('[ERROR] %1', $ps_message));
+		}
+		# ----------------------------------------------------------
+	}
+?>

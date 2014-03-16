@@ -37,6 +37,7 @@
 require_once(__CA_LIB_DIR__.'/ca/Utils/IApplicationTool.php');
 require_once(__CA_LIB_DIR__.'/ca/Utils/ApplicationToolSettings.php');
 require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
+require_once(__CA_LIB_DIR__.'/ca/ProgressBar.php');
  
 	abstract class BaseApplicationTool implements IApplicationTool {
 		# -------------------------------------------------------
@@ -47,57 +48,65 @@ require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
 		public $SETTINGS;
 		
 		/**
-		 *
+		 * Array of settings for this tool. Set by subclass
 		 */
 		protected $opa_available_settings = array();
 		
 		/**
-		 *
+		 * Name of tool. Must be unique to tool.
 		 */
 		protected $ops_tool_name = null;
 		
-		
 		/**
-		 *
+		 * Path to tool configuration file
 		 */
 		protected $ops_tool_config_path = null;
-		
-		
+			
 		/**
-		 *
+		 * Path to tool log directory
 		 */
 		protected $ops_log_path = null;
 		
 		/**
-		 *
+		 * Current logging level
 		 */
 		protected $opn_log_level = KLogger::NOTICE;
 		
 		/**
-		 *
+		 * Description of tool for display
 		 */
 		protected $ops_description = '';
 		
 		/**
-		 *
+		 * Application Configuration object
 		 */
 		protected $opo_app_config;
 		
 		/**
-		 *
+		 * Tool Configuration object
 		 */
 		protected $opo_config;
 		
 		/**
-		 *
+		 * Application datamodel object
 		 */
 		protected $opo_datamodel;
+			
+		/**
+		 * Tool run mode. Either CLI (command line) or WebUI (via web-based user interface)
+		 */
+		protected $ops_mode;	// CLI or WebUI
 		
 		# -------------------------------------------------------
 		/**
+		 * Set up tool environment.
 		 *
+		 * @param array $pa_settings Values to initialize settings with.
+		 * @param string $ps_mode Tool run mode. Either CLI (command line) or WebUI (via web-based user interface).
+		 * @param $ps_tool_config_path Path to tool configuration file.
+		 * @param $ps_log_path Path to tool log directory. If omitted log are placed in default app/log directory.
 		 */
-		public function __construct($pa_settings=null, $ps_tool_config_path=null, $ps_log_path=null) {
+		public function __construct($pa_settings=null, $ps_mode='CLI', $ps_tool_config_path=null, $ps_log_path=null) {
 			$this->SETTINGS = new ApplicationToolSettings($this->opa_available_settings, array());
 			
 			$this->opo_datamodel = Datamodel::load();
@@ -108,6 +117,7 @@ require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
 			
 			if (!$ps_log_path) { $ps_log_path = __CA_APP_DIR__.'/log'; }
 			if ($ps_log_path) { $this->setLogPath($ps_log_path); }
+			if ($ps_mode) { $this->setMode($ps_mode); }
 		}
 		# -------------------------------------------------------
 		/**
@@ -127,6 +137,9 @@ require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
 		# -------------------------------------------------------
 		/**
 		 * Reroutes calls to method implemented by settings delegate to the delegate class
+		 *
+		 * @param string $ps_command The command to run
+		 * @return bool True on success, false on failure
 		 */
 		public function run($ps_command) {
 			if (!method_exists($this, "command{$ps_command}")) { 
@@ -138,21 +151,27 @@ require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
 		# Configuration
 		# -------------------------------------------------------
 		/**
-		 * 
+		 * Get application configuration instance
+		 *
+		 * @return Configuration
 		 */
 		public function getAppConfig() {
 			return $this->opo_app_config;
 		}
 		# -------------------------------------------------------
 		/**
-		 * 
+		 * Get application Datamodel instance
+		 *
+		 * @return Datamodel
 		 */
 		public function getAppDatamodel() {
 			return $this->opo_datamodel;
 		}
 		# -------------------------------------------------------
 		/**
-		 * 
+		 * Get tool configuration instance
+		 *
+		 * @return Configuration
 		 */
 		public function getToolConfig() {
 			if(!file_exists($this->ops_tool_config_path)) { return null; }
@@ -162,21 +181,26 @@ require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
 		# Logging
 		# -------------------------------------------------------
 		/**
-		 * 
+		 * Get logger instance. Tools can use this to log activity.
+		 *
+		 * @return KLogger
 		 */
 		public function getLogger() {
 			return (is_writable($this->ops_log_path)) ? new KLogger($this->ops_log_path, $this->opn_log_level) : null;
 		}
 		# -------------------------------------------------------
 		/**
-		 * 
+		 * Get current logging level
+		 *
+		 * @return int
 		 */
 		public function getLogLevel() {
 			return $this->opn_log_level;
 		}
 		# -------------------------------------------------------
 		/**
-		 * 
+		 * Set current logging level 
+		 *
 		 * @param int $pn_log_level KLogger constant for minimum log level to record. Default is KLogger::INFO. Constants are, in descending order of shrillness:
 		 *			KLogger::EMERG = Emergency messages (system is unusable)
 		 *			KLogger::ALERT = Alert messages (action must be taken immediately)
@@ -195,14 +219,20 @@ require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
 		}
 		# -------------------------------------------------------
 		/**
-		 * 
+		 * Get current log path
+		 *
+		 * @return string
 		 */
 		public function getLogPath() {
 			return $this->ops_log_path;
 		}
 		# -------------------------------------------------------
 		/**
-		 * 
+		 * Set current log path. The path must exist and be writeable.
+		 *
+		 * @param string $ps_log_path 
+		 *
+		 * @return bool True if path is valid and was set, false is path was not set.
 		 */
 		public function setLogPath($ps_log_path) {
 			if (is_writeable($ps_log_path)) { 
@@ -210,6 +240,42 @@ require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
 				return true;
 			}
 			return false;
+		}
+		# -------------------------------------------------------
+		# Progress
+		# -------------------------------------------------------
+		/**
+		 * Returns instance of progress bar for use by tool to convey current status to the user
+		 *
+		 * @param int $pn_total The maximum value of the progress bar. Defaults to zero if omitted.
+		 * @return ProgressBar
+		 */
+		public function getProgressBar($pn_total=null) {
+			$o_progress = new ProgressBar($this->getMode(), $pn_total);
+			if ($this->getMode() == 'CLI') { $o_progress->set('outputToTerminal', true); }
+			return $o_progress;
+		}
+		# -------------------------------------------------------
+		/**
+		 * Set run mode. This primarily affects how progress is conveyed to the user. Possible values
+		 * are CLI (command line interface) and WebUI (web-based user interface).
+		 *
+		 * @param string $ps_mode One of: CLI, WebUI
+		 * @return bool True if value was valid and set, false if not.
+		 */
+		public function setMode($ps_mode) {
+			if (!in_array($ps_mode, array('CLI', 'WebUI'))) { return false; }
+			$this->ops_mode = $ps_mode;
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 * Return current run mode.
+		 *
+		 * @return string One of: CLI, WebUI
+		 */
+		public function getMode() {
+			return $this->ops_mode;
 		}
 		# -------------------------------------------------------
 		# Help

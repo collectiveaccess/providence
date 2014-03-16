@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/BaseApplicationPlugin.php : 
+ * app/lib/ca/BaseToolsPlugin.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,52 +34,86 @@
   *
   */
  
-require_once(__CA_LIB_DIR__.'/ca/IApplicationPlugin.php');
+require_once(__CA_LIB_DIR__.'/ca/BaseApplicationPlugin.php');
  
-	abstract class BaseApplicationPlugin implements IApplicationPlugin {
+	abstract class BaseToolsPlugin extends BaseApplicationPlugin {
 		# -------------------------------------------------------
+		/**
+		 * Plugin description
+		 */
 		protected $description = '';
+		
+		/**
+		 * Instance of tool this plugin wraps
+		 */
+		protected $tool;
+		
+		/**
+		 * Title of tool. This should be formatted for display and unique to the tool.
+		 */
+		protected $tool_title = 'NO_CLASS_SET';
 		# -------------------------------------------------------
 		public function __construct() {
-			// NOOP
+			parent::__construct();
 		}
 		# -------------------------------------------------------
 		/**
-		 * Get request object for current request. Returns null if no request is available 
-		 * (if, for example, the plugin is being run in a batch script - scripts don't use the request/response model)
-		 *
-		 * @return Request object or null if no request object is available
+		 * Return possible commands for CLI caUtils
 		 */
-		public function getRequest() {
-			if (($o_app = AppController::getInstance()) && ($o_req = $o_app->getRequest())) {
-				return $o_req;	
+		public function hookCLICaUtilsGetCommands($pa_commands) {
+			if (!$this->tool) { return null; }
+			
+			$va_settings = $this->tool->getAvailableSettings();
+			
+			$va_options = array();
+			$vn_i = 1;
+			foreach($va_settings as $vs_setting => $va_setting_info) {
+				$va_options["{$vs_setting}|{$vn_i}-".(($va_setting_info['formatType'] == FT_NUMBER) ? 'n' : 's')] = $va_setting_info['description'];
+				$vn_i++;
 			}
-			return null;
+			
+			foreach($this->tool->getCommands() as $vs_command) {
+				$pa_commands[$this->tool_title][$vs_command] = array(
+					'Command' => $vs_command,
+					'ShortHelp' => $this->tool->getShortHelpText($vs_command),
+					'Help' => $this->tool->getHelpText($vs_command),
+					'Options' => $va_options
+				);
+			}
+			
+			return $pa_commands;
 		}
 		# -------------------------------------------------------
 		/**
-		 * Returns description of the current plugin. So long as your plugin sets its description property
-		 * you shouldn't need to override this method.
-		 *
-		 * @return string description of plugin for display to end-users
+		 * Run commands from CLI caUtils
 		 */
-		public function getDescription() {
-			return isset($this->description) ? $this->description : '';
+		public function hookCLICaUtilsGetToolWithSettings(&$pa_params) {
+			if ($pa_params[0] == $this->tool_title) {
+				$this->tool->setSettings($pa_params[1]);
+				$this->tool->setMode($pa_params[2]);
+				
+				$pa_params['tool'] = $this->tool;
+			}  
+			return $pa_params;
 		}
 		# -------------------------------------------------------
 		/**
-		 * Returns current status of plugin. Your plugin needs to override this. The default
-		 * implementation returns a status without errors but with the 'available' flag set to false (ie. plug isn't functional)
-		 *
-		 * @return array associative array indicating availability of plugin, and any initialization errors and warnings. Also includes text description of plugin for display.
+		 * Override checkStatus() to return true
 		 */
 		public function checkStatus() {
 			return array(
 				'description' => $this->getDescription(),
 				'errors' => array(),
 				'warnings' => array(),
-				'available' => false
+				'available' => true
 			);
+		}
+		# -------------------------------------------------------
+		/**
+		 * Get plugin user actions
+		 */
+		static public function getRoleActionList() {
+			return array();
 		}
 		# -------------------------------------------------------
 	}

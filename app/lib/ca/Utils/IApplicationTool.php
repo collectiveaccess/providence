@@ -62,6 +62,13 @@
 	 */
 	public function getShortHelpText($ps_command);
 	public function getHelpText($ps_command);
+	
+	/**
+	 * Progress bar
+ 	 */
+	public function getProgressBar($pn_total=null);
+	public function setMode($ps_mode);
+	public function getMode();
 	 
 	/**
  	 * Execution

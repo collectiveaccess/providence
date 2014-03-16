@@ -69,7 +69,6 @@
 		public function getSettings() {
 			return $this->o_instance->get($this->ops_settings_field);
 		}
-		
 		# ------------------------------------------------------
 		/**
 		 * Set setting value 
