@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/ModelSettings.php :
+ * app/lib/core/ApplicationToolSettings.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -35,29 +35,19 @@
   */
  
  	require_once(__CA_LIB_DIR__.'/core/BaseSettings.php');
- 	require_once(__CA_LIB_DIR__.'/core/View.php');
  
-	class ModelSettings extends BaseSettings {
+	class ApplicationToolSettings extends BaseSettings {
 		# ------------------------------------------------------
-		/**
-		 *
-		 */
-		private $o_instance;
 		
 		/**
 		 *
 		 */
-		protected $ops_settings_field;
+		protected $opa_setting_values = array();
 		# ------------------------------------------------------
-		public function __construct($t_instance, $ps_settings_field, $pa_settings_defs) {
+		public function __construct($pa_settings_defs, $pa_setting_values) {
 			parent::__construct($pa_settings_defs);
 			
-			$this->o_instance = $t_instance;
-			$this->ops_settings_field = $ps_settings_field;
-		}
-		# ------------------------------------------------------
-		public function __destruct() {
-			unset($this->o_instance);
+			$this->opa_setting_values = $pa_setting_values;
 		}
 		# ------------------------------------------------------
 		# Settings
@@ -67,18 +57,17 @@
 		 * The keys of the array are setting codes, the values are the setting values
 		 */
 		public function getSettings() {
-			return $this->o_instance->get($this->ops_settings_field);
+			return $this->opa_setting_values;
 		}
-		
 		# ------------------------------------------------------
 		/**
 		 * Set setting value 
 		 * (you must call insert() or update() to write the settings to the database)
 		 */
 		public function setSetting($ps_setting, $pm_value) {
-			$this->o_instance->set($this->ops_settings_field, $vm_val = parent::setSetting($ps_setting, $pm_value));
+			$this->opa_setting_values = $vm_val = parent::setSetting($ps_setting, $pm_value);
 			
-			return $this->o_instance->numErrors() ? false : $vm_val;
+			return $vm_val;
 		}
 		# ------------------------------------------------------
 		/**
@@ -123,7 +112,7 @@
 					$this->setSetting($vs_setting, $vs_value);
 				}
 			}
-			return $this->o_instance->update();
+			return true;
 		}
 		# ------------------------------------------------------
 	}
