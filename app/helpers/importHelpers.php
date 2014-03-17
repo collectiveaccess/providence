@@ -686,7 +686,7 @@
 							$va_val['idno'] = $vs_item;
 							break;
 						case 'ca_list_items':
-							$va_val['preferred_labels'] = array('name_singular' => $vs_item, 'name_plural' => $vs_item);
+							$va_val['preferred_labels'] = array('name_singular' => str_replace("_", " ", $vs_item), 'name_plural' => str_replace("_", " ", $vs_item));
 							$va_val['_list'] = $pa_options['list_id'];
 							break;
 						case 'ca_storage_locations':
