@@ -168,8 +168,10 @@ class CollectiveAccessDataReader extends BaseDataReader {
 			
 			if (!$pb_return_all_locales) {
 				$va_data['attributes'] = caExtractValuesByUserLocale($va_data['attributes']);
-				$va_data['preferred_labels'] = array_pop(caExtractValuesByUserLocale(array($va_data['preferred_labels'])));
+				$va_tmp = caExtractValuesByUserLocale(array($va_data['preferred_labels']));
+				$va_data['preferred_labels'] = array_pop($va_tmp);
 			}
+			
 			switch(sizeof($va_col)) {
 				// ------------------------------------------------------------------------------------------------
 				case 2:
