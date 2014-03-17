@@ -1122,6 +1122,9 @@ class BaseModel extends BaseObject {
 	 *
 	 * for text fields:
 	 *	- purify : if set then text input is run through HTML Purifier before being set
+	 *
+	 * for parent_id field:
+	 *	- treatParentIDAsIdno: force parent_id value to be used as idno lookup rather than a primary key value
 	 */
 	public function set($pa_fields, $pm_value="", $pa_options=null) {
 		$this->errors = array();
@@ -1158,7 +1161,7 @@ class BaseModel extends BaseObject {
 						}
 						
 						
-						if (($vs_field == $this->HIERARCHY_PARENT_ID_FLD) && (!is_numeric($vm_value))) {
+						if (($vs_field == $this->HIERARCHY_PARENT_ID_FLD) && (!is_numeric($vm_value) || caGetOption('treatParentIDAsIdno', $pa_options, false))) {
 							if(is_array($va_ids = call_user_func_array($this->tableName()."::find", array(array('idno' => $vm_value, 'deleted' => 0), array('returnAs' => 'ids'))))) {
 								$vm_value = array_shift($va_ids);
 							}
