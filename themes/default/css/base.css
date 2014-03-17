@@ -180,6 +180,7 @@ h5 {
     width: 215px;
     height: 100%;
     border-top: 2px solid #ddd;
+    padding-bottom: 10px;
 }
 
 #leftNav h2 {
@@ -327,12 +328,16 @@ h5 {
 	clear: both;
 	min-height: 26px;
 }
-#leftNav .watchThis, #leftNav #inspectorChangeType, #leftNav #inspectorCreateChild, #leftNav #caDuplicateItemButton {
+#leftNav .watchThis, #leftNav #inspectorChangeType, #leftNav #inspectorCreateChild, #leftNav #caDuplicateItemButton, #leftNav #inspectorLotMediaDownloadButton {
 	float: left;
 	margin-right: 10px;
 	width: 28px;
 	text-align: center;
 }
+#leftNav #inspectorLotMediaDownloadButton {
+	margin-top:5px;
+	margin-right:8px;
+} 
 #leftNav #inspectorChangeType img {
 	width: 26px;
 	padding-top: 1px;
@@ -389,6 +394,9 @@ div.inspectorLotObjectTypeControls {
 	text-align: center;
 	width:100%;
 	padding-left: 0px;
+}
+#leftNav #searchSetTools .button {
+	width:auto;
 }
 #leftNav #toolIcons .button {
 	text-align:left;
@@ -664,7 +672,7 @@ ul.sf-menu li li li.sfHover ul {
 }
 .sf-menu a {
     border-top:		0px solid #134959;
-    padding-top: .6em;
+    padding-top: .55em;
     padding-bottom: .40em;
     padding-left: .6em;
     padding-right: 5px;
@@ -675,7 +683,7 @@ ul.sf-menu li li li.sfHover ul {
     color:			#333;
     font-weight:normal;
 }
-
+ 
 .sf-menu li {
 
 
@@ -784,6 +792,14 @@ a.sf-menu-disabled {
     text-indent: 	-999em;
     overflow:		hidden;
     background:		url('../graphics/icons/arrows_white.png') no-repeat -10px -100px; /* 8-bit indexed alpha png. IE6 gets solid image only */
+}
+
+ul.sf-menu li a.sf-with-ul .sf-sub-indicator{
+	display:none;
+}
+ul.sf-menu li ul li a.sf-with-ul .sf-sub-indicator{
+	display:block;
+	margin-top: -2px;
 }
 a > .sf-sub-indicator {  /* give all except IE6 the correct values */
     top:			.7em;
@@ -2162,6 +2178,7 @@ select.searchToolsSelect {
 }
 #searchSetTools .col{
 	margin-bottom:15px;
+	clear: both;
 }
 #searchSetTools .header {
 	font-family: 'din-regular', helvetica, sans-serif;
@@ -2176,7 +2193,7 @@ select.searchToolsSelect {
 #searchSetTools .searchSetsToggle a{
 	float: left;
 	clear: right;
-	width: 100%;
+	width: auto;
 	text-align: left;
 	margin-bottom: 15px;
 	margin-top: -14px;
@@ -5109,7 +5126,7 @@ a.quickaddMenuItem {
 div.roundedRel {
     font-size: 10px;
     font-weight: normal;
-    padding: 2px 4px 4px 8px;
+    padding: 5px 4px 1px 8px;
     margin: 5px;
     float: left;
     border: 1px solid #ddd;
@@ -6157,9 +6174,12 @@ div.dialogHeader {
     display: none;
     margin: 0px;
     padding:0px !important;
-    border: 2px solid #999999;
+    border: 2px solid #eee;
     z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
     background-color: #FFFFFF;
+    border-radius:4px;
+    -moz-border-radius:4px;
+    -webkit-border-radius:4px;
 }
 
 #caRelationQuickAddPanel .close a{
@@ -6588,8 +6608,15 @@ div.caRepresentationMediaReplicationControls {
 	top: 3px;
 }
 
+.caAnnoEditorPlayerAndFormContainer {
+	position: relative;
+}
+
 .caAnnoMediaPlayerContainer {	/*  media player container */
-	float: left;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	
     width: 500px;
     height: 375px;
     
@@ -6618,7 +6645,10 @@ div.caRepresentationMediaReplicationControls {
 }
 
 .caAnnoEditorEditorScreen {
-	float: right;
+	position: absolute;
+	top: 0px;
+	left: 515px;
+	
 	width: 720px;
 	height: 500px;
 	overflow: auto;

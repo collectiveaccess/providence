@@ -453,7 +453,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		}
 		
 		$vs_buf = '';
-		if (is_array($va_found_ids) && sizeof($va_found_ids) && $vn_item_id) {
+		if (is_array($va_found_ids) && sizeof($va_found_ids)) {
 			if ($vn_prev_id > 0) {
 				if($po_request->user->canAccess($po_request->getModulePath(),$po_request->getController(),"Edit",array($vs_pk => $vn_prev_id))){
 					$vs_buf .= caNavLink($po_request, '&#60; prev', 'prev', $po_request->getModulePath(), $po_request->getController(), 'Edit'.'/'.$po_request->getActionExtra(), array($vs_pk => $vn_prev_id)).'&nbsp;';
@@ -616,7 +616,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 
 		// action extra to preserve currently open screen across next/previous links
 		$vs_screen_extra 	= ($po_view->getVar('screen')) ? '/'.$po_view->getVar('screen') : '';
-		if ($vn_item_id) {
+		if (($vn_item_id) | ($po_view->request->getAction() === 'Delete')) {
 			$vs_buf = '<h3 class="nextPrevious">'.caEditorFindResultNavigation($po_view->request, $t_item, $o_result_context, $pa_options)."</h3>\n";
 		}
 		
@@ -636,6 +636,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		}
 		
 		if (($po_view->request->getAction() === 'Delete') && ($po_view->request->getParameter('confirm', pInteger))) { 
+
 			$vs_buf .= "<strong>"._t("Deleted %1", $vs_type_name)."</strong>\n";
 			$vs_buf .= "<br style='clear: both;'/></div></h4>\n";
 		} else {	
@@ -718,6 +719,9 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 			
 				$vs_idno = $t_item->get($t_item->getProperty('ID_NUMBERING_ID_FIELD'));
 				$vs_buf .= "<div style='width:190px; overflow:hidden;'>{$vs_label}"."<a title='$vs_idno'>".($vs_idno ? " ({$vs_idno})" : '')."</a></div>";
+				if (($vs_table_name === 'ca_object_lots') && $t_item->getPrimaryKey()) {
+					$vs_buf .= "<div id='inspectorLotMediaDownload'><strong>".((($vn_num_objects = $t_item->numObjects()) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
+				} 
 			} else {
 				$vs_parent_name = '';
 				if ($vn_parent_id = $po_view->request->getParameter('parent_id', pInteger)) {
@@ -734,8 +738,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		if($t_item->getPrimaryKey()) {
 			if (sizeof($va_reps) > 0) {	
 				$va_imgs = array();
-				$vs_buf .= "<div class='button'><a href='#' id='inspectorShowMedia' class='open'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_IMAGE__)."</a></div><div id='inspectorMedia' >";
-			
+				
+				$vs_buf .= "<div id='inspectorMedia'>";
 			
 				foreach($va_reps as $va_rep) {
 					if (!($va_rep['info']['preview170']['WIDTH'] && $va_rep['info']['preview170']['HEIGHT'])) { continue; }
@@ -754,7 +758,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 									
 				if (sizeof($va_imgs) > 0) {
 					$vs_buf .= "
-				<div id='inspectorInfoRepScrollingViewer'>
+				<div id='inspectorInfoRepScrollingViewer' style='position: relative;'>
 					<div id='inspectorInfoRepScrollingViewerContainer'>
 						<div id='inspectorInfoRepScrollingViewerImageContainer'></div>
 					</div>
@@ -767,8 +771,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 					</div>
 		";
 					}
-					TooltipManager::add(".leftScroll", _t('3/10'));
-					TooltipManager::add(".rightScroll", _t('5/10'));
+					TooltipManager::add(".leftScroll", _t('Previous'));
+					TooltipManager::add(".rightScroll", _t('Next'));
 
 					$vs_buf .= "<script type='text/javascript'>";
 					$vs_buf .= "
@@ -837,14 +841,24 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 							}
 						}
 						if ($vb_show_add_child_control) {
-
-							$vs_buf .= "<div id='inspectorCreateChild'><div id='inspectorCreateChildButton'><a href='#' onclick='caCreateChildPanel.showPanel(); return false;'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_CHILD__, array('title' => _t('Create Child Record')))."</a></div></div>\n";
+							if ((bool)$po_view->request->config->get($vs_table_name.'_enforce_strict_type_hierarchy')) {
+								// strict menu
+								$vs_type_list = $t_item->getTypeListAsHTMLFormElement('type_id', array('style' => 'width: 90px; font-size: 9px;'), array('childrenOfCurrentTypeOnly' => true, 'directChildrenOnly' => ($po_view->request->config->get($vs_table_name.'_enforce_strict_type_hierarchy') == '~') ? false : true, 'returnHierarchyLevels' => true, 'access' => __CA_BUNDLE_ACCESS_EDIT__));
+							} else {
+								// all types
+								$vs_type_list = $t_item->getTypeListAsHTMLFormElement('type_id', array('style' => 'width: 90px; font-size: 9px;'), array('access' => __CA_BUNDLE_ACCESS_EDIT__));
+							}
+							
+							if ($vs_type_list) {
+								$vs_buf .= "<div id='inspectorCreateChild'><div id='inspectorCreateChildButton'><a href='#' onclick='caCreateChildPanel.showPanel(); return false;'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_CHILD__, array('title' => _t('Create Child Record')))."</a></div></div>\n";
 						
-							$vo_create_child_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
-							$vo_create_child_view->setVar('t_item', $t_item);
+								$vo_create_child_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
+								$vo_create_child_view->setVar('t_item', $t_item);
+								$vo_create_child_view->setVar('type_list', $vs_type_list);
 						
-							FooterManager::add($vo_create_child_view->render("create_child_html.php"));
-							TooltipManager::add("#inspectorCreateChildButton", _t('Create a child record under this one'));
+								FooterManager::add($vo_create_child_view->render("create_child_html.php"));
+								TooltipManager::add("#inspectorCreateChildButton", _t('Create a child record under this one'));
+							}
 						}
 					}
 			}
@@ -861,10 +875,15 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 				$vs_buf .= "</form>";
 				$vs_buf .= "</div>";
 			
-				TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($vs_type_name, 'UTF-8')).". "._t("<br/> You can control what information will be duplicated by setting user preferences under 'Duplication.'", mb_strtolower($vs_type_name, 'UTF-8'), mb_strtolower($vs_type_name, 'UTF-8')));
+				TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($vs_type_name, 'UTF-8')));
 			}
 			
-			
+			if ($vn_num_objects > 0) {
+				$vs_buf .= caNavLink($po_view->request, caNavIcon($po_view->request, __CA_NAV_BUTTON_DOWNLOAD__), "button", $po_view->request->getModulePath(), $po_view->request->getController(), 'getLotMedia', array('lot_id' => $t_item->getPrimaryKey(), 'download' => 1), array('id' => 'inspectorLotMediaDownloadButton'));
+			}
+			TooltipManager::add('#inspectorLotMediaDownloadButton', _t("Download all media associated with objects in this lot"));
+		
+		
 			$vs_more_info = '';
 			
 			// list of sets in which item is a member
@@ -931,6 +950,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 				TooltipManager::add("#inspectorMoreInfo", _t('See more information about this record'));
 
 			}
+			
 			$vs_buf .= "</div><!--End tooIcons-->";
 		}
 	
@@ -970,15 +990,9 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 			// Output lot info for ca_object_lots
 			//
 			if (($vs_table_name === 'ca_object_lots') && $t_item->getPrimaryKey()) {
-				$vs_buf .= "<div id='inspectorLotMediaDownload'><strong>".((($vn_num_objects = $t_item->numObjects()) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
-				
-				if ($vn_num_objects > 0) {
-					$vs_buf .= caNavLink($po_view->request, caNavIcon($po_view->request, __CA_NAV_BUTTON_DOWNLOAD__), "button", $po_view->request->getModulePath(), $po_view->request->getController(), 'getLotMedia', array('lot_id' => $t_item->getPrimaryKey(), 'download' => 1), array('id' => 'inspectorLotMediaDownloadButton'));
-				}
-				$vs_buf .= "</div>\n";
-				
-				TooltipManager::add('#inspectorLotMediaDownloadButton', _t("Download all media associated with objects in this lot."));
 			
+				$vs_buf .= "</div>\n";
+
 				if (((bool)$po_view->request->config->get('allow_automated_renumbering_of_objects_in_a_lot')) && ($va_nonconforming_objects = $t_item->getObjectsWithNonConformingIdnos())) {
 				
 					$vs_buf .= '<br/><br/><em>'. ((($vn_c = sizeof($va_nonconforming_objects)) == 1) ? _t('There is %1 object with non-conforming numbering', $vn_c) : _t('There are %1 objects with non-conforming numbering', $vn_c))."</em>\n";
@@ -1356,8 +1370,6 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		// -------------------------------------------------------------------------------------
 		// Export
 		
-
-
 		if($po_view->request->user->canDoAction('can_export_'.$vs_table_name) && $t_item->getPrimaryKey() && (sizeof(ca_data_exporters::getExporters($t_item->tableNum()))>0)) {
 			$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" id="caExportItemButton">';
 				
@@ -1411,20 +1423,21 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 	
 				if (sizeof($va_reps)) {
 					$vs_buf .= "
-						if (inspectorCookieJar.get('inspectorShowMediaIsOpen') == undefined) {		// default is to have media open
+		if (inspectorCookieJar.get('inspectorShowMediaIsOpen') == undefined) {		// default is to have media open
 			inspectorCookieJar.set('inspectorShowMediaIsOpen', 1);
 		}
+		
 		if (inspectorCookieJar.get('inspectorShowMediaIsOpen') == 1) {
-			jQuery('#inspectorMedia').toggle(0);
-			jQuery('#inspectorShowMedia').html('".addslashes(caNavIcon($po_view->request, __CA_NAV_BUTTON_COLLAPSE__))."').addClass('closed');
+			jQuery('#inspectorMedia').toggle();
 		}
 	
-		jQuery('#inspectorShowMedia').click(function() {
-			jQuery('#inspectorMedia').slideToggle(350, function() { 
-				inspectorCookieJar.set('inspectorShowMediaIsOpen', (this.style.display == 'block') ? 1 : 0); 
-jQuery('#inspectorShowMedia').html((this.style.display == 'block') ? '".addslashes(caNavIcon($po_view->request, __CA_NAV_BUTTON_COLLAPSE__))."' : '".addslashes(caNavIcon($po_view->request, __CA_NAV_BUTTON_IMAGE__))."').removeClass((this.style.display == 'block') ? 'open' : 'closed').addClass((this.style.display == 'block') ? 'closed' : 'open');				
-caResizeSideNav();
-			}); 
+		jQuery('#caColorbox').on('click', function(e) {
+			if (e.altKey) {
+				jQuery('#inspectorMedia').slideToggle(200, function() { 
+					inspectorCookieJar.set('inspectorShowMediaIsOpen', (this.style.display == 'block') ? 1 : 0); 
+						caResizeSideNav();
+				}); 
+			}
 			return false;
 		});
 					";
@@ -1432,7 +1445,6 @@ caResizeSideNav();
 			}
 
 			$vs_buf .= "</script>\n";
-			TooltipManager::addFunction("#inspectorShowMedia", "return (jQuery('#inspectorMedia').is(':visible')) ? '".addslashes(_t('Hide media'))."' : '".addslashes(_t('Show media'))."';");
 		}
 
         $o_app_plugin_manager = new ApplicationPluginManager();
@@ -1501,7 +1513,8 @@ caResizeSideNav();
 			if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}")) {
 				
 				$vs_buf .= "<div id='inspectorChangeType'><div id='inspectorChangeTypeButton'><a href='#' onclick='caTypeChangePanel.showPanel(); return false;'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_CHANGE__, array('title' => _t('Change type')))."</a></div></div>\n";
-				
+				TooltipManager::add("#inspectorChangeType", _t('Change Record Type')); 
+
 				$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
 				$vo_change_type_view->setVar('t_item', $t_item);
 				$vo_change_type_view->setVar('t_set', $t_set);
@@ -1791,7 +1804,11 @@ caResizeSideNav();
 			if ($t_instance && ($vs_gotten_val = $t_instance->get($vs_proc_tag, $pa_options))) {
 				$ps_template = str_replace('^'.$vs_tag, $vs_gotten_val, $ps_template);
 			} else {
-				$ps_template = str_replace('^'.$vs_tag, isset($pa_values[$vs_proc_tag]) ? $pa_values[$vs_proc_tag] : '', $ps_template);
+				if (is_array($vs_val = isset($pa_values[$vs_proc_tag]) ? $pa_values[$vs_proc_tag] : '')) {
+					// If value is an array try to make a string of it
+					$vs_val = join(" ", $vs_val);
+				}
+				$ps_template = str_replace('^'.$vs_tag, $vs_val, $ps_template);
 			}
 		}
 		return $ps_template;
@@ -2109,6 +2126,13 @@ caResizeSideNav();
 					
 					$vs_tag = $vs_tag_proc;
 				}
+				
+				switch($vs_tag) {
+					case 'DATE':
+						$vs_format = urldecode(caGetOption('format', $va_tag_opts, 'm/d/Y'));
+						$va_proc_templates[$vn_i] = str_replace("^{$vs_tag}", date($vs_format), $va_proc_templates[$vn_i]);
+						break;
+				}
 			
 				$pa_options = array_merge($pa_options, $va_tag_opts);
 				
@@ -2127,6 +2151,8 @@ caResizeSideNav();
 					
 					if (isset($va_relationship_value_array[$vs_tag]) && !(isset($pa_options['showHierarchicalLabels']) && $pa_options['showHierarchicalLabels'] && ($vs_tag == 'label'))) {
 						$va_val = array($vs_val = $va_relationship_value_array[$vs_tag]);
+					} elseif (isset($va_relationship_value_array[$vs_tag])) {
+						$va_val = array($vs_val = $va_relationship_value_array[$vs_tag]);
 					} else {
 						if (isset($va_related_values[$vs_pk_val][$vs_tag])) {
 							$va_val = array($vs_val = $va_related_values[$vs_pk_val][$vs_tag]);
@@ -2134,7 +2160,26 @@ caResizeSideNav();
 							//
 							// see if this is a reference to a related table
 							//
-							if (($ps_tablename != $va_tmp[0]) && ($t_tmp = $o_dm->getInstanceByTableName($va_tmp[0], true))) {	// if the part of the tag before a "." (or the tag itself if there are no periods) is a related table then try to fetch it as related to the current record
+							if (in_array($vs_tag, array("relationship_typename", "relationship_type_id", "relationship_typecode", "relationship_type_code"))) {
+								$vb_is_related = true;
+								
+								switch($vs_tag) {
+									case 'relationship_typename':
+										$vs_spec = 'preferred_labels.'.((caGetOption('orientation', $pa_options, 'LTOR') == 'LTOR') ? 'typename' : 'typename_reverse');
+										break;
+									case 'relationship_type_id':
+										$vs_spec = 'type_id';
+										break;
+									case 'relationship_typecode':
+									case 'relationship_type_code':
+									default:
+										$vs_spec = 'type_code';
+										break;
+								}
+								
+								$vs_rel = $qr_res->get("ca_relationship_types.{$vs_spec}", array_merge($pa_options, $va_tag_opts, array('returnAsArray' => false)));
+								$va_val = array($vs_rel);
+							} elseif (($ps_tablename != $va_tmp[0]) && ($t_tmp = $o_dm->getInstanceByTableName($va_tmp[0], true))) {	// if the part of the tag before a "." (or the tag itself if there are no periods) is a related table then try to fetch it as related to the current record
 								if (isset($pa_options['placeholderPrefix']) && $pa_options['placeholderPrefix'] && ($va_tmp[0] != $pa_options['placeholderPrefix']) && (sizeof($va_tmp) == 1)) {
 									$vs_get_spec = array_shift($va_tmp).".".$pa_options['placeholderPrefix'];
 									if(sizeof($va_tmp) > 0) {
@@ -2960,7 +3005,7 @@ $ca_relationship_lookup_parse_cache = array();
 				}
 				
 				if (!isset($va_items[$va_relation[$vs_rel_pk]][$vs_rel_pk]) || !$va_items[$va_relation[$vs_rel_pk]][$vs_rel_pk]) {
-					$va_items[$va_relation[$vs_rel_pk]][$vs_rel_pk] = $va_relation[$vs_rel_pk];
+					$va_items[$va_relation[$vs_rel_pk]][$vs_rel_pk] = $va_items[$va_relation[$vs_rel_pk]]['id'] = $va_relation[$vs_rel_pk];
 				}
 				
 				if (!isset($va_items[$va_relation[$vs_rel_pk]]['_display']) || !$va_items[$va_relation[$vs_rel_pk]]['_display']) {
@@ -3305,12 +3350,10 @@ $ca_relationship_lookup_parse_cache = array();
 		}
 		
 		
-		if ($vn_datatype == 6) {
-			if (!($vs_user_currency = $po_request->user ? $po_request->user->getPreference('currency') : 'USD')) {
-				$vs_user_currency = 'USD';
-			}
+		if (!($vs_user_currency = $po_request->user ? $po_request->user->getPreference('currency') : 'USD')) {
+			$vs_user_currency = 'USD';
 		}
-		
+	
 		// Parse out tags and optional sub-elements from template
 		//		we have to pull each sub-element separately
 		//
@@ -3337,6 +3380,8 @@ $ca_relationship_lookup_parse_cache = array();
 				$va_subelements_to_process["{$vs_bundle_name}.{$vs_subelement}"] = $t_instance->_getElementDatatype($vs_subelement);
 			}
 		} else {
+			$va_tmp = explode(".", $vs_bundle_name);
+			if (sizeof($va_tmp) == 2) { $vs_bundle_name .= ".".array_pop($va_tmp); }
 			$va_subelements_to_process = array($vs_bundle_name => $vn_datatype);
 		}
 	
@@ -3364,63 +3409,83 @@ $ca_relationship_lookup_parse_cache = array();
 						$vs_value = $pr_res->get($vs_subelement);
 						break;
 					case 6:		// currency
-						$vs_value = $pr_res->get($vs_subelement, array('returnAsDecimalWithCurrencySpecifier' => true));
-						$vn_value = (float)caConvertCurrencyValue($vs_value, $vs_user_currency, array('numericValue' => true));
-						$va_tag_values[$vs_subelement]['SUM'] += $vn_value;
-						if (is_null($va_tag_values[$vs_subelement]['MIN']) || ($vn_value < $va_tag_values[$vs_subelement]['MIN'])) { $va_tag_values[$vs_subelement]['MIN'] = $vn_value; }
-						if (is_null($va_tag_values[$vs_subelement]['MAX']) || ($vn_value > $va_tag_values[$vs_subelement]['MAX'])) { $va_tag_values[$vs_subelement]['MAX'] = $vn_value; }
+						$va_values = $pr_res->get($vs_subelement, array('returnAsDecimalWithCurrencySpecifier' => true, 'returnAsArray' => true));
+						
+						if(is_array($va_values)) {
+							foreach($va_values as $vs_value) {
+								$vn_value = (float)caConvertCurrencyValue($vs_value, $vs_user_currency, array('numericValue' => true));
+						
+								$va_tag_values[$vs_subelement]['SUM'] += $vn_value;
+								if (is_null($va_tag_values[$vs_subelement]['MIN']) || ($vn_value < $va_tag_values[$vs_subelement]['MIN'])) { $va_tag_values[$vs_subelement]['MIN'] = $vn_value; }
+								if (is_null($va_tag_values[$vs_subelement]['MAX']) || ($vn_value > $va_tag_values[$vs_subelement]['MAX'])) { $va_tag_values[$vs_subelement]['MAX'] = $vn_value; }
 					
-						if (($vn_c >= $pn_page_start) && ($vn_c <= $pn_page_end)) {
-							$va_tag_values[$vs_subelement]['PAGESUM'] += $vn_value;
-							if (is_null($va_tag_values[$vs_subelement]['PAGEMIN']) || ($vn_value < $va_tag_values[$vs_subelement]['PAGEMIN'])) { $va_tag_values[$vs_subelement]['PAGEMIN'] = $vn_value; }
-							if (is_null($va_tag_values[$vs_subelement]['PAGEMAX']) || ($vn_value > $va_tag_values[$vs_subelement]['PAGEMAX'])) { $va_tag_values[$vs_subelement]['PAGEMAX'] = $vn_value; }
-							$vn_page_len++;
+								if (($vn_c >= $pn_page_start) && ($vn_c <= $pn_page_end)) {
+									$va_tag_values[$vs_subelement]['PAGESUM'] += $vn_value;
+									if (is_null($va_tag_values[$vs_subelement]['PAGEMIN']) || ($vn_value < $va_tag_values[$vs_subelement]['PAGEMIN'])) { $va_tag_values[$vs_subelement]['PAGEMIN'] = $vn_value; }
+									if (is_null($va_tag_values[$vs_subelement]['PAGEMAX']) || ($vn_value > $va_tag_values[$vs_subelement]['PAGEMAX'])) { $va_tag_values[$vs_subelement]['PAGEMAX'] = $vn_value; }
+									$vn_page_len++;
+								}
+							}
 						}
-					
 						break;
 					case 8:		// length
 					case 9:		// weight
-						$vn_value = (float)$vs_value = $pr_res->get($vs_subelement, array('returnAsDecimalMetric' => true));
-						$va_tag_values[$vs_subelement]['SUM'] += $vn_value;
-						if (is_null($va_tag_values[$vs_subelement]['MIN']) || ($vn_value < $va_tag_values[$vs_subelement]['MIN'])) { $va_tag_values[$vs_subelement]['MIN'] = $vn_value; }
-						if (is_null($va_tag_values[$vs_subelement]['MAX']) || ($vn_value > $va_tag_values[$vs_subelement]['MAX'])) { $va_tag_values[$vs_subelement]['MAX'] = $vn_value; }
+						$va_values = $pr_res->get($vs_subelement, array('returnAsDecimalMetric' => true, 'returnAsArray' => true));
+						
+						if(is_array($va_values)) {
+							foreach($va_values as $vs_value) {
+								$vn_value = (float)$vs_value;
+								$va_tag_values[$vs_subelement]['SUM'] += $vn_value;
+								if (is_null($va_tag_values[$vs_subelement]['MIN']) || ($vn_value < $va_tag_values[$vs_subelement]['MIN'])) { $va_tag_values[$vs_subelement]['MIN'] = $vn_value; }
+								if (is_null($va_tag_values[$vs_subelement]['MAX']) || ($vn_value > $va_tag_values[$vs_subelement]['MAX'])) { $va_tag_values[$vs_subelement]['MAX'] = $vn_value; }
 					
-						if (($vn_c >= $pn_page_start) && ($vn_c <= $pn_page_end)) {
-							$va_tag_values[$vs_subelement]['PAGESUM'] += $vn_value;
-							if (is_null($va_tag_values[$vs_subelement]['PAGEMIN']) || ($vn_value < $va_tag_values[$vs_subelement]['PAGEMIN'])) { $va_tag_values[$vs_subelement]['PAGEMIN'] = $vn_value; }
-							if (is_null($va_tag_values[$vs_subelement]['PAGEMAX']) || ($vn_value > $va_tag_values[$vs_subelement]['PAGEMAX'])) { $va_tag_values[$vs_subelement]['PAGEMAX'] = $vn_value; }
-							$vn_page_len++;
+								if (($vn_c >= $pn_page_start) && ($vn_c <= $pn_page_end)) {
+									$va_tag_values[$vs_subelement]['PAGESUM'] += $vn_value;
+									if (is_null($va_tag_values[$vs_subelement]['PAGEMIN']) || ($vn_value < $va_tag_values[$vs_subelement]['PAGEMIN'])) { $va_tag_values[$vs_subelement]['PAGEMIN'] = $vn_value; }
+									if (is_null($va_tag_values[$vs_subelement]['PAGEMAX']) || ($vn_value > $va_tag_values[$vs_subelement]['PAGEMAX'])) { $va_tag_values[$vs_subelement]['PAGEMAX'] = $vn_value; }
+									$vn_page_len++;
+								}
+							}
 						}
 						break;
 					case 10:	// timecode
-						$vs_value = $pr_res->get($vs_subelement, array('returnAsDecimal' => true));
+						$va_values = $pr_res->get($vs_subelement, array('returnAsDecimal' => true, 'returnAsArray' => true));
 						
-						$va_tag_values[$vs_subelement]['SUM'] += $vn_value;
-						if (is_null($vn_min) || ($vn_value < $vn_min)) { $vn_min = $vn_value; }
-						if (is_null($vn_max) || ($vn_value > $vn_max)) { $vn_max = $vn_value; }
+						if(is_array($va_values)) {
+							foreach($va_values as $vn_value) {
+								$va_tag_values[$vs_subelement]['SUM'] += $vn_value;
+								if (is_null($vn_min) || ($vn_value < $vn_min)) { $vn_min = $vn_value; }
+								if (is_null($vn_max) || ($vn_value > $vn_max)) { $vn_max = $vn_value; }
 					
-						if (($vn_c >= $pn_page_start) && ($vn_c <= $pn_page_end)) {
-							$va_tag_values[$vs_subelement]['PAGESUM'] += $vn_value;
-							if (is_null($vn_page_min) || ($vn_value < $vn_page_min)) { $vn_page_min = $vn_value; }
-							if (is_null($vn_page_max) || ($vn_value > $vn_page_max)) { $vn_page_max = $vn_value; }
-							$vn_page_len++;
+								if (($vn_c >= $pn_page_start) && ($vn_c <= $pn_page_end)) {
+									$va_tag_values[$vs_subelement]['PAGESUM'] += $vn_value;
+									if (is_null($vn_page_min) || ($vn_value < $vn_page_min)) { $vn_page_min = $vn_value; }
+									if (is_null($vn_page_max) || ($vn_value > $vn_page_max)) { $vn_page_max = $vn_value; }
+									$vn_page_len++;
+								}
+							}
 						}
 						$vb_has_timecode = true;
 						break;
 					case 11:	// integer
 					case 12:	// numeric (decimal)
 					default:
-						$vn_value = (float)$pr_res->get($vs_subelement);
+						$va_values = $pr_res->get($vs_subelement, array('returnAsArray' => true));
 						
-						$va_tag_values[$vs_subelement]['SUM'] += $vn_value;
-						if (is_null($vn_min) || ($vn_value < $vn_min)) { $vn_min = $vn_value; }
-						if (is_null($vn_max) || ($vn_value > $vn_max)) { $vn_max = $vn_value; }
+						if(is_array($va_values)) {
+							foreach($va_values as $vs_value) {
+								$vn_value = (float)$vs_value;
+								$va_tag_values[$vs_subelement]['SUM'] += $vn_value;
+								if (is_null($vn_min) || ($vn_value < $vn_min)) { $vn_min = $vn_value; }
+								if (is_null($vn_max) || ($vn_value > $vn_max)) { $vn_max = $vn_value; }
 					
-						if (($vn_c >= $pn_page_start) && ($vn_c <= $pn_page_end)) {
-							$va_tag_values[$vs_subelement]['PAGESUM'] += $vn_value;
-							if (is_null($vn_page_min) || ($vn_value < $vn_page_min)) { $vn_page_min = $vn_value; }
-							if (is_null($vn_page_max) || ($vn_value > $vn_page_max)) { $vn_page_max = $vn_value; }
-							$vn_page_len++;
+								if (($vn_c >= $pn_page_start) && ($vn_c <= $pn_page_end)) {
+									$va_tag_values[$vs_subelement]['PAGESUM'] += $vn_value;
+									if (is_null($vn_page_min) || ($vn_value < $vn_page_min)) { $vn_page_min = $vn_value; }
+									if (is_null($vn_page_max) || ($vn_value > $vn_page_max)) { $vn_page_max = $vn_value; }
+									$vn_page_len++;
+								}
+							}
 						}
 						break;
 					default:

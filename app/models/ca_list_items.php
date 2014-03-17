@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -198,6 +198,22 @@ BaseModel::$s_ca_models_definitions['ca_list_items'] = array(
  				'IS_NULL' => false, 
  				'DEFAULT' => 0,
  				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if list item is deleted or not.')
+		),
+		'source_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'LIST_CODE' => 'list_item_sources',
+				'LABEL' => _t('Source'), 'DESCRIPTION' => _t('Administrative source of list item. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed.')
+		),
+		'source_info' => array(
+				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => 'Source information', 'DESCRIPTION' => 'Serialized array used to store source information for list item information retrieved via web services [NOT IMPLEMENTED YET].'
 		)
  	)
 );
@@ -310,6 +326,12 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	# ------------------------------------------------------
 	protected $ATTRIBUTE_TYPE_ID_FLD = 'type_id';					// name of type field for this table - attributes system uses this to determine via ca_metadata_type_restrictions which attributes are applicable to rows of the given type
 	protected $ATTRIBUTE_TYPE_LIST_CODE = 'list_item_types';		// list code (ca_lists.list_code) of list defining types for this table
+
+	# ------------------------------------------------------
+	# Sources
+	# ------------------------------------------------------
+	protected $SOURCE_ID_FLD = 'source_id';					// name of source field for this table
+	protected $SOURCE_LIST_CODE = 'list_item_sources';		// list code (ca_lists.list_code) of list defining sources for this table
 	
 	# ------------------------------------------------------
 	# Labels
@@ -604,6 +626,24 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		}
 		return $va_sorted_hierarchies;
 	 }
+	 # ------------------------------------------------------------------
+	/**
+	 * Set field value(s) for the table row represented by this object
+	 *
+	 */
+	public function set($pa_fields, $pm_value="", $pa_options=null) {
+		if(!is_array($pa_fields)) {
+			$pa_fields = array($pa_fields => $pm_value);
+		}
+		
+		foreach($pa_fields as $vs_field => $vm_value) {
+			if(($vs_field == 'list_id') && (!is_numeric($vm_value)) && ($vn_list_id = caGetListID($vm_value))) {
+				$pa_fields[$vs_field] = $vn_list_id;
+			}
+		}
+
+		return parent::set($pa_fields, null, $pa_options);
+	}
 	 # ------------------------------------------------------
 	 /**
 	 * Returns name of hierarchy for currently loaded item or, if specified, item with item_id = to optional $pn_id parameter
@@ -619,94 +659,6 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	 	
 	 	return $t_list->getLabelForDisplay(false);
 	 }
-	 # ------------------------------------------------------
-	/**
-	 * Returns a flat list of all items in the specified list referenced by items in the specified table
-	 * (and optionally a search on that table)
-	 */
-	public function getReferenced($pm_table_num_or_name, $pn_type_id=null, $pa_reference_limit_ids=null, $pn_access=null, $pn_restrict_to_relationship_hierarchy_id=null) {
-		if (is_numeric($pm_table_num_or_name)) {
-			$vs_table_name = $this->getAppDataModel()->getTableName($pm_table_num_or_name);
-		} else {
-			$vs_table_name = $pm_table_num_or_name;
-		}
-		
-		if (!($t_ref_table = $this->getAppDatamodel()->getInstanceByTableName($vs_table_name, true))) {
-			return null;
-		}
-		
-		
-		if (!$vs_table_name) { return null; }
-		
-		$o_db = $this->getDb();
-		$va_path = $this->getAppDatamodel()->getPath($this->tableName(), $vs_table_name);
-		array_shift($va_path); // remove table name from path
-		
-		$vs_last_table = $this->tableName();
-		$va_joins = array();
-		foreach($va_path as $vs_rel_table_name => $vn_rel_table_num) {
-			$va_rels = $this->getAppDatamodel()->getRelationships($vs_last_table, $vs_rel_table_name);
-			$va_rel = $va_rels[$vs_last_table][$vs_rel_table_name][0];
-			
-			
-			$va_joins[] = "INNER JOIN {$vs_rel_table_name} ON {$vs_last_table}.".$va_rel[0]." = {$vs_rel_table_name}.".$va_rel[1];
-			
-			$vs_last_table = $vs_rel_table_name;
-		}
-		
-		$va_sql_wheres = array();
-		if (is_array($pa_reference_limit_ids) && sizeof($pa_reference_limit_ids)) {
-			$va_sql_wheres[] = "({$vs_table_name}.".$t_ref_table->primaryKey()." IN (".join(',', $pa_reference_limit_ids)."))";
-		}
-		
-		if (!is_null($pn_access)) {
-			$va_sql_wheres[] = "({$vs_table_name}.access = ".intval($pn_access).")";
-		}
-		
-		if ($pn_restrict_to_relationship_hierarchy_id > 0) {
-			$va_sql_wheres[] = "(ca_list_items.list_id = {$pn_restrict_to_relationship_hierarchy_id})";
-		}
-		
-		// get item counts
-		$vs_sql = "
-			SELECT ca_list_items.item_id, count(*) cnt
-			FROM ca_list_items
-			".join("\n", $va_joins)."
-			".(sizeof($va_sql_wheres) ? " WHERE ".join(' AND ', $va_sql_wheres) : "")."
-			GROUP BY
-				ca_list_items.item_id, {$vs_table_name}.".$t_ref_table->primaryKey()."
-		";
-		$qr_items = $o_db->query($vs_sql);
-		
-		$va_item_counts = array();
-		while($qr_items->nextRow()) {
-			$va_item_counts[$qr_items->get('item_id')]++;
-		}
-		
-		$vs_sql = "
-			SELECT ca_list_items.item_id, ca_list_items.idno, ca_list_item_labels.*, count(*) c
-			FROM ca_list_items
-			INNER JOIN ca_list_item_labels ON ca_list_item_labels.item_id = ca_list_items.item_id
-			".join("\n", $va_joins)."
-			WHERE
-				(ca_list_item_labels.is_preferred = 1)
-				".(sizeof($va_sql_wheres) ? " AND ".join(' AND ', $va_sql_wheres) : "")."
-			GROUP BY
-				ca_list_item_labels.label_id
-			ORDER BY 
-				ca_list_item_labels.name_plural
-		";
-		
-		$qr_items = $o_db->query($vs_sql);
-		
-		$va_items = array();
-		while($qr_items->nextRow()) {
-			$vn_item_id = $qr_items->get('item_id');
-			$va_items[$vn_item_id][$qr_items->get('locale_id')] = array_merge($qr_items->getRow(), array('cnt' => $va_item_counts[$vn_item_id]));
-		}
-		
-		return caExtractValuesByUserLocale($va_items);
-	}
 	# ------------------------------------------------------
 	/**
 	 * Override standard implementation to insert list_code for current list_id into returned data. The list_code is required for consumers of export data
@@ -722,49 +674,6 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		$va_data['list_code'] = $t_list->get('list_code');
 		
 		return $va_data;	
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public function getListItemIDsByName($pn_list_id, $ps_name, $pn_parent_id=null, $pn_type_id=null) {
-		$o_db = $this->getDb();
-		
-		$va_params = array((int)$pn_list_id, (string)$ps_name, (string)$ps_name);
-		
-		$vs_type_sql = '';
-		if ($pn_type_id) {
-			if(sizeof($va_type_ids = caMakeTypeIDList('ca_list_items', array($pn_type_id)))) {
-				$vs_type_sql = " AND cap.type_id IN (?)";
-				$va_params[] = $va_type_ids;
-			}
-		}
-		
-		if ($pn_parent_id) {
-			$vs_parent_sql = " AND cap.parent_id = ?";
-			$va_params[] = (int)$pn_parent_id;
-		} 
-		
-		$qr_res = $o_db->query("
-			SELECT DISTINCT cap.item_id
-			FROM ca_list_items cap
-			INNER JOIN ca_list_item_labels AS capl ON capl.item_id = cap.item_id
-			WHERE
-				cap.list_id = ? AND (capl.name_singular = ? OR capl.name_plural = ?) {$vs_type_sql} {$vs_parent_sql} AND cap.deleted = 0
-		", $va_params);
-		
-		$va_item_ids = array();
-		while($qr_res->nextRow()) {
-			$va_item_ids[] = $qr_res->get('item_id');
-		}
-		return $va_item_ids;
-	}
-	# ------------------------------------------------------
-	/**
-	 * @param array $pa_label_values
-	 */
-	public function getIDsByLabel($pa_label_values, $pn_parent_id=null, $pn_type_id=null) {
-		return $this->getListItemIDsByName($pa_label_values['list_id'], $pa_label_values['name_plural'], $pn_parent_id, $pn_type_id);
 	}
 	# ------------------------------------------------------
  	/**

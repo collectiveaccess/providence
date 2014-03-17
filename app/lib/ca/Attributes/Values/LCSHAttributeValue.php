@@ -206,7 +206,7 @@
 					);
 				} else {
 					$ps_value = str_replace(array("‘", "’", "“", "”"), array("'", "'", '"', '"'), $ps_value);
-					$vs_service_url = "http://id.loc.gov/authorities/label/".rawurlencode($ps_value);
+					$vs_service_url = "http://id.loc.gov/authorities/".rawurlencode($ps_value);
 					$o_client = new Zend_Http_Client($vs_service_url);
 					$o_client->setConfig(array(
 						'maxredirects' => 0,
@@ -222,7 +222,7 @@
 					$vn_status = $o_response->getStatus();
 					$va_headers = $o_response->getHeaders();
 					
-					if (($vn_status == 302) && (isset($va_headers['X-preflabel'])) && $va_headers['X-preflabel']) {
+					if (($vn_status >= 300) && ($vn_status <= 399) && (isset($va_headers['X-preflabel'])) && $va_headers['X-preflabel']) {
 						$vs_url = $va_headers['Location'];
 						$va_url = explode("/", $vs_url);
 						$vs_id = array_pop($va_url);

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -57,6 +57,7 @@
  			
  			JavascriptLoadManager::register('bundleListEditorUI');
  			JavascriptLoadManager::register('panel');
+ 			JavascriptLoadManager::register('openlayers');
  			
  			$this->opo_datamodel = Datamodel::load();
  			$this->opo_app_plugin_manager = new ApplicationPluginManager();
@@ -90,11 +91,29 @@
  			$va_restrict_to_types = null;
  			if ($t_subject->getAppConfig()->get('perform_type_access_checking')) {
  				$va_restrict_to_types = caGetTypeRestrictionsForUser($this->ops_table_name, array('access' => $vn_subject_id ? __CA_BUNDLE_ACCESS_READONLY__ : __CA_BUNDLE_ACCESS_EDIT__));
- 			}
- 			if (is_array($va_restrict_to_types) && !in_array($t_subject->get('type_id'), $va_restrict_to_types)) {
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2560?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
+ 			
+				if (is_array($va_restrict_to_types) && !in_array($t_subject->get('type_id'), $va_restrict_to_types)) {
+					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2560?r='.urlencode($this->request->getFullUrlPath()));
+					return;
+				}
+			}
+ 			
+ 			//
+ 			// Is record from correct source?
+ 			// 
+ 			$va_restrict_to_sources = null;
+ 			if ($t_subject->getAppConfig()->get('perform_source_access_checking')) {
+ 				$va_restrict_to_sources = caGetSourceRestrictionsForUser($this->ops_table_name, array('access' => $vn_subject_id ? __CA_BUNDLE_ACCESS_READONLY__ : __CA_BUNDLE_ACCESS_EDIT__));
+ 			
+ 				if (!$t_subject->get('source_id')) {
+ 					$t_subject->set('source_id', $t_subject->getDefaultSourceID(array('request' => $this->request)));
+ 				}
+ 			
+				if (is_array($va_restrict_to_sources) && !in_array($t_subject->get('source_id'), $va_restrict_to_sources)) {
+					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2562?r='.urlencode($this->request->getFullUrlPath()));
+					return;
+				}
+			}
  			
  			//
  			// Does user have access to row?
@@ -355,7 +374,7 @@
  				}
  			} else {
 				$this->notification->addNotification($vs_message, __NOTIFICATION_TYPE_INFO__);	
- 				$this->opo_result_context->invalidateCache();
+ 				$this->opo_result_context->invalidateCache();	// force new search in case changes have removed this item from the results
   				$this->opo_result_context->saveContext();
  			}
  			# trigger "SaveItem" hook 
@@ -1134,7 +1153,6 @@
 			if (!in_array($ps_version, $va_versions)) { 
 				if (!($ps_version = $va_rep_display_info['display_version'])) { $ps_version = null; }
 			}
-			print "v=$ps_version";
 			$o_view->setVar('version', $ps_version);
 			$o_view->setVar('version_info', $t_attr_val->getMediaInfo('value_blob', $ps_version));
 			$o_view->setVar('version_type', $t_media->getMimetypeTypename($t_attr_val->getMediaInfo('value_blob', $ps_version, 'MIMETYPE')));

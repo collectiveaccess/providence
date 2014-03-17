@@ -53,6 +53,7 @@
 		 * @return array An array of information about the linked representations
 		 */
 		public function getRepresentations($pa_versions=null, $pa_version_sizes=null, $pa_options=null) {
+			global $AUTH_CURRENT_USER_ID;
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
 			if (!is_array($pa_options)) { $pa_options = array(); }
 		
@@ -99,6 +100,10 @@
 			$t_rep = new ca_object_representations();
 			while($qr_reps->nextRow()) {
 				$vn_rep_id = $qr_reps->get('representation_id');
+
+				if($AUTH_CURRENT_USER_ID) { // this might not be set if this method is accessed via CLI script
+					if(!caCanRead($AUTH_CURRENT_USER_ID, 'ca_object_representations', $vn_rep_id)){ continue; }	
+				}
 			
 				$va_tmp = $qr_reps->getRow();
 				$va_tmp['tags'] = array();
@@ -408,6 +413,7 @@
 		 *		original_filename - the name of the file being uploaded; will be recorded in the database and used as the filename when the file is subsequently downloaded
 		 *		rank - a numeric rank used to order the representations when listed
 		 *		returnRepresentation = if set the newly created ca_object_representations instance is returned rather than the link_id of the newly created relationship record
+		 *		matchOn = 
 		 *
 		 * @return mixed Returns primary key (link_id) of the relatipnship row linking the newly created representation to the item; if the 'returnRepresentation' is set then an instance for the newly created ca_object_representations is returned instead; boolean false is returned on error
 		 */
@@ -415,59 +421,85 @@
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
 			if (!$pn_locale_id) { $pn_locale_id = ca_locales::getDefaultCataloguingLocaleID(); }
 		
+		
 			$t_rep = new ca_object_representations();
 		
 			if ($this->inTransaction()) {
 				$o_trans = $this->getTransaction();
 				$t_rep->setTransaction($o_trans);
 			}
-		
-			$t_rep->setMode(ACCESS_WRITE);
-			$t_rep->set('type_id', $pn_type_id);
-			$t_rep->set('locale_id', $pn_locale_id);
-			$t_rep->set('status', $pn_status);
-			$t_rep->set('access', $pn_access);
-			$t_rep->set('media', $ps_media_path, $pa_options);
-		
-		
-			if (is_array($pa_values)) {
-				if (isset($pa_values['idno'])) {
-					$t_rep->set('idno', $pa_values['idno']);
+			
+			$vn_rep_id = null;
+			if(is_array($va_match_on = caGetOption('matchOn', $pa_options, null))) {
+				$va_ids = null;
+				foreach($va_match_on as $vs_match_on) {
+					switch($vs_match_on) {
+						case 'idno':
+							if (!trim($pa_values['idno'])) { break; }
+							$va_ids = ca_object_representations::find(array('idno' => trim($pa_values['idno'])), array('returnAs' => 'ids'));
+							break;
+						case 'label':
+							if (!trim($pa_values['preferred_labels']['name'])) { break; }
+							$va_ids = ca_object_representations::find(array('preferred_labels' => array('name' => trim($pa_values['preferred_labels']['name']))), array('returnAs' => 'ids'));
+							break;
+					}
+					if(is_array($va_ids) && sizeof($va_ids)) { 
+						$vn_rep_id = array_shift($va_ids);
+						break; 
+					}
+					
 				}
-				foreach($pa_values as $vs_element => $va_value) { 					
-					if (is_array($va_value)) {
-						// array of values (complex multi-valued attribute)
-						$t_rep->addAttribute(
-							array_merge($va_value, array(
-								'locale_id' => $pn_locale_id
-							)), $vs_element);
-					} else {
-						// scalar value (simple single value attribute)
-						if ($va_value) {
-							$t_rep->addAttribute(array(
-								'locale_id' => $pn_locale_id,
-								$vs_element => $va_value
-							), $vs_element);
+			}
+			
+			if (!$vn_rep_id) {
+				$t_rep->setMode(ACCESS_WRITE);
+				$t_rep->set('type_id', $pn_type_id);
+				$t_rep->set('locale_id', $pn_locale_id);
+				$t_rep->set('status', $pn_status);
+				$t_rep->set('access', $pn_access);
+				$t_rep->set('media', $ps_media_path, $pa_options);
+		
+				if (is_array($pa_values)) {
+					if (isset($pa_values['idno'])) {
+						$t_rep->set('idno', $pa_values['idno']);
+					}
+					foreach($pa_values as $vs_element => $va_value) { 					
+						if (is_array($va_value)) {
+							// array of values (complex multi-valued attribute)
+							$t_rep->addAttribute(
+								array_merge($va_value, array(
+									'locale_id' => $pn_locale_id
+								)), $vs_element);
+						} else {
+							// scalar value (simple single value attribute)
+							if ($va_value) {
+								$t_rep->addAttribute(array(
+									'locale_id' => $pn_locale_id,
+									$vs_element => $va_value
+								), $vs_element);
+							}
 						}
 					}
 				}
-			}
 		
-			$t_rep->insert();
+				$t_rep->insert();
 		
-			if ($t_rep->numErrors()) {
-				$this->errors = array_merge($this->errors, $t_rep->errors());
-				return false;
-			}
-			
-			if ($t_rep->getPreferredLabelCount() == 0) {
-				$vs_label = (isset($pa_values['name']) && $pa_values['name']) ? $pa_values['name'] : '['._t('BLANK').']';
-			
-				$t_rep->addLabel(array('name' => $vs_label), $pn_locale_id, null, true);
 				if ($t_rep->numErrors()) {
 					$this->errors = array_merge($this->errors, $t_rep->errors());
 					return false;
 				}
+			
+				if ($t_rep->getPreferredLabelCount() == 0) {
+					$vs_label = (isset($pa_values['name']) && $pa_values['name']) ? $pa_values['name'] : '['._t('BLANK').']';
+			
+					$t_rep->addLabel(array('name' => $vs_label), $pn_locale_id, null, true);
+					if ($t_rep->numErrors()) {
+						$this->errors = array_merge($this->errors, $t_rep->errors());
+						return false;
+					}
+				}
+			} else {
+				$t_rep->load($vn_rep_id);
 			}
 			
 			if (!($t_oxor = $this->_getRepresentationRelationshipTableInstance())) { return null; }
@@ -488,10 +520,10 @@
 		
 			if ($t_oxor->numErrors()) {
 				$this->errors = array_merge($this->errors, $t_oxor->errors());
-				$t_rep->delete();
-				if ($t_rep->numErrors()) {
-					$this->errors = array_merge($this->errors, $t_rep->errors());
-				}
+				//$t_rep->delete();
+				//if ($t_rep->numErrors()) {
+				//	$this->errors = array_merge($this->errors, $t_rep->errors());
+				//}
 				return false;
 			}
 			

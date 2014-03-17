@@ -100,12 +100,24 @@
 		 *
 		 */
 		public static function parsePlaceholder($ps_placeholder, $pa_source_data, $pa_item, $ps_delimiter=null, $pn_index=0, $pa_options=null) {
+			$o_reader = caGetOption('reader', $pa_options, null);
+			
 			$ps_placeholder = trim($ps_placeholder);
+			$vs_key = substr($ps_placeholder, 1);
+			
 			if ($ps_placeholder[0] == '^') {
-				if (!isset($pa_source_data[substr($ps_placeholder, 1)])) { return null; }
-				$vm_val = $pa_source_data[substr($ps_placeholder, 1)];
+				if ($o_reader) {
+					$vm_val = $o_reader->get($vs_key, array('returnAsArray' => true));
+				} else {
+					if (!isset($pa_source_data[substr($ps_placeholder, 1)])) { return null; }
+					$vm_val = $pa_source_data[substr($ps_placeholder, 1)];
+				}
 			} else {
 				$vm_val = $ps_placeholder;
+			}
+			
+			if (is_array($vm_val) && !is_null($pn_index)) {
+				$vm_val = isset($vm_val[$pn_index]) ? $vm_val[$pn_index] : null;
 			}
 			
 			if(is_array($vm_val)) {
@@ -115,6 +127,8 @@
 					}
 					$vm_val[$vn_i] = trim($vs_val);
 				}
+				
+				$vm_val = caProcessImportItemSettingsForValue($vm_val, $pa_item['settings']);
 				
 				if (caGetOption("returnAsString", $pa_options, false)) {
 					$vs_delimiter = caGetOption("delimiter", $pa_options, '');
@@ -136,6 +150,8 @@
 			if (is_array($pa_item['settings']['original_values']) && (($vn_i = array_search(mb_strtolower($vm_val), $pa_item['settings']['original_values'])) !== false)) {
 				$vm_val = $pa_item['settings']['replacement_values'][$vn_i];
 			}
+			
+			$vm_val = caProcessImportItemSettingsForValue($vm_val, $pa_item['settings']);
 			
 			return trim($vm_val);
 		}

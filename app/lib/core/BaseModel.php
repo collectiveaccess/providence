@@ -1156,7 +1156,13 @@ class BaseModel extends BaseObject {
 						if ($vs_cur_value != $vm_value) {
 							$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 						}
-
+						
+						
+						if (($vs_field == $this->HIERARCHY_PARENT_ID_FLD) && (!is_numeric($vm_value))) {
+							if(is_array($va_ids = call_user_func_array($this->tableName()."::find", array(array('idno' => $vm_value, 'deleted' => 0), array('returnAs' => 'ids'))))) {
+								$vm_value = array_shift($va_ids);
+							}
+						}
 						if (($vm_value !== "") || ($this->getFieldInfo($vs_field, "IS_NULL") && ($vm_value == ""))) {
 							if ($vm_value) {
 								if (($vs_list_code = $this->getFieldInfo($vs_field, "LIST_CODE")) && (!is_numeric($vm_value))) {	// translate ca_list_item idno's into item_ids if necessary
@@ -8809,7 +8815,6 @@ $pa_options["display_form_field_tips"] = true;
 				$va_to_reindex_relations[(int)$qr_res->get('relation_id')] = $qr_res->getRow();	
 			}
 			if (!sizeof($va_to_reindex_relations)) { return 0; }
-			print_r($va_to_reindex_relations);
 			$va_new_relations = array();
 			foreach($va_to_reindex_relations as $vn_relation_id => $va_row) {
 				$t_item_rel->clear();
@@ -9909,9 +9914,15 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		if (method_exists($this, 'getTypeFieldName') && ($vs_type_field_name = $this->getTypeFieldName())) {
-			$va_types = caMergeTypeRestrictionLists($this, $pa_options);
-			if (is_array($va_types) && sizeof($va_types)) {
-				$va_wheres[] = 't.'.$vs_type_field_name.' IN ('.join(',', $va_types).')';
+			$va_type_ids = caMergeTypeRestrictionLists($this, $pa_options);
+			if (is_array($va_type_ids) && sizeof($va_type_ids)) {
+				$va_wheres[] = 't.'.$vs_type_field_name.' IN ('.join(',', $va_type_ids).')';
+			}
+		}
+		if (method_exists($this, 'getSourceFieldName') && ($vs_source_id_field_name = $this->getSourceFieldName())) {
+			$va_source_ids = caMergeSourceRestrictionLists($this, $pa_options);
+			if (is_array($va_source_ids) && sizeof($va_source_ids)) {
+				$va_wheres[] = 't.'.$vs_source_id_field_name.' IN ('.join(',', $va_source_ids).')';
 			}
 		}
 		
@@ -9976,9 +9987,16 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		if (method_exists($this, 'getTypeFieldName') && ($vs_type_field_name = $this->getTypeFieldName())) {
-			$va_types = caMergeTypeRestrictionLists($this, $pa_options);
-			if (is_array($va_types) && sizeof($va_types)) {
-				$va_wheres[] = 't.'.$vs_type_field_name.' IN ('.join(',', $va_types).')';
+			$va_type_ids = caMergeTypeRestrictionLists($this, $pa_options);
+			if (is_array($va_type_ids) && sizeof($va_type_ids)) {
+				$va_wheres[] = 't.'.$vs_type_field_name.' IN ('.join(',', $va_type_ids).')';
+			}
+		}
+		
+		if (method_exists($this, 'getSourceFieldName') && ($vs_source_id_field_name = $this->getSourceFieldName())) {
+			$va_source_ids = caMergeSourceRestrictionLists($this, $pa_options);
+			if (is_array($va_source_ids) && sizeof($va_source_ids)) {
+				$va_wheres[] = 't.'.$vs_source_id_field_name.' IN ('.join(',', $va_source_ids).')';
 			}
 		}
 		
@@ -10059,9 +10077,16 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		if (method_exists($this, 'getTypeFieldName') && ($vs_type_field_name = $this->getTypeFieldName())) {
-			$va_types = caMergeTypeRestrictionLists($this, $pa_options);
-			if (is_array($va_types) && sizeof($va_types)) {
-				$va_wheres[] = 't.'.$vs_type_field_name.' IN ('.join(',', $va_types).')';
+			$va_type_ids = caMergeTypeRestrictionLists($this, $pa_options);
+			if (is_array($va_type_ids) && sizeof($va_type_ids)) {
+				$va_wheres[] = 't.'.$vs_type_field_name.' IN ('.join(',', $va_type_ids).')';
+			}
+		}
+		
+		if (method_exists($this, 'getSourceFieldName') && ($vs_source_id_field_name = $this->getSourceFieldName())) {
+			$va_source_ids = caMergeSourceRestrictionLists($this, $pa_options);
+			if (is_array($va_source_ids) && sizeof($va_source_ids)) {
+				$va_wheres[] = 't.'.$vs_source_id_field_name.' IN ('.join(',', $va_source_ids).')';
 			}
 		}
 		
@@ -10127,9 +10152,16 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		if (method_exists($this, 'getTypeFieldName') && ($vs_type_field_name = $this->getTypeFieldName())) {
-			$va_types = caMergeTypeRestrictionLists($this, $pa_options);
-			if (is_array($va_types) && sizeof($va_types)) {
-				$va_wheres[] = 't.'.$vs_type_field_name.' IN ('.join(',', $va_types).')';
+			$va_type_ids = caMergeTypeRestrictionLists($this, $pa_options);
+			if (is_array($va_type_ids) && sizeof($va_type_ids)) {
+				$va_wheres[] = 't.'.$vs_type_field_name.' IN ('.join(',', $va_type_ids).')';
+			}
+		}
+		
+		if (method_exists($this, 'getSourceFieldName') && ($vs_source_id_field_name = $this->getSourceFieldName())) {
+			$va_source_ids = caMergeSourceRestrictionLists($this, $pa_options);
+			if (is_array($va_source_ids) && sizeof($va_source_ids)) {
+				$va_wheres[] = 't.'.$vs_source_id_field_name.' IN ('.join(',', $va_source_ids).')';
 			}
 		}
 		$vs_join_sql = '';
@@ -10206,9 +10238,16 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		if (method_exists($this, 'getTypeFieldName') && ($vs_type_field_name = $this->getTypeFieldName())) {
-			$va_types = caMergeTypeRestrictionLists($this, $pa_options);
-			if (is_array($va_types) && sizeof($va_types)) {
-				$va_wheres[] = $vs_table_name.'.'.$vs_type_field_name.' IN ('.join(',', $va_types).')';
+			$va_type_ids = caMergeTypeRestrictionLists($this, $pa_options);
+			if (is_array($va_type_ids) && sizeof($va_type_ids)) {
+				$va_wheres[] = $vs_table_name.'.'.$vs_type_field_name.' IN ('.join(',', $va_type_ids).')';
+			}
+		}
+		
+		if (method_exists($this, 'getSourceFieldName') && ($vs_source_id_field_name = $this->getSourceFieldName())) {
+			$va_source_ids = caMergeSourceRestrictionLists($this, $pa_options);
+			if (is_array($va_source_ids) && sizeof($va_source_ids)) {
+				$va_wheres[] = $vs_table_name.'.'.$vs_source_id_field_name.' IN ('.join(',', $va_source_ids).')';
 			}
 		}
 		

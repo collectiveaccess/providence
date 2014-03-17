@@ -3873,6 +3873,7 @@ if (!$vb_batch) {
 		
 		$vs_related_table = $t_rel_item->tableName();
 		if ($t_rel_item->hasField('type_id')) { $va_selects[] = $vs_related_table.'.type_id item_type_id'; }
+		if ($t_rel_item->hasField('source_id')) { $va_selects[] = $vs_related_table.'.source_id item_source_id'; }
 		
 		// TODO: get these field names from models
 		if ($t_item_rel) {
@@ -3961,10 +3962,15 @@ if (!$vb_batch) {
 			$pa_options['restrict_to_types'][] = $pa_options['restrict_to_type'];
 		}
 		
-		$va_ids = caMergeTypeRestrictionLists($t_rel_item, $pa_options);
+		$va_type_ids = caMergeTypeRestrictionLists($t_rel_item, $pa_options);
 		
-		if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
-			$va_wheres[] = '('.$vs_related_table.'.type_id IN ('.join(',', $va_ids).'))';
+		if (is_array($va_type_ids) && (sizeof($va_type_ids) > 0)) {
+			$va_wheres[] = '('.$vs_related_table.'.type_id IN ('.join(',', $va_type_ids).'))';
+		}
+		
+		$va_source_ids = caMergeSourceRestrictionLists($t_rel_item, $pa_options);
+		if (($vs_source_id_fld = $t_rel_item->getSourceFieldName()) && is_array($va_source_ids) && (sizeof($va_source_ids) > 0)) {
+			$va_wheres[] = "({$vs_related_table}.{$vs_source_id_fld} IN (".join(',', $va_source_ids)."))";
 		}
 		
 		if (isset($pa_options['exclude_type']) && $pa_options['exclude_type']) {
@@ -3974,10 +3980,10 @@ if (!$vb_batch) {
 			$pa_options['exclude_types'][] = $pa_options['exclude_type'];
 		}
 		if (isset($pa_options['exclude_types']) && is_array($pa_options['exclude_types'])) {
-			$va_ids = caMakeTypeIDList($t_rel_item->tableName(), $pa_options['exclude_types']);
+			$va_type_ids = caMakeTypeIDList($t_rel_item->tableName(), $pa_options['exclude_types']);
 			
-			if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
-				$va_wheres[] = '('.$vs_related_table.'.type_id NOT IN ('.join(',', $va_ids).'))';
+			if (is_array($va_type_ids) && (sizeof($va_type_ids) > 0)) {
+				$va_wheres[] = '('.$vs_related_table.'.type_id NOT IN ('.join(',', $va_type_ids).'))';
 			}
 		}
 		
@@ -4567,9 +4573,10 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 * @param mixed $pm_rel_table_name_or_num The name or table number of the table for which to create the result set. Must be a searchable/browsable table
 	 * @param array $pa_ids List of primary key values to create result set for. Result set will contain specified keys in the order in which that are passed in the array.
+	 * @param array $pa_options Optional array of options to pass through to SearchResult::init()
 	 * @return SearchResult A search result of for the specified table
 	 */
-	public function makeSearchResult($pm_rel_table_name_or_num, $pa_ids) {
+	public function makeSearchResult($pm_rel_table_name_or_num, $pa_ids, $pa_options = null) {
 		if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
 		$pn_table_num = $this->getAppDataModel()->getTableNum($pm_rel_table_name_or_num);
 		if (!($t_instance = $this->getAppDataModel()->getInstanceByTableNum($pn_table_num))) { return null; }
@@ -4585,7 +4592,7 @@ $pa_options["display_form_field_tips"] = true;
 		require_once(__CA_LIB_DIR__.'/ca/Search/'.$vs_search_result_class.'.php');
 		$o_data = new WLPlugSearchEngineCachedResult($va_ids, $t_instance->tableNum());
 		$o_res = new $vs_search_result_class($t_instance->tableName());	// we pass the table name here so generic multi-table search classes such as InterstitialSearch know what table they're operating over
-		$o_res->init($o_data, array());
+		$o_res->init($o_data, array(), $pa_options);
 		
 		return $o_res;
 	}
@@ -5318,6 +5325,123 @@ $pa_options["display_form_field_tips"] = true;
 			}
 		}
 		return $t_rel;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Return array containing information about all hierarchies, including their root_id's
+	 * For non-adhoc hierarchies such as places, this call returns the contents of the place_hierarchies list
+	 * with some extra information such as the # of top-level items in each hierarchy.
+	 *
+	 * For an ad-hoc hierarchy like that of an collection, there is only ever one hierarchy to display - that of the current collection.
+	 * So for adhoc hierarchies we just return a single entry corresponding to the root of the current collection hierarchy
+	 */
+	 public function getHierarchyList($pb_dummy=false) {
+		$vs_hier_fld = $this->getProperty('HIERARCHY_ID_FLD');
+		$vs_parent_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD');
+		if (!$vs_parent_fld) { return; }
+		
+	 	$o_dm = Datamodel::load();
+	 
+	 	$vs_pk = $this->primaryKey();
+	 	$vn_id = $this->getPrimaryKey();
+	 	$vs_table = $this->tableName();
+	 	$vs_template = $this->getAppConfig()->get($vs_table.'_hierarchy_browser_display_settings');
+	 	
+	 	$va_type_ids = caMergeTypeRestrictionLists($this, array());
+	 	$va_source_ids = caMergeSourceRestrictionLists($this, array());
+	 	
+	 	
+	 	
+		$vs_type_fld = $this->getTypeFieldName();
+		$vs_source_fld = $this->getSourceFieldName();
+	 		
+	 	if (!$vn_id) { 
+	 		$o_db = $this->getDb();
+	 		
+	 		$va_wheres = array("(o.{$vs_parent_fld} IS NULL)");
+	 		$va_params = array();
+	 		if (is_array($va_type_ids) && sizeof($va_type_ids)) {
+	 			$va_params[] = $va_type_ids;
+	 			$va_wheres[] = "(o.{$vs_type_fld} IN (?))";
+	 		}
+	 		if (is_array($va_source_ids) && sizeof($va_source_ids)) {
+	 			$va_params[] = $va_source_ids;
+	 			$va_wheres[] = "(o.{$vs_source_fld} IN (?))";
+	 		}
+			$qr_res = $o_db->query("
+				SELECT o.{$vs_pk}, count(*) c
+				FROM {$vs_table} o
+				INNER JOIN {$vs_table} AS p ON p.{$vs_parent_fld} = o.{$vs_pk}
+				WHERE ".(join(" AND ", $va_wheres))."
+				GROUP BY o.{$vs_pk}
+			", $va_params);
+			
+	 		$va_hiers = array();
+	 		
+	 		$va_ids = $qr_res->getAllFieldValues($vs_pk);
+	 		$qr_res->seek(0);
+	 		$va_labels = $this->getPreferredDisplayLabelsForIDs($va_ids);
+	 		while($qr_res->nextRow()) {
+	 			$va_hiers[$vn_id = $qr_res->get($vs_pk)] = array(
+	 				'item_id' => $vn_id,
+	 				$vs_pk => $vn_id,
+	 				'name' => caProcessTemplateForIDs($vs_template, $vs_table, array($vn_id)),
+	 				'hierarchy_id' => $vn_id,
+	 				'children' => (int)$qr_res->get('c')
+	 			);
+	 		}
+	 		return $va_hiers;
+	 	} else {
+	 		// return specific collection as root of hierarchy
+			$vs_label = $this->getLabelForDisplay(false);
+			$vn_hier_id = $this->get($vs_hier_fld);
+			
+			if ($this->get($vs_parent_fld)) { 
+				// currently loaded row is not the root so get the root
+				$va_ancestors = $this->getHierarchyAncestors();
+				if (!is_array($va_ancestors) || sizeof($va_ancestors) == 0) { return null; }
+				$t_instance = $o_dm->getInstanceByTableName($va_ancestors[0], true);
+			} else {
+				$t_instance =& $this;
+			}
+			
+			$va_children = $t_instance->getHierarchyChildren(null, array('idsOnly' => true));
+			$va_hierarchy_root = array(
+				$t_instance->get($vs_hier_fld) => array(
+					'item_id' => $vn_id,
+					'collection_id' => $vn_id,
+					'name' => caProcessTemplateForIDs($vs_template, $vs_table, array($vn_id)),
+					'hierarchy_id' => $vn_hier_id,
+					'children' => sizeof($va_children)
+				)
+			);
+				
+	 		return $va_hierarchy_root;
+		}
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Returns name of hierarchy for currently loaded row or, if specified, row identified by optional $pn_id parameter
+	 */
+	 public function getHierarchyName($pn_id=null) {
+	 	$o_dm = Datamodel::load();
+	 	if (!$pn_id) { $pn_id = $this->getPrimaryKey(); }
+	 	
+	 	$t_instance = $o_dm->getInstanceByTableName($this->tableName(), true);
+	 	
+		$va_ancestors = $this->getHierarchyAncestors($pn_id, array('idsOnly' => true));
+		if (is_array($va_ancestors) && sizeof($va_ancestors)) {
+			$vn_parent_id = array_pop($va_ancestors);
+			$t_instance->load($vn_parent_id);
+			return $t_instance->getLabelForDisplay(false);
+		} else {			
+			if ($pn_id == $this->getPrimaryKey()) {
+				return $this->getLabelForDisplay(true);
+			} else {
+				$t_instance->load($pn_id);
+				return $t_instance->getLabelForDisplay(false);
+			}
+		}
 	}
 	# --------------------------------------------------------------------------------------------
 }

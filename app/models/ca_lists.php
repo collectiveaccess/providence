@@ -1336,13 +1336,23 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				return $vs_buf;
 				break;
 			case 'lookup':
+				$vs_value = $vs_hidden_value = "";
+				if(caGetOption('forSearch',$pa_options)) {
+					if($vs_val_id = caGetOption('value',$pa_options)) {
+						$vs_value = $t_list->getItemFromListForDisplayByItemID($pm_list_name_or_id, $vs_val_id);
+						$vs_hidden_value = $vs_val_id;
+					}
+				} else {
+					$vs_value = "{".$pa_options['element_id']."_label}";
+					$vs_hidden_value = "{".$pa_options['element_id']."}";
+				}
 				$vs_buf =
  				caHTMLTextInput(
  					$ps_name.'_autocomplete', 
 					array(
 						'width' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width']: 300, 
 						'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : 1, 
-						'value' => "{".$pa_options['element_id']."_label}", 
+						'value' => $vs_value, 
 						'maxlength' => 512,
 						'id' => $ps_name."_autocomplete",
 						'class' => 'lookupBg'
@@ -1351,7 +1361,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				caHTMLHiddenInput(
 					$ps_name,
 					array(
-						'value' => "{".$pa_options['element_id']."}", 
+						'value' => $vs_hidden_value, 
 						'id' => $ps_name
 					)
 				);
@@ -1500,101 +1510,6 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$t_items->load(array('list_id' => $vn_list_id, 'parent_id' => null));
 		
 		return $t_items->getPrimaryKey();
-	}
-	# ------------------------------------------------------
-	/**
-	 * Returns a flat list of all list items in the specified list referenced by items in the specified table
-	 * (and optionally a search on that table)
-	 */
-	public function getReferencedItems($pm_table_num_or_name, $pm_list_name_or_id=null, $pa_reference_limit_ids=null, $ps_ref_table_fieldname=null, $pn_access=null) {
-		if (is_numeric($pm_table_num_or_name)) {
-			$vs_table_name = $this->getAppDataModel()->getTableName($pm_table_num_or_name);
-		} else {
-			$vs_table_name = $pm_table_num_or_name;
-		}
-		
-		if (!($t_ref_table = $this->getAppDatamodel()->getInstanceByTableName($vs_table_name, true))) {
-			return null;
-		}
-		
-		
-		if($pm_list_name_or_id) {
-			$vn_list_id = $this->_getListID($pm_list_name_or_id);
-		} else {
-			$vn_list_id = $this->getPrimaryKey();
-		}
-		if (!$vn_list_id || !$vs_table_name) { return null; }
-		
-		$o_db = $this->getDb();
-		
-		if (!$ps_ref_table_fieldname) {
-			$va_path = $this->getAppDatamodel()->getPath('ca_list_items', $vs_table_name);
-			array_shift($va_path); // remove 'ca_list_items' from path
-			
-			$vs_last_table = 'ca_list_items';
-			$va_joins = array();
-			foreach($va_path as $vs_rel_table_name => $vn_rel_table_num) {
-				$va_rels = $this->getAppDatamodel()->getRelationships($vs_last_table, $vs_rel_table_name);
-				$va_rel = $va_rels[$vs_last_table][$vs_rel_table_name][0];
-				
-				
-				$va_joins[] = "INNER JOIN {$vs_rel_table_name} ON {$vs_last_table}.".$va_rel[0]." = {$vs_rel_table_name}.".$va_rel[1];
-				
-				$vs_last_table = $vs_rel_table_name;
-			}
-		} else {
-			$va_joins[] = "INNER JOIN {$vs_table_name} ON {$vs_table_name}.{$ps_ref_table_fieldname} = ca_list_items.item_id";
-		}
-		
-		$va_sql_wheres = array();
-		if (is_array($pa_reference_limit_ids) && sizeof($pa_reference_limit_ids)) {
-			$va_sql_wheres[] = "({$vs_table_name}.".$t_ref_table->primaryKey()." IN (".join(',', $pa_reference_limit_ids)."))";
-		}
-		
-		if (!is_null($pn_access)) {
-			$va_sql_wheres[] = "({$vs_table_name}.access = ".intval($pn_access).")";
-		}
-		
-		// get counts
-		$vs_sql = "
-			SELECT ca_list_items.item_id, count(*) cnt
-			FROM ca_list_items
-			".join("\n", $va_joins)."
-			WHERE
-				(ca_list_items.deleted = 0) AND (ca_list_items.list_id = ?)
-				".(sizeof($va_sql_wheres) ? " AND ".join(' AND ', $va_sql_wheres) : "")."
-			GROUP BY
-				ca_list_items.item_id
-		";
-		$qr_items = $o_db->query($vs_sql, (int)$vn_list_id);
-		
-		$va_item_counts = array();
-		while($qr_items->nextRow()) {
-			$va_item_counts[$qr_items->get('item_id')] = $qr_items->get('cnt');
-		}
-		
-		$vs_sql = "
-			SELECT ca_list_items.item_id, ca_list_item_labels.*
-			FROM ca_list_items
-			INNER JOIN ca_list_item_labels ON ca_list_item_labels.item_id = ca_list_items.item_id
-			".join("\n", $va_joins)."
-			WHERE
-				(ca_list_items.deleted = 0) AND (ca_list_items.list_id = ?) AND (ca_list_item_labels.is_preferred = 1)
-				".(sizeof($va_sql_wheres) ? " AND ".join(' AND ', $va_sql_wheres) : "")."
-				
-			GROUP BY
-				ca_list_item_labels.label_id
-		";
-		
-		$qr_items = $o_db->query($vs_sql, (int)$vn_list_id);
-		
-		$va_items = array();
-		while($qr_items->nextRow()) {
-			$vn_item_id = $qr_items->get('item_id');
-			$va_items[$vn_item_id][$qr_items->get('locale_id')] = array_merge($qr_items->getRow(), array('cnt' => $va_item_counts[$vn_item_id]));
-		}
-		
-		return caExtractValuesByUserLocale($va_items);
 	}
 	# ------------------------------------------------------
 	/**
