@@ -696,9 +696,9 @@
 			$vn_parent_id = caGetOption('parent_id', $pa_values, null);
 			
 			$vs_singular_label = (isset($pa_values['preferred_labels']['name_singular']) && $pa_values['preferred_labels']['name_singular']) ? $pa_values['preferred_labels']['name_singular'] : '';
-			if (!$vs_singular_label) { $vs_singular_label = (isset($pa_values['name_singular']) && $pa_values['name_singular']) ? $pa_values['name_singular'] : $ps_item_idno; }
+			if (!$vs_singular_label) { $vs_singular_label = (isset($pa_values['name_singular']) && $pa_values['name_singular']) ? $pa_values['name_singular'] : str_replace("_", " ", $ps_item_idno); }
 			$vs_plural_label = (isset($pa_values['preferred_labels']['name_plural']) && $pa_values['preferred_labels']['name_plural']) ? $pa_values['preferred_labels']['name_plural'] : '';
-			if (!$vs_plural_label) { $vs_plural_label = (isset($pa_values['name_plural']) && $pa_values['name_plural']) ? $pa_values['name_plural'] : $ps_item_idno; }
+			if (!$vs_plural_label) { $vs_plural_label = (isset($pa_values['name_plural']) && $pa_values['name_plural']) ? $pa_values['name_plural'] : str_replace("_", " ", $ps_item_idno); }
 			
 			if (!$vs_singular_label) { $vs_singular_label = $vs_plural_label; }
 			if (!$vs_plural_label) { $vs_plural_label = $vs_singular_label; }
