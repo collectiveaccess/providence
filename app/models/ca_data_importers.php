@@ -699,7 +699,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$vn_locale_id = (isset($pa_options['locale_id']) && (int)$pa_options['locale_id']) ? (int)$pa_options['locale_id'] : $g_ui_locale_id;
 		$pa_errors = array();
 		
-		
 		$o_log = (is_writable($pa_options['logDirectory'])) ? new KLogger($pa_options['logDirectory'], $pa_options['logLevel']) : null;
 		
 		$o_excel = PHPExcel_IOFactory::load($ps_source);
@@ -1476,7 +1475,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			if ($vs_existing_record_policy != 'none') {
 				switch($vs_existing_record_policy) {
 					case 'skip_on_idno':
-						if (!$vb_idno_is_template && $t_subject->load(array($t_subject->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno))) {
+						if (!$vb_idno_is_template && $t_subject->load(array($t_subject->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno, 'deleted' => 0))) {
 							$o_log->logInfo(_t('[%1] Skipped import because of existing record matched on identifier by policy %2', $vs_idno, $vs_existing_record_policy));
 							ca_data_importers::$s_num_records_skipped++;
 							continue(2);	// skip because idno matched
@@ -1484,7 +1483,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						break;
 					case 'skip_on_preferred_labels':
 						$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
-							array('type_id' => $vs_type, 'preferred_labels' => $va_pref_label_values),
+							array('type_id' => $vs_type, 'preferred_labels' => $va_pref_label_values, 'deleted' => 0),
 							array('returnAs' => 'ids')
 						));
 						if (is_array($va_ids) && sizeof($va_ids)) {
@@ -1497,7 +1496,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					case 'merge_on_idno':
 					case 'merge_on_idno_and_preferred_labels_with_replace':
 					case 'merge_on_idno_with_replace':
-						if (!$vb_idno_is_template && $t_subject->load(array($t_subject->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno))) {
+						if (!$vb_idno_is_template && $t_subject->load(array($t_subject->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno, 'deleted' => 0))) {
 							$o_log->logInfo(_t('[%1] Merged with existing record matched on identifer by policy %2', $vs_idno, $vs_existing_record_policy));
 							break;
 						}
@@ -1505,7 +1504,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					case 'merge_on_preferred_labels':
 					case 'merge_on_preferred_labels_with_replace':
 						$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
-							array('type_id' => $vs_type, 'preferred_labels' => $va_pref_label_values),
+							array('type_id' => $vs_type, 'preferred_labels' => $va_pref_label_values, 'deleted' => 0),
 							array('returnAs' => 'ids')
 						));
 						if (is_array($va_ids) && sizeof($va_ids)) {
@@ -1515,7 +1514,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						break;	
 					case 'overwrite_on_idno_and_preferred_labels':
 					case 'overwrite_on_idno':
-						if (!$vb_idno_is_template && $vs_idno && $t_subject->load(array($t_subject->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno))) {
+						if (!$vb_idno_is_template && $vs_idno && $t_subject->load(array($t_subject->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno, 'deleted' => 0))) {
 					
 							$t_subject->setMode(ACCESS_WRITE);
 							$t_subject->delete(true, array('hard' => true));
@@ -1531,7 +1530,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						if ($vs_existing_record_policy == 'overwrite_on_idno') { break; }	// fall through if overwrite_on_idno_and_preferred_labels
 					case 'overwrite_on_preferred_labels':
 						$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
-							array('type_id' => $vs_type, 'preferred_labels' => $va_pref_label_values),
+							array('type_id' => $vs_type, 'preferred_labels' => $va_pref_label_values, 'deleted' => 0),
 							array('returnAs' => 'ids')
 						));
 						if (is_array($va_ids) && sizeof($va_ids)) {
@@ -1848,7 +1847,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								switch($vs_element) {
 									case $vs_parent_id_fld:
 										if ($va_element_content[$vs_parent_id_fld]) {
-											$t_subject->set($vs_parent_id_fld, $va_element_content[$vs_parent_id_fld]);
+											$t_subject->set($vs_parent_id_fld, $va_element_content[$vs_parent_id_fld], array('treatParentIDAsIdno' => true));
 										}
 										break;
 								}
