@@ -196,6 +196,16 @@ class ItemService extends BaseJSONService {
 						}
 					}
 				}
+				switch($vs_field_name) {
+					case 'parent_id':
+						if($t_parent = $this->_getTableInstance($this->ops_table, $vs_val)){
+							$va_return['intrinsic'][$vs_field_name] = $t_parent->get('idno');
+						}
+						break;
+					default:
+						$va_return['intrinsic'][$vs_field_name] = $vs_val;
+						break;
+				}
 			}
 		}
 
@@ -297,7 +307,7 @@ class ItemService extends BaseJSONService {
 			if(!is_null($vs_val = $t_instance->get($vs_field_name))){
 				if(preg_match("/^hier\_/",$vs_field_name)){ continue; }
 				if(preg_match("/\_sort$/",$vs_field_name)){ continue; }
-				if($vs_field_name == $t_instance->primaryKey()){ continue; }
+				//if($vs_field_name == $t_instance->primaryKey()){ continue; }
 				$va_return['intrinsic_fields'][$vs_field_name] = $vs_val;
 			}
 		}
@@ -452,7 +462,7 @@ class ItemService extends BaseJSONService {
 			if(!is_null($vs_val = $t_instance->get($vs_field_name))){
 				if(preg_match("/^hier\_/",$vs_field_name)){ continue; }
 				if(preg_match("/\_sort$/",$vs_field_name)){ continue; }
-				if($vs_field_name == $t_instance->primaryKey()){ continue; }
+				//if($vs_field_name == $t_instance->primaryKey()){ continue; }
 				
 				if(isset($va_field_info["LIST_CODE"])){ // typical example: type_id
 					$va_item = $t_list->getItemFromListByItemID($va_field_info["LIST_CODE"],$vs_val);
@@ -460,8 +470,16 @@ class ItemService extends BaseJSONService {
 						$vs_val = $t_item->get('idno');
 					}
 				}
-				
-				$va_return['intrinsic'][$vs_field_name] = $vs_val;
+				switch($vs_field_name) {
+					case 'parent_id':
+						if($t_parent = $this->_getTableInstance($this->ops_table, $vs_val)){
+							$va_return['intrinsic'][$vs_field_name] = $t_parent->get('idno');
+						}
+						break;
+					default:
+						$va_return['intrinsic'][$vs_field_name] = $vs_val;
+						break;
+				}
 			}
 		}
 
