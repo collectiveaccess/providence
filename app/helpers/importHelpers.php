@@ -456,7 +456,8 @@
 		$o_log = caGetOption('log', $pa_options, null);
 		$o_reader = caGetOption('reader', $pa_options, null);
 		
-		$va_group_dest = explode(".", $pa_group['destination']);
+		$va_group_dest = $pa_item['destination'] ? explode(".", $pa_item['destination']) : explode(".", $pa_group['destination']);
+		
 		$vs_terminal = array_pop($va_group_dest);
 		$vs_dest_table = $va_group_dest[0];
 		$va_group_dest[] = $vs_terminal;
@@ -494,7 +495,7 @@
 				
 				
 				
-				// Set value as hierachy
+				// Set value as hierarchy
 				if ($va_parents = $pa_item['settings']["{$ps_refinery_name}_hierarchy"]) {
 					$va_attr_vals = $va_val = caProcessRefineryParents($ps_refinery_name, $ps_table, $va_parents, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, array_merge($pa_options, array('hierarchyMode' => true)));
 					$vs_item = $va_val['_preferred_label'];
@@ -582,7 +583,7 @@
 					}
 				
 					// Set relatedEntities
-					// TODO generalize for all of types of records
+					// TODO: generalize for all of types of records
 					if (is_array($va_attr_vals = caProcessRefineryRelated($ps_refinery_name, "ca_entities", $pa_item['settings']["{$ps_refinery_name}_relatedEntities"], $pa_source_data, $pa_item, null, $vn_c, array('log' => $o_log, 'reader' => $o_reader)))) {
 						$va_val = array_merge($va_val, $va_attr_vals);
 					}
@@ -608,7 +609,7 @@
 					$va_attr_vals_with_parent = array_merge($va_attr_vals, array('parent_id' => $va_val['_parent_id']));
 					
 					$pa_options = array_merge(array_merge(array('matchOn' => array('idno', 'label')), $pa_options));
-					
+					print "lookup $ps_table<Br>";
 					switch($ps_table) {
 						case 'ca_objects':
 							$vn_item_id = DataMigrationUtils::getObjectID($vs_item, $va_val['parent_id'], $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
