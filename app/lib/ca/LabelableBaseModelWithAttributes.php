@@ -2127,7 +2127,7 @@
 		/**
 		 * 
 		 */
-		public function getUserGroupHTMLFormBundle($po_request, $ps_form_name, $pn_table_num, $pn_item_id, $pn_user_id=null, $pa_options=null) {
+		public function getUserGroupHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pn_table_num, $pn_item_id, $pn_user_id=null, $pa_options=null) {
 			$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 			$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 			
@@ -2141,7 +2141,8 @@
 			
 			$o_view->setVar('t_instance', $this);
 			$o_view->setVar('table_num', $pn_table_num);
-			$o_view->setVar('id_prefix', $ps_form_name);		
+			$o_view->setVar('id_prefix', $ps_form_name);	
+			$o_view->setVar('placement_code', $ps_placement_code);		
 			$o_view->setVar('request', $po_request);	
 			$o_view->setVar('t_group', $t_group);
 			$o_view->setVar('initialValues', $this->getUserGroups(array('returnAsInitialValuesForBundle' => true)));
@@ -2346,7 +2347,7 @@
 		/**
 		 * 
 		 */
-		public function getUserHTMLFormBundle($po_request, $ps_form_name, $pn_table_num, $pn_item_id, $pn_user_id=null, $pa_options=null) {
+		public function getUserHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pn_table_num, $pn_item_id, $pn_user_id=null, $pa_options=null) {
 			$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 			$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 			
@@ -2359,7 +2360,8 @@
 			
 			$o_view->setVar('t_instance', $this);
 			$o_view->setVar('table_num', $pn_table_num);
-			$o_view->setVar('id_prefix', $ps_form_name);		
+			$o_view->setVar('id_prefix', $ps_form_name);	
+			$o_view->setVar('placement_code', $ps_placement_code);		
 			$o_view->setVar('request', $po_request);	
 			$o_view->setVar('t_user', $t_user);
 			$o_view->setVar('initialValues', $this->getUsers(array('returnAsInitialValuesForBundle' => true)));

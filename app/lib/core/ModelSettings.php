@@ -189,6 +189,7 @@
 		 *
 		 * @param array $pa_options Optional array of options. Support options are:
 		 *		id = 
+		 *		placement_code =
 		 *		name = 
 		 *		settings = 
 		 * @return string HTML form
@@ -197,14 +198,17 @@
 			$vs_form = '';
 			$va_form_elements = array();
 			$va_settings = $this->getAvailableSettings();
-			$va_setting_values = is_array($pa_options['settings']) ? $pa_options['settings'] : array();
+			$va_setting_values = caGetOption('settings', $pa_options, array(), array('castTo' => 'array'));
+			$vs_id_prefix = caGetOption('id', $pa_options, 'setting');
+			$vs_placement_code  = caGetOption('placement_code', $pa_options, '');				
+			$vs_name = caGetOption('name', $pa_options, $vs_id_prefix);
 			
-			$va_options = array('id_prefix' => $pa_options['id']);
+			$va_options = array('id_prefix' => $vs_id_prefix);
 			foreach($va_settings as $vs_setting => $va_setting_info) {
-				$va_options['id'] = $pa_options['id']."_{$vs_setting}";
+				$va_options['id'] = "{$vs_placement_code}{$vs_id_prefix}{$vs_setting}";
 				$va_options['label_id'] = $va_options['id'].'_label';
-				if (!$pa_options['name']) { $pa_options['name'] = $pa_options['id']; }
-				$va_options['name'] = $pa_options['name']."_{$vs_setting}";
+
+				$va_options['name'] = "{$vs_placement_code}{$vs_name}{$vs_setting}";
 				
 				$va_options['value'] = isset($va_setting_values[$vs_setting]) ? $va_setting_values[$vs_setting] : $this->getSetting($vs_setting);
 				$va_options['helpText'] = isset($va_setting_info['helpText']) ? $va_setting_info['helpText'] : '';
@@ -225,9 +229,11 @@
 		 *		settings = 
 		 * @return string HTML code for bundle
 		 */
-		public function getHTMLSettingFormBundle($po_request, $pa_options=null) {
+		public function getHTMLSettingFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null) {
 				$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 				$o_view->setVar('t_subject', $this);
+				$o_view->setVar('id_prefix', $ps_form_name);
+				$o_view->setVar('placement_code', $ps_placement_code);
 				
 				return $o_view->render('settings.php');
 		}
@@ -518,17 +524,21 @@
 		 * Sets and saves form element settings, taking parameters off of the request as needed. Does an update()
 		 * on the ca_search_forms instance to save settings to the database
 		 */ 
-		public function setSettingsFromHTMLForm($po_request) {
+		public function setSettingsFromHTMLForm($po_request, $pa_options=null) {
 			$va_locales = ca_locales::getLocaleList(array('sort_field' => '', 'sort_order' => 'asc', 'index_by_code' => true, 'available_for_cataloguing_only' => true)); 
 			$va_available_settings = $this->getAvailableSettings();
 
 			$this->o_instance->setMode(ACCESS_WRITE);
 			$va_values = array();
+			
+			$vs_id_prefix = caGetOption('id', $pa_options, 'setting');
+			$vs_placement_code = caGetOption('placement_code', $pa_options, '');
+			
 			foreach(array_keys($va_available_settings) as $vs_setting) {
 				$va_properties = $va_available_settings[$vs_setting];
 				if (isset($va_properties['takesLocale']) && $va_properties['takesLocale']) {
 					foreach($va_locales as $vs_locale => $va_locale_info) {
-						$va_values[$vs_setting][$va_locale_info['locale_id']] = $po_request->getParameter('setting_'.$vs_setting.'_'.$vs_locale, pString);
+						$va_values[$vs_setting][$va_locale_info['locale_id']] = $po_request->getParameter("{$vs_placement_code}{$vs_id_prefix}{$vs_setting}_{$vs_locale}", pString);
 					}
 				} else {
 					if (
@@ -540,10 +550,10 @@
 						||
 						(isset($va_properties['showVocabularies']) && $va_properties['showVocabularies'] && ($va_properties['height'] > 1))
 					) {
-						$va_values[$vs_setting] = $po_request->getParameter('setting_'.$vs_setting, pArray);
+						$va_values[$vs_setting] = $po_request->getParameter("{$vs_placement_code}{$vs_id_prefix}{$vs_setting}", pArray);
 					} else {
 						$va_values = array(
-							$vs_setting => $po_request->getParameter('setting_'.$vs_setting, pString)
+							$vs_setting => $po_request->getParameter("{$vs_placement_code}{$vs_id_prefix}{$vs_setting}", pString)
 						);
 					}
 				}
