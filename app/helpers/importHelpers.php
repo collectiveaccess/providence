@@ -456,7 +456,9 @@
 		$o_log = caGetOption('log', $pa_options, null);
 		$o_reader = caGetOption('reader', $pa_options, null);
 		
-		$va_group_dest = $pa_item['destination'] ? explode(".", $pa_item['destination']) : explode(".", $pa_group['destination']);
+		// We can probably always use the item destination – using group destination is a vestige of older code and no longer uses
+		// but we're leaving it in for now as a fallback it item dest is not set for some reason
+		$va_group_dest = (isset($pa_item['destination']) && $pa_item['destination']) ? explode(".", $pa_item['destination']) : explode(".", $pa_group['destination']);
 		
 		$vs_terminal = array_pop($va_group_dest);
 		$vs_dest_table = $va_group_dest[0];
@@ -609,7 +611,7 @@
 					$va_attr_vals_with_parent = array_merge($va_attr_vals, array('parent_id' => $va_val['_parent_id']));
 					
 					$pa_options = array_merge(array_merge(array('matchOn' => array('idno', 'label')), $pa_options));
-					print "lookup $ps_table<Br>";
+					
 					switch($ps_table) {
 						case 'ca_objects':
 							$vn_item_id = DataMigrationUtils::getObjectID($vs_item, $va_val['parent_id'], $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
