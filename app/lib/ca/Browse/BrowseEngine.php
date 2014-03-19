@@ -2345,20 +2345,17 @@
 						}
 						
 						$vs_sql = "
-							SELECT count(DISTINCT value_longtext1) c
+							SELECT 1
 							FROM ca_attributes
 							
 							{$vs_join_sql}
 							WHERE
 								(ca_attribute_values.element_id = ?) {$vs_criteria_exclude_sql} {$vs_where_sql}
-							LIMIT 1";
+							LIMIT 2";
 						//print $vs_sql;
 						$qr_res = $this->opo_db->query($vs_sql,$vn_element_id);
 						
-						if ($qr_res->nextRow()) {
-							return ((int)$qr_res->get('c') > 0) ? true : false;
-						}
-						return false;
+						return ((int)$qr_res->numRows() > 1) ? true : false;
 					} else {
 						$vs_sql = "
 							SELECT DISTINCT value_longtext1, value_decimal1, value_longtext2
