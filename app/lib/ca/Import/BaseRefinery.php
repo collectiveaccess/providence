@@ -105,10 +105,38 @@
 			$ps_placeholder = trim($ps_placeholder);
 			$vs_key = substr($ps_placeholder, 1);
 			
-			if ($ps_placeholder[0] == '^') {
+			if (($ps_placeholder[0] == '^') && (strpos($ps_placeholder, '^', 1) === false)) {
+				// Placeholder is a single caret-value
 				if ($o_reader) {
 					$vm_val = $o_reader->get($vs_key, array('returnAsArray' => true));
 				} else {
+					if (!isset($pa_source_data[substr($ps_placeholder, 1)])) { return null; }
+					$vm_val = $pa_source_data[substr($ps_placeholder, 1)];
+				}
+			} elseif(strpos($ps_placeholder, '^') !== false) {
+				// Placeholder is a full template – requires extra processing
+				if ($o_reader) {
+					$va_tags = array();
+					
+					// get a list of all tags in placeholder
+					if (preg_match_all("!\^([\/A-Za-z0-9_\.]+)!", $ps_template, $va_matches)) {
+						foreach($va_matches[1] as $vn_i => $vs_possible_tag) {
+							$va_matches[1][$vn_i] = rtrim($vs_possible_tag, "/.");	// remove trailing slashes and periods
+						}
+						$va_tags = $va_matches[1];
+					}
+					
+					// Make sure all tags are in source data array, otherwise try to pull them from the reader.
+					// Some formats, mainly XML, can take expressions (XPath for XML) that are not precalculated in the array
+					foreach($va_tags as $vs_tag) {
+						if (isset($pa_source_data[$vs_tag])) { continue; }
+						$va_val = $o_reader->get($vs_key, array('returnAsArray' => true));
+						$pa_source_data[$vs_tag] = $va_val[$pn_index];
+					}
+					
+					$vm_val = caProcessTemplate($ps_placeholder, $pa_source_data);
+				} else {
+					// Is plain text
 					if (!isset($pa_source_data[substr($ps_placeholder, 1)])) { return null; }
 					$vm_val = $pa_source_data[substr($ps_placeholder, 1)];
 				}
