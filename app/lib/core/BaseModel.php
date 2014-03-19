@@ -1161,7 +1161,7 @@ class BaseModel extends BaseObject {
 						}
 						
 						
-						if (($vs_field == $this->HIERARCHY_PARENT_ID_FLD) && (!is_numeric($vm_value) || caGetOption('treatParentIDAsIdno', $pa_options, false))) {
+						if (($vs_field == $this->HIERARCHY_PARENT_ID_FLD) && ((strlen($vm_value) > 0) && (!is_numeric($vm_value) || caGetOption('treatParentIDAsIdno', $pa_options, false)))) {
 							if(is_array($va_ids = call_user_func_array($this->tableName()."::find", array(array('idno' => $vm_value, 'deleted' => 0), array('returnAs' => 'ids'))))) {
 								$vm_value = array_shift($va_ids);
 							}
