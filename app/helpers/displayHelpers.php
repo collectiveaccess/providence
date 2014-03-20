@@ -2680,6 +2680,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 			'end' => $va_end['year'].','.$va_end['month'].','.$va_end['day'],
 		);
 	}
+	
 	# ------------------------------------------------------------------------------------------------
 	/**
 	 * Returns text describing dimensions of object representation
