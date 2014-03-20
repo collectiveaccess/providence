@@ -1672,6 +1672,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 			$vs_display_name = mb_strtolower($vs_display_name, 'UTF-8');
 			
 			if (!caTableIsActive($vn_table_num)) { continue; }
+			$vs_table_name = $o_dm->getTableName($vn_table_num);
 			
 			switch($vs_table_name) {
 				case 'ca_occurrences':
@@ -1901,7 +1902,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		$va_proc_templates = array();
 		$vn_i = 0;
 		
-		$o_if = $o_doc("if");						// if 
+		$o_ifs = $o_doc("if");						// if 
 		$o_ifdefs = $o_doc("ifdef");				// if defined
 		$o_ifnotdefs = $o_doc("ifnotdef");			// if not defined
 		$o_mores = $o_doc("more");					// more tags – content suppressed if there are no defined values following the tag pair
@@ -1909,11 +1910,11 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		$o_ifcounts = $o_doc("ifcount");			// if count - conditionally return template if # of items is in-bounds
 		
 		$va_if = array();
-		foreach($o_if as $o_if) {
+		foreach($o_ifs as $o_if) {
 			if (!$o_if) { continue; }
 			
 			$vs_html = $o_if->html();
-			$vs_content = $o_f->getInnerText();
+			$vs_content = $o_if->getInnerText();
 			
 			$va_if[] = array('directive' => $vs_html, 'content' => $vs_content, 'rule' => $vs_rule = (string)$o_if->getAttribute('rule'));
 		}
@@ -2693,7 +2694,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		$va_tmp = $po_rep->getMediaInfo('media', $ps_version);
 		$va_dimensions = array();
 			if (isset($va_tmp['WIDTH']) && isset($va_tmp['HEIGHT'])) {
-			if (($vn_w = $va_tmp['WIDTH']) && ($vn_h = $va_tmp['WIDTH'])) {
+			if (($vn_w = $va_tmp['WIDTH']) && ($vn_h = $va_tmp['HEIGHT'])) {
 				$va_dimensions[] = $va_tmp['WIDTH'].'p x '.$va_tmp['HEIGHT'].'p';
 			}
 		}
