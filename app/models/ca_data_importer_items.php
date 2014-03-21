@@ -487,8 +487,9 @@ class ca_data_importer_items extends BaseModel {
 		
 		$va_refinery_list = array();
 		foreach($va_refinery_names as $vs_name) {
-			$o_refinery = RefineryManager::getRefineryInstance($vs_name);
-			$va_refinery_list[$vs_name] = $o_refinery->getTitle();
+			if ($o_refinery = RefineryManager::getRefineryInstance($vs_name)) {
+				$va_refinery_list[$vs_name] = $o_refinery->getTitle();
+			}
 		}
 		
 		return $va_refinery_list;
