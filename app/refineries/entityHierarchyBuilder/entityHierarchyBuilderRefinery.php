@@ -80,7 +80,7 @@
 			
 			// Set entity parents
 			if ($va_parents = $pa_item['settings']['entityHierarchyBuilder_parents']) {
-				$vn_parent_id = caProcessRefineryParents('entityHierarchyBuilderRefinery', 'ca_entities', $va_parents, $pa_source_data, $pa_item, null, null, array('log' => $o_log));
+				$vn_parent_id = caProcessRefineryParents('entityHierarchyBuilderRefinery', 'ca_entities', $va_parents, $pa_source_data, $pa_item, null, null, array('reader' => caGetOption('reader', $pa_options, null), 'log' => $o_log));
 			}
 			
 			return $vn_parent_id;
