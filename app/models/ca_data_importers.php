@@ -1885,7 +1885,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//
 			// Process data in subject record
 			//
-			print_r($va_content_tree);
+			//print_r($va_content_tree);
 			//die("END\n\n");
 			//continue;
 			//if ($pb_debug && $po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
@@ -1925,7 +1925,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				foreach($va_mandatory_field_mapping_ids as $vs_mandatory_field => $vn_mandatory_mapping_item_id) {
 					$t_subject->set($vs_mandatory_field, $va_mandatory_field_values[$vs_mandatory_field], array('assumeIdnoStubForLotID' => true));
 				}
-				$t_subject->dump();
+				
 				$t_subject->insert();
 				if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not insert new record"), array('dontOutputLevel' => true, 'dontPrint' => true))) {
 					ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
