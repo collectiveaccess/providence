@@ -58,9 +58,19 @@ require_once(__CA_LIB_DIR__.'/ca/BaseApplicationPlugin.php');
 		}
 		# -------------------------------------------------------
 		/**
+		 * 
+		 */
+		public function hookGetToolInstances(&$pa_instances) {
+			if(!is_array($pa_instances['instances'])) { $pa_instances['instances'] = array(); }
+			$pa_instances['instances'][$this->tool_title] = $this->tool;
+			
+			return $pa_instances;
+		}
+		# -------------------------------------------------------
+		/**
 		 * Return possible commands for CLI caUtils
 		 */
-		public function hookCLICaUtilsGetCommands($pa_commands) {
+		public function hookCLICaUtilsGetCommands(&$pa_commands) {
 			if (!$this->tool) { return null; }
 			
 			$va_settings = $this->tool->getAvailableSettings();

@@ -48,9 +48,14 @@ require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 		public $SETTINGS;
 		
 		/**
-		 * Name of tool. Usuall the same as the class name. Must be unique to the tool
+		 * Name for tool. Must be unique to the tool.
 		 */
-		protected $ops_tool_name = 'pbcImportSIPTool';
+		protected $ops_tool_name = 'PBC Tools';
+		
+		/**
+		 * Identifier for tool. Usually the same as the class name. Must be unique to the tool.
+		 */
+		protected $ops_tool_id = 'pbcImportSIPTool';
 		
 		/**
 		 * Description of tool for display

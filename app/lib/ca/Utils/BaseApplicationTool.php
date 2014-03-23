@@ -53,6 +53,11 @@ require_once(__CA_LIB_DIR__.'/ca/ProgressBar.php');
 		protected $opa_available_settings = array();
 		
 		/**
+		 * Tool identifier. Must be unique to tool.
+		 */
+		protected $ops_tool_id = null;
+		
+		/**
 		 * Name of tool. Must be unique to tool.
 		 */
 		protected $ops_tool_name = null;
@@ -279,6 +284,27 @@ require_once(__CA_LIB_DIR__.'/ca/ProgressBar.php');
 		}
 		# -------------------------------------------------------
 		# Help
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public function getToolName() {
+			return $this->ops_tool_name;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public function getToolIdentifier() {
+			return $this->ops_tool_id;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public function getToolDescription() {
+			return $this->ops_description;
+		}
 		# -------------------------------------------------------
 		/**
 		 * Return short help text about a tool command
