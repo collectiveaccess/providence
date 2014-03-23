@@ -118,10 +118,16 @@ var caUI = caUI || {};
 			that.colWidths.push(200);
 			switch(that.columns[i]['type']) {
 				case 'DT_SELECT':
-					that.columns[i]['type'] = { renderer: that.autocompleteRenderer, editor: Handsontable.AutocompleteEditor, options: { items: 100 } };
+					delete(that.columns[i]['type']);
+					that.columns[i]['renderer'] = that.autocompleteRenderer;
+					that.columns[i]['editor'] = Handsontable.AutocompleteEditor;
+					that.columns[i]['options'] = { items: 100 };
 					break;
 				case 'DT_LOOKUP':
-					that.columns[i]['type'] = { renderer: that.autocompleteRenderer, editor: Handsontable.AutocompleteEditor, options: { items: 100 } };
+					delete(that.columns[i]['type']);
+					that.columns[i]['renderer'] = that.autocompleteRenderer;
+					that.columns[i]['editor'] = Handsontable.AutocompleteEditor;
+					that.columns[i]['options'] = { items: 100 };
 					that.columns[i]['source'] = function (query, process) {
 						$.ajax({
 							url: that.columns[i]['lookupURL'],
@@ -143,7 +149,8 @@ var caUI = caUI || {};
 					};
 					break;
 				default:
-					that.columns[i]['type'] = { renderer: that.htmlRenderer };
+					delete(that.columns[i]['type']);
+					that.columns[i]['renderer'] = that.htmlRenderer;
 					break;
 			}
 		});
@@ -186,14 +193,14 @@ var caUI = caUI || {};
 						var errorMessages = [];
 						jQuery.each(data.errors, function(k, v) {
 							errorMessages.push(that.errorMessagePrefix + ": " + v.message);
-							ht.setDataAtRowProp(itemIDToRow[k], rowData[itemIDToRow[k]]['change'][0][1], rowData[itemIDToRow[k]]['change'][0][2], 'updateAfterRequest');
+							ht.setDataAtRowProp(itemIDToRow[k], rowData[itemIDToRow[k]]['change'][0][1], rowData[itemIDToRow[k]]['change'][0][2], 'external');
 						});
 						jQuery("." + that.statusDisplayClassName).html(errorMessages.join('; '));
 					} else {
 						jQuery("." + that.statusDisplayClassName).html(that.saveSuccessMessage);
 						
 						jQuery.each(data.messages, function(k, v) {
-							ht.setDataAtRowProp(itemIDToRow[k], rowData[itemIDToRow[k]]['change'][0][1], v['value'], 'updateAfterRequest');
+							ht.setDataAtRowProp(itemIDToRow[k], rowData[itemIDToRow[k]]['change'][0][1], v['value'], 'external');
 						});
 						setTimeout(function() { jQuery('.' + that.statusDisplayClassName).fadeOut(500); }, 5000);
 					}
@@ -229,14 +236,14 @@ var caUI = caUI || {};
 			statusDisplayClassName: that.statusDisplayClassName,
 			
 			onChange: function (change, source) {
-				if ((source === 'loadData') || (source === 'updateAfterRequest')) {
+				if ((source === 'loadData') || (source === 'updateAfterRequest') || (source === 'external')) {
 				  return; //don't save this change
 				}
 				jQuery("." + that.statusDisplayClassName).html(that.saveMessage).fadeIn(500);
 				
 				var item_id = this.getDataAtRowProp(parseInt(change[0]), 'item_id');
 				
-				var pieces = change[0][1].split("-");
+				var pieces = (change[0] instanceof Array) ? change[0][1].split("-") : change[1].split("-");
 				var table = pieces.shift();
 				var bundle = pieces.join('-');
 				
