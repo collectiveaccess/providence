@@ -75,11 +75,6 @@ var caUI = caUI || {};
 			return td;
 		};
 		
-		that.autocompleteRenderer = function(instance, td, row, col, prop, value, cellProperties) {
-			Handsontable.AutocompleteCell.renderer.apply(this, arguments);
-			td.style.fontStyle = 'italic';
-		}
-		
 		that.caResultsEditorOpenFullScreen = function() {
 			var ht = jQuery(that.container).data('handsontable');
 			jQuery(that.container).toggleClass('caResultsEditorContentFullScreen');
@@ -119,34 +114,42 @@ var caUI = caUI || {};
 			switch(that.columns[i]['type']) {
 				case 'DT_SELECT':
 					delete(that.columns[i]['type']);
-					that.columns[i]['renderer'] = that.autocompleteRenderer;
-					that.columns[i]['editor'] = Handsontable.AutocompleteEditor;
-					that.columns[i]['options'] = { items: 100 };
+					that.columns[i]['type'] = 'autocomplete';
+					that.columns[i]['editor'] = 'dropdown';
 					break;
 				case 'DT_LOOKUP':
-					delete(that.columns[i]['type']);
-					that.columns[i]['renderer'] = that.autocompleteRenderer;
-					that.columns[i]['editor'] = Handsontable.AutocompleteEditor;
-					that.columns[i]['options'] = { items: 100 };
-					that.columns[i]['source'] = function (query, process) {
-						$.ajax({
-							url: that.columns[i]['lookupURL'],
-							data: {
-								term: query,
-								list: that.columns[i]['list'],
-								simple: 0
-							},
-							success: function (response) {
-								var labels = [];
-								that.lastLookupIDMap = {};
-								for(var k in response) {
-									labels.push(response[k]['label']);
-									that.lastLookupIDMap[response[k]['label']] = k;
+					var d = that.columns[i]['data'];
+					var lookupUrl = that.columns[i]['lookupURL'];
+					var list = that.columns[i]['list'];
+					that.columns[i] = {
+						'data' : d,
+						'type': 'autocomplete',
+						'strict': false,
+						'source' : function (query, process) {
+							if (!query) { return; }
+							$.ajax({
+								url: lookupUrl,
+								data: {
+									term: query,
+									list: list,
+									simple: 0,
+									
+									
+								},
+								success: function (response) {
+									console.log("r", response);
+									var labels = [];
+									that.lastLookupIDMap = {};
+									for(var k in response) {
+										labels.push(response[k]['label']);
+										that.lastLookupIDMap[response[k]['label']] = k;
+									}
+									if (labels.length > 0) {
+										process(labels);
+									}
 								}
-								process(labels);
-							}
-						})
-					};
+							})
+					}};
 					break;
 				default:
 					delete(that.columns[i]['type']);

@@ -48,7 +48,11 @@
 		}
 
 		// Skip HandsOnTable keyboard bindings
-		for(var i=0; i < keys.length; i++) { if (keys[i].substring(0,3) == 'ht_')  return; }
+		for(var i=0; i < keys.length; i++) { 
+			if (keys[i] == 'autocompleteeditor') return;
+			if (keys[i] == 'autoResize') return;
+			if (keys[i].substring(0,3) == 'ht_') return; 
+		}
 
 		handleObj.handler = function( event ) {
 			// Don't fire in text-accepting inputs that we didn't directly bind to
