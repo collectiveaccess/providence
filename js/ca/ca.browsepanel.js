@@ -84,7 +84,7 @@ var caUI = caUI || {};
 		
 		that.hideBrowsePanel = function() {
 			that.isChanging = true;
-			
+			var panelContentID = (options && options.panelContentID) ? options.panelContentID : that.panelContentID;
 			if (!that.useStaticDiv) {
 				jQuery("#" + that.panelID).fadeOut(that.panelTransitionSpeed, function() { that.isChanging = false; });
 			
