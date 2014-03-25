@@ -5225,6 +5225,19 @@ $pa_options["display_form_field_tips"] = true;
 	 */
 	public function addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
 		global $g_ui_locale_id;
+
+		$this->opo_app_plugin_manager->hookAddRelationship(array(
+			'table_name' => $this->tableName(), 
+			'instance' => $this,
+			'related_table' => $pm_rel_table_name_or_num,
+			'rel_id' => $pn_rel_id,
+			'type_id' => $pm_type_id,
+			'edate' => $ps_effective_date,
+			'source_info' => $ps_source_info,
+			'direction' => $ps_direction,
+			'rank' => $pn_rank,
+			'options' => $pa_options,
+		));
 		
 		if ($t_rel = parent::addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options)) {
 			if ($t_rel->numErrors()) {
