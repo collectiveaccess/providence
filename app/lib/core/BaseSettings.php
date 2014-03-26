@@ -179,7 +179,7 @@
 			$va_settings = $this->getAvailableSettings();
 			return (isset($va_settings[$ps_setting])) ? true : false;
 		}
-				# ------------------------------------------------------
+		# ------------------------------------------------------
 		/**
 		 * Returns HTML form for specifying settings for the currently loaded row
 		 *
@@ -194,8 +194,9 @@
 			$va_form_elements = array();
 			$va_settings = $this->getAvailableSettings();
 			$va_setting_values = is_array($pa_options['settings']) ? $pa_options['settings'] : array();
+			$po_request = caGetOption('request', $pa_options, null);
 			
-			$va_options = array('id_prefix' => $pa_options['id']);
+			$va_options = array('request' => $po_request, 'id_prefix' => $pa_options['id']);
 			foreach($va_settings as $vs_setting => $va_setting_info) {
 				$va_options['id'] = $pa_options['id']."_{$vs_setting}";
 				$va_options['label_id'] = $va_options['id'].'_label';
@@ -242,6 +243,9 @@
 			if(!$this->isValidSetting($ps_setting)) {
 				return false;
 			}
+			
+			$po_request = caGetOption('request', $pa_options, null);
+			
 			$va_available_settings = $this->getAvailableSettings();
 			
 			$va_properties = $va_available_settings[$ps_setting];
@@ -283,6 +287,15 @@
 			}
 			
 			switch($va_properties['displayType']){
+				# --------------------------------------------
+				case DT_FILE_BROWSER:
+					if ($po_request) {
+						$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');	
+						$o_view->setVar('id', $vs_input_id);	
+		
+						$vs_return .= $o_view->render('settings_directory_browser_html.php');
+					}
+					break;
 				# --------------------------------------------
 				case DT_FIELD:
 					$vb_takes_locale = false;

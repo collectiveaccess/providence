@@ -59,7 +59,12 @@ require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
 		/**
 		 * Name of tool. Usuall the same as the class name. Must be unique to the tool
 		 */
-		protected $ops_tool_name = 'pier21OralHistoryImportTool';
+		protected $ops_tool_name = 'Pier21 Oral History Import Tool';
+		
+		/**
+		 * Identifier for tool. Usually the same as the class name. Must be unique to the tool.
+		 */
+		protected $ops_tool_id = 'pier21OralHistoryImportTool';
 		
 		/**
 		 * Description of tool for display
@@ -73,7 +78,7 @@ require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
 			$this->opa_available_settings = array(
 				'transcript_directory' => array(
 					'formatType' => FT_TEXT,
-					'displayType' => DT_FIELD,
+					'displayType' => DT_FILE_BROWSER,
 					'width' => 100, 'height' => 1,
 					'takesLocale' => false,
 					'default' => '1',
@@ -82,7 +87,7 @@ require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
 				),
 				'audio_directory' => array(
 					'formatType' => FT_TEXT,
-					'displayType' => DT_FIELD,
+					'displayType' => DT_FILE_BROWSER,
 					'width' => 100, 'height' => 1,
 					'takesLocale' => false,
 					'default' => '1',

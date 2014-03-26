@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * themes/default/views/manage/tools/widget_tool_list_html.php
+ * batch/mediaimport/directory_level_json.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,17 +26,5 @@
  * ----------------------------------------------------------------------
  */
  
-	$vn_tool_count 	= $this->getVar('tool_count');
-	$o_tool_manager = $this->getVar('tool_manager');
-	$va_tools = $o_tool_manager->getTools();
-	
-	if(strtolower($this->request->getAction()) != 'index') {
-		print "<h3 class='nextPrevious'>".caNavLink($this->request, _t('Back to list'), '', 'manage', 'Tools', 'Index')."</h3>";
-	}
+	print json_encode($this->getVar('directory_list'));
 ?>
-<h4><div id='caColorbox' style='border: 6px solid #444444; padding-bottom:15px;'>
-<strong><?php print _t('Tools for your installation'); ?>:</strong>
-<p><?php
-	print (is_array($va_tools) && sizeof($va_tools)) ? join("<br/>", array_keys($va_tools)) : _('None available');
-?></p>
-</div></h4>

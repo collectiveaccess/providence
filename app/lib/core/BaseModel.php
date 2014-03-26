@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2013 Whirl-i-Gig
+ * Copyright 2000-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -54,6 +54,7 @@ define("FT_DATE", 13);
 define("FT_HISTORIC_DATE", 14);
 define("FT_TIME", 15);
 define("FT_TIMERANGE", 16);
+
 # ------------------------------------------------------------------------------------
 # --- Display type constants
 # ------------------------------------------------------------------------------------
@@ -72,17 +73,13 @@ define("DT_TIMECODE", 12);
 define("DT_COUNTRY_LIST", 13);
 define("DT_STATEPROV_LIST", 14);
 define("DT_LOOKUP", 15);
+define("DT_FILE_BROWSER", 16);
+
 # ------------------------------------------------------------------------------------
 # --- Access mode constants
 # ------------------------------------------------------------------------------------
 define("ACCESS_READ", 0);
 define("ACCESS_WRITE", 1);
-
-# ------------------------------------------------------------------------------------
-# --- Text-markup constants
-# ------------------------------------------------------------------------------------
-define("__CA_MT_HTML__", 0);
-define("__CA_MT_TEXT_ONLY__", 1);
 
 # ------------------------------------------------------------------------------------
 # --- Hierarchy type constants
@@ -1140,14 +1137,6 @@ class BaseModel extends BaseObject {
 
 				if ($vs_field == $this->primaryKey()) {
 					$vm_value = preg_replace("/[\"']/", "", $vm_value);
-				}
-
-				// what markup is supported for text fields?
-				$vs_markup_type = $this->getFieldInfo($vs_field, "MARKUP_TYPE");
-
-				// if markup is non-HTML then strip out HTML special chars for safety
-				if (!($vs_markup_type == __CA_MT_HTML__)) {
-					$vm_value = htmlspecialchars($vm_value, ENT_QUOTES, 'UTF-8');
 				}
 								
 				$vs_cur_value = isset($this->_FIELD_VALUES[$vs_field]) ? $this->_FIELD_VALUES[$vs_field] : null;

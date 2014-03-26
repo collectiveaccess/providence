@@ -64,6 +64,34 @@
 		}
 		# -------------------------------------------------------
 		/**
+		 * 
+		 */
+		public function getToolCount() {
+			return sizeof($this->getTools());
+		}
+		# -------------------------------------------------------
+		/**
+		 * 
+		 */
+		public function getTool($ps_tool_name) {
+			$va_tool_list = $this->getTools();
+			
+			// Get by name
+			if (isset($va_tool_list[$ps_tool_name])) {
+				return $va_tool_list[$ps_tool_name];
+			}
+			
+			// Get by identifier
+			foreach($va_tool_list as $vs_tool_name => $o_tool) {
+				if ($o_tool->getToolIdentifier() == $ps_tool_name) {
+					return $o_tool;
+				}
+			}
+			
+			return null;	// Bad tool
+		}
+		# -------------------------------------------------------
+		/**
 		 * Return possible commands for CLI caUtils
 		 */
 		public function getToolCommandList() {

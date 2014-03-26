@@ -78,12 +78,15 @@ if (!$this->request->isAjax()) {
 					<?php print $o_tool->getToolDescription(); ?>
 				</td>
 				<td>
-					<?php print $va_exporter['exporter_type']; ?>
+<?php
+	$va_commands = $o_tool->getCommands();
+	foreach($va_commands as $vs_command) {
+		print "<u>{$vs_command}</u> – <em>".$o_tool->getShortHelpText($vs_command)."</em>";
+	}
+?>
 				</td>
 				<td>
-					<!--<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), 'manage', 'MetadataExport', 'Edit', array('exporter_id' => $va_exporter['exporter_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>-->
-					<?php print caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'manage', 'MetadataExport', 'Delete', array('exporter_id' => $va_exporter['exporter_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-					<?php print caNavButton($this->request, __CA_NAV_BUTTON_GO__, _t("Export data"), 'manage', 'MetadataExport', 'Run', array('exporter_id' => $va_exporter['exporter_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?php print caNavButton($this->request, __CA_NAV_BUTTON_GO__, _t("Run"), 'manage', 'Tools', 'Settings', array('tool' => $o_tool->getToolIdentifier()), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 				</td>
 			</tr>
 <?php

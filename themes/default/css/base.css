@@ -5897,3 +5897,9 @@ div.caRepresentationMediaReplicationControls {
     text-align: center;
     line-height: 70px; /* Fake vertical aligning */
 }
+
+/** Tool plugins **/
+.toolPluginHelpText {
+    margin: 5px 0 5px 10px;
+    font-size:13px;
+}

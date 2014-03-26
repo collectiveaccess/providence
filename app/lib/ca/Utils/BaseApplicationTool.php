@@ -126,7 +126,9 @@ require_once(__CA_LIB_DIR__.'/ca/ProgressBar.php');
 		}
 		# -------------------------------------------------------
 		/**
-		 * Reroutes calls to method implemented by settings delegate to the delegate class
+		 * Return list of command supported by the tool
+		 *
+		 * @return array
 		 */
 		public function getCommands() {
 			$va_methods = get_class_methods($this);

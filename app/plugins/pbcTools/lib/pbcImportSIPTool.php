@@ -69,7 +69,7 @@ require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 			$this->opa_available_settings = array(
 				'import_directory' => array(
 					'formatType' => FT_TEXT,
-					'displayType' => DT_FIELD,
+					'displayType' => DT_FILE_BROWSER,
 					'width' => 100, 'height' => 1,
 					'takesLocale' => false,
 					'default' => '1',
