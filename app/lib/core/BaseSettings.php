@@ -194,17 +194,20 @@
 			$va_form_elements = array();
 			$va_settings = $this->getAvailableSettings();
 			$va_setting_values = is_array($pa_options['settings']) ? $pa_options['settings'] : array();
-			$po_request = caGetOption('request', $pa_options, null);
 			
-			$va_options = array('request' => $po_request, 'id_prefix' => $pa_options['id']);
+			$po_request = 		caGetOption('request', $pa_options, null);
+			$vs_id = 			caGetOption('id', $pa_options, null);
+			$vs_name = 			caGetOption('name', $pa_options, null);
+			
+			$va_options = array('request' => $po_request, 'id_prefix' => $vs_id);
 			foreach($va_settings as $vs_setting => $va_setting_info) {
-				$va_options['id'] = $pa_options['id']."_{$vs_setting}";
+				$va_options['id'] = "{$vs_id}_{$vs_setting}";
 				$va_options['label_id'] = $va_options['id'].'_label';
-				if (!$pa_options['name']) { $pa_options['name'] = $pa_options['id']; }
-				$va_options['name'] = $pa_options['name']."_{$vs_setting}";
+				if (!$vs_name) { $vs_name = $vs_id; }
+				$va_options['name'] = "{$vs_name}_{$vs_setting}";
 				
-				$va_options['value'] = isset($va_setting_values[$vs_setting]) ? $va_setting_values[$vs_setting] : $this->getSetting($vs_setting);
-				$va_options['helpText'] = isset($va_setting_info['helpText']) ? $va_setting_info['helpText'] : '';
+				$va_options['value'] = caGetOption($vs_setting, $va_setting_values, $this->getSetting($vs_setting));
+				$va_options['helpText'] = caGetOption('helpText', $va_setting_info, '');
 				
 				$va_form_elements[] = $this->settingHTMLFormElement($vs_setting, $va_options);
 			}
@@ -292,7 +295,8 @@
 					if ($po_request) {
 						$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');	
 						$o_view->setVar('id', $vs_input_id);	
-		
+						$o_view->setVar('defaultPath', $vs_value);
+						
 						$vs_return .= $o_view->render('settings_directory_browser_html.php');
 					}
 					break;

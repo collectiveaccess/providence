@@ -2,12 +2,13 @@
 	JavascriptLoadManager::register("directoryBrowser");
  					
 	$vs_id = $this->getVar('id');
+	$vs_default = $this->getVar('defaultPath');
 ?>
 <div id="<?php print $vs_id; ?>directoryBrowser" class='directoryBrowserSmall'>
 	<!-- Content for directory browser is dynamically inserted here by ca.hierbrowser -->
 </div><!-- end directoryBrowser -->
 <?php
-	print caHTMLHiddenInput($vs_id.'directory', array('value' => '', 'id' => $vs_id.'directory'));	
+	print caHTMLHiddenInput($vs_id, array('value' => '', 'id' => $vs_id));	
 ?>
 <script type="text/javascript">
 	var oDirBrowser;
@@ -24,13 +25,13 @@
 			displayFiles: true,
 			allowFileSelection: false,
 			
-			initItemID: '',
+			initItemID: '<?php print $vs_default; ?>',
 			indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
 			
 			currentSelectionDisplayID: 'browseCurrentSelection',
 			
 			onSelection: function(item_id, path, name, type) {
-				if (type == 'DIR') { jQuery('#<?php print $vs_id; ?>directory').val(path); }
+				if (type == 'DIR') { jQuery('#<?php print $vs_id; ?>').val(path); }
 			}
 		});
 	});

@@ -54,9 +54,26 @@
 		private $opn_start;
 		
 		/**
+		 * Current position
+		 */
+		private $opn_position = 0;
+		
+		/**
 		 * Current run mode. One of: CLI (command line interface) or WebUI (web-based user interface)
 		 */
 		private $ops_mode = 'CLI';
+		
+		/**
+		 * Optional job id to associate the progress bar with. If set then the current state of the
+		 * progress bar is written into a persistent cache associated with the job_id. This enables
+		 * progress bars that can be restored across multiple HTTP requests
+		 */
+		private $ops_job_id = null;
+		
+		/**
+		 * A Zend_Cache object to record per-job_id progress bar details in. Only set if job_id is specified.
+		 */
+		private $opo_cache = null;
 		
 		/**
 		 * Display properties. Includes:
@@ -72,10 +89,23 @@
 		 *
 		 * @param string $ps_mode Display mode. One of: CLI, WebUI
 		 * @param int $pn_total Maximum value of the progress bar
+		 * @param string $ps_job_id Optional job_id to associate progress bar with. If specified  the current 
+		 * 			state of the progress bar is written into a persistent cache associated with the job_id. This enables
+		 * 			progress bars that can be restored across multiple HTTP requests
 		 */
-		public function __construct($ps_mode='CLI', $pn_total=null) {
+		public function __construct($ps_mode='CLI', $pn_total=null, $ps_job_id=null) {
 			if ($pn_total > 0) { $this->setTotal($pn_total); }
 			if ($ps_mode) { $this->setMode($ps_mode); }
+			
+			if ($ps_job_id) {
+				$this->ops_job_id = $ps_job_id;
+				if ($this->opo_cache = caGetCacheObject('caProgressBar', 3600 * 24)) {
+					// load values from store
+					if(is_array($va_data = $this->opo_cache->load($ps_job_id))) {
+						$this->setTotal($va_data['total']);
+					}
+				}
+			}
 		}
 		# -------------------------------------------------------
 		/**
@@ -99,6 +129,24 @@
 				return true;
 			}
 			return false;
+		}
+		# -------------------------------------------------------
+		/**
+		 * Get current job_id
+		 * 
+		 * @return string The current job_id
+		 */
+		public function getJobID() {
+			return $this->ops_job_id;
+		}
+		# -------------------------------------------------------
+		/**
+		 * Set current job_id
+		 * 
+		 * @return string The job_id that was set
+		 */
+		public function setJobID($ps_job_id) {
+			return $this->ops_job_id = $ps_job_id;
 		}
 		# -------------------------------------------------------
 		/**
@@ -138,11 +186,17 @@
 		public function start($ps_message=null) {
 			if (!is_null($ps_message)) { $this->setMessage($ps_message); }
 			$this->opn_start = time();
+			$this->opn_position = 0;
+			
+			$this->setCache($ps_message);
 			
 			switch($vs_mode = $this->getMode()) {
 				case 'CLI':
 					$vs_output = CLIProgressBar::start($this->getTotal(), $this->getMessage());
 					if ($this->get('outputToTerminal')) { print $vs_output; }
+					break;
+				case 'WebUI':
+				
 					break;
 				default:
 					$vs_output = _t("Invalid mode %1", $vs_mode);
@@ -161,10 +215,17 @@
 		public function finish($ps_message=null) {
 			if (!is_null($ps_message)) { $this->setMessage($ps_message); }
 			
+			$this->opn_position = $this->getTotal();
+			
+			$this->setCache($ps_message);
+			
 			switch($vs_mode = $this->getMode()) {
 				case 'CLI':
 					$vs_output = CLIProgressBar::finish($this->getMessage());
 					if ($this->get('outputToTerminal')) { print $vs_output; }
+					break;
+				case 'WebUI':
+				
 					break;
 				default:
 					$vs_output = _t("Invalid mode %1", $vs_mode);
@@ -183,10 +244,17 @@
 		public function next($ps_message=null) {
 			if (!is_null($ps_message)) { $this->setMessage($ps_message); }
 			
+			$this->opn_position++;
+			
+			$this->setCache($ps_message);
+			
 			switch($vs_mode = $this->getMode()) {
 				case 'CLI':
 					$vs_output = CLIProgressBar::next(1, $this->getMessage());
 					if ($this->get('outputToTerminal')) { print $vs_output; }
+					break;
+				case 'WebUI':
+					// noop
 					break;
 				default:
 					$vs_output = _t("Invalid mode %1", $vs_mode);
@@ -207,6 +275,9 @@
 				case 'CLI':
 					$vs_output = CLIProgressBar::next(0);
 					if ($this->get('outputToTerminal')) { print $vs_output; }
+					break;
+				case 'WebUI':
+					// noop
 					break;
 				default:
 					$vs_output = _t("Invalid mode %1", $vs_mode);
@@ -254,6 +325,24 @@
 		}
 		# -------------------------------------------------------
 		/**
+		 * Set the current position of the progress bar
+		 *
+		 * @return int The newly set current postion
+		 */
+		public function setCurrentPosition($pn_position) {
+			return $this->opn_position = $pn_position;
+		}
+		# -------------------------------------------------------
+		/**
+		 * Get the current position of the progress bar
+		 *
+		 * @return int 
+		 */
+		public function getCurrentPosition() {
+			return $this->opn_position;
+		}
+		# -------------------------------------------------------
+		/**
 		 * Set the current progress bar message
 		 *
 		 * @param string $ps_message The message to set.
@@ -264,9 +353,14 @@
 		public function setMessage($ps_message, $pb_refresh=true) {
 			$this->ops_message = $ps_message;
 			
+			$this->setCache($ps_message);
+			
 			switch($vs_mode = $this->getMode()) {
 				case 'CLI':
 					CLIProgressBar::setMessage($ps_message);
+					break;
+				case 'WebUI':
+					// noop
 					break;
 			}
 			
@@ -291,6 +385,57 @@
 		 */
 		public function setError($ps_message) {
 			return $this->setMessage(_t('[ERROR] %1', $ps_message));
+		}
+		# -------------------------------------------------------
+		# Cache
+		# -------------------------------------------------------
+		/**
+		 * Set the per-job_id progress bar cache with the current state of the progress bar
+		 *
+		 * @param string $ps_message The message
+		 * @return array The cached data or null if no job_id was set or the cache could not be opened.
+		 */
+		private function setCache($ps_message=null) {
+			$va_data = null;
+			if ($this->ops_job_id && $this->opo_cache) {
+				if(!is_array($va_data = $this->opo_cache->load($this->ops_job_id))) {
+					$va_data = array();
+				}
+				$va_data['total'] = $this->getTotal();
+				$va_data['start'] = $this->opn_start;
+				$va_data['position'] = $this->getCurrentPosition();
+				$va_data['message'] = is_null($ps_message) ? $this->getMessage() : $ps_message;
+				
+				$this->opo_cache->save($va_data);
+			}
+			
+			return $va_data;
+		}
+		# -------------------------------------------------------
+		/**
+		 * Get the per-job_id progress bar cache with the current state of the progress bar
+		 *
+		 * @return array The cached data or null if no job_id was set or the cache could not be opened.
+		 */
+		private function getCache() {
+			$vs_data = null;
+			if ($this->ops_job_id && $this->opo_cache) {
+				if(!is_array($va_data = $this->opo_cache->load($this->ops_job_id))) {
+					$va_data = array('total' => $this->getTotal(), 'start' => $this->opn_start, 'position' => $this->getCurrentPosition(), 'message' => $this->getMessage());
+				}
+			}
+			return $va_data;
+		}
+		# -------------------------------------------------------
+		/**
+		 * Get the progress bar cache with the current state of the progress bar for the specified job_id
+		 *
+		 * @param string $ps_job_id Optional job_id to get progress bar data for. If omitted the currently set job_id is used.
+		 * @return array The cached data or null if no job_id was set or the cache could not be opened.
+		 */
+		public function getDataForJobID($ps_job_id=null) {
+			if($ps_job_id) { $this->setJobID($ps_job_id); }
+			return $this->getCache();
 		}
 		# ----------------------------------------------------------
 	}

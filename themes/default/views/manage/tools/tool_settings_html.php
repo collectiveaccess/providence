@@ -26,36 +26,77 @@
  * ----------------------------------------------------------------------
  */
  
-	$o_tool = $this->getVar('tool');
-	$vs_tool_identifier = $o_tool->getToolIdentifier();
+	$o_tool = 				$this->getVar('tool');
+	$vs_tool_identifier = 	$o_tool->getToolIdentifier();
+	
+	$va_settings = 			$this->getVar('available_settings');
+	$vs_form_id = 			$this->getVar('form_id');
+	$va_last_settings =		$this->getVar('last_settings');
 ?>
 <h1><?php print $o_tool->getToolName(); ?></h1>
 <div class="toolPluginHelpText">
 	<p><?php print $o_tool->getToolDescription(); ?></p>
 </div>
 <?php
-	//$va_last_settings = $this->getVar('batch_mediaimport_last_settings');
- 	
-	print caFormTag($this->request, 'Run', "caTool{$vs_tool_identifier}", null, 'POST', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
-
-	$va_settings = $o_tool->getAvailableSettings();
+	print caFormTag($this->request, 'Run', $vs_form_id, null, 'POST', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
 	
-	// Print command <select>
-	print "<div class='formLabel'>"._t('Command')."<br/>".caHTMLSelect('command', $o_tool->getCommands(), array('id' => 'caToolCommand'))."</div>\n";
-	
-	// Print settings
-	print $o_tool->getHTMLSettingForm(array('request' => $this->request));
-
-	print $this->render("tools/confirm_html.php");
-?>
-	<div class="editorBottomPadding"><!-- empty --></div>
-<?php
 	print $vs_control_box = caFormControlBox(
-		caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Run"), "caRunTool{$vs_tool_identifier}", array('onclick' => 'caShowConfirmBatchExecutionPanel(); return false;')).' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'manage', 'Tools', 'Settings/'.$this->request->getActionExtra(), array('tool' => $vs_tool_identifier)),
+		caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Run"), "caRunTool{$vs_tool_identifier}", array('onclick' => 'caShowConfirmToolExecutionPanel(); return false;')).' '.
+		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'manage', 'Tools', 'Settings', array('tool' => $vs_tool_identifier)),
 		'', 
 		''
 	);
+	// Print command <select>
+?>
+		<div class='bundleLabel'>
+			<span class="formLabelText"><?php print _t('Command'); ?></span> 
+			<div class="bundleContainer">
+				<div class="caLabelList" >
+					<p>
+<?php
+					print caHTMLSelect('command', $o_tool->getCommands(), array('id' => 'caToolCommand'));
+?>	
+					</p>
+				</div>
+			</div>
+		</div>
+<?php	
+
+	// Print settings controls
+	foreach($va_settings as $vs_setting => $va_setting_info) {
+?>
+		<div class='bundleLabel'>
+			<span class="formLabelText"><?php print $va_setting_info['label']; ?></span> 
+			<div class="bundleContainer">
+				<div class="caLabelList" >
+					<p>
+<?php
+					print $o_tool->settingHTMLFormElement($vs_setting, array('id' => "{$vs_form_id}_{$vs_setting}", 'name' => "{$vs_form_id}_{$vs_setting}", 'request' => $this->request));
+?>	
+					</p>
+				</div>
+			</div>
+		</div>
+<?php
+	}
+?>
+		<div class='bundleLabel'>
+			<span class="formLabelText"><?php print _t('Log level'); ?></span> 
+			<div class="bundleContainer">
+				<div class="caLabelList" >
+					<p>
+<?php
+					print caHTMLSelect('logLevel', caGetLogLevels(), array('id' => 'caLogLevel'), array('value' => $va_last_settings['logLevel']));
+?>
+					</p>
+				</div>
+			</div>
+		</div>
+<?php
+
+	print $this->render("tools/confirm_html.php");
+
+	print $vs_control_box;
 	
 	print caHTMLHiddenInput("tool", array('value' => $vs_tool_identifier));
 ?>
@@ -64,7 +105,7 @@
 <div class="editorBottomPadding"><!-- empty --></div>
 	
 <script type="text/javascript">
-	function caShowConfirmBatchExecutionPanel() {
+	function caShowConfirmToolExecutionPanel() {
 		var msg = '<?php print addslashes(_t("You are about to run <em>%2</em> in <em>%1</em>", $o_tool->getToolName())); ?>';
 		msg = msg.replace("%2", jQuery('#caToolCommand').val());
 		caConfirmBatchExecutionPanel.showPanel();

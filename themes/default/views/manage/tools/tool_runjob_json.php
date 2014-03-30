@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * default/views/manage/tools/directory_level_json.php : 
+ * default/views/manage/tools/tool_runjob_json.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -26,5 +26,5 @@
  * ----------------------------------------------------------------------
  */
  
-	print json_encode($this->getVar('directory_list'));
+	print json_encode($this->getVar('jobinfo'));
 ?>

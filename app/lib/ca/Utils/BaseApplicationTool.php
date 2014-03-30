@@ -102,6 +102,11 @@ require_once(__CA_LIB_DIR__.'/ca/ProgressBar.php');
 		 */
 		protected $ops_mode;	// CLI or WebUI
 		
+		/**
+		 * 
+		 */
+		protected $ops_job_id;	
+		
 		# -------------------------------------------------------
 		/**
 		 * Set up tool environment.
@@ -140,6 +145,24 @@ require_once(__CA_LIB_DIR__.'/ca/ProgressBar.php');
 				}
 			}
 			return $va_commands;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public function setJobID($ps_job_id=null, $pa_options=null) {
+			$this->ops_job_id = ($ps_job_id) ? $ps_job_id : md5(caGetOption('data', $pa_options, '').'_'.$this->getToolIdentifier().'_'.uniqid(rand(), true).'_'.microtime(true));
+			
+			return $this->ops_job_id;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public function getJobID() {
+			if (!$this->ops_job_id) { $this->setJobID(); }
+			
+			return $this->ops_job_id;
 		}
 		# -------------------------------------------------------
 		/**
@@ -258,7 +281,7 @@ require_once(__CA_LIB_DIR__.'/ca/ProgressBar.php');
 		 * @return ProgressBar
 		 */
 		public function getProgressBar($pn_total=null) {
-			$o_progress = new ProgressBar($this->getMode(), $pn_total);
+			$o_progress = new ProgressBar($this->getMode(), $pn_total, $this->ops_job_id);
 			if ($this->getMode() == 'CLI') { $o_progress->set('outputToTerminal', true); }
 			return $o_progress;
 		}

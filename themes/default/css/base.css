@@ -4494,7 +4494,7 @@ div.preferenceSectionDivider {
     padding: 10px;
     line-height:1.3em;
     overflow: hidden;
-    height: 1.2em;
+    height: 2.4em;
 }
 
 #batchProcessingElapsedTime {
@@ -5900,6 +5900,6 @@ div.caRepresentationMediaReplicationControls {
 
 /** Tool plugins **/
 .toolPluginHelpText {
-    margin: 5px 0 5px 10px;
+    margin: 5px 0 5px 0px;
     font-size:13px;
 }

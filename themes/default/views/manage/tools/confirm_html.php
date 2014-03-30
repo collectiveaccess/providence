@@ -73,6 +73,7 @@
 				<table class="caConfirmBatchExecutionPanelAlertControls">
 					<tr style="vertical-align: top;">
 <?php
+	$vb_queue_enabled = false; // TODO: add support for background processing
 	if ($vb_queue_enabled) {
 ?>
 				<td class="caConfirmBatchExecutionPanelAlertControls">

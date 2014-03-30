@@ -39,23 +39,30 @@
 	class ToolsManager {
 		# -------------------------------------------------------
 		/**
-		 *
+		 * Instance of application plugin manager, used to query available tools
 		 */
 		private $opo_app_plugin_manager;
 		# -------------------------------------------------------
+		/**
+		 * Constructor
+		 */
 		public function __construct() {
  			$this->opo_app_plugin_manager = new ApplicationPluginManager();
 		}
 		# -------------------------------------------------------
 		/**
 		 * Return possible commands for CLI caUtils
+		 *
+		 * @return array
 		 */
 		public function getToolCommands() {
 			return $this->getToolCommandList();
 		}
 		# -------------------------------------------------------
 		/**
-		 * 
+		 * Return list of availble tools
+		 *
+		 * @return array List of available tools
 		 */
 		public function getTools() {
 			$va_tools = $this->opo_app_plugin_manager->hookGetToolInstances();
@@ -64,14 +71,19 @@
 		}
 		# -------------------------------------------------------
 		/**
-		 * 
+		 * Return number of available tools
+		 *
+		 * @return int Number of tools
 		 */
 		public function getToolCount() {
 			return sizeof($this->getTools());
 		}
 		# -------------------------------------------------------
 		/**
-		 * 
+		 * Return instance of tool
+		 *
+		 * @param string $ps_tool_name The name or identifier of the tool
+		 * @return BaseApplicationTool Instance of tool or null if name/identifier is invalid
 		 */
 		public function getTool($ps_tool_name) {
 			$va_tool_list = $this->getTools();
@@ -93,6 +105,8 @@
 		# -------------------------------------------------------
 		/**
 		 * Return possible commands for CLI caUtils
+		 *
+		 * @return array List of commands grouped by tool
 		 */
 		public function getToolCommandList() {
 			return $this->opo_app_plugin_manager->hookCLICaUtilsGetCommands();
