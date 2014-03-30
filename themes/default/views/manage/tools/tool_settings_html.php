@@ -35,26 +35,29 @@
 </div>
 <?php
 	//$va_last_settings = $this->getVar('batch_mediaimport_last_settings');
- 
-	print $vs_control_box = caFormControlBox(
-		caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Run"), "caTool{$vs_tool_identifier}", array('onclick' => 'caShowConfirmBatchExecutionPanel(); return false;')).' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'manage', 'Tools', 'Settings/'.$this->request->getActionExtra(), array('tool' => $vs_tool_identifier)),
-		'', 
-		''
-	);
-	
-	print caFormTag($this->request, 'Run/'.$this->request->getActionExtra(), "caTool{$vs_tool_identifier}", null, 'POST', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
+ 	
+	print caFormTag($this->request, 'Run', "caTool{$vs_tool_identifier}", null, 'POST', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
 
 	$va_settings = $o_tool->getAvailableSettings();
 	
 	// Print command <select>
-	print "<div class='formLabel'>"._t('Command')."<br/>".caHTMLSelect('command', $o_tool->getCommands())."</div>\n";
+	print "<div class='formLabel'>"._t('Command')."<br/>".caHTMLSelect('command', $o_tool->getCommands(), array('id' => 'caToolCommand'))."</div>\n";
 	
 	// Print settings
 	print $o_tool->getHTMLSettingForm(array('request' => $this->request));
 
 	print $this->render("tools/confirm_html.php");
-	print $vs_control_box;
+?>
+	<div class="editorBottomPadding"><!-- empty --></div>
+<?php
+	print $vs_control_box = caFormControlBox(
+		caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Run"), "caRunTool{$vs_tool_identifier}", array('onclick' => 'caShowConfirmBatchExecutionPanel(); return false;')).' '.
+		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'manage', 'Tools', 'Settings/'.$this->request->getActionExtra(), array('tool' => $vs_tool_identifier)),
+		'', 
+		''
+	);
+	
+	print caHTMLHiddenInput("tool", array('value' => $vs_tool_identifier));
 ?>
 	</form>
 	
@@ -62,13 +65,9 @@
 	
 <script type="text/javascript">
 	function caShowConfirmBatchExecutionPanel() {
-		var msg = '<?php print addslashes(_t("You are about to run <em>%1</em> in <em>%2</em>")); ?>';
-		msg = msg.replace("%1", jQuery('#caDirectoryValue').val());
+		var msg = '<?php print addslashes(_t("You are about to run <em>%2</em> in <em>%1</em>", $o_tool->getToolName())); ?>';
+		msg = msg.replace("%2", jQuery('#caToolCommand').val());
 		caConfirmBatchExecutionPanel.showPanel();
 		jQuery('#caConfirmBatchExecutionPanelAlertText').html(msg);
 	}
-	
-	$(document).bind('drop dragover', function (e) {
-		e.preventDefault();
-	});
 </script>

@@ -30,6 +30,8 @@
 	
 	$vb_queue_enabled = (bool)$this->request->config->get('queue_enabled');
  	$va_last_settings = $this->getVar('batch_mediaimport_last_settings');
+ 	
+ 	$vs_tool_identifier = $this->getVar('tool_identifier');
 ?>
 <script type="text/javascript">
 	var caConfirmBatchExecutionPanel;
@@ -55,7 +57,7 @@
 	});
 	
 	function caRunTool() {
-		jQuery("#caBatchMediaImportForm").submit();
+		jQuery("#caTool<?php print $vs_tool_identifier; ?>").submit();
 	}
 </script>
 <div id="caConfirmBatchExecutionPanel" class="caConfirmBatchExecutionPanel"> 

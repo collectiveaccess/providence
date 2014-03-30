@@ -46,6 +46,9 @@
  		# -------------------------------------------------------
  		#
  		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			if (!$po_request->isLoggedIn() || !$po_request->user->canDoAction('can_use_plugin_tools')) { 
  				$this->response->setRedirect($po_request->config->get('error_display_url').'/n/3000?r='.urlencode($po_request->getFullUrlPath()));
@@ -60,10 +63,7 @@
  		}
  		# -------------------------------------------------------
  		/**
- 		 * List 
- 		 *
- 		 * @param array $pa_values An optional array of values to preset in the format, overriding any existing values in the model of the record being editing.
- 		 * @param array $pa_options Array of options passed through to _initView
+ 		 * 
  		 *
  		 */
  		public function Index($pa_values=null, $pa_options=null) {
@@ -77,6 +77,9 @@
  			$this->render('tools/tools_list_html.php');
  		}
  		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
  		public function Settings() {
  			if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_use_plugin_tools')) { 
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3000?r='.urlencode($this->request->getFullUrlPath()));
@@ -89,28 +92,36 @@
  			}
  			
  			$this->view->setVar('tool', $o_tool);
+ 			$this->view->setVar('tool_identifier', $o_tool->getToolIdentifier());
  			
 			$this->render('tools/tool_settings_html.php');
  		}
  		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
  		public function Run() {
  			if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_use_plugin_tools')) { 
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3000?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
- 			
  			$ps_tool_name = $this->request->getParameter('tool', pString);
- 			$t_exporter = $this->getExporterInstance();
  			
  			if(!($o_tool = $this->opo_tools_manager->getTool($ps_tool_name))) {
  				die("Bad tool");
  			}
- 			
+ 			print_R($_REQUEST);
  			$this->view->setVar('tool', $o_tool);
+ 			$this->view->setVar('tool_identifier', $o_tool->getToolIdentifier());
+ 			
+ 			
  			
 			$this->render('tools/tool_run_html.php');
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
  		public function GetDirectoryLevel() {
  			if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_use_plugin_tools')) { 
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3000?r='.urlencode($this->request->getFullUrlPath()));
@@ -176,6 +187,9 @@
  			$this->render('tools/directory_level_json.php');
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
  		public function GetDirectoryAncestorList() {
  			if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_use_plugin_tools')) { 
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3000?r='.urlencode($this->request->getFullUrlPath()));
