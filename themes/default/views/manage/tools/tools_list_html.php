@@ -68,7 +68,8 @@ if (!$this->request->isAjax()) {
 			</thead>
 			<tbody>
 <?php
-	foreach($va_tool_list as $vs_name => $o_tool) {
+	if (sizeof($va_tool_list) > 0) {
+		foreach($va_tool_list as $vs_name => $o_tool) {
 ?>
 			<tr>
 				<td>
@@ -79,16 +80,21 @@ if (!$this->request->isAjax()) {
 				</td>
 				<td>
 <?php
-	$va_commands = $o_tool->getCommands();
-	foreach($va_commands as $vs_command) {
-		print "<u>{$vs_command}</u> – <em>".$o_tool->getShortHelpText($vs_command)."</em>";
-	}
+				$va_commands = $o_tool->getCommands();
+				foreach($va_commands as $vs_command) {
+					print "<u>{$vs_command}</u> – <em>".$o_tool->getShortHelpText($vs_command)."</em>";
+				}
 ?>
 				</td>
 				<td>
 					<?php print caNavButton($this->request, __CA_NAV_BUTTON_GO__, _t("Run"), 'manage', 'Tools', 'Settings', array('tool' => $o_tool->getToolIdentifier()), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 				</td>
 			</tr>
+<?php
+		}
+	} else {
+?>
+	<tr><td colspan="4" align="center"><?php print _t('No tools are available'); ?></td></tr>
 <?php
 	}
 ?>

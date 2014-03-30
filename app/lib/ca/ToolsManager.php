@@ -66,6 +66,7 @@
 		 */
 		public function getTools() {
 			$va_tools = $this->opo_app_plugin_manager->hookGetToolInstances();
+			if(!is_array($va_tool_list) || !sizeof($va_tool_list)) { return array(); }
 			$va_tool_list = array_shift($va_tools);
 			return  $va_tool_list;
 		}
