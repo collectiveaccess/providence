@@ -52,6 +52,12 @@ require_once(__CA_LIB_DIR__.'/ca/BaseApplicationPlugin.php');
 		 * Title of tool. This should be formatted for display and unique to the tool.
 		 */
 		protected $tool_title = 'NO_CLASS_SET';
+		
+		/**
+		 * Plugin configuration
+		 */
+		protected $config;
+		
 		# -------------------------------------------------------
 		public function __construct() {
 			parent::__construct();
@@ -111,11 +117,16 @@ require_once(__CA_LIB_DIR__.'/ca/BaseApplicationPlugin.php');
 		 * Override checkStatus() to return true
 		 */
 		public function checkStatus() {
+			if ($this->config) {
+				$vb_enabled = (bool)$this->config->get('enabled');
+			} else {
+				$vb_enabled = true;
+			}
 			return array(
 				'description' => $this->getDescription(),
 				'errors' => array(),
 				'warnings' => array(),
-				'available' => true
+				'available' => $vb_enabled
 			);
 		}
 		# -------------------------------------------------------

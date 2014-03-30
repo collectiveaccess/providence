@@ -48,6 +48,8 @@
 			$this->tool = new pier21OralHistoryImportTool();
 			
 			
+			$this->config = Configuration::load($ps_plugin_path."/conf/pier21Tools.conf");
+			
 			parent::__construct($ps_plugin_path);
 		}
 		# -------------------------------------------------------

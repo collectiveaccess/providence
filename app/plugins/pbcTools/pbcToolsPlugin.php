@@ -47,6 +47,7 @@
 			 */
 			$this->tool = new pbcImportSIPTool();
 			
+			$this->config = Configuration::load($ps_plugin_path."/conf/pbcTools.conf");
 			
 			parent::__construct($ps_plugin_path);
 		}
