@@ -1227,6 +1227,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					$o_view->setVar('form_element', ($vn_id = (int)$this->get($ps_bundle_name)) ? $vn_id : "&lt;"._t('Not yet issued')."&gt;");
 				} else {
 					$vb_read_only = ($pa_bundle_settings['readonly'] || ($pa_options['request']->user->getBundleAccessLevel($this->tableName(), $ps_bundle_name) == __CA_BUNDLE_ACCESS_READONLY__)) ? true : false;
+
+					$va_additional_field_options = array();
+					if($vn_width = caGetOption('width', $pa_bundle_settings)){
+						$va_additional_field_options['width'] = $vn_width;
+					}
+					if($vn_height = caGetOption('height', $pa_bundle_settings)){
+						$va_additional_field_options['height'] = $vn_height;
+					}
 					
 					$o_view->setVar('form_element', $this->htmlFormElement($ps_bundle_name, ($this->getProperty('ID_NUMBERING_ID_FIELD') == $ps_bundle_name) ? $o_config->get('idno_element_display_format_without_label') : $o_config->get('bundle_element_display_format_without_label'), 
 						array_merge(
@@ -1236,7 +1244,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 								'progress_indicator'		=> $pa_options['request']->getThemeUrlPath()."/graphics/icons/indicator.gif",
 								'lookup_url' 				=> $va_lookup_url_info['intrinsic']
 							),
-							$pa_options
+							$pa_options,
+							$va_additional_field_options
 						)
 					));
 				}
