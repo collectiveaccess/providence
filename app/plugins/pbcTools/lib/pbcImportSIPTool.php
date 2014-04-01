@@ -72,7 +72,7 @@ require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 					'displayType' => DT_FILE_BROWSER,
 					'width' => 100, 'height' => 1,
 					'takesLocale' => false,
-					'default' => '1',
+					'default' => '',
 					'label' => _t('Import directory'),
 					'description' => _t('Directory containing SIPS to import.')
 				)
@@ -119,15 +119,20 @@ require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 			foreach($va_files as $vs_file) {
 				if (!preg_match("!\.zip$!i", $vs_file)) { continue; }
 				
-				$o_progress->next(_t('Processing %1', $vs_file));
+				$o_progress->setMessage(_t('Processing %1', $vs_file));
 				
-				// unpack ZIP
-				$va_archive_files = caGetDirectoryContentsAsList('phar://'.$vs_file);
-				
+				// unpack ZIP 
+				$va_package_files = caGetDirectoryContentsAsList('phar://'.$vs_file.'/', false, false, false, true);
+foreach($va_package_files as $vs_package_path) {
+				$va_tmp = explode("/", $vs_package_path);
+				$vs_package_dir = array_pop($va_tmp);
+				$va_archive_files = caGetDirectoryContentsAsList('phar://'.$vs_file.'/'.$vs_package_dir, true);
+						
 				// Does it look like a SIP?
 				$vb_is_sip = false;
 				$vs_idno = $vs_zip_path = $vs_category = null;
 				$va_sides = array();
+			
 				foreach($va_archive_files as $vs_archive_file) {
 					if ($o_log) { $o_log->logDebug(_t("Testing file %1 for SIP-ness", $vs_archive_file)); }
 					if (preg_match("!category.txt$!", $vs_archive_file)) {
@@ -150,7 +155,13 @@ require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 				}
 				
 				$va_track_audio_by_side = $va_track_xml_by_side = $va_side_audio = $va_side_xml = $va_artifacts = array();
+				
+				// Reset total # of SIPS with contents of ZIP
+				$o_progress->setTotal($o_progress->getTotal() - 1 + sizeof($va_archive_files));
+			
 				foreach($va_archive_files as $vs_archive_file) {
+					
+				$o_progress->next(_t('Processing %1', $vs_archive_file));
 					$vs_file_in_zip = str_replace("phar://{$vs_file}/{$vs_idno}", "", $vs_archive_file);
 					
 					$va_tmp = explode("/", $vs_file_in_zip);
@@ -190,12 +201,11 @@ require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 					}
 				}
 				
-				//	print_R($va_archive_files);
-				
 				
 				// Process
-					
 				// Create parent record
+				
+				$o_progress->setMessage(_t("Creating reel for %1", $vs_idno));
 				$va_ids = ca_objects::find(array('idno' => $vs_idno, 'deleted' => 0, 'type_id' => 'reel'), array('returnAs' => 'ids'));
 				if (!is_array($va_ids) || !sizeof($va_ids)) { 
 					$t_object = new ca_objects();
@@ -234,10 +244,12 @@ require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 					$t_object->setMode(ACCESS_WRITE);
 				}
 
-							
+				
+				$o_progress->setMessage(_t("Linking artifact images for %1", $vs_idno));
 				foreach($va_artifacts as $vs_artifact) {
 					copy($vs_artifact, $vs_tmp_filepath = "/tmp/pbc".md5(time()));
 					$t_object->addRepresentation($vs_tmp_filepath, 'front', $pn_locale_id, 0, 1, 1);
+					$o_progress->setMessage(_t("Added artifact image %1 for %2", $vs_artifact, $vs_idno));
 					
 					if ($t_object->numErrors()) {
 						if ($o_log) { $o_log->logError(_t("Could not add artifact media %1 to reel %2: %3", pathinfo($vs_artifact, PATHINFO_BASENAME), $vs_idno, join("; ", $t_object->getErrors()))); }
@@ -248,6 +260,8 @@ require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 				}
 				
 				// Create tracks
+				
+				$o_progress->setMessage(_t("Creating tracks for %1", $vs_idno));
 				foreach($va_track_audio_by_side as $vs_side => $va_tracks) {
 					foreach($va_tracks as $vn_i => $vs_audio) {
 						$vs_ext = pathinfo($vs_audio, PATHINFO_EXTENSION);
@@ -258,6 +272,7 @@ require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 						// Does track already exist?
 						$va_track_ids = ca_objects::find(array('idno' => $vs_track_idno, 'deleted' => 0), array('returnAs' => 'ids'));
 						
+				$o_progress->setMessage(_t("Creating %2 track for %1", $vs_track_idno, $vs_category));
 						if (!is_array($va_track_ids) || !sizeof($va_track_ids)) { 
 							// Create track record
 							$t_track = new ca_objects();
@@ -290,6 +305,7 @@ require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 						//
 						// Add track XML
 						//
+						$o_progress->setMessage(_t("Adding track XML for %1", $vs_track_idno));
 						copy($va_track_xml_by_side[$vs_side][$vn_i], $vs_xml_tmppath = "./".pathinfo($va_track_xml_by_side[$vs_side][$vn_i], PATHINFO_BASENAME));
 						$t_track->replaceAttribute(
 							array(
@@ -305,10 +321,13 @@ require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 						//
 						// Add track audio
 						//
+						$o_progress->setMessage(_t("Adding track audio for %1", $vs_track_idno));
+						
 						$t_track->addRepresentation($vs_tmp_filepath, 'front', $pn_locale_id, 0, 1, 1);
 						
 						if ($t_track->numErrors()) {
-							if ($o_log) { $o_log->logError(_t("Could not import audio file %1 into track %2: %3", pathinfo($vs_audio, PATHINFO_BASENAME), $vs_track_idno, join("; ", $t_track->getErrors()))); }
+							if ($o_log) { $o_log->logError($vs_err_msg = _t("Could not import audio file %1 into track %2: %3", pathinfo($vs_audio, PATHINFO_BASENAME), $vs_track_idno, join("; ", $t_track->getErrors()))); }
+							if ($o_progress) { $o_progress->setError($vs_err_msg); }
 						}
 						
 						// Remove tmp files
@@ -316,6 +335,7 @@ require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 						unlink($vs_xml_tmppath);
 					}
 				}
+}
 			}
 			
 			
