@@ -185,7 +185,7 @@ class Installer {
 		if(isset($po_simplexml[$ps_attr])){
 			return (string) $po_simplexml[$ps_attr];
 		} else {
-			return false;
+			return null;
 		}
 	}
 	# --------------------------------------------------

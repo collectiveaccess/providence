@@ -176,9 +176,9 @@
  			// we do this because we don't print "$10" (which is expected in the Zend locale rules) but "USD 10" ... and that looks nicer with an additional space.
  			// we also replace the weird multibyte nonsense Zend uses as placeholder with something more reasonable so that
  			// whatever we output here isn't rejected if thrown into parseValue() again
- 			if(mb_substr($vs_decimal_with_placeholder,0,2)=="¤") { // '¤' has length 2
+ 			if(substr($vs_decimal_with_placeholder,0,2)=="¤") { // '¤' has length 2
  				$vs_decimal_with_placeholder = str_replace("¤", '% ', $vs_decimal_with_placeholder);
- 			} elseif(mb_substr($vs_decimal_with_placeholder, -2)=="¤") { // placeholder at the end
+ 			} elseif(substr($vs_decimal_with_placeholder, -2)=="¤") { // placeholder at the end
  				$vs_decimal_with_placeholder = preg_replace("![^\d\,\.]!", "", $vs_decimal_with_placeholder)." %";
  			}
 
