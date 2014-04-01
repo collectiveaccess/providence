@@ -310,6 +310,18 @@
 		public function setTotal($pn_total) {
 			if ($pn_total >= 0) { 
 				$this->opn_total = $pn_total;
+				
+				switch($vs_mode = $this->getMode()) {
+					case 'CLI':
+						CLIProgressBar::setTotal($this->opn_total);
+						break;
+					case 'WebUI':
+						// noop
+						break;
+					default:
+						$vs_output = _t("Invalid mode %1", $vs_mode);
+						break;
+				}
 				return true;
 			}
 			return false;
