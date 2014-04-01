@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,7 +24,7 @@
  * http://www.CollectiveAccess.org
  *
  * @package CollectiveAccess
- * @subpackage Geographic
+ * @subpackage InformationService
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
@@ -100,7 +100,7 @@ $g_information_service_settings_CollectiveAccess = array(
 			'displayType' => DT_FIELD,
 			'default' => '',
 			'width' => 90, 'height' => 3,
-			'label' => _t('Query result label format'),
+			'label' => _t('Detail format'),
 			'description' => _t('Display template to format detailed information blocks with.')
 		)
 );
