@@ -1437,8 +1437,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 					inspectorCookieJar.set('inspectorShowMediaIsOpen', (this.style.display == 'block') ? 1 : 0); 
 						caResizeSideNav();
 				}); 
+				return false;
 			}
-			return false;
 		});
 					";
 				}
