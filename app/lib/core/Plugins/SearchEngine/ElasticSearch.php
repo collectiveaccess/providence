@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -74,7 +74,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		
 		$this->opa_options = array(
 			'start' => 0,
-			'limit' => 10000,												// maximum number of hits to return [default=10000],
+			'limit' => 100000,												// maximum number of hits to return [default=10000],
 			'maxIndexingBufferSize' => $vn_max_indexing_buffer_size			// maximum number of indexed content items to accumulate before writing to the index
 		);
 
@@ -116,9 +116,6 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	}
 	# -------------------------------------------------------
 	public function search($pn_subject_tablenum, $ps_search_expression, $pa_filters=array(), $po_rewritten_query=null){
-		$t = new Timer();
-		$va_solr_search_filters = array();
-		
 		$vn_i = 0;
 		$va_old_signs = $po_rewritten_query->getSigns();
 		
@@ -309,7 +306,6 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$ps_search_expression .= ' AND ('.$vs_filter_query.')';
 		}
 		
-		
 		$vo_http_client = new Zend_Http_Client();
 		$vo_http_client->setUri(
 			$this->opo_search_config->get('search_elasticsearch_base_url')."/".
@@ -321,6 +317,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		$vo_http_client->setParameterGet(array(
 			'size' => intval($this->opa_options["limit"]),
 			'q' => $ps_search_expression,
+			'fields' => ''
 		));
 		
 		$vo_http_response = $vo_http_client->request();

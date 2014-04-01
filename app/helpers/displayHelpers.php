@@ -1672,6 +1672,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 			$vs_display_name = mb_strtolower($vs_display_name, 'UTF-8');
 			
 			if (!caTableIsActive($vn_table_num)) { continue; }
+			$vs_table_name = $o_dm->getTableName($vn_table_num);
 			
 			switch($vs_table_name) {
 				case 'ca_occurrences':
@@ -1901,7 +1902,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		$va_proc_templates = array();
 		$vn_i = 0;
 		
-		$o_if = $o_doc("if");						// if 
+		$o_ifs = $o_doc("if");						// if 
 		$o_ifdefs = $o_doc("ifdef");				// if defined
 		$o_ifnotdefs = $o_doc("ifnotdef");			// if not defined
 		$o_mores = $o_doc("more");					// more tags – content suppressed if there are no defined values following the tag pair
@@ -1909,11 +1910,11 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		$o_ifcounts = $o_doc("ifcount");			// if count - conditionally return template if # of items is in-bounds
 		
 		$va_if = array();
-		foreach($o_if as $o_if) {
+		foreach($o_ifs as $o_if) {
 			if (!$o_if) { continue; }
 			
 			$vs_html = $o_if->html();
-			$vs_content = $o_f->getInnerText();
+			$vs_content = $o_if->getInnerText();
 			
 			$va_if[] = array('directive' => $vs_html, 'content' => $vs_content, 'rule' => $vs_rule = (string)$o_if->getAttribute('rule'));
 		}
@@ -2693,7 +2694,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		$va_tmp = $po_rep->getMediaInfo('media', $ps_version);
 		$va_dimensions = array();
 			if (isset($va_tmp['WIDTH']) && isset($va_tmp['HEIGHT'])) {
-			if (($vn_w = $va_tmp['WIDTH']) && ($vn_h = $va_tmp['WIDTH'])) {
+			if (($vn_w = $va_tmp['WIDTH']) && ($vn_h = $va_tmp['HEIGHT'])) {
 				$va_dimensions[] = $va_tmp['WIDTH'].'p x '.$va_tmp['HEIGHT'].'p';
 			}
 		}
@@ -2796,19 +2797,19 @@ $ca_relationship_lookup_parse_cache = array();
 			$o_config = $pa_options['config'];
 		}
 		
-		$pn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
-		$ps_inline_create_message = (isset($pa_options['inlineCreateMessage'])) ? (string)$pa_options['inlineCreateMessage'] : null;
-		$ps_inline_create_does_not_exist_message = (isset($pa_options['inlineCreateMessageDoesNotExist'])) ? (string)$pa_options['inlineCreateMessageDoesNotExist'] : null;
-		$ps_inline_create_query = (isset($pa_options['inlineCreateQuery'])) ? (string)$pa_options['inlineCreateQuery'] : null;
-		$ps_inline_create_query_lc = mb_strtolower($ps_inline_create_query);
+		$pn_limit = 								caGetOption('limit', $pa_options, null);
+		$ps_inline_create_message = 				caGetOption('inlineCreateMessage', $pa_options, null);
+		$ps_inline_create_does_not_exist_message = 	caGetOption('inlineCreateMessageDoesNotExist', $pa_options, null);
+		$ps_inline_create_query = 					caGetOption('inlineCreateQuery', $pa_options, null);
+		$ps_inline_create_query_lc = 				mb_strtolower($ps_inline_create_query);
 		
-		$ps_empty_result_message = (isset($pa_options['emptyResultMessage'])) ? (string)$pa_options['emptyResultMessage'] : null;
-		$ps_empty_result_query = (isset($pa_options['emptyResultQuery'])) ? (string)$pa_options['emptyResultQuery'] : null;
+		$ps_empty_result_message = 					caGetOption('emptyResultMessage', $pa_options, null);
+		$ps_empty_result_query = 					caGetOption('emptyResultQuery', $pa_options, null);
 		
-		$vs_template = (isset($pa_options['template'])) ? (string)$pa_options['template'] : null;
-		$vs_cache_key = md5($vs_display_format);
+		$vs_template =								caGetOption('template', $pa_options, null);
+		$vs_cache_key = 							md5($vs_display_format);
 		
-		$va_exclude = (isset($pa_options['exclude']) && is_array($pa_options['exclude'])) ? $pa_options['exclude'] : array();
+		$va_exclude = 								caGetOption('exclude', $pa_options, array(), array('castTo' => 'array'));
 		
 		//
 		// Originally the lookup display setting was a string with embedded tokens prefixed with carets. We still have to support this
@@ -2824,7 +2825,7 @@ $ca_relationship_lookup_parse_cache = array();
 			$vs_display_delimiter = $ca_relationship_lookup_parse_cache[$vs_rel_table][$vs_cache_key]['delimiter'];
 			$vb_use_new_display_format = true;
 		} else {
-			if (($vs_display_format = $o_config->get($vs_rel_table.'_lookup_settings')) && !is_array($vs_display_format)) {				
+			if (($vs_display_format = $o_config->get("{$vs_rel_table}_lookup_settings")) && !is_array($vs_display_format)) {				
 				if ($vs_display_format && is_string($vs_display_format) && !preg_match_all('!\^{1}([A-Za-z0-9\._]+)!', $vs_display_format, $va_matches)) {
 					$vs_display_format = '^'.$vs_rel_table.'.preferred_labels';
 					$va_bundles = array($vs_rel_table.'.preferred_labels');
@@ -2832,10 +2833,10 @@ $ca_relationship_lookup_parse_cache = array();
 					$va_bundles = $va_matches[1];
 				}
 			} else {
-				if (is_array($va_display_format = $o_config->getList($vs_rel_table.'_lookup_settings'))) {
+				if (is_array($va_display_format = $o_config->getList("{$vs_rel_table}_lookup_settings"))) {
 					$vb_use_new_display_format = true;
 				
-					if(!($vs_display_delimiter = $o_config->get($vs_rel_table.'_lookup_delimiter'))) {
+					if(!($vs_display_delimiter = $o_config->get("{$vs_rel_table}_lookup_delimiter"))) {
 						$vs_display_delimiter = ' ';
 					} else {
 						$vs_display_delimiter = " {$vs_display_delimiter} ";
@@ -2876,8 +2877,8 @@ $ca_relationship_lookup_parse_cache = array();
 					}
 				}
 			} else {
-				$vs_table = $qr_rel_items->tableName();
-				$vs_pk = $qr_rel_items->primaryKey();
+				$vs_table = 	$qr_rel_items->tableName();
+				$vs_pk = 		$qr_rel_items->primaryKey();
 				
 				$va_primary_ids = (method_exists($pt_rel, "isSelfRelationship") && ($vb_is_self_rel = $pt_rel->isSelfRelationship())) ? caGetOption("primaryIDs", $pa_options, null) : null;
 				while($qr_rel_items->nextHit()) {
@@ -3003,7 +3004,7 @@ $ca_relationship_lookup_parse_cache = array();
 				
 				if (!isset($va_items[$va_relation[$vs_rel_pk]]['_display']) || !$va_items[$va_relation[$vs_rel_pk]]['_display']) {
 					if ($vs_template) {
-						$va_items[$va_relation[$vs_rel_pk]]['_display'] = caProcessTemplateForIDs($vs_template, $vs_rel_table, array($va_relation[$vs_rel_pk]), array('returnAsArray' => false, 'returnAsLink' => true, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table));
+						$va_items[$va_relation[$vs_rel_pk]]['_display'] = caProcessTemplateForIDs($vs_template, $pt_rel->tableName(), array($va_relation['relation_id']), array('returnAsArray' => false, 'returnAsLink' => true, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table));
 					} else {
 						$va_items[$va_relation[$vs_rel_pk]]['_display'] = $va_items[$va_relation[$vs_rel_pk]]['label'];
 					}

@@ -179,6 +179,7 @@ if($vo_result->numHits() > 0) {
 				
 					currentBox = "searchToolsBox";
 					currentShowButton = "showTools";
+					jQuery("input.addItemToSetControl").show(); 
 				} 
 				break;
 			case 'sets':

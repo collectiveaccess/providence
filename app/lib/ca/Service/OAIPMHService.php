@@ -748,13 +748,19 @@ class OAIPMHService extends BaseService {
 			}
 		}
 
-		$this->exporter = ca_data_exporters::loadExporterByCode($this->getMappingCode());
+		if($vs_mapping = $this->getMappingCode()){
+			if($this->exporter = ca_data_exporters::loadExporterByCode($this->getMappingCode())){
+				if($this->exporter->getSetting('exporter_format') != "XML"){
+					$this->throwError(self::OAI_ERR_BAD_ARGUMENT, _t("Selected mapping %1 is invalid",$this->getMappingCode()));
+				}
 
-		if($this->exporter->getSetting('exporter_format') != "XML"){
-			$this->throwError(self::OAI_ERR_BAD_ARGUMENT, _t("Selected mapping %1 is invalid",$this->getMappingCode()));
+				$this->table = $this->exporter->getAppDatamodel()->getTableName($this->exporter->get('table_num'));
+			} else {
+				$this->throwError(self::OAI_ERR_CANNOT_DISSEMINATE_FORMAT, _t("Exporter with code %1 does not exist",$this->getMappingCode()));
+			}
+		} else {
+			$this->throwError(self::OAI_ERR_CANNOT_DISSEMINATE_FORMAT, _t("metadataPrefix or default_format is invalid",$this->getMappingCode()));
 		}
-
-		$this->table = $this->exporter->getAppDatamodel()->getTableName($this->exporter->get('table_num'));
 
 		return !$this->error;
 	}
@@ -824,7 +830,7 @@ class OAIPMHService extends BaseService {
 	 * Responds to GetRecord OAI verb
 	 */
 	public function getMappingCode() {
-		$ps_metadata_prefix = $this->opo_request->getParameter('metadata_prefix', pString);
+		$ps_metadata_prefix = $this->opo_request->getParameter('metadataPrefix', pString);
 
 		if(!$ps_metadata_prefix && isset($this->opa_provider_info['default_format'])) {
 			$ps_metadata_prefix = $this->opa_provider_info['default_format'];
