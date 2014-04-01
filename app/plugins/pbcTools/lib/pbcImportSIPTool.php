@@ -75,15 +75,6 @@ require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 					'default' => '',
 					'label' => _t('Import directory'),
 					'description' => _t('Directory containing SIPS to import.')
-				),
-				'comments' => array(
-					'formatType' => FT_TEXT,
-					'displayType' => DT_FIELD,
-					'width' => 100, 'height' => 2,
-					'takesLocale' => false,
-					'default' => '',
-					'label' => _t('Comments'),
-					'description' => _t('Test!.')
 				)
 			);
 			
