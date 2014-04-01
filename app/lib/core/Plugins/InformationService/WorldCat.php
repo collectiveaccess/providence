@@ -72,13 +72,26 @@ $g_information_service_settings_WorldCat = array(
 			'label' => _t('Query result label format'),
 			'description' => _t('Display template to format query result labels with.')
 		),
-		'detailFormat' => array(
+		'detailStyle' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'default' => '',
+			'options' => array(
+				_t('Labeled MARC fields') => 'labels',
+				_t('MARC codes') => 'codes',
+				_t('Template') => 'template'
+			),
+			'width' => 50, 'height' => 1,
+			'label' => _t('Detail style'),
+			'description' => _t('Sets the style of the detail view. Use <em>Labeled MARC fields</em> to display MARC fields with english labels, <em>MARC codes</em> to display with numeric MARC codes, and <em>template</em> to use the XSL template specified below.')
+		),
+		'detailXSLTemplate' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
 			'default' => '',
 			'width' => 90, 'height' => 3,
-			'label' => _t('Query result label format'),
-			'description' => _t('Display template to format detailed information blocks with.')
+			'label' => _t('Detail XSL template'),
+			'description' => _t('A valid XSL template for transforming MARCXML provided by WorldCat into HTML for display. Only used when valid XSL and <em>Detail style</em> is set to <em>template</em>.')
 		)
 );
 
@@ -167,8 +180,43 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 		$o_response = $o_request->send();
 		$vs_data = (string)$o_response->getBody();
 		
-		$va_data = array('display' => nl2br(htmlentities($vs_data)));
+		try {
+			$xml = new DOMDocument;
+			$xml->loadXML($vs_data);
+		} catch (Exception $e) {
+			return array('display' => _t('WorldCat data could not be parsed: %1', $e->getMessage()));
+		}
 		
+		switch($pa_settings['detailStyle']) {
+			case 'labels':
+			default:
+				$vs_template = file_get_contents(__CA_LIB_DIR__."/core/Plugins/InformationService/WorldCat/MARC21slim2English.xml");
+				break;
+			case 'codes':
+				$vs_template = file_get_contents(__CA_LIB_DIR__."/core/Plugins/InformationService/WorldCat/MARC21slim2HTML.xml");
+				break;
+			case 'template':
+				$vs_template = $pa_settings['detailXSLTemplate'];
+				break;
+		}
+		
+		try {
+			$xsl = new DOMDocument;
+			$xsl->loadXML($vs_template);
+		} catch (Exception $e) {
+			return array('display' => _t('WorldCat detail display template could not be parsed: %1', $e->getMessage()));
+		}
+		
+		try {
+			$proc = new XSLTProcessor;
+			$proc->importStyleSheet($xsl);
+
+			$vs_output= $proc->transformToXML($xml);
+		
+			$va_data = array('display' => $vs_output);
+		} catch (Exception $e) {
+			return array('display' => _t('WorldCat detail display template could not be created: %1', $e->getMessage()));
+		}
 		return $va_data;
 	}
 	# ------------------------------------------------
