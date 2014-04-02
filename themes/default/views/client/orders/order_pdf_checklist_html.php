@@ -35,7 +35,7 @@
 	
 	$va_items = $this->getVar('items');
 	$va_display_list = array(
-		'name' => _t('Item name'), 'idno' => _t('ID'), 'service' => _t('Service'), 'fullfillment_method' => _t('Fulfillment'), 'fee' => _t('Fee'), 'notes' => _t('Notes'), 'thumbnail_tag' => _t('Image')
+		'name' => _t('Item name'), 'idno' => _t('ID'), 'service' => _t('Service'), 'fulfillment_method' => _t('Fulfillment'), 'fee' => _t('Fee'), 'notes' => _t('Notes'), 'thumbnail_tag' => _t('Image')
 	);
 ?>
 <style type="text/css">
@@ -123,7 +123,7 @@ td.odd   { color: #00AA00; }
 					}
 					
 					switch($vs_column_code) {
-						case 'fullfillment_method':
+						case 'fulfillment_method':
 						case 'service':
 							$vs_display_value = $t_item->getChoiceListValue($vs_column_code, $va_item[$vs_column_code]);
 							break;

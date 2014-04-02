@@ -6274,7 +6274,7 @@ create table ca_commerce_order_items
    order_id                       int unsigned                   not null,
    object_id                      int unsigned                   null,
    service                    	  varchar(40)                  null,	
-   fullfillment_method            varchar(40)                   null,	
+   fulfillment_method             varchar(40)                   null,	
    fee                            decimal(8,2) null,
    tax                            decimal(8,2) null,
    notes                          text                                 not null,

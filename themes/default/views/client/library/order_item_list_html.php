@@ -185,7 +185,7 @@
 	jQuery(document).ready(function() {
 		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.'_item'; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-			templateValues: ['_display', 'id', 'object_id', 'item_id', 'name', 'name_sort', 'idno', 'idno_sort', 'service', 'fullfillment_method', 'fee', 'tax', 'notes', 'restrictions', 'loan_checkout_date', 'loan_due_date', 'loan_return_date', 'thumbnail_tag', 'autocomplete', 'representation_count'<?php print (sizeof($va_additional_fee_template_codes)) ? ", ".join(", ", $va_additional_fee_template_codes) : ""; ?>],
+			templateValues: ['_display', 'id', 'object_id', 'item_id', 'name', 'name_sort', 'idno', 'idno_sort', 'service', 'fulfillment_method', 'fee', 'tax', 'notes', 'restrictions', 'loan_checkout_date', 'loan_due_date', 'loan_return_date', 'thumbnail_tag', 'autocomplete', 'representation_count'<?php print (sizeof($va_additional_fee_template_codes)) ? ", ".join(", ", $va_additional_fee_template_codes) : ""; ?>],
 			initialValues: <?php print json_encode($va_initial_values); ?>,
 			forceNewValues: <?php print json_encode($va_failed_inserts); ?>,
 			defaultValues: <?php print json_encode($va_default_values); ?>,

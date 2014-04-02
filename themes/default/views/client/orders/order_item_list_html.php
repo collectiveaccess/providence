@@ -81,7 +81,7 @@
 				</tr>
 				<tr>
 					<td><?php print $t_order_item->htmlFormElement('service', null, array('value' => '{service}', 'name' => $vs_id_prefix.'_service_{n}', 'id' => $vs_id_prefix.'_service_{n}', 'tooltip_namespace' => 'item_list')); ?></td>
-					<td><?php print $t_order_item->htmlFormElement('fullfillment_method',  null, array('value' => '{fullfillment_method}', 'name' => $vs_id_prefix.'_fullfillment_method_{n}', 'id' => $vs_id_prefix.'_fullfillment_method_{n}', 'tooltip_namespace' => 'item_list')); ?></td>
+					<td><?php print $t_order_item->htmlFormElement('fulfillment_method',  null, array('value' => '{fulfillment_method}', 'name' => $vs_id_prefix.'_fulfillment_method_{n}', 'id' => $vs_id_prefix.'_fulfillment_method_{n}', 'tooltip_namespace' => 'item_list')); ?></td>
 					<td rowspan='3' valign='top' width='125'>
 						<a href='#' onclick='caMediaPanel.showPanel("<?php print urldecode(caNavUrl($this->request, 'client/orders', 'OrderEditor', 'SelectRepresentations', array('object_id' => "{object_id}", 'item_id' => "{item_id}"))); ?>", function() { jQuery("#orderItemRepresentationSelect{n}").load("<?php print urldecode(caNavUrl($this->request, 'client/orders', 'OrderEditor', 'GetSelectedRepresentationCount', array('item_id' => '{item_id}'))); ?>"); }); return false;' >{thumbnail_tag}</a>
 						<br/>
@@ -137,7 +137,7 @@
 				</tr>
 				<tr>
 					<td><?php print $t_order_item->htmlFormElement('service', null, array('value' => '{service}', 'name' => $vs_id_prefix.'_service_{n}', 'id' => $vs_id_prefix.'_service_{n}', 'onchange' => 'caGetDefaultFee("'.$vs_id_prefix.'_service_{n}", "'.$vs_id_prefix.'_fee_{n}", "{n}")', 'tooltip_namespace' => 'new_item_list')); ?></td>
-					<td><?php print $t_order_item->htmlFormElement('fullfillment_method',  null, array('value' => '{fullfillment_method}', 'name' => $vs_id_prefix.'_fullfillment_method_{n}', 'id' => $vs_id_prefix.'_fullfillment_method_{n}', 'tooltip_namespace' => 'new_item_list')); ?></td>
+					<td><?php print $t_order_item->htmlFormElement('fulfillment_method',  null, array('value' => '{fulfillment_method}', 'name' => $vs_id_prefix.'_fulfillment_method_{n}', 'id' => $vs_id_prefix.'_fulfillment_method_{n}', 'tooltip_namespace' => 'new_item_list')); ?></td>
 				</tr>
 				<tr>
 					<td><?php print $t_order_item->htmlFormElement('fee', $vs_currency_input_format, array('classname' => 'currencyBg', 'value' => '{fee}', 'name' => $vs_id_prefix.'_fee_{n}', 'id' => $vs_id_prefix.'_fee_{n}', 'tooltip_namespace' => 'new_item_list')); ?></td>
@@ -194,7 +194,7 @@
 	jQuery(document).ready(function() {
 		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.'_item'; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-			templateValues: ['_display', 'id', 'object_id', 'item_id', 'name', 'name_sort', 'idno', 'idno_sort', 'service', 'fullfillment_method', 'fee', 'tax', 'notes', 'restrictions', 'thumbnail_tag', 'autocomplete', 'representation_count'<?php print (sizeof($va_additional_fee_template_codes)) ? ", ".join(", ", $va_additional_fee_template_codes) : ""; ?>],
+			templateValues: ['_display', 'id', 'object_id', 'item_id', 'name', 'name_sort', 'idno', 'idno_sort', 'service', 'fulfillment_method', 'fee', 'tax', 'notes', 'restrictions', 'thumbnail_tag', 'autocomplete', 'representation_count'<?php print (sizeof($va_additional_fee_template_codes)) ? ", ".join(", ", $va_additional_fee_template_codes) : ""; ?>],
 			initialValues: <?php print json_encode($va_initial_values); ?>,
 			forceNewValues: <?php print json_encode($va_failed_inserts); ?>,
 			defaultValues: <?php print json_encode($va_default_values); ?>,
