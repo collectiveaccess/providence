@@ -170,16 +170,20 @@
 			$vs_format = Zend_Locale_Data::getContent($o_locale, 'currencynumber');
 
 			// this returns a string like '50,00 ¤' for locale de_DE
- 			$vs_decimal_with_placeholder = Zend_Locale_Format::toNumber($this->opn_value, array('locale' => $locale, 'number_format' => $vs_format, 'precision' => 2));
+ 			$vs_decimal_with_placeholder = Zend_Locale_Format::toNumber($this->opn_value, array('locale' => $o_locale, 'number_format' => $vs_format, 'precision' => 2));
 
  			// if the currency placeholder is the first character, for instance in en_US locale ($10), insert a space.
- 			// this has to be done because we don't print "$10" (which is expected in the locale rules) but "USD 10" ... and that looks nicer with an additional space.
- 			if(substr($vs_decimal_with_placeholder,0,2)=='¤'){ // for whatever reason '¤' has length 2
- 				$vs_decimal_with_placeholder = str_replace('¤', '¤ ', $vs_decimal_with_placeholder);
+ 			// we do this because we don't print "$10" (which is expected in the Zend locale rules) but "USD 10" ... and that looks nicer with an additional space.
+ 			// we also replace the weird multibyte nonsense Zend uses as placeholder with something more reasonable so that
+ 			// whatever we output here isn't rejected if thrown into parseValue() again
+ 			if(substr($vs_decimal_with_placeholder,0,2)=="¤") { // '¤' has length 2
+ 				$vs_decimal_with_placeholder = str_replace("¤", '% ', $vs_decimal_with_placeholder);
+ 			} elseif(substr($vs_decimal_with_placeholder, -2)=="¤") { // placeholder at the end
+ 				$vs_decimal_with_placeholder = preg_replace("![^\d\,\.]!", "", $vs_decimal_with_placeholder)." %";
  			}
 
  			// insert currency which is not locale-dependent in our case
- 			$vs_val = str_replace('¤', $this->ops_currency_specifier, $vs_decimal_with_placeholder);
+ 			$vs_val = str_replace('%', $this->ops_currency_specifier, $vs_decimal_with_placeholder);
  			if (($vs_to_currency = caGetOption('displayCurrencyConversion', $pa_options, false)) && ($this->ops_currency_specifier != $vs_to_currency)) {
  				$vs_val .= " ("._t("~%1", caConvertCurrencyValue($this->ops_currency_specifier.' '.$this->opn_value, $vs_to_currency)).")";
  			}

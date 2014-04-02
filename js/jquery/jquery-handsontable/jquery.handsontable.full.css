@@ -1,36 +1,39 @@
 /**
- * Handsontable 0.9.11
+ * Handsontable 0.10.4
  * Handsontable is a simple jQuery plugin for editable tables with basic copy-paste compatibility with Excel and Google Docs
  *
  * Copyright 2012, Marcin Warpechowski
  * Licensed under the MIT license.
  * http://handsontable.com/
  *
- * Date: Mon Jul 29 2013 07:50:52 GMT+0200 (Central European Daylight Time)
+ * Date: Thu Mar 20 2014 13:06:05 GMT+0100 (CET)
  */
 
 .handsontable {
   position: relative;
-  font-family: Arial, Helvetica, sans-serif;
-  line-height: 1.3em;
-  font-size: 13px;
 }
 
-.handsontable.hidden {
-  display: none;
+.handsontable.htAutoColumnSize {
+  visibility: hidden;
   left: 0;
   position: absolute;
   top: 0;
 }
 
-.handsontable * {
+.handsontable table,
+.handsontable tbody,
+.handsontable thead,
+.handsontable td,
+.handsontable th,
+.handsontable div {
   box-sizing: content-box;
   -webkit-box-sizing: content-box;
   -moz-box-sizing: content-box;
 }
 
-.handsontable table {
-  border-collapse: separate; /*it must be separate, otherwise there are offset miscalculations in WebKit: http://stackoverflow.com/questions/2655987/border-collapse-differences-in-ff-and-webkit*/
+.handsontable table.htCore {
+  border-collapse: separate;
+  /*it must be separate, otherwise there are offset miscalculations in WebKit: http://stackoverflow.com/questions/2655987/border-collapse-differences-in-ff-and-webkit*/
   position: relative;
   /*this actually only changes appearance of user selection - does not make text unselectable
   -webkit-user-select: none;
@@ -65,20 +68,18 @@
   height: 22px;
   empty-cells: show;
   line-height: 21px;
-  padding: 0 4px 0 4px; /* top, bottom padding different than 0 is handled poorly by FF with HTML5 doctype */
+  padding: 0 4px 0 4px;
+  /* top, bottom padding different than 0 is handled poorly by FF with HTML5 doctype */
   background-color: #FFF;
-  font-size: 12px;
   vertical-align: top;
   overflow: hidden;
   outline-width: 0;
-  white-space: pre-line; /* preserve new line character in cell */
+  white-space: pre-line;
+  /* preserve new line character in cell */
 }
 
 .handsontable td.htInvalid {
   -webkit-transition: background 0.75s ease;
-  -moz-transition: background 0.75s ease;
-  -ms-transition: background 0.75s ease;
-  -o-transition: background 0.75s ease;
   transition: background 0.75s ease;
   background-color: #ff4c42;
 }
@@ -122,10 +123,7 @@
   color: #222;
   text-align: center;
   font-weight: normal;
-}
-
-.handsontable th .small {
-  font-size: 12px;
+  white-space: nowrap;
 }
 
 .handsontable thead th {
@@ -196,6 +194,7 @@
 }
 
 /* border line */
+
 .handsontable .wtBorder {
   position: absolute;
   font-size: 0;
@@ -206,6 +205,7 @@
 }
 
 /* fill handle */
+
 .handsontable .wtBorder.corner {
   font-size: 0;
   cursor: crosshair;
@@ -217,55 +217,61 @@
   height: 1px;
 }
 
-/* textarea border color */
-textarea.handsontableInput {
+.handsontableInput {
   border: 2px solid #5292F7;
   outline-width: 0;
   margin: 0;
   padding: 1px 4px 0 2px;
-  font-family: Arial, Helvetica, sans-serif; /*repeat from .handsontable (inherit doesn't work with IE<8) */
-  line-height: 1.3em; /*repeat from .handsontable (inherit doesn't work with IE<8) */
-  font-size: 13px;
+  font-family: Arial, Helvetica, sans-serif;
+  /*repeat from .handsontable (inherit doesn't work with IE<8) */
+  line-height: 1.3em;
+  /*repeat from .handsontable (inherit doesn't work with IE<8) */
+  font-size: inherit;
+  -webkit-box-shadow: 1px 2px 5px rgba(0, 0, 0, 0.4);
   box-shadow: 1px 2px 5px rgba(0, 0, 0, 0.4);
   resize: none;
-
   /*below are needed to overwrite stuff added by jQuery UI Bootstrap theme*/
   display: inline-block;
-  font-size: 13px;
   color: #000;
-  -webkit-border-radius: 0;
-  -moz-border-radius: 0;
   border-radius: 0;
+  background-color: #FFF;
+  /*overwrite styles potentionally made by a framework*/
 }
 
 .handsontableInputHolder {
   position: absolute;
   top: 0;
   left: 0;
-  width: 1px;
-  height: 1px;
+  z-index: 100;
+}
+
+.htSelectEditor {
+  -webkit-appearance: menulist-button !important;
+  position: absolute;
 }
 
 /*
 TextRenderer readOnly cell
 */
+
 .handsontable .htDimmed {
-  font-style: italic;
   color: #777;
+}
+
+/*
+TextRenderer placeholder value
+*/
+
+.handsontable .htPlaceholder {
+  color: #999;
 }
 
 /*
 AutocompleteRenderer down arrow
 */
-.handsontable .htAutocomplete {
-  position: relative;
-  padding-right: 20px;
-}
 
 .handsontable .htAutocompleteArrow {
-  position: absolute;
-  top: 0;
-  right: 0;
+  float: right;
   font-size: 10px;
   color: #EEE;
   cursor: default;
@@ -280,6 +286,7 @@ AutocompleteRenderer down arrow
 /*
 CheckboxRenderer
 */
+
 .handsontable .htCheckboxRendererInput.noValue {
   opacity: 0.5;
 }
@@ -287,78 +294,20 @@ CheckboxRenderer
 /*
 NumericRenderer
 */
+
 .handsontable .htNumeric {
   text-align: right;
 }
 
-/* typeahead rules. Needed only if you are using the autocomplete feature */
-.handsontable .typeahead {
-  position: absolute;
-  font-family: Arial, Helvetica, sans-serif;
-  line-height: 1.3em;
-  font-size: 13px;
-  z-index: 10;
-  top: 100%;
-  left: 0;
-  float: left;
-  display: none;
-  min-width: 160px;
-  padding: 4px 0;
-  margin: 2px 0 0 0;
-  list-style: none;
-  background-color: white;
-  border-color: #CCC;
-  border-color: rgba(0, 0, 0, 0.2);
-  border-style: solid;
-  border-width: 1px;
-  -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-  -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-  -webkit-background-clip: padding-box;
-  background-clip: padding-box;
-  -webkit-border-radius: 4px;
-  -moz-border-radius: 4px;
-  border-radius: 4px;
-}
-
-.handsontable .typeahead li {
-  line-height: 18px;
-  min-height: 18px;
-  display: list-item;
-  margin: 0;
-}
-
-.handsontable .typeahead a {
-  display: block;
-  padding: 3px 15px;
-  clear: both;
-  font-weight: normal;
-  line-height: 18px;
-  min-height: 18px;
-  color: #333;
-  white-space: nowrap;
-}
-
-.handsontable .typeahead li > a:hover,
-.handsontable .typeahead .active > a,
-.handsontable .typeahead .active > a:hover {
-  color: white;
-  text-decoration: none;
-  background-color: #08C;
-}
-
-.handsontable .typeahead a {
-  color: #08C;
-  text-decoration: none;
-}
-
 /*context menu rules*/
+
 ul.context-menu-list {
   color: black;
 }
 
 ul.context-menu-list li {
-  margin-bottom: 0; /*Foundation framework fix*/
+  margin-bottom: 0;
+  /*Foundation framework fix*/
 }
 
 /**
@@ -371,10 +320,6 @@ ul.context-menu-list li {
   height: 9px;
   background: #F8F8F8;
   border: 1px solid #DDD;
-  
-  -moz-border-radius: 4px;
-  border-radius: 4px;
-  border-radius: 4px;
 }
 
 .handsontable .dragdealer .handle {
@@ -382,154 +327,164 @@ ul.context-menu-list li {
   width: 9px;
   height: 9px;
   background: #C5C5C5;
-  
-  -moz-border-radius: 4px;
-  border-radius: 4px;
-  border-radius: 4px;
 }
 
 .handsontable .dragdealer .disabled {
   background: #898989;
 }
-/*!
- * jQuery contextMenu - Plugin for simple contextMenu handling
- *
- * Version: 1.6.5
- *
- * Authors: Rodney Rehm, Addy Osmani (patches for FF)
- * Web: http://medialize.github.com/jQuery-contextMenu/
- *
- * Licensed under
- *   MIT License http://www.opensource.org/licenses/mit-license
- *   GPL v3 http://opensource.org/licenses/GPL-3.0
- *
+
+/**
+ * Handsontable in Handsontable
  */
 
-.context-menu-list {
-    margin:0; 
-    padding:0;
-    
-    min-width: 120px;
-    max-width: 250px;
-    display: inline-block;
-    position: absolute;
-    list-style-type: none;
-    
-    border: 1px solid #DDD;
-    background: #EEE;
-    
-    -webkit-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-       -moz-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-        -ms-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-         -o-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-    
-    font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size: 11px;
+.handsontable .handsontable .wtHider {
+  padding: 0 0 5px 0;
 }
 
-.context-menu-item {
-    padding: 2px 2px 2px 24px;
-    background-color: #EEE;
-    position: relative;
-    -webkit-user-select: none;
-       -moz-user-select: -moz-none;
-        -ms-user-select: none;
-            user-select: none;
+.handsontable .handsontable table {
+  -webkit-box-shadow: 1px 2px 5px rgba(0, 0, 0, 0.4);
+  box-shadow: 1px 2px 5px rgba(0, 0, 0, 0.4);
 }
 
-.context-menu-separator {
-    padding-bottom:0;
-    border-bottom: 1px solid #DDD;
-}
-
-.context-menu-item > label > input,
-.context-menu-item > label > textarea {
-    -webkit-user-select: text;
-       -moz-user-select: text;
-        -ms-user-select: text;
-            user-select: text;
-}
-
-.context-menu-item.hover {
-    cursor: pointer;
-    background-color: #39F;
-}
-
-.context-menu-item.disabled {
-    color: #666;
-}
-
-.context-menu-input.hover,
-.context-menu-item.disabled.hover {
-    cursor: default;
-    background-color: #EEE;
-}
-
-.context-menu-submenu:after {
-    content: ">";
-    color: #666;
-    position: absolute;
-    top: 0;
-    right: 3px;
-    z-index: 1;
-}
-
-/* icons
-    #protip:
-    In case you want to use sprites for icons (which I would suggest you do) have a look at
-    http://css-tricks.com/13224-pseudo-spriting/ to get an idea of how to implement 
-    .context-menu-item.icon:before {}
+/**
+ * Handsontable listbox theme
  */
-.context-menu-item.icon { min-height: 18px; background-repeat: no-repeat; background-position: 4px 2px; }
-.context-menu-item.icon-edit { background-image: url(images/page_white_edit.png); }
-.context-menu-item.icon-cut { background-image: url(images/cut.png); }
-.context-menu-item.icon-copy { background-image: url(images/page_white_copy.png); }
-.context-menu-item.icon-paste { background-image: url(images/page_white_paste.png); }
-.context-menu-item.icon-delete { background-image: url(images/page_white_delete.png); }
-.context-menu-item.icon-add { background-image: url(images/page_white_add.png); }
-.context-menu-item.icon-quit { background-image: url(images/door.png); }
 
-/* vertically align inside labels */
-.context-menu-input > label > * { vertical-align: top; }
-
-/* position checkboxes and radios as icons */
-.context-menu-input > label > input[type="checkbox"],
-.context-menu-input > label > input[type="radio"] {
-    margin-left: -17px;
-}
-.context-menu-input > label > span {
-    margin-left: 5px;
+.handsontable.listbox {
+  margin: 0;
 }
 
-.context-menu-input > label,
-.context-menu-input > label > input[type="text"],
-.context-menu-input > label > textarea,
-.context-menu-input > label > select {
-    display: block;
-    width: 100%;
-    
-    -webkit-box-sizing: border-box;
-       -moz-box-sizing: border-box;
-        -ms-box-sizing: border-box;
-         -o-box-sizing: border-box;
-            box-sizing: border-box;
+.handsontable.listbox table {
+  border: 1px solid #ccc;
+  border-collapse: separate;
+  background: white;
 }
 
-.context-menu-input > label > textarea {
-    height: 100px;
+.handsontable.listbox th,
+.handsontable.listbox tr:first-child th,
+.handsontable.listbox tr:last-child th,
+.handsontable.listbox tr:first-child td,
+.handsontable.listbox td {
+  border-width: 0;
 }
-.context-menu-item > .context-menu-list {
+
+.handsontable.listbox th,
+.handsontable.listbox td {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.handsontable.listbox td.htDimmed {
+  cursor: default;
+  color: inherit;
+  font-style: inherit;
+}
+
+.handsontable.listbox .wtBorder {
+  visibility: hidden;
+}
+
+.handsontable.listbox tr td.current,
+.handsontable.listbox tr:hover td {
+  background: #eee;
+}
+
+.htContextMenu {
+  display: none;
+  position: absolute;
+}
+
+.htContextMenu table.htCore {
+  outline: 1px solid #bbb;
+}
+
+.htContextMenu .wtBorder {
+  visibility: hidden;
+}
+
+.htContextMenu table tbody tr td {
+  background: white;
+  border-width: 0;
+  padding: 4px 6px 0px 6px;
+  cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.htContextMenu table tbody tr td:first-child {
+  border: 0;
+}
+
+.htContextMenu table tbody tr td.htDimmed{
+  font-style: normal;
+  color: #323232;
+}
+
+.htContextMenu table tbody tr td.current{
+  background: rgb(233, 233, 233);
+}
+
+.htContextMenu table tbody tr td.htSeparator {
+  border-top: 1px solid #bbb;
+  height: 0;
+  padding: 0;
+}
+
+.htContextMenu table tbody tr td.htDisabled {
+  color: #999;
+}
+
+.htContextMenu table tbody tr td.htDisabled:hover {
+  background: white;
+  color: #999;
+  cursor: default;
+}
+
+/*WalkontableDebugOverlay*/
+
+.wtDebugHidden {
+  display: none;
+}
+
+.wtDebugVisible {
+  display: block;
+  -webkit-animation-duration: 0.5s;
+  -webkit-animation-name: wtFadeInFromNone;
+  animation-duration: 0.5s;
+  animation-name: wtFadeInFromNone;
+}
+
+@keyframes wtFadeInFromNone {
+  0% {
     display: none;
-    /* re-positioned by js */
-    right: -5px;
-    top: 5px;
-}
+    opacity: 0;
+  }
 
-.context-menu-item.hover > .context-menu-list {
+  1% {
     display: block;
+    opacity: 0;
+  }
+
+  100% {
+    display: block;
+    opacity: 1;
+  }
 }
 
-.context-menu-accesskey {
-    text-decoration: underline;
+@-webkit-keyframes wtFadeInFromNone {
+  0% {
+    display: none;
+    opacity: 0;
+  }
+
+  1% {
+    display: block;
+    opacity: 0;
+  }
+
+  100% {
+    display: block;
+    opacity: 1;
+  }
 }
