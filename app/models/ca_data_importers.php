@@ -1569,7 +1569,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$va_group_buf = array();
 				
 				foreach($va_items as $vn_item_id => $va_item) {
-					$va_vals = ca_data_importers::getValueFromSource($va_item, $o_reader, array('returnAsArray' => true));
+				
+					if ($vb_use_as_single_value = caGetOption('useAsSingleValue', $va_item['settings'], false)) {
+						// Force repeating values to be imported as a single value
+						$va_vals = array(ca_data_importers::getValueFromSource($va_item, $o_reader, array('delimiter' => caGetOption('delimiter', $va_item['settings'], ''), 'returnAsArray' => false)));
+					} else {
+						$va_vals = ca_data_importers::getValueFromSource($va_item, $o_reader, array('returnAsArray' => true));
+					}
 					
 					$vn_c = -1;
 					foreach($va_vals as $vn_i => $vm_val) {
@@ -1695,6 +1701,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								
 								if ($o_refinery = RefineryManager::getRefineryInstance($vs_refinery)) {
 									$va_refined_values = $o_refinery->refine($va_content_tree, $va_group, $va_item, $va_row, array('mapping' => $t_mapping, 'source' => $ps_source, 'subject' => $t_subject, 'locale_id' => $vn_locale_id, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row));
+									print_R($va_refined_values);
 									if (!$va_refined_values || (is_array($va_refined_values) && !sizeof($va_refined_values))) { continue(2); }
 									
 									if ($o_refinery->returnsMultipleValues()) {
@@ -1808,8 +1815,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//
 			// Process data in subject record
 			//
-			//print_r($va_content_tree);
-			//die("END\n\n");
+			print_r($va_content_tree);
+			die("END\n\n");
 			//continue;
 			//if ($pb_debug && $po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
 				//$ps_callback($po_request, ca_data_importers::$s_num_records_processed, $vn_num_items, "<pre>".preg_replace("![\n\r\t ]+!", " ", print_r($va_content_tree, true))."</pre>", (time() - $vn_start_time), memory_get_usage(true), 0, ca_data_importers::$s_num_import_errors);

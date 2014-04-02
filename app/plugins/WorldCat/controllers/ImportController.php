@@ -26,13 +26,8 @@
  * ----------------------------------------------------------------------
  */
 
- 	require_once(__CA_LIB_DIR__.'/core/TaskQueue.php');
- 	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_lists.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_objects.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_object_representations.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_locales.php');
- 	require_once(__CA_APP_DIR__.'/plugins/statisticsViewer/lib/statisticsSQLHandler.php');
+ 	require_once(__CA_LIB_DIR__.'/core/Plugins/InformationService/WorldCat.php');
+ 	require_once(__CA_MODELS_DIR__.'/ca_data_importers.php');
  	
 
  	class ImportController extends ActionController {
@@ -66,6 +61,29 @@
  			
  		
  			$this->render(__CA_THEME__."/import_settings_html.php");
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
+ 		public function Run() {
+ 			$pa_worldcat_ids = $this->request->getParameter('WorldCatID', pArray);
+ 			
+ 			ca_data_importers::importDataFromSource(join(",", $pa_worldcat_ids), 'WorldCatBooks', array('format' => 'WorldCat'));
+ 			$this->render(__CA_THEME__."/import_settings_html.php");
+ 		}
+ 		# -------------------------------------------------------	
+ 		#
+ 		# -------------------------------------------------------	
+ 		/**
+ 		 *
+ 		 */
+ 		public function Lookup() {
+ 			$o_wc = new WLPlugInformationServiceWorldCat();	
+ 			
+ 			$this->view->setVar('results', $o_wc->lookup(array(), $this->request->getParameter('term', pString), array()));
+ 			
+ 			$this->render(__CA_THEME__."/ajax_worldcat_lookup_json.php");
  		}
  		# -------------------------------------------------------		
  	}

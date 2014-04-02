@@ -142,18 +142,32 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 	 *
 	 * @param array $pa_settings Plugin settings values
 	 * @param string $ps_search The expression with which to query the remote data service
-	 * @param array $pa_options Lookup options (none defined yet)
+	 * @param array $pa_options Options are:
+	 *		count = maximum number of items to return. Default is 25.
+	 *		APIKey = WorldCat API key to use. Default is the key configured in worldcat_api_key in app.conf  
 	 */
 	public function lookup($pa_settings, $ps_search, $pa_options=null) {
-		$o_feed = Zend_Feed::import(WLPlugInformationServiceWorldCat::$s_worldcat_search_url."?q=".urlencode($ps_search)."&wskey=".$pa_settings['APIKey']);
+		if (!($vs_api_key = caGetOption('APIKey', $pa_settings, null))) {
+			$o_config = Configuration::load();
+			$vs_api_key = $o_config->get('worldcat_api_key');
+		}
+		
+		$vn_count = caGetOption('count', $pa_options, 25);
+		
+		$o_feed = Zend_Feed::import(WLPlugInformationServiceWorldCat::$s_worldcat_search_url."?count={$vn_count}&q=".urlencode($ps_search)."&wskey=".$vs_api_key);
 		
 		$va_data = array();
 		foreach ($o_feed as $o_entry) {
 			$vs_author = (string)$o_entry->author->name();
 			$vs_title = (string)$o_entry->title();
+			$vs_url = $o_entry->id();
+			$va_tmp = explode("/", $vs_url);
+			$vs_id = array_pop($va_tmp);
+			
 			$va_data['results'][] = array(
 				'label' => ($vs_author ? "{$vs_author} " : '')."<em>{$vs_title}</em>.",
-				'url' => $o_entry->id()
+				'url' => $vs_url,
+				'id' => $vs_id
 			);
 		}
 		
@@ -173,7 +187,7 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 		$va_tmp = explode("/", $ps_url);
 		$vn_worldcat_id = array_pop($va_tmp);
 		
-		// Create a request with basic Auth
+		// Create a request
 		$o_request = $o_client->get("{$vn_worldcat_id}?wskey=".$pa_settings['APIKey']);
 	
 		// Send the request and get the response

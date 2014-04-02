@@ -123,6 +123,9 @@ class WorldCatDataReader extends BaseXMLDataReader {
 		
 		if ($vs_api_key = caGetOption('APIKey', $pa_options, null)) {
 			$this->ops_api_key = $vs_api_key;
+		} else {
+			$o_config = Configuration::load();
+			$this->ops_api_key = $o_config->get('worldcat_api_key');
 		}
 	}
 	# -------------------------------------------------------
