@@ -31,6 +31,7 @@ require_once(__CA_LIB_DIR__."/core/Datamodel.php");
 require_once(__CA_LIB_DIR__."/core/Db.php");
 require_once(__CA_LIB_DIR__."/core/Media/MediaVolumes.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
+require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
 
 class Installer {
 	# --------------------------------------------------
@@ -205,7 +206,7 @@ class Installer {
 		}
 	}
 	# --------------------------------------------------
-	private static function addLabelsFromXMLElement($t_instance,$po_labels,$pa_locales){
+	private static function addLabelsFromXMLElement($t_instance,$po_labels,$pa_locales, $pb_force_preferred=false){
 		require_once(__CA_LIB_DIR__."/ca/LabelableBaseModelWithAttributes.php");
 
 		if(!($t_instance instanceof LabelableBaseModelWithAttributes)){
@@ -218,7 +219,7 @@ class Installer {
 			$vn_locale_id = $pa_locales[$vs_locale];
 
 			$vb_preferred = self::getAttribute($vo_label, "preferred");
-			if((bool)$vb_preferred || is_null($vb_preferred)){
+			if($pb_force_preferred || (bool)$vb_preferred || is_null($vb_preferred)){
 				$vb_preferred = true;
 			} else {
 				$vb_preferred = false;
@@ -895,6 +896,8 @@ class Installer {
 			$t_role->set('name', trim((string) $vo_role->name));
 			$t_role->set('description', trim((string) $vo_role->description));
 			$t_role->set('code', $vs_role_code);
+
+			// add actions
 			$va_actions = array();
 			if($vo_role->actions){
 				foreach($vo_role->actions->children() as $vo_action){
@@ -908,6 +911,35 @@ class Installer {
 				$this->addError("Errors inserting access role {$vs_role_code}: ".join("; ",$t_role->getErrors()));
 				return false;
 			}
+
+			// add bundle level ACL items
+			if($vo_role->bundleLevelAccessControl) {
+				foreach($vo_role->bundleLevelAccessControl->children() as $vo_permission) {
+					$vs_permission_table = self::getAttribute($vo_permission, 'table');
+					$vs_permission_bundle = self::getAttribute($vo_permission, 'bundle');
+					$vn_permission_access = $this->_convertACLStringToConstant(self::getAttribute($vo_permission, 'access'));
+
+					if(!$t_role->setAccessSettingForBundle($vs_permission_table, $vs_permission_bundle, $vn_permission_access)){
+						$this->addError("Could not add bundle level access control for table '{$vs_permission_table}' and bundle '{$vs_permission_bundle}'. Check the table and bundle names.");
+						//return false;
+					}
+				}
+			}
+
+			// add type level ACL items
+			if($vo_role->typeLevelAccessControl) {
+				foreach($vo_role->typeLevelAccessControl->children() as $vo_permission) {
+					$vs_permission_table = self::getAttribute($vo_permission, 'table');
+					$vs_permission_type = self::getAttribute($vo_permission, 'type');
+					$vn_permission_access = $this->_convertACLStringToConstant(self::getAttribute($vo_permission, 'access'));
+
+					if(!$t_role->setAccessSettingForType($vs_permission_table, $vs_permission_type, $vn_permission_access)){
+						$this->addError("Could not add type level access control for table '{$vs_permission_table}' and type '{$vs_permission_type}'. Check the table name and the type code.");
+						//return false;
+					}
+				}
+			}
+			
 		}
 		return true;
 	}
@@ -955,7 +987,7 @@ class Installer {
 			$t_display->setMode(ACCESS_WRITE);
 
 			$t_display->set("display_code", $vs_display_code);
-			$t_display->set("is_system",$vb_system);
+			$t_display->set("is_system", $vb_system);
 			$t_display->set("table_num",$vo_dm->getTableNum($vs_table));
 			$t_display->set("user_id", 1);		// let administrative user own these
 			
@@ -1338,6 +1370,18 @@ class Installer {
 		}
 
 		return $va_settings;
+	}
+	# --------------------------------------------------
+	private function _convertACLStringToConstant($ps_name){
+		switch($ps_name) {
+			case 'edit':
+				return __CA_BUNDLE_ACCESS_EDIT__;
+			case 'read':
+				return __CA_BUNDLE_ACCESS_READONLY__;
+			case 'none':
+			default:
+				return __CA_BUNDLE_ACCESS_NONE__;
+		}
 	}
 	# --------------------------------------------------
 }
