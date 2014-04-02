@@ -1581,7 +1581,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$va_group_buf = array();
 				
 				foreach($va_items as $vn_item_id => $va_item) {
-					$va_vals = ca_data_importers::getValueFromSource($va_item, $o_reader, array('returnAsArray' => true));
+				
+					if ($vb_use_as_single_value = caGetOption('useAsSingleValue', $va_item['settings'], false)) {
+						// Force repeating values to be imported as a single value
+						$va_vals = array(ca_data_importers::getValueFromSource($va_item, $o_reader, array('delimiter' => caGetOption('delimiter', $va_item['settings'], ''), 'returnAsArray' => false)));
+					} else {
+						$va_vals = ca_data_importers::getValueFromSource($va_item, $o_reader, array('returnAsArray' => true));
+					}
 					
 					$vn_c = -1;
 					foreach($va_vals as $vn_i => $vm_val) {
