@@ -954,6 +954,7 @@ class Installer {
 					}
 				}
 			}
+
 		}
 		return true;
 	}
