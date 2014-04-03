@@ -856,6 +856,7 @@
 		}
 		# ------------------------------------------------------------------
 		public function getTypeName($pn_type_id=null) {
+			if (!is_numeric($pn_type_id)) { $pn_type_id = $this->getTypeIDForCode($pn_type_id); }
 			if ($t_list_item = $this->getTypeInstance($pn_type_id)) {
 				return $t_list_item->getLabelForDisplay(false);
 			}

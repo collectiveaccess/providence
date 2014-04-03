@@ -98,13 +98,7 @@
 			if ($ps_mode) { $this->setMode($ps_mode); }
 			
 			if ($ps_job_id) {
-				$this->ops_job_id = $ps_job_id;
-				if ($this->opo_cache = caGetCacheObject('caProgressBar', 3600 * 24)) {
-					// load values from store
-					if(is_array($va_data = $this->opo_cache->load($ps_job_id))) {
-						$this->setTotal($va_data['total']);
-					}
-				}
+				$this->setJobID($ps_job_id);
 			}
 		}
 		# -------------------------------------------------------
@@ -146,7 +140,14 @@
 		 * @return string The job_id that was set
 		 */
 		public function setJobID($ps_job_id) {
-			return $this->ops_job_id = $ps_job_id;
+			$this->ops_job_id = $ps_job_id;
+			if ($this->opo_cache = caGetCacheObject('caProgressBar', 3600 * 24)) {
+				// load values from store
+				if(is_array($va_data = $this->opo_cache->load($ps_job_id))) {
+					$this->setTotal($va_data['total']);
+				}
+			}
+			return $ps_job_id;
 		}
 		# -------------------------------------------------------
 		/**
@@ -183,7 +184,7 @@
 		 * @param string $ps_message Initial message to display
 		 * @return string Progress bar output. If mode is CLI and outputToTerminal property is set, output will also be printed to terminal.
 		 */
-		public function start($ps_message=null) {
+		public function start($ps_message=null, $pa_options=null) {
 			if (!is_null($ps_message)) { $this->setMessage($ps_message); }
 			$this->opn_start = time();
 			$this->opn_position = 0;
@@ -192,7 +193,7 @@
 			
 			switch($vs_mode = $this->getMode()) {
 				case 'CLI':
-					$vs_output = CLIProgressBar::start($this->getTotal(), $this->getMessage());
+					$vs_output = CLIProgressBar::start($this->getTotal(), $this->getMessage(), $pa_options);
 					if ($this->get('outputToTerminal')) { print $vs_output; }
 					break;
 				case 'WebUI':
@@ -212,7 +213,7 @@
 		 * @param string $ps_message New message to display. If omitted current message is maintained.
 		 * @return string Progress bar output. If mode is CLI and outputToTerminal property is set, output will also be printed to terminal.
 		 */
-		public function finish($ps_message=null) {
+		public function finish($ps_message=null, $pa_options=null) {
 			if (!is_null($ps_message)) { $this->setMessage($ps_message); }
 			
 			$this->opn_position = $this->getTotal();
@@ -221,7 +222,7 @@
 			
 			switch($vs_mode = $this->getMode()) {
 				case 'CLI':
-					$vs_output = CLIProgressBar::finish($this->getMessage());
+					$vs_output = CLIProgressBar::finish($this->getMessage(), $pa_options);
 					if ($this->get('outputToTerminal')) { print $vs_output; }
 					break;
 				case 'WebUI':
@@ -241,7 +242,7 @@
 		 * @param string $ps_message New message to display. If omitted current message is maintained.
 		 * @return string Progress bar output. If mode is CLI and outputToTerminal property is set, output will also be printed to terminal.
 		 */
-		public function next($ps_message=null) {
+		public function next($ps_message=null, $pa_options=null) {
 			if (!is_null($ps_message)) { $this->setMessage($ps_message); }
 			
 			$this->opn_position++;
@@ -250,7 +251,7 @@
 			
 			switch($vs_mode = $this->getMode()) {
 				case 'CLI':
-					$vs_output = CLIProgressBar::next(1, $this->getMessage());
+					$vs_output = CLIProgressBar::next(1, $this->getMessage(), $pa_options);
 					if ($this->get('outputToTerminal')) { print $vs_output; }
 					break;
 				case 'WebUI':
@@ -269,11 +270,11 @@
 		 *
 		 * @return string Progress bar output. If mode is CLI and outputToTerminal property is set, output will also be printed to terminal.
 		 */
-		public function redraw() {
+		public function redraw($pa_options=null) {
 			
 			switch($vs_mode = $this->getMode()) {
 				case 'CLI':
-					$vs_output = CLIProgressBar::next(0);
+					$vs_output = CLIProgressBar::next(0, $pa_options);
 					if ($this->get('outputToTerminal')) { print $vs_output; }
 					break;
 				case 'WebUI':
@@ -307,13 +308,13 @@
 		 * @param int $pn_total The maximum value of the progress bar.
 		 * @return bool True if value was valid and set, false if not.
 		 */
-		public function setTotal($pn_total) {
+		public function setTotal($pn_total, $pa_options=null) {
 			if ($pn_total >= 0) { 
 				$this->opn_total = $pn_total;
 				
 				switch($vs_mode = $this->getMode()) {
 					case 'CLI':
-						CLIProgressBar::setTotal($this->opn_total);
+						CLIProgressBar::setTotal($this->opn_total, $pa_options);
 						break;
 					case 'WebUI':
 						// noop
@@ -362,14 +363,14 @@
 		 *
 		 * @return bool True if message was set, false if not.
 		 */
-		public function setMessage($ps_message, $pb_refresh=true) {
+		public function setMessage($ps_message, $pb_refresh=true, $pa_options=null) {
 			$this->ops_message = $ps_message;
 			
 			$this->setCache($ps_message);
 			
 			switch($vs_mode = $this->getMode()) {
 				case 'CLI':
-					CLIProgressBar::setMessage($ps_message);
+					CLIProgressBar::setMessage($ps_message, $pa_options);
 					break;
 				case 'WebUI':
 					// noop

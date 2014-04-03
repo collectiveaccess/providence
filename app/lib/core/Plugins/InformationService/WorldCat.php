@@ -152,11 +152,13 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 			$vs_api_key = $o_config->get('worldcat_api_key');
 		}
 		
+		$vn_start = caGetOption('start', $pa_options, 0);
 		$vn_count = caGetOption('count', $pa_options, 25);
+		if ($vn_count <= 0) { $vn_count = 25; }
 		
-		$o_feed = Zend_Feed::import(WLPlugInformationServiceWorldCat::$s_worldcat_search_url."?count={$vn_count}&q=".urlencode($ps_search)."&wskey=".$vs_api_key);
+		$o_feed = Zend_Feed::import(WLPlugInformationServiceWorldCat::$s_worldcat_search_url."?start={$vn_start}&count={$vn_count}&q=".urlencode($ps_search)."&wskey=".$vs_api_key);
 		
-		$va_data = array();
+		$va_data = array('count' => $o_feed->count());
 		foreach ($o_feed as $o_entry) {
 			$vs_author = (string)$o_entry->author->name();
 			$vs_title = (string)$o_entry->title();
@@ -182,13 +184,17 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 	 * @return array An array of data from the data server defining the item.
 	 */
 	public function getExtendedInformation($pa_settings, $ps_url) {
+		if (!($vs_api_key = caGetOption('APIKey', $pa_settings, null))) {
+			$o_config = Configuration::load();
+			$vs_api_key = $o_config->get('worldcat_api_key');
+		}
 		$o_client = new Client(WLPlugInformationServiceWorldCat::$s_worldcat_detail_url);
 		
 		$va_tmp = explode("/", $ps_url);
 		$vn_worldcat_id = array_pop($va_tmp);
 		
 		// Create a request
-		$o_request = $o_client->get("{$vn_worldcat_id}?wskey=".$pa_settings['APIKey']);
+		$o_request = $o_client->get("{$vn_worldcat_id}?wskey=".$vs_api_key);
 	
 		// Send the request and get the response
 		$o_response = $o_request->send();

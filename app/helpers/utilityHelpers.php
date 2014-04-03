@@ -1581,9 +1581,9 @@ function caFileIsIncludable($ps_file) {
 		}
 		
 		if (isset($pa_parse_options['forceLowercase']) && $pa_parse_options['forceLowercase']) {
-			$vm_val = mb_strtolower($vm_val);
+			$vm_val = is_array($vm_val) ? array_map('mb_strtolower', $vm_val) : mb_strtolower($vm_val);
 		} elseif (isset($pa_parse_options['forceUppercase']) && $pa_parse_options['forceUppercase']) {
-			$vm_val = mb_strtoupper($vm_val);
+			$vm_val = is_array($vm_val) ? array_map('mb_strtoupper', $vm_val) : mb_strtoupper($vm_val);
 		}
 		
 		$vs_cast_to = (isset($pa_parse_options['castTo']) && ($pa_parse_options['castTo'])) ? strtolower($pa_parse_options['castTo']) : '';

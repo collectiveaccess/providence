@@ -38,6 +38,7 @@ require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
 require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_LIB_DIR__.'/ca/Import/DataReaderManager.php');
 require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
+require_once(__CA_LIB_DIR__.'/ca/ProgressBar.php');
 require_once(__CA_MODELS_DIR__."/ca_data_importer_labels.php");
 require_once(__CA_MODELS_DIR__."/ca_data_importer_groups.php");
 require_once(__CA_MODELS_DIR__."/ca_data_importer_items.php");
@@ -434,6 +435,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 * @param int $pn_table_num
 	 * @param array $pa_options
 	 *		countOnly = return number of importers available rather than a list of importers
+	 *		formats = array of input formats to limit returned importers to. Only importers that accept at least one of the specified formats will be returned.
 	 * 
 	 * @return mixed List of importers, or integer count of importers if countOnly option is set
 	 */
@@ -442,6 +444,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		$t_importer = new ca_data_importers();
 		$vo_dm = $t_importer->getAppDatamodel();
+		
+		$va_formats = caGetOption('formats', $pa_options, null, array('forceLowercase' => true));
 		
 		$va_sql_wheres = array("(deleted = 0)");
 		$va_sql_params = array();
@@ -468,13 +472,24 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		while($qr_res->nextRow()) {
 			$va_row = $qr_res->getRow();
+			$va_settings = caUnserializeForDatabase($va_row['settings']);
+			
+			if (isset($va_settings['inputFormats']) && is_array($va_settings['inputFormats']) && is_array($va_formats)) {
+				$va_settings['inputFormats'] = array_map('strtolower', $va_settings['inputFormats']);
+				if(!sizeof(array_intersect($va_settings['inputFormats'], $va_formats))) {
+					continue;
+				}
+			}
+			
 			$va_ids[] = $vn_id = $va_row['importer_id'];
 			$va_importers[$vn_id] = $va_row;
 			
 			$t_instance = $vo_dm->getInstanceByTableNum($va_row['table_num'], true);
 			$va_importers[$vn_id]['importer_type'] = $t_instance->getProperty('NAME_PLURAL');
+			$va_importers[$vn_id]['type'] = $va_settings['type'];
+			$va_importers[$vn_id]['type_for_display'] = $t_instance->getTypeName($va_settings['type']);
 			
-			$va_importers[$vn_id]['settings'] = caUnserializeForDatabase($va_row['settings']);
+			$va_importers[$vn_id]['settings'] = $va_settings;
 			$va_importers[$vn_id]['last_modified_on'] = $t_importer->getLastChangeTimestamp($vn_id, array('timestampOnly' => true));
 		}
 		
@@ -1190,6 +1205,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$o_log = new KLogger($pa_options['logDirectory'], $pa_options['logLevel']);
 		
 		$vb_show_cli_progress_bar 	= (isset($pa_options['showCLIProgressBar']) && ($pa_options['showCLIProgressBar'])) ? true : false;
+		
+		$o_progress = caGetOption('progressBar', $pa_options, new ProgressBar());
+		if ($vb_show_cli_progress_bar) { $o_progress->setMode('CLI'); }
+		
 		if ($vb_use_ncurses = (isset($pa_options['useNcurses']) && ($pa_options['useNcurses'])) ? true : false) {
 			$vb_use_ncurses = caCLIUseNcurses();
 		}
@@ -1243,9 +1262,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$t = new Timer();
 		$vn_start_time = time();
 		
-		if ($vb_show_cli_progress_bar){
-			print CLIProgressBar::start(0, _t('Reading %1', $ps_source), array('window' => $r_progress));
-		}
+		//if ($vb_show_cli_progress_bar){
+		$o_progress->start(_t('Reading %1', $ps_source), array('window' => $r_progress));
+		//}
 		
 		if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
 			$ps_callback($po_request, 0, 100, _t('Reading %1', $ps_source), (time() - $vn_start_time), memory_get_usage(true), 0, ca_data_importers::$s_num_import_errors);
@@ -1269,9 +1288,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$o_log->logDebug(_t('Finished reading input source at %1 seconds', $t->getTime(4)));
 		
 		$vn_num_items = $o_reader->numRows();
-		if ($vb_show_cli_progress_bar){
-			print CLIProgressBar::start($vn_num_items, _t('Importing from %1', $ps_source), array('window' => $r_progress));
-		}
+		//if ($vb_show_cli_progress_bar){
+		$o_progress->setTotal($vn_num_items);
+		$o_progress->start(_t('Importing from %1', $ps_source), array('window' => $r_progress));
+		//}
 		if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
 			$ps_callback($po_request, 0, $vn_num_items, _t('Importing from %1', $ps_source), (time() - $vn_start_time), memory_get_usage(true), 0, ca_data_importers::$s_num_import_errors);
 		}
@@ -1619,9 +1639,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			
-			if ($vb_show_cli_progress_bar) {
-				print CLIProgressBar::next(1, _t("Importing %1", $vs_idno), array('window' => $r_progress));
-			}
+			//if ($vb_show_cli_progress_bar) {
+			$o_progress->next(_t("Importing %1", $vs_idno), array('window' => $r_progress));
+			//}
 			
 			if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
 				$ps_callback($po_request, ca_data_importers::$s_num_records_processed, $vn_num_items, _t("[%3/%4] Processing %1 (%2)", caTruncateStringWithEllipsis($vs_display_label, 50), $vs_idno, ca_data_importers::$s_num_records_processed, $vn_num_items), (time() - $vn_start_time), memory_get_usage(true), ca_data_importers::$s_num_records_processed, ca_data_importers::$s_num_import_errors); 
@@ -2387,9 +2407,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		$o_log->logInfo(_t('Import of %1 completed using mapping %2: %3 imported/%4 skipped/%5 errors', $ps_source, $t_mapping->get('importer_code'), ca_data_importers::$s_num_records_processed, ca_data_importers::$s_num_records_skipped, ca_data_importers::$s_num_import_errors));
 		
-		if ($vb_show_cli_progress_bar) {
-			print CLIProgressBar::finish();
-		}
+		//if ($vb_show_cli_progress_bar) {
+		$o_progress->finish();
+		//}
 		if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
 			$ps_callback($po_request, $vn_num_items, $vn_num_items, _t('Import completed'), (time() - $vn_start_time), memory_get_usage(true), ca_data_importers::$s_num_records_processed, ca_data_importers::$s_num_import_errors);
 		}

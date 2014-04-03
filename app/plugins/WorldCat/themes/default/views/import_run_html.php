@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * views/manage/tools/tool_run_html.php : 
+ * app/plugins/WorldCat/themes/default/views/import_run_html.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -25,19 +25,13 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$o_tool = 				$this->getVar('tool');
-	$vs_tool_identifier = 	$o_tool->getToolIdentifier();
-	
-	$va_settings = 			$this->getVar('available_settings');
-	$va_setting_values = 	$this->getVar('setting_values');
-	
-	$vs_form_id = 			$this->getVar('form_id');
-	$vs_command = 			$this->getVar('command');
-	$vs_job_id = 			$this->getVar('job_id');
+ 	
+	$pa_worldcat_ids = 		$this->getVar('worldcat_ids');
+	$pn_importer_id = 		$this->getVar('importer_id');
+	$ps_job_id = 			$this->getVar('job_id');
  ?>
  
-<h1><?php print _t('Running %1: %2', $o_tool->getToolName(), $vs_command); ?></h1>
+<h1><?php print _t('Importing from WorldCat'); ?></h1>
 
 <div class="batchProcessingTableProgressGroup">
 	<div id="batchProcessingTableStatus" class="batchProcessingStatus"> </div>
@@ -54,7 +48,7 @@
 <div class="editorBottomPadding"><!-- empty --></div>
 
 <div id="batchProcessingMore">
-	<?php print caNavLink($this->request, _t('Back to tool list'), '', 'manage', 'Tools', 'Index'); ?>
+	<?php print caNavLink($this->request, _t('Run another import'), '', '*', '*', 'Index'); ?>
 </div>
 	
 <script type="text/javascript">
@@ -63,9 +57,9 @@
 			value: 0
 		});
 		
-		// Start running tool
+		// Start running import
 		var updateProgressBarInterval = null;
-		jQuery.post('<?php print caNavUrl($this->request, 'manage', 'Tools', 'RunJob', array('tool' => $vs_tool_identifier, 'command' => $vs_command)); ?>', <?php print json_encode(array('job_id' => $vs_job_id, 'settings' => $va_setting_values)); ?>,
+		jQuery.post('<?php print caNavUrl($this->request, '*', '*', 'RunImport', array()); ?>', <?php print json_encode(array('importer_id' => $pn_importer_id, 'job_id' => $ps_job_id, 'WorldCatID' => $pa_worldcat_ids)); ?>,
 			function(data, textStatus, jqXHR) {
 				console.log("Job returned:", data);
 				// stop progress refresh
@@ -82,7 +76,7 @@
 				
 			// Set up repeating load of progress bar status
 			updateProgressBarInterval = setInterval(function() {
-				jQuery.getJSON('<?php print caNavUrl($this->request, 'manage', 'Tools', 'GetJobStatus', array('job_id' => $vs_job_id)); ?>', {}, function(data) {
+				jQuery.getJSON('<?php print caNavUrl($this->request, '*', '*', 'GetImportStatus', array('job_id' => $ps_job_id)); ?>', {}, function(data) {
 					jQuery('#progressbar').progressbar("option", "value", data.position).progressbar("option", "max", data.total);
 					jQuery('#batchProcessingTableStatus').html(data.message);
 					jQuery('#batchProcessingElapsedTime').html(data.elapsedTime);
