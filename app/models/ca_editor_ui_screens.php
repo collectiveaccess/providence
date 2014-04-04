@@ -839,6 +839,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		return $va_sorted_bundles;
 	}
 	# ----------------------------------------
+	/**
+	 * Determines if a bundle name is valid for a given table
+	 */
+	public function isAvailableBundle($pm_table_name_or_num,$ps_bundle_name) {
+		$va_available_bundles = $this->getAvailableBundles($pm_table_name_or_num);
+		if(!is_array($va_available_bundles)) { return false; }
+		return in_array($ps_bundle_name, array_keys($va_available_bundles));
+	}
+	# ----------------------------------------
 	# Type restrictions
 	# ----------------------------------------
 	/**

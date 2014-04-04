@@ -5412,6 +5412,11 @@ div.quickAddFormTopPadding {
 }
 
 div.quickAddDialogHeader {
+	background-color: #cccccc;
+    font-size: 13px;
+    font-weight: bold !important;
+    padding: 5px;
+    
     position: fixed;
     width: 890px;
     z-index:33000;

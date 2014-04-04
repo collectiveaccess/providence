@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2011 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -268,6 +268,116 @@ class ca_user_roles extends BaseModel {
 		} else {
 			return $va_actions['raw'];
 		}
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get bundle access settings for current role
+	 */
+	public function getBundleAccessSettings() {
+		if(!$this->getPrimaryKey()) { return array(); }
+
+		$va_vars = $this->get('vars');
+ 		if(isset($va_vars['bundle_access_settings'])){
+ 			return $va_vars['bundle_access_settings'];
+ 		} else {
+ 			return array();
+ 		}
+	}
+	# ------------------------------------------------------
+	/**
+	 * Set access setting for given bundle
+	 *
+	 * @param string $ps_table the table the bundle belongs to
+	 * @param string $ps_bundle the bundle name, e.g. preferred_labels
+	 * @param int $pn_access access level, __CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__ or __CA_BUNDLE_ACCESS_EDIT__
+	 * @return boolean success or not
+	 */
+	public function setAccessSettingForBundle($ps_table, $ps_bundle, $pn_access) {
+		if(!in_array($pn_access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__))) { return false; }
+		if(!$this->getPrimaryKey()) { return false; }
+
+		$va_vars = $this->get('vars');
+		if(!is_array($va_vars)) { $va_vars = array(); }
+		if(!isset($va_vars['bundle_access_settings'])) { $va_vars['bundle_access_settings'] = array(); }
+
+		$t_ui_screens = new ca_editor_ui_screens();
+		if(!$t_ui_screens->isAvailableBundle($ps_table,$ps_bundle)) { return false; }
+
+		$va_vars['bundle_access_settings'][$ps_table.".".$ps_bundle] = $pn_access;
+		$this->set('vars', $va_vars);
+
+		$vn_old_mode = $this->getMode();
+		$this->setMode(ACCESS_WRITE);
+		$this->update();
+		$this->setMode($vn_old_mode);
+
+		if($this->numErrors()>0) {
+			return false;
+		}
+
+		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get type access settings for current role
+	 */
+	public function getTypeAccessSettings() {
+		if(!$this->getPrimaryKey()) { return array(); }
+		if(!$this->getAppConfig()->get('perform_type_access_checking')) { array(); }
+
+		$va_vars = $this->get('vars');
+ 		if(isset($va_vars['type_access_settings'])){
+ 			return $va_vars['type_access_settings'];
+ 		} else {
+ 			return array();
+ 		}
+	}
+	# ------------------------------------------------------
+	/**
+	 * Set access setting for given type
+	 *
+	 * @param string $ps_table the table the bundle belongs to
+	 * @param string $pm_type_id_or_code the primary key or code for the type list item
+	 * @param int $pn_access access level, __CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__ or __CA_BUNDLE_ACCESS_EDIT__
+	 * @return boolean success or not
+	 */
+	public function setAccessSettingForType($ps_table, $pm_type_id_or_code, $pn_access) {
+		if(!in_array($pn_access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__))) { return false; }
+		if(!$this->getPrimaryKey()) { return false; }
+		//if(!$this->getAppConfig()->get('perform_type_access_checking')) { return false; }
+		$o_dm = Datamodel::load();
+		$t_list = new ca_lists();	
+
+		$va_vars = $this->get('vars');
+		if(!is_array($va_vars)) { $va_vars = array(); }
+		if(!isset($va_vars['type_access_settings'])) { $va_vars['type_access_settings'] = array(); }
+
+		$t_instance = $o_dm->getInstanceByTableName($ps_table, true);
+		if(!$t_instance) { return false; }
+		if(!($vs_list_code = $t_instance->getTypeListCode())) { return false; }
+
+		// convert idno to id
+		if(!is_numeric($pm_type_id_or_code)){
+			if(!$t_list->itemIsInList($vs_list_code,$pm_type_id_or_code)) { return false; }
+			$pm_type_id_or_code = ca_lists::getItemID($vs_list_code,$pm_type_id_or_code);
+		}
+
+		if(!$t_list->itemIDIsInList($vs_list_code,$pm_type_id_or_code)){ return false; }
+
+		$va_vars['type_access_settings'][$ps_table.".".$pm_type_id_or_code] = $pn_access;
+
+		$this->set('vars', $va_vars);
+
+		$vn_old_mode = $this->getMode();
+		$this->setMode(ACCESS_WRITE);
+		$this->update();
+		$this->setMode($vn_old_mode);
+
+		if($this->numErrors()>0) {
+			return false;
+		}
+
+		return true;
 	}
 	# ------------------------------------------------------
 	/**

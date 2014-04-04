@@ -226,7 +226,7 @@ class ca_item_tags extends BaseModel {
 		$qr_res = $o_db->query("
 			SELECT cit.*, cixt.*, u.user_id, u.fname, u.lname, u.email user_email
 			FROM ca_items_x_tags cixt
-			INNER JOIN ca_users AS u ON u.user_id = cixt.user_id
+			LEFT JOIN ca_users AS u ON u.user_id = cixt.user_id
 			INNER JOIN ca_item_tags AS cit ON cit.tag_id = cixt.tag_id
 			{$vs_where} ORDER BY cixt.created_on DESC {$vs_limit}
 		");

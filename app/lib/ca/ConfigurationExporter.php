@@ -711,6 +711,7 @@ final class ConfigurationExporter {
 	# -------------------------------------------------------
 	public function getRolesAsDOM(){
 		$t_role = new ca_user_roles();
+		$t_list = new ca_lists();
 		
 		$vo_roles = $this->opo_dom->createElement("roles");
 		
@@ -731,6 +732,50 @@ final class ConfigurationExporter {
 					$vo_actions->appendChild($this->opo_dom->createElement("action", $vs_action));
 				}
 				$vo_role->appendChild($vo_actions);
+			}
+
+			$va_vars = $t_role->get('vars');
+
+			// add bundle level ACL items
+			if(is_array($va_vars['bundle_access_settings'])){
+				$vo_bundle_lvl_ac = $this->opo_dom->createElement("bundleLevelAccessControl");
+				foreach($va_vars['bundle_access_settings'] as $vs_bundle => $vn_val){
+					$va_tmp = explode('.', $vs_bundle);
+					$vs_table_name = $va_tmp[0];
+					$vs_bundle_name = $va_tmp[1];
+					$vs_access = $this->_convertACLConstantToString(intval($vn_val));
+
+					$vo_permission = $this->opo_dom->createElement("permission");
+					$vo_bundle_lvl_ac->appendChild($vo_permission);
+					$vo_permission->setAttribute('table',$vs_table_name);
+					$vo_permission->setAttribute('bundle',$vs_bundle_name);
+					$vo_permission->setAttribute('access',$vs_access);
+				}
+				$vo_role->appendChild($vo_bundle_lvl_ac);
+			}
+
+			// add type level ACL items
+			if(is_array($va_vars['type_access_settings'])){
+				$vo_type_lvl_ac = $this->opo_dom->createElement("typeLevelAccessControl");
+				foreach($va_vars['type_access_settings'] as $vs_id => $vn_val){
+					$va_tmp = explode('.', $vs_id);
+					$vs_table_name = $va_tmp[0];
+					$vn_type_id = $va_tmp[1];
+					$vs_access = $this->_convertACLConstantToString(intval($vn_val));
+
+					$t_instance = $this->opo_dm->getInstanceByTableName($vs_table_name, true);
+					if (!($vs_list_code = $t_instance->getTypeListCode())) { continue; }
+
+					$va_item = $t_list->getItemFromListByItemID($vs_list_code, $vn_type_id);
+					if(!isset($va_item['idno'])) { continue; }
+
+					$vo_permission = $this->opo_dom->createElement("permission");
+					$vo_type_lvl_ac->appendChild($vo_permission);
+					$vo_permission->setAttribute('table',$vs_table_name);
+					$vo_permission->setAttribute('type',$va_item['idno']);
+					$vo_permission->setAttribute('access',$vs_access);
+				}
+				$vo_role->appendChild($vo_type_lvl_ac);
 			}
 			
 			$vo_roles->appendChild($vo_role);
@@ -882,10 +927,23 @@ final class ConfigurationExporter {
 				}
 			}
 			$vs_buf .= "\t\t</labels>\n";
-			
+
+			$va_settings = $t_display->getSettings();
+			if(sizeof($va_settings)>0){
+				$vs_buf .= "\t\t<settings>\n";
+				foreach ($va_settings as $vs_setting => $vm_val) {
+					if (is_array($vm_val)) {
+						foreach($vm_value as $vn_i => $vn_val) {
+							$vs_buf .= "\t\t\t<setting name='{$vs_setting}'><![CDATA[".$vn_val."]]></setting>\n";
+						}
+					} else {
+						$vs_buf .= "\t\t\t<setting name='{$vs_setting}'><![CDATA[".$vm_val."]]></setting>\n";
+					}
+				}
+				$vs_buf .= "\t\t</settings>\n";
+			}
 			
 			$va_placements = $t_display->getPlacements();
-			//print_R(($va_placements));
 			
 			$vs_buf .= "<bundlePlacements>\n";
 			foreach($va_placements as $vn_placement_id => $va_placement_info) {
@@ -907,10 +965,10 @@ final class ConfigurationExporter {
 							default:
 								if (is_array($vm_value)) {
 									foreach($vm_value as $vn_i => $vn_val) {
-										$vs_buf .= "\t\t\t\t<setting name='{$vs_setting}'>".caEscapeForXML($vn_val)."</setting>\n";
+										$vs_buf .= "\t\t\t\t<setting name='{$vs_setting}'><![CDATA[".$vn_val."]]></setting>\n";
 									}
 								} else {
-									$vs_buf .= "\t\t\t\t<setting name='{$vs_setting}'>".caEscapeForXML($vm_value)."</setting>\n";
+									$vs_buf .= "\t\t\t\t<setting name='{$vs_setting}'><![CDATA[".$vm_value."]]></setting>\n";
 								}
 								break;
 						}
@@ -925,8 +983,6 @@ final class ConfigurationExporter {
 		}
 		$vs_buf .= "</displays>\n";
 		
-		//print_R($va_displays);
-		
 		return $vs_buf;
 	}
 	# -------------------------------------------------------
@@ -939,6 +995,17 @@ final class ConfigurationExporter {
 			return "default";
 		}
 	}
-	# -------------------------------------------------------
+	# --------------------------------------------------
+	private function _convertACLConstantToString($pn_val){
+		switch($pn_val) {
+			case __CA_BUNDLE_ACCESS_EDIT__:
+				return 'edit';
+			case __CA_BUNDLE_ACCESS_READONLY__:
+				return 'read';
+			default:
+				return 'none';
+		}
+	}
+	# --------------------------------------------------
 }
 ?>
