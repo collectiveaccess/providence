@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: CollectiveAccess Providence\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-08-19 07:58-0800\n"
-"PO-Revision-Date: 2014-02-18 11:39+0100\n"
+"PO-Revision-Date: 2014-03-20 10:28+0100\n"
 "Last-Translator: Stefan <stefan@whirl-i-gig.com>\n"
 "Language-Team: German (Germany) (http://www.transifex.com/projects/p/"
 "collectiveaccess-providence/language/de_DE/)\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: de_DE\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 1.5.7\n"
+"X-Generator: Poedit 1.6.4\n"
 "X-Poedit-Basepath: c:\\providence\n"
 "X-Poedit-KeywordsList: _t;_p;_\n"
 "X-Poedit-SourceCharset: utf-8\n"
@@ -59,7 +59,7 @@ msgstr ""
 #: c:\providence/themes/default/views/manage/Results/ca_item_comments_paging_controls_html.php:49
 #: c:\providence/themes/default/views/manage/Results/ca_item_tags_paging_controls_html.php:49
 msgid "Page"
-msgstr ""
+msgstr "Seite"
 
 #: c:\providence/app/conf/annotation_types.conf:58
 #: c:\providence/app/conf/annotation_types.conf:88
@@ -386,7 +386,7 @@ msgstr "Sammlungen"
 #: c:\providence/app/conf/browse.conf:111
 #: c:\providence/app/conf/browse.conf:314
 msgid "Years"
-msgstr ""
+msgstr "Jahre"
 
 #: c:\providence/app/conf/browse.conf:112
 #: c:\providence/app/conf/browse.conf:315
@@ -551,7 +551,7 @@ msgstr ""
 #: c:\providence/app/conf/browse.conf:938
 #: c:\providence/app/conf/browse.conf:972
 msgid "statuses"
-msgstr ""
+msgstr "Status"
 
 #: c:\providence/app/conf/browse.conf:200
 #: c:\providence/app/conf/browse.conf:403
@@ -573,17 +573,17 @@ msgstr ""
 #: c:\providence/app/conf/browse.conf:840
 #: c:\providence/app/conf/browse.conf:900
 msgid "access statuses"
-msgstr ""
+msgstr "Zugriffsstatus"
 
 #: c:\providence/app/conf/browse.conf:212
 #: c:\providence/app/helpers/utilityHelpers.php:853
 msgid "year"
-msgstr ""
+msgstr "Jahr"
 
 #: c:\providence/app/conf/browse.conf:213
 #: c:\providence/app/helpers/utilityHelpers.php:853
 msgid "years"
-msgstr ""
+msgstr "Jahre"
 
 #: c:\providence/app/conf/browse.conf:223
 msgid "decade"
@@ -1334,7 +1334,7 @@ msgstr ""
 #: c:\providence/app/conf/navigation.conf:1603
 #: c:\providence/themes/default/views/find/Search/search_sets_html.php:74
 msgid "Create"
-msgstr ""
+msgstr "Erstellen"
 
 #: c:\providence/app/conf/navigation.conf:1689
 #: c:\providence/app/conf/navigation.conf:1837
@@ -2206,7 +2206,7 @@ msgstr "Dem Benutzer gestatten, Objekte zu browsen"
 #: c:\providence/themes/default/views/bundles/representation_viewer_html.php:573
 #: c:\providence/themes/default/views/find/Search/search_tools_html.php:75
 msgid "Download media"
-msgstr ""
+msgstr "Anhang herunterladen"
 
 #: c:\providence/app/conf/user_actions.conf:235
 msgid "Allow user to download media associated with the object"
@@ -2241,7 +2241,7 @@ msgstr ""
 #: c:\providence/app/conf/user_actions.conf:783
 #: c:\providence/app/helpers/displayHelpers.php:639
 msgid "Change type"
-msgstr ""
+msgstr "Typ ändern"
 
 #: c:\providence/app/conf/user_actions.conf:247
 msgid "Allow user to change types of existing objects"
@@ -4241,13 +4241,13 @@ msgstr ""
 
 #: c:\providence/app/conf/visualization.conf:7
 msgid "Map"
-msgstr ""
+msgstr "Landkarte"
 
 #: c:\providence/app/conf/visualization.conf:24
 #: c:\providence/app/conf/visualization.conf:55
 #: c:\providence/app/conf/visualization.conf:75
 msgid "Timeline"
-msgstr ""
+msgstr "Zeitachse"
 
 #: c:\providence/app/controllers/administrate/access/GroupsController.php:58
 #: c:\providence/app/controllers/administrate/access/UsersController.php:83
@@ -4814,6 +4814,7 @@ msgid ""
 "There are errors preventing information in specific fields from being saved "
 "as noted below."
 msgstr ""
+"Fehler beim Speichern der Informationen in den unten aufgeführten Feldern:"
 
 #: c:\providence/app/controllers/client/library/OrderEditorController.php:527
 #: c:\providence/app/controllers/client/orders/OrderEditorController.php:524
@@ -5647,7 +5648,7 @@ msgstr "LEER"
 
 #: c:\providence/app/helpers/displayHelpers.php:725
 msgid "Add/remove item to/from watch list."
-msgstr ""
+msgstr "Element auf der Beobachtungsliste löschen/hinzufügen"
 
 #: c:\providence/app/helpers/displayHelpers.php:750
 msgid "Creating new %1"
@@ -5674,11 +5675,11 @@ msgstr ""
 
 #: c:\providence/app/helpers/displayHelpers.php:788
 msgid "Lot contains %1 object"
-msgstr ""
+msgstr "Das Lot enthält &1 Objekt"
 
 #: c:\providence/app/helpers/displayHelpers.php:788
 msgid "Lot contains %1 objects"
-msgstr ""
+msgstr "Lot enthält %1 Objekte"
 
 #: c:\providence/app/helpers/displayHelpers.php:795
 msgid "Download all media associated with objects in this lot."
@@ -5699,7 +5700,7 @@ msgstr ""
 #: c:\providence/app/helpers/displayHelpers.php:818
 #: c:\providence/app/helpers/displayHelpers.php:821
 msgid "Add new %1 to lot"
-msgstr ""
+msgstr "Neue/s %1 zu Lot hinzufügen"
 
 #: c:\providence/app/helpers/displayHelpers.php:842
 msgid "On loan to %1"
@@ -5882,16 +5883,16 @@ msgstr ""
 #: c:\providence/app/helpers/displayHelpers.php:1339
 #: c:\providence/app/helpers/displayHelpers.php:1350
 msgid "Just now"
-msgstr ""
+msgstr "Gerade eben"
 
 #: c:\providence/app/helpers/displayHelpers.php:1339
 #: c:\providence/app/helpers/displayHelpers.php:1350
 msgid "%1 ago"
-msgstr ""
+msgstr "vor %1"
 
 #: c:\providence/app/helpers/displayHelpers.php:1342
 msgid "<strong>Created</strong><br/>%1 by %2"
-msgstr "<strong>Angelegt</strong><br/>%1 by %2"
+msgstr "<strong>Angelegt</strong><br/>%1 von %2"
 
 #: c:\providence/app/helpers/displayHelpers.php:1342
 msgid "<strong>Created</strong><br/>%1"
@@ -5914,7 +5915,7 @@ msgstr ""
 
 #: c:\providence/app/helpers/displayHelpers.php:1353
 msgid "<strong>Last changed</strong><br/>%1 by %2"
-msgstr ""
+msgstr "<strong>Zuletzt geändert</strong><br/>%1 von %2"
 
 #: c:\providence/app/helpers/displayHelpers.php:1353
 msgid "<strong>Last changed</strong><br/>%1"
@@ -7318,39 +7319,39 @@ msgstr ""
 
 #: c:\providence/app/helpers/utilityHelpers.php:854
 msgid "month"
-msgstr ""
+msgstr "Monat"
 
 #: c:\providence/app/helpers/utilityHelpers.php:854
 msgid "months"
-msgstr ""
+msgstr "Monate"
 
 #: c:\providence/app/helpers/utilityHelpers.php:855
 msgid "day"
-msgstr ""
+msgstr "Tag"
 
 #: c:\providence/app/helpers/utilityHelpers.php:855
 msgid "days"
-msgstr ""
+msgstr "Tage"
 
 #: c:\providence/app/helpers/utilityHelpers.php:856
 msgid "hour"
-msgstr ""
+msgstr "Stunde"
 
 #: c:\providence/app/helpers/utilityHelpers.php:856
 msgid "hours"
-msgstr ""
+msgstr "Stunden"
 
 #: c:\providence/app/helpers/utilityHelpers.php:857
 msgid "minute"
-msgstr ""
+msgstr "Minute"
 
 #: c:\providence/app/helpers/utilityHelpers.php:857
 msgid "minutes"
-msgstr ""
+msgstr "Minuten"
 
 #: c:\providence/app/helpers/utilityHelpers.php:858
 msgid "second"
-msgstr ""
+msgstr "Sekunde"
 
 #: c:\providence/app/helpers/utilityHelpers.php:858
 msgid "seconds"
@@ -7389,7 +7390,7 @@ msgstr ""
 #: c:\providence/app/lib/ca/BaseSearchController.php:255
 #: c:\providence/app/lib/ca/BaseSearchController.php:500
 msgid "search"
-msgstr "Suchen"
+msgstr "Suche"
 
 #: c:\providence/app/lib/ca/BaseBrowseController.php:179
 msgid "%1 browse"
@@ -7397,11 +7398,11 @@ msgstr ""
 
 #: c:\providence/app/lib/ca/BaseBrowseController.php:209
 msgid "Refine Results By..."
-msgstr ""
+msgstr "Suche verfeinern nach..."
 
 #: c:\providence/app/lib/ca/BaseBrowseController.php:209
 msgid "Start Browsing By..."
-msgstr ""
+msgstr "Beginne browsen mit..."
 
 #: c:\providence/app/lib/ca/BaseBrowseController.php:280
 msgid "browse"
@@ -7471,7 +7472,7 @@ msgstr "%1 existiert nicht"
 #: c:\providence/app/lib/ca/BaseEditorController.php:298
 #: c:\providence/app/lib/ca/BaseQuickAddController.php:284
 msgid "Could not save %1"
-msgstr ""
+msgstr "%1 konnte nicht gespeichert werden"
 
 #: c:\providence/app/lib/ca/BaseEditorController.php:300
 #: c:\providence/app/lib/ca/BaseQuickAddController.php:286
@@ -7490,6 +7491,10 @@ msgid ""
 "saved. Correct the problems and click \"save\" again.\n"
 "<ul>"
 msgstr ""
+"Bestimmte Fehler verhindern, dass die <strong>GESAMTEN</strong> Daten "
+"gespeichert werden können. Bitte beheben Sie das Problem und klicken Sie "
+"danach erneut auf \"Speichern\".\n"
+"<ul>"
 
 #: c:\providence/app/lib/ca/BaseEditorController.php:355
 msgid ""
@@ -7497,6 +7502,8 @@ msgid ""
 "as noted below.\n"
 "<ul>"
 msgstr ""
+"Fehler beim Speichern der Informationen in den unten aufgeführten Feldern:\n"
+"<ul>"
 
 #: c:\providence/app/lib/ca/BaseEditorController.php:422
 msgid "Cannot delete root of hierarchy"
@@ -7592,7 +7599,7 @@ msgstr ""
 
 #: c:\providence/app/lib/ca/BaseFindController.php:828
 msgid "Search could not be saved"
-msgstr ""
+msgstr "Suche konnte nicht gespeichert werden"
 
 #: c:\providence/app/lib/ca/BaseFindController.php:944
 msgid "Could not generate ZIP file for download"
@@ -7701,11 +7708,11 @@ msgstr ""
 
 #: c:\providence/app/lib/ca/BatchProcessor.php:349
 msgid "Create set %1"
-msgstr ""
+msgstr "Sets erstellen %1"
 
 #: c:\providence/app/lib/ca/BatchProcessor.php:350
 msgid "Failed to create set %1: %2"
-msgstr ""
+msgstr "Set %1: %2 anlegen gescheitert"
 
 #: c:\providence/app/lib/ca/BatchProcessor.php:358
 msgid "Add label to set %1"
@@ -7963,7 +7970,7 @@ msgstr ""
 
 #: c:\providence/app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:4305
 msgid "Identifier %1 already exists and duplicates are not permitted"
-msgstr ""
+msgstr "Identifikator %1 existiert bereits, Duplikate sind nicht zulässig"
 
 #: c:\providence/app/lib/ca/ConfigurationCheck.php:146
 msgid ""
@@ -8364,7 +8371,7 @@ msgstr ""
 #: c:\providence/app/lib/ca/Attributes/Values/UrlAttributeValue.php:132
 #: c:\providence/app/lib/ca/Attributes/Values/WeightAttributeValue.php:89
 msgid "Can be used in search form"
-msgstr ""
+msgstr "Kann in einem Suchformular verwendet werden"
 
 #: c:\providence/app/lib/ca/Attributes/Values/ContainerAttributeValue.php:66
 #: c:\providence/app/lib/ca/Attributes/Values/CurrencyAttributeValue.php:102
@@ -8410,7 +8417,7 @@ msgstr ""
 #: c:\providence/app/lib/ca/Attributes/Values/UrlAttributeValue.php:140
 #: c:\providence/app/lib/ca/Attributes/Values/WeightAttributeValue.php:97
 msgid "Can be used in display"
-msgstr ""
+msgstr "Kann in einem Display verwendet werden"
 
 #: c:\providence/app/lib/ca/Attributes/Values/ContainerAttributeValue.php:74
 #: c:\providence/app/lib/ca/Attributes/Values/CurrencyAttributeValue.php:110
@@ -8895,7 +8902,7 @@ msgstr ""
 
 #: c:\providence/app/lib/ca/Attributes/Values/GeoNamesAttributeValue.php:85
 msgid "Disable map"
-msgstr ""
+msgstr "Landkarte deaktivieren"
 
 #: c:\providence/app/lib/ca/Attributes/Values/GeoNamesAttributeValue.php:86
 msgid "Check this option if you want to disable location map display."
@@ -8920,7 +8927,7 @@ msgstr ""
 
 #: c:\providence/app/lib/ca/Attributes/Values/GeoNamesAttributeValue.php:135
 msgid "Maximum number of GeoNames results"
-msgstr ""
+msgstr "Maximale Anzahl an GeoNames Ergebnissen"
 
 #: c:\providence/app/lib/ca/Attributes/Values/GeoNamesAttributeValue.php:136
 msgid ""
@@ -9093,7 +9100,7 @@ msgstr ""
 #: c:\providence/app/lib/ca/Attributes/Values/IntegerAttributeValue.php:200
 #: c:\providence/app/lib/ca/Attributes/Values/NumericAttributeValue.php:199
 msgid "%1 must a number"
-msgstr ""
+msgstr "%1 muss eine Zahl sein"
 
 #: c:\providence/app/lib/ca/Attributes/Values/IntegerAttributeValue.php:223
 #: c:\providence/app/lib/ca/Attributes/Values/NumericAttributeValue.php:222
@@ -9332,7 +9339,7 @@ msgstr ""
 
 #: c:\providence/app/lib/ca/Attributes/Values/ListAttributeValue.php:254
 msgid "-NONE-"
-msgstr ""
+msgstr "-OHNE WERT-"
 
 #: c:\providence/app/lib/ca/Attributes/Values/ListAttributeValue.php:294
 msgid "The list must have exactly two items to be used as a yes/no checkbox"
@@ -9502,7 +9509,7 @@ msgstr ""
 
 #: c:\providence/app/lib/ca/Browse/BrowseEngine.php:103
 msgid "Searches"
-msgstr ""
+msgstr "Suchen"
 
 #: c:\providence/app/lib/ca/Browse/BrowseEngine.php:164
 msgid "a"
@@ -9514,7 +9521,7 @@ msgstr "Browsen nach..."
 
 #: c:\providence/app/lib/ca/Browse/BrowseEngine.php:1370
 msgid "Invalid search type"
-msgstr ""
+msgstr "Ungültiger Suchtyp"
 
 #: c:\providence/app/lib/ca/Browse/BrowseEngine.php:1397
 msgid "Invalid criteria type"
@@ -9683,7 +9690,7 @@ msgstr ""
 
 #: c:\providence/app/lib/ca/IDNumbering/MultipartIDNumber.php:293
 msgid "%1 must be a number"
-msgstr ""
+msgstr "%1 muss eine Zahl sein"
 
 #: c:\providence/app/lib/ca/IDNumbering/MultipartIDNumber.php:296
 #: c:\providence/app/lib/core/BaseModel.php:5142
@@ -9696,11 +9703,11 @@ msgstr ""
 
 #: c:\providence/app/lib/ca/IDNumbering/MultipartIDNumber.php:318
 msgid "%1 must consist only letters and numbers"
-msgstr ""
+msgstr "%1 darf nur Zahlen und Buchstaben enthalten"
 
 #: c:\providence/app/lib/ca/IDNumbering/MultipartIDNumber.php:339
 msgid "%1 must be a valid year"
-msgstr ""
+msgstr "%1 muss eine gültige Jahreszahl sein"
 
 #: c:\providence/app/lib/ca/IDNumbering/MultipartIDNumber.php:346
 msgid "%1 must be a valid numeric month (between 1 and 12)"
@@ -11955,8 +11962,8 @@ msgstr ""
 
 #: c:\providence/app/lib/core/Plugins/Media/ImageMagick.php:218
 msgid ""
-"Provides image processing and conversion services using ImageMagick via exec"
-"() calls to ImageMagick binaries"
+"Provides image processing and conversion services using ImageMagick via "
+"exec() calls to ImageMagick binaries"
 msgstr ""
 "Ermöglicht Bildaufbereitungs- und Konvertierungsservice über ImageMagick via "
 "exec() calls nach ImageMagick Binärdatein"
@@ -12533,16 +12540,16 @@ msgstr ""
 
 #: c:\providence/app/lib/core/Plugins/Visualizer/Map.php:51
 msgid "Visualizes data as a map"
-msgstr ""
+msgstr "Stellt die Daten in einer Landkarte dar"
 
 #: c:\providence/app/lib/core/Plugins/Visualizer/Timeline.php:50
 msgid "Visualizes data as a timeline"
-msgstr ""
+msgstr "Stellt die Daten in einer Zeitachse dar"
 
 #: c:\providence/app/lib/core/Plugins/Visualizer/Timeline.php:103
 #: c:\providence/app/lib/core/Plugins/Visualizer/Timeline.php:105
 msgid "today"
-msgstr ""
+msgstr "Heute"
 
 #: c:\providence/app/lib/core/Print/PrintForms.php:99
 msgid "Form styles configuration file '%1' does not exist"
@@ -13432,7 +13439,7 @@ msgstr ""
 #: c:\providence/app/models/ca_collections.php:82
 #: c:\providence/themes/default/views/editor/collections/print_summary_html.php:60
 msgid "Collection identifier"
-msgstr ""
+msgstr "Sammlungsidentifikator"
 
 #: c:\providence/app/models/ca_collections.php:82
 msgid "A unique alphanumeric identifier for this collection."
@@ -14367,7 +14374,7 @@ msgstr "Email"
 #: c:\providence/themes/default/views/find/Search/search_tools_html.php:66
 #: c:\providence/themes/default/views/find/Search/search_tools_html.php:93
 msgid "Download"
-msgstr ""
+msgstr "Herunterladen"
 
 #: c:\providence/app/models/ca_commerce_fulfillment_events.php:88
 msgid "Notes pertaining to the fulfillment of the item."
@@ -14538,7 +14545,7 @@ msgstr ""
 #: c:\providence/app/models/ca_commerce_orders.php:350
 #: c:\providence/themes/default/views/administrate/access/role_edit_html.php:79
 msgid "None"
-msgstr ""
+msgstr "Ohne Wert"
 
 #: c:\providence/app/models/ca_commerce_orders.php:302
 #: c:\providence/themes/default/views/client/library/order_payment_html.php:69
@@ -15586,7 +15593,7 @@ msgstr ""
 
 #: c:\providence/app/models/ca_data_importers.php:310
 msgid "none"
-msgstr ""
+msgstr "Ohne Wert"
 
 #: c:\providence/app/models/ca_data_importers.php:311
 msgid "skip_on_idno"
@@ -16718,7 +16725,7 @@ msgstr ""
 #: c:\providence/app/models/ca_editor_ui_type_restrictions.php:83
 #: c:\providence/app/models/ca_metadata_type_restrictions.php:119
 msgid "Include subtypes in restriction?"
-msgstr ""
+msgstr "Unterdatentypen in die Einschränkung einbeziehen?"
 
 #: c:\providence/app/models/ca_editor_ui_bundle_placement_type_restrictions.php:83
 #: c:\providence/app/models/ca_editor_ui_screen_type_restrictions.php:83
@@ -17972,7 +17979,7 @@ msgstr ""
 
 #: c:\providence/app/models/ca_metadata_elements.php:83
 msgid "Documentation url"
-msgstr ""
+msgstr "URL zur Dokumentation"
 
 #: c:\providence/app/models/ca_metadata_elements.php:83
 msgid ""
@@ -17990,7 +17997,7 @@ msgstr ""
 
 #: c:\providence/app/models/ca_metadata_elements.php:101
 msgid "Use list (for list elements only)"
-msgstr ""
+msgstr "Verwende Liste (nur für Listenelemente)"
 
 #: c:\providence/app/models/ca_metadata_elements.php:101
 msgid ""
@@ -18082,7 +18089,7 @@ msgstr ""
 
 #: c:\providence/app/models/ca_metadata_type_restrictions.php:85
 msgid "Bind attribute to"
-msgstr ""
+msgstr "Verknüpfe Attribut mit"
 
 #: c:\providence/app/models/ca_metadata_type_restrictions.php:85
 #: c:\providence/app/models/ca_metadata_type_restrictions.php:112
@@ -18781,7 +18788,7 @@ msgstr ""
 
 #: c:\providence/app/models/ca_object_representation_labels.php:79
 msgid "Representation label"
-msgstr ""
+msgstr "Beschreibung"
 
 #: c:\providence/app/models/ca_object_representation_labels.php:79
 msgid "Label/caption for representation."
@@ -19224,7 +19231,7 @@ msgstr ""
 
 #: c:\providence/app/models/ca_search_forms.php:51
 msgid "search form"
-msgstr ""
+msgstr "Suchformular"
 
 #: c:\providence/app/models/ca_search_forms.php:59
 msgid ""
@@ -19271,7 +19278,7 @@ msgstr ""
 
 #: c:\providence/app/models/ca_search_forms.php:115
 msgid "Search form settings."
-msgstr ""
+msgstr "Einstellungen Suchformular"
 
 #: c:\providence/app/models/ca_search_forms.php:128
 #: c:\providence/app/widgets/advancedSearchForm/advancedSearchFormWidget.php:178
@@ -19333,15 +19340,15 @@ msgstr ""
 
 #: c:\providence/app/models/ca_search_form_labels.php:40
 msgid "search form name"
-msgstr ""
+msgstr "Suchformularname"
 
 #: c:\providence/app/models/ca_search_form_labels.php:41
 msgid "search form names"
-msgstr ""
+msgstr "Suchformularnamen"
 
 #: c:\providence/app/models/ca_search_form_labels.php:70
 msgid "Name of search form"
-msgstr ""
+msgstr "Name des Suchformulars"
 
 #: c:\providence/app/models/ca_search_form_placements.php:54
 msgid "search form placement"
@@ -21427,7 +21434,7 @@ msgstr ""
 
 #: c:\providence/app/widgets/advancedSearchForm/advancedSearchFormWidget.php:68
 msgid "Search form"
-msgstr ""
+msgstr "Suchformular"
 
 #: c:\providence/app/widgets/advancedSearchForm/advancedSearchFormWidget.php:69
 msgid "Search form to display"
@@ -22579,7 +22586,7 @@ msgstr ""
 
 #: c:\providence/themes/default/views/administrate/access/role_edit_html.php:66
 msgid "Types"
-msgstr ""
+msgstr "Erwerbungsart"
 
 #: c:\providence/themes/default/views/administrate/access/role_edit_html.php:120
 msgid "Element"
@@ -23119,14 +23126,14 @@ msgstr "Meinten Sie %1?"
 #: c:\providence/themes/default/views/find/Results/paging_controls_html.php:55
 #: c:\providence/themes/default/views/manage/Results/ca_item_comments_paging_controls_html.php:54
 msgid "Jump to page"
-msgstr ""
+msgstr "Springe zu Seite"
 
 #: c:\providence/themes/default/views/administrate/setup/Results/paging_controls_html.php:54
 #: c:\providence/themes/default/views/find/Results/paging_controls_html.php:55
 #: c:\providence/themes/default/views/manage/Results/ca_item_comments_paging_controls_html.php:54
 #: c:\providence/themes/default/views/manage/Results/ca_item_tags_paging_controls_html.php:54
 msgid "GO"
-msgstr ""
+msgstr "Los"
 
 #: c:\providence/themes/default/views/administrate/setup/Results/paging_controls_html.php:56
 #: c:\providence/themes/default/views/find/Results/paging_controls_html.php:57
@@ -23143,7 +23150,7 @@ msgstr "Anzeigeoptionen"
 #: c:\providence/themes/default/views/administrate/setup/Results/search_options_html.php:38
 #: c:\providence/themes/default/views/find/Results/search_options_html.php:38
 msgid "Filter Search"
-msgstr ""
+msgstr "Suche filtern"
 
 #: c:\providence/themes/default/views/administrate/setup/Results/search_options_html.php:52
 #: c:\providence/themes/default/views/find/Results/search_options_html.php:58
@@ -23222,12 +23229,12 @@ msgstr "Hierarchieansicht öffnen"
 #: c:\providence/themes/default/views/administrate/setup/Search/search_refine_html.php:12
 #: c:\providence/themes/default/views/find/Search/ajax_refine_facets_html.php:34
 msgid "Filter results by"
-msgstr ""
+msgstr "Ergebnisse filtern nach"
 
 #: c:\providence/themes/default/views/administrate/setup/Search/search_refine_html.php:36
 #: c:\providence/themes/default/views/find/Search/search_refine_html.php:50
 msgid "Filtering results by"
-msgstr ""
+msgstr "Filtere Ergebnisse nach"
 
 #: c:\providence/themes/default/views/administrate/setup/Search/search_refine_html.php:47
 #: c:\providence/themes/default/views/find/Search/search_refine_html.php:61
@@ -23237,7 +23244,7 @@ msgstr ""
 #: c:\providence/themes/default/views/administrate/setup/Search/search_tools_html.php:38
 #: c:\providence/themes/default/views/find/Search/search_tools_html.php:38
 msgid "Print results as labels"
-msgstr ""
+msgstr "Ergebnisse als Etiketten drucken"
 
 #: c:\providence/themes/default/views/administrate/setup/Search/search_tools_html.php:49
 #: c:\providence/themes/default/views/find/Search/search_tools_html.php:49
@@ -23247,7 +23254,7 @@ msgstr "Drucken"
 #: c:\providence/themes/default/views/administrate/setup/Search/search_tools_html.php:58
 #: c:\providence/themes/default/views/find/Search/search_tools_html.php:58
 msgid "Download results as"
-msgstr ""
+msgstr "Ergebnisse herunterladen als"
 
 #: c:\providence/themes/default/views/administrate/setup/Search/search_tools_html.php:75
 #: c:\providence/themes/default/views/find/Search/search_sets_html.php:39
@@ -23722,7 +23729,7 @@ msgstr ""
 #: c:\providence/themes/default/views/editor/places/quickadd_html.php:48
 #: c:\providence/themes/default/views/editor/storage_locations/quickadd_html.php:48
 msgid "Add %1"
-msgstr ""
+msgstr "%1 hinzufügen"
 
 #: c:\providence/themes/default/views/bundles/ca_bundle_display_labels_nonpreferred.php:65
 #: c:\providence/themes/default/views/bundles/ca_bundle_display_labels_preferred.php:64
@@ -24000,7 +24007,7 @@ msgstr ""
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:307
 msgid "Add representation with relationship type %1"
-msgstr ""
+msgstr "Anhang hinzufügen mit dem Beziehungstyp %1"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:307
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:401
@@ -24120,7 +24127,7 @@ msgstr ""
 
 #: c:\providence/themes/default/views/bundles/change_type_html.php:56
 msgid "Change %1 type"
-msgstr ""
+msgstr "%1 Typ ändern"
 
 #: c:\providence/themes/default/views/bundles/change_type_html.php:59
 msgid ""
@@ -24128,10 +24135,13 @@ msgid ""
 "fields not applicable to the new type to be discarded. This action cannot be "
 "undone."
 msgstr ""
+"<strong>Warnung:</strong> Durch das Ändern des %1 Typs gehen die "
+"Informationen in den Feldern, die nicht auf den neuen Typ anwendbar sind "
+"verloren. Diese Aktion kann nicht rückgängig gemacht werden."
 
 #: c:\providence/themes/default/views/bundles/change_type_html.php:60
 msgid "Change type from <em>%1</em> to %2"
-msgstr ""
+msgstr "Typ von <em>%1</em> nach %2 ändern"
 
 #: c:\providence/themes/default/views/bundles/hierarchy_location.php:170
 #: c:\providence/themes/default/views/bundles/hierarchy_location.php:358
@@ -24184,7 +24194,7 @@ msgstr ""
 #: c:\providence/themes/default/views/bundles/hierarchy_location.php:281
 #: c:\providence/themes/default/views/bundles/hierarchy_location.php:287
 msgid "Add a new %1 %2 <em>%3</em>"
-msgstr ""
+msgstr "Füge ein/e neue/s %1 %2 <em>%3</em> hinzu"
 
 #: c:\providence/themes/default/views/bundles/hierarchy_location.php:304
 msgid ""
@@ -25230,6 +25240,14 @@ msgid ""
 "widgets from your dashboard.  When you are finished editing your dashboard, "
 "click the \"Done\" button above."
 msgstr ""
+"Sie können mit Klick auf \"Widget hinzufügen\" ein neues Widget auf dem "
+"Cockpit hinzufügen. Die Widgets können Sie in der gewünschten Anordnung in "
+"die linke oder rechte Spalte ziehen. Um die Inhalte der Widgets zu ändern, "
+"klicken Sie auf das \"i\" in der rechten oberen Ecke des jeweiligen Widgets. "
+"Um das Widget vom Cockpit zu entfernen klicken sie auf das \"X\" in der "
+"oberen rechten Ecke des Widgets. Klicken Sie auf \"Cockpit leeren\" um alle "
+"Widgets auf einmal zu entfernen. Wenn Sie fertig mit dem Editieren des "
+"Cockpits sind, klicken Sie auf \"Fertig\"."
 
 #: c:\providence/themes/default/views/dashboard/dashboard_html.php:83
 #: c:\providence/themes/default/views/dashboard/dashboard_html.php:92
@@ -25423,7 +25441,7 @@ msgstr ""
 
 #: c:\providence/themes/default/views/find/Browse/browse_controls_html.php:102
 msgid "Start browsing by:"
-msgstr ""
+msgstr "Browsen nach..."
 
 #: c:\providence/themes/default/views/find/Browse/browse_start_html.php:31
 msgid "Choose a selection above to begin browsing"
@@ -25523,11 +25541,11 @@ msgstr ""
 
 #: c:\providence/themes/default/views/find/Results/search_options_html.php:47
 msgid "Visualization"
-msgstr ""
+msgstr "Grafische Darstellung"
 
 #: c:\providence/themes/default/views/find/Results/search_options_html.php:136
 msgid "Visualize results as %1"
-msgstr ""
+msgstr "Stelle Ergebnisse als %1 dar"
 
 #: c:\providence/themes/default/views/find/Results/viz_html.php:37
 msgid "Displaying %1 of %2 %3"
@@ -25557,7 +25575,7 @@ msgstr ""
 
 #: c:\providence/themes/default/views/find/Search/search_advanced_form_html.php:86
 msgid "Go"
-msgstr ""
+msgstr "Los"
 
 #: c:\providence/themes/default/views/find/Search/search_controls_html.php:45
 #: c:\providence/themes/default/views/find/Search/search_controls_html.php:57
@@ -25572,19 +25590,19 @@ msgstr ""
 #: c:\providence/themes/default/views/find/Search/search_sets_html.php:169
 #: c:\providence/themes/default/views/find/Search/search_sets_html.php:184
 msgid "Create set"
-msgstr ""
+msgstr "Sets erstellen"
 
 #: c:\providence/themes/default/views/find/Search/search_sets_html.php:67
 msgid "from_results"
-msgstr ""
+msgstr "aus dem Suchergebnis"
 
 #: c:\providence/themes/default/views/find/Search/search_sets_html.php:68
 msgid "from_checked"
-msgstr ""
+msgstr "aus der Auswahl"
 
 #: c:\providence/themes/default/views/find/Search/search_sets_html.php:77
 msgid "Open set for batch editing"
-msgstr ""
+msgstr "Set für Stapelverarbeitung öffnen"
 
 #: c:\providence/themes/default/views/find/Search/search_sets_html.php:161
 msgid "Created set <i>^set_name</i> with ^num_items ^item_type_name"
@@ -25750,7 +25768,7 @@ msgstr "# Aufzeichnungen"
 
 #: c:\providence/themes/default/views/manage/set_list_html.php:134
 msgid "No sets have been created"
-msgstr ""
+msgstr "Es wurden keine Sets angelegt"
 
 #: c:\providence/themes/default/views/manage/tag_list_html.php:50
 #: c:\providence/themes/default/views/manage/Results/ca_item_comments_list_html.php:36
@@ -26006,7 +26024,7 @@ msgstr ""
 #: c:\providence/themes/default/views/manage/Results/ca_item_comments_paging_controls_html.php:51
 #: c:\providence/themes/default/views/manage/Results/ca_item_tags_paging_controls_html.php:51
 msgid "Next"
-msgstr ""
+msgstr "Nächste Seite"
 
 #: c:\providence/themes/default/views/manage/Results/ca_item_tags_list_html.php:46
 msgid "Number of tagged items"
@@ -26014,7 +26032,7 @@ msgstr ""
 
 #: c:\providence/themes/default/views/manage/Results/ca_item_tags_paging_controls_html.php:54
 msgid "Jump to page:"
-msgstr ""
+msgstr "Springe zu Seite:"
 
 #: c:\providence/themes/default/views/manage/search_forms/ajax_element_settings_html.php:38
 msgid "Settings for Group #%1/%2"
@@ -26080,8 +26098,8 @@ msgid ""
 "<div class='error'>An error in your system configuration has been detected</"
 "div>\n"
 "\t    General installation instructions can be found\n"
-"\t    <a href='http://wiki.collectiveaccess.org/index.php?title=Installation_"
-"(Providence)' target='_blank'>here</a>.\n"
+"\t    <a href='http://wiki.collectiveaccess.org/index.php?"
+"title=Installation_(Providence)' target='_blank'>here</a>.\n"
 "\t    For more specific hints on the existing issues please have a look at "
 "the messages below."
 msgstr ""

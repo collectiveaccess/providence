@@ -53,6 +53,7 @@
 		 * @return array An array of information about the linked representations
 		 */
 		public function getRepresentations($pa_versions=null, $pa_version_sizes=null, $pa_options=null) {
+			global $AUTH_CURRENT_USER_ID;
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
 			if (!is_array($pa_options)) { $pa_options = array(); }
 		
@@ -99,6 +100,10 @@
 			$t_rep = new ca_object_representations();
 			while($qr_reps->nextRow()) {
 				$vn_rep_id = $qr_reps->get('representation_id');
+
+				if($AUTH_CURRENT_USER_ID) { // this might not be set if this method is accessed via CLI script
+					if(!caCanRead($AUTH_CURRENT_USER_ID, 'ca_object_representations', $vn_rep_id)){ continue; }	
+				}
 			
 				$va_tmp = $qr_reps->getRow();
 				$va_tmp['tags'] = array();

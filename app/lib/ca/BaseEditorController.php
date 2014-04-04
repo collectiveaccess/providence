@@ -315,7 +315,7 @@
  				}
  			} else {
 				$this->notification->addNotification($vs_message, __NOTIFICATION_TYPE_INFO__);	
- 				$this->opo_result_context->invalidateCache();
+ 				$this->opo_result_context->invalidateCache();	// force new search in case changes have removed this item from the results
   				$this->opo_result_context->saveContext();
  			}
  			# trigger "SaveItem" hook 
@@ -982,7 +982,7 @@
 			if (!in_array($ps_version, $va_versions)) { 
 				if (!($ps_version = $va_rep_display_info['display_version'])) { $ps_version = null; }
 			}
-		
+			
 			$o_view->setVar('version', $ps_version);
 			$o_view->setVar('version_info', $t_attr_val->getMediaInfo('value_blob', $ps_version));
 			$o_view->setVar('version_type', $t_media->getMimetypeTypename($t_attr_val->getMediaInfo('value_blob', $ps_version, 'MIMETYPE')));
