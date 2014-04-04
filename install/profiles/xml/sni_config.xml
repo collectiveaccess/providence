@@ -3306,6 +3306,39 @@
         </item>
       </items>
     </list>
+    <list code="distribution_status" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Distribution Status</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="null" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular> </name_singular>
+              <name_plural> </name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="current" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Current Program</name_singular>
+              <name_plural>Current Program</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="expired" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Expired Program</name_singular>
+              <name_plural>Expired Program</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
     <!-- New Item lists -->
     <list code="media_asset_type" hierarchical="0" system="0" vocabulary="0">
       <labels>
@@ -7431,7 +7464,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="log" datatype="Text">
+    <metadataElement code="object_log" datatype="Text">
       <labels>
         <label locale="en_US">
           <name>Log</name>
@@ -8674,6 +8707,46 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="distribution_status" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>Distribution Status</name>
+          <description/>
+        </label>
+      </labels>
+      <elements>
+        <metadataElement code="distribution_list" datatype="List" list="distribution_status">
+          <labels>
+            <label locale="en_US">
+              <name>Status</name>
+            </label>
+          </labels>
+          <settings/>
+        </metadataElement>
+        <metadataElement code="distribution_date" datatype="DateRange">
+          <labels>
+            <label locale="en_US">
+              <name>Expiration Date</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="useDatePicker">1</setting>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+          </settings>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_occurrences</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
     <!-- Annotation fields -->
     <metadataElement code="log" datatype="Text">
       <labels>
@@ -9761,6 +9834,9 @@
             <placement code="ca_object_representations">
               <bundle>ca_object_representations</bundle>
             </placement>
+            <placement code="ca_attribute_object_log">
+              <bundle>ca_attribute_object_log</bundle>
+            </placement>
              <placement code="ca_attribute_logged">
               <bundle>ca_attribute_logged</bundle>
             </placement>
@@ -10308,6 +10384,9 @@
             </label>
           </labels>
           <bundlePlacements>
+            <placement code="ca_attribute_distribution_status">
+              <bundle>ca_attribute_distribution_status</bundle>
+            </placement>
             <placement code="ca_attribute_restrictions">
               <bundle>ca_attribute_restrictions</bundle>
               <settings>
