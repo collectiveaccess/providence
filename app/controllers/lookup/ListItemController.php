@@ -150,9 +150,9 @@
 						}
 					}
 				}
+ 				$va_list_items['_sortOrder'] = array_keys($va_list_items);
 				$va_list_items['_primaryKey'] = $t_item->primaryKey();	// pass the name of the primary key so the hierbrowser knows where to look for item_id's
  				$va_list_items['_itemCount'] = $qr_res ? $qr_res->numRows() : 0;
- 				$va_list_items['_sortOrder'] = array_keys($va_list_items);
  				
 				$va_level_data[$pn_id] = $va_list_items;
 			}
