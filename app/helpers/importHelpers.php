@@ -456,7 +456,10 @@
 		$o_log = caGetOption('log', $pa_options, null);
 		$o_reader = caGetOption('reader', $pa_options, null);
 		
-		$va_group_dest = explode(".", $pa_group['destination']);
+		// We can probably always use the item destination – using group destination is a vestige of older code and no longer uses
+		// but we're leaving it in for now as a fallback it item dest is not set for some reason
+		$va_group_dest = (isset($pa_item['destination']) && $pa_item['destination']) ? explode(".", $pa_item['destination']) : explode(".", $pa_group['destination']);
+		
 		$vs_terminal = array_pop($va_group_dest);
 		$vs_dest_table = $va_group_dest[0];
 		$va_group_dest[] = $vs_terminal;
@@ -494,7 +497,7 @@
 				
 				
 				
-				// Set value as hierachy
+				// Set value as hierarchy
 				if ($va_parents = $pa_item['settings']["{$ps_refinery_name}_hierarchy"]) {
 					$va_attr_vals = $va_val = caProcessRefineryParents($ps_refinery_name, $ps_table, $va_parents, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, array_merge($pa_options, array('hierarchyMode' => true)));
 					$vs_item = $va_val['_preferred_label'];
@@ -582,7 +585,7 @@
 					}
 				
 					// Set relatedEntities
-					// TODO generalize for all of types of records
+					// TODO: generalize for all of types of records
 					if (is_array($va_attr_vals = caProcessRefineryRelated($ps_refinery_name, "ca_entities", $pa_item['settings']["{$ps_refinery_name}_relatedEntities"], $pa_source_data, $pa_item, null, $vn_c, array('log' => $o_log, 'reader' => $o_reader)))) {
 						$va_val = array_merge($va_val, $va_attr_vals);
 					}
@@ -683,10 +686,10 @@
 					switch($ps_table) {
 						case 'ca_entities':
 							$va_val['preferred_labels'] = DataMigrationUtils::splitEntityName($vs_item);
-							$va_val['idno'] = $vs_item;
+							//$va_val['idno'] = $vs_item;
 							break;
 						case 'ca_list_items':
-							$va_val['preferred_labels'] = array('name_singular' => $vs_item, 'name_plural' => $vs_item);
+							$va_val['preferred_labels'] = array('name_singular' => str_replace("_", " ", $vs_item), 'name_plural' => str_replace("_", " ", $vs_item));
 							$va_val['_list'] = $pa_options['list_id'];
 							break;
 						case 'ca_storage_locations':

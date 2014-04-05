@@ -426,7 +426,7 @@ class ca_item_comments extends BaseModel {
 		$qr_res = $o_db->query("
 			SELECT cic.*, u.user_id, u.fname, u.lname, u.email user_email
 			FROM ca_item_comments cic
-			INNER JOIN ca_users AS u ON u.user_id = cic.user_id
+			LEFT JOIN ca_users AS u ON u.user_id = cic.user_id
 			{$vs_where} ORDER BY cic.created_on DESC {$vs_limit}
 		");
 		

@@ -1122,6 +1122,9 @@ class BaseModel extends BaseObject {
 	 *
 	 * for text fields:
 	 *	- purify : if set then text input is run through HTML Purifier before being set
+	 *
+	 * for parent_id field:
+	 *	- treatParentIDAsIdno: force parent_id value to be used as idno lookup rather than a primary key value
 	 */
 	public function set($pa_fields, $pm_value="", $pa_options=null) {
 		$this->errors = array();
@@ -1156,7 +1159,13 @@ class BaseModel extends BaseObject {
 						if ($vs_cur_value != $vm_value) {
 							$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 						}
-
+						
+						
+						if (($vs_field == $this->HIERARCHY_PARENT_ID_FLD) && ((strlen($vm_value) > 0) && (!is_numeric($vm_value) || caGetOption('treatParentIDAsIdno', $pa_options, false)))) {
+							if(is_array($va_ids = call_user_func_array($this->tableName()."::find", array(array('idno' => $vm_value, 'deleted' => 0), array('returnAs' => 'ids'))))) {
+								$vm_value = array_shift($va_ids);
+							}
+						}
 						if (($vm_value !== "") || ($this->getFieldInfo($vs_field, "IS_NULL") && ($vm_value == ""))) {
 							if ($vm_value) {
 								if (($vs_list_code = $this->getFieldInfo($vs_field, "LIST_CODE")) && (!is_numeric($vm_value))) {	// translate ca_list_item idno's into item_ids if necessary
@@ -8809,7 +8818,6 @@ $pa_options["display_form_field_tips"] = true;
 				$va_to_reindex_relations[(int)$qr_res->get('relation_id')] = $qr_res->getRow();	
 			}
 			if (!sizeof($va_to_reindex_relations)) { return 0; }
-
 			$va_new_relations = array();
 			foreach($va_to_reindex_relations as $vn_relation_id => $va_row) {
 				$t_item_rel->clear();
@@ -10159,7 +10167,6 @@ $pa_options["display_form_field_tips"] = true;
 				$va_wheres[] = 't.'.$vs_source_id_field_name.' IN ('.join(',', $va_source_ids).')';
 			}
 		}
-		
 		$vs_join_sql = '';
 		if (isset($pa_options['hasRepresentations']) && $pa_options['hasRepresentations'] && ($this->tableName() == 'ca_objects')) {
 			$vs_join_sql = ' INNER JOIN ca_objects_x_object_representations ON ca_objects_x_object_representations.object_id = t.object_id';
