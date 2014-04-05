@@ -666,8 +666,8 @@
 		 * @param string $ps_direction Determines the reading direction of the relationship. Possible values are 'ltor' (left-to-right) and 'rtol' (right-to-left). Default value is ltor.
 		 * @return string Type name or null if no row is loaded.
 		 */
-		public function getRelationshipTypename($ps_direction='ltor') {
-			if ($vn_type_id = $this->getTypeID()) {
+		public function getRelationshipTypename($ps_direction='ltor', $pn_type_id=null) {
+			if (($vn_type_id = $pn_type_id) || ($vn_type_id = $this->getTypeID())) {
 				$t_rel_type = new ca_relationship_types($vn_type_id);
 				return ($ps_direction == 'ltor') ? $t_rel_type->get('ca_relationship_types.preferred_labels.typename') : $t_rel_type->get('ca_relationship_types.preferred_labels.typename_reverse');
 			}
