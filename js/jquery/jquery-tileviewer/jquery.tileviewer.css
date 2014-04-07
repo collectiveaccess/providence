@@ -169,6 +169,22 @@ span.tileviewerAnnotationDefaultText {
 	top: 6px;
 }
 
+.tileViewToolbarRotation {
+	position: absolute;
+	top: 6px;
+	right: 0px;
+	width: 30px;
+	height: 320px;
+}
+
+.tileViewToolbarRotationSlider {
+	position: absolute;
+	width: 25px;
+	height: 300px;
+	right: 0px;
+	top: 30px;
+}
+
 .ui-slider a {outline:none;}
 
 #tileviewerHelpPanel {
