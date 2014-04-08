@@ -889,10 +889,10 @@ class Installer {
 			}
 		}
 
-		$t_role = new ca_user_roles();
-		$t_role->setMode(ACCESS_WRITE);
-
 		foreach($va_roles as $vs_role_code => $vo_role) {
+			$t_role = new ca_user_roles();
+			$t_role->setMode(ACCESS_WRITE);
+
 			$t_role->set('name', trim((string) $vo_role->name));
 			$t_role->set('description', trim((string) $vo_role->description));
 			$t_role->set('code', $vs_role_code);
@@ -954,6 +954,7 @@ class Installer {
 					}
 				}
 			}
+
 		}
 		return true;
 	}

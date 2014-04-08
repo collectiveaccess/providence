@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -196,7 +196,7 @@ class MediaContentLocationIndexer  {
 						
 					// Is this hit part of a phrase match?
 					if ($vn_word_num > 0) {
-						if(!is_array($va_hit_acc[$va_hit['p']]) || !sizeof(is_array($va_hit_acc[$va_hit['p']]))) { continue(2); } 	// if page is empty after the first word is processed then we can skip checking the rest of the words
+						if(!is_array($va_hit_acc[$va_hit['p']]) || !sizeof($va_hit_acc[$va_hit['p']])) { continue; } 	// if page is empty after the first word is processed then we can skip checking the rest of the words
 						
 						$vn_i = -1;
 						foreach($va_hit_acc[$va_hit['p']] as $vn_i => $va_existing_loc) {
