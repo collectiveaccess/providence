@@ -236,3 +236,4 @@ class WorldCatDataReader extends BaseXMLDataReader {
 	}
 	# -------------------------------------------------------
 }
+?>
