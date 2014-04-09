@@ -1175,7 +1175,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		ca_data_importers::$s_import_error_list = array();
 		
 		$va_notices = $va_errors = array();
-	
+
 		if (!($t_mapping = ca_data_importers::mappingExists($ps_mapping))) {
 			return null;
 		}
@@ -1206,9 +1206,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		$vb_show_cli_progress_bar 	= (isset($pa_options['showCLIProgressBar']) && ($pa_options['showCLIProgressBar'])) ? true : false;
 		
-		$o_progress = caGetOption('progressBar', $pa_options, new ProgressBar());
+		$o_progress = caGetOption('progressBar', $pa_options, new ProgressBar('WebUI'));
 		if ($vb_show_cli_progress_bar) { $o_progress->setMode('CLI'); }
-		
+
 		if ($vb_use_ncurses = (isset($pa_options['useNcurses']) && ($pa_options['useNcurses'])) ? true : false) {
 			$vb_use_ncurses = caCLIUseNcurses();
 		}
@@ -2011,6 +2011,30 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				
 				$o_log->logDebug(_t('Updated idno %1 at %2 seconds', $vs_idno, $t->getTime(4)));
 			}
+			
+			
+				
+				if ($vs_idno_fld && ($o_idno = $t_subject->getIDNoPlugInInstance())) {
+					$va_values = $o_idno->htmlFormValuesAsArray($vs_idno_fld, $t_subject->get($vs_idno_fld));
+					if (($vs_proc_idno = join($o_idno->getSeparator(), $va_values)) && ($vs_proc_idno != $vs_idno)) {
+						$t_subject->set($vs_idno_fld, $vs_proc_idno);
+						$t_subject->update();
+						
+						if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could update idno"), array('dontOutputLevel' => true, 'dontPrint' => true))) {
+							ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
+							if ($vs_import_error_policy == 'stop') {
+								$o_log->logAlert(_t('Import stopped due to import error policy'));
+								if($vb_use_ncurses) { ncurses_end(); }
+						
+								$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
+						
+								$o_trans->rollback();
+								return false;
+							}
+							continue;
+						}
+					}
+				}
 			
 			$va_elements_set_for_this_record = array();
 			foreach($va_content_tree as $vs_table_name => $va_content) {

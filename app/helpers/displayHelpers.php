@@ -1774,7 +1774,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		$vs_remove_prefix = isset($pa_options['removePrefix']) ? $pa_options['removePrefix'] : null;
 		
 		$va_tags = array();
-		if (preg_match_all("!\^([\/A-Za-z0-9_\.]+)!", $ps_template, $va_matches)) {
+		if (preg_match_all("!\^([A-Za-z0-9_\.\/]+[\~]{1}[^ \^\t\r\n\"\'<>\(\)\{\}]*|[A-Za-z0-9_\.]+)!", $ps_template, $va_matches)) {
 			foreach($va_matches[1] as $vn_i => $vs_possible_tag) {
 				$va_matches[1][$vn_i] = rtrim($vs_possible_tag, "/.");	// remove trailing slashes and periods
 			}
@@ -1787,7 +1787,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		}
 		
 		foreach($va_tags as $vs_tag) {
-			$vs_proc_tag = $vs_tag;
+			$va_tmp = explode("~", $vs_tag);
+			$vs_proc_tag = array_shift($va_tmp);
 			if ($vs_remove_prefix) {
 				$vs_proc_tag = str_replace($vs_remove_prefix, '', $vs_proc_tag);
 			}
@@ -1796,16 +1797,47 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 			}
 			
 			if ($t_instance && ($vs_gotten_val = $t_instance->get($vs_proc_tag, $pa_options))) {
+				$vs_gotten_val = caProcessTemplateTagDirectives($vs_gotten_val, $va_tmp);
 				$ps_template = str_replace('^'.$vs_tag, $vs_gotten_val, $ps_template);
 			} else {
 				if (is_array($vs_val = isset($pa_values[$vs_proc_tag]) ? $pa_values[$vs_proc_tag] : '')) {
 					// If value is an array try to make a string of it
 					$vs_val = join(" ", $vs_val);
 				}
+				$vs_val = caProcessTemplateTagDirectives($vs_val, $va_tmp);
 				$ps_template = str_replace('^'.$vs_tag, $vs_val, $ps_template);
 			}
 		}
 		return $ps_template;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caProcessTemplateTagDirectives($ps_value, $pa_directives) {
+		if (!is_array($pa_directives) || !sizeof($pa_directives)) { return $ps_value; }
+		foreach($pa_directives as $vs_directive) {
+			$va_tmp = explode(":", $vs_directive);
+			switch($va_tmp[0]) {
+				case 'LP':
+					$va_params = explode("/", $va_tmp[1]);
+					$vn_len = (int)$va_params[1];
+					$vs_str = (string)$va_params[0];
+					if (($vn_len > 0) && strlen($vs_str)) {
+						$ps_value = str_pad($ps_value, $vn_len, $vs_str, STR_PAD_LEFT);
+					}
+					break;
+				case 'RP':
+					$va_params = explode("/", $va_tmp[1]);
+					$vn_len = (int)$va_params[1];
+					$vs_str = (string)$va_params[0];
+					if (($vn_len > 0) && strlen($vs_str)) {
+						$ps_value = str_pad($ps_value, $vn_len, $vs_str, STR_PAD_RIGHT);
+					}
+					break;
+			}
+		}
+		return $ps_value;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
