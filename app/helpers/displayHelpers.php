@@ -2210,7 +2210,6 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 									$va_val = array();
 								}
 								
-								print_R($va_primary_ids);
 								if(is_array($va_primary_ids) && isset($va_primary_ids[$va_spec_bits[0]]) && is_array($va_primary_ids[$va_spec_bits[0]])) {
 									foreach($va_primary_ids[$va_spec_bits[0]] as $vn_primary_id) {
 										unset($va_val[$vn_primary_id]);
