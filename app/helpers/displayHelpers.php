@@ -2210,6 +2210,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 									$va_val = array();
 								}
 								
+								print_R($va_primary_ids);
 								if(is_array($va_primary_ids) && isset($va_primary_ids[$va_spec_bits[0]]) && is_array($va_primary_ids[$va_spec_bits[0]])) {
 									foreach($va_primary_ids[$va_spec_bits[0]] as $vn_primary_id) {
 										unset($va_val[$vn_primary_id]);
@@ -3004,7 +3005,7 @@ $ca_relationship_lookup_parse_cache = array();
 				
 				if (!isset($va_items[$va_relation[$vs_rel_pk]]['_display']) || !$va_items[$va_relation[$vs_rel_pk]]['_display']) {
 					if ($vs_template) {
-						$va_items[$va_relation[$vs_rel_pk]]['_display'] = caProcessTemplateForIDs($vs_template, $pt_rel->tableName(), array($va_relation['relation_id']), array('returnAsArray' => false, 'returnAsLink' => true, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table));
+						$va_items[$va_relation[$vs_rel_pk]]['_display'] = caProcessTemplateForIDs($vs_template, $pt_rel->tableName(), array($va_relation['relation_id']), array('returnAsArray' => false, 'returnAsLink' => true, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'primaryIDs' => $va_primary_ids, 'resolveLinksUsing' => $vs_rel_table));
 					} else {
 						$va_items[$va_relation[$vs_rel_pk]]['_display'] = $va_items[$va_relation[$vs_rel_pk]]['label'];
 					}
