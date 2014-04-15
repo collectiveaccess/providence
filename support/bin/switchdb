@@ -1,0 +1,10 @@
+#!/bin/bash
+# switch database connections by using a different setup.php file
+pushd "$COLLECTIVEACCSES_HOME"
+SETTINGS_FILE=$1
+if [ -f "$SETTINGS_FILE" ]
+then
+    rm setup.php && ln -sv "$SETTINGS_FILE" setup.php
+fi
+popd
+

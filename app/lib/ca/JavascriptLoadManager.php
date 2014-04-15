@@ -154,6 +154,10 @@
 						$vs_url = $va_matches[1];
 					} else {
 						$vs_url = "{$ps_baseurlpath}/js/{$vs_lib}";
+						$vs_filename = __CA_BASE_DIR__ . $vs_url;
+						if(file_exists($vs_filename)){
+							$vs_url .= '?v=' . filemtime($vs_filename);
+						}
 					}
 					
 					if (preg_match('!\.css$!', $vs_lib)) {
