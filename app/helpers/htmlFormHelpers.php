@@ -349,6 +349,9 @@
 			$vs_annotation_save_url	=		caGetOption("annotation_save_url", $pa_options, null);
 			$vs_help_load_url	=			caGetOption("help_load_url", $pa_options, null);
 			
+			$vs_annotation_editor_panel =	caGetOption("annotationEditorPanel", $pa_options, null);
+			$vs_annotation_editor_url =		caGetOption("annotationEditorUrl", $pa_options, null);
+			
 			$vs_viewer_base_url =			caGetOption("viewer_base_url", $pa_options, __CA_URL_ROOT__);
 			
 			$vb_directly_embed_flash = 		(bool)$pa_options['directly_embed_flash'];
@@ -393,6 +396,9 @@ $vs_tag = "
 								buttonUrlPath: '{$vs_viewer_base_url}/themes/default/graphics/buttons',
 								annotationLoadUrl: '{$vs_annotation_load_url}',
 								annotationSaveUrl: '{$vs_annotation_save_url}',
+								annotationEditorPanel: '{$vs_annotation_editor_panel}',
+								annotationEditorUrl: '{$vs_annotation_editor_url}',
+								annotationEditorLink: '".addslashes(_t('More...'))."',
 								helpLoadUrl: '{$vs_help_load_url}',
 								info: {
 									width: '{$vn_width}',

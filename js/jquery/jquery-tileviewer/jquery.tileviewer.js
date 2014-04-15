@@ -93,7 +93,11 @@ var methods = {
 			add_polygon_annotation_mode: false,
 			pan_mode: true,
 			
-			allow_rotation: true
+			allow_rotation: true,
+			
+			annotationEditorPanel: null,					// instance of ca.panel to open full annotation editor in
+			annotationEditorUrl: null,						// url to load full annotation editor form
+			annotationEditorLink: 'Edit more'				// content of full annotation editor link
         };
 
         return this.each(function() {
@@ -326,7 +330,7 @@ var methods = {
                     		annotationsToSave.push(a);
                     	});
                     	
-                    	jQuery.getJSON(options.annotationSaveUrl, { save: annotationsToSave, delete: view.annotationsToDelete }, function(data) {
+                    	jQuery.post(options.annotationSaveUrl, { save: annotationsToSave, delete: view.annotationsToDelete }, function(data) {
                     		if (data['annotation_ids']) {
                     			for(var index in data['annotation_ids']) {
                     				if (!jQuery.isNumeric(index)) { continue; }
@@ -357,16 +361,20 @@ var methods = {
                     		
                     		view.needdraw = true;
                     		//jQuery("#tileviewerAnnotationTextSave").fadeOut(250);	// hide save button
-                    	});
+                    	}, 'json');
                     },
 
 					_makeAnnotationTextBlockDraggable: function(id) {
+						var index = jQuery(this).data('annotationIndex');
+							
 						jQuery(id).show().draggable({ drag: function(e) {
-							if (options.lock_annotation_text) {
+							var index = jQuery(this).data('annotationIndex');
+							if ((options.lock_annotation_text) || (parseInt(view.annotations[index]['locked']) == 1)) {
 								e.preventDefault();
 								return false;
 							}
-							var index = jQuery(this).data('annotationIndex');
+							
+							
 							if(
 								index != null
 								&&
@@ -836,6 +844,7 @@ var methods = {
                     
                     drag_annotation: function(i, dx, dy, clickX, clickY) {
                     	if (!options.use_annotations || !options.display_annotations || options.lock_annotations) { return; }
+                    	if (parseInt(view.annotations[i]['locked']) == 1) { return; }
                     	
                     	var offset = jQuery(view.canvas).offset();
                     	var factor = Math.pow(2,layer.level);
@@ -1161,6 +1170,7 @@ var methods = {
                     		default:
 							case 'poly':
 								if(!view.annotations[view.polygon_in_progress_annotation_index]) { return; }
+								if (parseInt(view.annotations[view.polygon_in_progress_annotation_index]['locked']) == 1) { return; }
 								view.annotations[view.polygon_in_progress_annotation_index].points.push({x: x, y: y});
 								view.annotations[view.polygon_in_progress_annotation_index]['label'] = $('#tileviewerAnnotationTextLabel').val();	// set in-progress text in label field
 								break;
@@ -1175,6 +1185,7 @@ var methods = {
                     
                     insert_annotation_point: function(i, pointIndex, x, y) {
                     	if (!options.use_annotations || !options.display_annotations || options.lock_annotations) { return; }
+                    	if (parseInt(view.annotations[i]['locked']) == 1) { return; }
                     	if (!view.annotations[i]) return; 
                     	
                     	view.annotations[i].points.splice(pointIndex + 1, 0, {x: x, y: y});
@@ -1185,6 +1196,7 @@ var methods = {
                     delete_annotation: function(i) {
                     	if (!options.use_annotations || !options.display_annotations || options.lock_annotations) { return; }
                     	if (!view.annotations[i]) return; 
+                    	if (parseInt(view.annotations[i]['locked']) == 1) { return; }
                     	
 						view.save_annotations([], [i]);
 						view.commit_annotation_changes();
@@ -1202,6 +1214,7 @@ var methods = {
                     },
                     
                 	delete_annotation_point: function(i, pointIndex) {
+                		if (parseInt(view.annotations[i]['locked']) == 1) { return; }
                     	if (view.annotations[i] && view.annotations[i]['points'] && view.annotations[i]['points'][pointIndex]  && (view.annotations[i]['points'].length >= 4)) {
                     		view.annotations[i]['points'].splice(pointIndex, 1);
                     		view.make_annotation_dirty(i);
@@ -1221,7 +1234,7 @@ var methods = {
                     			case 'poly':
                     				// are we clicking on a line or point?
                     				var points = view.annotations[k].points;
-                    				
+                    			
                     				if (view.isAnnotationTranslation && (k == view.selectedAnnotation)) { return true; }
                     				
                     				var segments = points.slice();
@@ -1271,21 +1284,25 @@ var methods = {
                     					}
                     					
                     					// line?
+                    					var lineTolerance = 1.0;
+                    					var xIsAsymphotic = ((p2.x - p1.x) == 0);
+                    					var yIsAsymphotic = ((p2.y - p1.y) == 0);
+                    					var dx = xIsAsymphotic ? 0 : (mX - p1.x)/(p2.x - p1.x);
+                    					var dy = yIsAsymphotic ? 0 : (mY - p1.y)/(p2.y - p1.y);
                     					
-                    					var lineTolerance = 0.5;
-                    					var dx = (mX - p1.x)/(p2.x - p1.x);
-                    					var dy = (mY - p1.y)/(p2.y - p1.y);
                     					if (
-                    						(Math.abs(dx - dy) < lineTolerance)
-                    						&&
-                    						((mX >= p1.x) && (mX <= p2.x) || (mX >= p2.x) && (mX <= p1.x))
-                    						&&
-                    						((mY >= p1.y) && (mY <= p2.y) || (mY >= p2.y) && (mY <= p1.y))
-                    					) { 
-                    						if (e && e.altKey) {
-                    						 	view.insert_annotation_point(v.index, pointIndex, mX, mY);
-                    						}
-                    						foundAnnotation = v;
+                    						(
+												(Math.abs(dx - dy) < lineTolerance)
+												&&
+												(((mX >= (p1.x - (lineTolerance)) && (mX <= p2.x + (lineTolerance))) || ((mX >= p2.x - (lineTolerance)) && (mX <= p1.x + (lineTolerance)))))
+												&&
+												(((mY >= p1.y - (lineTolerance)) && (mY <= p2.y + (lineTolerance))) || ((mY >= p2.y - (lineTolerance)) && (mY <= p1.y + (lineTolerance))))
+											)
+                    					) {
+											if (e && e.altKey) {
+												view.insert_annotation_point(v.index, pointIndex, mX, mY);
+											}
+											foundAnnotation = v;
 											return false;
                     					}
                     				}
@@ -1343,27 +1360,17 @@ var methods = {
 						view.polygon_in_progress_annotation_index = null;
                     },
                     
-                    openAnnotationTextEditor: function(inAnnotation) {
-                    	if (options.lock_annotation_text) { return; }
-                    	if (!inAnnotation || !options.display_annotations) { console.log("failed to open annotation text editor"); console.trace(); return; }
-						var sx = ((inAnnotation['tstartX']/100) * ((layer.info.width/factor) * (layer.tilesize/256))) + layer.xpos;
-						var sy = ((inAnnotation['tendY']/100) * ((layer.info.height/factor) * (layer.tilesize/256))) + layer.ypos;
-						
-						var sw = (((inAnnotation['tendX']/100) * ((layer.info.width/factor) * (layer.tilesize/256))) + layer.xpos) - sx - 10;	// 10 = 2 * 5px padding
-						
-						// Set editing form
-						var tText = (view.annotations[inAnnotation['index']]['label'] ?  view.annotations[inAnnotation['index']]['label'] : options.empty_annotation_editor_text);
-						
-						t = "<form><textarea id='tileviewerAnnotationTextLabel'>" + tText + "</textarea></form>";
-					
-                		jQuery(view.annotationTextEditor).draggable();
+                    _makeAnnotationTextEditorDraggable: function(inAnnotation) {
+                    	var curAnnotation = view.annotations[inAnnotation['index']];
+                    	
+                     	jQuery(view.annotationTextEditor).draggable();
 						
 						if (
-							(view.annotations[inAnnotation['index']].type == 'point') 
+							(curAnnotation.type == 'point') 
 							|| 
-							(view.annotations[inAnnotation['index']].type == 'poly')
+							(curAnnotation.type == 'poly')
 							||
-							(options.allow_draggable_text_boxes_for_rects && (view.annotations[inAnnotation['index']].type == 'rect'))
+							(options.allow_draggable_text_boxes_for_rects && (curAnnotation.type == 'rect'))
 						) {
 							// Allow dragging of text for point and polygon annotations
 							jQuery(view.annotationTextEditor).draggable("enable");
@@ -1371,16 +1378,49 @@ var methods = {
 							// All other annotation types are not draggable
 							jQuery(view.annotationTextEditor).draggable("disable");
 						}
+                    },
+                    
+                    openAnnotationTextEditor: function(inAnnotation) {
+                    	if (options.lock_annotation_text) { return; }
+                    	if (!inAnnotation || !options.display_annotations) { console.log("failed to open annotation text editor"); console.trace(); return; }
+                    	
+                    	var curAnnotation = view.annotations[inAnnotation['index']];
+						var sx = ((inAnnotation['tstartX']/100) * ((layer.info.width/factor) * (layer.tilesize/256))) + layer.xpos;
+						var sy = ((inAnnotation['tendY']/100) * ((layer.info.height/factor) * (layer.tilesize/256))) + layer.ypos;
+						
+						var sw = (((inAnnotation['tendX']/100) * ((layer.info.width/factor) * (layer.tilesize/256))) + layer.xpos) - sx - 10;	// 10 = 2 * 5px padding
+						
+						// Set editing form
+						var tText = (curAnnotation['label'] ?  curAnnotation['label'] : options.empty_annotation_editor_text);
+						
+						t = "<form><textarea id='tileviewerAnnotationTextLabel'>" + tText + "</textarea> <div class='tileviewerAnnotationLockedButtonLabel'><input type='checkbox' id='tileviewerAnnotationLockedButton' value='1' " + ((parseInt(curAnnotation['locked']) > 0) ? "CHECKED='1'" : '') + "/> Locked</div> <a class='tileviewerFullAnnotationEditorLink' href='#' onclick='caRepresentationAnnotationEditor.showPanel(\"" + options.annotationEditorUrl + "/annotation_id/" + curAnnotation['annotation_id'] + "\"); return false;'>" + options.annotationEditorLink + "</a></form>";
+			
+						if (!parseInt(curAnnotation['locked'])) { 
+                			view._makeAnnotationTextEditorDraggable(inAnnotation);
+						} else {
+							jQuery(view.annotationTextEditor).draggable("disable");
+						}
 					
 						// Position text editor box, set text and make visible
 						jQuery(view.annotationTextEditor).css("left", sx + 'px').css('top', sy + 'px').html("<div class='textContentDeleteButton' id='tileviewerAnnotationDeleteButton'><img src='" + options.buttonUrlPath + "/x.png' alt='Delete'/></div><div class='textContent'>" + t + "</div>").css('width', sw + 'px').css("display", "block");
 							
 						
-						if (!view.annotations[inAnnotation['index']]['label']) {
+						if (!curAnnotation['label']) {
 							jQuery("#tileviewerAnnotationTextLabel").on("focus", function(e) {
 								jQuery(this).html("");
 							});
 						}
+						
+						$('#tileviewerAnnotationLockedButton').on("change", function(e) {	
+							curAnnotation['locked'] = (jQuery(this).is(":checked") == 1) ? 1 : 0;
+							jQuery(view.annotationTextEditor).data('dirty', curAnnotation);
+							
+							if (curAnnotation['locked'] == 0) { 
+								view._makeAnnotationTextEditorDraggable(curAnnotation);
+							} else {
+								jQuery(view.annotationTextEditor).draggable("disable");
+							}
+						});
 						
 						$('#tileviewerAnnotationTextLabel').on("keydown", function(e) {		// Mark as needing to be saved
 							jQuery(view.annotationTextEditor).data('dirty', inAnnotation);
@@ -1392,8 +1432,8 @@ var methods = {
 							
 						// $('#tileviewerAnnotationTextSave').on("click", function(e) {
 // 							// Save annotation text
-// 							if(!view.annotations[inAnnotation['index']]) { console.log("Could not save text; no annotation at index ", inAnnotation['index'], inAnnotation); }
-// 							view.annotations[inAnnotation['index']]['label'] = jQuery('#tileviewerAnnotationTextLabel').val();
+// 							if(!curAnnotation) { console.log("Could not save text; no annotation at index ", inAnnotation['index'], inAnnotation); }
+// 							curAnnotation['label'] = jQuery('#tileviewerAnnotationTextLabel').val();
 // 							view.make_annotation_dirty(inAnnotation['index']);
 // 							view.save_annotations([inAnnotation['index']], []);
 // 							view.draw();
@@ -2830,6 +2870,13 @@ var methods = {
     },
 */
 
+    ///////////////////////////////////////////////////////////////////////////////////
+    // refresh annotation data from server
+	refreshAnnnotations: function() {
+		var view = $(this).data("view");
+		view.selectedAnnotation = null;
+		view.load_annotations();
+	},
     ///////////////////////////////////////////////////////////////////////////////////
     // call this if everytime you resize the container (TODO - can't it be automated?)
     resize: function (options) {
