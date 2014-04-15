@@ -1,0 +1,1122 @@
+# -------------------
+# Character set to use (usually utf-8; might be ISO-8859-1)
+# -------------------
+character_set = utf-8
+
+# -------------------
+# --- Session settings
+# -------------------
+session_lifetime = 600000
+session_domain =
+
+# -------------------
+# Search engine configuration
+# -------------------
+#search_engine_plugin = Solr
+search_engine_plugin = SqlSearch
+
+# -------------------
+# Menu bar caching
+# -------------------
+# Caching the menu bar can significantly increase performance
+# If you are developing a profile. caching can prevent you from seeing profile
+# changes in real-time, however. So you can disable it here if need be. When using
+# the system "in production" it is usually best to leave this enabled
+do_menu_bar_caching = 1
+
+# -------------------
+# URL configuration (paths to controllers and themes)
+# -------------------
+auth_login_path = system/auth/login
+auth_login_url = <ca_url_root>/index.php/system/auth/login
+auth_logout_url = <ca_url_root>/index.php
+controllers_directory = <ca_app_dir>/controllers
+
+# theme to use when user is not logged in (when they're logged in their preferred theme is used)
+theme = default
+themes_directory = <ca_base_dir>/themes
+themes_url = <ca_url_root>/themes
+views_directory = <themes_directory>/<theme>/views
+
+# Path to navigation config file - defines menu structure
+nav_config = <ca_conf_dir>/navigation.conf
+
+
+# Url path to error display page; user will be directed here upon unrecoverable error (eg. bad controller or action)
+error_display_url = <ca_url_root>/index.php/system/Error/Show
+
+# Url to redirect user to when nothing is specified (eg. they go to /index.php)
+# ONLY PUT THE CONTROLLER/ACTION PATH HERE - leave out the 'index.php'
+default_action = /Dashboard/Index
+
+# Services
+service_controllers_directory = <ca_app_dir>/service/controllers
+service_default_action = /search/rest/doSearch
+service_view_path = <ca_app_dir>/service/views
+
+# -------------------
+# Media and file processing paths
+# -------------------
+media_plugins = <ca_lib_dir>/core/Plugins/Media
+file_plugins = <ca_lib_dir>/core/Plugins/File
+
+# Directory to use for Tilepic generation temporary files
+tilepic_tmpdir = <ca_app_dir>/tmp
+
+# -------------------
+# Task queue set up (deferred processing of uploaded media)
+# -------------------
+taskqueue_handler_plugins = <ca_lib_dir>/core/Plugins/TaskQueueHandlers
+taskqueue_tmp_directory = <ca_app_dir>/tmp
+taskqueue_max_opo_processes = 4
+taskqueue_process_timeout = 3600
+taskqueue_max_items_processed_per_session = 100
+
+# -------------------
+# Paths to other config files
+# -------------------
+data_model = <ca_conf_dir>/datamodel.conf
+user_pref_defs = <ca_conf_dir>/user_pref_defs.conf
+field_label_defs = <ca_conf_dir>/field_labels.conf
+external_applications = <ca_conf_dir>/external_applications.conf
+media_volumes = <ca_conf_dir>/media_volumes.conf
+file_volumes = <ca_conf_dir>/file_volumes.conf
+default_media_icons = <ca_conf_dir>/default_media_icons.conf
+search_config = <ca_conf_dir>/search.conf
+browse_config = <ca_conf_dir>/browse.conf
+media_processing_settings = <ca_conf_dir>/media_processing.conf
+annotation_type_config = <ca_conf_dir>/annotation_types.conf
+attribute_type_config = <ca_conf_dir>/attribute_types.conf
+application_monitor_config = <ca_conf_dir>/monitor.conf
+javascript_config = <ca_conf_dir>/javascript.conf
+reporting_settings = <ca_conf_dir>/reporting.conf
+bundle_type_config = <ca_conf_dir>/bundle_types.conf
+xml_config = <ca_conf_dir>/xml.conf
+user_actions = <ca_conf_dir>/user_actions.conf
+find_navigation = <ca_conf_dir>/find_navigation.conf
+media_display = <ca_conf_dir>/media_display.conf
+media_metadata = <ca_conf_dir>/media_metadata.conf
+access_restrictions = <ca_conf_dir>/access_restrictions.conf
+datetime_config = <ca_conf_dir>/datetime.conf
+client_services_config = <ca_conf_dir>/client_services.conf
+authentication_config = <ca_conf_dir>/authentication.conf
+services_config = <ca_conf_dir>/services.conf
+visualization_config = <ca_conf_dir>/visualization.conf
+find_results_download_config = <ca_conf_dir>/find_results_download.conf
+
+# OAI configuration
+oai_harvester_config = <ca_conf_dir>/oai_harvester.conf
+oai_provider_config = <ca_conf_dir>/oai_provider.conf
+
+# Fonts to use for PDF generation
+fonts_directory = <ca_app_dir>/fonts
+ca_objects_print_forms = <ca_conf_dir>/ca_objects_label_layouts.conf
+ca_object_lots_print_forms = <ca_conf_dir>/ca_object_lots_label_layouts.conf
+ca_collections_print_forms = <ca_conf_dir>/ca_collections_label_layouts.conf
+ca_loans_print_forms = <ca_conf_dir>/ca_loans_label_layouts.conf
+ca_movements_print_forms = <ca_conf_dir>/ca_movements_label_layouts.conf
+ca_storage_locations_print_forms = <ca_conf_dir>/ca_storage_locations_label_layouts.conf
+
+# -------------------
+# Path to application plugins
+# -------------------
+application_plugins = <ca_app_dir>/plugins
+
+# -------------------
+# Path to dashboard widgets
+# -------------------
+dashboard_widgets = <ca_app_dir>/widgets
+
+# -------------------
+# Password reset parameters
+# -------------------
+password_reset_url = <site_host><ca_url_root>/index.php?action=reset_password&form_action=reset
+
+# -------------------
+# ID numbering (for objects, object lots and authorities)
+# -------------------
+multipart_id_numbering_config = <ca_conf_dir>/multipart_id_numbering.conf
+
+#
+# Require input id number value to conform to format? (0=no, 1=yes)
+#
+require_valid_id_number_for_ca_objects = 0
+require_valid_id_number_for_ca_object_lots = 0
+require_valid_id_number_for_ca_entities = 1
+require_valid_id_number_for_ca_places = 1
+require_valid_id_number_for_ca_collections = 1
+require_valid_id_number_for_ca_occurrences = 1
+require_valid_id_number_for_ca_loans = 0
+require_valid_id_number_for_ca_movements = 0
+require_valid_id_number_for_ca_tours = 0
+require_valid_id_number_for_ca_tour_stops = 0
+require_valid_id_number_for_ca_object_representations = 0
+require_valid_id_number_for_ca_storage_locations = 0
+
+#
+# Allow dupe id numbers? (0=no, 1=yes)
+#
+allow_duplicate_id_number_for_ca_objects = 1
+allow_duplicate_id_number_for_ca_object_lots = 1
+allow_duplicate_id_number_for_ca_entities = 1
+allow_duplicate_id_number_for_ca_places = 1
+allow_duplicate_id_number_for_ca_collections= 1
+allow_duplicate_id_number_for_ca_occurrences= 1
+allow_duplicate_id_number_for_ca_list_items= 1
+allow_duplicate_id_number_for_ca_loans= 0
+allow_duplicate_id_number_for_ca_movements= 0
+allow_duplicate_id_number_for_ca_tours= 0
+allow_duplicate_id_number_for_ca_tour_stops= 0
+allow_duplicate_id_number_for_ca_object_representations = 1
+allow_duplicate_id_number_for_ca_storage_locations = 1
+
+#
+# Allow dupe labels? (0=no, 1=yes)
+# If set to no, then atttempting to save records with a label already
+# in use by another record will fail
+#
+allow_duplicate_labels_for_ca_objects = 1
+allow_duplicate_labels_for_ca_object_lots = 1
+allow_duplicate_labels_for_ca_entities = 0
+allow_duplicate_labels_for_ca_places = 1
+allow_duplicate_labels_for_ca_collections= 0
+allow_duplicate_labels_for_ca_occurrences= 0
+allow_duplicate_labels_for_ca_storage_locations= 1
+allow_duplicate_labels_for_ca_list_items= 1
+allow_duplicate_labels_for_ca_loans = 1
+allow_duplicate_labels_for_ca_movements= 1
+allow_duplicate_labels_for_ca_object_representations= 1
+allow_duplicate_labels_for_ca_relationship_types= 1
+allow_duplicate_labels_for_ca_set_items= 1
+allow_duplicate_labels_for_ca_search_forms= 1
+allow_duplicate_labels_for_ca_bundle_displays= 1
+allow_duplicate_labels_for_ca_editor_uis= 1
+allow_duplicate_labels_for_ca_editor_ui_screens= 1
+allow_duplicate_labels_for_ca_tours= 1
+allow_duplicate_labels_for_ca_tour_stops= 1
+
+#
+# Require preferred label? (0=no, 1=yes)
+# If set to yes, then attempting to save records without a preferred label
+# will fail. If set to no (default) then attempting to save a record without
+# a preferred label will automatically set the preferred label to "[BLANK]"
+#
+require_preferred_label_for_ca_objects = 0
+require_preferred_label_for_ca_object_lots = 0
+require_preferred_label_for_ca_entities = 0
+require_preferred_label_for_ca_places = 0
+require_preferred_label_for_ca_collections = 0
+require_preferred_label_for_ca_occurrences = 0
+require_preferred_label_for_ca_storage_locations = 0
+require_preferred_label_for_ca_list_items = 0
+require_preferred_label_for_ca_loans = 0
+require_preferred_label_for_ca_movements = 0
+require_preferred_label_for_ca_object_representations = 0
+require_preferred_label_for_ca_relationship_types = 0
+require_preferred_label_for_ca_set_items = 0
+require_preferred_label_for_ca_search_forms = 0
+require_preferred_label_for_ca_bundle_displays = 0
+require_preferred_label_for_ca_editor_uis = 0
+require_preferred_label_for_ca_editor_ui_screens = 0
+require_preferred_label_for_ca_tours = 0
+require_preferred_label_for_ca_tour_stops = 0
+
+#
+# Name of plugin class to use for id number field in objects, object lots
+# and authorities that support id numbering (entities, places, collections and occurrences)
+#
+ca_objects_id_numbering_plugin = MultipartIDNumber
+ca_object_lots_id_numbering_plugin = MultipartIDNumber
+ca_entities_id_numbering_plugin = MultipartIDNumber
+ca_places_id_numbering_plugin = MultipartIDNumber
+ca_collections_id_numbering_plugin = MultipartIDNumber
+ca_occurrences_id_numbering_plugin = MultipartIDNumber
+ca_list_items_id_numbering_plugin = MultipartIDNumber
+ca_loans_id_numbering_plugin = MultipartIDNumber
+ca_movements_id_numbering_plugin = MultipartIDNumber
+ca_tours_id_numbering_plugin = MultipartIDNumber
+ca_tour_stops_id_numbering_plugin = MultipartIDNumber
+ca_object_representations_id_numbering_plugin = MultipartIDNumber
+ca_storage_locations_id_numbering_plugin = MultipartIDNumber
+
+#
+# Allow automated renumbering of objects with lot idno + sequence number 
+# when object number don't conform to that format?
+#
+# If you're managing lots with related object-level records and the lot and
+# object numbering get out of sync (because you change the lot number after
+# the fact, for example) then this can be useful. But it can also be dangerous in the
+# sense that letting cataloguers renumber sets of objects at a click may not be the 
+# idea. Only enable this if you need it. Keep in mind that the automated renumbering format 
+# is fixed at lot <lot identifier> + <separator> + <sequential number starting from one>. So if
+# your lot number is 2010.10 and your separator is '.', then objects will be numbered 2010.10.1, 
+# 2010.10.2, 2010.10.3, etc.
+#
+allow_automated_renumbering_of_objects_in_a_lot = 0
+
+#
+# Default to summary when opening item for editing?
+#
+ca_objects_editor_defaults_to_summary_view = 0
+ca_object_lots_editor_defaults_to_summary_view = 0
+ca_entities_editor_defaults_to_summary_view = 0
+ca_places_editor_defaults_to_summary_view = 0
+ca_occurrences_editor_defaults_to_summary_view = 0
+ca_collections_editor_defaults_to_summary_view = 0
+ca_lists_editor_defaults_to_summary_view = 0
+ca_list_items_editor_defaults_to_summary_view = 0
+ca_loans_editor_defaults_to_summary_view = 0
+ca_movements_editor_defaults_to_summary_view = 0
+ca_storage_locations_editor_defaults_to_summary_view = 0
+ca_object_representations_editor_defaults_to_summary_view = 0
+ca_tours_editor_defaults_to_summary_view = 0
+ca_tour_stops_editor_defaults_to_summary_view = 0
+ca_representation_annotations_defaults_to_summary_view = 0
+
+# -------------------
+# Mapping plugins
+# -------------------
+#
+# Name of plugin class to use for mapping
+# 	Currently supported values: GoogleMaps, OpenLayers
+#	
+# GoogleMaps is deprecated. Use OpenLayers unless you have a reason to do otherwise.
+mapping_plugin = OpenLayers
+
+# --- OpenLayers options
+# Tile to use for base layer; Ex. OpenLayers.Layer.OSM() [OpenStreetMaps] or OpenLayers.Layer.Stamen('toner') [Stamen 'Toner' theme]
+openlayers_base_layer = OpenLayers.Layer.OSM()
+
+# Radius, in pixels, of plotted points
+openlayers_point_radius = 5
+
+# Fill color (hex) for points and regions
+openlayers_fill_color = #ffcc66
+
+# Stroke width, in pixels, for points, regions and paths
+openlayers_stroke_width = 2
+
+# Stroke color (hex) for points, regions and paths
+openlayers_stroke_color = #ff9933
+
+#  Fill color (hex) for points and regions when selected
+openlayers_fill_color_selected = #66ccff
+
+#  Stroke color (hex) for points regions and paths when selected
+openlayers_stroke_color_selected = #3399ff
+
+# --- GoogleMaps options
+# default Google map type to display
+# Values are: ROADMAP, SATELLITE, HYBRID, TERRAIN
+google_maps_default_type = TERRAIN
+google_maps_show_navigation_controls = 1
+google_maps_show_map_type_controls = 1
+google_maps_show_scale_controls = 1
+
+# --- Generic mapping options
+# Attribute object records to use to map search results
+ca_objects_map_attribute = georeference
+
+# -------------------
+# Timecode output
+# -------------------
+#
+# Controls how timecode values are displayed
+# Valid settings are:
+#	COLON_DELIMITED = format with colons. Ex. 1:20:10
+#	HOURS_MINUTES_SECONDS = format with h/m/s labels. Ex. 1h 20m 10s
+#	RAW = the number of seconds in the interval. Ex. 4810
+#
+timecode_output_format = COLON_DELIMITED
+
+# -------------------
+# GeoNames web services
+# -------------------
+# To access the GeoNames services for geographic names
+# via a 'GeoNames' attribute you must enter your GeoNames username and password
+# here. You can get a free account at http://www.geonames.org/login. After
+# you confirmed your registration you have to enable your account for web
+# service usage at http://www.geonames.org/manageaccount, otherwise the search
+# won't return any results.
+# If you don't care about GeoNames (or even know what is it) then leave this as-is
+geonames_user = enter_your_username_here
+
+# -------------------
+# Taxonomy web services
+# -------------------
+# To access the uBio taxonomic name service (http://www.ubio.org)
+# via a 'Taxonomy' attribute you must enter your uBio API keycode here
+# If you don't care about taxonomy (or even know what is it) then leave this as-is
+ubio_keycode = enter_your_keycode_here
+
+# -------------------
+# Proxy server configuration for web services
+# -------------------
+# In some larger networks servers are required to run their HTTP/HTTPS requests
+# through a proxy server. If this applies to your setup, uncomment the following lines
+# and enter your proxy configuration here. 
+# web_services_proxy_url = tcp://127.0.0.1:8080
+
+# uncomment this ONLY if your proxy requires authentication!
+# web_services_proxy_auth_user = my_username
+# web_services_proxy_auth_pw = my_password
+
+# -------------------
+# Media processing tweaks
+# -------------------
+# If you have the PECL Imagick extension installed on your server
+# and don't want to use it with CollectiveAccess (it has a bad habit of choking and crashing
+# on some types of files) you can force CA to ignore it by setting 'dont_use_imagick' to 1; leave it 
+# set to zero if you want to use Imagick. When Imagick works, it performs well so you should give it a try
+# and see how it works before disabling support for it.
+dont_use_imagick = 0
+
+# If you have ImageMagick or GraphicsMagick installed and PDFs are being inexplicably rejected try setting the corresponding
+# option to 1. It has been observed that ImageMagick chokes on some PDFs. Setting this option will force CA to use Zend_PDF
+# to identify uploaded PDF's, which often resolves the issues at the expense of greater memory consumption.
+dont_use_imagemagick_to_identify_pdfs = 0
+dont_use_graphicsmagick_to_identify_pdfs = 0
+
+# If you wish to allow the importing of object representation media and icons via http, https and ftp urls set this to 1. 
+# Letting users employ your CA installation as a proxy for downloading arbitrary URLs could be seen as a security hole in 
+# some cases, so enable this option only if you really need it.
+allow_fetching_of_media_from_remote_urls = 0
+
+# If you wish to allow the linking to existing object representations in the manner other relationships
+# set the relevant directives below to 1. Using representations as records that can be targets of
+# relationships can be confusing and, well, odd for many common setups. Still, when you need this behavior
+# you need it, so here it is :-)
+ca_objects_allow_relationships_to_existing_representations = 0
+ca_object_lots_allow_relationships_to_existing_representations = 0
+ca_entities_allow_relationships_to_existing_representations = 0
+ca_places_allow_relationships_to_existing_representations = 0
+ca_occurrences_allow_relationships_to_existing_representations = 0
+ca_collections_allow_relationships_to_existing_representations = 0
+ca_storage_locations_allow_relationships_to_existing_representations = 0
+ca_list_items_allow_relationships_to_existing_representations = 0
+ca_loans_allow_relationships_to_existing_representations = 0
+ca_movements_allow_relationships_to_existing_representations = 0
+
+# If you have OpenCV (http://www.opencv.org) and PHP-facedetect (http://www.xarg.org/project/php-facedetect/) installed
+# on your server and want CA to try and crop images to include faces set this to a non-zero value. Note that detection
+# can slow image processing significantly and isn't 100% accurate.
+#
+enable_face_detection_for_images = 0
+
+# Video preview frame generation 
+#
+# You can have CA generate preview frames from uploaded video
+# These settings control how (and if) the preview frames are generated
+
+# Should we generate frames? (Set to 1 for yes, 0 for no)
+video_preview_generate_frames = 1
+
+# The minimum number of preview frames to generate in any situation
+# CA will adjust timing parameters to ensure at least this number of frames is generated.
+video_preview_min_number_of_frames = 10
+
+# The maximum number of preview frames to generate in any situation
+# CA will always stop generating frames when it hits this limit
+video_preview_max_number_of_frames = 100
+
+# The time between extracted frames; you can enter this is timecode notation (eg. 10s = 10 seconds; 1:10 = 1 minute, 10  seconds)
+video_preview_interval_between_frames = 30s
+
+# The time relative to the start of the video at which to start extracting preview frames; this can be used to ensure you don't generate frames from blank leader footage
+video_preview_start_at = 2s
+
+# The time interval relative to the end of the video at which to stop extracting preview frames; this can be used to ensure you don't generate frames from blank footage at the end of a video
+video_preview_end_at = 2s
+
+# Document preview page generation 
+#
+# You can have CA generate preview page images from uploaded documents (only PDFs currently)
+# These settings control how (and if) the preview pages are generated
+
+# Should we generate pages? (Set to 1 for yes, 0 for no)
+document_preview_generate_pages = 1
+
+# The maximum number of preview pages to generate in any situation
+# CA will always stop generating page images when it hits this limit
+document_preview_max_number_of_pages = 500
+
+# The number of pages between extracted pages; set to 1 if you want to generate all pages; set to 10 if you only want to generate every 10th page
+document_preview_interval_between_pages = 1
+
+# The page number at which to start extracting pages
+document_preview_start_page = 1
+
+# Resolution to rasterize PDFs at (300dpi the maximum you should use)
+document_preview_resolution = 200
+
+# Set to non-zero value if you do not wish to generate representation annotation previews
+# These previews are discrete audio/video files covering a given annotation.
+dont_generate_annotation_previews = 1
+
+# If you want to use the pdfjs viewer (http://mozilla.github.com/pdf.js/) when
+# viewing PDF files set this to a non-zero value. pdfjs provides lots of nice 
+# features, including text highlighting, but requires a modern browser and is 
+# relatively heavy in terms of bandwidth and memory requirements
+#
+# If you are concerned about memory and/or bandwidth the set this to zero and
+# use the standard document viewer.
+#
+use_pdfjs_viewer = 0
+
+# -------------------
+# Editor "disable" switches
+# -------------------
+#
+# If you're not using certain editors in your system (you don't catalogue places for example)
+# you can disable the menu items for them by setting the various *_disable directives below to a non-zero value
+#
+ca_objects_disable = 0
+ca_entities_disable = 0
+ca_places_disable = 0
+ca_occurrences_disable = 0
+ca_collections_disable = 0
+ca_object_lots_disable = 0
+ca_storage_locations_disable = 0
+ca_loans_disable = 0
+ca_movements_disable = 1
+ca_tours_disable = 1
+ca_object_representations_disable = 1
+
+# Sometimes you want representations enabled for relationship purposes but don't want
+# to have the option to create or edit them as free-standing records. You can control
+# whether the object representations, when enabled in general above, show up in the "new"
+# and "find" menus using the directives below. Set them to a non-zero value to remove
+# object representations from the specified menu.
+#
+ca_object_representations_dont_show_in_new_menu = 0
+ca_object_representations_dont_show_in_find_menu = 0
+
+
+# -------------------
+# Navigation options
+# -------------------
+#
+# If you only want to allow users to create new records with top-level types for
+# a give item type, set the appropriate directive below to 1; if set users will still be able
+# to create records for sub-types, but only from within an existing record with a top-level types
+# This can be useful if you have a system where sub-types need to be subsidiary to top-level records -
+# eg. sub-type records need to have a top-level parent and cannot exist on their own
+ca_objects_navigation_new_menu_shows_top_level_types_only = 0
+ca_entities_navigation_new_menu_shows_top_level_types_only = 0
+ca_places_navigation_new_menu_shows_top_level_types_only = 0
+ca_occurrences_navigation_new_menu_shows_top_level_types_only = 0
+ca_collections_navigation_new_menu_shows_top_level_types_only = 0
+ca_object_lots_navigation_new_menu_shows_top_level_types_only = 0
+ca_storage_locations_navigation_new_menu_shows_top_level_types_only = 0
+ca_loans_navigation_new_menu_shows_top_level_types_only = 0
+ca_movements_navigation_new_menu_shows_top_level_types_only = 0
+ca_object_representations_navigation_new_menu_shows_top_level_types_only = 0
+
+#
+# Strict type hierarchies
+#
+# When fully enabled, top-level records may only be created with top-level types, and sub-records may only be created 
+# with types that are direct sub-types of the parent's type. This ensures conformance with the type hierarchy. So 
+# if you have an object type hierarchy like this:
+#
+# Book
+# -- Page
+# ---- Figure
+# -- Frontspiece
+#
+# ... then top-level records can only be of type "Book." Sub-records of books may only be "Page" or "Frontspiece"; 
+# and sub-records of "Page" can be "Figure." "Frontspiece" may not take sub-records.
+# 
+# We partially enabled, top-level records may only be created with top-level types, but sub-records may be of *any*
+# type below the top-level type, not just direct sub-types. In the example above, the sub-records of a "book" can be
+# of type "Page", "Figure" or Frontspiece; sub-records of a "Page" may be only of type "Figure."
+#
+# When disabled, all types are allowed anywhere.
+#
+# The type hierarchy behavior can be independently for each type of hierarchical record. 
+# Set to 1 to fully enable, 0 to disable and ~ (tilde character) to partially enable restrictions.
+#
+ca_objects_enforce_strict_type_hierarchy = 0
+ca_entities_enforce_strict_type_hierarchy = 0
+ca_places_enforce_strict_type_hierarchy = 0
+ca_occurrences_enforce_strict_type_hierarchy = 0
+ca_collections_enforce_strict_type_hierarchy = 0
+ca_storage_locations_enforce_strict_type_hierarchy = 0
+ca_loans_enforce_strict_type_hierarchy = 0
+ca_tour_stops_enforce_strict_type_hierarchy = 0
+ca_list_items_enforce_strict_type_hierarchy = 0
+
+#
+# Show "add child record" control in editor inspector?
+#
+ca_objects_show_add_child_control_in_inspector = 1
+ca_entities_show_add_child_control_in_inspector = 0
+ca_places_show_add_child_control_in_inspector = 1
+ca_occurrences_show_add_child_control_in_inspector = 0
+ca_collections_show_add_child_control_in_inspector = 0
+ca_storage_locations_show_add_child_control_in_inspector = 1
+ca_loans_show_add_child_control_in_inspector = 0
+ca_movements_show_add_child_control_in_inspector = 0
+ca_tour_stops_show_add_child_control_in_inspector = 0
+
+# -------------------
+# Formats for form elements
+# -------------------
+
+# If set text of "required_field_marker" will be displayed for bundles in editors for which input is required
+show_required_field_marker = 0
+
+# Text to display for bundles in editors for which input is required
+required_field_marker = <span style="color: #bb0000; font-size:10px; font-weight: normal; font-style: italic;">(required)</span>
+
+# These are used to format data entry elements in various editing formats. Don't change them unless
+# you know what you're doing
+# Used for intrinsic fields (simple fields)
+form_element_display_format = <div class='formLabel'>^EXTRA^LABEL<br/>^ELEMENT</div>
+form_element_display_format_without_label = <div class='formLabel'>^ELEMENT</div>
+form_element_error_display_format = <div class='formLabel'>^EXTRA^LABEL (<span class='formLabelError'>^ERRORS</span>)<br/>^ELEMENT</div>
+
+# Used for bundle-able fields such as attributes
+bundle_element_display_format = <div class='bundleLabel'>^LABEL ^DOCUMENTATIONLINK ^ELEMENT</div>
+bundle_element_display_format_without_label = <div class='formLabel'>^ELEMENT</div>
+bundle_element_error_display_format = <div class='bundleLabel'>^LABEL (<span class='bundleLabelError'>^ERRORS</span>)<br/>^ELEMENT</div>
+
+# Used for the 'idno' field of bundle-providers (Eg. ca_objects, ca_places, etc.)
+idno_element_display_format = <div class='formLabel'>^LABEL<br/>^ELEMENT <span id='idnoStatus'></span></div>
+idno_element_display_format_without_label = <div class='formLabel'>^ELEMENT <span id='idnoStatus'></span></div>
+idno_element_error_display_format = <div class='formLabel'>^LABEL (<span class='formLabelError'>^ERRORS</span>)<br/>^ELEMENT <span id='idnoStatus'></span></div>
+
+# -------------------
+# Access control
+# -------------------
+# User_id to consider "administrator" - not subject to access control measures.
+# By default, user_id=1 is considered administrator for convenience and compatbility with older
+# installations. You can make any user_id "administrator" if you want, however, if disable this completely
+# by setting it to a blank value.
+administrator_user_id = 1
+
+# -------------------
+# Find defaults
+# -------------------
+items_per_page_options_for_ca_objects_search = [12,24,36,48]
+items_per_page_default_for_ca_objects_search = 24
+view_default_for_ca_objects_search = list
+
+items_per_page_options_for_ca_object_lots_search = [15,30,45]
+items_per_page_default_for_ca_object_lots_search = 30
+view_default_for_ca_object_lots_search = list
+
+items_per_page_options_for_ca_entities_search = [15,30,45]
+items_per_page_default_for_ca_entities_search = 30
+view_default_for_ca_entities_search = list
+
+items_per_page_options_for_ca_places_search = [15,30,45]
+items_per_page_default_for_ca_places_search = 30
+view_default_for_ca_places_search = list
+
+items_per_page_options_for_ca_occurrences_search = [15,30,45]
+items_per_page_default_for_ca_occurrences_search = 30
+view_default_for_ca_occurrences_search = list
+
+items_per_page_options_for_ca_collections_search = [15,30,45]
+items_per_page_default_for_ca_collections_search = 30
+view_default_for_ca_collections_search = list
+
+items_per_page_options_for_ca_storage_locations_search = [15,30,45]
+items_per_page_default_for_ca_storage_locations_search = 30
+view_default_for_ca_storage_locations_search = list
+
+items_per_page_options_for_ca_objects_browse = [12,24,36,48]
+items_per_page_default_for_ca_objects_browse = 24
+view_default_for_ca_objects_browse = list
+
+items_per_page_options_for_ca_object_lots_browse = [15,30,45]
+items_per_page_default_for_ca_object_lots_browse = 30
+view_default_for_ca_object_lots_browse = list
+
+items_per_page_options_for_ca_entities_browse = [15,30,45]
+items_per_page_default_for_ca_entities_browse = 30
+view_default_for_ca_entities_browse = list
+
+items_per_page_options_for_ca_places_browse = [15,30,45]
+items_per_page_default_for_ca_places_browse = 30
+view_default_for_ca_places_browse = list
+
+items_per_page_options_for_ca_occurrences_browse = [15,30,45]
+items_per_page_default_for_ca_occurrences_browse = 30
+view_default_for_ca_occurrences_browse = list
+
+items_per_page_options_for_ca_collections_browse = [15,30,45]
+items_per_page_default_for_ca_collections_browse = 30
+view_default_for_ca_collections_browse = list
+
+items_per_page_options_for_ca_storage_locations_browse = [15,30,45]
+items_per_page_default_for_ca_storage_locations_browse = 30
+view_default_for_ca_storage_locations_browse = list
+
+items_per_page_options_for_ca_loans_browse = [15,30,45]
+items_per_page_default_for_ca_loans_browse = 30
+view_default_for_ca_loans_browse = list
+
+items_per_page_options_for_ca_movements_browse = [15,30,45]
+items_per_page_default_for_ca_movements_browse = 30
+view_default_for_ca_movements_browse = list
+
+items_per_page_options_for_ca_lists_browse = [15,30,45]
+items_per_page_default_for_ca_lists_browse = 30
+view_default_for_ca_lists_browse = list
+
+items_per_page_options_for_ca_list_items_browse = [15,30,45]
+items_per_page_default_for_ca_list_items_browse = 30
+view_default_for_ca_list_items_browse = list
+
+items_per_page_options_for_ca_tours_browse = [15,30,45]
+items_per_page_default_for_ca_tours_browse = 30
+view_default_for_ca_tours_browse = list
+
+items_per_page_options_for_ca_tour_stops_browse = [15,30,45]
+items_per_page_default_for_ca_tour_stops_browse = 30
+view_default_for_ca_tour_stops_browse = list
+
+items_per_page_options_for_ca_object_representations_browse = [15,30,45]
+items_per_page_default_for_ca_object_representations_browse = 30
+view_default_for_ca_object_representations_browse = list
+
+# -------------------
+# Browse Panel Styles (for best results, choose a number between 1 and 5)
+# -------------------
+
+browse_row_size = 4
+
+# -------------------
+# Quicksearch ("live" search in search box in header)
+# -------------------
+
+# what sorts of results does Quicksearch return?
+quicksearch_return_ca_objects = 1
+quicksearch_return_ca_entities = 1
+quicksearch_return_ca_places = 1
+quicksearch_return_ca_occurrences = 1
+quicksearch_return_ca_collections = 1
+
+# -------------------------
+# Default type to use when creating sets 
+# (in search results "sets" options, for example)
+# -------------------------
+ca_sets_default_type = user
+
+
+# -------------------
+# Object representation download options
+# -------------------
+
+# Media versions to provide downloads of
+ca_object_representation_download_versions = [original, large, medium, small]
+
+# -------------------
+# Restrict facets shown to specific facet groups?
+# 	<table_name>_browse_facet_group limits facets on the main browse landing page
+#	<table_name>_refine_facet_group limits facets in the "refine" browse on detail pages
+#	<table_name>_search_refine_facet_group limits facets in the "refine" browse on search results
+# -------------------
+#ca_objects_browse_facet_group = main
+#ca_objects_refine_facet_group = refine
+#ca_objects_search_refine_facet_group = refine
+
+# ----------------------------
+# Summary printing page format
+# ----------------------------
+
+# allowed values:
+# 4A0, 2A0, A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10,
+# B0, B1, B2, B3, B4, B5, B6, B7, B8, B9, B10,
+# C0, C1, C2, C3, C4, C5, C6, C7, C8, C9, C10,
+# RA0, RA1, RA2, RA3, RA4, SRA0, SRA1, SRA2, SRA3, SRA4,
+# LETTER (default), LEGAL, EXECUTIVE, FOLIO
+
+summary_print_format = LETTER
+
+
+# ----------------------------
+# Related item lookup settings
+# ----------------------------
+ca_objects_lookup_settings = [^ca_object_representations.media.icon (^ca_objects.idno) ^ca_objects.preferred_labels]
+ca_objects_lookup_delimiter = 
+ca_objects_lookup_relationship_type_position = right
+
+ca_object_lots_lookup_settings = [^ca_object_lots.preferred_labels (^ca_object_lots.idno_stub)]
+ca_object_lots_lookup_delimiter = ➔
+ca_object_lots_lookup_relationship_type_position = right
+
+ca_entities_lookup_settings = [^ca_entities.preferred_labels]
+ca_entities_lookup_delimiter = ➔
+ca_entities_lookup_relationship_type_position = right
+
+ca_places_lookup_settings =  [^_hierarchy ➔ ^_parent ➔ ^ca_places.preferred_labels]
+ca_places_lookup_delimiter =  ➔ 
+ca_places_lookup_relationship_type_position = right
+
+ca_occurrences_lookup_settings = [^ca_occurrences.preferred_labels]
+ca_occurrences_lookup_delimiter = ➔
+ca_occurrences_lookup_relationship_type_position = right
+
+ca_collections_lookup_settings = [^ca_collections.preferred_labels (^ca_collections.idno)]
+ca_collections_lookup_delimiter = ➔
+ca_collections_lookup_relationship_type_position = right
+
+ca_storage_locations_lookup_settings = [^_parent, ^ca_storage_locations.preferred_labels]
+ca_storage_locations_lookup_delimiter = ➔
+ca_storage_locations_lookup_relationship_type_position = right
+
+ca_list_items_lookup_settings = [^_hierarchy ➔ ^_parent ➔ ^ca_list_items.preferred_labels.name_plural]
+ca_list_items_lookup_delimiter = ➔
+ca_list_items_lookup_relationship_type_position = right
+
+ca_relationship_types_lookup_settings = [^_parent ➔ ^ca_relationship_types.preferred_labels (^ca_relationship_types.type_code)]
+ca_relationship_types_lookup_delimiter = ➔
+
+ca_loans_lookup_settings = [^ca_loans.preferred_labels]
+ca_loans_lookup_delimiter = ➔
+ca_loans_lookup_relationship_type_position = right
+
+ca_movements_lookup_settings = [^ca_movements.preferred_labels]
+ca_movements_lookup_delimiter = ➔
+ca_movements_lookup_relationship_type_position = right
+
+ca_users_lookup_settings = [^ca_users.fname ^ca_users.lname (^ca_users.email)]
+ca_users_lookup_delimiter = ➔
+
+ca_user_groups_lookup_settings= [^ca_user_groups.name]
+ca_user_groups_lookup_delimiter = ➔
+
+ca_tours_lookup_settings = [^ca_tours.preferred_labels]
+ca_tours_lookup_delimiter = ➔
+
+ca_tour_stops_lookup_settings = [^ca_tour_stops.preferred_labels]
+ca_tour_stops_lookup_delimiter = ➔
+
+ca_object_representations_lookup_settings = [^ca_object_representations.media.icon ^ca_object_representations.preferred_labels]
+ca_object_representations_lookup_delimiter = ➔
+
+ca_representation_annotations_lookup_settings = [^ca_representation_annotations.preferred_labels.name]
+ca_representation_annotations_lookup_delimiter = ➔
+
+
+# ----------------------------
+# Hierarchy browser items
+# ----------------------------
+ca_objects_hierarchy_browser_display_settings = ^ca_objects.preferred_labels.name (^ca_objects.idno)
+ca_object_lots_hierarchy_browser_display_settings = ^ca_object_lots.preferred_labels (^ca_object_lots.idno_stub)
+ca_entities_hierarchy_browser_display_settings = ^ca_entities.preferred_labels (^ca_entities.idno)
+ca_places_hierarchy_browser_display_settings = ^ca_places.preferred_labels (^ca_places.idno)
+ca_occurrences_hierarchy_browser_display_settings = ^ca_occurrences.preferred_labels (^ca_occurrences.idno)
+ca_collections_hierarchy_browser_display_settings = ^ca_collections.preferred_labels (^ca_collections.idno)
+ca_list_hierarchy_browser_display_settings = ^ca_lists.preferred_labels.name (^ca_lists.list_code)
+ca_list_items_hierarchy_browser_display_settings = ^ca_list_items.preferred_labels.name_plural (^ca_list_items.idno)
+ca_storage_locations_hierarchy_browser_display_settings = ^ca_storage_locations.preferred_labels (^ca_storage_locations.idno)
+ca_tour_stops_hierarchy_browser_display_settings = ^ca_tour_stops.preferred_labels
+ca_relationship_types_hierarchy_browser_display_settings = ^ca_relationship_types.preferred_labels (^ca_relationship_types.type_code)
+ca_loans_hierarchy_browser_display_settings = ^ca_loans.preferred_labels (^ca_loans.idno)
+ca_movements_hierarchy_browser_display_settings = ^ca_movements.preferred_labels (^ca_movements.idno)
+
+
+ca_objects_hierarchy_browser_sort_values = [ca_objects.idno_sort]
+ca_objects_hierarchy_browser_sort_direction = asc
+ca_object_lots_hierarchy_browser_sort_values = [ca_object_lots.idno_stub_sort]
+ca_object_lots_hierarchy_browser_sort_direction = asc
+ca_entities_hierarchy_browser_sort_values = [ca_entities.preferred_labels.surname, ca_entities.preferred_labels.forename]
+ca_entities_hierarchy_browser_sort_direction = asc
+ca_places_hierarchy_browser_sort_values = [ca_places.preferred_labels.name_sort]
+ca_places_hierarchy_browser_sort_direction = asc
+ca_occurrences_hierarchy_browser_sort_values = [ca_occurrences.preferred_labels.name_sort]
+ca_occurrences_hierarchy_browser_sort_direction = asc
+ca_collections_hierarchy_browser_sort_values = [ca_collections.preferred_labels.name_sort]
+ca_collections_hierarchy_browser_sort_direction = asc
+ca_list_items_hierarchy_browser_sort_values = [ca_list_items.preferred_labels.name_sort_plural]
+ca_list_items_hierarchy_browser_sort_direction = asc
+ca_storage_locations_hierarchy_browser_sort_values = [ca_storage_locations.preferred_labels.name_sort]
+ca_storage_locations_hierarchy_browser_sort_direction = asc
+ca_tour_stops_hierarchy_browser_sort_values = [ca_tour_stops.preferred_labels.name_sort]
+ca_tour_stops_hierarchy_browser_sort_direction = asc
+ca_relationship_types_hierarchy_browser_sort_values = [ca_relationship_types.preferred_labels.typename]
+ca_relationship_types_hierarchy_browser_sort_direction = asc
+ca_loans_hierarchy_browser_sort_values = [ca_loans.preferred_labels.name_sort]
+ca_loans_hierarchy_browser_sort_direction = asc
+ca_movements_hierarchy_browser_sort_values = [ca_movements.preferred_labels.name_sort]
+ca_movements_hierarchy_browser_sort_direction = asc
+
+# ----------------------------
+# Label type lists
+#
+# Labels, both preferred and non-preferred, for primary items (objects, entities, etc.) 
+# can include a type. By default the range of types is defined by a list named for the item.
+# For objects, the types for preferred labels are object_label_types_preferred while the
+# non-preferred label types are defined by the object_label_types list. You can set other
+# lists for each kind of label below. If you don't want to use types for a given category of
+# label set it to an empty list.
+# ----------------------------
+ca_objects_preferred_label_type_list = object_label_types_preferred
+ca_objects_nonpreferred_label_type_list = object_label_types
+ca_object_lots_preferred_label_type_list = object_lot_label_types_preferred
+ca_object_lots_nonpreferred_label_type_list = object_lot_label_types
+ca_entities_preferred_label_type_list = entity_label_types_preferred
+ca_entities_nonpreferred_label_type_list = entity_label_types
+ca_places_preferred_label_type_list = place_label_types_preferred
+ca_places_nonpreferred_label_type_list = place_label_types
+ca_collections_preferred_label_type_list = collection_label_types_preferred
+ca_collections_nonpreferred_label_type_list = collection_label_types
+ca_occurrences_preferred_label_type_list = occurrence_label_types_preferred
+ca_occurrences_nonpreferred_label_type_list = occurrence_label_types
+ca_loans_preferred_label_type_list = loan_label_types_preferred
+ca_loans_nonpreferred_label_type_list = loan_label_types
+ca_movements_preferred_label_type_list = movement_label_types_preferred
+ca_movements_nonpreferred_label_type_list = movement_label_types
+ca_storage_locations_preferred_label_type_list = storage_location_label_types_preferred
+ca_storage_locations_nonpreferred_label_type_list = storage_location_label_types
+ca_list_items_preferred_label_type_list = list_item_label_types_preferred
+ca_list_items_nonpreferred_label_type_list = list_item_label_types
+ca_object_representations_preferred_label_type_list = object_representation_label_types_preferred
+ca_object_representations_nonpreferred_label_type_list = object_representation_label_types
+ca_representation_annotation_preferred_label_type_list = representation_annotation_label_types_preferred
+ca_representation_annotation_nonpreferred_label_type_list = representation_annotation_label_types
+
+# ----------------------------
+# Menu bar preferences
+# ----------------------------
+#
+# By default each of the follow record types has a sub-menu in the top-level "New" menu
+# list out the configured types. When you choose a type the creation of new record of that type 
+# is initiated. If you have several types configured sub-menus make sense, but if your setup only
+# has one or two types, or is deeply nested then you may want to push the first level of types 
+# directly onto the menu. Setting the directives below will force the first level of the sub-menu onto
+# the "new" menu itself.
+#
+ca_object_lots_no_new_submenu = 0
+ca_objects_no_new_submenu = 0
+ca_entities_no_new_submenu = 0
+ca_collections_no_new_submenu = 0
+ca_loans_no_new_submenu = 0
+ca_movements_no_new_submenu = 0
+ca_tours_no_new_submenu = 0
+ca_object_representations_no_new_submenu = 0
+
+
+# ----
+# Find menu formatting
+# ----
+
+# By default only the top-level item classes ("objects", "entities", "collections") appear in the find menu
+# Set the following to a non-zero value to break out each top-level item into a submenu with types
+# This allows you do to type-specific searches and browses
+ca_objects_breakout_find_by_type_in_submenu = 0
+ca_object_lots_breakout_find_by_type_in_submenu = 0
+ca_object_representations_breakout_find_by_type_in_submenu = 0
+ca_entities_breakout_find_by_type_in_submenu = 0
+ca_places_breakout_find_by_type_in_submenu = 0
+ca_occurrences_breakout_find_by_type_in_submenu = 0
+ca_collections_breakout_find_by_type_in_submenu = 0
+ca_loans_breakout_find_by_type_in_submenu = 0
+ca_movements_breakout_find_by_type_in_submenu = 0
+
+# Set the following to a non-zero value to put types directly into the find menu, replacing the top-level item class
+# This allows you do to type-specific searches and browses where the types are treated as generic top-level items
+ca_objects_breakout_find_by_type_in_menu = 0
+ca_object_lots_breakout_find_by_type_in_menu = 0
+ca_object_representations_breakout_find_by_type_in_menu = 0
+ca_entities_breakout_find_by_type_in_menu = 0
+ca_places_breakout_find_by_type_in_menu = 0
+ca_occurrences_breakout_find_by_type_in_menu = 1
+ca_collections_breakout_find_by_type_in_menu = 0
+ca_loans_breakout_find_by_type_in_menu = 0
+ca_movements_breakout_find_by_type_in_menu = 0
+
+# -------------------------
+# "Rich text" (aka. wysiwyg) editor options
+#
+# You can read more about available text editor options here: http://docs.cksource.com/CKEditor_3.x/Developers_Guide/Toolbar
+# -------------------------
+
+# Defines options available in the toolbar
+wysiwyg_editor_toolbar = {
+	formatting = [Bold, Italic, Underline, Strike, -, Subscript, Superscript, Font, FontSize, TextColor],
+	lists = [-, NumberedList, BulletedList, Outdent, Indent, Blockquote],
+	links = [Link, Unlink, Anchor],
+	misc = [SelectAll, Undo, Redo, -, Source, Maximize]
+}
+
+# -------------------------
+# Theme configuration
+# -------------------------
+# To display your logo in the menu bar, upload it to the graphics/logos/ folder in the Default theme
+# directory and enter the filename below.  For the best results, your logo must not exceed
+# 45 pixels in height.  To change the menu color, enter the six digit HTML color code below
+# and omit the leading '#' sign.
+# 
+header_img = menu_logo.png
+menu_color = ffffff
+footer_color = ffffff
+login_logo = ca_logo.png
+
+#
+# If set to a controller in the "find" module, will use that for quicksearch rather
+# than the regular "Quicksearch" controller. This is useful for having the Quicksearch
+# operate on a single table
+#
+#one_table_search =
+
+# -------------------------
+# Search Result Reporting configuration
+# -------------------------
+# To display your logo at the top of a PDF report, upload it to the graphics/logos/ folder in all themes
+# directory and enter the filename below.  To change the header color (report_color) and header text color (report_text_color), enter the six digit HTML color code below
+# and omit the leading '#' sign.
+#
+report_header_enabled = 1
+report_img = ca_wide.png
+report_color = FFFFFF
+report_text_color = 000000
+
+#
+# The following options control what additional information can be printed on your PDF reports. Enter a non-zero
+# value to include the following information.
+#
+report_show_timestamp = 1
+report_show_number_results = 1
+report_representation_version = preview
+report_show_search_term = 1
+
+# -------------------------
+# Record PDF Summary configuration
+# -------------------------
+# To display your logo at the top of a PDF report, upload it to the graphics/logos/ folder in all themes
+# directory and enter the filename below.  To change the header color (summary_color) and header text color (summary_text_color), enter the six digit HTML color code below
+# and omit the leading '#' sign.
+#
+summary_header_enabled = 1
+summary_footer_enabled = 1
+summary_img = ca_wide.png
+summary_color = FFFFFF
+summary_text_color = 000000
+summary_footer_color = FFFFFF
+summary_footer_text_color = 000000
+
+#
+# The following options control what additional information can be printed on your PDF summary. Enter a non-zero
+# value to include the following information.
+#
+
+summary_show_identifier = 1
+summary_show_timestamp = 1
+
+# -------------------------
+# Client services
+# -------------------------
+enable_client_services = 0
+
+enable_client_services_sales = 0
+enable_client_services_library = 0
+
+# -------------------------
+# SMS notifications
+# -------------------------
+enable_sms_notifications = 0
+
+# Each SMS plugin supports a specific gateway. For now only SendHub.com is supported.
+sms_plugin = SendHub
+sms_user = MY_SENDHUB_USERNAME
+sms_api_key = MY_SENDHUB_API_KEY
+
+# -------------------------
+# Currency settings
+# -------------------------
+# By default currency values using the "$" symbol are considered to be in US dollars.
+# You can change that here to another currency using its standard 3-letter code.
+# Ex. CDN = Canadian dollars
+default_dollar_currency = USD
+
+# -------------------------
+# User generated content
+# -------------------------
+enable_user_generated_content = 1
+
+# -------------------------
+# Bundle-level access control
+# -------------------------
+default_bundle_access_level = __CA_BUNDLE_ACCESS_EDIT__
+
+# -------------------------
+# Type-level access control
+# -------------------------
+perform_type_access_checking = 0
+default_type_access_level = __CA_BUNDLE_ACCESS_EDIT__
+
+# -------------------------
+# Item-level access control
+# -------------------------
+perform_item_level_access_checking = 0
+default_item_access_level = __CA_ACL_EDIT_DELETE_ACCESS__
+
+# You can control item-level access control support 
+# for each type of item using these directives
+ca_objects_dont_do_item_level_access_control = 0
+ca_object_lots_dont_do_item_level_access_control = 0
+ca_entities_dont_do_item_level_access_control = 0
+ca_places_dont_do_item_level_access_control = 0
+ca_occurrences_dont_do_item_level_access_control = 0
+ca_collections_dont_do_item_level_access_control = 0
+ca_lists_dont_do_item_level_access_control = 0
+ca_list_items_dont_do_item_level_access_control = 0
+ca_loans_dont_do_item_level_access_control = 0
+ca_movements_dont_do_item_level_access_control = 0
+ca_object_representations_dont_do_item_level_access_control = 0
+ca_representation_annotations_dont_do_item_level_access_control = 0
+ca_storage_locations_dont_do_item_level_access_control = 0
+ca_tours_dont_do_item_level_access_control = 0
+ca_tour_stops_dont_do_item_level_access_control = 0
+
+# Defaults for collection-to-object ACL inheritance settings
+#	Set to 1 to make default to inherit; 0 for default to be no inheritance
+ca_collections_acl_inherit_from_parent_default = 0
+ca_objects_acl_inherit_from_ca_collections_default = 0
+ca_objects_acl_inherit_from_parent_default = 0
+
+
+# ----
+# Batch media processing
+# ----
+
+# Root directory of staging area for media import – any media in this
+# directory will appear in media importer file listings
+batch_media_import_root_directory = <ca_base_dir>/import
+
+mediaFilenameToObjectIdnoRegexes = {
+	filename_with_page_number = {
+		displayName = _(Filename with page number - page number stripped),
+		regexes = { "(.*?)\.[A-Za-z0-9\-]+\.[A-Za-z]+$" }
+	},
+	filename_with_page_number_included = {
+		displayName = _(Filename with page number - page number included),
+		regexes = { "(.*?\.[A-Za-z0-9\-]+)\.[A-Za-z]+$", "(.*?)\.[A-Za-z0-9]+$" }
+	},
+	filename_without_extension = {
+		displayName = _(Filename without extension),
+		regexes = { "(.*?)\.[A-Za-z0-9]+$" }
+	},
+	filename_exactly = {
+		displayName = _(Filename exactly),
+		regexes = { "^(.*)$" }
+	}
+}
+
+# List of fields to attempt to match filename-extracted data on
+# Matching will be performed on fields in order, with the first matching
+# record used for import.
+#
+# You can specify intrinsic field names (Eg. idno), metadata element codes or
+# "preferred_labels" and "nonpreferred_labels" to match on labels
+batch_media_import_match_on = [idno]
+
+# ----
+# Batch metadata import
+# ----
+batch_metadata_import_log_directory = <ca_base_dir>/app/log

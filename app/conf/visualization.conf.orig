@@ -1,0 +1,85 @@
+#
+# Visualization options
+#
+
+ca_objects = {
+	basic_map = {
+		name = _("Map"),
+		plugin = Map,
+		sources = {
+			georef = {
+				data = ca_objects.georeference,
+				display = {
+					title_template = <p><l>^ca_objects.preferred_labels.name</l>  (^ca_objects.idno)</p>,
+					description_template = <div style='float:right; margin-left: 8px;'><l>^ca_object_representations.media.preview</l></div>^ca_objects.description
+				}
+			}
+		},
+		options = {
+			width = 100%,
+			height = 100%
+		}
+	},
+	basic_timeline = {
+		name = _("Timeline"),
+		plugin = TimelineJS,
+		sources = {
+			creation = {
+				data = ca_objects.creation_date,
+				display = {
+					title_template = ^ca_objects.preferred_labels.name (^ca_objects.idno),
+					description_template = <p>^ca_objects.description</p>,
+					credit_template = <unit restrictToRelationshipTypes="creator"><em>^ca_entities.preferred_labels.displayname</em></unit>,
+					caption_template = <em>^ca_objects.caption</em>,
+					image = ^ca_object_representations.media.large,
+					icon = ^ca_object_representations.media.icon
+				}
+			}
+		},
+		options = {
+			width = 100%,
+			height = 100%
+		}
+	}
+}
+
+ca_entities = {
+	basic_timeline = {
+		name = _("Timeline"),
+		plugin = TimelineJS,
+		sources = {
+			lifespan = {
+				data = ca_entities.lifespan,
+				display = {
+					title_template = ^ca_entities.preferred_labels.name,
+					description_template = ^ca_entities.biography
+				}
+			}
+		},
+		options = {
+			width = 100%,
+			height = 100%
+		}
+	}
+}
+
+ca_occurrences = {
+	basic_timeline = {
+		name = _("Timeline"),
+		plugin = TimelineJS,
+		restrictToTypes = [event],
+		sources = {
+			events = {
+				data = ca_occurrences.event_dates,
+				display = {
+					title_template = ^ca_occurrences.preferred_labels.name,
+					description_template = ^ca_occurrences.description
+				}
+			}
+		},
+		options = {
+			width = 100%,
+			height = 100%
+		}
+	}
+}

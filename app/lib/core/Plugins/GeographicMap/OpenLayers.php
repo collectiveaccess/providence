@@ -73,8 +73,16 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 	public function render($ps_format, $pa_options=null) {
 		$o_config = Configuration::load();
 		
-		list($vs_width, $vs_height) = $this->getDimensions();
-		list($vn_width, $vn_height) = $this->getDimensions(array('returnPixelValues' => true));
+		list($vn_width, $vn_height) = $this->getDimensions();
+		
+		if (!preg_match('!^[\d]+%$!', $vn_width)) {
+			$vn_width = intval($vn_width)."px";
+			if ($vn_width < 1) { $vn_width = 690; }
+		}
+		if (!preg_match('!^[\d]+%$!', $vn_height)) {
+			$vn_height = intval($vn_height)."px";
+			if ($vn_height < 1) { $vn_height = 300; }
+		}
 		
 		$va_options = caGetOptions($pa_options, array());
 		
@@ -143,7 +151,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		
 		
 				$va_layers[] = "new {$vs_base_layer}";
-				$vs_buf = "<div style='width:{$vs_width}; height:{$vs_height}' id='{$vs_id}' ".((isset($pa_options['classname']) && $pa_options['classname']) ? "class='".$pa_options['classname']."'" : "")."> </div>\n";
+				$vs_buf = "<div style='width:{$vn_width}; height:{$vn_height}' id='{$vs_id}' ".((isset($pa_options['classname']) && $pa_options['classname']) ? "class='".$pa_options['classname']."'" : "")."> </div>\n";
 				$vs_buf .= "
 <script type='text/javascript'>;
 	jQuery(document).ready(function() {
@@ -268,7 +276,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 				selectedFeature_{$vs_id} = feature;
 				
 				if (!popup_{$vs_id}) {
-					popup_{$vs_id} = new OpenLayers.Popup.Anchored('infoBubble', 
+					popup_{$vs_id} = new OpenLayers.Popup.AnchoredBubble('infoBubble', 
 						 feature.geometry.getBounds().getCenterLonLat(),
 						 null,
 						 feature.data.label + feature.data.content,
@@ -406,7 +414,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		$vs_layer_switcher_control = caGetOption('layerSwitcherControl', $pa_element_info['settings'], null) ? "map_{$vs_id}.addControl(new OpenLayers.Control.LayerSwitcher());" : "";
 		
 		
-		$vs_element = '<div id="{fieldNamePrefix}mapholder_'.$vs_id.'_{n}" class="mapholder" style="width:'.$vn_width.'px; height:'.($vn_height + 40).'px; float: left; margin:-18px 0 0 0;">';
+		$vs_element = '<div id="{fieldNamePrefix}mapholder_'.$vs_id.'_{n}" class="mapholder" style="width:'.$vn_width.'spx; height:'.($vn_height + 40).'px; float: left; margin:-18px 0 0 0;">';
 
 		$vs_element .= 		'<div class="olMapSearchControls" id="{fieldNamePrefix}Controls_{n}">';
 		if ($po_request) {
@@ -603,7 +611,11 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 					var pt = new OpenLayers.LonLat(loc.lng(), loc.lat()).transform(new OpenLayers.Projection('EPSG:4326'),map_{$vs_id}.getProjectionObject());
 					map_{$vs_id}.panTo(pt);
 					map_{$vs_id}.zoomTo((results[0]['geometry']['location_type'] == 'APPROXIMATE') ? 10 : 14);
-					points_{$vs_id}.addFeatures([new OpenLayers.Feature.Vector(new OpenLayers.Geometry.Point(loc.lng(), loc.lat()).transform(new OpenLayers.Projection('EPSG:4326'),map_{$vs_id}.getProjectionObject()))]);
+					if(confirm('Would you like to remove existing points and add a new point at this location?')){
+						points_{$vs_id}.removeAllFeatures();
+						points_{$vs_id}.addFeatures([new OpenLayers.Feature.Vector(new OpenLayers.Geometry.Point(loc.lng(), loc.lat()).transform(new OpenLayers.Projection('EPSG:4326'),map_{$vs_id}.getProjectionObject()))]);	
+					}
+					
 				}
 			});
 			return false;

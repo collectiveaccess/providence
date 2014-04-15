@@ -1,0 +1,82 @@
+#
+# Date/time output configuration
+#
+
+# Define text expressions you wish to have the date/time parser 
+# convert to dates. The text expression on the left side of the equal sign 
+# must be *all lowercase* ; the date/time expression on the right side must
+# be valid and parsable
+#
+expressions = {
+	us civil war = 1861 to 1865,
+	world war 2  = 1939 to 1945,
+	nickel empire = 1920s,
+}
+
+#
+# Output options for date/times
+#
+
+# Format to use for dates; valid values are (text|delimited|iso8601|original)	[default is text]
+# "original" is the date as entered by the user; other values will normalize all date/time input
+# to the selected standard format
+dateFormat = text
+
+#
+# Do we output the time portion of date time expressions?
+timeOmit = 0
+
+# If set to a non-zero value commas are included after the day in a US-style (month first) text date
+showCommaAfterDayForTextDates = 0
+
+# Format to use for times; valid values are (12|24) [default is 24]
+timeFormat = 24
+
+# If true dates ranging over uniform quarter centuries (eg. 1900 - 1925, 1925 - 1950, 1950 - 1975, 1975-2000) 
+# will be output in the format "20 Q1" (eg. 1st quarter of 20th century... 1900 - 1925)
+useQuarterCenturySyntaxForDisplay = 0
+
+# If true century only dates (eg "18th century") will be output in roman numerals like "XVIIIth century"
+useRomanNumeralsForCenturies = 0
+
+# Delimiter in time display; must be valid for the current language or default will be used;  [default is first delimiter in language config file]
+#	timeDelimiter = :
+
+# Text to put between times in a range; must be valid for the current language or default will be used; [default is first in lang. config]
+#	timeRangeConjunction = -
+
+# Text to place before date/times in a range; must be valid for the current language or default will be used; [default is none]
+#	rangePreConjunction = 
+
+# Text to place between date/times in a range; must be valid for the current language or default will be used; [default is first in lang. config]
+#	rangeConjunction = to
+
+# Text to place between times in a range; must be valid for the current language or default will be used; [default is first in lang. config]
+#	dateTimeConjunction = -
+# dateTimeConjunction = to
+
+# If set to a non-zero value the "AD" era will be show for all dates; default is to only show it in ranges that span eraa
+#	showADEra  = 0
+
+# Text to use to indicate that a precision (eg. +/- 5 days, +/- 3 years) for the date is set; must be valid for the current language or default will be used; [default is first in lang. config]
+# This is not the same as "circa" (uncertain) dates. Circa conveys the general notion that a date is not precisely known. A precision expression
+# using the uncertaintyIndicator explicitly defines the uncertainty in a date numerically.
+#	uncertaintyIndicator = ~
+
+# If set to a non-zero value then empty dates will be displayed using the "undated" text for the current language. If not set then an empty string will be returned for empty dates.
+showUndated = 0
+
+# Text to place before date/times in a range; must be valid for the current language or default will be used; [default is none]
+#	dateDelimiter	(string) [default is first delimiter in language config file]
+
+# Text to place before date/times to indicate it is a "circa" (uncertain) date; must be valid for the current language or default will be used; [default is first indicator in language config file]
+#	circaIndicator = circa
+
+# Text to place before a date/time to indicate that it is no later than the specified date; must be valid for the current language or default will be used; [default is first indicator in language config file]
+#	beforeQualifier	= before
+
+# Text to place before a date/time to indicate that it is no earlier than the specified date; must be valid for the current language or default will be used; [default is first indicator in language config file]
+#	afterQualifier = after
+
+# Text that represents the current date; must be valid for the current language or default will be used; [default is first indicator in language config file]
+#	presentDate = present

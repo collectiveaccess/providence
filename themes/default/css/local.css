@@ -1,0 +1,71 @@
+.bundleLabel select,
+.bundleLabel option {
+	max-width: 300px;
+}
+.bundleLabel textarea,
+.bundleLabel input[type="text"] {
+	max-width: 94.5%;
+	display: inline-block;
+}
+.bundleLabel {
+	float: left;
+	min-width: 45%;
+	padding: 1%;
+	max-width: 94.5%;
+	margin: 1%;
+	/*overflow: auto;*/
+	border-radius: 1em;
+}
+
+.bundleLabel.fullWidth {
+	width: 94.5%;
+}
+
+.bundleLabel .formLabelText {
+	width: 80%;
+	white-space: nowrap;
+	overflow: visible;
+}
+
+.bundleLabel>span {
+	display: inline-block;
+	clear: none;
+}
+
+.required {
+	color: #bb0000;
+	font-size: 10px;
+	font-weight: normal;
+	float: left;
+}
+
+#intrinsic_idno input[type="text"],
+#intrinsic_idno select,
+#intrinsic_idno .formLabel
+ {
+	font-size: 18px;
+	font-family: monospace;
+	max-width: 75%;
+}
+/**Don't overflow the container */
+.caRelatedItem>div,
+.caItemList .listRel,
+.olMap,
+.cke,
+div.hierarchyBrowseTab {
+	max-width: 95%;
+}
+/*So that the user interface editor doesn't appear cramped*/
+div.bundleDisplayEditorPlacementList {
+	width: 100%;
+}
+div.bundleDisplayEditorPlacementList div.bundleDisplayEditorPlacement {
+	width: 90%;
+}
+/* And the source and target columns are equal width */
+.bundleDisplayPlacementEditor td {
+	width: 50%;
+}
+.cke_reset.cke_maximized {
+	z-index: 30001 !important;
+}

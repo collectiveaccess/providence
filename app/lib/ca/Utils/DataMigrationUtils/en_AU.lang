@@ -1,0 +1,16 @@
+#
+# Locale data for data migration tools
+#
+
+# Entity titles
+titles = [
+	Mr, Mrs, Ms, Miss, 
+	Professor, Doctor, Dr, Officer, Ofc, 
+	Sister, Monsieur, Congressman, Senator, President, Vice President,
+	Private, PFC, Pvt, CP, CPL, Corporal, Sergeant, Sgt, SSgt, Sapper, Lt, Lieutenant, Colonel,
+	Captain, Cpt, Major, LCdr, Cmdr, Flying Officer, General, Gen, LGen, Lt Gen, Lt General, 
+	F/O, F/Lt, Pilot, Flight Sergeant, LAC, WAAC, Cftsmn, Able Seaman, Trooper, WOI, Gunner,
+	RSM, RQMS, Dispatcher, Lance Corporal
+]
+
+corporation_suffixes = [inc, inc., llc, incorporated]
