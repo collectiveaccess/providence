@@ -179,16 +179,16 @@ class BaseXMLDataReader extends BaseDataReader {
 			for($vn_i=0; $vn_i < $vn_l; $vn_i++) {
 				$o_node = $o_attributes->item($vn_i);
 				$vs_key = $ps_base_key.'/@'.$o_node->nodeName;
- 				$this->opa_row_buf[$vs_key] = (string)$o_node->nodeValue;
+ 				$this->opa_row_buf[$vs_key][] = (string)$o_node->nodeValue;
  				if ($this->opb_tag_names_as_case_insensitive && (strtolower($vs_key) != $vs_key)) { 
- 					$this->opa_row_buf[strtolower($vs_key)] = (string)$o_node->nodeValue;
+ 					$this->opa_row_buf[strtolower($vs_key)][] = (string)$o_node->nodeValue;
  				}
  				
  				if ($this->opb_use_row_tag_attributes_as_row_level_values) {
  					$vs_key = $ps_base_key.'/'.$o_node->nodeName;
-					$this->opa_row_buf[$vs_key] = (string)$o_node->nodeValue;
+					$this->opa_row_buf[$vs_key][] = (string)$o_node->nodeValue;
 					if ($this->opb_tag_names_as_case_insensitive && (strtolower($vs_key) != $vs_key)) { 
-						$this->opa_row_buf[strtolower($vs_key)] = (string)$o_node->nodeValue;
+						$this->opa_row_buf[strtolower($vs_key)][] = (string)$o_node->nodeValue;
 					}
  				}
  			}
@@ -250,7 +250,9 @@ class BaseXMLDataReader extends BaseDataReader {
 		
 		// Recondition the spec for Xpath
 		$ps_spec = $this->_convertXPathExpression($ps_spec, array('useRootTag' => $this->ops_base_root_tag));
-		$o_node_list = $this->opo_handle_xpath->query($ps_spec);
+		if (!($o_node_list = $this->opo_handle_xpath->query($ps_spec))) {
+			return null;
+		}
 		
 		$va_values = array();
 		foreach($o_node_list as $o_node) {

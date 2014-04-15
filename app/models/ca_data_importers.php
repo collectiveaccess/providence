@@ -685,7 +685,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	public function getEnivronment(){
+	public function getEnvironment(){
 		$va_rules = $this->get('rules');
 		if (!is_array($va_rules)) { return array(); }
 		if (!is_array($va_rules['environment'])) { return array(); }
@@ -1380,18 +1380,21 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		// Set up environment
 		//
 		$va_environment = caGetOption('environment', $pa_options, array(), array('castTo' => 'array'));
-		if (is_array($va_environment_config = $t_mapping->getEnivronment())) {
+		if (is_array($va_environment_config = $t_mapping->getEnvironment())) {
 			foreach($va_environment_config as $vn_i => $va_environment_item) {
 				$va_env_tmp = explode("|", $va_environment_item['value']);
 				
+				if (!($o_env_reader = $t_mapping->getDataReader($ps_source, $ps_format))) { break; }
+				if(!$o_env_reader->read($ps_source, array('basePath' => ''))) { break; }
+				$o_env_reader->nextRow();
 				switch(sizeof($va_env_tmp)) {
 					case 1:
-						$vs_env_value = $o_reader->get(0, array('returnAsArray' => false));
+						$vs_env_value = $o_env_reader->get($va_environment_item['value'], array('returnAsArray' => false));
 						break;
 					case 2:
 						$vn_seek = (int)$va_env_tmp[0];
-						$o_reader->seek(($vn_seek > 0) ? $vn_seek - 1 : $vn_seek); $o_reader->nextRow();
-						$vs_env_value = $o_reader->get($va_env_tmp[1], array('returnAsArray' => false));
+						$o_reader->seek(($vn_seek > 0) ? $vn_seek - 1 : $vn_seek); $o_env_reader->nextRow();
+						$vs_env_value = $o_env_reader->get($va_env_tmp[1], array('returnAsArray' => false));
 						$o_reader->seek(0);
 						break;
 					default:
@@ -1654,6 +1657,28 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						$va_vals = ca_data_importers::getValueFromSource($va_item, $o_reader, array('returnAsArray' => true, 'environment' => $va_environment));
 					}
 					
+					// Do value conversions
+					foreach($va_vals as $vn_i => $vm_val) {
+						if (isset($va_item['settings']['formatWithTemplate']) && strlen($va_item['settings']['formatWithTemplate'])) {
+							$vm_val = caProcessTemplate($va_item['settings']['formatWithTemplate'], array_replace($va_row, array((string)$va_item['source'] => ca_data_importers::replaceValue($vm_val, $va_item))));
+							$va_row[$va_item['source']] = $vm_val;	// copy formatted data into row so refineries can pick it up
+						}
+						
+						if (isset($va_item['settings']['applyRegularExpressions']) && is_array($va_item['settings']['applyRegularExpressions'])) {
+							if(is_array($va_item['settings']['applyRegularExpressions'])) {
+								foreach($va_item['settings']['applyRegularExpressions'] as $vn_regex_index => $va_regex) {
+									if (!strlen($va_regex['match'])) { continue; }
+									$vm_val = preg_replace("!".str_replace("!", "\\!", $va_regex['match'])."!", $va_regex['replaceWith'], $vm_val);
+								}
+							}
+							if (is_array($va_row[$va_item['source']])) {
+								$va_vals[$vn_i] = $va_row[$va_item['source']][$vn_i] = $va_row[mb_strtolower($va_item['source'])][$vn_i] = $vm_val;
+							} else {
+								$va_vals[$vn_i] = $va_row[$va_item['source']] = $va_row[mb_strtolower($va_item['source'])] = $vm_val;
+							}
+						}
+					}
+					
 					$vn_c = -1;
 					foreach($va_vals as $vn_i => $vm_val) {
 						$vn_c++;
@@ -1711,7 +1736,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							
 						}
 						if (!is_array($vm_val) && ($vm_val[0] == '^') && preg_match("!^\^[^ ]+$!", $vm_val)) {
-							// Parse placeholder when it's at the beginning of the value
+							// Parse placeholder
 							if (!is_null($vm_parsed_val = BaseRefinery::parsePlaceholder($vm_val, $va_row, $va_item, $vs_delimiter, $vn_c, array('reader' => $o_reader, 'returnAsString' => true)))) {
 								$vm_val = $vm_parsed_val;
 							}
@@ -1732,22 +1757,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						if (isset($va_item['settings']['suffix']) && strlen($va_item['settings']['suffix'])) {
 							$vm_val .= $va_item['settings']['suffix'];
 						}
-					
-						if (isset($va_item['settings']['formatWithTemplate']) && strlen($va_item['settings']['formatWithTemplate'])) {
-							$vm_val = caProcessTemplate($va_item['settings']['formatWithTemplate'], array_replace($va_row, array((string)$va_item['source'] => ca_data_importers::replaceValue($vm_val, $va_item))));
-							$va_row[$va_item['source']] = $vm_val;	// copy formatted data into row so refineries can pick it up
-						}
-						
-						if (isset($va_item['settings']['applyRegularExpressions']) && is_array($va_item['settings']['applyRegularExpressions'])) {
-							if(is_array($va_item['settings']['applyRegularExpressions'])) {
-								foreach($va_item['settings']['applyRegularExpressions'] as $vn_i => $va_regex) {
-									if (!strlen($va_regex['match'])) { continue; }
-									$vm_val = preg_replace("!".str_replace("!", "\\!", $va_regex['match'])."!", $va_regex['replaceWith'], $vm_val);
-								}
-							}
-							$va_row[$va_item['source']] = $va_row[mb_strtolower($va_item['source'])] = $vm_val;
-						}
-					
 					
 						// Get mapping error policy
 						$vb_item_error_policy_is_default = false;
@@ -1852,7 +1861,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					} // end foreach($va_vals as $vm_val)
 				}
 				
-				foreach($va_group_buf as $vn_i => $va_group_data) {	
+				foreach($va_group_buf as $vn_group_index => $va_group_data) {	
 					$va_ptr =& $va_content_tree;
 					foreach($va_group_tmp as $vs_tmp) {
 						if(!is_array($va_ptr[$vs_tmp])) { $va_ptr[$vs_tmp] = array(); }
@@ -2119,6 +2128,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							unset($va_data_for_rel_table['_relationship_type']);
 							unset($va_data_for_rel_table['_type']);
 							unset($va_data_for_rel_table['_parent_id']);
+							unset($va_data_for_rel_table['_errorPolicy']);
 							
 							$va_data_for_rel_table = array_merge($va_data_for_rel_table, ca_data_importers::_extractIntrinsicValues($va_data_for_rel_table, $vs_table_name));
 			
@@ -2258,19 +2268,18 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									break;
 								case 'ca_object_representations':
 									if (($vs_subject_table_name == 'ca_objects') && $va_element_data['media']['media']) {
-										$va_attributes = $va_element_data;
-										unset($va_attributes['media']);
+										unset($va_data_for_rel_table['media']);
 										
-										foreach($va_attributes as $vs_key => $vm_val) {
+										foreach($va_data_for_rel_table as $vs_key => $vm_val) {
 											// Attributes, including intrinsics are in two-level format, eg. idno is $va_attributes['idno']['idno'] 
 											// but addRepresentations() expects intrinsics to be single level (eg. $va_attributes['idno']) so
 											// we do some rewriting here
 											if (is_array($vm_val) && isset($vm_val[$vs_key])) { 
-												$va_attributes[$vs_key] = $vm_val[$vs_key];
+												$va_data_for_rel_table[$vs_key] = $vm_val[$vs_key];
 											}
 										}
 										
-										if (!($t_subject->addRepresentation($va_element_data['media']['media'], isset($va_element_data['_type']) ? $va_element_data['_type'] : caGetDefaultItemID('object_representation_types'), $vn_locale_id, 0, 0, true, $va_attributes, array('matchOn' => array('idno'))))) {
+										if (!($t_subject->addRepresentation($va_element_data['media']['media'], isset($va_element_data['_type']) ? $va_element_data['_type'] : caGetDefaultItemID('object_representation_types'), $vn_locale_id, 0, 0, true, $va_data_for_rel_table, array('matchOn' => array('idno'))))) {
 											$vs_error = join("; ", $t_subject->getErrors());
 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 											if ($vs_item_error_policy == 'stop') {
@@ -2419,7 +2428,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	public function getDataReader($ps_source, $ps_format=null) {
 		//$o_reader_manager = new DataReaderManager();
 		
-		return DataReaderManager::getDataReaderForFormat($ps_format);
+		return DataReaderManager::getDataReaderForFormat($ps_format, array('noCache' => true));
 		
 		if (!$ps_format) {
 			// TODO: try to figure out format from source

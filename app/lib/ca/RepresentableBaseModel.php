@@ -462,6 +462,7 @@
 				if (is_array($pa_values)) {
 					if (isset($pa_values['idno'])) {
 						$t_rep->set('idno', $pa_values['idno']);
+						unset($pa_values['idno']);
 					}
 					foreach($pa_values as $vs_element => $va_value) { 					
 						if (is_array($va_value)) {
