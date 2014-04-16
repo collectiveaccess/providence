@@ -1,11 +1,17 @@
 /*
-	Date: 5 March 2014
+	Date: 15 April 2014
 	Migration: 100
-	Description: add is_current fields for location tracking
+	Description: add fields location and deaccession tracking
 */
 
-ALTER TABLE ca_movements_x_objects ADD COLUMN is_current tinyint unsigned not null default 0;
-ALTER TABLE ca_objects_x_storage_locations ADD COLUMN is_current tinyint unsigned not null default 0;
+/* Add home location field for objects */
+ALTER TABLE ca_objects ADD COLUMN home_location_id int unsigned null references ca_storage_locations(location_id);
+
+/* Add deaccession fields for objects */
+ALTER TABLE ca_objects ADD COLUMN accession_sdatetime decimal(30,20) null;
+ALTER TABLE ca_objects ADD COLUMN accession_edatetime decimal(30,20) null;
+ALTER TABLE ca_objects ADD COLUMN deaccession_sdatetime decimal(30,20) null;
+ALTER TABLE ca_objects ADD COLUMN deaccession_edatetime decimal(30,20) null;
 
 /* Always add the update to ca_schema_updates at the end of the file */
 INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (100, unix_timestamp());

@@ -1544,6 +1544,11 @@ create table ca_objects
    rank                           int unsigned                   not null default 0,
    acl_inherit_from_ca_collections tinyint unsigned              not null default 0,
    acl_inherit_from_parent         tinyint unsigned              not null default 0,
+   home_location_id               int unsigned,
+   accession_sdatetime            decimal(30,20),
+   accession_edatetime            decimal(30,20),
+   deaccession_sdatetime          decimal(30,20),
+   deaccession_edatetime          decimal(30,20),
    
    primary key (object_id),
    constraint fk_ca_objects_source_id foreign key (source_id)
@@ -1565,7 +1570,10 @@ create table ca_objects
       references ca_object_lots (lot_id) on delete restrict on update restrict,
       
    constraint fk_ca_objects_parent_id foreign key (parent_id)
-      references ca_objects (object_id) on delete restrict on update restrict
+      references ca_objects (object_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_objects_home_location_id foreign key (location_id)
+      references ca_storage_locations (location_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_parent_id on ca_objects(parent_id);
@@ -1586,6 +1594,11 @@ create index i_source_id on ca_objects(source_id);
 create index i_item_status_id on ca_objects(item_status_id);
 create index i_acl_inherit_from_parent on ca_objects(acl_inherit_from_parent);
 create index i_acl_inherit_from_ca_collections on ca_objects(acl_inherit_from_ca_collections);
+create index i_home_location_id on ca_objects(home_location_id);
+create index i_accession_sdatetime on ca_objects(accession_sdatetime);
+create index i_accession_edatetime on ca_objects(accession_edatetime);
+create index i_deaccession_sdatetime on ca_objects(deaccession_sdatetime);
+create index i_deaccession_edatetime on ca_objects(deaccession_edatetime);
 
 
 /*==========================================================================*/
@@ -3083,7 +3096,6 @@ create table ca_objects_x_storage_locations (
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
    rank                           int unsigned                   not null default 0,
-   is_current                     tinyint                        not null default 0,
    primary key (relation_id),
    constraint fk_ca_objects_x_storage_locations_location_id foreign key (location_id)
       references ca_storage_locations (location_id) on delete restrict on update restrict,
@@ -3751,7 +3763,6 @@ create table ca_movements_x_objects (
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
    rank                           int unsigned                   not null default 0,
-   is_current                     tinyint                        not null default 0,
    primary key (relation_id),
    
    constraint fk_ca_movements_x_objects_movement_id foreign key (movement_id)
