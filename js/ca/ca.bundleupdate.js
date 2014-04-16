@@ -44,12 +44,14 @@ var caBundleUpdateManager = null;
 		}, options);
 		
 		// --------------------------------------------------------------------------------
-		// Define methods
+		// Methods
 		// --------------------------------------------------------------------------------
 		that.registerBundle = function(id, bundle, placement_id) {
-			that.byBundle[bundle] = that.byID[id] = that.byPlacementID[placement_id] = {
+			that.byID[id] = that.byPlacementID[placement_id] = {
 				id: id, bundle: bundle, placement_id: placement_id
 			};
+			if(!that.byBundle[bundle]) { that.byBundle[bundle] = []; }
+			that.byBundle[bundle].push(that.byID[id]);
 		}
 		
 		// --------------------------------------------------------------------------------
@@ -65,10 +67,11 @@ var caBundleUpdateManager = null;
 		that.reloadBundle = function(bundle) {
 			var b = that.byBundle[bundle];
 			if (b) {
-				var loadURL = that.url + "/" + that.key + "/" + that.id + "/bundle/" + b.bundle + "/placement_id/" + b.placement_id;
-				jQuery("#" + b.id).load(loadURL);
+				jQuery.each(b, function(k, v) {
+					var loadURL = that.url + "/" + that.key + "/" + that.id + "/bundle/" + v.bundle + "/placement_id/" + v.placement_id;
+					jQuery("#" + v.id).load(loadURL);
+				});
 			}
-			//console.log("reload", bundle);
 		}
 		
 		// --------------------------------------------------------------------------------
