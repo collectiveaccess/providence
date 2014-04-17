@@ -6533,11 +6533,11 @@ class BaseModel extends BaseObject {
 	 * @access public
 	 * @param int $pn_id optional, id of record to be treated as root
 	 * @param array $pa_options
-	 *		returnDeleted = return deleted records in list (def. false)
+	 *		returnDeleted = return deleted records in list [default: false]
 	 *		additionalTableToJoin = name of table to join to hierarchical table (and return fields from); only fields related many-to-one are currently supported
-	 *		idsOnly = return simple array of primary key values for child records rather than full data array
+	 *		idsOnly = return simple array of primary key values for child records rather than full result
 	 *
-	 * @return DbResult
+	 * @return Mixed DbResult or array
 	 */
 	public function &getHierarchy($pn_id=null, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
