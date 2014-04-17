@@ -111,7 +111,6 @@
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo caRelatedItem">
 <?php
-	$va_settings['useHierarchicalBrowser'] = true;
 	if (!(bool)$va_settings['useHierarchicalBrowser']) {
 ?>
 			<table class="caListItem">
@@ -119,6 +118,9 @@
 					<td>
 						<input type="text" size="60" name="<?php print $vs_id_prefix; ?>_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
 						<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
+					</td>
+					<td>
+						<a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
 					</td>
 				</tr>
 			</table>
