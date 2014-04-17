@@ -8,5 +8,10 @@ setup.php
 .DS_Store
 .settings
 .project
+.idea/
+*.un~
+*.sublime-*
+*.swp
 /import/*
 app/lib/core/Parsers/htmlpurifier/standalone/HTMLPurifier/DefinitionCache/Serializer/*
+app/log/log*.txt
