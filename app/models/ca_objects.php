@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -417,6 +417,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		
 		$this->BUNDLES['ca_commerce_order_history'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Order history'));
 		$this->BUNDLES['ca_objects_components_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Components'));
+		$this->BUNDLES['ca_objects_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Object location'));
 	}
 	# ------------------------------------------------------
 	/**
@@ -783,6 +784,259 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		return $o_view->render('ca_commerce_order_history.php');
 	}
 	# ------------------------------------------------------
+ 	# Object location tracking
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * Returns HTML form bundle for location tracking
+	 *
+	 * @param HTTPRequest $po_request The current request
+	 * @param string $ps_form_name
+	 * @param string $ps_placement_code
+	 * @param array $pa_bundle_settings
+	 * @param array $pa_options Array of options. Options include:
+	 *			None yet.
+	 *
+	 * @return string Rendered HTML bundle
+ 	 */
+ 	public function getObjectLocationHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
+ 		global $g_ui_locale;
+		
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+		
+		if(!is_array($pa_options)) { $pa_options = array(); }
+		
+		$vs_display_template		= caGetOption('display_template', $pa_bundle_settings, _t('No template defined'));
+		$vs_history_template		= caGetOption('history_template', $pa_bundle_settings, $vs_display_template);
+		
+		$o_view->setVar('id_prefix', $ps_form_name);
+		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
+		
+		$o_view->setVar('settings', $pa_bundle_settings);
+		
+		$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
+		$o_view->setVar('t_subject', $this);
+		
+		$o_view->setVar('mode', $vs_mode = caGetOption('location_tracking_mode', $pa_bundle_settings, 'ca_movements'));
+		
+		switch($vs_mode) {
+			case 'ca_storage_locations':
+				$t_last_location = $this->getLastLocation(array());
+				$o_view->setVar('current_location', $t_last_location ? $t_last_location->getWithTemplate($vs_display_template) : null);
+				$o_view->setVar('location_history', $this->getLocationHistory(array('template' => $vs_history_template)));
+				$o_view->setVar('location_relationship_type', is_array($pa_bundle_settings['ca_storage_locations_relationship_type']) ? addslashes($pa_bundle_settings['ca_storage_locations_relationship_type'][0]) : '');
+				$o_view->setVar('location_change_url',  null);
+				break;
+			case 'ca_movements':
+			default:
+				$t_last_movement = $this->getLastMovement(array('dateElement' => caGetOption('ca_movements_date_element', $pa_bundle_settings, null)));
+				$o_view->setVar('current_location', $t_last_movement ? $t_last_movement->getWithTemplate($vs_display_template) : null);
+				$o_view->setVar('location_history', $this->getMovementHistory(array('dateElement' => caGetOption('ca_movements_date_element', $pa_bundle_settings, null), 'template' => $vs_history_template)));
+				
+				$o_view->setVar('location_relationship_type', is_array($pa_bundle_settings['ca_movements_relationship_type']) ? addslashes($pa_bundle_settings['ca_movements_relationship_type'][0]) : '');
+				$o_view->setVar('location_change_url', caNavUrl($po_request, 'editor/movements', 'MovementQuickAdd', 'Form', array('movement_id' => 0)));
+				break;
+		}
+		
+		
+		return $o_view->render('ca_objects_location.php');
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 *
+ 	 */
+ 	public function getLastMovement($pa_options=null) {
+ 		$pn_object = caGetOption('object_id', $pa_options, null);
+ 		if (!($vn_object_id = ($pn_object_id > 0) ? $pn_object_id : $this->getPrimaryKey())) { return null; }
+ 		
+ 		if (!($ps_date_element = caGetOption('dateElement', $pa_options, null))) { return null; }
+ 		if (!($t_element = $this->_getElementInstance($ps_date_element))) { return null; }
+ 		
+ 		$va_current_date = caDateToHistoricTimestamps(_t('now'));
+ 		$vn_current_date = $va_current_date['start'];
+ 		
+ 		$o_db = $this->getDb();
+ 		$qr_res = $o_db->query("
+ 			SELECT cmo.relation_id
+ 			FROM ca_movements_x_objects cmo
+ 			INNER JOIN ca_movements AS m ON m.movement_id = cmo.movement_id
+ 			INNER JOIN ca_attributes AS a ON a.row_id = m.movement_id
+ 			INNER JOIN ca_attribute_values AS av ON av.attribute_id = a.attribute_id
+ 			WHERE
+ 				(cmo.object_id = ?) AND 
+ 				(av.element_id = ?) AND (a.table_num = 137) AND 
+ 				(m.deleted = 0) AND (av.value_decimal1 <= ?)
+ 			ORDER BY
+ 				av.value_decimal1 DESC, cmo.relation_id DESC
+ 			LIMIT 1
+ 		", array($vn_object_id, (int)$t_element->getPrimaryKey(), $vn_current_date));
+ 		if($qr_res->nextRow()) {
+ 			return new ca_movements_x_objects($qr_res->get('relation_id'));
+ 		}
+ 		return false;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 *
+ 	 *
+ 	 * @param array $pa_options Array of options:
+ 	 *		template =
+ 	 *		dateElement = 
+ 	 */
+ 	public function getMovementHistory($pa_options=null) {
+ 		$pn_object = caGetOption('object_id', $pa_options, null);
+ 		if (!($vn_object_id = ($pn_object_id > 0) ? $pn_object_id : $this->getPrimaryKey())) { return null; }
+ 		
+ 		$ps_display_template = caGetOption('template', $pa_options, '^ca_movements_x_objects.relation_id');
+ 		
+ 		if (!($ps_date_element = caGetOption('dateElement', $pa_options, null))) { return null; }
+ 		if (!($t_element = $this->_getElementInstance($ps_date_element))) { return null; }
+ 		
+ 		$va_current_date = caDateToHistoricTimestamps(_t('now'));
+ 		$vn_current_date = $va_current_date['start'];
+ 		
+ 		
+ 		//
+ 		// Directly query the date attribute for performance
+ 		// 
+ 		$o_dm = Datamodel::load();
+ 		$vn_movements_table_num = (int)$o_dm->getTableNum("ca_movements");
+ 		
+ 		$o_db = $this->getDb();
+ 		$qr_res = $o_db->query("
+ 			SELECT cmo.relation_id, cmo.movement_id, cmo.object_id, av.value_decimal1
+ 			FROM ca_movements_x_objects cmo
+ 			INNER JOIN ca_movements AS m ON m.movement_id = cmo.movement_id
+ 			INNER JOIN ca_attributes AS a ON a.row_id = m.movement_id
+ 			INNER JOIN ca_attribute_values AS av ON av.attribute_id = a.attribute_id
+ 			WHERE
+ 				(cmo.object_id = ?) AND 
+ 				(av.element_id = ?) AND (a.table_num = ?) AND 
+ 				(m.deleted = 0)
+ 			ORDER BY
+ 				av.value_decimal1 DESC, cmo.relation_id DESC
+ 		", array($vn_object_id, (int)$t_element->getPrimaryKey(), $vn_movements_table_num));
+ 		
+ 		
+ 		$va_relation_ids = $qr_res->getAllFieldValues('relation_id');
+ 		$va_displays = caProcessTemplateForIDs($ps_display_template, 'ca_movements_x_objects', $va_relation_ids, array('returnAsArray' => true));
+ 
+		$qr_res->seek(0);
+ 		$va_items = array();
+ 		
+ 		$vb_have_seen_the_present = false;
+ 		while($qr_res->nextRow()) {
+ 			$va_row = $qr_res->getRow();
+ 			$vn_relation_id = $va_row['relation_id'];
+ 			
+ 			if ($va_row['value_decimal1'] > $vn_current_date) { 
+ 				$vs_status = 'FUTURE';
+ 			} else {
+ 				$vs_status = $vb_have_seen_the_present ? 'PAST' : 'PRESENT';
+ 				$vb_have_seen_the_present = true;
+ 			}
+ 			
+ 			$va_items[$vn_relation_id] = array(
+ 				'object_id' => $va_row['object_id'],
+ 				'movement_id' => $va_row['movement_id'],
+ 				'display' => array_shift($va_displays),
+ 				'status' => $vs_status
+ 			);
+ 		}
+ 		return $va_items;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 *
+ 	 */
+ 	public function getLastLocation($pa_options=null) {
+ 		$pn_object = caGetOption('object_id', $pa_options, null);
+ 		if (!($vn_object_id = ($pn_object_id > 0) ? $pn_object_id : $this->getPrimaryKey())) { return null; }
+ 		
+ 		$va_current_date = caDateToHistoricTimestamps(_t('now'));
+ 		$vn_current_date = $va_current_date['start'];
+ 		
+ 		$o_db = $this->getDb();
+ 		$qr_res = $o_db->query("
+ 			SELECT csl.relation_id
+ 			FROM ca_objects_x_storage_locations csl
+ 			INNER JOIN ca_storage_locations AS sl ON sl.location_id = csl.location_id
+ 			WHERE
+ 				(csl.object_id = ?) AND 
+ 				(sl.deleted = 0) AND (csl.sdatetime <= ?)
+ 			ORDER BY
+ 				csl.sdatetime DESC, csl.relation_id DESC
+ 			LIMIT 1
+ 		", array($vn_object_id, $vn_current_date));
+ 	
+ 		if($qr_res->nextRow()) {
+ 			return new ca_objects_x_storage_locations($qr_res->get('relation_id'));
+ 		}
+ 		return false;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 *
+ 	 *
+ 	 * @param array $pa_options Array of options:
+ 	 *		template =
+ 	 */
+ 	public function getLocationHistory($pa_options=null) {
+ 		$pn_object = caGetOption('object_id', $pa_options, null);
+ 		if (!($vn_object_id = ($pn_object_id > 0) ? $pn_object_id : $this->getPrimaryKey())) { return null; }
+ 		
+ 		$ps_display_template = caGetOption('template', $pa_options, '^ca_objects_x_storage_locations.relation_id');
+ 		
+ 		$va_current_date = caDateToHistoricTimestamps(_t('now'));
+ 		$vn_current_date = $va_current_date['start'];
+ 		
+ 		
+ 		//
+ 		// Directly query the date field for performance
+ 		// 
+ 		
+ 		$o_db = $this->getDb();
+ 		$qr_res = $o_db->query("
+ 			SELECT csl.relation_id, csl.location_id, csl.object_id, csl.sdatetime, csl.edatetime
+ 			FROM ca_objects_x_storage_locations csl
+ 			INNER JOIN ca_storage_locations AS sl ON sl.location_id = csl.location_id
+ 			WHERE
+ 				(csl.object_id = ?) AND 
+ 				(sl.deleted = 0)
+ 			ORDER BY
+ 				 csl.sdatetime DESC, csl.relation_id DESC
+ 		", array($vn_object_id));
+ 		
+ 		
+ 		$va_relation_ids = $qr_res->getAllFieldValues('relation_id');
+ 		$va_displays = caProcessTemplateForIDs($ps_display_template, 'ca_objects_x_storage_locations', $va_relation_ids, array('returnAsArray' => true));
+ 
+		$qr_res->seek(0);
+ 		$va_items = array();
+ 		
+ 		$vb_have_seen_the_present = false;
+ 		while($qr_res->nextRow()) {
+ 			$va_row = $qr_res->getRow();
+ 			$vn_relation_id = $va_row['relation_id'];
+ 			
+ 			if ($va_row['sdatetime'] > $vn_current_date) { 
+ 				$vs_status = 'FUTURE';
+ 			} else {
+ 				$vs_status = $vb_have_seen_the_present ? 'PAST' : 'PRESENT';
+ 				$vb_have_seen_the_present = true;
+ 			}
+ 			
+ 			$va_items[$vn_relation_id] = array(
+ 				'object_id' => $va_row['object_id'],
+ 				'location_id' => $va_row['location_id'],
+ 				'display' => array_shift($va_displays),
+ 				'status' => $vs_status
+ 			);
+ 		}
+ 		return $va_items;
+ 	}
+ 	# ------------------------------------------------------
+ 	# Components
+ 	# ------------------------------------------------------
 	/** 
 	 * Returns HTML form bundle for component listing
 	 *
@@ -790,8 +1044,8 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 	 * @param string $ps_form_name
 	 * @param string $ps_placement_code
 	 * @param array $pa_bundle_settings
-	 * @param array $pa_options Array of options. Supported options are 
-	 *			noCache = If set to true then label cache is bypassed; default is true
+	 * @param array $pa_options Array of options. Options include:
+	 *			noCache = If set to true then label cache is bypassed. [Default = true]
 	 *
 	 * @return string Rendered HTML bundle
 	 */
@@ -815,18 +1069,17 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		return $o_view->render('ca_objects_components_list.php');
 	}
 	# ------------------------------------------------------
- 	# Components
- 	# ------------------------------------------------------
 	/** 
 	 * Return number of components directly linked to this container
 	 *
-	 * @param int $pn_object_id
-	 * @param array $pa_options Array of options. None are defined yet.
+	 * @param array $pa_options Array of options:
+	 *			object_id = object to return components for, rather than currently loaded object. [Default = null; use loaded object]
 	 *	
 	 * @return int 
 	 */
-	public function getComponentCount($pn_object_id=null, $pa_options=null) {
-		if (!$pn_object_id) { $pn_object_id = $this->getPrimaryKey(); }
+	public function getComponentCount($pa_options=null) {
+		$pn_object_id = caGetOption('object_id', $pa_options, null);
+		if (!(int)$pn_object_id) { $pn_object_id = (int)$this->getPrimaryKey(); }
 		if (!$pn_object_id) { return null; }
 		
 		$va_component_types = $this->getAppConfig()->getList('ca_objects_component_types');
@@ -841,8 +1094,8 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 	/** 
 	 * Return number of components directly linked to this container
 	 *
-	 * @param int $pn_object_id
-	 * @param array $pa_options Array of options. None are defined yet.
+	 * @param array $pa_options Array of options:
+	 *		object_id = object to return components for, rather than currently loaded object. [Default = null; use loaded object]
 	 *		returnAs = what to return; possible values are:
 	 *			searchResult			= a search result instance (aka. a subclass of BaseSearchResult), when the calling subclass is searchable (ie. <classname>Search and <classname>SearchResult classes are defined) 
 	 *			ids						= an array of ids (aka. primary keys)
@@ -853,9 +1106,9 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 	 *			
 	 * @return int 
 	 */
-	public function getComponents($pn_object_id=null, $pa_options=null) {
-		if ($pn_object_id && !is_numeric($pn_object_id)) { return null; }
-		if (!(int)$pn_object_id) { $pn_object_id = $this->getPrimaryKey(); }
+	public function getComponents($pa_options=null) {
+		$pn_object_id = caGetOption('object_id', $pa_options, null);
+		if (!(int)$pn_object_id) { $pn_object_id = (int)$this->getPrimaryKey(); }
 		if (!$pn_object_id) { return null; }
 		
 		if (caGetOption('idsOnly', $pa_options, false)) { $pa_options['returnAs'] = 'ids'; }

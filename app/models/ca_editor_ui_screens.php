@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -353,7 +353,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				if (!$pb_settings_only) {
 					$t_placement->setSettingDefinitionsForPlacement($va_available_bundles[$vs_bundle_name]['settings']);
 					$va_placements[$vn_placement_id]['display'] = $va_available_bundles[$vs_bundle_name]['display'];
-					$va_placements[$vn_placement_id]['settingsForm'] = $t_placement->getHTMLSettingForm(array('id' => $vs_bundle_name.'_'.$vn_placement_id, 'settings' => $va_settings));
+					$va_placements[$vn_placement_id]['settingsForm'] = $t_placement->getHTMLSettingForm(array('id' => $vs_bundle_name.'_'.$vn_placement_id.'_', 'settings' => $va_settings));
 				} else {
 					$va_tmp = explode('.', $vs_bundle_name);
 					$t_instance = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true);
@@ -800,7 +800,106 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'width' => "275px", 'height' => 4,
 										'label' => _t('Component display template'),
 										'description' => _t('Layout for component when displayed in list (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.idno</i>.')
-									),	
+									)
+								);
+								break;
+							case 'ca_objects_location':
+								$va_additional_settings = array(
+									'location_tracking_mode' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'options' => array(
+											_t('movements') => 'ca_movements',
+											_t('storage location relationships') => 'ca_storage_locations'
+										),
+										'default' => 'ca_movements',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('Track location using'),
+										'description' => _t('')
+									),
+									'ca_movements_date_element' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'table' => 'ca_movements',
+										'showMetadataElementsWithDataType' => 2,
+										'takesLocale' => false,
+										'default' => '',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Movement date'),
+										'description' => _t('')
+									),
+									'ca_movements_relationship_type' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'useRelationshipTypeList' => 'ca_movements_x_objects',
+										'takesLocale' => false,
+										'default' => '',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Limit movement tracking to relationship types'),
+										'description' => _t('')
+									),
+									'ca_storage_locations_relationship_type' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'useRelationshipTypeList' => 'ca_objects_x_storage_locations',
+										'takesLocale' => false,
+										'default' => '',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Limit storage location tracking to relationship types'),
+										'description' => _t('')
+									),
+									'display_template' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Object location display template'),
+										'description' => _t('Layout for current location of object when displayed in list (can include HTML). The template is evaluated relative to the object-movement or object-storage location relationship that is current. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_movements.idno</i>.')
+									),
+									'history_template' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Object location history template'),
+										'description' => _t('Layout for each previous location of object when displayed in history list (can include HTML). The template is evaluated relative to the object-movement or object-storage location relationship. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_movements.idno</i>.')
+									),
+									'current_location_color' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_COLORPICKER,
+										'takesLocale' => false,
+										'default' => '#EEEEEE',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Color for current location'),
+										'description' => _t('Color to use as highlight for the current location in the location history.')
+									),
+									'future_location_color' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_COLORPICKER,
+										'takesLocale' => false,
+										'default' => '#EEEEEE',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Color for future locations'),
+										'description' => _t('Color to use as highlight for future locations in the location history.')
+									),
+									'past_location_color' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_COLORPICKER,
+										'takesLocale' => false,
+										'default' => '#EEEEEE',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Color for past locations'),
+										'description' => _t('Color to use as highlight for the previous locations in the location history.')
+									),
+									'useHierarchicalBrowser' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_CHECKBOXES,
+										'width' => "10", 'height' => "1",
+										'takesLocale' => false,
+										'default' => '1',
+										'label' => _t('Use hierarchy browser for storage locations?'),
+										'description' => _t('If checked a hierarchical browser will be used to select stroage location items instead of an auto-complete lookup.')
+									)
 								);
 								break;
 						}
@@ -819,7 +918,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				'bundle' => $vs_bundle,
 				'display' => $vs_display,
 				'description' => $vs_description = $t_instance->getDisplayDescription($vs_table.'.'.$vs_bundle),
-				'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
+				'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0_')),
 				'settings' => $va_additional_settings
 			);
 			
@@ -1151,7 +1250,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				
 				foreach($_REQUEST as $vs_key => $vs_val) {
 					if (preg_match("!^{$vs_bundle_proc}_([\d]+)_(.*)$!", $vs_key, $va_matches)) {
-						
 						// is this locale-specific?
 						if (preg_match('!(.*)_([a-z]{2}_[A-Z]{2})$!', $va_matches[2], $va_locale_matches)) {
 							$vn_locale_id = isset($va_locale_list[$va_locale_matches[2]]) ? (int)$va_locale_list[$va_locale_matches[2]]['locale_id'] : 0;

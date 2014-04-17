@@ -84,13 +84,6 @@ BaseModel::$s_ca_models_definitions['ca_objects_x_storage_locations'] = array(
 				'START' => 'sdatetime', 'END' => 'edatetime',
 				'LABEL' => _t('Effective dates'), 'DESCRIPTION' => _t('Period of time for which this relationship was in effect. This is an option qualification for the relationship. If left blank, this relationship is implied to have existed for as long as the related items have existed.')
 		),
-		'is_current' => array(
-				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Is current?'), 'DESCRIPTION' => _t('Indicates that this is latest recorded location for the object.')
-		),
 		'rank' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
@@ -221,48 +214,16 @@ class ca_objects_x_storage_locations extends ObjectRelationshipBaseModel {
 	 *
 	 */
 	public function insert($pa_options=null) {
-		if ($vn_rc = parent::insert($pa_options)) {
-			$this->getDb()->query("
-				UPDATE ca_objects_x_storage_locations SET is_current = 0 WHERE object_id = ?
-			", array((int)$this->get('movement_id')));
-			
-			$this->getDb()->query("
-				UPDATE ca_objects_x_storage_locations SET is_current = 1 WHERE relation_id = ?
-			", array((int)$this->get('relation_id')));
-		}
-		return $vn_rc;
+		if (!$this->get('effective_date')) { $this->set('effective_date', _t('now')); }
+		return parent::insert($pa_options);
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
 	public function update($pa_options=null) {
+		if (!$this->get('effective_date')) { $this->set('effective_date', _t('now')); }
 		return parent::update($pa_options);
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
-		$vn_object_id = (int)$this->get('object_id');
-		if ($vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
-			$this->getDb()->query("
-				UPDATE ca_objects_x_storage_locations SET is_current = 0 WHERE object_id = ?
-			", array((int)$this->get('movement_id')));
-			
-			$qr_res = $this->getDb()->query("
-				SELECT relation_id 
-				FROM ca_objects_x_storage_locations 
-				WHERE object_id = ?
-				ORDER BY object_id DESC
-			", array($vn_object_id));
-			if ($qr_res->nextRow()) {
-				$this->getDb()->query("
-					UPDATE ca_objects_x_storage_locations SET is_current = 1 WHERE relation_id = ?
-				", array((int)$qr_res->get('relation_id')));
-			}
-		}
-		return $vn_rc;
 	}
 	# ------------------------------------------------------
 }

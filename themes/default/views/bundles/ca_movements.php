@@ -216,7 +216,7 @@
 				closeButtonSelector: ".close",
 				center: true,
 				onOpenCallback: function() {
-				jQuery("#topNavContainer").hide(250);
+					jQuery("#topNavContainer").hide(250);
 				},
 				onCloseCallback: function() {
 					jQuery("#topNavContainer").show(250);

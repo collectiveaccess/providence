@@ -39,7 +39,7 @@
 
 	$va_errors = array();
 	
-	$vn_num_components = ($qr_components = $t_subject->getComponents(null, array('returnAs' => 'searchResult'))) ? $qr_components->numHits() : 0;
+	$vn_num_components = ($qr_components = $t_subject->getComponents(array('returnAs' => 'searchResult'))) ? $qr_components->numHits() : 0;
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 ?>

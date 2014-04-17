@@ -1,4 +1,4 @@
-@import url("//hello.myfonts.net/count/28ec2c");
+/* @import url("//hello.myfonts.net/count/28ec2c"); */
 
 @font-face {font-family: 'DIN17SBOP-Regular';src: url('fonts/28EC2C_0_0.eot');src: url('fonts/28EC2C_0_0.eot?#iefix') format('embedded-opentype'),url('fonts/28EC2C_0_0.woff') format('woff'),url('fonts/28EC2C_0_0.ttf') format('truetype');}
 
@@ -5902,4 +5902,21 @@ div.caRepresentationMediaReplicationControls {
 .jcarousel .loading {
     text-align: center;
     line-height: 70px; /* Fake vertical aligning */
+}
+
+/** Location tracking **/
+.caCurrentLocation {
+	padding: 10px;
+	margin-right: 12px;
+}
+
+div.caLocationHistory {
+	border-top: 1px dotted #e6e6e6;
+	padding: 10px;
+	margin-right: 12px;
+}
+
+div.caLocationHistoryTab {
+	max-height: 400px;
+	overflow: auto;
 }
