@@ -336,9 +336,20 @@
  			
  			$vn_id = $t_subject->getPrimaryKey();
  			
+ 			$vn_relation_id = null;
  			if ($vn_id) {
  				$va_tmp = caProcessRelationshipLookupLabel($t_subject->makeSearchResult($t_subject->tableName(), array($vn_id)), $t_subject);
  				$va_name = array_pop($va_tmp);
+ 				 			
+				// Add relationship to added item here?
+				$pn_related_id = $this->request->getParameter('relatedID', pInteger);
+				$ps_related_table = $this->request->getParameter('relatedTable', pString);
+				$ps_relationship_type = $this->request->getParameter('relationshipType', pString);
+				if ($pn_related_id && $ps_related_table && $ps_relationship_type) {
+					if ($t_rel = $t_subject->addRelationship($ps_related_table, $pn_related_id, $ps_relationship_type)) {
+						$vn_relation_id = $t_rel->getPrimaryKey();
+					}
+				}
  			} else {
  				$va_name = array();
  			}
@@ -347,6 +358,7 @@
  				'id' => $vn_id,
  				'table' => $t_subject->tableName(),
 				'type_id' => method_exists($t_subject, "getTypeID") ? $t_subject->getTypeID() : null,
+				'relation_id' => $vn_relation_id,
  				'display' => $va_name['label'],
  				'errors' => $va_error_list
  			);

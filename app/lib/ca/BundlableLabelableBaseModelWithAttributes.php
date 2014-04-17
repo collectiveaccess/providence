@@ -711,6 +711,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		return array();
 	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getWithTemplate($ps_template, $pa_options=null) {	
+		return caProcessTemplateForIDs($ps_template, $this->tableName(), array($this->get($this->tableName().".".$this->primaryKey())), $pa_options);
+	}
 	# ------------------------------------------------------
 	/**
 	 *
@@ -1412,6 +1419,15 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						
 						break;
 					# -------------------------------
+					// This bundle is only available for objects
+					case 'ca_objects_location':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
+					
+						$vs_element .= $this->getObjectLocationHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						
+						break;
+					# -------------------------------
 					// This bundle is only available for relationships that include an object on one end
 					case 'ca_object_representation_chooser':
 						if ($vb_batch) { return null; } // not supported in batch mode
@@ -1742,6 +1758,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		} else {
  			$va_bundles = $t_ui->getScreenBundlePlacements($pm_screen);
  		}
+ 		
+ 		$vs_form_name = caGetOption('formName', $pa_options, '');
  
  		$va_bundle_html = array();
  		
@@ -2383,7 +2401,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							}
 							break;
 						default:
-							$this->set($vs_f, $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}{$vs_f}", pString));
+							// Look for fully qualified intrinsic
+							if(!($vs_v = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}{$vs_f}", pString))) {
+								// fall back to simple field name intrinsic spec - still used for "mandatory" fields such as type_id and parent_id
+								$vs_v = $po_request->getParameter("{$vs_f}", pString);
+							}
+							$this->set($vs_f, $vs_v);
 							break;
 					}
 				}
@@ -3059,7 +3082,7 @@ if (!$vb_batch) {
 				// get settings
 				$va_bundle_settings = array();
 				foreach($va_bundles as $va_bundle_info) {
-					if ($va_bundle_info['placement_code'] == $vs_placement_code) {
+					if ('P'.$va_bundle_info['placement_id'] == $vs_placement_code) {
 						$va_bundle_settings = $va_bundle_info['settings'];
 						break;
 					}
@@ -3400,7 +3423,24 @@ if (!$vb_batch) {
 							$this->update();
 						}
 						break;
-					# -------------------------------------
+					# -------------------------------
+					// This bundle is only available for objects
+					case 'ca_objects_location':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
+						
+						if ($vn_location_id = $po_request->getParameter($x="{$vs_placement_code}{$vs_form_prefix}_idnew_0", pInteger)) {
+							if (
+								(is_array($va_relationship_types = caGetOption('ca_storage_locations_relationship_type', $va_bundle_settings, null)))
+								&& 
+								($vn_relationship_type_id = array_shift($va_relationship_types))
+							) {
+								$this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id); 
+							}
+						}
+						
+						break;
+					# -------------------------------
 				}
 			}
 		}
@@ -3621,7 +3661,6 @@ if (!$vb_batch) {
 		if(isset($pa_options['restrictToLists']) && (!isset($pa_options['restrict_to_lists']) || !$pa_options['restrict_to_lists'])) { $pa_options['restrict_to_lists'] = $pa_options['restrictToLists']; }
 	 	if(isset($pa_options['groupFields'])) { $pa_options['groupFields'] = (bool)$pa_options['groupFields']; } else { $pa_options['groupFields'] = false; }
 	 	
-	 	$pb_show_current_only = caGetOption('showCurrentOnly', $pa_options, false);
 	 	
 		$o_db = $this->getDb();
 		$t_locale = new ca_locales();
@@ -4033,15 +4072,6 @@ if (!$vb_batch) {
 				}
 
 				$vs_cur_table = $vs_join_table;
-			}
-			
-			if ($pb_show_current_only) {
-				if ($t_item_rel->hasField('is_current')) {
-					$va_wheres[] = "(".$t_item_rel->tableName().".is_current = 1)";
-				} else {
-					$va_joins[] = 'INNER JOIN ca_movements_x_objects ON ca_movements_x_objects.movement_id = ca_movements.movement_id';
-					$va_wheres[] = "(ca_movements_x_objects.is_current = 1)";
-				}
 			}
 			
 			$va_selects[] = $this->tableName().'.'.$this->primaryKey().' AS row_id';
