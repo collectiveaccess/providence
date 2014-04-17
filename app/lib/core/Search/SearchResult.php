@@ -1176,6 +1176,7 @@ class SearchResult extends BaseObject {
 									}
 								}
 							}
+							break;
 						case FT_MEDIA:
 							if(!$vs_version = $va_path_components['subfield_name']) {
 								$vs_version = "largeicon";
