@@ -1661,7 +1661,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					foreach($va_vals as $vn_i => $vm_val) {
 						if (isset($va_item['settings']['formatWithTemplate']) && strlen($va_item['settings']['formatWithTemplate'])) {
 							$vm_val = caProcessTemplate($va_item['settings']['formatWithTemplate'], array_replace($va_row, array((string)$va_item['source'] => ca_data_importers::replaceValue($vm_val, $va_item))));
-							$va_row[$va_item['source']] = $vm_val;	// copy formatted data into row so refineries can pick it up
+							$va_vals[$vn_i] = $va_row[$va_item['source']] = $vm_val;	// copy formatted data into row so refineries can pick it up
 						}
 						
 						if (isset($va_item['settings']['applyRegularExpressions']) && is_array($va_item['settings']['applyRegularExpressions'])) {
@@ -1792,7 +1792,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									if ($o_refinery->returnsMultipleValues()) {
 										foreach($va_refined_values as $va_refined_value) {
 											$va_refined_value['_errorPolicy'] = $vs_item_error_policy;
-											$va_group_buf[$vn_c] = $va_refined_value;
+											if (!is_array($va_group_buf[$vn_c])) { $va_group_buf[$vn_c] = array(); }
+											$va_group_buf[$vn_c] = array_merge($va_group_buf[$vn_c], $va_refined_value);
 											$vn_c++;
 										}
 									} else {
@@ -2151,7 +2152,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									}
 									break;
 								case 'ca_object_lots':
-									if ($vn_rel_id = DataMigrationUtils::getObjectLotID($va_element_data['idno_stub'], $va_element_data['preferred_labels']['name'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
+									$vs_idno_stub = null;
+									if (is_array($va_element_data['idno_stub'])) {
+										$vs_idno_stub = isset($va_element_data['idno_stub']['idno_stub']) ? $va_element_data['idno_stub']['idno_stub'] : '';
+									} else {
+										$vs_idno_stub = isset($va_element_data['idno_stub']) ? $va_element_data['idno_stub'] : '';
+									}
+									if ($vn_rel_id = DataMigrationUtils::getObjectLotID($vs_idno_stub, $va_element_data['preferred_labels']['name'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
 										if (!($vs_rel_type = $va_element_data['_relationship_type']) && !($vs_rel_type = $va_element_data['idno_stub']['_relationship_type'])) { break; }
 										$t_subject->addRelationship($vs_table_name, $vn_rel_id, trim($va_element_data['_relationship_type']), null, null, null, null, array('interstitialValues' => $va_element_data['_interstitial']));
 										

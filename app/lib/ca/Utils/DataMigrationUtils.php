@@ -1473,6 +1473,16 @@
 			
 			$vn_id = null;
 			
+			if (preg_match("!\%!", $ps_idno_stub)) {
+				$pa_options['generateIdnoWithTemplate'] = $ps_idno_stub;
+				$ps_idno_stub = null;
+			}
+			if (!$ps_idno_stub) {
+				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
+					$ps_idno_stub = $t_lot->setIdnoWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
+				}
+			}
+			
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
@@ -1501,7 +1511,7 @@
 				$t_lot->set('lot_status_id', isset($pa_values['lot_status_id']) ? $pa_values['lot_status_id'] : null);
 				$t_lot->set('access', isset($pa_values['access']) ? $pa_values['access'] : 0);
 				$t_lot->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
-				
+			
 				$t_lot->set('idno_stub', $ps_idno_stub);
 				
 				$t_lot->insert();
