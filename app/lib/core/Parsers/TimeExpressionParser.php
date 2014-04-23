@@ -2513,6 +2513,7 @@ class TimeExpressionParser {
 		if (($pn_start >= -1) && ($pn_end >= -1) && ($pn_end >= $pn_start)) {
 			$this->opn_start_unixtime = $pn_start;
 			$this->opn_end_unixtime = $pn_end;
+			return true;
 		} else {
 			return false;
 		}
