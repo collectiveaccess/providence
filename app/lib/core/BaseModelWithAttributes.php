@@ -1277,7 +1277,7 @@
 			
 			// get all elements of this element set
 			$va_element_set = $t_element->getElementsInSet();
-			
+
 			// get attributes of this element attached to this row
 			$va_attributes = $this->getAttributesByElement($pm_element_code_or_id);
 			
@@ -1327,7 +1327,7 @@
 					'description' => $va_label['description'],
 					't_subject' => $this,
 					'request' => $po_request,
-					'ps_form_name' => $ps_form_name,
+					'form_name' => $ps_form_name,
 					'format' => ''
 				))));
 				
@@ -1558,7 +1558,7 @@
 			$va_attributes = ca_attributes::getAttributes($this->getDb(), $this->tableNum(), $vn_row_id, array($vn_element_id), array());
 		
 			$va_attribute_list =  is_array($va_attributes[$vn_element_id]) ? $va_attributes[$vn_element_id] : array();
-			
+		
 			$vs_sort_dir = (isset($pa_options['sort']) && (in_array(strtolower($pa_options['sortDirection']), array('asc', 'desc')))) ? strtolower($pa_options['sortDirection']) : 'asc';	
 			if (isset($pa_options['sort']) && ($vs_sort = $pa_options['sort'])) {
 				$va_tmp = array();
