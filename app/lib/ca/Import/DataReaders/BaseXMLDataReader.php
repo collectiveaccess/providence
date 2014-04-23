@@ -250,7 +250,6 @@ class BaseXMLDataReader extends BaseDataReader {
 		
 		// Recondition the spec for Xpath
 		$ps_spec = $this->_convertXPathExpression($ps_spec, array('useRootTag' => $this->ops_base_root_tag));
-		
 		$o_node_list = $this->opo_handle_xpath->query($ps_spec);
 		
 		$va_values = array();

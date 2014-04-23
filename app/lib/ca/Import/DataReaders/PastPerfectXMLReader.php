@@ -53,8 +53,7 @@ class PastPerfectXMLReader extends BaseXMLDataReader {
 	
 	/**
 	 * XML namespace prefix to pair with namespace URL
-	 * For files that use a namespace this should match that actually used in the file;
-	 * For files that don't use a namespace this should be set to *something* – doesn't really matter what
+	 * For files that use a namespace this should match that actually used in the file
 	 */
 	protected $ops_xml_namespace_prefix = null;
 	
