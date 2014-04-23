@@ -420,7 +420,7 @@
 				
 				dontAllowEditForFirstLevel: <?php print (in_array($t_subject->tableName(), array('ca_places', 'ca_storage_locations', 'ca_list_items', 'ca_relationship_types')) ? 'true' : 'false'); ?>,
 				
-				readOnly: <?php print $vb_read_only ? 1 : 0; ?>,
+				readOnly: false, //<?php print $vb_read_only ? 1 : 0; ?>,
 				
 				editUrl: '<?php print $vs_edit_url; ?>',
 				editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
