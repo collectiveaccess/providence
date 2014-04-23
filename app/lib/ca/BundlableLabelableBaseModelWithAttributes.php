@@ -1212,6 +1212,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$vs_label = $vs_label_text = $pa_bundle_settings['label'][$g_ui_locale];
 		}
 		
+		// Set bundle level documentation URL
+		$vs_documentation_url =  trim((isset($pa_bundle_settings['documentation_url']) && $pa_bundle_settings['documentation_url']) ? $pa_bundle_settings['documentation_url']  : '');
+		
 		$vs_element = '';
 		$va_errors = array();
 		switch($vs_type) {
