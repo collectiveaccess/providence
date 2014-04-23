@@ -616,8 +616,12 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 
 		// action extra to preserve currently open screen across next/previous links
 		$vs_screen_extra 	= ($po_view->getVar('screen')) ? '/'.$po_view->getVar('screen') : '';
+		if ($vs_type_name == "list item") {
+			print "<div style='height:12px;'></div>";
+			$vs_style = "style='height:auto;'";
+		}
 		if (($vn_item_id) | ($po_view->request->getAction() === 'Delete')) {
-			$vs_buf = '<h3 class="nextPrevious">'.caEditorFindResultNavigation($po_view->request, $t_item, $o_result_context, $pa_options)."</h3>\n";
+			$vs_buf = '<h3 class="nextPrevious" '.$vs_style.'>'.caEditorFindResultNavigation($po_view->request, $t_item, $o_result_context, $pa_options)."</h3>\n";
 		}
 		
 		$vs_color = null;
