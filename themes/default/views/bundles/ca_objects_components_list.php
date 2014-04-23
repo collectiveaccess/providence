@@ -35,7 +35,7 @@
 	$vb_read_only				=	(isset($va_settings['readonly']) && $va_settings['readonly']);
 	
 	if (!($vs_add_label 		= $this->getVar('add_label'))) { $vs_add_label = _t('Add component'); }
-	$vs_display_template		= caGetOption('display_template', $va_settings, $t_subject->getAppConfig()->get('ca_objects_component_display_settings'));
+	$vs_display_template		= caGetOption('displayTemplate', $va_settings, $t_subject->getAppConfig()->get('ca_objects_component_display_settings'));
 
 	$va_errors = array();
 	
