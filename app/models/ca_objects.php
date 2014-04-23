@@ -418,6 +418,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$this->BUNDLES['ca_commerce_order_history'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Order history'));
 		$this->BUNDLES['ca_objects_components_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Components'));
 		$this->BUNDLES['ca_objects_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Object location'));
+		$this->BUNDLES['ca_objects_history'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Object use history'));
 	}
 	# ------------------------------------------------------
 	/**
@@ -805,6 +806,61 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		
+		$vs_display_template		= caGetOption('displayTemplate', $pa_bundle_settings, _t('No template defined'));
+		$vs_history_template		= caGetOption('historyTemplate', $pa_bundle_settings, $vs_display_template);
+		
+		$o_view->setVar('id_prefix', $ps_form_name);
+		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
+		
+		$o_view->setVar('settings', $pa_bundle_settings);
+		
+		$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
+		$o_view->setVar('t_subject', $this);
+		
+		$o_view->setVar('mode', $vs_mode = caGetOption('locationTrackingMode', $pa_bundle_settings, 'ca_movements'));
+		
+		switch($vs_mode) {
+			case 'ca_storage_locations':
+				$t_last_location = $this->getLastLocation(array());
+				$o_view->setVar('current_location', $t_last_location ? $t_last_location->getWithTemplate($vs_display_template) : null);
+				$o_view->setVar('location_history', $this->getLocationHistory(array('template' => $vs_history_template)));
+				$o_view->setVar('location_relationship_type', is_array($pa_bundle_settings['ca_storage_locations_relationshipType']) ? addslashes($pa_bundle_settings['ca_storage_locations_relationshipType'][0]) : '');
+				$o_view->setVar('location_change_url',  null);
+				break;
+			case 'ca_movements':
+			default:
+				$t_last_movement = $this->getLastMovement(array('dateElement' => caGetOption('ca_movements_dateElement', $pa_bundle_settings, null)));
+				$o_view->setVar('current_location', $t_last_movement ? $t_last_movement->getWithTemplate($vs_display_template) : null);
+				$o_view->setVar('location_history', $this->getMovementHistory(array('dateElement' => caGetOption('ca_movements_dateElement', $pa_bundle_settings, null), 'template' => $vs_history_template)));
+				
+				$o_view->setVar('location_relationship_type', is_array($pa_bundle_settings['ca_movements_relationshipType']) ? addslashes($pa_bundle_settings['ca_movements_relationshipType'][0]) : '');
+				$o_view->setVar('location_change_url', caNavUrl($po_request, 'editor/movements', 'MovementQuickAdd', 'Form', array('movement_id' => 0)));
+				break;
+		}
+		
+		
+		return $o_view->render('ca_objects_location.php');
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * Returns HTML form bundle for location tracking
+	 *
+	 * @param HTTPRequest $po_request The current request
+	 * @param string $ps_form_name
+	 * @param string $ps_placement_code
+	 * @param array $pa_bundle_settings
+	 * @param array $pa_options Array of options. Options include:
+	 *			None yet.
+	 *
+	 * @return string Rendered HTML bundle
+ 	 */
+ 	public function getObjectHistoryHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
+ 		global $g_ui_locale;
+		
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+		
+		if(!is_array($pa_options)) { $pa_options = array(); }
+		
 		$vs_display_template		= caGetOption('display_template', $pa_bundle_settings, _t('No template defined'));
 		$vs_history_template		= caGetOption('history_template', $pa_bundle_settings, $vs_display_template);
 		
@@ -816,29 +872,127 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
 		$o_view->setVar('t_subject', $this);
 		
-		$o_view->setVar('mode', $vs_mode = caGetOption('location_tracking_mode', $pa_bundle_settings, 'ca_movements'));
 		
-		switch($vs_mode) {
-			case 'ca_storage_locations':
-				$t_last_location = $this->getLastLocation(array());
-				$o_view->setVar('current_location', $t_last_location ? $t_last_location->getWithTemplate($vs_display_template) : null);
-				$o_view->setVar('location_history', $this->getLocationHistory(array('template' => $vs_history_template)));
-				$o_view->setVar('location_relationship_type', is_array($pa_bundle_settings['ca_storage_locations_relationship_type']) ? addslashes($pa_bundle_settings['ca_storage_locations_relationship_type'][0]) : '');
-				$o_view->setVar('location_change_url',  null);
-				break;
-			case 'ca_movements':
-			default:
-				$t_last_movement = $this->getLastMovement(array('dateElement' => caGetOption('ca_movements_date_element', $pa_bundle_settings, null)));
-				$o_view->setVar('current_location', $t_last_movement ? $t_last_movement->getWithTemplate($vs_display_template) : null);
-				$o_view->setVar('location_history', $this->getMovementHistory(array('dateElement' => caGetOption('ca_movements_date_element', $pa_bundle_settings, null), 'template' => $vs_history_template)));
+		$o_media_coder = new MediaInfoCoder();
 				
-				$o_view->setVar('location_relationship_type', is_array($pa_bundle_settings['ca_movements_relationship_type']) ? addslashes($pa_bundle_settings['ca_movements_relationship_type'][0]) : '');
-				$o_view->setVar('location_change_url', caNavUrl($po_request, 'editor/movements', 'MovementQuickAdd', 'Form', array('movement_id' => 0)));
-				break;
+		//
+		// Get history
+		//
+		$va_history = array();
+		
+		// Lots
+		if(is_array($va_lot_types = caGetOption('ca_object_lots_showTypes', $pa_bundle_settings, null)) && ($vn_lot_id = $this->get('lot_id'))) {	
+			$va_date_elements = caGetOption('ca_object_lots_dateElement', $pa_bundle_settings, null);
+			$t_lot = new ca_object_lots($vn_lot_id);
+			
+			$va_dates = array();
+			if (is_array($va_date_elements) && sizeof($va_date_elements)) {
+				foreach($va_date_elements as $vs_date_element) {
+					$va_dates[] = $t_lot->get($vs_date_element, array('getDirectDate' => true));
+				}
+			}
+			if (!sizeof($va_dates)) {
+				$va_dates[] = caUnixTimestampToHistoricTimestamps($t_lot->getCreationTimestamp(null, array('timestampOnly' => true)));
+			}
+			
+			$va_lot_type_info = $t_lot->getTypeList(); 
+			foreach($va_dates as $vs_date) {
+				if (!$vs_date) { continue; }
+				if (!in_array($vn_type_id = $t_lot->get('type_id'), $va_lot_types)) { continue; }
+				$va_history[$vs_date][] = array(
+					'type' => 'ca_object_lots',
+					'id' => $vn_lot_id,
+					'display' => $t_lot->getWithTemplate(caGetOption('ca_object_lots_displayTemplate', $pa_bundle_settings, '^ca_object_lots.idno_stub')),
+					'color' => $vs_color = $va_lot_type_info[$vn_type_id]['color'],
+					'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag($va_lot_type_info[$vn_type_id]['icon'], 'icon'),
+					'typename_singular' => $vs_typename = $va_lot_type_info[$vn_type_id]['name_singular'],
+					'typename_plural' => $va_lot_type_info[$vn_type_id]['name_plural'],
+					'icon' => '<div class="caUseHistoryIcon" style="background-color: #'.$vs_color.'">'.($vs_icon_url ? $vs_icon_url : '<div class="caUseHistoryIconText">'.$vs_typename.'</div>').'</div>'
+				);
+			}
+		}
+		
+		// Loans
+		$va_loans = $this->get('ca_loans.loan_id', array('returnAsArray' => true));
+		if(is_array($va_loan_types = caGetOption('ca_loans_showTypes', $pa_bundle_settings, null)) && is_array($va_loans) && sizeof($va_loans)) {	
+			
+			$t_loan = new ca_loans();
+			$va_loan_type_info = $t_loan->getTypeList(); 
+			
+			if (!is_array($va_date_elements = caGetOption('ca_loans_dateElement', $pa_bundle_settings, null))) {
+				$va_date_elements = array($va_date_elements);
+			}
+			$qr_loans = caMakeSearchResult('ca_loans', $va_loans);
+			
+			while($qr_loans->nextHit()) {
+				$vn_loan_id = $qr_loans->get('loan_id');
+				
+				$va_dates = array();
+				if (is_array($va_date_elements) && sizeof($va_date_elements)) {
+					foreach($va_date_elements as $vs_date_element) {
+						$va_dates[] = $qr_loans->get("ca_loans.{$vs_date_element}", array('getDirectDate' => true));
+					}
+				}
+				if (!sizeof($va_dates)) {
+					$va_dates[] = caUnixTimestampToHistoricTimestamps($qr_loans->get('lastModified'));
+				}
+		
+				foreach($va_dates as $vs_date) {
+					if (!$vs_date) { continue; }
+					if (!in_array($vn_type_id = $qr_loans->get('type_id'), $va_loan_types)) { continue; }
+					$va_history[$vs_date][] = array(
+						'type' => 'ca_loans',
+						'id' => $vn_loan_id,
+						'display' => $qr_loans->getWithTemplate(caGetOption('ca_loans_displayTemplate', $pa_bundle_settings, '^ca_loans.idno')),
+						'color' => $vs_color = $va_loan_type_info[$vn_type_id]['color'],
+						'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag($va_loan_type_info[$vn_type_id]['icon'], 'icon'),
+						'typename_singular' => $vs_typename = $va_loan_type_info[$vn_type_id]['name_singular'],
+						'typename_plural' => $va_loan_type_info[$vn_type_id]['name_plural'],
+						'icon' => '<div class="caUseHistoryIcon" style="background-color: #'.$vs_color.'">'.($vs_icon_url ? $vs_icon_url : '<div class="caUseHistoryIconText">'.$vs_typename.'</div>').'</div>'
+					);
+				}
+			}
 		}
 		
 		
-		return $o_view->render('ca_objects_location.php');
+		// Movements
+		
+		
+		// Storage locations
+		$va_locations = $this->get('ca_objects_x_storage_locations.relation_id', array('returnAsArray' => true));
+		if(is_array($va_location_types = caGetOption('ca_storage_locations_showRelationshipTypes', $pa_bundle_settings, null)) && is_array($va_locations) && sizeof($va_locations)) {	
+			$t_location = new ca_storage_locations();
+			$va_location_type_info = $t_location->getTypeList(); 
+			
+			$qr_locations = caMakeSearchResult('ca_objects_x_storage_locations', $va_locations);
+			
+			while($qr_locations->nextHit()) {
+				$vn_location_id = $qr_locations->get('ca_objects_x_storage_locations.location_id');
+				
+				$vs_date = $qr_locations->get("ca_objects_x_storage_locations.effective_date");
+
+				if (!$vs_date) { continue; }
+				if (!in_array($vn_rel_type_id = $qr_locations->get('ca_objects_x_storage_locations.type_id'), $va_location_types)) { continue; }
+				$vn_type_id = $qr_locations->get('ca_storage_locations.type_id');
+				$va_history[$vs_date][] = array(
+					'type' => 'ca_storage_locations',
+					'id' => $vn_location_id,
+					'display' => $qr_locations->getWithTemplate(caGetOption('ca_storage_locations_displayTemplate', $pa_bundle_settings, '^ca_storage_locations.idno')),
+					'color' => $vs_color = $va_location_type_info[$vn_type_id]['color'],
+					'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag($va_location_type_info[$vn_type_id]['icon'], 'icon'),
+					'typename_singular' => $vs_typename = $va_location_type_info[$vn_type_id]['name_singular'],
+					'typename_plural' => $va_location_type_info[$vn_type_id]['name_plural'],
+					'icon' => '<div class="caUseHistoryIcon" style="background-color: #'.$vs_color.'">'.($vs_icon_url ? $vs_icon_url : '<div class="caUseHistoryIconText">'.$vs_typename.'</div>').'</div>'
+				);
+			}
+		}
+		
+		
+		ksort($va_history);
+		$va_history = array_reverse($va_history);
+		$o_view->setVar('history', $va_history);
+		
+		return $o_view->render('ca_objects_history.php');
  	}
  	# ------------------------------------------------------
  	/**

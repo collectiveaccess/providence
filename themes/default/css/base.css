@@ -5904,7 +5904,7 @@ div.caRepresentationMediaReplicationControls {
     line-height: 70px; /* Fake vertical aligning */
 }
 
-/** Location tracking **/
+/** Object location tracking **/
 .caCurrentLocation {
 	padding: 10px;
 	margin-right: 12px;
@@ -5919,4 +5919,19 @@ div.caLocationHistory {
 div.caLocationHistoryTab {
 	max-height: 400px;
 	overflow: auto;
+}
+
+/** Object use history **/
+div.caUseHistoryIcon {
+	float: left;
+	width: 48px;
+	height: 48px;
+	margin: 8px 8px 8px 0;
+}
+
+div.caUseHistoryIconText {
+	text-align: center;
+	margin-top: 18px;
+	font-size: 10px;
+	font-weight: normal;
 }

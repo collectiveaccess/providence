@@ -35,8 +35,8 @@
 	$vb_read_only				=	(isset($va_settings['readonly']) && $va_settings['readonly']);
 	
 	if (!($vs_add_label 		= $this->getVar('add_label'))) { $vs_add_label = _t('Update location'); }
-	$vs_display_template		= caGetOption('display_template', $va_settings, _t('No template defined'));
-	$vs_history_template		= caGetOption('history_template', $va_settings, $vs_display_template);
+	$vs_display_template		= caGetOption('displayTemplate', $va_settings, _t('No template defined'));
+	$vs_history_template		= caGetOption('historyTemplate', $va_settings, $vs_display_template);
 
 	$vs_current_location		= $this->getVar('current_location');
 	$va_history					= $this->getVar('location_history');
@@ -73,14 +73,14 @@
 							foreach($va_history as $vn_id => $va_relation) {
 								switch($va_relation['status']) {
 									case 'FUTURE':
-										print "<div class='caLocationHistory' style='background-color:#".$va_settings['future_location_color']."'>".$va_relation['display']."</div>\n";
+										print "<div class='caLocationHistory' style='background-color:#".$va_settings['futureLocationColor']."'>".$va_relation['display']."</div>\n";
 										break;
 									case 'PRESENT':
-										print "<div class='caCurrentLocation' style='background-color:#".$va_settings['current_location_color']."'>".$va_relation['display']."</div>\n";
+										print "<div class='caCurrentLocation' style='background-color:#".$va_settings['currentLocationColor']."'>".$va_relation['display']."</div>\n";
 										break;
 									case 'PAST':
 									default:
-										print "<div class='caLocationHistory' style='background-color:#".$va_settings['past_location_color']."'>".$va_relation['display']."</div>\n";
+										print "<div class='caLocationHistory' style='background-color:#".$va_settings['pastLocationColor']."'>".$va_relation['display']."</div>\n";
 										break;	
 								}
 							}
