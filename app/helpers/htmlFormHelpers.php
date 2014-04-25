@@ -265,8 +265,11 @@
 	 *		returnValueIfUnchecked = boolean indicating if checkbox should return value in request if unchecked; default is false
 	 */
 	function caHTMLCheckboxInput($ps_name, $pa_attributes=null, $pa_options=null) {
-		$vs_attr_string = _caHTMLMakeAttributeString($pa_attributes, $pa_options);
+		if (array_key_exists('checked', $pa_attributes) && !$pa_attributes['checked']) { unset($pa_attributes['checked']); }
+		if (array_key_exists('CHECKED', $pa_attributes) && !$pa_attributes['CHECKED']) { unset($pa_attributes['CHECKED']); }
 		
+		$vs_attr_string = _caHTMLMakeAttributeString($pa_attributes, $pa_options);
+	
 		if (isset($pa_options['returnValueIfUnchecked']) && $pa_options['returnValueIfUnchecked']) {
 			// javascript-y check box that returns form value even if unchecked
 			$vs_element = "<input name='{$ps_name}' {$vs_attr_string} type='checkbox'/>\n";

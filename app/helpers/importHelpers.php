@@ -700,9 +700,11 @@
 							$o_log->logWarn(_t("[{$ps_refinery_name}Refinery] No relationship type is set for %2 %1", $vs_item, $ps_item_prefix));
 						}
 		
+
 						switch($ps_table) {
 							case 'ca_entities':
 								$va_val['preferred_labels'] = DataMigrationUtils::splitEntityName($vs_item);
+								if (!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
 								break;
 							case 'ca_list_items':
 								$va_val['preferred_labels'] = array('name_singular' => str_replace("_", " ", $vs_item), 'name_plural' => str_replace("_", " ", $vs_item));
@@ -716,10 +718,11 @@
 							case 'ca_places':
 							case 'ca_objects':
 								$va_val['preferred_labels'] = array('name' => $vs_item);
+								if (!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
 								break;
 							case 'ca_object_lots':
 								$va_val['preferred_labels'] = array('name' => $vs_item);
-								$va_val['idno_stub'] = $vs_item;
+								if (!isset($va_val['idno_stub'])) { $va_val['idno_stub'] = $vs_item; }
 								if (isset($va_val['_status'])) {
 									$va_val['lot_status_id'] = $va_val['_status'];
 								}
