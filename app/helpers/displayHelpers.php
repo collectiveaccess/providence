@@ -1673,7 +1673,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 			
 			if (!caTableIsActive($vn_table_num)) { continue; }
 			
-			switch($vs_table_name) {
+#ORG		//switch($vs_table_name) {
+            switch($vs_display_name) {
 				case 'ca_occurrences':
 					$t_occ = new ca_occurrences();	
 					$va_types = $t_occ->getTypeList();
@@ -1913,7 +1914,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 			if (!$o_if) { continue; }
 			
 			$vs_html = $o_if->html();
-			$vs_content = $o_f->getInnerText();
+#ORG		//$vs_content = $o_f->getInnerText();
+            $vs_content = $o_if->getInnerText();
 			
 			$va_if[] = array('directive' => $vs_html, 'content' => $vs_content, 'rule' => $vs_rule = (string)$o_if->getAttribute('rule'));
 		}
@@ -2693,7 +2695,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		$va_tmp = $po_rep->getMediaInfo('media', $ps_version);
 		$va_dimensions = array();
 			if (isset($va_tmp['WIDTH']) && isset($va_tmp['HEIGHT'])) {
-			if (($vn_w = $va_tmp['WIDTH']) && ($vn_h = $va_tmp['WIDTH'])) {
+#ORG		//if (($vn_w = $va_tmp['WIDTH']) && ($vn_h = $va_tmp['WIDTH'])) {
+            if (($vn_w = $va_tmp['WIDTH']) && ($vn_h = $va_tmp['HEIGHT'])) {
 				$va_dimensions[] = $va_tmp['WIDTH'].'p x '.$va_tmp['HEIGHT'].'p';
 			}
 		}
