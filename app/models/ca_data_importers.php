@@ -1669,17 +1669,15 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						if (isset($va_item['settings']['suffix']) && strlen($va_item['settings']['suffix'])) {
 							$vm_val .= $va_item['settings']['suffix'];
 						}
-						$va_vals[$vn_i] = $va_row[$va_item['source']] = $vm_val;
 						
 						if (!is_array($vm_val) && ($vm_val[0] == '^') && preg_match("!^\^[^ ]+$!", $vm_val)) {
 							// Parse placeholder
 							if (!is_null($vm_parsed_val = BaseRefinery::parsePlaceholder($vm_val, $va_row, $va_item, $vn_i, array('reader' => $o_reader, 'returnAsString' => true)))) {
-								$va_vals[$vn_i] = $va_row[$va_item['source']] = $vm_val = $vm_parsed_val;
+								$vm_val = $vm_parsed_val;
 							}
 						}
 						if (isset($va_item['settings']['formatWithTemplate']) && strlen($va_item['settings']['formatWithTemplate'])) {
 							$vm_val = caProcessTemplate($va_item['settings']['formatWithTemplate'], array_replace($va_row, array((string)$va_item['source'] => ca_data_importers::replaceValue($vm_val, $va_item))));
-							$va_vals[$vn_i] = $va_row[$va_item['source']] = $vm_val;	// copy formatted data into row so refineries can pick it up
 						}
 						
 						if (isset($va_item['settings']['applyRegularExpressions']) && is_array($va_item['settings']['applyRegularExpressions'])) {
