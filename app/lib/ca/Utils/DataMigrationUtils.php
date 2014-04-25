@@ -104,12 +104,13 @@
 			$pb_match_on_displayname = caGetOption('matchOnDisplayName', $pa_options, false);
 			$pa_match_on = caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
 			
+			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
 			$t_entity = new ca_entities();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_entity->setTransaction($pa_options['transaction']);
+				$o_event->setTransaction($pa_options['transaction']);
 			}
 			
-			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 				
@@ -301,12 +302,13 @@
 			
 			$pa_match_on = caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
 			
+			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
 			$t_place = new ca_places();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_place->setTransaction($pa_options['transaction']);
+				$o_event->setTransaction($pa_options['transaction']);
 			}
 			
-			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 
@@ -501,12 +503,13 @@
 			
 			$pa_match_on = caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
 			
+			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
 			$t_occurrence = new ca_occurrences();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_occurrence->setTransaction($pa_options['transaction']);
+				$o_event->setTransaction($pa_options['transaction']);
 			}
 			
-			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 
@@ -736,6 +739,7 @@
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_list->setTransaction($pa_options['transaction']);
 				$t_item->setTransaction($pa_options['transaction']);
+				$o_event->setTransaction($pa_options['transaction']);
 			}
 			
 			
@@ -759,7 +763,7 @@
 					case 'idno':
 						if ($vs_idno == '%') { break; }	// don't try to match on an unreplaced idno placeholder
 						if ($vn_item_id = (ca_list_items::find(array('idno' => $ps_item_idno ? $ps_item_idno : $vs_plural_label, 'list_id' => $vn_list_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
-							if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using idno with %3", $ps_item_idno, $pm_list_code_or_id)); }
+							if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using idno with %3", $ps_item_idno, $pm_list_code_or_id, $ps_item_idno)); }
 							break(2);
 						}
 						break;
@@ -876,12 +880,13 @@
 			
 			$pa_match_on = caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
 			
+			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
 			$t_collection = new ca_collections();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_collection->setTransaction($pa_options['transaction']);
+				$o_event->setTransaction($pa_options['transaction']);
 			}
 			
-			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 
@@ -1071,12 +1076,13 @@
 			
 			$pa_match_on = caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
 			
+			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
 			$t_location = new ca_storage_locations();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_location->setTransaction($pa_options['transaction']);
+				$o_event->setTransaction($pa_options['transaction']);
 			}
 			
-			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 			
@@ -1266,12 +1272,13 @@
 			
 			$pa_match_on = caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
 			
+			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
 			$t_object = new ca_objects();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_object->setTransaction($pa_options['transaction']);
+				$o_event->setTransaction($pa_options['transaction']);
 			}
 			
-			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 
@@ -1462,12 +1469,13 @@
 			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = false; }
 			$pa_match_on = caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
 			
+			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
 			$t_lot = new ca_object_lots();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_lot->setTransaction($pa_options['transaction']);
+				$o_event->setTransaction($pa_options['transaction']);
 			}
 			
-			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 			
@@ -1644,12 +1652,13 @@
 			
 			$pa_match_on = caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
 			
+			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
 			$t_loan = new ca_loans();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_loan->setTransaction($pa_options['transaction']);
+				$o_event->setTransaction($pa_options['transaction']);
 			}
 			
-			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 				
@@ -1836,12 +1845,13 @@
 			
 			$pa_match_on = caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
 			
+			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
 			$t_movement = new ca_movements();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_movement->setTransaction($pa_options['transaction']);
+				$o_event->setTransaction($pa_options['transaction']);
 			}
 			
-			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 			

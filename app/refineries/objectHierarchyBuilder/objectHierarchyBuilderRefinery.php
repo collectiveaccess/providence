@@ -80,7 +80,7 @@
 			
 			// Set object parents
 			if ($va_parents = $pa_item['settings']['objectHierarchyBuilder_parents']) {
-				$vn_parent_id = caProcessRefineryParents('objectHierarchyBuilderRefinery', 'ca_objects', $va_parents, $pa_source_data, $pa_item, null, null, array('reader' => caGetOption('reader', $pa_options, null), 'log' => $o_log));
+				$vn_parent_id = caProcessRefineryParents('objectHierarchyBuilderRefinery', 'ca_objects', $va_parents, $pa_source_data, $pa_item, null, array('reader' => caGetOption('reader', $pa_options, null), 'log' => $o_log));
 			}
 			
 			return $vn_parent_id;

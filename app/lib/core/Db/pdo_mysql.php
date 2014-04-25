@@ -94,7 +94,7 @@ class Db_pdo_mysql extends DbDriverBase {
 		if (!is_array($g_connect)) { $g_connect = array(); }
 		$vs_db_connection_key = $pa_options["host"].'/'.$pa_options["database"];
 		
-		if (isset($g_connect[$vs_db_connection_key]) && ($g_connect[$vs_db_connection_key])) { $this->opr_db = $g_connect[$vs_db_connection_key]; return true;}
+		if (!($vb_unique_connection = caGetOption('uniqueConnection', $pa_options, false)) && isset($g_connect[$vs_db_connection_key]) && ($g_connect[$vs_db_connection_key])) { $this->opr_db = $g_connect[$vs_db_connection_key]; return true;}
 		
 		if (!class_exists("PDO")) {
 			die(_t("Your PHP installation lacks PDO MySQL support. Please add it and retry..."));
@@ -111,7 +111,7 @@ class Db_pdo_mysql extends DbDriverBase {
 		$this->opr_db->exec('SET NAMES \'utf8\'');
 		$this->opr_db->exec('SET character_set_results = NULL');	
 	
-		$g_connect[$vs_db_connection_key] = $this->opr_db;
+		if (!$vb_unique_connection) { $g_connect[$vs_db_connection_key] = $this->opr_db; }
 		return true;
 	}
 

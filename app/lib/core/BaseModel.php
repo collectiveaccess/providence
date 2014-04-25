@@ -1161,7 +1161,7 @@ class BaseModel extends BaseObject {
 						}
 						
 						if (($vs_field == $this->HIERARCHY_PARENT_ID_FLD) && ((strlen($vm_value) > 0) && (!is_numeric($vm_value) || caGetOption('treatParentIDAsIdno', $pa_options, false)))) {
-							if(is_array($va_ids = call_user_func_array($this->tableName()."::find", array(array('idno' => $vm_value, 'deleted' => 0), array('returnAs' => 'ids'))))) {
+							if(is_array($va_ids = call_user_func_array($this->tableName()."::find", array(array('idno' => $vm_value, 'deleted' => 0), array('returnAs' => 'ids', 'transaction' => $this->getTransaction()))))) {
 								$vm_value = array_shift($va_ids);
 							}
 						}
@@ -8290,9 +8290,7 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		$t_item_rel = $va_rel_info['t_item_rel'];
 		$t_item_rel->clear();
-		//if ($this->inTransaction()) {
-		//	$t_item_rel->setTransaction($this->getTransaction());
-		//}
+		if ($this->inTransaction()) { $t_item_rel->setTransaction($this->getTransaction()); }
 		
 		if ($pm_type_id && !is_numeric($pm_type_id)) {
 			$t_rel_type = new ca_relationship_types();
@@ -10429,17 +10427,19 @@ $pa_options["display_form_field_tips"] = true;
 		if (!is_array($pa_values) || (sizeof($pa_values) == 0)) { return null; }
 		$ps_return_as = caGetOption('returnAs', $pa_options, 'ids', array('forceLowercase' => true, 'validValues' => array('searchResult', 'ids', 'modelInstances', 'firstId', 'firstModelInstance', 'count')));
 		$ps_boolean = caGetOption('boolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
-			
+		$o_trans = caGetOption('transaction', $pa_options, null);
+		
 		$vs_table = get_called_class();
 		$t_instance = new $vs_table;
+		if ($o_trans) { $t_instance->setTransaction($o_trans); }
 		
 		$va_sql_wheres = array();
 		
 		//
 		// Convert type id
 		//
-		if (method_exists($this, "getTypeFieldName")) {
-			$vs_type_field_name = $this->getTypeFieldName();
+		if (method_exists($t_instance, "getTypeFieldName")) {
+			$vs_type_field_name = $t_instance->getTypeFieldName();
 			if (isset($pa_values[$vs_type_field_name]) && !is_numeric($pa_values[$vs_type_field_name])) {
 				if ($vn_id = ca_lists::getItemID($this->getTypeListCode(), $pa_values[$vs_type_field_name])) {
 					$pa_values[$vs_type_field_name] = $vn_id;
@@ -10496,8 +10496,8 @@ $pa_options["display_form_field_tips"] = true;
 		$vs_deleted_sql = ($t_instance->hasField('deleted')) ? '(deleted = 0) AND ' : '';
 		$vs_sql = "SELECT * FROM {$vs_table} WHERE {$vs_deleted_sql} (".join(" {$ps_boolean} ", $va_sql_wheres).")";
 		
-		if (isset($pa_options['transaction']) && ($pa_options['transaction'] instanceof Transaction)) {
-			$o_db = $pa_options['transaction']->getDb();
+		if ($o_trans instanceof Transaction) {
+			$o_db = $o_trans->getDb();
 		} else {
 			$o_db = new Db();
 		}
@@ -10513,6 +10513,7 @@ $pa_options["display_form_field_tips"] = true;
 			case 'firstmodelinstance':
 				while($qr_res->nextRow()) {
 					$t_instance = new $vs_table;
+					if ($o_trans) { $t_instance->setTransaction($o_trans); }
 					if ($t_instance->load($qr_res->get($vs_pk))) {
 						return $t_instance;
 					}
@@ -10523,6 +10524,7 @@ $pa_options["display_form_field_tips"] = true;
 				$va_instances = array();
 				while($qr_res->nextRow()) {
 					$t_instance = new $vs_table;
+					if ($o_trans) { $t_instance->setTransaction($o_trans); }
 					if ($t_instance->load($qr_res->get($vs_pk))) {
 						$va_instances[] = $t_instance;
 						$vn_c++;

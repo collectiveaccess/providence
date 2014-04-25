@@ -123,6 +123,8 @@ class BaseXMLDataReader extends BaseDataReader {
 		$this->ops_description = _t('Provides basic XML functions for all XML-format data readers');
 		
 		$this->opa_formats = array();
+		
+		$this->opa_properties['isXML'] = true;
 	}
 	# -------------------------------------------------------
 	/**
