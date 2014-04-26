@@ -436,3 +436,4 @@ class CollectiveAccessDataReader extends BaseDataReader {
 	}
 	# -------------------------------------------------------
 }
+?>

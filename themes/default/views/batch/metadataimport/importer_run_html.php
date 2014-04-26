@@ -88,6 +88,18 @@ print $vs_control_box = caFormControlBox(
 				</div>
 			</div>
 		</div>
+		<div class='bundleLabel' id="caSourceTextContainer">
+			<span class="formLabelText"><?php print _t('Data as text'); ?></span> 
+			<div class="bundleContainer">
+				<div class="caLabelList" >
+					<p>
+<?php
+		print caHTMLTextInput('sourceText', array('id' => 'caSourceText'), array('width' => '600px', 'height' => 3));
+?>
+					</p>
+				</div>
+			</div>
+		</div>
 		<div class='bundleLabel'>
 			<span class="formLabelText"><?php print _t('Log level'); ?></span> 
 			<div class="bundleContainer">
@@ -181,18 +193,35 @@ print $vs_control_box = caFormControlBox(
 		
 		// Set visibility of source input field based upon format
 		if (info = formatInfo[currentFormat.toLowerCase()]) {
-			if (info['inputType'] == 0) {
-				// file
-				jQuery('#caSourceUrlContainer').hide(dontAnimate ? 0 : 150);
-				jQuery('#caSourceUrl').prop('disabled', true);
-				jQuery('#caSourceFileContainer').show(dontAnimate ? 0 : 150);
-				jQuery('#caSourceFile').prop('disabled', false);
-			} else {
-				// url
-				jQuery('#caSourceUrlContainer').show(dontAnimate ? 0 : 150);
-				jQuery('#caSourceUrl').prop('disabled', false);
-				jQuery('#caSourceFileContainer').hide(dontAnimate ? 0 : 150);
-				jQuery('#caSourceFile').prop('disabled', true);
+			switch(info['inputType']) {
+				case 0:
+				default:
+					// file
+					jQuery('#caSourceUrlContainer').hide(dontAnimate ? 0 : 150);
+					jQuery('#caSourceUrl').prop('disabled', true);
+					jQuery('#caSourceFileContainer').show(dontAnimate ? 0 : 150);
+					jQuery('#caSourceFile').prop('disabled', false);
+					jQuery('#caSourceTextContainer').hide(dontAnimate ? 0 : 150);
+					jQuery('#caSourceText').prop('disabled', true);
+					break;
+				case 1:
+					// url
+					jQuery('#caSourceUrlContainer').show(dontAnimate ? 0 : 150);
+					jQuery('#caSourceUrl').prop('disabled', false);
+					jQuery('#caSourceFileContainer').hide(dontAnimate ? 0 : 150);
+					jQuery('#caSourceFile').prop('disabled', true);
+					jQuery('#caSourceTextContainer').hide(dontAnimate ? 0 : 150);
+					jQuery('#caSourceText').prop('disabled', true);
+					break;
+				case 2:
+					// text
+					jQuery('#caSourceUrlContainer').hide(dontAnimate ? 0 : 150);
+					jQuery('#caSourceUrl').prop('disabled', true);
+					jQuery('#caSourceFileContainer').hide(dontAnimate ? 0 : 150);
+					jQuery('#caSourceFile').prop('disabled', true);
+					jQuery('#caSourceTextContainer').show(dontAnimate ? 0 : 150);
+					jQuery('#caSourceText').prop('disabled', false);
+					break;
 			}
 		}
 	}
