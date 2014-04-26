@@ -117,6 +117,8 @@
 		$va_item_item_links = array();
 		$va_aat_id_to_item_id = array();
 		$vn_last_message_length = 0;
+		
+		$va_subject = array();
 	
 		$vn_term_count = 0;
 	
