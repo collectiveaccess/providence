@@ -128,7 +128,8 @@
 				}
 			}
 			
-			$pa_options = array_merge(array_merge(array('matchOn' => array('idno', 'label')), $pa_options));
+			$va_match_on = caGetOption("{$ps_refinery_name}_dontMatchOnLabel", $pa_item['settings'], false) ? array('idno') : array('idno', 'label');
+			$pa_options = array_merge(array_merge(array('matchOn' => $va_match_on), $pa_options));
 			
 			switch($ps_table) {
 				case 'ca_objects':

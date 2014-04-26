@@ -1774,7 +1774,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		$vs_remove_prefix = isset($pa_options['removePrefix']) ? $pa_options['removePrefix'] : null;
 		
 		$va_tags = array();
-		if (preg_match_all("!\^([A-Za-z0-9_\.\/]+[\~]{1}[^ \^\t\r\n\"\'<>\(\)\{\}]*|[A-Za-z0-9_\.]+)!", $ps_template, $va_matches)) {
+		// The only things that can follow a tilde are letters, numbers, underscores, colons and slashes – the minimum we need to handle those options
+		if (preg_match_all("!\^([A-Za-z0-9_\.\/]+[\~]{1}[A-Za-z0-9\:\/_]*|[A-Za-z0-9_\.]+)!", $ps_template, $va_matches)) {
 			foreach($va_matches[1] as $vn_i => $vs_possible_tag) {
 				$va_matches[1][$vn_i] = rtrim($vs_possible_tag, "/.");	// remove trailing slashes and periods
 			}

@@ -1587,7 +1587,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							$o_log->logInfo(_t('[%1] Merged with existing record matched on identifer by policy %2', $vs_idno, $vs_existing_record_policy));
 							break;
 						}
-						if ($vs_existing_record_policy == 'merge_on_idno') { break; }	// fall through if merge_on_idno_and_preferred_labels
+						if (in_array($vs_existing_record_policy, array('merge_on_idno', 'merge_on_idno_with_replace'))) { break; }	// fall through if merge_on_idno_and_preferred_labels
 					case 'merge_on_preferred_labels':
 					case 'merge_on_preferred_labels_with_replace':
 						$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
@@ -1919,7 +1919,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//}
 			
 			if (!sizeof($va_content_tree) && !str_replace("%", "", $vs_idno)) { continue; }
-			
+	
 			if (!$t_subject->getPrimaryKey()) {
 				$o_event->beginItem($vn_row, $t_subject->tableNum(), 'I') ;
 				$t_subject->setMode(ACCESS_WRITE);
