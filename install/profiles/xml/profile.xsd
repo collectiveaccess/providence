@@ -637,6 +637,22 @@
 											</xs:complexType>
 										</xs:element>
 
+										<!-- SOURCE-LEVEL ACCESS CONTROL -->
+
+										<xs:element name="sourceLevelAccessControl" minOccurs="0" maxOccurs="1">
+											<xs:complexType>
+												<xs:sequence>
+													<xs:element name="permission" minOccurs="1" maxOccurs="unbounded">
+														<xs:complexType>
+															<xs:attribute name="table" type="xs:string" use="required"/>
+															<xs:attribute name="source" type="xs:string" use="required"/>
+															<xs:attribute name="access" type="acPermissionList" use="required"/>
+															<xs:attribute name="default" type="xs:string" use="optional"/>
+														</xs:complexType>
+													</xs:element>
+												</xs:sequence>
+											</xs:complexType>
+										</xs:element>
 									</xs:sequence>
 									<xs:attribute name="code" type="codeType" use="required"/>
 								</xs:complexType>
