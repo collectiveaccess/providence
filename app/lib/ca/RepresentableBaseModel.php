@@ -425,10 +425,9 @@
 			$t_rep = new ca_object_representations();
 		
 			if ($this->inTransaction()) {
-				$o_trans = $this->getTransaction();
-				$t_rep->setTransaction($o_trans);
+				$t_rep->setTransaction($this->getTransaction());
 			}
-			
+				
 			$vn_rep_id = null;
 			if(is_array($va_match_on = caGetOption('matchOn', $pa_options, null))) {
 				$va_ids = null;
@@ -462,6 +461,7 @@
 				if (is_array($pa_values)) {
 					if (isset($pa_values['idno'])) {
 						$t_rep->set('idno', $pa_values['idno']);
+						unset($pa_values['idno']);
 					}
 					foreach($pa_values as $vs_element => $va_value) { 					
 						if (is_array($va_value)) {
@@ -506,8 +506,7 @@
 			$vs_pk = $this->primaryKey();
 			
 			if ($this->inTransaction()) {
-				$o_trans = $this->getTransaction();
-				$t_oxor->setTransaction($o_trans);
+				$t_oxor->setTransaction($this->getTransaction());
 			}
 			$t_oxor->setMode(ACCESS_WRITE);
 			$t_oxor->set($vs_pk, $vn_id);
@@ -571,8 +570,7 @@
 			
 			$t_rep = new ca_object_representations();
 			if ($this->inTransaction()) {
-				$o_trans = $this->getTransaction();
-				$t_rep->setTransaction($o_trans);
+				$t_rep->setTransaction($this->getTransaction());
 			}
 			if (!$t_rep->load(array('representation_id' => $pn_representation_id))) {
 				$this->postError(750, _t("Representation id=%1 does not exist", $pn_representation_id), "RepresentableBaseModel->editRepresentation()");

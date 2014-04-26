@@ -80,7 +80,7 @@
 			
 			// Set storage location parents
 			if ($va_parents = $pa_item['settings']['storageLocationHierarchyBuilder_parents']) {
-				$vn_parent_id = caProcessRefineryParents('storageLocationHierarchyBuilderRefinery', 'ca_storage_locations', $va_parents, $pa_source_data, $pa_item, null, null, array('reader' => caGetOption('reader', $pa_options, null), 'log' => $o_log));
+				$vn_parent_id = caProcessRefineryParents('storageLocationHierarchyBuilderRefinery', 'ca_storage_locations', $va_parents, $pa_source_data, $pa_item, null, array('reader' => caGetOption('reader', $pa_options, null), 'log' => $o_log));
 			}
 			
 			return $vn_parent_id;

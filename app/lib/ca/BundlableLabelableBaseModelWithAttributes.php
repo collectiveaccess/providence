@@ -1410,6 +1410,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					// This bundle is only available when editing objects of type ca_representation_annotations
 					case 'ca_representation_annotation_properties':
 						if ($vb_batch) { return null; } // not supported in batch mode
+						if (!$this->useInEditor()) { return null; }
 						foreach($this->getPropertyList() as $vs_property) {
 							$vs_element .= $this->getPropertyHTMLFormBundle($pa_options['request'], $vs_property, $pa_options);
 						}
@@ -2345,7 +2346,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if (is_array($va_bundle_lists['fields_by_type']['intrinsic'])) {
 			$vs_idno_field = $this->getProperty('ID_NUMBERING_ID_FIELD');
 			foreach($va_bundle_lists['fields_by_type']['intrinsic'] as $vs_f) {
-				
+				if (!isset($_REQUEST[$vs_f])) { continue; }
 				switch($vs_f) {
 					case $vs_idno_field:
 						if (($this->opo_idno_plugin_instance) && !$pa_options['dontReturnSerialIdno']) {
@@ -3187,6 +3188,7 @@ if (!$vb_batch) {
 					// This bundle is only available when editing objects of type ca_representation_annotations
 					case 'ca_representation_annotation_properties':
 						if ($vb_batch) { break; } // not supported in batch mode
+						if (!$this->useInEditor()) { break; }
 						foreach($this->getPropertyList() as $vs_property) {
 							$this->setPropertyValue($vs_property, $po_request->getParameter($vs_property, pString));
 						}
