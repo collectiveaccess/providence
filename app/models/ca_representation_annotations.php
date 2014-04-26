@@ -331,7 +331,7 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 	public function insert($pa_options=null) {
 		$this->set('type_code', $vs_type = $this->getAnnotationType());
 		$this->opo_annotations_properties = $this->loadProperties($vs_type);
-		$this->dump();
+		
 		if (!$this->opo_annotations_properties) {
 			$this->postError(1101, _t('No type code set'), 'ca_representation_annotations->insert');
 			return false;
