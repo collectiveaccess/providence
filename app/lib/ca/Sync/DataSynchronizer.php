@@ -172,6 +172,8 @@
 	# ------------------------------------------------------------------------------------------
 	// TODO: Add from/until support	
 	private function fetchAndImport($pa_item_queue, $po_client, $pa_config, $pa_tables, $ps_code) {
+		global $g_ui_locale_id;
+		
 		if (!is_array($pa_tables)) { $pa_tables = array(); }
 		
 		$t_rel_type = new ca_relationship_types();
@@ -316,7 +318,7 @@
 					if ($t_list->numErrors()) {
 						print "[ERROR] Could not insert new list '{$vs_list_code}': ".join('; ', $t_list->getErrors())."\n";
 					} else {
-						$t_list->addLabel(array('name' => $vs_list_code), $pn_locale_id, null, true);
+						$t_list->addLabel(array('name' => $vs_list_code), $g_ui_locale_id, null, true);
 						if ($t_list->numErrors()) {
 							print "[ERROR] Could not add label to new list '{$vs_list_code}': ".join('; ', $t_list->getErrors())."\n";
 						}
@@ -529,7 +531,7 @@
 								if (is_array($pa_config['importRelatedFor'][$va_item['table']][$vs_rel_table])) {
 									$va_rel_types = array_keys($pa_config['importRelatedFor'][$va_item['table']][$vs_rel_table]);
 									if (is_array($va_rel_types) && sizeof($va_rel_types) && !in_array((string)$o_related_item->relationship_type_code, $va_rel_types)) {
-										print "[INFO] Skipped relationship for {$vs_display_name} because type='".(string)$o_related_item->relationship_type_code."' is excluded\n";
+										print "[INFO] Skipped relationship for ".$o_related_item->idno." because type='".(string)$o_related_item->relationship_type_code."' is excluded\n";
 										continue;
 									}
 								}

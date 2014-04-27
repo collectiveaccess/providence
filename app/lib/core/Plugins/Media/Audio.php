@@ -456,7 +456,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$w = round($w);
 				$h = round($h);
 				if (!($w > 0 && $h > 0)) {
-					$this->postError(1610, _t("%1: %2 during resize operation", $reason, $description), "WLPlugAudio->transform()");
+					$this->postError(1610, _t("Width or height was zero"), "WLPlugAudio->transform()");
 					return false;
 				}
 				if ($do_crop) {
@@ -480,7 +480,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		return 1;
 	}
 	# ----------------------------------------------------------
-	public function write($filepath, $mimetype) {
+	public function write($filepath, $mimetype, $pa_options=null) {
 		if (!$this->handle) { return false; }
 		if (!($ext = $this->info["EXPORT"][$mimetype])) {
 			# this plugin can't write this mimetype
@@ -656,7 +656,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		
 		exec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($this->filepath)." -f mp3 -t {$vn_duration}  -y -ss {$vn_start} ".caEscapeShellArg($ps_filepath), $va_output, $vn_return);
 		if ($vn_return != 0) {
-			@unlink($filepath.".".$ext);
+			@unlink($ps_filepath);
 			$this->postError(1610, _t("Error extracting clip from %1 to %2: %3", $ps_start, $ps_end, join("; ", $va_output)), "WLPlugAudio->writeClip()");
 			return false;
 		}
@@ -745,11 +745,11 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 						$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 38;
 ?>
 						<div style='width: {$vn_width}px; height: {$vn_height}px;'>
-							<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0" width="<?php print $vn_viewer_width; ?>" height="<?php print $vn_viewer_height; ?>" id="<?php print $vs_id; ?>" align="">
+							<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0" width="<?php print $vn_width; ?>" height="<?php print $vn_height; ?>" id="<?php print $vs_id; ?>">
 								<param name="movie" value="<?php print $viewer_base_url; ?>/viewers/apps/niftyplayer.swf?file=<?php print $ps_url; ?>&as=0">
 								<param name="quality" value="high">
 								<param name="bgcolor" value="#FFFFFF">
-								<embed src="<?php print $viewer_base_url; ?>/viewers/apps/niftyplayer.swf?file=<?php print $ps_url; ?>&as=0" quality="high" bgcolor="#FFFFFF" width="<?php print $vn_viewer_width; ?>" height="<?php print $vn_viewer_height; ?>" align="" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer">
+								<embed src="<?php print $viewer_base_url; ?>/viewers/apps/niftyplayer.swf?file=<?php print $ps_url; ?>&as=0" quality="high" bgcolor="#FFFFFF" width="<?php print $vn_width; ?>" height="<?php print $vn_height; ?>" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer">
 								</embed>
 							</object>
 						</div>
@@ -792,7 +792,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
 ?>
 					<div style="width: {$vn_width}px; height: {$vn_height}px;">
-						<table border="0" cellpadding="0" cellspacing="0">
+						<table>
 							<tr>
 								<td>
 									<embed width="<?php print $vn_width; ?>" height="<?php print $vn_height + 16; ?>"
@@ -818,7 +818,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
 ?>
 					<div style="width: {$vn_width}px; height: {$vn_height}px;">
-						<table border="0" cellpadding="0" cellspacing="0">
+						<table>
 							<tr>
 								<td>
 									<embed width="<?php print $pa_properties["width"]; ?>" height="<?php print $pa_properties["height"] + 16; ?>"
@@ -844,7 +844,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
 ?>
 					<div style="width: {$vn_width}px; height: {$vn_height}px;">
-						<table border="0" cellpadding="0" cellspacing="0">
+						<table>
 							<tr>
 								<td>
 									<embed width="<?php print $pa_properties["width"]; ?>" height="<?php print $pa_properties["height"] + 16; ?>"

@@ -114,16 +114,17 @@
  		 */
  		public function UploadImporters() {
  			$va_response = array('uploadMessage' => '', 'skippedMessage' => '');
+ 			$va_errors = array();
  			
-				foreach($_FILES as $vs_param => $va_file) {
-					foreach($va_file['name'] as $vn_i => $vs_name) {
-						if ($t_importer = ca_data_importers::loadImporterFromFile($va_file['tmp_name'][$vn_i], $va_errors, array('logDirectory' => $this->request->config->get('batch_metadata_import_log_directory'), 'logLevel' => KLogger::INFO))) {
-							$va_response['copied'][$vs_name] = true;
-						} else {
-							$va_response['skipped'][$vs_name] = true;
-						}
+			foreach($_FILES as $vs_param => $va_file) {
+				foreach($va_file['name'] as $vn_i => $vs_name) {
+					if ($t_importer = ca_data_importers::loadImporterFromFile($va_file['tmp_name'][$vn_i], $va_errors, array('logDirectory' => $this->request->config->get('batch_metadata_import_log_directory'), 'logLevel' => KLogger::INFO))) {
+						$va_response['copied'][$vs_name] = true;
+					} else {
+						$va_response['skipped'][$vs_name] = true;
 					}
 				}
+			}
 			
 			$va_response['uploadMessage'] = (($vn_upload_count = sizeof($va_response['copied'])) == 1) ? _t('Uploaded %1 worksheet', $vn_upload_count) : _t('Uploaded %1 worksheets', $vn_upload_count);
 			if (is_array($va_response['skipped']) && ($vn_skip_count = sizeof($va_response['skipped'])) && !$va_response['error']) {
@@ -156,6 +157,7 @@
  		 * 
  		 */
  		public function ImportData() {
+ 			global $g_ui_locale_id;
  			$t_importer = $this->getImporterInstance();
  			
  			if (!$t_subject = $t_importer->getAppDatamodel()->getInstanceByTableNum($t_importer->get('table_num'), true)) {

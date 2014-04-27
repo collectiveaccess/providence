@@ -933,7 +933,7 @@ final class ConfigurationExporter {
 				$vs_buf .= "\t\t<settings>\n";
 				foreach ($va_settings as $vs_setting => $vm_val) {
 					if (is_array($vm_val)) {
-						foreach($vm_value as $vn_i => $vn_val) {
+						foreach($vm_val as $vn_i => $vn_val) {
 							$vs_buf .= "\t\t\t<setting name='{$vs_setting}'><![CDATA[".$vn_val."]]></setting>\n";
 						}
 					} else {

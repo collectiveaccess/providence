@@ -133,16 +133,23 @@
  			$this->view->setVar('version_info', $va_rep_info);
  			$this->view->setVar('version_path', $t_rep->getMediaPath('media', $ps_version));
  			
+ 			if ($va_object_ids = $t_rep->get('ca_objects.object_id', array('returnAsArray' => true)) && sizeof($va_object_ids)) {
+ 				$t_object = new ca_objects($va_object_ids[0]);
+ 				$vs_idno = (str_replace(' ', '_', $t_object->get('idno')));
+ 			} else {
+ 				$vs_idno = $pn_representation_id;	
+ 			}
+ 			
  			$va_info = $t_rep->getMediaInfo('media');
  			switch($this->request->user->getPreference('downloaded_file_naming')) {
  				case 'idno':
- 					$this->view->setVar('version_download_name', (str_replace(' ', '_', $t_object->get('idno'))).'.'.$va_rep_info['EXTENSION']);
+ 					$this->view->setVar('version_download_name', $vs_idno.'.'.$va_rep_info['EXTENSION']);
  					break;
  				case 'idno_and_version':
- 					$this->view->setVar('version_download_name', (str_replace(' ', '_', $t_object->get('idno'))).'_'.$ps_version.'.'.$va_rep_info['EXTENSION']);
+ 					$this->view->setVar('version_download_name', $vs_idno.'_'.$ps_version.'.'.$va_rep_info['EXTENSION']);
  					break;
  				case 'idno_and_rep_id_and_version':
- 					$this->view->setVar('version_download_name', (str_replace(' ', '_', $t_object->get('idno'))).'_representation_'.$pn_representation_id.'_'.$ps_version.'.'.$va_rep_info['EXTENSION']);
+ 					$this->view->setVar('version_download_name', $vs_idno.'_representation_'.$pn_representation_id.'_'.$ps_version.'.'.$va_rep_info['EXTENSION']);
  					break;
  				case 'original_name':
  				default:

@@ -1083,7 +1083,7 @@
 				$va_data['preferred_labels'] = $va_preferred_labels_for_export;
 			}
 			
-			$va_non_preferred_labels = $this->get($this->tableName().".nonpreferred_labels", array('returnAsArray' => true, 'returnAllLocales' => true));
+			$va_nonpreferred_labels = $this->get($this->tableName().".nonpreferred_labels", array('returnAsArray' => true, 'returnAllLocales' => true));
 			if(is_array($va_nonpreferred_labels) && sizeof($va_nonpreferred_labels)) {
 				$va_nonpreferred_labels_for_export = array();
 				foreach($va_nonpreferred_labels as $vn_id => $va_labels_by_locale) {

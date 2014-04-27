@@ -98,7 +98,7 @@
 				$va_field_values = array();
 			} else {
 				// Get default screen (this is all we show in quickadd, even if the UI has multiple screens)
-				$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
+				$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, null, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 					array(),
 					array()
 				);
@@ -233,7 +233,7 @@
  					
  					switch($o_e->getErrorNumber()) {
  						case 1100:	// duplicate/invalid idno
- 							if (!$vn_subject_id) {		// can't save new record if idno is not valid (when updating everything but idno is saved if it is invalid)
+ 							if (!$t_subject->getPrimaryKey()) {		// can't save new record if idno is not valid (when updating everything but idno is saved if it is invalid)
  								$vb_no_save_error = true;
  							}
  							break;
@@ -245,7 +245,7 @@
   			$this->opo_result_context->saveContext();
  			
  			# trigger "SaveItem" hook 
-			$this->opo_app_plugin_manager->hookSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => true));
+			$this->opo_app_plugin_manager->hookSaveItem(array('id' => $t_subject->getPrimaryKey(), 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => true));
  			
  			$vn_id = $t_subject->getPrimaryKey();
  			
@@ -315,7 +315,7 @@
  			if ($vs_parent_id_fld = $t_subject->getProperty('HIERARCHY_PARENT_ID_FLD')) {
  				$this->view->setVar('parent_id', $vn_parent_id = $this->request->getParameter($vs_parent_id_fld, pInteger));
 
- 				return array($t_subject, $t_ui, $vn_parent_id, $vn_above_id);
+ 				return array($t_subject, $t_ui, $vn_parent_id, null);
  			}
  			
  			return array($t_subject, $t_ui);

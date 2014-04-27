@@ -1019,6 +1019,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 				// indexing tasks in a separate process when the number of dependent rows exceeds a certain threshold
 				//
 				$o_indexer = new SearchIndexer($this->opo_db);
+				$t_dep = null;
 				foreach($va_rows_to_reindex as $va_row_to_reindex) {
 					if ((!$t_dep) || ($t_dep->tableNum() != $va_row_to_reindex['table_num'])) {
 						$t_dep = $this->opo_datamodel->getInstanceByTableNum($va_row_to_reindex['table_num']);

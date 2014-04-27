@@ -936,7 +936,7 @@
  		 *
  		 * @param array $pa_options Array of options passed through to _initView 
  		 */
- 		public function DownloadFile() {
+ 		public function DownloadFile($pa_options=null) {
  			if (!($pn_value_id = $this->request->getParameter('value_id', pInteger))) { return; }
  			$t_attr_val = new ca_attribute_values($pn_value_id);
  			if (!$t_attr_val->getPrimaryKey()) { return; }
@@ -1125,7 +1125,6 @@
 			$va_rep_display_info['poster_frame_url'] = $t_attr_val->getMediaUrl('value_blob', $va_rep_display_info['poster_frame_version']);
 			
 			$o_view->setVar('display_options', $va_rep_display_info);
-			$o_view->setVar('representation_id', $pn_representation_id);
 			$o_view->setVar('t_attribute_value', $t_attr_val);
 			$o_view->setVar('versions', $va_versions = $t_attr_val->getMediaVersions('value_blob'));
 			

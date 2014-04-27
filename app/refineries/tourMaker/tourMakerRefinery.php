@@ -131,7 +131,7 @@
 								'locale_id' => $g_ui_locale_id
 							);
 						} else {
-							foreach($va_attrs as $vs_k => $vs_v) {
+							foreach($va_attr as $vs_k => $vs_v) {
 								$va_attr[$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item);
 							}
 							$va_attr['locale_id'] = $g_ui_locale_id;
