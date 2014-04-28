@@ -2658,6 +2658,23 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Returns date/time as a localized string for display, subject to the settings in the app/conf/datetime.conf configuration 
+	 *
+	 * @param int $pn_timestamp Historic timestamp for date/time to localize; if omitted defaults to current date and time.
+	 * @param array $pa_options All options supported by TimeExpressionParser::getText() are supported
+	 *
+	 * @return string Localized date/time expression
+	 */
+	function caGetLocalizedHistoricDate($pn_timestamp=null, $pa_options=null) {
+		if (!$pn_timestamp) { $pn_timestamp = time(); }
+		$o_tep = new TimeExpressionParser();
+		
+		$o_tep->setHistoricTimestamps($pn_timestamp, $pn_timestamp);
+		
+		return $o_tep->getText($pa_options);
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	 * Returns date range as a localized string for display, subject to the settings in the app/conf/datetime.conf configuration 
 	 *
 	 * @param int $pn_start_timestamp Start of date range, as Unix timestamp

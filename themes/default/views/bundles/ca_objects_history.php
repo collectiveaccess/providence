@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * bundles/ca_object_components_list.php : 
+ * bundles/ca_objects_history.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  
-	$vs_id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
+ 	$vs_id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$vn_table_num 				= $this->getVar('table_num');
 	
 	$t_subject					= $this->getVar('t_subject');
@@ -34,50 +34,37 @@
 
 	$vb_read_only				=	(isset($va_settings['readonly']) && $va_settings['readonly']);
 	
-	if (!($vs_add_label 		= $this->getVar('add_label'))) { $vs_add_label = _t('Add component'); }
-	$vs_display_template		= caGetOption('displayTemplate', $va_settings, $t_subject->getAppConfig()->get('ca_objects_component_display_settings'));
-
-	$va_errors = array();
+	if (!($vs_add_label 		= $this->getVar('add_label'))) { $vs_add_label = _t('Update location'); }
 	
-	$vn_num_components = ($qr_components = $t_subject->getComponents(array('returnAs' => 'searchResult'))) ? $qr_components->numHits() : 0;
+	$va_history					= $this->getVar('history');
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 ?>
-
 <div id="<?php print $vs_id_prefix; ?>">
 	<div class="bundleContainer">
 		<div class="caItemList">
 <?php
-	if ($vn_num_components) {
+	foreach($va_history as $vn_date => $va_history_entries_for_date) {
+		foreach($va_history_entries_for_date as $va_history_entry) {
 ?>
 			<div>
-<?php
-				print ($vn_num_components == 1) ? _t('%1 component', $vn_num_components) : _t('%1 components', $vn_num_components);
-?>	
+				<?php print $va_history_entry['icon']; ?>
+				<div><?php print $va_history_entry['display']; ?></div>
+				<em><?php print caGetLocalizedHistoricDate($vn_date); ?></em>
+				<br class="clear"/>
 			</div>
-<?php
-	}
-?>
-			<div class="labelInfo">	
-<?php
-	if ($vn_num_components) {
-		while($qr_components->nextHit()) {
-?>
-				<div style="font-weight: normal;">
-					<?php print $qr_components->getWithTemplate($vs_display_template); ?>
-				</div>
 <?php
 		}
-	} else {
-?>
-				<div><?php print _t('No components defined'); ?></div>
-<?php
 	}
-			
 ?>
-	<div class='button labelInfo caAddItemButton'><?php print '<a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($this->request, '*', 'ObjectComponent', 'Form', array('parent_id' => $t_subject->getPrimaryKey())).'"); return false;\')>'; ?><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print $vs_add_label; ?></a></div>
-
-			</div>
 		</div>
+		
 	</div>
 </div>
+
+<div id="caRelationQuickAddPanel<?php print $vs_id_prefix; ?>" class="caRelationQuickAddPanel"> 
+	<div id="caRelationQuickAddPanel<?php print $vs_id_prefix; ?>ContentArea">
+	<div class='dialogHeader'><?php print _t('Change location'); ?></div>
+		
+	</div>
+</div>	

@@ -1420,11 +1420,22 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						break;
 					# -------------------------------
 					// This bundle is only available for objects
-					case 'ca_objects_location':
-						if ($vb_batch) { return null; } // not supported in batch mode
+					case 'ca_objects_location':		// storage location via ca_objects_x_storage_locations or ca_movements_x_objects
+						if ($vb_batch) { return null; } 				// not supported in batch mode
+						if (!$this->getPrimaryKey()) { return null; }	// not supported for new records
 						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
 					
 						$vs_element .= $this->getObjectLocationHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						
+						break;
+					# -------------------------------
+					// This bundle is only available for objects
+					case 'ca_objects_history':		// summary of object accession, movement, exhibition and deaccession
+						if ($vb_batch) { return null; } // not supported in batch mode
+						if (!$this->getPrimaryKey()) { return null; }	// not supported for new records
+						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
+					
+						$vs_element .= $this->getObjectHistoryHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 						
 						break;
 					# -------------------------------
@@ -3406,7 +3417,7 @@ if (!$vb_batch) {
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if (!is_array($va_rep_ids = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}", pArray))) { $va_rep_ids = array(); }
 									
-						if ($vs_element_code = caGetOption('element_code', $va_bundle_settings, null)) {
+						if ($vs_element_code = caGetOption('elementCode', $va_bundle_settings, null)) {
 							if (!is_array($va_current_rep_ids = $this->get($vs_element_code, array('returnAsArray' => true, 'idsOnly' => true)))) { $va_current_rep_ids = array(); }
 							$va_current_rep_ids = caExtractValuesFromArrayList($va_current_rep_ids, $vs_element_code, array('preserveKeys' => true));
 						
@@ -3431,11 +3442,13 @@ if (!$vb_batch) {
 						
 						if ($vn_location_id = $po_request->getParameter($x="{$vs_placement_code}{$vs_form_prefix}_idnew_0", pInteger)) {
 							if (
-								(is_array($va_relationship_types = caGetOption('ca_storage_locations_relationship_type', $va_bundle_settings, null)))
+								(is_array($va_relationship_types = caGetOption('ca_storage_locations_relationshipType', $va_bundle_settings, null)))
 								&& 
 								($vn_relationship_type_id = array_shift($va_relationship_types))
 							) {
-								$this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id); 
+								if (!$this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id)) {
+									// TODO: error reporting
+								}
 							}
 						}
 						

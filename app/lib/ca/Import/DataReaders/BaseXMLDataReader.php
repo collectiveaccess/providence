@@ -318,7 +318,7 @@ class BaseXMLDataReader extends BaseDataReader {
 		$vb_double_slash = (substr($ps_spec, 0, 2) == '//') ? true : false;
 		$va_tmp = explode("/", $ps_spec);
 		while(sizeof($va_tmp) && !$va_tmp[0]) { array_shift($va_tmp);}
-		if ($vb_add_root_tag && !$vb_double_slash && ($va_tmp[0] != $this->ops_root_tag)) { array_unshift($va_tmp, $this->ops_xml_namespace_prefix.':'.($vs_use_root_tag ? $vs_use_root_tag : $this->ops_root_tag)); }
+		if ($vb_add_root_tag && !$vb_double_slash && ($va_tmp[0] != $this->ops_root_tag)) { array_unshift($va_tmp, ($this->ops_xml_namespace_prefix ? $this->ops_xml_namespace_prefix.':' : '').($vs_use_root_tag ? $vs_use_root_tag : $this->ops_root_tag)); }
 		foreach($va_tmp as $vn_i => $vs_spec_element) {
 			if(!$vs_spec_element) { continue; }
 			if (
@@ -326,7 +326,9 @@ class BaseXMLDataReader extends BaseDataReader {
 				&&
 				(strpos($vs_spec_element, "@") !== 0)
 			) {
-				$va_tmp[$vn_i]= $this->ops_xml_namespace_prefix.":{$vs_spec_element}";
+				if ($this->ops_xml_namespace_prefix) {
+					$va_tmp[$vn_i]= $this->ops_xml_namespace_prefix.":{$vs_spec_element}";
+				}
 			}
 		}
 		$ps_spec = ($vb_double_slash ? '//' : '/').join("/", $va_tmp);

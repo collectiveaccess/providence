@@ -763,7 +763,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						switch($vs_bundle) {
 							case 'ca_commerce_order_history':
 								$va_additional_settings = array(
-									'order_type' => array(
+									'orderType' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_SELECT,
 										'takesLocale' => false,
@@ -779,7 +779,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								break;
 							case 'ca_object_representation_chooser':
 								$va_additional_settings = array(
-									'element_code' => array(
+									'elementCode' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_SELECT,
 										'takesLocale' => false,
@@ -793,7 +793,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								break;
 							case 'ca_objects_components_list':
 								$va_additional_settings = array(
-									'display_template' => array(
+									'displayTemplate' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_FIELD,
 										'default' => '<l>^ca_objects.preferred_labels.name</l> (^ca_objects.idno)',
@@ -805,7 +805,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								break;
 							case 'ca_objects_location':
 								$va_additional_settings = array(
-									'location_tracking_mode' => array(
+									'locationTrackingMode' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_SELECT,
 										'options' => array(
@@ -817,7 +817,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Track location using'),
 										'description' => _t('')
 									),
-									'ca_movements_date_element' => array(
+									'ca_movements_dateElement' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_SELECT,
 										'table' => 'ca_movements',
@@ -828,7 +828,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Movement date'),
 										'description' => _t('')
 									),
-									'ca_movements_relationship_type' => array(
+									'ca_movements_relationshipType' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_SELECT,
 										'useRelationshipTypeList' => 'ca_movements_x_objects',
@@ -838,7 +838,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Limit movement tracking to relationship types'),
 										'description' => _t('')
 									),
-									'ca_storage_locations_relationship_type' => array(
+									'ca_storage_locations_RelationshipType' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_SELECT,
 										'useRelationshipTypeList' => 'ca_objects_x_storage_locations',
@@ -848,7 +848,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Limit storage location tracking to relationship types'),
 										'description' => _t('')
 									),
-									'display_template' => array(
+									'displayTemplate' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_FIELD,
 										'default' => '',
@@ -856,7 +856,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Object location display template'),
 										'description' => _t('Layout for current location of object when displayed in list (can include HTML). The template is evaluated relative to the object-movement or object-storage location relationship that is current. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_movements.idno</i>.')
 									),
-									'history_template' => array(
+									'historyTemplate' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_FIELD,
 										'default' => '',
@@ -864,7 +864,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Object location history template'),
 										'description' => _t('Layout for each previous location of object when displayed in history list (can include HTML). The template is evaluated relative to the object-movement or object-storage location relationship. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_movements.idno</i>.')
 									),
-									'current_location_color' => array(
+									'currentLocationColor' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_COLORPICKER,
 										'takesLocale' => false,
@@ -873,7 +873,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Color for current location'),
 										'description' => _t('Color to use as highlight for the current location in the location history.')
 									),
-									'future_location_color' => array(
+									'futureLocationColor' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_COLORPICKER,
 										'takesLocale' => false,
@@ -882,7 +882,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Color for future locations'),
 										'description' => _t('Color to use as highlight for future locations in the location history.')
 									),
-									'past_location_color' => array(
+									'pastLocationColor' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_COLORPICKER,
 										'takesLocale' => false,
@@ -900,6 +900,161 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Use hierarchy browser for storage locations?'),
 										'description' => _t('If checked a hierarchical browser will be used to select stroage location items instead of an auto-complete lookup.')
 									)
+								);
+								break;
+							case 'ca_objects_history':
+								$va_additional_settings = array(
+									'ca_object_lots_showTypes' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'useList' => 'object_lot_types',
+										'takesLocale' => false,
+										'default' => '',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Show lots'),
+										'description' => _t('')
+									),
+									'ca_object_lots_dateElement' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'table' => 'ca_object_lots',
+										'showMetadataElementsWithDataType' => 2,
+										'takesLocale' => false,
+										'default' => '',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Lot date'),
+										'description' => _t('')
+									),
+									'ca_object_lots_displayTemplate' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Object lot display template'),
+										'description' => _t('Layout for lot when displayed in history list (can include HTML). The template is evaluated relative to the lot. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_object_lots.idno_stub</i>.')
+									),
+									'ca_occurrences_showTypes' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'useList' => 'occurrence_types',
+										'takesLocale' => false,
+										'default' => '',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Show occurrences'),
+										'description' => _t('')
+									),
+									'ca_occurrences_dateElement' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'table' => 'ca_occurrences',
+										'showMetadataElementsWithDataType' => 2,
+										'takesLocale' => false,
+										'default' => '',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Occurrence date'),
+										'description' => _t('')
+									),
+									'ca_occurrences_displayTemplate' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Occurrence display template'),
+										'description' => _t('Layout for lot when displayed in history list (can include HTML). The template is evaluated relative to the lot. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_object_lots.idno_stub</i>.')
+									),
+									'ca_movements_showTypes' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'useList' => 'movement_types',
+										'takesLocale' => false,
+										'default' => '',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Show movements'),
+										'description' => _t('')
+									),
+									'ca_movements_dateElement' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'table' => 'ca_movements',
+										'showMetadataElementsWithDataType' => 2,
+										'takesLocale' => false,
+										'default' => '',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Movement date'),
+										'description' => _t('')
+									),
+									'ca_movements_displayTemplate' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Movement display template'),
+										'description' => _t('Layout for movement when displayed in history list (can include HTML). The template is evaluated relative to the lot. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_object_lots.idno_stub</i>.')
+									),
+									'ca_loans_showTypes' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'useList' => 'loan_types',
+										'takesLocale' => false,
+										'default' => '',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Show loans'),
+										'description' => _t('')
+									),
+									'ca_loans_dateElement' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'table' => 'ca_loans',
+										'showMetadataElementsWithDataType' => 2,
+										'takesLocale' => false,
+										'default' => '',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Loan date'),
+										'description' => _t('')
+									),
+									'ca_loans_displayTemplate' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Loan display template'),
+										'description' => _t('Layout for loan when displayed in history list (can include HTML). The template is evaluated relative to the lot. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_object_lots.idno_stub</i>.')
+									),
+									'ca_storage_locations_showRelationshipTypes' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'useRelationshipTypeList' => 'ca_objects_x_storage_locations',
+										'takesLocale' => false,
+										'default' => '',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Show storage locations'),
+										'description' => _t('Show storage locations with selected relationship types.')
+									),
+									'ca_storage_locations_displayTemplate' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Storage location display template'),
+										'description' => _t('Layout for storage location when displayed in history list (can include HTML). The template is evaluated relative to the object-storage location relationship. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_object_lots.idno_stub</i>.')
+									),
+									'showDeaccessionInformation' => array(
+										'formatType' => FT_NUMBER,
+										'displayType' => DT_CHECKBOXES,
+										'width' => "4", 'height' => "1",
+										'takesLocale' => false,
+										'default' => '1',
+										'label' => _t('Show deaccession information'),
+										'description' => _t('If checked hierarchy browser will be open when form loads.')
+									),
+									'deaccession_displayTemplate' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Deaccession display template'),
+										'description' => _t('Layout for deaccession information when displayed in history list (can include HTML). The template is evaluated relative to the object. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.deaccession_notes</i>.')
+									),
 								);
 								break;
 						}
