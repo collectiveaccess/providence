@@ -88,7 +88,7 @@
  			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
  			
  			// Make sure user has access to at least one type
- 			if ($t_model->getTypeFieldName() && (!is_array($va_types = caGetTypeListForUser($this->ops_tablename, array('access' => __CA_BUNDLE_ACCESS_READONLY__))) || !sizeof($va_types))) {
+ 			if ((method_exists($t_model, 'getTypeFieldName')) && $t_model->getTypeFieldName() && (!is_array($va_types = caGetTypeListForUser($this->ops_tablename, array('access' => __CA_BUNDLE_ACCESS_READONLY__))) || !sizeof($va_types))) {
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
@@ -918,12 +918,16 @@
  				if (!is_array($pa_ids) || !sizeof($pa_ids)) { 
  					$pa_ids = $this->opo_result_context->getResultList();
  				}
+ 				
+				$vn_file_count = 0;
+						
  				if (is_array($pa_ids) && sizeof($pa_ids)) {
  					$ps_version = $this->request->getParameter('version', pString);
 					if ($qr_res = $t_subject->makeSearchResult($t_subject->tableName(), $pa_ids, array('filterNonPrimaryRepresentations' => false))) {
 						$o_zip = new ZipFile();
 						if (!($vn_limit = ini_get('max_execution_time'))) { $vn_limit = 30; }
 						set_time_limit($vn_limit * 2);
+						
 						while($qr_res->nextHit()) {
 							if (!is_array($va_version_list = $qr_res->getMediaVersions('ca_object_representations.media')) || !in_array($ps_version, $va_version_list)) {
 								$vs_version = 'original';
@@ -973,6 +977,7 @@
 									$vs_path = $vs_path_with_embedding;
 								}
 								$o_zip->addFile($vs_path, $vs_filename, 0, array('compression' => 0));
+								$vn_file_count++;
 							}
 						}
 						$this->view->setVar('zip', $o_zip);
@@ -982,7 +987,11 @@
 					}
 				}
  				
- 				$this->render('Results/object_representation_download_binary.php');
+ 				if ($vn_file_count > 0) {
+ 					$this->render('Results/object_representation_download_binary.php');
+ 				} else {
+ 					$this->response->setHTTPResponseCode(204, _t('No files to download'));
+ 				}
  				return;
  			}
  			

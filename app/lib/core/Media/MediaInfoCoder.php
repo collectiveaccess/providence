@@ -289,10 +289,8 @@ class MediaInfoCoder {
 	}
 	# ---------------------------------------------------------------------------
 	public function getMediaVersions($ps_data) {
-		if (!is_array($va_media_info)) {
-			if (!($va_media_info = $this->getMediaArray($ps_data))) {
-				return false;
-			}
+		if (!($va_media_info = $this->getMediaArray($ps_data))) {
+			return false;
 		}
 		
 		unset($va_media_info["ORIGINAL_FILENAME"]);

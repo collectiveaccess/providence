@@ -263,7 +263,7 @@
 				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_entities', 'U'); }
 				$vn_entity_id = $vn_id;
 				if ($o_event) { $o_event->endItem($vn_entity_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, ''); }
-				if ($o_log) { $o_log->logDebug(_t("Found existing entity %1 in DataMigrationUtils::getEntityID(); total of %2 entities were found", $pa_entity_name['forename']."/".$pa_entity_name['surname'], sizeof($va_entity_ids) + 1)); }
+				if ($o_log) { $o_log->logDebug(_t("Found existing entity %1 in DataMigrationUtils::getEntityID()", $pa_entity_name['forename']."/".$pa_entity_name['surname'])); }
 				
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
 					return new ca_entities($vn_entity_id);
@@ -464,7 +464,7 @@
 				$vn_place_id = $vn_id;
 				if ($o_event) { $o_event->endItem($vn_place_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, ''); }
 				
-				if ($o_log) { $o_log->logDebug(_t("Found existing place %1 in DataMigrationUtils::getPlaceID(); total of %2 places were found", $ps_place_name, sizeof($va_place_ids) + 1)); }
+				if ($o_log) { $o_log->logDebug(_t("Found existing place %1 in DataMigrationUtils::getPlaceID()", $ps_place_name)); }
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
 					return new ca_places($vn_place_id);
 				}
@@ -664,7 +664,7 @@
 				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_occurrences', 'U'); }
 				$vn_occurrence_id = $vn_id;
 				if ($o_event) { $o_event->endItem($vn_occurrence_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, ''); }
-				if ($o_log) { $o_log->logDebug(_t("Found existing occurrence %1 in DataMigrationUtils::getOccurrenceID(); total of %2 occurrences were found", $ps_occ_name, sizeof($va_occurrence_ids) + 1)); }
+				if ($o_log) { $o_log->logDebug(_t("Found existing occurrence %1 in DataMigrationUtils::getOccurrenceID()", $ps_occ_name)); }
 				
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
 					return new ca_occurrences($vn_occurrence_id);
@@ -757,7 +757,7 @@
 							break;
 						}
 					case 'idno':
-						if ($vs_idno == '%') { break; }	// don't try to match on an unreplaced idno placeholder
+						if ($ps_item_idno == '%') { break; }	// don't try to match on an unreplaced idno placeholder
 						if ($vn_item_id = (ca_list_items::find(array('idno' => $ps_item_idno ? $ps_item_idno : $vs_plural_label, 'list_id' => $vn_list_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 							if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using idno with %3", $ps_item_idno, $pm_list_code_or_id)); }
 							break(2);
@@ -902,7 +902,7 @@
 				switch(strtolower($vs_match_on)) {
 					case 'label':
 						if (trim($ps_collection_name)) {
-							if ($vn_id = (ca_collections::find(array('preferred_labels' => array('name' => $ps_collection_name), 'parent_id' => $pn_parent_id, 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+							if ($vn_id = (ca_collections::find(array('preferred_labels' => array('name' => $ps_collection_name), 'parent_id' => caGetOption('parent_id', $pa_values, null), 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 								break(2);
 							}
 							break;
@@ -1033,7 +1033,7 @@
 				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_collections', 'U'); }
 				$vn_collection_id = $vn_id;
 				if ($o_event) { $o_event->endItem($vn_collection_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, ''); }
-				if ($o_log) { $o_log->logDebug(_t("Found existing collection %1 in DataMigrationUtils::getCollectionID(); total of %2 collections were found", $ps_collection_name, sizeof($va_collection_ids) + 1)); }
+				if ($o_log) { $o_log->logDebug(_t("Found existing collection %1 in DataMigrationUtils::getCollectionID()", $ps_collection_name)); }
 				
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
 					return new ca_collections($vn_collection_id);
@@ -1228,7 +1228,7 @@
 				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_storage_locations', 'U'); }
 				$vn_location_id = $vn_id;
 				if ($o_event) { $o_event->endItem($vn_location_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, ''); }
-				if ($o_log) { $o_log->logDebug(_t("Found existing storage location %1 in DataMigrationUtils::getStorageLocationID(); total of %2 storage locations were found", $ps_location_name, sizeof($va_location_ids) + 1)); }
+				if ($o_log) { $o_log->logDebug(_t("Found existing storage location %1 in DataMigrationUtils::getStorageLocationID()", $ps_location_name)); }
 				
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
 					return new ca_storage_locations($vn_location_id);
@@ -1426,7 +1426,7 @@
 				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_objects', 'U'); }
 				$vn_object_id = $vn_id;
 				if ($o_event) { $o_event->endItem($vn_object_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, ''); }
-				if ($o_log) { $o_log->logDebug(_t("Found existing object %1 in DataMigrationUtils::getObjectID(); total of %2 objects were found", $ps_object_name, sizeof($va_object_ids) + 1)); }
+				if ($o_log) { $o_log->logDebug(_t("Found existing object %1 in DataMigrationUtils::getObjectID()", $ps_object_name)); }
 				
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
 					return new ca_objects($vn_object_id);
@@ -1483,7 +1483,7 @@
 						}
 						break;
 					case 'idno':
-						if ($vs_idno == '%') { break; }	// don't try to match on an unreplaced idno placeholder
+						if ($ps_idno_stub == '%') { break; }	// don't try to match on an unreplaced idno placeholder
 						if ($vn_id = (ca_object_lots::find(array('idno_stub' => $ps_idno_stub ? $ps_idno_stub : $ps_lot_name), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 							break(2);
 						}
@@ -1607,7 +1607,7 @@
 				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_object_lots', 'U'); }
 				$vn_lot_id = $vn_id;
 				if ($o_event) { $o_event->endItem($vn_lot_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, ''); }
-				if ($o_log) { $o_log->logDebug(_t("Found existing lot %1 in DataMigrationUtils::getObjectLotID(); total of %2 lots were found", $ps_lot_name, sizeof($va_lot_ids) + 1)); }
+				if ($o_log) { $o_log->logDebug(_t("Found existing lot %1 in DataMigrationUtils::getObjectLotID()", $ps_lot_name)); }
 				
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
 					return new ca_object_lots($vn_lot_id);
@@ -1670,7 +1670,7 @@
 				switch(strtolower($vs_match_on)) {
 					case 'label':
 						if (trim($ps_loan_name)) {
-							if ($vn_id = (ca_loans::find(array('preferred_labels' => array('name' => $ps_loan_name), 'type_id' => $pn_type_id, 'parent_id' => $pn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+							if ($vn_id = (ca_loans::find(array('preferred_labels' => array('name' => $ps_loan_name), 'type_id' => $pn_type_id, 'parent_id' => caGetOption('parent_id', $pa_values, null)), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 								break(2);
 							}
 							break;
@@ -1799,10 +1799,10 @@
 				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_loans', 'U'); }
 				$vn_loan_id = $vn_id;
 				if ($o_event) { $o_event->endItem($vn_loan_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, ''); }
-				if ($o_log) { $o_log->logDebug(_t("Found existing loan %1 in DataMigrationUtils::getLoanID(); total of %2 loans were found", $ps_loan_name, sizeof($va_loan_ids) + 1)); }
+				if ($o_log) { $o_log->logDebug(_t("Found existing loan %1 in DataMigrationUtils::getLoanID()", $ps_loan_name)); }
 				
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					return new ca_loans($vn_load_id);
+					return new ca_loans($vn_loan_id);
 				}
 			}
 				
@@ -1862,7 +1862,7 @@
 				switch(strtolower($vs_match_on)) {
 					case 'label':
 						if (trim($ps_movement_name)) {
-							if ($vn_id = (ca_movements::find(array('preferred_labels' => array('name' => $ps_movement_name), 'type_id' => $pn_type_id, 'parent_id' => $pn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+							if ($vn_id = (ca_movements::find(array('preferred_labels' => array('name' => $ps_movement_name), 'type_id' => $pn_type_id, 'parent_id' => caGetOption('parent_id', $pa_options, null)), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 								break(2);
 							}
 							break;
@@ -1992,10 +1992,10 @@
 				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_movements', 'U'); }
 				$vn_movement_id = $vn_id;
 				if ($o_event) { $o_event->endItem($vn_movement_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, ''); }
-				if ($o_log) { $o_log->logDebug(_t("Found existing movement %1 in DataMigrationUtils::getMovementID(); total of %2 movements were found", $ps_movement_name, sizeof($va_movement_ids) + 1)); }
+				if ($o_log) { $o_log->logDebug(_t("Found existing movement %1 in DataMigrationUtils::getMovementID()", $ps_movement_name)); }
 				
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					return new ca_movements($vn_load_id);
+					return new ca_movements($vn_movement_id);
 				}
 			}
 				
@@ -2006,12 +2006,12 @@
 		 *
 		 */
 		static function transformTextEncoding($ps_text) {
-			$ps_text = str_replace("‘", "'", $ps_text);
-			$ps_text = str_replace("’", "'", $ps_text);
-			$ps_text = str_replace("”", '"', $ps_text);
-			$ps_text = str_replace("“", '"', $ps_text);
-			$ps_text = str_replace("–", "-", $ps_text);
-			$ps_text = str_replace("…", "...", $ps_text);
+			$ps_text = str_replace("���", "'", $ps_text);
+			$ps_text = str_replace("���", "'", $ps_text);
+			$ps_text = str_replace("���", '"', $ps_text);
+			$ps_text = str_replace("���", '"', $ps_text);
+			$ps_text = str_replace("���", "-", $ps_text);
+			$ps_text = str_replace("���", "...", $ps_text);
 			return iconv(DataMigrationUtils::$s_source_encoding, DataMigrationUtils::$s_target_encoding, $ps_text);
 		}
 		# -------------------------------------------------------

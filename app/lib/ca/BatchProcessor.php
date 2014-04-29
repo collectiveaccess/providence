@@ -524,7 +524,7 @@
  				return null;
  			}
  			
- 			if (preg_match("!/\.\.!", $vs_directory) || preg_match("!\.\./!", $pa_options['importFromDirectory'])) {
+ 			if (preg_match("!\.\./!", $pa_options['importFromDirectory'])) {
  				$o_eventlog->log(array(
 					"CODE" => 'ERR',
 					"SOURCE" => "mediaImport",
@@ -702,7 +702,7 @@
 									$va_extracted_idnos_from_filename[] = $va_matches[1];
 								
 									if (in_array($vs_import_mode, array('TRY_TO_MATCH', 'ALWAYS_MATCH'))) {
-										if(!is_array($va_fields_to_match_on = $po_request->config->getList('batch_media_import_match_on')) || !sizeof($batch_media_import_match_on)) {
+										if(!is_array($va_fields_to_match_on = $po_request->config->getList('batch_media_import_match_on')) || !sizeof($va_fields_to_match_on)) {
 											$batch_media_import_match_on = array('idno');
 										}
 										$va_values = array();
@@ -794,7 +794,7 @@
 								// Calculate identifier using numbering plugin
 								$o_numbering_plugin = $t_object->getIDNoPlugInInstance();
 								if (!($vs_sep = $o_numbering_plugin->getSeparator())) { $vs_sep = ''; }
-								if (!is_array($va_idno_values = $o_numbering_plugin->htmlFormValuesAsArray('idno', $vs_object_idno, false, false, true))) { $va_idno_values = array(); }
+								if (!is_array($va_idno_values = $o_numbering_plugin->htmlFormValuesAsArray('idno', null, false, false, true))) { $va_idno_values = array(); }
 								$t_object->set('idno', join($vs_sep, $va_idno_values));	// true=always set serial values, even if they already have a value; this let's us use the original pattern while replacing the serial value every time through
 								break;
 						}
@@ -1040,7 +1040,7 @@
 				$va_errors['general'] = array(
 					'idno' => "*",
 					'label' => "*",
-					'errors' => array(_t("Could not import source %1", $vs_data_source)),
+					'errors' => array(_t("Could not import source %1", $ps_source)),
 					'status' => 'ERROR'
 				);
 				return false;
@@ -1048,7 +1048,7 @@
 				$va_notices['general'] = array(
 					'idno' => "*",
 					'label' => "*",
-					'errors' => array(_t("Imported data from source %1", $vs_data_source)),
+					'errors' => array(_t("Imported data from source %1", $ps_source)),
 					'status' => 'SUCCESS'
 				);
 				//return true;
@@ -1065,7 +1065,7 @@
 							'numErrors' => sizeof($va_errors), 'numProcessed' => sizeof($va_notices),
 							'subjectNameSingular' => _t('row'),
 							'subjectNamePlural' => _t('rows'),
-							'startedOn' => $vs_started_on,
+							'startedOn' => caGetLocalizedDate($vn_start_time),
 							'completedOn' => caGetLocalizedDate(time()),
 							'elapsedTime' => caFormatInterval($vn_elapsed_time)
 						)
@@ -1074,7 +1074,7 @@
 			}
 			
 			if (isset($pa_options['sendSMS']) && $pa_options['sendSMS']) {
-				SMS::send($po_request->getUserID(), _t("[%1] Metadata import processing for begun at %2 is complete", $po_request->config->get('app_display_name'),  $vs_started_on));
+				SMS::send($po_request->getUserID(), _t("[%1] Metadata import processing for begun at %2 is complete", $po_request->config->get('app_display_name'),  caGetLocalizedDate($vn_start_time)));
 			}
 			return array('errors' => $va_errors, 'notices' => $va_notices, 'processing_time' => caFormatInterval($vn_elapsed_time));
 		}

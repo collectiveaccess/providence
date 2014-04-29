@@ -514,7 +514,7 @@ class SearchEngine extends SearchBase {
 								FROM ca_attributes attr
 								INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
 								INNER JOIN ca_list_item_labels AS lil ON lil.item_id = attr_vals.item_id
-								INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = attr.row_id
+								INNER JOIN {$vs_search_tmp_table} ON {$vs_search_tmp_table}.row_id = attr.row_id
 								WHERE
 									(attr_vals.element_id = ?) AND (attr.table_num = ?) AND (lil.{$vs_sort_field} IS NOT NULL)
 								ORDER BY lil.{$vs_sort_field}

@@ -419,6 +419,7 @@
 					$vn_id = DataMigrationUtils::getMovementID($vs_name, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
 					break;
 				case 'ca_list_items':
+					$vn_list_id = caGetOption('list_id', $pa_options, null);
 					$vn_id = DataMigrationUtils::getListItemID($vn_list_id, $vs_name, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
 					break;
 				case 'ca_storage_locations':
@@ -605,8 +606,8 @@
 				if (
 					(($vs_dest_table != $ps_table) && (sizeof($va_group_dest) > 1))
 				) {	
-				
 					$vs_item = BaseRefinery::parsePlaceholder($vs_item, $pa_source_data, $pa_item, $ps_delimiter, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
+					
 					if(!is_array($va_attr_vals)) { $va_attr_vals = array(); }
 					$va_attr_vals_with_parent = array_merge($va_attr_vals, array('parent_id' => $va_val['_parent_id']));
 					

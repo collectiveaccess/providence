@@ -927,7 +927,21 @@ final class ConfigurationExporter {
 				}
 			}
 			$vs_buf .= "\t\t</labels>\n";
-			
+
+			$va_settings = $t_display->getSettings();
+			if(sizeof($va_settings)>0){
+				$vs_buf .= "\t\t<settings>\n";
+				foreach ($va_settings as $vs_setting => $vm_val) {
+					if (is_array($vm_val)) {
+						foreach($vm_val as $vn_i => $vn_val) {
+							$vs_buf .= "\t\t\t<setting name='{$vs_setting}'><![CDATA[".$vn_val."]]></setting>\n";
+						}
+					} else {
+						$vs_buf .= "\t\t\t<setting name='{$vs_setting}'><![CDATA[".$vm_val."]]></setting>\n";
+					}
+				}
+				$vs_buf .= "\t\t</settings>\n";
+			}
 			
 			$va_placements = $t_display->getPlacements();
 			
@@ -951,10 +965,10 @@ final class ConfigurationExporter {
 							default:
 								if (is_array($vm_value)) {
 									foreach($vm_value as $vn_i => $vn_val) {
-										$vs_buf .= "\t\t\t\t<setting name='{$vs_setting}'>".caEscapeForXML($vn_val)."</setting>\n";
+										$vs_buf .= "\t\t\t\t<setting name='{$vs_setting}'><![CDATA[".$vn_val."]]></setting>\n";
 									}
 								} else {
-									$vs_buf .= "\t\t\t\t<setting name='{$vs_setting}'>".caEscapeForXML($vm_value)."</setting>\n";
+									$vs_buf .= "\t\t\t\t<setting name='{$vs_setting}'><![CDATA[".$vm_value."]]></setting>\n";
 								}
 								break;
 						}

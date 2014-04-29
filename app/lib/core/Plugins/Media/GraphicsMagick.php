@@ -826,7 +826,7 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 			} 
 					
 			if (!$this->_graphicsMagickWrite($this->handle, $filepath.".".$ext, $mimetype, $this->properties["quality"])) {
-				$this->postError(1610, _t("%1: %2", $reason, $description), "WLPlugImageMagick->write()");
+				$this->postError(1610, _t("Could not write file %1", $filepath.".".$ext), "WLPlugImageMagick->write()");
 				return false;
 			}
 			

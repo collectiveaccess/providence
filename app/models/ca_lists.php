@@ -788,7 +788,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			while($qr_res->nextRow()) {
 				 $va_items[$vn_item_id = $qr_res->get('item_id')][$qr_res->get('locale_id')] = $qr_res->getRow();
 			}
-			ca_lists::$s_list_item_display_cache[$vn_item_id] = ca_lists::$s_list_item_display_cache[$vs_idno] = $va_items;
+			ca_lists::$s_list_item_display_cache[$vn_item_id] = ca_lists::$s_list_item_display_cache[$ps_idno] = $va_items;
 		}
 		
 		$va_tmp = caExtractValuesByUserLocale($va_items, null, null, array());

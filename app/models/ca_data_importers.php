@@ -1081,6 +1081,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		// 
 		// Output to screen via NCurses
 		//
+		$vn_max_x = $vn_max_y = null;
 		if ($r_ncurses_win) {
 			ncurses_getmaxyx($r_ncurses_win, $vn_max_y, $vn_max_x);
 			
@@ -1096,7 +1097,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$po_request = (isset($pa_options['request']) && $pa_options['request']) ? $pa_options['request'] : null;
 		if ($po_request && isset($pa_options['reportCallback']) && ($ps_callback = $pa_options['reportCallback'])) {
 			$va_general = array(
-				'elapsedTime' => time() - $vn_start_time,
+				'elapsedTime' => time() - caGetOption('startTime', $pa_options, 0),
 				'numErrors' => ca_data_importers::$s_num_import_errors,
 				'numProcessed' => ca_data_importers::$s_num_records_processed
 			);
@@ -1196,6 +1197,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		}
 		$vb_use_ncurses = false;
 		$vn_error_window_height = null;
+
+		$vn_max_x = $vn_max_y = null;
 		if($vb_use_ncurses) {
 			$r_ncurse = ncurses_init();
 			$r_screen = ncurses_newwin( 0, 0, 0, 0); 
@@ -1233,16 +1236,16 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		$o_log->logInfo(_t('Started import of %1 using mapping %2', $ps_source, $t_mapping->get("importer_code")));		
 		
-		
-		$va_log_import_error_opts = array('window' => $r_errors, 'log' => $o_log, 'request' => $po_request, 'progressCallback' => (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) ? $ps_callback : null, 'reportCallback' => (isset($pa_options['reportCallback']) && ($ps_callback = $pa_options['reportCallback'])) ? $ps_callback : null);
+
+		$t = new Timer();
+		$vn_start_time = time();
+		$va_log_import_error_opts = array('startTime' => $vn_start_time, 'window' => $r_errors, 'log' => $o_log, 'request' => $po_request, 'progressCallback' => (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) ? $ps_callback : null, 'reportCallback' => (isset($pa_options['reportCallback']) && ($ps_callback = $pa_options['reportCallback'])) ? $ps_callback : null);
 	
 		global $g_ui_locale_id;	// constant locale set by index.php for web requests
 		$vn_locale_id = (isset($pa_options['locale_id']) && (int)$pa_options['locale_id']) ? (int)$pa_options['locale_id'] : $g_ui_locale_id;
 		
 		$o_dm = $t_mapping->getAppDatamodel();
 		
-		$t = new Timer();
-		$vn_start_time = time();
 		
 		if ($vb_show_cli_progress_bar){
 			print CLIProgressBar::start(0, _t('Reading %1', $ps_source), array('window' => $r_progress));

@@ -1095,7 +1095,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 							'height' => (isset($va_element['settings']['height']) && ($va_element['settings']['height'] > 0)) ? $va_element['settings']['height'] : 1
 						)),
 						'label' => $vs_field_label,
-						'name' => $vs_field
+						'name' => $va_element['bundle_name']
 					); 
 					continue(2);
 				case 'created':
@@ -1128,7 +1128,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 						$va_labels = caExtractValuesByUserLocale(array(0 => $va_element['settings']['label']));
 						$vs_label = array_shift($va_labels);
 					} 
-					if (!$va_label && !($vs_label = $va_access_points[$va_tmp[0]]['name'])) {
+					if (!$vs_label && !($vs_label = $va_access_points[$va_tmp[0]]['name'])) {
 						$vs_label = $vs_field;
 					}
 				
