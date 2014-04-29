@@ -1104,6 +1104,8 @@ div.hint {
 .quickAddSectionBox{
     margin: 0px;
     padding: 10px;
+    height: 525px;
+    overflow-y: auto;
 }
 
 /* Style for labels on standard form fields (ie. no error) */
@@ -6210,8 +6212,8 @@ div.quickAddDialogHeader {
     font-weight: bold !important;
     padding: 5px;
     
-    position: fixed;
     width: 890px;
+    height: 35px;
     z-index:33000;
 }
 

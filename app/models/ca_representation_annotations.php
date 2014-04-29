@@ -306,7 +306,7 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 		foreach($pm_fields as $vs_fld => $vs_val) {
 			if (($vs_fld == 'representation_id') && ($pb_assume_idno_for_representation_id || preg_match("![^\d]+!", $vs_val))) {
 				$t_rep = new ca_object_representations();
-				if ($t_rep->load(array('idno' => $vs_val))) {
+				if ($t_rep->load(array('idno' => $vs_val, 'deleted' => 0))) {
 					$vn_representation_id = (int)$t_rep->getPrimaryKey();
 					$pm_fields[$vs_fld] = $vn_representation_id;
 					if ($vn_rc = parent::set($pm_fields, null, $pa_options)) {
@@ -331,7 +331,7 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 	public function insert($pa_options=null) {
 		$this->set('type_code', $vs_type = $this->getAnnotationType());
 		$this->opo_annotations_properties = $this->loadProperties($vs_type);
-		$this->dump();
+		
 		if (!$this->opo_annotations_properties) {
 			$this->postError(1101, _t('No type code set'), 'ca_representation_annotations->insert');
 			return false;
@@ -566,6 +566,13 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
  		}
  		return $va_reps;
  	}
+ 	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function useInEditor() {
+		return $this->opo_annotations_properties->useInEditor();
+	}
  	# ------------------------------------------------------
  	# STATIC
  	# ------------------------------------------------------

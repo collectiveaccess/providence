@@ -83,7 +83,7 @@
  			list($t_ui) = $this->_initView($pa_options);
  			
  			$this->view->setVar('batch_mediaimport_last_settings', $va_last_settings = is_array($va_last_settings = $this->request->user->getVar('batch_mediaimport_last_settings')) ? $va_last_settings : array());
- 			
+ 		
  			$t_object = new ca_objects();
  			$t_object->set('status', $va_last_settings['ca_objects_status']);
  			$t_object->set('access', $va_last_settings['ca_objects_access']);
@@ -180,7 +180,8 @@
  				'set_id' => $this->request->getParameter('set_id', pInteger),
  				'idnoMode' => $this->request->getParameter('idno_mode', pString),
  				'idno' => $this->request->getParameter('idno', pString),
- 				'idno' => $this->request->getParameter('idno', pString),
+ 				'logLevel' => $this->request->getParameter('log_level', pString),
+ 				'allowDuplicateMedia' => $this->request->getParameter('allow_duplicate_media', pInteger),
  				'locale_id' => $g_ui_locale_id,
  				'user_id' => $this->request->getUserID(),
  				'skipFileList' => $this->request->getParameter('skip_file_list', pString)
@@ -196,7 +197,7 @@
  			$va_last_settings = $va_options;
  			$va_last_settings['importFromDirectory'] = preg_replace("!{$vs_batch_media_import_root_directory}[/]*!", "", $va_last_settings['importFromDirectory']); 
  			$this->request->user->setVar('batch_mediaimport_last_settings', $va_last_settings);
- 
+ 			
  			if ((bool)$this->request->config->get('queue_enabled') && (bool)$this->request->getParameter('run_in_background', pInteger)) { // queue for background processing
  				$o_tq = new TaskQueue();
  				

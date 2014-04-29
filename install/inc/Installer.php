@@ -939,7 +939,7 @@ class Installer {
 					}
 				}
 			}
-		
+			
 			// add source level ACL items
 			if($vo_role->sourceLevelAccessControl) {
 				foreach($vo_role->sourceLevelAccessControl->children() as $vo_permission) {
