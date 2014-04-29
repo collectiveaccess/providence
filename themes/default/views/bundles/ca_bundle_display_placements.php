@@ -38,6 +38,7 @@
 	$va_to_display_items  				= $t_display->getPlacementsInDisplay(array('noCache' => true));
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'BundleDisplayPlacements');
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'BundleDisplayPlacements', $va_settings);
 ?>
 <div class="bundleDisplayPlacementEditorContainer" id="<?php print $vs_id_prefix; ?>BundleDisplayPlacements">
 	<div id="bundleDisplayPlacementEditor" class="bundleDisplayPlacementEditor">

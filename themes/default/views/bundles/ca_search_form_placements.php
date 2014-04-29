@@ -40,6 +40,7 @@
 	
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'searchFormPlacements');
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'searchFormPlacements', $va_settings);
 ?>
 <div class="bundleDisplayPlacementEditorContainer" id="<?php print $vs_id_prefix; ?>searchFormPlacements">
 	<div id="bundleDisplayPlacementEditor" class="bundleDisplayPlacementEditor">

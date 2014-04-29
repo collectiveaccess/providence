@@ -41,6 +41,7 @@
 	$va_orders = $t_subject->getClientHistory($vs_order_type);
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$vn_table_num.'OrderHistory');
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$vn_table_num.'OrderHistory', $va_settings);
 ?>
 <div id="<?php print $vs_id_prefix.$vn_table_num.'OrderHistory'; ?>">
 	<div class="bundleContainer">

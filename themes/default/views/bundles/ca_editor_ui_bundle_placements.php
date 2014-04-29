@@ -38,6 +38,7 @@
 	$va_to_display_items  				= $t_screen->getPlacementsInScreen(array('noCache' => true));
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'UIEditorBundlePlacements');
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'UIEditorBundlePlacements', $va_settings);
 ?>
 <div class="bundleDisplayPlacementEditorContainer" id="<?php print $vs_id_prefix; ?>UIEditorBundlePlacements">
 	<div id="bundleDisplayPlacementEditor" class="bundleDisplayPlacementEditor">

@@ -49,6 +49,7 @@
 	} else {
 		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$vn_table_num.'_sets');
 	}
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$vn_table_num.'_sets', $va_settings);
 ?>
 <div id="<?php print $vs_id_prefix.$vn_table_num.'_sets'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php

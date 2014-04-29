@@ -36,6 +36,7 @@
 	$vb_media_is_set = is_array($t_subject->getMediaInfo('media'));
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'MediaDisplay');
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'MediaDisplay', $va_settings);
 ?>
 <div id="<?php print $vs_id_prefix.'MediaDisplay'; ?>">
 	<div class="bundleContainer">

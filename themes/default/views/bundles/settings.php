@@ -33,6 +33,7 @@
 	$t_subject							= $this->getVar('t_subject');
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$vn_table_num.'Settings');
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$vn_table_num.'Settings', $va_settings);
 ?>
 <div id="<?php print $vs_id_prefix.$vn_table_num.'Settings'; ?>">
 	<div class="bundleContainer">
