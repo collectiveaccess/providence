@@ -1180,7 +1180,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			||
 			($t_dictionary_entry = ca_metadata_dictionary_entries::getEntry($this->tableName().'.'.$ps_bundle_name_proc))
 		) {
-			$pa_bundle_settings['description'][$g_ui_locale] = $t_dictionary_entry->getSetting('definition');
+			$pa_bundle_settings['definition'][$g_ui_locale] = $t_dictionary_entry->getSetting('definition');
+			if ($t_dictionary_entry->getSetting('mandatory')) {
+				$pa_bundle_settings['definition'][$g_ui_locale] .= $this->getAppConfig()->get('required_field_marker');
+			}
+			if (!caGetOption($g_ui_locale, $pa_bundle_settings['description'], null)) { $pa_bundle_settings['description'][$g_ui_locale] = $t_dictionary_entry->getSetting('definition'); }
 		}
 		
 		// is label for this bundle forced in bundle settings?

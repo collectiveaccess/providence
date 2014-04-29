@@ -3301,8 +3301,9 @@ $ca_relationship_lookup_parse_cache = array();
 	}
 	# ---------------------------------------
 	/**
-	 * Generates batch mode control HTML for metadata attribute bundles
+	 * Generates show/hide control HTML for bundles
 	 *
+	 * @param RequestHTTP $po_request
 	 * @param string $ps_id_prefix
 	 * 
 	 * @return string HTML implementing the control
@@ -3317,20 +3318,51 @@ $ca_relationship_lookup_parse_cache = array();
 	}
 	# ---------------------------------------
 	/**
-	 * Generates batch mode control HTML for metadata attribute bundles
+	 * Generates metadata dictionary control HTML for bundles
 	 *
+	 * @param RequestHTTP $po_request
 	 * @param string $ps_id_prefix
+	 * @param array $pa_settings
 	 * 
 	 * @return string HTML implementing the control
 	 */
 	function caEditorBundleMetadataDictionary($po_request, $ps_id_prefix, $pa_settings) {
 		global $g_ui_locale;
 		
+		if (!($vs_definition = trim(caGetOption($g_ui_locale, $pa_settings['definition'], null)))) { return ''; }
+		
 		$vs_buf = "<span style='position: absolute; top: 2px; right: 26px;'>";
 		$vs_buf .= "<a href='#' onclick='caBundleVisibilityManager.toggleDictionaryEntry(\"{$ps_id_prefix}\");  return false;'><img src=\"".$po_request->getThemeUrlPath()."/graphics/icons/info.png\" border=\"0\" id=\"{$ps_id_prefix}MetadataDictionaryToggleButton\"/></a>";
 		$vs_buf .= "</span>\n";	
 		
-		$vs_buf .= "<div id='{$ps_id_prefix}DictionaryEntry' class='caMetadataDictionaryDefinition'>".caGetOption($g_ui_locale, $pa_settings['description'], null)."</div>";
+		$vs_buf .= "<div id='{$ps_id_prefix}DictionaryEntry' class='caMetadataDictionaryDefinition'>{$vs_definition}</div>";
+		
+		return $vs_buf;
+	}
+	# ---------------------------------------
+	/**
+	 * Generates sort control HTML for relation bundles (Eg. ca_entities, ca_occurrences)
+	 *
+	 * @param RequestHTTP $po_request
+	 * @param string $ps_id_prefix
+	 * @param array $pa_settings
+	 * 
+	 * @return string HTML implementing the control
+	 */
+	function caEditorBundleSortControls($po_request, $ps_id_prefix, $pa_settings) {
+		$vs_buf = "	<div class=\"caItemListSortControlContainer\">
+		<div class=\"caItemListSortControlTrigger\" id=\"{$ps_id_prefix}caItemListSortControlTrigger\">
+			"._t('Sort by')." <img src=\"".$po_request->getThemeUrlPath()."/graphics/icons/bg.gif\" alt=\"Sort\"/>
+		</div>
+		<div class=\"caItemListSortControls\" id=\"{$ps_id_prefix}caItemListSortControls\">
+			<ul>
+				<li><a href=\"#\" onclick=\"caRelationBundle{$ps_id_prefix}.sort('name'); return false;\" class=\"caItemListSortControl\">"._t('name')."</a><br/></li>
+				<li><a href=\"#\" onclick=\"caRelationBundle{$ps_id_prefix}.sort('idno'); return false;\" class=\"caItemListSortControl\">"._t('idno')."</a><br/></li>
+				<li><a href=\"#\" onclick=\"caRelationBundle{$ps_id_prefix}.sort('type'); return false;\" class=\"caItemListSortControl\">"._t('type')."</a><br/></li>
+				<li><a href=\"#\" onclick=\"caRelationBundle{$ps_id_prefix}.sort('entry'); return false;\" class=\"caItemListSortControl\">"._t('entry')."</a><br/></li>
+			</ul>
+		</div>
+	</div>";
 		
 		return $vs_buf;
 	}

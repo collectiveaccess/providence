@@ -161,7 +161,7 @@
 ?>
 		
 		</div>
-		<input type="hidden" name="<?php print $vs_id_prefix; ?>BundleList" id="<?php print $vs_id_prefix; ?>BundleList" value=""/>
+		<input type="text" name="<?php print $vs_id_prefix; ?>BundleList" id="<?php print $vs_id_prefix; ?>BundleList" value=""/>
 
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
 <?php
