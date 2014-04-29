@@ -3317,6 +3317,25 @@ $ca_relationship_lookup_parse_cache = array();
 	}
 	# ---------------------------------------
 	/**
+	 * Generates batch mode control HTML for metadata attribute bundles
+	 *
+	 * @param string $ps_id_prefix
+	 * 
+	 * @return string HTML implementing the control
+	 */
+	function caEditorBundleMetadataDictionary($po_request, $ps_id_prefix, $pa_settings) {
+		global $g_ui_locale;
+		
+		$vs_buf = "<span style='float:right; margin-right:7px;'>";
+		$vs_buf .= "<a href='#' onclick='caBundleVisibilityManager.toggleDictionaryEntry(\"{$ps_id_prefix}\");  return false;'><img src=\"".$po_request->getThemeUrlPath()."/graphics/icons/info.png\" border=\"0\" id=\"{$ps_id_prefix}MetadataDictionaryToggleButton\"/></a>";
+		$vs_buf .= "</span>\n";	
+		
+		$vs_buf .= "<div id='{$ps_id_prefix}DictionaryEntry' class='caMetadataDictionaryDefinition'>".caGetOption($g_ui_locale, $pa_settings['description'], null)."</div>";
+		
+		return $vs_buf;
+	}
+	# ---------------------------------------
+	/**
 	 * 
 	 */
 	function caProcessBottomLineTemplate($po_request, $pa_placement, $pr_res, $pa_options=null) {

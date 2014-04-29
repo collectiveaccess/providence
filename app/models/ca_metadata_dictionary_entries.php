@@ -35,6 +35,7 @@
    */
  
 require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
+require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_rules.php');
 
 global $_ca_metadata_dictionary_entry_settings;
 $_ca_metadata_dictionary_entry_settings = array(		// global
@@ -53,6 +54,15 @@ $_ca_metadata_dictionary_entry_settings = array(		// global
 		'takesLocale' => true,
 		'label' => _t('Descriptive text for bundle.'),
 		'description' => _t('Definition text to display for this bundle.')
+	),
+	'mandatory' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_CHECKBOXES,
+		'width' => "10", 'height' => "1",
+		'takesLocale' => false,
+		'default' => 0,
+		'label' => _t('Bundle is mandatory'),
+		'description' => _t('Bundle is mandatory and a valid value must be set before it can be saved.')
 	)
 );
 
@@ -201,7 +211,32 @@ class ca_metadata_dictionary_entries extends BaseModel {
 		
 		return true;
 	}
-	# ----------------------------------------
+	# ------------------------------------------------------
+	/**
+	 *
+	 *
+	 */
+	public static function entryExists($ps_bundle_name, $pa_options=null) {
+		if (($va_ids = ca_metadata_dictionary_entries::find(array('bundle_name' => $ps_bundle_name), array('returnAs' => 'ids'))) && is_array($va_ids) && sizeof($va_ids)) {
+			return true;
+		}
+		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 *
+	 */
+	public static function getEntry($ps_bundle_name, $pa_options=null) {
+		if ($t_entry = ca_metadata_dictionary_entries::find(array('bundle_name' => $ps_bundle_name), array('returnAs' => 'firstModelInstance'))) {
+			if(($vs_return = caGetOption('return', $pa_options, null)) && ($t_entry->hasField($vs_return))) {
+				return $t_entry->get($vs_return);
+			}
+			return $t_entry;
+		}
+		return null;
+	}
+	# ------------------------------------------------------
 	public function __destruct() {
 		unset($this->SETTINGS);
 	}
@@ -215,6 +250,6 @@ class ca_metadata_dictionary_entries extends BaseModel {
 		}
 		die($this->tableName()." does not implement method {$ps_name}");
 	}
-	# ----------------------------------------
+	# ------------------------------------------------------
 }
 ?>

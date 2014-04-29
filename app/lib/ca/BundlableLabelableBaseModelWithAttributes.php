@@ -57,6 +57,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	public function __construct($pn_id=null) {
 		require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
 		require_once(__CA_MODELS_DIR__."/ca_acl.php");
+		require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_entries.php');
+		
 		parent::__construct($pn_id);	# call superclass constructor
 		
 		$this->initLabelDefinitions();
@@ -1172,6 +1174,15 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		$vs_label = $vs_label_text = null;
 		
+		$ps_bundle_name_proc = str_replace("ca_attribute_", "", $ps_bundle_name);
+		if (
+			($t_dictionary_entry = ca_metadata_dictionary_entries::getEntry($ps_bundle_name_proc))
+			||
+			($t_dictionary_entry = ca_metadata_dictionary_entries::getEntry($this->tableName().'.'.$ps_bundle_name_proc))
+		) {
+			$pa_bundle_settings['description'][$g_ui_locale] = $t_dictionary_entry->getSetting('definition');
+		}
+		
 		// is label for this bundle forced in bundle settings?
 		if (isset($pa_bundle_settings['label']) && isset($pa_bundle_settings['label'][$g_ui_locale]) && ($pa_bundle_settings['label'][$g_ui_locale])) {
 			$vs_label = $vs_label_text = $pa_bundle_settings['label'][$g_ui_locale];
@@ -1195,8 +1206,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$pa_options['dontCache'] = true;	// we *don't* want to cache labels here
 				$vs_element = ($vs_type === 'preferred_label') ? $this->getPreferredLabelHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options) : $this->getNonPreferredLabelHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 			
+				$vs_field_id = "ca_{$vs_type}_".$pa_options['formName']."_{$ps_placement_code}";
 				if (!$vs_label_text) {  $vs_label_text = $va_info['label']; } 
-				$vs_label = '<span class="formLabelText" id="'.$pa_options['formName'].'_'.$ps_placement_code.'">'.$vs_label_text.'</span>'; 
+				$vs_label = '<span class="formLabelText" id="'.$vs_field_id.'">'.$vs_label_text.'</span>'; 
 				
 				if (($vs_type == 'preferred_label') && $o_config->get('show_required_field_marker') && $o_config->get('require_preferred_label_for_'.$this->tableName())) {
 					$vs_label .= ' '.$vs_required_marker;
@@ -1204,8 +1216,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 				$vs_description = isset($pa_bundle_settings['description'][$g_ui_locale]) ? $pa_bundle_settings['description'][$g_ui_locale] : null;
 				
-				if (($vs_label_text) && ($vs_description)) {
-					TooltipManager::add('#'.$pa_options['formName'].'_'.$ps_placement_code, "<h3>{$vs_label}</h3>{$vs_description}");
+				if (($vs_label) && ($vs_description)) {
+					TooltipManager::add('#'.$vs_field_id, "<h3>{$vs_label_text}</h3>{$vs_description}");
 				}
 				break;
 			# -------------------------------------------------

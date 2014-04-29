@@ -2017,5 +2017,122 @@
 			return _t('Reset a user\'s password.');
 		}
 		# -------------------------------------------------------
+		/**
+		 * Reset user password
+		 */
+		public static function load_metadata_dictionary_from_excel_file($po_opts=null) {
+			
+			require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
+			require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
+			require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_entries.php');
+			
+			if (!($ps_source = (string)$po_opts->getOption('file'))) {
+				CLIUtils::addError(_t("You must specify a file"));
+				return false;
+			}
+			if (!file_exists($ps_source) || !is_readable($ps_source)) {
+				CLIUtils::addError(_t("You must specify a valid file"));
+				return false;
+			}
+			
+			try {
+				$o_file = PHPExcel_IOFactory::load($ps_source);
+			} catch (Exception $e) {
+				CLIUtils::addError(_t("You must specify a valid Excel .xls or .xlsx file: %1", $e->getMessage()));
+				return false;
+			}
+			$o_sheet = $o_file->getActiveSheet();
+			$o_rows = $o_sheet->getRowIterator();
+			
+			$vn_add_count = $vn_modify_count = 0;
+			while ($o_rows->valid() && ($o_row = $o_rows->current())) {
+				$o_cells = $o_row->getCellIterator();
+				$o_cells->setIterateOnlyExistingCells(false); 
+				
+				$vn_c = 0;
+				$va_data = array();
+				
+				foreach ($o_cells as $o_cell) {
+					$vm_val = $o_cell->getValue();
+					if ($vm_val instanceof PHPExcel_RichText) {
+						$vs_val = '';
+						foreach($vm_val->getRichTextElements() as $vn_x => $o_item) {
+							$o_font = $o_item->getFont();
+							$vs_text = $o_item->getText();
+							if ($o_font && $o_font->getBold()) {
+								$vs_val .= "<strong>{$vs_text}</strong>";
+							} elseif($o_font && $o_font->getItalic()) {
+								$vs_val .= "<em>{$vs_text}</em>";
+							} else {
+								$vs_val .= $vs_text;
+							}
+						}
+					} else {
+						$vs_val = trim((string)$vm_val);
+					}
+					$va_data[$vn_c] = nl2br(preg_replace("![\n\r]{1}!", "\n\n", $vs_val));
+					$vn_c++;
+					
+					if ($vn_c > 2) { break; }
+				}
+				$o_rows->next();
+				//print_R($va_data);
+				// Insert entries
+				if (!($t_entry = ca_metadata_dictionary_entries::find(array('bundle_name' => $va_data[0]), array('returnAs' => 'firstModelInstance')))) {
+					$t_entry = new ca_metadata_dictionary_entries();
+					$t_entry->set('bundle_name', $va_data[0]);
+					$vn_add_count++;
+				} else {
+					$vn_modify_count++;
+				}
+				$t_entry->setMode(ACCESS_WRITE);
+				$t_entry->setSetting('label', '');
+				$t_entry->setSetting('definition', $va_data[2]);
+				$t_entry->setSetting('mandatory', (bool)$va_data[1] ? 1 : 0);
+				
+				$vn_rc = ($t_entry->getPrimaryKey() > 0) ? $t_entry->update() : $t_entry->insert();
+				
+				if ($t_entry->numErrors()) {
+					CLIUtils::addError(_t("Error while adding definition for %1: %2", $va_data[0], join("; ", $t_entry->getErrors())));
+				}
+			}
+		
+			
+
+			CLIUtils::addMessage(_t('Added %1 entries; modified %2 entries', $vn_add_count, $vn_modify_count), array('color' => 'bold_green'));
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_metadata_dictionary_from_excel_fileParamList() {
+			return array(
+				"file|f=s" => _t('Excel XLSX file to load.')
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_metadata_dictionary_from_excel_fileUtilityClass() {
+			return _t('Maintenance');
+		}
+		
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_metadata_dictionary_from_excel_fileShortHelp() {
+			return _t('Load metadata dictionary entries from an Excel file');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_metadata_dictionary_from_excel_fileHelp() {
+			return _t('Load metadata dictionary entries from an Excel file using the format described at http://docs.collectiveaccess.org/metadata_dictionary');
+		}
+		# -------------------------------------------------------
 	}
 ?>
