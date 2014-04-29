@@ -28,7 +28,7 @@
 
 require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 
-class wamRelationshipGeneratorPlugin extends BaseApplicationPlugin {
+class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 
 	/** @var Configuration */
 	private $opo_config;
@@ -61,24 +61,15 @@ class wamRelationshipGeneratorPlugin extends BaseApplicationPlugin {
 	}
 
 	private function _process(&$pa_params) {
-		foreach ($this->opo_config->getList('collection_assignment_triggers') as $vo_trigger) {
-			$vb_hasRelationship = $this->_hasRelationshipFromTrigger($pa_params, $vo_trigger);
-			$vb_matches = $this->_matchesTrigger($pa_params, $vo_trigger);
+		foreach ($this->opo_config->getAssoc('triggers') as $vo_trigger) {
+			$vb_hasRelationship = $pa_params['instance']->relationshipExists($vo_trigger['related_table'], $vo_trigger['related_record']);
+			$vb_matches = in_array($pa_params['table_name'], $vo_trigger['source_tables']) && in_array(caProcessTemplateForIDs($vo_trigger['trigger_template'], $pa_params['table_name'], array( $pa_params['id'] )), $vo_trigger['trigger_values']);
 			if (!$vb_hasRelationship && $vb_matches) {
 				$pa_params['instance']->addRelationship($vo_trigger['related_table'], $vo_trigger['related_record'], $vo_trigger['relationship_type']);
 			} elseif ($vb_hasRelationship && !$vb_matches) {
 				$pa_params['instance']->removeRelationship($vo_trigger['related_table'], $vo_trigger['related_record'], $vo_trigger['relationship_type']);
 			}
 		}
-	}
-
-	private function _hasRelationshipFromTrigger($pa_params, $po_trigger) {
-		return $pa_params['instance']->relationshipExists($po_trigger['related_table'], $po_trigger['related_record']);
-	}
-
-	private function _matchesTrigger($pa_params, $po_trigger) {
-		return in_array($pa_params['table_name'], $po_trigger['source_tables'])
-			&& in_array(caProcessTemplateForIDs($po_trigger['trigger_template'], $pa_params['table_name'], array( $pa_params['id'] )), $po_trigger['trigger_values']);
 	}
 
 	static function getRoleActionList() {
