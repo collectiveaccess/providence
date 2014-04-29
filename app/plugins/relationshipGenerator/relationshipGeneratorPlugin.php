@@ -36,7 +36,7 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 	public function __construct($ps_plugin_path) {
 		parent::__construct();
 		$this->description = _t('Automatically assigns an object to a collection, based upon rules you specify in the configuration file associated with the plugin');
-		$this->opo_config = Configuration::load($ps_plugin_path . DIRECTORY_SEPARATOR . 'conf' . DIRECTORY_SEPARATOR . 'wamRelationshipGenerator.conf');
+		$this->opo_config = Configuration::load($ps_plugin_path . DIRECTORY_SEPARATOR . 'conf' . DIRECTORY_SEPARATOR . 'relationshipGenerator.conf');
 	}
 
 	public function checkStatus() {
@@ -44,17 +44,17 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 			'description' => $this->getDescription(),
 			'errors' => array(),
 			'warnings' => array(),
-			'available' => (bool)$this->opo_config->get('enabled')
+			'available' => (bool)$this->opo_config->getBoolean('enabled')
 		);
 	}
 
-	public function hookBeforeBundleInsert(&$pa_params) {
+	public function hookAfterBundleInsert(&$pa_params) {
 		if ($this->opo_config->getBoolean('assign_on_insert') && $pa_params['instance'] instanceof BundlableLabelableBaseModelWithAttributes) {
 			$this->_process($pa_params);
 		}
 	}
 
-	public function hookBeforeBundleUpdate(&$pa_params) {
+	public function hookAfterBundleUpdate(&$pa_params) {
 		if ($this->opo_config->getBoolean('assign_on_update') && $pa_params['instance'] instanceof BundlableLabelableBaseModelWithAttributes) {
 			$this->_process($pa_params);
 		}
@@ -62,12 +62,19 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 
 	private function _process(&$pa_params) {
 		foreach ($this->opo_config->getAssoc('triggers') as $vo_trigger) {
-			$vb_hasRelationship = $pa_params['instance']->relationshipExists($vo_trigger['related_table'], $vo_trigger['related_record']);
-			$vb_matches = in_array($pa_params['table_name'], $vo_trigger['source_tables']) && in_array(caProcessTemplateForIDs($vo_trigger['trigger_template'], $pa_params['table_name'], array( $pa_params['id'] )), $vo_trigger['trigger_values']);
-			if (!$vb_hasRelationship && $vb_matches) {
-				$pa_params['instance']->addRelationship($vo_trigger['related_table'], $vo_trigger['related_record'], $vo_trigger['relationship_type']);
-			} elseif ($vb_hasRelationship && !$vb_matches) {
-				$pa_params['instance']->removeRelationship($vo_trigger['related_table'], $vo_trigger['related_record'], $vo_trigger['relationship_type']);
+			$vo_relatedModel = new $vo_trigger['related_table']($vo_trigger['related_record']);
+			if (sizeof($vo_relatedModel->getFieldValuesArray()) > 0) {
+				error_log('related model exists');
+				$vb_hasRelationship = $pa_params['instance']->relationshipExists($vo_trigger['related_table'], $vo_trigger['related_record']);
+				$vs_value = caProcessTemplateForIDs($vo_trigger['trigger_template'], $pa_params['table_name'], array( $pa_params['id'] ));
+				$vb_matches = in_array($pa_params['table_name'], $vo_trigger['source_tables']) && in_array($vs_value, $vo_trigger['trigger_values']);
+				if (!$vb_hasRelationship && $vb_matches) {
+					error_log('adding relationship');
+					$pa_params['instance']->addRelationship($vo_trigger['related_table'], $vo_trigger['related_record'], $vo_trigger['relationship_type']);
+				} elseif ($vb_hasRelationship && !$vb_matches) {
+					error_log('removing relationship');
+					$pa_params['instance']->removeRelationship($vo_trigger['related_table'], $vo_trigger['related_record'], $vo_trigger['relationship_type']);
+				}
 			}
 		}
 	}
