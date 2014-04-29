@@ -921,6 +921,8 @@ div.hint {
 }
 
 .bundleLabel {
+	position: relative;
+	
     font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size:13px;
     color: #333;
