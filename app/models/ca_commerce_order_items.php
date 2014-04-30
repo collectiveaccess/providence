@@ -73,7 +73,7 @@ BaseModel::$s_ca_models_definitions['ca_commerce_order_items'] = array(
 					_t('Scan of image') => 'SCAN'
 				)
 		),
-		'fullfillment_method' => array(
+		'fulfillment_method' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => true, 
@@ -311,7 +311,7 @@ class ca_commerce_order_items extends BaseModel {
 			foreach($va_methods as $vs_code => $va_info) {
 				$va_method_list[$va_info['label']] = $vs_code;
 			}
-			BaseModel::$s_ca_models_definitions['ca_commerce_order_items']['FIELDS']['fullfillment_method']['BOUNDS_CHOICE_LIST'] = $va_method_list;
+			BaseModel::$s_ca_models_definitions['ca_commerce_order_items']['FIELDS']['fulfillment_method']['BOUNDS_CHOICE_LIST'] = $va_method_list;
 		}
 		
 		parent::__construct($pn_id);
@@ -468,7 +468,7 @@ class ca_commerce_order_items extends BaseModel {
 		if (!$this->getPrimaryKey()) { return null; }
 		
 		// It it intended for fulfillment by download?
-		if (!in_array($this->get('fullfillment_method'), array('DOWNLOAD'))) {
+		if (!in_array($this->get('fulfillment_method'), array('DOWNLOAD'))) {
 			return false;
 		}
 		

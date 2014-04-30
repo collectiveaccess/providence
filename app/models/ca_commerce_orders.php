@@ -1495,9 +1495,9 @@ class ca_commerce_orders extends BaseModel {
 	 	}
 	 	
 	 	// set fulfillment method
-	 	if (!isset($pa_values['fullfillment_method'])) {
+	 	if (!isset($pa_values['fulfillment_method'])) {
 	 		if (isset($this->opo_services_list[$t_item->get('service')]['fulfillment_method'])) {
-	 			$t_item->set('fullfillment_method', $this->opo_services_list[$t_item->get('service')]['fulfillment_method']);
+	 			$t_item->set('fulfillment_method', $this->opo_services_list[$t_item->get('service')]['fulfillment_method']);
 	 		}
 	 	}
 	 	$t_item->insert();
@@ -1870,7 +1870,7 @@ class ca_commerce_orders extends BaseModel {
 			SELECT count(*) c
 			FROM ca_commerce_order_items
 			WHERE
-				fullfillment_method = 'SHIPMENT' AND order_id = ?
+				fulfillment_method = 'SHIPMENT' AND order_id = ?
 		", (int)$this->getPrimaryKey());
 		$qr_res->nextRow();
 		if ($qr_res->get('c') > 0) { return true; }
@@ -1890,7 +1890,7 @@ class ca_commerce_orders extends BaseModel {
 			SELECT count(*) c
 			FROM ca_commerce_order_items
 			WHERE
-				fullfillment_method = 'DOWNLOAD' AND order_id = ?
+				fulfillment_method = 'DOWNLOAD' AND order_id = ?
 		", (int)$this->getPrimaryKey());
 		$qr_res->nextRow();
 		if ($qr_res->get('c') > 0) { return true; }
@@ -1911,7 +1911,7 @@ class ca_commerce_orders extends BaseModel {
 			SELECT item_id, object_id
 			FROM ca_commerce_order_items
 			WHERE
-				fullfillment_method = 'DOWNLOAD' AND order_id = ?
+				fulfillment_method = 'DOWNLOAD' AND order_id = ?
 		", (int)$this->getPrimaryKey());
 		
 		$va_object_ids = array();
@@ -1957,7 +1957,7 @@ class ca_commerce_orders extends BaseModel {
 			FROM ca_commerce_order_items i
 			LEFT JOIN ca_commerce_order_items_x_object_representations AS coxor ON i.item_id = coxor.item_id
 			WHERE
-				i.fullfillment_method = 'DOWNLOAD' AND i.order_id = ?
+				i.fulfillment_method = 'DOWNLOAD' AND i.order_id = ?
 		", (int)$this->getPrimaryKey());
 		
 		$va_object_ids = array();
@@ -2001,16 +2001,16 @@ class ca_commerce_orders extends BaseModel {
 		
 		$o_db = $this->getDb();
 		$qr_res = $o_db->query("
-			SELECT count(*) c, fullfillment_method
+			SELECT count(*) c, fulfillment_method
 			FROM ca_commerce_order_items
 			WHERE
 				order_id = ?
-			GROUP BY fullfillment_method
+			GROUP BY fulfillment_method
 		", (int)$this->getPrimaryKey());
 		
 		$va_counts = array();
 		while($qr_res->nextRow()) {
-			$va_counts[$qr_res->get('fullfillment_method')] = $qr_res->get('c');
+			$va_counts[$qr_res->get('fulfillment_method')] = $qr_res->get('c');
 		}
 		return $va_counts;
 	}
@@ -2091,7 +2091,7 @@ class ca_commerce_orders extends BaseModel {
 			$va_row = $qr_res->getRow();
 			$va_row['fulfillment_details'] = caUnserializeForDatabase($va_row['fulfillment_details']);
 			$va_row['item_label'] = $va_labels[$va_row['object_id']];
-			$va_row['fulfillment_method_display'] = $t_item->getChoiceListValue('fullfillment_method', $va_row['fullfillment_method']);
+			$va_row['fulfillment_method_display'] = $t_item->getChoiceListValue('fulfillment_method', $va_row['fulfillment_method']);
 			$va_row['service_display'] = $t_item->getChoiceListValue('service', $va_row['service']);
 			
 			if ($vn_user_id = (int)$va_row['fulfillment_details']['user_id']) {

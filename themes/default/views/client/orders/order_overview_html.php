@@ -255,7 +255,7 @@ foreach ($va_items as $va_item) {
 	print "<td class='itemTitle{$vn_object_id}'>".caNavLink($this->request, $va_item['name'], "", "editor", "objects/ObjectEditor", "Edit", array('object_id' => $va_item['object_id']))."</td>";
 	print "<td>".$va_item['idno']."</td>";
 	print "<td>".$t_item->getChoiceListValue('service', $va_item['service'])."</td>";
-	print "<td>".$t_item->getChoiceListValue('fullfillment_method', $va_item['fullfillment_method'])."</td>";
+	print "<td>".$t_item->getChoiceListValue('fulfillment_method', $va_item['fulfillment_method'])."</td>";
 	print "<td>".$vs_currency_symbol.(int)$va_item['fee']."</td>";
 	print "<td>".$va_item['notes']."</td>";
 	print "</tr>";
