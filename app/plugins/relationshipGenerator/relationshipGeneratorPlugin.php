@@ -61,15 +61,25 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 	}
 
 	private function _process(&$pa_params) {
+//		$test = new ca_collections(array('idno' => 'single_individual'));
+
+
 		foreach ($this->opo_config->getAssoc('triggers') as $vo_trigger) {
-			$vo_relatedModel = new $vo_trigger['related_table']($vo_trigger['related_record']);
+			error_log($vo_trigger['related_table']);
+			error_log($vo_trigger['related_record']);
+			/** @var $vo_relatedModel ca_objects */
+			$vo_relatedModel = $this->_getRelatedModel($vo_trigger);
+			error_log(print_r($vo_relatedModel->get('collection_id'), true));
+//			echo '<pre>'; print_r($vo_relatedModel); exit;
 			if (sizeof($vo_relatedModel->getFieldValuesArray()) > 0) {
 				error_log('related model exists');
 				$vb_hasRelationship = $pa_params['instance']->relationshipExists($vo_trigger['related_table'], $vo_trigger['related_record']);
-				$vs_value = caProcessTemplateForIDs($vo_trigger['trigger_template'], $pa_params['table_name'], array( $pa_params['id'] ));
-				$vb_matches = in_array($pa_params['table_name'], $vo_trigger['source_tables']) && in_array($vs_value, $vo_trigger['trigger_values']);
+				$vb_matches = $this->_hasMatch($pa_params, $vo_trigger);
 				if (!$vb_hasRelationship && $vb_matches) {
+					error_log('***************');
 					error_log('adding relationship');
+					error_log($vo_trigger['relationship_type']);
+					error_log('***************');
 					$pa_params['instance']->addRelationship($vo_trigger['related_table'], $vo_trigger['related_record'], $vo_trigger['relationship_type']);
 				} elseif ($vb_hasRelationship && !$vb_matches) {
 					error_log('removing relationship');
@@ -77,6 +87,23 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 				}
 			}
 		}
+	}
+
+	private function _getRelatedModel($po_trigger) {
+		$vm_constructorParams = $po_trigger['related_record'];
+		if (is_string($vm_constructorParams)) {
+			$vm_constructorParams = array( 'idno' => $vm_constructorParams );
+		}
+		return new $po_trigger['related_table']($vm_constructorParams);
+	}
+
+	private function _hasMatch($pa_params, $po_trigger) {
+		$vs_value = caProcessTemplateForIDs($po_trigger['trigger_template'], $pa_params['table_name'], array( $pa_params['id'] ));
+		$vb_matches = in_array($pa_params['table_name'], $po_trigger['source_tables']);
+		foreach ($po_trigger['trigger_value_patterns'] as $vs_pattern) {
+			$vb_matches = $vb_matches && preg_match($vs_pattern, $vs_value);
+		}
+		return $vb_matches;
 	}
 
 	static function getRoleActionList() {
