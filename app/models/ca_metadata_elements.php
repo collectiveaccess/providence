@@ -369,6 +369,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		if (!$this->isValidSetting($ps_setting)) { return null; }
 		
 		$o_value_instance = Attribute::getValueInstance($this->get('datatype'), null, true);
+		$vs_error = null;
 		if (!$o_value_instance->validateSetting($this->getFieldValuesArray(), $ps_setting, $pm_value, $vs_error)) {
 			$ps_error = $vs_error;
 			return false;
@@ -461,9 +462,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
  				$vn_width = (isset($va_properties['width']) && (strlen($va_properties['width']) > 0)) ? $va_properties['width'] : "100px";
 				$vn_height = (isset($va_properties['height']) && (strlen($va_properties['height']) > 0)) ? $va_properties['height'] : "50px";
 				
-				if (!$vs_input_id) { $vs_input_id = $vs_input_name; }
 				if ($vn_height > 1) { $va_attr['multiple'] = 1; $vs_input_name .= '[]'; }
-				$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height);
+				$va_opts = array('id' => $vs_input_name, 'width' => $vn_width, 'height' => $vn_height);
 				
 				$vm_value = $this->getSetting($ps_setting);
 				
@@ -476,7 +476,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 				
 				// reload settings form when value for this element changes
 				if (isset($va_properties['refreshOnChange']) && (bool)$va_properties['refreshOnChange']) {
-					$va_attr['onchange'] = "caSetElementsSettingsForm({ {$vs_input_id} : jQuery(this).val() }); return false;";
+					$va_attr['onchange'] = "caSetElementsSettingsForm({ {$vs_input_name} : jQuery(this).val() }); return false;";
 				}
 				$vs_return .= caHTMLSelect($vs_input_name, $va_properties['options'], $va_attr, $va_opts);
 				break;			
@@ -528,7 +528,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 	/**
-	 * Returns list of "root" metadata elements – elements that are either freestanding or at the top of an element hierarchy (Eg. have sub-elements but are not sub-elements themselves).
+	 * Returns list of "root" metadata elements ��� elements that are either freestanding or at the top of an element hierarchy (Eg. have sub-elements but are not sub-elements themselves).
 	 * Root elements are used to reference the element as a whole (including sub-elements), so it is useful to be able to obtain
 	 * a list of these elements with sub-elements filtered out.
 	 *

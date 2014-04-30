@@ -336,7 +336,7 @@ class Installer {
 			}
 			$vo_db->query($vs_statement);
 			if ($vo_db->numErrors()) {
-				$this->addError("Error while loading the database schema: ".join("; ",$o_db->getErrors()));
+				$this->addError("Error while loading the database schema: ".join("; ",$vo_db->getErrors()));
 				return false;
 			}
 		}
@@ -595,7 +595,7 @@ class Installer {
 		$t_md_element->insert();
 
 		if ($t_md_element->numErrors()) {
-			$this->addError("There was an error while inserting metadata element {$ps_element_code}: ".join(" ",$t_md_element->getErrors()));
+			$this->addError("There was an error while inserting metadata element {$vs_element_code}: ".join(" ",$t_md_element->getErrors()));
 			return false;
 		}
 
@@ -702,7 +702,7 @@ class Installer {
 
 				self::addLabelsFromXMLElement($t_ui_screens, $vo_screen->labels, $this->opa_locales);
 
-				$va_available_bundles = $t_ui_screens->getAvailableBundles($pn_type,array('dontCache' => true));
+				$va_available_bundles = $t_ui_screens->getAvailableBundles(null,array('dontCache' => true));
 
 				// create ui bundle placements
 				foreach($vo_screen->bundlePlacements->children() as $vo_placement) {
@@ -954,7 +954,6 @@ class Installer {
 					}
 				}
 			}
-
 		}
 		return true;
 	}
@@ -1061,7 +1060,7 @@ class Installer {
 		
 		$vn_i = 1;
 		foreach($po_placements->children() as $vo_placement){
-			$vs_code = self::getAttribute($vo_item, "code");
+			$vs_code = self::getAttribute($vo_placement, "code");
 			$vs_bundle = (string)$vo_placement->bundle;
 
 			$va_settings = $this->_processSettings(null, $vo_placement->settings);
@@ -1147,7 +1146,7 @@ class Installer {
 		
 		$vn_i = 0;
 		foreach($po_placements->children() as $vo_placement){
-			$vs_code = self::getAttribute($vo_item, "code");
+			$vs_code = self::getAttribute($vo_placement, "code");
 			$vs_bundle = (string)$vo_placement->bundle;
 
 			$va_settings = $this->_processSettings(null, $vo_placement->settings);
@@ -1175,7 +1174,7 @@ class Installer {
 		$t_user_group->insert();
 		
 		if ($t_user_group->numErrors()) {
-			$this->addError("Errors creating root user group {$vs_group_code}: ".join("; ",$t_user_group->getErrors()));
+			$this->addError("Errors creating root user group 'Root': ".join("; ",$t_user_group->getErrors()));
 			return false;
 		}
 		if($this->ops_base_name){ // "merge" profile and its base

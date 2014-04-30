@@ -330,7 +330,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 			# Read in Tilepic format image
 			#
 			$this->handle = new TilepicParser($filepath);
-			$tp->useLibrary(LIBRARY_GD);
+			$this->handle->useLibrary(LIBRARY_GD);
 			if (!$this->handle->error) {
 				$this->filepath = $filepath;
 				foreach($this->handle->properties as $k => $v) {
@@ -342,7 +342,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$this->properties["typename"] = "Tilepic";
 				return true;
 			} else {
-				postError(1610, $this->handle->error, "WLPlugGD->read()");
+				$this->postError(1610, $this->handle->error, "WLPlugGD->read()");
 				return false;
 			}
 		} else {
@@ -400,7 +400,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 					
 					
 					$o_xmp = new XMPParser();
-					if ($o_xmp->parse($ps_filepath)) {
+					if ($o_xmp->parse($filepath)) {
 						if (is_array($va_xmp_metadata = $o_xmp->getMetadata()) && sizeof($va_xmp_metadata)) {
 							$va_metadata['XMP'] = $va_xmp_metadata;
 						}
@@ -496,7 +496,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 		
 		if (!($this->info["TRANSFORMATIONS"][$operation])) {
 			# invalid transformation
-			postError(1655, _t("Invalid transformation %1", $operation), "WLPlugGD->transform()");
+			$this->postError(1655, _t("Invalid transformation %1", $operation), "WLPlugGD->transform()");
 			return false;
 		}
 		
@@ -577,7 +577,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$angle = $parameters["angle"];
 			if (($angle > -360) && ($angle < 360)) {
 				if ( !($r_new_img = imagerotate($this->handle, $angle, 0 )) ){
-					postError(1610, _t("Couldn't rotate image"), "WLPlugGD->transform()");
+					$this->postError(1610, _t("Couldn't rotate image"), "WLPlugGD->transform()");
 					return false;
 				}
 				imagedestroy($this->handle);

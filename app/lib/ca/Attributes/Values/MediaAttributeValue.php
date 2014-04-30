@@ -171,7 +171,7 @@
 						$va_dimensions[] = $vn_pages.' '.(($vn_pages == 1) ? _t('page') : _t('pages'));
 					}
 					if (!isset($va_info['original']['PROPERTIES']['filesize']) || !($vn_filesize = $va_info['original']['PROPERTIES']['filesize'])) {
-						$vn_filesize = @filesize($qr_reps->getMediaPath('media', 'original'));
+						$vn_filesize = 0;
 					}
 					if ($vn_filesize) {
 						$va_dimensions[] = sprintf("%4.1f", $vn_filesize/(1024*1024)).'mb';

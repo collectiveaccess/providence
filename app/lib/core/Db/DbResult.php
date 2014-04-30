@@ -189,7 +189,7 @@ class DbResult extends DbBase {
 		}
 
 		if (isset($pa_options["escapeForXML"]) && $pa_options["escapeForXML"]) {
-			$vs_val = escapeForXML($vs_val);
+			$vs_val = caEscapeForXML($vs_val);
 		}
 
 		if (get_magic_quotes_gpc() || $pa_options["stripSlashes"]) {

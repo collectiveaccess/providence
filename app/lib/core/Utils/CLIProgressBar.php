@@ -357,8 +357,8 @@ class CLIProgressBar
     {
         if ($width === null) {
         	if (self::$window) {
-        		ncurses_getmaxyx(self::$window, $vn_max_y, $vn_max_x);
-        		$width = $vn_max_x - 4;
+        		ncurses_getmaxyx(self::$window, 80, 100);
+        		$width = 96;
         	} else {
 				if (DIRECTORY_SEPARATOR === '/') {
 					$width = `tput cols`;

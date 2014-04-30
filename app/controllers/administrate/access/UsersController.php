@@ -197,7 +197,7 @@
  			} else {
  				$this->request->user->setVar('ca_users_default_userclass', $vn_userclass);
  			}
- 			if (($vn_userclass < 0) || ($vn_user_class >= 2)) { $vn_userclass = 0; }
+ 			if (($vn_userclass < 0) || ($vn_userclass >= 2)) { $vn_userclass = 0; }
  			$t_user = $this->getUserObject();
  			
  			$this->view->setVar('userclass', $vn_userclass);

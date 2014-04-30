@@ -56,6 +56,8 @@
 		 *
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
+			$o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;
+			
 			// Set place hierarchy
 			if ($vs_hierarchy = $pa_item['settings']['placeSplitter_placeHierarchy']) {
 				$vn_hierarchy_id = caGetListItemID('place_hierarchies', $vs_hierarchy);
@@ -66,7 +68,7 @@
 				$vn_hierarchy_id = array_shift($va_hierarchy_ids);
 			}
 			if (!$vn_hierarchy_id) {
-				if ($o_log) { $o_log->logError(_t('[placeSplitterRefinery] No place hierarchies are defined for %1', $vs_place)); }
+				if ($o_log) { $o_log->logError(_t('[placeSplitterRefinery] No place hierarchies are defined')); }
 				return array();
 			}
 			$pa_options['hierarchyID'] = $vn_hierarchy_id;

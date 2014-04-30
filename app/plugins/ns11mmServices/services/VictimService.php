@@ -284,6 +284,7 @@ class VictimService extends NS11mmService {
 					unset($va_reps[$vn_i]['paths']);
 					unset($va_reps[$vn_i]['tags']);
 					unset($va_reps[$vn_i]['media']);
+					unset($va_reps[$vn_i]['media_metadata']);
 					unset($va_reps[$vn_i]['is_primary']);
 					unset($va_reps[$vn_i]['name']);
 					unset($va_reps[$vn_i]['status']);

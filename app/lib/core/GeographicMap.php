@@ -148,7 +148,7 @@
 					$vs_label = $vs_content = $vs_ajax_content = null;
 							
 					if (!is_null($pa_options['labelTemplate'])) {
-						$vs_label = caProcessTemplateForIDs($pa_options['labelTemplate'], $vs_table, array($vn_id), array('returnAsLink' => $vb_render_label_as_link || (strpos($pa_options['contentTemplate'], "<l>") !== false)));
+						$vs_label = caProcessTemplateForIDs($pa_options['labelTemplate'], $po_data_object->tableName(), array($vn_id), array('returnAsLink' => $vb_render_label_as_link || (strpos($pa_options['contentTemplate'], "<l>") !== false)));
 					} else {
 						if (!is_null($pa_options['label'])) {
 							$vs_label = $po_data_object->get($pa_options['label'], array('returnAsLink' => $vb_render_label_as_link || (strpos($pa_options['contentTemplate'], "<l>") !== false)));
@@ -158,7 +158,7 @@
 					} 
 					
 					if (!is_null($vs_color)) {
-						$vs_color = caProcessTemplateForIDs($vs_color, $vs_table, array($vn_id), array('returnAsLink' => false));
+						$vs_color = caProcessTemplateForIDs($vs_color, $po_data_object->tableName(), array($vn_id), array('returnAsLink' => false));
 					} else {
 						$vs_color = null;
 					}

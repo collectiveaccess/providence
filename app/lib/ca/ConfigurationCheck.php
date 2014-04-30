@@ -177,7 +177,7 @@ final class ConfigurationCheck {
 		}
 
 		// check web root for write-ability
-		if (!$vb_perm_media_error && !$vb_at_least_one_part_of_the_media_path_exists && !is_writeable($vs_web_root)) {
+		if (!$vb_perm_media_error && !$vb_at_least_one_part_of_the_media_path_exists && !is_writeable($vs_base_dir)) {
 			$vb_perm_media_error = true;
 			$vs_perm_media_path = $vs_base_dir;
 		}
