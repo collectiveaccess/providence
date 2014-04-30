@@ -500,6 +500,40 @@
 				}
 			} else {
 				$t_rep->load($vn_rep_id);
+				$t_rep->setMode(ACCESS_WRITE);
+				
+				$t_rep->set('status', $pn_status);
+				$t_rep->set('access', $pn_access);
+				if ($ps_media_path) { $t_rep->set('media', $ps_media_path, $pa_options); }
+		
+				if (is_array($pa_values)) {
+					if (isset($pa_values['idno'])) {
+						$t_rep->set('idno', $pa_values['idno']);
+						unset($pa_values['idno']);
+					}
+					foreach($pa_values as $vs_element => $va_value) { 					
+						if (is_array($va_value)) {
+							// array of values (complex multi-valued attribute)
+							$t_rep->replaceAttribute(
+								array_merge($va_value, array(
+									'locale_id' => $pn_locale_id
+								)), $vs_element);
+						} else {
+							// scalar value (simple single value attribute)
+							if ($va_value) {
+								$t_rep->replaceAttribute(array(
+									'locale_id' => $pn_locale_id,
+									$vs_element => $va_value
+								), $vs_element);
+							}
+						}
+					}
+				}
+				$t_rep->update();
+				if ($t_rep->numErrors()) {
+					$this->errors = array_merge($this->errors, $t_rep->errors());
+					return false;
+				}
 			}
 			
 			if (!($t_oxor = $this->_getRepresentationRelationshipTableInstance())) { return null; }
