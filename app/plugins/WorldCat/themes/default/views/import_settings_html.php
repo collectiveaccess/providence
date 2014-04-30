@@ -60,6 +60,12 @@
 			<?php print _t('Enter a WorldCat search above to begin'); ?>
 		</div>
 	</div>
+	
+	<div class='formLabel'>
+<?php
+		print _t('Log level').': '.caHTMLSelect('log_level', caGetLogLevels(), array('id' => 'caLogLevel'), array('value' => $this->getVar('log_level')));
+?>
+	</div>
 </form>
 
 <div class="editorBottomPadding"><!-- empty --></div>

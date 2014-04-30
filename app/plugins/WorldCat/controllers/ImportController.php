@@ -28,6 +28,7 @@
 
  	require_once(__CA_LIB_DIR__.'/core/Plugins/InformationService/WorldCat.php');
  	require_once(__CA_MODELS_DIR__.'/ca_data_importers.php');
+ 	require_once(__CA_APP_DIR__.'/helpers/importHelpers.php');
  	
 
  	class ImportController extends ActionController {
@@ -75,6 +76,7 @@
  				$va_importer_options[$va_importer_info['label'].' (creates '.($va_importer_info['type_for_display'] ? $va_importer_info['type_for_display'].' ' : '').$va_importer_info['importer_type'].')'] = $vn_importer_id;
  			}
  			$this->view->setVar('importer_list_select', caHTMLSelect('importer_id', $va_importer_options, array()));
+ 			$this->view->setVar('log_level', $this->request->user->getVar('worldcat_log_level'));
  		
  			$this->render("import_settings_html.php");
  		}
@@ -93,6 +95,10 @@
  			$this->view->setVar('job_id', $vs_job_id);
  			$this->view->setVar('worldcat_ids', $pa_worldcat_ids);
  			
+ 			$this->request->user->setVar('worldcat_log_level', $vn_log_level = $this->request->getParameter('log_level', pInteger));
+ 			
+ 			$this->view->setVar('log_level', $vn_log_level);
+ 			
  			$this->render("import_run_html.php");
  		}
  		# ------------------------------------------------------------------
@@ -107,13 +113,14 @@
  			$pa_worldcat_ids = $this->request->getParameter('WorldCatID', pArray);
  			$pn_importer_id = $this->request->getParameter('importer_id', pInteger);
  			$ps_job_id = $this->request->getParameter('job_id', pString);
- 			
+ 			$pn_log_level = $this->request->getParameter('log_level', pInteger);
+ 		
  			$o_progress = new ProgressBar('WebUI', 0, $ps_job_id);
  			$o_progress->setJobID($ps_job_id); 
  			$o_progress->setMode('WebUI');
  			$o_progress->setTotal(sizeof($pa_worldcat_ids));
  			
- 			$vn_status = ca_data_importers::importDataFromSource(join(",", $pa_worldcat_ids), $pn_importer_id, array('progressBar' => $o_progress, 'format' => 'WorldCat'));
+ 			$vn_status = ca_data_importers::importDataFromSource(join(",", $pa_worldcat_ids), $pn_importer_id, array('progressBar' => $o_progress, 'format' => 'WorldCat', 'logLevel' => $pn_log_level));
  		
  			$this->view->setVar('info', array(
  				'status' => $vn_status,
