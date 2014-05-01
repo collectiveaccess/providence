@@ -265,8 +265,11 @@
 							<div class='caObjectRepresentationListActionButton'>
 								<span id="{fieldNamePrefix}download_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_DOWNLOAD__).' '._t('Download'), '', 'editor/objects', 'ObjectEditor', 'DownloadRepresentation', array('version' => 'original', 'representation_id' => "{n}", 'object_id' => $t_subject->getPrimaryKey(), 'download' => 1), array('id' => "{fieldNamePrefix}download_button_{n}"))); ?></span>
 							</div>
-							<div class="caAnnoEditorLaunchButton annotationType{annotation_type} caObjectRepresentationListActionButton">
+							<div class="caAnnoEditorLaunchButton annotationTypeClip{annotation_type} caObjectRepresentationListActionButton">
 								<span id="{fieldNamePrefix}edit_annotations_{n}"><a href="#" onclick="caAnnoEditor<?php print $vs_id_prefix; ?>.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/object_representations', 'ObjectRepresentationEditor', 'GetAnnotationEditor', array('representation_id' => '{n}'))); ?>'); return false;" id="{fieldNamePrefix}edit_annotations_button_{n}"><img src='<?php print $this->request->getThemeUrlPath()."/graphics/buttons/clock.png"; ?>' border='0'/> <?php print _t('Annotations'); ?></a></span>
+							</div>
+							<div class="caSetImageCenterLaunchButton annotationTypeSetCenter{annotation_type} caObjectRepresentationListActionButton">
+								<span id="{fieldNamePrefix}edit_image_center_{n}"><a href="#" onclick="caImageCenterEditor<?php print $vs_id_prefix; ?>.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/object_representations', 'ObjectRepresentationEditor', 'GetImageCenterEditor', array('representation_id' => '{n}'))); ?>', caSetImageCenterForSave<?php print $vs_id_prefix; ?>, true, {}, {'id': '{n}'}); return false;" id="{fieldNamePrefix}edit_image_center_{n}"><img src='<?php print $this->request->getThemeUrlPath()."/graphics/buttons/crosshairs.png"; ?>' border='0'/> <?php print _t('Set center'); ?></a></span>
 							</div>
 						</div>	
 					</div>
@@ -311,6 +314,9 @@
 <?php
 			print TooltipManager::getLoadHTML('bundle_ca_object_representations');
 ?>
+			<!-- image center coorinates -->
+			<input type="hidden" name="<?php print $vs_id_prefix; ?>_center_x_{n}" id="<?php print $vs_id_prefix; ?>_center_x_{n}" value="{center_x}"/>
+			<input type="hidden" name="<?php print $vs_id_prefix; ?>_center_y_{n}" id="<?php print $vs_id_prefix; ?>_center_y_{n}" value="{center_y}"/>
 		</textarea>
 <?php
 	//
@@ -469,10 +475,11 @@
 	var caMediaReplicationMimeTypes = <?php print json_encode(MediaReplicator::getMediaReplicationMimeTypes()); ?>;
 	
 	var caAnnoEditor<?php print $vs_id_prefix; ?>;
+	var caImageCenterEditor<?php print $vs_id_prefix; ?>;
 	jQuery(document).ready(function() {
 		caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-			templateValues: ['status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'media', 'locale_id', 'icon', 'type', 'dimensions', 'filename', 'num_multifiles', 'metadata', 'rep_type_id', 'type_id', 'typename', 'fetched', 'label', 'rep_label', 'id', 'fetched_from','mimetype'],
+			templateValues: ['status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'media', 'locale_id', 'icon', 'type', 'dimensions', 'filename', 'num_multifiles', 'metadata', 'rep_type_id', 'type_id', 'typename', 'fetched', 'label', 'rep_label', 'id', 'fetched_from','mimetype', 'center_x', 'center_y'],
 			initialValues: <?php print json_encode($va_inital_values); ?>,
 			errors: <?php print json_encode($va_errors); ?>,
 			forceNewValues: <?php print json_encode($va_failed_inserts); ?>,
@@ -484,7 +491,7 @@
 			addButtonClassName: 'caAddItemButton',
 			deleteButtonClassName: 'caDeleteItemButton',
 			showOnNewIDList: ['<?php print $vs_id_prefix; ?>_media_'],
-			hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_edit_','<?php print $vs_id_prefix; ?>_download_', '<?php print $vs_id_prefix; ?>_media_metadata_container_', '<?php print $vs_id_prefix; ?>_edit_annotations_'],
+			hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_edit_','<?php print $vs_id_prefix; ?>_download_', '<?php print $vs_id_prefix; ?>_media_metadata_container_', '<?php print $vs_id_prefix; ?>_edit_annotations_', '<?php print $vs_id_prefix; ?>_edit_image_center_'],
 			enableOnNewIDList: [],
 			showEmptyFormsOnLoad: 1,
 			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
@@ -518,12 +525,44 @@
 					jQuery("#topNavContainer").show(250);
 				}
 			});
+			
+			caImageCenterEditor<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
+				panelID: "caImageCenterEditor<?php print $vs_id_prefix; ?>",						/* DOM ID of the <div> enclosing the panel */
+				panelContentID: "caImageCenterEditor<?php print $vs_id_prefix; ?>ContentArea",		/* DOM ID of the content area <div> in the panel */
+				exposeBackgroundColor: "#000000",				
+				exposeBackgroundOpacity: 0.7,					
+				panelTransitionSpeed: 400,						
+				closeButtonSelector: ".close",
+				centerHorizontal: true,
+				onOpenCallback: function() {
+					jQuery("#topNavContainer").hide(250);
+				},
+				onCloseCallback: function() {
+					jQuery("#topNavContainer").show(250);
+				}
+			});
 		}
 		
 		jQuery("body").append('<div id="caAnnoEditor<?php print $vs_id_prefix; ?>" class="caAnnoEditorPanel"><div id="caAnnoEditor<?php print $vs_id_prefix; ?>ContentArea" class="caAnnoEditorPanelContentArea"></div></div>');
+		jQuery("body").append('<div id="caImageCenterEditor<?php print $vs_id_prefix; ?>" class="caAnnoEditorPanel"><div id="caImageCenterEditor<?php print $vs_id_prefix; ?>ContentArea" class="caAnnoEditorPanelContentArea"></div></div>');
 	
 		// Hide annotation editor links for non-timebased media
 		jQuery(".caAnnoEditorLaunchButton").hide();
-		jQuery(".annotationTypeTimeBasedVideo, .annotationTypeTimeBasedAudio").show();
+		jQuery(".annotationTypeClipTimeBasedVideo, .annotationTypeClipTimeBasedAudio").show();
+		
+		jQuery(".caSetImageCenterLaunchButton").hide();
+		jQuery(".annotationTypeSetCenterImage").show();
 	});
+	
+	function caSetImageCenterForSave<?php print $vs_id_prefix; ?>(data) {
+		var id = data['id'];
+		jQuery("#topNavContainer").show(250);
+		jQuery('#<?php print $vs_id_prefix; ?>_change_indicator_' + id).show();
+		
+		var center_x = parseInt(jQuery('#caObjectRepresentationSetCenterMarker').css('left'))/parseInt(jQuery('#caImageCenterEditorImage').width());
+		var center_y = parseInt(jQuery('#caObjectRepresentationSetCenterMarker').css('top'))/parseInt(jQuery('#caImageCenterEditorImage').height());
+		jQuery('#<?php print $vs_id_prefix; ?>_center_x_' + id).val(center_x);
+		jQuery('#<?php print $vs_id_prefix; ?>_center_y_' + id).val(center_y);
+		//console.log('#<?php print $vs_id_prefix; ?>_center_x' + id, jQuery('#<?php print $vs_id_prefix; ?>_center_x' + id).val(), center_x, center_y);
+	}
 </script>

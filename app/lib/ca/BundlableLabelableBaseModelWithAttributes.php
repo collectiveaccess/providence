@@ -1227,6 +1227,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					$o_view->setVar('form_element', ($vn_id = (int)$this->get($ps_bundle_name)) ? $vn_id : "&lt;"._t('Not yet issued')."&gt;");
 				} else {
 					$vb_read_only = ($pa_bundle_settings['readonly'] || ($pa_options['request']->user->getBundleAccessLevel($this->tableName(), $ps_bundle_name) == __CA_BUNDLE_ACCESS_READONLY__)) ? true : false;
+
+					$va_additional_field_options = array();
+					if($vn_width = caGetOption('width', $pa_bundle_settings)){
+						$va_additional_field_options['width'] = $vn_width;
+					}
+					if($vn_height = caGetOption('height', $pa_bundle_settings)){
+						$va_additional_field_options['height'] = $vn_height;
+					}
 					
 					$o_view->setVar('form_element', $this->htmlFormElement($ps_bundle_name, ($this->getProperty('ID_NUMBERING_ID_FIELD') == $ps_bundle_name) ? $o_config->get('idno_element_display_format_without_label') : $o_config->get('bundle_element_display_format_without_label'), 
 						array_merge(
@@ -1236,7 +1244,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 								'progress_indicator'		=> $pa_options['request']->getThemeUrlPath()."/graphics/icons/indicator.gif",
 								'lookup_url' 				=> $va_lookup_url_info['intrinsic']
 							),
-							$pa_options
+							$pa_options,
+							$va_additional_field_options
 						)
 					));
 				}
@@ -3023,12 +3032,16 @@ if (!$vb_batch) {
 									$vs_rep_label = trim($po_request->getParameter($vs_prefix_stub.'rep_label_'.$va_rep['representation_id'], pString));
 									//$vn_rep_type_id = $po_request->getParameter($vs_prefix_stub.'rep_type_id'.$va_rep['representation_id'], pInteger);
 									
+									// Get user-specified center point (images only)
+									$vn_center_x = $po_request->getParameter($vs_prefix_stub.'center_x_'.$va_rep['representation_id'], pString);
+									$vn_center_y = $po_request->getParameter($vs_prefix_stub.'center_y_'.$va_rep['representation_id'], pString);
+									
 									$vn_rank = null;
 									if (($vn_rank_index = array_search($va_rep['representation_id'], $va_rep_sort_order)) !== false) {
 										$vn_rank = $va_rep_ids_sorted[$vn_rank_index];
 									}
 									
-									$this->editRepresentation($va_rep['representation_id'], $vs_path, $vn_locale_id, $vn_status, $vn_access, $vn_is_primary, array(), array('original_filename' => $vs_original_name, 'rank' => $vn_rank));
+									$this->editRepresentation($va_rep['representation_id'], $vs_path, $vn_locale_id, $vn_status, $vn_access, $vn_is_primary, array(), array('original_filename' => $vs_original_name, 'rank' => $vn_rank, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y));
 									if ($this->numErrors()) {
 										//$po_request->addActionErrors($this->errors(), $vs_f, $va_rep['representation_id']);
 										foreach($this->errors() as $o_e) {
@@ -3122,8 +3135,12 @@ if (!$vb_batch) {
 								$vn_status = $po_request->getParameter($vs_prefix_stub.'status_new_'.$va_matches[1], pInteger);
 								$vn_access = $po_request->getParameter($vs_prefix_stub.'access_new_'.$va_matches[1], pInteger);
 								$vn_is_primary = $po_request->getParameter($vs_prefix_stub.'is_primary_new_'.$va_matches[1], pInteger);
+								
+								// Get user-specified center point (images only)
+								$vn_center_x = $po_request->getParameter($vs_prefix_stub.'center_x_new_'.$va_matches[1], pString);
+								$vn_center_y = $po_request->getParameter($vs_prefix_stub.'center_y_new_'.$va_matches[1], pString);
 						
-								$t_rep = $this->addRepresentation($vs_path, $vn_rep_type_id, $vn_locale_id, $vn_status, $vn_access, $vn_is_primary, array('name' => $vs_rep_label), array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'type_id' => $vn_type_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
+								$t_rep = $this->addRepresentation($vs_path, $vn_rep_type_id, $vn_locale_id, $vn_status, $vn_access, $vn_is_primary, array('name' => $vs_rep_label), array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
 								if ($this->numErrors()) {
 									$po_request->addActionErrors($this->errors(), $vs_f, 'new_'.$va_matches[1]);
 								} else {
@@ -5225,6 +5242,19 @@ $pa_options["display_form_field_tips"] = true;
 	 */
 	public function addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
 		global $g_ui_locale_id;
+
+		$this->opo_app_plugin_manager->hookAddRelationship(array(
+			'table_name' => $this->tableName(), 
+			'instance' => $this,
+			'related_table' => $pm_rel_table_name_or_num,
+			'rel_id' => $pn_rel_id,
+			'type_id' => $pm_type_id,
+			'edate' => $ps_effective_date,
+			'source_info' => $ps_source_info,
+			'direction' => $ps_direction,
+			'rank' => $pn_rank,
+			'options' => $pa_options,
+		));
 		
 		if ($t_rel = parent::addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options)) {
 			if ($t_rel->numErrors()) {

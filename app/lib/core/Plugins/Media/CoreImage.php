@@ -582,11 +582,20 @@ class WLPlugMediaCoreImage Extends BaseMediaPlugin Implements IWLPlugMedia {
 									break;
 								case 'center':
 								default:
+									$crop_from_offset_x = $crop_from_offset_y = 0;
+										
+									// Get image center
+									$vn_center_x = caGetOption('_centerX', $parameters, 0.5);
+									$vn_center_y = caGetOption('_centerY', $parameters, 0.5);
 									if ($w > $parameters["width"]) {
-										$crop_from_offset_x = ceil(($w - $parameters["width"])/2);
+										$crop_from_offset_x = ceil($w * $vn_center_x) - ($parameters["width"]/2);
+										if (($crop_from_offset_x + $parameters["width"]) > $w) { $crop_from_offset_x = $w - $parameters["width"]; }
+										if ($crop_from_offset_x < 0) { $crop_from_offset_x = 0; }
 									} else {
 										if ($h > $parameters["height"]) {
-											$crop_from_offset_y = ceil(($h - $parameters["height"])/2);
+											$crop_from_offset_y = ceil($h * $vn_center_y) - ($parameters["height"]/2);
+											if (($crop_from_offset_y + $parameters["height"]) > $h) { $crop_from_offset_y = $h - $parameters["height"]; }
+											if ($crop_from_offset_y < 0) { $crop_from_offset_y = 0; }
 										}
 									}
 									break;
@@ -724,7 +733,7 @@ class WLPlugMediaCoreImage Extends BaseMediaPlugin Implements IWLPlugMedia {
 			} 
 					
 			if (!$this->_CoreImageWrite($this->handle, $filepath.".".$ext, $mimetype, $this->properties["quality"])) {
-				$this->postError(1610, _t("%1: %2", $reason, $description), "WLPlugCoreImage->write()");
+				$this->postError(1610, _t("Could not write file %1", $filepath.".".$ext), "WLPlugCoreImage->write()");
 				return false;
 			}
 			
