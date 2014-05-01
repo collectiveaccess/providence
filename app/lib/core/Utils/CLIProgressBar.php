@@ -355,9 +355,10 @@ class CLIProgressBar
      */
     protected static function setWidth($width = null)
     {
+    	$height = null;
         if ($width === null) {
         	if (self::$window) {
-        		ncurses_getmaxyx(self::$window, 80, 100);
+        		ncurses_getmaxyx(self::$window, $width, $height);
         		$width = 96;
         	} else {
 				if (DIRECTORY_SEPARATOR === '/') {
