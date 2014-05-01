@@ -49,52 +49,54 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 	}
 
 	public function hookAfterBundleInsert(&$pa_params) {
-		if ($this->opo_config->getBoolean('assign_on_insert') && $pa_params['instance'] instanceof BundlableLabelableBaseModelWithAttributes) {
+		if ($this->opo_config->getBoolean('assign_on_insert') && $this->_isRelevantInstance($pa_params['instance'])) {
 			$this->_process($pa_params);
 		}
 	}
 
 	public function hookAfterBundleUpdate(&$pa_params) {
-		if ($this->opo_config->getBoolean('assign_on_update') && $pa_params['instance'] instanceof BundlableLabelableBaseModelWithAttributes) {
+		if ($this->opo_config->getBoolean('assign_on_update') && $this->_isRelevantInstance($pa_params['instance'])) {
 			$this->_process($pa_params);
 		}
 	}
 
+	private function _isRelevantInstance($po_instance) {
+		// Only operate on the appropriate models; specifically exclude relationships as it leads to infinite recursion.
+		return ($po_instance instanceof BundlableLabelableBaseModelWithAttributes) && !($po_instance instanceof BaseRelationshipModel);
+	}
+
 	private function _process(&$pa_params) {
-//		$test = new ca_collections(array('idno' => 'single_individual'));
-
-
 		foreach ($this->opo_config->getAssoc('triggers') as $vo_trigger) {
-			error_log($vo_trigger['related_table']);
-			error_log($vo_trigger['related_record']);
-			/** @var $vo_relatedModel ca_objects */
-			$vo_relatedModel = $this->_getRelatedModel($vo_trigger);
-			error_log(print_r($vo_relatedModel->get('collection_id'), true));
-//			echo '<pre>'; print_r($vo_relatedModel); exit;
+			/** @var $vo_instance BundlableLabelableBaseModelWithAttributes */
+			$vo_instance = $pa_params['instance'];
+			// Ensure the related record actually exists (i.e. skip over bad config)
+			/** @var $vo_relatedModel BundlableLabelableBaseModelWithAttributes */
+			$vo_relatedModel = $this->_getRelatedModel($vo_trigger['related_table'], $vo_trigger['related_record']);
 			if (sizeof($vo_relatedModel->getFieldValuesArray()) > 0) {
-				error_log('related model exists');
-				$vb_hasRelationship = $pa_params['instance']->relationshipExists($vo_trigger['related_table'], $vo_trigger['related_record']);
+				/** @var BaseRelationshipModel $vo_relationship */
+				$vo_relationship = $vo_instance->getRelationshipInstance($vo_trigger['related_table']);
+				$vb_hasRelationship = sizeof($vo_relationship->getFieldValuesArray()) > 0;
 				$vb_matches = $this->_hasMatch($pa_params, $vo_trigger);
+
+//				error_log($vo_trigger['related_table'] . '/' . $vo_trigger['related_record']);
+//				error_log('relationship = ' . print_r($vo_relationship->getFieldValuesArray(), true));
+//				error_log('hasRelationship = ' . $vb_hasRelationship);
+//				error_log('matches = ' . $vb_matches);
+//				error_log('-------------');
+
 				if (!$vb_hasRelationship && $vb_matches) {
-					error_log('***************');
-					error_log('adding relationship');
-					error_log($vo_trigger['relationship_type']);
-					error_log('***************');
-					$pa_params['instance']->addRelationship($vo_trigger['related_table'], $vo_trigger['related_record'], $vo_trigger['relationship_type']);
+					error_log('we are adding a relationship');
+					$vo_instance->addRelationship($vo_trigger['related_table'], $vo_trigger['related_record'], $vo_trigger['relationship_type']);
 				} elseif ($vb_hasRelationship && !$vb_matches) {
-					error_log('removing relationship');
-					$pa_params['instance']->removeRelationship($vo_trigger['related_table'], $vo_trigger['related_record'], $vo_trigger['relationship_type']);
+					error_log('we are removing a relationship');
+					$vo_instance->removeRelationship($vo_trigger['related_table'], $vo_relationship->getPrimaryKey());
 				}
 			}
 		}
 	}
 
-	private function _getRelatedModel($po_trigger) {
-		$vm_constructorParams = $po_trigger['related_record'];
-		if (is_string($vm_constructorParams)) {
-			$vm_constructorParams = array( 'idno' => $vm_constructorParams );
-		}
-		return new $po_trigger['related_table']($vm_constructorParams);
+	private function _getRelatedModel($pm_relatedTable, $pm_relatedRecord) {
+		return new $pm_relatedTable(is_string($pm_relatedRecord) ? array( 'idno' => $pm_relatedRecord ) : $pm_relatedRecord);
 	}
 
 	private function _hasMatch($pa_params, $po_trigger) {
