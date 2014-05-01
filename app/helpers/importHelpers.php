@@ -145,7 +145,10 @@
 						require_once(__CA_MODELS_DIR__."/ca_places.php");
 						$t_place = new ca_places();
 						if ($o_trans) { $t_place->setTransaction($o_trans); }
-						$vn_id = $t_place->getHierarchyRootID($va_attributes['hierarchy_id']);
+						$vn_id = $pa_options['defaultParentID'];
+						if(!$vn_id){
+							$vn_id = $t_place->getHierarchyRootID($pa_options['hierarchyID']);
+						}
 						$va_attributes['parent_id'] = $vn_id;
 					}
 					$vn_id = DataMigrationUtils::getPlaceID($vs_name, $vn_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
