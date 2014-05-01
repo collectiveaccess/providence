@@ -40,6 +40,12 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
 require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
+
+/**
+ * Regex used to parse bundle display template tags (Eg. ^I_am_a_tag)
+ * More about bundle display templates here: http://docs.collectiveaccess.org/wiki/Bundle_Display_Templates
+ */
+define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.:\/]+)!");
 	
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -355,9 +361,6 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 	function caBusyIndicatorIcon($po_request, $pa_attributes=null) {
 		if (!is_array($pa_attributes)) { $pa_attributes = array(); }
 		
-		if (!isset($pa_attributes['alt'])) {
-			$pa_attributes['alt'] = $vs_img_name;
-		}
 		$vs_attr = _caHTMLMakeAttributeString($pa_attributes);
 		$vs_button = "<img src='".$po_request->getThemeUrlPath()."/graphics/icons/indicator.gif' border='0' {$vs_attr}/> ";
 	
@@ -738,8 +741,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		if($t_item->getPrimaryKey()) {
 			if (sizeof($va_reps) > 0) {	
 				$va_imgs = array();
-				$vs_buf .= "<div class='button'><a href='#' id='inspectorShowMedia' class='open'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_IMAGE__)."</a></div><div id='inspectorMedia' >";
-			
+				
+				$vs_buf .= "<div id='inspectorMedia'>";
 			
 				foreach($va_reps as $va_rep) {
 					if (!($va_rep['info']['preview170']['WIDTH'] && $va_rep['info']['preview170']['HEIGHT'])) { continue; }
@@ -758,7 +761,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 									
 				if (sizeof($va_imgs) > 0) {
 					$vs_buf .= "
-				<div id='inspectorInfoRepScrollingViewer'>
+				<div id='inspectorInfoRepScrollingViewer' style='position: relative;'>
 					<div id='inspectorInfoRepScrollingViewerContainer'>
 						<div id='inspectorInfoRepScrollingViewerImageContainer'></div>
 					</div>
@@ -771,8 +774,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 					</div>
 		";
 					}
-					TooltipManager::add(".leftScroll", _t('3/10'));
-					TooltipManager::add(".rightScroll", _t('5/10'));
+					TooltipManager::add(".leftScroll", _t('Previous'));
+					TooltipManager::add(".rightScroll", _t('Next'));
 
 					$vs_buf .= "<script type='text/javascript'>";
 					$vs_buf .= "
@@ -877,6 +880,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 			
 				TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($vs_type_name, 'UTF-8')));
 			}
+			
 			if ($vn_num_objects > 0) {
 				$vs_buf .= caNavLink($po_view->request, caNavIcon($po_view->request, __CA_NAV_BUTTON_DOWNLOAD__), "button", $po_view->request->getModulePath(), $po_view->request->getController(), 'getLotMedia', array('lot_id' => $t_item->getPrimaryKey(), 'download' => 1), array('id' => 'inspectorLotMediaDownloadButton'));
 			}
@@ -949,6 +953,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 				TooltipManager::add("#inspectorMoreInfo", _t('See more information about this record'));
 
 			}
+			
 			$vs_buf .= "</div><!--End tooIcons-->";
 		}
 	
@@ -1050,7 +1055,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 						
 						$vs_screen = '';
 						if ($t_ui = ca_editor_uis::loadDefaultUI($vs_rel_table, $po_view->request, null)) {
-							$vs_screen = $t_ui->getScreenWithBundle('ca_object_representations', $po_request);
+							$vs_screen = $t_ui->getScreenWithBundle('ca_object_representations', $po_view->request);
 						}
 						foreach($va_objects as $vn_rel_id => $va_rel_info) {
 							if ($vs_label = array_shift($va_rel_info['labels'])) {
@@ -1316,9 +1321,10 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 			
 			if ($vs_table_name === 'ca_commerce_orders') {
 				$o_client_services_config = Configuration::load($po_view->request->config->get('client_services_config'));
+				$va_order_totals = $t_item->getOrderTotals();
 				if (($va_order_totals['fee'] + $va_order_totals['tax']+ $va_order_totals['shipping']+ $va_order_totals['handling'] + $va_order_totals['additional_order_fees'] + $va_order_totals['additional_item_fees']) != 0) {	
 					$vs_currency_symbol = $o_client_services_config->get('currency_symbol');
-					$va_order_totals = $t_item->getOrderTotals();
+					
 					$vs_buf .= "<table style='margin-left: 10px;'>";
 					$vs_buf .= "<tr><td><strong>"._t("Items").'</strong></td><td>'.$vs_currency_symbol.sprintf("%4.2f", $va_order_totals['fee'])." (".(int)$va_order_totals['items'].")</td></tr>\n";
 					$vs_buf .= "<tr><td><strong>"._t("S+H").'</strong></td><td>'.$vs_currency_symbol.sprintf("%4.2f", ($va_order_totals['shipping'] + $va_order_totals['handling']))."</td></tr>\n";
@@ -1368,8 +1374,6 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		// -------------------------------------------------------------------------------------
 		// Export
 		
-
-
 		if($po_view->request->user->canDoAction('can_export_'.$vs_table_name) && $t_item->getPrimaryKey() && (sizeof(ca_data_exporters::getExporters($t_item->tableNum()))>0)) {
 			$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" id="caExportItemButton">';
 				
@@ -1423,20 +1427,21 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 	
 				if (sizeof($va_reps)) {
 					$vs_buf .= "
-						if (inspectorCookieJar.get('inspectorShowMediaIsOpen') == undefined) {		// default is to have media open
+		if (inspectorCookieJar.get('inspectorShowMediaIsOpen') == undefined) {		// default is to have media open
 			inspectorCookieJar.set('inspectorShowMediaIsOpen', 1);
 		}
+		
 		if (inspectorCookieJar.get('inspectorShowMediaIsOpen') == 1) {
-			jQuery('#inspectorMedia').toggle(0);
-			jQuery('#inspectorShowMedia').html('".addslashes(caNavIcon($po_view->request, __CA_NAV_BUTTON_COLLAPSE__))."').addClass('closed');
+			jQuery('#inspectorMedia').toggle();
 		}
 	
-		jQuery('#inspectorShowMedia').click(function() {
-			jQuery('#inspectorMedia').slideToggle(350, function() { 
-				inspectorCookieJar.set('inspectorShowMediaIsOpen', (this.style.display == 'block') ? 1 : 0); 
-jQuery('#inspectorShowMedia').html((this.style.display == 'block') ? '".addslashes(caNavIcon($po_view->request, __CA_NAV_BUTTON_COLLAPSE__))."' : '".addslashes(caNavIcon($po_view->request, __CA_NAV_BUTTON_IMAGE__))."').removeClass((this.style.display == 'block') ? 'open' : 'closed').addClass((this.style.display == 'block') ? 'closed' : 'open');				
-caResizeSideNav();
-			}); 
+		jQuery('#caColorbox').on('click', function(e) {
+			if (e.altKey) {
+				jQuery('#inspectorMedia').slideToggle(200, function() { 
+					inspectorCookieJar.set('inspectorShowMediaIsOpen', (this.style.display == 'block') ? 1 : 0); 
+						caResizeSideNav();
+				}); 
+			}
 			return false;
 		});
 					";
@@ -1444,7 +1449,6 @@ caResizeSideNav();
 			}
 
 			$vs_buf .= "</script>\n";
-			TooltipManager::addFunction("#inspectorShowMedia", "return (jQuery('#inspectorMedia').is(':visible')) ? '".addslashes(_t('Hide media'))."' : '".addslashes(_t('Show media'))."';");
 		}
 
         $o_app_plugin_manager = new ApplicationPluginManager();
@@ -1503,7 +1507,10 @@ caResizeSideNav();
 		$vs_buf = '<h3 class="nextPrevious">'.caNavLink($po_view->request, 'Back', '', 'manage', 'Set', 'ListSets')."</h3>\n";
 
 		$vs_color = null;
+		
+		$t_type = method_exists($t_item, "getTypeInstance") ? $t_item->getTypeInstance() : null;
 		if ($t_type) { $vs_color = trim($t_type->get('color')); } 
+		$vs_type_name = $t_type->getTypeName();
 		if (!$vs_color && $t_ui) { $vs_color = trim($t_ui->get('color')); }
 		if (!$vs_color) { $vs_color = "444444"; }
 		
@@ -1544,7 +1551,7 @@ caResizeSideNav();
 		}
 	
 		
-		$vs_buf .= "<div style='width:190px; overflow:hidden;'>{$vs_watch}{$vs_label}"."<a title='$vs_idno'>".($vs_idno ? " ({$vs_idno})" : '')."</a></div>\n";
+		//$vs_buf .= "<div style='width:190px; overflow:hidden;'>{$vs_watch}{$vs_label}"."<a title='$vs_idno'>".($vs_idno ? " ({$vs_idno})" : '')."</a></div>\n";
 
 		
 		// -------------------------------------------------------------------------------------
@@ -1679,6 +1686,7 @@ caResizeSideNav();
 			$vs_display_name = mb_strtolower($vs_display_name, 'UTF-8');
 			
 			if (!caTableIsActive($vn_table_num)) { continue; }
+			$vs_table_name = $o_dm->getTableName($vn_table_num);
 			
 			switch($vs_table_name) {
 				case 'ca_occurrences':
@@ -1780,7 +1788,7 @@ caResizeSideNav();
 		$vs_remove_prefix = isset($pa_options['removePrefix']) ? $pa_options['removePrefix'] : null;
 		
 		$va_tags = array();
-		if (preg_match_all("!\^([\/A-Za-z0-9_\.]+)!", $ps_template, $va_matches)) {
+		if (preg_match_all(__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__, $ps_template, $va_matches)) {
 			foreach($va_matches[1] as $vn_i => $vs_possible_tag) {
 				$va_matches[1][$vn_i] = rtrim($vs_possible_tag, "/.");	// remove trailing slashes and periods
 			}
@@ -1804,7 +1812,11 @@ caResizeSideNav();
 			if ($t_instance && ($vs_gotten_val = $t_instance->get($vs_proc_tag, $pa_options))) {
 				$ps_template = str_replace('^'.$vs_tag, $vs_gotten_val, $ps_template);
 			} else {
-				$ps_template = str_replace('^'.$vs_tag, isset($pa_values[$vs_proc_tag]) ? $pa_values[$vs_proc_tag] : '', $ps_template);
+				if (is_array($vs_val = isset($pa_values[$vs_proc_tag]) ? $pa_values[$vs_proc_tag] : '')) {
+					// If value is an array try to make a string of it
+					$vs_val = join(" ", $vs_val);
+				}
+				$ps_template = str_replace('^'.$vs_tag, $vs_val, $ps_template);
 			}
 		}
 		return $ps_template;
@@ -1895,7 +1907,7 @@ caResizeSideNav();
 		$ps_template = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_doc->html()));	// replace template with parsed version; this allows us to do text find/replace later
 		
 		$va_tags = array();
-		if (preg_match_all("!\^([A-Za-z0-9_\.]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.]+)!", $ps_template, $va_matches)) {
+		if (preg_match_all(__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__, $ps_template, $va_matches)) {
 			$va_tags = $va_matches[1];
 		}
 		
@@ -1904,19 +1916,19 @@ caResizeSideNav();
 		$va_proc_templates = array();
 		$vn_i = 0;
 		
-		$o_if = $o_doc("if");						// if 
+		$o_ifs = $o_doc("if");						// if 
 		$o_ifdefs = $o_doc("ifdef");				// if defined
 		$o_ifnotdefs = $o_doc("ifnotdef");			// if not defined
-		$o_mores = $o_doc("more");					// more tags – content suppressed if there are no defined values following the tag pair
-		$o_betweens = $o_doc("between");			// between tags – content suppressed if there are not defined values on both sides of the tag pair
+		$o_mores = $o_doc("more");					// more tags ��� content suppressed if there are no defined values following the tag pair
+		$o_betweens = $o_doc("between");			// between tags ��� content suppressed if there are not defined values on both sides of the tag pair
 		$o_ifcounts = $o_doc("ifcount");			// if count - conditionally return template if # of items is in-bounds
 		
 		$va_if = array();
-		foreach($o_if as $o_if) {
+		foreach($o_ifs as $o_if) {
 			if (!$o_if) { continue; }
 			
 			$vs_html = $o_if->html();
-			$vs_content = $o_f->getInnerText();
+			$vs_content = $o_if->getInnerText();
 			
 			$va_if[] = array('directive' => $vs_html, 'content' => $vs_content, 'rule' => $vs_rule = (string)$o_if->getAttribute('rule'));
 		}
@@ -2122,6 +2134,13 @@ caResizeSideNav();
 					
 					$vs_tag = $vs_tag_proc;
 				}
+				
+				switch($vs_tag) {
+					case 'DATE':
+						$vs_format = urldecode(caGetOption('format', $va_tag_opts, 'm/d/Y'));
+						$va_proc_templates[$vn_i] = str_replace("^{$vs_tag}", date($vs_format), $va_proc_templates[$vn_i]);
+						break;
+				}
 			
 				$pa_options = array_merge($pa_options, $va_tag_opts);
 				
@@ -2140,6 +2159,8 @@ caResizeSideNav();
 					
 					if (isset($va_relationship_value_array[$vs_tag]) && !(isset($pa_options['showHierarchicalLabels']) && $pa_options['showHierarchicalLabels'] && ($vs_tag == 'label'))) {
 						$va_val = array($vs_val = $va_relationship_value_array[$vs_tag]);
+					} elseif (isset($va_relationship_value_array[$vs_tag])) {
+						$va_val = array($vs_val = $va_relationship_value_array[$vs_tag]);
 					} else {
 						if (isset($va_related_values[$vs_pk_val][$vs_tag])) {
 							$va_val = array($vs_val = $va_related_values[$vs_pk_val][$vs_tag]);
@@ -2147,7 +2168,26 @@ caResizeSideNav();
 							//
 							// see if this is a reference to a related table
 							//
-							if (($ps_tablename != $va_tmp[0]) && ($t_tmp = $o_dm->getInstanceByTableName($va_tmp[0], true))) {	// if the part of the tag before a "." (or the tag itself if there are no periods) is a related table then try to fetch it as related to the current record
+							if (in_array($vs_tag, array("relationship_typename", "relationship_type_id", "relationship_typecode", "relationship_type_code"))) {
+								$vb_is_related = true;
+								
+								switch($vs_tag) {
+									case 'relationship_typename':
+										$vs_spec = 'preferred_labels.'.((caGetOption('orientation', $pa_options, 'LTOR') == 'LTOR') ? 'typename' : 'typename_reverse');
+										break;
+									case 'relationship_type_id':
+										$vs_spec = 'type_id';
+										break;
+									case 'relationship_typecode':
+									case 'relationship_type_code':
+									default:
+										$vs_spec = 'type_code';
+										break;
+								}
+								
+								$vs_rel = $qr_res->get("ca_relationship_types.{$vs_spec}", array_merge($pa_options, $va_tag_opts, array('returnAsArray' => false)));
+								$va_val = array($vs_rel);
+							} elseif (($ps_tablename != $va_tmp[0]) && ($t_tmp = $o_dm->getInstanceByTableName($va_tmp[0], true))) {	// if the part of the tag before a "." (or the tag itself if there are no periods) is a related table then try to fetch it as related to the current record
 								if (isset($pa_options['placeholderPrefix']) && $pa_options['placeholderPrefix'] && ($va_tmp[0] != $pa_options['placeholderPrefix']) && (sizeof($va_tmp) == 1)) {
 									$vs_get_spec = array_shift($va_tmp).".".$pa_options['placeholderPrefix'];
 									if(sizeof($va_tmp) > 0) {
@@ -2668,7 +2708,7 @@ caResizeSideNav();
 		$va_tmp = $po_rep->getMediaInfo('media', $ps_version);
 		$va_dimensions = array();
 			if (isset($va_tmp['WIDTH']) && isset($va_tmp['HEIGHT'])) {
-			if (($vn_w = $va_tmp['WIDTH']) && ($vn_h = $va_tmp['WIDTH'])) {
+			if (($vn_w = $va_tmp['WIDTH']) && ($vn_h = $va_tmp['HEIGHT'])) {
 				$va_dimensions[] = $va_tmp['WIDTH'].'p x '.$va_tmp['HEIGHT'].'p';
 			}
 		}
@@ -2771,19 +2811,19 @@ $ca_relationship_lookup_parse_cache = array();
 			$o_config = $pa_options['config'];
 		}
 		
-		$pn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
-		$ps_inline_create_message = (isset($pa_options['inlineCreateMessage'])) ? (string)$pa_options['inlineCreateMessage'] : null;
-		$ps_inline_create_does_not_exist_message = (isset($pa_options['inlineCreateMessageDoesNotExist'])) ? (string)$pa_options['inlineCreateMessageDoesNotExist'] : null;
-		$ps_inline_create_query = (isset($pa_options['inlineCreateQuery'])) ? (string)$pa_options['inlineCreateQuery'] : null;
-		$ps_inline_create_query_lc = mb_strtolower($ps_inline_create_query);
+		$pn_limit = 								caGetOption('limit', $pa_options, null);
+		$ps_inline_create_message = 				caGetOption('inlineCreateMessage', $pa_options, null);
+		$ps_inline_create_does_not_exist_message = 	caGetOption('inlineCreateMessageDoesNotExist', $pa_options, null);
+		$ps_inline_create_query = 					caGetOption('inlineCreateQuery', $pa_options, null);
+		$ps_inline_create_query_lc = 				mb_strtolower($ps_inline_create_query);
 		
-		$ps_empty_result_message = (isset($pa_options['emptyResultMessage'])) ? (string)$pa_options['emptyResultMessage'] : null;
-		$ps_empty_result_query = (isset($pa_options['emptyResultQuery'])) ? (string)$pa_options['emptyResultQuery'] : null;
+		$ps_empty_result_message = 					caGetOption('emptyResultMessage', $pa_options, null);
+		$ps_empty_result_query = 					caGetOption('emptyResultQuery', $pa_options, null);
 		
-		$vs_template = (isset($pa_options['template'])) ? (string)$pa_options['template'] : null;
-		$vs_cache_key = md5($vs_display_format);
+		$vs_template =								caGetOption('template', $pa_options, null);
+		$vs_cache_key = 							md5($vs_template);
 		
-		$va_exclude = (isset($pa_options['exclude']) && is_array($pa_options['exclude'])) ? $pa_options['exclude'] : array();
+		$va_exclude = 								caGetOption('exclude', $pa_options, array(), array('castTo' => 'array'));
 		
 		//
 		// Originally the lookup display setting was a string with embedded tokens prefixed with carets. We still have to support this
@@ -2799,7 +2839,7 @@ $ca_relationship_lookup_parse_cache = array();
 			$vs_display_delimiter = $ca_relationship_lookup_parse_cache[$vs_rel_table][$vs_cache_key]['delimiter'];
 			$vb_use_new_display_format = true;
 		} else {
-			if (($vs_display_format = $o_config->get($vs_rel_table.'_lookup_settings')) && !is_array($vs_display_format)) {				
+			if (($vs_display_format = $o_config->get("{$vs_rel_table}_lookup_settings")) && !is_array($vs_display_format)) {				
 				if ($vs_display_format && is_string($vs_display_format) && !preg_match_all('!\^{1}([A-Za-z0-9\._]+)!', $vs_display_format, $va_matches)) {
 					$vs_display_format = '^'.$vs_rel_table.'.preferred_labels';
 					$va_bundles = array($vs_rel_table.'.preferred_labels');
@@ -2807,10 +2847,10 @@ $ca_relationship_lookup_parse_cache = array();
 					$va_bundles = $va_matches[1];
 				}
 			} else {
-				if (is_array($va_display_format = $o_config->getList($vs_rel_table.'_lookup_settings'))) {
+				if (is_array($va_display_format = $o_config->getList("{$vs_rel_table}_lookup_settings"))) {
 					$vb_use_new_display_format = true;
 				
-					if(!($vs_display_delimiter = $o_config->get($vs_rel_table.'_lookup_delimiter'))) {
+					if(!($vs_display_delimiter = $o_config->get("{$vs_rel_table}_lookup_delimiter"))) {
 						$vs_display_delimiter = ' ';
 					} else {
 						$vs_display_delimiter = " {$vs_display_delimiter} ";
@@ -2851,8 +2891,8 @@ $ca_relationship_lookup_parse_cache = array();
 					}
 				}
 			} else {
-				$vs_table = $qr_rel_items->tableName();
-				$vs_pk = $qr_rel_items->primaryKey();
+				$vs_table = 	$qr_rel_items->tableName();
+				$vs_pk = 		$qr_rel_items->primaryKey();
 				
 				$va_primary_ids = (method_exists($pt_rel, "isSelfRelationship") && ($vb_is_self_rel = $pt_rel->isSelfRelationship())) ? caGetOption("primaryIDs", $pa_options, null) : null;
 				while($qr_rel_items->nextHit()) {
@@ -2937,7 +2977,7 @@ $ca_relationship_lookup_parse_cache = array();
 		
 		$va_hierarchies = (method_exists($t_rel, "getHierarchyList")) ? $t_rel->getHierarchyList() : array();
 		
-		// Get root entries for hierarchies and remove from labels (we don't want to show the root labels – they are not meant for display)
+		// Get root entries for hierarchies and remove from labels (we don't want to show the root labels ��� they are not meant for display)
 		if (is_array($va_hierarchies)) {
 			foreach($va_hierarchies as $vn_root_id => $va_hier_info) {
 				foreach($va_parent_ids as $vn_item_id => $vn_parent_id) {
@@ -2973,12 +3013,12 @@ $ca_relationship_lookup_parse_cache = array();
 				}
 				
 				if (!isset($va_items[$va_relation[$vs_rel_pk]][$vs_rel_pk]) || !$va_items[$va_relation[$vs_rel_pk]][$vs_rel_pk]) {
-					$va_items[$va_relation[$vs_rel_pk]][$vs_rel_pk] = $va_relation[$vs_rel_pk];
+					$va_items[$va_relation[$vs_rel_pk]][$vs_rel_pk] = $va_items[$va_relation[$vs_rel_pk]]['id'] = $va_relation[$vs_rel_pk];
 				}
 				
 				if (!isset($va_items[$va_relation[$vs_rel_pk]]['_display']) || !$va_items[$va_relation[$vs_rel_pk]]['_display']) {
 					if ($vs_template) {
-						$va_items[$va_relation[$vs_rel_pk]]['_display'] = caProcessTemplateForIDs($vs_template, $vs_rel_table, array($va_relation[$vs_rel_pk]), array('returnAsArray' => false, 'returnAsLink' => true, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table));
+						$va_items[$va_relation[$vs_rel_pk]]['_display'] = caProcessTemplateForIDs($vs_template, $pt_rel->tableName(), array($va_relation['relation_id']), array('returnAsArray' => false, 'returnAsLink' => true, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'primaryIDs' => $va_primary_ids, 'resolveLinksUsing' => $vs_rel_table));
 					} else {
 						$va_items[$va_relation[$vs_rel_pk]]['_display'] = $va_items[$va_relation[$vs_rel_pk]]['label'];
 					}
@@ -3348,12 +3388,17 @@ $ca_relationship_lookup_parse_cache = array();
 				$va_subelements_to_process["{$vs_bundle_name}.{$vs_subelement}"] = $t_instance->_getElementDatatype($vs_subelement);
 			}
 		} else {
+			$va_tmp = explode(".", $vs_bundle_name);
+			if (sizeof($va_tmp) == 2) { $vs_bundle_name .= ".".array_pop($va_tmp); }
 			$va_subelements_to_process = array($vs_bundle_name => $vn_datatype);
 		}
 	
 		$vn_c = 0;
 		$vn_page_len = 0;
 		$vb_has_timecode = false;
+		
+		$vn_min = $vn_max = null;
+		$vn_page_min = $vn_page_max = null;
 		
 		$va_tag_values = array();
 		while($pr_res->nextHit()) {
@@ -3377,18 +3422,20 @@ $ca_relationship_lookup_parse_cache = array();
 					case 6:		// currency
 						$va_values = $pr_res->get($vs_subelement, array('returnAsDecimalWithCurrencySpecifier' => true, 'returnAsArray' => true));
 						
-						foreach($va_values as $vs_value) {
-							$vn_value = (float)caConvertCurrencyValue($vs_value, $vs_user_currency, array('numericValue' => true));
+						if(is_array($va_values)) {
+							foreach($va_values as $vs_value) {
+								$vn_value = (float)caConvertCurrencyValue($vs_value, $vs_user_currency, array('numericValue' => true));
 						
-							$va_tag_values[$vs_subelement]['SUM'] += $vn_value;
-							if (is_null($va_tag_values[$vs_subelement]['MIN']) || ($vn_value < $va_tag_values[$vs_subelement]['MIN'])) { $va_tag_values[$vs_subelement]['MIN'] = $vn_value; }
-							if (is_null($va_tag_values[$vs_subelement]['MAX']) || ($vn_value > $va_tag_values[$vs_subelement]['MAX'])) { $va_tag_values[$vs_subelement]['MAX'] = $vn_value; }
+								$va_tag_values[$vs_subelement]['SUM'] += $vn_value;
+								if (is_null($va_tag_values[$vs_subelement]['MIN']) || ($vn_value < $va_tag_values[$vs_subelement]['MIN'])) { $va_tag_values[$vs_subelement]['MIN'] = $vn_value; }
+								if (is_null($va_tag_values[$vs_subelement]['MAX']) || ($vn_value > $va_tag_values[$vs_subelement]['MAX'])) { $va_tag_values[$vs_subelement]['MAX'] = $vn_value; }
 					
-							if (($vn_c >= $pn_page_start) && ($vn_c <= $pn_page_end)) {
-								$va_tag_values[$vs_subelement]['PAGESUM'] += $vn_value;
-								if (is_null($va_tag_values[$vs_subelement]['PAGEMIN']) || ($vn_value < $va_tag_values[$vs_subelement]['PAGEMIN'])) { $va_tag_values[$vs_subelement]['PAGEMIN'] = $vn_value; }
-								if (is_null($va_tag_values[$vs_subelement]['PAGEMAX']) || ($vn_value > $va_tag_values[$vs_subelement]['PAGEMAX'])) { $va_tag_values[$vs_subelement]['PAGEMAX'] = $vn_value; }
-								$vn_page_len++;
+								if (($vn_c >= $pn_page_start) && ($vn_c <= $pn_page_end)) {
+									$va_tag_values[$vs_subelement]['PAGESUM'] += $vn_value;
+									if (is_null($va_tag_values[$vs_subelement]['PAGEMIN']) || ($vn_value < $va_tag_values[$vs_subelement]['PAGEMIN'])) { $va_tag_values[$vs_subelement]['PAGEMIN'] = $vn_value; }
+									if (is_null($va_tag_values[$vs_subelement]['PAGEMAX']) || ($vn_value > $va_tag_values[$vs_subelement]['PAGEMAX'])) { $va_tag_values[$vs_subelement]['PAGEMAX'] = $vn_value; }
+									$vn_page_len++;
+								}
 							}
 						}
 						break;
@@ -3396,33 +3443,37 @@ $ca_relationship_lookup_parse_cache = array();
 					case 9:		// weight
 						$va_values = $pr_res->get($vs_subelement, array('returnAsDecimalMetric' => true, 'returnAsArray' => true));
 						
-						foreach($va_values as $vs_value) {
-							$vn_value = (float)$vs_value;
-							$va_tag_values[$vs_subelement]['SUM'] += $vn_value;
-							if (is_null($va_tag_values[$vs_subelement]['MIN']) || ($vn_value < $va_tag_values[$vs_subelement]['MIN'])) { $va_tag_values[$vs_subelement]['MIN'] = $vn_value; }
-							if (is_null($va_tag_values[$vs_subelement]['MAX']) || ($vn_value > $va_tag_values[$vs_subelement]['MAX'])) { $va_tag_values[$vs_subelement]['MAX'] = $vn_value; }
+						if(is_array($va_values)) {
+							foreach($va_values as $vs_value) {
+								$vn_value = (float)$vs_value;
+								$va_tag_values[$vs_subelement]['SUM'] += $vn_value;
+								if (is_null($va_tag_values[$vs_subelement]['MIN']) || ($vn_value < $va_tag_values[$vs_subelement]['MIN'])) { $va_tag_values[$vs_subelement]['MIN'] = $vn_value; }
+								if (is_null($va_tag_values[$vs_subelement]['MAX']) || ($vn_value > $va_tag_values[$vs_subelement]['MAX'])) { $va_tag_values[$vs_subelement]['MAX'] = $vn_value; }
 					
-							if (($vn_c >= $pn_page_start) && ($vn_c <= $pn_page_end)) {
-								$va_tag_values[$vs_subelement]['PAGESUM'] += $vn_value;
-								if (is_null($va_tag_values[$vs_subelement]['PAGEMIN']) || ($vn_value < $va_tag_values[$vs_subelement]['PAGEMIN'])) { $va_tag_values[$vs_subelement]['PAGEMIN'] = $vn_value; }
-								if (is_null($va_tag_values[$vs_subelement]['PAGEMAX']) || ($vn_value > $va_tag_values[$vs_subelement]['PAGEMAX'])) { $va_tag_values[$vs_subelement]['PAGEMAX'] = $vn_value; }
-								$vn_page_len++;
+								if (($vn_c >= $pn_page_start) && ($vn_c <= $pn_page_end)) {
+									$va_tag_values[$vs_subelement]['PAGESUM'] += $vn_value;
+									if (is_null($va_tag_values[$vs_subelement]['PAGEMIN']) || ($vn_value < $va_tag_values[$vs_subelement]['PAGEMIN'])) { $va_tag_values[$vs_subelement]['PAGEMIN'] = $vn_value; }
+									if (is_null($va_tag_values[$vs_subelement]['PAGEMAX']) || ($vn_value > $va_tag_values[$vs_subelement]['PAGEMAX'])) { $va_tag_values[$vs_subelement]['PAGEMAX'] = $vn_value; }
+									$vn_page_len++;
+								}
 							}
 						}
 						break;
 					case 10:	// timecode
 						$va_values = $pr_res->get($vs_subelement, array('returnAsDecimal' => true, 'returnAsArray' => true));
 						
-						foreach($va_values as $vn_value) {
-							$va_tag_values[$vs_subelement]['SUM'] += $vn_value;
-							if (is_null($vn_min) || ($vn_value < $vn_min)) { $vn_min = $vn_value; }
-							if (is_null($vn_max) || ($vn_value > $vn_max)) { $vn_max = $vn_value; }
+						if(is_array($va_values)) {
+							foreach($va_values as $vn_value) {
+								$va_tag_values[$vs_subelement]['SUM'] += $vn_value;
+								if (is_null($vn_min) || ($vn_value < $vn_min)) { $vn_min = $vn_value; }
+								if (is_null($vn_max) || ($vn_value > $vn_max)) { $vn_max = $vn_value; }
 					
-							if (($vn_c >= $pn_page_start) && ($vn_c <= $pn_page_end)) {
-								$va_tag_values[$vs_subelement]['PAGESUM'] += $vn_value;
-								if (is_null($vn_page_min) || ($vn_value < $vn_page_min)) { $vn_page_min = $vn_value; }
-								if (is_null($vn_page_max) || ($vn_value > $vn_page_max)) { $vn_page_max = $vn_value; }
-								$vn_page_len++;
+								if (($vn_c >= $pn_page_start) && ($vn_c <= $pn_page_end)) {
+									$va_tag_values[$vs_subelement]['PAGESUM'] += $vn_value;
+									if (is_null($vn_page_min) || ($vn_value < $vn_page_min)) { $vn_page_min = $vn_value; }
+									if (is_null($vn_page_max) || ($vn_value > $vn_page_max)) { $vn_page_max = $vn_value; }
+									$vn_page_len++;
+								}
 							}
 						}
 						$vb_has_timecode = true;
@@ -3432,17 +3483,19 @@ $ca_relationship_lookup_parse_cache = array();
 					default:
 						$va_values = $pr_res->get($vs_subelement, array('returnAsArray' => true));
 						
-						foreach($va_values as $vs_value) {
-							$vn_value = (float)$vs_value;
-							$va_tag_values[$vs_subelement]['SUM'] += $vn_value;
-							if (is_null($vn_min) || ($vn_value < $vn_min)) { $vn_min = $vn_value; }
-							if (is_null($vn_max) || ($vn_value > $vn_max)) { $vn_max = $vn_value; }
+						if(is_array($va_values)) {
+							foreach($va_values as $vs_value) {
+								$vn_value = (float)$vs_value;
+								$va_tag_values[$vs_subelement]['SUM'] += $vn_value;
+								if (is_null($vn_min) || ($vn_value < $vn_min)) { $vn_min = $vn_value; }
+								if (is_null($vn_max) || ($vn_value > $vn_max)) { $vn_max = $vn_value; }
 					
-							if (($vn_c >= $pn_page_start) && ($vn_c <= $pn_page_end)) {
-								$va_tag_values[$vs_subelement]['PAGESUM'] += $vn_value;
-								if (is_null($vn_page_min) || ($vn_value < $vn_page_min)) { $vn_page_min = $vn_value; }
-								if (is_null($vn_page_max) || ($vn_value > $vn_page_max)) { $vn_page_max = $vn_value; }
-								$vn_page_len++;
+								if (($vn_c >= $pn_page_start) && ($vn_c <= $pn_page_end)) {
+									$va_tag_values[$vs_subelement]['PAGESUM'] += $vn_value;
+									if (is_null($vn_page_min) || ($vn_value < $vn_page_min)) { $vn_page_min = $vn_value; }
+									if (is_null($vn_page_max) || ($vn_value > $vn_page_max)) { $vn_page_max = $vn_value; }
+									$vn_page_len++;
+								}
 							}
 						}
 						break;

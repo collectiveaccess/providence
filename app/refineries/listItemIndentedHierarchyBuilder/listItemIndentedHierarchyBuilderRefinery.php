@@ -143,12 +143,12 @@
 			foreach($va_levels as $vn_i => $vs_level_placeholder) {
 				$vs_level_value = null;
 				if (strlen($vs_level_placeholder)) {
-					if ($vs_level_value = BaseRefinery::parsePlaceholder($vs_level_placeholder, $pa_source_data, $pa_item, $vs_delimiter, 0, array('returnAsString' => true))) {
+					if ($vs_level_value = BaseRefinery::parsePlaceholder($vs_level_placeholder, $pa_source_data, $pa_item, 0, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true))) {
 						if (!$vn_parent_id && isset(listItemIndentedHierarchyBuilderRefinery::$opa_level_value_ids[$vn_i-1])) { 
 							$vn_parent_id = listItemIndentedHierarchyBuilderRefinery::$opa_level_value_ids[$vn_i-1];
 						}
 						
-
+						$vs_type = isset($va_level_types[$vn_i]) ? $va_level_types[$vn_i] : null;
 						if ($vn_item_id = DataMigrationUtils::getListItemID($vs_list_code, preg_replace("![^A-Za-z0-9_]+!", "_", $vs_level_value), $vs_type, $pn_locale_id, array('is_enabled' => 1, 'parent_id' => $vn_parent_id, 'preferred_labels' => array('name_singular' => $vs_level_value, 'name_plural' => $vs_level_value)), array('matchOnIdno' => true, 'log' => $o_log, 'transaction' => caGetOption('transaction', $pa_options, null), 'importEvent' => caGetOption('event', $pa_options, null), 'importEventSource' => 'listItemIndentedHierarchyBuilder'))) {
 							$vn_parent_id = $vn_item_id;
 							

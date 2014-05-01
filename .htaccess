@@ -1,0 +1,15 @@
+Order allow,deny
+Allow from all
+
+<FilesMatch ".*\.[A-Za-z0-9]+">
+	Deny from all
+</FilesMatch>
+<FilesMatch "^(index\.php)?$">
+        Allow from all
+</FilesMatch>
+<FilesMatch "^(index|service|tilepic)\.php$">
+        Allow from all
+</FilesMatch>
+<FilesMatch "^.*\.(css|gif|jpg|png|js|woff|ttf|swf)$">
+        Allow from all
+</FilesMatch>

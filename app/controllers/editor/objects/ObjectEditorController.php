@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -149,19 +149,20 @@
  			foreach($va_annotations_raw as $vn_annotation_id => $va_annotation) {
  				$va_annotations[] = array(
  					'annotation_id' => $va_annotation['annotation_id'],
- 					'x' => (float)$va_annotation['x'],
- 					'y' => (float)$va_annotation['y'],
- 					'w' => (float)$va_annotation['w'],
- 					'h' => (float)$va_annotation['h'],
- 					'tx' => (float)$va_annotation['tx'],
- 					'ty' => (float)$va_annotation['ty'],
- 					'tw' => (float)$va_annotation['tw'],
- 					'th' => (float)$va_annotation['th'],
- 					'points' => $va_annotation['points'],
- 					'label' => (string)$va_annotation['label'],
- 					'description' => (string)$va_annotation['description'],
- 					'type' => (string)$va_annotation['type'],
- 					'options' => $va_annotation['options']
+ 					'x' => 				caGetOption('x', $va_annotation, 0, array('castTo' => 'float')),
+ 					'y' => 				caGetOption('y', $va_annotation, 0, array('castTo' => 'float')),
+ 					'w' => 				caGetOption('w', $va_annotation, 0, array('castTo' => 'float')),
+ 					'h' => 				caGetOption('h', $va_annotation, 0, array('castTo' => 'float')),
+ 					'tx' => 			caGetOption('tx', $va_annotation, 0, array('castTo' => 'float')),
+ 					'ty' => 			caGetOption('ty', $va_annotation, 0, array('castTo' => 'float')),
+ 					'tw' => 			caGetOption('tw', $va_annotation, 0, array('castTo' => 'float')),
+ 					'th' => 			caGetOption('th', $va_annotation, 0, array('castTo' => 'float')),
+ 					'points' => 		caGetOption('points', $va_annotation, array(), array('castTo' => 'array')),
+ 					'label' => 			caGetOption('label', $va_annotation, '', array('castTo' => 'string')),
+ 					'description' => 	caGetOption('description', $va_annotation, '', array('castTo' => 'string')),
+ 					'type' => 			caGetOption('type', $va_annotation, 'rect', array('castTo' => 'string')),
+ 					'locked' => 		caGetOption('locked', $va_annotation, '0', array('castTo' => 'string')),
+ 					'options' => 		caGetOption('options', $va_annotation, array(), array('castTo' => 'array'))
  				);
  			}
  			

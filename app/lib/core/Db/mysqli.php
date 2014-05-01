@@ -109,7 +109,7 @@ class Db_mysqli extends DbDriverBase {
 		if (!is_array($g_connect)) { $g_connect = array(); }
 		$vs_db_connection_key = $pa_options["host"].'/'.$pa_options["database"];
 		
-		if (isset($g_connect[$vs_db_connection_key]) && ($g_connect[$vs_db_connection_key])) { $this->opr_db = $g_connect[$vs_db_connection_key]; return true;}
+		if (!($vb_unique_connection = caGetOption('uniqueConnection', $pa_options, false)) && isset($g_connect[$vs_db_connection_key]) && ($g_connect[$vs_db_connection_key])) { $this->opr_db = $g_connect[$vs_db_connection_key]; return true;}
 		
 		if (!function_exists("mysqli_connect")) {
 			die(_t("Your PHP installation lacks MySQL support. Please add it and retry..."));
@@ -130,7 +130,7 @@ class Db_mysqli extends DbDriverBase {
 		mysqli_query($this->opr_db, 'SET NAMES \'utf8\'');
 		mysqli_query($this->opr_db, 'SET character_set_results = NULL');	
 		
-		$g_connect[$vs_db_connection_key] = $this->opr_db;
+		if (!$vb_unique_connection) { $g_connect[$vs_db_connection_key] = $this->opr_db; }
 		return true;
 	}
 

@@ -122,7 +122,6 @@ class CollectiveAccessDataReader extends BaseDataReader {
 				$request = $this->opo_client->get("/service.php/item/{$this->ops_table}/id/{$vn_id}?pretty=1&format=import");
 				$response = $request->send();
 				$data = $response->json();
-				//print_R($data);
 				$this->opa_row_buf[$this->opn_current_row] = $data;
 			} catch (Exception $e) {
 				//return false;
@@ -168,8 +167,10 @@ class CollectiveAccessDataReader extends BaseDataReader {
 			
 			if (!$pb_return_all_locales) {
 				$va_data['attributes'] = caExtractValuesByUserLocale($va_data['attributes']);
-				$va_data['preferred_labels'] = array_pop(caExtractValuesByUserLocale(array($va_data['preferred_labels'])));
+				$va_tmp = caExtractValuesByUserLocale(array($va_data['preferred_labels']));
+				$va_data['preferred_labels'] = array_pop($va_tmp);
 			}
+			
 			switch(sizeof($va_col)) {
 				// ------------------------------------------------------------------------------------------------
 				case 2:

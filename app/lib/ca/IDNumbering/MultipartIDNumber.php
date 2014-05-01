@@ -188,14 +188,11 @@
 		# Types
 		# -------------------------------------------------------
 		public function getTypes() {
-			$va_formats = $this->getFormats();
-			
+			if (!($vs_format = $this->getFormat())) { return array(); }
 			$va_types = array();
-			foreach($va_formats as $vs_format) {
-				if (is_array($this->opa_formats[$vs_format])) {
-					foreach($this->opa_formats[$vs_format] as $vs_type => $va_info) {
-						$va_types[$vs_type] = true;
-					}
+			if (is_array($this->opa_formats[$vs_format])) {
+				foreach($this->opa_formats[$vs_format] as $vs_type => $va_info) {
+					$va_types[$vs_type] = true;
 				}
 			}
 			

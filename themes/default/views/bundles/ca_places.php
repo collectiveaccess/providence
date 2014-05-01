@@ -194,7 +194,7 @@
 						className: 'hierarchyBrowserLevel',
 						classNameContainer: 'hierarchyBrowserContainer',
 						
-						editButtonIcon: '<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>',
+						editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
 						
 						//initItemID: <?php print (int)$this->request->session->getVar('ca_places_browse_last_id'); ?>,
 						useAsRootID: <?php print $vn_use_as_root_id; ?>,

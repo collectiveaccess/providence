@@ -186,7 +186,7 @@ class Installer {
 		if(isset($po_simplexml[$ps_attr])){
 			return (string) $po_simplexml[$ps_attr];
 		} else {
-			return false;
+			return null;
 		}
 	}
 	# --------------------------------------------------
@@ -206,7 +206,7 @@ class Installer {
 		}
 	}
 	# --------------------------------------------------
-	private static function addLabelsFromXMLElement($t_instance,$po_labels,$pa_locales){
+	private static function addLabelsFromXMLElement($t_instance,$po_labels,$pa_locales, $pb_force_preferred=false){
 		require_once(__CA_LIB_DIR__."/ca/LabelableBaseModelWithAttributes.php");
 
 		if(!($t_instance instanceof LabelableBaseModelWithAttributes)){
@@ -219,7 +219,7 @@ class Installer {
 			$vn_locale_id = $pa_locales[$vs_locale];
 
 			$vb_preferred = self::getAttribute($vo_label, "preferred");
-			if((bool)$vb_preferred || is_null($vb_preferred)){
+			if($pb_force_preferred || (bool)$vb_preferred || is_null($vb_preferred)){
 				$vb_preferred = true;
 			} else {
 				$vb_preferred = false;
@@ -336,7 +336,7 @@ class Installer {
 			}
 			$vo_db->query($vs_statement);
 			if ($vo_db->numErrors()) {
-				$this->addError("Error while loading the database schema: ".join("; ",$o_db->getErrors()));
+				$this->addError("Error while loading the database schema: ".join("; ",$vo_db->getErrors()));
 				return false;
 			}
 		}
@@ -595,7 +595,7 @@ class Installer {
 		$t_md_element->insert();
 
 		if ($t_md_element->numErrors()) {
-			$this->addError("There was an error while inserting metadata element {$ps_element_code}: ".join(" ",$t_md_element->getErrors()));
+			$this->addError("There was an error while inserting metadata element {$vs_element_code}: ".join(" ",$t_md_element->getErrors()));
 			return false;
 		}
 
@@ -702,7 +702,7 @@ class Installer {
 
 				self::addLabelsFromXMLElement($t_ui_screens, $vo_screen->labels, $this->opa_locales);
 
-				$va_available_bundles = $t_ui_screens->getAvailableBundles($pn_type,array('dontCache' => true));
+				$va_available_bundles = $t_ui_screens->getAvailableBundles(null,array('dontCache' => true));
 
 				// create ui bundle placements
 				foreach($vo_screen->bundlePlacements->children() as $vo_placement) {
@@ -889,10 +889,10 @@ class Installer {
 			}
 		}
 
-		$t_role = new ca_user_roles();
-		$t_role->setMode(ACCESS_WRITE);
-
 		foreach($va_roles as $vs_role_code => $vo_role) {
+			$t_role = new ca_user_roles();
+			$t_role->setMode(ACCESS_WRITE);
+
 			$t_role->set('name', trim((string) $vo_role->name));
 			$t_role->set('description', trim((string) $vo_role->description));
 			$t_role->set('code', $vs_role_code);
@@ -921,7 +921,7 @@ class Installer {
 
 					if(!$t_role->setAccessSettingForBundle($vs_permission_table, $vs_permission_bundle, $vn_permission_access)){
 						$this->addError("Could not add bundle level access control for table '{$vs_permission_table}' and bundle '{$vs_permission_bundle}'. Check the table and bundle names.");
-						return false;
+						//return false;
 					}
 				}
 			}
@@ -935,13 +935,25 @@ class Installer {
 
 					if(!$t_role->setAccessSettingForType($vs_permission_table, $vs_permission_type, $vn_permission_access)){
 						$this->addError("Could not add type level access control for table '{$vs_permission_table}' and type '{$vs_permission_type}'. Check the table name and the type code.");
-						return false;
+						//return false;
 					}
 				}
 			}
 			
-			// @TODO add source level ACL items once that feature is done
-			//
+			// add source level ACL items
+			if($vo_role->sourceLevelAccessControl) {
+				foreach($vo_role->sourceLevelAccessControl->children() as $vo_permission) {
+					$vs_permission_table = self::getAttribute($vo_permission, 'table');
+					$vs_permission_source = self::getAttribute($vo_permission, 'source');
+					$vs_permission_default = self::getAttribute($vo_permission, 'default');
+					$vn_permission_access = $this->_convertACLStringToConstant(self::getAttribute($vo_permission, 'access'));
+
+					if(!$t_role->setAccessSettingForSource($vs_permission_table, $vs_permission_source, $vn_permission_access, (bool)$vs_permission_default)){
+						$this->addError("Could not add source level access control for table '{$vs_permission_table}' and source '{$vs_permission_source}'. Check the table name and the source code.");
+						//return false;
+					}
+				}
+			}
 		}
 		return true;
 	}
@@ -989,7 +1001,7 @@ class Installer {
 			$t_display->setMode(ACCESS_WRITE);
 
 			$t_display->set("display_code", $vs_display_code);
-			$t_display->set("is_system",$vb_system);
+			$t_display->set("is_system", $vb_system);
 			$t_display->set("table_num",$vo_dm->getTableNum($vs_table));
 			$t_display->set("user_id", 1);		// let administrative user own these
 			
@@ -1048,7 +1060,7 @@ class Installer {
 		
 		$vn_i = 1;
 		foreach($po_placements->children() as $vo_placement){
-			$vs_code = self::getAttribute($vo_item, "code");
+			$vs_code = self::getAttribute($vo_placement, "code");
 			$vs_bundle = (string)$vo_placement->bundle;
 
 			$va_settings = $this->_processSettings(null, $vo_placement->settings);
@@ -1134,7 +1146,7 @@ class Installer {
 		
 		$vn_i = 0;
 		foreach($po_placements->children() as $vo_placement){
-			$vs_code = self::getAttribute($vo_item, "code");
+			$vs_code = self::getAttribute($vo_placement, "code");
 			$vs_bundle = (string)$vo_placement->bundle;
 
 			$va_settings = $this->_processSettings(null, $vo_placement->settings);
@@ -1162,7 +1174,7 @@ class Installer {
 		$t_user_group->insert();
 		
 		if ($t_user_group->numErrors()) {
-			$this->addError("Errors creating root user group {$vs_group_code}: ".join("; ",$t_user_group->getErrors()));
+			$this->addError("Errors creating root user group 'Root': ".join("; ",$t_user_group->getErrors()));
 			return false;
 		}
 		if($this->ops_base_name){ // "merge" profile and its base

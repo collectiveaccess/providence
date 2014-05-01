@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -199,6 +199,22 @@ BaseModel::$s_ca_models_definitions['ca_object_representations'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Sort order'),
+		),
+		'source_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'LIST_CODE' => 'object_representation_sources',
+				'LABEL' => _t('Source'), 'DESCRIPTION' => _t('Administrative source of object representation. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed.')
+		),
+		'source_info' => array(
+				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => 'Source information', 'DESCRIPTION' => 'Serialized array used to store source information for object representation information retrieved via web services [NOT IMPLEMENTED YET].'
 		)
  	)
 );
@@ -294,6 +310,12 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	# ------------------------------------------------------
 	protected $ATTRIBUTE_TYPE_ID_FLD = 'type_id';								// name of type field for this table - attributes system uses this to determine via ca_metadata_type_restrictions which attributes are applicable to rows of the given type
 	protected $ATTRIBUTE_TYPE_LIST_CODE = 'object_representation_types';		// list code (ca_lists.list_code) of list defining types for this table
+
+	# ------------------------------------------------------
+	# Sources
+	# ------------------------------------------------------
+	protected $SOURCE_ID_FLD = 'source_id';								// name of source field for this table
+	protected $SOURCE_LIST_CODE = 'object_representation_sources';		// list code (ca_lists.list_code) of list defining sources for this table
 
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
@@ -894,6 +916,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  	protected function _processRepresentationAnnotations($po_request, $ps_form_prefix, $ps_placement_code) {
  		$va_rel_items = $this->getAnnotations();
 		$o_coder = $this->getAnnotationPropertyCoderInstance($this->getAnnotationType());
+		
+		$vn_c = 0;
 		foreach($va_rel_items as $vn_id => $va_rel_item) {
 			$this->clearErrors();
 			if (strlen($vn_status = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_status_'.$va_rel_item['annotation_id'], pString))) {
@@ -933,6 +957,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 							
 							if ($t_annotation->numErrors()) {
 								$po_request->addActionErrors($t_annotation->errors(), 'ca_representation_annotations', 'new_'.$vn_c);
+								$vn_c++;
 							}
 						}
 					}
@@ -1387,14 +1412,19 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		
  		$o_db = $this->getDb();
  		
+ 		$va_access_values = caGetOption('checkAccess', $pa_options, null);
+ 		$vs_access_where = '';
+ 		if (isset($va_access_values) && is_array($va_access_values) && sizeof($va_access_values)) {
+ 			$vs_access_where = ' AND caor.access IN ('.join(',', $va_access_values).')';
+ 		}
+ 		
  		$qr_reps = $o_db->query("
  			SELECT caor.representation_id, caor.media, caor.access, caor.status, l.name, caor.locale_id, caor.media_metadata, caor.type_id
  			FROM ca_object_representations caor
  			LEFT JOIN ca_locales AS l ON caor.locale_id = l.locale_id
  			WHERE
  				caor.representation_id = ?  AND caor.deleted = 0
- 				{$vs_is_primary_sql}
- 				{$vs_access_sql}
+ 				{$vs_access_where}
  			ORDER BY
  				l.name ASC 
  		", (int)$this->getPrimaryKey());
@@ -1485,7 +1515,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	public function getRepresentationMediaForIDs($pa_ids, $pa_versions, $pa_options = null) {
 		if (!is_array($pa_ids) || !sizeof($pa_ids)) { return array(); }
 		if (!is_array($pa_options)) { $pa_options = array(); }
-		$va_access_values = $pa_options["checkAccess"];
+		$va_access_values = caGetOption('checkAccess', $pa_options, null);
+		$vs_access_where = '';
 		if (isset($va_access_values) && is_array($va_access_values) && sizeof($va_access_values)) {
 			$vs_access_where = ' AND orep.access IN ('.join(',', $va_access_values).')';
 		}
@@ -1598,7 +1629,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			
 			if (is_array($pa_additional_display_options)) { $va_rep_display_info = array_merge($va_rep_display_info, $pa_additional_display_options); }
 			$o_view->setVar('display_options', $va_rep_display_info);
-			$o_view->setVar('representation_id', $pn_representation_id);
+			$o_view->setVar('representation_id', $vn_representation_id);
 			$o_view->setVar('t_object_representation', $this);
 			$o_view->setVar('versions', $va_versions = $this->getMediaVersions('media'));
 			
@@ -1635,7 +1666,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  			$o_view->setVar('t_object', $t_object);
  			$o_view->setVar('t_set_item', $t_set_item);
  			$o_view->setVar('t_order_item', $t_order_item);
- 			$o_view->setVar('only_show_reps_in_order', $vb_only_show_reps_in_order);
+ 			//$o_view->setVar('only_show_reps_in_order', $vb_only_show_reps_in_order);
  			$o_view->setVar('use_media_editor', $vb_media_editor);
  			$o_view->setVar('noControls', $vb_no_controls);
 		}

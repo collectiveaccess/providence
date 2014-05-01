@@ -905,14 +905,13 @@ class BaseModel extends BaseObject {
 			case (FT_HISTORIC_DATETIME):
 			case (FT_HISTORIC_DATE):
 			case (FT_DATE):
-
+				$vn_timestamp = isset($this->_FIELD_VALUES[$ps_field]) ? $this->_FIELD_VALUES[$ps_field] : 0;
 				if (isset($pa_options["GET_DIRECT_DATE"]) && $pa_options["GET_DIRECT_DATE"]) {
 					$vs_prop = $this->_FIELD_VALUES[$ps_field];
 				} elseif ((isset($pa_options['sortable']) && $pa_options['sortable'])) {
 					$vs_prop = $vn_timestamp."/".$vn_timestamp;
 				} else {
 					$o_tep = new TimeExpressionParser();
-					$vn_timestamp = isset($this->_FIELD_VALUES[$ps_field]) ? $this->_FIELD_VALUES[$ps_field] : 0;
 
 					if (($ps_field_type == FT_HISTORIC_DATETIME) || ($ps_field_type == FT_HISTORIC_DATE)) {
 						$o_tep->setHistoricTimestamps($vn_timestamp, $vn_timestamp);
@@ -1003,7 +1002,7 @@ class BaseModel extends BaseObject {
 		}
 
 		if (isset($pa_options["ESCAPE_FOR_XML"]) && $pa_options["ESCAPE_FOR_XML"]) {
-			$vs_prop = escapeForXML($vs_prop);
+			$vs_prop = caEscapeForXML($vs_prop);
 		}
 
 		if (!(isset($pa_options["DONT_STRIP_SLASHES"]) && $pa_options["DONT_STRIP_SLASHES"])) {
@@ -1122,6 +1121,9 @@ class BaseModel extends BaseObject {
 	 *
 	 * for text fields:
 	 *	- purify : if set then text input is run through HTML Purifier before being set
+	 *
+	 * for parent_id field:
+	 *	- treatParentIDAsIdno: force parent_id value to be used as idno lookup rather than a primary key value
 	 */
 	public function set($pa_fields, $pm_value="", $pa_options=null) {
 		$this->errors = array();
@@ -1156,7 +1158,12 @@ class BaseModel extends BaseObject {
 						if ($vs_cur_value != $vm_value) {
 							$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 						}
-
+						
+						if (($vs_field == $this->HIERARCHY_PARENT_ID_FLD) && ((strlen($vm_value) > 0) && (!is_numeric($vm_value) || caGetOption('treatParentIDAsIdno', $pa_options, false)))) {
+							if(is_array($va_ids = call_user_func_array($this->tableName()."::find", array(array('idno' => $vm_value, 'deleted' => 0), array('returnAs' => 'ids', 'transaction' => $this->getTransaction()))))) {
+								$vm_value = array_shift($va_ids);
+							}
+						}
 						if (($vm_value !== "") || ($this->getFieldInfo($vs_field, "IS_NULL") && ($vm_value == ""))) {
 							if ($vm_value) {
 								if (($vs_list_code = $this->getFieldInfo($vs_field, "LIST_CODE")) && (!is_numeric($vm_value))) {	// translate ca_list_item idno's into item_ids if necessary
@@ -1733,14 +1740,14 @@ class BaseModel extends BaseObject {
 				if (preg_match("/([\w_]+)\.([\w_]+)/", $vs_field, $va_matches)) {
 					if ($va_matches[1] != $this->tableName()) {
 						if ($this->_DATAMODEL->tableExists($va_matches[1])) {
-							$this->postError(715,_t("BaseModel '%1' cannot be accessed with this class", $matches[1]), "BaseModel->load()");
+							$this->postError(715,_t("BaseModel '%1' cannot be accessed with this class", $va_matches[1]), "BaseModel->load()");
 							return false;
 						} else {
-							$this->postError(715, _t("BaseModel '%1' does not exist", $matches[1]), "BaseModel->load()");
+							$this->postError(715, _t("BaseModel '%1' does not exist", $va_matches[1]), "BaseModel->load()");
 							return false;
 						}
 					}
-					$vs_field = $matches[2]; # get field name alone
+					$vs_field = $va_matches[2]; # get field name alone
 				}
 
 				if (!$this->hasField($vs_field)) {
@@ -3470,7 +3477,7 @@ class BaseModel extends BaseObject {
 			return $va_media_info[$ps_version]["QUEUED_MESSAGE"];
 		}
 
-		$url = $this->getMediaUrl($ps_field, $ps_version, isset($options["page"]) ? $options["page"] : null);
+		$url = $this->getMediaUrl($ps_field, $ps_version, isset($pa_options["page"]) ? $pa_options["page"] : null);
 		$m = new Media();
 		
 		$o_vol = new MediaVolumes();
@@ -3673,7 +3680,7 @@ class BaseModel extends BaseObject {
 		if (!$ps_mimetype) {
 			# figure out mimetype from field content
 			$va_media_desc = $this->get($ps_field);
-			if ($vs_media_type = $o_media_proc_settings->canAccept($media_desc["INPUT"]["MIMETYPE"])) {
+			if ($vs_media_type = $o_media_proc_settings->canAccept($va_media_desc["INPUT"]["MIMETYPE"])) {
 				return $o_media_proc_settings->getMediaTypeInfo($vs_media_type);
 			}
 		} else {
@@ -3790,7 +3797,7 @@ class BaseModel extends BaseObject {
 					array(
 						"MIRROR" => $vs_mirror_code,
 						"VOLUME" => $vs_volume,
-						"FIELD" => $f,
+						"FIELD" => $ps_field,
 						"TABLE" => $this->tableName(),
 						"DELETE" => 1,
 						"VERSION" => $ps_version,
@@ -3805,7 +3812,7 @@ class BaseModel extends BaseObject {
 				{
 					continue;
 				} else {
-					$this->postError(100, _t("Couldn't queue mirror using '%1' for version '%2' (handler '%3')", $vs_mirror_method, $v, $vs_queue),"BaseModel->_removeMedia()");
+					$this->postError(100, _t("Couldn't queue mirror using '%1' for version '%2' (handler '%3')", $vs_mirror_method, $ps_version, $vs_queue),"BaseModel->_removeMedia()");
 				}
 			}
 		}
@@ -3925,7 +3932,7 @@ class BaseModel extends BaseObject {
 
 					// add file extension to temporary file if necessary; otherwise phar barfs when handling the archive
 					$va_tmp = array();
-					preg_match("/[.]*\.([a-zA-Z0-9]+)$/",$va_archive_files[0],$va_tmp);
+					preg_match("/[.]*\.([a-zA-Z0-9]+)$/",$vs_original_tmpname,$va_tmp);
 					if(!isset($va_tmp[1])){
 						@rename($this->_SET_FILES[$ps_field]['tmp_name'], $this->_SET_FILES[$ps_field]['tmp_name'].$vs_archive_extension);
 						$this->_SET_FILES[$ps_field]['tmp_name'] = $this->_SET_FILES[$ps_field]['tmp_name'].$vs_archive_extension;
@@ -4770,7 +4777,7 @@ class BaseModel extends BaseObject {
 		
 		$va_volume_info = $this->_MEDIA_VOLUMES->getVolumeInformation($va_media_info['VOLUME']);
 		if(isset($va_volume_info['replication']) && is_array($va_volume_info['replication'])) {
-			if ($vs_trigger || (!is_null($vn_access) && is_array($va_target_info['access']))) {
+			if ($vs_trigger || (!is_null($vn_access))) {
 				$va_tmp = array();
 				foreach($va_volume_info['replication'] as $vs_target => $va_target_info) {
 					if (
@@ -4859,6 +4866,8 @@ class BaseModel extends BaseObject {
 	 * @return bool
 	 */
 	public function replicateMedia($ps_field, $ps_target) {
+		global $AUTH_CURRENT_USER_ID;
+		
 		$va_targets = $this->getMediaReplicationTargets($ps_field, 'original');
 		$va_target_info = $va_targets[$ps_target];
 		
@@ -4870,7 +4879,7 @@ class BaseModel extends BaseObject {
 			'category' => $va_target_info['options']['category']
 		);
 		
-		$vs_version = $pa_target_info['version'];
+		$vs_version = $va_target_info['version'];
 		if (!in_array($vs_version, $this->getMediaVersions($ps_field))) {
 			$vs_version = 'original';
 		}
@@ -4915,7 +4924,7 @@ class BaseModel extends BaseObject {
 				$this->update();
 				return null;
 			} else {
-				$this->postError(100, _t("Couldn't queue mirror using '%1' for version '%2' (handler '%3')", 'mediaReplication', $vs_version, $queue),"BaseModel->replicateMedia()");
+				$this->postError(100, _t("Couldn't queue mirror using '%1' for version '%2'", 'mediaReplication', $vs_version),"BaseModel->replicateMedia()");
 			}
 			
 			$vs_key = null;
@@ -6007,6 +6016,7 @@ class BaseModel extends BaseObject {
 					}
 				}
 				if(is_array($va_subject_config['RELATED_TABLES'])) {
+					$o_db = $this->getDb();
 					if (!isset($o_db) || !$o_db) {
 						$o_db = new Db();
 						$o_db->dieOnError(false);
@@ -6118,6 +6128,7 @@ class BaseModel extends BaseObject {
 				$vn_log_id, $vs_snapshot
 			);
 		
+			global $g_change_log_delegate;
 			if ($g_change_log_delegate && method_exists($g_change_log_delegate, "onLogChange")) {
 				call_user_func( array( $g_change_log_delegate, 'onLogChange'), $this->tableNum(), $vn_row_id, $vn_log_id );
 			}
@@ -7363,9 +7374,9 @@ class BaseModel extends BaseObject {
 		if ($va_parsed_height['type'] == 'pixels') {
 			$va_dim_styles[] = "height: ".$va_parsed_height['dimension']."px;";
 		}
-		if ($vn_max_pixel_width) {
-			$va_dim_styles[] = "max-width: {$vn_max_pixel_width}px;";
-		}
+		//if ($vn_max_pixel_width) {
+		//	$va_dim_styles[] = "max-width: {$vn_max_pixel_width}px;";
+		//}
 					
 		$vs_dim_style = trim(join(" ", $va_dim_styles));
 		$vs_field_label = (isset($pa_options['label']) && (strlen($pa_options['label']) > 0)) ? $pa_options['label'] : $va_attr["LABEL"];
@@ -7559,7 +7570,7 @@ $pa_options["display_form_field_tips"] = true;
 							
 							$t_list = new ca_lists();
 							$va_list_attrs = array( 'id' => $pa_options['id']);
-							if ($vn_max_pixel_width) { $va_list_attrs['style'] = $vs_width_style; }
+							//if ($vn_max_pixel_width) { $va_list_attrs['style'] = $vs_width_style; }
 							
 							
 							// NOTE: "raw" field value (value passed into method, before the model default value is applied) is used so as to allow the list default to be used if needed
@@ -8271,8 +8282,8 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param string $ps_source_info Text field for storing information about source of relationship. Not currently used.
 	 * @param string $ps_direction Optional direction specification for self-relationships (relationships linking two rows in the same table). Valid values are 'ltor' (left-to-right) and  'rtol' (right-to-left); the direction determines which "side" of the relationship the currently loaded row is on: 'ltor' puts the current row on the left side. For many self-relations the direction determines the nature and display text for the relationship.
 	 * @param array $pa_options Array of additional options:
-	 *		allowDuplicates = if set to true, attempts to add a relationship that already exists will succeed. Default is false – duplicate relationships will not be created.
-	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to add a duplicate relationship. Default is false – don't set error. addRelationship() will always return false when creation of a duplicate relationship fails, no matter how the setErrorOnDuplicate option is set.
+	 *		allowDuplicates = if set to true, attempts to add a relationship that already exists will succeed. Default is false ��� duplicate relationships will not be created.
+	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to add a duplicate relationship. Default is false ��� don't set error. addRelationship() will always return false when creation of a duplicate relationship fails, no matter how the setErrorOnDuplicate option is set.
 	 * @return BaseRelationshipModel Loaded relationship model instance on success, false on error.
 	 */
 	public function addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
@@ -8282,9 +8293,7 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		$t_item_rel = $va_rel_info['t_item_rel'];
 		$t_item_rel->clear();
-		//if ($this->inTransaction()) {
-		//	$t_item_rel->setTransaction($this->getTransaction());
-		//}
+		if ($this->inTransaction()) { $t_item_rel->setTransaction($this->getTransaction()); }
 		
 		if ($pm_type_id && !is_numeric($pm_type_id)) {
 			$t_rel_type = new ca_relationship_types();
@@ -8418,8 +8427,8 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param string $ps_source_info Text field for storing information about source of relationship. Not currently used.
 	 * @param string $ps_direction Optional direction specification for self-relationships (relationships linking two rows in the same table). Valid values are 'ltor' (left-to-right) and  'rtol' (right-to-left); the direction determines which "side" of the relationship the currently loaded row is on: 'ltor' puts the current row on the left side. For many self-relations the direction determines the nature and display text for the relationship.
 	 * @param array $pa_options Array of additional options:
-	 *		allowDuplicates = if set to true, attempts to edit a relationship to match one that already exists will succeed. Default is false – duplicate relationships will not be created.
-	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to create a duplicate relationship. Default is false – don't set error. editRelationship() will always return false when editing of a relationship fails, no matter how the setErrorOnDuplicate option is set.
+	 *		allowDuplicates = if set to true, attempts to edit a relationship to match one that already exists will succeed. Default is false ��� duplicate relationships will not be created.
+	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to create a duplicate relationship. Default is false ��� don't set error. editRelationship() will always return false when editing of a relationship fails, no matter how the setErrorOnDuplicate option is set.
 	 * @return BaseRelationshipModel Loaded relationship model instance on success, false on error.
 	 */
 	public function editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $pa_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
@@ -8469,7 +8478,7 @@ $pa_options["display_form_field_tips"] = true;
 				$t_item_rel->set('rank', $pn_rank);	
 				$t_item_rel->set($t_item_rel->getTypeFieldName(), $pn_type_id);		// TODO: verify type_id based upon type_id's of each end of the relationship
 				if(!is_null($ps_effective_date)){ $t_item_rel->set('effective_date', $ps_effective_date); }
-				if(!is_null($ps_source_info)){ $t_item_rel->set("source_info",$ps_source_info); }
+				if(!is_null($pa_source_info)){ $t_item_rel->set("source_info",$pa_source_info); }
 				$t_item_rel->update();
 				if ($t_item_rel->numErrors()) {
 					$this->errors = $t_item_rel->errors;
@@ -8497,7 +8506,7 @@ $pa_options["display_form_field_tips"] = true;
 						$t_item_rel->set('rank', $pn_rank);	
 						$t_item_rel->set($t_item_rel->getTypeFieldName(), $pn_type_id);		// TODO: verify type_id based upon type_id's of each end of the relationship
 						if(!is_null($ps_effective_date)){ $t_item_rel->set('effective_date', $ps_effective_date); }
-						if(!is_null($ps_source_info)){ $t_item_rel->set("source_info",$ps_source_info); }
+						if(!is_null($pa_source_info)){ $t_item_rel->set("source_info",$pa_source_info); }
 						$t_item_rel->update();
 						
 						if ($t_item_rel->numErrors()) {
@@ -8809,7 +8818,6 @@ $pa_options["display_form_field_tips"] = true;
 				$va_to_reindex_relations[(int)$qr_res->get('relation_id')] = $qr_res->getRow();	
 			}
 			if (!sizeof($va_to_reindex_relations)) { return 0; }
-			print_r($va_to_reindex_relations);
 			$va_new_relations = array();
 			foreach($va_to_reindex_relations as $vn_relation_id => $va_row) {
 				$t_item_rel->clear();
@@ -9797,7 +9805,6 @@ $pa_options["display_form_field_tips"] = true;
 	public function registerItemView($pn_user_id=null) {
 		global $g_ui_locale_id;
 		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
-		if (!$pn_locale_id) { $pn_locale_id = $g_ui_locale_id; }
 		
 		$vn_table_num = $this->tableNum();
 		
@@ -9806,7 +9813,7 @@ $pa_options["display_form_field_tips"] = true;
 		$t_view->set('table_num', $vn_table_num);
 		$t_view->set('row_id', $vn_row_id);
 		$t_view->set('user_id', $pn_user_id);
-		$t_view->set('locale_id', $pn_locale_id);
+		$t_view->set('locale_id', $g_ui_locale_id);
 	
 		$t_view->insert();
 		
@@ -9899,19 +9906,26 @@ $pa_options["display_form_field_tips"] = true;
 		$o_db = $this->getDb();
 		
 		$vs_limit_sql = '';
-		if ($pn_limit > 0) {
+		if (($pn_limit = caGetOption('limit', $pa_options, 0)) > 0) {
 			$vs_limit_sql = "LIMIT ".intval($pn_limit);
 		}
 		
-		$va_wheres = array('(civc.table_num = ?)');
+		$va_wheres = array('(civc.table_num = ?)', '(AND row_id = ?)');
+		$va_params = array($this->tableNum(), $vn_row_id);
 		if (is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && ($this->hasField('access'))) {
 			$va_wheres[] = 't.access IN ('.join(',', $pa_options['checkAccess']).')';
 		}
 		
 		if (method_exists($this, 'getTypeFieldName') && ($vs_type_field_name = $this->getTypeFieldName())) {
-			$va_types = caMergeTypeRestrictionLists($this, $pa_options);
-			if (is_array($va_types) && sizeof($va_types)) {
-				$va_wheres[] = 't.'.$vs_type_field_name.' IN ('.join(',', $va_types).')';
+			$va_type_ids = caMergeTypeRestrictionLists($this, $pa_options);
+			if (is_array($va_type_ids) && sizeof($va_type_ids)) {
+				$va_wheres[] = 't.'.$vs_type_field_name.' IN ('.join(',', $va_type_ids).')';
+			}
+		}
+		if (method_exists($this, 'getSourceFieldName') && ($vs_source_id_field_name = $this->getSourceFieldName())) {
+			$va_source_ids = caMergeSourceRestrictionLists($this, $pa_options);
+			if (is_array($va_source_ids) && sizeof($va_source_ids)) {
+				$va_wheres[] = 't.'.$vs_source_id_field_name.' IN ('.join(',', $va_source_ids).')';
 			}
 		}
 		
@@ -9934,15 +9948,14 @@ $pa_options["display_form_field_tips"] = true;
 			SELECT t.*, count(*) cnt
 			FROM ".$this->tableName()." t
 			INNER JOIN ca_item_views AS civ ON civ.row_id = t.".$this->primaryKey()."
-			WHERE
-				civ.table_num = ? AND row_id = ? {$vs_user_sql} {$vs_access_sql}
+			{$vs_where_sql} 
 			GROUP BY
 				civ.row_id
 			ORDER BY
 				cnt DESC
 			{$vs_limit_sql}
 				
-		", $this->tableNum(), $vn_row_id);
+		", $va_params);
 		
 		$va_items = array();
 		
@@ -9976,9 +9989,16 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		if (method_exists($this, 'getTypeFieldName') && ($vs_type_field_name = $this->getTypeFieldName())) {
-			$va_types = caMergeTypeRestrictionLists($this, $pa_options);
-			if (is_array($va_types) && sizeof($va_types)) {
-				$va_wheres[] = 't.'.$vs_type_field_name.' IN ('.join(',', $va_types).')';
+			$va_type_ids = caMergeTypeRestrictionLists($this, $pa_options);
+			if (is_array($va_type_ids) && sizeof($va_type_ids)) {
+				$va_wheres[] = 't.'.$vs_type_field_name.' IN ('.join(',', $va_type_ids).')';
+			}
+		}
+		
+		if (method_exists($this, 'getSourceFieldName') && ($vs_source_id_field_name = $this->getSourceFieldName())) {
+			$va_source_ids = caMergeSourceRestrictionLists($this, $pa_options);
+			if (is_array($va_source_ids) && sizeof($va_source_ids)) {
+				$va_wheres[] = 't.'.$vs_source_id_field_name.' IN ('.join(',', $va_source_ids).')';
 			}
 		}
 		
@@ -10018,7 +10038,7 @@ $pa_options["display_form_field_tips"] = true;
 	# --------------------------------------------------------------------------------------------
 	/**
 	 * Returns the most recently viewed items, up to a maximum of $pn_limit (default is 10)
-	 * Note that the limit is just that – a limit. getRecentlyViewedItems() may return fewer
+	 * Note that the limit is just that ��� a limit. getRecentlyViewedItems() may return fewer
 	 * than the limit either because there fewer viewed items than your limit or because fetching
 	 * additional views would take too long. (To ensure adequate performance getRecentlyViewedItems() uses a cache of 
 	 * recent views. If there is no cache available it will query the database to look at the most recent (4 x your limit) viewings. 
@@ -10059,9 +10079,16 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		if (method_exists($this, 'getTypeFieldName') && ($vs_type_field_name = $this->getTypeFieldName())) {
-			$va_types = caMergeTypeRestrictionLists($this, $pa_options);
-			if (is_array($va_types) && sizeof($va_types)) {
-				$va_wheres[] = 't.'.$vs_type_field_name.' IN ('.join(',', $va_types).')';
+			$va_type_ids = caMergeTypeRestrictionLists($this, $pa_options);
+			if (is_array($va_type_ids) && sizeof($va_type_ids)) {
+				$va_wheres[] = 't.'.$vs_type_field_name.' IN ('.join(',', $va_type_ids).')';
+			}
+		}
+		
+		if (method_exists($this, 'getSourceFieldName') && ($vs_source_id_field_name = $this->getSourceFieldName())) {
+			$va_source_ids = caMergeSourceRestrictionLists($this, $pa_options);
+			if (is_array($va_source_ids) && sizeof($va_source_ids)) {
+				$va_wheres[] = 't.'.$vs_source_id_field_name.' IN ('.join(',', $va_source_ids).')';
 			}
 		}
 		
@@ -10127,9 +10154,16 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		if (method_exists($this, 'getTypeFieldName') && ($vs_type_field_name = $this->getTypeFieldName())) {
-			$va_types = caMergeTypeRestrictionLists($this, $pa_options);
-			if (is_array($va_types) && sizeof($va_types)) {
-				$va_wheres[] = 't.'.$vs_type_field_name.' IN ('.join(',', $va_types).')';
+			$va_type_ids = caMergeTypeRestrictionLists($this, $pa_options);
+			if (is_array($va_type_ids) && sizeof($va_type_ids)) {
+				$va_wheres[] = 't.'.$vs_type_field_name.' IN ('.join(',', $va_type_ids).')';
+			}
+		}
+		
+		if (method_exists($this, 'getSourceFieldName') && ($vs_source_id_field_name = $this->getSourceFieldName())) {
+			$va_source_ids = caMergeSourceRestrictionLists($this, $pa_options);
+			if (is_array($va_source_ids) && sizeof($va_source_ids)) {
+				$va_wheres[] = 't.'.$vs_source_id_field_name.' IN ('.join(',', $va_source_ids).')';
 			}
 		}
 		$vs_join_sql = '';
@@ -10206,9 +10240,16 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		if (method_exists($this, 'getTypeFieldName') && ($vs_type_field_name = $this->getTypeFieldName())) {
-			$va_types = caMergeTypeRestrictionLists($this, $pa_options);
-			if (is_array($va_types) && sizeof($va_types)) {
-				$va_wheres[] = $vs_table_name.'.'.$vs_type_field_name.' IN ('.join(',', $va_types).')';
+			$va_type_ids = caMergeTypeRestrictionLists($this, $pa_options);
+			if (is_array($va_type_ids) && sizeof($va_type_ids)) {
+				$va_wheres[] = $vs_table_name.'.'.$vs_type_field_name.' IN ('.join(',', $va_type_ids).')';
+			}
+		}
+		
+		if (method_exists($this, 'getSourceFieldName') && ($vs_source_id_field_name = $this->getSourceFieldName())) {
+			$va_source_ids = caMergeSourceRestrictionLists($this, $pa_options);
+			if (is_array($va_source_ids) && sizeof($va_source_ids)) {
+				$va_wheres[] = $vs_table_name.'.'.$vs_source_id_field_name.' IN ('.join(',', $va_source_ids).')';
 			}
 		}
 		
@@ -10231,7 +10272,6 @@ $pa_options["display_form_field_tips"] = true;
 				{$vs_limit_sql}
 			) AS random_items 
 			INNER JOIN {$vs_table_name} ON {$vs_table_name}.{$vs_primary_key} = random_items.{$vs_primary_key}
-			{$vs_deleted_sql}
 		";
 		$qr_res = $o_db->query($vs_sql);
 		
@@ -10388,17 +10428,19 @@ $pa_options["display_form_field_tips"] = true;
 		if (!is_array($pa_values) || (sizeof($pa_values) == 0)) { return null; }
 		$ps_return_as = caGetOption('returnAs', $pa_options, 'ids', array('forceLowercase' => true, 'validValues' => array('searchResult', 'ids', 'modelInstances', 'firstId', 'firstModelInstance', 'count')));
 		$ps_boolean = caGetOption('boolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
-			
+		$o_trans = caGetOption('transaction', $pa_options, null);
+		
 		$vs_table = get_called_class();
 		$t_instance = new $vs_table;
+		if ($o_trans) { $t_instance->setTransaction($o_trans); }
 		
 		$va_sql_wheres = array();
 		
 		//
 		// Convert type id
 		//
-		if (method_exists($this, "getTypeFieldName")) {
-			$vs_type_field_name = $this->getTypeFieldName();
+		if (method_exists($t_instance, "getTypeFieldName")) {
+			$vs_type_field_name = $t_instance->getTypeFieldName();
 			if (isset($pa_values[$vs_type_field_name]) && !is_numeric($pa_values[$vs_type_field_name])) {
 				if ($vn_id = ca_lists::getItemID($this->getTypeListCode(), $pa_values[$vs_type_field_name])) {
 					$pa_values[$vs_type_field_name] = $vn_id;
@@ -10429,7 +10471,7 @@ $pa_options["display_form_field_tips"] = true;
 						return false;
 					}
 				}
-				$vs_field = $matches[2]; # get field name alone
+				$vs_field = $va_matches[2]; # get field name alone
 			}
 
 			if (!$t_instance->hasField($vs_field)) {
@@ -10455,8 +10497,8 @@ $pa_options["display_form_field_tips"] = true;
 		$vs_deleted_sql = ($t_instance->hasField('deleted')) ? '(deleted = 0) AND ' : '';
 		$vs_sql = "SELECT * FROM {$vs_table} WHERE {$vs_deleted_sql} (".join(" {$ps_boolean} ", $va_sql_wheres).")";
 		
-		if (isset($pa_options['transaction']) && ($pa_options['transaction'] instanceof Transaction)) {
-			$o_db = $pa_options['transaction']->getDb();
+		if ($o_trans instanceof Transaction) {
+			$o_db = $o_trans->getDb();
 		} else {
 			$o_db = new Db();
 		}
@@ -10472,6 +10514,7 @@ $pa_options["display_form_field_tips"] = true;
 			case 'firstmodelinstance':
 				while($qr_res->nextRow()) {
 					$t_instance = new $vs_table;
+					if ($o_trans) { $t_instance->setTransaction($o_trans); }
 					if ($t_instance->load($qr_res->get($vs_pk))) {
 						return $t_instance;
 					}
@@ -10482,6 +10525,7 @@ $pa_options["display_form_field_tips"] = true;
 				$va_instances = array();
 				while($qr_res->nextRow()) {
 					$t_instance = new $vs_table;
+					if ($o_trans) { $t_instance->setTransaction($o_trans); }
 					if ($t_instance->load($qr_res->get($vs_pk))) {
 						$va_instances[] = $t_instance;
 						$vn_c++;

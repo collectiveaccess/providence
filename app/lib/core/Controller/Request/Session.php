@@ -174,10 +174,7 @@ class Session {
 	# ----------------------------------------
 	# Return number of seconds since request processing began
 	public function elapsedTime($pn_decimal_places=4) {
-		if (!$microtime) {
-			$microtime = $this->start_time;
-		}
-		list($sm, $st) = explode(" ",$microtime);
+		list($sm, $st) = explode(" ", $this->start_time);
 		list($em, $et) = explode(" ",microtime());
 
 		return sprintf("%4.{$pn_decimal_places}f", (($et+$em) - ($st+$sm)));

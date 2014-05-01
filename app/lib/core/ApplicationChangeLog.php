@@ -304,7 +304,6 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 			foreach($pa_data as $va_log_entry) {
 				$va_grouped_data[$va_log_entry['unit_id']]['ca_table_num_'.$va_log_entry['logged_table_num']][] = $va_log_entry;
 			}
-			//print_r($va_grouped_data);
 			
 			//
 			// Process units

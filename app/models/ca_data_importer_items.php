@@ -360,6 +360,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Format with template'),
 			'description' => _t('Format imported value with provided template. Template may include caret (^) prefixed placeholders that refer to data source values.')
 		);
+		$va_settings['applyRegularExpressions'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 4,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Apply one or more regular expression-based substitutions to a soruce value prior to import.'),
+			'description' => _t('A list of Perl-compatible regular expressions. Each expression has two parts, a matching expression and a substitution expression, and is expressed as a JSON object with <em>match</em> and <em>replaceWith</em> keys. Ex. [{"match": "([\\d]+)\\.([\\d]+)", "replaceWith": "\\1:\\2"}, {"match": "[^\\d:]+", "replaceWith": ""}] ')
+		);
 		$va_settings['maxLength'] = array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_FIELD,
@@ -399,6 +408,15 @@ class ca_data_importer_items extends BaseModel {
 			'default' => '',
 			'label' => _t('Convert newlines to HTML'),
 			'description' => _t('Convert newline characters in text to HTML &lt;BR/&gt; tags.')
+		);
+		$va_settings['useAsSingleValue'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Use as single value'),
+			'description' => _t('Force repeating values to be imported as a single value concatenated with the specified delimiter.')
 		);
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
@@ -478,8 +496,9 @@ class ca_data_importer_items extends BaseModel {
 		
 		$va_refinery_list = array();
 		foreach($va_refinery_names as $vs_name) {
-			$o_refinery = RefineryManager::getRefineryInstance($vs_name);
-			$va_refinery_list[$vs_name] = $o_refinery->getTitle();
+			if ($o_refinery = RefineryManager::getRefineryInstance($vs_name)) {
+				$va_refinery_list[$vs_name] = $o_refinery->getTitle();
+			}
 		}
 		
 		return $va_refinery_list;

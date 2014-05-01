@@ -56,6 +56,8 @@
 		 *
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
+			$o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;
+			
 			// Set list 
 			$vn_list_id = null;
 			if ($vs_list = $pa_item['settings']['listItemSplitter_list']) {
@@ -63,7 +65,7 @@
 			}
 			if (!$vn_list_id) {
 				// No list = bail!
-				if ($o_log) { $o_log->logError(_t('[listItemSplitterRefinery] Could not find list %1 for item %2; item was skipped', $vs_list, $vs_list_item)); }
+				if ($o_log) { $o_log->logError(_t('[listItemSplitterRefinery] Could not find list %1; item was skipped', $vs_list)); }
 				return array();
 			} 
 			$pa_options['list_id'] = $vn_list_id;

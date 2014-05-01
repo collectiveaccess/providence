@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -60,6 +60,7 @@
 		 */
 		private $opa_browse_type_ids = null;
 		private $opb_dont_expand_type_restrictions = false;
+		private $opb_dont_expand_source_restrictions = false;
 		
 		private $opo_datamodel;
 		protected $opo_db;
@@ -75,6 +76,7 @@
 		private $opb_criteria_have_changed = false;
 		# ------------------------------------------------------
 		static $s_type_id_cache = array();
+		static $s_source_id_cache = array();
 		# ------------------------------------------------------
 		/**
 		 *
@@ -1392,6 +1394,9 @@
 									if (is_array($va_type_ids = $this->getTypeRestrictionList()) && sizeof($va_type_ids)) {
 										$o_search->setTypeRestrictions($va_type_ids);
 									}
+									if (is_array($va_source_ids = $this->getSourceRestrictionList()) && sizeof($va_source_ids)) {
+										$o_search->setSourceRestrictions($va_source_ids);
+									}
 									$va_options = $pa_options;
 									unset($va_options['sort']);					// browse engine takes care of sort so there is no reason to waste time having the search engine do so
 									$va_options['filterNonPrimaryRepresentations'] = true;	// filter out non-primary representations in ca_objects results to save (a bit) of time
@@ -1456,10 +1461,23 @@
 						}
 					}
 					
-					if (($va_browse_type_ids = $this->getTypeRestrictionList()) && sizeof($va_browse_type_ids)) {
+					$va_browse_type_ids = $this->getTypeRestrictionList();
+					$va_browse_source_ids = $this->getSourceRestrictionList();
+					
+					if (
+						(is_array($va_browse_type_ids) && sizeof($va_browse_type_ids))
+						||
+						(is_array($va_browse_source_ids) && sizeof($va_browse_source_ids))
+					) {
 						$t_subject = $this->getSubjectInstance();
 						$va_joins[$this->ops_browse_table_name] = "INNER JOIN ".$this->ops_browse_table_name." ON ".$this->ops_browse_table_name.'.'.$t_item->primaryKey().' = ca_browses_acc.row_id';
-						$va_wheres[] = '('.$this->ops_browse_table_name.'.'.$t_subject->getTypeFieldName().' IN ('.join(', ', $va_browse_type_ids).'))';
+						
+						if (is_array($va_browse_type_ids) && sizeof($va_browse_type_ids)) {
+							$va_wheres[] = '('.$this->ops_browse_table_name.'.'.$t_subject->getTypeFieldName().' IN ('.join(', ', $va_browse_type_ids).'))';
+						}
+						if (is_array($va_browse_source_ids) && sizeof($va_browse_source_ids)) {
+							$va_wheres[] = '('.$this->ops_browse_table_name.'.'.$t_subject->getSourceFieldName().' IN ('.join(', ', $va_browse_source_ids).'))';
+						}
 					}
 					
 					if (sizeof($va_wheres)) {
@@ -1517,10 +1535,24 @@
 						}
 					}
 					
-					if (($va_browse_type_ids = $this->getTypeRestrictionList()) && sizeof($va_browse_type_ids)) {
+					$va_browse_type_ids = $this->getTypeRestrictionList();
+					$va_browse_source_ids = $this->getSourceRestrictionList();
+					
+					if (
+						(is_array($va_browse_type_ids) && sizeof($va_browse_type_ids))
+						||
+						(is_array($va_browse_source_ids) && sizeof($va_browse_source_ids))
+					) {
 						$t_subject = $this->getSubjectInstance();
-						$va_wheres[] = '('.$this->ops_browse_table_name.'.'.$t_subject->getTypeFieldName().' IN ('.join(', ', $va_browse_type_ids).'))';
+						
+						if (is_array($va_browse_type_ids) && sizeof($va_browse_type_ids)) {
+							$va_wheres[] = '('.$this->ops_browse_table_name.'.'.$t_subject->getTypeFieldName().' IN ('.join(', ', $va_browse_type_ids).'))';
+						}
+						if (is_array($va_browse_source_ids) && sizeof($va_browse_source_ids)) {
+							$va_wheres[] = '('.$this->ops_browse_table_name.'.'.$t_subject->getSourceFieldName().' IN ('.join(', ', $va_browse_source_ids).'))';
+						}
 					}
+					
 					
 					if (sizeof($va_wheres)) {
 						$vs_filter_where_sql = 'WHERE '.join(' AND ', $va_wheres);
@@ -1591,11 +1623,9 @@
 				}
 			}
 
-			if ((!$va_criteria) || (is_array($va_criteria) && (sizeof($va_criteria) == 0))) {	
-				// for the "starting" facets (no criteria) we need to stash some statistics
-				// so getInfoForFacetsWithContent() can operate efficiently
-				$this->opo_ca_browse_cache->setGlobalParameter('facets_with_content', array_keys($va_facets_with_content));
-			}
+			// for the "starting" facets (no criteria) we need to stash some statistics
+			// so getInfoForFacetsWithContent() can operate efficiently
+			$this->opo_ca_browse_cache->setGlobalParameter('facets_with_content', array_keys($va_facets_with_content));
 			
 			$this->opo_ca_browse_cache->setFacets($va_facets_with_content);
 		}
@@ -1839,6 +1869,7 @@
 			switch($va_facet_info['type']) {
 				# -----------------------------------------------------
 				case 'has':
+					$vn_state = null;
 					if (isset($va_all_criteria[$ps_facet_name])) { break; }		// only one instance of this facet allowed per browse 
 					
 					if (!($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true))) { break; }
@@ -2004,13 +2035,7 @@
 							$va_wheres = array();
 							$va_joins = $va_joins_init;
 						
-							if ((sizeof($va_restrict_to_relationship_types) > 0) && is_object($t_item_rel)) {
-								$va_wheres[] = "(".$t_item_rel->tableName().".type_id IN (".join(',', $va_restrict_to_relationship_types)."))";
-							}
-							if ((sizeof($va_exclude_relationship_types) > 0) && is_object($t_item_rel)) {
-								$va_wheres[] = "(".$t_item_rel->tableName().".type_id NOT IN (".join(',', $va_exclude_relationship_types)."))";
-							}
-						
+							
 							if (!(bool)$va_state_info['id']) {	// no option
 								$va_wheres[] = "(".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NULL)";
 								if ($t_rel_item->hasField('deleted')) {
@@ -2019,6 +2044,14 @@
 								if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_item->hasField('access')) {
 									$va_wheres[] = "((".$t_rel_item->tableName().".access NOT IN (".join(',', $pa_options['checkAccess']).")) OR (".$t_rel_item->tableName().".access IS NULL))";
 								}
+								
+								if ((sizeof($va_restrict_to_relationship_types) > 0) && is_object($t_item_rel)) {
+									$va_wheres[] = "((".$t_item_rel->tableName().".type_id NOT IN (".join(',', $va_restrict_to_relationship_types).")) OR (".$t_item_rel->tableName().".type_id IS NULL))";
+								}
+								if ((sizeof($va_exclude_relationship_types) > 0) && is_object($t_item_rel)) {
+									$va_wheres[] = "(".$t_item_rel->tableName().".type_id IN (".join(',', $va_exclude_relationship_types)."))";
+								}
+						
 							} else {							// yes option
 								$va_wheres[] = "(".$t_rel_item->tableName().".".$t_rel_item->primaryKey()." IS NOT NULL)";
 								if ($t_rel_item->hasField('deleted')) {
@@ -2026,6 +2059,13 @@
 								}							
 								if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_item->hasField('access')) {
 									$va_wheres[] = "(".$t_rel_item->tableName().".access IN (".join(',', $pa_options['checkAccess'])."))";
+								}
+								
+								if ((sizeof($va_restrict_to_relationship_types) > 0) && is_object($t_item_rel)) {
+									$va_wheres[] = "(".$t_item_rel->tableName().".type_id IN (".join(',', $va_restrict_to_relationship_types)."))";
+								}
+								if ((sizeof($va_exclude_relationship_types) > 0) && is_object($t_item_rel)) {
+									$va_wheres[] = "(".$t_item_rel->tableName().".type_id NOT IN (".join(',', $va_exclude_relationship_types)."))";
 								}
 							}
 						
@@ -2153,13 +2193,6 @@
 						$va_restrict_to_type_ids = caMakeTypeIDList($vs_browse_table_name, $va_restrict_to_types, array('dont_include_subtypes_in_type_restriction' => true));
 						if (sizeof($va_restrict_to_type_ids)) {
 							$va_where_sql[] = "(".$vs_browse_table_name.".".$t_item->getTypeFieldName()." IN (".join(", ", $va_restrict_to_type_ids)."))";
-							$vb_needs_join = true;
-						}
-					}
-					if (sizeof($va_exclude_types)) {
-						$va_exclude_type_ids = caMakeTypeIDList($vs_browse_table_name, $va_exclude_types, array('dont_include_subtypes_in_type_restriction' => true));
-						if (sizeof($va_exclude_type_ids)) {
-							$va_where_sql[] = "(".$vs_browse_table_name.".".$t_item->getTypeFieldName()." IN (".join(", ", $va_exclude_type_ids)."))";
 							$vb_needs_join = true;
 						}
 					}
@@ -3332,7 +3365,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 								if ($va_fetched_row[$vs_hier_parent_id_fld]) {
 									$va_facet_parents[$va_fetched_row[$vs_hier_parent_id_fld]] = true;
 								}
-								if (is_array($va_restrict_to_types) && sizeof($va_restrict_types) && $va_fetched_row['type_id'] && !in_array($va_fetched_row['type_id'], $va_restrict_to_types)) {
+								if (is_array($va_restrict_to_types) && sizeof($va_restrict_to_types) && $va_fetched_row['type_id'] && !in_array($va_fetched_row['type_id'], $va_restrict_to_types)) {
 									continue; 
 								}
 								$va_facet_items[$va_fetched_row[$vs_rel_pk]] = array(
@@ -4116,6 +4149,127 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 			$this->opb_dont_expand_type_restrictions = (bool)$pb_value;
 			return true;
 		}
+		# ------------------------------------------------------
+		# Source filtering
+		# ------------------------------------------------------
+		/**
+		 * When source restrictions are specified, the browse will only browse upon items with the given sources. 
+		 * If you specify a source that has hierarchical children then the children will automatically be included
+		 * in the restriction. You may pass numeric source_id and alphanumeric source codes interchangeably.
+		 *
+		 * @param array $pa_source_codes_or_ids List of source_id or code values to filter browse by. When set, the browse will only consider items of the specified sources. Using a hierarchical parent source will automatically include its children in the restriction. 
+		 * @param array $pa_options Options include
+	 	 *		includeSubsources = include any child sources in the restriction. Default is true.
+		 * @return boolean True on success, false on failure
+		 */
+		public function setSourceRestrictions($pa_source_codes_or_ids, $pa_options=null) {
+			$this->opa_browse_source_ids = $this->_convertSourceCodesToIDs($pa_source_codes_or_ids);
+			$this->opo_ca_browse_cache->setSourceRestrictions($this->opa_browse_source_ids);
+			return true;
+		}
+		# ------------------------------------------------------
+		/**
+		 *
+		 *
+		 * @param array $pa_source_codes_or_ids List of source codes or ids 
+		 * @param array $pa_options Options include
+		 *		includeSubsources = include any child sources in the restriction. Default is true.
+		 * @return array List of source_ids
+		 */
+		private function _convertSourceCodesToIDs($pa_source_codes_or_ids, $pa_options=null) {
+			$vs_md5 = caMakeCacheKeyFromOptions($pa_source_codes_or_ids);
+			
+			if (isset(BrowseEngine::$s_source_id_cache[$vs_md5])) { return BrowseEngine::$s_source_id_cache[$vs_md5]; }
+			
+			if (isset($pa_options['instance']) && is_object($pa_options['instance'])) {
+				$t_instance = $pa_options['instance'];
+			} else {
+				$t_instance = $this->getSubjectInstance();
+			}
+			$va_source_ids = array();
+			
+			if (!$pa_source_codes_or_ids) { return false; }
+			if (is_array($pa_source_codes_or_ids) && !sizeof($pa_source_codes_or_ids)) { return false; }
+			if (!is_array($pa_source_codes_or_ids)) { $pa_source_codes_or_ids = array($pa_source_codes_or_ids); }
+			
+			$t_list = new ca_lists();
+			if (!method_exists($t_instance, 'getSourceListCode')) { return false; }
+			if (!($vs_list_name = $t_instance->getSourceListCode())) { return false; }
+			$va_source_list = $t_instance->getSourceList();
+			
+			foreach($pa_source_codes_or_ids as $vs_code_or_id) {
+				if (!trim($vs_code_or_id)) { continue; }
+				if (!is_numeric($vs_code_or_id)) {
+					$vn_source_id = $t_list->getItemIDFromList($vs_list_name, $vs_code_or_id);
+				} else {
+					$vn_source_id = (int)$vs_code_or_id;
+				}
+				
+				if (!$vn_source_id) { return false; }
+
+				if (isset($va_source_list[$vn_source_id]) && $va_source_list[$vn_source_id]) {	// is valid source for this subject
+					// See if there are any child sources
+					if (caGetOption('includeSubsources', $pa_options, true) && $this->opb_dont_expand_source_restrictions) {
+						$t_item = new ca_list_items($vn_source_id);
+						$va_ids = $t_item->getHierarchyChildren(null, array('idsOnly' => true));
+					}
+					$va_ids[] = $vn_source_id;
+					$va_source_ids = array_merge($va_source_ids, $va_ids);
+				}
+			}
+			$va_source_ids = array_keys(array_flip($va_source_ids));
+			BrowseEngine::$s_source_id_cache[$vs_md5] = $va_source_ids;
+			return $va_source_ids;
+		}
+		# ------------------------------------------------------
+		/**
+		 * Returns list of source_id values to restrict browse to. Return values are always numeric sources, 
+		 * never codes, and will include all source_ids to filter on, including children of hierarchical sources.
+		 *
+		 * @return array List of source_id values to restrict browse to.
+		 */
+		public function getSourceRestrictionList() {
+			if (function_exists("caGetSourceRestrictionsForUser")) {
+				$va_pervasive_sources = caGetSourceRestrictionsForUser($this->ops_tablename);	// restrictions set in app.conf or by associated user role
+				
+				if (!is_array($va_pervasive_sources) || !sizeof($va_pervasive_sources)) { return $this->opa_browse_source_ids; }
+				
+				if (is_array($this->opa_browse_source_ids) && sizeof($this->opa_browse_source_ids)) {
+					$va_filtered_sources = array();
+					foreach($this->opa_browse_source_ids as $vn_id) {
+						if (in_array($vn_id, $va_pervasive_sources)) {
+							$va_filtered_sources[] = $vn_id;
+						}
+					}
+					return $va_filtered_sources;
+				} else {
+					return $va_pervasive_sources;
+				}
+			}
+			return $this->opa_browse_source_ids;
+		}
+		# ------------------------------------------------------
+		/**
+		 * Removes any specified source restrictions on the browse
+		 *
+		 * @return boolean Always returns true
+		 */
+		public function clearSourceRestrictionList() {
+			$this->opa_browse_source_ids = null;
+			return true;
+		}
+		# ------------------------------------------------------
+		/**
+		 * If set source restrictions will not be expanded to include child sources.
+		 *
+		 * @param bool $pb_value If set to true, source restriction will not be expanded; default is true if omitted
+		 *
+		 * @return boolean Always returns true
+		 */
+		public function dontExpandSourceRestrictions($pb_value=true) {
+			$this->opb_dont_expand_source_restrictions = (bool)$pb_value;
+			return true;
+		}
 		# ------------------------------------------------------------------
 		#
 		# ------------------------------------------------------------------
@@ -4206,7 +4360,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 		/**
 		 *
 		 */
-		private function _getRelativeExecuteSQLData($ps_relative_to_table) {
+		private function _getRelativeExecuteSQLData($ps_relative_to_table, $pa_options=null) {
 			if (!($t_target = $this->opo_datamodel->getInstanceByTableName($ps_relative_to_table, true))) { return null; }
 			$vs_target_browse_table_num = $t_target->tableNum();
 			$vs_target_browse_table_pk = $t_target->primaryKey();

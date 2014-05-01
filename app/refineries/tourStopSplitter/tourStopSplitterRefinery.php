@@ -96,11 +96,11 @@
 				if (
 					($vs_rel_type_opt = $pa_item['settings']['tourStopSplitter_relationshipType'])
 				) {
-					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '));
 				}
 				
 				if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && ($vs_rel_type_opt = $pa_item['settings']['tourStopSplitter_relationshipTypeDefault'])) {
-					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '));
 				}
 				
 				if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log) {
@@ -111,11 +111,11 @@
 				if (
 					($vs_type_opt = $pa_item['settings']['tourStopSplitter_tourStopType'])
 				) {
-					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '));
 				}
 				
 				if((!isset($va_val['_type']) || !$va_val['_type']) && ($vs_type_opt = $pa_item['settings']['tourStopSplitter_tourStopTypeDefault'])) {
-					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '));
 				}
 				
 				if ((!isset($va_val['_type']) || !$va_val['_type']) && $o_log) {
@@ -137,11 +137,11 @@
 							
 				// Set stop parents
 				if ($va_parents = $pa_item['settings']['tourStopSplitter_parents']) {
-					$va_val['parent_id'] = $va_val['_parent_id'] = caProcessRefineryParents('tourStopSplitterRefinery', 'ca_tour_stops', $va_parents, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log);
+					$va_val['parent_id'] = $va_val['_parent_id'] = caProcessRefineryParents('tourStopSplitterRefinery', 'ca_tour_stops', $va_parents, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'log' => $o_log));
 				}
 			
 				// Set attributes
-				if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']['tourStopSplitter_attributes'], $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log))) {
+				if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']['tourStopSplitter_attributes'], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'log' => $o_log)))) {
 					$va_val = array_merge($va_val, $va_attr_vals);
 				}
 				

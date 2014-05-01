@@ -53,14 +53,14 @@ BaseModel::$s_ca_models_definitions['ca_relationship_types'] = array(
 				'DISPLAY_WIDTH' => 80, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Type restriction for "left" side of relationship'), 'DESCRIPTION' => _t('Type restriction for "left" side of relationship (eg. if relationship is object ⇔ entity, then the restriction controls for which types of objects this relationship type is valid.')
+				'LABEL' => _t('Type restriction for "left" side of relationship'), 'DESCRIPTION' => _t('Type restriction for "left" side of relationship (eg. if relationship is object ��� entity, then the restriction controls for which types of objects this relationship type is valid.')
 		),
 		'sub_type_right_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 80, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Type restriction for "right" side of relationship'), 'DESCRIPTION' => _t('Type restriction for "right" side of relationship (eg. if relationship is object ⇔ entity, then the restriction controls for which types of entities this relationship type is valid.')
+				'LABEL' => _t('Type restriction for "right" side of relationship'), 'DESCRIPTION' => _t('Type restriction for "right" side of relationship (eg. if relationship is object ��� entity, then the restriction controls for which types of entities this relationship type is valid.')
 		),
 		'parent_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
@@ -391,7 +391,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 				}
 			}
 		} else {
-			if ($va_relationships = $this->getRelationshipInfo($pm_table_name_or_num, $ps_type_code)) {
+			if ($va_relationships = $this->getRelationshipInfo($pm_table_name_or_num, $pm_type_code_or_id)) {
 				foreach($va_relationships as $vn_type_id => $va_type_info) {
 					if ($va_type_info['type_code'] == $pm_type_code_or_id) {
 						return ca_relationship_types::$s_relationship_type_id_cache[$vn_table_num.'/'.$pm_type_code_or_id] = $vn_type_id;
@@ -597,7 +597,6 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		$va_hierarchies = array();
 		while ($qr_res->nextRow()) {
 			$vn_type_id = $qr_res->get('type_id');
-			//$va_hierarchies[$vn_type_id]['table_num'] = $qr_res->get('table_num');	
 			$va_hierarchies[$vn_type_id]['type_id'] = $va_hierarchies[$vn_type_id]['item_id'] = $vn_type_id;	
 			$va_hierarchies[$vn_type_id]['name'] = $va_relationship_tables[$qr_res->get('table_num')]['name'];	
 			

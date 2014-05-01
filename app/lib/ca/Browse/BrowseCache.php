@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010 Whirl-i-Gig
+ * Copyright 2010-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -228,6 +228,21 @@
 		/**
 		 *
 		 */
+		 public function setSourceRestrictions($pa_source_restrictions) {
+		 	$this->opa_browse['source_restrictions'] = is_array($pa_source_restrictions) ? $pa_source_restrictions : array();
+		 	return true;
+		 }
+		 # ------------------------------------------------------
+		/**
+		 *
+		 */
+		 public function getSourceRestrictions() {
+		 	return is_array($this->opa_browse['source_restrictions']) ? $this->opa_browse['source_restrictions'] : array();
+		 }
+		 # ------------------------------------------------------
+		/**
+		 *
+		 */
 		 public function getResults() {
 		 	return $this->opa_browse['results'];
 		 }
@@ -236,14 +251,15 @@
 			if(!is_array($va_params = $this->getParameters())) { $va_params = array(); }
 			if (!is_array($va_params['criteria'])) { $va_params['criteria'] = array(); }
 			if(!is_array($va_type_restrictions = $this->getTypeRestrictions())) { $va_type_restrictions = array(); }
+			if(!is_array($va_source_restrictions = $this->getSourceRestrictions())) { $va_source_restrictions = array(); }
 			
-			return BrowseCache::makeCacheKey($va_params, $va_type_restrictions);
+			return BrowseCache::makeCacheKey($va_params, $va_type_restrictions,$va_source_restrictions);
 		}
 		# ------------------------------------------------------
-		 public static function makeCacheKey($pa_params, $pa_type_restrictions) {
+		 public static function makeCacheKey($pa_params, $pa_type_restrictions, $pa_source_restrictions) {
 			if (!is_array($pa_params['criteria'])) { $pa_params['criteria'] = array(); }
 			
-			return md5($pa_params['context'].'/'.$pa_params['table_num'].'/'.print_r($pa_params['criteria'], true).'/'.print_r($pa_type_restrictions, true));
+			return md5($pa_params['context'].'/'.$pa_params['table_num'].'/'.print_r($pa_params['criteria'], true).'/'.print_r($pa_type_restrictions, true).'/'.print_r($pa_source_restrictions, true));
 		}
 		# ------------------------------------------------------
 		# Global parameters - available to all browses

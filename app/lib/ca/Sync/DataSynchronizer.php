@@ -156,7 +156,6 @@
 					);
 				}
 				print "\t\t[Notice] Found ".sizeof($va_items)." items\n";
-				//print_R($va_items);
 		
 				// Ok... now fetch and import each
 				$o_client->setUri($vs_base_url."/service.php/iteminfo/ItemInfo/rest");
@@ -172,6 +171,8 @@
 	# ------------------------------------------------------------------------------------------
 	// TODO: Add from/until support	
 	private function fetchAndImport($pa_item_queue, $po_client, $pa_config, $pa_tables, $ps_code) {
+		global $g_ui_locale_id;
+		
 		if (!is_array($pa_tables)) { $pa_tables = array(); }
 		
 		$t_rel_type = new ca_relationship_types();
@@ -187,7 +188,6 @@
 		foreach($pa_item_queue as $vn_i => $va_item) {
 			$vs_table = $va_item['table'];
 			$va_import_relationships_from = $pa_config['importRelatedFor'][$va_item['table']];
-			print "oo"; print_r($va_import_relationships_from);
 			$vn_id = $va_item['id'];
 			if (!$vn_id) { print "[Notice] SKIP CAUSE NO ID ({$ps_code})\n"; continue; }
 			if(isset($this->opa_processed_records[$vs_table.'/'.$vn_id])) { continue; }
@@ -316,7 +316,7 @@
 					if ($t_list->numErrors()) {
 						print "[ERROR] Could not insert new list '{$vs_list_code}': ".join('; ', $t_list->getErrors())."\n";
 					} else {
-						$t_list->addLabel(array('name' => $vs_list_code), $pn_locale_id, null, true);
+						$t_list->addLabel(array('name' => $vs_list_code), $g_ui_locale_id, null, true);
 						if ($t_list->numErrors()) {
 							print "[ERROR] Could not add label to new list '{$vs_list_code}': ".join('; ', $t_list->getErrors())."\n";
 						}
@@ -514,7 +514,6 @@
 			
 			// Are there relationships?
 			$pb_imported_self_relations = false;
-			print_r($va_import_relationships_from);
 			foreach($va_import_relationships_from as $vs_rel_table => $va_table_info) {
 				$vb_is_self_relation = (($vs_rel_table == $t_instance->tableName()) && (!$pb_imported_self_relations)) ? true : false;
 				if (!$pa_tables[$vs_rel_table] || $vb_is_self_relation) {
@@ -529,7 +528,7 @@
 								if (is_array($pa_config['importRelatedFor'][$va_item['table']][$vs_rel_table])) {
 									$va_rel_types = array_keys($pa_config['importRelatedFor'][$va_item['table']][$vs_rel_table]);
 									if (is_array($va_rel_types) && sizeof($va_rel_types) && !in_array((string)$o_related_item->relationship_type_code, $va_rel_types)) {
-										print "[INFO] Skipped relationship for {$vs_display_name} because type='".(string)$o_related_item->relationship_type_code."' is excluded\n";
+										print "[INFO] Skipped relationship for ".$o_related_item->idno." because type='".(string)$o_related_item->relationship_type_code."' is excluded\n";
 										continue;
 									}
 								}

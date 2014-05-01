@@ -150,7 +150,7 @@
 			$vn_attribute_id = $t_attr->addAttribute($this->tableNum(), $this->getPrimaryKey(), $t_element->getPrimaryKey(), $pa_values, $pa_info['options']);
 			if ($t_attr->numErrors()) {
 				foreach($t_attr->errors as $o_error) {
-					$this->postError($o_error->getErrorNumber(), $o_error->getErrorDescription(), $o_error->getErrorContext(), $pa_options['error_source']);
+					$this->postError($o_error->getErrorNumber(), $o_error->getErrorDescription(), $o_error->getErrorContext(), $pa_info['error_source']);
 				}
 				return false;
 			}
@@ -212,13 +212,13 @@
 			$t_attr->purify($this->purify());
 			if ($po_trans) { $t_attr->setTransaction($po_trans); }
 			if ((!$t_attr->getPrimaryKey()) || ($t_attr->get('table_num') != $this->tableNum()) || ($this->getPrimaryKey() != $t_attr->get('row_id'))) {
-				$this->postError(1969, _t('Can\'t edit invalid attribute'), 'BaseModelWithAttributes->editAttribute()', $pa_options['error_source']);
+				$this->postError(1969, _t('Can\'t edit invalid attribute'), 'BaseModelWithAttributes->editAttribute()', $pa_info['error_source']);
 				return false;
 			}
 			
 			if (!$t_attr->editAttribute($pa_values, $pa_info['options'])) {
 				foreach($t_attr->errors as $o_error) {
-					$this->postError($o_error->getErrorNumber(), $o_error->getErrorDescription(), $o_error->getErrorContext(), $pa_options['error_source']);
+					$this->postError($o_error->getErrorNumber(), $o_error->getErrorDescription(), $o_error->getErrorContext(), $pa_info['error_source']);
 				}
 				return false;
 			}
@@ -252,6 +252,7 @@
 			$t_attr = new ca_attributes($pn_attribute_id);
 			$t_attr->purify($this->purify());
 			if (!$t_attr->getPrimaryKey()) { return false; }
+			$vn_element_id = (int)$t_attr->get('element_id');
 			
 			$vn_add_cnt = 0;
 			if (isset($pa_extra_info['pending_adds']) && is_array($pa_extra_info['pending_adds'])) {
@@ -836,6 +837,154 @@
 		/**
 		 *
 		 */
+		public function getSourceID() {
+			if (!isset($this->SOURCE_ID_FLD) || !$this->SOURCE_ID_FLD) { return null; }
+			return $this->get($this->SOURCE_ID_FLD);
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Field in this table that defines the source of the row
+		 */
+		public function getSourceFieldName() {
+			return $this->SOURCE_ID_FLD;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * List code (from ca_lists.list_code) of list defining sources for this table
+		 */
+		public function getSourceListCode() {
+			return isset($this->SOURCE_LIST_CODE) ? $this->SOURCE_LIST_CODE : null;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 *
+		 */
+		public function getSourceName($pn_source_id=null) {
+			if ($t_list_item = $this->getTypeInstance($pn_source_id)) {
+				return $t_list_item->getLabelForDisplay(false);
+			}
+			return null;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns ca_list_items.idno (aka "item code") for the source of the currently loaded row
+		 *
+		 * @return string - idno (aka "item code") for current row's source or null if no row is loaded or model does not support sources
+		 */
+		public function getSourceCode() {
+			if ($t_list_item = $this->getSourceInstance()) {
+				return $t_list_item->get('idno');
+			}
+			return null;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns ca_list_items.item_id (aka "source_id") for $ps_type_code
+		 *
+		 * @param string $ps_type_code Alphanumeric code for the type
+		 * @return int - item_id (aka "source_id") for specified list item idno (aka "source code")
+		 */
+		public function getSourceIDForCode($ps_source_code) {
+			$va_sources = $this->getSourceList();
+			
+			foreach($va_sources as $vn_source_id => $va_source_info) {
+				if ($va_source_info['idno'] == $ps_source_code) {
+					return $vn_source_id;
+				}
+			}
+			
+			return null;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns default ca_list_items.item_id (aka "source_id") for this model
+		 *
+		 * @return int - item_id (aka "source_id") for default type
+		 */
+		public function getDefaultSourceID($pa_options=null) {
+			global $g_request;
+			if (!($po_request = caGetOption('request', $pa_options, null))) { $po_request = $g_request; }
+			
+			// Try to load default for user
+			if ($po_request && ($po_request->isLoggedIn())) {
+				$va_roles = $po_request->user->getUserRoles(); 
+				foreach($va_roles as $vn_i => $va_role) {
+					$va_vars = $va_role['vars'];
+					if ($vn_id = $va_vars['source_access_settings'][$this->tableName().'_default_id']) {
+						return $vn_id;
+					}
+				}	
+			}
+			
+			// Bail and return list default
+			$t_list = new ca_lists();
+			return $t_list->getDefaultItemID($this->getSourceListCode());
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns list of sources for this table with locale-appropriate labels, keyed by source_id
+		 *
+		 * @param array $pa_options Array of options, passed as-is to ca_lists::getItemsForList() [the underlying implemenetation]
+		 * @return array List of types
+		 */ 
+		public function getSourceList($pa_options=null) {
+			$t_list = new ca_lists();
+			if (isset($pa_options['childrenOfCurrentTypeOnly']) && $pa_options['childrenOfCurrentTypeOnly']) {
+				$pa_options['item_id'] = $this->get('type_id');
+			}
+			
+			$va_list = $t_list->getItemsForList($this->getSourceListCode(), $pa_options);
+			return is_array($va_list) ? caExtractValuesByUserLocale($va_list): array();
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Return ca_list_item instance for the source of the currently loaded row
+		 */ 
+		public function getSourceInstance($pn_source_id=null) {
+			if (!isset($this->SOURCE_ID_FLD) || !$this->SOURCE_ID_FLD) { return null; }
+			if ($pn_source_id) { 
+				$vn_source_id = $pn_source_id; 
+			} else {
+				if (!($vn_source_id = $this->get($this->SOURCE_ID_FLD))) { return null; }
+			}
+			
+			$t_list_item = new ca_list_items($vn_source_id);
+			return ($t_list_item->getPrimaryKey()) ? $t_list_item : null;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns HTML <select> form element with source list
+		 *
+		 * @param string $ps_name The name of the returned form element
+		 * @param array $pa_attributes An optional array of HTML attributes to place into the returned <select> tag
+		 * @param array $pa_options An array of options. Supported options are anything supported by ca_lists::getListAsHTMLFormElement as well as:
+		 *		childrenOfCurrentSourceOnly = Returns only sourcs below the current source
+		 *		restrictToSources = Array of source_ids to restrict source list to
+		 * @return string HTML for list element
+		 */ 
+		public function getSourceListAsHTMLFormElement($ps_name, $pa_attributes=null, $pa_options=null) {
+			if(!($vs_source_id_fld_name = $this->getSourceFieldName())) { return null; }
+			$t_list = new ca_lists();
+			if (isset($pa_options['childrenOfCurrentSourceOnly']) && $pa_options['childrenOfCurrentSourceOnly']) {
+				$pa_options['childrenOnlyForItemID'] = $this->get($vs_source_id_fld_name);
+			}
+			
+			$pa_options['limitToItemsWithID'] = caGetSourceRestrictionsForUser($this->tableName(), $pa_options);
+			
+			if (isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes'])) {
+				if (!$pa_options['limitToItemsWithID'] || !is_array($pa_options['limitToItemsWithID'])) {
+					$pa_options['limitToItemsWithID'] = $pa_options['restrictToSources'];
+				} else {
+					$pa_options['limitToItemsWithID'] = array_intersect($pa_options['limitToItemsWithID'], $pa_options['restrictToSources']);
+				}
+			}
+			
+			return $t_list->getListAsHTMLFormElement($this->getSourceListCode(), $ps_name, $pa_attributes, $pa_options);
+		}
+		# ------------------------------------------------------------------
+		/**
+		 *
+		 */
 		public function getTypeID() {
 			if (!isset($this->ATTRIBUTE_TYPE_ID_FLD) || !$this->ATTRIBUTE_TYPE_ID_FLD) { return null; }
 			return $this->get($this->ATTRIBUTE_TYPE_ID_FLD);
@@ -855,6 +1004,9 @@
 			return isset($this->ATTRIBUTE_TYPE_LIST_CODE) ? $this->ATTRIBUTE_TYPE_LIST_CODE : null;
 		}
 		# ------------------------------------------------------------------
+		/**
+		 *
+		 */
 		public function getTypeName($pn_type_id=null) {
 			if ($t_list_item = $this->getTypeInstance($pn_type_id)) {
 				return $t_list_item->getLabelForDisplay(false);
@@ -1340,6 +1492,22 @@
 			return ca_attributes::getReferencedAttributes($this->getDb(), $this->tableNum(), $pa_reference_limit_ids, array('element_id' => $vn_element_id));s;
 		}
 		# ------------------------------------------------------------------
+		/** 
+		 *
+		 */
+		public function htmlFormElement($ps_field, $ps_format=null, $pa_options=null) {
+			switch($ps_field) {
+				case $this->getSourceFieldName():
+					if ((bool)$this->getAppConfig()->get('perform_source_access_checking')) {
+						$pa_options['value'] = $this->get($ps_field);
+						return $this->getSourceListAsHTMLFormElement($ps_field, array(), $pa_options);
+					}
+					break;
+			}
+			
+			return parent::htmlFormElement($ps_field, $ps_format, $pa_options);
+		}
+		# ------------------------------------------------------------------
 		// --- Retrieval
 		# ------------------------------------------------------------------
 		// returns an array of all attributes attached to the current row
@@ -1791,7 +1959,7 @@
 				return false;
 			}
 			$t_restriction = new ca_metadata_type_restrictions();
-			if ($t_restriction->load(array('element_id' => $t_element->getPrimaryKey(), 'type_id' => $type_id, 'table_num' => $this->tableNum()))) {
+			if ($t_restriction->load(array('element_id' => $t_element->getPrimaryKey(), 'type_id' => $pn_type_id, 'table_num' => $this->tableNum()))) {
 				$t_restriction->setMode(ACCESS_WRITE);
 				$t_restriction->delete();
 				if ($t_restriction->numErrors()) {

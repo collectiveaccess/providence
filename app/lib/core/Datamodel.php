@@ -69,6 +69,8 @@ class Datamodel {
 	 *
 	 */
 	function __construct($pb_dont_cache=false) {
+		global $_DATAMODEL_CACHE;
+			
 		// is the graph already in memory?
 		if (!$pb_dont_cache && DataModel::$s_graph) { return; }
 		
@@ -331,7 +333,7 @@ class Datamodel {
 			$va_many_to_one_relations = array();
 			foreach($va_related_tables as $vs_related_table) {
 				$va_relationships = $this->opo_graph->getAttribute("relationships", $ps_table, $vs_related_table);
-			//	print_r($va_relationships);
+
 				if (is_array($va_relationships[$ps_table][$vs_related_table])) {
 					foreach($va_relationships[$ps_table][$vs_related_table] as $va_fields) {
 						if ($va_fields[0] != $vs_table_pk) {

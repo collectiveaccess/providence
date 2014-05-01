@@ -223,7 +223,7 @@ class SearchResult extends BaseObject {
 			$va_fields[] = $this->ops_table_name.'.'.$this->ops_table_pk;
 			
 			// Include type_id field for item table (eg. ca_entities.type_id)
-			if (method_exists($t_rel_instance, "getTypeFieldName") && ($t_rel_instance->getTypeFieldName()) && ($vs_type_fld_name = $t_rel_instance->getTypeFieldName())) {
+			if (method_exists($t_rel_instance, "getTypeFieldName") && ($vs_type_fld_name = $t_rel_instance->getTypeFieldName())) {
 				$va_fields[] = $t_rel_instance->tableName().'.'.$vs_type_fld_name.' item_type_id';
 			} else {
 				// Include type_id field for item table (eg. ca_entities.type_id) when fetching labels
@@ -231,6 +231,19 @@ class SearchResult extends BaseObject {
 					$t_label_subj_instance = $t_rel_instance->getSubjectTableInstance();
 					if (method_exists($t_label_subj_instance, "getTypeFieldName") && ($vs_type_fld_name = $t_label_subj_instance->getTypeFieldName())) {
 						$va_fields[] = $t_label_subj_instance->tableName().'.'.$vs_type_fld_name.' item_type_id';
+					}
+				}
+			}
+			
+			// Include source_id field for item table (eg. ca_entities.source_id)
+			if (method_exists($t_rel_instance, "getSourceFieldName") && ($vs_source_id_fld_name = $t_rel_instance->getSourceFieldName())) {
+				$va_fields[] = $t_rel_instance->tableName().'.'.$vs_source_id_fld_name.' item_source_id';
+			} else {
+				// Include source_id field for item table (eg. ca_entities.source_id) when fetching labels
+				if (method_exists($t_rel_instance, "getSubjectTableInstance")) {
+					$t_label_subj_instance = $t_rel_instance->getSubjectTableInstance();
+					if (method_exists($t_label_subj_instance, "getSourceFieldName") && ($vs_source_id_fld_name = $t_label_subj_instance->getSourceFieldName())) {
+						$va_fields[] = $t_label_subj_instance->tableName().'.'.$vs_source_id_fld_name.' item_source_id';
 					}
 				}
 			}
@@ -377,17 +390,7 @@ class SearchResult extends BaseObject {
 	 *
 	 */
 	public function getPrimaryKeyValues($vn_limit=4000000000) {
-		//$vs_pk = $this->opo_subject_instance->primaryKey();
 		return $this->opo_engine_result->getHits();
-		
-		$va_ids = array();
-		$vn_c = 0;
-		foreach($va_hits as $vn_id) {
-			$va_ids[] = $va_hit[$vs_pk];
-			$vn_c++;
-			if ($vn_c >= $vn_limit) { break; }
-		}
-		return $va_ids;
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -594,7 +597,7 @@ class SearchResult extends BaseObject {
 							$va_template_opts = array();
 							$va_template_opts['relationshipValues'][$va_relation_info[$vs_pk]][$va_relation_info['relation_id']]['relationship_typename'] = $va_relation_info['relationship_typename'];
 							$vs_text = $vs_template ? caProcessTemplateForIDs($vs_template, $t_instance->tableName(), array($va_relation_info[$vs_pk]), $va_template_opts) : join("; ", $va_relation_info['labels']);
-							$va_link = caCreateLinksFromText(array($vs_text), $va_original_path_components['table_name'], array($va_relation_info[$vs_pk]), $vs_return_as_link_class, $vs_return_as_link_target);
+							$va_link = caCreateLinksFromText(array($vs_text), $va_original_path_components['table_name'], array($va_relation_info[$vs_pk]), null, $vs_return_as_link_target);
 							$va_links[$vn_relation_id] = array_pop($va_link);
 						} else {
 							$va_related_items[$vn_relation_id]['labels'] = $va_relation_info['labels'];
@@ -619,6 +622,8 @@ class SearchResult extends BaseObject {
 					$va_relationship_values[$va_relation_info[$vs_rel_pk]][$vn_relation_id] = array(
 						'relationship_typename' => $va_relation_info['relationship_typename'],
 						'relationship_type_id' => $va_relation_info['relationship_type_id'],
+						'relationship_type_code' => $va_relation_info['relationship_type_code'],
+						'relationship_typecode' => $va_relation_info['relationship_type_code'],
 						'label' => $va_relation_info['label']
 					);
 				}
@@ -634,7 +639,7 @@ class SearchResult extends BaseObject {
 				$va_text = caProcessTemplateForIDs($vs_template, $t_instance->tableNum(), $va_row_ids, array_merge($va_template_opts, array('relationshipValues' => $va_relationship_values, 'showHierarchicalLabels' => $vb_show_hierarachy)));
 							
 				if ($vb_return_as_link) {
-					$va_links = caCreateLinksFromText($va_text, $va_original_path_components['table_name'], $va_row_ids, $vs_return_as_link_class, $vs_return_as_link_target);
+					$va_links = caCreateLinksFromText($va_text, $va_original_path_components['table_name'], $va_row_ids, null, $vs_return_as_link_target);
 					
 					return join($vs_delimiter, $va_links);
 				} 
@@ -750,7 +755,7 @@ class SearchResult extends BaseObject {
 					
 					if ($vb_return_as_link) {
 						if (!$vb_return_all_locales) {
-							$va_vals = caCreateLinksFromText($va_vals, $va_original_path_components['table_name'], $va_ids, $vs_return_as_link_class, $vs_return_as_link_target);
+							$va_vals = caCreateLinksFromText($va_vals, $va_original_path_components['table_name'], $va_ids, null, $vs_return_as_link_target);
 						}
 					}
 	
@@ -770,14 +775,14 @@ class SearchResult extends BaseObject {
 								foreach($va_ids as $vn_id) {
 									// TODO: This is too slow
 									if($t_instance->load($vn_id)) {
-										$va_vals = array_merge($va_vals, $t_instance->get($va_path_components['table_name'].".hierarchy.".$vs_hier_pk_fld, $pa_options));
+										$va_vals = array_merge($va_vals, $t_instance->get($va_path_components['table_name'].".hierarchy.".$vs_hier_pk_fld, array_merge($pa_options, array('returnAsArray' => true))));
 									}
 								}
 							} else {
 								foreach($va_ids as $vn_id) {
 									// TODO: This is too slow
 									if($t_instance->load($vn_id)) {
-										$va_vals = $t_instance->get($vs_field_spec.".preferred_labels", $pa_options);
+										$va_vals = $t_instance->get($vs_field_spec.".preferred_labels", array_merge($pa_options, array('returnAsArray' => true, 'returnAllLocales' => false)));
 									}
 								}
 							}
@@ -963,7 +968,7 @@ class SearchResult extends BaseObject {
 							}
 							
 							if ($vb_return_as_link) {
-								$va_return_values_tmp[$vn_i] = array_pop(caCreateLinksFromText(array($vs_value), $va_original_path_components['table_name'], array($va_ids[$vn_i]), $vs_return_as_link_class, $vs_return_as_link_target));
+								$va_return_values_tmp[$vn_i] = array_pop(caCreateLinksFromText(array($vs_value), $va_original_path_components['table_name'], array($va_ids[$vn_i]), null, $vs_return_as_link_target));
 							} else {
 								$va_return_values_tmp[$vn_i] = $vs_value;
 							}
@@ -975,7 +980,7 @@ class SearchResult extends BaseObject {
 			} else {
 // return scalar
 				if ($vb_return_as_link && $vb_is_related) {
-					$va_return_values = caCreateLinksFromText($va_return_values, $va_original_path_components['table_name'], $va_ids, $vs_return_as_link_class, $vs_return_as_link_target);
+					$va_return_values = caCreateLinksFromText($va_return_values, $va_original_path_components['table_name'], $va_ids, null, $vs_return_as_link_target);
 				}
 				if (isset($pa_options['convertLineBreaks']) && $pa_options['convertLineBreaks']) {
 					return caConvertLineBreaks(join($vs_delimiter, $va_return_values));
@@ -1099,6 +1104,36 @@ class SearchResult extends BaseObject {
 					foreach($va_by_locale as $vn_locale_id => $va_values) {
 						foreach($va_values as $vn_i => $va_value) {
 							if (!$va_value[$vs_type_fld ? $vs_type_fld : 'item_type_id'] || in_array($va_value[$vs_type_fld ? $vs_type_fld : 'item_type_id'], $va_type_ids)) {
+								$va_tmp[$vn_id][$vn_locale_id][$vn_i] = $va_value;
+							}
+						}
+					}
+				}
+				$va_value_list = $va_tmp;
+			}
+			
+			
+			// Restrict to sources (related)
+			$va_source_ids = $vs_source_id_fld = null;
+			if (method_exists($t_instance, "getSourceFieldName")) {
+				$va_source_ids = caMergeSourceRestrictionLists($t_instance, $pa_options);
+				$vs_source_id_fld = $t_instance->getSourceFieldName();
+			} else {
+				if (method_exists($t_instance, "getSubjectTableInstance")) {
+					$t_label_subj_instance = $t_instance->getSubjectTableInstance();
+					if (method_exists($t_label_subj_instance, "getSourceFieldName")) {
+						$va_source_ids = caMergeSourceRestrictionLists($t_label_subj_instance, $pa_options);
+						$vs_source_id_fld = 'item_source_id';
+					}
+				}
+			}
+			
+			if (is_array($va_source_ids) && sizeof($va_source_ids)) {
+				$va_tmp = array(); 
+				foreach($va_value_list as $vn_id => $va_by_locale) {
+					foreach($va_by_locale as $vn_locale_id => $va_values) {
+						foreach($va_values as $vn_i => $va_value) {
+							if (!$va_value[$vs_source_id_fld ? $vs_source_id_fld : 'item_source_id'] || in_array($va_value[$vs_source_id_fld ? $vs_source_id_fld : 'item_source_id'], $va_source_ids)) {
 								$va_tmp[$vn_id][$vn_locale_id][$vn_i] = $va_value;
 							}
 						}
@@ -1333,7 +1368,7 @@ class SearchResult extends BaseObject {
 				}
 				if ($vb_return_as_link) {
 					if (!$vb_return_all_locales) {
-						$va_return_values = caCreateLinksFromText($va_return_values, $va_original_path_components['table_name'], $va_ids, $vs_return_as_link_class, $vs_return_as_link_target);
+						$va_return_values = caCreateLinksFromText($va_return_values, $va_original_path_components['table_name'], $va_ids, null, $vs_return_as_link_target);
 					}
 				}
 				
@@ -1471,7 +1506,7 @@ class SearchResult extends BaseObject {
 				}
 				
 				if ($vb_return_as_link && $vb_is_related) {
-					$va_return_values = caCreateLinksFromText($va_return_values, $va_original_path_components['table_name'], $va_ids, $vs_return_as_link_class, $vs_return_as_link_target);
+					$va_return_values = caCreateLinksFromText($va_return_values, $va_original_path_components['table_name'], $va_ids, null, $vs_return_as_link_target);
 				}
 				
 				if (isset($pa_options['convertLineBreaks']) && $pa_options['convertLineBreaks']) {
@@ -1513,7 +1548,6 @@ class SearchResult extends BaseObject {
 		$vs_return_as_link_class = 	(isset($pa_options['returnAsLinkClass'])) ? (string)$pa_options['returnAsLinkClass'] : '';
 		$vs_return_as_link_get_text_from = 	(isset($pa_options['returnAsLinkGetTextFrom'])) ? (string)$pa_options['returnAsLinkGetTextFrom'] : '';
 		
-		$vs_val = $va_subvalues[$vn_attribute_id];
 		$va_tmp = explode(".", $ps_field); array_pop($va_tmp);
 		$vs_link_text = ($vs_return_as_link_get_text_from) ? $this->get(join(".", $va_tmp).".{$vs_return_as_link_get_text_from}") : $ps_val;
 

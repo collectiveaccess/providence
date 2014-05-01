@@ -104,14 +104,14 @@ class Db_mysql extends DbDriverBase {
 		if (!is_array($g_connect)) { $g_connect = array(); }
 		$vs_db_connection_key = $pa_options["host"].'/'.$pa_options["database"];
 		
-		if (isset($g_connect[$vs_db_connection_key]) && is_resource($g_connect[$vs_db_connection_key])) { $this->opr_db = $g_connect[$vs_db_connection_key]; return true;}
+		if (!($vb_unique_connection = caGetOption('uniqueConnection', $pa_options, false)) && isset($g_connect[$vs_db_connection_key]) && is_resource($g_connect[$vs_db_connection_key])) { $this->opr_db = $g_connect[$vs_db_connection_key]; return true;}
 		
 		if (!function_exists("mysql_connect")) {
 			die(_t("Your PHP installation lacks MySQL support. Please add it and retry..."));
 			exit;
 		}
 		
-		if (isset($pa_options["persistent_connections"]) && $pa_options["persistent_connections"]) {
+		if (!$vb_unique_connection && isset($pa_options["persistent_connections"]) && $pa_options["persistent_connections"]) {
 			$this->opr_db = @mysql_pconnect($pa_options["host"], $pa_options["username"], $pa_options["password"]);
 		} else {
 			$this->opr_db = @mysql_connect($pa_options["host"], $pa_options["username"], $pa_options["password"], true);
@@ -128,7 +128,7 @@ class Db_mysql extends DbDriverBase {
 		mysql_query('SET NAMES \'utf8\'', $this->opr_db);
 		mysql_query('SET character_set_results = NULL', $this->opr_db);	
 		
-		$g_connect[$vs_db_connection_key] = $this->opr_db;
+		if (!$vb_unique_connection) { $g_connect[$vs_db_connection_key] = $this->opr_db; }
 		return true;
 	}
 
