@@ -712,7 +712,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								if (!$vs_access_point && ($vs_field = method_exists($o_term, "getTerm") ? $o_term->getTerm()->field : $o_term->field)) { $vs_access_point = $vs_field; }
 								
 								$vs_stripped_term = preg_replace('!\*+$!u', '', $vs_term);
-								$va_ft_like_terms[] = $vs_stripped_term.($vb_had_wildcard ? '%' : '');
+								$va_ft_like_terms[] = $vs_stripped_term;
 							}
 							break;
 						default:

@@ -788,7 +788,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			while($qr_res->nextRow()) {
 				 $va_items[$vn_item_id = $qr_res->get('item_id')][$qr_res->get('locale_id')] = $qr_res->getRow();
 			}
-			ca_lists::$s_list_item_display_cache[$vn_item_id] = ca_lists::$s_list_item_display_cache[$vs_idno] = $va_items;
+			ca_lists::$s_list_item_display_cache[$vn_item_id] = ca_lists::$s_list_item_display_cache[$ps_idno] = $va_items;
 		}
 		
 		$va_tmp = caExtractValuesByUserLocale($va_items, null, null, array());
@@ -1339,13 +1339,23 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				return $vs_buf;
 				break;
 			case 'lookup':
+				$vs_value = $vs_hidden_value = "";
+				if(caGetOption('forSearch',$pa_options)) {
+					if($vs_val_id = caGetOption('value',$pa_options)) {
+						$vs_value = $t_list->getItemFromListForDisplayByItemID($pm_list_name_or_id, $vs_val_id);
+						$vs_hidden_value = $vs_val_id;
+					}
+				} else {
+					$vs_value = "{".$pa_options['element_id']."_label}";
+					$vs_hidden_value = "{".$pa_options['element_id']."}";
+				}
 				$vs_buf =
  				caHTMLTextInput(
  					$ps_name.'_autocomplete', 
 					array(
 						'width' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width']: 300, 
 						'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : 1, 
-						'value' => "{".$pa_options['element_id']."_label}", 
+						'value' => $vs_value, 
 						'maxlength' => 512,
 						'id' => $ps_name."_autocomplete",
 						'class' => 'lookupBg'
@@ -1354,7 +1364,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				caHTMLHiddenInput(
 					$ps_name,
 					array(
-						'value' => "{".$pa_options['element_id']."}", 
+						'value' => $vs_hidden_value, 
 						'id' => $ps_name
 					)
 				);

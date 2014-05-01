@@ -297,7 +297,7 @@
  			// Set "context" id from those editors that need to restrict idno lookups to within the context of another field value (eg. idno's for ca_list_items are only unique within a given list_id)
  			$vn_context_id = null;
  			if ($vs_idno_context_field = $t_subject->getProperty('ID_NUMBERING_CONTEXT_FIELD')) {
- 				if ($vn_subject_id > 0) {
+ 				if ($t_subject->getPrimaryKey() > 0) {
  					$this->view->setVar('_context_id', $vn_context_id = $t_subject->get($vs_idno_context_field));
  				} else {
  					if ($vn_parent_id > 0) {
@@ -327,7 +327,7 @@
  			$vb_save_rc = $t_subject->saveBundlesForScreen($this->request->getParameter('screen', pString), $this->request, $va_opts);
 			$this->view->setVar('t_ui', $t_ui);
 		
-			if(!$vn_subject_id) {
+			if(!$t_subject->getPrimaryKey()) {
 				$vn_subject_id = $t_subject->getPrimaryKey();
 				if (!$vb_save_rc) {
 					$vs_message = _t("Could not save %1", $vs_type_name);
@@ -455,7 +455,7 @@
  			if ($vs_parent_id_fld = $t_subject->getProperty('HIERARCHY_PARENT_ID_FLD')) {
  				$this->view->setVar('parent_id', $vn_parent_id = $this->request->getParameter($vs_parent_id_fld, pInteger));
 
- 				return array($t_subject, $t_ui, $vn_parent_id, $vn_above_id);
+ 				return array($t_subject, $t_ui, $vn_parent_id, null);
  			}
  			
  			return array($t_subject, $t_ui);

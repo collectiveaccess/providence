@@ -180,6 +180,7 @@ h5 {
     width: 215px;
     height: 100%;
     border-top: 2px solid #ddd;
+    padding-bottom: 10px;
 }
 
 #leftNav h2 {
@@ -393,6 +394,9 @@ div.inspectorLotObjectTypeControls {
 	text-align: center;
 	width:100%;
 	padding-left: 0px;
+}
+#leftNav #searchSetTools .button {
+	width:auto;
 }
 #leftNav #toolIcons .button {
 	text-align:left;
@@ -1029,7 +1033,7 @@ div.notification-info-box {
 }
 
 div.notification-error-box {
-    background:	url('../graphics/icons/glyphicons_078_warning_sign.png') no-repeat 10px 5px;
+    background:	url('../graphics/buttons/glyphicons_078_warning_sign.png') no-repeat 10px 5px;
     text-indent: 32px;
     background-color: #eeeeee;
     padding: 5px;
@@ -1100,6 +1104,8 @@ div.hint {
 .quickAddSectionBox{
     margin: 0px;
     padding: 10px;
+    height: 525px;
+    overflow-y: auto;
 }
 
 /* Style for labels on standard form fields (ie. no error) */
@@ -2174,6 +2180,7 @@ select.searchToolsSelect {
 }
 #searchSetTools .col{
 	margin-bottom:15px;
+	clear: both;
 }
 #searchSetTools .header {
 	font-family: 'din-regular', helvetica, sans-serif;
@@ -2188,7 +2195,7 @@ select.searchToolsSelect {
 #searchSetTools .searchSetsToggle a{
 	float: left;
 	clear: right;
-	width: 100%;
+	width: auto;
 	text-align: left;
 	margin-bottom: 15px;
 	margin-top: -14px;
@@ -5121,7 +5128,7 @@ a.quickaddMenuItem {
 div.roundedRel {
     font-size: 10px;
     font-weight: normal;
-    padding: 2px 4px 4px 8px;
+    padding: 5px 4px 1px 8px;
     margin: 5px;
     float: left;
     border: 1px solid #ddd;
@@ -6169,9 +6176,12 @@ div.dialogHeader {
     display: none;
     margin: 0px;
     padding:0px !important;
-    border: 2px solid #999999;
+    border: 2px solid #eee;
     z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
     background-color: #FFFFFF;
+    border-radius:4px;
+    -moz-border-radius:4px;
+    -webkit-border-radius:4px;
 }
 
 #caRelationQuickAddPanel .close a{
@@ -6197,8 +6207,13 @@ div.quickAddFormTopPadding {
 }
 
 div.quickAddDialogHeader {
-    position: fixed;
+	background-color: #cccccc;
+    font-size: 13px;
+    font-weight: bold !important;
+    padding: 5px;
+    
     width: 890px;
+    height: 35px;
     z-index:33000;
 }
 
@@ -6690,7 +6705,7 @@ div.caRepresentationMediaReplicationControls {
 .jcarousel li {
     float: left;
     width: 150px;
-    height: 80px;
+    height: 92px;
     margin-right: 1px;
 }
 

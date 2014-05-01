@@ -348,7 +348,25 @@
 						<p>
 <?php 
 			print caHTMLTextInput('skip_file_list', array('value' => $va_last_settings['skipFileList'],  'id' => "caSkipFilesList"), array('width' => '700px', 'height' => '100px')); 
-
+?>
+						</p>
+					</div>
+				</div>
+		</div>
+		<div class='bundleLabel'>
+			<span class="formLabelText"><?php print _t('Miscellaneous'); ?></span> 
+				<div class="bundleContainer">
+					<div class="caLabelList" >
+						<p class='formLabel'>
+<?php 
+			print caHTMLCheckboxInput('allow_duplicate_media', array('value' => 1,  'id' => 'caAllowDuplicateMedia', 'checked' => $va_last_settings['allowDuplicateMedia']), array()); 
+			print " "._t('Allow duplicate media?');
+?>
+						</p>
+						<p class='formLabel'>
+<?php
+							print _t('Log level').'<br/>';
+							print caHTMLSelect('log_level', caGetLogLevels(), array('id' => 'caLogLevel'), array('value' => $va_last_settings['logLevel']));
 ?>
 						</p>
 					</div>

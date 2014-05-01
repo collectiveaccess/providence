@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -47,9 +47,16 @@
 		}
 		# ------------------------------------------------------
 		public function insert($pa_options=null) {
-			$o_trans = new Transaction();
+			$vb_we_set_transaction = false;
+			if ($this->inTransaction()) {
+				$o_trans = $this->getTransaction();
+			} else {
+				$o_trans = new Transaction();
+				$this->setTransaction($o_trans);
+				$vb_we_set_transaction = true;
+			}
+			
 			$o_db = $o_trans->getDb();
-			$this->setTransaction($o_trans);
 		
 			list($vs_target_table, $vs_target_key) = $this->_getTarget();
 			$vs_rel_table = $this->tableName();
@@ -79,7 +86,7 @@
 				}
 			
 				$vb_rc = parent::insert($pa_options);
-				$o_trans->commitTransaction();
+				if ($vb_we_set_transaction) { $o_trans->commitTransaction(); }
 				return $vb_rc;
 			} else {
 				// unset other reps is_primary field
@@ -93,9 +100,9 @@
 				", (int)$vn_target_id);
 			
 				if (!$vb_rc = parent::insert($pa_options)) {
-					$o_trans->rollbackTransaction();
+					if ($vb_we_set_transaction) { $o_trans->rollbackTransaction(); }
 				} else {
-					$o_trans->commitTransaction();
+					if ($vb_we_set_transaction) { $o_trans->commitTransaction(); }
 				}
 			
 				return $vb_rc;
@@ -103,9 +110,15 @@
 		}
 		# ------------------------------------------------------
 		public function update($pa_options=null) {
-			$o_trans = new Transaction();
+			$vb_we_set_transaction = false;
+			if ($this->inTransaction()) {
+				$o_trans = $this->getTransaction();
+			} else {
+				$o_trans = new Transaction();
+				$this->setTransaction($o_trans);
+				$vb_we_set_transaction = true;
+			}
 			$o_db = $o_trans->getDb();
-			$this->setTransaction($o_trans);
 		
 			list($vs_target_table, $vs_target_key) = $this->_getTarget();
 			
@@ -150,9 +163,9 @@
 									relation_id = ?
 							", (int)$qr_res->get('relation_id'));
 							if (!($vb_rc = parent::update($pa_options))) {
-								$o_trans->rollbackTransaction();
+								if ($vb_we_set_transaction) { $o_trans->rollbackTransaction(); }
 							} else {
-								$o_trans->commitTransaction();
+								if ($vb_we_set_transaction) { $o_trans->commitTransaction(); }
 							}
 						}
 					}
@@ -167,15 +180,15 @@
 							{$vs_target_key} = ?
 					", (int)$vn_target_id);
 					if (!($vb_rc = parent::update($pa_options))) {
-						$o_trans->rollbackTransaction();
+						if ($vb_we_set_transaction) { $o_trans->rollbackTransaction(); }
 					} else {
-						$o_trans->commitTransaction();
+						if ($vb_we_set_transaction) { $o_trans->commitTransaction(); }
 					}
 					return $vb_rc;
 				}
 			} else {
 				$vb_rc = parent::update($pa_options);
-				$o_trans->commitTransaction();
+				if ($vb_we_set_transaction) { $o_trans->commitTransaction(); }
 				return $vb_rc;
 			}
 		}
@@ -194,12 +207,19 @@
 				return false;
 			}
 		
-			$o_trans = new Transaction();
-			$this->setTransaction($o_trans);
+			$vb_we_set_transaction = false;
+			if ($this->inTransaction()) {
+				$o_trans = $this->getTransaction();
+			} else {
+				$o_trans = new Transaction();
+				$this->setTransaction($o_trans);
+				$vb_we_set_transaction = true;
+			}
+			$o_db = $o_trans->getDb();
+			
 			if($vb_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
 		
 				if ($this->get('is_primary')) {
-					$o_db = $this->getDb();
 			
 					// make some other row primary
 					$qr_res = $o_db->query("
@@ -222,19 +242,19 @@
 					
 							if ($t_rep_link->numErrors()) {
 								$this->postError(2700, _t('Could not update primary flag for representation: %1', join('; ', $t_rep_link->getErrors())), 'BaseRepresentationRelationship->delete()');
-								$o_trans->rollbackTransaction();
+								if ($vb_we_set_transaction) { $o_trans->rollbackTransaction(); }
 								return false;
 							}
 						} else {
 							$this->postError(2700, _t('Could not load %1-representation link', $t_target->getProperty('NAME_SINGULAR')), 'BaseRepresentationRelationship->delete()');
-							$o_trans->rollbackTransaction();
+							if ($vb_we_set_transaction) { $o_trans->rollbackTransaction(); }
 							return false;
 						}				
 					}
 				} 
-				$o_trans->commitTransaction();
+				if ($vb_we_set_transaction) { $o_trans->commitTransaction(); }
 			} else {
-				$o_trans->rollbackTransaction();
+				if ($vb_we_set_transaction) { $o_trans->rollbackTransaction(); }
 			}
 		
 			return $vb_rc;

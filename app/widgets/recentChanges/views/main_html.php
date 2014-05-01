@@ -85,7 +85,9 @@
 				
 				print "</div></li>";
 			}
-			print "</ul></div>";
+?>
+	</ul></div>
+<?php
 		}else{
 			print "<div class='dashboardWidgetHeading'>"._t("There have been no changes to <strong>%1</strong> from %2.", $this->getVar('table_name_plural'), $vn_displayed_date_range)."</div>";
 		}

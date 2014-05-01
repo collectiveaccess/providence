@@ -724,7 +724,7 @@ class WLPlugMediaCoreImage Extends BaseMediaPlugin Implements IWLPlugMedia {
 			} 
 					
 			if (!$this->_CoreImageWrite($this->handle, $filepath.".".$ext, $mimetype, $this->properties["quality"])) {
-				$this->postError(1610, _t("%1: %2", $reason, $description), "WLPlugCoreImage->write()");
+				$this->postError(1610, _t("Could not write file %1", $filepath.".".$ext), "WLPlugCoreImage->write()");
 				return false;
 			}
 			

@@ -69,6 +69,8 @@ class Datamodel {
 	 *
 	 */
 	function __construct($pb_dont_cache=false) {
+		global $_DATAMODEL_CACHE;
+			
 		// is the graph already in memory?
 		if (!$pb_dont_cache && DataModel::$s_graph) { return; }
 		

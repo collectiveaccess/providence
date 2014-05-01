@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -45,6 +45,7 @@
 	require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
 	require_once(__CA_LIB_DIR__."/core/Logging/Batchlog.php");
 	require_once(__CA_LIB_DIR__."/core/SMS.php");
+	require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
   
 	class BatchProcessor {
 		# ----------------------------------------
@@ -480,9 +481,27 @@
 		 *		progressCallback =
 		 *		reportCallback = 
 		 *		sendMail = 
+		 *		log = log directory path
+		 *		logLevel = KLogger constant for minimum log level to record. Default is KLogger::INFO. Constants are, in descending order of shrillness:
+		 *			KLogger::EMERG = Emergency messages (system is unusable)
+		 *			KLogger::ALERT = Alert messages (action must be taken immediately)
+		 *			KLogger::CRIT = Critical conditions
+		 *			KLogger::ERR = Error conditions
+		 *			KLogger::WARN = Warnings
+		 *			KLogger::NOTICE = Notices (normal but significant conditions)
+		 *			KLogger::INFO = Informational messages
+		 *			KLogger::DEBUG = Debugging messages
 		 */
 		public static function importMediaFromDirectory($po_request, $pa_options=null) {
 			global $g_ui_locale_id;
+			
+			$vs_log_dir = caGetOption('log', $pa_options, __CA_APP_DIR__."/log"); 
+			$vs_log_level = caGetOption('logLevel', $pa_options, "INFO"); 
+			
+			if (!is_writeable($vs_log_dir)) { $vs_log_dir = caGetTempDirPath(); }
+			$vn_log_level = BatchProcessor::_logLevelStringToNumber($vs_log_level);
+			$o_log = new KLogger($vs_log_dir, $vn_log_level);
+			
 			
  			$t_object = new ca_objects();
  			$o_eventlog = new Eventlog();
@@ -497,7 +516,7 @@
  				$o_trans = new Transaction();
  			}
  			
- 			$o_log = new Batchlog(array(
+ 			$o_batch_log = new Batchlog(array(
  				'user_id' => $po_request->getUserID(),
  				'batch_type' => 'MI',
  				'table_num' => (int)$t_object->tableNum(),
@@ -509,8 +528,9 @@
  				$o_eventlog->log(array(
 					"CODE" => 'ERR',
 					"SOURCE" => "mediaImport",
-					"MESSAGE" => "Specified import directory is invalid"
+					"MESSAGE" => $vs_msg = _t("Specified import directory '%1' is invalid", $pa_options['importFromDirectory'])
 				));
+				$o_log->logError($vs_msg);
  				return null;
  			}
  			
@@ -519,17 +539,19 @@
  				$o_eventlog->log(array(
 					"CODE" => 'ERR',
 					"SOURCE" => "mediaImport",
-					"MESSAGE" => "Specified import directory is invalid"
+					"MESSAGE" => $vs_msg = _t("Specified import directory '%1' is invalid", $pa_options['importFromDirectory'])
 				));
+				$o_log->logError($vs_msg);
  				return null;
  			}
  			
- 			if (preg_match("!/\.\.!", $vs_directory) || preg_match("!\.\./!", $pa_options['importFromDirectory'])) {
+ 			if (preg_match("!\.\./!", $pa_options['importFromDirectory'])) {
  				$o_eventlog->log(array(
 					"CODE" => 'ERR',
 					"SOURCE" => "mediaImport",
-					"MESSAGE" => "Specified import directory is invalid"
+					"MESSAGE" => $vs_msg = _t("Specified import directory '%1' is invalid", $pa_options['importFromDirectory'])
 				));
+				$o_log->logError($vs_msg);
  				return null;
  			}
  			
@@ -555,6 +577,9 @@
  			
  			$vn_locale_id						= $pa_options['locale_id'];
  			$vs_skip_file_list					= $pa_options['skipFileList'];
+ 			
+ 			$vs_skip_file_list					= $pa_options['skipFileList'];
+ 			$vb_allow_duplicate_media			= $pa_options['allowDuplicateMedia'];
  		
  			$va_relationship_type_id_for = array();
  			if (is_array($va_create_relationship_for = $pa_options['create_relationship_for'])) {
@@ -566,6 +591,7 @@
  			if (!$vn_locale_id) { $vn_locale_id = $g_ui_locale_id; }
  			
  			$va_files_to_process = caGetDirectoryContentsAsList($pa_options['importFromDirectory'], $vb_include_subdirectories);
+ 			$o_log->logInfo(_t('Found %1 files in directory \'%2\'', sizeof($va_files_to_process), $pa_options['importFromDirectory']));
  			
  			if ($vs_set_mode == 'add') {
  				$t_set->load($vn_set_id);
@@ -597,18 +623,20 @@
 							$va_notices['create_set'] = array(
 								'idno' => '',
 								'label' => _t('Create set %1', $vs_set_create_name),
-								'message' =>  _t('Failed to create set %1: %2', $vs_set_create_name, join("; ", $t_set->getErrors())),
+								'message' =>  $vs_msg = _t('Failed to create set %1: %2', $vs_set_create_name, join("; ", $t_set->getErrors())),
 								'status' => 'SET ERROR'
 							);
+							$o_log->logError($vs_msg);
 						} else {
 							$t_set->addLabel(array('name' => $vs_set_create_name), $vn_locale_id, null, true);
 							if ($t_set->numErrors()) {
 								$va_notices['add_set_label'] = array(
 									'idno' => '',
 									'label' => _t('Add label to set %1', $vs_set_create_name),
-									'message' =>  _t('Failed to add label to set: %1', join("; ", $t_set->getErrors())),
+									'message' =>  $vs_msg = _t('Failed to add label to set: %1', join("; ", $t_set->getErrors())),
 									'status' => 'SET ERROR'
 								);
+								$o_log->logError($vs_msg);
 							}
 							$vn_set_id = $t_set->getPrimaryKey();
 						}
@@ -622,9 +650,11 @@
  				$va_notices['set_access'] = array(
 					'idno' => '',
 					'label' => _t('You do not have access to set %1', $vs_set_create_name),
-					'message' =>  _t('Cannot add to set %1 because you do not have edit access', $vs_set_create_name),
+					'message' =>  $vs_msg = _t('Cannot add to set %1 because you do not have edit access', $vs_set_create_name),
 					'status' => 'SET ERROR'
 				);
+				
+ 				$o_log->logError($vs_msg);
 				$vn_set_id = null;
 				$t_set = new ca_sets();
  			}
@@ -654,18 +684,22 @@
  				$vs_directory = join("/", $va_tmp);
  				
  				// Skip file names using $vs_skip_file_list
- 				if (BatchProcessor::_skipFile($f, $va_skip_list)) { continue; }
+ 				if (BatchProcessor::_skipFile($f, $va_skip_list)) { 
+ 					$o_log->logInfo(_t('Skipped file %1 because it was on the skipped files list', $f));
+ 					continue; 
+ 				}
  				
  				$vs_relative_directory = preg_replace("!{$vs_batch_media_import_root_directory}[/]*!", "", $vs_directory); 
  				
  				// does representation already exist?
- 				if (ca_object_representations::mediaExists($vs_file)) {
+ 				if (!$vb_allow_duplicate_media && ($t_dupe = ca_object_representations::mediaExists($vs_file))) {
  					$va_notices[$vs_relative_directory.'/'.$f] = array(
 						'idno' => '',
 						'label' => $f,
-						'message' =>  _t('Skipped %1 from %2 because it already exists', $f, $vs_relative_directory),
+						'message' =>  $vs_msg = _t('Skipped %1 from %2 because it already exists %3', $f, $vs_relative_directory, caEditorLink($po_request, _t('(view)'), 'button', 'ca_object_representations', $t_dupe->getPrimaryKey())),
 						'status' => 'SKIPPED'
 					);
+					$o_log->logInfo($vs_msg);
  					continue;
  				}
  				
@@ -681,13 +715,16 @@
 							switch($vs_match_mode) {
 								case 'DIRECTORY_NAME':
 									$va_names_to_match = array($d);
+									$o_log->logDebug(_t("Trying to match on directory '%1'", $d));
 									break;
 								case 'FILE_AND_DIRECTORY_NAMES':
 									$va_names_to_match = array($f, $d);
+									$o_log->logDebug(_t("Trying to match on directory '%1' and file name '%2'", $d, $f));
 									break;
 								default:
 								case 'FILE_NAME':
 									$va_names_to_match = array($f);
+									$o_log->logDebug(_t("Trying to match on file name '%1'", $d, $f));
 									break;
 							}
 							
@@ -702,7 +739,7 @@
 									$va_extracted_idnos_from_filename[] = $va_matches[1];
 								
 									if (in_array($vs_import_mode, array('TRY_TO_MATCH', 'ALWAYS_MATCH'))) {
-										if(!is_array($va_fields_to_match_on = $po_request->config->getList('batch_media_import_match_on')) || !sizeof($batch_media_import_match_on)) {
+										if(!is_array($va_fields_to_match_on = $po_request->config->getList('batch_media_import_match_on')) || !sizeof($va_fields_to_match_on)) {
 											$batch_media_import_match_on = array('idno');
 										}
 										$va_values = array();
@@ -719,9 +756,10 @@
 												$va_notices[$vs_relative_directory.'/'.$vs_match_name.'_match'] = array(
 													'idno' => $t_object->get($t_object->getProperty('ID_NUMBERING_ID_FIELD')),
 													'label' => $t_object->getLabelForDisplay(),
-													'message' => _t('Matched media %1 from %2 to object using %2', $f, $vs_relative_directory, $vs_regex_name),
+													'message' => $vs_msg = _t('Matched media %1 from %2 to object using %2', $f, $vs_relative_directory, $vs_regex_name),
 													'status' => 'MATCHED'
 												);
+												$o_log->logInfo($vs_msg);
 											}
 											break(3);
 										}
@@ -738,9 +776,10 @@
 						$va_notices[$vs_relative_directory.'/'.$f.'_match'] = array(
  							'idno' => $t_object->get($t_object->getProperty('ID_NUMBERING_ID_FIELD')),
  							'label' => $t_object->getLabelForDisplay(),
- 							'message' => _t('Matched media %1 from %2 to object using filename', $f, $vs_relative_directory),
+ 							'message' => $vs_msg = _t('Matched media %1 from %2 to object using filename', $f, $vs_relative_directory),
  							'status' => 'MATCHED'
  						);
+						$o_log->logInfo($vs_msg);
 					}
 				}
 				
@@ -755,16 +794,18 @@
 						$o_eventlog->log(array(
 							"CODE" => 'ERR',
 							"SOURCE" => "mediaImport",
-							"MESSAGE" => "Error importing {$f} from {$vs_directory}: ".join('; ', $t_object->getErrors())
+							"MESSAGE" => _t("Error importing {$f} from {$vs_directory}: %1", join('; ', $t_object->getErrors()))
 						));
+						
 						
 						$va_errors[$vs_relative_directory.'/'.$f] = array(
 							'idno' => $t_object->get($t_object->getProperty('ID_NUMBERING_ID_FIELD')),
 							'label' => $t_object->getLabelForDisplay(),
 							'errors' => $t_object->errors(),
-							'message' => _t("Error importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_object->getErrors())),
+							'message' => $vs_msg = _t("Error importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_object->getErrors())),
 							'status' => 'ERROR',
 						);
+						$o_log->logError($vs_msg);
 						$o_trans->rollback();
 						continue;
 					} else {
@@ -794,7 +835,7 @@
 								// Calculate identifier using numbering plugin
 								$o_numbering_plugin = $t_object->getIDNoPlugInInstance();
 								if (!($vs_sep = $o_numbering_plugin->getSeparator())) { $vs_sep = ''; }
-								if (!is_array($va_idno_values = $o_numbering_plugin->htmlFormValuesAsArray('idno', $vs_object_idno, false, false, true))) { $va_idno_values = array(); }
+								if (!is_array($va_idno_values = $o_numbering_plugin->htmlFormValuesAsArray('idno', null, false, false, true))) { $va_idno_values = array(); }
 								$t_object->set('idno', join($vs_sep, $va_idno_values));	// true=always set serial values, even if they already have a value; this let's us use the original pattern while replacing the serial value every time through
 								break;
 						}
@@ -805,15 +846,16 @@
 							$o_eventlog->log(array(
 								"CODE" => 'ERR',
 								"SOURCE" => "mediaImport",
-								"MESSAGE" => "Error creating new object while importing {$f} from {$vs_relative_directory}: ".join('; ', $t_object->getErrors())
+								"MESSAGE" => _t("Error creating new object while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_object->getErrors()))
 							));
 							$va_errors[$vs_relative_directory.'/'.$f] = array(
 								'idno' => $t_object->get($t_object->getProperty('ID_NUMBERING_ID_FIELD')),
 								'label' => $t_object->getLabelForDisplay(),
 								'errors' => $t_object->errors(),
-								'message' => _t("Error creating new object while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_object->getErrors())),
+								'message' => $vs_msg = _t("Error creating new object while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_object->getErrors())),
 								'status' => 'ERROR',
 							);
+							$o_log->logError($vs_msg);
 							$o_trans->rollback();
 							continue;
 						}
@@ -826,16 +868,17 @@
 							$o_eventlog->log(array(
 								"CODE" => 'ERR',
 								"SOURCE" => "mediaImport",
-								"MESSAGE" => "Error creating object label while importing {$f} from {$vs_relative_directory}: ".join('; ', $t_object->getErrors())
+								"MESSAGE" => _t("Error creating object label while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_object->getErrors()))
 							));
 							
 							$va_errors[$vs_relative_directory.'/'.$f] = array(
 								'idno' => $t_object->get($t_object->getProperty('ID_NUMBERING_ID_FIELD')),
 								'label' => $t_object->getLabelForDisplay(),
 								'errors' => $t_object->errors(),
-								'message' => _t("Error creating object label while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_object->getErrors())),
+								'message' => $vs_msg = _t("Error creating object label while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_object->getErrors())),
 								'status' => 'ERROR',
 							);
+							$o_log->logError($vs_msg);
 							$o_trans->rollback();
 							continue;
 						}
@@ -846,16 +889,17 @@
 							$o_eventlog->log(array(
 								"CODE" => 'ERR',
 								"SOURCE" => "mediaImport",
-								"MESSAGE" => "Error importing {$f} from {$vs_relative_directory}: ".join('; ', $t_object->getErrors())
+								"MESSAGE" => _t("Error importing %1 from %2: ", $f, $vs_relative_directory, join('; ', $t_object->getErrors()))
 							));
 							
 							$va_errors[$vs_relative_directory.'/'.$f] = array(
 								'idno' => $t_object->get($t_object->getProperty('ID_NUMBERING_ID_FIELD')),
 								'label' => $t_object->getLabelForDisplay(),
 								'errors' => $t_object->errors(),
-								'message' => _t("Error importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_object->getErrors())),
+								'message' => $vs_msg = _t("Error importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_object->getErrors())),
 								'status' => 'ERROR',
 							);
+							$o_log->logError($vs_msg);
 							$o_trans->rollback();
 							continue;
 						} else {
@@ -870,14 +914,15 @@
 					$va_notices[$t_object->getPrimaryKey()] = array(
 						'idno' => $t_object->get($t_object->getProperty('ID_NUMBERING_ID_FIELD')),
 						'label' => $t_object->getLabelForDisplay(),
-						'message' => _t('Imported %1 as %2', $f, $t_object->get($t_object->getProperty('ID_NUMBERING_ID_FIELD'))),
+						'message' => $vs_msg = _t('Imported %1 as %2', $f, $t_object->get($t_object->getProperty('ID_NUMBERING_ID_FIELD'))),
 						'status' => 'SUCCESS'
 					);
+					$o_log->logInfo($vs_msg);
 									
 					if ($vn_set_id) {
 						$t_set->addItem($t_object->getPrimaryKey(), null, $po_request->getUserID());
 					}
-					$o_log->addItem($t_object->getPrimaryKey(), $t_object->errors());
+					$o_batch_log->addItem($t_object->getPrimaryKey(), $t_object->errors());
 					
 					// Create relationships?
 					if(is_array($va_create_relationship_for) && sizeof($va_create_relationship_for) && is_array($va_extracted_idnos_from_filename) && sizeof($va_extracted_idnos_from_filename)) {
@@ -892,16 +937,18 @@
 										$va_notices[$t_object->getPrimaryKey().'_rel'] = array(
 											'idno' => $t_object->get($t_object->getProperty('ID_NUMBERING_ID_FIELD')),
 											'label' => $vs_label = $t_object->getLabelForDisplay(),
-											'message' => _t('Added relationship between <em>%1</em> and %2 <em>%3</em>', $vs_label, $t_rel->getProperty('NAME_SINGULAR'), $t_rel->getLabelForDisplay()),
+											'message' => $vs_msg = _t('Added relationship between <em>%1</em> and %2 <em>%3</em>', $vs_label, $t_rel->getProperty('NAME_SINGULAR'), $t_rel->getLabelForDisplay()),
 											'status' => 'RELATED'
 										);
+										$o_log->logInfo($vs_msg);
 									} else {
 										$va_notices[$t_object->getPrimaryKey()] = array(
 											'idno' => $t_object->get($t_object->getProperty('ID_NUMBERING_ID_FIELD')),
 											'label' => $vs_label = $t_object->getLabelForDisplay(),
-											'message' => _t('Could not add relationship between <em>%1</em> and %2 <em>%3</em>: %4', $vs_label, $t_rel->getProperty('NAME_SINGULAR'), $t_rel->getLabelForDisplay(), join("; ", $t_object->getErrors())),
+											'message' => $vs_msg = _t('Could not add relationship between <em>%1</em> and %2 <em>%3</em>: %4', $vs_label, $t_rel->getProperty('NAME_SINGULAR'), $t_rel->getLabelForDisplay(), join("; ", $t_object->getErrors())),
 											'status' => 'ERROR'
 										);
+										$o_log->logError($vs_msg);
 									}
 								}
 							}
@@ -911,9 +958,10 @@
 					$va_notices[$vs_relative_directory.'/'.$f] = array(
 						'idno' => '',
 						'label' => $f,
-						'message' => (($vs_import_mode == 'ALWAYS_MATCH') ? _t('Skipped %1 from %2 because it could not be matched', $f, $vs_relative_directory) : _t('Skipped %1 from %2', $f, $vs_relative_directory)),
+						'message' => $vs_msg = (($vs_import_mode == 'ALWAYS_MATCH') ? _t('Skipped %1 from %2 because it could not be matched', $f, $vs_relative_directory) : _t('Skipped %1 from %2', $f, $vs_relative_directory)),
 						'status' => 'SKIPPED'
 					);
+					$o_log->logInfo($vs_msg);
 				}
  				
  				if (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
@@ -940,7 +988,7 @@
 				);
 				$ps_callback($po_request, $va_general, $va_notices, $va_errors);
 			}
-			$o_log->close();
+			$o_batch_log->close();
 			
 			if ($vb_we_set_transaction) {
 				if (sizeof($va_errors) > 0) {
@@ -973,6 +1021,7 @@
 			if (isset($pa_options['sendSMS']) && $pa_options['sendSMS']) {
 				SMS::send($po_request->getUserID(), _t("[%1] Media import processing for directory %2 with %3 %4 begun at %5 is complete", $po_request->config->get('app_display_name'), $vs_relative_directory, $vn_num_items, (($vn_num_items == 1) ? _t('file') : _t('files')), $vs_started_on));
 			}
+			$o_log->logInfo(_t("Media import processing for directory %1 with %2 %3 begun at %4 is complete", $vs_relative_directory, $vn_num_items, (($vn_num_items == 1) ? _t('file') : _t('files'))));
 			return array('errors' => $va_errors, 'notices' => $va_notices, 'processing_time' => caFormatInterval($vn_elapsed_time));
 		}
 		# ----------------------------------------
@@ -984,7 +1033,16 @@
 		 *		dryRun = 
 		 *		debug = output tons of debugging info during import
 		 *		log = log directory path
-		 * 		logLevel = KLogger loglevel. Default is "INFO"
+		 *		logLevel = KLogger constant for minimum log level to record. Default is KLogger::INFO. Constants are, in descending order of shrillness:
+		 *			KLogger::EMERG = Emergency messages (system is unusable)
+		 *			KLogger::ALERT = Alert messages (action must be taken immediately)
+		 *			KLogger::CRIT = Critical conditions
+		 *			KLogger::ERR = Error conditions
+		 *			KLogger::WARN = Warnings
+		 *			KLogger::NOTICE = Notices (normal but significant conditions)
+		 *			KLogger::INFO = Informational messages
+		 *			KLogger::DEBUG = Debugging messages
+
 		 */
 		public static function importMetadata($po_request, $ps_source, $ps_importer, $ps_input_format, $pa_options=null) {
 			$va_errors = $va_noticed = array();
@@ -1007,10 +1065,59 @@
 			$vb_dry_run = caGetOption('dryRun', $pa_options, false); 
 			$vb_debug = caGetOption('debug', $pa_options, false); 
 			
-			if (is_numeric($vs_log_level)) {
-				$vn_log_level = (int)$vs_log_level;
+			$vn_log_level = BatchProcessor::_logLevelStringToNumber($vs_log_level);
+
+			if (!ca_data_importers::importDataFromSource($ps_source, $ps_importer, array('logDirectory' => $o_config->get('batch_metadata_import_log_directory'), 'request' => $po_request,'format' => $ps_input_format, 'showCLIProgressBar' => false, 'useNcurses' => false, 'progressCallback' => isset($pa_options['progressCallback']) ? $pa_options['progressCallback'] : null, 'reportCallback' => isset($pa_options['reportCallback']) ? $pa_options['reportCallback'] : null,  'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'dryRun' => $vb_dry_run, 'debug' => $vb_debug))) {
+				$va_errors['general'] = array(
+					'idno' => "*",
+					'label' => "*",
+					'errors' => array(_t("Could not import source %1", $ps_source)),
+					'status' => 'ERROR'
+				);
+				return false;
 			} else {
-				switch($vs_log_level) {
+				$va_notices['general'] = array(
+					'idno' => "*",
+					'label' => "*",
+					'errors' => array(_t("Imported data from source %1", $ps_source)),
+					'status' => 'SUCCESS'
+				);
+				//return true;
+			}
+			
+			$vn_elapsed_time = time() - $vn_start_time;
+			
+			
+			if (isset($pa_options['sendMail']) && $pa_options['sendMail']) {
+				if ($vs_email = trim($po_request->user->get('email'))) {
+					caSendMessageUsingView($po_request, array($vs_email => $po_request->user->get('fname').' '.$po_request->user->get('lname')), __CA_ADMIN_EMAIL__, _t('[%1] Batch metadata import completed', $po_request->config->get('app_display_name')), 'batch_metadata_import_completed.tpl', 
+						array(
+							'notices' => $va_notices, 'errors' => $va_errors,
+							'numErrors' => sizeof($va_errors), 'numProcessed' => sizeof($va_notices),
+							'subjectNameSingular' => _t('row'),
+							'subjectNamePlural' => _t('rows'),
+							'startedOn' => caGetLocalizedDate($vn_start_time),
+							'completedOn' => caGetLocalizedDate(time()),
+							'elapsedTime' => caFormatInterval($vn_elapsed_time)
+						)
+					);
+				}
+			}
+			
+			if (isset($pa_options['sendSMS']) && $pa_options['sendSMS']) {
+				SMS::send($po_request->getUserID(), _t("[%1] Metadata import processing for begun at %2 is complete", $po_request->config->get('app_display_name'),  caGetLocalizedDate($vn_start_time)));
+			}
+			return array('errors' => $va_errors, 'notices' => $va_notices, 'processing_time' => caFormatInterval($vn_elapsed_time));
+		}
+		# ----------------------------------------
+		/**
+		 *
+		 */
+		private static function _logLevelStringToNumber($ps_log_level) {
+			if (is_numeric($ps_log_level)) {
+				$vn_log_level = (int)$ps_log_level;
+			} else {
+				switch($ps_log_level) {
 					case 'DEBUG':
 						$vn_log_level = KLogger::DEBUG;
 						break;
@@ -1035,48 +1142,7 @@
 						break;
 				}
 			}
-
-			if (!ca_data_importers::importDataFromSource($ps_source, $ps_importer, array('logDirectory' => $o_config->get('batch_metadata_import_log_directory'), 'request' => $po_request,'format' => $ps_input_format, 'showCLIProgressBar' => false, 'useNcurses' => false, 'progressCallback' => isset($pa_options['progressCallback']) ? $pa_options['progressCallback'] : null, 'reportCallback' => isset($pa_options['reportCallback']) ? $pa_options['reportCallback'] : null,  'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'dryRun' => $vb_dry_run, 'debug' => $vb_debug))) {
-				$va_errors['general'] = array(
-					'idno' => "*",
-					'label' => "*",
-					'errors' => array(_t("Could not import source %1", $vs_data_source)),
-					'status' => 'ERROR'
-				);
-				return false;
-			} else {
-				$va_notices['general'] = array(
-					'idno' => "*",
-					'label' => "*",
-					'errors' => array(_t("Imported data from source %1", $vs_data_source)),
-					'status' => 'SUCCESS'
-				);
-				//return true;
-			}
-			
-			$vn_elapsed_time = time() - $vn_start_time;
-			
-			
-			if (isset($pa_options['sendMail']) && $pa_options['sendMail']) {
-				if ($vs_email = trim($po_request->user->get('email'))) {
-					caSendMessageUsingView($po_request, array($vs_email => $po_request->user->get('fname').' '.$po_request->user->get('lname')), __CA_ADMIN_EMAIL__, _t('[%1] Batch metadata import completed', $po_request->config->get('app_display_name')), 'batch_metadata_import_completed.tpl', 
-						array(
-							'notices' => $va_notices, 'errors' => $va_errors,
-							'numErrors' => sizeof($va_errors), 'numProcessed' => sizeof($va_notices),
-							'subjectNameSingular' => _t('row'),
-							'subjectNamePlural' => _t('rows'),
-							'startedOn' => $vs_started_on,
-							'completedOn' => caGetLocalizedDate(time()),
-							'elapsedTime' => caFormatInterval($vn_elapsed_time)
-						)
-					);
-				}
-			}
-			
-			if (isset($pa_options['sendSMS']) && $pa_options['sendSMS']) {
-				SMS::send($po_request->getUserID(), _t("[%1] Metadata import processing for begun at %2 is complete", $po_request->config->get('app_display_name'),  $vs_started_on));
-			}
-			return array('errors' => $va_errors, 'notices' => $va_notices, 'processing_time' => caFormatInterval($vn_elapsed_time));
+			return $vn_log_level;
 		}
 		# ----------------------------------------
 	}

@@ -127,7 +127,7 @@
 				// do search
 				$va_opts = array('exclude' => $va_excludes, 'limit' => $pn_limit);
 				
-				if ($vs_hier_fld && ($vn_restrict_to_hier_id = $this->request->getParameter('currentHierarchyOnly', pInteger))) {
+				if (($vn_restrict_to_hier_id = $this->request->getParameter('currentHierarchyOnly', pInteger))) {
 					$o_object_search->addResultFilter('ca_objects.hier_object_id', '=', (int)$vn_restrict_to_hier_id);
 				}
 				$qr_res = $o_object_search->search('('.$ps_query.(intval($pb_exact) ? '' : '*').')'.$vs_type_query.$vs_additional_query_params, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => 'ca_objects.idno_sort'));
@@ -451,7 +451,7 @@
  			if ($vs_table == 'ca_objects') {
  				
  				$t_item->load($vn_top_id);
- 				// try to pull related collections – the first one is considered the parent
+ 				// try to pull related collections ��� the first one is considered the parent
  				$va_cross_table_items = $t_item->getRelatedItems('ca_collections');
  				
  				if(is_array($va_cross_table_items)) {

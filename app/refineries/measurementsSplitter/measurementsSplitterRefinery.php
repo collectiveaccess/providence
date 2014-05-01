@@ -92,7 +92,7 @@
 					// Set label
 					$va_val[$va_element['quantityElement']] = $vs_measurement;
 					if (isset($va_element['typeElement']) && $va_element['typeElement']) {
-						$va_val[$va_element['typeElement']] = BaseRefinery::parsePlaceholder($va_element["type"], $pa_source_data, $pa_item);
+						$va_val[$va_element['typeElement']] = BaseRefinery::parsePlaceholder($va_element["type"], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '));
 					}
 				}
 			
@@ -102,7 +102,7 @@
 					foreach($pa_item['settings']['measurementsSplitter_attributes'] as $vs_element_code => $vs_v) {
 						// BaseRefinery::parsePlaceholder may return an array if the input format supports repeated values (as XML does)
 						// but we only supports non-repeating attribute values, so we join any values here and call it a day.
-						$va_attr_vals[$vs_element_code] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item);
+						$va_attr_vals[$vs_element_code] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '));
 					}
 					$va_val = array_merge($va_val, $va_attr_vals);
 				}

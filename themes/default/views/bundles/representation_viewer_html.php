@@ -633,11 +633,13 @@
 	// return standard tag
 	if (!is_array($va_display_options)) { $va_display_options = array(); }
 	$vs_tag = $t_rep->getMediaTag('media', $vs_show_version, array_merge($va_display_options, array(
-		'id' => ($vs_display_type == 'media_overlay') ? 'caMediaOverlayContentMedia' : 'caMediaDisplayContentMedia', 
+		'id' => $vs_viewer_id = (($vs_display_type == 'media_overlay') ? 'caMediaOverlayContentMedia' : 'caMediaDisplayContentMedia'), 
 		'viewer_base_url' => $this->request->getBaseUrlPath(),
 		'annotation_load_url' => caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetAnnotations', array('representation_id' => (int)$t_rep->getPrimaryKey(), 'object_id' => (int)$t_object->getPrimaryKey())),
 		'annotation_save_url' => caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'SaveAnnotations', array('representation_id' => (int)$t_rep->getPrimaryKey(), 'object_id' => (int)$t_object->getPrimaryKey())),
 		'help_load_url' => caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'ViewerHelp', array()),
+		'annotationEditorPanel' => 'caRepresentationAnnotationEditor',
+		'annotationEditorUrl' => caNavUrl($this->request, 'editor/representation_annotations', 'RepresentationAnnotationQuickAdd', 'Form', array('representation_id' => (int)$t_rep->getPrimaryKey())),
 		'captions' => $t_rep->getCaptionFileList()
 	)));
 	# --- should the media be clickable to open the overlay?
@@ -647,4 +649,49 @@
 		print "<a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($this->request, 'Detail', 'Object', 'GetRepresentationInfo', array('object_id' => $t_object->getPrimaryKey(), 'representation_id' => $t_rep->getPrimaryKey()))."\"); return false;' >".$vs_tag."</a>";
 	}
 ?>
+<script type="text/javascript">
+	var caRepresentationAnnotationEditor;
+	jQuery(document).ready(function() {
+		if (caUI.initPanel) {
+			caRepresentationAnnotationEditor = caUI.initPanel({ 
+				panelID: "caRepresentationAnnotationEditor",						/* DOM ID of the <div> enclosing the panel */
+				panelContentID: "caRepresentationAnnotationEditorContentArea",		/* DOM ID of the content area <div> in the panel */
+				panelTransitionSpeed: 400,						
+				closeButtonSelector: ".close",
+				center: true,
+				useExpose: false,
+				onCloseCallback: function() {
+					jQuery("#<?php print $vs_viewer_id; ?>").tileviewer("refreshAnnnotations");
+				}
+			});
+		}
+	});
+	
+	function caAnnoEditorDisableAnnotationForm() {
+		caRepresentationAnnotationEditor.hidePanel();
+	}
+	function caAnnoEditorTlReload() {
+		console.log("caught reload");
+	}
+	function caAnnoEditorTlLoad() {
+		console.log("caught load");
+	}
+	function caAnnoEditorEdit(annotation_id) {
+		//jQuery("#caRepresentationAnnotationEditorContentArea").load("<?php print caNavUrl($this->request, 'editor/representation_annotations', 'RepresentationAnnotationQuickAdd', 'Form', array('representation_id' => $vn_representation_id, 'annotation_id' => '')); ?>" + annotation_id, {}).show();
+		caRepresentationAnnotationEditor.hidePanel();
+		return false;
+	}
+	function caAnnoEditorGetPlayerTime() {
+		return 0;
+	}
+	function caAnnoEditorTlRemove() {
+		console.log("caught remove");
+	}
+</script>
+	</div>
+	<div id="caRepresentationAnnotationEditor" class="caRelationQuickAddPanel"> 
+		<div id="caRepresentationAnnotationEditorContentArea">
+		<div class='quickAddDialogHeader'><?php print _t('Edit annotation'); ?></div>
+		
+		</div>
 	</div>

@@ -744,7 +744,9 @@
 						$vs_pk = $this->primaryKey();
 						$vs_label_table_name = $this->getLabelTableName();
 						$t_label_instance = $this->getLabelTableInstance();
-						$vs_display_field = ($t_label_instance->hasField($va_tmp[2])) ? $va_tmp[2] : $this->getLabelDisplayField();
+						if (!$vs_template && ($vs_display_field = ($t_label_instance->hasField($va_tmp[2])) ? $t_label_instance->tableName().".".$va_tmp[2] : ($this->hasField($va_tmp[2]) ? $this->tableName().".".$va_tmp[2] : null))) {
+							$vs_template ="^{$vs_display_field}";
+						}
 						
 						$vn_top_id = null;
 						if (!($va_ancestor_list = $this->getHierarchyAncestors(null, array('idsOnly' => true, 'includeSelf' => true)))) {
@@ -1081,7 +1083,7 @@
 				$va_data['preferred_labels'] = $va_preferred_labels_for_export;
 			}
 			
-			$va_non_preferred_labels = $this->get($this->tableName().".nonpreferred_labels", array('returnAsArray' => true, 'returnAllLocales' => true));
+			$va_nonpreferred_labels = $this->get($this->tableName().".nonpreferred_labels", array('returnAsArray' => true, 'returnAllLocales' => true));
 			if(is_array($va_nonpreferred_labels) && sizeof($va_nonpreferred_labels)) {
 				$va_nonpreferred_labels_for_export = array();
 				foreach($va_nonpreferred_labels as $vn_id => $va_labels_by_locale) {

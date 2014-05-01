@@ -37,15 +37,15 @@
 
 	$vb_can_edit	 	= $t_subject->isSaveable($this->request);
 	
-	$vs_form_name = "RepresentationAnnotationQuickAddForm";
+	$vs_form_name 		= "RepresentationAnnotationQuickAddForm";
 	
-	$va_notifications = $this->getVar('notifications');
+	$va_notifications 	= $this->getVar('notifications');
 ?>		
 <form action="#" class="quickAddSectionForm" name="<?php print $vs_form_name; ?>" method="POST" enctype="multipart/form-data" id="<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>">
-	<div class='dialogHeader' style='position: width: 100%; padding: 8px;'><?php 
+	<div class='quickAddDialogHeader'><?php 
 	
 	if ($vb_can_edit) {
-		if ($vn_subject_id > 0) {
+		if (($vn_subject_id > 0) && (preg_match("!timebased!i", $t_subject->getAnnotationType()))) {
 			print "<div style='float: right;'>".caJSButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete annotation"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caConfirmDeleteAnnotation(true);"))."</div>\n";
 		}
 		print "<div style='float: left;'>".caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save annotation"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("id" => "caAnnoEditorScreenSaveButton", "onclick" => "caSaveAnnotation{$vs_form_name}{$vs_field_name_prefix}{$vs_n}(event);"))
@@ -83,7 +83,16 @@
 		<input type='hidden' name='screen' value='<?php print htmlspecialchars($this->getVar('screen')); ?>'/>
 		
 		<script type="text/javascript">
+			jQuery(document).ready(function() {
+				jQuery.each(CKEDITOR.instances, function(k, instance) {
+					instance.on( 'focus', function( evt ) { evt.editor.focusManager.blur( true ); } );
+				});
+			});
 			function caSaveAnnotation<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>(e) {
+				jQuery.each(CKEDITOR.instances, function(k, instance) {
+					instance.updateElement();
+				});
+
 				jQuery.post('<?php print caNavUrl($this->request, "editor/representation_annotations", "RepresentationAnnotationQuickAdd", "Save"); ?>', jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").serialize(), function(resp, textStatus) {
 					if (resp.status == 0) {
 						

@@ -129,7 +129,8 @@
 				
 				$o_tep = new TimeExpressionParser();
 				
-				$o_tep->setLanguage(ca_locales::localeIDToCode($this->get('locale_id')));
+				$t_locale = new ca_locales();
+				$o_tep->setLanguage($t_locale->localeIDToCode($this->get('locale_id')));
 				$o_lang_settings = $o_tep->getLanguageSettings();
 				$vs_display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $this->get($vs_display_field)));
 				

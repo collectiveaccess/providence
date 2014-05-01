@@ -67,6 +67,12 @@ abstract class BaseDataReader {
 	 *
 	 */
 	protected $opa_formats = array();
+	
+	/**
+	 *
+	 */
+	protected $opa_properties = array();
+	
 	# -------------------------------------------------------
 	/**
 	 *
@@ -178,6 +184,16 @@ abstract class BaseDataReader {
 	 */
 	public function valuesCanRepeat() {
 		return false;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Return reader propery
+	 * 
+	 * @param string $ps_property 
+	 * @return mixed
+	 */
+	public function getProperty($ps_property) {
+		return isset($this->opa_properties[$ps_property]) ? $this->opa_properties[$ps_property] : null;
 	}
 	# -------------------------------------------------------
 	/**

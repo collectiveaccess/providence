@@ -128,7 +128,4 @@ if(sizeof($this->getVar("available_sets")) > 0){
 		
 		print $this->render('Search/search_sets_html.php');
 	}
-?>	
-
-
-
+?>

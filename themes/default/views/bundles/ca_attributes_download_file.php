@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,5 +35,11 @@
 	
 	header("Content-Disposition: attachment; filename=\"".preg_replace('![ \t\r\n]+!', '_', $vs_file_name)."\"");
 	
-	readfile($vs_file_path);
+	set_time_limit(0);
+	$o_fp = @fopen($vs_file_path,"rb");
+	while(is_resource($o_fp) && !feof($o_fp)) {
+		print(@fread($o_fp, 1024*8));
+		ob_flush();
+		flush();
+	}
 ?>

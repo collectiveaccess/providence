@@ -337,6 +337,9 @@ class PrintForms extends BaseObject {
 		
 		$vn_x = $vn_margin_left_px;
 		$vn_y = $vn_page_height_px - $vn_margin_top_px;
+
+
+		$vn_num_subforms = sizeof($this->opo_subforms);
 		
 		if ($this->opa_starting_subform > 0) {
 			for($vn_i=0; $vn_i < $this->opa_starting_subform; $vn_i++) {
@@ -354,8 +357,6 @@ class PrintForms extends BaseObject {
 			}
 		}
 		
-		
-		$vn_num_subforms = sizeof($this->opo_subforms);
 		
 		$vn_cur_page = 0;
 		for($vn_i=0; $vn_i < $vn_num_subforms; $vn_i++) {

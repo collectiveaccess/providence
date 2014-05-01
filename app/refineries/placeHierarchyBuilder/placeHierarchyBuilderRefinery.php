@@ -80,7 +80,7 @@
 			
 			// Set place parents
 			if ($va_parents = $pa_item['settings']['placeHierarchyBuilder_parents']) {
-				$vn_parent_id = caProcessRefineryParents('placeHierarchyBuilderRefinery', 'ca_places', $va_parents, $pa_source_data, $pa_item, null, null, $o_log, array('hierarchy_id' => $pa_item['settings']['placeHierarchyBuilder_hierarchy']));
+				$vn_parent_id = caProcessRefineryParents('placeHierarchyBuilderRefinery', 'ca_places', $va_parents, $pa_source_data, $pa_item, null, array('reader' => caGetOption('reader', $pa_options, null), 'log' => $o_log, 'hierarchy_id' => $pa_item['settings']['placeHierarchyBuilder_hierarchy']));
 			}
 			
 			return $vn_parent_id;

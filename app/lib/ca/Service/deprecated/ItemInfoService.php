@@ -421,7 +421,7 @@ class ItemInfoService extends BaseService {
 				$t_related_instance = $this->getTableInstance($related_type);
 				$qr_result = $t_related_instance->makeSearchResult($related_type, array_keys($va_items));
 				while($qr_result->nextHit()){
-					foreach($options["bundles"] as $vs_bundle => $vs_bundle_options){
+					foreach($options["bundles"] as $vs_bundle => $va_bundle_options){
 						if($this->_isBadBundle($vs_bundle)){
 							continue;
 						}

@@ -66,7 +66,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 	 *		strokeColor = Color of plotted paths, in hex format with leading "#"
 	 *		fillColorSelected = Color to fill regions with when selected, in hex format with leading "#"
 	 *		strokeColorSelected = Color of plotted paths when selected, in hex format with leading "#"
-	 *
+	 *		layerSwitcherControl = Show layer switcher controls? [Default is false]
 	 * 		delimiter = HTML to place between items displayed in info overlays for plotted items. Default is an HTML break ("<br/>")
 	 * @return string HTML output
 	 */
@@ -139,7 +139,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 					$va_layers[] = "new OpenLayers.Layer.OSM('{$vs_tile_layer_name}', '{$vs_tileserver_url}',{ isBaseLayer: false, tileOptions : {crossOriginKeyword: null}})";
 				}
 		
-				$vs_layer_switcher_control = caGetOption('layerSwitcherControl', $pa_element_info['settings'], null) ? "map_{$vs_id}.addControl(new OpenLayers.Control.LayerSwitcher());" : "";
+				$vs_layer_switcher_control = caGetOption('layerSwitcherControl', $pa_options, null) ? "map_{$vs_id}.addControl(new OpenLayers.Control.LayerSwitcher());" : "";
 		
 		
 				$va_layers[] = "new {$vs_base_layer}";
@@ -521,18 +521,18 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		map_{$vs_id}_delete_button.activate();
 		
 		// Grab current map coordinates from input
-		var map_{$ps_id}_loc_str = '{".$pa_element_info['element_id']."}';
-		var map_{$ps_id}_loc_features = map_{$ps_id}_loc_str.match(/\[([\d\,\-\.\:\;]+)\]/)
-		if (map_{$ps_id}_loc_features && (map_{$ps_id}_loc_features.length > 1)) {
-			map_{$ps_id}_loc_features = map_{$ps_id}_loc_features[1].split(/:/);
+		var map_{$vs_id}_loc_str = '{".$pa_element_info['element_id']."}';
+		var map_{$vs_id}_loc_features = map_{$vs_id}_loc_str.match(/\[([\d\,\-\.\:\;]+)\]/)
+		if (map_{$vs_id}_loc_features && (map_{$vs_id}_loc_features.length > 1)) {
+			map_{$vs_id}_loc_features = map_{$vs_id}_loc_features[1].split(/:/);
 		} else {
-			map_{$ps_id}_loc_features = [];
+			map_{$vs_id}_loc_features = [];
 		}
 		var features_{$vs_id} = [];
 		
 		var i, j, c=0;
-		for(i=0; i < map_{$ps_id}_loc_features.length; i++) {
-			var ptlist = map_{$ps_id}_loc_features[i].split(/;/);
+		for(i=0; i < map_{$vs_id}_loc_features.length; i++) {
+			var ptlist = map_{$vs_id}_loc_features[i].split(/;/);
 			
 			if (ptlist.length > 1) {
 				// path

@@ -80,7 +80,7 @@
 			
 			// Set occurrence parents
 			if ($va_parents = $pa_item['settings']['occurrenceHierarchyBuilder_parents']) {
-				$vn_parent_id = caProcessRefineryParents('occurrenceHierarchyBuilderRefinery', 'ca_occurrences', $va_parents, $pa_source_data, $pa_item, null, null, $o_log);
+				$vn_parent_id = caProcessRefineryParents('occurrenceHierarchyBuilderRefinery', 'ca_occurrences', $va_parents, $pa_source_data, $pa_item, null, array('reader' => caGetOption('reader', $pa_options, null), 'log' => $o_log));
 			}
 			
 			return $vn_parent_id;

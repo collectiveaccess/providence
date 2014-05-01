@@ -287,6 +287,37 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 		
 		$this->BUNDLES['ca_list_items'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related vocabulary terms'));
 	}
+	# ------------------------------------------------------
+	/**
+	 * Override set() to do idno_stub lookups on lots
+	 *
+	 * @param mixed $pm_fields
+	 * @param mixed $pm_value
+	 * @param array $pa_options Most options are handled by subclasses. Options defined here include:
+	 *		assumeIdnoStubForLotID = set to force lookup of lot_id values as ca_object_lots.idno_stub values first not matter what, before consideration as a numeric lot_id. The default is false, in which case integer values are considered lot_ids and non-numeric values possible idno_stubs.
+	 *		
+	 * @return int 
+	 */
+	public function set($pm_fields, $pm_value="", $pa_options=null) {
+		if (!is_array($pm_fields)) {
+			$pm_fields = array($pm_fields => $pm_value);
+		}
+		$pb_assume_idno_for_representation_id = caGetOption('assumeIdnoForRepresentationID', $pa_options, false);
+		foreach($pm_fields as $vs_fld => $vs_val) {
+			if (($vs_fld == 'representation_id') && ($pb_assume_idno_for_representation_id || preg_match("![^\d]+!", $vs_val))) {
+				$t_rep = new ca_object_representations();
+				if ($t_rep->load(array('idno' => $vs_val, 'deleted' => 0))) {
+					$vn_representation_id = (int)$t_rep->getPrimaryKey();
+					$pm_fields[$vs_fld] = $vn_representation_id;
+					if ($vn_rc = parent::set($pm_fields, null, $pa_options)) {
+						$this->set('type_code', $vs_type = $this->getAnnotationType());
+					}
+					return $vn_rc;
+				}
+			}
+		}
+		return parent::set($pm_fields, null, $pa_options);
+	}
  	# ------------------------------------------------------
 	public function load($pm_id=null, $pb_use_cache=true) {
 		$vn_rc = parent::load($pm_id, $pb_use_cache);
@@ -300,6 +331,7 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 	public function insert($pa_options=null) {
 		$this->set('type_code', $vs_type = $this->getAnnotationType());
 		$this->opo_annotations_properties = $this->loadProperties($vs_type);
+		
 		if (!$this->opo_annotations_properties) {
 			$this->postError(1101, _t('No type code set'), 'ca_representation_annotations->insert');
 			return false;
@@ -534,6 +566,13 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
  		}
  		return $va_reps;
  	}
+ 	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function useInEditor() {
+		return $this->opo_annotations_properties->useInEditor();
+	}
  	# ------------------------------------------------------
  	# STATIC
  	# ------------------------------------------------------
