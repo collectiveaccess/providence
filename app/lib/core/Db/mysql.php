@@ -104,14 +104,24 @@ class Db_mysql extends DbDriverBase {
 		if (!is_array($g_connect)) { $g_connect = array(); }
 		$vs_db_connection_key = $pa_options["host"].'/'.$pa_options["database"];
 		
-		if (!($vb_unique_connection = caGetOption('uniqueConnection', $pa_options, false)) && isset($g_connect[$vs_db_connection_key]) && is_resource($g_connect[$vs_db_connection_key])) { $this->opr_db = $g_connect[$vs_db_connection_key]; return true;}
+		if (
+			!($vb_unique_connection = caGetOption('uniqueConnection', $pa_options, false)) 
+			&& 
+			isset($g_connect[$vs_db_connection_key]) 
+			&& 
+			is_resource($g_connect[$vs_db_connection_key])
+		) { 
+			$this->opr_db = $g_connect[$vs_db_connection_key]; 
+			return true;
+		}
 		
 		if (!function_exists("mysql_connect")) {
 			die(_t("Your PHP installation lacks MySQL support. Please add it and retry..."));
 			exit;
 		}
 		
-		if (!$vb_unique_connection && isset($pa_options["persistent_connections"]) && $pa_options["persistent_connections"]) {
+		if ($vb_unique_connection || ($vb_persistent_connections = caGetOption('persistentConnections', $pa_options, false))) {
+			// Force unique connects to use persistent connections
 			$this->opr_db = @mysql_pconnect($pa_options["host"], $pa_options["username"], $pa_options["password"]);
 		} else {
 			$this->opr_db = @mysql_connect($pa_options["host"], $pa_options["username"], $pa_options["password"], true);
