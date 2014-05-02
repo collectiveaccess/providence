@@ -97,17 +97,17 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 	 * @param $pa_params array As given to the hook method.
 	 */
 	private function _process(&$pa_params) {
-		foreach ($this->opo_config->getAssoc('rules') as $vo_rule) {
+		foreach ($this->opo_config->getAssoc('rules') as $va_rule) {
 			/** @var $vo_instance BundlableLabelableBaseModelWithAttributes */
 			$vo_instance = $pa_params['instance'];
 			// Ensure the related record actually exists (i.e. skip over bad config)
 			/** @var $vo_relatedModel BundlableLabelableBaseModelWithAttributes */
-			$vo_relatedModel = $this->_getRelatedModel($vo_rule['related_table'], $vo_rule['related_record']);
+			$vo_relatedModel = $this->_getRelatedModel($va_rule['related_table'], $va_rule['related_record']);
 			if (sizeof($vo_relatedModel->getFieldValuesArray()) > 0) {
 				/** @var BaseRelationshipModel $vo_relationship */
-				$vo_relationship = $vo_instance->getRelationshipInstance($vo_rule['related_table']);
+				$vo_relationship = $vo_instance->getRelationshipInstance($va_rule['related_table']);
 				$vb_hasRelationship = sizeof($vo_relationship->getFieldValuesArray()) > 0;
-				$vb_matches = $this->_hasMatch($pa_params, $vo_rule);
+				$vb_matches = $this->_hasMatch($pa_params, $va_rule);
 
 //				error_log($vo_rule['related_table'] . '/' . $vo_rule['related_record']);
 //				error_log('relationship = ' . print_r($vo_relationship->getFieldValuesArray(), true));
@@ -117,10 +117,10 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 
 				if (!$vb_hasRelationship && $vb_matches && $this->opo_config->getBoolean('add_matched')) {
 					error_log('we are adding a relationship');
-					$vo_instance->addRelationship($vo_rule['related_table'], $vo_rule['related_record'], $vo_rule['relationship_type']);
+					$vo_instance->addRelationship($va_rule['related_table'], $va_rule['related_record'], $va_rule['relationship_type']);
 				} elseif ($vb_hasRelationship && !$vb_matches && $this->opo_config->getBoolean('remove_unmatched')) {
 					error_log('we are removing a relationship');
-					$vo_instance->removeRelationship($vo_rule['related_table'], $vo_relationship->getPrimaryKey());
+					$vo_instance->removeRelationship($va_rule['related_table'], $vo_relationship->getPrimaryKey());
 				}
 			}
 		}
