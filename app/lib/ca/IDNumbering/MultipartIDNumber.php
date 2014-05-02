@@ -1051,6 +1051,7 @@
 		# -------------------------------------------------------
 		public function getSequenceMaxValue($ps_format, $ps_element, $ps_idno_stub) {
 			$this->opo_db->dieOnError(false);
+			
 			if (!($qr_res = $this->opo_db->query("
 				SELECT seq
 				FROM ca_multipart_idno_sequences
@@ -1065,6 +1066,7 @@
 		# -------------------------------------------------------
 		public function setSequenceMaxValue($ps_format, $ps_element, $ps_idno_stub, $pn_value) {
 			$this->opo_db->dieOnError(false);
+			
 			$this->opo_db->query("
 				DELETE FROM ca_multipart_idno_sequences 
 				WHERE format = ? AND element = ? AND idno_stub = ?

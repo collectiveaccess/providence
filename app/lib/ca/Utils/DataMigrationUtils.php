@@ -766,7 +766,13 @@
 			
 			if ($pa_options['cache'] && isset(DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id])) {
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					return new ca_list_items(DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id]);
+					$t_item = new ca_list_items(DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id]);
+				
+					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
+						$t_item->setTransaction($pa_options['transaction']);
+					}
+					
+					return $t_item;
 				}
 				if ($o_event) { 
 					$o_event->beginItem($vs_event_source, 'ca_list_items', 'U'); 

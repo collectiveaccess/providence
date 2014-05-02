@@ -2515,7 +2515,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		} else {
 			if ($po_reader->valuesCanRepeat()) {
 				$vm_value = $po_reader->get($pa_item['source'], array('returnAsArray' => true));
-				if (!is_array($vm_value)) { return null; }
+				if (!is_array($vm_value)) { return $pb_return_as_array ? array() : null; }
 				foreach($vm_value as $vs_k => $vs_v) {
 					$vm_value[$vs_k] = ca_data_importers::replaceValue(trim($vs_v), $pa_item);
 				}
