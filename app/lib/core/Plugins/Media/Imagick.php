@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -807,11 +807,20 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 										break;
 									case 'center':
 									default:
+										$crop_from_offset_x = $crop_from_offset_y = 0;
+										
+										// Get image center
+										$vn_center_x = caGetOption('_centerX', $parameters, 0.5);
+										$vn_center_y = caGetOption('_centerY', $parameters, 0.5);
 										if ($w > $parameters["width"]) {
-											$crop_from_offset_x = ceil(($w - $parameters["width"])/2);
+											$crop_from_offset_x = ceil($w * $vn_center_x) - ($parameters["width"]/2);
+											if (($crop_from_offset_x + $parameters["width"]) > $w) { $crop_from_offset_x = $w - $parameters["width"]; }
+											if ($crop_from_offset_x < 0) { $crop_from_offset_x = 0; }
 										} else {
 											if ($h > $parameters["height"]) {
-												$crop_from_offset_y = ceil(($h - $parameters["height"])/2);
+												$crop_from_offset_y = ceil($h * $vn_center_y) - ($parameters["height"]/2);
+												if (($crop_from_offset_y + $parameters["height"]) > $h) { $crop_from_offset_y = $h - $parameters["height"]; }
+												if ($crop_from_offset_y < 0) { $crop_from_offset_y = 0; }
 											}
 										}
 										break;
