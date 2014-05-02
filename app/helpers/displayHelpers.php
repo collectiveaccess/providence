@@ -45,7 +45,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
  * Regex used to parse bundle display template tags (Eg. ^I_am_a_tag)
  * More about bundle display templates here: http://docs.collectiveaccess.org/wiki/Bundle_Display_Templates
  */
-define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.:\/]+)!");
+
+define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.:\/]+)!");
 	
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -1955,8 +1956,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([A-Za-z0-9_\.:\/]+[%]{1}
 		$o_ifs = $o_doc("if");						// if 
 		$o_ifdefs = $o_doc("ifdef");				// if defined
 		$o_ifnotdefs = $o_doc("ifnotdef");			// if not defined
-		$o_mores = $o_doc("more");					// more tags ��� content suppressed if there are no defined values following the tag pair
-		$o_betweens = $o_doc("between");			// between tags ��� content suppressed if there are not defined values on both sides of the tag pair
+		$o_mores = $o_doc("more");					// more tags - content suppressed if there are no defined values following the tag pair
+		$o_betweens = $o_doc("between");			// between tags - content suppressed if there are not defined values on both sides of the tag pair
 		$o_ifcounts = $o_doc("ifcount");			// if count - conditionally return template if # of items is in-bounds
 		
 		$va_if = array();
@@ -1975,7 +1976,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([A-Za-z0-9_\.:\/]+[%]{1}
 			
 			$vs_code = (string)$o_ifdef->getAttribute('code');
 			$vs_code_proc = preg_replace("!%(.*)$!", '', $vs_code);
-			if (!in_array($vs_code_proc, $va_tags)) { $va_tags[] = $vs_code_proc; }
+			if (!in_array($vs_code_proc, $va_tags)) { $va_tags += preg_split('![,\|]{1}!', $vs_code_proc); }
 			
 			$vs_html = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_ifdef->html()));
 			$vs_content = $o_ifdef->getInnerText();
@@ -1992,7 +1993,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([A-Za-z0-9_\.:\/]+[%]{1}
 			
 			$vs_code = (string)$o_ifnotdef->getAttribute('code');
 			$vs_code_proc = preg_replace("!%(.*)$!", '', $vs_code);
-			if (!in_array($vs_code_proc, $va_tags)) { $va_tags[] = $vs_code_proc; }
+			if (!in_array($vs_code_proc, $va_tags)) { $va_tags += preg_split('![,\|]{1}!', $vs_code_proc); }
 			
 			$vs_html = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_ifnotdef->html()));
 			$vs_content = $o_ifnotdef->getInnerText();
@@ -2035,7 +2036,10 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([A-Za-z0-9_\.:\/]+[%]{1}
 			$vn_min = (int)$o_ifcount->getAttribute('min');
 			if (!($vn_max = (int)$o_ifcount->getAttribute('max'))) { $vn_max = null; }
 			
-			$va_ifcounts[] = array('directive' => $vs_html, 'content' => $vs_content, 'min' => $vn_min, 'max' => $vn_max, 'code' => $vs_code);
+			$va_restrict_to_types = preg_split("![,; ]+!", $o_ifcount->getAttribute('restrictToTypes')); 
+			$va_restrict_to_relationship_types = preg_split("![,; ]+!", $o_ifcount->getAttribute('restrictToRelationshipTypes')); 
+			
+			$va_ifcounts[] = array('directive' => $vs_html, 'content' => $vs_content, 'min' => $vn_min, 'max' => $vn_max, 'code' => $vs_code, 'restrictToTypes' => $va_restrict_to_types, 'restrictToRelationshipTypes' => $va_restrict_to_relationship_types);
 		}
 		
 		$va_resolve_links_using_row_ids = array();
@@ -2047,15 +2051,21 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([A-Za-z0-9_\.:\/]+[%]{1}
 		
 			// Process <ifcount> directives
 			foreach($va_ifcounts as $va_ifcount) {
-				if($t_table = $o_dm->getInstanceByTableName($va_ifcount['code'], true)) {
-					$vn_count = sizeof($qr_res->get($va_ifcount['code'].".".$t_table->primaryKey(), array('returnAsArray' => true)));
-				} else {
-					$vn_count = sizeof($qr_res->get($va_ifcount['code'], array('returnAsArray' => true)));
-				}	
-				if (($va_ifcount['min'] <= $vn_count) && (($va_ifcount['max'] >= $vn_count) || !$va_ifcount['max'])) {
-					$va_proc_templates[$vn_i]  = str_replace($va_ifcount['directive'], $va_ifcount['content'], $va_proc_templates[$vn_i] );
-				} else {
-					$va_proc_templates[$vn_i]  = str_replace($va_ifcount['directive'], '', $va_proc_templates[$vn_i] );
+				if (is_array($va_if_codes = preg_split("![\|,;]+!", $va_ifcount['code']))) {
+					$vn_count = 0;
+					foreach($va_if_codes as $vs_if_code) {
+						if($t_table = $o_dm->getInstanceByTableName($vs_if_code, true)) {
+							$vn_count += sizeof($qr_res->get($vs_if_code.".".$t_table->primaryKey(), array('restrictToTypes' => $va_ifcount['restrictToTypes'], 'restrictToRelationshipTypes' => $va_ifcount['restrictToRelationshipTypes'], 'returnAsArray' => true)));
+						} else {
+							$vn_count += sizeof($qr_res->get($vs_if_code, array('returnAsArray' => true, 'restrictToTypes' => $va_ifcount['restrictToTypes'], 'restrictToRelationshipTypes' => $va_ifcount['restrictToRelationshipTypes'])));
+						}	
+					}
+					
+					if (($va_ifcount['min'] <= $vn_count) && (($va_ifcount['max'] >= $vn_count) || !$va_ifcount['max'])) {
+						$va_proc_templates[$vn_i]  = str_replace($va_ifcount['directive'], $va_ifcount['content'], $va_proc_templates[$vn_i] );
+					} else {
+						$va_proc_templates[$vn_i]  = str_replace($va_ifcount['directive'], '', $va_proc_templates[$vn_i] );
+					}
 				}
 			}
 		
@@ -2173,8 +2183,9 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([A-Za-z0-9_\.:\/]+[%]{1}
 				
 				switch($vs_tag) {
 					case 'DATE':
-						$vs_format = urldecode(caGetOption('format', $va_tag_opts, 'm/d/Y'));
+						$vs_format = urldecode(caGetOption('format', $va_tag_opts, 'd M Y'));
 						$va_proc_templates[$vn_i] = str_replace("^{$vs_tag}", date($vs_format), $va_proc_templates[$vn_i]);
+						continue(2);
 						break;
 				}
 			
@@ -2449,7 +2460,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([A-Za-z0-9_\.:\/]+[%]{1}
 						$vb_value_is_set = (
 							(isset($va_tags[$vs_tag_to_test]) && (sizeof($va_tags[$vs_tag_to_test]) > 1)) 
 							|| 
-							((sizeof($va_tags[$vs_tag_to_test]) == 1) && (strlen($va_tags[$vs_tag_to_test][0]) > 0)));
+							((sizeof($va_tags[$vs_tag_to_test]) == 1) && (strlen(trim($va_tags[$vs_tag_to_test][0])) > 0)));
 							
 						switch($vs_bool) {
 							case 'OR':
@@ -2484,7 +2495,9 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([A-Za-z0-9_\.:\/]+[%]{1}
 					}
 					$vb_output = true;
 					foreach($va_tag_list as $vs_tag_to_test) {
-						$vb_value_is_set = (bool)(isset($va_tags[$vs_tag_to_test]) && (sizeof($va_tags[$vs_tag_to_test]) > 1) || ((sizeof($va_tags[$vs_tag_to_test]) == 1) && (strlen($va_tags[$vs_tag_to_test][0]) > 0)));
+						$vb_value_is_set = (bool)(isset($va_tags[$vs_tag_to_test]) && (sizeof($va_tags[$vs_tag_to_test]) > 1) 
+						|| 
+						((sizeof($va_tags[$vs_tag_to_test]) == 1) && (strlen(trim($va_tags[$vs_tag_to_test][0])) > 0)));
 						switch($vs_bool) {
 							case 'OR':
 								if (!$vb_value_is_set) { $vb_output = true; break(2); }		// any must be not defined; if anything is not set output
@@ -2583,9 +2596,11 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([A-Za-z0-9_\.:\/]+[%]{1}
 				foreach($va_tags_tmp as $vs_tag) {
 					$vs_pt = str_replace('^'.$vs_tag, is_array($va_tags[$vs_tag]) ? join(" | ", $va_tags[$vs_tag]) : $va_tags[$vs_tag] , $vs_pt);
 				}
-				$va_pt_vals[] = $vs_pt;
+				if ($vs_pt) { $va_pt_vals[] = $vs_pt; } 
 			
-				$va_acc[] = join(isset($pa_options['delimiter']) ? $pa_options['delimiter'] : $vs_delimiter, $va_pt_vals);
+				if ($vs_acc_val = join(isset($pa_options['delimiter']) ? $pa_options['delimiter'] : $vs_delimiter, $va_pt_vals)) {
+					$va_acc[] = $vs_acc_val;
+				}
 			}
 			$va_proc_templates[$vn_i] = join($vs_delimiter, $va_acc);
 		}
