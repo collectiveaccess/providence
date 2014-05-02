@@ -100,7 +100,8 @@
 		 * (you must call insert() or update() to write the settings to the database)
 		 */
 		public function setSetting($ps_setting, $pm_value) {
-			if (!$this->isValidSetting($ps_setting)) { return null; }
+			$va_settings = $this->getSettings();
+			if (!$this->isValidSetting($ps_setting)) { return $va_settings; }
 			$va_setting_info = $this->getSettingInfo($ps_setting);
 			if ($va_setting_info['displayType'] == DT_CHECKBOXES) { $pm_value = (int)$pm_value; }
 			if (
@@ -151,7 +152,6 @@
 					}
 				}
 			}
-			$va_settings = $this->getSettings();
 			
 			if ($va_setting_info['formatType'] == FT_NUMBER) {
 				$pm_value = (float)$pm_value;

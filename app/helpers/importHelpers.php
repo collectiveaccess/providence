@@ -145,7 +145,10 @@
 					if(!$vn_id) {	// get place hierarchy root
 						require_once(__CA_MODELS_DIR__."/ca_places.php");
 						$t_place = new ca_places();
-						$vn_id = $t_place->getHierarchyRootID($va_attributes['hierarchy_id']);
+						$vn_id = $pa_options['defaultParentID'];
+						if(!$vn_id){
+							$vn_id = $t_place->getHierarchyRootID($pa_options['hierarchyID']);
+						}
 						$va_attributes['parent_id'] = $vn_id;
 					}
 					$vn_id = DataMigrationUtils::getPlaceID($vs_name, $vn_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
@@ -493,9 +496,7 @@
 				// Set label
 				$va_val = array();
 				
-				
-				
-				// Set value as hierachy
+				// Set value as hierarchy
 				if ($va_parents = $pa_item['settings']["{$ps_refinery_name}_hierarchy"]) {
 					$va_attr_vals = $va_val = caProcessRefineryParents($ps_refinery_name, $ps_table, $va_parents, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, array_merge($pa_options, array('hierarchyMode' => true)));
 					$vs_item = $va_val['_preferred_label'];
