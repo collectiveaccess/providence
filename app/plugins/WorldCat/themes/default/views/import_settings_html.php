@@ -29,7 +29,7 @@
  	
  	print $vs_control_box = caFormControlBox(
 		(caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Import"), 'caWorldCatResultsForm')).' '.
-		(caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '*', '*', 'Index')),
+		(caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', '*', '*', 'Index')),
 		'',
 		''
 	);
