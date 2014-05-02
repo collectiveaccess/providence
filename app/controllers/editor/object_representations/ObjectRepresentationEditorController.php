@@ -46,7 +46,7 @@
  		/**
  		 * Returns content for overlay containing details for object representation
  		 */ 
- 		public function getRepresentationInfo() {
+ 		public function GetRepresentationInfo() {
  			list($pn_representation_id, $t_rep) = $this->_initView();
 			
  			$ps_version = $this->request->getParameter('version', pString);
@@ -73,7 +73,6 @@
  			
  			return $this->render('ajax_object_representation_info_html.php');
  		}
- 		
  		# -------------------------------------------------------
  		/**
  		 * Return representation annotation editor
@@ -84,7 +83,7 @@
  		 *	Optional request parameters:
  		 *		none (yet)
  		 */ 
- 		public function getAnnotationEditor() {
+ 		public function GetAnnotationEditor() {
  			list($pn_representation_id, $t_rep) = $this->_initView();
  			
  			// Get player
@@ -103,9 +102,39 @@
  		}
  		# -------------------------------------------------------
  		/**
+ 		 * Return representation image center editor
+ 		 *
+ 		 * Expects the following request parameters: 
+ 		 *		representation_id = the id of the ca_object_representations record for which to edit annotations
+ 		 *
+ 		 *	Optional request parameters:
+ 		 *		none (yet)
+ 		 */ 
+ 		public function GetImageCenterEditor() {
+ 			list($pn_representation_id, $t_rep) = $this->_initView();
+ 			
+ 			$va_display_info = caGetMediaDisplayInfo('image_center_editor', $t_rep->getMediaInfo("media", "original", "MIMETYPE"));
+ 			$this->view->setVar('image', $t_rep->getMediaTag('media', $va_display_info['display_version'], array('id' => 'caImageCenterEditorImage', 'class' => 'caImageCenterEditor')));
+ 			$va_media_info = $t_rep->getMediaInfo('media', $va_display_info['display_version']);
+ 			
+ 			$this->view->setVar('image_width', caGetOption('WIDTH', $va_media_info, null));
+ 			$this->view->setVar('image_height', caGetOption('HEIGHT', $va_media_info, null));
+ 			
+ 			$va_center = $t_rep->getMediaCenter('media');
+ 			
+ 			$this->view->setVar('center_x', $va_center['x']);
+ 			$this->view->setVar('center_y', $va_center['y']);
+ 			
+ 			$this->view->setVar('image_info', $va_media_info);
+ 			
+ 			
+ 			return $this->render('ajax_representation_image_center_editor_html.php');
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
  		 * 
  		 */
- 		public function getAnnotationList() {
+ 		public function GetAnnotationList() {
  			list($pn_representation_id, $t_rep) = $this->_initView();
  			$vn_start = $this->request->getParameter('s', pInteger);
  			$vn_max = $this->request->getParameter('n', pInteger);
@@ -116,7 +145,7 @@
  			return $this->render('ajax_representation_annotation_list_json.php');
  		}
  		# -------------------------------------------------------
- 		public function downloadRepresentation() {
+ 		public function DownloadRepresentation() {
  			list($pn_representation_id, $t_rep) = $this->_initView();
  			
  			$ps_version = $this->request->getParameter('version', pString);
@@ -164,7 +193,7 @@
  			return $this->render('object_representation_download_binary.php');
  		}
  		# -------------------------------------------------------
- 		public function downloadCaptionFile() {
+ 		public function DownloadCaptionFile() {
  			list($pn_representation_id, $t_rep) = $this->_initView();
  			
  			$pn_caption_id = $this->request->getParameter('caption_id', pString);

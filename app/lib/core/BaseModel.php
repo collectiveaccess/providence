@@ -3817,7 +3817,7 @@ class BaseModel extends BaseObject {
 	}
 
 	/**
-	 * perform media processing for the given field if sth. has been uploaded
+	 * Perform media processing for the given field if something has been uploaded
 	 *
 	 * @access private
 	 * @param string $ps_field field name
@@ -4043,8 +4043,12 @@ class BaseModel extends BaseObject {
 				
 				$va_media_objects['_original'] = $m;
 				
+				// preserve center setting from any existing media
+				$va_center = null;
+				if (is_array($va_tmp = $this->getMediaInfo($ps_field))) { $va_center = caGetOption('_CENTER', $va_tmp, array()); }
 				$media_desc = array(
 					"ORIGINAL_FILENAME" => $this->_SET_FILES[$ps_field]['original_filename'],
+					"_CENTER" => $va_center,
 					"INPUT" => array(
 						"MIMETYPE" => $m->get("mimetype"),
 						"WIDTH" => $m->get("width"),
@@ -4337,6 +4341,13 @@ class BaseModel extends BaseObject {
 									}
 								}
 							} else {
+								if(is_array($this->_FIELD_VALUES[$ps_field]) && (is_array($va_media_center = $this->getMediaCenter($ps_field)))) {
+									$parameters['_centerX'] = caGetOption('x', $va_media_center, 0.5);
+									$parameters['_centerY'] = caGetOption('y', $va_media_center, 0.5);
+								
+									if (($parameters['_centerX'] < 0) || ($parameters['_centerX'] > 1)) { $parameters['_centerX'] = 0.5; }
+									if (($parameters['_centerY'] < 0) || ($parameters['_centerY'] > 1)) { $parameters['_centerY'] = 0.5; }
+								}
 								if (!($m->transform($operation, $parameters))) {
 									$error = 1;
 									$error_msg = "Couldn't do transformation '$operation'";
@@ -4627,7 +4638,7 @@ class BaseModel extends BaseObject {
 	 * @param string $ps_field The name of the media field
 	 * @param string $ps_op A valid media transformation op code, as defined by the media plugin handling the media being transformed.
 	 * @param array $pa_params The parameters for the op code, as defined by the media plugin handling the media being transformed.
-	 * @param array $pa_options An array of options. No options are current implemented.
+	 * @param array $pa_options An array of options. No options are currently implemented.
 	 *
 	 * @return bool True on success, false if an error occurred.
 	 */
@@ -4674,7 +4685,7 @@ class BaseModel extends BaseObject {
 	 * Remove all media transformation to media in specified field of current loaded row by reverting to the unmodified media.
 	 *
 	 * @param string $ps_field The name of the media field
-	 * @param array $pa_options An array of options. No options are current implemented.
+	 * @param array $pa_options An array of options. No options are currently implemented.
 	 *
 	 * @return bool True on success, false if an error occurred.
 	 */
@@ -4732,6 +4743,70 @@ class BaseModel extends BaseObject {
 			return null;
 		}
 		return isset($va_media_info['_undo_']);
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Return coordinates of center of image media as decimals between 0 and 1. By default this is dead-center (x=0.5, y=0.5)
+	 * but the user may override this to optimize cropping of images. Currently the center point is only used when cropping the image
+	 * from the "center" but it may be used for other transformation (Eg. rotation) in the future.
+	 *
+	 * @param string $ps_field The name of the media field
+	 * @param array $pa_options An array of options. No options are currently implemented.
+	 *
+	 * @return array An array with 'x' and 'y' keys containing coordinates, or null if no coordinates are available.
+	 */
+	public function getMediaCenter($ps_field, $pa_options=null) {
+		$va_media_info = $this->getMediaInfo($ps_field);
+		if (!is_array($va_media_info)) {
+			return null;
+		}
+		
+		$vn_current_center_x = caGetOption('x', $va_media_info['_CENTER'], 0.5);
+		if (($vn_current_center_x < 0) || ($vn_current_center_x > 1)) { $vn_current_center_x = 0.5; }
+		
+		$vn_current_center_y = caGetOption('y', $va_media_info['_CENTER'], 0.5);
+		if (($vn_current_center_y < 0) || ($vn_current_center_y > 1)) { $vn_current_center_y = 0.5; }
+		
+		return array('x' => $vn_current_center_x, 'y' => $vn_current_center_y);
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Sets the center of the currently loaded media. X and Y coordinates are fractions of the width and height respectively
+	 * expressed as decimals between 0 and 1. Currently the center point is only used when cropping the image
+	 * from the "center" but it may be used for other transformation (Eg. rotation) in the future.
+	 *
+	 * @param string $ps_field The name of the media field
+	 * @param float $pn_center_x X-coordinate for the new center, as a fraction of the width of the image. Value must be between 0 and 1.
+	 * @param float $pn_center_y Y-coordinate for the new center, as a fraction of the height of the image. Value must be between 0 and 1.
+	 * @param array $pa_options An array of options. No options are currently implemented.
+	 *
+	 * @return bool True on success, false if an error occurred.
+	 */
+	public function setMediaCenter($ps_field, $pn_center_x, $pn_center_y, $pa_options=null) {
+		$va_media_info = $this->getMediaInfo($ps_field);
+		if (!is_array($va_media_info)) {
+			return null;
+		}
+		
+		$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
+		
+		$vn_current_center_x = caGetOption('x', $va_media_info['_CENTER'], 0.5);
+		$vn_current_center_y = caGetOption('y', $va_media_info['_CENTER'], 0.5);
+		
+		// Is center different?
+		if(($vn_current_center_x == $pn_center_x) && ($vn_current_center_y == $pn_center_y)) { return true; }
+		
+		$va_media_info['_CENTER']['x'] = $pn_center_x;
+		$va_media_info['_CENTER']['y'] = $pn_center_y;
+		
+		// Regenerate derivatives 
+		$this->setMode(ACCESS_WRITE);
+		$this->setMediaInfo($ps_field, $va_media_info);
+		$this->update();
+		$this->set('media', $this->getMediaPath('media', 'original'), array('original_filename' => $vs_original_filename));
+		$this->update();
+		
+		return $this->numErrors() ? false : true;
 	}
 	# --------------------------------------------------------------------------------
 	/**

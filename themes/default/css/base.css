@@ -2468,6 +2468,18 @@ div.caObjectRepresentationDetailEditorDoneButton {
     text-align: center;
 }
 
+div.caObjectRepresentationSetCenterContainer {
+	position: relative;
+	text-align: center;
+	margin: auto;
+}
+
+#caObjectRepresentationSetCenterMarker {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}
+
 /* formats object representation extracted metadata for multifile metadata display */
 
 div.caMediaOverlayMultifileFileList {
@@ -5902,3 +5914,4 @@ div.caRepresentationMediaReplicationControls {
     text-align: center;
     line-height: 70px; /* Fake vertical aligning */
 }
+

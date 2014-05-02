@@ -253,7 +253,7 @@ jQuery(document).ready(function() {
 					$vs_balloon_content = join($vs_delimiter, $va_buf);
 				}
 				
-				$vs_buf .= "	var m = caMap_{$vs_id}.makeMarker(".$vn_latitude.", ".$vn_longitude.", '".preg_replace("![\n\r]+!", " ", addslashes($vs_label))."', '".preg_replace("![\n\r]+!", " ", addslashes($vs_balloon_content))."', '".preg_replace("![\n\r]+!", " ", ($vs_ajax_content_url ? addslashes($vs_ajax_content_url."/_ajax/1/id/".join(';', $va_ajax_ids)) : ''))."', {icon: '".$o_config->get("themes_url")."/".(defined("__CA_THEME__") ? __CA_THEME__ : $o_config->get('theme'))."/graphics/blu-pointer.png'} );\n";
+				$vs_buf .= "	var m = caMap_{$vs_id}.makeMarker(".$vn_latitude.", ".$vn_longitude.", '".preg_replace("![\n\r]+!", " ", addslashes($vs_label))."', '".preg_replace("![\n\r]+!", " ", addslashes($vs_balloon_content))."', '".preg_replace("![\n\r]+!", " ", ($vs_ajax_content_url ? addslashes($vs_ajax_content_url."/_ajax/1/id/".join(';', $va_ajax_ids)) : ''))."', {icon: '".$o_config->get("themes_url")."/".(defined("__CA_THEME__") ? __CA_THEME__ : $o_config->get('theme'))."/graphics/icons/blu-pointer.png'} );\n";
 				$vs_buf .= "	caMap_{$vs_id}_markers.push(m);\n";
 				$vs_buf .= "	mc_{$vs_id}.addMarker(m);\n";
 			}
