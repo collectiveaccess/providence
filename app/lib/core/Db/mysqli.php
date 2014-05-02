@@ -117,7 +117,7 @@ class Db_mysqli extends DbDriverBase {
 		}
 		
 		$vb_persistent_connections = caGetOption('persistentConnections', $pa_options, false);
-		$this->opr_db = @mysqli_connect((($vb_unique_connection || $vb_persistent_connections) ? "p:" : "").$pa_options["host"], $pa_options["username"], $pa_options["password"]);
+		$this->opr_db = @mysqli_connect(($vb_persistent_connections ? "p:" : "").$pa_options["host"], $pa_options["username"], $pa_options["password"]);
 
 		if (!$this->opr_db) {
 			$po_caller->postError(200, mysqli_connect_error(), "Db->mysqli->connect()");

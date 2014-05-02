@@ -650,27 +650,22 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		
 		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
-			$o_trans = new Transaction();
-			$this->setTransaction($o_trans);
+			$this->setTransaction($o_trans = new Transaction($this->getDb()));
 			$vb_we_set_transaction = true;
 		} else {
 			$o_trans = $this->getTransaction();
 		}
 		if ($this->get('is_default')) {
-			$this->getDb()->query("
+			$o_trans->getDb()->query("
 				UPDATE ca_relationship_types 
 				SET is_default = 0 
 				WHERE table_num = ?
 			", (int)$t_root_rel_type->get('table_num'));
 		}
 		if (!($vn_rc = parent::insert($pa_options))) {
-			if ($vb_we_set_transaction) {
-				$o_trans->rollback();
-			}
+			if ($vb_we_set_transaction) { $o_trans->rollback(); }
 		} else {
-			if ($vb_we_set_transaction) {
-				$o_trans->commit();
-			}
+			if ($vb_we_set_transaction) { $o_trans->commit(); }
 		}
 		return $vn_rc;
 	}
@@ -688,28 +683,23 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		
 		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
-			$o_trans = new Transaction();
-			$this->setTransaction($o_trans);
+			$this->setTransaction($o_trans = new Transaction($this->getDb()));
 			$vb_we_set_transaction = true;
 		} else {
 			$o_trans = $this->getTransaction();
 		}
 		
 		if ($this->get('is_default')) {
-			$this->getDb()->query("
+			$o_trans->getDb()->query("
 				UPDATE ca_relationship_types 
 				SET is_default = 0 
 				WHERE table_num = ?
 			", (int)$t_root_rel_type->get('table_num'));
 		}
 		if (!($vn_rc = parent::update($pa_options))) {
-			if ($vb_we_set_transaction) {
-				$o_trans->rollback();
-			}
+			if ($vb_we_set_transaction) { $o_trans->rollback(); }
 		} else {
-			if ($vb_we_set_transaction) {
-				$o_trans->commit();
-			}
+			if ($vb_we_set_transaction) { $o_trans->commit(); }
 		}
 		
 		return $vn_rc;

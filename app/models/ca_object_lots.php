@@ -459,9 +459,17 @@ class ca_object_lots extends RepresentableBaseModel {
 			$va_objects = $this->getObjects();
 			$vs_lot_num = $this->get('idno_stub');
 			
-			$t = new Transaction();
+			
 			$t_object = new ca_objects();
-			$t_object->setTransaction($t);
+			
+			$vb_web_set_transaction = false;
+			if (!$this->inTransaction()) {
+				$o_trans = new Transaction($this->getDb());
+				$vb_web_set_transaction = true;
+			} else {
+				$o_trans = $this->getTransaction();
+			}
+			$t_object->setTransaction($o_trans);
 			$t_idno = $t_object->getIDNoPlugInInstance();
 			$vs_separator = $t_idno->getSeparator();
 			$vn_i = 1;
@@ -484,7 +492,9 @@ class ca_object_lots extends RepresentableBaseModel {
 					$vn_i++;
 				}
 			}
-			$t->commit();
+			if ($vb_web_set_transaction) {
+				$o_trans->commit();
+			}
 		}
 		
 		return true;

@@ -427,13 +427,15 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
  	# ------------------------------------------------------
 	public function insert($pa_options=null) {
 		$vb_web_set_transaction = false;
-		
 		if (!$this->inTransaction()) {
-			$this->setTransaction(new Transaction());
+			$this->setTransaction(new Transaction($this->getDb()));
 			$vb_web_set_transaction = true;
 		}
+		
+		$o_trans = $this->getTransaction();
+		
 		if ($this->get('is_default')) {
-			$this->getDb()->query("
+			$o_trans->getDb()->query("
 				UPDATE ca_list_items 
 				SET is_default = 0 
 				WHERE list_id = ?
@@ -443,7 +445,6 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		
 		if ($this->getPrimaryKey()) {
 			$t_list = new ca_lists();
-			$o_trans = $this->getTransaction();
 			$t_list->setTransaction($o_trans);
 			
 			if (($t_list->load($this->get('list_id'))) && ($t_list->get('list_code') == 'place_hierarchies') && ($this->get('parent_id'))) {
@@ -482,9 +483,9 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		}
 		
 		if ($this->numErrors()) {
-			if ($vb_web_set_transaction) { $this->getTransaction()->rollback(); }
+			if ($vb_web_set_transaction) { $o_trans->rollback(); }
 		} else {
-			if ($vb_web_set_transaction) { $this->getTransaction()->commit(); }
+			if ($vb_web_set_transaction) { $o_trans->commit(); }
 			$this->_setSettingsForList();
 		}
 		return $vn_rc;
@@ -492,7 +493,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	# ------------------------------------------------------
 	public function update($pa_options=null) {
 		if (!$this->inTransaction()) {
-			$this->setTransaction(new Transaction());
+			$this->setTransaction(new Transaction($this->getDb()));
 		}
 		if ($this->get('is_default') == 1) {
 			$this->getDb()->query("

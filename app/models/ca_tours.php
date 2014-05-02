@@ -474,7 +474,14 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 		$va_stop_ranks = $this->getStopIDRanks($pa_options);	// get current ranks
 		
 		$vn_i = 0;
-		$o_trans = new Transaction();
+		$vb_web_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$o_trans = new Transaction($this->getDb());
+			$vb_web_set_transaction = true;
+		} else {
+			$o_trans = $this->getTransaction();
+		}
+		
 		$t_stop = new ca_tour_stops();
 		$t_stop->setTransaction($o_trans);
 		$t_stop->setMode(ACCESS_WRITE);
@@ -507,9 +514,9 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		if(sizeof($va_errors)) {
-			$o_trans->rollback();
+			if ($vb_web_set_transaction) { $o_trans->rollback(); }
 		} else {
-			$o_trans->commit();
+			if ($vb_web_set_transaction) { $o_trans->commit(); }
 		}
 		
 		return $va_errors;

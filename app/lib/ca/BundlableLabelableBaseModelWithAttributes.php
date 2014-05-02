@@ -5068,7 +5068,7 @@ $pa_options["display_form_field_tips"] = true;
 		unset($_REQUEST['form_timestamp']);
 		
 		if (!($vb_already_in_transaction = $this->inTransaction())) {
-			$this->setTransaction($o_t = new Transaction());
+			$this->setTransaction($o_t = new Transaction($this->getDb()));
 		}
 		
 		$vn_old_type_id = $this->getTypeID();

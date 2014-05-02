@@ -102,7 +102,7 @@ class Db_pdo_mysql extends DbDriverBase {
 		}
 		
 		try {
-			$this->opr_db = new PDO('mysql:host='.$pa_options["host"].';dbname='.$pa_options["database"], $pa_options["username"], $pa_options["password"], array(PDO::ATTR_PERSISTENT => ($vb_unique_connection || caGetOption("persistentConnections", $pa_options, true))));
+			$this->opr_db = new PDO('mysql:host='.$pa_options["host"].';dbname='.$pa_options["database"], $pa_options["username"], $pa_options["password"], array(PDO::ATTR_PERSISTENT => caGetOption("persistentConnections", $pa_options, true)));
 		} catch (Exception $e) {
 			$po_caller->postError(200, $e->getMessage(), "Db->pdo_mysql->connect()");
 			return false;
