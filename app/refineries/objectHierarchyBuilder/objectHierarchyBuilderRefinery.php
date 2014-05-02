@@ -106,6 +106,17 @@
 			'default' => '',
 			'label' => _t('Parents'),
 			'description' => _t('object parents to create')
+		),
+		'objectHierarchyBuilder_dontMatchOnLabel' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Do not match on label'),
+			'description' => _t('set to prohibit matching using label')
 		)
+		
+		
 	);
 ?>

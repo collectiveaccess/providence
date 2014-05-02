@@ -174,6 +174,15 @@
 				'label' => _t('Place type default'),
 				'description' => _t('Sets the default place type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list place_types')
 			),
+			'placeSplitter_skipIfValue' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Skip if value'),
+				'description' => _t('Skip if imported value is in the specified list of values.')
+			),
 			'placeSplitter_interstitial' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,

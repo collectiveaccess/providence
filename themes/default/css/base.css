@@ -1,4 +1,4 @@
-@import url("//hello.myfonts.net/count/28ec2c");
+/* @import url("//hello.myfonts.net/count/28ec2c"); */
 
 @font-face {font-family: 'DIN-Regular';src: url('fonts/28EC2C_0_0.eot');src: url('fonts/28EC2C_0_0.eot?#iefix') format('embedded-opentype'),url('fonts/28EC2C_0_0.woff') format('woff'),url('fonts/28EC2C_0_0.ttf') format('truetype');}
 
@@ -5269,7 +5269,7 @@ div.preferenceSectionDivider {
     padding: 10px;
     line-height:1.3em;
     overflow: hidden;
-    height: 1.2em;
+    height: 2.4em;
 }
 
 #batchProcessingElapsedTime {
@@ -6721,3 +6721,8 @@ div.caRepresentationMediaReplicationControls {
     line-height: 70px; /* Fake vertical aligning */
 }
 
+/** Tool plugins **/
+.toolPluginHelpText {
+    margin: 5px 0 5px 0px;
+    font-size:13px;
+}

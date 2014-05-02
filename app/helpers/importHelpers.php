@@ -50,12 +50,14 @@
 	 * @return int
 	 */
 	function caProcessRefineryParents($ps_refinery_name, $ps_table, $pa_parents, $pa_source_data, $pa_item, $pn_c, $pa_options=null) {
+
 		global $g_ui_locale_id;
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
 		$o_log = caGetOption('log', $pa_options, null);
 		$o_reader = caGetOption('reader', $pa_options, null);
 		$o_trans = caGetOption('transaction', $pa_options, null);
+
 		
 		$vn_list_id = caGetOption('list_id', $pa_options, null);
 		$vb_hierarchy_mode = caGetOption('hierarchyMode', $pa_options, false);
@@ -68,6 +70,7 @@
 			$vs_name = BaseRefinery::parsePlaceholder($va_parent['name'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 			$vs_idno = BaseRefinery::parsePlaceholder($va_parent['idno'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 			$vs_type = BaseRefinery::parsePlaceholder($va_parent['type'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
+
 			if (!$vs_name && !$vs_idno) { continue; }
 			if (!$vs_name) { $vs_name = $vs_idno; }
 			
@@ -128,7 +131,8 @@
 				}
 			}
 			
-			$pa_options = array_merge(array_merge(array('matchOn' => array('idno', 'label')), $pa_options));
+			$va_match_on = caGetOption("{$ps_refinery_name}_dontMatchOnLabel", $pa_item['settings'], false) ? array('idno') : array('idno', 'label');
+			$pa_options = array_merge(array_merge(array('matchOn' => $va_match_on), $pa_options));
 			
 			switch($ps_table) {
 				case 'ca_objects':
@@ -232,6 +236,7 @@
 					foreach($va_attrs as $vs_k => $vs_v) {
 						// BaseRefinery::parsePlaceholder may return an array if the input format supports repeated values (as XML does)
 						$va_vals = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader));
+
 						if (sizeof($va_vals) > 1) { $vb_is_repeating = true; }
 						
 						if ($vb_is_repeating) {
@@ -500,7 +505,7 @@
 			((sizeof($va_group_dest) == 1) && ($vs_terminal == $ps_table))
 			||
 			(($vs_terminal != $ps_table) && (sizeof($va_group_dest) > 1))
-		) {			
+		) {		
 			foreach($va_delimited_items as $vn_x => $vs_delimited_item) {
 				$va_items = ($vs_delimiter) ? explode($vs_delimiter, $vs_delimited_item) : array($vs_delimited_item);
 				
@@ -628,6 +633,7 @@
 						$vs_item = BaseRefinery::parsePlaceholder($vs_item, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 						if(!is_array($va_attr_vals)) { $va_attr_vals = array(); }
 						$va_attr_vals_with_parent = array_merge($va_attr_vals, array('parent_id' => $va_val['_parent_id']));
+
 					
 						$pa_options = array_merge(array_merge(array('matchOn' => array('idno', 'label')), $pa_options));
 					
@@ -699,12 +705,11 @@
 								$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader));
 							}
 						}
-			
+
 						if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log) {
 							$o_log->logWarn(_t("[{$ps_refinery_name}Refinery] No relationship type is set for %2 %1", $vs_item, $ps_item_prefix));
 						}
-		
-
+	
 						switch($ps_table) {
 							case 'ca_entities':
 								$va_val['preferred_labels'] = DataMigrationUtils::splitEntityName($vs_item);

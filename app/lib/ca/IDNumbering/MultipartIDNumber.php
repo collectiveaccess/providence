@@ -903,6 +903,10 @@
 				}
 				$va_tmp[$vs_element_name] = $va_element_values[$ps_name.'_'.$vs_element_name];
 				
+				if ($vn_zeropad_to_length = caGetOption('zeropad_to_length', $va_element_info, null)) {
+					$va_tmp[$vs_element_name] = str_pad($va_tmp[$vs_element_name], $vn_zeropad_to_length, "0", STR_PAD_LEFT);
+				}
+				
 				if (isset($va_element_values[$ps_name.'_'.$vs_element_name])) {
 					$vb_isset = true;
 				}
