@@ -82,6 +82,8 @@ class Db_mysql extends DbDriverBase {
 		'transactions'  => true,
 		'max_nested_transactions' => 1
 	);
+	
+	static $opa_transaction_connections = array();
 
 	/**
 	 * Constructor
@@ -90,6 +92,7 @@ class Db_mysql extends DbDriverBase {
 	 */
 	function __construct() {
 		//print "Construct db driver\n";
+		
 	}
 
 	/**
@@ -104,14 +107,23 @@ class Db_mysql extends DbDriverBase {
 		if (!is_array($g_connect)) { $g_connect = array(); }
 		$vs_db_connection_key = $pa_options["host"].'/'.$pa_options["database"];
 		
-		if (!($vb_unique_connection = caGetOption('uniqueConnection', $pa_options, false)) && isset($g_connect[$vs_db_connection_key]) && is_resource($g_connect[$vs_db_connection_key])) { $this->opr_db = $g_connect[$vs_db_connection_key]; return true;}
+		if (
+			!($vb_unique_connection = caGetOption('uniqueConnection', $pa_options, false)) 
+			&& 
+			isset($g_connect[$vs_db_connection_key]) 
+			&& 
+			is_resource($g_connect[$vs_db_connection_key])
+		) { 
+			$this->opr_db = $g_connect[$vs_db_connection_key]; 
+			return true;
+		}
 		
 		if (!function_exists("mysql_connect")) {
 			die(_t("Your PHP installation lacks MySQL support. Please add it and retry..."));
 			exit;
 		}
 		
-		if (!$vb_unique_connection && isset($pa_options["persistent_connections"]) && $pa_options["persistent_connections"]) {
+		if (!$vb_unique_connection && ($vb_persistent_connections = caGetOption('persistentConnections', $pa_options, false))) {
 			$this->opr_db = @mysql_pconnect($pa_options["host"], $pa_options["username"], $pa_options["password"]);
 		} else {
 			$this->opr_db = @mysql_connect($pa_options["host"], $pa_options["username"], $pa_options["password"], true);
@@ -288,7 +300,9 @@ class Db_mysql extends DbDriverBase {
 		}
 		if (!($r_res = mysql_query($vs_sql, $this->opr_db))) {
 			$vn_mysql_err = (int)mysql_errno($this->opr_db);
+			
 			switch($vn_mysql_err) {
+				case 1205:		// deadlock
 				case 1216:		// deadlock
 					$vn_tries = 0;
 					// wait a bit and try the query again (up to 10 times)

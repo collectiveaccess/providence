@@ -417,6 +417,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						if ($t_instance->getLeftTableFieldName() == $vs_bundle) { continue(2); }
 						if ($t_instance->getRightTableFieldName() == $vs_bundle) { continue(2); }
 					}
+					$va_additional_settings = array(
+						'documentation_url' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_FIELD,
+							'default' => '',
+							'width' => "275px", 'height' => 1,
+							'label' => _t('Documentation URL'),
+							'description' => _t('URL pointing to documentation for this field. Leave blank if no documentation URL exists.')
+						)
+					);
 					break;
 				case 'preferred_label':
 				case 'nonpreferred_label':
@@ -432,6 +442,14 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'width' => "100px", 'height' => 1,
 							'label' => _t('Use rich text editor'),
 							'description' => _t('Check this option if you want to use a word-processor like editor with this text field. If you expect users to enter rich text (italic, bold, underline) then you might want to enable this.')
+						),
+						'documentation_url' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_FIELD,
+							'default' => '',
+							'width' => "275px", 'height' => 1,
+							'label' => _t('Documentation URL'),
+							'description' => _t('URL pointing to documentation for this field. Leave blank if no documentation URL exists.')
 						)
 					);
 					break;
@@ -459,6 +477,14 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							),
 							'label' => _t('Sort direction'),
 							'description' => _t('Direction of sort.')
+						),
+						'documentation_url' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_FIELD,
+							'default' => '',
+							'width' => "275px", 'height' => 1,
+							'label' => _t('Documentation URL'),
+							'description' => _t('URL pointing to documentation for this field. Leave blank if you wish to use the default URL for this metadata element.')
 						)
 					);
 					if ($va_elements[preg_replace('!ca_attribute_!', '', $vs_bundle)]['datatype'] == 1) {		// 1=text
@@ -580,6 +606,14 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'label' => _t('Relationship display template'),
 							'description' => _t('Layout for relationship when displayed in list (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
 						),
+						'documentation_url' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_FIELD,
+							'default' => '',
+							'width' => "275px", 'height' => 1,
+							'label' => _t('Documentation URL'),
+							'description' => _t('URL pointing to documentation for this relationship bundle. Leave blank if no documentation URL exists.')
+						),
 						'minRelationshipsPerRow' => array(
 							'formatType' => FT_NUMBER,
 							'displayType' => DT_FIELD,
@@ -684,6 +718,14 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'default' => '1',
 								'label' => _t('Open hierarchy browser by default'),
 								'description' => _t('If checked hierarchy browser will be open when form loads.')
+							),
+							'documentation_url' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_FIELD,
+								'default' => '',
+								'width' => "275px", 'height' => 1,
+								'label' => _t('Documentation URL'),
+								'description' => _t('URL pointing to documentation for this hierarchy browser. Leave blank if no documentation URL exists.')
 							)
 						);
 					} else {
@@ -719,6 +761,14 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								);
 								break;
 						}
+						$va_additional_settings['documentation_url'] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_FIELD,
+							'default' => '',
+							'width' => "275px", 'height' => 1,
+							'label' => _t('Documentation URL'),
+							'description' => _t('URL pointing to documentation. Leave blank if no documentation URL exists.')
+						);
 					}
 					break;
 				default:
@@ -815,7 +865,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			if (is_numeric($pa_type_ids)) { 
 				$pa_type_ids = array($pa_type_ids); 
 			} else {
-				return null;
+				$pa_type_ids = array();
 			}
 		}
 		

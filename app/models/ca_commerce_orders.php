@@ -1699,7 +1699,15 @@ class ca_commerce_orders extends BaseModel {
 		$va_item_ranks = $this->getItemIDRanks($pa_options);	// get current ranks
 		
 		$vn_i = 0;
-		$o_trans = new Transaction();
+		
+		$vb_web_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$o_trans = new Transaction($this->getDb());
+			$vb_web_set_transaction = true;
+		} else {
+			$o_trans = $this->getTransaction();
+		}
+		
 		$t_item = new ca_commerce_order_items();
 		$t_item->setTransaction($o_trans);
 		$t_item->setMode(ACCESS_WRITE);
@@ -1721,9 +1729,9 @@ class ca_commerce_orders extends BaseModel {
 		}
 		
 		if(sizeof($va_errors)) {
-			$o_trans->rollback();
+			if ($vb_web_set_transaction) { $o_trans->rollback(); }
 		} else {
-			$o_trans->commit();
+			if ($vb_web_set_transaction) { $o_trans->commit(); }
 		}
 		
 		return $va_errors;

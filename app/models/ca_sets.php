@@ -359,10 +359,10 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	public function duplicate($pa_options=null) {
 		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
-			$this->setTransaction($o_t = new Transaction($this->getDb()));
+			$this->setTransaction($o_trans = new Transaction($this->getDb()));
 			$vb_we_set_transaction = true;
 		} else {
-			$o_t = $this->getTransaction();
+			$o_trans = $this->getTransaction();
 		}
 		
 		if ($t_dupe = parent::duplicate($pa_options)) {
@@ -1157,7 +1157,15 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$va_row_ranks = $this->getRowIDRanks($pa_options);	// get current ranks
 		
 		$vn_i = 0;
-		$o_trans = new Transaction();
+		
+		$vb_web_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$o_trans = new Transaction($this->getDb());
+			$vb_web_set_transaction = true;
+		} else {
+			$o_trans = $this->getTransaction();
+		}
+		
 		$t_set_item = new ca_set_items();
 		$t_set_item->setTransaction($o_trans);
 		$t_set_item->setMode(ACCESS_WRITE);
@@ -1193,9 +1201,9 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		}
 		
 		if(sizeof($va_errors)) {
-			$o_trans->rollback();
+			if ($vb_web_set_transaction) { $o_trans->rollback(); }
 		} else {
-			$o_trans->commit();
+			if ($vb_web_set_transaction) { $o_trans->commit(); }
 		}
 		
 		return $va_errors;

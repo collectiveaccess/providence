@@ -333,8 +333,10 @@ if (that.uiStyle == 'horizontal') {
 					
 					var foundSelected = false;
 					jQuery('#' + newLevelDivID).data('itemCount', data['_itemCount']);
-					jQuery.each(data, function(i, item) {
-						if (!item) { return; }
+					//jQuery.each(data, function(i, item) {
+					for(var i in data['_sortOrder']) {
+						var item = data[data['_sortOrder'][i]];
+						if (!item) { continue; }
 						if (item['item_id']) {
 							if ((is_init) && (level == 0) && (!that.selectedItemIDs[0])) {
 								that.selectedItemIDs[0] = item['item_id'];
@@ -367,6 +369,7 @@ if (that.uiStyle == 'horizontal') {
 							}
 							
 							jQuery('#' + newLevelListID + " li:last a").data('item_id', item['item_id']);
+							jQuery('#' + newLevelListID + " li:last a").data('item', item);
 							if(that.editDataForFirstLevel) {
 								jQuery('#' + newLevelListID + " li:last a").data(that.editDataForFirstLevel, item[that.editDataForFirstLevel]);
 							}
@@ -397,7 +400,7 @@ if (that.uiStyle == 'horizontal') {
 										var l = jQuery(this).parent().parent().parent().data('level');
 										var item_id = jQuery(this).data('item_id');
 										var has_children = jQuery(this).data('has_children');
-										that.selectItem(l, item_id, jQuery('#' + newLevelDivID).data('parent_id'), has_children, item);
+										that.selectItem(l, item_id, jQuery('#' + newLevelDivID).data('parent_id'), has_children, jQuery(this).data('item'));
 										return false;
 									});
 								}
@@ -409,7 +412,7 @@ if (that.uiStyle == 'horizontal') {
 									var l = jQuery(this).parent().parent().parent().parent().data('level');
 									var item_id = jQuery(this).data('item_id');
 									var has_children = jQuery(this).data('has_children');
-									that.selectItem(l, item_id, jQuery('#' + newLevelDivID).data('parent_id'), has_children, item);
+									that.selectItem(l, item_id, jQuery('#' + newLevelDivID).data('parent_id'), has_children, jQuery(this).data('item'));
 									
 									// scroll to new level
 									that.setUpHierarchyLevel(l + 1, item_id, 0, undefined, true);
@@ -443,7 +446,7 @@ if (that.uiStyle == 'horizontal') {
 						} else {
 							if (item.parent_id && (that.selectedItemIDs.length == 0)) { that.selectedItemIDs[0] = item.parent_id; }
 						}
-					});
+					}//);
 					
 					var dontDoSelectAndScroll = false;
 					if (!foundSelected && that.selectedItemIDs[level]) {

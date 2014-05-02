@@ -78,7 +78,7 @@
  			$o_trans = (isset($pa_options['transaction']) && $pa_options['transaction']) ? $pa_options['transaction'] : null;
  			if (!$o_trans) { 
  				$vb_we_set_transaction = true;
- 				$o_trans = new Transaction();
+ 				$o_trans = new Transaction($t_subject->getDb());
  			}
  			
  			$o_log = new Batchlog(array(
@@ -513,7 +513,7 @@
  			$o_trans = (isset($pa_options['transaction']) && $pa_options['transaction']) ? $pa_options['transaction'] : null;
  			if (!$o_trans) { 
  				$vb_we_set_transaction = true;
- 				$o_trans = new Transaction();
+ 				$o_trans = new Transaction($t_set->getDb());
  			}
  			
  			$o_batch_log = new Batchlog(array(

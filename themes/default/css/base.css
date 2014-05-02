@@ -150,6 +150,7 @@ h5 {
     border-right: 2px solid #ddd;
     margin-top: 28px;
     min-height: 1000px;
+    position:absolute;
 }
 * html #mainContent { width:736px; margin-left: 0px;} /* IE6 only fixes width */
 
@@ -166,21 +167,20 @@ h5 {
 /* --- SIDE NAVIGATION --- */
 #leftNav {
     clear: both;
-    width: 215px;
+    width: 211px;
     background-color: #fff;
     position: fixed;
     height: 100%;
-    padding-top:1px;
+    padding-top:27px; 
     border-right: #ddd solid 2px;
     border-left: #ddd solid 2px;
 }
 
 #leftNav #leftNavSidebar {
     overflow: auto;
-    width: 215px;
+    width: 212px;
     height: 100%;
     border-top: 2px solid #ddd;
-    padding-bottom: 10px;
 }
 
 #leftNav h2 {
@@ -394,9 +394,6 @@ div.inspectorLotObjectTypeControls {
 	text-align: center;
 	width:100%;
 	padding-left: 0px;
-}
-#leftNav #searchSetTools .button {
-	width:auto;
 }
 #leftNav #toolIcons .button {
 	text-align:left;
@@ -1033,7 +1030,7 @@ div.notification-info-box {
 }
 
 div.notification-error-box {
-    background:	url('../graphics/buttons/glyphicons_078_warning_sign.png') no-repeat 10px 5px;
+    background:	url('../graphics/icons/glyphicons_078_warning_sign.png') no-repeat 10px 5px;
     text-indent: 32px;
     background-color: #eeeeee;
     padding: 5px;
@@ -1104,8 +1101,6 @@ div.hint {
 .quickAddSectionBox{
     margin: 0px;
     padding: 10px;
-    height: 525px;
-    overflow-y: auto;
 }
 
 /* Style for labels on standard form fields (ie. no error) */
@@ -2180,7 +2175,6 @@ select.searchToolsSelect {
 }
 #searchSetTools .col{
 	margin-bottom:15px;
-	clear: both;
 }
 #searchSetTools .header {
 	font-family: 'din-regular', helvetica, sans-serif;
@@ -2195,7 +2189,7 @@ select.searchToolsSelect {
 #searchSetTools .searchSetsToggle a{
 	float: left;
 	clear: right;
-	width: auto;
+	width: 100%;
 	text-align: left;
 	margin-bottom: 15px;
 	margin-top: -14px;
@@ -5128,7 +5122,7 @@ a.quickaddMenuItem {
 div.roundedRel {
     font-size: 10px;
     font-weight: normal;
-    padding: 5px 4px 1px 8px;
+    padding: 2px 4px 4px 8px;
     margin: 5px;
     float: left;
     border: 1px solid #ddd;
@@ -6176,12 +6170,9 @@ div.dialogHeader {
     display: none;
     margin: 0px;
     padding:0px !important;
-    border: 2px solid #eee;
+    border: 2px solid #999999;
     z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
     background-color: #FFFFFF;
-    border-radius:4px;
-    -moz-border-radius:4px;
-    -webkit-border-radius:4px;
 }
 
 #caRelationQuickAddPanel .close a{
@@ -6207,13 +6198,8 @@ div.quickAddFormTopPadding {
 }
 
 div.quickAddDialogHeader {
-	background-color: #cccccc;
-    font-size: 13px;
-    font-weight: bold !important;
-    padding: 5px;
-    
+    position: fixed;
     width: 890px;
-    height: 35px;
     z-index:33000;
 }
 
@@ -6701,11 +6687,11 @@ div.caRepresentationMediaReplicationControls {
     margin: 0;
     padding: 0;
 }
-
+ 
 .jcarousel li {
     float: left;
     width: 150px;
-    height: 92px;
+    height: 80px;
     margin-right: 1px;
 }
 

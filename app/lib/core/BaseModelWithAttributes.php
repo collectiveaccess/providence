@@ -934,6 +934,7 @@
 			}
 			
 			$va_list = $t_list->getItemsForList($this->getSourceListCode(), $pa_options);
+			if (caGetOption('idsOnly', $pa_options, false)) { return $va_list; }
 			return is_array($va_list) ? caExtractValuesByUserLocale($va_list): array();
 		}
 		# ------------------------------------------------------------------
@@ -1067,6 +1068,7 @@
 			}
 			
 			$va_list = $t_list->getItemsForList($this->getTypeListCode(), $pa_options);
+			if (caGetOption('idsOnly', $pa_options, false)) { return $va_list; }
 			return is_array($va_list) ? caExtractValuesByUserLocale($va_list): array();
 		}
 		# ------------------------------------------------------------------
@@ -1276,7 +1278,7 @@
 			
 			// get all elements of this element set
 			$va_element_set = $t_element->getElementsInSet();
-			
+
 			// get attributes of this element attached to this row
 			$va_attributes = $this->getAttributesByElement($pm_element_code_or_id);
 			
@@ -1326,7 +1328,7 @@
 					'description' => $va_label['description'],
 					't_subject' => $this,
 					'request' => $po_request,
-					'ps_form_name' => $ps_form_name,
+					'form_name' => $ps_form_name,
 					'format' => ''
 				))));
 				
@@ -1496,13 +1498,17 @@
 		 *
 		 */
 		public function htmlFormElement($ps_field, $ps_format=null, $pa_options=null) {
-			switch($ps_field) {
-				case $this->getSourceFieldName():
-					if ((bool)$this->getAppConfig()->get('perform_source_access_checking')) {
-						$pa_options['value'] = $this->get($ps_field);
-						return $this->getSourceListAsHTMLFormElement($ps_field, array(), $pa_options);
-					}
-					break;
+			if ($vs_source_id_fld_name = $this->getSourceFieldName()) {
+				switch($ps_field) {
+					case $vs_source_id_fld_name:
+						if ((bool)$this->getAppConfig()->get('perform_source_access_checking')) {
+							$pa_options['value'] = $this->get($ps_field);
+							$pa_options['disableItemsWithID'] = caGetSourceRestrictionsForUser($this->tableName(), array('access' => __CA_BUNDLE_ACCESS_READONLY__, 'exactAccess' => true));
+							
+							return $this->getSourceListAsHTMLFormElement($ps_field, array(), $pa_options);
+						}
+						break;
+				}
 			}
 			
 			return parent::htmlFormElement($ps_field, $ps_format, $pa_options);
@@ -1553,7 +1559,7 @@
 			$va_attributes = ca_attributes::getAttributes($this->getDb(), $this->tableNum(), $vn_row_id, array($vn_element_id), array());
 		
 			$va_attribute_list =  is_array($va_attributes[$vn_element_id]) ? $va_attributes[$vn_element_id] : array();
-			
+		
 			$vs_sort_dir = (isset($pa_options['sort']) && (in_array(strtolower($pa_options['sortDirection']), array('asc', 'desc')))) ? strtolower($pa_options['sortDirection']) : 'asc';	
 			if (isset($pa_options['sort']) && ($vs_sort = $pa_options['sort'])) {
 				$va_tmp = array();

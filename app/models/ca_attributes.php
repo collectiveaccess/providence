@@ -204,13 +204,15 @@ class ca_attributes extends BaseModel {
 		unset(ca_attributes::$s_get_attributes_cache[$pn_table_num.'/'.$pn_row_id]);
 		$t_element = ca_attributes::getElementInstance($pm_element_code_or_id);
 		
-		$vb_already_in_transaction = $this->inTransaction();
-		if (!$vb_already_in_transaction) {
-			$o_trans = new Transaction();
+		$vb_web_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$o_trans = new Transaction($this->getDb());
+			$vb_web_set_transaction = true;
 			$this->setTransaction($o_trans);
 		} else {
 			$o_trans = $this->getTransaction();
 		}
+		
 		// create new attribute row
 		$this->set('element_id', $vn_attribute_id = $t_element->getPrimaryKey());
 		$this->set('locale_id', $pa_values['locale_id']);
@@ -223,7 +225,7 @@ class ca_attributes extends BaseModel {
 		$this->insert();
 		
 		if ($this->numErrors()) {
-			if (!$vb_already_in_transaction) {
+			if ($vb_web_set_transaction) {
 				$o_trans->rollback();
 			}
 			
@@ -268,14 +270,14 @@ class ca_attributes extends BaseModel {
 			// empty values to pass without complaint.
 			//
 			$this->delete(true);	// nuke existing ca_attributes record
-			if (!$vb_already_in_transaction) {
+			if ($vb_web_set_transaction) {
 				$o_trans->rollback();
 			}
 			return null;	// we return null so the caller understands not to throw errors
 		}
 		
 		if ($this->numErrors()) {
-			if (!$vb_already_in_transaction) {
+			if ($vb_web_set_transaction) {
 				$o_trans->rollback();
 			} else {
 				$va_errors = $this->errors();
@@ -285,9 +287,7 @@ class ca_attributes extends BaseModel {
 			return false;
 		}
 		
-		if (!$vb_already_in_transaction) {
-			$o_trans->commit();
-		}
+		if ($vb_web_set_transaction) { $o_trans->commit(); }
 		return $this->getPrimaryKey();
 	}
 	# ------------------------------------------------------
@@ -297,9 +297,10 @@ class ca_attributes extends BaseModel {
 	public function editAttribute($pa_values, $pa_options=null) {
 		if (!$this->getPrimaryKey()) { return null; }
 		
-		$vb_already_in_transaction = $this->inTransaction();
-		if (!$vb_already_in_transaction) {
-			$o_trans = new Transaction();
+		$vb_web_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$o_trans = new Transaction($this->getDb());
+			$vb_web_set_transaction = true;
 			$this->setTransaction($o_trans);
 		} else {
 			$o_trans = $this->getTransaction();
@@ -311,7 +312,7 @@ class ca_attributes extends BaseModel {
 		$this->set('locale_id', $pa_values['locale_id']);
 		$this->update();
 		if ($this->numErrors()) {
-			if (!$vb_already_in_transaction) {
+			if ($vb_web_set_transaction) {
 				$o_trans->rollback();
 			}
 			$vs_errors = join('; ', $this->getErrors());
@@ -372,15 +373,13 @@ class ca_attributes extends BaseModel {
 		
 		
 		if ($this->numErrors()) {
-			if (!$vb_already_in_transaction) {
+			if ($vb_web_set_transaction) {
 				$o_trans->rollback();
 			}
 			return false;
 		}
 		
-		if (!$vb_already_in_transaction) {
-			$o_trans->commit();
-		}
+		if ($vb_web_set_transaction) { $o_trans->commit(); }
 		return true;
 	}
 	# ------------------------------------------------------

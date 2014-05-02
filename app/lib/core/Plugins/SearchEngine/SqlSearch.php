@@ -695,6 +695,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							$vs_direct_sql_query = "SELECT swi.row_id, ca.boost 
 													FROM {$vs_results_temp_table} ca
 													INNER JOIN ca_sql_search_word_index AS swi ON swi.index_id = ca.row_id 
+													INNER JOIN ca_sql_search_search_final AS ftmp1 ON ftmp1.row_id = swi.row_id
 							";
 							$pa_direct_sql_query_params = array(); // don't pass any params
 							

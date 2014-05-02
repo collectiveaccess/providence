@@ -80,7 +80,7 @@ BaseModel::$s_ca_models_definitions['ca_metadata_elements'] = array(
 				'DISPLAY_WIDTH' => 80, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Documentation url'), 'DESCRIPTION' => _t('URL pointing to documentation for this metadata element. Leave blank if no documentation URL exists.'),
+				'LABEL' => _t('Documentation URL'), 'DESCRIPTION' => _t('URL pointing to documentation for this metadata element. Leave blank if no documentation URL exists.'),
 				'BOUNDS_LENGTH' => array(0,255)
 		),
 		'datatype' => array(

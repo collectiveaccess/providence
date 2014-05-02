@@ -675,7 +675,15 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		$va_screen_ranks = $this->getScreenIDRanks($pa_options);	// get current ranks
 		
 		$vn_i = 0;
-		$o_trans = new Transaction();
+		
+		$vb_web_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$o_trans = new Transaction($this->getDb());
+			$vb_web_set_transaction = true;
+		} else {
+			$o_trans = $this->getTransaction();
+		}
+		
 		$t_screen = new ca_editor_ui_screens();
 		$t_screen->setTransaction($o_trans);
 		$t_screen->setMode(ACCESS_WRITE);
@@ -711,9 +719,9 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		if(sizeof($va_errors)) {
-			$o_trans->rollback();
+			if ($vb_web_set_transaction) { $o_trans->rollback(); }
 		} else {
-			$o_trans->commit();
+			if ($vb_web_set_transaction) { $o_trans->commit(); }
 		}
 		
 		return $va_errors;
