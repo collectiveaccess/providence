@@ -544,10 +544,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						array_splice($va_tmp, 1, 1);
 						$vb_is_related = true;
 					}
-					if ($vb_is_related || ($va_tmp[0] !== $this->tableName())) {		// must be related table
-						
+					if ($vb_is_related || ($va_tmp[0] !== $this->tableName())) {		// must be related table			
 						$va_related_items = $this->getRelatedItems($va_tmp[0], $pa_options);
-						
+
 						if ($vb_return_as_array && (sizeof($va_tmp) == 1)) {
 							//
 							// When spec is a related table to be returned as arrray
@@ -619,6 +618,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 			
 		return parent::get($ps_field, $pa_options);
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getWithTemplate($ps_template, $pa_options=null) {	
+		return caProcessTemplateForIDs($ps_template, $this->tableName(), array($this->get($this->tableName().".".$this->primaryKey())), $pa_options);
 	}
 	# ------------------------------------------------------
 	/**
