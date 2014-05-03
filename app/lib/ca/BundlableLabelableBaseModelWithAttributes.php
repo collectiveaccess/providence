@@ -718,13 +718,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		return array();
 	}
-	# ------------------------------------------------------------------
-	/**
-	 *
-	 */
-	public function getWithTemplate($ps_template, $pa_options=null) {	
-		return caProcessTemplateForIDs($ps_template, $this->tableName(), array($this->get($this->tableName().".".$this->primaryKey())), $pa_options);
-	}
 	# ------------------------------------------------------
 	/**
 	 *
