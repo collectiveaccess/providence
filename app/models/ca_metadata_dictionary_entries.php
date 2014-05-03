@@ -63,7 +63,26 @@ $_ca_metadata_dictionary_entry_settings = array(		// global
 		'default' => 0,
 		'label' => _t('Bundle is mandatory'),
 		'description' => _t('Bundle is mandatory and a valid value must be set before it can be saved.')
-	)
+	),
+	'restrict_to_relationship_types' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_FIELD,
+		'width' => 35, 'height' => 5,
+		'takesLocale' => false,
+		'default' => '',
+		'label' => _t('Restrict to relationship types'),
+		'description' => _t('Restricts entry to items related using the specified relationship type(s). Leave all unchecked for no restriction.')
+	),
+	'restrict_to_types' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_FIELD,
+		'width' => 35, 'height' => 5,
+		'takesLocale' => false,
+		'default' => '',
+		'label' => _t('Restrict to types'),
+		'description' => _t('Restricts entry to items of the specified type(s). Leave all unchecked for no restriction.')
+	),
+	
 );
 
 BaseModel::$s_ca_models_definitions['ca_metadata_dictionary_entries'] = array(
@@ -227,7 +246,11 @@ class ca_metadata_dictionary_entries extends BaseModel {
 	 *
 	 *
 	 */
-	public static function getEntry($ps_bundle_name, $pa_options=null) {
+	public static function getEntry($ps_bundle_name, $pa_settings=null, $pa_options=null) {
+		if(!is_array($va_types = caGetOption('restrict_to_types', $pa_settings, null)) && $va_types) {
+			$va_types = array($va_types);
+		}
+		
 		if ($t_entry = ca_metadata_dictionary_entries::find(array('bundle_name' => $ps_bundle_name), array('returnAs' => 'firstModelInstance'))) {
 			if(($vs_return = caGetOption('return', $pa_options, null)) && ($t_entry->hasField($vs_return))) {
 				return $t_entry->get($vs_return);

@@ -2073,7 +2073,7 @@
 					$va_data[$vn_c] = nl2br(preg_replace("![\n\r]{1}!", "\n\n", $vs_val));
 					$vn_c++;
 					
-					if ($vn_c > 2) { break; }
+					if ($vn_c > 4) { break; }
 				}
 				$o_rows->next();
 				//print_R($va_data);
@@ -2089,6 +2089,17 @@
 				$t_entry->setSetting('label', '');
 				$t_entry->setSetting('definition', $va_data[2]);
 				$t_entry->setSetting('mandatory', (bool)$va_data[1] ? 1 : 0);
+				
+				$va_types = preg_split("![;,\|]{1}!", $va_data[3]);
+				if(!is_array($va_types)) { $va_types = array(); }
+				$va_types = array_filter($va_types,'strlen');
+				
+				$va_relationship_types = preg_split("![;,\|]{1}!", $va_data[4]);
+				if (!is_array($va_relationship_types)) { $va_relationship_types = array(); }
+				$va_relationship_types = array_filter($va_relationship_types,'strlen');
+				
+				$t_entry->setSetting('restrict_to_types', $va_types);
+				$t_entry->setSetting('restrict_to_relationship_types', $va_relationship_types);
 				
 				$vn_rc = ($t_entry->getPrimaryKey() > 0) ? $t_entry->update() : $t_entry->insert();
 				
