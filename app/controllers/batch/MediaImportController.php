@@ -92,7 +92,7 @@
  			$t_rep->set('status', $va_last_settings['ca_object_representations_status']);
  			$t_rep->set('access', $va_last_settings['ca_object_representations_access']);
  			
- 			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
+ 			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, null, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 				array(),
 				array()
 			);

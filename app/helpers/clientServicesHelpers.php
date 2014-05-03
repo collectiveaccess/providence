@@ -268,7 +268,7 @@
 		}
 		
 		if (!$vs_card_type) {
-			return $false;
+			return false;
 		}
 		
 		/*  mod 10 checksum algorithm  */

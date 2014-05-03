@@ -150,7 +150,7 @@
 			$vn_attribute_id = $t_attr->addAttribute($this->tableNum(), $this->getPrimaryKey(), $t_element->getPrimaryKey(), $pa_values, $pa_info['options']);
 			if ($t_attr->numErrors()) {
 				foreach($t_attr->errors as $o_error) {
-					$this->postError($o_error->getErrorNumber(), $o_error->getErrorDescription(), $o_error->getErrorContext(), $pa_options['error_source']);
+					$this->postError($o_error->getErrorNumber(), $o_error->getErrorDescription(), $o_error->getErrorContext(), $pa_info['error_source']);
 				}
 				return false;
 			}
@@ -212,13 +212,13 @@
 			$t_attr->purify($this->purify());
 			if ($po_trans) { $t_attr->setTransaction($po_trans); }
 			if ((!$t_attr->getPrimaryKey()) || ($t_attr->get('table_num') != $this->tableNum()) || ($this->getPrimaryKey() != $t_attr->get('row_id'))) {
-				$this->postError(1969, _t('Can\'t edit invalid attribute'), 'BaseModelWithAttributes->editAttribute()', $pa_options['error_source']);
+				$this->postError(1969, _t('Can\'t edit invalid attribute'), 'BaseModelWithAttributes->editAttribute()', $pa_info['error_source']);
 				return false;
 			}
 			
 			if (!$t_attr->editAttribute($pa_values, $pa_info['options'])) {
 				foreach($t_attr->errors as $o_error) {
-					$this->postError($o_error->getErrorNumber(), $o_error->getErrorDescription(), $o_error->getErrorContext(), $pa_options['error_source']);
+					$this->postError($o_error->getErrorNumber(), $o_error->getErrorDescription(), $o_error->getErrorContext(), $pa_info['error_source']);
 				}
 				return false;
 			}
@@ -252,6 +252,7 @@
 			$t_attr = new ca_attributes($pn_attribute_id);
 			$t_attr->purify($this->purify());
 			if (!$t_attr->getPrimaryKey()) { return false; }
+			$vn_element_id = (int)$t_attr->get('element_id');
 			
 			$vn_add_cnt = 0;
 			if (isset($pa_extra_info['pending_adds']) && is_array($pa_extra_info['pending_adds'])) {
@@ -1792,7 +1793,7 @@
 				return false;
 			}
 			$t_restriction = new ca_metadata_type_restrictions();
-			if ($t_restriction->load(array('element_id' => $t_element->getPrimaryKey(), 'type_id' => $type_id, 'table_num' => $this->tableNum()))) {
+			if ($t_restriction->load(array('element_id' => $t_element->getPrimaryKey(), 'type_id' => $pn_type_id, 'table_num' => $this->tableNum()))) {
 				$t_restriction->setMode(ACCESS_WRITE);
 				$t_restriction->delete();
 				if ($t_restriction->numErrors()) {

@@ -333,7 +333,7 @@ class WLPlugMediaQuicktimeVR Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$h = round($h);
 
 				if (!($w > 0 && $h > 0)) {
-					$this->postError(1610, _t("%1: %2 during resize operation", $reason, $description), "WLPlugQuicktimeVR->transform()");
+					$this->postError(1610, _t("Width or height was zero"), "WLPlugQuicktimeVR->transform()");
 					return false;
 				}
 				if ($do_crop) {
@@ -576,7 +576,7 @@ class WLPlugMediaQuicktimeVR Extends BaseMediaPlugin Implements IWLPlugMedia {
 					return "<a href='$ps_url'>".(($pa_options["text_only"]) ? $pa_options["text_only"] : "View QuickTime")."</a>";
 				} else {
 ?>
-					<table border="0" cellpadding="0" cellspacing="0">
+					<table>
 						<tr>
 							<td>
 								<object classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B"

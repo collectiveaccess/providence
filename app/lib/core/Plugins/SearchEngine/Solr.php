@@ -135,6 +135,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 				case 'Zend_Search_Lucene_Search_Query_Term':
 				case 'Zend_Search_Lucene_Search_Query_MultiTerm':
 				case 'Zend_Search_Lucene_Search_Query_Phrase':
+					$vs_access_point = '';
 					if ($vs_class != 'Zend_Search_Lucene_Search_Query_Term') {
 						$va_raw_terms = array();
 						foreach($o_lucene_query_element->getQueryTerms() as $o_term) {

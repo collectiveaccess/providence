@@ -1083,7 +1083,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$va_set_ids = $this->getSetIDsForItem($vn_table_num, $pn_row_id);
 		$vb_skipped = false;
 		foreach($va_set_ids as $vn_set_id) {
-			if ($pn_user_id && (!$t_set->haveAccessToSet($pn_user_id, __CA_SET_EDIT_ACCESS__, $vn_set_id))) { $vb_skipped = true; continue; }
+			if ($pn_user_id && (!$this->haveAccessToSet($pn_user_id, __CA_SET_EDIT_ACCESS__, $vn_set_id))) { $vb_skipped = true; continue; }
 			
 			if ($t_item->load(array('set_id' => $vn_set_id, 'row_id' => $pn_row_id))) {
 				$t_item->delete(true);
@@ -1591,7 +1591,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		$o_view->setVar('placement_code', $ps_placement_code);		
 		$o_view->setVar('request', $po_request);
  		$o_view->setVar('set_ids', array_keys($va_cur_sets));
- 		$o_view->setVar('available_set_ids', $va_available_sets = $this->getAvailableSetsForItem($pn_table_num, $pn_item_id, array('user_id' => $pn_user_id, 'access' => __CA_SET_EDIT_ACCESS__)));
+ 		$o_view->setVar('available_set_ids', $va_available_sets = $this->getAvailableSetsForItem($pn_table_num, $pn_row_id, array('user_id' => $pn_user_id, 'access' => __CA_SET_EDIT_ACCESS__)));
  		$o_view->setVar('sets', $va_sets = $this->getSets(array('table' => $pn_table_num, 'user_id' => $pn_user_id, 'access' => __CA_SET_EDIT_ACCESS__)));
  		$o_view->setVar('settings', $pa_bundle_settings);
  		
@@ -1707,7 +1707,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
 		$vs_access_sql = '';
-		if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_table->hasField('access')) {
+		if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess'])) {
 			$vs_access_sql = ' AND o.access IN ('.join(',', $pa_options['checkAccess']).') AND caor.access IN ('.join(',', $pa_options['checkAccess']).')';
 		}
 		$o_db = $this->getDb();

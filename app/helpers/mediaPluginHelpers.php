@@ -404,6 +404,7 @@
 								if ($t_element = $po_instance->_getElementInstance($vs_sub_element)) {
 									switch($t_element->get('datatype')) {
 										case 3:	// List
+											$t_list = new ca_lists();
 											$va_data[$vs_sub_element] = $t_list->getItemIDFromList($t_element->get('list_id'), $vs_value);
 											break;
 										default:

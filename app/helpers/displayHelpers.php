@@ -355,9 +355,6 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 	function caBusyIndicatorIcon($po_request, $pa_attributes=null) {
 		if (!is_array($pa_attributes)) { $pa_attributes = array(); }
 		
-		if (!isset($pa_attributes['alt'])) {
-			$pa_attributes['alt'] = $vs_img_name;
-		}
 		$vs_attr = _caHTMLMakeAttributeString($pa_attributes);
 		$vs_button = "<img src='".$po_request->getThemeUrlPath()."/graphics/icons/indicator.gif' border='0' {$vs_attr}/> ";
 	
@@ -878,7 +875,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 						
 						$vs_screen = '';
 						if ($t_ui = ca_editor_uis::loadDefaultUI($vs_rel_table, $po_view->request, null)) {
-							$vs_screen = $t_ui->getScreenWithBundle('ca_object_representations', $po_request);
+							$vs_screen = $t_ui->getScreenWithBundle('ca_object_representations', $po_view->request);
 						}
 						foreach($va_objects as $vn_rel_id => $va_rel_info) {
 							if ($vs_label = array_shift($va_rel_info['labels'])) {
@@ -1144,9 +1141,10 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 			
 			if ($vs_table_name === 'ca_commerce_orders') {
 				$o_client_services_config = Configuration::load($po_view->request->config->get('client_services_config'));
+				$va_order_totals = $t_item->getOrderTotals();
 				if (($va_order_totals['fee'] + $va_order_totals['tax']+ $va_order_totals['shipping']+ $va_order_totals['handling'] + $va_order_totals['additional_order_fees'] + $va_order_totals['additional_item_fees']) != 0) {	
 					$vs_currency_symbol = $o_client_services_config->get('currency_symbol');
-					$va_order_totals = $t_item->getOrderTotals();
+					
 					$vs_buf .= "<table style='margin-left: 10px;'>";
 					$vs_buf .= "<tr><td><strong>"._t("Items").'</strong></td><td>'.$vs_currency_symbol.sprintf("%4.2f", $va_order_totals['fee'])." (".(int)$va_order_totals['items'].")</td></tr>\n";
 					$vs_buf .= "<tr><td><strong>"._t("S+H").'</strong></td><td>'.$vs_currency_symbol.sprintf("%4.2f", ($va_order_totals['shipping'] + $va_order_totals['handling']))."</td></tr>\n";
@@ -1541,7 +1539,10 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		$vs_buf = '<h3 class="nextPrevious">'.caNavLink($po_view->request, 'Back', '', 'manage', 'Set', 'ListSets')."</h3>\n";
 
 		$vs_color = null;
+		
+		$t_type = method_exists($t_item, "getTypeInstance") ? $t_item->getTypeInstance() : null;
 		if ($t_type) { $vs_color = trim($t_type->get('color')); } 
+		$vs_type_name = $t_type->getTypeName();
 		if (!$vs_color && $t_ui) { $vs_color = trim($t_ui->get('color')); }
 		if (!$vs_color) { $vs_color = "444444"; }
 		
@@ -1581,7 +1582,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		}
 	
 		
-		$vs_buf .= "<div style='width:190px; overflow:hidden;'>{$vs_watch}{$vs_label}"."<a title='$vs_idno'>".($vs_idno ? " ({$vs_idno})" : '')."</a></div>\n";
+		//$vs_buf .= "<div style='width:190px; overflow:hidden;'>{$vs_watch}{$vs_label}"."<a title='$vs_idno'>".($vs_idno ? " ({$vs_idno})" : '')."</a></div>\n";
 
 		
 		// -------------------------------------------------------------------------------------
@@ -1924,7 +1925,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 				'tag' => $vs_unit_tag = "[[#{$vn_unit_id}]]",
 				'directive' => $vs_html,
 				'content' => $vs_content, 'relativeTo' => (string)$o_unit->getAttribute("relativeto"),
-				'delimiter' => (string)$o_unit->getAttribute("delimiter"),
+				'delimiter' => ($vs_d = (string)$o_unit->getAttribute("delimiter")) ? $vs_d : null,
 				'restrictToTypes' => (string)$o_unit->getAttribute("restricttotypes"),
 				'restrictToRelationshipTypes' => (string)$o_unit->getAttribute("restricttorelationshiptypes")
 			);
@@ -1949,8 +1950,8 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		$o_ifs = $o_doc("if");						// if 
 		$o_ifdefs = $o_doc("ifdef");				// if defined
 		$o_ifnotdefs = $o_doc("ifnotdef");			// if not defined
-		$o_mores = $o_doc("more");					// more tags – content suppressed if there are no defined values following the tag pair
-		$o_betweens = $o_doc("between");			// between tags – content suppressed if there are not defined values on both sides of the tag pair
+		$o_mores = $o_doc("more");					// more tags - content suppressed if there are no defined values following the tag pair
+		$o_betweens = $o_doc("between");			// between tags - content suppressed if there are not defined values on both sides of the tag pair
 		$o_ifcounts = $o_doc("ifcount");			// if count - conditionally return template if # of items is in-bounds
 		
 		$va_if = array();
@@ -2055,18 +2056,20 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 			foreach($va_units as $va_unit) {
 				if (!$va_unit['content']) { continue; }
 				$va_relative_to_tmp = $va_unit['relativeTo'] ? explode(".", $va_unit['relativeTo']) : array($ps_tablename);
-				if (!($t_instance = $o_dm->getInstanceByTableName($va_relative_to_tmp[0], true))) { continue; }
-				$vs_unit_delimiter = caGetOption('delimiter', $va_unit, '; ');
+				if (!($t_rel_instance = $o_dm->getInstanceByTableName($va_relative_to_tmp[0], true))) { continue; }
+				$vs_unit_delimiter = caGetOption('delimiter', $va_unit, $vs_delimiter);
 
 				// additional get options for pulling related records
 				$va_get_options = array('returnAsArray' => true);
 
 				if ($va_unit['restrictToTypes'] && strlen($va_unit['restrictToTypes'])>0) {
-					$va_get_options['restrictToTypes'] = explode('|', $va_unit['restrictToTypes']);
+					$va_get_options['restrictToTypes'] = preg_split('![\|,;]+!', $va_unit['restrictToTypes']);
 				}
 				if ($va_unit['restrictToRelationshipTypes'] && strlen($va_unit['restrictToRelationshipTypes'])>0) {
-					$va_get_options['restrictToRelationshipTypes'] = explode('|', $va_unit['restrictToRelationshipTypes']);
+					$va_get_options['restrictToRelationshipTypes'] = preg_split('![\|,;]+!', $va_unit['restrictToRelationshipTypes']);
 				}
+				
+				
 			
 				if (
 					((sizeof($va_relative_to_tmp) == 1) && ($va_relative_to_tmp[0] == $ps_tablename))
@@ -2076,15 +2079,15 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 					
 					switch(strtolower($va_relative_to_tmp[1])) {
 						case 'hierarchy':
-							$va_relative_ids = $qr_res->get($t_instance->tableName().".hierarchy.".$t_instance->primaryKey(), $va_get_options);
+							$va_relative_ids = $qr_res->get($t_rel_instance->tableName().".hierarchy.".$t_rel_instance->primaryKey(), $va_get_options);
 							$va_relative_ids = array_values($va_relative_ids);
 							break;
 						case 'parent':
-							$va_relative_ids = $qr_res->get($t_instance->tableName().".parent.".$t_instance->primaryKey(), $va_get_options);
+							$va_relative_ids = $qr_res->get($t_rel_instance->tableName().".parent.".$t_rel_instance->primaryKey(), $va_get_options);
 							$va_relative_ids = array_values($va_relative_ids);
 							break;
 						case 'children':
-							$va_relative_ids = $qr_res->get($t_instance->tableName().".children.".$t_instance->primaryKey(), $va_get_options);
+							$va_relative_ids = $qr_res->get($t_rel_instance->tableName().".children.".$t_rel_instance->primaryKey(), $va_get_options);
 							$va_relative_ids = array_values($va_relative_ids);
 							break;
 						default:
@@ -2094,26 +2097,32 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 				} else { 
 					switch(strtolower($va_relative_to_tmp[1])) {
 						case 'hierarchy':
-							$va_relative_ids = $qr_res->get($t_instance->tableName().".hierarchy.".$t_instance->primaryKey(), $va_get_options);
+							$va_relative_ids = $qr_res->get($t_rel_instance->tableName().".hierarchy.".$t_rel_instance->primaryKey(), $va_get_options);
 							$va_relative_ids = array_values($va_relative_ids);
 							break;
 						case 'parent':
-							$va_relative_ids = $qr_res->get($t_instance->tableName().".parent.".$t_instance->primaryKey(), $va_get_options);
+							$va_relative_ids = $qr_res->get($t_rel_instance->tableName().".parent.".$t_rel_instance->primaryKey(), $va_get_options);
 							$va_relative_ids = array_values($va_relative_ids);
 							break;
 						case 'children':
-							$va_relative_ids = $qr_res->get($t_instance->tableName().".children.".$t_instance->primaryKey(), $va_get_options);
+							$va_relative_ids = $qr_res->get($t_rel_instance->tableName().".children.".$t_rel_instance->primaryKey(), $va_get_options);
 							$va_relative_ids = array_values($va_relative_ids);
 							break;
 						case 'related':
-							$va_relative_ids = $qr_res->get($t_instance->tableName().".related.".$t_instance->primaryKey(), $va_get_options);
+							$va_relative_ids = $qr_res->get($t_rel_instance->tableName().".related.".$t_rel_instance->primaryKey(), $va_get_options);
 							$va_relative_ids = array_values($va_relative_ids);
 							break;
 						default:
-							$va_relative_ids = $qr_res->get($t_instance->tableName().".".$t_instance->primaryKey(), $va_get_options);
+							if (method_exists($t_instance, 'isSelfRelationship') && $t_instance->isSelfRelationship()) {
+								$va_relative_ids = array_values($t_instance->getRelatedIDsForSelfRelationship($va_primary_ids[$t_rel_instance->tableName()], array($vs_pk_val)));
+							} else {
+								$va_relative_ids = array_values($qr_res->get($t_rel_instance->tableName().".".$t_rel_instance->primaryKey(), $va_get_options));
+							}
+							
 							break;
 					}
 				}
+				
 				$vs_tmpl_val = caProcessTemplateForIDs($va_unit['content'], $va_relative_to_tmp[0], $va_relative_ids, array_merge($pa_options, array('delimiter' => $vs_unit_delimiter, 'resolveLinksUsing' => null)));
 				
 				$va_proc_templates[$vn_i] = str_ireplace($va_unit['tag'], $vs_tmpl_val, $va_proc_templates[$vn_i]);
@@ -2867,7 +2876,7 @@ $ca_relationship_lookup_parse_cache = array();
 		$ps_empty_result_query = 					caGetOption('emptyResultQuery', $pa_options, null);
 		
 		$vs_template =								caGetOption('template', $pa_options, null);
-		$vs_cache_key = 							md5($vs_display_format);
+		$vs_cache_key = 							md5($vs_template);
 		
 		$va_exclude = 								caGetOption('exclude', $pa_options, array(), array('castTo' => 'array'));
 		
@@ -3023,7 +3032,7 @@ $ca_relationship_lookup_parse_cache = array();
 		
 		$va_hierarchies = (method_exists($t_rel, "getHierarchyList")) ? $t_rel->getHierarchyList() : array();
 		
-		// Get root entries for hierarchies and remove from labels (we don't want to show the root labels – they are not meant for display)
+		// Get root entries for hierarchies and remove from labels (we don't want to show the root labels ��� they are not meant for display)
 		if (is_array($va_hierarchies)) {
 			foreach($va_hierarchies as $vn_root_id => $va_hier_info) {
 				foreach($va_parent_ids as $vn_item_id => $vn_parent_id) {
@@ -3064,7 +3073,7 @@ $ca_relationship_lookup_parse_cache = array();
 				
 				if (!isset($va_items[$va_relation[$vs_rel_pk]]['_display']) || !$va_items[$va_relation[$vs_rel_pk]]['_display']) {
 					if ($vs_template) {
-						$va_items[$va_relation[$vs_rel_pk]]['_display'] = caProcessTemplateForIDs($vs_template, $pt_rel->tableName(), array($va_relation['relation_id']), array('returnAsArray' => false, 'returnAsLink' => true, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table));
+						$va_items[$va_relation[$vs_rel_pk]]['_display'] = caProcessTemplateForIDs($vs_template, $pt_rel->tableName(), array($va_relation['relation_id']), array('returnAsArray' => false, 'returnAsLink' => true, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'primaryIDs' => $va_primary_ids, 'resolveLinksUsing' => $vs_rel_table));
 					} else {
 						$va_items[$va_relation[$vs_rel_pk]]['_display'] = $va_items[$va_relation[$vs_rel_pk]]['label'];
 					}
@@ -3442,6 +3451,9 @@ $ca_relationship_lookup_parse_cache = array();
 		$vn_c = 0;
 		$vn_page_len = 0;
 		$vb_has_timecode = false;
+		
+		$vn_min = $vn_max = null;
+		$vn_page_min = $vn_page_max = null;
 		
 		$va_tag_values = array();
 		while($pr_res->nextHit()) {

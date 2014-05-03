@@ -1069,7 +1069,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			
 			$vs_display = "<div id='uiEditorBundle_{$vs_table}_{$vs_bundle_proc}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_instance->getDisplayLabel($vs_table.'.'.$vs_bundle_proc))."</div>";
 			
-			$va_available_bundles[$vs_display_label][$vs_bundle] = array(
+			$va_available_bundles[$vs_display][$vs_bundle] = array(
 				'bundle' => $vs_bundle,
 				'display' => $vs_display,
 				'description' => $vs_description = $t_instance->getDisplayDescription($vs_table.'.'.$vs_bundle),

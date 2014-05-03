@@ -542,6 +542,7 @@ class ca_attributes extends BaseModel {
 		$vn_last_attribute_id = $vn_last_row_id = null;
 		
 		$vn_val_count = 0;
+		$o_attr = $vn_last_element_id = null; 
 		while($qr_attrs->nextRow()) {
 			$va_raw_row = $qr_attrs->getRow();
 			if ($vn_last_attribute_id != $va_raw_row['attribute_id']) {
@@ -717,6 +718,7 @@ class ca_attributes extends BaseModel {
 		$va_attrs = array();
 		$vn_last_attribute_id = null;
 		
+		$o_attr = null;
 		while($qr_attrs->nextRow()) {
 			$va_raw_row = $qr_attrs->getRow();
 			if ($vn_last_attribute_id != $va_raw_row['attribute_id']) {
