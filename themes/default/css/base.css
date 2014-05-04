@@ -6773,9 +6773,9 @@ div.caUseHistoryEntry {
 	font-weight: normal;
 	font-size: 11px;
 	
-	width: 100%;
+	width: 730px;
 	
-	margin: 5px 0 0 0;
+	margin: 5px 0 0 5px;
 	padding: 5px 0 5px 0;
 	border-top: 1px dotted #e6e6e6;
 }
