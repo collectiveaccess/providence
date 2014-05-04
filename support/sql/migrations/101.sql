@@ -27,6 +27,11 @@ create table ca_metadata_dictionary_rules (
       references ca_metadata_dictionary_entries (entry_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+/*==========================================================================*/
+/* Add missing sql search indices */
+create index i_field_table_num on ca_sql_search_word_index(field_table_num);
+create index i_field_num on ca_sql_search_word_index(field_num);
+
 
 /*==========================================================================*/
 

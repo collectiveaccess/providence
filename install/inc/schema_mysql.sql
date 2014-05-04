@@ -6446,6 +6446,8 @@ create index i_row_id on ca_sql_search_word_index(row_id, table_num);
 create index i_word_id on ca_sql_search_word_index(word_id, access);
 create index i_field_row_id on ca_sql_search_word_index(field_row_id, field_table_num);
 create index i_rel_type_id on ca_sql_search_word_index(rel_type_id);
+create index i_field_table_num on ca_sql_search_word_index(field_table_num);
+create index i_field_num on ca_sql_search_word_index(field_num);
 
 
 /*==========================================================================*/
