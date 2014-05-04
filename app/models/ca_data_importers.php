@@ -1184,7 +1184,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		$o_event = ca_data_import_events::newEvent(isset($pa_options['user_id']) ? $pa_options['user_id'] : null, $pa_options['format'], $ps_source, isset($pa_options['description']) ? $pa_options['description'] : '');
 		
-		$t_mapping->setTransaction($o_trans = new Transaction());
+		$o_trans = new Transaction();
+		$t_mapping->setTransaction($o_trans);
 		
 		$po_request 	= caGetOption('request', $pa_options, null);
 		$pb_dry_run 	= caGetOption('dryRun', $pa_options, false);
