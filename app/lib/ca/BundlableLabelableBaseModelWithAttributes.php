@@ -1044,15 +1044,15 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		$ps_bundle_name_proc = str_replace("ca_attribute_", "", $ps_bundle_name);
 		if (
-			($t_dictionary_entry = ca_metadata_dictionary_entries::getEntry($ps_bundle_name_proc))
+			($va_dictionary_entry = ca_metadata_dictionary_entries::getEntry($ps_bundle_name_proc, $pa_bundle_settings))
 			||
-			($t_dictionary_entry = ca_metadata_dictionary_entries::getEntry($this->tableName().'.'.$ps_bundle_name_proc))
+			($va_dictionary_entry = ca_metadata_dictionary_entries::getEntry($this->tableName().'.'.$ps_bundle_name_proc, $pa_bundle_settings))
 		) {
-			$pa_bundle_settings['definition'][$g_ui_locale] = $t_dictionary_entry->getSetting('definition');
-			if ($t_dictionary_entry->getSetting('mandatory')) {
-				$pa_bundle_settings['definition'][$g_ui_locale] .= $this->getAppConfig()->get('required_field_marker');
+			$pa_bundle_settings['definition'][$g_ui_locale] = $va_dictionary_entry['settings']['definition'];
+			if ($va_dictionary_entry['settings']['mandatory']) {
+				$pa_bundle_settings['definition'][$g_ui_locale] = $this->getAppConfig()->get('required_field_marker').$pa_bundle_settings['definition'][$g_ui_locale];
 			}
-			if (!caGetOption($g_ui_locale, $pa_bundle_settings['description'], null)) { $pa_bundle_settings['description'][$g_ui_locale] = $t_dictionary_entry->getSetting('definition'); }
+			if (!caGetOption($g_ui_locale, $pa_bundle_settings['description'], null)) { $pa_bundle_settings['description'][$g_ui_locale] = $va_dictionary_entry['settings']['definition']; }
 		}
 		
 		// is label for this bundle forced in bundle settings?
@@ -1737,10 +1737,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  	public function getBundleFormHTMLForScreen($pm_screen, $pa_options, &$pa_placements=null) {
  		$va_omit_bundles = (isset($pa_options['omit']) && is_array($pa_options['omit'])) ? $pa_options['omit'] : array();
  		
+ 		$vs_table_name = $this->tableName();
+ 		
  		if (isset($pa_options['ui_instance']) && ($pa_options['ui_instance'])) {
  			$t_ui = $pa_options['ui_instance'];
  		} else {
- 			$t_ui = ca_editor_uis::loadDefaultUI($this->tableName(), $pa_options['request'], $this->getTypeID());
+ 			$t_ui = ca_editor_uis::loadDefaultUI($vs_table_name, $pa_options['request'], $this->getTypeID());
  		}
  		if (!$t_ui) { return false; }
  		if (isset($pa_options['bundles']) && is_array($pa_options['bundles'])) {
@@ -1755,10 +1757,23 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		$va_bundles_present = array();
 		if (is_array($va_bundles)) {
+			
+			$o_dm = $this->getAppDatamodel();
+			
+			$va_definition_bundle_names = array();
+			foreach($va_bundles as $va_bundle) {
+				if ($va_bundle['bundle_name'] === $vs_type_id_fld) { continue; }	// skip type_id
+				if ((!$vn_pk_id) && ($va_bundle['bundle_name'] === $vs_hier_parent_id_fld)) { continue; }
+				if (in_array($va_bundle['bundle_name'], $va_omit_bundles)) { continue; }
+				
+				$va_definition_bundle_names[(!$o_dm->tableExists($va_bundle['bundle_name']) ? "{$vs_table_name}." : "").str_replace("ca_attribute_", "", $va_bundle['bundle_name'])] = 1;
+			}
+			ca_metadata_dictionary_entries::preloadDefinitions(array_keys($va_definition_bundle_names));
+		
 			if (is_subclass_of($this, 'BaseRelationshipModel')) {
 				$vs_type_id_fld = $this->getTypeFieldName();
 				if(isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes'])) {
-					$va_valid_element_codes = $this->getApplicableElementCodesForTypes(caMakeRelationshipTypeIDList($this->tableName(), $pa_options['restrictToTypes']));
+					$va_valid_element_codes = $this->getApplicableElementCodesForTypes(caMakeRelationshipTypeIDList($vs_table_name, $pa_options['restrictToTypes']));
 				} else {
 					$va_valid_element_codes = null;
 				}
@@ -1769,7 +1784,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$vs_hier_parent_id_fld = isset($this->HIERARCHY_PARENT_ID_FLD) ? $this->HIERARCHY_PARENT_ID_FLD : null;
 			
 				if(isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes'])) {
-					$va_valid_element_codes = $this->getApplicableElementCodesForTypes(caMakeTypeIDList($this->tableName(), $pa_options['restrictToTypes']));
+					$va_valid_element_codes = $this->getApplicableElementCodesForTypes(caMakeTypeIDList($vs_table_name, $pa_options['restrictToTypes']));
 				} else {
 					$va_valid_element_codes = null;
 				}
@@ -1807,7 +1822,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					$va_bundles_present[$va_bundle['bundle_name']] = true;
 					
 					$pa_placements["{$pm_screen}_{$vn_c}"] = array(
-						'name' => $vs_bundle_display_name ? $vs_bundle_display_name : $this->getDisplayLabel($this->tableName().".".$va_bundle['bundle_name'])
+						'name' => $vs_bundle_display_name ? $vs_bundle_display_name : $this->getDisplayLabel($vs_table_name.".".$va_bundle['bundle_name'])
 					);
 				}
 				$vn_c++;
@@ -1854,6 +1869,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 			}
 		}
+		
 		
  		return $va_bundle_html;
  	}

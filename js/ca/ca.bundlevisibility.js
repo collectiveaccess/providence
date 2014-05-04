@@ -87,6 +87,11 @@ var caUI = caUI || {};
 				});
 			} else {
 				jQuery("#" + id).slideDown(dontAnimate ? 0 : 250);
+				
+				if (jQuery("#" + id + 'DictionaryEntry').length && (that.bundleDictionaryStates[id] == 'open')) { 
+					jQuery("#" + id + 'DictionaryEntry').slideDown(dontAnimate ? 0 : 250);
+				}
+				
 				that.bundleStates[id] = 'open';
 				that.cookieJar.set(id, 'open');
 				
@@ -107,6 +112,11 @@ var caUI = caUI || {};
 				});
 			} else {
 				jQuery("#" + id).slideUp(dontAnimate ? 0 : 250);
+				
+				if (jQuery("#" + id + 'DictionaryEntry').length && (that.bundleDictionaryStates[id] == 'open')) { 
+					jQuery("#" + id + 'DictionaryEntry').slideUp(dontAnimate ? 0 : 250);
+				}
+				
 				that.bundleStates[id] = 'closed';
 				that.cookieJar.set(id, 'closed');
 				
@@ -140,6 +150,10 @@ var caUI = caUI || {};
 				jQuery("#" + id + 'DictionaryEntry').slideDown(dontAnimate ? 0 : 250);
 				that.bundleDictionaryStates[id] = 'open';
 				that.cookieJar.set(id + 'DictionaryEntry', 'open');
+				
+				if (that.bundleStates[id] == 'closed') {
+					that.open(id);
+				}
 				
 				if (dontAnimate) {
 					jQuery("#" + id + "MetadataDictionaryToggleButton").css("opacity", 1.0);

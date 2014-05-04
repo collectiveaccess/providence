@@ -2026,6 +2026,11 @@
 			require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
 			require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_entries.php');
 			
+			$t_entry = new ca_metadata_dictionary_entries();
+			$o_db = $t_entry->getDb();
+			$qr_res = $o_db->query("DELETE FROM ca_metadata_dictionary_rules");
+			$qr_res = $o_db->query("DELETE FROM ca_metadata_dictionary_entries");
+			
 			if (!($ps_source = (string)$po_opts->getOption('file'))) {
 				CLIUtils::addError(_t("You must specify a file"));
 				return false;
@@ -2044,7 +2049,7 @@
 			$o_sheet = $o_file->getActiveSheet();
 			$o_rows = $o_sheet->getRowIterator();
 			
-			$vn_add_count = $vn_modify_count = 0;
+			$vn_add_count = 0;
 			while ($o_rows->valid() && ($o_row = $o_rows->current())) {
 				$o_cells = $o_row->getCellIterator();
 				$o_cells->setIterateOnlyExistingCells(false); 
@@ -2076,15 +2081,12 @@
 					if ($vn_c > 4) { break; }
 				}
 				$o_rows->next();
-				//print_R($va_data);
+				
 				// Insert entries
-				if (!($t_entry = ca_metadata_dictionary_entries::find(array('bundle_name' => $va_data[0]), array('returnAs' => 'firstModelInstance')))) {
-					$t_entry = new ca_metadata_dictionary_entries();
-					$t_entry->set('bundle_name', $va_data[0]);
-					$vn_add_count++;
-				} else {
-					$vn_modify_count++;
-				}
+				$t_entry = new ca_metadata_dictionary_entries();
+				$t_entry->set('bundle_name', $va_data[0]);
+				$vn_add_count++;
+			
 				$t_entry->setMode(ACCESS_WRITE);
 				$t_entry->setSetting('label', '');
 				$t_entry->setSetting('definition', $va_data[2]);
@@ -2108,9 +2110,8 @@
 				}
 			}
 		
-			
 
-			CLIUtils::addMessage(_t('Added %1 entries; modified %2 entries', $vn_add_count, $vn_modify_count), array('color' => 'bold_green'));
+			CLIUtils::addMessage(_t('Added %1 entries', $vn_add_count), array('color' => 'bold_green'));
 			return true;
 		}
 		# -------------------------------------------------------

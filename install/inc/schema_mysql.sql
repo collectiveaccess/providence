@@ -6479,8 +6479,7 @@ create table ca_metadata_dictionary_entries (
    entry_id                 int unsigned					not null AUTO_INCREMENT,
    bundle_name              varchar(255) not null,
    settings                 longtext not null,
-   primary key (entry_id),
-   unique index u_bundle_name (bundle_name)
+   primary key (entry_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
