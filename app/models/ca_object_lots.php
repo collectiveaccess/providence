@@ -284,6 +284,13 @@ class ca_object_lots extends RepresentableBaseModel {
 
 	protected $FIELDS;
 	
+	/**
+	 * Cache for object counts used by ca_object_lots::numObjects()
+	 *
+	 * @see ca_object_lots::numObjects()
+	 */
+	static $s_object_count_cache = array();
+	
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -316,30 +323,6 @@ class ca_object_lots extends RepresentableBaseModel {
 		$this->BUNDLES['ca_sets'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Sets'));
 		
 		$this->BUNDLES['ca_objects'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects'));
-	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Returns the number of ca_object rows related to the currently loaded object lot.
- 	 *
- 	 * @param int $pn_lot_id Optional lot_id to get object count for; if null then the id of the currently loaded lot will be used
- 	 * @return int Number of objects related to the object lot or null if $pn_lot_id is not set and there is no currently loaded lot
- 	 */
- 	 public function numObjects($pn_lot_id=null) {
- 	 	if (!$pn_lot_id) {
- 	 		if (!($vn_lot_id = $this->getPrimaryKey())) {
-				return null;
- 	 		}
- 	 	}
-		$o_db = $this->getDb();
-		$qr_res = $o_db->query("
-				SELECT count(*) c
-				FROM ca_objects
-				WHERE
-					lot_id = ? AND deleted = 0
-			", (int)$vn_lot_id);
-			
-		$qr_res->nextRow();
-		return (int)$qr_res->get('c');
 	}
 	# ------------------------------------------------------
  	/**
@@ -390,17 +373,52 @@ class ca_object_lots extends RepresentableBaseModel {
 	}
 	# ------------------------------------------------------
  	/**
+ 	 * Returns the number of ca_object rows related to the currently loaded object lot.
+ 	 *
+ 	 * @param int $pn_lot_id Optional lot_id to get object count for; if null then the id of the currently loaded lot will be used
+ 	 * @param array $pa_options Options include:
+ 	 *		return = Set to "components" to return the count of component objects only; "objects" to return the count of objects (but not components) or "all" to return a count of any kind of object. [Default = "all"]
+ 	 *		noCache = If set cached object counts are generated from the database and any cached counts are ignored. [Default = false]
+ 	 * @return int Number of objects related to the object lot or null if $pn_lot_id is not set and there is no currently loaded lot
+ 	 */
+ 	 public function numObjects($pn_lot_id=null, $pa_options=null) {
+ 	 	$vn_lot_id = $this->getPrimaryKey();
+ 	 	if ($pn_lot_id && ($pn_lot_id != $vn_lot_id)) {
+ 	 		$vn_lot_id = $pn_lot_id;
+ 	 	}
+ 	 	
+ 	 	$pb_no_cache = caGetOption('noCache', $pa_options, false);
+ 	 	
+ 	 	if (!$pb_no_cache) {
+ 	 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options);
+ 	 		if (isset(ca_object_lots::$s_object_count_cache[$vn_lot_id][$vs_cache_key])) {
+ 	 			return ca_object_lots::$s_object_count_cache[$vn_lot_id][$vs_cache_key];
+ 	 		}
+ 	 	}
+ 	 	return sizeof($this->getObjects($pn_lot_id, $pa_options));
+	}
+	# ------------------------------------------------------
+ 	/**
  	 * Returns a list of ca_object rows related to the currently loaded object lot.
  	 *
  	 * @param int $pn_lot_id Optional lot_id to get object list for; if null then the id of the currently loaded lot will be used
+ 	 * @param array $pa_options Options include:
+ 	 *		return = Set to "components" to return the count of component objects only; "objects" to return the count of objects (but not components) or "all" to return a count of any kind of object. [Default = "all"]
  	 * @return array List of objects related to the object lot or null if $pn_lot_id is not set and there is no currently loaded lot
  	 */
- 	 public function getObjects($pn_lot_id=null) {
- 	 	if (!$pn_lot_id) {
- 	 		if (!($vn_lot_id = $this->getPrimaryKey())) {
-				return null;
- 	 		}
+ 	 public function getObjects($pn_lot_id=null, $pa_options=null) {
+ 	 	$vn_lot_id = $this->getPrimaryKey();
+ 	 	if ($pn_lot_id && ($pn_lot_id != $vn_lot_id)) {
+ 	 		$vn_lot_id = $pn_lot_id;
  	 	}
+ 	 	
+ 	 	$ps_return = caGetOption('return', $pa_options, 'all');
+ 	 	$vs_cache_key = caMakeCacheKeyFromOptions($pa_options);
+ 	 	
+		if (is_array($va_component_types = $this->getAppConfig()->getList('ca_objects_component_types')) && sizeof($va_component_types)) {
+			$va_component_types = caMakeTypeIDList('ca_objects', $va_component_types);
+		}
+		
 		$o_db = $this->getDb();
 		$qr_res = $o_db->query("
 				SELECT *
@@ -410,13 +428,33 @@ class ca_object_lots extends RepresentableBaseModel {
 				ORDER BY
 					idno_sort
 			", (int)$vn_lot_id);
-			
+	
 		$va_rows = array();
 		while($qr_res->nextRow()) {
-			$va_rows[$qr_res->get('object_id')] = $qr_res->getRow();
+			$va_rows[$qr_res->get('object_id')] = 1;
 		}
+		if (!sizeof($va_rows)) { ca_object_lots::$s_object_count_cache[$vn_lot_id][$vs_cache_key] = 0; return array(); }
 		
-		return $va_rows;
+		
+		$qr_res = $o_db->query("
+			SELECT *
+			FROM ca_objects
+			WHERE
+				hier_object_id IN (?) AND deleted = 0
+			ORDER BY
+				idno_sort
+		", array(array_keys($va_rows)));
+	
+		$va_objects = array();
+		while($qr_res->nextRow()) {
+			$va_row = $qr_res->getRow();
+			if (($ps_return == 'objects') && in_array($va_row['type_id'], $va_component_types)) { continue; }
+			if (($ps_return == 'components') && !in_array($va_row['type_id'], $va_component_types)) { continue; }
+			$va_objects[$va_row['object_id']] = $va_row;
+		}
+				
+		ca_object_lots::$s_object_count_cache[$vn_lot_id][$vs_cache_key] = sizeof($va_objects); 
+ 	 	return $va_objects;
 	}
 	# ------------------------------------------------------
  	/**

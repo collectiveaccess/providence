@@ -338,9 +338,9 @@ class ca_commerce_order_items extends BaseModel {
 	 */
 	private function _preSaveActions() {
 		$t_order = $this->getOrder();
-		$vn_checkout_date = $this->get('loan_checkout_date', array('GET_DIRECT_DATE' => true));
-		$vn_return_date = $this->get('loan_return_date', array('GET_DIRECT_DATE' => true));
-		$vn_due_date = $this->get('loan_due_date', array('GET_DIRECT_DATE' => true));
+		$vn_checkout_date = $this->get('loan_checkout_date', array('getDirectDate' => true));
+		$vn_return_date = $this->get('loan_return_date', array('getDirectDate' => true));
+		$vn_due_date = $this->get('loan_due_date', array('getDirectDate' => true));
 		
 		//
 		// Is object available for checkout?
@@ -370,7 +370,7 @@ class ca_commerce_order_items extends BaseModel {
 			&&
 			($vn_return_date > 0)
 			&&
-			$this->get('loan_checkout_date', array('GET_DIRECT_DATE' => true)) > $vn_return_date
+			$this->get('loan_checkout_date', array('getDirectDate' => true)) > $vn_return_date
 		) {
 			$this->postError(1101, _t('Checkout date must be before return date'), 'ca_commerce_orders->_preSaveActions()');		
 		}
@@ -380,7 +380,7 @@ class ca_commerce_order_items extends BaseModel {
 			&&
 			($vn_due_date > 0)
 			&&
-			$this->get('loan_checkout_date', array('GET_DIRECT_DATE' => true)) > $vn_due_date
+			$this->get('loan_checkout_date', array('getDirectDate' => true)) > $vn_due_date
 		) {
 			$this->postError(1101, _t('Checkout date must be before due date'), 'ca_commerce_orders->_preSaveActions()');		
 		}

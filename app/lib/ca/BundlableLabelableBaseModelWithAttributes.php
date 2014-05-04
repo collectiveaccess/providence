@@ -1065,6 +1065,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		
+		
 		$va_info = $this->getBundleInfo($ps_bundle_name);
 		if (!($vs_type = $va_info['type'])) { return null; }
 		
@@ -1154,7 +1155,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 								'readonly' 					=> $vb_read_only,						
 								'error_icon' 				=> $pa_options['request']->getThemeUrlPath()."/graphics/icons/warning_small.gif",
 								'progress_indicator'		=> $pa_options['request']->getThemeUrlPath()."/graphics/icons/indicator.gif",
-								'lookup_url' 				=> $va_lookup_url_info['intrinsic']
+								'lookup_url' 				=> $va_lookup_url_info['intrinsic'],
+								
+								'name'						=> $ps_placement_code.$pa_options['formName'].$ps_bundle_name
 							),
 							$pa_options,
 							$va_additional_field_options
@@ -1180,6 +1183,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 				
 				$o_view->setVar('bundle_name', $ps_bundle_name);
+				
+				$o_view->setVar('id_prefix', $pa_options['formName']);
+				$o_view->setVar('placement_code', $ps_placement_code);
+				
 				$o_view->setVar('settings', $pa_bundle_settings);
 				$o_view->setVar('t_instance', $this);
 				$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
@@ -1264,7 +1271,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					case 'ca_movements':
 					case 'ca_tour_stops':
 						if (($ps_bundle_name != 'ca_object_representations') && ($this->_CONFIG->get($ps_bundle_name.'_disable'))) { return ''; }		// don't display if master "disable" switch is set
-						$vs_element = $this->getRelatedHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options);	
+						$vs_element = $this->getRelatedHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options);	
 						break;
 					# -------------------------------
 					case 'ca_object_lots':
@@ -1274,7 +1281,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						if (($this->tableName() != 'ca_object_lots') && ($vn_lot_id = $pa_options['request']->getParameter('lot_id', pInteger))) {
 							$pa_lot_options['force'][] = $vn_lot_id;
 						}
-						$vs_element = $this->getRelatedHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_lot_options);	
+						$vs_element = $this->getRelatedHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_lot_options);	
 						break;
 					# -------------------------------
 					case 'ca_representation_annotations':
@@ -1283,7 +1290,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						
 						$pa_options['fields'] = array('ca_representation_annotations.status', 'ca_representation_annotations.access', 'ca_representation_annotations.props', 'ca_representation_annotations.representation_id');
 						
-						$vs_element = $this->getRepresentationAnnotationHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options);	
+						$vs_element = $this->getRepresentationAnnotationHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);	
 
 						break;
 					# -------------------------------
@@ -1324,34 +1331,34 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$this->useInEditor()) { return null; }
 						foreach($this->getPropertyList() as $vs_property) {
-							$vs_element .= $this->getPropertyHTMLFormBundle($pa_options['request'], $vs_property, $pa_options);
+							$vs_element .= $this->getPropertyHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $vs_property, $pa_options);
 						}
 						break;
 					# -------------------------------
 					// This bundle is only available when editing objects of type ca_sets
 					case 'ca_set_items':
 						if ($vb_batch) { return null; } // not supported in batch mode
-						$vs_element .= $this->getSetItemHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $pa_options);
+						$vs_element .= $this->getSetItemHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
 						break;
 					# -------------------------------
 					// This bundle is only available for types which support set membership
 					case 'ca_sets':
 						require_once(__CA_MODELS_DIR__."/ca_sets.php");	// need to include here to avoid dependency errors on parse/compile
 						$t_set = new ca_sets();
-						$vs_element .= $t_set->getItemSetMembershipHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $this->tableNum(), $this->getPrimaryKey(), $pa_options['request']->getUserID(), $pa_bundle_settings, $pa_options);
+						$vs_element .= $t_set->getItemSetMembershipHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $this->tableNum(), $this->getPrimaryKey(), $pa_options['request']->getUserID(), $pa_bundle_settings, $pa_options);
 						break;
 					# -------------------------------
 					// This bundle is only available when editing objects of type ca_editor_uis
 					case 'ca_editor_ui_screens':
 						if ($vb_batch) { return null; } // not supported in batch mode
-						$vs_element .= $this->getScreenHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $pa_options);
+						$vs_element .= $this->getScreenHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
 						break;
 					# -------------------------------
 					// This bundle is only available when editing objects of type ca_editor_uis
 					case 'ca_editor_ui_type_restrictions':
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if (($t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->get('editor_type'), true)) && (is_subclass_of($t_instance, 'BaseRelationshipModel'))) { return null; } // interstitial forms don't support UI type restrictions
-						$vs_element .= $this->getTypeRestrictionsHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $pa_options);
+						$vs_element .= $this->getTypeRestrictionsHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
 						break;
 					# -------------------------------
 					// This bundle is only available when editing objects of type ca_editor_ui_screens
@@ -1359,26 +1366,26 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$t_editor = new ca_editor_uis($this->get('ui_id'));
 						if (
 							$t_editor && ($t_instance = $this->getAppDatamodel()->getInstanceByTableNum($t_editor->get('editor_type'), true)) && (is_subclass_of($t_instance, 'BaseRelationshipModel'))) { return null; } // interstitial forms don't support UI type restrictions
-						$vs_element .= $this->getTypeRestrictionsHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $pa_options);
+						$vs_element .= $this->getTypeRestrictionsHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
 						break;
 					# -------------------------------
 					// This bundle is only available when editing objects of type ca_editor_ui_screens
 					case 'ca_editor_ui_bundle_placements':
 						if ($vb_batch) { return null; } // not supported in batch mode
-						$vs_element .= $this->getPlacementsHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $pa_options);
+						$vs_element .= $this->getPlacementsHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
 						break;
 					# -------------------------------
 					// This bundle is only available when editing objects of type ca_tours
 					case 'ca_tour_stops_list':
 						if ($vb_batch) { return null; } // not supported in batch mode
-						$vs_element .= $this->getTourStopHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $pa_options);
+						$vs_element .= $this->getTourStopHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
 						break;
 					# -------------------------------
 					// Hierarchy navigation bar for hierarchical tables
 					case 'hierarchy_navigation':
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if ($this->isHierarchical()) {
-							$vs_element .= $this->getHierarchyNavigationHTMLFormBundle($pa_options['request'], $pa_options['formName'], array(), $pa_bundle_settings, $pa_options);
+							$vs_element .= $this->getHierarchyNavigationHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, array(), $pa_bundle_settings, $pa_options);
 						}
 						break;
 					# -------------------------------
@@ -1386,7 +1393,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					case 'hierarchy_location':
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if ($this->isHierarchical()) {
-							$vs_element .= $this->getHierarchyLocationHTMLFormBundle($pa_options['request'], $pa_options['formName'], array(), $pa_bundle_settings, $pa_options);
+							$vs_element .= $this->getHierarchyLocationHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, array(), $pa_bundle_settings, $pa_options);
 						}
 						break;
 					# -------------------------------
@@ -1394,36 +1401,36 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					case 'ca_search_form_placements':
 						if ($vb_batch) { return null; } // not supported in batch mode
 						//if (!$this->getPrimaryKey()) { return ''; }
-						$vs_element .= $this->getSearchFormHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $pa_options);
+						$vs_element .= $this->getSearchFormHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
 						break;
 					# -------------------------------
 					// This bundle is only available when editing objects of type ca_bundle_displays
 					case 'ca_bundle_display_placements':
 						if ($vb_batch) { return null; } // not supported in batch mode
 						//if (!$this->getPrimaryKey()) { return ''; }
-						$vs_element .= $this->getBundleDisplayHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $pa_options);
+						$vs_element .= $this->getBundleDisplayHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
 						break;
 					# -------------------------------
 					// This bundle is only available when editing objects of type ca_bundle_displays
 					case 'ca_bundle_display_type_restrictions':
-						$vs_element .= $this->getTypeRestrictionsHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $pa_options);
+						$vs_element .= $this->getTypeRestrictionsHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
 						break;
 					# -------------------------------
 					// 
 					case 'ca_users':
 						if (!$pa_options['request']->user->canDoAction('is_administrator') && ($pa_options['request']->getUserID() != $this->get('user_id'))) { return ''; }	// don't allow setting of per-user access if user is not owner
-						$vs_element .= $this->getUserHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $this->tableNum(), $this->getPrimaryKey(), $pa_options['request']->getUserID(), $pa_options);
+						$vs_element .= $this->getUserHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $this->tableNum(), $this->getPrimaryKey(), $pa_options['request']->getUserID(), $pa_options);
 						break;
 					# -------------------------------
 					// 
 					case 'ca_user_groups':
 						if (!$pa_options['request']->user->canDoAction('is_administrator') && ($pa_options['request']->getUserID() != $this->get('user_id'))) { return ''; }	// don't allow setting of group access if user is not owner
-						$vs_element .= $this->getUserGroupHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $this->tableNum(), $this->getPrimaryKey(), $pa_options['request']->getUserID(), $pa_options);
+						$vs_element .= $this->getUserGroupHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $this->tableNum(), $this->getPrimaryKey(), $pa_options['request']->getUserID(), $pa_options);
 						break;
 					# -------------------------------
 					case 'settings':
 						if ($vb_batch) { return null; } // not supported in batch mode
-						$vs_element .= $this->getHTMLSettingFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $pa_options);
+						$vs_element .= $this->getHTMLSettingFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
 						break;
 					# -------------------------------
 					// This bundle is only available when editing objects of type ca_object_representations
@@ -1444,13 +1451,42 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$pa_options['request']->user->canDoAction('can_manage_clients')) { break; }
 						$vs_label_text = ($pa_bundle_settings['order_type'][0] == 'O') ? _t('Order history') : _t('Loan history');
-						$vs_element .= $this->getCommerceOrderHistoryHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options);
+						$vs_element .= $this->getCommerceOrderHistoryHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						break;
+					# -------------------------------
+					// This bundle is only available for objects
+					case 'ca_objects_components_list':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
+						if (!$this->canTakeComponents()) { return null; }
+						$vs_element .= $this->getComponentListHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						
+						break;
+					# -------------------------------
+					// This bundle is only available for objects
+					case 'ca_objects_location':		// storage location via ca_objects_x_storage_locations or ca_movements_x_objects
+						if ($vb_batch) { return null; } 				// not supported in batch mode
+						if (!$this->getPrimaryKey()) { return null; }	// not supported for new records
+						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
+					
+						$vs_element .= $this->getObjectLocationHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						
+						break;
+					# -------------------------------
+					// This bundle is only available for objects
+					case 'ca_objects_history':		// summary of object accession, movement, exhibition and deaccession
+						if ($vb_batch) { return null; } // not supported in batch mode
+						if (!$this->getPrimaryKey()) { return null; }	// not supported for new records
+						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
+					
+						$vs_element .= $this->getObjectHistoryHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						
 						break;
 					# -------------------------------
 					// This bundle is only available for relationships that include an object on one end
 					case 'ca_object_representation_chooser':
 						if ($vb_batch) { return null; } // not supported in batch mode
-						$vs_element .= $this->getRepresentationChooserHTMLFormBundle($pa_options['request'], $pa_options['formName'].'_'.$ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options);
+						$vs_element .= $this->getRepresentationChooserHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 						break;
 					# -------------------------------
 					default:
@@ -1494,7 +1530,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 
 		$ps_bundle_label = $vs_label_text;
 		
-		return $vs_output;
+		return caGetOption('contentOnly', $pa_options, false) ? $vs_element : $vs_output;
 	}
 	# ------------------------------------------------------
 	public function getBundleList($pa_options=null) {
@@ -1777,6 +1813,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		} else {
  			$va_bundles = $t_ui->getScreenBundlePlacements($pm_screen);
  		}
+ 		
+ 		$vs_form_name = caGetOption('formName', $pa_options, '');
  
  		$va_bundle_html = array();
  		
@@ -1831,12 +1869,15 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				if (!$vb_output_bundle) { continue; }
 				
 				$va_bundle['settings']['placement_id'] = $va_bundle['placement_id'];
-				if ($vs_bundle_form_html = $this->getBundleFormHTML($va_bundle['bundle_name'], $va_bundle['placement_code'], $va_bundle['settings'], $pa_options, $vs_bundle_display_name)) {
+				if ($vs_bundle_form_html = $this->getBundleFormHTML($va_bundle['bundle_name'], 'P'.$va_bundle['placement_id'], $va_bundle['settings'], $pa_options, $vs_bundle_display_name)) {
 					$va_bundle_html[$va_bundle['placement_code']] = "<a name=\"{$pm_screen}_{$vn_c}\"></a>{$vs_bundle_form_html}";
 					$va_bundles_present[$va_bundle['bundle_name']] = true;
 					
 					$pa_placements["{$pm_screen}_{$vn_c}"] = array(
-						'name' => $vs_bundle_display_name ? $vs_bundle_display_name : $this->getDisplayLabel($this->tableName().".".$va_bundle['bundle_name'])
+						'name' => $vs_bundle_display_name ? $vs_bundle_display_name : $this->getDisplayLabel($this->tableName().".".$va_bundle['bundle_name']),
+						'placement_id' => $va_bundle['placement_id'],
+						'bundle' => $va_bundle['bundle_name'],
+						'id' => 'P'.$va_bundle['placement_id'].caGetOption('formName', $pa_options, '')
 					);
 				}
 				$vn_c++;
@@ -1890,25 +1931,25 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  	/**
  	 *
  	 */
-	public function getHierarchyNavigationHTMLFormBundle($po_request, $ps_form_name, $pa_options=null, $pa_bundle_settings=null) {
+	public function getHierarchyNavigationHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null, $pa_bundle_settings=null) {
 	
- 		$o_view = $this->_getHierarchyLocationHTMLFormBundleInfo($po_request, $ps_form_name, $pa_options, $pa_bundle_settings);
+ 		$o_view = $this->_getHierarchyLocationHTMLFormBundleInfo($po_request, $ps_form_name, $ps_placement_code, $pa_options, $pa_bundle_settings);
 		return $o_view->render('hierarchy_navigation.php');
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	public function getHierarchyLocationHTMLFormBundle($po_request, $ps_form_name, $pa_options=null, $pa_bundle_settings=null) {
+	public function getHierarchyLocationHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null, $pa_bundle_settings=null) {
 		
- 		$o_view = $this->_getHierarchyLocationHTMLFormBundleInfo($po_request, $ps_form_name, $pa_options, $pa_bundle_settings);
+ 		$o_view = $this->_getHierarchyLocationHTMLFormBundleInfo($po_request, $ps_form_name, $ps_placement_code, $pa_options, $pa_bundle_settings);
 		return $o_view->render('hierarchy_location.php');
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	private function _getHierarchyLocationHTMLFormBundleInfo($po_request, $ps_form_name, $pa_options=null, $pa_bundle_settings=null) {
+	private function _getHierarchyLocationHTMLFormBundleInfo($po_request, $ps_form_name, $ps_placement_code, $pa_options=null, $pa_bundle_settings=null) {
 		$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 		$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 		
@@ -1917,6 +1958,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if (!($vs_label_table_name = $this->getLabelTableName())) { return ''; }
 		
 		$o_view->setVar('id_prefix', $ps_form_name);
+		$o_view->setVar('placement_code', $ps_placement_code);
 		$o_view->setVar('t_subject', $this);
 		if (!($vn_id = $this->getPrimaryKey())) {
 			$vn_parent_id = $vn_id = $po_request->getParameter($this->HIERARCHY_PARENT_ID_FLD, pString);
@@ -2201,7 +2243,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					continue;
 				}
 				$va_info = $this->getBundleInfo($va_tmp['bundle_name']);
-				$va_fields_by_type[$va_info['type']][$va_tmp['placement_code']] = $va_tmp['bundle_name'];
+				$va_fields_by_type[$va_info['type']]['P'.$va_tmp['placement_id']] = $va_tmp['bundle_name'];
 			}
 		}
 			
@@ -2367,11 +2409,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	*/
 	public function saveBundlesForScreen($pm_screen, $po_request, &$pa_options) {
 		$vb_we_set_transaction = false;
+		$vs_form_prefix = caGetOption('formName', $pa_options, $po_request->getParameter('_formName', pString));
 		
-		$vs_form_prefix = $po_request->getParameter('_formName', pString);
-		
-		$vb_dryrun = (isset($pa_options['dryRun']) && $pa_options['dryRun']) ? true : false;
-		$vb_batch = (isset($pa_options['batch']) && $pa_options['batch']) ? true : false;
+		$vb_dryrun = caGetOption('dryRun', $pa_options, false);
+		$vb_batch = caGetOption('batch', $pa_options, false); 
 		
 		if (!$this->inTransaction()) {
 			$this->setTransaction(new Transaction($this->getDb()));
@@ -2386,28 +2427,24 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 
 		BaseModel::setChangeLogUnitID();
 		// get items on screen
-		if (isset($pa_options['ui_instance']) && ($pa_options['ui_instance'])) {
- 			$t_ui = $pa_options['ui_instance'];
- 		} else {
-			$t_ui = ca_editor_uis::loadDefaultUI($this->tableName(), $po_request, $this->getTypeID());
- 		}
+		$t_ui = caGetOption('ui_instance', $pa_options, ca_editor_uis::loadDefaultUI($this->tableName(), $po_request, $this->getTypeID()));
 		
 		$va_bundle_lists = $this->getBundleListsForScreen($pm_screen, $po_request, $t_ui, $pa_options);
 		
 		$va_bundles = $va_bundle_lists['bundles'];
 		$va_fields_by_type = $va_bundle_lists['fields_by_type'];
-	
+
 		// save intrinsic fields
 		if (is_array($va_fields_by_type['intrinsic'])) {
 			$vs_idno_field = $this->getProperty('ID_NUMBERING_ID_FIELD');
-			foreach($va_fields_by_type['intrinsic'] as $vs_f) {
+			foreach($va_fields_by_type['intrinsic'] as $vs_placement_code => $vs_f) {
 				if ($vb_batch) { 
 					$vs_batch_mode = $po_request->getParameter("{$vs_f}_batch_mode", pString);
 					if($vs_batch_mode == '_disabled_') { continue; }
 				}
-				if (isset($_FILES[$vs_f]) && $_FILES[$vs_f]) {
+				if (isset($_FILES["{$vs_placement_code}{$vs_form_prefix}{$vs_f}"]) && $_FILES["{$vs_placement_code}{$vs_form_prefix}{$vs_f}"]) {
 					// media field
-					$this->set($vs_f, $_FILES[$vs_f]['tmp_name'], array('original_filename' => $_FILES[$vs_f]['name']));
+					$this->set($vs_f, $_FILES["{$vs_placement_code}{$vs_form_prefix}{$vs_f}"]['tmp_name'], array('original_filename' => $_FILES["{$vs_placement_code}{$vs_form_prefix}{$vs_f}"]['name']));
 				} else {
 					switch($vs_f) {
 						case $vs_idno_field:
@@ -2415,11 +2452,16 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 								$this->opo_idno_plugin_instance->setDb($this->getDb());
 								$this->set($vs_f, $vs_tmp = $this->opo_idno_plugin_instance->htmlFormValue($vs_idno_field));
 							} else {
-								$this->set($vs_f, $po_request->getParameter($vs_f, pString));
+								$this->set($vs_f, $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}{$vs_f}", pString));
 							}
 							break;
 						default:
-							$this->set($vs_f, $po_request->getParameter($vs_f, pString));
+							// Look for fully qualified intrinsic
+							if(!($vs_v = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}{$vs_f}", pString))) {
+								// fall back to simple field name intrinsic spec - still used for "mandatory" fields such as type_id and parent_id
+								$vs_v = $po_request->getParameter("{$vs_f}", pString);
+							}
+							$this->set($vs_f, $vs_v);
 							break;
 					}
 				}
@@ -2482,7 +2524,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 				foreach($_REQUEST as $vs_key => $vs_val) {
 					// is it a newly created attribute?
-					if (preg_match('/'.$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_([\w\d\-_]+)_new_([\d]+)/', $vs_key, $va_matches)) { 
+					if (preg_match($x='/'.$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_([\w\d\-_]+)_new_([\d]+)/', $vs_key, $va_matches)) { 
 						if ($vb_batch) {
 							switch($vs_batch_mode) {
 								case '_disabled_':		// skip
@@ -2600,39 +2642,45 @@ if (!$vb_batch) {
 }
 		
 if (!$vb_batch) {		// hierarchy moves are not supported in batch mode
-
-		$va_parent_tmp = explode("-", $po_request->getParameter($vs_form_prefix.'HierLocation_new_parent_id', pString));
-		
-		// Hierarchy browser sets new_parent_id param to "X" if user wants to extract item from hierarchy
-		$vn_parent_id = (($vn_parent_id = array_pop($va_parent_tmp)) == 'X') ? -1 : (int)$vn_parent_id;
-		if (sizeof($va_parent_tmp) > 0) { $vs_parent_table = array_pop($va_parent_tmp); } else { $vs_parent_table = $this->tableName(); }
-		
-		if ($this->getPrimaryKey() && $this->HIERARCHY_PARENT_ID_FLD && ($vn_parent_id > 0)) {
+	if (is_array($va_fields_by_type['special'])) {
+		foreach($va_fields_by_type['special'] as $vs_placement_code => $vs_bundle) {
+			if ($vs_bundle !== 'hierarchy_location') { continue; }
 			
-			if ($vs_parent_table == $this->tableName()) {
-				$this->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id);
+			$va_parent_tmp = explode("-", $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_new_parent_id", pString));
+		
+			// Hierarchy browser sets new_parent_id param to "X" if user wants to extract item from hierarchy
+			$vn_parent_id = (($vn_parent_id = array_pop($va_parent_tmp)) == 'X') ? -1 : (int)$vn_parent_id;
+			if (sizeof($va_parent_tmp) > 0) { $vs_parent_table = array_pop($va_parent_tmp); } else { $vs_parent_table = $this->tableName(); }
+		
+			if ($this->getPrimaryKey() && $this->HIERARCHY_PARENT_ID_FLD && ($vn_parent_id > 0)) {
+			
+				if ($vs_parent_table == $this->tableName()) {
+					$this->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id);
+				} else {
+					if ((bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && ($vs_parent_table == 'ca_collections') && ($this->tableName() == 'ca_objects') && ($vs_coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))) {
+						// link object to collection
+						$this->removeRelationships('ca_collections', $vs_coll_rel_type);
+						$this->set($this->HIERARCHY_PARENT_ID_FLD, null);
+						$this->set($this->HIERARCHY_ID_FLD, $this->getPrimaryKey());
+						if (!($this->addRelationship('ca_collections', $vn_parent_id, $vs_coll_rel_type))) {
+							$this->postError(2510, _t('Could not move object under collection: %1', join("; ", $this->getErrors())), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");
+						}
+					}
+				}
 			} else {
-				if ((bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && ($vs_parent_table == 'ca_collections') && ($this->tableName() == 'ca_objects') && ($vs_coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))) {
-					// link object to collection
-					$this->removeRelationships('ca_collections', $vs_coll_rel_type);
+				if ($this->getPrimaryKey() && $this->HIERARCHY_PARENT_ID_FLD && ($this->HIERARCHY_TYPE == __CA_HIER_TYPE_ADHOC_MONO__) && isset($_REQUEST["{$vs_placement_code}{$vs_form_prefix}_new_parent_id"]) && ($vn_parent_id <= 0)) {
 					$this->set($this->HIERARCHY_PARENT_ID_FLD, null);
 					$this->set($this->HIERARCHY_ID_FLD, $this->getPrimaryKey());
-					if (!($this->addRelationship('ca_collections', $vn_parent_id, $vs_coll_rel_type))) {
-						$this->postError(2510, _t('Could not move object under collection: %1', join("; ", $this->getErrors())), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");
+				
+					// Support for collection-object cross-table hierarchies
+					if ((bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && ($this->tableName() == 'ca_objects') && ($vs_coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type')) && ($vn_parent_id == -1)) {	// -1 = extract from hierarchy
+						$this->removeRelationships('ca_collections', $vs_coll_rel_type);
 					}
 				}
 			}
-		} else {
-			if ($this->getPrimaryKey() && $this->HIERARCHY_PARENT_ID_FLD && ($this->HIERARCHY_TYPE == __CA_HIER_TYPE_ADHOC_MONO__) && isset($_REQUEST[$vs_form_prefix.'HierLocation_new_parent_id']) && ($vn_parent_id <= 0)) {
-				$this->set($this->HIERARCHY_PARENT_ID_FLD, null);
-				$this->set($this->HIERARCHY_ID_FLD, $this->getPrimaryKey());
-				
-				// Support for collection-object cross-table hierarchies
-				if ((bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && ($this->tableName() == 'ca_objects') && ($vs_coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type')) && ($vn_parent_id == -1)) {	// -1 = extract from hierarchy
-					$this->removeRelationships('ca_collections', $vs_coll_rel_type);
-				}
-			}
+			break;
 		}
+	}
 }
 		
 		//
@@ -2902,7 +2950,6 @@ if (!$vb_batch) {
 		if (isset($va_fields_by_type['related_table']) && is_array($va_fields_by_type['related_table'])) {
 			foreach($va_fields_by_type['related_table'] as $vs_placement_code => $vs_f) {
 				$vn_table_num = $this->_DATAMODEL->getTableNum($vs_f);
-				$vs_prefix_stub = $vs_placement_code.$vs_form_prefix.'_'.$vs_f.'_';
 				
 				// get settings
 				$va_bundle_settings = array();
@@ -2918,6 +2965,7 @@ if (!$vb_batch) {
 					case 'ca_object_representations':
 						// check for existing representations to update (or delete)
 						
+						$vs_prefix_stub = $vs_placement_code.$vs_form_prefix.'_';
 						$vb_allow_fetching_of_urls = (bool)$this->_CONFIG->get('allow_fetching_of_media_from_remote_urls');
 						$va_rep_ids_sorted = $va_rep_sort_order = explode(';',$po_request->getParameter($vs_prefix_stub.'ObjectRepresentationBundleList', pString));
 						sort($va_rep_ids_sorted, SORT_NUMERIC);
@@ -3076,7 +3124,7 @@ if (!$vb_batch) {
 					case 'ca_loans':
 					case 'ca_movements':
 					case 'ca_tour_stops':
-						$this->_processRelated($po_request, $vs_f, $vs_placement_code.$vs_form_prefix, array('batch' => $vb_batch, 'settings' => $va_bundle_settings));
+						$this->_processRelated($po_request, $vs_f, $vs_form_prefix, $vs_placement_code, array('batch' => $vb_batch, 'settings' => $va_bundle_settings));
 						break;
 					# -------------------------------------
 					case 'ca_representation_annotations':
@@ -3097,7 +3145,7 @@ if (!$vb_batch) {
 				// get settings
 				$va_bundle_settings = array();
 				foreach($va_bundles as $va_bundle_info) {
-					if ($va_bundle_info['placement_code'] == $vs_placement_code) {
+					if ('P'.$va_bundle_info['placement_id'] == $vs_placement_code) {
 						$va_bundle_settings = $va_bundle_info['settings'];
 						break;
 					}
@@ -3110,7 +3158,7 @@ if (!$vb_batch) {
 						if ($vb_batch) { break; } // not supported in batch mode
 						if (!$this->useInEditor()) { break; }
 						foreach($this->getPropertyList() as $vs_property) {
-							$this->setPropertyValue($vs_property, $po_request->getParameter($vs_property, pString));
+							$this->setPropertyValue($vs_property, $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}{$vs_property}", pString));
 						}
 						if (!$this->validatePropertyValues()) {
 							$po_request->addActionErrors($this->errors(), 'ca_representation_annotation_properties', 'general');
@@ -3127,11 +3175,11 @@ if (!$vb_batch) {
 						$t_set = new ca_sets();
 if (!$vb_batch) {
 						$va_sets = caExtractValuesByUserLocale($t_set->getSetsForItem($this->tableNum(), $this->getPrimaryKey(), array('user_id' => $po_request->getUserID()))); 
-	
+
 						foreach($va_sets as $vn_set_id => $va_set_info) {
 							$vn_item_id = $va_set_info['item_id'];
 							
-							if ($po_request->getParameter($vs_form_prefix.'_ca_sets_set_id_'.$vn_item_id.'_delete', pString)) {
+							if ($po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_set_id_{$vn_item_id}_delete", pString)) {
 								// delete
 								$t_set->load($va_set_info['set_id']);
 								$t_set->removeItem($this->getPrimaryKey(), $po_request->getUserID());	// remove *all* instances of the item in the set, not just the specified id
@@ -3142,17 +3190,17 @@ if (!$vb_batch) {
 						}
 }
 						if ($vb_batch) {
-							$vs_batch_mode = $_REQUEST[$vs_form_prefix.'_ca_sets_batch_mode'];
+							$vs_batch_mode = $_REQUEST["{$vs_placement_code}{$vs_form_prefix}_batch_mode"];
 	
 							if ($vs_batch_mode == '_disabled_') { break;}
 							if ($vs_batch_mode == '_replace_') { $t_set->removeItemFromAllSets($this->tableNum(), $this->getPrimaryKey());}
 							if ($vs_batch_mode == '_delete_') { $t_set->removeItemFromAllSets($this->tableNum(), $this->getPrimaryKey()); break; }
 						}	
-											
+										
 						foreach($_REQUEST as $vs_key => $vs_value) {
-							if (!preg_match('/'.$vs_form_prefix.'_ca_sets_set_id_new_([\d]+)/', $vs_key, $va_matches)) { continue; }
+							if (!preg_match("/{$vs_placement_code}{$vs_form_prefix}_set_id_new_([\d]+)/", $vs_key, $va_matches)) { continue; }
 							$vn_c = intval($va_matches[1]);
-							if ($vn_new_set_id = $po_request->getParameter($vs_form_prefix.'_ca_sets_set_id_new_'.$vn_c, pString)) {
+							if ($vn_new_set_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_set_id_new_{$vn_c}", pString)) {
 								$t_set->load($vn_new_set_id);
 								$t_set->addItem($this->getPrimaryKey(), null, $po_request->getUserID());
 								if ($t_set->numErrors()) {
@@ -3169,7 +3217,7 @@ if (!$vb_batch) {
 						require_once(__CA_MODELS_DIR__.'/ca_sets.php');
 						require_once(__CA_MODELS_DIR__.'/ca_set_items.php');
 						
-						$va_row_ids = explode(';', $po_request->getParameter($vs_form_prefix.'_ca_set_itemssetRowIDList', pString));
+						$va_row_ids = explode(';', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}setRowIDList", pString));
 						$this->reorderItems($va_row_ids, array('user_id' => $po_request->getUserID()));
 						break;
 					# -------------------------------------
@@ -3190,19 +3238,19 @@ if (!$vb_batch) {
 					// This bundle is only available for ca_bundle_displays 
 					case 'ca_bundle_display_placements':
 						if ($vb_batch) { break; } // not supported in batch mode
-						$this->savePlacementsFromHTMLForm($po_request, $vs_form_prefix);
+						$this->savePlacementsFromHTMLForm($po_request, $vs_form_prefix, $vs_placement_code);
 						break;
 					# -------------------------------------
 					// This bundle is only available for ca_bundle_displays 
 					case 'ca_bundle_display_type_restrictions':
 						if ($vb_batch) { break; } // not supported in batch mode
-						$this->saveTypeRestrictionsFromHTMLForm($po_request, $vs_form_prefix);
+						$this->saveTypeRestrictionsFromHTMLForm($po_request, $vs_form_prefix, $vs_placement_code);
 						break;
 					# -------------------------------------
 					// This bundle is only available for ca_search_forms 
 					case 'ca_search_form_placements':
 						if ($vb_batch) { break; } // not supported in batch mode
-						$this->savePlacementsFromHTMLForm($po_request, $vs_form_prefix);
+						$this->savePlacementsFromHTMLForm($po_request, $vs_form_prefix, $vs_placement_code);
 						break;
 					# -------------------------------------
 					// This bundle is only available for ca_editor_ui
@@ -3210,12 +3258,14 @@ if (!$vb_batch) {
 						if ($vb_batch) { break; } // not supported in batch mode
 						global $g_ui_locale_id;
 						require_once(__CA_MODELS_DIR__.'/ca_editor_ui_screens.php');
-						$va_screen_ids = explode(';', $po_request->getParameter($vs_form_prefix.'_ca_editor_ui_screens_ScreenBundleList', pString));
+						$va_screen_ids = explode(';', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_ScreenBundleList", pString));
+					
 						
 						foreach($_REQUEST as $vs_key => $vs_val) {
 							if (is_array($vs_val)) { continue; }
 							if (!($vs_val = trim($vs_val))) { continue; }
-							if (preg_match("!^{$vs_form_prefix}_ca_editor_ui_screens_name_new_([\d]+)$!", $vs_key, $va_matches)) {
+							
+							if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_name_new_([\d]+)$!", $vs_key, $va_matches)) {
 								if (!($t_screen = $this->addScreen($vs_val, $g_ui_locale_id, 'screen_'.$this->getPrimaryKey().'_'.$va_matches[1]))) { break; }
 								
 								if ($vn_fkey = array_search("new_".$va_matches[1], $va_screen_ids)) {
@@ -3226,7 +3276,7 @@ if (!$vb_batch) {
 								continue;
 							}
 							
-							if (preg_match("!^{$vs_form_prefix}_ca_editor_ui_screens_([\d]+)_delete$!", $vs_key, $va_matches)) {
+							if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_([\d]+)_delete$!", $vs_key, $va_matches)) {
 								$this->removeScreen($va_matches[1]);
 								if ($vn_fkey = array_search($va_matches[1], $va_screen_ids)) { unset($va_screen_ids[$vn_fkey]); }
 							}
@@ -3237,19 +3287,19 @@ if (!$vb_batch) {
 					// This bundle is only available for ca_editor_ui_screens
 					case 'ca_editor_ui_bundle_placements':
 						if ($vb_batch) { break; } // not supported in batch mode
-						$this->savePlacementsFromHTMLForm($po_request, $vs_form_prefix);
+						$this->savePlacementsFromHTMLForm($po_request, $vs_form_prefix, $vs_placement_code);
 						break;
 					# -------------------------------------
 					// This bundle is only available for ca_editor_uis
 					case 'ca_editor_ui_type_restrictions':
 						if ($vb_batch) { break; } // not supported in batch mode
-						$this->saveTypeRestrictionsFromHTMLForm($po_request, $vs_form_prefix);
+						$this->saveTypeRestrictionsFromHTMLForm($po_request, $vs_form_prefix, $vs_placement_code);
 						break;
 					# -------------------------------------
 					// This bundle is only available for ca_editor_ui_screens
 					case 'ca_editor_ui_screen_type_restrictions':
 						if ($vb_batch) { break; } // not supported in batch mode
-						$this->saveTypeRestrictionsFromHTMLForm($po_request, $vs_form_prefix);
+						$this->saveTypeRestrictionsFromHTMLForm($po_request, $vs_form_prefix, $vs_placement_code);
 						break;
 					# -------------------------------------
 					// This bundle is only available for ca_tours
@@ -3257,12 +3307,12 @@ if (!$vb_batch) {
 						if ($vb_batch) { break; } // not supported in batch mode
 						global $g_ui_locale_id;
 						require_once(__CA_MODELS_DIR__.'/ca_tour_stops.php');
-						$va_stop_ids = explode(';', $po_request->getParameter($vs_form_prefix.'_ca_tour_stops_list_StopBundleList', pString));
-						
+						$va_stop_ids = explode(';', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_StopBundleList", pString));
+					
 						foreach($_REQUEST as $vs_key => $vs_val) {
 							if (!($vs_val = trim($vs_val))) { continue; }
-							if (preg_match("!^{$vs_form_prefix}_ca_tour_stops_list_name_new_([\d]+)$!", $vs_key, $va_matches)) {
-								$vn_type_id = $_REQUEST["{$vs_form_prefix}_ca_tour_stops_list_type_id_new_".$va_matches[1]];
+							if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_name_new_([\d]+)$!", $vs_key, $va_matches)) {
+								$vn_type_id = $_REQUEST["{$vs_placement_code}{$vs_form_prefix}_type_id_new_".$va_matches[1]];
 								if (!($t_stop = $this->addStop($vs_val, $vn_type_id, $g_ui_locale_id, mb_substr(preg_replace('![^A-Za-z0-9_]+!', '_', $vs_val),0, 255)))) { break; }
 								
 								if ($vn_fkey = array_search("new_".$va_matches[1], $va_stop_ids)) {
@@ -3273,94 +3323,12 @@ if (!$vb_batch) {
 								continue;
 							}
 							
-							if (preg_match("!^{$vs_form_prefix}_ca_tour_stops_list_([\d]+)_delete$!", $vs_key, $va_matches)) {
+							if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_([\d]+)_delete$!", $vs_key, $va_matches)) {
 								$this->removeStop($va_matches[1]);
 								if ($vn_fkey = array_search($va_matches[1], $va_stop_ids)) { unset($va_stop_ids[$vn_fkey]); }
 							}
 						}
 						$this->reorderStops($va_stop_ids);
-						break;
-					# -------------------------------------
-					// This bundle is only available for ca_bundle_mappings
-					case 'ca_bundle_mapping_groups':
-						if ($vb_batch) { break; } // not supported in batch mode
-						global $g_ui_locale_id;
-						require_once(__CA_MODELS_DIR__.'/ca_bundle_mapping_groups.php');
-						$va_group_ids = explode(';', $po_request->getParameter($vs_form_prefix.'_ca_bundle_mapping_groups_GroupBundleList', pString));
-						
-						foreach($_REQUEST as $vs_key => $vs_val) {
-							if (is_array($vs_val) || !($vs_val = trim($vs_val))) { continue; }
-							if (preg_match("!^{$vs_form_prefix}_ca_bundle_mapping_groups_name_new_([\d]+)$!", $vs_key, $va_matches)) {
-								if (!($t_group = $this->addGroup($vs_val, $vs_val, '', $g_ui_locale_id))) { break; }
-								
-								if ($vn_fkey = array_search("new_".$va_matches[1], $va_group_ids)) {
-									$va_group_ids[$vn_fkey] = $t_group->getPrimaryKey();
-								} else {
-									$va_group_ids[] = $t_group->getPrimaryKey();
-								}
-								continue;
-							}
-							
-							if (preg_match("!^{$vs_form_prefix}_ca_bundle_mapping_groups_([\d]+)_delete$!", $vs_key, $va_matches)) {
-								$this->removeGroup($va_matches[1]);
-								if ($vn_fkey = array_search($va_matches[1], $va_group_ids)) { unset($va_group_ids[$vn_fkey]); }
-							}
-						}
-						$this->reorderGroups($va_group_ids);
-						break;
-					# -------------------------------------
-					// This bundle is only available for ca_bundle_mapping_groups
-					case 'ca_bundle_mapping_rules':
-						if ($vb_batch) { break; } // not supported in batch mode
-						require_once(__CA_MODELS_DIR__.'/ca_bundle_mapping_rules.php');
-						$va_rule_ids = explode(';', $po_request->getParameter($vs_form_prefix.'_ca_bundle_mapping_rules_RuleBundleList', pString));
-						
-						foreach($_REQUEST as $vs_key => $vs_val) {
-							if (!$vs_val) { continue; }
-							//MappingGroupEditorForm_ca_bundle_mapping_rules_ca_path_suffix_new_0
-							if (preg_match("!^{$vs_form_prefix}_ca_bundle_mapping_rules_ca_path_suffix_new_([\d]+)$!", $vs_key, $va_matches)) {
-								
-								$vs_ca_path_suffix = $po_request->getParameter("{$vs_form_prefix}_ca_bundle_mapping_rules_ca_path_suffix_new_".$va_matches[1], pString);
-								$vs_external_path_suffix = $po_request->getParameter("{$vs_form_prefix}_ca_bundle_mapping_rules_external_path_suffix_new_".$va_matches[1], pString);
-								if (!($t_rule = $this->addRule($vs_ca_path_suffix, $vs_external_path_suffix, '', array()))) { break; }
-								
-								if ($vn_fkey = array_search("new_".$va_matches[1], $va_rule_ids)) {
-									$va_rule_ids[$vn_fkey] = $t_rule->getPrimaryKey();
-								} else {
-									$va_rule_ids[] = $t_rule->getPrimaryKey();
-								}
-								
-								// save settings
-								foreach($t_rule->getAvailableSettings() as $vs_setting => $va_setting_info) {
-									$vs_setting_value = $po_request->getParameter("{$vs_form_prefix}_ca_bundle_mapping_rules_setting_new_".$va_matches[1]."_{$vs_setting}", pString);
-									$t_rule->setSetting($vs_setting, $vs_setting_value);
-								}
-								$t_rule->update();
-								continue;
-							}
-							
-							if (preg_match("!^{$vs_form_prefix}_ca_bundle_mapping_rules_ca_path_suffix_([\d]+)$!", $vs_key, $va_matches)) {
-								$t_rule = new ca_bundle_mapping_rules($va_matches[1]);
-								$t_rule->setMode(ACCESS_WRITE);
-								$t_rule->set('ca_path_suffix', $po_request->getParameter($vs_key, pString));
-								$t_rule->set('external_path_suffix', $po_request->getParameter("{$vs_form_prefix}_ca_bundle_mapping_rules_external_path_suffix_".$va_matches[1], pString));
-								
-								// save settings
-								foreach($t_rule->getAvailableSettings() as $vs_setting => $va_setting_info) {
-									$vs_setting_value = $po_request->getParameter("{$vs_form_prefix}_ca_bundle_mapping_rules_setting_".$t_rule->getPrimaryKey()."_{$vs_setting}", pString);
-									$t_rule->setSetting($vs_setting, $vs_setting_value);
-								}
-								
-								$t_rule->update();
-								continue;
-							}
-							
-							if (preg_match("!^{$vs_form_prefix}_ca_bundle_mapping_rules_([\d]+)_delete$!", $vs_key, $va_matches)) {
-								$this->removeRule($va_matches[1]);
-								if ($vn_fkey = array_search($va_matches[1], $va_rule_ids)) { unset($va_rule_ids[$vn_fkey]); }
-							}
-						}
-						$this->reorderRules($va_rule_ids);
 						break;
 					# -------------------------------------
 					case 'ca_user_groups':
@@ -3370,10 +3338,10 @@ if (!$vb_batch) {
 	
 						$va_groups_to_set = $va_group_effective_dates = array();
 						foreach($_REQUEST as $vs_key => $vs_val) { 
-							if (preg_match("!^{$vs_form_prefix}_ca_user_groups_id(.*)$!", $vs_key, $va_matches)) {
-								$vs_effective_date = $po_request->getParameter($vs_form_prefix.'_ca_user_groups_effective_date_'.$va_matches[1], pString);
-								$vn_group_id = (int)$po_request->getParameter($vs_form_prefix.'_ca_user_groups_id'.$va_matches[1], pInteger);
-								$vn_access = $po_request->getParameter($vs_form_prefix.'_ca_user_groups_access_'.$va_matches[1], pInteger);
+							if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_id(.*)$!", $vs_key, $va_matches)) {
+								$vs_effective_date = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_effective_date_".$va_matches[1], pString);
+								$vn_group_id = (int)$po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_id".$va_matches[1], pInteger);
+								$vn_access = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_access_".$va_matches[1], pInteger);
 								if ($vn_access > 0) {
 									$va_groups_to_set[$vn_group_id] = $vn_access;
 									$va_group_effective_dates[$vn_group_id] = $vs_effective_date;
@@ -3392,10 +3360,10 @@ if (!$vb_batch) {
 	
 						$va_users_to_set = $va_user_effective_dates = array();
 						foreach($_REQUEST as $vs_key => $vs_val) { 
-							if (preg_match("!^{$vs_form_prefix}_ca_users_id(.*)$!", $vs_key, $va_matches)) {
-								$vs_effective_date = $po_request->getParameter($vs_form_prefix.'_ca_users_effective_date_'.$va_matches[1], pString);
-								$vn_user_id = (int)$po_request->getParameter($vs_form_prefix.'_ca_users_id'.$va_matches[1], pInteger);
-								$vn_access = $po_request->getParameter($vs_form_prefix.'_ca_users_access_'.$va_matches[1], pInteger);
+							if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_id(.*)$!", $vs_key, $va_matches)) {
+								$vs_effective_date = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_effective_date_".$va_matches[1], pString);
+								$vn_user_id = (int)$po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_id".$va_matches[1], pInteger);
+								$vn_access = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_access_".$va_matches[1], pInteger);
 								if ($vn_access > 0) {
 									$va_users_to_set[$vn_user_id] = $vn_access;
 									$va_user_effective_dates[$vn_user_id] = $vs_effective_date;
@@ -3409,7 +3377,7 @@ if (!$vb_batch) {
 					# -------------------------------------
 					case 'settings':
 						if ($vb_batch) { break; } // not supported in batch mode
-						$this->setSettingsFromHTMLForm($po_request);
+						$this->setSettingsFromHTMLForm($po_request, array('id' => $vs_form_prefix, 'placement_code' => $vs_placement_code));
 						break;
 					# -------------------------------
 					// This bundle is only available when editing objects of type ca_object_representations
@@ -3417,18 +3385,18 @@ if (!$vb_batch) {
 						if ($vb_batch) { break; } // not supported in batch mode
 						$va_versions_to_process = null;
 						
-						if ($vb_use_options = (bool)$po_request->getParameter($vs_placement_code.$vs_form_prefix.'_media_display_derivative_options_selector', pInteger)) {
+						if ($vb_use_options = (bool)$po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_derivative_options_selector", pInteger)) {
 							// update only specified versions
-							$va_versions_to_process =  $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_media_display_set_versions', pArray);
+							$va_versions_to_process =  $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_set_versions", pArray);
 						} 
 					
 						if (!is_array($va_versions_to_process) || !sizeof($va_versions_to_process)) {
 							$va_versions_to_process = array('_all');	
 						}
 						
-						if ($vb_use_options && ($po_request->getParameter($vs_placement_code.$vs_form_prefix.'_media_display_derivative_options_mode', pString) == 'timecode')) {
+						if ($vb_use_options && ($po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_derivative_options_mode", pString) == 'timecode')) {
 							// timecode
-							if (!(string)($vs_timecode = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_media_display_derivative_options_mode_timecode_value', pString))) {
+							if (!(string)($vs_timecode = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_derivative_options_mode_timecode_value", pString))) {
 								$vs_timecode = "1s";
 							}
 							//
@@ -3442,8 +3410,8 @@ if (!$vb_batch) {
 							}
 							
 						} else {
-							if ($vb_use_options && ($po_request->getParameter($vs_placement_code.$vs_form_prefix.'_media_display_derivative_options_mode', pString) == 'page')) {
-								if (!(int)($vn_page = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_media_display_derivative_options_mode_page_value', pInteger))) {
+							if ($vb_use_options && ($po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_derivative_options_mode", pString) == 'page')) {
+								if (!(int)($vn_page = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_derivative_options_mode_page_value", pInteger))) {
 									$vn_page = 1;
 								}
 								//
@@ -3457,11 +3425,11 @@ if (!$vb_batch) {
 								}
 							} else {
 								// process file as new upload
-								$vs_key = $vs_placement_code.$vs_form_prefix.'_media_display_url';
+								$vs_key = "{$vs_placement_code}{$vs_form_prefix}_url";
 								if (($vs_media_url = trim($po_request->getParameter($vs_key, pString))) && isURL($vs_media_url)) {
 									$this->set('media', $vs_media_url);
 								} else {
-									$vs_key = $vs_placement_code.$vs_form_prefix.'_media_display_media';
+									$vs_key = "{$vs_placement_code}{$vs_form_prefix}_media";
 									if (isset($_FILES[$vs_key])) {
 										$this->set('media', $_FILES[$vs_key]['tmp_name'], array('original_filename' => $_FILES[$vs_key]['name']));
 									}
@@ -3484,12 +3452,12 @@ if (!$vb_batch) {
 				
 						$va_users_to_set = array();
 						foreach($_REQUEST as $vs_key => $vs_val) { 
-							if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_captions_locale_id(.*)$!", $vs_key, $va_matches)) {
-								$vn_locale_id = (int)$po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_captions_locale_id".$va_matches[1], pInteger);
-								$this->addCaptionFile($_FILES["{$vs_placement_code}{$vs_form_prefix}_captions_caption_file".$va_matches[1]]['tmp_name'], $vn_locale_id, array('originalFilename' => $_FILES["{$vs_placement_code}{$vs_form_prefix}_captions_caption_file".$va_matches[1]]['name']));
+							if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_locale_id(.*)$!", $vs_key, $va_matches)) {
+								$vn_locale_id = (int)$po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_locale_id".$va_matches[1], pInteger);
+								$this->addCaptionFile($_FILES["{$vs_placement_code}{$vs_form_prefix}_caption_file".$va_matches[1]]['tmp_name'], $vn_locale_id, array('originalFilename' => $_FILES["{$vs_placement_code}{$vs_form_prefix}_captions_caption_file".$va_matches[1]]['name']));
 							} else {
 								// any to delete?
-								if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_captions_([\d]+)_delete$!", $vs_key, $va_matches)) {
+								if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_([\d]+)_delete$!", $vs_key, $va_matches)) {
 									$this->removeCaptionFile((int)$va_matches[1]);
 								}
 							}
@@ -3500,9 +3468,9 @@ if (!$vb_batch) {
 					// This bundle is only available for relationships that include an object on one end
 					case 'ca_object_representation_chooser':
 						if ($vb_batch) { return null; } // not supported in batch mode
-						if (!is_array($va_rep_ids = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_ca_object_representation_chooser', pArray))) { $va_rep_ids = array(); }
+						if (!is_array($va_rep_ids = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}", pArray))) { $va_rep_ids = array(); }
 									
-						if ($vs_element_code = caGetOption('element_code', $va_bundle_settings, null)) {
+						if ($vs_element_code = caGetOption('elementCode', $va_bundle_settings, null)) {
 							if (!is_array($va_current_rep_ids = $this->get($vs_element_code, array('returnAsArray' => true, 'idsOnly' => true)))) { $va_current_rep_ids = array(); }
 							$va_current_rep_ids = caExtractValuesFromArrayList($va_current_rep_ids, $vs_element_code, array('preserveKeys' => true));
 						
@@ -3519,7 +3487,27 @@ if (!$vb_batch) {
 							$this->update();
 						}
 						break;
-					# -------------------------------------
+					# -------------------------------
+					// This bundle is only available for objects
+					case 'ca_objects_location':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
+						
+						if ($vn_location_id = $po_request->getParameter($x="{$vs_placement_code}{$vs_form_prefix}_idnew_0", pInteger)) {
+							if (
+								(is_array($va_relationship_types = caGetOption('ca_storage_locations_relationshipType', $va_bundle_settings, null)))
+								&& 
+								($vn_relationship_type_id = array_shift($va_relationship_types))
+							) {
+								if (!$this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id)) {
+									// TODO: error reporting
+								}
+							}
+							print_R($va_relationship_types);
+						}
+						
+						break;
+					# -------------------------------
 				}
 			}
 		}
@@ -3534,7 +3522,7 @@ if (!$vb_batch) {
  	/**
  	 *
  	 */
- 	private function _processRelated($po_request, $ps_bundlename, $ps_form_prefix, $pa_options=null) {
+ 	private function _processRelated($po_request, $ps_bundlename, $ps_form_prefix, $ps_placement_code, $pa_options=null) {
  		$pa_settings = caGetOption('settings', $pa_options, array());
  		$vb_batch = caGetOption('batch', $pa_options, false);
 		
@@ -3542,13 +3530,12 @@ if (!$vb_batch) {
 		$vn_max_relationships = caGetOption('maxRelationshipsPerRow', $pa_settings, 65535);
 		if ($vn_max_relationships == 0) { $vn_max_relationships = 65535; }
 		
- 		$va_rel_ids_sorted = $va_rel_sort_order = explode(';',$po_request->getParameter($ps_form_prefix.'_'.$ps_bundlename.'BundleList', pString));
+ 		$va_rel_ids_sorted = $va_rel_sort_order = explode(';',$po_request->getParameter("{$ps_placement_code}{$ps_form_prefix}BundleList", pString));
 		sort($va_rel_ids_sorted, SORT_NUMERIC);
 						
  		$va_rel_items = $this->getRelatedItems($ps_bundlename, $pa_settings);
  		
  		$va_rels_to_add = $va_rels_to_delete = array();
- 
  if(!$vb_batch) {	
 		foreach($va_rel_items as $va_rel_item) {
 			$vs_key = $va_rel_item['_key'];
@@ -3559,16 +3546,16 @@ if (!$vb_batch) {
 			}
 			
 			$this->clearErrors();
-			$vn_id = $po_request->getParameter($ps_form_prefix.'_'.$ps_bundlename.'_id'.$va_rel_item[$vs_key], pString);
+			$vn_id = $po_request->getParameter("{$ps_placement_code}{$ps_form_prefix}_id".$va_rel_item[$vs_key], pString);
 			if ($vn_id) {
-				$vn_type_id = $po_request->getParameter($ps_form_prefix.'_'.$ps_bundlename.'_type_id'.$va_rel_item[$vs_key], pString);
+				$vn_type_id = $po_request->getParameter("{$ps_placement_code}{$ps_form_prefix}_type_id".$va_rel_item[$vs_key], pString);
 				$vs_direction = null;
 				if (sizeof($va_tmp = explode('_', $vn_type_id)) == 2) {
 					$vn_type_id = (int)$va_tmp[1];
 					$vs_direction = $va_tmp[0];
 				}
 				
-				$vs_effective_daterange = $po_request->getParameter($ps_form_prefix.'_'.$ps_bundlename.'_effective_date'.$va_rel_item[$vs_key], pString);
+				$vs_effective_daterange = $po_request->getParameter("{$ps_placement_code}{$ps_form_prefix}_effective_date".$va_rel_item[$vs_key], pString);
 				$this->editRelationship($ps_bundlename, $va_rel_item[$vs_key], $vn_id, $vn_type_id, null, null, $vs_direction, $vn_rank);	
 					
 				if ($this->numErrors()) {
@@ -3577,7 +3564,7 @@ if (!$vb_batch) {
 			} else {
 				// is it a delete key?
 				$this->clearErrors();
-				if (($po_request->getParameter($ps_form_prefix.'_'.$ps_bundlename.'_'.$va_rel_item[$vs_key].'_delete', pInteger)) > 0) {
+				if (($po_request->getParameter("{$ps_placement_code}{$ps_form_prefix}_".$va_rel_item[$vs_key].'_delete', pInteger)) > 0) {
 					$va_rels_to_delete[] = array('bundle' => $ps_bundlename, 'relation_id' => $va_rel_item[$vs_key]);
 				}
 			}
@@ -3586,7 +3573,7 @@ if (!$vb_batch) {
  		
  		// check for new relations to add
  		if ($vb_batch) {
-			$vs_batch_mode = $_REQUEST[$ps_form_prefix.'_'.$ps_bundlename.'_batch_mode'];
+			$vs_batch_mode = $_REQUEST["{$ps_placement_code}{$ps_form_prefix}_batch_mode"];
  			if ($vb_batch_mode == '_disabled_') { return true; }
 			if ($vs_batch_mode == '_delete_') {				// remove all relationships and return
 				$this->removeRelationships($ps_bundlename);
@@ -3597,10 +3584,10 @@ if (!$vb_batch) {
 			}
 		}
  		foreach($_REQUEST as $vs_key => $vs_value ) {
-			if (preg_match('/^'.$ps_form_prefix.'_'.$ps_bundlename.'_idnew_([\d]+)/', $vs_key, $va_matches)) { 
+			if (preg_match("/^{$ps_placement_code}{$ps_form_prefix}_idnew_([\d]+)/", $vs_key, $va_matches)) { 
 				$vn_c = intval($va_matches[1]);
-				if ($vn_new_id = $po_request->getParameter($ps_form_prefix.'_'.$ps_bundlename.'_idnew_'.$vn_c, pString)) {
-					$vn_new_type_id = $po_request->getParameter($ps_form_prefix.'_'.$ps_bundlename.'_type_idnew_'.$vn_c, pString);
+				if ($vn_new_id = $po_request->getParameter("{$ps_placement_code}{$ps_form_prefix}_idnew_{$vn_c}", pString)) {
+					$vn_new_type_id = $po_request->getParameter("{$ps_placement_code}{$ps_form_prefix}_type_idnew_{$vn_c}", pString);
 				
 					$vs_direction = null;
 					if (sizeof($va_tmp = explode('_', $vn_new_type_id)) == 2) {
@@ -3616,8 +3603,8 @@ if (!$vb_batch) {
 			
 			// check for checklist mode ca_list_items
 			if ($ps_bundlename == 'ca_list_items') {
-				if (preg_match('/^'.$ps_form_prefix.'_'.$ps_bundlename.'_item_id_new_([\d]+)/', $vs_key, $va_matches)) { 
-					if ($vn_rel_type_id = $po_request->getParameter($ps_form_prefix.'_'.$ps_bundlename.'_type_idchecklist', pInteger)) {
+				if (preg_match("/^{$ps_placement_code}{$ps_form_prefix}_item_id_new_([\d]+)/", $vs_key, $va_matches)) { 
+					if ($vn_rel_type_id = $po_request->getParameter("{$ps_placement_code}{$ps_form_prefix}_type_idchecklist", pInteger)) {
 						if ($vn_item_id = $po_request->getParameter($vs_key, pInteger)) {
 							$va_rels_to_add[] = array(
 								'bundle' => $ps_bundlename, 'row_id' => $vn_item_id, 'type_id' => $vn_rel_type_id, 'direction' => null
@@ -3626,7 +3613,7 @@ if (!$vb_batch) {
 					}
 				}
 				
-				if (preg_match('/^'.$ps_form_prefix.'_'.$ps_bundlename.'_item_id_([\d]+)_delete/', $vs_key, $va_matches)) { 
+				if (preg_match("/^{$ps_placement_code}{$ps_form_prefix}_item_id_([\d]+)_delete/", $vs_key, $va_matches)) { 
 					if ($po_request->getParameter($vs_key, pInteger)) {
 						$va_rels_to_delete[] = array('bundle' => $ps_bundlename, 'relation_id' => $va_matches[1]);
 					}
@@ -3740,6 +3727,7 @@ if (!$vb_batch) {
 	 	if(isset($pa_options['returnLabelsAsArray']) && (!isset($pa_options['return_labels_as_array']) || !$pa_options['return_labels_as_array'])) { $pa_options['return_labels_as_array'] = $pa_options['returnLabelsAsArray']; }
 		if(isset($pa_options['restrictToLists']) && (!isset($pa_options['restrict_to_lists']) || !$pa_options['restrict_to_lists'])) { $pa_options['restrict_to_lists'] = $pa_options['restrictToLists']; }
 	 	if(isset($pa_options['groupFields'])) { $pa_options['groupFields'] = (bool)$pa_options['groupFields']; } else { $pa_options['groupFields'] = false; }
+	 	
 	 	
 		$o_db = $this->getDb();
 		$t_locale = new ca_locales();
@@ -4171,7 +4159,7 @@ if (!$vb_batch) {
 			}
 			
 			$vs_sql = "
-				SELECT ".join(', ', $va_selects)."
+				SELECT DISTINCT ".join(', ', $va_selects)."
 				FROM ".$this->tableName()."
 				".join("\n", array_merge($va_joins, $va_joins_post_add))."
 				WHERE

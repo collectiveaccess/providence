@@ -576,12 +576,13 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 * @return string Rendered HTML bundle for display
 	 */
-	public function getTourStopHTMLFormBundle($po_request, $ps_form_name) {
+	public function getTourStopHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null) {
 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 		
 		$o_view->setVar('t_tour', $this);		
 		$o_view->setVar('t_stop', new ca_tour_stops());		
 		$o_view->setVar('id_prefix', $ps_form_name);		
+		$o_view->setVar('placement_code', $ps_placement_code);		
 		$o_view->setVar('request', $po_request);
 		
 		if ($this->getPrimaryKey()) {

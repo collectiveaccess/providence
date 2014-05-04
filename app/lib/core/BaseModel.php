@@ -628,8 +628,8 @@ class BaseModel extends BaseObject {
 	 * 		DONT_PROCESS_GLOSSARY_TAGS: ?
 	 * 		CONVERT_HTML_BREAKS: similar to nl2br()
 	 * 		convertLineBreaks: same as CONVERT_HTML_BREAKS
-	 * 		GET_DIRECT_DATE: return raw date value from database if $ps_field adresses a date field, otherwise the value will be parsed using the TimeExpressionParser::getText() method
-	 * 		GET_DIRECT_TIME: return raw time value from database if $ps_field adresses a time field, otherwise the value will be parsed using the TimeExpressionParser::getText() method
+	 * 		getDirectDate: return raw date value from database if $ps_field adresses a date field, otherwise the value will be parsed using the TimeExpressionParser::getText() method
+	 * 		getDirectTime: return raw time value from database if $ps_field adresses a time field, otherwise the value will be parsed using the TimeExpressionParser::getText() method
 	 * 		TIMECODE_FORMAT: set return format for fields representing time ranges possible (string) values: COLON_DELIMITED, HOURS_MINUTES_SECONDS, RAW; data will be passed through floatval() by default
 	 * 		QUOTE: set return value into quotes
 	 * 		URL_ENCODE: value will be passed through urlencode()
@@ -903,7 +903,7 @@ class BaseModel extends BaseObject {
 			case (FT_HISTORIC_DATE):
 			case (FT_DATE):
 				$vn_timestamp = isset($this->_FIELD_VALUES[$ps_field]) ? $this->_FIELD_VALUES[$ps_field] : 0;
-				if (isset($pa_options["GET_DIRECT_DATE"]) && $pa_options["GET_DIRECT_DATE"]) {
+				if (caGetOption('GET_DIRECT_DATE', $pa_options, false) || caGetOption('getDirectDate', $pa_options, false)) {
 					$vs_prop = $this->_FIELD_VALUES[$ps_field];
 				} elseif ((isset($pa_options['sortable']) && $pa_options['sortable'])) {
 					$vs_prop = $vn_timestamp."/".$vn_timestamp;
@@ -923,7 +923,7 @@ class BaseModel extends BaseObject {
 				}
 				break;
 			case (FT_TIME):
-				if (isset($pa_options["GET_DIRECT_TIME"]) && $pa_options["GET_DIRECT_TIME"]) {
+				if (caGetOption('GET_DIRECT_TIME', $pa_options, false) || caGetOption('getDirectTime', $pa_options, false)) {
 					$vs_prop = $this->_FIELD_VALUES[$ps_field];
 				} else {
 					$o_tep = new TimeExpressionParser();
@@ -940,7 +940,7 @@ class BaseModel extends BaseObject {
 				
 				$vn_start_date = isset($this->_FIELD_VALUES[$vs_start_field_name]) ? $this->_FIELD_VALUES[$vs_start_field_name] : null;
 				$vn_end_date = isset($this->_FIELD_VALUES[$vs_end_field_name]) ? $this->_FIELD_VALUES[$vs_end_field_name] : null;
-				if (!isset($pa_options["GET_DIRECT_DATE"]) || !$pa_options["GET_DIRECT_DATE"]) {
+				if (!caGetOption('GET_DIRECT_DATE', $pa_options, false) && !caGetOption('getDirectDate', $pa_options, false)) {
 					$o_tep = new TimeExpressionParser();
 					if ($ps_field_type == FT_HISTORIC_DATERANGE) {
 						$o_tep->setHistoricTimestamps($vn_start_date, $vn_end_date);
@@ -951,7 +951,7 @@ class BaseModel extends BaseObject {
 				} elseif ((isset($pa_options['sortable']) && $pa_options['sortable'])) {
 					$vs_prop = $vn_start_date."/".$vn_timestamp;
 				} else {
-					$vs_prop = array($vn_start_date, $vn_end_date);
+					$vs_prop = $vn_start_date; //array($vn_start_date, $vn_end_date);
 				}
 				break;
 			case (FT_TIMERANGE):
@@ -961,7 +961,7 @@ class BaseModel extends BaseObject {
 				
 				$vn_start_date = isset($this->_FIELD_VALUES[$vs_start_field_name]) ? $this->_FIELD_VALUES[$vs_start_field_name] : null;
 				$vn_end_date = isset($this->_FIELD_VALUES[$vs_end_field_name]) ? $this->_FIELD_VALUES[$vs_end_field_name] : null;
-				if (!isset($pa_options["GET_DIRECT_TIME"]) || !$pa_options["GET_DIRECT_TIME"]) {
+				if (!caGetOption('GET_DIRECT_TIME', $pa_options, false) && !caGetOption('getDirectTime', $pa_options, false)) {
 					$o_tep = new TimeExpressionParser();
 					$o_tep->setTimes($vn_start_date, $vn_end_date);
 					$vs_prop = $o_tep->getText($pa_options);
@@ -6602,11 +6602,11 @@ class BaseModel extends BaseObject {
 	 * @access public
 	 * @param int $pn_id optional, id of record to be treated as root
 	 * @param array $pa_options
-	 *		returnDeleted = return deleted records in list (def. false)
+	 *		returnDeleted = return deleted records in list [default: false]
 	 *		additionalTableToJoin = name of table to join to hierarchical table (and return fields from); only fields related many-to-one are currently supported
-	 *		idsOnly = return simple array of primary key values for child records rather than full data array
+	 *		idsOnly = return simple array of primary key values for child records rather than full result
 	 *
-	 * @return DbResult
+	 * @return Mixed DbResult or array
 	 */
 	public function &getHierarchy($pn_id=null, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
@@ -10486,6 +10486,9 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 *			The default is AND
 	 *
+	 *		sort = field to sort on. Must be in <table>.<field> or <field> format and be an intrinsic field in the primary table. Sort order can be set using the sortDirection option.
+	 *		sortDirection = the direction of the sort. Values are ASC (ascending) and DESC (descending). Default is ASC.
+	 *
 	 * @return mixed Depending upon the returnAs option setting, an array, subclass of BaseModel or integer may be returned.
 	 */
 	public static function find($pa_values, $pa_options=null) {
@@ -10503,11 +10506,16 @@ $pa_options["display_form_field_tips"] = true;
 		//
 		// Convert type id
 		//
-		if (method_exists($t_instance, "getTypeFieldName")) {
-			$vs_type_field_name = $t_instance->getTypeFieldName();
-			if (isset($pa_values[$vs_type_field_name]) && !is_numeric($pa_values[$vs_type_field_name])) {
-				if ($vn_id = ca_lists::getItemID($this->getTypeListCode(), $pa_values[$vs_type_field_name])) {
-					$pa_values[$vs_type_field_name] = $vn_id;
+		$vs_type_field_name = null;
+		if (method_exists($this, "getTypeFieldName")) {
+			$vs_type_field_name = $this->getTypeFieldName();
+			if(!is_array($pa_values[$vs_type_field_name])) { $pa_values[$vs_type_field_name] = array($pa_values[$vs_type_field_name]); }
+			
+			foreach($pa_values[$vs_type_field_name] as $vn_i => $vm_value) {
+				if (!is_numeric($vm_value)) {
+					if ($vn_id = ca_lists::getItemID($this->getTypeListCode(), $vm_value)) {
+						$pa_values[$vs_type_field_name][$vn_i] = $vn_id;
+					}
 				}
 			}
 		}
@@ -10516,15 +10524,21 @@ $pa_options["display_form_field_tips"] = true;
 		// Convert other intrinsic list references
 		//
 		foreach($pa_values as $vs_field => $vm_value) {
+			if ($vs_field == $vs_type_field_name) { continue; }
 			if($vs_list_code = $t_instance->getFieldInfo($vs_field, 'LIST_CODE')) {
-				if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) {
-					$pa_values[$vs_field] = $vn_id;
+				if(!is_array($vm_value)) { $pa_values[$vs_field] = $vm_value = array($vm_value); }
+				
+				foreach($vm_value as $vn_i => $vm_ivalue) {
+					if (is_numeric($vm_ivalue)) { continue; }
+					if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_ivalue)) {
+						$pa_values[$vs_field][$vn_i] = $vn_id;
+					}
 				}
 			}
 		}
 		
 		foreach ($pa_values as $vs_field => $vm_value) {
-			if (is_array($vm_value)) { continue; }
+			//if (is_array($vm_value)) { continue; }
 		
 			# support case where fieldname is in format table.fieldname
 			if (preg_match("/([\w_]+)\.([\w_]+)/", $vs_field, $va_matches)) {
@@ -10544,25 +10558,65 @@ $pa_options["display_form_field_tips"] = true;
 
 			if ($t_instance->_getFieldTypeType($vs_field) == 0) {
 				if (!is_numeric($vm_value) && !is_null($vm_value)) {
-					$vm_value = intval($vm_value);
+					if (is_array($vm_value)) {
+						foreach($vm_value as $vn_i => $vm_ivalue) {
+							$vm_value[$vn_i] = intval($vm_ivalue);
+						}
+					} else {
+						$vm_value = intval($vm_value);
+					}
 				}
 			} else {
-				$vm_value = $t_instance->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
+				if (is_array($vm_value) && sizeof($vm_value)) {
+					foreach($vm_value as $vn_i => $vm_ivalue) {
+						$vm_value[$vn_i] = $this->quote($vs_field, $vm_ivalue);
+					}
+				} else {
+					$vm_value = $t_instance->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
+				}
 			}
 
 			if (is_null($vm_value)) {
 				$va_sql_wheres[] = "({$vs_field} IS NULL)";
 			} else {
 				if ($vm_value === '') { continue; }
-				$va_sql_wheres[] = "({$vs_field} = {$vm_value})";
+				if (is_array($vm_value)) {
+					if(!sizeof($vm_value)) { continue; }
+					$va_sql_wheres[] = "({$vs_field} IN (".join(",", $vm_value)."))";
+				} else {
+					$va_sql_wheres[] = "({$vs_field} = {$vm_value})";
+				}
 			}
 		}
 		if(!sizeof($va_sql_wheres)) { return null; }
 		$vs_deleted_sql = ($t_instance->hasField('deleted')) ? '(deleted = 0) AND ' : '';
 		$vs_sql = "SELECT * FROM {$vs_table} WHERE {$vs_deleted_sql} (".join(" {$ps_boolean} ", $va_sql_wheres).")";
 		
-		if ($o_trans instanceof Transaction) {
-			$o_db = $o_trans->getDb();
+		$vs_orderby = '';
+		if ($vs_sort = caGetOption('sort', $pa_options, null)) {
+			$vs_sort_direction = caGetOption('sortDirection', $pa_options, 'ASC', array('validValues' => array('ASC', 'DESC')));
+			$va_tmp = explode(".", $vs_sort);
+			if (sizeof($va_tmp) > 0) {
+				switch($va_tmp[0]) {
+					case $vs_table:
+						if ($t_instance->hasField($va_tmp[1])) {
+							$vs_orderby = " ORDER BY {$vs_sort} {$vs_sort_direction}";
+						}
+						break;
+					default:
+						if (sizeof($va_tmp) == 1) {
+							if ($t_instance->hasField($va_tmp[0])) {
+								$vs_orderby = " ORDER BY {$vs_sort} {$vs_sort_direction}";
+							}
+						}
+						break;
+				}
+			}
+			if ($vs_orderby) { $vs_sql .= $vs_orderby; }
+		}
+		
+		if (isset($pa_options['transaction']) && ($pa_options['transaction'] instanceof Transaction)) {
+			$o_db = $pa_options['transaction']->getDb();
 		} else {
 			$o_db = new Db();
 		}

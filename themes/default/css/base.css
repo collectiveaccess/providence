@@ -6237,6 +6237,11 @@ input[type='text'].ui-autocomplete-loading {
 }
 
 
+div.componentAddTypeList {
+    float: left;
+    margin-top: 6px;
+}
+
 /** Debug **/
 
 div.debug {
@@ -6725,4 +6730,68 @@ div.caRepresentationMediaReplicationControls {
 .toolPluginHelpText {
     margin: 5px 0 5px 0px;
     font-size:13px;
+}
+
+/** Object location tracking **/
+.caCurrentLocation {
+	padding: 10px;
+	margin-right: 12px;
+}
+
+div.caLocationHistory {
+	border-top: 1px dotted #e6e6e6;
+	padding: 10px;
+	margin-right: 12px;
+}
+
+div.caLocationHistoryTab {
+	max-height: 400px;
+	overflow: auto;
+}
+
+/** Object use history **/
+div.caUseHistoryEntry {
+	position: relative;
+	display: table; 
+	overflow: hidden;
+	font-weight: normal;
+	font-size: 11px;
+	
+	width: 100%;
+	
+	margin: 5px 0 0 0;
+	padding: 5px 0 5px 0;
+	border-top: 1px dotted #e6e6e6;
+}
+div.caUseHistoryIconContainer {
+	float: left;
+	display: table; 
+	width: 60px;
+	height: 60px; 
+	overflow: hidden;
+	
+	border: 2px solid #333;
+    border-radius: 5px;
+    
+	margin: 0 10px 0 0;
+}
+
+div.caUseHistoryIcon {
+	display: table-cell; 
+	vertical-align: middle;
+}
+
+div.caUseHistoryIconText {
+	text-align: center;
+	font-size: 11px;
+	font-style: italic;
+}
+
+div.caUseHistoryDate {
+	position: absolute;
+	bottom: 3px;
+	right: 3px;
+	
+	font-style: italic;
+	font-size: 9px;
 }

@@ -37,9 +37,9 @@
 	$va_errors = array();
 	$va_failed_inserts = array();
  
- 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_ui->tableNum().'_rel');
+ 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 ?>
-<div id="<?php print $vs_id_prefix.$t_ui->tableNum().'_rel'; ?>">
+<div id="<?php print $vs_id_prefix; ?>">
 <?php
 	//
 	// The bundle template - used to generate each bundle in the form
@@ -90,7 +90,7 @@
 ?>
 			
 <script type="text/javascript">
-	caUI.initBundle('#<?php print $vs_id_prefix.$t_ui->tableNum().'_rel'; ?>', {
+	caUI.initBundle('#<?php print $vs_id_prefix; ?>', {
 		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 		templateValues: ['name', 'locale_id', 'rank', 'screen_id', 'numPlacements', 'typeRestrictionsForDisplay', 'isDefault'],
 		initialValues: <?php print json_encode($va_initial_values); ?>,

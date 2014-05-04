@@ -476,7 +476,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				if (!$pb_settings_only) {
 					$t_placement->setSettingDefinitionsForPlacement($va_available_bundles[$vs_bundle_name]['settings']);
 					$va_placements[$vn_placement_id]['display'] = $va_available_bundles[$vs_bundle_name]['display'];
-					$va_placements[$vn_placement_id]['settingsForm'] = $t_placement->getHTMLSettingForm(array('id' => $vs_bundle_name.'_'.$vn_placement_id, 'settings' => $va_settings));
+					$va_placements[$vn_placement_id]['settingsForm'] = $t_placement->getHTMLSettingForm(array('id' => $vs_bundle_name.'_'.$vn_placement_id.'_', 'settings' => $va_settings));
 				} else {
 					$va_tmp = explode('.', $vs_bundle_name);
 					$t_instance = $o_dm->getInstanceByTableName($va_tmp[0], true);
@@ -823,7 +823,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 	 * @param $ps_form_name The name of the HTML form this bundle will be part of
 	 * @return string HTML for bundle
 	 */
-	public function getBundleDisplayHTMLFormBundle($po_request, $ps_form_name) {
+	public function getBundleDisplayHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null) {
 		if (!$this->haveAccessToDisplay($po_request->getUserID(), __CA_BUNDLE_DISPLAY_EDIT_ACCESS__)) {
 			return null;
 		}
@@ -832,6 +832,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		
 		$o_view->setVar('lookup_urls', caJSONLookupServiceUrl($po_request, $this->getAppDatamodel()->getTableName($this->get('table_num'))));
 		$o_view->setVar('t_display', $this);
+		$o_view->setVar('placement_code', $ps_placement_code);	
 		$o_view->setVar('id_prefix', $ps_form_name);		
 		
 		return $o_view->render('ca_bundle_display_placements.php');
@@ -1825,8 +1826,8 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		return $vs_val;
 	}
 	# ------------------------------------------------------
-	public function savePlacementsFromHTMLForm($po_request, $ps_form_prefix) {;
-		if ($vs_bundles = $po_request->getParameter($ps_form_prefix.'_ca_bundle_display_placementsdisplayBundleList', pString)) {
+	public function savePlacementsFromHTMLForm($po_request, $ps_form_prefix, $ps_placement_code) {;
+		if ($vs_bundles = $po_request->getParameter("{$ps_placement_code}{$ps_form_prefix}displayBundleList", pString)) {
 			$va_bundles = explode(';', $vs_bundles);
 			
 			$t_display = new ca_bundle_displays($this->getPrimaryKey());
@@ -1845,7 +1846,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			$va_locale_list = ca_locales::getLocaleList(array('index_by_code' => true));
-			
+
 			$va_available_bundles = $t_display->getAvailableBundles();
 			foreach($va_bundles as $vn_i => $vs_bundle) {
 				// get settings
@@ -1861,7 +1862,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				$va_settings = array();
 				
 				foreach($_REQUEST as $vs_key => $vs_val) {
-					if (preg_match("!^{$vs_bundle_proc}_([\d]+)_(.*)$!", $vs_key, $va_matches)) {
+					if (preg_match("!^{$vs_bundle_proc}_([\d]+)_([^\d]+.*)$!", $vs_key, $va_matches)) {
 						
 						// is this locale-specific?
 						if (preg_match('!(.*)_([a-z]{2}_[A-Z]{2})$!', $va_matches[2], $va_locale_matches)) {
@@ -2070,11 +2071,12 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 * @return string Rendered HTML bundle for display
 	 */
-	public function getTypeRestrictionsHTMLFormBundle($po_request, $ps_form_name) {
+	public function getTypeRestrictionsHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null) {
 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 		
 		$o_view->setVar('t_display', $this);			
-		$o_view->setVar('id_prefix', $ps_form_name);		
+		$o_view->setVar('id_prefix', $ps_form_name);	
+		$o_view->setVar('placement_code', $ps_placement_code);		
 		$o_view->setVar('request', $po_request);
 		
 		$va_type_restrictions = $this->getTypeRestrictions();
@@ -2092,7 +2094,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		return $o_view->render('ca_bundle_display_type_restrictions.php');
 	}
 	# ----------------------------------------
-	public function saveTypeRestrictionsFromHTMLForm($po_request, $ps_form_prefix) {
+	public function saveTypeRestrictionsFromHTMLForm($po_request, $ps_form_prefix, $ps_placement_code) {
 		if (!$this->getPrimaryKey()) { return null; }
 		
 		return $this->setTypeRestrictions($po_request->getParameter('type_restrictions', pArray));

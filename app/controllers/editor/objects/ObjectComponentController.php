@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/BaseQuickAddController.php : 
+ * app/lib/ca/ObjectComponentController.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2014 Whirl-i-Gig
+ * Copyright 2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,11 +41,13 @@
 	require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
  	require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
  
- 	class BaseQuickAddController extends ActionController {
+ 	class ObjectComponentController extends ActionController {
  		# -------------------------------------------------------
  		protected $opo_datamodel;
  		protected $opo_app_plugin_manager;
  		protected $opo_result_context;
+ 		
+ 		protected $ops_table_name = 'ca_objects';
  		# -------------------------------------------------------
  		#
  		# -------------------------------------------------------
@@ -69,12 +71,6 @@
  			$vs_field_name_prefix = $this->request->getParameter('fieldNamePrefix', pString);
  			$vs_n = $this->request->getParameter('n', pString);
  		
- 			// Is user allowed to quickadd?
- 			if (!(is_array($pa_options) && isset($pa_options['dontCheckQuickAddAction']) && (bool)$pa_options['dontCheckQuickAddAction']) && (!$this->request->user->canDoAction('can_quickadd_'.$t_subject->tableName()))) {
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2585?r='.urlencode($this->request->getFullUrlPath()));
-				return;
- 			}
- 			
  			if ($vn_parent_id = $this->request->getParameter('parent_id', pInteger)) {
  				$this->opo_result_context->setParameter($t_subject->tableName().'_last_parent_id', $vn_parent_id);
  			}
@@ -92,23 +88,6 @@
  				return;
  			}
  			
- 			//
- 			// Is record from correct source?
- 			// 
- 			$va_restrict_to_sources = null;
- 			if ($t_subject->getAppConfig()->get('perform_source_access_checking')) {
- 				$va_restrict_to_sources = caGetSourceRestrictionsForUser($this->ops_table_name, array('access' => $vn_subject_id ? __CA_BUNDLE_ACCESS_READONLY__ : __CA_BUNDLE_ACCESS_EDIT__));
- 			
- 				if (!$t_subject->get('source_id')) {
- 					$t_subject->set('source_id', $t_subject->getDefaultSourceID(array('request' => $this->request)));
- 				}
- 			
-				if (is_array($va_restrict_to_sources) && !in_array($t_subject->get('source_id'), $va_restrict_to_sources)) {
-					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2562?r='.urlencode($this->request->getFullUrlPath()));
-					return;
-				}
-			}
- 			
  			if(is_array($pa_values)) {
  				foreach($pa_values as $vs_key => $vs_val) {
  					$t_subject->set($vs_key, $vs_val);
@@ -116,48 +95,36 @@
  			}
  			
  			// Set "context" id from those editors that need to restrict idno lookups to within the context of another field value (eg. idno's for ca_list_items are only unique within a given list_id)
- 			if ($vs_idno_context_field = $t_subject->getProperty('ID_NUMBERING_CONTEXT_FIELD')) {
-				if ($vn_parent_id > 0) {
-					$t_parent = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
-					if ($t_parent->load($vn_parent_id)) {
+			if ($vn_parent_id > 0) {
+				$t_parent = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
+				if ($t_parent->load($vn_parent_id)) {
+					if ($vs_idno_context_field = $t_subject->getProperty('ID_NUMBERING_CONTEXT_FIELD')) {
 						$this->view->setVar('_context_id', $t_parent->get($vs_idno_context_field));
 					}
+					$t_subject->set('idno', $t_parent->get('idno'));
 				}
- 			}
+			}
  			
  			// Get type
- 			if (!($vn_type_id = $t_subject->getTypeID())) {
- 				if (!($vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pString))) {
- 					if ($vs_type = $this->request->config->get('quickadd_'.$t_subject->tableName().'_default_type')) {
- 						$va_tmp = caMakeTypeIDList($t_subject->tableName(), array($vs_type));
- 						$vn_type_id = array_shift($va_tmp);
- 					}
- 					if (!$vn_type_id) {
- 						$vn_type_id = $t_subject->getDefaultTypeID();
- 						$t_subject->set('type_id', $vn_type_id);
- 					}
- 				}
- 			}
+			if (!($vn_type_id = $this->request->getParameter($t_subject->getTypeFieldName(), pString))) {
+				$vn_type_id =  array_shift(caMakeTypeIDList($t_subject->tableName(), $this->request->config->getList('ca_objects_component_types'), array('dontIncludeSubtypesInTypeRestriction' => true)));
+			}
+			
+ 			// Set type restrictions to component types
+			$this->view->setVar('restrict_to_types', $this->request->config->getList('ca_objects_component_types'));
  			
- 			// Set type restrictions of bundle that spawned quickadd form
- 			if ($vs_restrict_to_types = trim($this->request->getParameter('types', pString))) {
- 				$this->view->setVar('restrict_to_types', $va_restrict_to_type_ids = caMakeTypeIDList($t_subject->tableName(), explode(',', $vs_restrict_to_types), array('dont_include_subtypes_in_type_restriction' => (bool)$this->request->getParameter('dont_include_subtypes_in_type_restriction', pString))));
- 				
- 				if (!in_array($vn_type_id, $va_restrict_to_type_ids)) {
- 					$vn_type_id = $va_restrict_to_type_ids[0];		// get first type on list since default isn't part of restriction
- 				}
- 			}
+ 			
  			$this->request->setParameter('type_id', $vn_type_id);
  			$t_subject->set('type_id', $vn_type_id);
  			
- 			$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, $vn_type_id, array('editorPref' => 'quickadd'));
+ 			$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, $vn_type_id);
  			
- 			// Get default screen (this is all we show in quickadd, even if the UI has multiple screens)
+ 			// Get default screen (this is all we show in the component editor, even if the UI has multiple screens)
  			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 				array(),
 				array()
 			);
- 			
+			
 			$this->view->setVar('t_ui', $t_ui);
 			$this->view->setVar('screen', $va_nav['defaultScreen']);
 			
@@ -169,6 +136,7 @@
 					$t_subject->set($vs_f, $vs_v);
 				}
 			}	
+			$t_subject->set('idno', $t_parent->get('idno'));
 			
 			// Set attributes
 			if (is_array($va_field_values['attributes'])) {
@@ -213,7 +181,7 @@
 			
 			$this->view->setVar('notifications', $this->notification->getNotifications());
 			
-			$this->render('quickadd_html.php');
+			$this->render('component_html.php');
  		}
  		# -------------------------------------------------------
  		/**
@@ -224,23 +192,6 @@
  		public function Save($pa_options=null) {
  			list($t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView($pa_options);
  			if (!is_array($pa_options)) { $pa_options = array(); }
- 			
- 			// Is user allowed to quickadd?
- 			if (!(is_array($pa_options) && isset($pa_options['dontCheckQuickAddAction']) && (bool)$pa_options['dontCheckQuickAddAction']) && (!$this->request->user->canDoAction('can_quickadd_'.$t_subject->tableName()))) {
- 				$va_response = array(
-					'status' => 30,
-					'id' => null,
-					'table' => $t_subject->tableName(),
-					'type_id' => null,
-					'display' => null,
-					'errors' => array(_t("You are not allowed to quickadd %1", $t_subject->getProperty('NAME_PLURAL')) => _t("You are not allowed to quickadd %1", $t_subject->getProperty('NAME_PLURAL')))
-				);
-				
-				$this->view->setVar('response', $va_response);
-				
-				$this->render('quickadd_result_json.php');
-				return;
- 			}
  			
  			//
  			// Is record of correct type?
@@ -253,29 +204,6 @@
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2560?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
- 			
- 			//
- 			// Is record from correct source?
- 			// 
- 			$va_restrict_to_sources = null;
- 			if ($t_subject->getAppConfig()->get('perform_source_access_checking')) {
- 				if (is_array($va_restrict_to_sources = caGetSourceRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_EDIT__)))) {
-					if (
-						(!$t_subject->get('source_id'))
-						||
-						($t_subject->get('source_id') && !in_array($t_subject->get('source_id'), $va_restrict_to_sources))
-						||
-						((strlen($vn_source_id = $this->request->getParameter('source_id', pInteger))) && !in_array($vn_source_id, $va_restrict_to_sources))
-					) {
-						$t_subject->set('source_id', $t_subject->getDefaultSourceID(array('request' => $this->request)));
-					}
-			
-					if (is_array($va_restrict_to_sources) && !in_array($t_subject->get('source_id'), $va_restrict_to_sources)) {
-						$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2562?r='.urlencode($this->request->getFullUrlPath()));
-						return;
-					}
-				}
-			}
  			
  			// Make sure request isn't empty
  			if(!sizeof($_POST)) {
@@ -290,14 +218,14 @@
 				
 				$this->view->setVar('response', $va_response);
 				
-				$this->render('quickadd_result_json.php');
+				$this->render('component_result_json.php');
 				return;
  			}
  			
  			// Set "context" id from those editors that need to restrict idno lookups to within the context of another field value (eg. idno's for ca_list_items are only unique within a given list_id)
  			$vn_context_id = null;
  			if ($vs_idno_context_field = $t_subject->getProperty('ID_NUMBERING_CONTEXT_FIELD')) {
- 				if ($t_subject->getPrimaryKey() > 0) {
+ 				if ($vn_subject_id > 0) {
  					$this->view->setVar('_context_id', $vn_context_id = $t_subject->get($vs_idno_context_field));
  				} else {
  					if ($vn_parent_id > 0) {
@@ -327,7 +255,7 @@
  			$vb_save_rc = $t_subject->saveBundlesForScreen($this->request->getParameter('screen', pString), $this->request, $va_opts);
 			$this->view->setVar('t_ui', $t_ui);
 		
-			if(!$t_subject->getPrimaryKey()) {
+			if(!$vn_subject_id) {
 				$vn_subject_id = $t_subject->getPrimaryKey();
 				if (!$vb_save_rc) {
 					$vs_message = _t("Could not save %1", $vs_type_name);
@@ -376,20 +304,9 @@
  			
  			$vn_id = $t_subject->getPrimaryKey();
  			
- 			$vn_relation_id = null;
  			if ($vn_id) {
  				$va_tmp = caProcessRelationshipLookupLabel($t_subject->makeSearchResult($t_subject->tableName(), array($vn_id)), $t_subject);
  				$va_name = array_pop($va_tmp);
- 				 			
-				// Add relationship to added item here?
-				$pn_related_id = $this->request->getParameter('relatedID', pInteger);
-				$ps_related_table = $this->request->getParameter('relatedTable', pString);
-				$ps_relationship_type = $this->request->getParameter('relationshipType', pString);
-				if ($pn_related_id && $ps_related_table && $ps_relationship_type) {
-					if ($t_rel = $t_subject->addRelationship($ps_related_table, $pn_related_id, $ps_relationship_type)) {
-						$vn_relation_id = $t_rel->getPrimaryKey();
-					}
-				}
  			} else {
  				$va_name = array();
  			}
@@ -398,14 +315,13 @@
  				'id' => $vn_id,
  				'table' => $t_subject->tableName(),
 				'type_id' => method_exists($t_subject, "getTypeID") ? $t_subject->getTypeID() : null,
-				'relation_id' => $vn_relation_id,
  				'display' => $va_name['label'],
  				'errors' => $va_error_list
  			);
  			
  			$this->view->setVar('response', $va_response);
  			
- 			$this->render('quickadd_result_json.php');
+ 			$this->render('component_result_json.php');
  		}
  		# -------------------------------------------------------
  		/**
@@ -455,19 +371,17 @@
  			}
  			
  			if (!$t_ui->getPrimaryKey()) {
- 				$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, $t_subject->getTypeID(), array('editorPref' => 'quickadd'));
+ 				$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, $t_subject->getTypeID());
  			}
  			
  			$this->view->setVar($t_subject->primaryKey(), $t_subject->getPrimaryKey());
  			$this->view->setVar('subject_id', $t_subject->getPrimaryKey());
  			$this->view->setVar('t_subject', $t_subject);
  			
- 			//MetaTagManager::setWindowTitle(_t("Editing %1 : %2", ($vs_type = $t_subject->getTypeName()) ? $vs_type : $t_subject->getProperty('NAME_SINGULAR'), ($vn_subject_id) ? $t_subject->getLabelForDisplay(true) : _t('new %1', $t_subject->getTypeName())));
- 			
  			if ($vs_parent_id_fld = $t_subject->getProperty('HIERARCHY_PARENT_ID_FLD')) {
  				$this->view->setVar('parent_id', $vn_parent_id = $this->request->getParameter($vs_parent_id_fld, pInteger));
 
- 				return array($t_subject, $t_ui, $vn_parent_id, null);
+ 				return array($t_subject, $t_ui, $vn_parent_id, $vn_above_id);
  			}
  			
  			return array($t_subject, $t_ui);

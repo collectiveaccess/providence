@@ -1545,7 +1545,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 	 *
 	 * @return string Rendered HTML bundle for display
 	 */
-	public function getSetItemHTMLFormBundle($po_request, $ps_form_name) {
+	public function getSetItemHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null) {
 		if ($this->getItemCount() > 50) {
 			$vs_thumbnail_version = 'tiny';
 		} else {
@@ -1554,7 +1554,8 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 		
 		$o_view->setVar('t_set', $this);		
-		$o_view->setVar('id_prefix', $ps_form_name);		
+		$o_view->setVar('id_prefix', $ps_form_name);	
+		$o_view->setVar('placement_code', $ps_placement_code);		
 		$o_view->setVar('request', $po_request);
 		
 		if ($this->getPrimaryKey()) {
@@ -1588,13 +1589,14 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 	 *
 	 * @return string Rendered HTML bundle for display
 	 */
-	public function getItemSetMembershipHTMLFormBundle($po_request, $ps_form_name, $pn_table_num, $pn_row_id, $pn_user_id=null, $pa_bundle_settings=null, $pa_options=null) {
+	public function getItemSetMembershipHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pn_table_num, $pn_row_id, $pn_user_id=null, $pa_bundle_settings=null, $pa_options=null) {
 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 		
  		$va_cur_sets = caExtractValuesByUserLocale($this->getSetsForItem($pn_table_num, $pn_row_id, array('user_id' => $pn_user_id)));
  		
 		$o_view->setVar('t_set', $this);		
-		$o_view->setVar('id_prefix', $ps_form_name);		
+		$o_view->setVar('id_prefix', $ps_form_name);	
+		$o_view->setVar('placement_code', $ps_placement_code);		
 		$o_view->setVar('request', $po_request);
  		$o_view->setVar('set_ids', array_keys($va_cur_sets));
  		$o_view->setVar('available_set_ids', $va_available_sets = $this->getAvailableSetsForItem($pn_table_num, $pn_row_id, array('user_id' => $pn_user_id, 'access' => __CA_SET_EDIT_ACCESS__)));

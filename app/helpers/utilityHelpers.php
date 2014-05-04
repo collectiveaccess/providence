@@ -940,7 +940,7 @@ function caFileIsIncludable($ps_file) {
 		$va_sort_keys = array();
 		foreach ($pa_sort_keys as $vs_field) {
 			$va_tmp = explode('.', $vs_field);
-			array_shift($va_tmp);
+			if (sizeof($va_tmp) > 1) { array_shift($va_tmp); }
 			$va_sort_keys[] = join(".", $va_tmp);
 		}
 		$va_sorted_by_key = array();
@@ -1277,6 +1277,17 @@ function caFileIsIncludable($ps_file) {
 			return $o_tep->getHistoricTimestamps();
 		}
 		return null;
+	}
+	# ---------------------------------------
+	/**
+	  * Converts Unix timestamp to historic date timestamp
+	  *
+	  * @param int $pn_timestamp A Unix-format timestamp
+	  * @return float Equivalent value as floating point historic timestamp value, or null if Unix timestamp was not valid.
+	  */
+	function caUnixTimestampToHistoricTimestamps($pn_timestamp) {
+		$o_tep = new TimeExpressionParser();
+		return $o_tep->unixToHistoricTimestamp($pn_timestamp);
 	}
 	# ---------------------------------------
 	/**
