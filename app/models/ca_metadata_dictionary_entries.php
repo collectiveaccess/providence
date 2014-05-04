@@ -36,6 +36,8 @@
  
 require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_rules.php');
+require_once(__CA_MODELS_DIR__.'/ca_lists.php');
+require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
 
 global $_ca_metadata_dictionary_entry_settings;
 $_ca_metadata_dictionary_entry_settings = array(		// global
@@ -213,6 +215,11 @@ class ca_metadata_dictionary_entries extends BaseModel {
 	 */
 	static $s_definition_cache_index;
 	
+	/**
+	 * Index array converting bundle names to entry_id's
+	 */
+	static $s_definition_cache_relationship_type_ids;
+	
 	# ------------------------------------------------------
 	/**
 	 *
@@ -253,6 +260,8 @@ class ca_metadata_dictionary_entries extends BaseModel {
 		", array($pa_bundles));
 		
 		$vn_c = 0;
+		
+		$va_type_ids = array();
 		while($qr_res->nextRow()) {
 			$va_row = $qr_res->getRow();
 			$va_row['settings'] = caUnserializeForDatabase($va_row['settings']);
@@ -329,9 +338,19 @@ class ca_metadata_dictionary_entries extends BaseModel {
 		if(!is_array($va_types = caGetOption('restrict_to_types', $pa_settings, null)) && $va_types) {
 			$va_types = array($va_types);
 		}
+		if(!is_array($va_types)) { $va_types = array(); }
+		if(sizeof($va_types = array_filter($va_types, 'strlen'))) {
+			$va_types = ca_lists::itemIDsToIDNOs($va_types);
+		}
+		
 		if(!is_array($va_relationship_types = caGetOption('restrict_to_relationship_types', $pa_settings, null)) && $va_relationship_types) {
 			$va_relationship_types = array($va_relationship_types);
 		}
+		if(!is_array($va_relationship_types)) { $va_relationship_types = array(); }
+		if (sizeof($va_relationship_types = array_filter($va_relationship_types, 'strlen'))) {
+			$va_relationship_types = ca_relationship_types::relationshipTypeIDsToTypeCodes($va_relationship_types);
+		}
+		
 		if ($va_entry_list = ca_metadata_dictionary_entries::entryExists($ps_bundle_name)) {
 			$vn_entry_id = null;
 			
