@@ -47,10 +47,10 @@
 	foreach($va_history as $vn_date => $va_history_entries_for_date) {
 		foreach($va_history_entries_for_date as $va_history_entry) {
 ?>
-			<div>
+			<div class="caUseHistoryEntry">
 				<?php print $va_history_entry['icon']; ?>
 				<div><?php print $va_history_entry['display']; ?></div>
-				<em><?php print caGetLocalizedHistoricDate($vn_date); ?></em>
+				<div class="caUseHistoryDate"><?php print $va_history_entry['date']; ?></div>
 				<br class="clear"/>
 			</div>
 <?php

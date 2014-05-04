@@ -838,7 +838,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Limit movement tracking to relationship types'),
 										'description' => _t('')
 									),
-									'ca_storage_locations_RelationshipType' => array(
+									'ca_storage_locations_relationshipType' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_SELECT,
 										'useRelationshipTypeList' => 'ca_objects_x_storage_locations',
@@ -913,8 +913,12 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('Show lots'),
 										'description' => _t('')
-									),
-									'ca_object_lots_dateElement' => array(
+									)
+								);
+								
+								$va_types = caGetTypeList("ca_object_lots");
+								foreach($va_types as $vn_type_id => $va_type) {
+									$va_additional_settings["ca_object_lots_{$va_type['idno']}_dateElement"] = array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_SELECT,
 										'table' => 'ca_object_lots',
@@ -922,28 +926,42 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '',
 										'width' => "275px", 'height' => "75px",
-										'label' => _t('Lot date'),
+										'label' => _t('Lot (%1) date', $va_type['name_singular']),
 										'description' => _t('')
-									),
-									'ca_object_lots_displayTemplate' => array(
+									);
+									$va_additional_settings["ca_object_lots_{$va_type['idno']}_color"] = array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_COLORPICKER,
+										'takesLocale' => false,
+										'default' => '#EEEEEE',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Color for %1', $va_type['name_singular']),
+										'description' => _t('Color to use as highlight %1.', $va_type['name_plural'])
+									);
+									$va_additional_settings["ca_object_lots_{$va_type['idno']}_displayTemplate"] = array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_FIELD,
 										'default' => '',
 										'width' => "275px", 'height' => 4,
-										'label' => _t('Object lot display template'),
+										'label' => _t('Lot (%1) display template', $va_type['name_singular']),
 										'description' => _t('Layout for lot when displayed in history list (can include HTML). The template is evaluated relative to the lot. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_object_lots.idno_stub</i>.')
-									),
-									'ca_occurrences_showTypes' => array(
-										'formatType' => FT_TEXT,
-										'displayType' => DT_SELECT,
-										'useList' => 'occurrence_types',
-										'takesLocale' => false,
-										'default' => '',
-										'width' => "275px", 'height' => "75px",
-										'label' => _t('Show occurrences'),
-										'description' => _t('')
-									),
-									'ca_occurrences_dateElement' => array(
+
+									);
+								}
+								
+								$va_additional_settings['ca_occurrences_showTypes'] = array(
+									'formatType' => FT_TEXT,
+									'displayType' => DT_SELECT,
+									'useList' => 'occurrence_types',
+									'takesLocale' => false,
+									'default' => '',
+									'width' => "275px", 'height' => "75px",
+									'label' => _t('Show occurrences'),
+									'description' => _t('')
+								);
+								$va_types = caGetTypeList("ca_occurrences");
+								foreach($va_types as $vn_type_id => $va_type) {
+									$va_additional_settings["ca_occurrences_{$va_type['idno']}_dateElement"] = array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_SELECT,
 										'table' => 'ca_occurrences',
@@ -951,28 +969,42 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '',
 										'width' => "275px", 'height' => "75px",
-										'label' => _t('Occurrence date'),
+										'label' => _t('%1 date', $va_type['name_singular']),
 										'description' => _t('')
-									),
-									'ca_occurrences_displayTemplate' => array(
+									);
+									$va_additional_settings["ca_occurrences_{$va_type['idno']}_color"] = array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_COLORPICKER,
+										'takesLocale' => false,
+										'default' => '#EEEEEE',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Color for %1', $va_type['name_singular']),
+										'description' => _t('Color to use as highlight %1.', $va_type['name_plural'])
+									);
+									$va_additional_settings["ca_occurrences_{$va_type['idno']}_displayTemplate"] = array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_FIELD,
 										'default' => '',
 										'width' => "275px", 'height' => 4,
-										'label' => _t('Occurrence display template'),
-										'description' => _t('Layout for lot when displayed in history list (can include HTML). The template is evaluated relative to the lot. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_object_lots.idno_stub</i>.')
-									),
-									'ca_movements_showTypes' => array(
-										'formatType' => FT_TEXT,
-										'displayType' => DT_SELECT,
-										'useList' => 'movement_types',
-										'takesLocale' => false,
-										'default' => '',
-										'width' => "275px", 'height' => "75px",
-										'label' => _t('Show movements'),
-										'description' => _t('')
-									),
-									'ca_movements_dateElement' => array(
+										'label' => _t('%1 display template', $va_type['name_singular']),
+										'description' => _t('Layout for %1 when displayed in history list (can include HTML). The template is evaluated relative to the %1. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_occurrences.idno</i>.', $va_type['name_singular'])
+
+									);
+								}
+								
+								$va_additional_settings['ca_movements_showTypes'] = array(
+									'formatType' => FT_TEXT,
+									'displayType' => DT_SELECT,
+									'useList' => 'movement_types',
+									'takesLocale' => false,
+									'default' => '',
+									'width' => "275px", 'height' => "75px",
+									'label' => _t('Show movements'),
+									'description' => _t('')
+								);
+								$va_types = caGetTypeList("ca_movements");
+								foreach($va_types as $vn_type_id => $va_type) {
+									$va_additional_settings["ca_movements_{$va_type['idno']}_dateElement"] = array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_SELECT,
 										'table' => 'ca_movements',
@@ -980,28 +1012,43 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '',
 										'width' => "275px", 'height' => "75px",
-										'label' => _t('Movement date'),
+										'label' => _t('%1 date', $va_type['name_singular']),
 										'description' => _t('')
-									),
-									'ca_movements_displayTemplate' => array(
+									);
+									$va_additional_settings["ca_movements_{$va_type['idno']}_color"] = array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_COLORPICKER,
+										'takesLocale' => false,
+										'default' => '#EEEEEE',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Color for %1', $va_type['name_singular']),
+										'description' => _t('Color to use as highlight %1.', $va_type['name_plural'])
+									);
+									$va_additional_settings["ca_movements_{$va_type['idno']}_displayTemplate"] = array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_FIELD,
 										'default' => '',
 										'width' => "275px", 'height' => 4,
-										'label' => _t('Movement display template'),
-										'description' => _t('Layout for movement when displayed in history list (can include HTML). The template is evaluated relative to the lot. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_object_lots.idno_stub</i>.')
-									),
-									'ca_loans_showTypes' => array(
-										'formatType' => FT_TEXT,
-										'displayType' => DT_SELECT,
-										'useList' => 'loan_types',
-										'takesLocale' => false,
-										'default' => '',
-										'width' => "275px", 'height' => "75px",
-										'label' => _t('Show loans'),
-										'description' => _t('')
-									),
-									'ca_loans_dateElement' => array(
+										'label' => _t('%1 display template', $va_type['name_singular']),
+										'description' => _t('Layout for %1 when displayed in history list (can include HTML). The template is evaluated relative to the %1. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_movements.idno</i>.', $va_type['name_singular'])
+
+									);
+								}
+								
+								$va_additional_settings['ca_loans_showTypes'] = array(
+									'formatType' => FT_TEXT,
+									'displayType' => DT_SELECT,
+									'useList' => 'loan_types',
+									'takesLocale' => false,
+									'default' => '',
+									'width' => "275px", 'height' => "75px",
+									'label' => _t('Show loans'),
+									'description' => _t('')
+								);
+								$va_types = caGetTypeList("ca_loans");
+							
+								foreach($va_types as $vn_type_id => $va_type) {
+									$va_additional_settings["ca_loans_{$va_type['idno']}_dateElement"] = array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_SELECT,
 										'table' => 'ca_loans',
@@ -1009,17 +1056,30 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '',
 										'width' => "275px", 'height' => "75px",
-										'label' => _t('Loan date'),
+										'label' => _t('%1 date', $va_type['name_singular']),
 										'description' => _t('')
-									),
-									'ca_loans_displayTemplate' => array(
+									);
+									$va_additional_settings["ca_loans_{$va_type['idno']}_color"] = array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_COLORPICKER,
+										'takesLocale' => false,
+										'default' => '#EEEEEE',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Color for %1', $va_type['name_singular']),
+										'description' => _t('Color to use as highlight %1.', $va_type['name_plural'])
+									);
+									$va_additional_settings["ca_loans_{$va_type['idno']}_displayTemplate"] = array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_FIELD,
 										'default' => '',
 										'width' => "275px", 'height' => 4,
-										'label' => _t('Loan display template'),
-										'description' => _t('Layout for loan when displayed in history list (can include HTML). The template is evaluated relative to the lot. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_object_lots.idno_stub</i>.')
-									),
+										'label' => _t('%1 display template', $va_type['name_singular']),
+										'description' => _t('Layout for %1 when displayed in history list (can include HTML). The template is evaluated relative to the %1. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_loans.idno</i>.', $va_type['name_singular'])
+
+									);
+								}
+									
+								$va_additional_settings += array(
 									'ca_storage_locations_showRelationshipTypes' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_SELECT,
@@ -1029,6 +1089,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('Show storage locations'),
 										'description' => _t('Show storage locations with selected relationship types.')
+									),
+									'ca_storage_locations_color' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_COLORPICKER,
+										'takesLocale' => false,
+										'default' => '#EEEEEE',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Color for storage location'),
+										'description' => _t('Color to use as highlight storage location.')
 									),
 									'ca_storage_locations_displayTemplate' => array(
 										'formatType' => FT_TEXT,
@@ -1047,6 +1116,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Show deaccession information'),
 										'description' => _t('If checked hierarchy browser will be open when form loads.')
 									),
+									'deaccession_color' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_COLORPICKER,
+										'takesLocale' => false,
+										'default' => '#EEEEEE',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Color for deaccession'),
+										'description' => _t('Color to use as highlight deaccession.')
+									),
 									'deaccession_displayTemplate' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_FIELD,
@@ -1054,7 +1132,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'width' => "275px", 'height' => 4,
 										'label' => _t('Deaccession display template'),
 										'description' => _t('Layout for deaccession information when displayed in history list (can include HTML). The template is evaluated relative to the object. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.deaccession_notes</i>.')
-									),
+									)
 								);
 								break;
 						}

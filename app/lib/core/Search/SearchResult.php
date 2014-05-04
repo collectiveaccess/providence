@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1145,9 +1145,13 @@ class SearchResult extends BaseObject {
 								foreach($va_values_by_locale as $vn_locale_id => $va_values) {
 									foreach($va_values as $vn_i => $va_value) {
 										$va_ids[] = $va_value[$vs_pk];
-					
-										if ((isset($pa_options['sortable']) && $pa_options['sortable'])) {
-											$vs_prop = $va_value[$va_field_info['START']].'/'.$va_value[$va_field_info['END']];
+										
+										if (caGetOption('GET_DIRECT_DATE', $pa_options, false) || caGetOption('getDirectDate', $pa_options, false)) {
+											if (caGetOption('sortable', $pa_options, false)) { 
+												$vs_prop = $va_value[$va_field_info['START']].'/'.$va_value[$va_field_info['END']];
+											} else {
+												$vs_prop = $va_value[$va_field_info['START']];
+											}
 										} else {
 											$this->opo_tep->init();
 											if ($va_field_info['FIELD_TYPE'] == FT_DATERANGE) {
@@ -1374,8 +1378,12 @@ class SearchResult extends BaseObject {
 								}
 								break;
 							case FT_DATERANGE:
-								if ((isset($pa_options['sortable']) && $pa_options['sortable'])) {
-									$va_value[$va_path_components['field_name']] = $va_value[$va_field_info['START']].'/'.$va_value[$va_field_info['END']];
+								if (caGetOption('GET_DIRECT_DATE', $pa_options, false) || caGetOption('getDirectDate', $pa_options, false)) {
+									if ((isset($pa_options['sortable']) && $pa_options['sortable'])) {
+										$va_value[$va_path_components['field_name']] = $va_value[$va_field_info['START']].'/'.$va_value[$va_field_info['END']];
+									} else {
+										$va_value[$va_path_components['field_name']] = $va_value[$va_field_info['START']];
+									}
 								} else {
 									$this->opo_tep->init();
 									$this->opo_tep->setUnixTimestamps($va_value[$va_field_info['START']], $va_value[$va_field_info['END']]);
@@ -1383,8 +1391,12 @@ class SearchResult extends BaseObject {
 								}
 								break;
 							case FT_HISTORIC_DATERANGE:
-								if ((isset($pa_options['sortable']) && $pa_options['sortable'])) {
-									$va_value[$va_path_components['field_name']] = $va_value[$va_field_info['START']].'/'.$va_value[$va_field_info['END']];
+								if (caGetOption('GET_DIRECT_DATE', $pa_options, false) || caGetOption('getDirectDate', $pa_options, false)) {
+									if (caGetOption('sortable', $pa_options, false)) { 
+										$va_value[$va_path_components['field_name']] = $va_value[$va_field_info['START']].'/'.$va_value[$va_field_info['END']];
+									} else {
+										$va_value[$va_path_components['field_name']] = $va_value[$va_field_info['START']];
+									}
 								} else {
 									$this->opo_tep->init();
 									$this->opo_tep->setHistoricTimestamps($va_value[$va_field_info['START']], $va_value[$va_field_info['END']]);

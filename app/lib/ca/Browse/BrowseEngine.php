@@ -732,7 +732,7 @@
 			
 			if ($this->opo_ca_browse_cache->load($vs_cache_key)) {
 			
-				$vn_created_on = $this->opo_ca_browse_cache->getParameter('created_on'); //$t_new_browse->get('created_on', array('GET_DIRECT_DATE' => true));
+				$vn_created_on = $this->opo_ca_browse_cache->getParameter('created_on'); //$t_new_browse->get('created_on', array('getDirectDate' => true));
 		
 				$va_criteria = $this->getCriteria();
 				if ((!isset($pa_options['no_cache']) || (!$pa_options['no_cache'])) && (intval(time() - $vn_created_on) < $this->opo_ca_browse_config->get('cache_timeout'))) {

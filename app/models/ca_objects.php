@@ -682,12 +682,12 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
  			$va_order = array_shift($va_orders);
  			$t_order_item = new ca_commerce_order_items();
  			if ($t_order_item->load(array('order_id' => $va_order['order_id'], 'object_id' => $this->getPrimaryKey()))) {
- 				if (!$t_order_item->get('loan_return_date', array('GET_DIRECT_DATE' => true))) {
+ 				if (!$t_order_item->get('loan_return_date', array('getDirectDate' => true))) {
  					return array(
  						'loan_checkout_date' => $t_order_item->get('loan_checkout_date'),
- 						'loan_checkout_date_raw' => $t_order_item->get('loan_checkout_date', array('GET_DIRECT_DATE' => true)),
+ 						'loan_checkout_date_raw' => $t_order_item->get('loan_checkout_date', array('getDirectDate' => true)),
  						'loan_due_date' => $t_order_item->get('loan_due_date'),
- 						'loan_due_date_raw' => $t_order_item->get('loan_due_date', array('GET_DIRECT_DATE' => true)),
+ 						'loan_due_date_raw' => $t_order_item->get('loan_due_date', array('getDirectDate' => true)),
  						'client' => $va_order['billing_fname'].' '.$va_order['billing_lname']." (".$va_order['billing_email'].")",
  						'billing_fname' => $va_order['billing_fname'],
  						'billing_lname' => $va_order['billing_lname'],
@@ -875,17 +875,27 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		
 		$o_media_coder = new MediaInfoCoder();
 				
-		//
-		// Get history
-		//
+//
+// Get history
+//
 		$va_history = array();
 		
 		// Lots
-		if(is_array($va_lot_types = caGetOption('ca_object_lots_showTypes', $pa_bundle_settings, null)) && ($vn_lot_id = $this->get('lot_id'))) {	
-			$va_date_elements = caGetOption('ca_object_lots_dateElement', $pa_bundle_settings, null);
+		if(is_array($va_lot_types = caGetOption('ca_object_lots_showTypes', $pa_bundle_settings, null)) && ($vn_lot_id = $this->get('lot_id'))) {
 			$t_lot = new ca_object_lots($vn_lot_id);
+			$va_lot_type_info = $t_lot->getTypeList(); 
+			$vn_type_id = $t_lot->get('type_id');
+			
+			$vs_color = $va_lot_type_info[$vn_type_id]['color'];
+			if (!$vs_color || ($vs_color == '000000')) {
+				$vs_color = caGetOption("ca_object_lots_{$va_lot_type_info[$vn_type_id]['idno']}_color", $pa_bundle_settings, 'ffffff');
+			}
 			
 			$va_dates = array();
+				
+			$va_date_elements = caGetOption("ca_object_lots_{$va_lot_type_info[$vn_type_id]['idno']}_dateElement", $pa_bundle_settings, null);
+			if (!is_array($va_date_elements) && $va_date_elements) { $va_date_elements = array($va_date_elements); }
+			
 			if (is_array($va_date_elements) && sizeof($va_date_elements)) {
 				foreach($va_date_elements as $vs_date_element) {
 					$va_dates[] = $t_lot->get($vs_date_element, array('getDirectDate' => true));
@@ -895,19 +905,21 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 				$va_dates[] = caUnixTimestampToHistoricTimestamps($t_lot->getCreationTimestamp(null, array('timestampOnly' => true)));
 			}
 			
-			$va_lot_type_info = $t_lot->getTypeList(); 
 			foreach($va_dates as $vs_date) {
 				if (!$vs_date) { continue; }
-				if (!in_array($vn_type_id = $t_lot->get('type_id'), $va_lot_types)) { continue; }
+				if (!in_array($vn_type_id, $va_lot_types)) { continue; }
+				
+				
 				$va_history[$vs_date][] = array(
 					'type' => 'ca_object_lots',
 					'id' => $vn_lot_id,
-					'display' => $t_lot->getWithTemplate(caGetOption('ca_object_lots_displayTemplate', $pa_bundle_settings, '^ca_object_lots.idno_stub')),
-					'color' => $vs_color = $va_lot_type_info[$vn_type_id]['color'],
+					'display' => $t_lot->getWithTemplate(caGetOption("ca_object_lots_{$va_lot_type_info[$vn_type_id]['idno']}_displayTemplate", $pa_bundle_settings, '^ca_object_lots.preferred_labels.name (^ca_object_lots.idno_stub)')),
+					'color' => $vs_color,
 					'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag($va_lot_type_info[$vn_type_id]['icon'], 'icon'),
 					'typename_singular' => $vs_typename = $va_lot_type_info[$vn_type_id]['name_singular'],
 					'typename_plural' => $va_lot_type_info[$vn_type_id]['name_plural'],
-					'icon' => '<div class="caUseHistoryIcon" style="background-color: #'.$vs_color.'">'.($vs_icon_url ? $vs_icon_url : '<div class="caUseHistoryIconText">'.$vs_typename.'</div>').'</div>'
+					'icon' => '<div class="caUseHistoryIconContainer" style="background-color: #'.$vs_color.'"><div class="caUseHistoryIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caUseHistoryIconText">'.$vs_typename.'</div>').'</div></div>',
+					'date' => caGetLocalizedHistoricDate($vs_date)
 				);
 			}
 		}
@@ -915,21 +927,27 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		// Loans
 		$va_loans = $this->get('ca_loans.loan_id', array('returnAsArray' => true));
 		if(is_array($va_loan_types = caGetOption('ca_loans_showTypes', $pa_bundle_settings, null)) && is_array($va_loans) && sizeof($va_loans)) {	
+			$qr_loans = caMakeSearchResult('ca_loans', $va_loans);
 			
 			$t_loan = new ca_loans();
 			$va_loan_type_info = $t_loan->getTypeList(); 
 			
-			if (!is_array($va_date_elements = caGetOption('ca_loans_dateElement', $pa_bundle_settings, null))) {
-				$va_date_elements = array($va_date_elements);
+			$va_date_elements_by_type = array();
+			foreach($va_loan_types as $vn_type_id) {
+				if (!is_array($va_date_elements = caGetOption("ca_loans_{$va_loan_type_info[$vn_type_id]['idno']}_dateElement", $pa_bundle_settings, null)) && $va_date_elements) {
+					$va_date_elements = array($va_date_elements);
+				}
+				if (!$va_date_elements) { continue; }
+				$va_date_elements_by_type[$vn_type_id] = $va_date_elements;
 			}
-			$qr_loans = caMakeSearchResult('ca_loans', $va_loans);
 			
 			while($qr_loans->nextHit()) {
 				$vn_loan_id = $qr_loans->get('loan_id');
+				$vn_type_id = $qr_loans->get('type_id');
 				
 				$va_dates = array();
-				if (is_array($va_date_elements) && sizeof($va_date_elements)) {
-					foreach($va_date_elements as $vs_date_element) {
+				if (is_array($va_date_elements_by_type[$vn_type_id]) && sizeof($va_date_elements_by_type[$vn_type_id])) {
+					foreach($va_date_elements_by_type[$vn_type_id] as $vs_date_element) {
 						$va_dates[] = $qr_loans->get("ca_loans.{$vs_date_element}", array('getDirectDate' => true));
 					}
 				}
@@ -939,24 +957,138 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		
 				foreach($va_dates as $vs_date) {
 					if (!$vs_date) { continue; }
-					if (!in_array($vn_type_id = $qr_loans->get('type_id'), $va_loan_types)) { continue; }
+					if (!in_array($vn_type_id, $va_loan_types)) { continue; }
+					
+					$vs_color = $va_loan_type_info[$vn_type_id]['color'];
+					if (!$vs_color || ($vs_color == '000000')) {
+						$vs_color = caGetOption("ca_loans_{$va_loan_type_info[$vn_type_id]['idno']}_color", $pa_bundle_settings, 'ffffff');
+					}
+					
 					$va_history[$vs_date][] = array(
 						'type' => 'ca_loans',
 						'id' => $vn_loan_id,
-						'display' => $qr_loans->getWithTemplate(caGetOption('ca_loans_displayTemplate', $pa_bundle_settings, '^ca_loans.idno')),
-						'color' => $vs_color = $va_loan_type_info[$vn_type_id]['color'],
+						'display' => $qr_loans->getWithTemplate(caGetOption("ca_loans_{$va_loan_type_info[$vn_type_id]['idno']}_displayTemplate", $pa_bundle_settings, '^ca_loans.preferred_labels.name (^ca_loans.idno)')),
+						'color' => $vs_color,
 						'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag($va_loan_type_info[$vn_type_id]['icon'], 'icon'),
 						'typename_singular' => $vs_typename = $va_loan_type_info[$vn_type_id]['name_singular'],
 						'typename_plural' => $va_loan_type_info[$vn_type_id]['name_plural'],
-						'icon' => '<div class="caUseHistoryIcon" style="background-color: #'.$vs_color.'">'.($vs_icon_url ? $vs_icon_url : '<div class="caUseHistoryIconText">'.$vs_typename.'</div>').'</div>'
+						'icon' => '<div class="caUseHistoryIconContainer" style="background-color: #'.$vs_color.'"><div class="caUseHistoryIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caUseHistoryIconText">'.$vs_typename.'</div>').'</div></div>',
+						'date' => caGetLocalizedHistoricDate($vs_date)
+					);
+				}
+			}
+		}
+		
+		// Movements
+		$va_movements = $this->get('ca_movements.movement_id', array('returnAsArray' => true));
+		if(is_array($va_movement_types = caGetOption('ca_movements_showTypes', $pa_bundle_settings, null)) && is_array($va_movements) && sizeof($va_movements)) {	
+			$qr_movements = caMakeSearchResult('ca_movements', $va_movements);
+			
+			$t_movement = new ca_movements();
+			$va_movement_type_info = $t_movement->getTypeList(); 
+			
+			$va_date_elements_by_type = array();
+			foreach($va_movement_types as $vn_type_id) {
+				if (!is_array($va_date_elements = caGetOption("ca_movements_{$va_movement_type_info[$vn_type_id]['idno']}_dateElement", $pa_bundle_settings, null)) && $va_date_elements) {
+					$va_date_elements = array($va_date_elements);
+				}
+				if (!$va_date_elements) { continue; }
+				$va_date_elements_by_type[$vn_type_id] = $va_date_elements;
+			}
+			
+			while($qr_movements->nextHit()) {
+				$vn_movement_id = $qr_movements->get('movement_id');
+				$vn_type_id = $qr_movements->get('type_id');
+				
+				$va_dates = array();
+				if (is_array($va_date_elements_by_type[$vn_type_id]) && sizeof($va_date_elements_by_type[$vn_type_id])) {
+					foreach($va_date_elements_by_type[$vn_type_id] as $vs_date_element) {
+						$va_dates[] = $qr_movements->get("ca_movements.{$vs_date_element}", array('getDirectDate' => true));
+					}
+				}
+				if (!sizeof($va_dates)) {
+					$va_dates[] = caUnixTimestampToHistoricTimestamps($qr_movements->get('lastModified'));
+				}
+		
+				foreach($va_dates as $vs_date) {
+					if (!$vs_date) { continue; }
+					if (!in_array($vn_type_id, $va_movement_types)) { continue; }
+					
+					$vs_color = $va_movement_type_info[$vn_type_id]['color'];
+					if (!$vs_color || ($vs_color == '000000')) {
+						$vs_color = caGetOption("ca_movements_{$va_movement_type_info[$vn_type_id]['idno']}_color", $pa_bundle_settings, 'ffffff');
+					}
+					
+					$va_history[$vs_date][] = array(
+						'type' => 'ca_movements',
+						'id' => $vn_movement_id,
+						'display' => $qr_movements->getWithTemplate(caGetOption("ca_movements_{$va_movement_type_info[$vn_type_id]['idno']}_displayTemplate", $pa_bundle_settings, '^ca_movements.preferred_labels.name (^ca_movements.idno)')),
+						'color' => $vs_color,
+						'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag($va_movement_type_info[$vn_type_id]['icon'], 'icon'),
+						'typename_singular' => $vs_typename = $va_movement_type_info[$vn_type_id]['name_singular'],
+						'typename_plural' => $va_movement_type_info[$vn_type_id]['name_plural'],
+						'icon' => '<div class="caUseHistoryIconContainer" style="background-color: #'.$vs_color.'"><div class="caUseHistoryIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caUseHistoryIconText">'.$vs_typename.'</div>').'</div></div>',
+						'date' => caGetLocalizedHistoricDate($vs_date)
 					);
 				}
 			}
 		}
 		
 		
-		// Movements
+		// Occurrences
+		$va_occurrences = $this->get('ca_occurrences.occurrence_id', array('returnAsArray' => true));
+		if(is_array($va_occurrence_types = caGetOption('ca_occurrences_showTypes', $pa_bundle_settings, null)) && is_array($va_occurrences) && sizeof($va_occurrences)) {	
+			$qr_occurrences = caMakeSearchResult('ca_occurrences', $va_occurrences);
+			
+			$t_occurrence = new ca_occurrences();
+			$va_occurrence_type_info = $t_occurrence->getTypeList(); 
+			
+			$va_date_elements_by_type = array();
+			foreach($va_occurrence_types as $vn_type_id) {
+				if (!is_array($va_date_elements = caGetOption("ca_occurrences_{$va_occurrence_type_info[$vn_type_id]['idno']}_dateElement", $pa_bundle_settings, null)) && $va_date_elements) {
+					$va_date_elements = array($va_date_elements);
+				}
+				if (!$va_date_elements) { continue; }
+				$va_date_elements_by_type[$vn_type_id] = $va_date_elements;
+			}
+			
+			while($qr_occurrences->nextHit()) {
+				$vn_occurrence_id = $qr_occurrences->get('occurrence_id');
+				$vn_type_id = $qr_occurrences->get('type_id');
+				
+				$va_dates = array();
+				if (is_array($va_date_elements_by_type[$vn_type_id]) && sizeof($va_date_elements_by_type[$vn_type_id])) {
+					foreach($va_date_elements_by_type[$vn_type_id] as $vs_date_element) {
+						$va_dates[] = $qr_occurrences->get("ca_occurrences.{$vs_date_element}", array('getDirectDate' => true, 'sortable' => true));
+					}
+				}
+				if (!sizeof($va_dates)) {
+					$va_dates[] = caUnixTimestampToHistoricTimestamps($qr_occurrences->get('lastModified'));
+				}
 		
+				foreach($va_dates as $vs_date) {
+					if (!$vs_date) { continue; }
+					if (!in_array($vn_type_id, $va_occurrence_types)) { continue; }
+					
+					$vs_color = $va_occurrence_type_info[$vn_type_id]['color'];
+					if (!$vs_color || ($vs_color == '000000')) {
+						$vs_color = caGetOption("ca_occurrences_{$va_occurrence_type_info[$vn_type_id]['idno']}_color", $pa_bundle_settings, 'ffffff');
+					}
+					
+					$va_history[$vs_date][] = array(
+						'type' => 'ca_occurrences',
+						'id' => $vn_occurrence_id,
+						'display' => $qr_occurrences->getWithTemplate(caGetOption("ca_occurrences_{$va_occurrence_type_info[$vn_type_id]['idno']}_displayTemplate", $pa_bundle_settings, '^ca_occurrences.preferred_labels.name (^ca_occurrences.idno)')),
+						'color' => $vs_color,
+						'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag($va_occurrence_type_info[$vn_type_id]['icon'], 'icon'),
+						'typename_singular' => $vs_typename = $va_occurrence_type_info[$vn_type_id]['name_singular'],
+						'typename_plural' => $va_occurrence_type_info[$vn_type_id]['name_plural'],
+						'icon' => '<div class="caUseHistoryIconContainer" style="background-color: #'.$vs_color.'"><div class="caUseHistoryIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caUseHistoryIconText">'.$vs_typename.'</div>').'</div></div>',
+						'date' => $vs_date
+					);
+				}
+			}
+		}
 		
 		// Storage locations
 		$va_locations = $this->get('ca_objects_x_storage_locations.relation_id', array('returnAsArray' => true));
@@ -964,29 +1096,39 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 			$t_location = new ca_storage_locations();
 			$va_location_type_info = $t_location->getTypeList(); 
 			
+			$vs_name_singular = $t_location->getProperty('NAME_SINGULAR');
+			$vs_name_plural = $t_location->getProperty('NAME_PLURAL');
+			
 			$qr_locations = caMakeSearchResult('ca_objects_x_storage_locations', $va_locations);
 			
 			while($qr_locations->nextHit()) {
 				$vn_location_id = $qr_locations->get('ca_objects_x_storage_locations.location_id');
 				
-				$vs_date = $qr_locations->get("ca_objects_x_storage_locations.effective_date");
+				$vs_date = $qr_locations->get("ca_objects_x_storage_locations.effective_date", array('getDirectDate' => true));
 
 				if (!$vs_date) { continue; }
 				if (!in_array($vn_rel_type_id = $qr_locations->get('ca_objects_x_storage_locations.type_id'), $va_location_types)) { continue; }
 				$vn_type_id = $qr_locations->get('ca_storage_locations.type_id');
+				
+				$vs_color = $va_location_type_info[$vn_type_id]['color'];
+				if (!$vs_color || ($vs_color == '000000')) {
+					$vs_color = caGetOption("ca_storage_locations_color", $pa_bundle_settings, 'ffffff');
+				}
+				
 				$va_history[$vs_date][] = array(
 					'type' => 'ca_storage_locations',
 					'id' => $vn_location_id,
-					'display' => $qr_locations->getWithTemplate(caGetOption('ca_storage_locations_displayTemplate', $pa_bundle_settings, '^ca_storage_locations.idno')),
-					'color' => $vs_color = $va_location_type_info[$vn_type_id]['color'],
+					'display' => $qr_locations->getWithTemplate("<unit relativeTo='ca_storage_locations'>".caGetOption('ca_storage_locations_displayTemplate', $pa_bundle_settings, '^ca_storage_locations.idno')."</unit>"),
+					'color' => $vs_color,
 					'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag($va_location_type_info[$vn_type_id]['icon'], 'icon'),
-					'typename_singular' => $vs_typename = $va_location_type_info[$vn_type_id]['name_singular'],
-					'typename_plural' => $va_location_type_info[$vn_type_id]['name_plural'],
-					'icon' => '<div class="caUseHistoryIcon" style="background-color: #'.$vs_color.'">'.($vs_icon_url ? $vs_icon_url : '<div class="caUseHistoryIconText">'.$vs_typename.'</div>').'</div>'
+					'typename_singular' => $vs_name_singular, //$vs_typename = $va_location_type_info[$vn_type_id]['name_singular'],
+					'typename_plural' => $vs_name_plural, //$va_location_type_info[$vn_type_id]['name_plural'],
+					'icon' => '<div class="caUseHistoryIconContainer" style="background-color: #'.$vs_color.'"><div class="caUseHistoryIcon">'.($vs_icon_url ? $vs_icon_url : '<div class="caUseHistoryIconText">'.$vs_name_singular.'</div>').'</div></div>',
+					'date' => caGetLocalizedHistoricDate($vs_date)
 				);
 			}
 		}
-		
+		//print_R($va_history);
 		
 		ksort($va_history);
 		$va_history = array_reverse($va_history);

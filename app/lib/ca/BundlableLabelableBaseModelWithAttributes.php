@@ -3458,6 +3458,7 @@ if (!$vb_batch) {
 									// TODO: error reporting
 								}
 							}
+							print_R($va_relationship_types);
 						}
 						
 						break;
