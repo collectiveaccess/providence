@@ -39,6 +39,7 @@
 	$vn_table_num 			= $t_set->get('table_num');
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'setItemEditor');
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'setItemEditor', $va_settings);
 ?>
 <div id="<?php print $vs_id_prefix; ?>" class='setItemEditor'>
 <?php

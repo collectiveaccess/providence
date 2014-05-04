@@ -1135,6 +1135,8 @@ div.hint {
 }
 
 .bundleLabel {
+	position: relative;
+	
     font-family: "DIN-Regular", sans-serif;
     font-size:13px;
     color: #333;
@@ -5177,30 +5179,44 @@ div.listRel {
 }
 
 .caItemListSortControlTrigger {
-    position: absolute;
-    right: 20px;
-    top: -11px;
     font-size: 11px;
     padding: 4px;
-    margin-top: -12px;
+}
+
+.caItemListSortControlContainer {
+    position: absolute;
+    right: 40px;
+    top: 0px;
+    min-width: 50px;
+    
+    z-index: 14000;
 }
 
 .caItemListSortControls {
-    position: absolute;
-    right: 20px;
-    top: 0px;
     display: none;
-    width: 70px;
 
     line-height: 17px;
     font-size: 11px;
-    padding: 7px;
-    border: 1px solid #ddd;
-    background-color:#eeeeee;
+    padding: 3px 5px 5px 5px;
+    background-color: #fff;
+    
+    border: 1px solid #e6e6e6;
+
     z-index: 10000;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-    border-radius: 4px;
+}
+
+.caItemListSortControls ul {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+
+.caItemListSortControls ul li {
+    background-color: #fff;
+}
+
+.caItemListSortControls ul li a {
+	text-decoration: none;
 }
 
 .roundedRel .caDeleteItemButton, .roundedRel .caInterstitialEditButton {
@@ -6794,4 +6810,15 @@ div.caUseHistoryDate {
 	
 	font-style: italic;
 	font-size: 9px;
+}
+
+/** Metadata dictionary **/
+.caMetadataDictionaryDefinition {
+	padding: 10px;
+	background-color: #fff;
+	
+    border: 2px solid #e6e6e6;
+    
+	font-weight: normal;
+	font-size: 12px;
 }

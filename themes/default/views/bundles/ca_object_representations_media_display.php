@@ -34,8 +34,9 @@
 	
 	$vb_allow_fetching_from_urls = $this->request->getAppConfig()->get('allow_fetching_of_media_from_remote_urls');
 	$vb_media_is_set = is_array($t_subject->getMediaInfo('media'));
-	
+
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 ?>
 <div id="<?php print $vs_id_prefix; ?>">
 	<div class="bundleContainer">

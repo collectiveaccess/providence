@@ -41,6 +41,7 @@
 	if (!is_array($va_initial_values)) { $va_initial_values = array(); }
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 ?>
 <div id="<?php print $vs_id_prefix; ?>">
 <?php

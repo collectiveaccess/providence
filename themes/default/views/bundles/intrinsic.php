@@ -44,6 +44,7 @@
 	} else {
 		print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 	}
+	print caEditorBundleMetadataDictionary($this->request, "intrinsic_{$vs_bundle_name}", $va_settings);
 ?>
 	<div>
 <?php

@@ -6446,6 +6446,8 @@ create index i_row_id on ca_sql_search_word_index(row_id, table_num);
 create index i_word_id on ca_sql_search_word_index(word_id, access);
 create index i_field_row_id on ca_sql_search_word_index(field_row_id, field_table_num);
 create index i_rel_type_id on ca_sql_search_word_index(rel_type_id);
+create index i_field_table_num on ca_sql_search_word_index(field_table_num);
+create index i_field_num on ca_sql_search_word_index(field_num);
 
 
 /*==========================================================================*/
@@ -6474,6 +6476,29 @@ create table ca_media_replication_status_check (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
+/*==========================================================================*/
+create table ca_metadata_dictionary_entries (
+   entry_id                 int unsigned					not null AUTO_INCREMENT,
+   bundle_name              varchar(255) not null,
+   settings                 longtext not null,
+   primary key (entry_id)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
+create table ca_metadata_dictionary_rules (
+   rule_id                  int unsigned					not null AUTO_INCREMENT,
+   entry_id                 int unsigned not null,
+   rule_name                varchar(255) not null,
+   settings                 longtext not null,
+   primary key (rule_id),
+   index i_entry_id (entry_id),
+   index i_rule_name (rule_name),
+   
+   constraint fk_ca_metadata_dictionary_rules_entry_id foreign key (entry_id)
+      references ca_metadata_dictionary_entries (entry_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
 
 /*==========================================================================*/
 /* Schema update tracking                                                   */
@@ -6486,5 +6511,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 100 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (100, unix_timestamp());
+/* CURRENT MIGRATION: 101 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (101, unix_timestamp());

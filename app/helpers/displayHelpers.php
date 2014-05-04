@@ -1446,31 +1446,31 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			}
 		}
 		
-		$vb_can_duplicate = ($po_view->request->user->canDoAction('can_duplicate_'.$vs_table_name) && $t_item->getPrimaryKey());
+		//$vb_can_duplicate = ($po_view->request->user->canDoAction('can_duplicate_'.$vs_table_name) && $t_item->getPrimaryKey());
 		
 		$va_object_container_types = $po_view->request->config->getList('ca_objects_container_types');
 		$va_object_component_types = $po_view->request->config->getList('ca_objects_component_types');
 		$vb_can_add_component = (($vs_table_name === 'ca_objects') && $t_item->getPrimaryKey() && ($po_view->request->user->canDoAction('can_create_ca_objects')) && (sizeof($va_object_component_types)) && in_array($t_item->getTypeCode(), $va_object_container_types));
 		
-		if ($vb_can_duplicate || $vb_can_add_component) {
+		if ($vb_can_add_component) {
 			$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; border-bottom: 1px solid #aaaaaa;  margin: 5px 0 0 0; padding: 0 0 5px 0; font-size: 10px;">';
 		}
 		
-		if($vb_can_duplicate) {
-			$vs_buf .= '<div style="float: right;" id="caDuplicateItemButton">';
-			
-			$vs_buf .= caFormTag($po_view->request, 'Edit', 'DuplicateItemForm', $po_view->request->getModulePath().'/'.$po_view->request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
-			$vs_buf .= _t('Duplicate').' '.caFormSubmitLink($po_view->request, caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__), '', 'DuplicateItemForm');
-				
-			$vs_buf .= caHTMLHiddenInput($t_item->primaryKey(), array('value' => $t_item->getPrimaryKey()));
-			$vs_buf .= caHTMLHiddenInput('mode', array('value' => 'dupe'));
-			
-			$vs_buf .= "</form>";
-			$vs_buf .= "</div>";
-			
-			TooltipManager::add("#caDuplicateItemButton", "<h2>"._t('Duplicate this %1', mb_strtolower($vs_type_name, 'UTF-8'))."</h2>
-			"._t("Click the [+] button to create and open for editing a duplicate of this %1. By default virtually all aspects of the %2 will be duplicated. You can exclude certain types of content from duplicates using settings in your user preferences under 'Duplication.'", mb_strtolower($vs_type_name, 'UTF-8'), mb_strtolower($vs_type_name, 'UTF-8')));
-		}
+		// if($vb_can_duplicate) {
+// 			$vs_buf .= '<div style="float: right;" id="caDuplicateItemButton">';
+// 			
+// 			$vs_buf .= caFormTag($po_view->request, 'Edit', 'DuplicateItemForm', $po_view->request->getModulePath().'/'.$po_view->request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
+// 			$vs_buf .= _t('Duplicate').' '.caFormSubmitLink($po_view->request, caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__), '', 'DuplicateItemForm');
+// 				
+// 			$vs_buf .= caHTMLHiddenInput($t_item->primaryKey(), array('value' => $t_item->getPrimaryKey()));
+// 			$vs_buf .= caHTMLHiddenInput('mode', array('value' => 'dupe'));
+// 			
+// 			$vs_buf .= "</form>";
+// 			$vs_buf .= "</div>";
+// 			
+// 			TooltipManager::add("#caDuplicateItemButton", "<h2>"._t('Duplicate this %1', mb_strtolower($vs_type_name, 'UTF-8'))."</h2>
+// 			"._t("Click the [+] button to create and open for editing a duplicate of this %1. By default virtually all aspects of the %2 will be duplicated. You can exclude certain types of content from duplicates using settings in your user preferences under 'Duplication.'", mb_strtolower($vs_type_name, 'UTF-8'), mb_strtolower($vs_type_name, 'UTF-8')));
+// 		}
 		
 		//
 		// Add component link for ca_objects
@@ -1486,7 +1486,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			FooterManager::add($vo_change_type_view->render("create_component_html.php"));
 		}
 		
-		if ($vb_can_duplicate || $vb_can_add_component) {
+		if ($vb_can_add_component) {
 			$vs_buf .= '<br style="clear: both;"/></div>';
 		}
 
@@ -3500,17 +3500,68 @@ $ca_relationship_lookup_parse_cache = array();
 	}
 	# ---------------------------------------
 	/**
-	 * Generates batch mode control HTML for metadata attribute bundles
+	 * Generates show/hide control HTML for bundles
 	 *
+	 * @param RequestHTTP $po_request
 	 * @param string $ps_id_prefix
 	 * 
 	 * @return string HTML implementing the control
 	 */
 	function caEditorBundleShowHideControl($po_request, $ps_id_prefix) {
-		$vs_buf = "<span style='float:right; margin-right:7px;'>";
-		$vs_buf .= "<a href='#' class='expand' onclick='caBundleVisibilityManager.toggle(\"{$ps_id_prefix}\");  return false;'><img src=\"".$po_request->getThemeUrlPath()."/graphics/arrows/expand.png\" border=\"0\" id=\"{$ps_id_prefix}VisToggleButton\"/></a>";
+		$vs_buf = "<span style='position: absolute; top: 2px; right: 7px;'>";
+		$vs_buf .= "<a href='#' onclick='caBundleVisibilityManager.toggle(\"{$ps_id_prefix}\");  return false;'><img src=\"".$po_request->getThemeUrlPath()."/graphics/arrows/expand.jpg\" border=\"0\" id=\"{$ps_id_prefix}VisToggleButton\"/></a>";
 		$vs_buf .= "</span>\n";	
 		$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$ps_id_prefix}'); }); </script>";	
+		
+		return $vs_buf;
+	}
+	# ---------------------------------------
+	/**
+	 * Generates metadata dictionary control HTML for bundles
+	 *
+	 * @param RequestHTTP $po_request
+	 * @param string $ps_id_prefix
+	 * @param array $pa_settings
+	 * 
+	 * @return string HTML implementing the control
+	 */
+	function caEditorBundleMetadataDictionary($po_request, $ps_id_prefix, $pa_settings) {
+		global $g_ui_locale;
+		
+		if (!($vs_definition = trim(caGetOption($g_ui_locale, $pa_settings['definition'], null)))) { return ''; }
+		
+		$vs_buf = "<span style='position: absolute; top: 2px; right: 26px;'>";
+		$vs_buf .= "<a href='#' onclick='caBundleVisibilityManager.toggleDictionaryEntry(\"{$ps_id_prefix}\");  return false;'><img src=\"".$po_request->getThemeUrlPath()."/graphics/icons/info.png\" border=\"0\" id=\"{$ps_id_prefix}MetadataDictionaryToggleButton\"/></a>";
+		$vs_buf .= "</span>\n";	
+		
+		$vs_buf .= "<div id='{$ps_id_prefix}DictionaryEntry' class='caMetadataDictionaryDefinition'>{$vs_definition}</div>";
+		
+		return $vs_buf;
+	}
+	# ---------------------------------------
+	/**
+	 * Generates sort control HTML for relation bundles (Eg. ca_entities, ca_occurrences)
+	 *
+	 * @param RequestHTTP $po_request
+	 * @param string $ps_id_prefix
+	 * @param array $pa_settings
+	 * 
+	 * @return string HTML implementing the control
+	 */
+	function caEditorBundleSortControls($po_request, $ps_id_prefix, $pa_settings) {
+		$vs_buf = "	<div class=\"caItemListSortControlContainer\">
+		<div class=\"caItemListSortControlTrigger\" id=\"{$ps_id_prefix}caItemListSortControlTrigger\">
+			"._t('Sort by')." <img src=\"".$po_request->getThemeUrlPath()."/graphics/icons/bg.gif\" alt=\"Sort\"/>
+		</div>
+		<div class=\"caItemListSortControls\" id=\"{$ps_id_prefix}caItemListSortControls\">
+			<ul>
+				<li><a href=\"#\" onclick=\"caRelationBundle{$ps_id_prefix}.sort('name'); return false;\" class=\"caItemListSortControl\">"._t('name')."</a><br/></li>
+				<li><a href=\"#\" onclick=\"caRelationBundle{$ps_id_prefix}.sort('idno'); return false;\" class=\"caItemListSortControl\">"._t('idno')."</a><br/></li>
+				<li><a href=\"#\" onclick=\"caRelationBundle{$ps_id_prefix}.sort('type'); return false;\" class=\"caItemListSortControl\">"._t('type')."</a><br/></li>
+				<li><a href=\"#\" onclick=\"caRelationBundle{$ps_id_prefix}.sort('entry'); return false;\" class=\"caItemListSortControl\">"._t('entry')."</a><br/></li>
+			</ul>
+		</div>
+	</div>";
 		
 		return $vs_buf;
 	}

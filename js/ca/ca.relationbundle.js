@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -243,6 +243,7 @@ var caUI = caUI || {};
 	
 		options.setDeleteButton = function(rowID) {
 			var curRowID = rowID;
+			if (!rowID) { return; }
 			var n = rowID.split("_").pop();
 			jQuery('#' + rowID + ' .caDeleteItemButton').click(
 				function() { that.deleteFromBundle(n); }

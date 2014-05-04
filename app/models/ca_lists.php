@@ -225,6 +225,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	static $s_list_item_value_display_cache = array();		// cache for results of getItemFromListForDisplayByItemValue()
 	static $s_list_item_get_cache = array();				// cache for results of getItemFromList()
 	static $s_item_id_cache = array();						// cache for ca_lists::getItemID()
+	static $s_item_id_to_code_cache = array();				// cache for ca_lists::itemIDsToIDNOs()
 	
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
@@ -1650,6 +1651,46 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		}
 		ca_lists::$s_item_id_cache[$pm_list_name_or_id][$ps_idno] = $vn_item_id;
 		return $vn_item_id;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Converts a list of relationship type_id's to a list of type_code strings. The conversion is literal without hierarchical expansion.
+	 *
+	 * @param array $pa_list A list of relationship numeric type_ids
+	 * @param array $pa_options Options include:
+	 *			NONE YET
+	 * @return array A list of corresponding type_codes 
+	 */
+	 static public function itemIDsToIDNOs($pa_ids, $pa_options=null) {
+	 	if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
+	 	
+	 	$vs_key = md5(print_r($pa_ids, true));
+	 	if (isset(ca_lists::$s_item_id_to_code_cache[$vs_key])) {
+	 		return ca_lists::$s_item_id_to_code_cache[$vs_key];
+	 	}
+	 	
+	 	$va_ids = $va_non_numerics = array();
+	 	foreach($pa_ids as $pn_id) {
+	 		if (!is_numeric($pn_id)) {
+	 			$va_non_numerics[] = $pn_id;
+	 		} else {
+	 			$va_ids = (int)$pn_id;
+	 		}
+	 	}
+	 	
+	 	$o_db = new Db();
+	 	$qr_res = $o_db->query("
+	 		SELECT item_id, idno 
+	 		FROM ca_list_items
+	 		WHERE
+	 			item_id IN (?)
+	 	", array($va_ids));
+	 	
+	 	$va_item_ids_to_codes = array();
+	 	while($qr_res->nextRow()) {
+	 		$va_item_ids_to_codes[$qr_res->get('item_id')] = $qr_res->get('idno');
+	 	}
+	 	return ca_lists::$s_item_id_to_code_cache[$vs_key] = $va_item_ids_to_codes + $va_non_numerics;
 	}
 	# ------------------------------------------------------
 }

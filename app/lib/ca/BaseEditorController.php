@@ -1472,7 +1472,7 @@
  			// Is record from correct source?
  			// 	
 			$va_restrict_to_sources = null;
- 			if ($t_subject->getAppConfig()->get('perform_source_access_checking') && $t_subject->hasField('source_id')) {
+ 			if ($pt_subject->getAppConfig()->get('perform_source_access_checking') && $pt_subject->hasField('source_id')) {
  				if (is_array($va_restrict_to_sources = caGetSourceRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_EDIT__)))) {
 					if (
 						(!$pt_subject->get('source_id'))
@@ -1481,7 +1481,7 @@
 						||
 						((strlen($vn_source_id = $this->request->getParameter('source_id', pInteger))) && !in_array($vn_source_id, $va_restrict_to_sources))
 					) {
-						$t_subject->set('source_id', $t_subject->getDefaultSourceID(array('request' => $this->request)));
+						$pt_subject->set('source_id', $pt_subject->getDefaultSourceID(array('request' => $this->request)));
 					}
 			
 					if (is_array($va_restrict_to_sources) && !in_array($pt_subject->get('source_id'), $va_restrict_to_sources)) {

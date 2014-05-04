@@ -8767,6 +8767,16 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 *
+	 */
+	public function getRelationshipTableName($pm_rel_table_name_or_num) {
+		if ($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num)) {
+			if ($va_rel_info['t_item_rel']) { return $va_rel_info['t_item_rel']->tableName(); }
+		}
+		return null;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
 	 * Moves relationships from currently loaded row to another row specified by $pn_row_id. The existing relationship
 	 * rows are simply re-pointed to the new row, so this is a relatively fast operation. Note that this method does not copy 
 	 * relationships, it moves them. After the operation completes no relationships to the specified related table will exist for the current row.

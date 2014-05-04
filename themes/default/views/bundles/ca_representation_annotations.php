@@ -78,6 +78,7 @@
 	}
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_annotations');
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'_annotations', $va_settings);
 ?>
 <!-- BEGIN Media Player -->
 <div class="bundleContainer" style="text-align:center; padding:5px;">
