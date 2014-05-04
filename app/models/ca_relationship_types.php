@@ -609,6 +609,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 			$va_ids = (int)$pn_id;
 	 		}
 	 	}
+	 	if (!sizeof($va_ids)) { return ca_relationship_types::$s_relationship_type_id_to_code_cache[$vs_key] = $pa_ids; }
 	 	
 	 	$o_db = new Db();
 	 	$qr_res = $o_db->query("

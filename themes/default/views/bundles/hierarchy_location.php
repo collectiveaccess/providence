@@ -159,7 +159,7 @@
 </script>
 <?php
 	print caEditorBundleShowHideControl($this->request, $ps_id_prefix.$t_subject->tableNum().'HierLocation');
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'HierLocation', $va_settings);
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_subject->tableNum().'HierLocation', $va_settings);
 ?>
 <div class="bundleContainer" id="<?php print $ps_id_prefix.$t_subject->tableNum(); ?>HierLocation">
 	<div class="hierNav" >

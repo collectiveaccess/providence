@@ -55,7 +55,7 @@
 	}
 	
 	print caEditorBundleShowHideControl($this->request, $ps_id_prefix.$t_subject->tableNum().'HierNavigation');
-	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'HierNavigation', $va_settings);
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_subject->tableNum().'HierNavigation', $va_settings);
 ?>	
 	<div class="bundleContainer" id="<?php print $ps_id_prefix.$t_subject->tableNum(); ?>HierNavigation">
 		<div class="hierNav">
