@@ -282,11 +282,7 @@ class Request {
 					if (get_magic_quotes_gpc()) {
 						$vs_val = stripSlashes($vs_val);
 					}
-					$vs_val = rawurldecode($vs_val);
-					if ($pb_prep_for_sql) {
-						$vs_val = addslashes($vs_val);
-					} 
-					return $vs_val;
+					return rawurldecode($vs_val);
 				}
 				break;
 			# -----------------------------------------

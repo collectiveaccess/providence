@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -666,8 +666,8 @@
 		 * @param string $ps_direction Determines the reading direction of the relationship. Possible values are 'ltor' (left-to-right) and 'rtol' (right-to-left). Default value is ltor.
 		 * @return string Type name or null if no row is loaded.
 		 */
-		public function getRelationshipTypename($ps_direction='ltor') {
-			if ($vn_type_id = $this->getTypeID()) {
+		public function getRelationshipTypename($ps_direction='ltor', $pn_type_id=null) {
+			if (($vn_type_id = $pn_type_id) || ($vn_type_id = $this->getTypeID())) {
 				$t_rel_type = new ca_relationship_types($vn_type_id);
 				return ($ps_direction == 'ltor') ? $t_rel_type->get('ca_relationship_types.preferred_labels.typename') : $t_rel_type->get('ca_relationship_types.preferred_labels.typename_reverse');
 			}
@@ -685,6 +685,49 @@
 				return $t_rel_type->get('ca_relationship_types.type_code');
 			}
 			return null;
+		}
+		# ------------------------------------------------------
+		/**
+		 * Get row_ids linked to by this self-relationship. By default this method will return
+		 * row_ids for linked records on either side of the relationship for the currently loaded relationship.
+		 * You can omit specific row_ids from the list of returned ids by including them in the $pa_primary_ids parameters array.
+		 * You can obtain linked row_ids for multiple relationships, not necessarily including the currently loaded relationship,
+		 * by passing a list of relation_ids in the optional $pa_relationship_ids parameter.
+		 *
+		 * This method only returns values for self-relationships (Ex. ca_objects_x_objects, ca_entities_x_entities). It will return null
+		 * when called for non-self-relationships. The returned values are primary keys (row_ids) for the related record - Eg. ca_objects object_id's
+		 * for ca_objects_x_objects, ca_entities entity_id's for ca_entities_x_entities.
+		 *
+		 * @param array $pa_primary_ids List of row_ids to not include in the returned list. [Default is to include all row_ids]
+		 * @param array $pa_relationship_ids List of relationship relation_ids to return related row_ids for. [Default is to return row_ids for the currently loaded relationship only.]
+		 *
+		 * @return array An array of row_ids. If called on a non-self-relationship or with no loaded relationship and and empty $pa_relationship_ids parameter, will return null.
+		 */
+		public function getRelatedIDsForSelfRelationship($pa_primary_ids=null, $pa_relationship_ids=null) {
+			if (!$this->isSelfRelationship()) { return null; }
+			
+			if (!is_array($pa_primary_ids)) { $pa_primary_ids = array(); }
+			
+			if (!is_array($pa_relationship_ids) || !sizeof($pa_relationship_ids)) { 
+				if (!($vn_id = $this->getPrimaryKey())) { return null; }
+				$pa_relationship_ids = array($vn_id);
+			}
+			
+			$o_db = $this->getDb();
+			
+			$qr_res = $o_db->query("
+				SELECT * FROM ".$this->tableName()." WHERE relation_id IN (?)
+			", array($pa_relationship_ids));
+			
+			$va_ids = array();
+			$vs_left_fld = $this->getLeftTableFieldName();
+			$vs_right_fld = $this->getRightTableFieldName();
+			while($qr_res->nextRow()) {
+				if (!in_array($vn_id = $qr_res->get($vs_left_fld), $pa_primary_ids)) { $va_ids[$vn_id] = 1; }
+				if (!in_array($vn_id = $qr_res->get($vs_right_fld), $pa_primary_ids)) { $va_ids[$vn_id] = 1; }
+			}
+		
+			return array_keys($va_ids);
 		}
 		# ------------------------------------------------------
 	}

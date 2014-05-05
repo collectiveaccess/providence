@@ -413,15 +413,19 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
  		return is_object($this->opo_annotations_properties) ? $this->opo_annotations_properties->getPropertyList() : array();
  	}
  	# ------------------------------------------------------
- 	public function getPropertyHTMLFormElement($ps_property, $pa_attributes=null) {
+ 	public function getPropertyHTMLFormElement($ps_property, $pa_attributes=null, $pa_options=null) {
  		return $this->opo_annotations_properties->htmlFormElement($ps_property, $pa_attributes);
  	}
  	# ------------------------------------------------------
- 	public function getPropertyHTMLFormBundle($po_request, $ps_property, $pa_attributes=null) {
+ 	public function getPropertyHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $ps_property, $pa_attributes=null, $pa_options=null) {
  		$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 		$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 		
 		$o_view->setVar('property', $ps_property);
+		$o_view->setVar('id_prefix', $ps_form_name);
+		$o_view->setVar('placement_code', $ps_placement_code);
+		
+		$pa_attributes['name'] = $pa_attributes['id'] = "{$ps_placement_code}{$ps_form_name}{$ps_property}";
  		$o_view->setVar('form_element', $this->getPropertyHTMLFormElement($ps_property, $pa_attributes));
  		
 		return $o_view->render('ca_representation_annotation_properties.php');

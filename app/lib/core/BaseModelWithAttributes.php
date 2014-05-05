@@ -150,7 +150,7 @@
 			$vn_attribute_id = $t_attr->addAttribute($this->tableNum(), $this->getPrimaryKey(), $t_element->getPrimaryKey(), $pa_values, $pa_info['options']);
 			if ($t_attr->numErrors()) {
 				foreach($t_attr->errors as $o_error) {
-					$this->postError($o_error->getErrorNumber(), $o_error->getErrorDescription(), $o_error->getErrorContext(), $pa_options['error_source']);
+					$this->postError($o_error->getErrorNumber(), $o_error->getErrorDescription(), $o_error->getErrorContext(), $pa_info['error_source']);
 				}
 				return false;
 			}
@@ -212,13 +212,13 @@
 			$t_attr->purify($this->purify());
 			if ($po_trans) { $t_attr->setTransaction($po_trans); }
 			if ((!$t_attr->getPrimaryKey()) || ($t_attr->get('table_num') != $this->tableNum()) || ($this->getPrimaryKey() != $t_attr->get('row_id'))) {
-				$this->postError(1969, _t('Can\'t edit invalid attribute'), 'BaseModelWithAttributes->editAttribute()', $pa_options['error_source']);
+				$this->postError(1969, _t('Can\'t edit invalid attribute'), 'BaseModelWithAttributes->editAttribute()', $pa_info['error_source']);
 				return false;
 			}
 			
 			if (!$t_attr->editAttribute($pa_values, $pa_info['options'])) {
 				foreach($t_attr->errors as $o_error) {
-					$this->postError($o_error->getErrorNumber(), $o_error->getErrorDescription(), $o_error->getErrorContext(), $pa_options['error_source']);
+					$this->postError($o_error->getErrorNumber(), $o_error->getErrorDescription(), $o_error->getErrorContext(), $pa_info['error_source']);
 				}
 				return false;
 			}
@@ -252,6 +252,7 @@
 			$t_attr = new ca_attributes($pn_attribute_id);
 			$t_attr->purify($this->purify());
 			if (!$t_attr->getPrimaryKey()) { return false; }
+			$vn_element_id = (int)$t_attr->get('element_id');
 			
 			$vn_add_cnt = 0;
 			if (isset($pa_extra_info['pending_adds']) && is_array($pa_extra_info['pending_adds'])) {
@@ -933,6 +934,7 @@
 			}
 			
 			$va_list = $t_list->getItemsForList($this->getSourceListCode(), $pa_options);
+			if (caGetOption('idsOnly', $pa_options, false)) { return $va_list; }
 			return is_array($va_list) ? caExtractValuesByUserLocale($va_list): array();
 		}
 		# ------------------------------------------------------------------
@@ -1007,6 +1009,7 @@
 		 *
 		 */
 		public function getTypeName($pn_type_id=null) {
+			if (!is_numeric($pn_type_id)) { $pn_type_id = $this->getTypeIDForCode($pn_type_id); }
 			if ($t_list_item = $this->getTypeInstance($pn_type_id)) {
 				return $t_list_item->getLabelForDisplay(false);
 			}
@@ -1066,6 +1069,7 @@
 			}
 			
 			$va_list = $t_list->getItemsForList($this->getTypeListCode(), $pa_options);
+			if (caGetOption('idsOnly', $pa_options, false)) { return $va_list; }
 			return is_array($va_list) ? caExtractValuesByUserLocale($va_list): array();
 		}
 		# ------------------------------------------------------------------
@@ -1113,6 +1117,7 @@
 			$pa_options['limitToItemsWithID'] = caGetTypeRestrictionsForUser($this->tableName(), $pa_options);
 			
 			if (isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes'])) {
+				$pa_options['restrictToTypes'] = caMakeTypeIDList($this->tableName(), $pa_options['restrictToTypes'], $pa_options);
 				if (!$pa_options['limitToItemsWithID'] || !is_array($pa_options['limitToItemsWithID'])) {
 					$pa_options['limitToItemsWithID'] = $pa_options['restrictToTypes'];
 				} else {
@@ -1275,7 +1280,7 @@
 			
 			// get all elements of this element set
 			$va_element_set = $t_element->getElementsInSet();
-			
+
 			// get attributes of this element attached to this row
 			$va_attributes = $this->getAttributesByElement($pm_element_code_or_id);
 			
@@ -1325,7 +1330,7 @@
 					'description' => $va_label['description'],
 					't_subject' => $this,
 					'request' => $po_request,
-					'ps_form_name' => $ps_form_name,
+					'form_name' => $ps_form_name,
 					'format' => ''
 				))));
 				
@@ -1495,13 +1500,17 @@
 		 *
 		 */
 		public function htmlFormElement($ps_field, $ps_format=null, $pa_options=null) {
-			switch($ps_field) {
-				case $this->getSourceFieldName():
-					if ((bool)$this->getAppConfig()->get('perform_source_access_checking')) {
-						$pa_options['value'] = $this->get($ps_field);
-						return $this->getSourceListAsHTMLFormElement($ps_field, array(), $pa_options);
-					}
-					break;
+			if ($vs_source_id_fld_name = $this->getSourceFieldName()) {
+				switch($ps_field) {
+					case $vs_source_id_fld_name:
+						if ((bool)$this->getAppConfig()->get('perform_source_access_checking')) {
+							$pa_options['value'] = $this->get($ps_field);
+							$pa_options['disableItemsWithID'] = caGetSourceRestrictionsForUser($this->tableName(), array('access' => __CA_BUNDLE_ACCESS_READONLY__, 'exactAccess' => true));
+							
+							return $this->getSourceListAsHTMLFormElement($ps_field, array(), $pa_options);
+						}
+						break;
+				}
 			}
 			
 			return parent::htmlFormElement($ps_field, $ps_format, $pa_options);
@@ -1552,7 +1561,7 @@
 			$va_attributes = ca_attributes::getAttributes($this->getDb(), $this->tableNum(), $vn_row_id, array($vn_element_id), array());
 		
 			$va_attribute_list =  is_array($va_attributes[$vn_element_id]) ? $va_attributes[$vn_element_id] : array();
-			
+		
 			$vs_sort_dir = (isset($pa_options['sort']) && (in_array(strtolower($pa_options['sortDirection']), array('asc', 'desc')))) ? strtolower($pa_options['sortDirection']) : 'asc';	
 			if (isset($pa_options['sort']) && ($vs_sort = $pa_options['sort'])) {
 				$va_tmp = array();
@@ -1958,7 +1967,7 @@
 				return false;
 			}
 			$t_restriction = new ca_metadata_type_restrictions();
-			if ($t_restriction->load(array('element_id' => $t_element->getPrimaryKey(), 'type_id' => $type_id, 'table_num' => $this->tableNum()))) {
+			if ($t_restriction->load(array('element_id' => $t_element->getPrimaryKey(), 'type_id' => $pn_type_id, 'table_num' => $this->tableNum()))) {
 				$t_restriction->setMode(ACCESS_WRITE);
 				$t_restriction->delete();
 				if ($t_restriction->numErrors()) {

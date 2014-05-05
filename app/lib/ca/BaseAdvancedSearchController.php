@@ -132,6 +132,8 @@
  				$vb_is_new_search = true;
  			}
  			
+ 			$va_access_values = caGetUserAccessValues($this->request);
+ 			
 			if($vs_search && ($vs_search != "")){ /* any request? */
 				$va_search_opts = array(
 					'sort' => $vs_sort, 
@@ -323,7 +325,7 @@
  		# Sidebar info handler
  		# -------------------------------------------------------
  		public function Tools($pa_parameters) {
- 			parent::Tools($pa_parameters, $po_search);
+ 			parent::Tools($pa_parameters);
 
 			$this->view->setVar('mode_name', _t('search'));
 			$this->view->setVar('mode_type_singular', $this->searchName('singular'));

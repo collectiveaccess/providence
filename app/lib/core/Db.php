@@ -53,7 +53,6 @@ class Db extends DbBase {
 	 * @access private
 	 */
 	private $opo_db;
-
 	/**
 	 * Number of transactions begun
 	 *
@@ -117,16 +116,16 @@ class Db extends DbBase {
 
 		$this->opn_transaction_count = 0;
 
-		if (is_array($pa_options)) {
-			$va_options = $pa_options;
-		} else {
-			$va_options = array(
+		$va_options = (is_array($pa_options)) ? $pa_options : array();
+		
+		if (!isset($va_options['username'])) {
+			$va_options = array_merge($va_options, array(
 				"username" => 	$this->config->get("db_user"),
 				"password" => 	$this->config->get("db_password"),
 				"host" =>	 	$this->config->get("db_host"),
 				"database" =>	$this->config->get("db_database"),
 				"type" =>		$this->config->get("db_type")
-			);
+			));
 		}
 		$this->dieOnError($pb_die_on_error);
 		$this->connect($va_options);
@@ -185,6 +184,15 @@ class Db extends DbBase {
 	 */
 	public function getConfig() {
 		return $this->config;
+	}
+	
+	/**
+	 * Fetches the underlying database connection handle
+	 *
+	 * @return Resource
+	 */
+	public function getHandle() {
+		return $this->opo_db->getHandle();
 	}
 	
 	/**

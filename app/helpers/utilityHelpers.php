@@ -480,7 +480,7 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	function caEscapeHTML($ps_text, $vs_character_set='utf-8') {
-		if (!$opa_php_version) { $opa_php_version = caGetPHPVersion(); }
+		$opa_php_version = caGetPHPVersion();
 		
 		if ($opa_php_version['versionInt'] >= 50203) {
 			$ps_text = htmlspecialchars(stripslashes($ps_text), ENT_QUOTES, $vs_character_set, false);
@@ -742,10 +742,10 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 * Examples of valid expressions are:
 	 *		12 1/2" (= 12.5")
-	 *		12⅔ ft (= 12.667 ft)
+	 *		12��� ft (= 12.667 ft)
 	 *		"Total is 12 3/4 lbs" (= "Total is 12.75 lbs")
 	 *
-	 * Both text fractions (ex. 3/4) and Unicode fraction glyphs (ex. ¾) may be used.
+	 * Both text fractions (ex. 3/4) and Unicode fraction glyphs (ex. ��) may be used.
 	 *
 	 * @param string $ps_fractional_expression String including fractional expression to convert
 	 * @param string $locale The locale of the string to use the right decimal separator
@@ -767,9 +767,9 @@ function caFileIsIncludable($ps_file) {
 			$sep = caGetDecimalSeparator($locale);
 			// replace unicode fractions with decimal equivalents
 			foreach(array(
-				'½' => $sep.'5', '⅓' => $sep.'333',
-				'⅔' => $sep.'667', '¼' => $sep.'25',
-				'¾'	=> $sep.'75') as $vs_glyph => $vs_val
+				'��' => $sep.'5', '���' => $sep.'333',
+				'���' => $sep.'667', '��' => $sep.'25',
+				'��'	=> $sep.'75') as $vs_glyph => $vs_val
 			) {
 				$ps_fractional_expression = preg_replace('![ ]*'.$vs_glyph.'!u', $vs_val, $ps_fractional_expression);	
 			}
@@ -940,7 +940,7 @@ function caFileIsIncludable($ps_file) {
 		$va_sort_keys = array();
 		foreach ($pa_sort_keys as $vs_field) {
 			$va_tmp = explode('.', $vs_field);
-			array_shift($va_tmp);
+			if (sizeof($va_tmp) > 1) { array_shift($va_tmp); }
 			$va_sort_keys[] = join(".", $va_tmp);
 		}
 		$va_sorted_by_key = array();
@@ -1280,6 +1280,17 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ---------------------------------------
 	/**
+	  * Converts Unix timestamp to historic date timestamp
+	  *
+	  * @param int $pn_timestamp A Unix-format timestamp
+	  * @return float Equivalent value as floating point historic timestamp value, or null if Unix timestamp was not valid.
+	  */
+	function caUnixTimestampToHistoricTimestamps($pn_timestamp) {
+		$o_tep = new TimeExpressionParser();
+		return $o_tep->unixToHistoricTimestamp($pn_timestamp);
+	}
+	# ---------------------------------------
+	/**
 	 *
 	 */
 	function caSeemsUTF8($str){
@@ -1581,9 +1592,9 @@ function caFileIsIncludable($ps_file) {
 		}
 		
 		if (isset($pa_parse_options['forceLowercase']) && $pa_parse_options['forceLowercase']) {
-			$vm_val = mb_strtolower($vm_val);
+			$vm_val = is_array($vm_val) ? array_map('mb_strtolower', $vm_val) : mb_strtolower($vm_val);
 		} elseif (isset($pa_parse_options['forceUppercase']) && $pa_parse_options['forceUppercase']) {
-			$vm_val = mb_strtoupper($vm_val);
+			$vm_val = is_array($vm_val) ? array_map('mb_strtoupper', $vm_val) : mb_strtoupper($vm_val);
 		}
 		
 		$vs_cast_to = (isset($pa_parse_options['castTo']) && ($pa_parse_options['castTo'])) ? strtolower($pa_parse_options['castTo']) : '';
@@ -1926,7 +1937,7 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Convert currency value to another currency.
 	 *
-	 * @param $ps_value string Currency value with specifier (Ex. $500, USD 500, ¥1200, CAD 750)
+	 * @param $ps_value string Currency value with specifier (Ex. $500, USD 500, ��1200, CAD 750)
 	 * @param $ps_to string Specifier of currency to convert value to (Ex. USD, CAD, EUR)
 	 * @param $pa_options array Options are:
 	 *		numericValue = return floating point numeric value only, without currency specifier. Default is false.

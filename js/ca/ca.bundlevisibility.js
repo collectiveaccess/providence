@@ -34,7 +34,8 @@ var caUI = caUI || {};
 		var that = jQuery.extend({
 			bundles: [],
 			cookieJar: jQuery.cookieJar('caBundleVisibility'),
-			bundleStates: {}
+			bundleStates: {},
+			bundleDictionaryStates: {}
 		}, options);
 		
 		// --------------------------------------------------------------------------------
@@ -42,11 +43,18 @@ var caUI = caUI || {};
 		// --------------------------------------------------------------------------------
 		that.registerBundle = function(id) {
 			that.bundles.push(id);
-			that.bundleStates[id] = (that.cookieJar.get(id) == 'closed') ? "closed" : "open";
+			that.bundleStates[id] = (that.cookieJar.get(id) == 'closed') ? "closed" : "open";	// default to open
+			that.bundleDictionaryStates[id] = (that.cookieJar.get(id + 'DictionaryEntry') == 'open') ? "open" : "closed";	// default to closed
+		
 			if (that.bundleStates[id] == "closed") {
 				that.close(id, true);
 			} else {
 				that.open(id, true);
+			}
+			if (that.bundleDictionaryStates[id] == "closed") {
+				that.closeDictionaryEntry(id, true);
+			} else {
+				that.openDictionaryEntry(id, true);
 			}
 		}
 		
@@ -61,13 +69,14 @@ var caUI = caUI || {};
 			});
 		}
 		
-		// Open bundle
+		// Toggle bundle
 		that.toggle = function(id) {
 			if(that.bundleStates[id] == 'closed') {
 				that.open(id);
 			} else {
 				that.close(id);
 			}
+			return false;
 		}
 		
 		// Open bundle
@@ -78,6 +87,11 @@ var caUI = caUI || {};
 				});
 			} else {
 				jQuery("#" + id).slideDown(dontAnimate ? 0 : 250);
+				
+				if (jQuery("#" + id + 'DictionaryEntry').length && (that.bundleDictionaryStates[id] == 'open')) { 
+					jQuery("#" + id + 'DictionaryEntry').slideDown(dontAnimate ? 0 : 250);
+				}
+				
 				that.bundleStates[id] = 'open';
 				that.cookieJar.set(id, 'open');
 				
@@ -86,7 +100,8 @@ var caUI = caUI || {};
 				} else {
 					jQuery("#" + id + "VisToggleButton").rotate({ duration:500, angle: 0, animateTo: 180 });
 				}
-			}			
+			}	
+			return false;		
 		}
 		
 		// Close bundle
@@ -97,6 +112,11 @@ var caUI = caUI || {};
 				});
 			} else {
 				jQuery("#" + id).slideUp(dontAnimate ? 0 : 250);
+				
+				if (jQuery("#" + id + 'DictionaryEntry').length && (that.bundleDictionaryStates[id] == 'open')) { 
+					jQuery("#" + id + 'DictionaryEntry').slideUp(dontAnimate ? 0 : 250);
+				}
+				
 				that.bundleStates[id] = 'closed';
 				that.cookieJar.set(id, 'closed');
 				
@@ -106,6 +126,64 @@ var caUI = caUI || {};
 					jQuery("#" + id + "VisToggleButton").rotate({ duration:500, angle: 180, animateTo: 0 });
 				}
 			}
+			return false;
+		}
+		
+		// Toggle dictionary entry
+		that.toggleDictionaryEntry = function(id) {
+			if(that.bundleDictionaryStates[id] == 'closed') {
+				that.openDictionaryEntry(id);
+			} else {
+				that.closeDictionaryEntry(id);
+			}
+			return false;
+		}
+		
+		// Open dictionary entry
+		that.openDictionaryEntry = function(id, dontAnimate) {
+			if (id === undefined) {
+				jQuery.each(that.bundles, function(k, id) {
+					that.openDictionaryEntry(id);
+				});
+			} else {
+				if (!jQuery("#" + id + 'DictionaryEntry').length) { return false; }
+				jQuery("#" + id + 'DictionaryEntry').slideDown(dontAnimate ? 0 : 250);
+				that.bundleDictionaryStates[id] = 'open';
+				that.cookieJar.set(id + 'DictionaryEntry', 'open');
+				
+				if (that.bundleStates[id] == 'closed') {
+					that.open(id);
+				}
+				
+				if (dontAnimate) {
+					jQuery("#" + id + "MetadataDictionaryToggleButton").css("opacity", 1.0);
+				} else {
+					jQuery("#" + id + "MetadataDictionaryToggleButton").animate({ duration:500, opacity: 1.0, animateTo: 0.4 });
+				}
+			}	
+			
+			return false;		
+		}
+		
+		// Close dictionary entry
+		that.closeDictionaryEntry = function(id, dontAnimate) {
+			if (id === undefined) {
+				jQuery.each(that.bundles, function(k, id) {
+					that.closeDictionaryEntry(id);
+				});
+			} else {
+				if (!jQuery("#" + id + 'DictionaryEntry').length) { return false; }
+				jQuery("#" + id + 'DictionaryEntry').slideUp(dontAnimate ? 0 : 250);
+				that.bundleDictionaryStates[id] = 'closed';
+				that.cookieJar.set(id + 'DictionaryEntry', 'closed');
+				
+				if (dontAnimate) {
+					jQuery("#" + id + "MetadataDictionaryToggleButton").css("opacity", 0.4);
+				} else {
+					jQuery("#" + id + "MetadataDictionaryToggleButton").animate({ duration:500, opacity: 0.4, animateTo: 1.0 });
+				}
+			}
+			return false;
 		}
 		
 		// --------------------------------------------------------------------------------

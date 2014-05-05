@@ -78,7 +78,7 @@
  			$o_trans = (isset($pa_options['transaction']) && $pa_options['transaction']) ? $pa_options['transaction'] : null;
  			if (!$o_trans) { 
  				$vb_we_set_transaction = true;
- 				$o_trans = new Transaction();
+ 				$o_trans = new Transaction($t_subject->getDb());
  			}
  			
  			$o_log = new Batchlog(array(
@@ -513,7 +513,7 @@
  			$o_trans = (isset($pa_options['transaction']) && $pa_options['transaction']) ? $pa_options['transaction'] : null;
  			if (!$o_trans) { 
  				$vb_we_set_transaction = true;
- 				$o_trans = new Transaction();
+ 				$o_trans = new Transaction($t_set->getDb());
  			}
  			
  			$o_batch_log = new Batchlog(array(
@@ -545,7 +545,7 @@
  				return null;
  			}
  			
- 			if (preg_match("!/\.\.!", $vs_directory) || preg_match("!\.\./!", $pa_options['importFromDirectory'])) {
+ 			if (preg_match("!\.\./!", $pa_options['importFromDirectory'])) {
  				$o_eventlog->log(array(
 					"CODE" => 'ERR',
 					"SOURCE" => "mediaImport",
@@ -739,7 +739,7 @@
 									$va_extracted_idnos_from_filename[] = $va_matches[1];
 								
 									if (in_array($vs_import_mode, array('TRY_TO_MATCH', 'ALWAYS_MATCH'))) {
-										if(!is_array($va_fields_to_match_on = $po_request->config->getList('batch_media_import_match_on')) || !sizeof($batch_media_import_match_on)) {
+										if(!is_array($va_fields_to_match_on = $po_request->config->getList('batch_media_import_match_on')) || !sizeof($va_fields_to_match_on)) {
 											$batch_media_import_match_on = array('idno');
 										}
 										$va_values = array();
@@ -835,7 +835,7 @@
 								// Calculate identifier using numbering plugin
 								$o_numbering_plugin = $t_object->getIDNoPlugInInstance();
 								if (!($vs_sep = $o_numbering_plugin->getSeparator())) { $vs_sep = ''; }
-								if (!is_array($va_idno_values = $o_numbering_plugin->htmlFormValuesAsArray('idno', $vs_object_idno, false, false, true))) { $va_idno_values = array(); }
+								if (!is_array($va_idno_values = $o_numbering_plugin->htmlFormValuesAsArray('idno', null, false, false, true))) { $va_idno_values = array(); }
 								$t_object->set('idno', join($vs_sep, $va_idno_values));	// true=always set serial values, even if they already have a value; this let's us use the original pattern while replacing the serial value every time through
 								break;
 						}
@@ -1065,13 +1065,13 @@
 			$vb_dry_run = caGetOption('dryRun', $pa_options, false); 
 			$vb_debug = caGetOption('debug', $pa_options, false); 
 			
-			$vn_log_level = $this->_logLevelStringToNumber($vs_log_level);
+			$vn_log_level = BatchProcessor::_logLevelStringToNumber($vs_log_level);
 
 			if (!ca_data_importers::importDataFromSource($ps_source, $ps_importer, array('logDirectory' => $o_config->get('batch_metadata_import_log_directory'), 'request' => $po_request,'format' => $ps_input_format, 'showCLIProgressBar' => false, 'useNcurses' => false, 'progressCallback' => isset($pa_options['progressCallback']) ? $pa_options['progressCallback'] : null, 'reportCallback' => isset($pa_options['reportCallback']) ? $pa_options['reportCallback'] : null,  'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'dryRun' => $vb_dry_run, 'debug' => $vb_debug))) {
 				$va_errors['general'] = array(
 					'idno' => "*",
 					'label' => "*",
-					'errors' => array(_t("Could not import source %1", $vs_data_source)),
+					'errors' => array(_t("Could not import source %1", $ps_source)),
 					'status' => 'ERROR'
 				);
 				return false;
@@ -1079,7 +1079,7 @@
 				$va_notices['general'] = array(
 					'idno' => "*",
 					'label' => "*",
-					'errors' => array(_t("Imported data from source %1", $vs_data_source)),
+					'errors' => array(_t("Imported data from source %1", $ps_source)),
 					'status' => 'SUCCESS'
 				);
 				//return true;
@@ -1096,7 +1096,7 @@
 							'numErrors' => sizeof($va_errors), 'numProcessed' => sizeof($va_notices),
 							'subjectNameSingular' => _t('row'),
 							'subjectNamePlural' => _t('rows'),
-							'startedOn' => $vs_started_on,
+							'startedOn' => caGetLocalizedDate($vn_start_time),
 							'completedOn' => caGetLocalizedDate(time()),
 							'elapsedTime' => caFormatInterval($vn_elapsed_time)
 						)
@@ -1105,7 +1105,7 @@
 			}
 			
 			if (isset($pa_options['sendSMS']) && $pa_options['sendSMS']) {
-				SMS::send($po_request->getUserID(), _t("[%1] Metadata import processing for begun at %2 is complete", $po_request->config->get('app_display_name'),  $vs_started_on));
+				SMS::send($po_request->getUserID(), _t("[%1] Metadata import processing for begun at %2 is complete", $po_request->config->get('app_display_name'),  caGetLocalizedDate($vn_start_time)));
 			}
 			return array('errors' => $va_errors, 'notices' => $va_notices, 'processing_time' => caFormatInterval($vn_elapsed_time));
 		}

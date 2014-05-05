@@ -1480,7 +1480,7 @@ var methods = {
 					
 					view.tools = {};
 					view.tools['pan'] = "<a href='#' id='" + options.id + "ControlPanImage' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/pan_on.png' width='25' height='25'/></a>";
-					if (options.use_annotations && options.show_annotation_tools) { 
+					if (options.use_annotations && options.show_annotation_tools && !options.lock_annotations) { 
 						view.tools['point'] = "<a href='#' id='" + options.id + "ControlAddPointAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/point.png' width='26' height='25'/></a>";		
 						view.tools['rect'] = "<a href='#' id='" + options.id + "ControlAddRectAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/rect.png' width='25' height='24'/></a>";
 						view.tools['polygon'] = "<a href='#' id='" + options.id + "ControlAddPolygonAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/polygon.png' width='28' height='25'/></a>";

@@ -90,6 +90,19 @@ BaseModel::$s_ca_models_definitions['ca_movements'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Data source information'), 'DESCRIPTION' => _t('Serialized array used to store source information for movement information retrieved via web services [NOT IMPLEMENTED YET].')
 		),
+		'access' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 0,
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'BOUNDS_CHOICE_LIST' => array(
+					_t('Not accessible to public') => 0,
+					_t('Accessible to public') => 1
+				),
+				'LIST' => 'access_statuses',
+				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates if movement information is accessible to the public or not. ')
+		),
 		'status' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,

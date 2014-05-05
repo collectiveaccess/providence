@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2013 Whirl-i-Gig
+ * Copyright 2011-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,18 +27,19 @@
  */
  
  
-	$vs_id_prefix 					= $this->getVar('placement_code').$this->getVar('id_prefix');
+	$vs_id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$vn_table_num 				= $this->getVar('table_num');
 	
-	$t_subject							= $this->getVar('t_subject');
+	$t_subject					= $this->getVar('t_subject');
 	
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$vn_table_num.'Settings');
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 ?>
-<div id="<?php print $vs_id_prefix.$vn_table_num.'Settings'; ?>">
+<div id="<?php print $vs_id_prefix; ?>">
 	<div class="bundleContainer">
 		<div class="caItemList settingsBundle">
 <?php 
-				if ($vs_form = $t_subject->getHTMLSettingForm(array('id' => 'setting'))) {
+				if ($vs_form = $t_subject->getHTMLSettingForm(array('id' => $this->getVar('id_prefix'), 'placement_code' => $this->getVar('placement_code')))) {
 					print $vs_form;
 				} else {
 					print _t('No settings');
@@ -47,8 +48,3 @@
 		</div>
 	</div>
 </div>
-<script type="text/javascript">
-	jQuery(document).ready(function() {
-		jQuery("#<?php print $vs_id_prefix.$vn_table_num.'Settings'; ?> input").change();
-	});
-</script>

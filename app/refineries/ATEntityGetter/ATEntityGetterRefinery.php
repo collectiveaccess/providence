@@ -141,7 +141,7 @@
 				if (
 					($vs_entity_type)
 				) {
-					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_entity_type, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_entity_type, $pa_source_data, $pa_item, $vn_c);
 				}
 				if((!isset($va_val['_type']) || !$va_val['_type']) && ($vs_type_opt = $pa_item['settings']['ATEntityGetter_entityTypeDefault'])) {
 					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);

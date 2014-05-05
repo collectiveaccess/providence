@@ -56,6 +56,8 @@
 		 *
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
+			$o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;
+			
 			// Set place hierarchy
 			if ($vs_hierarchy = $pa_item['settings']['placeSplitter_placeHierarchy']) {
 				$vn_hierarchy_id = caGetListItemID('place_hierarchies', $vs_hierarchy);
@@ -66,7 +68,7 @@
 				$vn_hierarchy_id = array_shift($va_hierarchy_ids);
 			}
 			if (!$vn_hierarchy_id) {
-				if ($o_log) { $o_log->logError(_t('[placeSplitterRefinery] No place hierarchies are defined for %1', $vs_place)); }
+				if ($o_log) { $o_log->logError(_t('[placeSplitterRefinery] No place hierarchies are defined')); }
 				return array();
 			}
 			$pa_options['hierarchyID'] = $vn_hierarchy_id;
@@ -171,6 +173,15 @@
 				'default' => '',
 				'label' => _t('Place type default'),
 				'description' => _t('Sets the default place type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list place_types')
+			),
+			'placeSplitter_skipIfValue' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Skip if value'),
+				'description' => _t('Skip if imported value is in the specified list of values.')
 			),
 			'placeSplitter_interstitial' => array(
 				'formatType' => FT_TEXT,

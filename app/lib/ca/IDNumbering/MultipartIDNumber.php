@@ -903,6 +903,10 @@
 				}
 				$va_tmp[$vs_element_name] = $va_element_values[$ps_name.'_'.$vs_element_name];
 				
+				if ($vn_zeropad_to_length = caGetOption('zeropad_to_length', $va_element_info, null)) {
+					$va_tmp[$vs_element_name] = str_pad($va_tmp[$vs_element_name], $vn_zeropad_to_length, "0", STR_PAD_LEFT);
+				}
+				
 				if (isset($va_element_values[$ps_name.'_'.$vs_element_name])) {
 					$vb_isset = true;
 				}
@@ -1047,6 +1051,7 @@
 		# -------------------------------------------------------
 		public function getSequenceMaxValue($ps_format, $ps_element, $ps_idno_stub) {
 			$this->opo_db->dieOnError(false);
+			
 			if (!($qr_res = $this->opo_db->query("
 				SELECT seq
 				FROM ca_multipart_idno_sequences
@@ -1061,6 +1066,7 @@
 		# -------------------------------------------------------
 		public function setSequenceMaxValue($ps_format, $ps_element, $ps_idno_stub, $pn_value) {
 			$this->opo_db->dieOnError(false);
+			
 			$this->opo_db->query("
 				DELETE FROM ca_multipart_idno_sequences 
 				WHERE format = ? AND element = ? AND idno_stub = ?

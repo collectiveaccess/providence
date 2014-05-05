@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,10 +36,11 @@
  
  
 /**
- * Input type constants. Returned by inputType() to indicate what sort of input this reader takes (eg. File or URL)
+ * Input type constants. Returned by inputType() to indicate what sort of input this reader takes (eg. File, URL, text, etc.)
  */ 
 define("__CA_DATA_READER_INPUT_FILE__", 0);
 define("__CA_DATA_READER_INPUT_URL__", 1);
+define("__CA_DATA_READER_INPUT_TEXT__", 2);
 
 abstract class BaseDataReader {
 	# -------------------------------------------------------
@@ -67,6 +68,12 @@ abstract class BaseDataReader {
 	 *
 	 */
 	protected $opa_formats = array();
+	
+	/**
+	 *
+	 */
+	protected $opa_properties = array();
+	
 	# -------------------------------------------------------
 	/**
 	 *
@@ -181,9 +188,20 @@ abstract class BaseDataReader {
 	}
 	# -------------------------------------------------------
 	/**
+	 * Return reader propery
+	 * 
+	 * @param string $ps_property 
+	 * @return mixed
+	 */
+	public function getProperty($ps_property) {
+		return isset($this->opa_properties[$ps_property]) ? $this->opa_properties[$ps_property] : null;
+	}
+	# -------------------------------------------------------
+	/**
 	 * Indicates whether the reader takes a file or URL as input. The 
 	 * __CA_DATA_READER_INPUT_FILE__ constant is returned if file input is required, 
 	 * __CA_DATA_READER_INPUT_URL__ if a URL is required
+	 * __CA_DATA_READER_INPUT_TEXT__ if data encoded as text is required
 	 * 
 	 * @return int
 	 */

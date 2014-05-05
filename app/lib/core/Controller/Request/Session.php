@@ -71,10 +71,12 @@ class Session {
 		$this->domain = $o_config->get("session_domain");
 		$this->lifetime = $o_config->get("session_lifetime");
 		
+		ini_set("session.gc_maxlifetime", $this->lifetime); 
+		ini_set("session.cookie_lifetime", $this->lifetime); 
+		
 		if (!$pb_dont_create_new_session) {
 			session_save_path(__CA_APP_DIR__."/tmp");
 			session_name($this->name);
-			ini_set("session.gc_maxlifetime", $this->lifetime); 
 			session_set_cookie_params($this->lifetime, '/', $this->domain);
 			session_start();
 			$_SESSION['last_activity'] = $this->start_time;
@@ -174,10 +176,7 @@ class Session {
 	# ----------------------------------------
 	# Return number of seconds since request processing began
 	public function elapsedTime($pn_decimal_places=4) {
-		if (!$microtime) {
-			$microtime = $this->start_time;
-		}
-		list($sm, $st) = explode(" ",$microtime);
+		list($sm, $st) = explode(" ", $this->start_time);
 		list($em, $et) = explode(" ",microtime());
 
 		return sprintf("%4.{$pn_decimal_places}f", (($et+$em) - ($st+$sm)));

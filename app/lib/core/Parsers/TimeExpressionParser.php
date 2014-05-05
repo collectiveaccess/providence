@@ -2076,7 +2076,8 @@ class TimeExpressionParser {
 			'showADEra', 'timeFormat', 'timeDelimiter', 
 			'circaIndicator', 'beforeQualifier', 'afterQualifier', 
 			'presentDate', 'useQuarterCenturySyntaxForDisplay', 'timeOmit', 'useRomanNumeralsForCenturies', 
-			'rangePreConjunction', 'rangeConjunction', 'timeRangeConjunction', 'dateTimeConjunction', 'showUndated'
+			'rangePreConjunction', 'rangeConjunction', 'timeRangeConjunction', 'dateTimeConjunction', 'showUndated',
+			'useConjunctionForAfterDates'
 		) as $vs_opt) {
 			if (!isset($pa_options[$vs_opt]) && ($vs_opt_val = $this->opo_datetime_settings->get($vs_opt))) {
 				$pa_options[$vs_opt] = $vs_opt_val;
@@ -2145,7 +2146,8 @@ class TimeExpressionParser {
 		}
 		
 		// is it undated?
-		if (($va_dates['start'] === null) && ($va_dates['end'] === null) && $pa_options['showUndated']) {
+		if (($va_dates['start'] === null) && ($va_dates['end'] === null)) {
+			if ($pa_options['isLifespan']) { return ''; }	// no "undated" for lifedates
 			if (is_array($va_undated = $this->opo_language_settings->getList('undatedDate'))) {
 				return array_shift($va_undated);
 			} 
@@ -2319,26 +2321,32 @@ class TimeExpressionParser {
 		
 		// catch 'after' dates
 		if ($va_dates['end'] >= TEP_END_OF_UNIVERSE) {
-			$va_born_qualifiers = $this->opo_language_settings->getList('bornQualifier');
-			if ($pa_options['isLifespan'] && (sizeof($va_born_qualifiers) > 0)) {
-				$vs_after_qualifier = $va_born_qualifiers[0];
-			} else {
-				$va_after_qualifiers = $this->opo_language_settings->getList('afterQualifier');
-				if ($pa_options['afterQualifier'] && in_array($pa_options['afterQualifier'], $va_after_qualifiers)) {
-					$vs_after_qualifier = $pa_options['afterQualifier'] ;
-				} else {
-					$vs_after_qualifier = $va_after_qualifiers[0];
-				}
-			}
-			
 			if ($va_start_pieces['hours'] == 0 && $va_start_pieces['minutes'] == 0 && $va_start_pieces['seconds'] == 0) {
 				if ($va_start_pieces['day'] == 1 && $va_start_pieces['month'] == 1) {
-					return $vs_after_qualifier.' '. $this->_dateToText(array('year' => $va_start_pieces['year'], 'era' => $va_start_pieces['era'], 'uncertainty' => $va_start_pieces['uncertainty'], 'uncertainty_units' => $va_start_pieces['uncertainty_units']), $pa_options);
+					$vs_date = $this->_dateToText(array('year' => $va_start_pieces['year'], 'era' => $va_start_pieces['era'], 'uncertainty' => $va_start_pieces['uncertainty'], 'uncertainty_units' => $va_start_pieces['uncertainty_units']), $pa_options);
 				} else {
-					return $vs_after_qualifier.' '. $this->_dateToText($va_start_pieces, $pa_options);
+					$vs_date = $this->_dateToText($va_start_pieces, $pa_options);
 				}
 			} else {
-				return $vs_after_qualifier.' '. $this->_dateTimeToText($va_start_pieces, $pa_options);
+				$vs_date = $this->_dateTimeToText($va_start_pieces, $pa_options);	
+			}
+			
+			if (caGetOption('useConjunctionForAfterDates', $pa_options, false)) {
+				$va_range_conjunctions = $this->opo_language_settings->getList('rangeConjunctions');
+				return "{$vs_date} ".$va_range_conjunctions[0]; 
+			} else {
+				$va_born_qualifiers = $this->opo_language_settings->getList('bornQualifier');
+				if ($pa_options['isLifespan'] && (sizeof($va_born_qualifiers) > 0)) {
+					$vs_after_qualifier = $va_born_qualifiers[0];
+				} else {
+					$va_after_qualifiers = $this->opo_language_settings->getList('afterQualifier');
+					if ($pa_options['afterQualifier'] && in_array($pa_options['afterQualifier'], $va_after_qualifiers)) {
+						$vs_after_qualifier = $pa_options['afterQualifier'] ;
+					} else {
+						$vs_after_qualifier = $va_after_qualifiers[0];
+					}
+				}
+				return "{$vs_after_qualifier} {$vs_date}";
 			}
 		}
 		
@@ -2513,6 +2521,7 @@ class TimeExpressionParser {
 		if (($pn_start >= -1) && ($pn_end >= -1) && ($pn_end >= $pn_start)) {
 			$this->opn_start_unixtime = $pn_start;
 			$this->opn_end_unixtime = $pn_end;
+			return true;
 		} else {
 			return false;
 		}
@@ -2722,6 +2731,7 @@ class TimeExpressionParser {
 		
 		if (!$pa_options['timeOmit']) {
 			$vn_seconds = ($pa_date_pieces['hours'] * 3600) + ($pa_date_pieces['minutes'] * 60) + $pa_date_pieces['seconds'];
+			if (!$vn_seconds) { return $vs_date; }
 			$vs_time = $this->_timeToText($vn_seconds, $pa_options);
 			
 			return $vs_date. ' '.$vs_datetime_conjunction.' '.$vs_time;

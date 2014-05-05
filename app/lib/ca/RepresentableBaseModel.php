@@ -414,6 +414,8 @@
 		 *		rank - a numeric rank used to order the representations when listed
 		 *		returnRepresentation = if set the newly created ca_object_representations instance is returned rather than the link_id of the newly created relationship record
 		 *		matchOn = 
+		 *		centerX = Horizontal position of image center used when cropping as a percentage expressed as a decimal between 0 and 1. If omitted existing value is maintained. Note that both centerX and centerY must be specified for the center to be changed.
+		 *		centerY = Vertical position of image center used when cropping as a percentage expressed as a decimal between 0 and 1. If omitted existing value is maintained. Note that both centerX and centerY must be specified for the center to be changed.
 		 *
 		 * @return mixed Returns primary key (link_id) of the relatipnship row linking the newly created representation to the item; if the 'returnRepresentation' is set then an instance for the newly created ca_object_representations is returned instead; boolean false is returned on error
 		 */
@@ -425,10 +427,9 @@
 			$t_rep = new ca_object_representations();
 		
 			if ($this->inTransaction()) {
-				$o_trans = $this->getTransaction();
-				$t_rep->setTransaction($o_trans);
+				$t_rep->setTransaction($this->getTransaction());
 			}
-			
+				
 			$vn_rep_id = null;
 			if(is_array($va_match_on = caGetOption('matchOn', $pa_options, null))) {
 				$va_ids = null;
@@ -501,14 +502,59 @@
 				}
 			} else {
 				$t_rep->load($vn_rep_id);
+				$t_rep->setMode(ACCESS_WRITE);
+				
+				$t_rep->set('status', $pn_status);
+				$t_rep->set('access', $pn_access);
+				if ($ps_media_path) { $t_rep->set('media', $ps_media_path, $pa_options); }
+		
+				if (is_array($pa_values)) {
+					if (isset($pa_values['idno'])) {
+						$t_rep->set('idno', $pa_values['idno']);
+						unset($pa_values['idno']);
+					}
+					foreach($pa_values as $vs_element => $va_value) { 					
+						if (is_array($va_value)) {
+							// array of values (complex multi-valued attribute)
+							$t_rep->replaceAttribute(
+								array_merge($va_value, array(
+									'locale_id' => $pn_locale_id
+								)), $vs_element);
+						} else {
+							// scalar value (simple single value attribute)
+							if ($va_value) {
+								$t_rep->replaceAttribute(array(
+									'locale_id' => $pn_locale_id,
+									$vs_element => $va_value
+								), $vs_element);
+							}
+						}
+					}
+				}
+				$t_rep->update();
+				if ($t_rep->numErrors()) {
+					$this->errors = array_merge($this->errors, $t_rep->errors());
+					return false;
+				}
+			}
+			
+			// Set image center if specified
+			$vn_center_x = caGetOption('centerX', $pa_options, null);
+			$vn_center_y = caGetOption('centerY', $pa_options, null);
+			if (strlen($vn_center_x) && (strlen($vn_center_y)) && ($vn_center_x >= 0) && ($vn_center_y >= 0) && ($vn_center_x <= 1) && ($vn_center_y <= 1)) {
+				$t_rep->setMediaCenter('media', (float)$vn_center_x, (float)$vn_center_y);
+				$t_rep->update();
+				if ($t_rep->numErrors()) {
+					$this->errors = array_merge($this->errors, $t_rep->errors());
+					return false;
+				}
 			}
 			
 			if (!($t_oxor = $this->_getRepresentationRelationshipTableInstance())) { return null; }
 			$vs_pk = $this->primaryKey();
 			
 			if ($this->inTransaction()) {
-				$o_trans = $this->getTransaction();
-				$t_oxor->setTransaction($o_trans);
+				$t_oxor->setTransaction($this->getTransaction());
 			}
 			$t_oxor->setMode(ACCESS_WRITE);
 			$t_oxor->set($vs_pk, $vn_id);
@@ -563,6 +609,8 @@
 		 * @param bool $pb_is_primary Sets 'primaryness' of representation. If you wish to leave the primary setting to its current value set this null or omit the parameter.
 		 * @param array $pa_values
 		 * @param array $pa_options
+		 *		centerX = Horizontal position of image center used when cropping as a percentage expressed as a decimal between 0 and 1. If omitted existing value is maintained. Note that both centerX and centerY must be specified for the center to be changed.
+		 *		centerY = Vertical position of image center used when cropping as a percentage expressed as a decimal between 0 and 1. If omitted existing value is maintained. Note that both centerX and centerY must be specified for the center to be changed.
 		 *
 		 * @return bool True on success, false on failure, null if no row has been loaded into the object model 
 		 */
@@ -572,8 +620,7 @@
 			
 			$t_rep = new ca_object_representations();
 			if ($this->inTransaction()) {
-				$o_trans = $this->getTransaction();
-				$t_rep->setTransaction($o_trans);
+				$t_rep->setTransaction($this->getTransaction());
 			}
 			if (!$t_rep->load(array('representation_id' => $pn_representation_id))) {
 				$this->postError(750, _t("Representation id=%1 does not exist", $pn_representation_id), "RepresentableBaseModel->editRepresentation()");
@@ -621,6 +668,13 @@
 				if ($t_rep->numErrors()) {
 					$this->errors = array_merge($this->errors, $t_rep->errors());
 					return false;
+				}
+				
+				// Set image center if specified
+				$vn_center_x = caGetOption('centerX', $pa_options, null);
+				$vn_center_y = caGetOption('centerY', $pa_options, null);
+				if (strlen($vn_center_x) && (strlen($vn_center_y)) && ($vn_center_x >= 0) && ($vn_center_y >= 0) && ($vn_center_x <= 1) && ($vn_center_y <= 1)) {
+					$t_rep->setMediaCenter('media', (float)$vn_center_x, (float)$vn_center_y);
 				}
 					
 				if ($ps_media_path) {

@@ -194,7 +194,7 @@ class WLPlugFileImage Extends WLPlug Implements IWLPlugFileFormat {
 									break;
 							}
 							
-							if (!$r) { return false; }
+							if (!$rsource) { return false; }
 							
 							list($vn_width, $vn_height) = getimagesize($ps_orig_filepath);
 							

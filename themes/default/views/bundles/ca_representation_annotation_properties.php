@@ -26,6 +26,7 @@
  * ----------------------------------------------------------------------
  */
  
+	$vs_id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
  	$vs_element 			= $this->getVar('form_element');
  	
  	$va_errors = array();
@@ -35,7 +36,7 @@
  		}
  	}
 ?>
-	<div>
+	<div id="<?php print $vs_id_prefix; ?>">
 		<div class="bundleContainer">
 			<div class="caItemList">
 				<div class="labelInfo">	

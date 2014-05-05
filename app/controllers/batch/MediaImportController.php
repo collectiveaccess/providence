@@ -92,7 +92,7 @@
  			$t_rep->set('status', $va_last_settings['ca_object_representations_status']);
  			$t_rep->set('access', $va_last_settings['ca_object_representations_access']);
  			
- 			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
+ 			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, null, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 				array(),
 				array()
 			);
@@ -234,7 +234,7 @@
 				$dir = substr($dir, 0, strlen($dir) - 1);
 			}
 			
-			if($va_paths = scandir($dir, 0)) {
+			if($va_paths = @scandir($dir, 0)) {
 				$vn_i = $vn_c = 0;
 				foreach($va_paths as $item) {
 					if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {

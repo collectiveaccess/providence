@@ -244,6 +244,7 @@
 							{
 								minLength: 3,delay: 800,
 								source: '{$vs_url}',
+								html: true,
 								select: function(event, ui) {
 									jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').val(ui.item.label + '|' + ui.item.idno + '|' + ui.item.url);
 									

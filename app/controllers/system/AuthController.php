@@ -32,6 +32,7 @@
 		
  		# -------------------------------------------------------
  		public function Login() {
+ 			global $g_ui_locale;
 			if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
 				if(!initializeLocale($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) die("Error loading locale ".$g_ui_locale);
 			}
@@ -39,6 +40,7 @@
  		}
  		# -------------------------------------------------------
  		public function DoLogin() {
+ 			global $g_ui_locale;
 			if (!$this->request->doAuthentication(array('dont_redirect' => true, 'noPublicUsers' => true, 'user_name' => $this->request->getParameter('username', pString), 'password' => $this->request->getParameter('password', pString)))) {
 				$this->notification->addNotification(_t("Login was invalid"), __NOTIFICATION_TYPE_ERROR__);
  				

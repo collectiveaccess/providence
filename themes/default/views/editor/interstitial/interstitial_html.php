@@ -110,7 +110,6 @@
 						content += '</ul></div>';
 						
 						jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").html(content).slideDown(200);
-						jQuery('.rounded').corner('round 8px');
 						
 						var quickAddClearErrorInterval = setInterval(function() {
 							jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").slideUp(500);
