@@ -4497,8 +4497,11 @@ span.bundleDisplayEditorPlacementListItemTitle {
 }
 .elementSettingsUI {
 	position: absolute;
-	top: 550px;
+	top: 40px;
 	left: 400px;
+	overflow: auto;
+	width: 400px;
+	max-height:500px;
 	background-color: rgb(255, 255, 255);
 	padding: 20px;
 	border-radius: 4px;
@@ -4507,8 +4510,6 @@ span.bundleDisplayEditorPlacementListItemTitle {
 	-moz-box-shadow: 0 0 5px #888;
 	-webkit-box-shadow: 0 0 5px#888;
 	box-shadow: 0 0 5px #888;
-	width: 400px;
-	z-index: 200000;
 }
 .elementSettingsUI a{
 	float:right;
