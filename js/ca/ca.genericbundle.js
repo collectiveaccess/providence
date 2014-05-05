@@ -78,10 +78,11 @@ var caUI = caUI || {};
 		if (that.maxRepeats == 0) { that.maxRepeats = 65535; }
 		
 		if (!that.readonly) {
-			jQuery(container + " ." + that.addButtonClassName).click(function() {
+			jQuery(container + " ." + that.addButtonClassName).click(function(e) {
 				that.addToBundle();
 				that.showUnsavedChangesWarning(true);	
 				
+				e.preventDefault();
 				return false;
 			});
 		} else {
@@ -273,7 +274,7 @@ var caUI = caUI || {};
 			// attach interstitial edit button
 			if (this.interstitialButtonClassName) {
 				if (!this.readonly) {
-					jQuery(this.container + " #" +this.itemID + templateValues.n + " ." + this.interstitialButtonClassName).click(function() { 
+					jQuery(this.container + " #" +this.itemID + templateValues.n + " ." + this.interstitialButtonClassName).click(function(e) { 
 						// Trigger interstitial edit panel
 						var u = options.interstitialUrl + "/relation_id/" + initialValues['relation_id'] + "/placement_id/" + that.placementID + "/n/" + templateValues.n + "/field_name_prefix/" + that.fieldNamePrefix;
 						if (that.interstitialPrimaryTable && that.interstitialPrimaryID) {	// table and id for record from which interstitial was launched
@@ -281,6 +282,7 @@ var caUI = caUI || {};
 						}
 						options.interstitialPanel.showPanel(u);
 						jQuery('#' + options.interstitialPanel.getPanelContentID()).data('panel', options.interstitialPanel);
+						e.preventDefault();
 						return false; 
 					});
 				} else {
@@ -290,7 +292,7 @@ var caUI = caUI || {};
 		
 			// attach delete button
 			if (!this.readonly) {
-				jQuery(this.container + " #" +this.itemID + templateValues.n + " ." + this.deleteButtonClassName).click(function() { that.deleteFromBundle(templateValues.n); return false; });
+				jQuery(this.container + " #" +this.itemID + templateValues.n + " ." + this.deleteButtonClassName).click(function(e) { that.deleteFromBundle(templateValues.n); e.preventDefault(); return false; });
 			} else {
 				jQuery(this.container + " #" +this.itemID + templateValues.n + " ." + this.deleteButtonClassName).css("display", "none");
 			}
