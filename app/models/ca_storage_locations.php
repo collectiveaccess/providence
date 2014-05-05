@@ -367,7 +367,7 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 				FROM ca_movements_x_objects cxo
 				INNER JOIN ca_movements_x_storage_locations AS slxm ON slxm.movement_id = cxo.movement_id
 				WHERE
-					(cxo.is_current = 1) AND (slxm.location_id = ?)
+					(slxm.location_id = ?)
 					
 			", array((int)$this->getPrimaryKey()));
 		$va_ids = array();

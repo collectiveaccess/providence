@@ -738,8 +738,6 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$o_view->setVar('location_relationship_types', $t_location_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
 		$o_view->setVar('location_relationship_types_by_sub_type', $t_location_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
 
-		
-		
 		//
 		// Location update
 		//

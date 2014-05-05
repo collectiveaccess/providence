@@ -54,6 +54,7 @@
 			<div class="caUseHistoryButtonBar">
 				<div style='float: left;' class='button labelInfo caAddLoanButton'><a href="#" id="<?php print $vs_id_prefix; ?>AddLoan"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print _t('Add to loan'); ?></a></div>
 				<div style='float: left;'  class='button labelInfo caChangeLocationButton'><a href="#" id="<?php print $vs_id_prefix; ?>ChangeLocation"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print _t('Update location'); ?></a></div>
+				<br style='clear: both;'/>
 			</div>
 			
 		<div class="caLocationList"> </div>
