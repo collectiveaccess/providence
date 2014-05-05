@@ -1572,7 +1572,7 @@ create table ca_objects
    constraint fk_ca_objects_parent_id foreign key (parent_id)
       references ca_objects (object_id) on delete restrict on update restrict,
       
-   constraint fk_ca_objects_home_location_id foreign key (location_id)
+   constraint fk_ca_objects_home_location_id foreign key (home_location_id)
       references ca_storage_locations (location_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
