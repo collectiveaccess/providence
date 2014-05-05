@@ -353,7 +353,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				if (!$pb_settings_only) {
 					$t_placement->setSettingDefinitionsForPlacement($va_available_bundles[$vs_bundle_name]['settings']);
 					$va_placements[$vn_placement_id]['display'] = $va_available_bundles[$vs_bundle_name]['display'];
-					$va_placements[$vn_placement_id]['settingsForm'] = $t_placement->getHTMLSettingForm(array('id' => $vs_bundle_name.'_'.$vn_placement_id.'_', 'settings' => $va_settings));
+					$va_placements[$vn_placement_id]['settingsForm'] = $t_placement->getHTMLSettingForm(array('id' => $vs_bundle_name.'_'.$vn_placement_id, 'settings' => $va_settings));
 				} else {
 					$va_tmp = explode('.', $vs_bundle_name);
 					$t_instance = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true);
