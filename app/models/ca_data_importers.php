@@ -1715,7 +1715,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 						
 						$va_vals[$vn_i] = $vm_val;
-						if (is_array($va_row[$va_item['source']])) {
+						if ($o_reader->valuesCanRepeat()) {
 							$va_row[$va_item['source']][$vn_i] = $va_row[mb_strtolower($va_item['source'])][$vn_i] = $vm_val;
 						} else {
 							$va_row[$va_item['source']] = $va_row[mb_strtolower($va_item['source'])] = $vm_val;
