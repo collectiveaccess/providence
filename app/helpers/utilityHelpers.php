@@ -752,7 +752,7 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 * Examples of valid expressions are:
 	 *		12 1/2" (= 12.5")
-	 *		12��� ft (= 12.667 ft)
+	 *		12 ⅔ ft (= 12.667 ft)
 	 *		"Total is 12 3/4 lbs" (= "Total is 12.75 lbs")
 	 *
 	 * Both text fractions (ex. 3/4) and Unicode fraction glyphs (ex. ��) may be used.
@@ -777,9 +777,9 @@ function caFileIsIncludable($ps_file) {
 			$sep = caGetDecimalSeparator($locale);
 			// replace unicode fractions with decimal equivalents
 			foreach(array(
-				'��' => $sep.'5', '���' => $sep.'333',
-				'���' => $sep.'667', '��' => $sep.'25',
-				'��'	=> $sep.'75') as $vs_glyph => $vs_val
+				'½' => $sep.'5', '⅓' => $sep.'333',
+				'⅔' => $sep.'667', '¼' => $sep.'25',
+				'¾'	=> $sep.'75') as $vs_glyph => $vs_val
 			) {
 				$ps_fractional_expression = preg_replace('![ ]*'.$vs_glyph.'!u', $vs_val, $ps_fractional_expression);	
 			}
@@ -1032,10 +1032,11 @@ function caFileIsIncludable($ps_file) {
 	function caGetCacheObject($ps_prefix, $pn_lifetime=3600, $ps_cache_dir=null, $pn_cleaning_factor=100) {
 		if (!$ps_cache_dir) { $ps_cache_dir = __CA_APP_DIR__.'/tmp'; }
 		$va_frontend_options = array(
-			'lifetime' => null, //$pn_lifetime, 				/* cache lives 1 hour */
+			'cache_id_prefix' => $ps_prefix,
+			'lifetime' => $pn_lifetime, 				/* cache lives 1 hour */
 			'logging' => false,					/* do not use Zend_Log to log what happens */
 			'write_control' => true,			/* immediate read after write is enabled (we don't write often) */
-			'automatic_cleaning_factor' => 0, //$pn_cleaning_factor, 	/* automatic cache cleaning */
+			'automatic_cleaning_factor' => $pn_cleaning_factor, 	/* automatic cache cleaning */
 			'automatic_serialization' => true	/* we store arrays, so we have to enable that */
 		);
 		
