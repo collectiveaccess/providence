@@ -1963,13 +1963,16 @@
 		public static function check_media_fixity($po_opts=null) {
 			require_once(__CA_LIB_DIR__."/core/Db.php");
 			require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
-				
+			
+			$ps_file_path = strtolower((string)$po_opts->getOption('file'));	
 			$ps_format = strtolower((string)$po_opts->getOption('format'));
 			if(!in_array($ps_format, array('text', 'tab', 'csv'))) { $ps_format = 'text'; }
 				
 			$o_db = new Db();
 			$o_dm = Datamodel::load();
 			$t_rep = new ca_object_representations();
+			
+			$vs_report_output = join(($ps_format == 'tab') ? "\t" : ",", array(_t('Type'), _t('Error'), _t('Name'), _t('ID'), _t('Version'), _t('File path'), _t('Expected MD5'), _t('Actual MD5')))."\n";
 			
 			// Verify object representations
 			$qr_reps = $o_db->query("SELECT representation_id, idno, media FROM ca_object_representations WHERE deleted = 0");
@@ -1989,15 +1992,16 @@
 					if ($vs_database_md5 !== $vs_file_md5) {
 						$t_rep->load($vn_representation_id);
 						
+						$vs_message = _t("[Object representation][MD5 mismatch] %1; version %2 [%3]", $t_rep->get("ca_objects.preferred_labels.name")." (". $t_rep->get("ca_objects.idno")."); representation_id={$vn_representation_id}", $vs_version, $vs_path);
 						switch($ps_format) {
 							case 'text':
 							default:
-								$vs_message = _t("[MD5 mismatch] %1; version %2 [%3]", $t_rep->get("ca_objects.preferred_labels.name")." (". $t_rep->get("ca_objects.idno")."); representation_id={$vn_representation_id}", $vs_version, $vs_path);
+								$vs_report_output .= "{$vs_message}\n";
 								break;
 							case 'tab':
 							case 'csv':
-								$va_message = array(_t("MD5 mismatch"), $t_rep->get("ca_objects.preferred_labels.name")." (". $t_rep->get("ca_objects.idno")."); representation_id={$vn_representation_id}", $vs_version, $vs_path);
-								$vs_message = join(($ps_format == 'tab') ? "\t" : ",", $va_message);
+								$va_log = array(_t('Object representation'), ("MD5 mismatch"), caEscapeForDelimitedOutput($t_rep->get("ca_objects.preferred_labels.name")." (". $t_rep->get("ca_objects.idno").")"), $vn_representation_id, $vs_version, $vs_path, $vs_database_md5, $vs_file_md5);
+								$vs_report_output .= join(($ps_format == 'tab') ? "\t" : ",", $va_log)."\n";
 								break;
 						}
 						
@@ -2056,19 +2060,19 @@
 													$vs_label .= " ({$vs_label})";
 												}
 											}
-											$vs_label .= "; value_id={$vn_value_id}";
 										}
 										
+										$vs_message = _t("[Media attribute][MD5 mismatch] %1; value_id=%2; version %3 [%4]", $vs_label, $vn_value_id, $vs_version, $vs_path);
 										
 										switch($ps_format) {
 											case 'text':
 											default:
-												$vs_message = _t("[MD5 mismatch] %1; version %2 [%3]", $vs_label, $vs_version, $vs_path);
+												$vs_report_output .= "{$vs_message}\n";
 												break;
 											case 'tab':
 											case 'csv':
-												$va_message = array(_t("MD5 mismatch"), $vs_label, $vs_version, $vs_path);
-												$vs_message = join(($ps_format == 'tab') ? "\t" : ",", $va_message);
+												$va_log = array(_t('Media attribute'), _t("MD5 mismatch"), caEscapeForDelimitedOutput($vs_label), $vn_value_id, $vs_version, $vs_path, $vs_database_md5, $vs_file_md5);
+												$vs_report_output .= join(($ps_format == 'tab') ? "\t" : ",", $va_log);
 												break;
 										}
 						
@@ -2130,19 +2134,19 @@
 												$vs_label .= " ({$vs_label})";
 											}
 										}
-										$vs_label .= "; value_id={$vn_value_id}";
 									}
-									
+								
+									$vs_message = _t("[File attribute][MD5 mismatch] %1; value_id=%2; version %3 [%4]", $vs_label, $vn_value_id, $vs_version, $vs_path);		
 									
 									switch($ps_format) {
 										case 'text':
 										default:
-											$vs_message = _t("[MD5 mismatch] %1; version %2 [%3]", $vs_label, $vs_version, $vs_path);
+											$vs_report_output .= "{$vs_message}\n";
 											break;
 										case 'tab':
 										case 'csv':
-											$va_message = array(_t("MD5 mismatch"), $vs_label, $vs_version, $vs_path);
-											$vs_message = join(($ps_format == 'tab') ? "\t" : ",", $va_message);
+											$va_log = array(_t('File attribute'), _t("MD5 mismatch"), caEscapeForDelimitedOutput($vs_label), $vn_value_id, $vs_version, $vs_path, $vs_database_md5, $vs_file_md5);
+											$vs_report_output .= join(($ps_format == 'tab') ? "\t" : ",", $va_log);
 											break;
 									}
 					
@@ -2159,6 +2163,10 @@
 				}
 			}
 			
+			if ($ps_file_path) {
+				file_put_contents($ps_file_path, $vs_report_output);
+			}
+			
 			return true;
 		}
 		# -------------------------------------------------------
@@ -2167,7 +2175,8 @@
 		 */
 		public static function check_media_fixityParamList() {
 			return array(
-				"format|f=s" => _t('Output format. (text|tab|csv')	
+				"file|o=s" => _t('Location to write report to.'),
+				"format|f=s" => _t('Output format. (text|tab|csv)')	
 			);
 		}
 		# -------------------------------------------------------
