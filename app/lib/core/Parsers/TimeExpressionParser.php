@@ -2147,7 +2147,7 @@ class TimeExpressionParser {
 		
 		// is it undated?
 		if (($va_dates['start'] === null) && ($va_dates['end'] === null)) {
-			if ($pa_options['isLifespan']) { return ''; }	// no "undated" for lifedates
+			if ($pa_options['isLifespan'] || !$pa_options['showUndated']) { return ''; }	// no "undated" for lifedates
 			if (is_array($va_undated = $this->opo_language_settings->getList('undatedDate'))) {
 				return array_shift($va_undated);
 			} 
