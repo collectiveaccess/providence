@@ -989,7 +989,6 @@ class SearchResult extends BaseObject {
 				}
 			}
 		} else {
-
 			if ($vs_template) {
 				return caProcessTemplateForIDs($vs_template, $this->opo_subject_instance->tableName(), array($vn_row_id), array_merge($pa_options, array('placeholderPrefix' => $va_path_components['field_name'])));
 			}	
@@ -998,6 +997,23 @@ class SearchResult extends BaseObject {
 //
 			$t_list = $this->opo_datamodel->getInstanceByTableName('ca_lists', true);
 			$va_value_list = array($vn_row_id => $this->opa_prefetch_cache[$va_path_components['table_name']][$vn_row_id]);
+		
+			// Filter when getting relationships
+			if ($t_instance->isRelationship() && is_array($va_rel_types = caGetOption('restrict_to_relationship_types', $pa_options, null))) {
+				$va_rel_types = caMakeRelationshipTypeIDList($va_path_components['table_name'], $va_rel_types); 
+				
+				$va_tmp = array();
+				foreach($va_value_list as $vn_id => $va_by_locale) {
+					foreach($va_by_locale as $vn_locale_id => $va_values) {
+						foreach($va_values as $vn_i => $va_value) {
+							if (!$va_value['rel_type_id'] || in_array($va_value['rel_type_id'], $va_rel_types)) {
+								$va_tmp[$vn_id][$vn_locale_id][$vn_i] = $va_value;
+							}
+						}
+					}
+				}
+				$va_value_list = $va_tmp;
+			}
 
 			// Apply "where" criteria if defined
 			if (is_array($va_get_where)) {
