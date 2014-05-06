@@ -1829,7 +1829,7 @@
 		}
 		# -------------------------------------------------------
 		/**
-		 * Reset user password
+		 * Load metadata dictionary
 		 */
 		public static function load_metadata_dictionary_from_excel_file($po_opts=null) {
 			
@@ -1955,6 +1955,126 @@
 		 */
 		public static function load_metadata_dictionary_from_excel_fileHelp() {
 			return _t('Load metadata dictionary entries from an Excel file using the format described at http://docs.collectiveaccess.org/metadata_dictionary');
+		}
+		# -------------------------------------------------------
+		/**
+		 * 
+		 */
+		public static function check_media_fixity($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/core/Db.php");
+			require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
+				
+			$o_db = new Db();
+			
+			// Verify object representations
+			$qr_reps = $o_db->query("SELECT representation_id, idno, media FROM ca_object_representations WHERE deleted = 0");
+			print CLIProgressBar::start($vn_rep_count = $qr_reps->numRows(), _t('Checking object representations'))."\n";
+			$vn_errors = 0;
+			while($qr_reps->nextRow()) {
+				$vn_representation_id = $qr_reps->get('representation_id');
+				print CLIProgressBar::next(1, _t("Checking representation media %1", $vn_representation_id));
+	
+				$va_media_versions = $qr_reps->getMediaVersions('media');
+				foreach($va_media_versions as $vs_version) {
+					$vs_path = $qr_reps->getMediaPath('media', $vs_version);
+					
+					$vs_database_md5 = $qr_reps->getMediaInfo('media', $vs_version, 'MD5');
+					$vs_file_md5 = md5_file($vs_path);
+					
+					if ($vs_database_md5 !== $vs_file_md5) {
+						$vs_idno = $qr_reps->get('idno');
+						CLIUtils::addError(_t("Representation %1%2, version %3 does not match database signature %4 [%5]", $vn_representation_id, $vs_idno ? " ({$vs_idno})" : '', $vs_version, $vs_database_md5, $vs_path));
+						$vn_errors++;
+					}
+				}
+			}
+			
+			print CLIProgressBar::finish();
+			CLIUtils::addMessage(_t('%1 errors for %2 representations', $vn_errors, $vn_rep_count));
+			
+			// get all Media elements
+			$va_elements = ca_metadata_elements::getElementsAsList(false, null, null, true, false, true, array(16)); // 16=media
+			
+			if (is_array($va_elements) && sizeof($va_elements)) {
+				if (is_array($va_element_ids = caExtractValuesFromArrayList($va_elements, 'element_id', array('preserveKeys' => false))) && sizeof($va_element_ids)) {
+					$qr_c = $o_db->query("
+						SELECT count(*) c 
+						FROM ca_attribute_values
+						WHERE
+							element_id in (?)
+					", array($va_element_ids));
+					if ($qr_c->nextRow()) { $vn_count = $qr_c->get('c'); } else { $vn_count = 0; }
+			
+					print CLIProgressBar::start($vn_count, _t('Checking attribute media'));
+					
+					$vn_errors = 0;
+					foreach($va_elements as $vs_element_code => $va_element_info) {
+						$qr_vals = $o_db->query("SELECT value_id FROM ca_attribute_values WHERE element_id = ?", (int)$va_element_info['element_id']);
+						$va_vals = $qr_vals->getAllFieldValues('value_id');
+						foreach($va_vals as $vn_value_id) {
+							$t_attr_val = new ca_attribute_values($vn_value_id);
+							if ($t_attr_val->getPrimaryKey()) {
+								$t_attr_val->setMode(ACCESS_WRITE);
+								$t_attr_val->useBlobAsMediaField(true);
+						
+								
+								print CLIProgressBar::next(1, _t("Checking attribute media %1", $vn_value_id));
+								
+								$va_media_versions = $t_attr_val->getMediaVersions('value_blob');
+								foreach($va_media_versions as $vs_version) {
+									$vs_path = $t_attr_val->getMediaPath('value_blob', $vs_version);
+				
+									$vs_database_md5 = $t_attr_val->getMediaInfo('value_blob', $vs_version, 'MD5');
+									$vs_file_md5 = md5_file($vs_path);
+				
+									if ($vs_database_md5 !== $vs_file_md5) {
+										CLIUtils::addError(_t("Attribute %1, version %2 does not match database signature %3 [%4]", $vn_representation_id, $vs_version, $vs_database_md5, $vs_path));
+										$vn_errors++;
+									}
+								}
+						
+							}
+						}
+					}
+					print CLIProgressBar::finish();
+					
+					CLIUtils::addMessage(_t('%1 errors for %2 attributes', $vn_errors, $vn_rep_count));
+				}
+			}
+			
+			//CLIUtils::addError(_t("You must specify a user"));
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_media_fixityParamList() {
+			return array(
+				
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_media_fixityUtilityClass() {
+			return _t('Maintenance');
+		}
+		
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_media_fixityShortHelp() {
+			return _t('Verify media fixity using database file signatures');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_media_fixityHelp() {
+			return _t('Verifies that media files on disk are consistent with file signatures recordded in the database at time of upload.');
 		}
 		# -------------------------------------------------------
 	}
