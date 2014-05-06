@@ -1022,10 +1022,10 @@ function caFileIsIncludable($ps_file) {
 	function caGetCacheObject($ps_prefix, $pn_lifetime=3600, $ps_cache_dir=null, $pn_cleaning_factor=100) {
 		if (!$ps_cache_dir) { $ps_cache_dir = __CA_APP_DIR__.'/tmp'; }
 		$va_frontend_options = array(
-			'lifetime' => $pn_lifetime, 				/* cache lives 1 hour */
+			'lifetime' => null, //$pn_lifetime, 				/* cache lives 1 hour */
 			'logging' => false,					/* do not use Zend_Log to log what happens */
 			'write_control' => true,			/* immediate read after write is enabled (we don't write often) */
-			'automatic_cleaning_factor' => $pn_cleaning_factor, 	/* automatic cache cleaning */
+			'automatic_cleaning_factor' => 0, //$pn_cleaning_factor, 	/* automatic cache cleaning */
 			'automatic_serialization' => true	/* we store arrays, so we have to enable that */
 		);
 		
