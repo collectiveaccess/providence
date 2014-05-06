@@ -1167,7 +1167,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 *			KLogger::INFO = Informational messages
 	 *			KLogger::DEBUG = Debugging messages
 	 *		dryRun = do import but don't actually save data
-	 *		debug = output tons of debugging information
 	 *		environment = an array of environment values to provide to the import process. The keys manifest themselves as mappable tags.
 	 */
 	static public function importDataFromSource($ps_source, $ps_mapping, $pa_options=null) {
@@ -1188,7 +1187,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		$po_request 	= caGetOption('request', $pa_options, null);
 		$pb_dry_run 	= caGetOption('dryRun', $pa_options, false);
-		$pb_debug 		= caGetOption('debug', $pa_options, false);
 		
 		$o_config = Configuration::load();
 		
@@ -1930,9 +1928,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//print_r($va_content_tree);
 			//die("END\n\n");
 			//continue;
-			//if ($pb_debug && $po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
-				//$ps_callback($po_request, ca_data_importers::$s_num_records_processed, $vn_num_items, "<pre>".preg_replace("![\n\r\t ]+!", " ", print_r($va_content_tree, true))."</pre>", (time() - $vn_start_time), memory_get_usage(true), 0, ca_data_importers::$s_num_import_errors);
-			//}
 			
 			if (!sizeof($va_content_tree) && !str_replace("%", "", $vs_idno)) { continue; }
 	

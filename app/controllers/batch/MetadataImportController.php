@@ -172,8 +172,7 @@
  				'user_id' => $this->request->getUserID(),
  				
  				'logLevel' => $this->request->getParameter("logLevel", pInteger),
- 				'dryRun' => $this->request->getParameter("dryRun", pInteger),
- 				'debug' => $this->request->getParameter("debug", pInteger)
+ 				'dryRun' => $this->request->getParameter("dryRun", pInteger)
  			);
  			
  			$va_last_settings = $va_options;
@@ -181,7 +180,6 @@
  			$va_last_settings['inputFormat'] = $this->request->getParameter("inputFormat", pString); 
  			$va_last_settings['logLevel'] = $this->request->getParameter("logLevel", pInteger); 
  			$va_last_settings['dryRun'] = $this->request->getParameter("dryRun", pInteger); 
- 			$va_last_settings['debug'] = $this->request->getParameter("debug", pInteger); 
  			$this->request->user->setVar('batch_metadata_last_settings', $va_last_settings);
  			
  			$this->view->setVar("t_subject", $t_subject);
