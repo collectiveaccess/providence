@@ -9233,6 +9233,15 @@ $pa_options["display_form_field_tips"] = true;
 			return $this->SELF_RELATION_TABLE_NAME;
 		}
 		return null;
+	}	
+	# ------------------------------------------------------
+	/**
+	 * Returns true if model is a relationship
+	 *
+	 * @return bool
+	 */
+	public function isRelationship() {
+		return false;
 	}
 	# --------------------------------------------------------------------------------------------
 	# User tagging
