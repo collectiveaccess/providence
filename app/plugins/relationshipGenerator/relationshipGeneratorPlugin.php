@@ -63,7 +63,22 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 	const CONF_KEY_ADD_MATCHED = 'add_matched';
 	const CONF_KEY_REMOVE_UNMATCHED = 'remove_unmatched';
 	const CONF_KEY_NOTIFY = 'notify';
+	const CONF_KEY_DEFAULT_MATCH_MODE = 'default_match_mode';
+	const CONF_KEY_DEFAULT_VALUE_DELIMITER = 'default_value_delimiter';
 	const CONF_KEY_RULES = 'rules';
+
+	const RULE_KEY_SOURCE_TABLES = 'source_tables';
+	const RULE_KEY_TRIGGER_TEMPLATE = 'trigger_template';
+	const RULE_KEY_TRIGGER_VALUE_PATTERNS = 'trigger_value_patterns';
+	const RULE_KEY_MATCH_MODE = 'match_mode';
+	const RULE_KEY_VALUE_DELIMITER = 'value_delimiter';
+	const RULE_KEY_RELATED_TABLE = 'related_table';
+	const RULE_KEY_RELATED_RECORD = 'related_record';
+	const RULE_KEY_RELATIONSHIP_TYPE = 'relationship_type';
+
+	const MATCH_MODE_ANY = 'any';
+	const MATCH_MODE_ALL = 'all';
+	const MATCH_MODE_SINGLE = 'single';
 
 	/** @var Configuration */
 	private $opo_config;
@@ -118,23 +133,29 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 		// Process each rule in order specified
 		foreach ($this->opo_config->getAssoc(self::CONF_KEY_RULES) as $va_rule) {
 			// Ensure the related model record exists
-			$vo_relatedModel = $this->_getRelatedModel($va_rule['related_table'], $va_rule['related_record']);
+			$vo_relatedModel = $this->_getRelatedModel($va_rule[self::RULE_KEY_RELATED_TABLE], $va_rule[self::RULE_KEY_RELATED_RECORD]);
 			if (sizeof($vo_relatedModel->getFieldValuesArray()) > 0) {
 				// Determine whether a relationship already exists, and whether the rule matches the source object
-				$vn_relationshipId = $this->_getRelationshipId($pa_params['instance'], $va_rule['related_table'], $va_rule['related_record'], $va_rule['relationship_type']);
+				$vn_relationshipId = $this->_getRelationshipId($pa_params['instance'], $va_rule[self::RULE_KEY_RELATED_TABLE], $va_rule[self::RULE_KEY_RELATED_RECORD], $va_rule[self::RULE_KEY_RELATIONSHIP_TYPE]);
 				$vb_matches = $this->_hasMatch($pa_params, $va_rule);
 				// Add relationship where one does not already exist, and the rule matches
 				if ($vb_addMatched && $vb_matches && is_null($vn_relationshipId)) {
-					$pa_params['instance']->addRelationship($va_rule['related_table'], $va_rule['related_record'], $va_rule['relationship_type']);
+					$pa_params['instance']->addRelationship($va_rule[self::RULE_KEY_RELATED_TABLE], $va_rule[self::RULE_KEY_RELATED_RECORD], $va_rule[self::RULE_KEY_RELATIONSHIP_TYPE]);
 					if (!is_null($vo_notifications)) {
-						$vo_notifications->addNotification('Automagically added new relationship to ' . $vo_relatedModel->getTypeName() . ' ' . $vo_relatedModel->getListName(), __NOTIFICATION_TYPE_INFO__);
+						$vo_notifications->addNotification(
+							_t('Automagically added new relationship to %1 %2', $vo_relatedModel->getTypeName(), $vo_relatedModel->getListName()),
+							__NOTIFICATION_TYPE_INFO__
+						);
 					}
 				}
 				// Remove relationship where one exists, and the rule does not match
 				if ($vb_removeUnmatched && !$vb_matches && !is_null($vn_relationshipId)) {
-					$pa_params['instance']->removeRelationship($va_rule['related_table'], $vn_relationshipId);
+					$pa_params['instance']->removeRelationship($va_rule[self::RULE_KEY_RELATED_TABLE], $vn_relationshipId);
 					if (!is_null($vo_notifications)) {
-						$vo_notifications->addNotification('Automagically removed previously extant relationship to ' . $vo_relatedModel->getTypeName() . ' ' . $vo_relatedModel->getListName(), __NOTIFICATION_TYPE_INFO__);
+						$vo_notifications->addNotification(
+							_t('Automagically removed previously extant relationship to %1 %2', $vo_relatedModel->getTypeName(), $vo_relatedModel->getListName()),
+							__NOTIFICATION_TYPE_INFO__
+						);
 					}
 				}
 			}
@@ -189,10 +210,32 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 	 * @return bool True if the parameters match against the rule, otherwise false.
 	 */
 	protected function _hasMatch($pa_params, $pa_rule) {
-		$vs_value = caProcessTemplateForIDs($pa_rule['trigger_template'], $pa_params['table_name'], array( $pa_params['id'] ));
-		$vb_matches = in_array($pa_params['table_name'], $pa_rule['source_tables']);
-		foreach ($pa_rule['trigger_value_patterns'] as $vn_pattern => $vs_pattern) {
-			$vb_matches = $vb_matches && preg_match($vs_pattern, $vs_value);
+		if (!in_array($pa_params['table_name'], $pa_rule[self::RULE_KEY_SOURCE_TABLES])) {
+			return false;
+		}
+
+		$vs_matchMode = isset($pa_rule[self::RULE_KEY_MATCH_MODE]) ? $pa_rule[self::RULE_KEY_MATCH_MODE] : $this->opo_config->get(self::CONF_KEY_DEFAULT_MATCH_MODE);
+		$va_processTemplateOptions = $vs_matchMode === self::MATCH_MODE_SINGLE ?
+			array(
+				'returnAsArray' => false,
+				'delimiter' => isset($pa_rule[self::RULE_KEY_VALUE_DELIMITER]) ? $pa_rule[self::RULE_KEY_VALUE_DELIMITER] : $this->opo_config->get(self::CONF_KEY_DEFAULT_VALUE_DELIMITER)
+			) :
+			array(
+				'returnAsArray' => true
+			);
+		$va_values = caProcessTemplateForIDs($pa_rule[self::RULE_KEY_TRIGGER_TEMPLATE], $pa_params['table_name'], array( $pa_params['id'] ), $va_processTemplateOptions);
+
+		if (!is_array($va_values)) {
+			$va_values = array( $va_values );
+		}
+
+		$vb_matches = $vs_matchMode === self::MATCH_MODE_ALL;
+		foreach ($pa_rule[self::RULE_KEY_TRIGGER_VALUE_PATTERNS] as $vs_pattern) {
+			foreach ($va_values as $vs_value) {
+				$vb_matches = $vs_matchMode === self::MATCH_MODE_ALL ?
+					$vb_matches && preg_match($vs_pattern, $vs_value) :
+					$vb_matches || preg_match($vs_pattern, $vs_value);
+			}
 		}
 		return $vb_matches;
 	}
