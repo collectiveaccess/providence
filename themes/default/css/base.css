@@ -1979,7 +1979,7 @@ select.searchSetSelect {
 	line-height: 1.4em;
 	position: absolute;
 	top: 100px;
-	left: 40%;
+	left: 25%;
 	width: 400px;
 	z-index:20000;
 }
@@ -2137,7 +2137,7 @@ a#hideRefine img {
 	line-height: 1.4em;
 	position: absolute;
 	top: 100px;
-	left: 40%;
+	left: 25%;
 	width: 400px;
 	z-index:20000;
 }
