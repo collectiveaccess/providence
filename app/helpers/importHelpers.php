@@ -713,7 +713,7 @@
 						switch($ps_table) {
 							case 'ca_entities':
 								$va_val['preferred_labels'] = DataMigrationUtils::splitEntityName($vs_item);
-								if (!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
+								//if (!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
 								break;
 							case 'ca_list_items':
 								$va_val['preferred_labels'] = array('name_singular' => str_replace("_", " ", $vs_item), 'name_plural' => str_replace("_", " ", $vs_item));
@@ -727,11 +727,11 @@
 							case 'ca_places':
 							case 'ca_objects':
 								$va_val['preferred_labels'] = array('name' => $vs_item);
-								if (!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
+								//if (!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
 								break;
 							case 'ca_object_lots':
 								$va_val['preferred_labels'] = array('name' => $vs_item);
-								if (!isset($va_val['idno_stub'])) { $va_val['idno_stub'] = $vs_item; }
+								//if (!isset($va_val['idno_stub'])) { $va_val['idno_stub'] = $vs_item; }
 								if (isset($va_val['_status'])) {
 									$va_val['lot_status_id'] = $va_val['_status'];
 								}
@@ -741,7 +741,7 @@
 								if (!($vs_batch_media_directory = $t_instance->getAppConfig()->get('batch_media_import_root_directory'))) { break; }
 							
 								if(!isset($va_val['preferred_labels'])) { $va_val['preferred_labels'] = array('name' => $vs_item); }
-								if (!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
+								//if (!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
 							
 								if (isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) && $pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] && isset($va_val['media']['media']) && ($va_val['media']['media'])) {
 									$va_val['media']['media'] = $vs_batch_media_directory.'/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'].'/'.$va_val['media']['media'];
