@@ -33,6 +33,7 @@
  /**
   *
   */
+ 	define("__CA_ATTRIBUTE_VALUE_WEIGHT__", 9);
  	
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AttributeValue.php');

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,6 +33,8 @@
  /**
   *
   */
+  	define("__CA_ATTRIBUTE_VALUE_FILE__", 15);
+  	
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
