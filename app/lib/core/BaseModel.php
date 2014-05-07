@@ -2934,17 +2934,36 @@ class BaseModel extends BaseObject {
 		}
 	}
 	
+	/**
+	 * Perform search indexing on currently load row. All parameters are intended to override typical useful behavior.
+	 * Don't use these options unless you know what you're doing.
+	 *
+	 * @param array $pa_changed_field_values_array List of changed field values. [Default is to load list from model]
+	 * @param bool $pb_reindex_mode If set indexing is done in "reindex mode"; that is the row is reindexed from scratch as if the entire database is being reindexed. [Default is false]
+	 * @param string $ps_engine Name of the search engine to use. [Default is the engine configured using "search_engine_plugin" in app.conf] 
+	 *
+	 * @return bool true on success, false on failure of indexing
+	 */
 	public function doSearchIndexing($pa_changed_field_values_array=null, $pb_reindex_mode=false, $ps_engine=null) {
 		if (defined("__CA_DONT_DO_SEARCH_INDEXING__")) { return; }
 		if (is_null($pa_changed_field_values_array)) { 
 			$pa_changed_field_values_array = $this->getChangedFieldValuesArray();
 		}
 		
-		$o_indexer = $this->getSearchIndexer();
-		$o_indexer->indexRow($this->tableNum(), $this->getPrimaryKey(), $this->getFieldValuesArray(), $pb_reindex_mode, null, $pa_changed_field_values_array, $this->_FIELD_VALUES_OLD);
+		$o_indexer = $this->getSearchIndexer($ps_engine);
+		return $o_indexer->indexRow($this->tableNum(), $this->getPrimaryKey(), $this->getFieldValuesArray(), $pb_reindex_mode, null, $pa_changed_field_values_array, $this->_FIELD_VALUES_OLD);
 	}
 	
-	public function getSearchIndexer() {
+	/**
+	 * Get a SearchIndexer instance. Will return a single instance repeatedly within the context of
+	 * any currently running transaction. That is, if the current model is in a transaction the indexing
+	 * will be performed within that transaction.
+	 *
+	 * @param string $ps_engine Name of the search engine to use. [Default is the engine configured using "search_engine_plugin" in app.conf] 
+	 *
+	 * @return SearchIndexer
+	 */
+	public function getSearchIndexer($ps_engine=null) {
 		if (!BaseModel::$search_indexer) {
 			BaseModel::$search_indexer = new SearchIndexer($this->getDb(), $ps_engine);
 		} else {
@@ -3236,6 +3255,7 @@ class BaseModel extends BaseObject {
 			return $media_info["MIRROR_STATUS"][$vi["accessUsingMirror"]];
 		}
 	}
+	
 	/**
 	 * Retry mirroring of given media field. Sets global error properties on failure.
 	 *
