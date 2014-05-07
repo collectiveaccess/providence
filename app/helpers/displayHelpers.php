@@ -1571,11 +1571,13 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		
 		$vs_buf = '<h3 class="nextPrevious">'.caNavLink($po_view->request, 'Back', '', 'manage', 'Set', 'ListSets')."</h3>\n";
 
-		$vs_color = null;
+		$vs_color = $vs_type_name = null;
 		
 		$t_type = method_exists($t_item, "getTypeInstance") ? $t_item->getTypeInstance() : null;
-		if ($t_type) { $vs_color = trim($t_type->get('color')); } 
-		$vs_type_name = $t_type->getTypeName();
+		if ($t_type) { 
+			$vs_color = trim($t_type->get('color')); 
+			$vs_type_name = $t_type->getTypeName();
+		}
 		if (!$vs_color && $t_ui) { $vs_color = trim($t_ui->get('color')); }
 		if (!$vs_color) { $vs_color = "444444"; }
 		
