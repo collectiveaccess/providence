@@ -444,6 +444,7 @@ final class ConfigurationExporter {
 		
 		while($qr_uis->nextRow()){
 			$vo_ui = $this->opo_dom->createElement("userInterface");
+			$t_ui = new ca_editor_uis($qr_uis->get("ui_id"));
 			
 			$vs_type = $this->opo_dm->getTableName($qr_uis->get("editor_type"));
 			
@@ -455,6 +456,7 @@ final class ConfigurationExporter {
 			
 			$vo_ui->setAttribute("type", $vs_type);
 			
+			// labels
 			$vo_labels = $this->opo_dom->createElement("labels");
 			$qr_ui_labels = $this->opo_db->query("SELECT * FROM ca_editor_ui_labels WHERE ui_id=?",$qr_uis->get("ui_id"));
 			if($qr_ui_labels->numRows() > 0){
@@ -474,7 +476,25 @@ final class ConfigurationExporter {
 			}
 
 			$vo_ui->appendChild($vo_labels);
-			
+
+			// type restrictions
+			$va_ui_type_restrictions = $t_ui->getTypeRestrictions();
+			if(sizeof($va_ui_type_restrictions)>0){
+				$vo_ui_type_restrictions = $this->opo_dom->createElement("typeRestrictions");
+				$vo_ui->appendChild($vo_ui_type_restrictions);
+
+				foreach($va_ui_type_restrictions as $va_restriction){
+					$vo_restriction = $this->opo_dom->createElement("restriction");
+					$vo_ui_type_restrictions->appendChild($vo_restriction);
+					
+					$t_instance = $this->opo_dm->getInstanceByTableNum($va_restriction["table_num"]);
+					$vs_type_code = $t_instance->getTypeListCode();
+					$va_item = $t_list->getItemFromListByItemID($vs_type_code, $va_restriction["type_id"]);
+					$vo_restriction->setAttribute("type", $va_item["idno"]);
+				}
+			}
+
+			// screens
 			$vo_screens = $this->opo_dom->createElement("screens");
 			$qr_screens = $this->opo_db->query("SELECT * FROM ca_editor_ui_screens WHERE parent_id IS NOT NULL AND ui_id=? ORDER BY screen_id",$qr_uis->get("ui_id"));
 			
