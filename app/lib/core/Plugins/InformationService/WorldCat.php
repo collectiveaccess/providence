@@ -156,8 +156,16 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 		$vn_count = caGetOption('count', $pa_options, 25);
 		if ($vn_count <= 0) { $vn_count = 25; }
 		
-		$o_feed = Zend_Feed::import(WLPlugInformationServiceWorldCat::$s_worldcat_search_url."?start={$vn_start}&count={$vn_count}&q=".urlencode($ps_search)."&wskey=".$vs_api_key);
-		
+		try {
+			$o_feed = Zend_Feed::import(WLPlugInformationServiceWorldCat::$s_worldcat_search_url."?start={$vn_start}&count={$vn_count}&q=".urlencode($ps_search)."&wskey=".$vs_api_key);
+		} catch (Exception $e) {
+			$va_data['results'][] = array(
+				'label' => _t('Could not query WorldCat: %1', $e->getMessage()),
+				'url' => '#',
+				'id' => 0
+			);
+			return $va_data;
+		}
 		$va_data = array('count' => $o_feed->count());
 		foreach ($o_feed as $o_entry) {
 			$vs_author = (string)$o_entry->author->name();
@@ -193,13 +201,16 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 		$va_tmp = explode("/", $ps_url);
 		$vn_worldcat_id = array_pop($va_tmp);
 		
-		// Create a request
-		$o_request = $o_client->get("{$vn_worldcat_id}?wskey=".$vs_api_key);
+		try {
+			// Create a request
+			$o_request = $o_client->get("{$vn_worldcat_id}?wskey=".$vs_api_key);
 	
-		// Send the request and get the response
-		$o_response = $o_request->send();
-		$vs_data = (string)$o_response->getBody();
-		
+			// Send the request and get the response
+			$o_response = $o_request->send();
+			$vs_data = (string)$o_response->getBody();
+		} catch (Exception $e) {
+			return array('display' => _t('WorldCat data could not be loaded: %1', $e->getMessage()));
+		}
 		try {
 			$xml = new DOMDocument;
 			$xml->loadXML($vs_data);

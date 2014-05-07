@@ -27,8 +27,11 @@
  */
  
  	
+ 	$va_importer_list = $this->getVar('importer_list');
+ 	$vb_importers_available = (is_array($va_importer_list) && sizeof($va_importer_list));
+ 	
  	print $vs_control_box = caFormControlBox(
-		(caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Import"), 'caWorldCatResultsForm')).' '.
+		($vb_importers_available ? (caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Import"), 'caWorldCatResultsForm')) : '').' '.
 		(caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', '*', '*', 'Index')),
 		'',
 		''
@@ -44,8 +47,14 @@
 <?php
 	print caFormTag($this->request, 'Run', 'caWorldCatResultsForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
 ?>
-	<div class="formLabel">
- 		<?php print _t('Import using').': '.$this->getVar('importer_list_select'); ?>
+	<div class="<?php print $vb_importers_available ? 'formLabel' : 'formLabelError'; ?>">
+<?php
+	if ($vb_importers_available) {
+		print _t('Import using').': '.$this->getVar('importer_list_select');
+	} else {
+		print _t('You must load at least one WorldCat mapping before you can import');
+	}
+?>
  	</div>
  	
  	<div class="caWorldCatResultsPagination">
@@ -63,7 +72,9 @@
 	
 	<div class='formLabel'>
 <?php
-		print _t('Log level').': '.caHTMLSelect('log_level', caGetLogLevels(), array('id' => 'caLogLevel'), array('value' => $this->getVar('log_level')));
+		if ($vb_importers_available) {
+			print _t('Log level').': '.caHTMLSelect('log_level', caGetLogLevels(), array('id' => 'caLogLevel'), array('value' => $this->getVar('log_level')));
+		}
 ?>
 	</div>
 </form>
@@ -124,7 +135,7 @@
  		if (c <= 0) { c = 10; }
  		jQuery("#caWorldCatResults").html("<div class='caWorldCatResultsMessage'><?php print caBusyIndicatorIcon($this->request).' '; ?>" + msg + "</div>");
 		jQuery.getJSON('<?php print caNavUrl($this->request, '*', '*', 'Lookup'); ?>', {term: term, start: start, count: c }, function(data) {
-			if (data['count'] > 0) {
+			if (data['count'] >= 25) {
 				jQuery('#caWorldCatResultsNextLink').show();
 			} else {
 				jQuery('#caWorldCatResultsNextLink').hide();
@@ -137,7 +148,11 @@
 			
 			var html = '';
 			for(var i=0; i < data['results'].length; i++) {
-				html += "<li class='caWorldCatResultItem'><input type='checkbox' name='WorldCatID[]' value='" + data['results'][i].id + "' class='caWorldCatSearchResultCheckbox'/> <a href='#' class='caWorldCatSearchResultItem'>" + data['results'][i].label + "</a> <div class='caWorldCatSearchResultDetails' id='caWorldCatSearchResult_" + i + "'></div></li>"
+				if (data['results'][i].id > 0) {
+					html += "<li class='caWorldCatResultItem'><input type='checkbox' name='WorldCatID[]' value='" + data['results'][i].id + "' class='caWorldCatSearchResultCheckbox'/> <a href='#' class='caWorldCatSearchResultItem'>" + data['results'][i].label + "</a> <div class='caWorldCatSearchResultDetails' id='caWorldCatSearchResult_" + i + "'></div></li>";
+				} else {
+					html += "<li class='caWorldCatResultItem'>" + data['results'][i].label + "</li>";
+				}
 			}
 			html = "<ul>" + html + "</ul>";
 			
