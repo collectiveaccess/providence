@@ -2198,7 +2198,7 @@
 			$qr_res->seek(0);
 			while($qr_res->nextRow()) {
 				$va_row = array();
-				foreach(array('user_id', 'fname', 'lname', 'email', 'sdatetime', 'edatetime', 'access') as $vs_f) {
+				foreach(array('user_id', 'user_name', 'fname', 'lname', 'email', 'sdatetime', 'edatetime', 'access') as $vs_f) {
 					$va_row[$vs_f] = $qr_res->get($vs_f);
 				}
 				if ($vb_supports_date_restrictions) {
