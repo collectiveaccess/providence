@@ -2940,10 +2940,17 @@ class BaseModel extends BaseObject {
 			$pa_changed_field_values_array = $this->getChangedFieldValuesArray();
 		}
 		
+		$o_indexer = $this->getSearchIndexer();
+		$o_indexer->indexRow($this->tableNum(), $this->getPrimaryKey(), $this->getFieldValuesArray(), $pb_reindex_mode, null, $pa_changed_field_values_array, $this->_FIELD_VALUES_OLD);
+	}
+	
+	public function getSearchIndexer() {
 		if (!BaseModel::$search_indexer) {
 			BaseModel::$search_indexer = new SearchIndexer($this->getDb(), $ps_engine);
+		} else {
+			BaseModel::$search_indexer->setDb($this->getDb());
 		}
-		BaseModel::$search_indexer->indexRow($this->tableNum(), $this->getPrimaryKey(), $this->getFieldValuesArray(), $pb_reindex_mode, null, $pa_changed_field_values_array, $this->_FIELD_VALUES_OLD);
+		return BaseModel::$search_indexer;
 	}
 
 	/**
@@ -2966,11 +2973,9 @@ class BaseModel extends BaseObject {
 			$this->set('deleted', 1);
 			if ($vn_rc = $this->update(array('force' => true))) {
 				if(!defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
-					if (!BaseModel::$search_indexer) {
-						BaseModel::$search_indexer = new SearchIndexer($this->getDb());
-					}
-					BaseModel::$search_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
-					BaseModel::$search_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
+					$o_indexer = $this->getSearchIndexer();
+					$o_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
+					$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
 				}
 			}
 			$this->logChange("D");
@@ -3066,11 +3071,9 @@ class BaseModel extends BaseObject {
 			// analysis to startRowUnindexing() and only executing commands in commitRowUnIndexing(). For now we blithely assume that 
 			// SQL deletes always succeed. If they don't we can always reindex. Only the indexing is affected, not the underlying data.
 			if(!defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
-				if (!BaseModel::$search_indexer) {
-					BaseModel::$search_indexer = new SearchIndexer($this->getDb());
-				}
-				BaseModel::$search_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
-				BaseModel::$search_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
+				$o_indexer = $this->getSearchIndexer();
+				$o_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
+				$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
 			}
 
 			# --- Check ->many and many<->many relations
@@ -8842,11 +8845,9 @@ $pa_options["display_form_field_tips"] = true;
 		$vn_rel_table_num = $t_item_rel->tableNum();
 		
 		// Reindex modified relationships
-		if (!BaseModel::$search_indexer) {
-			BaseModel::$search_indexer = new SearchIndexer($this->getDb());
-		}
+		$o_indexer = $this->getSearchIndexer();
 		foreach($va_to_reindex_relations as $vn_relation_id => $va_row) {
-			BaseModel::$search_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
+			$o_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
 		}
 		
 		return sizeof($va_to_reindex_relations);
@@ -8946,11 +8947,9 @@ $pa_options["display_form_field_tips"] = true;
 		$vn_rel_table_num = $t_item_rel->tableNum();
 		
 		// Reindex modified relationships
-		if (!BaseModel::$search_indexer) {
-			BaseModel::$search_indexer = new SearchIndexer($this->getDb());
-		}
+		$o_indexer = $this->getSearchIndexer();
 		foreach($va_new_relations as $vn_relation_id => $va_row) {
-			BaseModel::$search_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
+			$o_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
 		}
 		
 		return sizeof($va_new_relations);

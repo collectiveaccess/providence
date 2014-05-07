@@ -81,6 +81,20 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 			return new $ps_classname;
 		}
 		# ------------------------------------------------
+		/**
+		 *
+		 */
+		public function setDb($po_db) {
+			$this->opo_db = $po_db;
+		}
+		# ------------------------------------------------
+		/**
+		 *
+		 */
+		public function getDb($po_db) {
+			return $this->opo_db;
+		}
+		# ------------------------------------------------
 		# Utils
 		# ------------------------------------------------
 		/**
