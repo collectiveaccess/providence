@@ -658,6 +658,10 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 				}else{
 					$vs_buf .= "<strong>"._t("Viewing %1", $vs_type_name).": </strong>\n";
 				}
+				
+				if ($t_item->hasField('is_deaccessioned') && $t_item->get('is_deaccessioned')) {
+					$vs_buf .= "<br/><div class='inspectorDeaccessioned'>"._t('Deaccessioned %1', $t_item->get('deaccession_date'))."</div>\n";
+				}
 					
 				$vs_label = '';
 				if ($vs_get_spec = $po_view->request->config->get("{$vs_table_name}_inspector_display_title")) {

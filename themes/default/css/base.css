@@ -410,6 +410,11 @@ a.inspectorOnLoan {
     font-style: italic;
 }
 
+.inspectorDeaccessioned {
+    color: #cc0000;
+    font-style: italic;
+}
+
 #leftNav h4 div {  text-transform: none; font-weight: normal; padding-top: 5px; }
 #leftNav h3 div {  text-transform: none; font-weight: normal; padding-top: 5px; }
 

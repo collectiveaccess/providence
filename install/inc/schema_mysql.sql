@@ -1549,6 +1549,9 @@ create table ca_objects
    accession_edatetime            decimal(30,20),
    deaccession_sdatetime          decimal(30,20),
    deaccession_edatetime          decimal(30,20),
+   is_deaccessioned               tinyint                        not null default 0,
+   deaccession_notes              text                           not null,
+   deaccession_type_id            int unsigned                   null,
    
    primary key (object_id),
    constraint fk_ca_objects_source_id foreign key (source_id)
@@ -1571,6 +1574,9 @@ create table ca_objects
       
    constraint fk_ca_objects_parent_id foreign key (parent_id)
       references ca_objects (object_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_objects_deaccession_type_id foreign key (deaccession_type_id)
+      references ca_list_items (item_id) on delete restrict on update restrict,
       
    constraint fk_ca_objects_home_location_id foreign key (home_location_id)
       references ca_storage_locations (location_id) on delete restrict on update restrict
@@ -1599,6 +1605,8 @@ create index i_accession_sdatetime on ca_objects(accession_sdatetime);
 create index i_accession_edatetime on ca_objects(accession_edatetime);
 create index i_deaccession_sdatetime on ca_objects(deaccession_sdatetime);
 create index i_deaccession_edatetime on ca_objects(deaccession_edatetime);
+create index i_deaccession_type_id on ca_objects(deaccession_type_id);
+create index i_is_deaccessioned on ca_objects(is_deaccessioned);
 
 
 /*==========================================================================*/
@@ -6511,5 +6519,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 101 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (101, unix_timestamp());
+/* CURRENT MIGRATION: 102 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (102, unix_timestamp());

@@ -1499,6 +1499,16 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						
 						break;
 					# -------------------------------
+					// This bundle is only available for objects
+					case 'ca_objects_deaccession':		// object deaccession information
+						//if ($vb_batch) { return null; } // not supported in batch mode
+						if (!$this->getPrimaryKey()) { return null; }	// not supported for new records
+						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
+					
+						$vs_element .= $this->getObjectDeaccessionHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						
+						break;
+					# -------------------------------
 					// This bundle is only available for relationships that include an object on one end
 					case 'ca_object_representation_chooser':
 						if ($vb_batch) { return null; } // not supported in batch mode
@@ -3568,6 +3578,22 @@ if (!$vb_batch) {
 							}
 						}
 						
+						break;
+					# -------------------------------
+					// This bundle is only available for objects
+					case 'ca_objects_deaccession':		// object deaccession information
+						//if ($vb_batch) { return null; } // not supported in batch mode
+						if (!$this->getPrimaryKey()) { return null; }	// not supported for new records
+						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
+					
+						$this->set('is_deaccessioned', $vb_is_deaccessioned = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}is_deaccessioned", pInteger));
+						$this->set('deaccession_notes', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}deaccession_notes", pString));
+						$this->set('deaccession_type_id', $x=$po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}deaccession_type_id", pString));
+	
+						$this->set('deaccession_date', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}deaccession_date", pString));
+						
+						if ($vb_is_deaccessioned) { $this->get('access', 0); }
+						$this->update();
 						break;
 					# -------------------------------
 				}
