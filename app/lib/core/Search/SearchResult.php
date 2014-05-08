@@ -449,7 +449,9 @@ class SearchResult extends BaseObject {
 		$vs_return_as_link_text = 	(isset($pa_options['returnAsLinkText'])) ? (string)$pa_options['returnAsLinkText'] : '';
 		$vs_return_as_link_target = (isset($pa_options['returnAsLinkTarget'])) ? (string)$pa_options['returnAsLinkTarget'] : '';
 		$vs_return_as_link_attributes = (isset($pa_options['returnAsLinkAttributes']) && is_array($pa_options['returnAsLinkAttributes'])) ? $pa_options['returnAsLinkAttributes'] : array();
-			
+		
+		$va_primary_ids = caGetOption("primaryIDs", $pa_options, null);	
+		
 		$va_original_path_components = $va_path_components = $this->getFieldPathComponents($ps_field);
 		
 		if ($va_path_components['table_name'] != $this->ops_table_name) {
@@ -807,11 +809,23 @@ class SearchResult extends BaseObject {
 			$va_join_tables = $this->opo_datamodel->getPath($this->ops_table_name, $va_path_components['table_name']);
 			array_shift($va_join_tables); 	// remove subject table
 			array_pop($va_join_tables);		// remove content table (we only need linking tables here)
+			
+			$va_join_criteria = array();
+			if(is_array($va_primary_ids)) {
+				foreach($va_primary_ids as $vs_t => $va_t_ids) {
+					if (isset($va_join_tables[$vs_t]) && (sizeof($va_t_ids) > 0)) {
+						$vs_t_pk = $this->opo_datamodel->getTablePrimaryKeyName($vs_t);
+						$va_join_criteria[] = "{$vs_t}.{$vs_t_pk} NOT IN (".join(",",$va_t_ids).")";
+					}
+				}
+			}
+			
 			$this->opa_tables[$va_path_components['table_name']] = array(
 				'fieldList' => array($va_path_components['table_name'].'.*'),
 				'joinTables' => array_keys($va_join_tables),
-				'criteria' => array()
+				'criteria' => $va_join_criteria
 			);
+			
 		}
 		
 		
