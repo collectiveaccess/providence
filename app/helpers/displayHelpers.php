@@ -2335,7 +2335,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 								}
 								
 								if ($va_spec_bits[1] != '_hierarchyName') {
-									$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_additional_options, array("returnAsArray" => true, "returnAllLocales" => true, 'filters' => $va_tag_filters)));
+									$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_additional_options, array("returnAsArray" => true, "returnAllLocales" => true, 'filters' => $va_tag_filters, 'primaryIDs' => $va_primary_ids)));
 								} else {
 									$va_val = array();
 								}
@@ -3072,7 +3072,7 @@ $ca_relationship_lookup_parse_cache = array();
 					}
 					
 					if ($t_rel->isHierarchical()) {
-						if ($vn_parent_id = $qr_rel_items->get($x="{$vs_rel_table}.{$vs_hier_parent_id_fld}")) {
+						if ($vn_parent_id = $qr_rel_items->get("{$vs_rel_table}.{$vs_hier_parent_id_fld}")) {
 							$va_parent_ids[$vn_id] = $vn_parent_id;
 						} else {
 							if ($pt_rel->getHierarchyType() != __CA_HIER_TYPE_ADHOC_MONO__) {		// don't show root for hierarchies unless it's adhoc (where the root is a valid record)
