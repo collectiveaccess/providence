@@ -819,7 +819,7 @@
  		 *
  		 * @param array $pa_options Array of options passed through to _initView 
  		 */
- 		public function DownloadFile($pa_options=null) {
+ 		public function DownloadAttributeFile($pa_options=null) {
  			if (!($pn_value_id = $this->request->getParameter('value_id', pInteger))) { return; }
  			$t_attr_val = new ca_attribute_values($pn_value_id);
  			if (!$t_attr_val->getPrimaryKey()) { return; }
@@ -873,7 +873,7 @@
  		 *
  		 * @param array $pa_options Array of options passed through to _initView 
  		 */
- 		public function DownloadMedia($pa_options=null) {
+ 		public function DownloadAttributeMedia($pa_options=null) {
  			if (!($pn_value_id = $this->request->getParameter('value_id', pInteger))) { return; }
  			$t_attr_val = new ca_attribute_values($pn_value_id);
  			if (!$t_attr_val->getPrimaryKey()) { return; }
