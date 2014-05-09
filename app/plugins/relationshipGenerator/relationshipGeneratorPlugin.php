@@ -97,6 +97,9 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 	 * @param $pa_params array As given to the hook method.
 	 */
 	protected function _process(&$pa_params) {
+		/** @var BundlableLabelableBaseModelWithAttributes $vo_instance */
+		$vo_instance = $pa_params['instance'];
+
 		// Configuration items used multiple times
 		$vb_addMatched = $this->opo_config->getBoolean('add_matched');
 		$vb_removeUnmatched = $this->opo_config->getBoolean('remove_unmatched');
@@ -109,6 +112,7 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 			$vs_relationshipType = $va_rule['relationship_type'];
 
 			// Ensure the related model record exists
+			/** @var BundlableLabelableBaseModelWithAttributes $vo_relatedModel */
 			$vo_relatedModel = new $vs_relatedTable(is_string($vs_relatedRecord) ? array( 'idno' => $vs_relatedRecord ) : $vs_relatedRecord);
 			if (sizeof($vo_relatedModel->getFieldValuesArray()) > 0) {
 				// Determine whether a relationship already exists, and whether the rule matches the source object
@@ -117,20 +121,29 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 
 				// Add relationship where one does not already exist, and the rule matches
 				if ($vb_addMatched && $vb_matches && is_null($vn_relationshipId)) {
-					$pa_params['instance']->addRelationship($vs_relatedTable, $vs_relatedRecord, $vs_relationshipType);
+					$vo_instance->addRelationship($vs_relatedTable, $vs_relatedRecord, $vs_relationshipType);
 					if (!is_null($vo_notifications)) {
 						$vo_notifications->addNotification(
-							_t('Automagically added new relationship to %1 %2', $vo_relatedModel->getTypeName(), $vo_relatedModel->getListName()),
+							_t(
+								isset($va_rule['add_relationship_notification']) ? $va_rule['add_relationship_notification'] : $this->opo_config->get('default_add_relationship_notification'),
+								$vo_relatedModel->getTypeName(),
+								$vo_relatedModel->getListName()
+							),
 							__NOTIFICATION_TYPE_INFO__
 						);
 					}
 				}
+
 				// Remove relationship where one exists, and the rule does not match
 				if ($vb_removeUnmatched && !$vb_matches && !is_null($vn_relationshipId)) {
-					$pa_params['instance']->removeRelationship($vs_relatedTable, $vn_relationshipId);
+					$vo_instance->removeRelationship($vs_relatedTable, $vn_relationshipId);
 					if (!is_null($vo_notifications)) {
 						$vo_notifications->addNotification(
-							_t('Automagically removed previously extant relationship to %1 %2', $vo_relatedModel->getTypeName(), $vo_relatedModel->getListName()),
+							_t(
+								isset($va_rule['remove_relationship_notification']) ? $va_rule['remove_relationship_notification'] : $this->opo_config->get('default_remove_relationship_notification'),
+								$vo_relatedModel->getTypeName(),
+								$vo_relatedModel->getListName()
+							),
 							__NOTIFICATION_TYPE_INFO__
 						);
 					}
@@ -248,6 +261,7 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 	 * @return array
 	 */
 	protected static function _getValues($ps_table, $pn_id, $ps_field) {
+		/** @var BundlableLabelableBaseModelWithAttributes $vo_object */
 		$vo_object = new $ps_table($pn_id);
 		$va_values = array();
 		foreach ($vo_object->get($ps_field, array( 'returnAsArray' => true )) as $va_v) {
