@@ -57,29 +57,6 @@ require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
  */
 class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 
-	const CONF_KEY_ENABLED = 'enabled';
-	const CONF_KEY_PROCESS_ON_INSERT = 'process_on_insert';
-	const CONF_KEY_PROCESS_ON_UPDATE = 'process_on_update';
-	const CONF_KEY_ADD_MATCHED = 'add_matched';
-	const CONF_KEY_REMOVE_UNMATCHED = 'remove_unmatched';
-	const CONF_KEY_NOTIFY = 'notify';
-	const CONF_KEY_DEFAULT_MATCH_MODE = 'default_match_mode';
-	const CONF_KEY_DEFAULT_VALUE_DELIMITER = 'default_value_delimiter';
-	const CONF_KEY_RULES = 'rules';
-
-	const RULE_KEY_SOURCE_TABLES = 'source_tables';
-	const RULE_KEY_TRIGGER_TEMPLATE = 'trigger_template';
-	const RULE_KEY_TRIGGER_VALUE_PATTERNS = 'trigger_value_patterns';
-	const RULE_KEY_MATCH_MODE = 'match_mode';
-	const RULE_KEY_VALUE_DELIMITER = 'value_delimiter';
-	const RULE_KEY_RELATED_TABLE = 'related_table';
-	const RULE_KEY_RELATED_RECORD = 'related_record';
-	const RULE_KEY_RELATIONSHIP_TYPE = 'relationship_type';
-
-	const MATCH_MODE_ANY = 'any';
-	const MATCH_MODE_ALL = 'all';
-	const MATCH_MODE_SINGLE = 'single';
-
 	/** @var Configuration */
 	private $opo_config;
 
@@ -94,18 +71,18 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 			'description' => $this->getDescription(),
 			'errors' => array(),
 			'warnings' => array(),
-			'available' => (bool)$this->opo_config->getBoolean(self::CONF_KEY_ENABLED)
+			'available' => (bool)$this->opo_config->getBoolean('enabled')
 		);
 	}
 
 	public function hookAfterBundleInsert(&$pa_params) {
-		if ($this->opo_config->getBoolean(self::CONF_KEY_PROCESS_ON_INSERT) && $this->_isRelevantInstance($pa_params['instance'])) {
+		if ($this->opo_config->getBoolean('process_on_insert') && $this->_isRelevantInstance($pa_params['instance'])) {
 			$this->_process($pa_params);
 		}
 	}
 
 	public function hookAfterBundleUpdate(&$pa_params) {
-		if ($this->opo_config->getBoolean(self::CONF_KEY_PROCESS_ON_UPDATE) && $this->_isRelevantInstance($pa_params['instance'])) {
+		if ($this->opo_config->getBoolean('process_on_update') && $this->_isRelevantInstance($pa_params['instance'])) {
 			$this->_process($pa_params);
 		}
 	}
@@ -127,20 +104,26 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 	 */
 	protected function _process(&$pa_params) {
 		// Configuration items used multiple times
-		$vb_addMatched = $this->opo_config->getBoolean(self::CONF_KEY_ADD_MATCHED);
-		$vb_removeUnmatched = $this->opo_config->getBoolean(self::CONF_KEY_REMOVE_UNMATCHED);
-		$vo_notifications = $this->opo_config->getBoolean(self::CONF_KEY_NOTIFY) ? new NotificationManager($this->getRequest()) : null;
+		$vb_addMatched = $this->opo_config->getBoolean('add_matched');
+		$vb_removeUnmatched = $this->opo_config->getBoolean('remove_unmatched');
+		$vo_notifications = $this->opo_config->getBoolean('notify') ? new NotificationManager($this->getRequest()) : null;
+
 		// Process each rule in order specified
-		foreach ($this->opo_config->getAssoc(self::CONF_KEY_RULES) as $va_rule) {
+		foreach ($this->opo_config->getAssoc('rules') as $va_rule) {
+			$vs_relatedTable = $va_rule['related_table'];
+			$vs_relatedRecord = $va_rule['related_record'];
+			$vs_relationshipType = $va_rule['relationship_type'];
+
 			// Ensure the related model record exists
-			$vo_relatedModel = $this->_getRelatedModel($va_rule[self::RULE_KEY_RELATED_TABLE], $va_rule[self::RULE_KEY_RELATED_RECORD]);
+			$vo_relatedModel = new $vs_relatedTable(is_string($vs_relatedRecord) ? array( 'idno' => $vs_relatedRecord ) : $vs_relatedRecord);
 			if (sizeof($vo_relatedModel->getFieldValuesArray()) > 0) {
 				// Determine whether a relationship already exists, and whether the rule matches the source object
-				$vn_relationshipId = $this->_getRelationshipId($pa_params['instance'], $va_rule[self::RULE_KEY_RELATED_TABLE], $va_rule[self::RULE_KEY_RELATED_RECORD], $va_rule[self::RULE_KEY_RELATIONSHIP_TYPE]);
+				$vn_relationshipId = self::_getRelationshipId($pa_params['instance'], $vs_relatedTable, $vs_relatedRecord, $vs_relationshipType);
 				$vb_matches = $this->_hasMatch($pa_params, $va_rule);
+
 				// Add relationship where one does not already exist, and the rule matches
 				if ($vb_addMatched && $vb_matches && is_null($vn_relationshipId)) {
-					$pa_params['instance']->addRelationship($va_rule[self::RULE_KEY_RELATED_TABLE], $va_rule[self::RULE_KEY_RELATED_RECORD], $va_rule[self::RULE_KEY_RELATIONSHIP_TYPE]);
+					$pa_params['instance']->addRelationship($vs_relatedTable, $vs_relatedRecord, $vs_relationshipType);
 					if (!is_null($vo_notifications)) {
 						$vo_notifications->addNotification(
 							_t('Automagically added new relationship to %1 %2', $vo_relatedModel->getTypeName(), $vo_relatedModel->getListName()),
@@ -150,7 +133,7 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 				}
 				// Remove relationship where one exists, and the rule does not match
 				if ($vb_removeUnmatched && !$vb_matches && !is_null($vn_relationshipId)) {
-					$pa_params['instance']->removeRelationship($va_rule[self::RULE_KEY_RELATED_TABLE], $vn_relationshipId);
+					$pa_params['instance']->removeRelationship($vs_relatedTable, $vn_relationshipId);
 					if (!is_null($vo_notifications)) {
 						$vo_notifications->addNotification(
 							_t('Automagically removed previously extant relationship to %1 %2', $vo_relatedModel->getTypeName(), $vo_relatedModel->getListName()),
@@ -163,18 +146,39 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 	}
 
 	/**
-	 * Retrieve the model object instance based on the given table name and record identifier (primary key or idno).
-	 * @param $ps_relatedTable string Name of the related table / model type.
-	 * @param $pm_relatedRecord string|int Record identifier, either a number (primary key), string (idno) or array of
-	 *   attribute values to match against.
-	 * @return object The model instance.
+	 * Determine whether the given hook parameters (defining the record being saved) match against the given rule.
+	 * @param $pa_params array As given to the hook method.
+	 * @param $pa_rule array Rule from configuration to test against.
+	 * @return bool True if the parameters match against the rule, otherwise false.
 	 */
-	protected function _getRelatedModel($ps_relatedTable, $pm_relatedRecord) {
-		return new $ps_relatedTable(
-			is_string($pm_relatedRecord) ?
-				array( 'idno' => $pm_relatedRecord ) :
-				$pm_relatedRecord
-		);
+	protected function _hasMatch($pa_params, $pa_rule) {
+		// Skip tables that aren't relevant to this rule
+		if (!in_array($pa_params['table_name'], $pa_rule['source_tables'])) {
+			return false;
+		}
+
+		// Settings for the rule, falling back to top-level defaults if not configured
+		$vs_fieldCombinationOperator = self::_getOperatorMethodName(isset($pa_rule['field_combination_operator']) ? $pa_rule['field_combination_operator'] : $this->opo_config->get('default_field_combination_operator'));
+		$vs_defaultValueCombinationOperator = self::_getOperatorMethodName(isset($pa_rule['value_combination_operator']) ? $pa_rule['value_combination_operator'] : $this->opo_config->get('default_value_combination_operator'));
+		$vs_defaultMatchType = self::_getMatchMethodName(isset($pa_rule['match_type']) ? $pa_rule['match_type'] : $this->opo_config->get('default_match_type'));
+		$va_defaultMatchOptions = isset($pa_rule['match_options']) ? $pa_rule['match_options'] : $this->opo_config->get('default_match_options');
+
+		$vb_matches = self::$vs_fieldCombinationOperator();
+		foreach ($pa_rule['triggers'] as $vs_field => $va_trigger) {
+			// Settings for the trigger, falling back to defaults if not specified
+			$va_trigger = array_merge($va_defaultMatchOptions, $va_trigger);
+			$vs_valueCombinationOperator = isset($va_trigger['value_combination_operator']) ? self::_getOperatorMethodName($va_trigger['value_combination_operator']) : $vs_defaultValueCombinationOperator;
+			$vs_matchType = isset($va_trigger['match_type']) ? self::_getMatchMethodName($va_trigger['match_type']) : $vs_defaultMatchType;
+			$va_values = self::_getValues($pa_params['table_name'], $pa_params['id'], $vs_field);
+
+			// Track match status
+			$vb_fieldMatches = self::$vs_valueCombinationOperator();
+			foreach ($va_values as $vm_value) {
+				$vb_fieldMatches = self::$vs_valueCombinationOperator($vb_fieldMatches, self::$vs_matchType($vm_value, $va_trigger));
+			}
+			$vb_matches = self::$vs_fieldCombinationOperator($vb_matches, $vb_fieldMatches);
+		}
+		return $vb_matches;
 	}
 
 	/**
@@ -190,7 +194,7 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 	 *
 	 * @return int|null
 	 */
-	protected function _getRelationshipId($po_instance, $ps_relatedTable, $pm_relatedRecord, $ps_relationshipType) {
+	protected static function _getRelationshipId($po_instance, $ps_relatedTable, $pm_relatedRecord, $ps_relationshipType) {
 		$va_items = $po_instance->getRelatedItems($ps_relatedTable, array(
 			'restrict_to_types' => array( $ps_relatedTable ),
 			'restrict_to_relationship_types' => array( $ps_relationshipType ),
@@ -204,40 +208,65 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 	}
 
 	/**
-	 * Determine whether the given hook parameters (defining the record being saved) match against the given rule.
-	 * @param $pa_params array As given to the hook method.
-	 * @param $pa_rule array Rule from configuration to test against.
-	 * @return bool True if the parameters match against the rule, otherwise false.
+	 * Get the internal operator method name for the given operator.
+	 * @param $ps_operator string
+	 * @return string
 	 */
-	protected function _hasMatch($pa_params, $pa_rule) {
-		if (!in_array($pa_params['table_name'], $pa_rule[self::RULE_KEY_SOURCE_TABLES])) {
-			return false;
-		}
+	protected static function _getOperatorMethodName($ps_operator) {
+		return '_' . $ps_operator . 'Operator';
+	}
 
-		$vs_matchMode = isset($pa_rule[self::RULE_KEY_MATCH_MODE]) ? $pa_rule[self::RULE_KEY_MATCH_MODE] : $this->opo_config->get(self::CONF_KEY_DEFAULT_MATCH_MODE);
-		$va_processTemplateOptions = $vs_matchMode === self::MATCH_MODE_SINGLE ?
-			array(
-				'returnAsArray' => false,
-				'delimiter' => isset($pa_rule[self::RULE_KEY_VALUE_DELIMITER]) ? $pa_rule[self::RULE_KEY_VALUE_DELIMITER] : $this->opo_config->get(self::CONF_KEY_DEFAULT_VALUE_DELIMITER)
-			) :
-			array(
-				'returnAsArray' => true
-			);
-		$va_values = caProcessTemplateForIDs($pa_rule[self::RULE_KEY_TRIGGER_TEMPLATE], $pa_params['table_name'], array( $pa_params['id'] ), $va_processTemplateOptions);
+	/**
+	 * Get the internal match method name for the given match type.
+	 * @param $ps_matchType string
+	 * @return string
+	 */
+	protected static function _getMatchMethodName($ps_matchType) {
+		return '_' . $ps_matchType . 'Match';
+	}
 
-		if (!is_array($va_values)) {
-			$va_values = array( $va_values );
+	/**
+	 * Get array of values for the given field from the given table's record with the given id.
+	 *
+	 * @param $ps_table string
+	 * @param $pn_id int
+	 * @param $ps_field string
+	 *
+	 * @return array
+	 */
+	protected static function _getValues($ps_table, $pn_id, $ps_field) {
+		$vo_object = new $ps_table($pn_id);
+		$va_values = array();
+		foreach ($vo_object->get($ps_field, array( 'returnAsArray' => true )) as $va_v) {
+			$va_values = array_merge($va_values, $va_v);
 		}
+		return $va_values;
+	}
 
-		$vb_matches = $vs_matchMode === self::MATCH_MODE_ALL;
-		foreach ($pa_rule[self::RULE_KEY_TRIGGER_VALUE_PATTERNS] as $vs_pattern) {
-			foreach ($va_values as $vs_value) {
-				$vb_matches = $vs_matchMode === self::MATCH_MODE_ALL ?
-					$vb_matches && preg_match($vs_pattern, $vs_value) :
-					$vb_matches || preg_match($vs_pattern, $vs_value);
-			}
+	protected static function _andOperator($a = null, $b = null) {
+		return (is_null($a) || is_null($b)) ? true : $a && $b;
+	}
+
+	protected static function _orOperator($a = null, $b = null) {
+		return (is_null($a) || is_null($b)) ? false : $a || $b;
+	}
+
+	protected static function _regexMatch($pm_value, $pa_trigger) {
+		$vs_modifiers = $pa_trigger['case_insensitive'] ? 'i' : '';
+		$vb_match = false;
+		foreach ($pa_trigger['regexes'] as $vs_pattern) {
+			$vs_escapedPattern = str_replace('/', '\\/', $vs_pattern);
+			$vb_match = $vb_match || preg_match('/' . $vs_escapedPattern . '/' . $vs_modifiers, strval($pm_value));
 		}
-		return $vb_matches;
+		return $vb_match;
+	}
+
+	protected static function _exactMatch($pm_value, $pa_trigger) {
+		return strcmp($pa_trigger['value'], strval($pm_value)) === 0;
+	}
+
+	protected static function _caseInsensitiveMatch($pm_value, $pa_trigger) {
+		return strcasecmp($pa_trigger['value'], strval($pm_value)) === 0;
 	}
 
 	static function getRoleActionList() {
