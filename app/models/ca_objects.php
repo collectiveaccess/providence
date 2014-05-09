@@ -1118,6 +1118,23 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 				);
 			}
 		}
+		
+		// Deaccession
+		if ($this->get('is_deaccessioned') && caGetOption('showDeaccessionInformation', $pa_bundle_settings, false)) {
+			$vs_color = caGetOption('deaccession_color', $pa_bundle_settings, 'cccccc');
+			$va_history[$this->get('deaccession_date', array('getDirectDate'=> true))][] = array(
+				'type' => 'ca_objects_deaccession',
+				'id' => $this->getPrimaryKey(),
+				'display' => $this->getWithTemplate("<unit>".caGetOption('deaccession_displayTemplate', $pa_bundle_settings, '^ca_objects.deaccession_notes')."</unit>"),
+				'color' => $vs_color,
+				'icon_url' => '',
+				'typename_singular' => $vs_name_singular = _t('deaccession'), 
+				'typename_plural' => $vs_name_plural = _t('deaccessions'), 
+				'icon' => '<div class="caUseHistoryIconContainer" style="background-color: #'.$vs_color.'"><div class="caUseHistoryIcon"><div class="caUseHistoryIconText">'.$vs_name_singular.'</div>'.'</div></div>',
+				'date' => $this->get('deaccession_date')
+			);
+		}
+		
 	//	print_R($va_history);
 		
 		ksort($va_history);
