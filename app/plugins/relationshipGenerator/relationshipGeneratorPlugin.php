@@ -35,11 +35,18 @@ require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
  * type of model that extends BundlableLabelableBaseModelWithAttributes, but does not extend BaseRelationshipModel
  * (relationships cannot be created from other relationships).
  *
- * Each rule specifies the table(s) (i.e. model type(s)) that the relationship will be created for, a template which
- * extracts a "value" from the record being saved (this might be a single field value, or a combination of field values
- * into a single string to check multiple fields), and a set of regular expressions that are matched against the
- * extracted "value".  Each rule also specifies the target table and record identifier (primary key value or idno),
- * plus the relationship type, which defines the type of relationship to be managed.
+ * Each rule specifies the table(s) (i.e. model type(s)) that the relationship will be created for, and a set of
+ * triggers.  Each trigger specifies a field, a match type, and some match type-specific criteria (see below).  Each
+ * rule also specifies the target table and record identifier (primary key value or idno), plus the relationship type,
+ * which defines the type of relationship to be managed.
+ *
+ * The plugin combines triggers for multiple fields according to the configured `default_field_combination_operator`,
+ * or a per-rule `field_combination_operator` override.  Similarly the plugin combines matches multiple values from
+ * trigger fields (where a field for a given record has more than one value) using a per-rule or per-trigger
+ * `value_combination_operator`, falling back to a global `default_value_combination_operator` where no override is
+ * given.  Finally, the match types can be globally set using `default_match_type`, and then overridden per-rule and
+ * per-trigger with a `match_type` setting.  The combination of configurable match types and combination operators
+ * gives the ability to generate (and remove) relationships based on a wide range of criteria.
  *
  * If the plugin detects a relationship that does not exist for a record being saved, but should exist according to the
  * defined rules, it will create the relationship.  This behaviour can be disabled by setting the `add_matched` config
@@ -53,7 +60,9 @@ require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
  * behaviours can be disabled individually by setting `process_on_insert` and `process_on_update` config items to 0.
  *
  * The plugin will normally notify the user of any added or removed relationships.  This can be disabled by setting the
- * `notify` config item to 0.
+ * `notify` config item to 0.  The notification text can be overridden using the `default_add_relationship_notification`
+ * and `default_remove_relationship_notification` config items for all rules, or `add_relationship_notification` and
+ * `remove_relationship_notification` per-rule settings.
  */
 class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 
@@ -157,6 +166,7 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 	 *
 	 * @param $pa_params array As given to the hook method.
 	 * @param $pa_rule array Rule from configuration to test against.
+	 *
 	 * @return bool True if the parameters match against the rule, otherwise false.
 	 */
 	protected function _hasMatch($pa_params, $pa_rule) {
