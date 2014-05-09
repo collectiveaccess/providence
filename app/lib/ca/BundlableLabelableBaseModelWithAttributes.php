@@ -1034,6 +1034,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			return;
 		}
 		
+		$vb_read_only_because_deaccessioned = ($this->hasField('is_deaccessioned') && (bool)$this->getAppConfig()->get('deaccession_dont_allow_editing') && (bool)$this->get('is_deaccessioned'));
+		if($vb_read_only_because_deaccessioned && ($ps_bundle_name != 'ca_objects_deaccession')) {
+			$pa_bundle_settings['readonly'] = true;
+		}
+		
 		// Check if user has access to this type
 		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
 			$vn_type_access = $pa_options['request']->user->getTypeAccessLevel($this->tableName(), $this->getTypeID());
@@ -2466,13 +2471,32 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				return false;
 			}
 		}
+		
+		$vb_read_only_because_deaccessioned = ($this->hasField('is_deaccessioned') && (bool)$this->getAppConfig()->get('deaccession_dont_allow_editing') && (bool)$this->get('is_deaccessioned'));
 
 		BaseModel::setChangeLogUnitID();
 		// get items on screen
 		$t_ui = caGetOption('ui_instance', $pa_options, ca_editor_uis::loadDefaultUI($this->tableName(), $po_request, $this->getTypeID()));
 		
 		$va_bundle_lists = $this->getBundleListsForScreen($pm_screen, $po_request, $t_ui, $pa_options);
-		
+
+		// 
+		// Filter bundles to save if deaccessioned - only allow editing of the ca_objects_deaccession bundle
+		//
+		if ($vb_read_only_because_deaccessioned) {
+			foreach($va_bundle_lists['bundles'] as $vn_i => $va_bundle) {
+				if ($va_bundle['bundle_name'] !== 'ca_objects_deaccession') {
+					unset($va_bundle_lists['bundles'][$vn_i]);
+				}
+			}
+			foreach($va_bundle_lists['fields_by_type'] as $vs_type => $va_bundles) {
+				foreach($va_bundles as $vs_id => $vs_bundle_name) {
+					if ($vs_bundle_name !== 'ca_objects_deaccession') {
+						unset($va_bundle_lists['fields_by_type'][$vs_type][$vs_id]);
+					}
+				}
+			}
+		}
 		$va_bundles = $va_bundle_lists['bundles'];
 		$va_fields_by_type = $va_bundle_lists['fields_by_type'];
 
@@ -3592,7 +3616,7 @@ if (!$vb_batch) {
 	
 						$this->set('deaccession_date', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}deaccession_date", pString));
 						
-						if ($vb_is_deaccessioned) { $this->get('access', 0); }
+						if ($vb_is_deaccessioned && (bool)$this->getAppConfig()->get('deaccession_force_access_private')) { $this->get('access', 0); }	// set access to private for accessioned items
 						$this->update();
 						break;
 					# -------------------------------

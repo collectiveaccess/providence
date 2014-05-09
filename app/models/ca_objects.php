@@ -121,6 +121,49 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				'LABEL' => 'Sortable object identifier', 'DESCRIPTION' => 'Value used for sorting objects on identifier value.',
 				'BOUNDS_LENGTH' => array(0,255)
 		),
+		'is_deaccessioned' => array(
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_CHECKBOXES, 
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => 0,
+				'OPTIONS' => array(
+					_t('Yes') => 1,
+					_t('No') => 0
+				),
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'DONT_ALLOW_IN_UI' => true,
+				'LABEL' => _t('Is deaccessioned'), 'DESCRIPTION' => _t('Check if object is deaccessioned')
+		),
+		'deaccession_date' => array(
+				'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'DONT_ALLOW_IN_UI' => true,
+				'START' => 'deaccession_sdatetime', 'END' => 'deaccession_edatetime',
+				'LABEL' => _t('Date of deaccession'), 'DESCRIPTION' => _t('Enter the date the object was deaccessioned.')
+		),
+		'deaccession_notes' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => "700px", 'DISPLAY_HEIGHT' => 6,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'DONT_ALLOW_IN_UI' => true,
+				'LABEL' => _t('Deaccession notes'), 'DESCRIPTION' => _t('Justification for deaccession.'),
+				'BOUNDS_LENGTH' => array(0,65535)
+		),
+		'deaccession_type_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'DONT_ALLOW_IN_UI' => true,
+				'LIST_CODE' => 'object_deaccession_types',
+				'LABEL' => _t('Deaccession type'), 'DESCRIPTION' => _t('Indicates type of deaccession.')
+		),
 		'item_status_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
@@ -427,6 +470,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$this->BUNDLES['ca_objects_components_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Components'));
 		$this->BUNDLES['ca_objects_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Object location'));
 		$this->BUNDLES['ca_objects_history'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Object use history'));
+		$this->BUNDLES['ca_objects_deaccession'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Deaccession status'));
 	}
 	# ------------------------------------------------------
 	/**
@@ -609,7 +653,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
  	# HTML form bundles
  	# ------------------------------------------------------
 	/** 
-	 * Returns HTML form bundle (for use in a ca_object_representations editor form) for media
+	 * Returns HTML form bundle listing order history for object
 	 *
 	 * @param HTTPRequest $po_request The current request
 	 * @param string $ps_form_name
@@ -637,6 +681,36 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		
 		
 		return $o_view->render('ca_commerce_order_history.php');
+	}
+	# ------------------------------------------------------
+	/** 
+	 * Returns HTML form bundle for object deaccession information
+	 *
+	 * @param HTTPRequest $po_request The current request
+	 * @param string $ps_form_name
+	 * @param string $ps_placement_code
+	 * @param array $pa_bundle_settings
+	 * @param array $pa_options Array of options. Supported options are 
+	 *			noCache = If set to true then label cache is bypassed; default is true
+	 *
+	 * @return string Rendered HTML bundle
+	 */
+	public function getObjectDeaccessionHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
+		global $g_ui_locale;
+		
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+		
+		if(!is_array($pa_options)) { $pa_options = array(); }
+		
+		$o_view->setVar('id_prefix', $ps_form_name);
+		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
+		
+		$o_view->setVar('settings', $pa_bundle_settings);
+		
+		$o_view->setVar('t_subject', $this);
+		
+		
+		return $o_view->render('ca_objects_deaccession.php');
 	}
 	# ------------------------------------------------------
  	# Object location tracking

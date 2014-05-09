@@ -51,11 +51,11 @@
 				<div id='<?php print $vs_id_prefix; ?>DeaccessionContainer' <?php print ((bool)$t_subject->get('is_deaccessioned') ? "" : "style='display: none;'"); ?>>
 <?php
 	print $t_subject->htmlFormElement('deaccession_date', "<div class='formLabel' style='float: left;'>^EXTRA^LABEL<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_date", 'id' => "{$vs_id_prefix}DeaccessionDate"));
-	print $t_subject->htmlFormElement('deaccession_type_id', "<div class='formLabel' style='float: left;'>^EXTRA^LABEL<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_type_id", 'id' => "{$vs_id_prefix}DeaccessionTypeID"));
+	print $t_subject->htmlFormElement('deaccession_type_id', "<div class='formLabel' style='float: left;'>^EXTRA"._t('Type')."<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_type_id", 'id' => "{$vs_id_prefix}DeaccessionTypeID"));
 ?>
 	<br class="clear"/>
 <?php
-	print $t_subject->htmlFormElement('deaccession_notes', null, array('name' => "{$vs_id_prefix}deaccession_notes", 'id' => "{$vs_id_prefix}DeaccessionNotes"));
+	print $t_subject->htmlFormElement('deaccession_notes', "<div class='formLabel'>^EXTRA"._t('Notes')."<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_notes", 'id' => "{$vs_id_prefix}DeaccessionNotes"));
 ?>
 				</div>
 			</div>
