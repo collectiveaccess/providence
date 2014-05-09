@@ -10527,6 +10527,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 *		sort = field to sort on. Must be in <table>.<field> or <field> format and be an intrinsic field in the primary table. Sort order can be set using the sortDirection option.
 	 *		sortDirection = the direction of the sort. Values are ASC (ascending) and DESC (descending). Default is ASC.
+	 *		allowWildcards = consider "%" as a wildcard when searching. Any term including a "%" character will be queried using the SQL LIKE operator. [Default is false]
 	 *
 	 * @return mixed Depending upon the returnAs option setting, an array, subclass of BaseModel or integer may be returned.
 	 */
@@ -10622,6 +10623,8 @@ $pa_options["display_form_field_tips"] = true;
 				if (is_array($vm_value)) {
 					if(!sizeof($vm_value)) { continue; }
 					$va_sql_wheres[] = "({$vs_field} IN (".join(",", $vm_value)."))";
+				} elseif (caGetOption('allowWildcards', $pa_options, false) && (strpos($vm_value, '%') !== false)) {
+					$va_sql_wheres[] = "({$vs_field} LIKE {$vm_value})";
 				} else {
 					$va_sql_wheres[] = "({$vs_field} = {$vm_value})";
 				}
