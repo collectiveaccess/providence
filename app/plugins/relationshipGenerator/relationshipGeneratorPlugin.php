@@ -92,19 +92,6 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 	}
 
 	/**
-	 * Only operate on the appropriate models; specifically exclude relationships as it leads to infinite recursion.
-	 *
-	 * @param $po_instance object
-	 *
-	 * @return bool True if the parameter object is the relevant type of model (i.e. bundlable and labelable, but not
-	 *   a relationship model), otherwise false.
-	 */
-	protected function _isRelevantInstance($po_instance) {
-		return ($po_instance instanceof BundlableLabelableBaseModelWithAttributes)
-			&& !($po_instance instanceof BaseRelationshipModel);
-	}
-
-	/**
 	 * Main processing method, both hooks (insert and update) delegate to this.
 	 *
 	 * @param $pa_params array As given to the hook method.
@@ -187,6 +174,20 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 			$vb_matches = self::$vs_fieldCombinationOperator($vb_matches, $vb_fieldMatches);
 		}
 		return $vb_matches;
+	}
+
+	/**
+	 * Determine if the given object is an appropriate model to process; specifically exclude relationships as it leads
+	 * to infinite recursion.
+	 *
+	 * @param $po_instance object
+	 *
+	 * @return bool True if the parameter object is the relevant type of model (i.e. bundlable and labelable, but not
+	 *   a relationship model), otherwise false.
+	 */
+	protected static function _isRelevantInstance($po_instance) {
+		return ($po_instance instanceof BundlableLabelableBaseModelWithAttributes)
+			&& !($po_instance instanceof BaseRelationshipModel);
 	}
 
 	/**
