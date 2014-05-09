@@ -229,6 +229,25 @@ class Datamodel {
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Get information for field from model 
+	 *
+	 * @param string $ps_table The table name
+	 * @param int $ps_field_name The field name
+	 * @param string $ps_key A model info key
+	 *
+	 * @return mixed If $ps_key is set the specified value will be returned, which may be a string, number or array. If $ps_key is omitted the entire information array is returned.
+	 */
+	public function getFieldInfo($ps_table, $ps_field, $ps_key=null) {
+		if ($t_table = $this->getInstanceByTableName($ps_table, true)) {
+			$va_info = $t_table->getFieldInfo($ps_field);
+			if ($ps_key) { return $va_info[$ps_key]; }
+			return $va_info;
+		} else {
+			return null;
+		}
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
 	 * Check if table exists in datamodel
 	 * 
 	 * @param string $ps_table The name of the table to check for
