@@ -75,6 +75,10 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 		);
 	}
 
+	static function getRoleActionList() {
+		return array();
+	}
+
 	public function hookAfterBundleInsert(&$pa_params) {
 		if ($this->opo_config->getBoolean('process_on_insert') && $this->_isRelevantInstance($pa_params['instance'])) {
 			$this->_process($pa_params);
@@ -89,7 +93,9 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 
 	/**
 	 * Only operate on the appropriate models; specifically exclude relationships as it leads to infinite recursion.
+	 *
 	 * @param $po_instance object
+	 *
 	 * @return bool True if the parameter object is the relevant type of model (i.e. bundlable and labelable, but not
 	 *   a relationship model), otherwise false.
 	 */
@@ -100,6 +106,7 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 
 	/**
 	 * Main processing method, both hooks (insert and update) delegate to this.
+	 *
 	 * @param $pa_params array As given to the hook method.
 	 */
 	protected function _process(&$pa_params) {
@@ -147,6 +154,7 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 
 	/**
 	 * Determine whether the given hook parameters (defining the record being saved) match against the given rule.
+	 *
 	 * @param $pa_params array As given to the hook method.
 	 * @param $pa_rule array Rule from configuration to test against.
 	 * @return bool True if the parameters match against the rule, otherwise false.
@@ -209,7 +217,9 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 
 	/**
 	 * Get the internal operator method name for the given operator.
+	 *
 	 * @param $ps_operator string
+	 *
 	 * @return string
 	 */
 	protected static function _getOperatorMethodName($ps_operator) {
@@ -218,7 +228,9 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 
 	/**
 	 * Get the internal match method name for the given match type.
+	 *
 	 * @param $ps_matchType string
+	 *
 	 * @return string
 	 */
 	protected static function _getMatchMethodName($ps_matchType) {
@@ -243,14 +255,38 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 		return $va_values;
 	}
 
+	/**
+	 * Operator method implementing "and" operator.
+	 *
+	 * @param $a null|bool
+	 * @param $b null|bool
+	 *
+	 * @return bool
+	 */
 	protected static function _andOperator($a = null, $b = null) {
 		return (is_null($a) || is_null($b)) ? true : $a && $b;
 	}
 
+	/**
+	 * Operator method implementing "or" operator.
+	 *
+	 * @param $a null|bool
+	 * @param $b null|bool
+	 *
+	 * @return bool
+	 */
 	protected static function _orOperator($a = null, $b = null) {
 		return (is_null($a) || is_null($b)) ? false : $a || $b;
 	}
 
+	/**
+	 * Match method implementing "regex" match method.
+	 *
+	 * @param $pm_value mixed
+	 * @param $pa_trigger array
+	 *
+	 * @return bool
+	 */
 	protected static function _regexMatch($pm_value, $pa_trigger) {
 		$vs_modifiers = $pa_trigger['case_insensitive'] ? 'i' : '';
 		$vb_match = false;
@@ -261,15 +297,27 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 		return $vb_match;
 	}
 
+	/**
+	 * Match method implementing "exact" match method.
+	 *
+	 * @param $pm_value mixed
+	 * @param $pa_trigger array
+	 *
+	 * @return bool
+	 */
 	protected static function _exactMatch($pm_value, $pa_trigger) {
 		return strcmp($pa_trigger['value'], strval($pm_value)) === 0;
 	}
 
+	/**
+	 * Match method implementing "caseInsensitive" match method.
+	 *
+	 * @param $pm_value mixed
+	 * @param $pa_trigger array
+	 *
+	 * @return bool
+	 */
 	protected static function _caseInsensitiveMatch($pm_value, $pa_trigger) {
 		return strcasecmp($pa_trigger['value'], strval($pm_value)) === 0;
-	}
-
-	static function getRoleActionList() {
-		return array();
 	}
 }
