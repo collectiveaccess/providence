@@ -83,20 +83,26 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 			function ($key) { return $this->opo_config->get($key); },
 			$errors
 		);
-		foreach ($this->opo_config->get('rules') as $ruleIndex => $rule) {
-			$this->_testConfigurationSection(
-				_t('rule %1', $ruleIndex),
-				self::_getRuleConfigurationRequirements(),
-				function ($key) use ($rule) { return $rule[$key]; },
-				$errors
-			);
-			foreach ($rule['triggers'] as $triggerField => $trigger) {
+		$rules = $this->opo_config->get('rules');
+		if (is_array($rules) && !empty($rules)) {
+			foreach ($rules as $ruleIndex => $rule) {
 				$this->_testConfigurationSection(
-					_t('trigger field %1 on rule %2', $triggerField, $ruleIndex),
-					self::_getTriggerConfigurationRequirements(),
-					function ($key) use ($trigger) { return $trigger[$key]; },
+					_t('rule %1', $ruleIndex),
+					self::_getRuleConfigurationRequirements(),
+					function ($key) use ($rule) { return $rule[$key]; },
 					$errors
 				);
+				$triggers = isset($rule['triggers']) ? $rule['triggers'] : null;
+				if (is_array($triggers) && !empty($triggers)) {
+					foreach ($triggers as $triggerField => $trigger) {
+						$this->_testConfigurationSection(
+							_t('trigger field %1 on rule %2', $triggerField, $ruleIndex),
+							self::_getTriggerConfigurationRequirements(),
+							function ($key) use ($trigger) { return $trigger[$key]; },
+							$errors
+						);
+					}
+				}
 			}
 		}
 		return array(
@@ -374,6 +380,21 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 	 */
 	private static function _getTopLevelConfigurationRequirements() {
 		return array(
+			'enabled' => array(
+				'required' => true
+			),
+			'process_on_insert' => array(
+				'required' => true
+			),
+			'process_on_update' => array(
+				'required' => true
+			),
+			'add_matched' => array(
+				'required' => true
+			),
+			'remove_unmatched' => array(
+				'required' => true
+			),
 			'default_field_combination_operator' => array(
 				'required' => true,
 				'type' => 'string',
@@ -388,6 +409,13 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 				'required' => true,
 				'type' => 'string',
 				'call' => 'match type'
+			),
+			'default_match_options' => array(
+				'required' => true,
+				'type' => 'array'
+			),
+			'notify' => array(
+				'required' => true
 			),
 			'rules' => array(
 				'required' => true,
