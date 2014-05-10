@@ -76,9 +76,32 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 	}
 
 	public function checkStatus() {
+		$errors = array();
+		$this->_testConfigurationSection(
+			_t('top level'),
+			self::_getTopLevelConfigurationRequirements(),
+			function ($key) { return $this->opo_config->get($key); },
+			$errors
+		);
+		foreach ($this->opo_config->get('rules') as $ruleIndex => $rule) {
+			$this->_testConfigurationSection(
+				_t('rule %1', $ruleIndex),
+				self::_getRuleConfigurationRequirements(),
+				function ($key) use ($rule) { return $rule[$key]; },
+				$errors
+			);
+			foreach ($rule['triggers'] as $triggerField => $trigger) {
+				$this->_testConfigurationSection(
+					_t('trigger field %1 on rule %2', $triggerField, $ruleIndex),
+					self::_getTriggerConfigurationRequirements(),
+					function ($key) use ($trigger) { return $trigger[$key]; },
+					$errors
+				);
+			}
+		}
 		return array(
 			'description' => $this->getDescription(),
-			'errors' => array(),
+			'errors' => $errors,
 			'warnings' => array(),
 			'available' => (bool)$this->opo_config->getBoolean('enabled')
 		);
@@ -98,6 +121,20 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 		if ($this->opo_config->getBoolean('process_on_update') && $this->_isRelevantInstance($pa_params['instance'])) {
 			$this->_process($pa_params);
 		}
+	}
+
+	/**
+	 * Determine if the given object is an appropriate model to process; specifically exclude relationships as it leads
+	 * to infinite recursion.
+	 *
+	 * @param $po_instance object
+	 *
+	 * @return bool True if the parameter object is the relevant type of model (i.e. bundlable and labelable, but not
+	 *   a relationship model), otherwise false.
+	 */
+	protected static function _isRelevantInstance($po_instance) {
+		return ($po_instance instanceof BundlableLabelableBaseModelWithAttributes)
+			&& !($po_instance instanceof BaseRelationshipModel);
 	}
 
 	/**
@@ -178,7 +215,7 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 		// Settings for the rule, falling back to top-level defaults if not configured
 		$vs_fieldCombinationOperator = self::_getOperatorMethodName(isset($pa_rule['field_combination_operator']) ? $pa_rule['field_combination_operator'] : $this->opo_config->get('default_field_combination_operator'));
 		$vs_defaultValueCombinationOperator = self::_getOperatorMethodName(isset($pa_rule['value_combination_operator']) ? $pa_rule['value_combination_operator'] : $this->opo_config->get('default_value_combination_operator'));
-		$vs_defaultMatchType = self::_getMatchMethodName(isset($pa_rule['match_type']) ? $pa_rule['match_type'] : $this->opo_config->get('default_match_type'));
+		$vs_defaultMatchType = self::_getMatchTypeMethodName(isset($pa_rule['match_type']) ? $pa_rule['match_type'] : $this->opo_config->get('default_match_type'));
 		$va_defaultMatchOptions = isset($pa_rule['match_options']) ? $pa_rule['match_options'] : $this->opo_config->get('default_match_options');
 
 		$vb_matches = self::$vs_fieldCombinationOperator();
@@ -186,7 +223,7 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 			// Settings for the trigger, falling back to defaults if not specified
 			$va_trigger = array_merge($va_defaultMatchOptions, $va_trigger);
 			$vs_valueCombinationOperator = isset($va_trigger['value_combination_operator']) ? self::_getOperatorMethodName($va_trigger['value_combination_operator']) : $vs_defaultValueCombinationOperator;
-			$vs_matchType = isset($va_trigger['match_type']) ? self::_getMatchMethodName($va_trigger['match_type']) : $vs_defaultMatchType;
+			$vs_matchType = isset($va_trigger['match_type']) ? self::_getMatchTypeMethodName($va_trigger['match_type']) : $vs_defaultMatchType;
 			$va_values = self::_getValues($pa_params['table_name'], $pa_params['id'], $vs_field);
 
 			// Track match status
@@ -197,20 +234,6 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 			$vb_matches = self::$vs_fieldCombinationOperator($vb_matches, $vb_fieldMatches);
 		}
 		return $vb_matches;
-	}
-
-	/**
-	 * Determine if the given object is an appropriate model to process; specifically exclude relationships as it leads
-	 * to infinite recursion.
-	 *
-	 * @param $po_instance object
-	 *
-	 * @return bool True if the parameter object is the relevant type of model (i.e. bundlable and labelable, but not
-	 *   a relationship model), otherwise false.
-	 */
-	protected static function _isRelevantInstance($po_instance) {
-		return ($po_instance instanceof BundlableLabelableBaseModelWithAttributes)
-			&& !($po_instance instanceof BaseRelationshipModel);
 	}
 
 	/**
@@ -257,7 +280,7 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 	 *
 	 * @return string
 	 */
-	protected static function _getMatchMethodName($ps_matchType) {
+	protected static function _getMatchTypeMethodName($ps_matchType) {
 		return '_' . $ps_matchType . 'Match';
 	}
 
@@ -344,5 +367,108 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 	 */
 	protected static function _caseInsensitiveMatch($pm_value, $pa_trigger) {
 		return strcasecmp($pa_trigger['value'], strval($pm_value)) === 0;
+	}
+
+	/**
+	 * @return array Definition of requirements for top-level configuration items
+	 */
+	private static function _getTopLevelConfigurationRequirements() {
+		return array(
+			'default_field_combination_operator' => array(
+				'required' => true,
+				'type' => 'string',
+				'call' => 'operator'
+			),
+			'default_value_combination_operator' => array(
+				'required' => true,
+				'type' => 'string',
+				'call' => 'operator'
+			),
+			'default_match_type' => array(
+				'required' => true,
+				'type' => 'string',
+				'call' => 'match type'
+			)
+		);
+	}
+
+	/**
+	 * @return array Definition of requirements for per-rule configuration items
+	 */
+	private static function _getRuleConfigurationRequirements() {
+		return array(
+			'source_tables' => array(
+				'required' => true,
+				'type' => 'array'
+			),
+			'triggers' => array(
+				'required' => true,
+				'type' => 'array'
+			),
+			'related_table' => array(
+				'required' => true,
+				'type' => 'string'
+			),
+			'related_record' => array(
+				'required' => true
+			),
+			'relationship_type' => array(
+				'required' => true,
+				'type' => 'string'
+			),
+			'field_combination_operator' => array(
+				'type' => 'string',
+				'call' => 'operator'
+			),
+			'value_combination_operator' => array(
+				'type' => 'string',
+				'call' => 'operator'
+			),
+			'match_type' => array(
+				'type' => 'string',
+				'call' => 'match type'
+			)
+		);
+	}
+
+	/**
+	 * @return array Definition of requirements for per-trigger configuration items
+	 */
+	private static function _getTriggerConfigurationRequirements() {
+		return array(
+			'value_combination_operator' => array(
+				'type' => 'string',
+				'call' => 'operator'
+			),
+			'match_type' => array(
+				'type' => 'string',
+				'call' => 'match type'
+			)
+		);
+	}
+
+	/**
+	 * Test the given configuration section against the given requirements.
+	 * @param $section string Name of the section, for error messages
+	 * @param $requirements array Key-value array of requirements, keys are passed to the given callback
+	 * @param $getValue callback Callback which returns a value for a given key
+	 * @param $errors array By-reference array of errors to append to
+	 */
+	private function _testConfigurationSection($section, $requirements, $getValue, &$errors) {
+		foreach ($requirements as $key => $requirement) {
+			$value = $getValue($key);
+			if (isset($requirement['required']) && $requirement['required'] && is_null($value)) {
+				$errors[] = _t('Required configuration item `%1` missing from %2', $key, $section);
+			}
+			if (isset($requirement['type']) && is_string($requirement['type']) && !is_null($value) && gettype($value) !== $requirement['type']) {
+				$errors[] = _t('Configuration item `%1` in %2 has incorrect type %3, expected %4', $key, $section, gettype($value), $requirement['type']);
+			}
+			if (isset($requirement['call']) && is_string($requirement['call']) && !is_null($value)) {
+				$call = '_get' . str_replace(' ', '', ucwords($requirement['call'])) . 'MethodName';
+				if (!method_exists($this, $this->$call($value))) {
+					$errors[] = _t('Configuration item `%1` in %2 has value "%3", which is an invalid %4', $key, $section, $value, $requirement['call']);
+				}
+			}
+		}
 	}
 }
