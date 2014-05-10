@@ -388,6 +388,10 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 				'required' => true,
 				'type' => 'string',
 				'call' => 'match type'
+			),
+			'rules' => array(
+				'required' => true,
+				'type' => 'array'
 			)
 		);
 	}
