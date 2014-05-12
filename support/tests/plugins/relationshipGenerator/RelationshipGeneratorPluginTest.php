@@ -31,12 +31,12 @@
  */
 
 require_once 'PHPUnit/Autoload.php';
-require_once __CA_BASE_DIR__ . '/app/plugins/relationshipGenerator/relationshipGeneratorPlugin.php';
+require_once __CA_APP_DIR__ . '/plugins/relationshipGenerator/relationshipGeneratorPlugin.php';
 
 class RelationshipGeneratorPluginTest extends PHPUnit_Framework_TestCase {
 
 	public function testDefaultConfigurationIsEnabledAndValid() {
-		$vo_plugin = new relationshipGeneratorPlugin(__CA_BASE_DIR__ . '/app/plugins/relationshipGenerator');
+		$vo_plugin = new relationshipGeneratorPlugin(__CA_APP_DIR__ . '/plugins/relationshipGenerator');
 		$va_pluginStatus = $vo_plugin->checkStatus();
 		$this->assertTrue($va_pluginStatus['available'], 'The plugin is enabled by default');
 		$this->assertEmpty($va_pluginStatus['errors'], 'The default configuration does not produce any errors');
