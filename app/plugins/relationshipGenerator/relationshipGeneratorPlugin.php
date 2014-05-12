@@ -312,13 +312,16 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 	 * @return array
 	 */
 	protected static function _getValues($ps_table, $pn_id, $ps_field) {
+		$va_result = array();
 		/** @var BundlableLabelableBaseModelWithAttributes $vo_object */
 		$vo_object = new $ps_table($pn_id);
-		$va_values = array();
-		foreach ($vo_object->get($ps_field, array( 'returnAsArray' => true )) as $va_v) {
-			$va_values = array_merge($va_values, $va_v);
+		$va_values = $vo_object->get($ps_field, array( 'returnAsArray' => true ));
+		if (is_array($va_values)) {
+			foreach ($va_values as $va_v) {
+				$va_result = array_merge($va_result, $va_v);
+			}
 		}
-		return $va_values;
+		return $va_result;
 	}
 
 	/**
