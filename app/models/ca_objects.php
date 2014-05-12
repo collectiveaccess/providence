@@ -124,7 +124,7 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 		'is_deaccessioned' => array(
 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_CHECKBOXES, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
+				'IS_NULL' => false, 
 				'DEFAULT' => 0,
 				'OPTIONS' => array(
 					_t('Yes') => 1,
