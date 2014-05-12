@@ -1156,7 +1156,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '1',
 										'label' => _t('Show deaccession information'),
-										'description' => _t('If checked hierarchy browser will be open when form loads.')
+										'description' => _t('If clicked deaccession information will be shown in the history.')
 									),
 									'deaccession_color' => array(
 										'formatType' => FT_TEXT,
