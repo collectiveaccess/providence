@@ -281,9 +281,13 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 *
+	 * 
+	 *
 	 * Options:
-	 * 	disableUnsavedChangesWarning = if true, unsaved change warnings (when user tries to navigate away from the form before saving) are disabled
-	 *	noTimestamp = if true no form timestamp (used to determine if other users have made changes while the form is being displayed) is included. Default is false.
+	 * 	disableUnsavedChangesWarning = if true, unsaved change warnings (when user tries to navigate away from the form before saving) are disabled. [Default is false]
+	 *	noTimestamp = if true no form timestamp (used to determine if other users have made changes while the form is being displayed) is included. [Default is false]
+	 *	disableSubmit = don't allow form to be submitted. [Default is false]
 	 */
 	function caFormTag($po_request, $ps_action, $ps_id, $ps_module_and_controller_path=null, $ps_method='post', $ps_enctype='multipart/form-data', $ps_target='_top', $pa_options=null) {
 		if ($ps_target) {
@@ -300,10 +304,10 @@
 		
 		$vs_buf = "<form action='".$vs_action."' method='".$ps_method."' id='".$ps_id."' $vs_target enctype='".$ps_enctype."'>\n<input type='hidden' name='_formName' value='{$ps_id}'/>\n";
 		
-		if (!isset($pa_options['noTimestamp']) || !$pa_options['noTimestamp']) {
+		if (!caGetOption('noTimestamp', $pa_options, false)) {
 			$vs_buf .= caHTMLHiddenInput('form_timestamp', array('value' => time()));
 		}
-		if (!isset($pa_options['disableUnsavedChangesWarning']) || !$pa_options['disableUnsavedChangesWarning']) {
+		if (!caGetOption('disableUnsavedChangesWarning', $pa_options, false)) { 
 			$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(
 				function() {
 					jQuery('#{$ps_id} select, #{$ps_id} input, #{$ps_id} textarea').change(function() { caUI.utils.showUnsavedChangesWarning(true); });
@@ -311,7 +315,7 @@
 				}
 			);</script>";
 		}
-		if (isset($pa_options['disableSubmit']) && $pa_options['disableSubmit']) {
+		if (caGetOption('disableSubmit', $pa_options, false)) { 
 			$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(
 				function() {
 					jQuery('#{$ps_id}').submit(function() { return false; });
