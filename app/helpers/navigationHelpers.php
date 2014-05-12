@@ -657,6 +657,9 @@
 				break;	
 			case __CA_NAV_BUTTON_PDF__:
 				$vs_img_name = 'glyphicons_359_file_export';
+				break;	
+			case __CA_NAV_BUTTON_SET_CENTER__:
+				$vs_img_name = 'glyphicons_185_screenshot';
 				break;																																							
 			default:
 				return null;
