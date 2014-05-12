@@ -380,21 +380,6 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 	 */
 	private static function _getTopLevelConfigurationRequirements() {
 		return array(
-			'enabled' => array(
-				'required' => true
-			),
-			'process_on_insert' => array(
-				'required' => true
-			),
-			'process_on_update' => array(
-				'required' => true
-			),
-			'add_matched' => array(
-				'required' => true
-			),
-			'remove_unmatched' => array(
-				'required' => true
-			),
 			'default_field_combination_operator' => array(
 				'required' => true,
 				'type' => 'string',
@@ -413,9 +398,6 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 			'default_match_options' => array(
 				'required' => true,
 				'type' => 'array'
-			),
-			'notify' => array(
-				'required' => true
 			),
 			'rules' => array(
 				'required' => true,
