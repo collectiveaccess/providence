@@ -69,6 +69,9 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 	/** @var Configuration */
 	private $opo_config;
 
+	/** @var NotificationManager */
+	private $opo_notifications;
+
 	public function __construct($ps_plugin_path) {
 		parent::__construct();
 		$this->description = _t('Automatically assigns an object to a collection, based upon rules you specify in the configuration file associated with the plugin');
@@ -155,7 +158,6 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 		// Configuration items used multiple times
 		$vb_addMatched = $this->opo_config->getBoolean('add_matched');
 		$vb_removeUnmatched = $this->opo_config->getBoolean('remove_unmatched');
-		$vo_notifications = $this->opo_config->getBoolean('notify') ? new NotificationManager($this->getRequest()) : null;
 
 		// Process each rule in order specified
 		foreach ($this->opo_config->getAssoc('rules') as $va_rule) {
@@ -174,8 +176,8 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 				// Add relationship where one does not already exist, and the rule matches
 				if ($vb_addMatched && $vb_matches && is_null($vn_relationshipId)) {
 					$vo_instance->addRelationship($vs_relatedTable, $vs_relatedRecord, $vs_relationshipType);
-					if (!is_null($vo_notifications)) {
-						$vo_notifications->addNotification(
+					if ($this->opo_config->getBoolean('notify')) {
+						$this->_notifications()->addNotification(
 							_t(
 								isset($va_rule['add_relationship_notification']) ? $va_rule['add_relationship_notification'] : $this->opo_config->get('default_add_relationship_notification'),
 								$vo_relatedModel->getTypeName(),
@@ -189,8 +191,8 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 				// Remove relationship where one exists, and the rule does not match
 				if ($vb_removeUnmatched && !$vb_matches && !is_null($vn_relationshipId)) {
 					$vo_instance->removeRelationship($vs_relatedTable, $vn_relationshipId);
-					if (!is_null($vo_notifications)) {
-						$vo_notifications->addNotification(
+					if ($this->opo_config->getBoolean('notify')) {
+						$this->_notifications()->addNotification(
 							_t(
 								isset($va_rule['remove_relationship_notification']) ? $va_rule['remove_relationship_notification'] : $this->opo_config->get('default_remove_relationship_notification'),
 								$vo_relatedModel->getTypeName(),
@@ -202,6 +204,16 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 				}
 			}
 		}
+	}
+
+	/**
+	 * @return NotificationManager|null Note this function returns null if `notify` is off in configuration
+	 */
+	private function _notifications() {
+		if (!$this->opo_notifications && $this->opo_config->getBoolean('notify')) {
+			$this->opo_notifications = new NotificationManager($this->getRequest());
+		}
+		return $this->opo_notifications;
 	}
 
 	/**
