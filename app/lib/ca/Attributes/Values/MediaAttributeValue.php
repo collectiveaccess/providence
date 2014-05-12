@@ -200,8 +200,8 @@
 					
 					
 					$vs_val .= "<div class='attributeMediaThumbnail'>";
+					$vs_val .= "<div style='float: left;'>".urlDecode(caNavLink($pa_options['request'], caNavIcon($pa_options['request'], __CA_NAV_BUTTON_DOWNLOAD__, array('align' => 'middle')), '', $pa_options['request']->getModulePath(), $pa_options['request']->getController(), 'DownloadAttributeMedia', array('download' => 1, 'value_id' => $this->opn_value_id), array('class' => 'attributeDownloadButton')))."</div>";
 					$vs_val .= "<a href='#' onclick='caMediaPanel.showPanel(\"{$vs_view_url}\"); return false;'>{$vs_tag}</a>";
-					$vs_val .= urlDecode(caNavLink($pa_options['request'], caNavIcon($pa_options['request'], __CA_NAV_BUTTON_DOWNLOAD__, array('align' => 'middle')), '', $pa_options['request']->getModulePath(), $pa_options['request']->getController(), 'DownloadAttributeMedia', array('download' => 1, 'value_id' => $this->opn_value_id), array('class' => 'attributeDownloadButton')));
 					$vs_val .= "</div>";
 					
 					if ($pa_options['showMediaInfo']) {
