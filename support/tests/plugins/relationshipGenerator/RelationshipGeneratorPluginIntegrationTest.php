@@ -40,12 +40,23 @@ ApplicationPluginManager::initPlugins();
 
 /**
  * Performs an integration test of sorts for the RelationshipGeneratorPlugin.
+ *
+ * Data (including all required reference data) is created via the model classes, the tests are run, and then all
+ * inserted data is removed (hard deleted).  This leaves the database in an equivalent state at the end of the test
+ * compared to before the test, with the exception that database auto-increment ID values will have skipped ahead due
+ * to records being created and destroyed.  Values used in the tests are generated to be unique to a given test run.
+ *
+ * This test hacks the ApplicationPluginManager, in order to override the default-configured plugin with a plugin
+ * configured by a generated configuration file (see _generateConfiguration() for details about configuration file
+ * generation),  The original plugin instance is restored at the end of the test run.
+ *
+ * This test relies on the presence and correct setting of the __CA_DEFAULT_LOCALE__ constant in setup.php.
  */
 class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestCase {
 
 	private static $s_timestamp;
 	private static $s_randomNumber;
-	private static $s_oldPluginInstance;
+	private static $s_originalPluginInstance;
 
 	/** @var ca_locales */
 	private static $s_locale;
@@ -68,10 +79,10 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 	public static function setUpBeforeClass() {
 		self::$s_timestamp = date('YmdHis');
 		self::$s_randomNumber = mt_rand(100000, 1000000);
-		self::_generateConfFile(__DIR__ . '/conf/integration');
+		self::_processConfiguration(__DIR__ . '/conf/integration');
 
 		// HACK Store old instance of the plugin, and replace with one of our own with known configuration
-		self::$s_oldPluginInstance = ApplicationPluginManager::$s_application_plugin_instances['relationshipGenerator'];
+		self::$s_originalPluginInstance = ApplicationPluginManager::$s_application_plugin_instances['relationshipGenerator'];
 		ApplicationPluginManager::$s_application_plugin_instances['relationshipGenerator'] = new relationshipGeneratorPlugin(__DIR__ . '/conf/integration');
 		// END HACK
 
@@ -120,7 +131,7 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 		}
 
 		// HACK Restore old instance of the plugin
-		ApplicationPluginManager::$s_application_plugin_instances['relationshipGenerator'] = self::$s_oldPluginInstance;
+		ApplicationPluginManager::$s_application_plugin_instances['relationshipGenerator'] = self::$s_originalPluginInstance;
 		// END HACK
 	}
 
@@ -273,11 +284,22 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not have a relationship with collection4 after update');
 	}
 
+	/**
+	 * Convert the given "base" idno (or code in some cases) to a value unique to this test run.  For a given test run,
+	 * calling this method twice with the same parameter value will result in the same return value.
+	 * @param $ps_idnoBase string
+	 * @return string
+	 */
 	private static function _getIdno($ps_idnoBase) {
 		return sprintf('%s_%s_%s', self::$s_timestamp, self::$s_randomNumber, $ps_idnoBase);
 	}
 
-	private static function _generateConfFile($ps_path) {
+	/**
+	 * Convert the configuration file template containing placeholders into a ready-to-use configuration file
+	 * containing generated idno values.
+	 * @param $ps_path string
+	 */
+	private static function _processConfiguration($ps_path) {
 		$vs_outfile = $ps_path . '/conf/relationshipGenerator.conf';
 		if (file_exists($vs_outfile)) {
 			unlink($vs_outfile);
