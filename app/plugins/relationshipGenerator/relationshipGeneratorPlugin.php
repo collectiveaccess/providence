@@ -162,20 +162,20 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 		// Process each rule in order specified
 		foreach ($this->opo_config->getAssoc('rules') as $va_rule) {
 			$vs_relatedTable = $va_rule['related_table'];
-			$vs_relatedRecord = $va_rule['related_record'];
+			$vm_relatedRecord = $va_rule['related_record'];
 			$vs_relationshipType = $va_rule['relationship_type'];
 
 			// Ensure the related model record exists
 			/** @var BundlableLabelableBaseModelWithAttributes $vo_relatedModel */
-			$vo_relatedModel = new $vs_relatedTable(is_string($vs_relatedRecord) ? array( 'idno' => $vs_relatedRecord ) : $vs_relatedRecord);
+			$vo_relatedModel = new $vs_relatedTable(is_string($vm_relatedRecord) && !is_numeric($vm_relatedRecord) ? array( 'idno' => $vm_relatedRecord ) : $vm_relatedRecord);
 			if (sizeof($vo_relatedModel->getFieldValuesArray()) > 0) {
 				// Determine whether a relationship already exists, and whether the rule matches the source object
-				$vn_relationshipId = self::_getRelationshipId($pa_params['instance'], $vs_relatedTable, $vs_relatedRecord, $vs_relationshipType);
+				$vn_relationshipId = self::_getRelationshipId($pa_params['instance'], $vs_relatedTable, $vm_relatedRecord, $vs_relationshipType);
 				$vb_matches = $this->_hasMatch($pa_params, $va_rule);
 
 				// Add relationship where one does not already exist, and the rule matches
 				if ($vb_addMatched && $vb_matches && is_null($vn_relationshipId)) {
-					$vo_instance->addRelationship($vs_relatedTable, $vs_relatedRecord, $vs_relationshipType);
+					$vo_instance->addRelationship($vs_relatedTable, $vm_relatedRecord, $vs_relationshipType);
 					if ($this->opo_config->getBoolean('notify')) {
 						$this->_notifications()->addNotification(
 							_t(
