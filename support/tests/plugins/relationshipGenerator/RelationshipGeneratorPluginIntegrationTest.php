@@ -56,6 +56,9 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 	/** @var ca_collections[] */
 	private static $s_collections;
 
+	/** @var ca_metadata_elements[] */
+	private static $s_metadataElements;
+
 	/** @var ca_objects[] */
 	private static $s_objects;
 
@@ -79,6 +82,10 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 		self::_createListItem('test_collection', BaseModel::$s_ca_models_definitions['ca_collections']['FIELDS']['type_id']['LIST_CODE']);
 		self::_createListItem('test_object', BaseModel::$s_ca_models_definitions['ca_objects']['FIELDS']['type_id']['LIST_CODE']);
 
+		self::_createMetadataElement('element1');
+		self::_createMetadataElement('element2');
+		self::_createMetadataElement('element3');
+
 		self::_createCollection('single');
 		self::_createCollection('multiple');
 		self::_createCollection('ignored');
@@ -89,6 +96,10 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 			$vo_object->setMode(ACCESS_WRITE);
 			// TODO This leaves data in the `ca_metadata_type_restrictions` table, it should be removed here
 			$vo_object->delete(true, array( 'hard' => true ));
+		}
+		foreach (self::$s_metadataElements as $vo_metadataElement) {
+			$vo_metadataElement->setMode(ACCESS_WRITE);
+			$vo_metadataElement->delete(true, array( 'hard' => true ));
 		}
 		foreach (self::$s_collections as $vo_collection) {
 			$vo_collection->setMode(ACCESS_WRITE);
@@ -105,14 +116,14 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 	}
 
 	public function testInsertedRecordNotMatchingAnyRuleDoesNotCreateRelationship() {
-		$vo_object = self::_createObject('test1', 'non-numeric');
+		$vo_object = self::_createObject('notMatchingAnyRule', array( 'element1' => 'this value matches nothing' ));
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'single'));
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'multiple'));
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'ignored'));
 	}
 
-	public function testInsertedRecordMatchingSingleRuleCreatesSingleRelationship() {
-		$vo_object = self::_createObject('test2', '1');
+	public function testInsertedRecordMatchingSingleExactMatchRuleCreatesSingleRelationship() {
+		$vo_object = self::_createObject('matchingSingleExactMatchRule', array( 'element1' => 'EXACT MATCH' ));
 		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'single'));
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'multiple'));
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'ignored'));
@@ -197,6 +208,18 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 		return $vo_listItem;
 	}
 
+	private static function _createMetadataElement($ps_code) {
+		$vo_metadataElement = new ca_metadata_elements();
+		$vo_metadataElement->setMode(ACCESS_WRITE);
+		$vo_metadataElement->set(array(
+			'element_code' => self::_getIdno($ps_code),
+			'datatype' => 1
+		));
+		$vo_metadataElement->insert();
+		self::$s_metadataElements[$ps_code] = $vo_metadataElement;
+		return $vo_metadataElement;
+	}
+
 	private static function _createCollection($ps_idnoBase) {
 		$vo_collection = new ca_collections();
 		$vo_collection->setMode(ACCESS_WRITE);
@@ -204,6 +227,10 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 			'idno' => self::_getIdno($ps_idnoBase),
 			'type_id' => self::$s_listItems['test_collection']->getPrimaryKey()
 		));
+		$vn_testCollectionListItemId = self::$s_listItems['test_collection']->getPrimaryKey();
+		foreach (self::$s_metadataElements as $vo_metadataElement) {
+			$vo_collection->addMetadataElementToType($vo_metadataElement->get('element_code'), $vn_testCollectionListItemId);
+		}
 		$vo_collection->insert();
 		$vo_collection->addLabel(
 			array(
@@ -217,7 +244,7 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 		return $vo_collection;
 	}
 
-	private static function _createObject($ps_idnoBase, $ps_individualCount) {
+	private static function _createObject($ps_idnoBase, $pa_values) {
 		$vo_object = new ca_objects();
 		$vo_object->setMode(ACCESS_WRITE);
 		$vn_testObjectListItemId = self::$s_listItems['test_object']->getPrimaryKey();
@@ -225,9 +252,11 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 			'idno' => self::_getIdno($ps_idnoBase),
 			'type_id' => $vn_testObjectListItemId
 		));
-		// TODO Hardcoded attribute name
-		$vo_object->addMetadataElementToType('individualCount', $vn_testObjectListItemId);
-		$vo_object->addAttribute(array( 'individualCount' => $ps_individualCount ), 'individualCount');
+		foreach ($pa_values as $vs_elementCodeBase => $vs_value) {
+			$vs_elementCode = self::_getIdno($vs_elementCodeBase);
+			$vo_object->addMetadataElementToType($vs_elementCode, $vn_testObjectListItemId);
+			$vo_object->addAttribute(array( $vs_elementCode => $vs_value ), $vs_elementCode);
+		}
 		$vo_object->insert();
 		self::$s_objects[$ps_idnoBase] = $vo_object;
 		return $vo_object;

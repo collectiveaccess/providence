@@ -1,5 +1,5 @@
 # Configuration file for RelationshipGeneratorPluginIntegrationTest
-# This is the configuration used for the functionality test, with "real" data in the database
+# This is the configuration used for the functionality test, with "real" (generated) data in the database
 
 enabled = 1
 process_on_insert = 1
@@ -17,10 +17,9 @@ rules = {
 	0 = {
 		source_tables = [ ca_objects ],
 		triggers = {
-			individualCount = {
+			%%element1%% = {
 				match_type = exact,
-				value = 1,
-				multi_value_operator = and
+				value = EXACT MATCH
 			}
 		},
 		related_table = ca_collections,
@@ -32,8 +31,9 @@ rules = {
 	1 = {
 		source_tables = [ ca_objects ],
 		triggers = {
-			individualCount = {
-				regexes = { "^[2-9]|\d{2,}$" }
+			%%element1%% = {
+				match_type = regex,
+				regexes = { "^\d+$" }
 			}
 		},
 		related_table = ca_collections,
@@ -43,8 +43,9 @@ rules = {
 	2 = {
 		source_tables = [ ca_objects ],
 		triggers = {
-			individualCount = {
-				regexes = { "^\d+$" }
+			%%element1%% = {
+				match_type = case insensitive,
+				value = COLLECTION DOES NOT EXIST SHOULD NOT GIVE ERROR
 			}
 		},
 		related_table = ca_collections,
