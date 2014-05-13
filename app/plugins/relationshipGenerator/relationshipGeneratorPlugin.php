@@ -288,7 +288,7 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 	 * @return string
 	 */
 	protected static function _getOperatorMethodName($ps_operator) {
-		return '_' . $ps_operator . 'Operator';
+		return '_' . str_replace(' ', '', lcfirst(ucwords($ps_operator))) . 'Operator';
 	}
 
 	/**
@@ -299,7 +299,7 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 	 * @return string
 	 */
 	protected static function _getMatchTypeMethodName($ps_matchType) {
-		return '_' . $ps_matchType . 'Match';
+		return '_' . str_replace(' ', '', lcfirst(ucwords($ps_matchType))) . 'Match';
 	}
 
 	/**
