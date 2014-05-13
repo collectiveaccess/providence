@@ -24,7 +24,7 @@ rules = {
 			}
 		},
 		related_table = ca_collections,
-		related_record = 20140513173540_377956_single,
+		related_record = %%single%%,
 		relationship_type = part,
 		add_relationship_notification = Detected single individual and added to '%2' %1,
 		remove_relationship_notification = Detected modification of individual count and removed from '%2' %1
@@ -37,7 +37,7 @@ rules = {
 			}
 		},
 		related_table = ca_collections,
-		related_record = 20140513173540_377956_multiple,
+		related_record = %%multiple%%,
 		relationship_type = part
 	},
 	2 = {
@@ -48,7 +48,7 @@ rules = {
 			}
 		},
 		related_table = ca_collections,
-		related_record = 20140513173540_377956_xx,
+		related_record = %%xx%%,
 		relationship_type = part
 	}
 }
