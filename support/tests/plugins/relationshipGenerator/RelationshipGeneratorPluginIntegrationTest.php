@@ -100,7 +100,6 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 	public static function tearDownAfterClass() {
 		foreach (self::$s_objects as $vo_object) {
 			$vo_object->setMode(ACCESS_WRITE);
-			// TODO This leaves data in the `ca_metadata_type_restrictions` table, it should be removed here
 			$vo_object->delete(true, array( 'hard' => true ));
 		}
 		foreach (self::$s_metadataElements as $vo_metadataElement) {
