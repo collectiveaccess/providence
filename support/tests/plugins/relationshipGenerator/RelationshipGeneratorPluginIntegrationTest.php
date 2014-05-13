@@ -50,6 +50,9 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 	/** @var ca_locales */
 	private static $s_locale;
 
+	/** @var ca_relationship_types[] */
+	private static $s_relationshipTypes;
+
 	/** @var ca_list_items[] */
 	private static $s_listItems;
 
@@ -78,6 +81,8 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 		self::$s_listItems = array();
 		self::$s_collections = array();
 		self::$s_objects = array();
+
+		self::_createRelationshipType('part', 'ca_objects_x_collections');
 
 		self::_createListItem('test_collection', BaseModel::$s_ca_models_definitions['ca_collections']['FIELDS']['type_id']['LIST_CODE']);
 		self::_createListItem('test_object', BaseModel::$s_ca_models_definitions['ca_objects']['FIELDS']['type_id']['LIST_CODE']);
@@ -109,6 +114,10 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 		foreach (self::$s_listItems as $vo_listItem) {
 			$vo_listItem->setMode(ACCESS_WRITE);
 			$vo_listItem->delete(true, array( 'hard' => true ));
+		}
+		foreach (self::$s_relationshipTypes as $vo_relationshipType) {
+			$vo_relationshipType->setMode(ACCESS_WRITE);
+			$vo_relationshipType->delete(true, array( 'hard' => true ));
 		}
 
 		// HACK Restore old instance of the plugin
@@ -290,6 +299,27 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 		file_put_contents($vs_outfile, join('', $va_parsed));
 	}
 
+	private static function _createRelationshipType($ps_codeBase, $ps_tableName) {
+		$vo_relationshipType = new ca_relationship_types();
+		$vo_relationshipType->setMode(ACCESS_WRITE);
+		$vo_relationshipType->set(array(
+			'type_code' => self::_getIdno($ps_codeBase),
+			'table_num' => $vo_relationshipType->getAppDatamodel()->getTableNum($ps_tableName)
+		));
+		$vo_relationshipType->insert();
+		$vo_relationshipType->addLabel(
+			array(
+				'typename' => $ps_codeBase,
+				'typename_reverse' => $ps_codeBase . ' reverse'
+			),
+			self::$s_locale->getPrimaryKey(),
+			null,
+			true
+		);
+		self::$s_relationshipTypes[$ps_codeBase] = $vo_relationshipType;
+		return $vo_relationshipType;
+	}
+
 	private static function _createListItem($ps_idnoBase, $pn_listId) {
 		$vo_listItem = new ca_list_items();
 		$vo_listItem->setMode(ACCESS_WRITE);
@@ -312,15 +342,15 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 		return $vo_listItem;
 	}
 
-	private static function _createMetadataElement($ps_code) {
+	private static function _createMetadataElement($ps_codeBase) {
 		$vo_metadataElement = new ca_metadata_elements();
 		$vo_metadataElement->setMode(ACCESS_WRITE);
 		$vo_metadataElement->set(array(
-			'element_code' => self::_getIdno($ps_code),
+			'element_code' => self::_getIdno($ps_codeBase),
 			'datatype' => 1
 		));
 		$vo_metadataElement->insert();
-		self::$s_metadataElements[$ps_code] = $vo_metadataElement;
+		self::$s_metadataElements[$ps_codeBase] = $vo_metadataElement;
 		return $vo_metadataElement;
 	}
 

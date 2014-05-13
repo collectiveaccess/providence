@@ -24,7 +24,7 @@ rules = {
 		},
 		related_table = ca_collections,
 		related_record = %%collection1%%,
-		relationship_type = part
+		relationship_type = %%part%%
 	},
 	1 = {
 		source_tables = [ ca_objects ],
@@ -36,7 +36,7 @@ rules = {
 		},
 		related_table = ca_collections,
 		related_record = %%collection2%%,
-		relationship_type = part
+		relationship_type = %%part%%
 	},
 	2 = {
 		source_tables = [ ca_objects ],
@@ -48,7 +48,7 @@ rules = {
 		},
 		related_table = ca_collections,
 		related_record = %%collection3%%,
-		relationship_type = part
+		relationship_type = %%part%%
 	},
 	3 = {
 		source_tables = [ ca_objects ],
@@ -59,7 +59,7 @@ rules = {
 		},
 		related_table = ca_collections,
 		related_record = %%collection4%%,
-		relationship_type = part
+		relationship_type = %%part%%
 	},
 	4 = {
 		source_tables = [ ca_objects ],
@@ -71,6 +71,6 @@ rules = {
 		},
 		related_table = ca_collections,
 		related_record = %%collectionDoesNotExist%%,
-		relationship_type = part
+		relationship_type = %%part%%
 	}
 }
