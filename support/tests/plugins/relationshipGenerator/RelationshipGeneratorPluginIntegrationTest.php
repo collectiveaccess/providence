@@ -43,38 +43,38 @@ ApplicationPluginManager::initPlugins();
  */
 class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestCase {
 
-	private static $ops_timestamp;
-	private static $ops_randomNumber;
-	private static $opo_oldPluginInstance;
+	private static $s_timestamp;
+	private static $s_randomNumber;
+	private static $s_oldPluginInstance;
 
 	/** @var ca_locales */
-	private static $opo_locale;
+	private static $s_locale;
 
 	/** @var ca_list_items[] */
-	private static $opa_listItems;
+	private static $s_listItems;
 
 	/** @var ca_collections[] */
-	private static $opa_collections;
+	private static $s_collections;
 
 	/** @var ca_objects[] */
-	private static $opa_objects;
+	private static $s_objects;
 
 	public static function setUpBeforeClass() {
-		self::$ops_timestamp = date('YmdHis');
-		self::$ops_randomNumber = mt_rand(100000, 1000000);
+		self::$s_timestamp = date('YmdHis');
+		self::$s_randomNumber = mt_rand(100000, 1000000);
 		self::_generateConfFile(__DIR__ . '/conf/integration');
 
 		// HACK Store old instance of the plugin, and replace with one of our own with known configuration
-		self::$opo_oldPluginInstance = ApplicationPluginManager::$s_application_plugin_instances['relationshipGenerator'];
+		self::$s_oldPluginInstance = ApplicationPluginManager::$s_application_plugin_instances['relationshipGenerator'];
 		ApplicationPluginManager::$s_application_plugin_instances['relationshipGenerator'] = new relationshipGeneratorPlugin(__DIR__ . '/conf/integration');
 		// END HACK
 
-		self::$opo_locale = new ca_locales();
-		self::$opo_locale->loadLocaleByCode(__CA_DEFAULT_LOCALE__);
+		self::$s_locale = new ca_locales();
+		self::$s_locale->loadLocaleByCode(__CA_DEFAULT_LOCALE__);
 
-		self::$opa_listItems = array();
-		self::$opa_collections = array();
-		self::$opa_objects = array();
+		self::$s_listItems = array();
+		self::$s_collections = array();
+		self::$s_objects = array();
 
 		$va_listItems = array(
 			array(
@@ -96,22 +96,22 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 	}
 
 	public static function tearDownAfterClass() {
-		foreach (self::$opa_objects as $vo_object) {
+		foreach (self::$s_objects as $vo_object) {
 			$vo_object->setMode(ACCESS_WRITE);
 			// TODO This leaves data in the `ca_metadata_type_restrictions` table, it should be removed here
 			$vo_object->delete(true, array( 'hard' => true ));
 		}
-		foreach (self::$opa_collections as $vo_collection) {
+		foreach (self::$s_collections as $vo_collection) {
 			$vo_collection->setMode(ACCESS_WRITE);
 			$vo_collection->delete(true, array( 'hard' => true ));
 		}
-		foreach (self::$opa_listItems as $vo_listItem) {
+		foreach (self::$s_listItems as $vo_listItem) {
 			$vo_listItem->setMode(ACCESS_WRITE);
 			$vo_listItem->delete(true, array( 'hard' => true ));
 		}
 
 		// HACK Restore old instance of the plugin
-		ApplicationPluginManager::$s_application_plugin_instances['relationshipGenerator'] = self::$opo_oldPluginInstance;
+		ApplicationPluginManager::$s_application_plugin_instances['relationshipGenerator'] = self::$s_oldPluginInstance;
 		// END HACK
 	}
 
@@ -162,7 +162,7 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 //	}
 
 	private static function _getIdno($ps_idnoBase) {
-		return sprintf('%s_%s_%s', self::$ops_timestamp, self::$ops_randomNumber, $ps_idnoBase);
+		return sprintf('%s_%s_%s', self::$s_timestamp, self::$s_randomNumber, $ps_idnoBase);
 	}
 
 	private static function _generateConfFile($ps_path) {
@@ -200,11 +200,11 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 				'name_singular' => $ps_idnoBase,
 				'name_plural' => $ps_idnoBase
 			),
-			self::$opo_locale->getPrimaryKey(),
+			self::$s_locale->getPrimaryKey(),
 			null,
 			true
 		);
-		self::$opa_listItems[$ps_idnoBase] = $vo_listItem;
+		self::$s_listItems[$ps_idnoBase] = $vo_listItem;
 		return $vo_listItem;
 	}
 
@@ -213,25 +213,25 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 		$vo_collection->setMode(ACCESS_WRITE);
 		$vo_collection->set(array(
 			'idno' => self::_getIdno($ps_idnoBase),
-			'type_id' => self::$opa_listItems['test_collection']->getPrimaryKey()
+			'type_id' => self::$s_listItems['test_collection']->getPrimaryKey()
 		));
 		$vo_collection->insert();
 		$vo_collection->addLabel(
 			array(
 				'name' => $ps_idnoBase
 			),
-			self::$opo_locale->getPrimaryKey(),
+			self::$s_locale->getPrimaryKey(),
 			null,
 			true
 		);
-		self::$opa_collections[$ps_idnoBase] = $vo_collection;
+		self::$s_collections[$ps_idnoBase] = $vo_collection;
 		return $vo_collection;
 	}
 
 	private static function _createObject($ps_idnoBase, $ps_individualCount) {
 		$vo_object = new ca_objects();
 		$vo_object->setMode(ACCESS_WRITE);
-		$vn_testObjectListItemId = self::$opa_listItems['test_object']->getPrimaryKey();
+		$vn_testObjectListItemId = self::$s_listItems['test_object']->getPrimaryKey();
 		$vo_object->set(array(
 			'idno' => self::_getIdno($ps_idnoBase),
 			'type_id' => $vn_testObjectListItemId
@@ -240,7 +240,7 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 		$vo_object->addMetadataElementToType('individualCount', $vn_testObjectListItemId);
 		$vo_object->addAttribute(array( 'individualCount' => $ps_individualCount ), 'individualCount');
 		$vo_object->insert();
-		self::$opa_objects[$ps_idnoBase] = $vo_object;
+		self::$s_objects[$ps_idnoBase] = $vo_object;
 		return $vo_object;
 	}
 
