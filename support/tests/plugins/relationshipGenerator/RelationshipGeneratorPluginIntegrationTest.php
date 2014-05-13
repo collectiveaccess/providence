@@ -89,6 +89,7 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 		self::_createCollection('collection1');
 		self::_createCollection('collection2');
 		self::_createCollection('collection3');
+		self::_createCollection('collection4');
 	}
 
 	public static function tearDownAfterClass() {
@@ -115,58 +116,154 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 		// END HACK
 	}
 
-	public function testInsertedRecordNotMatchingAnyRuleDoesNotCreateRelationship() {
+	public function testInsertedRecordNotMatchingAnyRule() {
 		$vo_object = self::_createObject('notMatchingAnyRule', array( 'element1' => 'this value matches nothing' ));
-		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection1'));
-		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'));
-		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'));
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object does not have a relationship with collection1');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not have a relationship with collection2');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not have a relationship with collection3');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not have a relationship with collection4');
 	}
 
-	public function testInsertedRecordMatchingSingleExactMatchRuleCreatesSingleRelationship() {
+	public function testInsertedRecordMatchingSingleExactMatchRule() {
 		$vo_object = self::_createObject('matchingSingleExactMatchRule', array( 'element1' => 'EXACT MATCH' ));
-		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection1'));
-		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'));
-		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'));
+		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object has a relationship with collection1');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not have a relationship with collection2');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not have a relationship with collection3');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not have a relationship with collection4');
 	}
 
-	public function testInsertedRecordMatchingSingleRegexRuleCreatesSingleRelationship() {
+	public function testInsertedRecordMatchingSingleRegexRule() {
 		$vo_object = self::_createObject('matchingSingleRegexRule', array( 'element1' => '42' ));
-		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection1'));
-		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection2'));
-		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'));
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object does not have a relationship with collection1');
+		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object has a relationship with collection2');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not have a relationship with collection3');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not have a relationship with collection4');
 	}
 
-//	public function testInsertedRecordMatchingMultipleRulesCreatesMultipleRelationships() {
-//
-//	}
-//
-//	public function testUpdatedRecordNotMatchingAnyRuleDoesNotCreateRelationship() {
-//
-//	}
-//
-//	public function testUpdatedRecordMatchingSingleRuleCreatesSingleRelationship() {
-//
-//	}
-//
-//	public function testUpdatedRecordMatchingMultipleRulesCreatesMultipleRelationships() {
-//
-//	}
-//
-//	public function testUpdatedRecordWasMatchingSingleRuleNoLongerMatchingAnyRuleDeletesSingleRelationship() {
-//
-//	}
-//
-//	public function testUpdatedRecordWasMatchingMultipleRulesNoLongerMatchingOneRuleButStillMatchingOtherRuleDeletesSingleRelationship() {
-//
-//	}
-//
-//	public function testUpdatedRecordWasMatchingMultipleRulesNoLongerMatchingAnyRuleDeletesMultipleRelationships() {
-//
-//	}
-//
-//	public function testUpdatedRecordWasMatchingSingleRuleNoLongerMatchingSameRuleButMatchingOtherRuleDeletesSingleRelationshipAndAddsSingleRelationship() {
-//
-//	}
+	public function testInsertedRecordMatchingMultipleRules() {
+		$vo_object = self::_createObject('matchingMultipleRules', array( 'element1' => 'EXACT MATCH', 'element2' => 'xyzzy' ));
+		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object has a relationship with collection1');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not have a relationship with collection2');
+		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object has a relationship with collection3');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not have a relationship with collection4');
+	}
+
+	public function testUpdatedRecordWasNotMatchingAnyRuleStillNotMatchingAnyRule() {
+		$vo_object = self::_createObject('wasNotMatchingAnyRuleNowStillNotMatchingAnyRule', array( 'element1' => 'this value matches nothing' ));
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object does not initially have a relationship with collection1');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not initially have a relationship with collection2');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not initially have a relationship with collection3');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not initially have a relationship with collection4');
+		$vo_object = self::_updateObject('wasNotMatchingAnyRuleNowStillNotMatchingAnyRule', array( 'element1' => 'this value also does not match' ));
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object does not have a relationship with collection1 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not have a relationship with collection2 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not have a relationship with collection3 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not have a relationship with collection4 after update');
+	}
+
+	public function testUpdatedRecordWasNotMatchingAnyRuleNowMatchingSingleRule() {
+		$vo_object = self::_createObject('wasNotMatchingAnyRuleNowMatchingSingleRule', array( 'element1' => 'this value matches nothing' ));
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object does not initially have a relationship with collection1');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not initially have a relationship with collection2');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not initially have a relationship with collection3');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not initially have a relationship with collection4');
+		$vo_object = self::_updateObject('wasNotMatchingAnyRuleNowMatchingSingleRule', array( 'element1' => 'EXACT MATCH' ));
+		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object has a relationship with collection1 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not have a relationship with collection2 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not have a relationship with collection3 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not have a relationship with collection4 after update');
+	}
+
+	public function testUpdatedRecordWasNotMatchingAnyRuleNowMatchingMultipleRules() {
+		$vo_object = self::_createObject('wasNotMatchingAnyRuleNowMatchingMultipleRules', array( 'element1' => 'this value matches nothing' ));
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object does not initially have a relationship with collection1');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not initially have a relationship with collection2');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not initially have a relationship with collection3');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not initially have a relationship with collection4');
+		$vo_object = self::_updateObject('wasNotMatchingAnyRuleNowMatchingMultipleRules', array( 'element1' => '42', 'element2' => 'XyZZy' ));
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object does not have a relationship with collection1 after update');
+		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object has a relationship with collection2 after update');
+		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object has a relationship with collection3 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not have a relationship with collection4 after update');
+	}
+
+	public function testUpdatedRecordWasMatchingSingleRuleNowMatchingMultipleRules() {
+		$vo_object = self::_createObject('wasWasMatchingSingleRuleNowMatchingMultipleRules', array( 'element1' => 'EXACT MATCH' ));
+		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object initially has a relationship with collection1');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not initially have a relationship with collection2');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not initially have a relationship with collection3');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not initially have a relationship with collection4');
+		$vo_object = self::_updateObject('wasWasMatchingSingleRuleNowMatchingMultipleRules', array( 'element2' => 'XYZZY' ));
+		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object has a relationship with collection1 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not have a relationship with collection2 after update');
+		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object has a relationship with collection3 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not have a relationship with collection4 after update');
+	}
+
+	public function testUpdatedRecordWasMatchingSingleRuleNowMatchingDifferentSingleRule() {
+		$vo_object = self::_createObject('wasMatchingSingleRuleNowMatchingDifferentSingleRule', array( 'element1' => 'EXACT MATCH' ));
+		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object initially has a relationship with collection1');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not initially have a relationship with collection2');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not initially have a relationship with collection3');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not initially have a relationship with collection4');
+		$vo_object = self::_updateObject('wasMatchingSingleRuleNowMatchingDifferentSingleRule', array( 'element1' => 'no longer matching', 'element2' => 'Xyzzy' ));
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object does not have a relationship with collection1 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not have a relationship with collection2 after update');
+		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object has a relationship with collection3 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not have a relationship with collection4 after update');
+	}
+
+	public function testUpdatedRecordWasMatchingSingleRuleNowNotMatchingAnyRule() {
+		$vo_object = self::_createObject('wasMatchingSingleRuleNowNotMatchingAnyRule', array( 'element1' => 'EXACT MATCH' ));
+		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object initially has a relationship with collection1');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not initially have a relationship with collection2');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not initially have a relationship with collection3');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not initially have a relationship with collection4');
+		$vo_object = self::_updateObject('wasMatchingSingleRuleNowNotMatchingAnyRule', array( 'element1' => 'no longer matching' ));
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object does not have a relationship with collection1 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not have a relationship with collection2 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not have a relationship with collection3 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not have a relationship with collection4 after update');
+	}
+
+	public function testUpdatedRecordWasMatchingMultipleRulesNowMatchingSingleRule() {
+		$vo_object = self::_createObject('wasMatchingMultipleRulesNowMatchingSingleRule', array( 'element1' => 'EXACT MATCH', 'element2' => 'xyzzy' ));
+		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object initially has a relationship with collection1');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not initially have a relationship with collection2');
+		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object initially has a relationship with collection3');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not initially have a relationship with collection4');
+		$vo_object = self::_updateObject('wasMatchingMultipleRulesNowMatchingSingleRule', array( 'element1' => 'no longer matching' ));
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object does not have a relationship with collection1 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not have a relationship with collection2 after update');
+		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object has a relationship with collection3 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not have a relationship with collection4 after update');
+	}
+
+	public function testUpdatedRecordWasMatchingMultipleRulesNowMatchingDifferentSingleRule() {
+		$vo_object = self::_createObject('wasMatchingMultipleRulesNowNotMatchingDifferentSingleRule', array( 'element1' => 'EXACT MATCH', 'element2' => 'xyzzy', 'element3' => 'bad data' ));
+		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object initially has a relationship with collection1');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not initially have a relationship with collection2');
+		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object initially has a relationship with collection3');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not initially have a relationship with collection4');
+		$vo_object = self::_updateObject('wasMatchingMultipleRulesNowNotMatchingDifferentSingleRule', array( 'element1' => 'no longer matching NO LONGER', 'element2' => 'foo', 'element3' => 'barBBBBBBBBBBBBBAAAAAAAAAAAAAAAAAAAAAAAAAAAAARRRRRRRRRRRRRRRRRRRRRRRRRRRRRR' ));
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object does not have a relationship with collection1 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not have a relationship with collection2 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not have a relationship with collection3 after update');
+		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object has a relationship with collection4 after update');
+	}
+
+	public function testUpdatedRecordWasMatchingMultipleRulesNowNotMatchingAnyRule() {
+		$vo_object = self::_createObject('wasMatchingMultipleRulesNowNotMatchingAnyRule', array( 'element1' => 'EXACT MATCH', 'element2' => 'xyzzy' ));
+		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object initially has a relationship with collection1');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not initially have a relationship with collection2');
+		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object initially has a relationship with collection3');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not initially have a relationship with collection4');
+		$vo_object = self::_updateObject('wasMatchingMultipleRulesNowNotMatchingAnyRule', array( 'element1' => 'no longer matching', 'element2' => 'yzxxz' ));
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object does not have a relationship with collection1 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not have a relationship with collection2 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not have a relationship with collection3 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not have a relationship with collection4 after update');
+	}
 
 	private static function _getIdno($ps_idnoBase) {
 		return sprintf('%s_%s_%s', self::$s_timestamp, self::$s_randomNumber, $ps_idnoBase);
@@ -251,7 +348,7 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 		return $vo_collection;
 	}
 
-	private static function _createObject($ps_idnoBase, $pa_values) {
+	private static function _createObject($ps_idnoBase, $pa_attributes) {
 		$vo_object = new ca_objects();
 		$vo_object->setMode(ACCESS_WRITE);
 		$vn_testObjectListItemId = self::$s_listItems['test_object']->getPrimaryKey();
@@ -259,12 +356,24 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 			'idno' => self::_getIdno($ps_idnoBase),
 			'type_id' => $vn_testObjectListItemId
 		));
-		foreach ($pa_values as $vs_elementCodeBase => $vs_value) {
-			$vs_elementCode = self::_getIdno($vs_elementCodeBase);
-			$vo_object->addMetadataElementToType($vs_elementCode, $vn_testObjectListItemId);
-			$vo_object->addAttribute(array( $vs_elementCode => $vs_value ), $vs_elementCode);
+		foreach ($pa_attributes as $vs_codeBase => $vs_value) {
+			$vs_code = self::_getIdno($vs_codeBase);
+			$vo_object->addMetadataElementToType($vs_code, $vn_testObjectListItemId);
+			$vo_object->addAttribute(array( $vs_code => $vs_value ), $vs_code);
 		}
 		$vo_object->insert();
+		self::$s_objects[$ps_idnoBase] = $vo_object;
+		return $vo_object;
+	}
+
+	private static function _updateObject($ps_idnoBase, $pa_attributes) {
+		/** @var BundlableLabelableBaseModelWithAttributes $vo_object */
+		$vo_object = self::$s_objects[$ps_idnoBase];
+		foreach ($pa_attributes as $vs_codeBase => $vs_value) {
+			$vs_code = self::_getIdno($vs_codeBase);
+			$vo_object->replaceAttribute(array( $vs_code => $vs_value ), $vs_code);
+		}
+		$vo_object->update();
 		self::$s_objects[$ps_idnoBase] = $vo_object;
 		return $vo_object;
 	}

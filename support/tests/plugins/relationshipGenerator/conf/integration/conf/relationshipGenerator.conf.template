@@ -43,6 +43,29 @@ rules = {
 	2 = {
 		source_tables = [ ca_objects ],
 		triggers = {
+			%%element2%% = {
+				match_type = case insensitive,
+				value = XYZZY
+			}
+		},
+		related_table = ca_collections,
+		related_record = %%collection3%%,
+		relationship_type = part
+	},
+	3 = {
+		source_tables = [ ca_objects ],
+		triggers = {
+			%%element3%% = {
+				regexes = { "bar" }
+			}
+		},
+		related_table = ca_collections,
+		related_record = %%collection4%%,
+		relationship_type = part
+	},
+	4 = {
+		source_tables = [ ca_objects ],
+		triggers = {
 			%%element1%% = {
 				match_type = case insensitive,
 				value = COLLECTION DOES NOT EXIST SHOULD NOT GIVE ERROR
