@@ -47,6 +47,9 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 	private $ops_randomNumber;
 	private $opo_oldPluginInstance;
 
+	/** @var ca_locales */
+	private $opo_locale;
+
 	/** @var ca_list_items[] */
 	private $opa_listItems;
 
@@ -66,12 +69,25 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 		ApplicationPluginManager::$s_application_plugin_instances['relationshipGenerator'] = new relationshipGeneratorPlugin(__DIR__ . '/conf/integration');
 		// END HACK
 
+		$this->opo_locale = new ca_locales();
+		$this->opo_locale->loadLocaleByCode(__CA_DEFAULT_LOCALE__);
+
 		$this->opa_listItems = array();
 		$this->opa_collections = array();
 		$this->opa_objects = array();
 
-		// TODO Hardcoded list IDs
-		foreach (array( array( 'item' => 'test_collection', 'list' => 'collection_types' ), array( 'item' => 'test_object', 'list' => 'object_types' )) as $va_listItemDetails) {
+		$va_listItems = array(
+			array(
+				'item' => 'test_collection',
+				'list' => BaseModel::$s_ca_models_definitions['ca_collections']['FIELDS']['type_id']['LIST_CODE']
+			),
+			array(
+				'item' => 'test_object',
+				'list' => BaseModel::$s_ca_models_definitions['ca_objects']['FIELDS']['type_id']['LIST_CODE']
+			)
+		);
+
+		foreach ($va_listItems as $va_listItemDetails) {
 			$this->_createListItem($va_listItemDetails['item'], $va_listItemDetails['list']);
 		}
 		foreach (array( 'single', 'multiple', 'ignored' ) as $va_listItemDetails) {
@@ -185,7 +201,7 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 				'name_singular' => $ps_idnoBase,
 				'name_plural' => $ps_idnoBase
 			),
-			1, // TODO Hardcoded locale ID
+			$this->opo_locale->getPrimaryKey(),
 			null,
 			true
 		);
@@ -205,7 +221,7 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 			array(
 				'name' => $ps_idnoBase
 			),
-			1, // TODO Hardcoded locale ID
+			$this->opo_locale->getPrimaryKey(),
 			null,
 			true
 		);
