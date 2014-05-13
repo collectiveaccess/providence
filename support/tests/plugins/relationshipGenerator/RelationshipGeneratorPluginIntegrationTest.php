@@ -76,23 +76,12 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 		self::$s_collections = array();
 		self::$s_objects = array();
 
-		$va_listItems = array(
-			array(
-				'item' => 'test_collection',
-				'list' => BaseModel::$s_ca_models_definitions['ca_collections']['FIELDS']['type_id']['LIST_CODE']
-			),
-			array(
-				'item' => 'test_object',
-				'list' => BaseModel::$s_ca_models_definitions['ca_objects']['FIELDS']['type_id']['LIST_CODE']
-			)
-		);
+		self::_createListItem('test_collection', BaseModel::$s_ca_models_definitions['ca_collections']['FIELDS']['type_id']['LIST_CODE']);
+		self::_createListItem('test_object', BaseModel::$s_ca_models_definitions['ca_objects']['FIELDS']['type_id']['LIST_CODE']);
 
-		foreach ($va_listItems as $va_listItemDetails) {
-			self::_createListItem($va_listItemDetails['item'], $va_listItemDetails['list']);
-		}
-		foreach (array( 'single', 'multiple', 'ignored' ) as $va_listItemDetails) {
-			self::_createCollection($va_listItemDetails);
-		}
+		self::_createCollection('single');
+		self::_createCollection('multiple');
+		self::_createCollection('ignored');
 	}
 
 	public static function tearDownAfterClass() {
