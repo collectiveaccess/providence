@@ -23,7 +23,7 @@ rules = {
 			}
 		},
 		related_table = ca_collections,
-		related_record = %%single%%,
+		related_record = %%collection1%%,
 		relationship_type = part,
 		add_relationship_notification = Detected single individual and added to '%2' %1,
 		remove_relationship_notification = Detected modification of individual count and removed from '%2' %1
@@ -37,7 +37,7 @@ rules = {
 			}
 		},
 		related_table = ca_collections,
-		related_record = %%multiple%%,
+		related_record = %%collection2%%,
 		relationship_type = part
 	},
 	2 = {
@@ -49,7 +49,7 @@ rules = {
 			}
 		},
 		related_table = ca_collections,
-		related_record = %%xx%%,
+		related_record = %%collectionDoesNotExist%%,
 		relationship_type = part
 	}
 }

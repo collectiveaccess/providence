@@ -86,9 +86,9 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 		self::_createMetadataElement('element2');
 		self::_createMetadataElement('element3');
 
-		self::_createCollection('single');
-		self::_createCollection('multiple');
-		self::_createCollection('ignored');
+		self::_createCollection('collection1');
+		self::_createCollection('collection2');
+		self::_createCollection('collection3');
 	}
 
 	public static function tearDownAfterClass() {
@@ -117,16 +117,23 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 
 	public function testInsertedRecordNotMatchingAnyRuleDoesNotCreateRelationship() {
 		$vo_object = self::_createObject('notMatchingAnyRule', array( 'element1' => 'this value matches nothing' ));
-		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'single'));
-		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'multiple'));
-		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'ignored'));
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection1'));
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'));
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'));
 	}
 
 	public function testInsertedRecordMatchingSingleExactMatchRuleCreatesSingleRelationship() {
 		$vo_object = self::_createObject('matchingSingleExactMatchRule', array( 'element1' => 'EXACT MATCH' ));
-		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'single'));
-		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'multiple'));
-		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'ignored'));
+		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection1'));
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'));
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'));
+	}
+
+	public function testInsertedRecordMatchingSingleRegexRuleCreatesSingleRelationship() {
+		$vo_object = self::_createObject('matchingSingleRegexRule', array( 'element1' => '42' ));
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection1'));
+		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection2'));
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'));
 	}
 
 //	public function testInsertedRecordMatchingMultipleRulesCreatesMultipleRelationships() {
