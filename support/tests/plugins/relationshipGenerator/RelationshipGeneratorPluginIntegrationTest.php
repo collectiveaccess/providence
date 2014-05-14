@@ -55,41 +55,41 @@ ApplicationPluginManager::initPlugins();
 class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestCase {
 
 	private static $s_timestamp;
-	private static $s_randomNumber;
-	private static $s_originalPluginInstance;
+	private static $s_random_number;
+	private static $s_original_plugin_instance;
 
 	/** @var ca_locales */
 	private static $s_locale;
 
 	/** @var ca_relationship_types[] */
-	private static $s_relationshipTypes;
+	private static $s_relationship_types;
 
 	/** @var ca_list_items[] */
-	private static $s_listItems;
+	private static $s_list_items;
 
 	/** @var ca_collections[] */
 	private static $s_collections;
 
 	/** @var ca_metadata_elements[] */
-	private static $s_metadataElements;
+	private static $s_metadata_elements;
 
 	/** @var ca_objects[] */
 	private static $s_objects;
 
 	public static function setUpBeforeClass() {
 		self::$s_timestamp = date('YmdHis');
-		self::$s_randomNumber = mt_rand(100000, 1000000);
+		self::$s_random_number = mt_rand(100000, 1000000);
 		self::_processConfiguration(__DIR__ . '/conf/integration');
 
 		// HACK Store old instance of the plugin, and replace with one of our own with known configuration
-		self::$s_originalPluginInstance = ApplicationPluginManager::$s_application_plugin_instances['relationshipGenerator'];
+		self::$s_original_plugin_instance = ApplicationPluginManager::$s_application_plugin_instances['relationshipGenerator'];
 		ApplicationPluginManager::$s_application_plugin_instances['relationshipGenerator'] = new relationshipGeneratorPlugin(__DIR__ . '/conf/integration');
 		// END HACK
 
 		self::$s_locale = new ca_locales();
 		self::$s_locale->loadLocaleByCode(__CA_DEFAULT_LOCALE__);
 
-		self::$s_listItems = array();
+		self::$s_list_items = array();
 		self::$s_collections = array();
 		self::$s_objects = array();
 
@@ -113,25 +113,25 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 			$vo_object->setMode(ACCESS_WRITE);
 			$vo_object->delete(true, array( 'hard' => true ));
 		}
-		foreach (self::$s_metadataElements as $vo_metadataElement) {
-			$vo_metadataElement->setMode(ACCESS_WRITE);
-			$vo_metadataElement->delete(true, array( 'hard' => true ));
+		foreach (self::$s_metadata_elements as $vo_metadata_element) {
+			$vo_metadata_element->setMode(ACCESS_WRITE);
+			$vo_metadata_element->delete(true, array( 'hard' => true ));
 		}
 		foreach (self::$s_collections as $vo_collection) {
 			$vo_collection->setMode(ACCESS_WRITE);
 			$vo_collection->delete(true, array( 'hard' => true ));
 		}
-		foreach (self::$s_listItems as $vo_listItem) {
-			$vo_listItem->setMode(ACCESS_WRITE);
-			$vo_listItem->delete(true, array( 'hard' => true ));
+		foreach (self::$s_list_items as $vo_list_item) {
+			$vo_list_item->setMode(ACCESS_WRITE);
+			$vo_list_item->delete(true, array( 'hard' => true ));
 		}
-		foreach (self::$s_relationshipTypes as $vo_relationshipType) {
-			$vo_relationshipType->setMode(ACCESS_WRITE);
-			$vo_relationshipType->delete(true, array( 'hard' => true ));
+		foreach (self::$s_relationship_types as $vo_relationship_type) {
+			$vo_relationship_type->setMode(ACCESS_WRITE);
+			$vo_relationship_type->delete(true, array( 'hard' => true ));
 		}
 
 		// HACK Restore old instance of the plugin
-		ApplicationPluginManager::$s_application_plugin_instances['relationshipGenerator'] = self::$s_originalPluginInstance;
+		ApplicationPluginManager::$s_application_plugin_instances['relationshipGenerator'] = self::$s_original_plugin_instance;
 		// END HACK
 	}
 
@@ -287,11 +287,11 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 	/**
 	 * Convert the given "base" idno (or code in some cases) to a value unique to this test run.  For a given test run,
 	 * calling this method twice with the same parameter value will result in the same return value.
-	 * @param $ps_idnoBase string
+	 * @param $ps_idno_base string
 	 * @return string
 	 */
-	private static function _getIdno($ps_idnoBase) {
-		return sprintf('%s_%s_%s', self::$s_timestamp, self::$s_randomNumber, $ps_idnoBase);
+	private static function _getIdno($ps_idno_base) {
+		return sprintf('%s_%s_%s', self::$s_timestamp, self::$s_random_number, $ps_idno_base);
 	}
 
 	/**
@@ -328,124 +328,124 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 		file_put_contents($vs_outfile, join('', $va_parsed));
 	}
 
-	private static function _createRelationshipType($ps_codeBase, $ps_tableName) {
-		$vo_relationshipType = new ca_relationship_types();
-		$vo_relationshipType->setMode(ACCESS_WRITE);
-		$vo_relationshipType->set(array(
-			'type_code' => self::_getIdno($ps_codeBase),
-			'table_num' => $vo_relationshipType->getAppDatamodel()->getTableNum($ps_tableName)
+	private static function _createRelationshipType($ps_code_base, $ps_table_name) {
+		$vo_relationship_type = new ca_relationship_types();
+		$vo_relationship_type->setMode(ACCESS_WRITE);
+		$vo_relationship_type->set(array(
+			'type_code' => self::_getIdno($ps_code_base),
+			'table_num' => $vo_relationship_type->getAppDatamodel()->getTableNum($ps_table_name)
 		));
-		$vo_relationshipType->insert();
-		$vo_relationshipType->addLabel(
+		$vo_relationship_type->insert();
+		$vo_relationship_type->addLabel(
 			array(
-				'typename' => $ps_codeBase,
-				'typename_reverse' => $ps_codeBase . ' reverse'
+				'typename' => $ps_code_base,
+				'typename_reverse' => $ps_code_base . ' reverse'
 			),
 			self::$s_locale->getPrimaryKey(),
 			null,
 			true
 		);
-		self::$s_relationshipTypes[$ps_codeBase] = $vo_relationshipType;
-		return $vo_relationshipType;
+		self::$s_relationship_types[$ps_code_base] = $vo_relationship_type;
+		return $vo_relationship_type;
 	}
 
-	private static function _createListItem($ps_idnoBase, $pn_listId) {
-		$vo_listItem = new ca_list_items();
-		$vo_listItem->setMode(ACCESS_WRITE);
-		$vo_listItem->set(array(
-			'idno' => self::_getIdno($ps_idnoBase),
-			'list_id' => $pn_listId,
+	private static function _createListItem($ps_idno_base, $pn_list_id) {
+		$vo_list_item = new ca_list_items();
+		$vo_list_item->setMode(ACCESS_WRITE);
+		$vo_list_item->set(array(
+			'idno' => self::_getIdno($ps_idno_base),
+			'list_id' => $pn_list_id,
 			'is_enabled' => true
 		));
-		$vo_listItem->insert();
-		$vo_listItem->addLabel(
+		$vo_list_item->insert();
+		$vo_list_item->addLabel(
 			array(
-				'name_singular' => $ps_idnoBase,
-				'name_plural' => $ps_idnoBase
+				'name_singular' => $ps_idno_base,
+				'name_plural' => $ps_idno_base
 			),
 			self::$s_locale->getPrimaryKey(),
 			null,
 			true
 		);
-		self::$s_listItems[$ps_idnoBase] = $vo_listItem;
-		return $vo_listItem;
+		self::$s_list_items[$ps_idno_base] = $vo_list_item;
+		return $vo_list_item;
 	}
 
-	private static function _createMetadataElement($ps_codeBase) {
-		$vo_metadataElement = new ca_metadata_elements();
-		$vo_metadataElement->setMode(ACCESS_WRITE);
-		$vo_metadataElement->set(array(
-			'element_code' => self::_getIdno($ps_codeBase),
+	private static function _createMetadataElement($ps_code_base) {
+		$vo_metadata_element = new ca_metadata_elements();
+		$vo_metadata_element->setMode(ACCESS_WRITE);
+		$vo_metadata_element->set(array(
+			'element_code' => self::_getIdno($ps_code_base),
 			'datatype' => 1
 		));
-		$vo_metadataElement->insert();
-		self::$s_metadataElements[$ps_codeBase] = $vo_metadataElement;
-		return $vo_metadataElement;
+		$vo_metadata_element->insert();
+		self::$s_metadata_elements[$ps_code_base] = $vo_metadata_element;
+		return $vo_metadata_element;
 	}
 
-	private static function _createCollection($ps_idnoBase) {
+	private static function _createCollection($ps_idno_base) {
 		$vo_collection = new ca_collections();
 		$vo_collection->setMode(ACCESS_WRITE);
 		$vo_collection->set(array(
-			'idno' => self::_getIdno($ps_idnoBase),
-			'type_id' => self::$s_listItems['test_collection']->getPrimaryKey()
+			'idno' => self::_getIdno($ps_idno_base),
+			'type_id' => self::$s_list_items['test_collection']->getPrimaryKey()
 		));
-		$vn_testCollectionListItemId = self::$s_listItems['test_collection']->getPrimaryKey();
-		foreach (self::$s_metadataElements as $vo_metadataElement) {
-			$vo_collection->addMetadataElementToType($vo_metadataElement->get('element_code'), $vn_testCollectionListItemId);
+		$vn_test_collection_list_item_id = self::$s_list_items['test_collection']->getPrimaryKey();
+		foreach (self::$s_metadata_elements as $vo_metadata_element) {
+			$vo_collection->addMetadataElementToType($vo_metadata_element->get('element_code'), $vn_test_collection_list_item_id);
 		}
 		$vo_collection->insert();
 		$vo_collection->addLabel(
 			array(
-				'name' => $ps_idnoBase
+				'name' => $ps_idno_base
 			),
 			self::$s_locale->getPrimaryKey(),
 			null,
 			true
 		);
-		self::$s_collections[$ps_idnoBase] = $vo_collection;
+		self::$s_collections[$ps_idno_base] = $vo_collection;
 		return $vo_collection;
 	}
 
-	private static function _createObject($ps_idnoBase, $pa_attributes) {
+	private static function _createObject($ps_idno_base, $pa_attributes) {
 		$vo_object = new ca_objects();
 		$vo_object->setMode(ACCESS_WRITE);
-		$vn_testObjectListItemId = self::$s_listItems['test_object']->getPrimaryKey();
+		$vn_test_object_list_item_id = self::$s_list_items['test_object']->getPrimaryKey();
 		$vo_object->set(array(
-			'idno' => self::_getIdno($ps_idnoBase),
-			'type_id' => $vn_testObjectListItemId
+			'idno' => self::_getIdno($ps_idno_base),
+			'type_id' => $vn_test_object_list_item_id
 		));
-		foreach ($pa_attributes as $vs_codeBase => $vs_value) {
-			$vs_code = self::_getIdno($vs_codeBase);
-			$vo_object->addMetadataElementToType($vs_code, $vn_testObjectListItemId);
+		foreach ($pa_attributes as $vs_code_base => $vs_value) {
+			$vs_code = self::_getIdno($vs_code_base);
+			$vo_object->addMetadataElementToType($vs_code, $vn_test_object_list_item_id);
 			$vo_object->addAttribute(array( $vs_code => $vs_value ), $vs_code);
 		}
 		$vo_object->insert();
-		self::$s_objects[$ps_idnoBase] = $vo_object;
+		self::$s_objects[$ps_idno_base] = $vo_object;
 		return $vo_object;
 	}
 
-	private static function _updateObject($ps_idnoBase, $pa_attributes) {
+	private static function _updateObject($ps_idno_base, $pa_attributes) {
 		/** @var BundlableLabelableBaseModelWithAttributes $vo_object */
-		$vo_object = self::$s_objects[$ps_idnoBase];
-		foreach ($pa_attributes as $vs_codeBase => $vs_value) {
-			$vs_code = self::_getIdno($vs_codeBase);
+		$vo_object = self::$s_objects[$ps_idno_base];
+		foreach ($pa_attributes as $vs_code_base => $vs_value) {
+			$vs_code = self::_getIdno($vs_code_base);
 			$vo_object->replaceAttribute(array( $vs_code => $vs_value ), $vs_code);
 		}
 		$vo_object->update();
-		self::$s_objects[$ps_idnoBase] = $vo_object;
+		self::$s_objects[$ps_idno_base] = $vo_object;
 		return $vo_object;
 	}
 
 	/**
 	 * @param $po_object BundlableLabelableBaseModelWithAttributes
-	 * @param $ps_collectionIdno string
+	 * @param $ps_collection_idno_base string
 	 * @return bool
 	 */
-	private static function _getCollectionRelationshipCount($po_object, $ps_collectionIdno) {
+	private static function _getCollectionRelationshipCount($po_object, $ps_collection_idno_base) {
 		$va_collections = $po_object->getRelatedItems('ca_collections', array(
 			'restrict_to_types' => array( 'ca_collections' ),
-			'where' => array( 'idno' => self::_getIdno($ps_collectionIdno) )
+			'where' => array( 'idno' => self::_getIdno($ps_collection_idno_base) )
 		));
 		return is_array($va_collections) ? sizeof($va_collections) : 0;
 	}
