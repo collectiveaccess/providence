@@ -1498,7 +1498,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		
 		$t_type = method_exists($t_item, "getTypeInstance") ? $t_item->getTypeInstance() : null;
 		if ($t_type) { $vs_color = trim($t_type->get('color')); } 
-		$vs_type_name = $t_type->getTypeName();
+		if ($t_type) { $vs_type_name = $t_type->getTypeName(); }
 		if (!$vs_color && $t_ui) { $vs_color = trim($t_ui->get('color')); }
 		if (!$vs_color) { $vs_color = "444444"; }
 		
