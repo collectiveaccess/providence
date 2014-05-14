@@ -256,7 +256,7 @@
 <?php 
 					if (is_array($va_versions = $this->request->config->getList('ca_object_representation_download_versions'))) {
 						// -- provide user with a choice of versions to download
-						print caFormTag($this->request, 'DownloadMedia', 'caMediaDownloadForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
+						print caFormTag($this->request, 'DownloadAttributeMedia', 'caMediaDownloadForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
 						print caHTMLSelect('version', $va_versions, array('style' => 'font-size: 9px;'));
 						print caFormSubmitLink($this->request, "<img src='".$this->request->getThemeUrlPath()."/graphics/buttons/downloadWhite.png' border='0' title='"._t("Download media")."' valign='bottom'/>", '', 'caMediaDownloadForm', 'caMediaDownloadFormButton');
 						print caHTMLHiddenInput('value_id', array('value' => $t_value->getPrimaryKey()));

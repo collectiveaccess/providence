@@ -1034,6 +1034,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			return;
 		}
 		
+		$vb_read_only_because_deaccessioned = ($this->hasField('is_deaccessioned') && (bool)$this->getAppConfig()->get('deaccession_dont_allow_editing') && (bool)$this->get('is_deaccessioned'));
+		if($vb_read_only_because_deaccessioned && ($ps_bundle_name != 'ca_objects_deaccession')) {
+			$pa_bundle_settings['readonly'] = true;
+		}
+		
 		// Check if user has access to this type
 		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
 			$vn_type_access = $pa_options['request']->user->getTypeAccessLevel($this->tableName(), $this->getTypeID());
@@ -1496,6 +1501,16 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
 					
 						$vs_element .= $this->getObjectHistoryHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						
+						break;
+					# -------------------------------
+					// This bundle is only available for objects
+					case 'ca_objects_deaccession':		// object deaccession information
+						//if ($vb_batch) { return null; } // not supported in batch mode
+						if (!$this->getPrimaryKey()) { return null; }	// not supported for new records
+						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
+					
+						$vs_element .= $this->getObjectDeaccessionHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 						
 						break;
 					# -------------------------------
@@ -2456,13 +2471,32 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				return false;
 			}
 		}
+		
+		$vb_read_only_because_deaccessioned = ($this->hasField('is_deaccessioned') && (bool)$this->getAppConfig()->get('deaccession_dont_allow_editing') && (bool)$this->get('is_deaccessioned'));
 
 		BaseModel::setChangeLogUnitID();
 		// get items on screen
 		$t_ui = caGetOption('ui_instance', $pa_options, ca_editor_uis::loadDefaultUI($this->tableName(), $po_request, $this->getTypeID()));
 		
 		$va_bundle_lists = $this->getBundleListsForScreen($pm_screen, $po_request, $t_ui, $pa_options);
-		
+
+		// 
+		// Filter bundles to save if deaccessioned - only allow editing of the ca_objects_deaccession bundle
+		//
+		if ($vb_read_only_because_deaccessioned) {
+			foreach($va_bundle_lists['bundles'] as $vn_i => $va_bundle) {
+				if ($va_bundle['bundle_name'] !== 'ca_objects_deaccession') {
+					unset($va_bundle_lists['bundles'][$vn_i]);
+				}
+			}
+			foreach($va_bundle_lists['fields_by_type'] as $vs_type => $va_bundles) {
+				foreach($va_bundles as $vs_id => $vs_bundle_name) {
+					if ($vs_bundle_name !== 'ca_objects_deaccession') {
+						unset($va_bundle_lists['fields_by_type'][$vs_type][$vs_id]);
+					}
+				}
+			}
+		}
 		$va_bundles = $va_bundle_lists['bundles'];
 		$va_fields_by_type = $va_bundle_lists['fields_by_type'];
 
@@ -2471,7 +2505,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$vs_idno_field = $this->getProperty('ID_NUMBERING_ID_FIELD');
 			foreach($va_fields_by_type['intrinsic'] as $vs_placement_code => $vs_f) {
 				if ($vb_batch) { 
-					$vs_batch_mode = $po_request->getParameter("{$vs_f}_batch_mode", pString);
+					$vs_batch_mode = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_batch_mode", pString);
 					if($vs_batch_mode == '_disabled_') { continue; }
 				}
 				if (isset($_FILES["{$vs_placement_code}{$vs_form_prefix}{$vs_f}"]) && $_FILES["{$vs_placement_code}{$vs_form_prefix}{$vs_f}"]) {
@@ -2556,7 +2590,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 				foreach($_REQUEST as $vs_key => $vs_val) {
 					// is it a newly created attribute?
-					if (preg_match($x='/'.$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_([\w\d\-_]+)_new_([\d]+)/', $vs_key, $va_matches)) { 
+					if (preg_match('/'.$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_([\w\d\-_]+)_new_([\d]+)/', $vs_key, $va_matches)) { 
 						if ($vb_batch) {
 							switch($vs_batch_mode) {
 								case '_disabled_':		// skip
@@ -3568,6 +3602,22 @@ if (!$vb_batch) {
 							}
 						}
 						
+						break;
+					# -------------------------------
+					// This bundle is only available for objects
+					case 'ca_objects_deaccession':		// object deaccession information
+						//if ($vb_batch) { return null; } // not supported in batch mode
+						if (!$this->getPrimaryKey()) { return null; }	// not supported for new records
+						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
+					
+						$this->set('is_deaccessioned', $vb_is_deaccessioned = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}is_deaccessioned", pInteger));
+						$this->set('deaccession_notes', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}deaccession_notes", pString));
+						$this->set('deaccession_type_id', $x=$po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}deaccession_type_id", pString));
+	
+						$this->set('deaccession_date', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}deaccession_date", pString));
+						
+						if ($vb_is_deaccessioned && (bool)$this->getAppConfig()->get('deaccession_force_access_private')) { $this->get('access', 0); }	// set access to private for accessioned items
+						$this->update();
 						break;
 					# -------------------------------
 				}

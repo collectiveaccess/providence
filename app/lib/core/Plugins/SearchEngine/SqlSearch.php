@@ -1020,8 +1020,59 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 											}
 										}
 									}
-									if ($t_table->getFieldInfo($t_table->fieldName($vn_fld_num), 'FIELD_TYPE') == FT_BIT) {
+									if (($vn_intrinsic_type = $t_table->getFieldInfo($vs_intrinsic_field_name = $t_table->fieldName($vn_fld_num), 'FIELD_TYPE')) == FT_BIT) {
 										$vb_ft_bit_optimization = true;
+									} elseif($vn_intrinsic_type == FT_HISTORIC_DATERANGE) {
+										$vb_all_numbers = true;
+										foreach($va_raw_terms as $vs_term) {
+											if (!is_numeric($vs_term)) {
+												$vb_all_numbers = false;
+												break;
+											}
+										}
+										
+										$vs_date_start_fld = $t_table->getFieldInfo($vs_intrinsic_field_name, 'START');
+										$vs_date_end_fld = $t_table->getFieldInfo($vs_intrinsic_field_name, 'END');
+										
+										$vs_raw_term = join(' ', $va_raw_terms);
+										$vb_exact = ($vs_raw_term{0} == "#") ? true : false;	// dates prepended by "#" are considered "exact" or "contained - the matched dates must be wholly contained by the search term
+										if ($vb_exact) {
+											$vs_raw_term = substr($vs_raw_term, 1);
+											if ($this->opo_tep->parse($vs_raw_term)) {
+												$va_dates = $this->opo_tep->getHistoricTimestamps();
+												$vs_direct_sql_query = "
+													SELECT ".$t_table->primaryKey().", 1
+													FROM ".$t_table->tableName()."
+													^JOIN
+													WHERE
+														(
+															({$vs_date_start_fld} BETWEEN ".floatval($va_dates['start'])." AND ".floatval($va_dates['end']).")
+															AND
+															({$vs_date_end_fld} BETWEEN ".floatval($va_dates['start'])." AND ".floatval($va_dates['end']).")
+														)
+														
+												";
+											}
+										} else {
+											if ($this->opo_tep->parse($vs_raw_term)) {
+												$va_dates = $this->opo_tep->getHistoricTimestamps();
+												$vs_direct_sql_query = "
+													SELECT ".$t_table->primaryKey().", 1
+													FROM ".$t_table->tableName()."
+													^JOIN
+													WHERE
+														(
+															({$vs_date_start_fld} BETWEEN ".floatval($va_dates['start'])." AND ".floatval($va_dates['end']).")
+															OR
+															({$vs_date_end_fld} BETWEEN ".floatval($va_dates['start'])." AND ".floatval($va_dates['end']).")
+															OR
+															({$vs_date_start_fld} <= ".floatval($va_dates['start'])." AND {$vs_date_end_fld} >= ".floatval($va_dates['end']).")	
+														)
+														
+												";
+											}
+										}	
+										$pa_direct_sql_query_params = array();
 									}
 								}
 							}

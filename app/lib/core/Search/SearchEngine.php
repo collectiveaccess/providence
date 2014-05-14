@@ -785,8 +785,24 @@ class SearchEngine extends SearchBase {
 				}
 				
 				$va_terms = array();
+				$vs_term = (string)$po_term->getTerm()->text;
 				foreach($va_fields as $vs_field) {
-					$va_terms['terms'][] = new Zend_Search_Lucene_Index_Term($po_term->getTerm()->text, $vs_field);
+					$va_tmp = explode(".", $vs_field);
+					
+					// Rewrite FT_BIT fields to accept yes/no values
+					if ($this->opo_datamodel->getFieldInfo($va_tmp[0], $va_tmp[1], 'FIELD_TYPE') == FT_BIT) {
+						switch(mb_strtolower($vs_term)) {
+							case 'yes':
+							case _t('yes'):
+								$vs_term = 1;
+								break;
+							case 'no':
+							case _t('no'):
+								$vs_term = 0;
+								break;
+						}
+					} 
+					$va_terms['terms'][] = new Zend_Search_Lucene_Index_Term($vs_term, $vs_field);
 					$va_terms['signs'][] = ($vs_bool == 'AND') ? true : null;
 				}
 				
