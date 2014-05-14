@@ -306,6 +306,12 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 		}
 		$va_parsed = array();
 		foreach (file($ps_path . '/conf/relationshipGenerator.conf.template') as $vs_line) {
+			// Skip comment lines
+			if ($vs_line[0] === '#') {
+				continue;
+			}
+
+			// Replace placeholders with generated (unique) values
 			while (strpos($vs_line, '%%') !== false) {
 				$vs_line = preg_replace_callback(
 					'/%%(.*?)%%/',
@@ -315,6 +321,8 @@ class RelationshipGeneratorPluginIntegrationTest extends PHPUnit_Framework_TestC
 					$vs_line
 				);
 			}
+
+			// Add the resulting (processed) line to the output
 			$va_parsed[] = $vs_line;
 		}
 		file_put_contents($vs_outfile, join('', $va_parsed));

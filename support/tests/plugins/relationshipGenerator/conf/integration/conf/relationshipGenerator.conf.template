@@ -1,6 +1,12 @@
 # Configuration file for RelationshipGeneratorPluginIntegrationTest
 # This is the configuration used for the functionality test, with "real" (generated) data in the database
 
+# NOTE: Some of the keys and values used in this file are written enclosed in double percent symbols %%like_this%%.
+# The integration test replaces these with unique values, to prevent collisions between subsequent or parallel test
+# runs.  For the purpose of understanding this template as an example of using rules, simply ignore the percent symbols,
+# e.g. read "%%element1%%" as "element1", and read "%%part%%" as "part".  For more details on placeholder replacement,
+# see the documentation in RelationshipGeneratorPluginIntegrationTest.
+
 enabled = 1
 process_on_insert = 1
 process_on_update = 1
