@@ -2890,12 +2890,42 @@ if (!$vb_batch) {
 							case '_delete_':		// remove all existing preferred labels
 								$this->removeAllLabels(__CA_LABEL_TYPE_PREFERRED__);
 								continue(2);
+							case '_add_':
 								break;
 						}
 					}
 					$vn_c = intval($va_matches[1]);
 					if ($vn_new_label_locale_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'locale_id_new_'.$vn_c, pString)) {
+						
 						if(is_array($va_label_values = $this->getLabelUIValuesFromRequest($po_request, $vs_placement_code.$vs_form_prefix, 'new_'.$vn_c, true))) {
+
+							// make sure we don't add multiple pref labels for one locale in batch mode
+							if($vb_batch && ($vs_batch_mode == '_add_')) {
+
+								// first remove [BLANK] labels for this locale if there are any, as we are about to add a new one
+								$va_labels_for_this_locale = $this->getPreferredLabels(array($vn_new_label_locale_id));
+								if(is_array($va_labels_for_this_locale)) {
+									foreach($va_labels_for_this_locale as $vn_id => $va_labels_by_locale) {
+						 				foreach($va_labels_by_locale as $vn_locale_id => $va_labels) {
+						 					foreach($va_labels as $vn_i => $va_label) {
+						 						if(isset($va_label[$this->getLabelDisplayField()]) && ($va_label[$this->getLabelDisplayField()] == '['._t('BLANK').']')) {
+						 							$this->removeLabel($va_label['label_id']);
+						 						}
+						 					}
+						 				}
+						 			}
+								}
+
+								// if there are non-[BLANK] labels for this locale, don't add this new one
+								$va_labels_for_this_locale = $this->getPreferredLabels(array($vn_new_label_locale_id),true,array('forDisplay' => true));
+								if(is_array($va_labels_for_this_locale) && (sizeof($va_labels_for_this_locale)>0)){
+									$this->postError(1125, _t('A preferred label for this locale already exists. Only one preferred label per locale is allowed.'), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");
+									$po_request->addActionErrors($this->errors(), $vs_f);
+									$vb_error_inserting_pref_label = true;
+									continue;
+								}
+							}
+							
 							if ($vb_check_for_dupe_labels && $this->checkForDupeLabel($vn_new_label_locale_id, $va_label_values)) {
 								$this->postError(1125, _t('Value <em>%1</em> is already used and duplicates are not allowed', join("/", $va_label_values)), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");
 								$po_request->addActionErrors($this->errors(), 'preferred_labels');
