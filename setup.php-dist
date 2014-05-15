@@ -217,7 +217,10 @@ define("__CA_CONF_DIR__", __CA_APP_DIR__."/conf");
 # Path to local config directory - configuration containing installation-specific configuration
 # Note that this is not the same as the __CA_CONF_DIR__, which contains general application configuration
 # Installation-specific configuration simply allows you to override selected application configuration as-needed without having to modify the stock config
-define("__CA_LOCAL_CONFIG_DIRECTORY__", __CA_CONF_DIR__."/local");
+# Note also that unit tests should generally ignore local configuration and use the base configuration only
+if (!defined('__CA_IS_UNIT_TEST__') || !__CA_IS_UNIT_TEST__) {
+	define("__CA_LOCAL_CONFIG_DIRECTORY__", __CA_CONF_DIR__."/local");
+}
 
 # Set path to instance configuration file
 # (If you want to run several CA distinct instances using a single install you can add additional configuration files here.)
