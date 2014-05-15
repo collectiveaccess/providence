@@ -561,7 +561,7 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 			
 				$va_out_file = explode(".", $vs_out_file);
 				if (sizeof($va_out_file) > 1) { array_pop($va_out_file); }
-				$this->handle['content'] = strip_tags(file_get_contents("{$vs_tmp_dir_path}/".join(".", $va_out_file).".html"));
+				$this->handle['content'] = file_exists("{$vs_tmp_dir_path}/".join(".", $va_out_file).".html") ? strip_tags(file_get_contents("{$vs_tmp_dir_path}/".join(".", $va_out_file).".html")) : '';
 				$va_out_file[] = 'pdf';
 				
 				WLPlugMediaOffice::$s_pdf_conv_cache[$this->filepath] = "{$vs_tmp_dir_path}/".join(".", $va_out_file);
