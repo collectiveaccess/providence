@@ -236,6 +236,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			die("Invalid subject table");
 		}
 		
+		$this->opo_db->query('SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED');
 		if (trim($ps_search_expression) === '((*))') {	
 			$vs_table_name = $t_instance->tableName();
 			$vs_pk = $t_instance->primaryKey();
@@ -357,7 +358,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 			$this->_dropTempTable('ca_sql_search_search_final');
 		}
-		
+		$this->opo_db->query('SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ');
 		$va_hits = array();
 		while($qr_res->nextRow()) {
 			$va_row = $qr_res->getRow();
