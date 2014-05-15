@@ -141,6 +141,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 	
 			$va_fields_to_index = $va_info[$vs_content_table]['fields'];
 			
+			// Convert attribute codes to element_ids
 			$t_subject = $this->opo_datamodel->getInstanceByTableName($vs_content_table, false);
 			if (is_array($va_fields_to_index)) {
 				foreach($va_fields_to_index as $vs_f => $va_info) {

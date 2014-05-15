@@ -194,7 +194,6 @@ class SearchIndexer extends SearchBase {
 		$vn_tc = 0;
 		foreach($va_table_names as $vn_table_num => $va_table_info) {
 			$vs_table = $va_table_info['name'];
-			if ($vs_table != 'ca_objects') continue;
 			$t_table_timer = new Timer();
 			$t_instance = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
 			$vs_table_pk = $t_instance->primaryKey();
@@ -205,7 +204,7 @@ class SearchIndexer extends SearchBase {
 			}
 
 
-			$qr_all = $o_db->query("SELECT ".$t_instance->primaryKey()." FROM $vs_table WHERE object_id = 27646");
+			$qr_all = $o_db->query("SELECT ".$t_instance->primaryKey()." FROM $vs_table");
 
 			$vn_num_rows = $qr_all->numRows();
 			if ($pb_display_progress) {
