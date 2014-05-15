@@ -18,6 +18,10 @@
          bootstrap="../../setup.php"
          verbose="false">
 
+	<php>
+		<const name="__CA_IS_UNIT_TEST__" value="1" />
+	</php>
+
 	<testsuites>
 		<testsuite name="Helpers Test Suite">
 			<directory>helpers/</directory>
