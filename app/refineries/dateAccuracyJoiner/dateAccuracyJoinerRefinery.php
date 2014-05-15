@@ -54,8 +54,9 @@ class dateAccuracyJoinerRefinery extends BaseRefinery {
 	public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options = null) {
 		// Extract and normalise the original date value
 		$vs_source_value = $pa_source_data[$pa_item['source']];
-		$vs_normalised_date = DateTime::createFromFormat($vs_source_value, $pa_item['settings']['dateAccuracyJoiner_dateFormat'])->format('Y-m-d');
-		if ($vs_normalised_date === false) {
+		$vo_normalised_date = DateTime::createFromFormat($pa_item['settings']['dateAccuracyJoiner_dateFormat'], $vs_source_value);
+
+		if ($vo_normalised_date === false) {
 			// Date does not match expected format
 			switch ($pa_item['settings']['dateAccuracyJoiner_dateParseFailureReturnMode']) {
 				case 'original':
@@ -65,6 +66,7 @@ class dateAccuracyJoinerRefinery extends BaseRefinery {
 					return null;
 			}
 		}
+		$vs_normalised_date = $vo_normalised_date->format('Y-m-d');
 		// Process according to accuracy value
 		switch (strtolower(trim($pa_source_data[$pa_item['settings']['dateAccuracyJoiner_accuracyField']]))) {
 			case strtolower($pa_item['settings']['dateAccuracyJoiner_accuracyValueDay']):
