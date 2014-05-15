@@ -111,7 +111,8 @@
 	function caBatchEditorPreferredLabelsModeControl($t_item, $ps_id_prefix) {
 		$vs_buf = "	<div class='editorBatchModeControl'>"._t("In batch")." ".
 			caHTMLSelect($ps_id_prefix."_batch_mode", array(
-			_t("do not use") => "_disabled_", 
+			_t("do not use") => "_disabled_",
+			_t('add to each item') => '_add_',
 			_t('replace value') => '_replace_',
 			_t('remove all values') => '_delete_'
 		), array('id' => $ps_id_prefix.'Labels_batch_mode_select'))."</div>\n

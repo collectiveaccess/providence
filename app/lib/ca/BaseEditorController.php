@@ -819,7 +819,7 @@
  		 *
  		 * @param array $pa_options Array of options passed through to _initView 
  		 */
- 		public function DownloadFile($pa_options=null) {
+ 		public function DownloadAttributeFile($pa_options=null) {
  			if (!($pn_value_id = $this->request->getParameter('value_id', pInteger))) { return; }
  			$t_attr_val = new ca_attribute_values($pn_value_id);
  			if (!$t_attr_val->getPrimaryKey()) { return; }
@@ -873,7 +873,7 @@
  		 *
  		 * @param array $pa_options Array of options passed through to _initView 
  		 */
- 		public function DownloadMedia($pa_options=null) {
+ 		public function DownloadAttributeMedia($pa_options=null) {
  			if (!($pn_value_id = $this->request->getParameter('value_id', pInteger))) { return; }
  			$t_attr_val = new ca_attribute_values($pn_value_id);
  			if (!$t_attr_val->getPrimaryKey()) { return; }
@@ -1461,9 +1461,17 @@
  			// 
  			$va_restrict_to_types = null;
  			if ($pt_subject->getAppConfig()->get('perform_type_access_checking')) {
- 				$va_restrict_to_types = caGetTypeRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_EDIT__));
+ 				$va_restrict_to_types = caGetTypeRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_READONLY__));
  			}
- 			if (is_array($va_restrict_to_types) && !in_array($pt_subject->get('type_id'), $va_restrict_to_types)) {
+ 			if (
+ 				is_array($va_restrict_to_types) 
+ 				&& 
+ 				(
+ 					($pt_subject->get('type_id')) && ($pt_subject->getPrimaryKey() && !in_array($pt_subject->get('type_id'), $va_restrict_to_types))
+ 					//||
+ 					//(!$pt_subject->getPrimaryKey() && !in_array($this->request->getParameter('type_id', pInteger), $va_restrict_to_types))
+ 				)
+ 			) {
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2560?r='.urlencode($this->request->getFullUrlPath()));
  				return false;
  			}
@@ -1473,7 +1481,7 @@
  			// 	
 			$va_restrict_to_sources = null;
  			if ($pt_subject->getAppConfig()->get('perform_source_access_checking') && $pt_subject->hasField('source_id')) {
- 				if (is_array($va_restrict_to_sources = caGetSourceRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_EDIT__)))) {
+ 				if (is_array($va_restrict_to_sources = caGetSourceRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_READONLY__)))) {
 					if (
 						(!$pt_subject->get('source_id'))
 						||
@@ -1495,7 +1503,7 @@
  			// Does user have access to row?
  			//
  			if ($pt_subject->getAppConfig()->get('perform_item_level_access_checking') && $vn_subject_id) {
- 				if ($pt_subject->checkACLAccessForUser($this->request->user) < __CA_ACL_EDIT_ACCESS__) {
+ 				if ($pt_subject->checkACLAccessForUser($this->request->user) < __CA_BUNDLE_ACCESS_READONLY__) {
  					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
  					return false;
  				}
@@ -1505,4 +1513,4 @@
  		}
 		# ------------------------------------------------------------------
  	}
- ?>
+?>

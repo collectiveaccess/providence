@@ -2934,16 +2934,42 @@ class BaseModel extends BaseObject {
 		}
 	}
 	
+	/**
+	 * Perform search indexing on currently load row. All parameters are intended to override typical useful behavior.
+	 * Don't use these options unless you know what you're doing.
+	 *
+	 * @param array $pa_changed_field_values_array List of changed field values. [Default is to load list from model]
+	 * @param bool $pb_reindex_mode If set indexing is done in "reindex mode"; that is the row is reindexed from scratch as if the entire database is being reindexed. [Default is false]
+	 * @param string $ps_engine Name of the search engine to use. [Default is the engine configured using "search_engine_plugin" in app.conf] 
+	 *
+	 * @return bool true on success, false on failure of indexing
+	 */
 	public function doSearchIndexing($pa_changed_field_values_array=null, $pb_reindex_mode=false, $ps_engine=null) {
 		if (defined("__CA_DONT_DO_SEARCH_INDEXING__")) { return; }
 		if (is_null($pa_changed_field_values_array)) { 
 			$pa_changed_field_values_array = $this->getChangedFieldValuesArray();
 		}
 		
+		$o_indexer = $this->getSearchIndexer($ps_engine);
+		return $o_indexer->indexRow($this->tableNum(), $this->getPrimaryKey(), $this->getFieldValuesArray(), $pb_reindex_mode, null, $pa_changed_field_values_array, $this->_FIELD_VALUES_OLD);
+	}
+	
+	/**
+	 * Get a SearchIndexer instance. Will return a single instance repeatedly within the context of
+	 * any currently running transaction. That is, if the current model is in a transaction the indexing
+	 * will be performed within that transaction.
+	 *
+	 * @param string $ps_engine Name of the search engine to use. [Default is the engine configured using "search_engine_plugin" in app.conf] 
+	 *
+	 * @return SearchIndexer
+	 */
+	public function getSearchIndexer($ps_engine=null) {
 		if (!BaseModel::$search_indexer) {
 			BaseModel::$search_indexer = new SearchIndexer($this->getDb(), $ps_engine);
+		} else {
+			BaseModel::$search_indexer->setDb($this->getDb());
 		}
-		BaseModel::$search_indexer->indexRow($this->tableNum(), $this->getPrimaryKey(), $this->getFieldValuesArray(), $pb_reindex_mode, null, $pa_changed_field_values_array, $this->_FIELD_VALUES_OLD);
+		return BaseModel::$search_indexer;
 	}
 
 	/**
@@ -2966,11 +2992,9 @@ class BaseModel extends BaseObject {
 			$this->set('deleted', 1);
 			if ($vn_rc = $this->update(array('force' => true))) {
 				if(!defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
-					if (!BaseModel::$search_indexer) {
-						BaseModel::$search_indexer = new SearchIndexer($this->getDb());
-					}
-					BaseModel::$search_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
-					BaseModel::$search_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
+					$o_indexer = $this->getSearchIndexer();
+					$o_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
+					$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
 				}
 			}
 			$this->logChange("D");
@@ -3066,11 +3090,9 @@ class BaseModel extends BaseObject {
 			// analysis to startRowUnindexing() and only executing commands in commitRowUnIndexing(). For now we blithely assume that 
 			// SQL deletes always succeed. If they don't we can always reindex. Only the indexing is affected, not the underlying data.
 			if(!defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
-				if (!BaseModel::$search_indexer) {
-					BaseModel::$search_indexer = new SearchIndexer($this->getDb());
-				}
-				BaseModel::$search_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
-				BaseModel::$search_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
+				$o_indexer = $this->getSearchIndexer();
+				$o_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
+				$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
 			}
 
 			# --- Check ->many and many<->many relations
@@ -3233,6 +3255,7 @@ class BaseModel extends BaseObject {
 			return $media_info["MIRROR_STATUS"][$vi["accessUsingMirror"]];
 		}
 	}
+	
 	/**
 	 * Retry mirroring of given media field. Sets global error properties on failure.
 	 *
@@ -3622,6 +3645,7 @@ class BaseModel extends BaseObject {
 				unset($va_media_desc["VOLUME"]);
 				unset($va_media_desc["_undo_"]);
 				unset($va_media_desc["TRANSFORMATION_HISTORY"]);
+				unset($va_media_desc["_CENTER"]);
 				return array_keys($va_media_desc);
 			}
 		} else {
@@ -8841,11 +8865,9 @@ $pa_options["display_form_field_tips"] = true;
 		$vn_rel_table_num = $t_item_rel->tableNum();
 		
 		// Reindex modified relationships
-		if (!BaseModel::$search_indexer) {
-			BaseModel::$search_indexer = new SearchIndexer($this->getDb());
-		}
+		$o_indexer = $this->getSearchIndexer();
 		foreach($va_to_reindex_relations as $vn_relation_id => $va_row) {
-			BaseModel::$search_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
+			$o_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
 		}
 		
 		return sizeof($va_to_reindex_relations);
@@ -8945,11 +8967,9 @@ $pa_options["display_form_field_tips"] = true;
 		$vn_rel_table_num = $t_item_rel->tableNum();
 		
 		// Reindex modified relationships
-		if (!BaseModel::$search_indexer) {
-			BaseModel::$search_indexer = new SearchIndexer($this->getDb());
-		}
+		$o_indexer = $this->getSearchIndexer();
 		foreach($va_new_relations as $vn_relation_id => $va_row) {
-			BaseModel::$search_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
+			$o_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
 		}
 		
 		return sizeof($va_new_relations);
@@ -9233,6 +9253,15 @@ $pa_options["display_form_field_tips"] = true;
 			return $this->SELF_RELATION_TABLE_NAME;
 		}
 		return null;
+	}	
+	# ------------------------------------------------------
+	/**
+	 * Returns true if model is a relationship
+	 *
+	 * @return bool
+	 */
+	public function isRelationship() {
+		return false;
 	}
 	# --------------------------------------------------------------------------------------------
 	# User tagging
@@ -10498,6 +10527,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 *		sort = field to sort on. Must be in <table>.<field> or <field> format and be an intrinsic field in the primary table. Sort order can be set using the sortDirection option.
 	 *		sortDirection = the direction of the sort. Values are ASC (ascending) and DESC (descending). Default is ASC.
+	 *		allowWildcards = consider "%" as a wildcard when searching. Any term including a "%" character will be queried using the SQL LIKE operator. [Default is false]
 	 *
 	 * @return mixed Depending upon the returnAs option setting, an array, subclass of BaseModel or integer may be returned.
 	 */
@@ -10593,6 +10623,8 @@ $pa_options["display_form_field_tips"] = true;
 				if (is_array($vm_value)) {
 					if(!sizeof($vm_value)) { continue; }
 					$va_sql_wheres[] = "({$vs_field} IN (".join(",", $vm_value)."))";
+				} elseif (caGetOption('allowWildcards', $pa_options, false) && (strpos($vm_value, '%') !== false)) {
+					$va_sql_wheres[] = "({$vs_field} LIKE {$vm_value})";
 				} else {
 					$va_sql_wheres[] = "({$vs_field} = {$vm_value})";
 				}

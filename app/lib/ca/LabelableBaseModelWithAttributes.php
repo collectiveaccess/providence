@@ -360,7 +360,8 @@
 		 *			The default is AND
 		 *
 		 *		sort = field to sort on. Must be in <table>.<field> format and be an intrinsic field in either the primary table or the label table. Sort order can be set using the sortDirection option.
-		 *		sortDirection = the direction of the sort. Values are ASC (ascending) and DESC (descending). Default is ASC.
+		 *		sortDirection = the direction of the sort. Values are ASC (ascending) and DESC (descending). [Default is ASC]
+		 *		allowWildcards = consider "%" as a wildcard when searching. Any term including a "%" character will be queried using the SQL LIKE operator. [Default is false]
 		 *
 		 * @return mixed Depending upon the returnAs option setting, an array, subclass of LabelableBaseModelWithAttributes or integer may be returned.
 		 */
@@ -466,6 +467,8 @@
 
 						if (is_null($vm_value)) {
 							$va_sql_wheres[] = "({$vs_label_table}.{$vs_field} IS NULL)";
+						} elseif (caGetOption('allowWildcards', $pa_options, false) && (strpos($vm_value, '%') !== false)) {
+							$va_sql_wheres[] = "({$vs_label_table}.{$vs_field} LIKE {$vm_value})";
 						} else {
 							if ($vm_value === '') { continue; }
 							$va_sql_wheres[] = "({$vs_label_table}.{$vs_field} = {$vm_value})";
@@ -525,6 +528,9 @@
 
 					if (is_null($vm_value)) {
 						$va_label_sql[] = "({$vs_table}.{$vs_field} IS NULL)";
+					} elseif (caGetOption('allowWildcards', $pa_options, false) && (strpos($vm_value, '%') !== false)) {
+						$va_label_sql[] = "({$vs_table}.{$vs_field} LIKE ?)";
+						$va_sql_params[] = $vm_value;
 					} else {
 						if ($vm_value === '') { continue; }
 						if (is_array($vm_value)) {
@@ -570,7 +576,11 @@
 							default:
 								if (!($vs_fld = Attribute::getSortFieldForDatatype($vn_datatype))) { $vs_fld = 'value_longtext1'; }
 								
-								$vs_q .= "(ca_attribute_values.{$vs_fld} = ?)";
+								if (caGetOption('allowWildcards', $pa_options, false) && (strpos($vm_value, '%') !== false)) {
+									$vs_q .= "(ca_attribute_values.{$vs_fld} LIKE ?)";
+								} else {
+									$vs_q .= "(ca_attribute_values.{$vs_fld} = ?)";
+								}
 								$va_sql_params[] = (string)$vm_value;
 								break;
 						}
@@ -2198,7 +2208,7 @@
 			$qr_res->seek(0);
 			while($qr_res->nextRow()) {
 				$va_row = array();
-				foreach(array('user_id', 'fname', 'lname', 'email', 'sdatetime', 'edatetime', 'access') as $vs_f) {
+				foreach(array('user_id', 'user_name', 'fname', 'lname', 'email', 'sdatetime', 'edatetime', 'access') as $vs_f) {
 					$va_row[$vs_f] = $qr_res->get($vs_f);
 				}
 				if ($vb_supports_date_restrictions) {

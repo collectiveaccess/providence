@@ -93,7 +93,9 @@ var caUI = caUI || {};
 		that.showUnsavedChangesWarning = function(b) {
 			if(caUI && caUI.utils && typeof caUI.utils.showUnsavedChangesWarning === 'function') {
 				if (b === undefined) { b = true; }
-				caUI.utils.showUnsavedChangesWarning(b);
+				if (caUI.utils.getDisableUnsavedChangesWarning()) {
+					caUI.utils.showUnsavedChangesWarning(b);
+				}
 			}
 		}
 		

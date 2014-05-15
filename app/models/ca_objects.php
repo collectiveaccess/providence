@@ -121,6 +121,49 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				'LABEL' => 'Sortable object identifier', 'DESCRIPTION' => 'Value used for sorting objects on identifier value.',
 				'BOUNDS_LENGTH' => array(0,255)
 		),
+		'is_deaccessioned' => array(
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_CHECKBOXES, 
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 0,
+				'OPTIONS' => array(
+					_t('Yes') => 1,
+					_t('No') => 0
+				),
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'DONT_ALLOW_IN_UI' => true,
+				'LABEL' => _t('Is deaccessioned'), 'DESCRIPTION' => _t('Check if object is deaccessioned')
+		),
+		'deaccession_date' => array(
+				'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'DONT_ALLOW_IN_UI' => true,
+				'START' => 'deaccession_sdatetime', 'END' => 'deaccession_edatetime',
+				'LABEL' => _t('Date of deaccession'), 'DESCRIPTION' => _t('Enter the date the object was deaccessioned.')
+		),
+		'deaccession_notes' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => "700px", 'DISPLAY_HEIGHT' => 6,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'DONT_ALLOW_IN_UI' => true,
+				'LABEL' => _t('Deaccession notes'), 'DESCRIPTION' => _t('Justification for deaccession.'),
+				'BOUNDS_LENGTH' => array(0,65535)
+		),
+		'deaccession_type_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'DONT_ALLOW_IN_UI' => true,
+				'LIST_CODE' => 'object_deaccession_types',
+				'LABEL' => _t('Deaccession type'), 'DESCRIPTION' => _t('Indicates type of deaccession.')
+		),
 		'item_status_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
@@ -427,6 +470,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$this->BUNDLES['ca_objects_components_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Components'));
 		$this->BUNDLES['ca_objects_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Object location'));
 		$this->BUNDLES['ca_objects_history'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Object use history'));
+		$this->BUNDLES['ca_objects_deaccession'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Deaccession status'));
 	}
 	# ------------------------------------------------------
 	/**
@@ -458,14 +502,16 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 	# ------------------------------------------------------
 	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null){
 		// nuke related representations
-		foreach($this->getRepresentations() as $va_rep){
-			// check if representation is in use anywhere else 
-			$qr_res = $this->getDb()->query("SELECT count(*) c FROM ca_objects_x_object_representations WHERE object_id <> ? AND representation_id = ?", (int)$this->getPrimaryKey(), (int)$va_rep["representation_id"]);
-			if ($qr_res->nextRow() && ($qr_res->get('c') == 0)) {
-				$this->removeRepresentation($va_rep["representation_id"], array('dontCheckPrimaryValue' => true));
+		$va_representations = $this->getRepresentations();
+		if (is_array($va_representations)) {
+			foreach ($va_representations as $va_rep){
+				// check if representation is in use anywhere else
+				$qr_res = $this->getDb()->query("SELECT count(*) c FROM ca_objects_x_object_representations WHERE object_id <> ? AND representation_id = ?", (int)$this->getPrimaryKey(), (int)$va_rep["representation_id"]);
+				if ($qr_res->nextRow() && ($qr_res->get('c') == 0)) {
+					$this->removeRepresentation($va_rep["representation_id"], array('dontCheckPrimaryValue' => true));
+				}
 			}
 		}
-
 		return parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 	}
 	# ------------------------------------------------------
@@ -609,7 +655,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
  	# HTML form bundles
  	# ------------------------------------------------------
 	/** 
-	 * Returns HTML form bundle (for use in a ca_object_representations editor form) for media
+	 * Returns HTML form bundle listing order history for object
 	 *
 	 * @param HTTPRequest $po_request The current request
 	 * @param string $ps_form_name
@@ -637,6 +683,36 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		
 		
 		return $o_view->render('ca_commerce_order_history.php');
+	}
+	# ------------------------------------------------------
+	/** 
+	 * Returns HTML form bundle for object deaccession information
+	 *
+	 * @param HTTPRequest $po_request The current request
+	 * @param string $ps_form_name
+	 * @param string $ps_placement_code
+	 * @param array $pa_bundle_settings
+	 * @param array $pa_options Array of options. Supported options are 
+	 *			noCache = If set to true then label cache is bypassed; default is true
+	 *
+	 * @return string Rendered HTML bundle
+	 */
+	public function getObjectDeaccessionHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
+		global $g_ui_locale;
+		
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+		
+		if(!is_array($pa_options)) { $pa_options = array(); }
+		
+		$o_view->setVar('id_prefix', $ps_form_name);
+		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
+		
+		$o_view->setVar('settings', $pa_bundle_settings);
+		
+		$o_view->setVar('t_subject', $this);
+		
+		
+		return $o_view->render('ca_objects_deaccession.php');
 	}
 	# ------------------------------------------------------
  	# Object location tracking
@@ -1044,6 +1120,23 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 				);
 			}
 		}
+		
+		// Deaccession
+		if ($this->get('is_deaccessioned') && caGetOption('showDeaccessionInformation', $pa_bundle_settings, false)) {
+			$vs_color = caGetOption('deaccession_color', $pa_bundle_settings, 'cccccc');
+			$va_history[$this->get('deaccession_date', array('getDirectDate'=> true))][] = array(
+				'type' => 'ca_objects_deaccession',
+				'id' => $this->getPrimaryKey(),
+				'display' => $this->getWithTemplate("<unit>".caGetOption('deaccession_displayTemplate', $pa_bundle_settings, '^ca_objects.deaccession_notes')."</unit>"),
+				'color' => $vs_color,
+				'icon_url' => '',
+				'typename_singular' => $vs_name_singular = _t('deaccession'), 
+				'typename_plural' => $vs_name_plural = _t('deaccessions'), 
+				'icon' => '<div class="caUseHistoryIconContainer" style="background-color: #'.$vs_color.'"><div class="caUseHistoryIcon"><div class="caUseHistoryIconText">'.$vs_name_singular.'</div>'.'</div></div>',
+				'date' => $this->get('deaccession_date')
+			);
+		}
+		
 	//	print_R($va_history);
 		
 		ksort($va_history);

@@ -476,7 +476,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				if (!$pb_settings_only) {
 					$t_placement->setSettingDefinitionsForPlacement($va_available_bundles[$vs_bundle_name]['settings']);
 					$va_placements[$vn_placement_id]['display'] = $va_available_bundles[$vs_bundle_name]['display'];
-					$va_placements[$vn_placement_id]['settingsForm'] = $t_placement->getHTMLSettingForm(array('id' => $vs_bundle_name.'_'.$vn_placement_id.'_', 'settings' => $va_settings));
+					$va_placements[$vn_placement_id]['settingsForm'] = $t_placement->getHTMLSettingForm(array('id' => $vs_bundle_name.'_'.$vn_placement_id, 'settings' => $va_settings));
 				} else {
 					$va_tmp = explode('.', $vs_bundle_name);
 					$t_instance = $o_dm->getInstanceByTableName($va_tmp[0], true);
@@ -1860,7 +1860,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				$vs_bundle_proc = str_replace(".", "_", $vs_bundle);
 				
 				$va_settings = array();
-				
+			
 				foreach($_REQUEST as $vs_key => $vs_val) {
 					if (preg_match("!^{$vs_bundle_proc}_([\d]+)_([^\d]+.*)$!", $vs_key, $va_matches)) {
 						

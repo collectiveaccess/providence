@@ -449,7 +449,9 @@ class SearchResult extends BaseObject {
 		$vs_return_as_link_text = 	(isset($pa_options['returnAsLinkText'])) ? (string)$pa_options['returnAsLinkText'] : '';
 		$vs_return_as_link_target = (isset($pa_options['returnAsLinkTarget'])) ? (string)$pa_options['returnAsLinkTarget'] : '';
 		$vs_return_as_link_attributes = (isset($pa_options['returnAsLinkAttributes']) && is_array($pa_options['returnAsLinkAttributes'])) ? $pa_options['returnAsLinkAttributes'] : array();
-			
+		
+		$va_primary_ids = caGetOption("primaryIDs", $pa_options, null);	
+		
 		$va_original_path_components = $va_path_components = $this->getFieldPathComponents($ps_field);
 		
 		if ($va_path_components['table_name'] != $this->ops_table_name) {
@@ -807,11 +809,23 @@ class SearchResult extends BaseObject {
 			$va_join_tables = $this->opo_datamodel->getPath($this->ops_table_name, $va_path_components['table_name']);
 			array_shift($va_join_tables); 	// remove subject table
 			array_pop($va_join_tables);		// remove content table (we only need linking tables here)
+			
+			$va_join_criteria = array();
+			if(is_array($va_primary_ids)) {
+				foreach($va_primary_ids as $vs_t => $va_t_ids) {
+					if (isset($va_join_tables[$vs_t]) && (sizeof($va_t_ids) > 0)) {
+						$vs_t_pk = $this->opo_datamodel->getTablePrimaryKeyName($vs_t);
+						$va_join_criteria[] = "{$vs_t}.{$vs_t_pk} NOT IN (".join(",",$va_t_ids).")";
+					}
+				}
+			}
+			
 			$this->opa_tables[$va_path_components['table_name']] = array(
 				'fieldList' => array($va_path_components['table_name'].'.*'),
 				'joinTables' => array_keys($va_join_tables),
-				'criteria' => array()
+				'criteria' => $va_join_criteria
 			);
+			
 		}
 		
 		
@@ -989,7 +1003,6 @@ class SearchResult extends BaseObject {
 				}
 			}
 		} else {
-
 			if ($vs_template) {
 				return caProcessTemplateForIDs($vs_template, $this->opo_subject_instance->tableName(), array($vn_row_id), array_merge($pa_options, array('placeholderPrefix' => $va_path_components['field_name'])));
 			}	
@@ -998,6 +1011,23 @@ class SearchResult extends BaseObject {
 //
 			$t_list = $this->opo_datamodel->getInstanceByTableName('ca_lists', true);
 			$va_value_list = array($vn_row_id => $this->opa_prefetch_cache[$va_path_components['table_name']][$vn_row_id]);
+		
+			// Filter when getting relationships
+			if ($t_instance->isRelationship() && is_array($va_rel_types = caGetOption('restrict_to_relationship_types', $pa_options, null))) {
+				$va_rel_types = caMakeRelationshipTypeIDList($va_path_components['table_name'], $va_rel_types); 
+				
+				$va_tmp = array();
+				foreach($va_value_list as $vn_id => $va_by_locale) {
+					foreach($va_by_locale as $vn_locale_id => $va_values) {
+						foreach($va_values as $vn_i => $va_value) {
+							if (!$va_value['rel_type_id'] || in_array($va_value['rel_type_id'], $va_rel_types)) {
+								$va_tmp[$vn_id][$vn_locale_id][$vn_i] = $va_value;
+							}
+						}
+					}
+				}
+				$va_value_list = $va_tmp;
+			}
 
 			// Apply "where" criteria if defined
 			if (is_array($va_get_where)) {

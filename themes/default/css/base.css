@@ -410,6 +410,11 @@ a.inspectorOnLoan {
     font-style: italic;
 }
 
+.inspectorDeaccessioned {
+    color: #cc0000;
+    font-style: italic;
+}
+
 #leftNav h4 div {  text-transform: none; font-weight: normal; padding-top: 5px; }
 #leftNav h3 div {  text-transform: none; font-weight: normal; padding-top: 5px; }
 
@@ -1979,7 +1984,7 @@ select.searchSetSelect {
 	line-height: 1.4em;
 	position: absolute;
 	top: 100px;
-	left: 40%;
+	left: 25%;
 	width: 400px;
 	z-index:20000;
 }
@@ -2137,7 +2142,7 @@ a#hideRefine img {
 	line-height: 1.4em;
 	position: absolute;
 	top: 100px;
-	left: 40%;
+	left: 25%;
 	width: 400px;
 	z-index:20000;
 }
@@ -3049,7 +3054,7 @@ div.attributeFileFileName {
 }
 
 div.attributeMediaThumbnail {
-    width: 160px;
+    width: 90%;
     /* float: left; */
 }
 
@@ -5301,6 +5306,12 @@ div.preferenceSectionDivider {
     margin-top: 0px;
 }
 
+#batchProcessingFileCount {
+    float: right;
+    font-size: 10px;
+    margin-top: 0px;
+}
+
 .batchProcessingTableProgressGroup {
     margin-bottom: 10px;
 }
@@ -6828,4 +6839,20 @@ div.caUseHistoryDate {
     
 	font-weight: normal;
 	font-size: 12px;
+}
+
+/** Metadata importer **/
+table.caFileSourceControls {
+	width: 700px
+}
+
+td.caFileSourceControls {
+	vertical-align: top;
+	padding-top: 4px;
+}
+
+td.caSourceFileControlRadio {
+	vertical-align: top;
+	width: 30px;
+	height: 35px;
 }

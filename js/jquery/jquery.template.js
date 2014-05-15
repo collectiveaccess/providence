@@ -50,6 +50,7 @@ jQuery.fn.template = function( objValues ){
  			var objValueSlashed = objValues[ strKey ] + "";
  			objValueSlashed = objValueSlashed.replace(/["]/g, '\\"');
  			objValueSlashed = objValueSlashed.replace(/[\']/g, "\\'");
+ 			objValueSlashed = objValueSlashed.replace(/[\n]/g, "\\\n");
  			
  			// Replace the value with version where entities are converted to text  {{{{n}}}}
 			strHTML = strHTML.replace(

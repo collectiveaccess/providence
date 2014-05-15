@@ -73,9 +73,10 @@ class Session {
 		
 		if (!$pb_dont_create_new_session) {
 			if (!($vs_session_id = $this->getSessionID())) {
-				setcookie($this->name, $_COOKIE[$this->name] = $vs_session_id=$this->generateGUIDV4(), time() + $this->lifetime, "/");
+				$vs_cookiepath = ((__CA_URL_ROOT__== '') ? '/' : __CA_URL_ROOT__);
+				setcookie($this->name, $_COOKIE[$this->name] = $vs_session_id=$this->generateGUIDV4(), time() + $this->lifetime, $vs_cookiepath);
 		 	} 
-			$this->sessionData = caGetCacheObject("ca_session_".md5($vs_session_id), ($this->lifetime > 0) ? $this->lifetime : 7 * 24 * 60 * 60);
+			$this->sessionData = caGetCacheObject("ca_session_".str_replace("-", "_", $vs_session_id), 0);
 		}
 	}
 	# ----------------------------------------

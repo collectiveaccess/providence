@@ -539,6 +539,23 @@
         </item>
       </items>
     </list>
+    <list code="object_deaccession_types" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Object deaccession types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="disposed" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>disposed</name_singular>
+              <name_plural>disposed</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
     <list code="object_acq_types" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">

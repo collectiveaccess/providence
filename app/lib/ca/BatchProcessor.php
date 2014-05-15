@@ -1026,12 +1026,17 @@
 		}
 		# ----------------------------------------
 		/**
+		 * Import metadata using a mapping
+		 * 
+		 * @param RequestHTTP $po_request The current request
+		 * @param string $ps_source A path to a file or directory of files to import
+		 * @param string $ps_importer The code of the importer (mapping) to use
+		 * @param string $ps_input_format The format of the source data
 		 * @param array $pa_options
 		 *		progressCallback =
 		 *		reportCallback = 
 		 *		sendMail = 
 		 *		dryRun = 
-		 *		debug = output tons of debugging info during import
 		 *		log = log directory path
 		 *		logLevel = KLogger constant for minimum log level to record. Default is KLogger::INFO. Constants are, in descending order of shrillness:
 		 *			KLogger::EMERG = Emergency messages (system is unusable)
@@ -1063,26 +1068,35 @@
 			$vs_log_level = caGetOption('logLevel', $pa_options, "INFO"); 
 			
 			$vb_dry_run = caGetOption('dryRun', $pa_options, false); 
-			$vb_debug = caGetOption('debug', $pa_options, false); 
 			
 			$vn_log_level = BatchProcessor::_logLevelStringToNumber($vs_log_level);
 
-			if (!ca_data_importers::importDataFromSource($ps_source, $ps_importer, array('logDirectory' => $o_config->get('batch_metadata_import_log_directory'), 'request' => $po_request,'format' => $ps_input_format, 'showCLIProgressBar' => false, 'useNcurses' => false, 'progressCallback' => isset($pa_options['progressCallback']) ? $pa_options['progressCallback'] : null, 'reportCallback' => isset($pa_options['reportCallback']) ? $pa_options['reportCallback'] : null,  'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'dryRun' => $vb_dry_run, 'debug' => $vb_debug))) {
-				$va_errors['general'] = array(
-					'idno' => "*",
-					'label' => "*",
-					'errors' => array(_t("Could not import source %1", $ps_source)),
-					'status' => 'ERROR'
-				);
-				return false;
+			if (is_dir($ps_source)) {
+				$va_sources = caGetDirectoryContentsAsList($ps_source, true, false, false, false);
 			} else {
-				$va_notices['general'] = array(
-					'idno' => "*",
-					'label' => "*",
-					'errors' => array(_t("Imported data from source %1", $ps_source)),
-					'status' => 'SUCCESS'
-				);
-				//return true;
+				$va_sources = array($ps_source);
+			}
+			
+			$vn_file_num = 0;
+			foreach($va_sources as $vs_source) {
+				$vn_file_num++;
+				if (!ca_data_importers::importDataFromSource($vs_source, $ps_importer, array('fileNumber' => $vn_file_num, 'numberOfFiles' => sizeof($va_sources), 'logDirectory' => $o_config->get('batch_metadata_import_log_directory'), 'request' => $po_request,'format' => $ps_input_format, 'showCLIProgressBar' => false, 'useNcurses' => false, 'progressCallback' => isset($pa_options['progressCallback']) ? $pa_options['progressCallback'] : null, 'reportCallback' => isset($pa_options['reportCallback']) ? $pa_options['reportCallback'] : null,  'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'dryRun' => $vb_dry_run))) {
+					$va_errors['general'][] = array(
+						'idno' => "*",
+						'label' => "*",
+						'errors' => array(_t("Could not import source %1", $ps_source)),
+						'status' => 'ERROR'
+					);
+					return false;
+				} else {
+					$va_notices['general'][] = array(
+						'idno' => "*",
+						'label' => "*",
+						'errors' => array(_t("Imported data from source %1", $ps_source)),
+						'status' => 'SUCCESS'
+					);
+					//return true;
+				}
 			}
 			
 			$vn_elapsed_time = time() - $vn_start_time;

@@ -408,7 +408,7 @@
 						'parameters' => array(
 							'type_id' => $va_item['item_id']
 						),
-						'is_enabled' => 1,
+						'is_enabled' => $va_item['is_enabled'],
 						'navigation' => $va_subtypes
 					);
 				}

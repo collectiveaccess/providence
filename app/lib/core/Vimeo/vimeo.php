@@ -366,10 +366,10 @@ class phpVimeo
         $this->_token = $token;
         $this->_token_secret = $token_secret;
 
-        if ($session_store) {
-            $_SESSION["{$type}_token"] = $token;
-            $_SESSION["{$type}_token_secret"] = $token_secret;
-        }
+       //if ($session_store) {
+       //     $_SESSION["{$type}_token"] = $token;
+       //     $_SESSION["{$type}_token_secret"] = $token_secret;
+       // }
 
         return true;
     }

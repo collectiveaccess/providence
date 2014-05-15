@@ -32,6 +32,8 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 require_once(__CA_LIB_DIR__."/core/Media/MediaVolumes.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
+require_once(__CA_MODELS_DIR__."/ca_users.php");
+require_once(__CA_MODELS_DIR__."/ca_user_groups.php");
 
 class Installer {
 	# --------------------------------------------------
@@ -731,6 +733,45 @@ class Installer {
 					}
 				}
 			}
+
+			// set user and group access
+			if($vo_ui->userAccess) {
+				$t_user = new ca_users();
+				$va_ui_users = array();
+				foreach($vo_ui->userAccess->children() as $vo_permission){
+					$vs_user = trim((string)self::getAttribute($vo_permission, "user"));
+					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+
+					if($vn_access && $t_user->load(array('user_name' => $vs_user))){
+						$va_ui_users[$t_user->getUserID()] = $vn_access;
+					} else {
+						$this->addError("User name or access value invalid for UI {$vs_ui_code} (permission item with user name '{$vs_user}')");
+					}
+				}
+
+				if(sizeof($va_ui_users)>0){
+					$t_ui->addUsers($va_ui_users);
+				}
+			}
+
+			if($vo_ui->groupAccess) {
+				$t_group = new ca_user_groups();
+				$va_ui_groups = array();
+				foreach($vo_ui->groupAccess->children() as $vo_permission){
+					$vs_group = trim((string)self::getAttribute($vo_permission, "group"));
+					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+
+					if($vn_access && $t_group->load(array('code' => $vs_group))){
+						$va_ui_groups[$t_group->getPrimaryKey()] = $vn_access;
+					} else {
+						$this->addError("Group code or access value invalid for UI {$vs_ui_code} (permission item with group code '{$vs_group}')");
+					}
+				}
+
+				if(sizeof($va_ui_groups)>0){
+					$t_ui->addUserGroups($va_ui_groups);
+				}
+			}
 		}
 		return true;
 	}
@@ -1049,6 +1090,45 @@ class Installer {
 					}
 				}
 			}
+
+			if($vo_display->userAccess) {
+				$t_user = new ca_users();
+				$va_display_users = array();
+				foreach($vo_display->userAccess->children() as $vo_permission){
+					$vs_user = trim((string)self::getAttribute($vo_permission, "user"));
+					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+
+					if($vn_access && $t_user->load(array('user_name' => $vs_user))){
+						$va_display_users[$t_user->getUserID()] = $vn_access;
+					} else {
+						$this->addError("User name or access value invalid for display {$vs_display_code} (permission item with user name '{$vs_user}')");
+					}
+				}
+
+				if(sizeof($va_display_users)>0){
+					$t_display->addUsers($va_display_users);
+				}
+			}
+
+			if($vo_display->groupAccess) {
+				$t_group = new ca_user_groups();
+				$va_display_groups = array();
+				foreach($vo_display->groupAccess->children() as $vo_permission){
+					$vs_group = trim((string)self::getAttribute($vo_permission, "group"));
+					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+
+					if($vn_access && $t_group->load(array('code' => $vs_group))){
+						$va_display_groups[$t_group->getPrimaryKey()] = $vn_access;
+					} else {
+						$this->addError("Group code or access value invalid for display {$vs_display_code} (permission item with group code '{$vs_group}')");
+					}
+				}
+
+				if(sizeof($va_display_groups)>0){
+					$t_display->addUserGroups($va_display_groups);
+				}
+			}
+
 		}
 
 		return true;
@@ -1135,6 +1215,45 @@ class Installer {
 					return false;
 				}
 			}
+
+			// set user and group access
+			if($vo_form->userAccess) {
+				$t_user = new ca_users();
+				$va_form_users = array();
+				foreach($vo_form->userAccess->children() as $vo_permission){
+					$vs_user = trim((string)self::getAttribute($vo_permission, "user"));
+					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+
+					if($vn_access && $t_user->load(array('user_name' => $vs_user))){
+						$va_form_users[$t_user->getUserID()] = $vn_access;
+					} else {
+						$this->addError("User name or access value invalid for search form {$vs_form_code} (permission item with user name '{$vs_user}')");
+					}
+				}
+
+				if(sizeof($va_form_users)>0){
+					$t_form->addUsers($va_form_users);
+				}
+			}
+
+			if($vo_form->groupAccess) {
+				$t_group = new ca_user_groups();
+				$va_form_groups = array();
+				foreach($vo_form->groupAccess->children() as $vo_permission){
+					$vs_group = trim((string)self::getAttribute($vo_permission, "group"));
+					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+
+					if($vn_access && $t_group->load(array('code' => $vs_group))){
+						$va_form_groups[$t_group->getPrimaryKey()] = $vn_access;
+					} else {
+						$this->addError("Group code or access value invalid for search form {$vs_form_code} (permission item with group code '{$vs_group}')");
+					}
+				}
+
+				if(sizeof($va_form_groups)>0){
+					$t_form->addUserGroups($va_form_groups);
+				}
+			}
 		}
 
 		return true;
@@ -1163,7 +1282,6 @@ class Installer {
 	}
 	# --------------------------------------------------
 	public function processGroups(){
-		require_once(__CA_MODELS_DIR__."/ca_user_groups.php");
 
 		// Create root group		
 		$t_user_group = new ca_user_groups();
@@ -1228,7 +1346,6 @@ class Installer {
 	}
 	# --------------------------------------------------
 	public function processLogins(){
-		require_once(__CA_MODELS_DIR__."/ca_users.php");
 
 		if($this->ops_base_name){ // "merge" profile and its base
 			$va_logins = array();
@@ -1395,6 +1512,17 @@ class Installer {
 			case 'none':
 			default:
 				return __CA_BUNDLE_ACCESS_NONE__;
+		}
+	}
+	# --------------------------------------------------
+	private function _convertUserGroupAccessStringToInt($ps_name) {
+		switch($ps_name) {
+			case 'read':
+				return 1;
+			case 'edit':
+				return 2;
+			default:
+				return null;
 		}
 	}
 	# --------------------------------------------------

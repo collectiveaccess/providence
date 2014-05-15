@@ -1829,7 +1829,7 @@
 		}
 		# -------------------------------------------------------
 		/**
-		 * Reset user password
+		 * Load metadata dictionary
 		 */
 		public static function load_metadata_dictionary_from_excel_file($po_opts=null) {
 			
@@ -1955,6 +1955,251 @@
 		 */
 		public static function load_metadata_dictionary_from_excel_fileHelp() {
 			return _t('Load metadata dictionary entries from an Excel file using the format described at http://docs.collectiveaccess.org/metadata_dictionary');
+		}
+		# -------------------------------------------------------
+		/**
+		 * 
+		 */
+		public static function check_media_fixity($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/core/Db.php");
+			require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
+			
+			$ps_file_path = strtolower((string)$po_opts->getOption('file'));	
+			$ps_format = strtolower((string)$po_opts->getOption('format'));
+			if(!in_array($ps_format, array('text', 'tab', 'csv'))) { $ps_format = 'text'; }
+				
+			$o_db = new Db();
+			$o_dm = Datamodel::load();
+			$t_rep = new ca_object_representations();
+			
+			$vs_report_output = join(($ps_format == 'tab') ? "\t" : ",", array(_t('Type'), _t('Error'), _t('Name'), _t('ID'), _t('Version'), _t('File path'), _t('Expected MD5'), _t('Actual MD5')))."\n";
+			
+			// Verify object representations
+			$qr_reps = $o_db->query("SELECT representation_id, idno, media FROM ca_object_representations WHERE deleted = 0");
+			print CLIProgressBar::start($vn_rep_count = $qr_reps->numRows(), _t('Checking object representations'))."\n";
+			$vn_errors = 0;
+			while($qr_reps->nextRow()) {
+				$vn_representation_id = $qr_reps->get('representation_id');
+				print CLIProgressBar::next(1, _t("Checking representation media %1", $vn_representation_id));
+	
+				$va_media_versions = $qr_reps->getMediaVersions('media');
+				foreach($va_media_versions as $vs_version) {
+					$vs_path = $qr_reps->getMediaPath('media', $vs_version);
+					
+					$vs_database_md5 = $qr_reps->getMediaInfo('media', $vs_version, 'MD5');
+					$vs_file_md5 = md5_file($vs_path);
+					
+					if ($vs_database_md5 !== $vs_file_md5) {
+						$t_rep->load($vn_representation_id);
+						
+						$vs_message = _t("[Object representation][MD5 mismatch] %1; version %2 [%3]", $t_rep->get("ca_objects.preferred_labels.name")." (". $t_rep->get("ca_objects.idno")."); representation_id={$vn_representation_id}", $vs_version, $vs_path);
+						switch($ps_format) {
+							case 'text':
+							default:
+								$vs_report_output .= "{$vs_message}\n";
+								break;
+							case 'tab':
+							case 'csv':
+								$va_log = array(_t('Object representation'), ("MD5 mismatch"), caEscapeForDelimitedOutput($t_rep->get("ca_objects.preferred_labels.name")." (". $t_rep->get("ca_objects.idno").")"), $vn_representation_id, $vs_version, $vs_path, $vs_database_md5, $vs_file_md5);
+								$vs_report_output .= join(($ps_format == 'tab') ? "\t" : ",", $va_log)."\n";
+								break;
+						}
+						
+						CLIUtils::addError($vs_message);
+						$vn_errors++;
+					}
+				}
+			}
+			
+			print CLIProgressBar::finish();
+			CLIUtils::addMessage(_t('%1 errors for %2 representations', $vn_errors, $vn_rep_count));
+			
+			// get all Media elements
+			$va_elements = ca_metadata_elements::getElementsAsList(false, null, null, true, false, true, array(16)); // 16=media
+			
+			if (is_array($va_elements) && sizeof($va_elements)) {
+				if (is_array($va_element_ids = caExtractValuesFromArrayList($va_elements, 'element_id', array('preserveKeys' => false))) && sizeof($va_element_ids)) {
+					$qr_c = $o_db->query("
+						SELECT count(*) c 
+						FROM ca_attribute_values
+						WHERE
+							element_id in (?)
+					", array($va_element_ids));
+					if ($qr_c->nextRow()) { $vn_count = $qr_c->get('c'); } else { $vn_count = 0; }
+			
+					print CLIProgressBar::start($vn_count, _t('Checking attribute media'));
+					
+					$vn_errors = 0;
+					foreach($va_elements as $vs_element_code => $va_element_info) {
+						$qr_vals = $o_db->query("SELECT value_id FROM ca_attribute_values WHERE element_id = ?", (int)$va_element_info['element_id']);
+						$va_vals = $qr_vals->getAllFieldValues('value_id');
+						foreach($va_vals as $vn_value_id) {
+							$t_attr_val = new ca_attribute_values($vn_value_id);
+							if ($t_attr_val->getPrimaryKey()) {
+								$t_attr_val->setMode(ACCESS_WRITE);
+								$t_attr_val->useBlobAsMediaField(true);
+						
+								
+								print CLIProgressBar::next(1, _t("Checking attribute media %1", $vn_value_id));
+								
+								$va_media_versions = $t_attr_val->getMediaVersions('value_blob');
+								foreach($va_media_versions as $vs_version) {
+									$vs_path = $t_attr_val->getMediaPath('value_blob', $vs_version);
+				
+									$vs_database_md5 = $t_attr_val->getMediaInfo('value_blob', $vs_version, 'MD5');
+									$vs_file_md5 = md5_file($vs_path);
+				
+									if ($vs_database_md5 !== $vs_file_md5) {
+										$t_attr = new ca_attributes($vn_attribute_id = $t_attr_val->get('attribute_id'));
+										
+										$vs_label = "attribute_id={$vn_attribute_id}; value_id={$vn_value_id}";
+										if ($t_instance = $o_dm->getInstanceByTableNum($t_attr->get('table_num'), true)) {
+											if ($t_instance->load($t_attr->get('row_id'))) {
+												$vs_label = $t_instance->get($t_instance->tableName().'.preferred_labels');
+												if ($vs_idno = $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
+													$vs_label .= " ({$vs_label})";
+												}
+											}
+										}
+										
+										$vs_message = _t("[Media attribute][MD5 mismatch] %1; value_id=%2; version %3 [%4]", $vs_label, $vn_value_id, $vs_version, $vs_path);
+										
+										switch($ps_format) {
+											case 'text':
+											default:
+												$vs_report_output .= "{$vs_message}\n";
+												break;
+											case 'tab':
+											case 'csv':
+												$va_log = array(_t('Media attribute'), _t("MD5 mismatch"), caEscapeForDelimitedOutput($vs_label), $vn_value_id, $vs_version, $vs_path, $vs_database_md5, $vs_file_md5);
+												$vs_report_output .= join(($ps_format == 'tab') ? "\t" : ",", $va_log);
+												break;
+										}
+						
+										CLIUtils::addError($vs_message);
+										$vn_errors++;
+									}
+								}
+						
+							}
+						}
+					}
+					print CLIProgressBar::finish();
+					
+					CLIUtils::addMessage(_t('%1 errors for %2 attributes', $vn_errors, $vn_rep_count));
+				}
+			}
+			
+			// get all File elements
+			$va_elements = ca_metadata_elements::getElementsAsList(false, null, null, true, false, true, array(15)); // 15=file
+			
+			if (is_array($va_elements) && sizeof($va_elements)) {
+				if (is_array($va_element_ids = caExtractValuesFromArrayList($va_elements, 'element_id', array('preserveKeys' => false))) && sizeof($va_element_ids)) {
+					$qr_c = $o_db->query("
+						SELECT count(*) c 
+						FROM ca_attribute_values
+						WHERE
+							element_id in (?)
+					", array($va_element_ids));
+					if ($qr_c->nextRow()) { $vn_count = $qr_c->get('c'); } else { $vn_count = 0; }
+			
+					print CLIProgressBar::start($vn_count, _t('Checking attribute files'));
+					
+					$vn_errors = 0;
+					foreach($va_elements as $vs_element_code => $va_element_info) {
+						$qr_vals = $o_db->query("SELECT value_id FROM ca_attribute_values WHERE element_id = ?", (int)$va_element_info['element_id']);
+						$va_vals = $qr_vals->getAllFieldValues('value_id');
+						foreach($va_vals as $vn_value_id) {
+							$t_attr_val = new ca_attribute_values($vn_value_id);
+							if ($t_attr_val->getPrimaryKey()) {
+								$t_attr_val->setMode(ACCESS_WRITE);
+								$t_attr_val->useBlobAsFileField(true);
+						
+								
+								print CLIProgressBar::next(1, _t("Checking attribute file %1", $vn_value_id));
+								
+								$vs_path = $t_attr_val->getFilePath('value_blob');
+			
+								$vs_database_md5 = $t_attr_val->getFileInfo('value_blob', 'MD5');
+								$vs_file_md5 = md5_file($vs_path);
+			
+								if ($vs_database_md5 !== $vs_file_md5) {
+									$t_attr = new ca_attributes($vn_attribute_id = $t_attr_val->get('attribute_id'));
+									
+									$vs_label = "attribute_id={$vn_attribute_id}; value_id={$vn_value_id}";
+									if ($t_instance = $o_dm->getInstanceByTableNum($t_attr->get('table_num'), true)) {
+										if ($t_instance->load($t_attr->get('row_id'))) {
+											$vs_label = $t_instance->get($t_instance->tableName().'.preferred_labels');
+											if ($vs_idno = $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
+												$vs_label .= " ({$vs_label})";
+											}
+										}
+									}
+								
+									$vs_message = _t("[File attribute][MD5 mismatch] %1; value_id=%2; version %3 [%4]", $vs_label, $vn_value_id, $vs_version, $vs_path);		
+									
+									switch($ps_format) {
+										case 'text':
+										default:
+											$vs_report_output .= "{$vs_message}\n";
+											break;
+										case 'tab':
+										case 'csv':
+											$va_log = array(_t('File attribute'), _t("MD5 mismatch"), caEscapeForDelimitedOutput($vs_label), $vn_value_id, $vs_version, $vs_path, $vs_database_md5, $vs_file_md5);
+											$vs_report_output .= join(($ps_format == 'tab') ? "\t" : ",", $va_log);
+											break;
+									}
+					
+									CLIUtils::addError($vs_message);
+									$vn_errors++;
+								}
+						
+							}
+						}
+					}
+					print CLIProgressBar::finish();
+					
+					CLIUtils::addMessage(_t('%1 errors for %2 attributes', $vn_errors, $vn_rep_count));
+				}
+			}
+			
+			if ($ps_file_path) {
+				file_put_contents($ps_file_path, $vs_report_output);
+			}
+			
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_media_fixityParamList() {
+			return array(
+				"file|o=s" => _t('Location to write report to.'),
+				"format|f=s" => _t('Output format. (text|tab|csv)')	
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_media_fixityUtilityClass() {
+			return _t('Maintenance');
+		}
+		
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_media_fixityShortHelp() {
+			return _t('Verify media fixity using database file signatures');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_media_fixityHelp() {
+			return _t('Verifies that media files on disk are consistent with file signatures recordded in the database at time of upload.');
 		}
 		# -------------------------------------------------------
 	}

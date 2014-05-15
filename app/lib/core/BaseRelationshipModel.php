@@ -200,6 +200,15 @@
 		public function isSelfRelationship() {
 			return (bool)($this->getLeftTableNum() == $this->getRightTableNum());
 		}
+		# ------------------------------------------------------
+		/**
+		 * Returns true if model is a relationship
+		 *
+		 * @return bool
+		 */
+		public function isRelationship() {
+			return true;
+		}
  		# ------------------------------------------------------
 		/**
 		 * Returns an array of relationship types for this relation, subject to sub type restrictions

@@ -1284,8 +1284,6 @@
 			// get attributes of this element attached to this row
 			$va_attributes = $this->getAttributesByElement($pm_element_code_or_id);
 			
-			// TODO: how do we not-hardcode {fieldNamePrefix}? is this even a problem?
-			
 			$t_attr = new ca_attributes();
 			$t_attr->purify($this->purify());
 			

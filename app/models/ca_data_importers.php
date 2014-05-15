@@ -1167,7 +1167,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 *			KLogger::INFO = Informational messages
 	 *			KLogger::DEBUG = Debugging messages
 	 *		dryRun = do import but don't actually save data
-	 *		debug = output tons of debugging information
 	 *		environment = an array of environment values to provide to the import process. The keys manifest themselves as mappable tags.
 	 */
 	static public function importDataFromSource($ps_source, $ps_mapping, $pa_options=null) {
@@ -1188,7 +1187,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		$po_request 	= caGetOption('request', $pa_options, null);
 		$pb_dry_run 	= caGetOption('dryRun', $pa_options, false);
-		$pb_debug 		= caGetOption('debug', $pa_options, false);
+		
+		$pn_file_number 		= caGetOption('fileNumber', $pa_options, 0);
+		$pn_number_of_files 	= caGetOption('numberOfFiles', $pa_options, 1);
 		
 		$o_config = Configuration::load();
 		
@@ -1265,12 +1266,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$o_dm = $t_mapping->getAppDatamodel();
 		
 		
-		//if ($vb_show_cli_progress_bar){
 		$o_progress->start(_t('Reading %1', $ps_source), array('window' => $r_progress));
-		//}
 		
 		if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
-			$ps_callback($po_request, 0, 100, _t('Reading %1', $ps_source), (time() - $vn_start_time), memory_get_usage(true), 0, ca_data_importers::$s_num_import_errors);
+			$ps_callback($po_request, $pn_file_number, $pn_number_of_files, $ps_source, 0, 100, _t('Reading %1', $ps_source), (time() - $vn_start_time), memory_get_usage(true), 0, ca_data_importers::$s_num_import_errors);
 		}
 	
 		// Open file 
@@ -1291,12 +1290,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$o_log->logDebug(_t('Finished reading input source at %1 seconds', $t->getTime(4)));
 		
 		$vn_num_items = $o_reader->numRows();
-		//if ($vb_show_cli_progress_bar){
+
 		$o_progress->setTotal($vn_num_items);
 		$o_progress->start(_t('Importing from %1', $ps_source), array('window' => $r_progress));
-		//}
+
 		if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
-			$ps_callback($po_request, 0, $vn_num_items, _t('Importing from %1', $ps_source), (time() - $vn_start_time), memory_get_usage(true), 0, ca_data_importers::$s_num_import_errors);
+			$ps_callback($po_request, $pn_file_number, $pn_number_of_files, $ps_source, 0, $vn_num_items, _t('Importing from %1', $ps_source), (time() - $vn_start_time), memory_get_usage(true), 0, ca_data_importers::$s_num_import_errors);
 		}
 		
 		// What are we importing?
@@ -1645,13 +1644,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				}
 			}
 			
-			
-			//if ($vb_show_cli_progress_bar) {
 			$o_progress->next(_t("Importing %1", $vs_idno), array('window' => $r_progress));
-			//}
 			
 			if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
-				$ps_callback($po_request, ca_data_importers::$s_num_records_processed, $vn_num_items, _t("[%3/%4] Processing %1 (%2)", caTruncateStringWithEllipsis($vs_display_label, 50), $vs_idno, ca_data_importers::$s_num_records_processed, $vn_num_items), (time() - $vn_start_time), memory_get_usage(true), ca_data_importers::$s_num_records_processed, ca_data_importers::$s_num_import_errors); 
+				$ps_callback($po_request, $pn_file_number, $pn_number_of_files, $ps_source, ca_data_importers::$s_num_records_processed, $vn_num_items, _t("[%3/%4] Processing %1 (%2)", caTruncateStringWithEllipsis($vs_display_label, 50), $vs_idno, ca_data_importers::$s_num_records_processed, $vn_num_items), (time() - $vn_start_time), memory_get_usage(true), ca_data_importers::$s_num_records_processed, ca_data_importers::$s_num_import_errors); 
 			}
 			
 			$vb_output_subject_preferred_label = false;
@@ -1715,7 +1711,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 						
 						$va_vals[$vn_i] = $vm_val;
-						if (is_array($va_row[$va_item['source']])) {
+						if ($o_reader->valuesCanRepeat()) {
 							$va_row[$va_item['source']][$vn_i] = $va_row[mb_strtolower($va_item['source'])][$vn_i] = $vm_val;
 						} else {
 							$va_row[$va_item['source']] = $va_row[mb_strtolower($va_item['source'])] = $vm_val;
@@ -1930,9 +1926,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//print_r($va_content_tree);
 			//die("END\n\n");
 			//continue;
-			//if ($pb_debug && $po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
-				//$ps_callback($po_request, ca_data_importers::$s_num_records_processed, $vn_num_items, "<pre>".preg_replace("![\n\r\t ]+!", " ", print_r($va_content_tree, true))."</pre>", (time() - $vn_start_time), memory_get_usage(true), 0, ca_data_importers::$s_num_import_errors);
-			//}
 			
 			if (!sizeof($va_content_tree) && !str_replace("%", "", $vs_idno)) { continue; }
 	
@@ -2458,7 +2451,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$o_progress->finish();
 		//}
 		if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
-			$ps_callback($po_request, $vn_num_items, $vn_num_items, _t('Import completed'), (time() - $vn_start_time), memory_get_usage(true), ca_data_importers::$s_num_records_processed, ca_data_importers::$s_num_import_errors);
+			$ps_callback($po_request, $pn_file_number, $pn_number_of_files, $ps_source, $vn_num_items, $vn_num_items, _t('Import completed'), (time() - $vn_start_time), memory_get_usage(true), ca_data_importers::$s_num_records_processed, ca_data_importers::$s_num_import_errors);
 		}
 		
 		if (isset($pa_options['reportCallback']) && ($ps_callback = $pa_options['reportCallback'])) {
