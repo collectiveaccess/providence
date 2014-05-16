@@ -197,12 +197,13 @@ class SearchIndexer extends SearchBase {
 			$t_table_timer = new Timer();
 			$t_instance = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
 			$vs_table_pk = $t_instance->primaryKey();
+			
+			$vn_table_num = $t_instance->tableNum();
 
 			$va_fields_to_index = $this->getFieldsToIndex($vn_table_num);
 			if (!is_array($va_fields_to_index) || (sizeof($va_fields_to_index) == 0)) {
 				continue;
 			}
-
 
 			$qr_all = $o_db->query("SELECT ".$t_instance->primaryKey()." FROM $vs_table");
 
@@ -212,8 +213,14 @@ class SearchIndexer extends SearchBase {
 			}
 
 			$vn_c = 0;
-			while($qr_all->nextRow()) {
-				$t_instance->load($qr_all->get($t_instance->primaryKey()));
+			$va_ids = $qr_all->getAllFieldValues($t_instance->primaryKey());
+			$va_element_ids = array_keys($t_instance->getApplicableElementCodes(null, false, false));
+			
+			foreach($va_ids as $vn_i => $vn_id) {
+				if (!($vn_i % 100)) {	// Pre-load attribute values for next 100 items to index; improves index performance
+					ca_attributes::prefetchAttributes($o_db, $vn_table_num, $x=array_slice($va_ids, $vn_i, 100), $va_element_ids, null);
+				}
+				$t_instance->load($vn_id);
 				$t_instance->doSearchIndexing(array(), true, $this->opo_engine->engineName());
 				if ($pb_display_progress && $pb_interactive_display) {
 					print CLIProgressBar::next();
@@ -382,7 +389,7 @@ class SearchIndexer extends SearchBase {
 		if (!$pb_reindex_mode && is_array($pa_changed_fields) && !sizeof($pa_changed_fields)) { return; }	// don't bother indexing if there are no changed fields
 		
 		$vs_subject_tablename = $this->opo_datamodel->getTableName($pn_subject_tablenum);
-		$t_subject = $this->getTableInstance($vs_subject_tablename, true);
+		$t_subject = $this->opo_datamodel->getInstanceByTableName($vs_subject_tablename, true);
 		
 		// Prevent endless recursive reindexing
 		if (is_array($pa_exclusion_list[$pn_subject_tablenum]) && (isset($pa_exclusion_list[$pn_subject_tablenum][$pn_subject_row_id]))) { return; }
@@ -398,15 +405,6 @@ class SearchIndexer extends SearchBase {
 		}
 		
 		$vb_can_do_incremental_indexing = $this->opo_engine->can('incremental_reindexing') ? true : false;		// can the engine do incremental indexing? Or do we need to reindex the entire row every time?
-		
-		foreach($this->opo_search_config->get('search_indexing_replacements') as $vs_to_replace => $vs_replacement){
-			foreach($pa_field_data as $vs_k => &$vs_value) {
-				if($vs_replacement=="nothing") {
-					$vs_replacement="";
-				}
-				$vs_value = str_replace($vs_to_replace,$vs_replacement,$vs_value);
-			}
-		}
 		
 		if (!$pa_exclusion_list) { $pa_exclusion_list = array(); }
 		$pa_exclusion_list[$pn_subject_tablenum][$pn_subject_row_id] = true;
@@ -437,7 +435,6 @@ class SearchIndexer extends SearchBase {
 			$pb_reindex_mode = true;
 			$vb_reindex_children = true;
 		}
-		
 		$vb_started_indexing = false;
 		if (is_array($va_fields_to_index)) {
 			$this->opo_engine->startRowIndexing($pn_subject_tablenum, $pn_subject_row_id);
@@ -465,9 +462,8 @@ class SearchIndexer extends SearchBase {
 					}
 					
 					$va_data['datatype'] = (int)$this->_getElementDataType($va_matches[1]);
-					
 					switch($va_data['datatype']) {
-						case 0: 		// container
+						case __CA_ATTRIBUTE_VALUE_CONTAINER__: 		// container
 							// index components of complex multi-value attributes
 							$va_attributes = $t_subject->getAttributesByElement($va_matches[1], array('row_id' => $pn_subject_row_id));
 							
@@ -488,7 +484,7 @@ class SearchIndexer extends SearchBase {
 								}
 							}
 							break;
-						case 3:		// list
+						case __CA_ATTRIBUTE_VALUE_LIST__:		// list
 							// We pull the preferred labels of list items for indexing here. We do so for all languages. Note that
 							// this only done for list attributes that are standalone and not a sub-element in a container. Perhaps
 							// we should also index the text of sub-element lists, but it's not clear that it is a good idea yet. The list_id's of
@@ -523,6 +519,7 @@ class SearchIndexer extends SearchBase {
 							
 							break;
 						default:
+							//$t=new Timer();
 							$va_attributes = $t_subject->getAttributesByElement($va_matches[1], array('row_id' => $pn_subject_row_id));
 							if (!is_array($va_attributes)) { break; }
 							foreach($va_attributes as $vo_attribute) {
@@ -774,7 +771,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 								$va_rel_field_info['datatype'] = (int)$this->_getElementDataType($va_matches[1]);
 				
 								switch($va_rel_field_info['datatype']) {
-									case 0: 		// container
+									case __CA_ATTRIBUTE_VALUE_CONTAINER__: 		// container
 										// index components of complex multi-value attributes
 										$va_attributes = $t_rel->getAttributesByElement($va_matches[1], array('row_id' => $vn_row_id));
 					
@@ -794,7 +791,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 											}
 										}
 										break;
-									case 3:		// list
+									case __CA_ATTRIBUTE_VALUE_LIST__:		// list
 										// We pull the preferred labels of list items for indexing here. We do so for all languages. Note that
 										// this only done for list attributes that are standalone and not a sub-element in a container. Perhaps
 										// we should also index the text of sub-element lists, but it's not clear that it is a good idea yet. The list_id's of
@@ -914,6 +911,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 			}
 		}
 }		
+
 		// save indexing on subject
 		if ($vb_started_indexing) {
 			$this->opo_engine->commitRowIndexing();
@@ -991,7 +989,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 			
 							$vs_v = '';
 							switch($va_row_to_reindex['indexing_info']['datatype']) {
-								case 0: 		// container
+								case __CA_ATTRIBUTE_VALUE_CONTAINER__: 		// container
 									// index components of complex multi-value attributes
 									$va_attributes = $t_rel->getAttributesByElement($vs_element_code, array('row_id' => $va_row_to_reindex['field_row_id']));
 				
@@ -1011,7 +1009,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 										}
 									}
 									break;
-								case 3:			// list
+								case __CA_ATTRIBUTE_VALUE_LIST__:			// list
 									$va_tmp = array();
 									if (is_array($va_attributes = $t_rel->getAttributesByElement($vs_element_code, array('row_id' => $va_row_to_reindex['field_row_id'])))) {
 										foreach($va_attributes as $vo_attribute) {
@@ -1125,7 +1123,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 		$vb_can_do_incremental_indexing = $this->opo_engine->can('incremental_reindexing') ? true : false;		// can the engine do incremental indexing? Or do we need to reindex the entire row every time?
 		
 		$vs_subject_tablename 		= $this->opo_datamodel->getTableName($pn_subject_tablenum);
-		$t_subject 					= $this->getTableInstance($vs_subject_tablename, true);
+		$t_subject 					= $this->opo_datamodel->getInstanceByTableName($vs_subject_tablename, true);
 		$vs_subject_pk 				= $t_subject->primaryKey();
 
 		$va_deps = $this->getDependencies($vs_subject_tablename);
@@ -1202,13 +1200,13 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 		$va_dependent_rows = array();
 		$vs_subject_tablename = $this->opo_datamodel->getTableName($pn_subject_tablenum);
 		
-		$t_subject = $this->getTableInstance($vs_subject_tablename);
+		$t_subject = $this->opo_datamodel->getInstanceByTableName($vs_subject_tablename, true);
 		$vs_subject_pk = $t_subject->primaryKey();
 		
 // Loop through dependent tables
 		foreach($va_deps as $vs_dep_table) {
 		
-			$t_dep 				= $this->getTableInstance($vs_dep_table);
+			$t_dep 				= $this->opo_datamodel->getInstanceByTableName($vs_dep_table, true);
 			$vs_dep_pk 			= $t_dep->primaryKey();
 			$vn_dep_tablenum 	= $t_dep->tableNum();
 			
