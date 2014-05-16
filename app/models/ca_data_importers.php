@@ -1168,6 +1168,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 *			KLogger::DEBUG = Debugging messages
 	 *		dryRun = do import but don't actually save data
 	 *		environment = an array of environment values to provide to the import process. The keys manifest themselves as mappable tags.
+	 *		noTransaction = don't wrap the import in a transaction. [Default is false]
 	 */
 	static public function importDataFromSource($ps_source, $ps_mapping, $pa_options=null) {
 		ca_data_importers::$s_num_import_errors = 0;
@@ -1176,6 +1177,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		ca_data_importers::$s_import_error_list = array();
 		
 		$va_notices = $va_errors = array();
+		
+		$pb_no_transaction 	= caGetOption('noTransaction', $pa_options, false, array('castTo' => 'bool'));
 
 		if (!($t_mapping = ca_data_importers::mappingExists($ps_mapping))) {
 			return null;
@@ -1183,13 +1186,16 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		$o_event = ca_data_import_events::newEvent(isset($pa_options['user_id']) ? $pa_options['user_id'] : null, $pa_options['format'], $ps_source, isset($pa_options['description']) ? $pa_options['description'] : '');
 		
-		$t_mapping->setTransaction($o_trans = new Transaction());
+		$o_trans = null;
+		
+		if (!$pb_no_transaction) { $t_mapping->setTransaction($o_trans = new Transaction()); }
 		
 		$po_request 	= caGetOption('request', $pa_options, null);
 		$pb_dry_run 	= caGetOption('dryRun', $pa_options, false);
 		
 		$pn_file_number 		= caGetOption('fileNumber', $pa_options, 0);
 		$pn_number_of_files 	= caGetOption('numberOfFiles', $pa_options, 1);
+		
 		
 		$o_config = Configuration::load();
 		
@@ -1209,7 +1215,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$vb_show_cli_progress_bar 	= (isset($pa_options['showCLIProgressBar']) && ($pa_options['showCLIProgressBar'])) ? true : false;
 		
 		$o_progress = caGetOption('progressBar', $pa_options, new ProgressBar('WebUI'));
-		if ($vb_show_cli_progress_bar) { $o_progress->setMode('CLI'); }
+		if ($vb_show_cli_progress_bar) { $o_progress->setMode('CLI'); $o_progress->set('outputToTerminal', true); }
 
 		if ($vb_use_ncurses = (isset($pa_options['useNcurses']) && ($pa_options['useNcurses'])) ? true : false) {
 			$vb_use_ncurses = caCLIUseNcurses();
