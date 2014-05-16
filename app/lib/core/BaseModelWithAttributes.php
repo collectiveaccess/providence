@@ -319,7 +319,7 @@
 				}
 				return false;
 			}
-			$this->setFieldValuesArray($this->addAttributesToFieldValuesArray());
+			//$this->setFieldValuesArray($this->addAttributesToFieldValuesArray());
 			return true;
 		}
 		# ------------------------------------------------------------------
@@ -389,7 +389,7 @@
 			$this->_initAttributeQueues();
 			
 			// set the field values array for this instance
-			$this->setFieldValuesArray($this->addAttributesToFieldValuesArray());
+			//$this->setFieldValuesArray($this->addAttributesToFieldValuesArray());
 			return true;
 		}
 		# ------------------------------------------------------------------
@@ -438,7 +438,7 @@
 			$this->setFieldValuesArray(array());
 			if ($vn_c = parent::load($pm_id)) {
 				// Copy attributes into field values array in BaseModel
-				$this->setFieldValuesArray($this->addAttributesToFieldValuesArray());
+				//$this->setFieldValuesArray($this->addAttributesToFieldValuesArray());
 			}
 			return $vn_c;
 		}
@@ -477,7 +477,7 @@
 				}
 				
 				// set the field values array for this instance
-				$this->setFieldValuesArray($va_field_values_with_updated_attributes);
+				//$this->setFieldValuesArray($va_field_values_with_updated_attributes);
 				
 				$this->doSearchIndexing($va_fields_changed_array);	// TODO: SHOULD SECOND PARAM (REINDEX) BE "TRUE"?
 				
@@ -520,10 +520,10 @@
 			if(parent::update($pa_options)) {
 				$this->_commitAttributes($this->getTransaction());
 				
-				$va_field_values_with_updated_attributes = $this->addAttributesToFieldValuesArray();	// copy committed attribute values to field values array
+			//	$va_field_values_with_updated_attributes = $this->addAttributesToFieldValuesArray();	// copy committed attribute values to field values array
 				
 				// set the field values array for this instance
-				$this->setFieldValuesArray($va_field_values_with_updated_attributes);
+				//$this->setFieldValuesArray($va_field_values_with_updated_attributes);
 				
 				$this->doSearchIndexing($va_fields_changed_array);
 				
@@ -1844,9 +1844,6 @@
 		}
 		# ------------------------------------------------------------------
 		// --- Utilities
-		# ------------------------------------------------------------------
-		# ------------------------------------------------------------------
-		// --- Utilties
 		# ------------------------------------------------------------------
 		/**
 		 * Copies all attributes attached to the current row to the row specified by $pn_row_id
