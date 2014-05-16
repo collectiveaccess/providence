@@ -530,7 +530,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							$va_element = $this->_getElementIDForAccessPoint($va_lower_term->field);
 							
 							switch($va_element['datatype']) {
-								case 4:		// geocode
+								case __CA_ATTRIBUTE_VALUE_GEOCODE__:
 									$t_geocode = new GeocodeAttributeValue();
 									$va_parsed_value = $t_geocode->parseValue($va_lower_term->text, $va_element['element_info']);
 									$vs_lower_lat = $va_parsed_value['value_decimal1'];
@@ -553,7 +553,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 											(cav.value_decimal2 BETWEEN ".floatval($vs_lower_long)." AND ".floatval($vs_upper_long).")	
 									";
 									break;
-								case 6:		// currency
+								case __CA_ATTRIBUTE_VALUE_CURRENCY__:
 									$t_cur = new CurrencyAttributeValue();
 									$va_parsed_value = $t_cur->parseValue($va_lower_term->text, $va_element['element_info']);
 									$vs_currency = preg_replace('![^A-Z0-9]+!', '', $va_parsed_value['value_longtext1']);
@@ -576,7 +576,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 											
 									";
 									break;
-								case 10:	// timecode
+								case __CA_ATTRIBUTE_VALUE_TIMECODE__:
 									$t_timecode = new TimecodeAttributeValue();
 									$va_parsed_value = $t_timecode->parseValue($va_lower_term->text, $va_element['element_info']);
 									$vn_lower_val = $va_parsed_value['value_decimal1'];
@@ -584,7 +584,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$va_parsed_value = $t_timecode->parseValue($va_upper_term->text, $va_element['element_info']);
 									$vn_upper_val = $va_parsed_value['value_decimal1'];
 									break;
-								case 8: 	// length
+								case __CA_ATTRIBUTE_VALUE_LENGTH__:
 									$t_len = new LengthAttributeValue();
 									$va_parsed_value = $t_len->parseValue($va_lower_term->text, $va_element['element_info']);
 									$vn_lower_val = $va_parsed_value['value_decimal1'];
@@ -592,7 +592,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$va_parsed_value = $t_len->parseValue($va_upper_term->text, $va_element['element_info']);
 									$vn_upper_val = $va_parsed_value['value_decimal1'];
 									break;
-								case 9: 	// weight
+								case __CA_ATTRIBUTE_VALUE_WEIGHT__:
 									$t_weight = new WeightAttributeValue();
 									$va_parsed_value = $t_weight->parseValue($va_lower_term->text, $va_element['element_info']);
 									$vn_lower_val = $va_parsed_value['value_decimal1'];
@@ -600,7 +600,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$va_parsed_value = $t_weight->parseValue($va_upper_term->text, $va_element['element_info']);
 									$vn_upper_val = $va_parsed_value['value_decimal1'];
 									break;
-								case 11: 	// integer
+								case __CA_ATTRIBUTE_VALUE_INTEGER__:
 									$vn_lower_val = intval($va_lower_term->text);
 									$vn_upper_val = intval($va_upper_term->text);
 									
@@ -616,7 +616,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 											
 									";
 									break;
-								case 12:	// decimal
+								case __CA_ATTRIBUTE_VALUE_NUMERIC__:
 									$vn_lower_val = floatval($va_lower_term->text);
 									$vn_upper_val = floatval($va_upper_term->text);
 									break;
@@ -842,7 +842,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 													// parsed from natural language input and for length dimensions using unit conversion
 													//
 													switch($t_element->get('datatype')) {
-														case 2:		// dates		
+														case __CA_ATTRIBUTE_VALUE_DATERANGE__:	
 															$vb_all_numbers = true;
 															foreach($va_raw_terms as $vs_term) {
 																if (!is_numeric($vs_term)) {
@@ -895,7 +895,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																}
 															}
 															break;
-														case 4:		// geocode
+														case __CA_ATTRIBUTE_VALUE_GEOCODE__:
 															$t_geocode = new GeocodeAttributeValue();
 															// If it looks like a lat/long pair that has been tokenized by Lucene
 															// into oblivion rehydrate it here.
@@ -916,7 +916,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																";
 															}
 															break;
-														case 6:		// currency
+														case __CA_ATTRIBUTE_VALUE_CURRENCY__:
 															$t_cur = new CurrencyAttributeValue();
 															$va_parsed_value = $t_cur->parseValue(join(' ', $va_raw_terms), $t_element->getFieldValuesArray());
 															$vn_amount = $va_parsed_value['value_decimal1'];
@@ -936,7 +936,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																	
 															";
 															break;
-														case 8:		// length
+														case __CA_ATTRIBUTE_VALUE_LENGTH__:
 															$t_len = new LengthAttributeValue();
 															$va_parsed_value = $t_len->parseValue(array_shift($va_raw_terms), $t_element->getFieldValuesArray());
 															$vn_len = $va_parsed_value['value_decimal1'];	// this is always in meters so we can compare this value to the one in the database
@@ -953,7 +953,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																	
 															";
 															break;
-														case 9:		// weight
+														case __CA_ATTRIBUTE_VALUE_WEIGHT__:
 															$t_weight = new WeightAttributeValue();
 															$va_parsed_value = $t_weight->parseValue(array_shift($va_raw_terms), $t_element->getFieldValuesArray());
 															$vn_weight = $va_parsed_value['value_decimal1'];	// this is always in kilograms so we can compare this value to the one in the database
@@ -970,7 +970,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																	
 															";
 															break;
-														case 10:	// timecode
+														case __CA_ATTRIBUTE_VALUE_TIMECODE__:
 															$t_timecode = new TimecodeAttributeValue();
 															$va_parsed_value = $t_timecode->parseValue(join(' ', $va_raw_terms), $t_element->getFieldValuesArray());
 															$vn_timecode = $va_parsed_value['value_decimal1'];
@@ -987,7 +987,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																	
 															";
 															break;
-														case 11: 	// integer
+														case __CA_ATTRIBUTE_VALUE_INTEGER__:
 															$vs_direct_sql_query = "
 																SELECT ca.row_id, 1
 																FROM ca_attribute_values cav
@@ -1000,7 +1000,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																	
 															";
 															break;
-														case 12:	// decimal
+														case __CA_ATTRIBUTE_VALUE_NUMERIC__:
 															$vs_direct_sql_query = "
 																SELECT ca.row_id, 1
 																FROM ca_attribute_values cav
@@ -1303,17 +1303,17 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			// do we need to index this (don't index attribute types that we'll search directly)
 			if (WLPlugSearchEngineSqlSearch::$s_metadata_elements[$vn_field_num_proc]) {
 				switch(WLPlugSearchEngineSqlSearch::$s_metadata_elements[$vn_field_num_proc]['datatype']) {
-					case 0:		//container
-					case 2:		//daterange
-					case 4:		//geocode
-					case 6:		//currency
-					case 8:		//length
-					case 9:		//weight
-					case 10:	//timecode
-					case 15:	//media
-					case 16:	//file
-					case 17:	//place
-					case 18:	//occurrence
+					case __CA_ATTRIBUTE_VALUE_CONTAINER__:	
+					case __CA_ATTRIBUTE_VALUE_DATERANGE__:	
+					case __CA_ATTRIBUTE_VALUE_GEOCODE__:	
+					case __CA_ATTRIBUTE_VALUE_CURRENCY__:
+					case __CA_ATTRIBUTE_VALUE_LENGTH__:
+					case __CA_ATTRIBUTE_VALUE_WEIGHT__:
+					case __CA_ATTRIBUTE_VALUE_TIMECODE__:
+					case __CA_ATTRIBUTE_VALUE_MEDIA__:
+					case __CA_ATTRIBUTE_VALUE_FILE__:
+					//case 17:	//place
+					//case 18:	//occurrence
 						return;
 				}
 			}
