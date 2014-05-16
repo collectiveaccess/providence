@@ -604,7 +604,7 @@ class ca_attributes extends BaseModel {
 		
 		$va_element_ids = array();
 		foreach($pa_element_ids as $vn_element_id) {
-			if (!is_array(ca_attributes::$s_get_attributes_cache[$pn_table_num.'/'.$pn_row_id][$vn_element_id])) {
+			if (!isset(ca_attributes::$s_get_attributes_cache[$pn_table_num.'/'.$pn_row_id][$vn_element_id])) {
 				$va_element_ids[] = $vn_element_id;
 			}
 		}
