@@ -259,7 +259,7 @@ class ElementsController extends BaseEditorController {
 					} else {
 						$vs_val = $va_request['setting_'.$vs_setting_key];
 					}
-					
+					$vs_error = null;
 					if (!($t_element->setSetting($vs_setting_key, $vs_val, $vs_error))) {
 						$this->notification->addNotification(_t("Setting %2 is not valid: %1", $vs_error, $vs_setting_key), __NOTIFICATION_TYPE_ERROR__);
 						continue;
@@ -528,7 +528,7 @@ class ElementsController extends BaseEditorController {
 			}
 		}
 		
-		$this->view->setVar('available_settings',$t_element->getAvailableSettings($ps_service));
+		$this->view->setVar('available_settings',$t_element->getAvailableSettings());
 		$this->render("ajax_elements_settings_form_html.php");
 	}
 	# -------------------------------------------------------

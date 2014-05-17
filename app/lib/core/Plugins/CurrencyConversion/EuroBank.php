@@ -48,7 +48,7 @@
 		/**
 		 * Convert currency value to another currency. Will throw an exception if value cannot be converted.
 		 *
-		 * @param $ps_value string Currency value with specifier (Ex. $500, USD 500, ¥1200, CAD 750)
+		 * @param $ps_value string Currency value with specifier (Ex. $500, USD 500, ��1200, CAD 750)
 		 * @param $ps_to string Specifier of currency to convert value to (Ex. USD, CAD, EUR)
 		 * @param $pa_options array Options are:
 		 *		numericValue = return floating point numeric value only, without currency specifier. Default is false.
@@ -105,17 +105,17 @@
 			
 			$vs_format = Zend_Locale_Data::getContent($o_locale, 'currencynumber');
 
-			// this returns a string like '50,00 ¤' for locale de_DE
- 			$vs_decimal_with_placeholder = Zend_Locale_Format::toNumber($vn_converted_value, array('locale' => $locale, 'number_format' => $vs_format, 'precision' => 2));
+			// this returns a string like '50,00 ��' for locale de_DE
+ 			$vs_decimal_with_placeholder = Zend_Locale_Format::toNumber($vn_converted_value, array('locale' => $o_locale, 'number_format' => $vs_format, 'precision' => 2));
 
  			// if the currency placeholder is the first character, for instance in en_US locale ($10), insert a space.
  			// this has to be done because we don't print "$10" (which is expected in the locale rules) but "USD 10" ... and that looks nicer with an additional space.
- 			if(substr($vs_decimal_with_placeholder,0,2)=='¤'){ // for whatever reason '¤' has length 2
- 				$vs_decimal_with_placeholder = str_replace('¤', '¤ ', $vs_decimal_with_placeholder);
+ 			if(substr($vs_decimal_with_placeholder,0,2)=='��'){ // for whatever reason '��' has length 2
+ 				$vs_decimal_with_placeholder = str_replace('��', '�� ', $vs_decimal_with_placeholder);
  			}
 
  			// insert currency which is not locale-dependent in our case
- 			return str_replace('¤', $ps_to, $vs_decimal_with_placeholder);
+ 			return str_replace('��', $ps_to, $vs_decimal_with_placeholder);
 		}
 		# ------------------------------------------------
 		/**

@@ -359,6 +359,10 @@
 		 *
 		 *			The default is AND
 		 *
+		 *		sort = field to sort on. Must be in <table>.<field> format and be an intrinsic field in either the primary table or the label table. Sort order can be set using the sortDirection option.
+		 *		sortDirection = the direction of the sort. Values are ASC (ascending) and DESC (descending). [Default is ASC]
+		 *		allowWildcards = consider "%" as a wildcard when searching. Any term including a "%" character will be queried using the SQL LIKE operator. [Default is false]
+		 *
 		 * @return mixed Depending upon the returnAs option setting, an array, subclass of LabelableBaseModelWithAttributes or integer may be returned.
 		 */
 		public static function find($pa_values, $pa_options=null) {
@@ -405,19 +409,30 @@
 				//
 				if ($t_instance->ATTRIBUTE_TYPE_LIST_CODE) {
 					if (isset($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD]) && !is_numeric($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD])) {
-						if ($vn_id = ca_lists::getItemID($t_instance->ATTRIBUTE_TYPE_LIST_CODE, $pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD])) {
-							$pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD] = $vn_id;
+						if(!is_array($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD])) { $pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD] = array($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD]); }
+						
+						foreach($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD] as $vn_i => $vm_value) {
+							if (!is_numeric($vm_value)) {
+								if ($vn_id = ca_lists::getItemID($t_instance->ATTRIBUTE_TYPE_LIST_CODE, $vm_value)) {
+									$pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD][$vn_i] = $vn_id;
+								}
+							}
 						}
 					}
 				}
-
+			
 				//
 				// Convert other intrinsic list references
 				//
 				foreach($pa_values as $vs_field => $vm_value) {
+					if ($vs_field == $t_instance->ATTRIBUTE_TYPE_ID_FLD) { continue; }
 					if($vs_list_code = $t_instance->getFieldInfo($vs_field, 'LIST_CODE')) {
-						if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) {
-							$pa_values[$vs_field] = $vn_id;
+						if(!is_array($vm_value)) { $pa_values[$vs_field] = $vm_value = array($vm_value); }
+						foreach($vm_value as $vn_i => $vm_ivalue) {
+							if (is_numeric($vm_ivalue)) { continue; }
+							if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_ivalue)) {
+								$pa_values[$vs_field][$vn_i] = $vn_id;
+							}
 						}
 					}
 				}
@@ -452,6 +467,8 @@
 
 						if (is_null($vm_value)) {
 							$va_sql_wheres[] = "({$vs_label_table}.{$vs_field} IS NULL)";
+						} elseif (caGetOption('allowWildcards', $pa_options, false) && (strpos($vm_value, '%') !== false)) {
+							$va_sql_wheres[] = "({$vs_label_table}.{$vs_field} LIKE {$vm_value})";
 						} else {
 							if ($vm_value === '') { continue; }
 							$va_sql_wheres[] = "({$vs_label_table}.{$vs_field} = {$vm_value})";
@@ -491,7 +508,7 @@
 			
 			if ($vb_has_simple_fields) {
 				foreach ($pa_values as $vs_field => $vm_value) {
-					if (is_array($vm_value)) { continue; }
+					//if (is_array($vm_value)) { continue; }
 
 					if (!$t_instance->hasField($vs_field)) {
 						continue;
@@ -499,15 +516,29 @@
 
 					if ($t_instance->_getFieldTypeType($vs_field) == 0) {
 						if (!is_numeric($vm_value) && !is_null($vm_value)) {
-							$vm_value = intval($vm_value);
+							if (is_array($vm_value)) {
+								foreach($vm_value as $vn_i => $vm_ivalue) {
+									$vm_value[$vn_i] = intval($vm_ivalue);
+								}
+							} else {
+								$vm_value = intval($vm_value);
+							}
 						}
 					}
 
 					if (is_null($vm_value)) {
 						$va_label_sql[] = "({$vs_table}.{$vs_field} IS NULL)";
+					} elseif (caGetOption('allowWildcards', $pa_options, false) && (strpos($vm_value, '%') !== false)) {
+						$va_label_sql[] = "({$vs_table}.{$vs_field} LIKE ?)";
+						$va_sql_params[] = $vm_value;
 					} else {
 						if ($vm_value === '') { continue; }
-						$va_label_sql[] = "({$vs_table}.{$vs_field} = ?)";
+						if (is_array($vm_value)) {
+							if (!sizeof($vm_value)) { continue; }
+							$va_label_sql[] = "({$vs_table}.{$vs_field} IN (?))";
+						} else {
+							$va_label_sql[] = "({$vs_table}.{$vs_field} = ?)";
+						}
 						$va_sql_params[] = $vm_value;
 					}
 				}
@@ -545,7 +576,11 @@
 							default:
 								if (!($vs_fld = Attribute::getSortFieldForDatatype($vn_datatype))) { $vs_fld = 'value_longtext1'; }
 								
-								$vs_q .= "(ca_attribute_values.{$vs_fld} = ?)";
+								if (caGetOption('allowWildcards', $pa_options, false) && (strpos($vm_value, '%') !== false)) {
+									$vs_q .= "(ca_attribute_values.{$vs_fld} LIKE ?)";
+								} else {
+									$vs_q .= "(ca_attribute_values.{$vs_fld} = ?)";
+								}
 								$va_sql_params[] = (string)$vm_value;
 								break;
 						}
@@ -563,6 +598,27 @@
 			$vs_sql = "SELECT * FROM {$vs_table}";
 			$vs_sql .= join("\n", $va_joins);
 			$vs_sql .=" WHERE {$vs_deleted_sql} ".join(" {$ps_boolean} ", $va_label_sql);
+			
+			$vs_orderby = '';
+			if ($vs_sort = caGetOption('sort', $pa_options, null)) {
+				$vs_sort_direction = caGetOption('sortDirection', $pa_options, 'ASC', array('validValues' => array('ASC', 'DESC')));
+				$va_tmp = explode(".", $vs_sort);
+				if (sizeof($va_tmp) == 2) {
+					switch($va_tmp[0]) {
+						case $vs_table:
+							if ($t_instance->hasField($va_tmp[1])) {
+								$vs_orderby = " ORDER BY {$vs_sort} {$vs_sort_direction}";
+							}
+							break;
+						case $vs_label_table:
+							if ($t_label->hasField($va_tmp[1])) {
+								$vs_orderby = " ORDER BY {$vs_sort} {$vs_sort_direction}";
+							}
+							break;
+					}
+				}
+				if ($vs_orderby) { $vs_sql .= $vs_orderby; }
+			}
 
 			if (isset($pa_options['transaction']) && ($pa_options['transaction'] instanceof Transaction)) {
 				$o_db = $pa_options['transaction']->getDb();
@@ -571,7 +627,7 @@
 			}
 		
 			$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
-		
+	
 			$qr_res = $o_db->query($vs_sql, $va_sql_params);
 			$vn_c = 0;
 		
@@ -744,7 +800,9 @@
 						$vs_pk = $this->primaryKey();
 						$vs_label_table_name = $this->getLabelTableName();
 						$t_label_instance = $this->getLabelTableInstance();
-						$vs_display_field = ($t_label_instance->hasField($va_tmp[2])) ? $va_tmp[2] : $this->getLabelDisplayField();
+						if (!$vs_template && ($vs_display_field = ($t_label_instance->hasField($va_tmp[2])) ? $t_label_instance->tableName().".".$va_tmp[2] : ($this->hasField($va_tmp[2]) ? $this->tableName().".".$va_tmp[2] : null))) {
+							$vs_template ="^{$vs_display_field}";
+						}
 						
 						$vn_top_id = null;
 						if (!($va_ancestor_list = $this->getHierarchyAncestors(null, array('idsOnly' => true, 'includeSelf' => true)))) {
@@ -1081,7 +1139,7 @@
 				$va_data['preferred_labels'] = $va_preferred_labels_for_export;
 			}
 			
-			$va_non_preferred_labels = $this->get($this->tableName().".nonpreferred_labels", array('returnAsArray' => true, 'returnAllLocales' => true));
+			$va_nonpreferred_labels = $this->get($this->tableName().".nonpreferred_labels", array('returnAsArray' => true, 'returnAllLocales' => true));
 			if(is_array($va_nonpreferred_labels) && sizeof($va_nonpreferred_labels)) {
 				$va_nonpreferred_labels_for_export = array();
 				foreach($va_nonpreferred_labels as $vn_id => $va_labels_by_locale) {
@@ -2081,7 +2139,7 @@
 		/**
 		 * 
 		 */
-		public function getUserGroupHTMLFormBundle($po_request, $ps_form_name, $pn_table_num, $pn_item_id, $pn_user_id=null, $pa_options=null) {
+		public function getUserGroupHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pn_table_num, $pn_item_id, $pn_user_id=null, $pa_options=null) {
 			$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 			$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 			
@@ -2095,7 +2153,8 @@
 			
 			$o_view->setVar('t_instance', $this);
 			$o_view->setVar('table_num', $pn_table_num);
-			$o_view->setVar('id_prefix', $ps_form_name);		
+			$o_view->setVar('id_prefix', $ps_form_name);	
+			$o_view->setVar('placement_code', $ps_placement_code);		
 			$o_view->setVar('request', $po_request);	
 			$o_view->setVar('t_group', $t_group);
 			$o_view->setVar('initialValues', $this->getUserGroups(array('returnAsInitialValuesForBundle' => true)));
@@ -2149,7 +2208,7 @@
 			$qr_res->seek(0);
 			while($qr_res->nextRow()) {
 				$va_row = array();
-				foreach(array('user_id', 'fname', 'lname', 'email', 'sdatetime', 'edatetime', 'access') as $vs_f) {
+				foreach(array('user_id', 'user_name', 'fname', 'lname', 'email', 'sdatetime', 'edatetime', 'access') as $vs_f) {
 					$va_row[$vs_f] = $qr_res->get($vs_f);
 				}
 				if ($vb_supports_date_restrictions) {
@@ -2300,7 +2359,7 @@
 		/**
 		 * 
 		 */
-		public function getUserHTMLFormBundle($po_request, $ps_form_name, $pn_table_num, $pn_item_id, $pn_user_id=null, $pa_options=null) {
+		public function getUserHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pn_table_num, $pn_item_id, $pn_user_id=null, $pa_options=null) {
 			$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 			$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 			
@@ -2313,7 +2372,8 @@
 			
 			$o_view->setVar('t_instance', $this);
 			$o_view->setVar('table_num', $pn_table_num);
-			$o_view->setVar('id_prefix', $ps_form_name);		
+			$o_view->setVar('id_prefix', $ps_form_name);	
+			$o_view->setVar('placement_code', $ps_placement_code);		
 			$o_view->setVar('request', $po_request);	
 			$o_view->setVar('t_user', $t_user);
 			$o_view->setVar('initialValues', $this->getUsers(array('returnAsInitialValuesForBundle' => true)));

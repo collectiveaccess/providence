@@ -224,12 +224,12 @@ class SearchEngine extends SearchBase {
 			} 
 				
 			// Filter on type	
-			if (is_array($va_type_ids = $this->getTypeRestrictionList()) && sizeof($va_type_ids)) {
+			if (is_array($va_type_ids = $this->getTypeRestrictionList())) {
 				$this->addResultFilter($this->ops_tablename.'.type_id', 'IN', join(",",$va_type_ids));
 			}
 			
 			// Filter on source
-			if (is_array($va_source_ids = $this->getSourceRestrictionList()) && sizeof($va_source_ids)) {
+			if (is_array($va_source_ids = $this->getSourceRestrictionList())) {
 				$this->addResultFilter($this->ops_tablename.'.source_id', 'IN', join(",",$va_source_ids));
 			}
 			
@@ -514,7 +514,7 @@ class SearchEngine extends SearchBase {
 								FROM ca_attributes attr
 								INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
 								INNER JOIN ca_list_item_labels AS lil ON lil.item_id = attr_vals.item_id
-								INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = attr.row_id
+								INNER JOIN {$vs_search_tmp_table} ON {$vs_search_tmp_table}.row_id = attr.row_id
 								WHERE
 									(attr_vals.element_id = ?) AND (attr.table_num = ?) AND (lil.{$vs_sort_field} IS NOT NULL)
 								ORDER BY lil.{$vs_sort_field}
@@ -785,8 +785,24 @@ class SearchEngine extends SearchBase {
 				}
 				
 				$va_terms = array();
+				$vs_term = (string)$po_term->getTerm()->text;
 				foreach($va_fields as $vs_field) {
-					$va_terms['terms'][] = new Zend_Search_Lucene_Index_Term($po_term->getTerm()->text, $vs_field);
+					$va_tmp = explode(".", $vs_field);
+					
+					// Rewrite FT_BIT fields to accept yes/no values
+					if ($this->opo_datamodel->getFieldInfo($va_tmp[0], $va_tmp[1], 'FIELD_TYPE') == FT_BIT) {
+						switch(mb_strtolower($vs_term)) {
+							case 'yes':
+							case _t('yes'):
+								$vs_term = 1;
+								break;
+							case 'no':
+							case _t('no'):
+								$vs_term = 0;
+								break;
+						}
+					} 
+					$va_terms['terms'][] = new Zend_Search_Lucene_Index_Term($vs_term, $vs_field);
 					$va_terms['signs'][] = ($vs_bool == 'AND') ? true : null;
 				}
 				
@@ -1082,7 +1098,7 @@ class SearchEngine extends SearchBase {
 	public function getTypeRestrictionList() {
 		if (function_exists("caGetTypeRestrictionsForUser")) {
 			$va_pervasive_types = caGetTypeRestrictionsForUser($this->ops_tablename);	// restrictions set in app.conf or by associated user role
-			if (!is_array($va_pervasive_types) || !sizeof($va_pervasive_types)) { return $this->opa_search_type_ids; }
+			if (!is_array($va_pervasive_types)) { return $this->opa_search_type_ids; }
 				
 			if (is_array($this->opa_search_type_ids) && sizeof($this->opa_search_type_ids)) {
 				$va_filtered_types = array();
@@ -1166,7 +1182,7 @@ class SearchEngine extends SearchBase {
 	public function getSourceRestrictionList() {
 		if (function_exists("caGetSourceRestrictionsForUser")) {
 			$va_pervasive_sources = caGetSourceRestrictionsForUser($this->ops_tablename);	// restrictions set in app.conf or by associated user role
-			if (!is_array($va_pervasive_sources) || !sizeof($va_pervasive_sources)) { return $this->opa_search_source_ids; }
+			if (!is_array($va_pervasive_sources)) { return $this->opa_search_source_ids; }
 				
 			if (is_array($this->opa_search_source_ids) && sizeof($this->opa_search_source_ids)) {
 				$va_filtered_sources = array();

@@ -288,7 +288,7 @@
 	
 						$vn_item_count++;
 	
-						$va_row_headers[] = ($vn_item_count)." ".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), 'caResultsEditorEditLink', $vs_subject_table, $vn_id);
+						$va_row_headers[] = ($vn_item_count)." ".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), 'caResultsEditorEditLink', $this->ops_tablename, $vn_id);
 	
 					}
 				}
@@ -408,7 +408,7 @@
 						'parameters' => array(
 							'type_id' => $va_item['item_id']
 						),
-						'is_enabled' => 1,
+						'is_enabled' => $va_item['is_enabled'],
 						'navigation' => $va_subtypes
 					);
 				}

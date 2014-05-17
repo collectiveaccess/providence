@@ -32,6 +32,8 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 require_once(__CA_LIB_DIR__."/core/Media/MediaVolumes.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
+require_once(__CA_MODELS_DIR__."/ca_users.php");
+require_once(__CA_MODELS_DIR__."/ca_user_groups.php");
 
 class Installer {
 	# --------------------------------------------------
@@ -336,7 +338,7 @@ class Installer {
 			}
 			$vo_db->query($vs_statement);
 			if ($vo_db->numErrors()) {
-				$this->addError("Error while loading the database schema: ".join("; ",$o_db->getErrors()));
+				$this->addError("Error while loading the database schema: ".join("; ",$vo_db->getErrors()));
 				return false;
 			}
 		}
@@ -595,7 +597,7 @@ class Installer {
 		$t_md_element->insert();
 
 		if ($t_md_element->numErrors()) {
-			$this->addError("There was an error while inserting metadata element {$ps_element_code}: ".join(" ",$t_md_element->getErrors()));
+			$this->addError("There was an error while inserting metadata element {$vs_element_code}: ".join(" ",$t_md_element->getErrors()));
 			return false;
 		}
 
@@ -702,7 +704,7 @@ class Installer {
 
 				self::addLabelsFromXMLElement($t_ui_screens, $vo_screen->labels, $this->opa_locales);
 
-				$va_available_bundles = $t_ui_screens->getAvailableBundles($pn_type,array('dontCache' => true));
+				$va_available_bundles = $t_ui_screens->getAvailableBundles(null,array('dontCache' => true));
 
 				// create ui bundle placements
 				foreach($vo_screen->bundlePlacements->children() as $vo_placement) {
@@ -729,6 +731,45 @@ class Installer {
 							}
 						}
 					}
+				}
+			}
+
+			// set user and group access
+			if($vo_ui->userAccess) {
+				$t_user = new ca_users();
+				$va_ui_users = array();
+				foreach($vo_ui->userAccess->children() as $vo_permission){
+					$vs_user = trim((string)self::getAttribute($vo_permission, "user"));
+					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+
+					if($vn_access && $t_user->load(array('user_name' => $vs_user))){
+						$va_ui_users[$t_user->getUserID()] = $vn_access;
+					} else {
+						$this->addError("User name or access value invalid for UI {$vs_ui_code} (permission item with user name '{$vs_user}')");
+					}
+				}
+
+				if(sizeof($va_ui_users)>0){
+					$t_ui->addUsers($va_ui_users);
+				}
+			}
+
+			if($vo_ui->groupAccess) {
+				$t_group = new ca_user_groups();
+				$va_ui_groups = array();
+				foreach($vo_ui->groupAccess->children() as $vo_permission){
+					$vs_group = trim((string)self::getAttribute($vo_permission, "group"));
+					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+
+					if($vn_access && $t_group->load(array('code' => $vs_group))){
+						$va_ui_groups[$t_group->getPrimaryKey()] = $vn_access;
+					} else {
+						$this->addError("Group code or access value invalid for UI {$vs_ui_code} (permission item with group code '{$vs_group}')");
+					}
+				}
+
+				if(sizeof($va_ui_groups)>0){
+					$t_ui->addUserGroups($va_ui_groups);
 				}
 			}
 		}
@@ -954,7 +995,6 @@ class Installer {
 					}
 				}
 			}
-
 		}
 		return true;
 	}
@@ -1050,6 +1090,45 @@ class Installer {
 					}
 				}
 			}
+
+			if($vo_display->userAccess) {
+				$t_user = new ca_users();
+				$va_display_users = array();
+				foreach($vo_display->userAccess->children() as $vo_permission){
+					$vs_user = trim((string)self::getAttribute($vo_permission, "user"));
+					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+
+					if($vn_access && $t_user->load(array('user_name' => $vs_user))){
+						$va_display_users[$t_user->getUserID()] = $vn_access;
+					} else {
+						$this->addError("User name or access value invalid for display {$vs_display_code} (permission item with user name '{$vs_user}')");
+					}
+				}
+
+				if(sizeof($va_display_users)>0){
+					$t_display->addUsers($va_display_users);
+				}
+			}
+
+			if($vo_display->groupAccess) {
+				$t_group = new ca_user_groups();
+				$va_display_groups = array();
+				foreach($vo_display->groupAccess->children() as $vo_permission){
+					$vs_group = trim((string)self::getAttribute($vo_permission, "group"));
+					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+
+					if($vn_access && $t_group->load(array('code' => $vs_group))){
+						$va_display_groups[$t_group->getPrimaryKey()] = $vn_access;
+					} else {
+						$this->addError("Group code or access value invalid for display {$vs_display_code} (permission item with group code '{$vs_group}')");
+					}
+				}
+
+				if(sizeof($va_display_groups)>0){
+					$t_display->addUserGroups($va_display_groups);
+				}
+			}
+
 		}
 
 		return true;
@@ -1061,7 +1140,7 @@ class Installer {
 		
 		$vn_i = 1;
 		foreach($po_placements->children() as $vo_placement){
-			$vs_code = self::getAttribute($vo_item, "code");
+			$vs_code = self::getAttribute($vo_placement, "code");
 			$vs_bundle = (string)$vo_placement->bundle;
 
 			$va_settings = $this->_processSettings(null, $vo_placement->settings);
@@ -1136,6 +1215,45 @@ class Installer {
 					return false;
 				}
 			}
+
+			// set user and group access
+			if($vo_form->userAccess) {
+				$t_user = new ca_users();
+				$va_form_users = array();
+				foreach($vo_form->userAccess->children() as $vo_permission){
+					$vs_user = trim((string)self::getAttribute($vo_permission, "user"));
+					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+
+					if($vn_access && $t_user->load(array('user_name' => $vs_user))){
+						$va_form_users[$t_user->getUserID()] = $vn_access;
+					} else {
+						$this->addError("User name or access value invalid for search form {$vs_form_code} (permission item with user name '{$vs_user}')");
+					}
+				}
+
+				if(sizeof($va_form_users)>0){
+					$t_form->addUsers($va_form_users);
+				}
+			}
+
+			if($vo_form->groupAccess) {
+				$t_group = new ca_user_groups();
+				$va_form_groups = array();
+				foreach($vo_form->groupAccess->children() as $vo_permission){
+					$vs_group = trim((string)self::getAttribute($vo_permission, "group"));
+					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
+
+					if($vn_access && $t_group->load(array('code' => $vs_group))){
+						$va_form_groups[$t_group->getPrimaryKey()] = $vn_access;
+					} else {
+						$this->addError("Group code or access value invalid for search form {$vs_form_code} (permission item with group code '{$vs_group}')");
+					}
+				}
+
+				if(sizeof($va_form_groups)>0){
+					$t_form->addUserGroups($va_form_groups);
+				}
+			}
 		}
 
 		return true;
@@ -1147,7 +1265,7 @@ class Installer {
 		
 		$vn_i = 0;
 		foreach($po_placements->children() as $vo_placement){
-			$vs_code = self::getAttribute($vo_item, "code");
+			$vs_code = self::getAttribute($vo_placement, "code");
 			$vs_bundle = (string)$vo_placement->bundle;
 
 			$va_settings = $this->_processSettings(null, $vo_placement->settings);
@@ -1164,7 +1282,6 @@ class Installer {
 	}
 	# --------------------------------------------------
 	public function processGroups(){
-		require_once(__CA_MODELS_DIR__."/ca_user_groups.php");
 
 		// Create root group		
 		$t_user_group = new ca_user_groups();
@@ -1175,7 +1292,7 @@ class Installer {
 		$t_user_group->insert();
 		
 		if ($t_user_group->numErrors()) {
-			$this->addError("Errors creating root user group {$vs_group_code}: ".join("; ",$t_user_group->getErrors()));
+			$this->addError("Errors creating root user group 'Root': ".join("; ",$t_user_group->getErrors()));
 			return false;
 		}
 		if($this->ops_base_name){ // "merge" profile and its base
@@ -1229,7 +1346,6 @@ class Installer {
 	}
 	# --------------------------------------------------
 	public function processLogins(){
-		require_once(__CA_MODELS_DIR__."/ca_users.php");
 
 		if($this->ops_base_name){ // "merge" profile and its base
 			$va_logins = array();
@@ -1396,6 +1512,17 @@ class Installer {
 			case 'none':
 			default:
 				return __CA_BUNDLE_ACCESS_NONE__;
+		}
+	}
+	# --------------------------------------------------
+	private function _convertUserGroupAccessStringToInt($ps_name) {
+		switch($ps_name) {
+			case 'read':
+				return 1;
+			case 'edit':
+				return 2;
+			default:
+				return null;
 		}
 	}
 	# --------------------------------------------------

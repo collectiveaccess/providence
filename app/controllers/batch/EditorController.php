@@ -92,7 +92,7 @@
  			
  			$this->view->setVar('batch_editor_last_settings', $va_last_settings = is_array($va_last_settings = $this->request->user->getVar('batch_editor_last_settings')) ? $va_last_settings : array());
  			
- 			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
+ 			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, null, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 				array(),
 				array(),
 				false,
@@ -160,7 +160,7 @@
  
  		}
  		# -------------------------------------------------------
- 		public function Delete() {
+ 		public function Delete($pa_options=null) {
  			list($vn_set_id, $t_set, $t_subject, $t_ui) = $this->_initView($pa_options);
 
  			if (!$this->request->user->canDoAction('can_batch_delete_'.$t_set->getAppDatamodel()->getTableName($t_set->get('table_num')))) {

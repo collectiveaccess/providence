@@ -115,13 +115,15 @@
 	 *			__CA_BUNDLE_ACCESS_EDIT__ (2)
 	 *			If not specified types are returned for which the user has at least __CA_BUNDLE_ACCESS_READONLY__
 	 *
+	 *		exactAccess = if set only sources with access equal to the "access" value are returned. Default is false.
+	 *
 	 * @return array List of numeric type_ids for which the user has access, or null if there are no restrictions at all
 	 */
 	function caGetTypeRestrictionsForUser($pm_table_name_or_num, $pa_options=null) {
 		global $g_request, $g_access_helpers_type_restriction_cache;
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
-		if ($g_request && $g_request->isLoggedIn() && ($g_request->user->canDoAction('is_administrator'))) { return null; }
+		//if ($g_request && $g_request->isLoggedIn() && ($g_request->user->canDoAction('is_administrator'))) { return null; }
 		
 		$vs_cache_key = md5($pm_table_name_or_num."/".print_r($pa_options, true));
 		if (isset($g_access_helpers_type_restriction_cache[$vs_cache_key])) { return $g_access_helpers_type_restriction_cache[$vs_cache_key]; }
@@ -161,7 +163,7 @@
 			}
 		}
 		
-		return $g_access_helpers_type_restriction_cache[$vs_cache_key] = $g_access_helpers_type_restriction_cache[$vs_cache_key]= $va_type_ids;
+		return $g_access_helpers_type_restriction_cache[$vs_cache_key] = $va_type_ids;
 	}
 	# ---------------------------------------------------------------------------------------------
 	/**
@@ -180,13 +182,15 @@
 	 *			__CA_BUNDLE_ACCESS_EDIT__ (2)
 	 *			If not specified sources are returned for which the user has at least __CA_BUNDLE_ACCESS_READONLY__
 	 *
+	 *		exactAccess = if set only sources with access equal to the "access" value are returned. Default is false.
+	 *
 	 * @return array List of numeric source_ids for which the user has access, or null if there are no restrictions at all
 	 */
 	function caGetSourceRestrictionsForUser($pm_table_name_or_num, $pa_options=null) {
 		global $g_request, $g_access_helpers_source_restriction_cache;
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
-		if ($g_request && $g_request->isLoggedIn() && ($g_request->user->canDoAction('is_administrator'))) { return null; }
+		//if ($g_request && $g_request->isLoggedIn() && ($g_request->user->canDoAction('is_administrator'))) { return null; }
 		
 		$vs_cache_key = md5($pm_table_name_or_num."/".print_r($pa_options, true));
 		if (isset($g_access_helpers_source_restriction_cache[$vs_cache_key])) { return $g_access_helpers_source_restriction_cache[$vs_cache_key]; }
@@ -206,7 +210,7 @@
 		// get sources user has at least read-only access to
 		$va_source_ids = null;
 		if ((bool)$t_instance->getAppConfig()->get('perform_source_access_checking') && $g_request && $g_request->isLoggedIn()) {
-			if (is_array($va_source_ids = $g_request->user->getSourcesWithAccess($t_instance->tableName(), $vn_min_access))) {
+			if (is_array($va_source_ids = $g_request->user->getSourcesWithAccess($t_instance->tableName(), $vn_min_access, $pa_options))) {
 				$va_source_ids = caMakeSourceIDList($pm_table_name_or_num, $va_source_ids, array_merge($pa_options, array('dont_include_subsources_in_source_restriction' => true)));
 			}
 		} 
@@ -226,7 +230,7 @@
 			}
 		}
 		
-		return $g_access_helpers_source_restriction_cache[$vs_cache_key] = $g_access_helpers_source_restriction_cache[$vs_cache_key]= $va_source_ids;
+		return $g_access_helpers_source_restriction_cache[$vs_cache_key] = $va_source_ids;
 	}
 	# ---------------------------------------------------------------------------------------------
 	/**

@@ -89,10 +89,6 @@
 			$vo_installer->processMetadataElements('caGetMetadataElementToBeLoaded');
 			
 			$vn_progress += 7;
-			caIncrementProgress($vn_progress, "Processing user interfaces");
-			$vo_installer->processUserInterfaces();
-			
-			$vn_progress += 7;
 			caIncrementProgress($vn_progress, "Processing access roles");
 			$vo_installer->processRoles();
 			
@@ -102,6 +98,10 @@
 			
 			caIncrementProgress($vn_progress, "Creating logins");
 			$va_login_info = $vo_installer->processLogins();
+
+			$vn_progress += 7;
+			caIncrementProgress($vn_progress, "Processing user interfaces");
+			$vo_installer->processUserInterfaces();
 			
 			$vn_progress += 7;
 			caIncrementProgress($vn_progress, "Processing displays");

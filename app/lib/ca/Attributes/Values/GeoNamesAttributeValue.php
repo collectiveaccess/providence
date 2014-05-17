@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,6 +33,7 @@
   /**
   *
   */
+  define("__CA_ATTRIBUTE_VALUE_GEONAMES__", 14);
   
  require_once(__CA_LIB_DIR__.'/core/Configuration.php');
  require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
@@ -141,7 +142,6 @@
 		'default' => 'name,countryName,continentCode',
 		'width' => 90, 'height' => 4,
 		'label' => _t('GeoNames elements'),
-		'validForRootOnly' => 1,
 		'description' => _t('Comma-separated list of GeoNames attributes to be pulled from the service to build the text representation for the selected location. See http://www.geonames.org/export/geonames-search.html for further reference, including the available element names. Note that latitude and longitude are always added to the text value to enable map display.')
 	),
 	'gnDelimiter' => array(
@@ -150,7 +150,6 @@
 		'default' => ', ',
 		'width' => 10, 'height' => 1,
 		'label' => _t('GeoNames element delimiter'),
-		'validForRootOnly' => 1,
 		'description' => _t('Delimiter to use between multiple values pulled from GeoNames service.')
 	),
 );

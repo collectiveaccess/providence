@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -204,13 +204,15 @@ class ca_attributes extends BaseModel {
 		unset(ca_attributes::$s_get_attributes_cache[$pn_table_num.'/'.$pn_row_id]);
 		$t_element = ca_attributes::getElementInstance($pm_element_code_or_id);
 		
-		$vb_already_in_transaction = $this->inTransaction();
-		if (!$vb_already_in_transaction) {
-			$o_trans = new Transaction();
+		$vb_web_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$o_trans = new Transaction($this->getDb());
+			$vb_web_set_transaction = true;
 			$this->setTransaction($o_trans);
 		} else {
 			$o_trans = $this->getTransaction();
 		}
+		
 		// create new attribute row
 		$this->set('element_id', $vn_attribute_id = $t_element->getPrimaryKey());
 		$this->set('locale_id', $pa_values['locale_id']);
@@ -223,7 +225,7 @@ class ca_attributes extends BaseModel {
 		$this->insert();
 		
 		if ($this->numErrors()) {
-			if (!$vb_already_in_transaction) {
+			if ($vb_web_set_transaction) {
 				$o_trans->rollback();
 			}
 			
@@ -268,14 +270,14 @@ class ca_attributes extends BaseModel {
 			// empty values to pass without complaint.
 			//
 			$this->delete(true);	// nuke existing ca_attributes record
-			if (!$vb_already_in_transaction) {
+			if ($vb_web_set_transaction) {
 				$o_trans->rollback();
 			}
 			return null;	// we return null so the caller understands not to throw errors
 		}
 		
 		if ($this->numErrors()) {
-			if (!$vb_already_in_transaction) {
+			if ($vb_web_set_transaction) {
 				$o_trans->rollback();
 			} else {
 				$va_errors = $this->errors();
@@ -285,9 +287,7 @@ class ca_attributes extends BaseModel {
 			return false;
 		}
 		
-		if (!$vb_already_in_transaction) {
-			$o_trans->commit();
-		}
+		if ($vb_web_set_transaction) { $o_trans->commit(); }
 		return $this->getPrimaryKey();
 	}
 	# ------------------------------------------------------
@@ -297,9 +297,10 @@ class ca_attributes extends BaseModel {
 	public function editAttribute($pa_values, $pa_options=null) {
 		if (!$this->getPrimaryKey()) { return null; }
 		
-		$vb_already_in_transaction = $this->inTransaction();
-		if (!$vb_already_in_transaction) {
-			$o_trans = new Transaction();
+		$vb_web_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$o_trans = new Transaction($this->getDb());
+			$vb_web_set_transaction = true;
 			$this->setTransaction($o_trans);
 		} else {
 			$o_trans = $this->getTransaction();
@@ -311,7 +312,7 @@ class ca_attributes extends BaseModel {
 		$this->set('locale_id', $pa_values['locale_id']);
 		$this->update();
 		if ($this->numErrors()) {
-			if (!$vb_already_in_transaction) {
+			if ($vb_web_set_transaction) {
 				$o_trans->rollback();
 			}
 			$vs_errors = join('; ', $this->getErrors());
@@ -372,15 +373,13 @@ class ca_attributes extends BaseModel {
 		
 		
 		if ($this->numErrors()) {
-			if (!$vb_already_in_transaction) {
+			if ($vb_web_set_transaction) {
 				$o_trans->rollback();
 			}
 			return false;
 		}
 		
-		if (!$vb_already_in_transaction) {
-			$o_trans->commit();
-		}
+		if ($vb_web_set_transaction) { $o_trans->commit(); }
 		return true;
 	}
 	# ------------------------------------------------------
@@ -506,12 +505,16 @@ class ca_attributes extends BaseModel {
 	 * @param $pn_table_num int The table number of the table to fetch attributes for
 	 * @param $pa_row_ids array List of row_ids to fetch attributes for
 	 * @param $pa_options array Optional array of options. Supported options include:
-	 *			NONE
+	 *			resetCache = Clear cache before prefetch. [Default is false]
 	 * @return boolean Always return true
 	 */
 	static public function prefetchAttributes($po_db, $pn_table_num, $pa_row_ids, $pa_element_ids, $pa_options=null) {
 		if(!sizeof($pa_row_ids)) { return true; }
 		if(!is_array($pa_element_ids) || !sizeof($pa_element_ids)) { return true; }
+		
+		if (caGetOption('resetCache', $pa_options, false)) {
+			ca_attributes::$s_get_attributes_cache = array();
+		}
 	
 		// Make sure the element_id list looks like element_ids and does not have blanks
 		$va_element_ids = array();
@@ -542,6 +545,7 @@ class ca_attributes extends BaseModel {
 		$vn_last_attribute_id = $vn_last_row_id = null;
 		
 		$vn_val_count = 0;
+		$o_attr = $vn_last_element_id = null; 
 		while($qr_attrs->nextRow()) {
 			$va_raw_row = $qr_attrs->getRow();
 			if ($vn_last_attribute_id != $va_raw_row['attribute_id']) {
@@ -552,10 +556,12 @@ class ca_attributes extends BaseModel {
 				$vn_last_attribute_id = $va_raw_row['attribute_id'];
 				$vn_last_row_id = $va_raw_row['row_id'];
 				$vn_last_element_id = $va_raw_row['element_set_id'];
+				
 				// when creating the attribute you want element_id = to the "set" id (ie. the element_id in the ca_attributes row) so we overwrite
 				// the element_id of the ca_attribute_values row before we pass the array to Attribute() below
 				$o_attr = new Attribute(array_merge($va_raw_row, array('element_id' => $va_raw_row['element_set_id'])));
 			}
+			
 			$o_attr->addValueFromRow($va_raw_row);
 			$vn_val_count++;
 		}
@@ -570,7 +576,12 @@ class ca_attributes extends BaseModel {
 				ca_attributes::$s_get_attributes_cache[(int)$pn_table_num.'/'.(int)$vn_row_id][(int)$vn_element_id] = $va_attrs_for_element;
 				// Limit cache size
 				if (sizeof(ca_attributes::$s_get_attributes_cache) > ca_attributes::$s_attribute_cache_size) {
-					array_shift(ca_attributes::$s_get_attributes_cache);
+					//array_shift(ca_attributes::$s_get_attributes_cache);
+					if (($vn_splice_length = ceil(sizeof(ca_attributes::$s_get_attributes_cache) - ca_attributes::$s_attribute_cache_size + (ca_attributes::$s_attribute_cache_size * 0.5))) > ca_attributes::$s_attribute_cache_size) {
+						$vn_splice_length = ca_attributes::$s_attribute_cache_size;
+					}
+					
+					array_splice(ca_attributes::$s_get_attributes_cache, 0, $vn_splice_length);
 				}
 			}
 			
@@ -590,9 +601,15 @@ class ca_attributes extends BaseModel {
 				
 			// Limit cache size
 			if (sizeof(ca_attributes::$s_get_attributes_cache) > ca_attributes::$s_attribute_cache_size) {
-				array_shift(ca_attributes::$s_get_attributes_cache);
+				//array_shift(ca_attributes::$s_get_attributes_cache);
+				if (($vn_splice_length = ceil(sizeof(ca_attributes::$s_get_attributes_cache) - ca_attributes::$s_attribute_cache_size + (ca_attributes::$s_attribute_cache_size * 0.5))) > ca_attributes::$s_attribute_cache_size) {
+					$vn_splice_length = ca_attributes::$s_attribute_cache_size;
+				}
+				
+				array_splice(ca_attributes::$s_get_attributes_cache, 0, $vn_splice_length);
 			}
 		}
+		
 		return true;
 	}
 	# ------------------------------------------------------
@@ -604,7 +621,7 @@ class ca_attributes extends BaseModel {
 		
 		$va_element_ids = array();
 		foreach($pa_element_ids as $vn_element_id) {
-			if (!is_array(ca_attributes::$s_get_attributes_cache[$pn_table_num.'/'.$pn_row_id][$vn_element_id])) {
+			if (!isset(ca_attributes::$s_get_attributes_cache[$pn_table_num.'/'.$pn_row_id][$vn_element_id])) {
 				$va_element_ids[] = $vn_element_id;
 			}
 		}
@@ -717,6 +734,7 @@ class ca_attributes extends BaseModel {
 		$va_attrs = array();
 		$vn_last_attribute_id = null;
 		
+		$o_attr = null;
 		while($qr_attrs->nextRow()) {
 			$va_raw_row = $qr_attrs->getRow();
 			if ($vn_last_attribute_id != $va_raw_row['attribute_id']) {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -362,18 +362,28 @@ class ca_bookmark_folders extends BaseModel {
 	 * Sets order of bookmarks in the currently loaded folder to the order of bookmark_ids as set in $pa_bookmark_ids
 	 *
 	 * @param array $pa_bookmark_ids A list of bookmark_ids in the folder, in the order in which they should be displayed in the ui
+	 * @param int $pn_folder_id Optional folder_id to set
+	 * @param int $pn_user_id Optional user_id to enforce for folder selection
 	 * @param array $pa_options An optional array of options. Supported options include:
-	 *			NONE
+	 *			
 	 * @return array An array of errors. If the array is empty then no errors occurred
 	 */
-	public function reorderBookmarks($pa_bookmark_ids, $pa_options=null) {
+	public function reorderBookmarks($pa_bookmark_ids, $pn_folder_id=null, $pn_user_id=null, $pa_options=null) {
 		if (!($vn_folder_id = $this->_getFolderID($pn_folder_id, $pn_user_id))) { return false; }
 		
-		$va_bookmark_ranks = $this->getBookmarkIDRanks($pa_options);	// get current ranks
+		$va_bookmark_ranks = $this->getBookmarkIDRanks($pn_folder_id, $pn_user_id, $pa_options);	// get current ranks
 		
 		$vn_i = 0;
-		$o_trans = new Transaction();
-		$t_bookmark = new ca_bookmarkss();
+		
+		$vb_web_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$o_trans = new Transaction($this->getDb());
+			$vb_web_set_transaction = true;
+		} else {
+			$o_trans = $this->getTransaction();
+		}
+		
+		$t_bookmark = new ca_bookmarks();
 		$t_bookmark->setTransaction($o_trans);
 		$t_bookmark->setMode(ACCESS_WRITE);
 		$va_errors = array();
@@ -381,9 +391,9 @@ class ca_bookmark_folders extends BaseModel {
 		
 		// delete rows not present in $pa_stop_ids
 		$va_to_delete = array();
-		foreach($va_bookmark_ranks as $vn_stop_id => $va_rank) {
-			if (!in_array($vn_stop_id, $pa_stop_ids)) {
-				if ($t_bookmark->load(array('folder_id' => $vn_folder_id, 'stop_id' => $vn_stop_id))) {
+		foreach($va_bookmark_ranks as $vn_bookmark_id => $va_rank) {
+			if (!in_array($vn_bookmark_id, $pa_bookmark_ids)) {
+				if ($t_bookmark->load(array('folder_id' => $vn_folder_id, 'bookmark' => $vn_bookmark_id))) {
 					$t_bookmark->delete(true);
 				}
 			}
@@ -391,23 +401,23 @@ class ca_bookmark_folders extends BaseModel {
 		
 		
 		// rewrite ranks
-		foreach($pa_stop_ids as $vn_rank => $vn_stop_id) {
-			if (isset($va_bookmark_ranks[$vn_stop_id]) && $t_bookmark->load(array('folder_id' => $vn_folder_id, 'stop_id' => $vn_stop_id))) {
-				if ($va_bookmark_ranks[$vn_stop_id] != $vn_rank) {
+		foreach($pa_bookmark_ids as $vn_rank => $vn_bookmark_id) {
+			if (isset($va_bookmark_ranks[$vn_bookmark_id]) && $t_bookmark->load(array('folder_id' => $vn_folder_id, 'bookmark_id' => $vn_bookmark_id))) {
+				if ($va_bookmark_ranks[$vn_bookmark_id] != $vn_rank) {
 					$t_bookmark->set('rank', $vn_rank);
 					$t_bookmark->update();
 				
 					if ($t_bookmark->numErrors()) {
-						$va_errors[$vn_stop_id] = _t('Could not reorder stop %1: %2', $vn_stop_id, join('; ', $t_bookmark->getErrors()));
+						$va_errors[$vn_bookmark_id] = _t('Could not reorder bookmark %1: %2', $vn_bookmark_id, join('; ', $t_bookmark->getErrors()));
 					}
 				}
 			} 
 		}
 		
 		if(sizeof($va_errors)) {
-			$o_trans->rollback();
+			if ($vb_web_set_transaction) { $o_trans->rollback(); }
 		} else {
-			$o_trans->commit();
+			if ($vb_web_set_transaction) { $o_trans->commit(); }
 		}
 		
 		return $va_errors;
@@ -416,11 +426,13 @@ class ca_bookmark_folders extends BaseModel {
 	/**
  	 * Returns a list of bookmarks for the current folder with ranks for each, in rank order
 	 *
+	 * @param int $pn_folder_id Optional folder_id to set
+	 * @param int $pn_user_id the user_id of the current user; used to determine which folders the user has access to
 	 * @param array $pa_options An optional array of options. Supported options are:
-	 *			user_id = the user_id of the current user; used to determine which folders the user has access to
+	 * 		NONE
 	 * @return array Array keyed on row_id with values set to ranks for each bookmark. 
 	 */
-	public function getBookmarkIDRanks($pa_options=null) {
+	public function getBookmarkIDRanks($pn_folder_id=null, $pn_user_id=null, $pa_options=null) {
 		if (!($vn_folder_id = $this->_getFolderID($pn_folder_id, $pn_user_id))) { return false; }
 		$o_db = $this->getDb();
 		

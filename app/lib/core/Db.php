@@ -53,7 +53,6 @@ class Db extends DbBase {
 	 * @access private
 	 */
 	private $opo_db;
-public $x;
 	/**
 	 * Number of transactions begun
 	 *
@@ -156,7 +155,6 @@ public $x;
 			if (class_exists($vs_dbclass)) {
 				if (($this->opo_db = new $vs_dbclass())) {
 					if ($this->opo_db->connect($this, $pa_options)) {
-					$this->x = $this->opo_db;
 						return true;
 					} else {
 						// connection failed
@@ -186,6 +184,15 @@ public $x;
 	 */
 	public function getConfig() {
 		return $this->config;
+	}
+	
+	/**
+	 * Fetches the underlying database connection handle
+	 *
+	 * @return Resource
+	 */
+	public function getHandle() {
+		return $this->opo_db->getHandle();
 	}
 	
 	/**

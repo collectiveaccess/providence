@@ -289,10 +289,8 @@ class MediaInfoCoder {
 	}
 	# ---------------------------------------------------------------------------
 	public function getMediaVersions($ps_data) {
-		if (!is_array($va_media_info)) {
-			if (!($va_media_info = $this->getMediaArray($ps_data))) {
-				return false;
-			}
+		if (!($va_media_info = $this->getMediaArray($ps_data))) {
+			return false;
 		}
 		
 		unset($va_media_info["ORIGINAL_FILENAME"]);
@@ -300,6 +298,7 @@ class MediaInfoCoder {
 		unset($va_media_info["VOLUME"]);
 		unset($va_media_info["_undo_"]);
 		unset($va_media_info["TRANSFORMATION_HISTORY"]);
+		unset($va_media_info["_CENTER"]);
 		
 		return array_keys($va_media_info);		
 	}

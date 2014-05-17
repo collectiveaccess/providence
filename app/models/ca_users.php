@@ -3098,25 +3098,38 @@ class ca_users extends BaseModel {
 	 *		__CA_BUNDLE_ACCESS_NONE__ (indicates that the user has no access to bundle)
 	 */
 	public function getTypesWithAccess($ps_table_name, $pn_access) {
-		$vs_cache_key = $ps_table_name."/".(int)$pn_access."/".$this->getPrimaryKey();
+		$vb_exact = caGetOption('exactAccess', $pa_options, false);
+		$vs_cache_key = $ps_table_name."/".(int)$pn_access."/".$this->getPrimaryKey().(int)$vb_exact;
 		if (isset(ca_users::$s_user_type_with_access_cache[$vs_cache_key])) { return ca_users::$s_user_type_with_access_cache[$vs_cache_key]; }
 		$va_roles = array_merge($this->getUserRoles(), $this->getGroupRoles());
 		
 		$vn_default_access = (int)$this->getAppConfig()->get('default_type_access_level');
 		
+		$o_dm = Datamodel::load();
+		$t_instance = $o_dm->getInstanceByTableName($ps_table_name, true);
+		$vs_table = $t_instance->tableName();
+		if (!method_exists($t_instance, "getTypeList")) { return null; }
+		$va_available_types = $t_instance->getTypeList(array('idsOnly' => true));
 		$va_type_ids = null;
+		
 		foreach($va_roles as $vn_role_id => $va_role_info) {
 			$va_vars = $va_role_info['vars'];
 			
-			if (is_array($va_vars['type_access_settings'])) {
-				foreach($va_vars['type_access_settings'] as $vs_key => $vn_access) {
-					list($vs_table, $vn_type_id) = explode(".", $vs_key);
-					
-					if ($vs_table != $ps_table_name) { continue; }
-					if (!is_array($va_type_ids)) { $va_type_ids = array(); }
-					if($vn_access >= $pn_access) {
-						$va_type_ids[] = $vn_type_id;
+			if (!is_array($va_vars['type_access_settings'])) { $va_vars['type_access_settings'] = array(); }
+			
+			if (is_array($va_available_types)) {
+				foreach($va_available_types as $vn_type_id) {
+					if (isset($va_vars['type_access_settings'][$vs_table.'.'.$vn_type_id])) {
+						$vn_access = $va_vars['type_access_settings'][$vs_table.'.'.$vn_type_id];
+					} else {
+						$vn_access = $vn_default_access;
 					}
+				
+					if (!is_array($va_type_ids)) { $va_type_ids = array(); }
+				
+					if(($vb_exact && ($vn_access == $pn_access)) || (!$vb_exact && ($vn_access >= $pn_access))) {
+						$va_type_ids[] = $vn_type_id;
+					}	
 				}
 			}
 		}
@@ -3170,26 +3183,40 @@ class ca_users extends BaseModel {
 	 *		__CA_BUNDLE_ACCESS_READONLY__ (implies ability to view bundle content only)
 	 *		__CA_BUNDLE_ACCESS_NONE__ (indicates that the user has no access to bundle)
 	 */
-	public function getSourcesWithAccess($ps_table_name, $pn_access) {
-		$vs_cache_key = $ps_table_name."/".(int)$pn_access."/".$this->getPrimaryKey();
+	public function getSourcesWithAccess($ps_table_name, $pn_access, $pa_options=null) {
+		$vb_exact = caGetOption('exactAccess', $pa_options, false);
+		$vs_cache_key = $ps_table_name."/".(int)$pn_access."/".$this->getPrimaryKey().(int)$vb_exact;
 		if (isset(ca_users::$s_user_source_with_access_cache[$vs_cache_key])) { return ca_users::$s_user_source_with_access_cache[$vs_cache_key]; }
 		$va_roles = array_merge($this->getUserRoles(), $this->getGroupRoles());
 		
 		$vn_default_access = (int)$this->getAppConfig()->get('default_source_access_level');
 		
+		$o_dm = Datamodel::load();
+		$t_instance = $o_dm->getInstanceByTableName($ps_table_name, true);
+		$vs_table = $t_instance->tableName();
+		
+		if (!method_exists($t_instance, "getSourceList")) { return null; }
+		$va_available_sources = $t_instance->getSourceList(array('idsOnly' => true));
 		$va_source_ids = null;
+	
 		foreach($va_roles as $vn_role_id => $va_role_info) {
 			$va_vars = $va_role_info['vars'];
 			
-			if (is_array($va_vars['source_access_settings'])) {
-				foreach($va_vars['source_access_settings'] as $vs_key => $vn_access) {
-					list($vs_table, $vn_source_id) = explode(".", $vs_key);
-					
-					if ($vs_table != $ps_table_name) { continue; }
-					if (!is_array($va_source_ids)) { $va_source_ids = array(); }
-					if($vn_access >= $pn_access) {
-						$va_source_ids[] = $vn_source_id;
+			if (!is_array($va_vars['source_access_settings'])) { $va_vars['source_access_settings'] = array(); }
+			
+			if(is_array($va_available_sources)) {
+				foreach($va_available_sources as $vn_source_id) {
+					if (isset($va_vars['source_access_settings'][$vs_table.'.'.$vn_source_id])) {
+						$vn_access = $va_vars['source_access_settings'][$vs_table.'.'.$vn_source_id];
+					} else {
+						$vn_access = $vn_default_access;
 					}
+				
+					if (!is_array($va_source_ids)) { $va_source_ids = array(); }
+				
+					if(($vb_exact && ($vn_access == $pn_access)) || (!$vb_exact && ($vn_access >= $pn_access))) {
+						$va_source_ids[] = $vn_source_id;
+					}	
 				}
 			}
 		}

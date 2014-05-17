@@ -1,0 +1,57 @@
+#caWorldCatResults {
+	padding: 8px;
+	margin: 5px 0 0 0;
+	min-height: 400px;
+	background-color: #f7f7f7;
+	border-radius: 6px;
+}
+
+.caWorldCatResultsMessage {
+	padding: 10px;
+	font-size: 20px; 
+	color: #aaaaaa; 
+	font-weight: bold;
+	text-align: center;
+	
+	margin: 180px 0 0 0;
+}
+
+.caWorldCatDetailsMessage {
+	padding: 10px;
+	font-size: 14px; 
+	color: #aaaaaa; 
+	font-weight: bold;
+	text-align: center;
+	
+	margin: 140px 0 0 0;
+}
+
+li.caWorldCatResultItem {
+	list-style-type: none;
+}
+
+div.caWorldCatSearchResultDetails {
+	display: none;
+	border: 2px solid #ccc;
+	margin: 5px 0px 5px 20px;
+	padding: 5px 10px 5px 10px;
+	height: 300px;
+	overflow: auto;
+}
+
+a.caWorldCatSearchResultItem {
+	text-decoration: none;
+}
+
+div.caWorldCatResultsPagination {
+	float: right;
+	padding: 5px;
+}
+
+#caWorldCatResultsNextLink {
+	display: none;
+}
+#caWorldCatResultsPreviousLink {
+	margin-right: 10px;
+	display: none;
+}

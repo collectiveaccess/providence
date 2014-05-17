@@ -43,6 +43,8 @@
 	} else {
 		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'NPLabels');
 	}
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'NPLabels', $va_settings);
+	
 	$t_subject = $this->getVar('t_subject'); 
 	$vs_entity_class = $t_subject->getTypeSetting('entity_class');
 ?>

@@ -916,6 +916,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  	protected function _processRepresentationAnnotations($po_request, $ps_form_prefix, $ps_placement_code) {
  		$va_rel_items = $this->getAnnotations();
 		$o_coder = $this->getAnnotationPropertyCoderInstance($this->getAnnotationType());
+		
+		$vn_c = 0;
 		foreach($va_rel_items as $vn_id => $va_rel_item) {
 			$this->clearErrors();
 			if (strlen($vn_status = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_status_'.$va_rel_item['annotation_id'], pString))) {
@@ -955,6 +957,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 							
 							if ($t_annotation->numErrors()) {
 								$po_request->addActionErrors($t_annotation->errors(), 'ca_representation_annotations', 'new_'.$vn_c);
+								$vn_c++;
 							}
 						}
 					}
@@ -1409,14 +1412,19 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		
  		$o_db = $this->getDb();
  		
+ 		$va_access_values = caGetOption('checkAccess', $pa_options, null);
+ 		$vs_access_where = '';
+ 		if (isset($va_access_values) && is_array($va_access_values) && sizeof($va_access_values)) {
+ 			$vs_access_where = ' AND caor.access IN ('.join(',', $va_access_values).')';
+ 		}
+ 		
  		$qr_reps = $o_db->query("
  			SELECT caor.representation_id, caor.media, caor.access, caor.status, l.name, caor.locale_id, caor.media_metadata, caor.type_id
  			FROM ca_object_representations caor
  			LEFT JOIN ca_locales AS l ON caor.locale_id = l.locale_id
  			WHERE
  				caor.representation_id = ?  AND caor.deleted = 0
- 				{$vs_is_primary_sql}
- 				{$vs_access_sql}
+ 				{$vs_access_where}
  			ORDER BY
  				l.name ASC 
  		", (int)$this->getPrimaryKey());
@@ -1507,7 +1515,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	public function getRepresentationMediaForIDs($pa_ids, $pa_versions, $pa_options = null) {
 		if (!is_array($pa_ids) || !sizeof($pa_ids)) { return array(); }
 		if (!is_array($pa_options)) { $pa_options = array(); }
-		$va_access_values = $pa_options["checkAccess"];
+		$va_access_values = caGetOption('checkAccess', $pa_options, null);
+		$vs_access_where = '';
 		if (isset($va_access_values) && is_array($va_access_values) && sizeof($va_access_values)) {
 			$vs_access_where = ' AND orep.access IN ('.join(',', $va_access_values).')';
 		}
@@ -1620,7 +1629,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			
 			if (is_array($pa_additional_display_options)) { $va_rep_display_info = array_merge($va_rep_display_info, $pa_additional_display_options); }
 			$o_view->setVar('display_options', $va_rep_display_info);
-			$o_view->setVar('representation_id', $pn_representation_id);
+			$o_view->setVar('representation_id', $vn_representation_id);
 			$o_view->setVar('t_object_representation', $this);
 			$o_view->setVar('versions', $va_versions = $this->getMediaVersions('media'));
 			
@@ -1657,7 +1666,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  			$o_view->setVar('t_object', $t_object);
  			$o_view->setVar('t_set_item', $t_set_item);
  			$o_view->setVar('t_order_item', $t_order_item);
- 			$o_view->setVar('only_show_reps_in_order', $vb_only_show_reps_in_order);
+ 			//$o_view->setVar('only_show_reps_in_order', $vb_only_show_reps_in_order);
  			$o_view->setVar('use_media_editor', $vb_media_editor);
  			$o_view->setVar('noControls', $vb_no_controls);
 		}
@@ -1683,7 +1692,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		
-		$o_view->setVar('id_prefix', $ps_form_name.'_media_display');
+		$o_view->setVar('id_prefix', $ps_form_name);
 		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
 		
 		$o_view->setVar('settings', $pa_bundle_settings);
@@ -1718,7 +1727,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		
-		$o_view->setVar('id_prefix', $ps_form_name.'_captions');
+		$o_view->setVar('id_prefix', $ps_form_name);
 		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
 		
 		$o_view->setVar('settings', $pa_bundle_settings);

@@ -252,7 +252,6 @@ class ca_user_groups extends BaseModel {
 			WHERE
 				parent_id IS NOT NULL
 				{$vs_user_id_sql}
-			{$vs_sort}
 		";
 		$qr_groups = $o_db->query($vs_sql);
 		
@@ -589,7 +588,7 @@ class ca_user_groups extends BaseModel {
 				WHERE
 					(group_id = ?) AND
 					(role_id = ?)
-			", (int)$pn_group_id, (int)$t_role->getPrimaryKey());
+			", (int)$vn_group_id, (int)$t_role->getPrimaryKey());
 			
 			if (!$qr_res) { return false; }
 			

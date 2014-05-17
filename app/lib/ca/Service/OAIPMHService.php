@@ -685,7 +685,7 @@ class OAIPMHService extends BaseService {
 	 * @return DomElement The new element.
 	 */
 	protected function appendNewElement($parent, $name, $text = null) {
-		$document = $oaiData;
+		$document = $this->oaiData;
 		$newElement = $document->createElement($name);
 		// Use a TextNode, causes escaping of input text
 		if($text) {
