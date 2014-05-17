@@ -157,7 +157,7 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 		'deaccession_type_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => true, 
 				'DEFAULT' => '',
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				'DONT_ALLOW_IN_UI' => true,
@@ -502,14 +502,16 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 	# ------------------------------------------------------
 	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null){
 		// nuke related representations
-		foreach($this->getRepresentations() as $va_rep){
-			// check if representation is in use anywhere else 
-			$qr_res = $this->getDb()->query("SELECT count(*) c FROM ca_objects_x_object_representations WHERE object_id <> ? AND representation_id = ?", (int)$this->getPrimaryKey(), (int)$va_rep["representation_id"]);
-			if ($qr_res->nextRow() && ($qr_res->get('c') == 0)) {
-				$this->removeRepresentation($va_rep["representation_id"], array('dontCheckPrimaryValue' => true));
+		$va_representations = $this->getRepresentations();
+		if (is_array($va_representations)) {
+			foreach ($va_representations as $va_rep){
+				// check if representation is in use anywhere else
+				$qr_res = $this->getDb()->query("SELECT count(*) c FROM ca_objects_x_object_representations WHERE object_id <> ? AND representation_id = ?", (int)$this->getPrimaryKey(), (int)$va_rep["representation_id"]);
+				if ($qr_res->nextRow() && ($qr_res->get('c') == 0)) {
+					$this->removeRepresentation($va_rep["representation_id"], array('dontCheckPrimaryValue' => true));
+				}
 			}
 		}
-
 		return parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 	}
 	# ------------------------------------------------------

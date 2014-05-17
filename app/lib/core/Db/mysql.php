@@ -242,7 +242,7 @@ class Db_mysql extends DbDriverBase {
 			$vn_i++;
 		}
 		
-		if (sizeof($g_mysql_statement_cache) >= 2048) { 
+		while (sizeof($g_mysql_statement_cache) >= 2048) { 
 			array_shift($g_mysql_statement_cache); 
 		}	// limit statement cache to 2048 entries, otherwise we'll eat up memory in long running processes
 

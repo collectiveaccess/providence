@@ -68,11 +68,29 @@ print $vs_control_box = caFormControlBox(
 			<span class="formLabelText"><?php print _t('Data file'); ?></span> 
 			<div class="bundleContainer">
 				<div class="caLabelList" >
-					<p>
+					<div style='padding:10px 0px 10px 10px;'>
+						<table class="caFileSourceControls">
+							<tr class="caFileSourceControls">
+								<td class="caSourceFileControlRadio">
 <?php	
-		print "<input type='file' name='sourceFile' id='caSourceFile'/>";
+		$va_attr = array('value' => 'file',  'onclick' => 'caSetBatchMetadataImportFormState();', 'id' => 'caFileInputRadio');
+		if (caGetOption('fileInput', $va_last_settings, 'file') === 'file') { $va_attr['checked'] = 'checked'; }
+		print caHTMLRadioButtonInput("fileInput", $va_attr)."</td><td class='formLabel caFileSourceControls'>"._t('From a file')." <span id='caFileInputContainer'><input type='file' name='sourceFile' id='caSourceFile'/></span>";
+		
 ?>
-					</p>
+								</td>
+							</tr>
+							<tr class="caFileSourceControls">
+								<td class="caSourceFileControlRadio">
+<?php		
+		$va_attr = array('value' => 'import',  'onclick' => 'caSetBatchMetadataImportFormState();', 'id' => 'caFileBrowserRadio');
+		if (caGetOption('fileInput', $va_last_settings, 'file') === 'import') { $va_attr['checked'] = 'checked'; }	
+		print caHTMLRadioButtonInput("fileInput", $va_attr)."</td><td class='formLabel caFileSourceControls'>"._t('From the import directory')." <div id='caFileBrowserContainer'>".$this->getVar('file_browser')."</div>";
+?>
+								</td>
+							</tr>
+						</table>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -213,6 +231,14 @@ print $vs_control_box = caFormControlBox(
 					jQuery('#caSourceText').prop('disabled', false);
 					break;
 			}
+		}
+			
+		if (jQuery("#caFileInputRadio").is(":checked")) {
+			jQuery("#caFileInputContainer").show(dontAnimate ? 0 : 150);
+			jQuery("#caFileBrowserContainer").hide(dontAnimate ? 0 : 150);
+		} else {
+			jQuery("#caFileInputContainer").hide(dontAnimate ? 0 : 150);
+			jQuery("#caFileBrowserContainer").show(dontAnimate ? 0 : 150);
 		}
 	}
 	

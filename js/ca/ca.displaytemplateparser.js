@@ -35,6 +35,26 @@ var caUI = caUI || {};
 			
 		}, options);
 		
+		
+		that.unitTable = {
+			// Length
+			'"': "in", "”": "in", "in.": "in", "inch": "in", "inches": "in",
+			"'": "ft", "’": "ft", "ft.": "ft", "foot": "ft", "feet": "ft",
+			"m.": "m", "meter": "m", "meters": "m", "metre": "m", "metres": "m", "mt": "m",
+			"cm.": "cm", "centimeter": "cm", "centimeters": "cm", "centimetre": "cm", "centimetres": "cm",
+			"mm.": "mm", "millimeter": "mm", "millimeters": "mm", "millimetre": "mm", "millimetres": "mm",
+			"k": "kilometer", "km": "kilometer", "kilometers": "kilometer", "kilometre": "kilometer", "kilometres": "kilometer",
+			"pt": "point", "pt.": "point",
+			"mile": "miles", "mi" : "miles",
+			
+			// Weight
+			"lbs": "pounds", "lb": "pounds", "lb.": "pounds", "pound": "pounds",
+			"kg": "kilograms", "kg.": "kilograms", "kilo": "kilograms", "kilos": "kilograms", "kilogram": "kilograms",
+			"g": "grams", "g.": "grams", "gr": "grams", "gr.": "grams", "gram": "grams",
+			"mg": "milligrams", "mg.": "milligrams", "milligram": "milligrams",
+			"oz": "ounces", "oz.": "ounces", "ounce": "ounces",
+			"tons": "ton", "tonne": "ton", "tonnes": "ton", "t": "ton", "t." : "ton"
+		};
 		// --------------------------------------------------------------------------------
 		// Define methods
 		// --------------------------------------------------------------------------------
@@ -44,38 +64,63 @@ var caUI = caUI || {};
 			// get tags from template
 			var tagRegex = /\^([\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.~:\/]+)/g;
 			var tagList = template.match(tagRegex)
+			var unitRegex = /[\d\.\,]+(.*)$/;
 			
 			jQuery.each(tagList, function(i, tag) {
-				if(tag.indexOf("~") == -1) {
+				if(tag.indexOf("~") === -1) {
 					var tagProc = tag.replace("^", "");
 					t=t.replace(tag, jQuery(values[tagProc]).val());
 				} else {
 					var tagBits = tag.split(/\~/);
-					console.log(tagBits);
 					var tagRoot = tagBits[0].replace("^", "");
 					var tagProc = tag.replace("^", "");
 					var cmd = tagBits[1].split(/\:/);
 					switch(cmd[0].toLowerCase()) {
 						case 'units':
 							var val = jQuery(values[tagRoot]).val();
+							val = that.convertFractionalNumberToDecimal(val); 
 							
-							val = val.replace('"', "in");
-							val = val.replace("'", "ft");
+							var unitBits = val.match(unitRegex);
+							if (!unitBits || unitBits.length < 2) { 
+								t = t.replace(tag, val);
+								break; 
+							}
+							var units = unitBits[1].trim();
 							
+							if (that.unitTable[units]) {
+								val = val.replace(units, that.unitTable[units]);
+							}
+
 							try {
 								var qty = new Qty(val);
-								t=t.replace(tag, qty.to(cmd[1]));
+								t=t.replace(tag, qty.to(cmd[1]).toPrec(0.2).toString());
 							} catch(e) {
-								// noop
+								// noop - replace tag with existing value
+								t=t.replace(tag, val);
 							}
 							break;
 					}
 				}
 			});
 			return t;
-		}
+		};
 		
+		that.convertFractionalNumberToDecimal = function(fractionalExpression, locale) {
+			// convert ascii fractions (eg. 1/2) to decimal
+			var matches;
+			if (matches = fractionalExpression.match(/^([\d]*)[ ]*([\d]+)\/([\d]+)/)) {
+				var val = '';
+				if (parseFloat(matches[2]) > 0) {
+					val = parseFloat(matches[2])/parseFloat(matches[3]);
+				}
+				console.log(matches);
+				val += parseFloat(matches[1]);
+				
+				fractionalExpression = fractionalExpression.replace(matches[0], val);
+			} 
 		
+			return fractionalExpression;
+		};
 		
 		// --------------------------------------------------------------------------------
 		

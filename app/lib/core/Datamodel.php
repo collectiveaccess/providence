@@ -52,6 +52,9 @@ class Datamodel {
 	static $s_datamodel_field_name_cache = array();
 	static $s_datamodel_instance_cache = null;
 	static $s_datamodel_model_instance_cache = null;
+	
+	static $s_datamodel_many_to_one_rel_cache = array();
+	static $s_datamodel_one_to_many_rel_cache = array();
 	# --------------------------------------------------------------------------------------------
 	/**
 	 *
@@ -363,6 +366,9 @@ class Datamodel {
 	 * details for all foreign keys in the specified table 
 	 */
 	public function getManyToOneRelations ($ps_table, $ps_field=null) {
+		if(isset(Datamodel::$s_datamodel_many_to_one_rel_cache[$ps_table.'/'.$ps_field])) {
+			return Datamodel::$s_datamodel_many_to_one_rel_cache[$ps_table.'/'.$ps_field];
+		}
 		if ($o_table = $this->getInstanceByTableName($ps_table, true)) {
 			$va_related_tables = $this->opo_graph->getNeighbors($ps_table);
 			$vs_table_pk = $o_table->primaryKey();
@@ -376,7 +382,7 @@ class Datamodel {
 						if ($va_fields[0] != $vs_table_pk) {
 							if ($ps_field) {
 								if ($va_fields[0] == $ps_field) {
-									return array(
+									return Datamodel::$s_datamodel_many_to_one_rel_cache[$ps_table.'/'.$ps_field] = array(
 										"one_table" 		=> $vs_related_table,
 										"one_table_field" 	=> $va_fields[1],
 										"many_table" 		=> $ps_table,
@@ -395,9 +401,9 @@ class Datamodel {
 					}
 				}
 			}
-			return $va_many_to_one_relations;
+			return Datamodel::$s_datamodel_many_to_one_rel_cache[$ps_table.'/'.$ps_field] = $va_many_to_one_relations;
 		} else {
-			return null;
+			return Datamodel::$s_datamodel_many_to_one_rel_cache[$ps_table.'/'.$ps_field] = null;
 		}
 	}
 	# --------------------------------------------------------------------------------------------
@@ -405,6 +411,9 @@ class Datamodel {
 	 *
 	 */
 	public function getOneToManyRelations ($ps_table, $ps_many_table=null) {
+		if (isset(Datamodel::$s_datamodel_one_to_many_rel_cache[$ps_table.'/'.$ps_many_table])) {
+			return Datamodel::$s_datamodel_one_to_many_rel_cache[$ps_table.'/'.$ps_many_table];
+		}
 		if ($o_table = $this->getInstanceByTableName($ps_table, true)) {
 			$va_related_tables = $this->opo_graph->getNeighbors($ps_table);
 			$vs_table_pk = $o_table->primaryKey();
@@ -418,7 +427,7 @@ class Datamodel {
 						if ($va_fields[0] == $vs_table_pk) {
 							if ($ps_many_table) {
 								if ($ps_many_table == $vs_related_table) {
-									return array(
+									return Datamodel::$s_datamodel_one_to_many_rel_cache[$ps_table.'/'.$ps_many_table] = array(
 										"one_table" 		=> $ps_table,
 										"one_table_field" 	=> $va_fields[0],
 										"many_table" 		=> $vs_related_table,
@@ -437,9 +446,9 @@ class Datamodel {
 					}
 				}
 			}
-			return $va_one_to_many_relations;
+			return Datamodel::$s_datamodel_one_to_many_rel_cache[$ps_table.'/'.$ps_many_table] = $va_one_to_many_relations;
 		} else {
-			return null;
+			return Datamodel::$s_datamodel_one_to_many_rel_cache[$ps_table.'/'.$ps_many_table] = null;
 		}
 	}
 	# --------------------------------------------------------------------------------------------

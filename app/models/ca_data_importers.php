@@ -1168,6 +1168,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 *			KLogger::DEBUG = Debugging messages
 	 *		dryRun = do import but don't actually save data
 	 *		environment = an array of environment values to provide to the import process. The keys manifest themselves as mappable tags.
+	 *		noTransaction = don't wrap the import in a transaction. [Default is false]
 	 */
 	static public function importDataFromSource($ps_source, $ps_mapping, $pa_options=null) {
 		ca_data_importers::$s_num_import_errors = 0;
@@ -1176,6 +1177,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		ca_data_importers::$s_import_error_list = array();
 		
 		$va_notices = $va_errors = array();
+		
+		$pb_no_transaction 	= caGetOption('noTransaction', $pa_options, false, array('castTo' => 'bool'));
 
 		if (!($t_mapping = ca_data_importers::mappingExists($ps_mapping))) {
 			return null;
@@ -1183,10 +1186,16 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		$o_event = ca_data_import_events::newEvent(isset($pa_options['user_id']) ? $pa_options['user_id'] : null, $pa_options['format'], $ps_source, isset($pa_options['description']) ? $pa_options['description'] : '');
 		
-		$t_mapping->setTransaction($o_trans = new Transaction());
+		$o_trans = null;
+		
+		if (!$pb_no_transaction) { $t_mapping->setTransaction($o_trans = new Transaction()); }
 		
 		$po_request 	= caGetOption('request', $pa_options, null);
 		$pb_dry_run 	= caGetOption('dryRun', $pa_options, false);
+		
+		$pn_file_number 		= caGetOption('fileNumber', $pa_options, 0);
+		$pn_number_of_files 	= caGetOption('numberOfFiles', $pa_options, 1);
+		
 		
 		$o_config = Configuration::load();
 		
@@ -1206,7 +1215,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$vb_show_cli_progress_bar 	= (isset($pa_options['showCLIProgressBar']) && ($pa_options['showCLIProgressBar'])) ? true : false;
 		
 		$o_progress = caGetOption('progressBar', $pa_options, new ProgressBar('WebUI'));
-		if ($vb_show_cli_progress_bar) { $o_progress->setMode('CLI'); }
+		if ($vb_show_cli_progress_bar) { $o_progress->setMode('CLI'); $o_progress->set('outputToTerminal', true); }
 
 		if ($vb_use_ncurses = (isset($pa_options['useNcurses']) && ($pa_options['useNcurses'])) ? true : false) {
 			$vb_use_ncurses = caCLIUseNcurses();
@@ -1263,12 +1272,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$o_dm = $t_mapping->getAppDatamodel();
 		
 		
-		//if ($vb_show_cli_progress_bar){
 		$o_progress->start(_t('Reading %1', $ps_source), array('window' => $r_progress));
-		//}
 		
 		if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
-			$ps_callback($po_request, 0, 100, _t('Reading %1', $ps_source), (time() - $vn_start_time), memory_get_usage(true), 0, ca_data_importers::$s_num_import_errors);
+			$ps_callback($po_request, $pn_file_number, $pn_number_of_files, $ps_source, 0, 100, _t('Reading %1', $ps_source), (time() - $vn_start_time), memory_get_usage(true), 0, ca_data_importers::$s_num_import_errors);
 		}
 	
 		// Open file 
@@ -1289,12 +1296,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$o_log->logDebug(_t('Finished reading input source at %1 seconds', $t->getTime(4)));
 		
 		$vn_num_items = $o_reader->numRows();
-		//if ($vb_show_cli_progress_bar){
+
 		$o_progress->setTotal($vn_num_items);
 		$o_progress->start(_t('Importing from %1', $ps_source), array('window' => $r_progress));
-		//}
+
 		if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
-			$ps_callback($po_request, 0, $vn_num_items, _t('Importing from %1', $ps_source), (time() - $vn_start_time), memory_get_usage(true), 0, ca_data_importers::$s_num_import_errors);
+			$ps_callback($po_request, $pn_file_number, $pn_number_of_files, $ps_source, 0, $vn_num_items, _t('Importing from %1', $ps_source), (time() - $vn_start_time), memory_get_usage(true), 0, ca_data_importers::$s_num_import_errors);
 		}
 		
 		// What are we importing?
@@ -1643,13 +1650,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				}
 			}
 			
-			
-			//if ($vb_show_cli_progress_bar) {
 			$o_progress->next(_t("Importing %1", $vs_idno), array('window' => $r_progress));
-			//}
 			
 			if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
-				$ps_callback($po_request, ca_data_importers::$s_num_records_processed, $vn_num_items, _t("[%3/%4] Processing %1 (%2)", caTruncateStringWithEllipsis($vs_display_label, 50), $vs_idno, ca_data_importers::$s_num_records_processed, $vn_num_items), (time() - $vn_start_time), memory_get_usage(true), ca_data_importers::$s_num_records_processed, ca_data_importers::$s_num_import_errors); 
+				$ps_callback($po_request, $pn_file_number, $pn_number_of_files, $ps_source, ca_data_importers::$s_num_records_processed, $vn_num_items, _t("[%3/%4] Processing %1 (%2)", caTruncateStringWithEllipsis($vs_display_label, 50), $vs_idno, ca_data_importers::$s_num_records_processed, $vn_num_items), (time() - $vn_start_time), memory_get_usage(true), ca_data_importers::$s_num_records_processed, ca_data_importers::$s_num_import_errors); 
 			}
 			
 			$vb_output_subject_preferred_label = false;
@@ -2453,7 +2457,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$o_progress->finish();
 		//}
 		if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
-			$ps_callback($po_request, $vn_num_items, $vn_num_items, _t('Import completed'), (time() - $vn_start_time), memory_get_usage(true), ca_data_importers::$s_num_records_processed, ca_data_importers::$s_num_import_errors);
+			$ps_callback($po_request, $pn_file_number, $pn_number_of_files, $ps_source, $vn_num_items, $vn_num_items, _t('Import completed'), (time() - $vn_start_time), memory_get_usage(true), ca_data_importers::$s_num_records_processed, ca_data_importers::$s_num_import_errors);
 		}
 		
 		if (isset($pa_options['reportCallback']) && ($ps_callback = $pa_options['reportCallback'])) {
