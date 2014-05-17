@@ -157,7 +157,7 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 		'deaccession_type_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
+				'IS_NULL' => true, 
 				'DEFAULT' => '',
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				'DONT_ALLOW_IN_UI' => true,
