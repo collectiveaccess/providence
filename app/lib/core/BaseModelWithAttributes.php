@@ -691,7 +691,7 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			
 			$vs_template = 				(isset($pa_options['template'])) ? $pa_options['template'] : null;
-			$vs_delimiter = 				(isset($pa_options['delimiter'])) ? $pa_options['delimiter'] : ' ';
+			$vs_delimiter = 			(isset($pa_options['delimiter'])) ? $pa_options['delimiter'] : ' ';
 			$vb_return_as_array = 		(isset($pa_options['returnAsArray'])) ? (bool)$pa_options['returnAsArray'] : false;
 			$vb_return_all_locales = 	(isset($pa_options['returnAllLocales'])) ? (bool)$pa_options['returnAllLocales'] : false;
 			
