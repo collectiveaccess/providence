@@ -165,8 +165,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		$this->opa_options = array(
 				'limit' => 2000,											// maximum number of hits to return [default=2000]  ** NOT CURRENTLY ENFORCED -- MAY BE DROPPED **
 				'maxIndexingBufferSize' => $vn_max_indexing_buffer_size,	// maximum number of indexed content items to accumulate before writing to the database
-				'maxWordIndexInsertSegmentSize' => 2500,					// maximum number of word index rows to put into a single insert
-				'maxWordCacheSize' => 3000,									// maximum number of words to cache while indexing before purging
+				'maxWordIndexInsertSegmentSize' => ceil($vn_max_indexing_buffer_size / 2), // maximum number of word index rows to put into a single insert
+				'maxWordCacheSize' => 4096,								// maximum number of words to cache while indexing before purging
 				'cacheCleanFactor' => 0.50,									// percentage of words retained when cleaning the cache
 				
 				'omitPrivateIndexing' => false								//
@@ -1330,7 +1330,22 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				$va_words = preg_split("![ ]+!", (string)$pm_content);
 			}
 		}
-		WLPlugSearchEngineSqlSearch::$s_doc_content_buffer[$this->opn_indexing_subject_tablenum.'/'.$this->opn_indexing_subject_row_id.'/'.$pn_content_tablenum.'/'.$ps_content_fieldname.'/'.$pn_content_row_id.'/'.$vn_boost.'/'.$vn_private][] = $va_words;
+		
+		$vb_incremental_reindexing = (bool)$this->can('incremental_reindexing');
+		
+		if (!$va_words) {
+			WLPlugSearchEngineSqlSearch::$s_doc_content_buffer[] = '('.$this->opn_indexing_subject_tablenum.','.$this->opn_indexing_subject_row_id.','.$pn_content_tablenum.',\''.$ps_content_fieldname.'\','.$pn_content_row_id.',0,0,'.$vn_private.')';
+		} else {
+			foreach($va_words as $vs_word) {
+				if(!strlen($vs_word)) { continue; }
+				if (!($vn_word_id = (int)$this->getWordID($vs_word))) { continue; }
+			
+				if (!defined("__CollectiveAccess_IS_REINDEXING__") && $vb_incremental_reindexing) {
+					$this->removeRowIndexing($this->opn_indexing_subject_tablenum, $this->opn_indexing_subject_row_id, $pn_content_tablenum, $ps_content_fieldname);
+				}
+				WLPlugSearchEngineSqlSearch::$s_doc_content_buffer[] = '('.$this->opn_indexing_subject_tablenum.','.$this->opn_indexing_subject_row_id.','.$pn_content_tablenum.',\''.$ps_content_fieldname.'\','.$pn_content_row_id.','.$vn_word_id.','.$vn_boost.','.$vn_private.')';
+			}
+		}
 	}
 	# ------------------------------------------------
 	public function commitRowIndexing() {
@@ -1344,69 +1359,25 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		$va_row_sql = array();
 		$vn_segment = 0;
 		
-		foreach(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer as $vs_key => $va_content_list) {
-			foreach($va_content_list as $vn_i => $va_content) {
-				$vn_seq = 0;
-				//$va_word_list = is_array($va_content) ? array_flip($va_content) : null;
-				$va_word_list = is_array($va_content) ? $va_content : null;
-			
-				$va_tmp = explode('/', $vs_key);
-				$vn_table_num= (int)$va_tmp[0];
-				$vn_row_id= (int)$va_tmp[1];
-				$vn_content_table_num = (int)$va_tmp[2];
-				$vn_content_field_num = $va_tmp[3];
-				$vn_content_row_id = (int)$va_tmp[4];
-				$vn_boost= (int)$va_tmp[5];
-				$vn_access= (int)$va_tmp[6];
-			
-				if (!defined("__CollectiveAccess_IS_REINDEXING__") && $this->can('incremental_reindexing')) {
-					$this->removeRowIndexing($vn_table_num, $vn_row_id, $vn_content_table_num, $vn_content_field_num);
-				}
-			
-				if (is_array($va_word_list)) {
-					//foreach($va_word_list as $vs_word => $vn_x) {
-					foreach($va_word_list as $vs_word) {
-						if(!strlen((string)$vs_word)) { continue; }
-						if (!($vn_word_id = (int)$this->getWordID((string)$vs_word))) { continue; }
-				
-						$va_row_sql[$vn_segment][] = '('.$vn_table_num.','.$vn_row_id.','.$vn_content_table_num.',\''.$vn_content_field_num.'\','.$vn_content_row_id.','.$vn_word_id.','.$vn_boost.','.$vn_access.')';	
-						$vn_seq++;
-				
-						if (sizeof($va_row_sql[$vn_segment]) > $this->getOption('maxWordIndexInsertSegmentSize')) { $vn_segment++; }
-					}
-				} else {
-					// index blank value
-					$va_row_sql[$vn_segment][] = '('.$vn_table_num.','.$vn_row_id.','.$vn_content_table_num.',\''.$vn_content_field_num.'\','.$vn_content_row_id.',0,0,'.$vn_access.')';	
-					$vn_seq++;
-				
-					if (sizeof($va_row_sql[$vn_segment]) > $this->getOption('maxWordIndexInsertSegmentSize')) { $vn_segment++; }
-				}
-			}
-		}
+		$vn_max_word_segment_size = (int)$this->getOption('maxWordIndexInsertSegmentSize');
 		
 		// add new indexing
-		
-		if (sizeof($va_row_sql)) {
-			foreach($va_row_sql as $vn_segment => $va_row_sql_list) {
-				if (sizeof($va_row_sql_list)) {
-					$vs_sql = $this->ops_insert_word_index_sql."\n".join(",", $va_row_sql_list);
-					$this->opo_db->query($vs_sql);
-				}
+		if (is_array(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer) && sizeof(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer)) {
+			while(sizeof(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer)) {
+				$this->opo_db->query($this->ops_insert_word_index_sql."\n".join(",", array_splice(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer, 0, $vn_max_word_segment_size)));
 			}
 			if ($this->debug) { print "[SqlSearchDebug] Commit row indexing<br>\n"; }
 		}
 	
 		// clean up
-		//$this->opn_indexing_subject_tablenum = null;
-		//$this->opn_indexing_subject_row_id = null;
+		WLPlugSearchEngineSqlSearch::$s_doc_content_buffer = null;
 		WLPlugSearchEngineSqlSearch::$s_doc_content_buffer = array();
-		
 		$this->_checkWordCacheSize();
 	}
 	# ------------------------------------------------
 	public function getWordID($ps_word) {
 		if (!strlen($ps_word = trim(mb_strtolower($ps_word, "UTF-8")))) { return null; }
-		if ((int)WLPlugSearchEngineSqlSearch::$s_word_cache[(string)$ps_word]) { return (int)WLPlugSearchEngineSqlSearch::$s_word_cache[(string)$ps_word]; } 
+		if (WLPlugSearchEngineSqlSearch::$s_word_cache[(string)$ps_word]) { return (int)WLPlugSearchEngineSqlSearch::$s_word_cache[(string)$ps_word]; } 
 		
 		if ($qr_res = $this->opqr_lookup_word->execute((string)$ps_word)) {
 			if ($qr_res->nextRow()) {
@@ -1421,20 +1392,19 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		if (!($vn_word_id = (int)$this->opqr_insert_word->getLastInsertID())) { return null; }
 		
 		// create ngrams
-		$va_ngrams = caNgrams((string)$ps_word, 4);
-		$vn_seq = 0;
-		
-		$va_ngram_buf = array();
-		foreach($va_ngrams as $vs_ngram) {
-			//$this->opqr_insert_ngram->execute($vn_word_id, $vs_ngram, $vn_seq);
-			$va_ngram_buf[] = "({$vn_word_id},'{$vs_ngram}',{$vn_seq})";
-			$vn_seq++;
-		}
-		
-		if (sizeof($va_ngram_buf)) {
-			$vs_sql = $this->ops_insert_ngram_sql."\n".join(",", $va_ngram_buf);
-			$this->opo_db->query($vs_sql);
-		}
+		// 		$va_ngrams = caNgrams((string)$ps_word, 4);
+		// 		$vn_seq = 0;
+		// 		
+		// 		$va_ngram_buf = array();
+		// 		foreach($va_ngrams as $vs_ngram) {
+		// 			$va_ngram_buf[] = "({$vn_word_id},'{$vs_ngram}',{$vn_seq})";
+		// 			$vn_seq++;
+		// 		}
+		// 		
+		// 		if (sizeof($va_ngram_buf)) {
+		// 			$vs_sql = $this->ops_insert_ngram_sql."\n".join(",", $va_ngram_buf);
+		// 			$this->opo_db->query($vs_sql);
+		// 		}
 		
 		return WLPlugSearchEngineSqlSearch::$s_word_cache[(string)$ps_word] = (int)$vn_word_id;
 	}
