@@ -1037,6 +1037,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 						}
 					}
 				}
+				//print_R($pa_data);
 				
 				if(is_array($va_tmp) && sizeof($va_tmp)) {
 					$va_new_values = array();
@@ -1056,6 +1057,13 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 						if(!isset($va_new_values[$vn_item_id]) || !is_array($va_new_values[$vn_item_id])) { continue; }
 						$vs_v = join(' ;  ', array_merge(array($vn_item_id), array_keys($va_new_values[$vn_item_id])));	
 						$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $pn_row_id, $vs_v, $pa_data);
+						if ($va_hier_values = $this->_genHierarchicalPath($vn_item_id, "preferred_labels.name_plural", $t_item, $pa_data)) {
+							
+							$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $pn_row_id, $vs_v.' '.join(" ", $va_hier_values['values']), $pa_data);
+							if(caGetOption('INDEX_ANCESTORS_AS_PATH_WITH_DELIMITER', $pa_data, false) !== false) {
+								$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $pn_row_id, $va_hier_values['path'], array_merge($pa_data, array('DONT_TOKENIZE' => 1)));
+							}
+						}
 					}
 				}
 				
