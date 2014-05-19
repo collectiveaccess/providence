@@ -1467,7 +1467,7 @@
  				is_array($va_restrict_to_types) 
  				&& 
  				(
- 					($pt_subject->getPrimaryKey() && !in_array($pt_subject->get('type_id'), $va_restrict_to_types))
+ 					($pt_subject->get('type_id')) && ($pt_subject->getPrimaryKey() && !in_array($pt_subject->get('type_id'), $va_restrict_to_types))
  					//||
  					//(!$pt_subject->getPrimaryKey() && !in_array($this->request->getParameter('type_id', pInteger), $va_restrict_to_types))
  				)

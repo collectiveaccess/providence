@@ -5168,7 +5168,7 @@ div.listRel {
     font-size: 11px;
     font-weight: normal;
     padding: 10px;
-    margin-bottom: 5px;
+    margin: 0 0 5px 7px;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
     border-radius: 5px;
@@ -5301,6 +5301,12 @@ div.preferenceSectionDivider {
 }
 
 #batchProcessingCounts {
+    float: right;
+    font-size: 10px;
+    margin-top: 0px;
+}
+
+#batchProcessingFileCount {
     float: right;
     font-size: 10px;
     margin-top: 0px;
@@ -6833,4 +6839,20 @@ div.caUseHistoryDate {
     
 	font-weight: normal;
 	font-size: 12px;
+}
+
+/** Metadata importer **/
+table.caFileSourceControls {
+	width: 700px
+}
+
+td.caFileSourceControls {
+	vertical-align: top;
+	padding-top: 4px;
+}
+
+td.caSourceFileControlRadio {
+	vertical-align: top;
+	width: 30px;
+	height: 35px;
 }

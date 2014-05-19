@@ -897,13 +897,14 @@
 			}
 			
 			$vb_no_ncurses = (bool)$po_opts->getOption('disable-ncurses');
+			$vb_direct = (bool)$po_opts->getOption('direct');
 			
 			$vs_format = $po_opts->getOption('format');
 			$vs_log_dir = $po_opts->getOption('log');
 			$vn_log_level = CLIUtils::import_getLogLevel($po_opts);
 			
 			
-			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('format' => $vs_format, 'showCLIProgressBar' => true, 'useNcurses' => !$vb_no_ncurses && caCLIUseNcurses(), 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level))) {
+			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('noTransaction' => $vb_direct, 'format' => $vs_format, 'showCLIProgressBar' => true, 'useNcurses' => !$vb_no_ncurses && caCLIUseNcurses(), 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level))) {
 				CLIUtils::addError(_t("Could not import source %1", $vs_data_source));
 				return false;
 			} else {
@@ -954,7 +955,8 @@
 				"log|l-s" => _t('Path to directory in which to log import details. If not set no logs will be recorded.'),
 				"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
 				"disable-ncurses" => _t('If set the ncurses terminal library will not be used to display import progress.'),
-				"dryrun" => _t('If set import is performed without data actually being saved to the database. This is useful for previewing an import for errors.')
+				"dryrun" => _t('If set import is performed without data actually being saved to the database. This is useful for previewing an import for errors.'),
+				"direct" => _t('If set import is performed without a transaction. This allows viewing of imported data during the import, which may be useful during debugging/development. It may also lead to data corruption and should only be used for testing.')
 			);
 		}
 		# -------------------------------------------------------

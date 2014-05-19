@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -204,7 +204,7 @@
 
 				<div style='width: 700px; height: <?php print $va_settings['hierarchicalBrowserHeight']; ?>;'>
 					
-					<div id='<?php print $vs_id_prefix; ?>_hierarchyBrowser{n}' style='width: 100%; height: 100%;' class='hierarchyBrowser'>
+					<div id='<?php print $vs_id_prefix; ?>_hierarchyBrowser{n}' style='width: 100%; height: 140px;' class='hierarchyBrowser'>
 						<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
 					</div><!-- end hierarchyBrowser -->	</div>
 					
