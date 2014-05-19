@@ -1770,7 +1770,7 @@ class BaseModel extends BaseObject {
 		if ($qr_res->nextRow()) {
 			foreach($this->FIELDS as $vs_field => $va_attr) {
 				$vs_cur_value = isset($this->_FIELD_VALUES[$vs_field]) ? $this->_FIELD_VALUES[$vs_field] : null;
-				$va_row =& $qr_res->getRow();
+				$va_row = $qr_res->getRow();
 				switch($va_attr["FIELD_TYPE"]) {
 					case FT_DATERANGE:
 					case FT_HISTORIC_DATERANGE:
@@ -1800,8 +1800,8 @@ class BaseModel extends BaseObject {
 			$this->_FILES_CLEAR = array();
 			
 			if ($vn_id = $this->getPrimaryKey()) {
-				if (sizeof(BaseModel::$s_instance_cache[$vs_table_name]) > 100) {		// Limit cache to 100 instances per table
-					array_pop(BaseModel::$s_instance_cache[$vs_table_name]);
+				while (sizeof(BaseModel::$s_instance_cache[$vs_table_name]) > 100) {		// Limit cache to 100 instances per table
+					array_shift(BaseModel::$s_instance_cache[$vs_table_name]);
 				}
 				BaseModel::$s_instance_cache[$vs_table_name][$vn_id] = $this->_FIELD_VALUES; 
 			}

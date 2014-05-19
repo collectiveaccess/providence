@@ -424,6 +424,10 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			return false;
 		}
 		
+		if (((int)$this->get('parent_id') == 0) && isset($va_properties['validForNonRootOnly']) && $va_properties['validForNonRootOnly']) {
+			return false;
+		}
+		
 		$vs_input_name = "setting_$ps_setting";
 		
 		if(isset($pa_options['label_id'])) {

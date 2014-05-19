@@ -71,6 +71,16 @@
 				} elseif(!($vs_input = $req->getParameter('sourceUrl', pString))) {
 					$vs_input = $req->getParameter('sourceText', pString);
 				}
+				
+				$vs_file_input = caGetOption('fileInput', $this->opa_options, null); 
+				$vs_base_import_dir = $req->config->get('batch_media_import_root_directory');
+				$vs_file_import_directory = caGetOption('fileImportPath', $this->opa_options, null); 
+				if (($vs_file_input === 'import') && (is_dir($vs_base_import_dir.'/'.$vs_file_import_directory))) { 
+					// grab files from import directory
+					$vs_input = $vs_base_import_dir.'/'.$vs_file_import_directory;
+				}
+
+				
 				$va_errors = BatchProcessor::importMetadata(
 					$req, 
 					$vs_input,
