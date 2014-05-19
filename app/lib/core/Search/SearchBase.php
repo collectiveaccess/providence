@@ -140,19 +140,10 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 			}
 	
 			$va_fields_to_index = $va_info[$vs_content_table]['fields'];
-			
-			// Convert attribute codes to element_ids
+	
 			$t_subject = $this->opo_datamodel->getInstanceByTableName($vs_content_table, false);
-			if (is_array($va_fields_to_index)) {
-				foreach($va_fields_to_index as $vs_f => $va_info) {
-					if ((substr($vs_f, 0, 14) === '_ca_attribute_') && preg_match('!^_ca_attribute_([A-Za-z]+[A-Za-z0-9_]*)$!', $vs_f, $va_matches)) {
-						$vn_element_id = $t_subject->_getElementID($va_matches[1]);
-						unset($va_fields_to_index[$vs_f]);
-						$va_fields_to_index['_ca_attribute_'.$vn_element_id] = $va_info;
-					}
-				}
-			}
 			
+			// Expand "_metadata" to all available metadata elements		
 			if (isset($va_fields_to_index['_metadata'])) {
 				$va_data = $va_fields_to_index['_metadata'];
 				unset($va_fields_to_index['_metadata']);
@@ -163,6 +154,19 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 					$va_fields_to_index['_ca_attribute_'.$vn_element_id] = $va_data;
 				}
 			}
+			
+			// Convert specific attribute codes to element_ids
+			if (is_array($va_fields_to_index)) {
+				foreach($va_fields_to_index as $vs_f => $va_info) {
+					if ((substr($vs_f, 0, 14) === '_ca_attribute_') && preg_match('!^_ca_attribute_([A-Za-z]+[A-Za-z0-9_]*)$!', $vs_f, $va_matches)) {
+						$vn_element_id = $t_subject->_getElementID($va_matches[1]);
+						unset($va_fields_to_index[$vs_f]);
+						$va_fields_to_index['_ca_attribute_'.$vn_element_id] = $va_info;
+					}
+				}
+			}
+			
+			
 			return SearchBase::$s_fields_to_index_cache[$pm_subject_table.'/'.$pm_content_table] = SearchBase::$s_fields_to_index_cache[$vs_subject_table.'/'.$vs_content_table] = $va_fields_to_index;
 	
 		}
