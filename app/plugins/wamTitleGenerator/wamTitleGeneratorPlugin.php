@@ -82,12 +82,9 @@ class wamTitleGeneratorPlugin extends BaseApplicationPlugin {
 			$va_templates = $va_formatters[$vs_table_name][$vo_instance->getTypeCode()];
 			foreach ($va_templates as $vs_label_type => $ps_template) {
 				$vs_new_label = caProcessTemplateForIDs($ps_template, $vs_table_name, array( $vn_id ));
-				error_log('new label = ' . $vs_new_label);
 				if ($vo_instance->getPreferredLabelCount() > 0) {
-					error_log('removing existing label: ' . $vo_instance->getPreferredLabelID(1));
 					$vo_instance->removeLabel($vo_instance->getPreferredLabelID(1));
 				}
-				error_log('adding new label');
 				$vo_instance->addLabel(array( $vs_label_type => $vs_new_label ), 1, null, true);
 			}
 		}
