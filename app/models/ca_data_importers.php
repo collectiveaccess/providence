@@ -2031,6 +2031,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				
 				if ($vs_idno_fld && ($o_idno = $t_subject->getIDNoPlugInInstance())) {
 					$va_values = $o_idno->htmlFormValuesAsArray($vs_idno_fld, $t_subject->get($vs_idno_fld));
+					if (!is_array($va_values)) { $va_values = array($va_values); }
 					if (($vs_proc_idno = join($o_idno->getSeparator(), $va_values)) && ($vs_proc_idno != $vs_idno)) {
 						$t_subject->set($vs_idno_fld, $vs_proc_idno);
 						$t_subject->update();
@@ -2074,7 +2075,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											$vb_output_subject_preferred_label = true;
 										}
 										
-										if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add preferred label. Record was deleted because no preferred label could be applied: ", $vs_idno), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+										if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add preferred label to %2. Record was deleted because no preferred label could be applied: ", $vs_idno, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 											$t_subject->delete(true, array('hard' => false));
 											
@@ -2101,7 +2102,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, false
 										);
 										
-										if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add non-preferred label:", $vs_idno), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+										if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add non-preferred label to %2:", $vs_idno, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 											if ($vs_item_error_policy == 'stop') {
 												$o_log->logAlert(_t('Import stopped due to mapping error policy'));
@@ -2183,6 +2184,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							
 							$va_data_for_rel_table = array_merge($va_data_for_rel_table, ca_data_importers::_extractIntrinsicValues($va_data_for_rel_table, $vs_table_name));
 			
+							$t_subject->clearErrors();
 							switch($vs_table_name) {
 								case 'ca_objects':
 									if ($vn_rel_id = DataMigrationUtils::getObjectID($va_element_data['preferred_labels']['name'], $va_element_data['_parent_id'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('matchOn' => array('idno', 'label'), 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
@@ -2190,7 +2192,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										if (!($vs_rel_type = $va_element_data['_relationship_type']) && !($vs_rel_type = $va_element_data['idno']['_relationship_type'])) { break; }
 										$t_subject->addRelationship($vs_table_name, $vn_rel_id, trim($va_element_data['_relationship_type']), null, null, null, null, array('interstitialValues' => $va_element_data['_interstitial']));
 										
-										if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related object with relationship %2", $vs_idno, trim($va_element_data['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+										if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related object with relationship %2:", $vs_idno, trim($va_element_data['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 											if ($vs_item_error_policy == 'stop') {
 												$o_log->logAlert(_t('Import stopped due to mapping error policy'));
@@ -2212,7 +2214,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										if (!($vs_rel_type = $va_element_data['_relationship_type']) && !($vs_rel_type = $va_element_data['idno_stub']['_relationship_type'])) { break; }
 										$t_subject->addRelationship($vs_table_name, $vn_rel_id, trim($va_element_data['_relationship_type']), null, null, null, null, array('interstitialValues' => $va_element_data['_interstitial']));
 										
-										if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related object lot with relationship %2", $vs_idno, trim($va_element_data['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+										if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related object lot with relationship %2:", $vs_idno, trim($va_element_data['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 											if ($vs_item_error_policy == 'stop') {
 												$o_log->logAlert(_t('Import stopped due to mapping error policy'));
@@ -2229,7 +2231,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										
 										$t_subject->addRelationship($vs_table_name, $vn_rel_id, trim($va_element_data['_relationship_type']), null, null, null, null, array('interstitialValues' => $va_element_data['_interstitial']));
 										
-										if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related entity with relationship %2", $vs_idno, trim($va_element_data['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+										if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related entity with relationship %2:", $vs_idno, trim($va_element_data['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 											if ($vs_item_error_policy == 'stop') {
 												$o_log->logAlert(_t('Import stopped due to mapping error policy'));
