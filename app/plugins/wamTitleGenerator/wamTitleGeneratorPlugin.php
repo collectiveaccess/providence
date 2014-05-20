@@ -25,60 +25,79 @@
  *
  * ----------------------------------------------------------------------
  */
-	require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
+require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 
-	class wamTitleGeneratorPlugin extends BaseApplicationPlugin {
-		# -------------------------------------------------------
-		private $opo_config;
-		# -------------------------------------------------------
-		public function __construct($ps_plugin_path) {
-			$this->description = _t('Generates title based upon rules you specify in the configuration file associated with the plugin');
-			parent::__construct();
-			$this->opo_config = Configuration::load($ps_plugin_path.'/conf/wamTitleGenerator.conf');
-		}
-		# -------------------------------------------------------
-		/**
-		 * Override checkStatus() to return true - the wamTitleGeneratorPlugin plugin always initializes ok
-		 */
-		public function checkStatus() {
-			return array(
-				'description' => $this->getDescription(),
-				'errors' => array(),
-				'warnings' => array(),
-				'available' => ((bool)$this->opo_config->get('enabled'))
-			);
-		}
-		# -------------------------------------------------------
-		/**
-		 * Generate title on save
-		 */
-		public function hookBeforeLabelInsert(&$pa_params) {
-			$this->_rewriteLabel($pa_params);
-			return $pa_params;
-		}
-		public function hookBeforeLabelUpdate(&$pa_params) {
-			$this->_rewriteLabel($pa_params);
-			
-			return $pa_params;
-		}
-		# -------------------------------------------------------
-		private function _rewriteLabel(&$pa_params) {
-			$va_formatters = $this->opo_config->getAssoc('title_formatters');
-			if(isset($va_formatters[$pa_params['table_name']]) && isset($va_formatters[$pa_params['table_name']][$pa_params['instance']->getTypeCode()])){
-				$va_templates = $va_formatters[$pa_params['table_name']][$pa_params['instance']->getTypeCode()];
-				foreach ($va_templates as $vs_label_type => $ps_template) {
-					$vs_new_label = caProcessTemplateForIDs($ps_template, $pa_params['table_name'], array($pa_params['id']), array());
-					$pa_params['label_instance']->set($vs_label_type, $vs_new_label);
+class wamTitleGeneratorPlugin extends BaseApplicationPlugin {
+
+	/** @var Configuration */
+	private $opo_config;
+
+	public function __construct($ps_plugin_path) {
+		parent::__construct();
+		$this->description = _t('Generates title based upon rules you specify in the configuration file associated with the plugin');
+		$this->opo_config = Configuration::load($ps_plugin_path.'/conf/wamTitleGenerator.conf');
+	}
+
+	/**
+	 * Override checkStatus() to return true - the wamTitleGeneratorPlugin plugin always initializes ok
+	 */
+	public function checkStatus() {
+		return array(
+			'description' => $this->getDescription(),
+			'errors' => array(),
+			'warnings' => array(),
+			'available' => ((bool)$this->opo_config->get('enabled'))
+		);
+	}
+
+	public static function getRoleActionList(){
+		return array();
+	}
+
+	public function hookSaveItem($pa_params) {
+		return $this->_rewriteLabel($pa_params);
+	}
+
+	public function hookAfterBundleInsert($pa_params) {
+		return $this->_rewriteLabel($pa_params);
+	}
+
+	public function hookAfterBundleUpdate($pa_params) {
+		return $this->_rewriteLabel($pa_params);
+	}
+
+	private function _rewriteLabel(&$pa_params) {
+		$vs_table_name = $pa_params['table_name'];
+		$vn_id = $pa_params['id'];
+		$vb_modified_any = false;
+		$vn_locale_id = ca_locales::getDefaultCataloguingLocaleID();
+
+		/** @var BundlableLabelableBaseModelWithAttributes $vo_instance */
+		$vo_instance = $pa_params['instance'];
+		$vo_instance->setMode(ACCESS_WRITE);
+
+		$va_formatters = $this->opo_config->getAssoc('title_formatters');
+		if (isset($va_formatters[$vs_table_name]) && isset($va_formatters[$vs_table_name][$vo_instance->getTypeCode()])) {
+			$va_templates = $va_formatters[$vs_table_name][$vo_instance->getTypeCode()];
+			foreach ($va_templates as $vs_label_field => $ps_template) {
+				$vs_new_label_value = caProcessTemplateForIDs($ps_template, $vs_table_name, array( $vn_id ));
+				if ($vo_instance->getPreferredLabelCount() > 0) {
+					$vs_existing_labels = $vo_instance->getPreferredLabels(array( $vn_locale_id ));
+					if (empty($vs_existing_labels) || $vs_new_label_value !== $vs_existing_labels[$vn_id][$vn_locale_id][0][$vs_label_field]) {
+						$vo_instance->editLabel($vo_instance->getPreferredLabelID($vn_locale_id), array( $vs_label_field => $vs_new_label_value ), $vn_locale_id, null, true);
+						$vb_modified_any = true;
+					}
+				} else {
+					$vo_instance->addLabel(array( $vs_label_field => $vs_new_label_value ), $vn_locale_id, null, true);
+					$vb_modified_any = true;
 				}
 			}
 		}
-		/**
-		 * Need to specify which actions are overrideable by permissions
-		 * @return [type] [description]
-		 */
-		public static function getRoleActionList(){
-			return array();
+
+		// Only save if we actually changed something, otherwise we will end up in an infinite loop
+		if ($vb_modified_any) {
+			$vo_instance->update();
 		}
-# -------------------------------------------------------
-  }
-  ?>
+		return $pa_params;
+	}
+}
