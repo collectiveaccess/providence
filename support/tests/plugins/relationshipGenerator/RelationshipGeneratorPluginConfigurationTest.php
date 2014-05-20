@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * support/tests/plugins/RelationshipGeneratorPluginConfigurationTest.php
+ * support/tests/plugins/relationshipGenerator/RelationshipGeneratorPluginConfigurationTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -46,7 +46,7 @@ class RelationshipGeneratorConfigurationPluginTest extends PHPUnit_Framework_Tes
 		$this->assertEmpty($va_plugin_status['errors'], 'The default configuration does not produce any errors');
 	}
 
-	public function testDisabledConfigurationIsDisabled() {
+	public function testDisabledConfigurationIsDisabledAndValid() {
 		$vo_plugin = new relationshipGeneratorPlugin(__DIR__ . '/conf/disabled-plugin');
 		$va_plugin_status = $vo_plugin->checkStatus();
 		$this->assertFalse($va_plugin_status['available'], 'The plugin can be disabled by configuration');
