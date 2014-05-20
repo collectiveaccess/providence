@@ -92,7 +92,7 @@ class wamTitleGeneratorPlugin extends BaseApplicationPlugin {
 			foreach ($va_formatters[$vs_table_name] as $va_formatters_for_table) {
 				if (in_array($vo_instance->getTypeCode(), $va_formatters_for_table['types'])) {
 					foreach ($va_formatters_for_table['templates'] as $vs_label_field => $ps_template) {
-						// Determine whether to edit an existing lable or create a new label
+						// Determine whether to edit an existing label or create a new label
 						$vs_new_label_value = caProcessTemplateForIDs($ps_template, $vs_table_name, array( $vn_id ));
 						if ($vo_instance->getPreferredLabelCount() > 0) {
 							$vs_existing_labels = $vo_instance->getPreferredLabels(array( $vn_locale_id ));

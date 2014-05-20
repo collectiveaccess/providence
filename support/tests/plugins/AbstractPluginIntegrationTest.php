@@ -35,6 +35,11 @@
  * exercising a particular plugin, and then restoring the database to its original state (with the exception of
  * sequences).  Such tests should use the following template:
  *
+ * ------------------
+ *
+ * // Force initial setup of plugins so it isn't called later, which will overwrite our manually set up plugin
+ * ApplicationPluginManager::initPlugins();
+ *
  * class FancyPantsPluginIntegrationTest extend AbstractPluginIntegrationTest {
  *     public static function setUpBeforeTest() {
  *         self::_init();
@@ -52,6 +57,8 @@
  *         self::_cleanup();
  *     }
  * }
+ *
+ * ------------------
  */
 abstract class AbstractPluginIntegrationTest extends PHPUnit_Framework_TestCase {
 
