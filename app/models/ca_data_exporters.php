@@ -982,7 +982,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$va_mappings = explode("/", $vs_mapping);
 
 			foreach($va_mappings as $vs_mapping){
-				$vs_item_export = ca_data_exporters::exportRecord($vs_mapping,$va_split[1]);
+				$vs_item_export = ca_data_exporters::exportRecord($vs_mapping,$va_split[1],array('rdfMode' => true));
 				file_put_contents($ps_filename, trim($vs_item_export)."\n", FILE_APPEND);
 			}
 
@@ -1170,6 +1170,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 *        singleRecord = Gives a signal to the export format implementation that this is a single record export. For certain formats
 	 *        	this might trigger different behavior, for instance the XML export format prepends the item-level output with <?xml ... ?>
 	 *        	in those cases.
+	 *        rdfMode = Signals the implementation that this is an RDF mode export
 	 * @return string Exported record as string
 	 */
 	static public function exportRecord($ps_exporter_code, $pn_record_id, $pa_options=array()){
