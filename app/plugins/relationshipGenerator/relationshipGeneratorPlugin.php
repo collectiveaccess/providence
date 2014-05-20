@@ -124,12 +124,14 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 		if ($this->opo_config->getBoolean('process_on_insert') && $this->_isRelevantInstance($pa_params['instance'])) {
 			$this->_process($pa_params);
 		}
+		return $pa_params;
 	}
 
 	public function hookAfterBundleUpdate(&$pa_params) {
 		if ($this->opo_config->getBoolean('process_on_update') && $this->_isRelevantInstance($pa_params['instance'])) {
 			$this->_process($pa_params);
 		}
+		return $pa_params;
 	}
 
 	/**
