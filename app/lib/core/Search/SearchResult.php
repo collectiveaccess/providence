@@ -1654,6 +1654,7 @@ class SearchResult extends BaseObject {
 			} else {
 				$va_items = $this->get($pa_path_components['table_name'].'.'.$pa_path_components['field_name'], array('returnAsArray' => true));
 			}
+			if (!is_array($va_items)) { return null; }
 			$va_item_ids = caExtractValuesFromArrayList($va_items, $pa_path_components['field_name'], array('preserveKeys' => false));
 			$qr_items = caMakeSearchResult('ca_list_items', $va_item_ids);
 			
