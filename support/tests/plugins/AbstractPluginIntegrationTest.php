@@ -138,15 +138,6 @@ abstract class AbstractPluginIntegrationTest extends PHPUnit_Framework_TestCase 
 	}
 
 	/**
-	 * Get the directory where the plugin config for the test should be loaded from.
-	 * @return string
-	 * @throws Exception
-	 */
-	protected static function _getConfigurationDirectory() {
-		throw new Exception('not implemented');
-	}
-
-	/**
 	 * Convert the configuration file template containing placeholders into a ready-to-use configuration file
 	 * containing generated idno values.
 	 * @param $ps_dir
