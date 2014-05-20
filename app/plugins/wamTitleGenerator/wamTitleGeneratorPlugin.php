@@ -27,6 +27,19 @@
  */
 require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 
+/**
+ * The WAM Title Generator plugin is a configurable title generator, which uses templates to create titles (preferred
+ * labels) for any type of bundle containing objects of any type.
+ *
+ * The top-level configuration item `enabled` flag switches the plugin on or off.
+ *
+ * The only other top-level configuration item is `title_generators`, which maps to a hash where the keys are record
+ * types (e.g. ca_objects, ca_collections) and the values are also hashes.  The hashes in these child keys are ignored,
+ * they are only hashes instead of lists due to a limitation of the CA configuration module.  The values of these
+ * hashes are also hashes, which contain a `types` key and a `templates` key.  The `types` key is mapped to a list of
+ * type codes (idno values) to which the templates are applied.  The `templates` key maps to a hash where the keys are
+ * the field names and the values are templates used to determine the new value for those fields.
+ */
 class wamTitleGeneratorPlugin extends BaseApplicationPlugin {
 
 	/** @var Configuration */
@@ -38,9 +51,6 @@ class wamTitleGeneratorPlugin extends BaseApplicationPlugin {
 		$this->opo_config = Configuration::load($ps_plugin_path.'/conf/wamTitleGenerator.conf');
 	}
 
-	/**
-	 * Override checkStatus() to return true - the wamTitleGeneratorPlugin plugin always initializes ok
-	 */
 	public function checkStatus() {
 		return array(
 			'description' => $this->getDescription(),
@@ -76,11 +86,13 @@ class wamTitleGeneratorPlugin extends BaseApplicationPlugin {
 		$vo_instance = $pa_params['instance'];
 		$vo_instance->setMode(ACCESS_WRITE);
 
+		// Iterate through formatters until we get a match on table name and type code, then process
 		$va_formatters = $this->opo_config->getAssoc('title_formatters');
 		if (isset($va_formatters[$vs_table_name])) {
 			foreach ($va_formatters[$vs_table_name] as $va_formatters_for_table) {
 				if (in_array($vo_instance->getTypeCode(), $va_formatters_for_table['types'])) {
 					foreach ($va_formatters_for_table['templates'] as $vs_label_field => $ps_template) {
+						// Determine whether to edit an existing lable or create a new label
 						$vs_new_label_value = caProcessTemplateForIDs($ps_template, $vs_table_name, array( $vn_id ));
 						if ($vo_instance->getPreferredLabelCount() > 0) {
 							$vs_existing_labels = $vo_instance->getPreferredLabels(array( $vn_locale_id ));
