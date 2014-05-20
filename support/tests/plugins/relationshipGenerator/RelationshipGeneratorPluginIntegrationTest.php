@@ -54,8 +54,9 @@ class RelationshipGeneratorPluginIntegrationTest extends AbstractPluginIntegrati
 
 		self::_createRelationshipType('part', 'ca_objects_x_collections');
 
-		self::_createListItem('test_collection', BaseModel::$s_ca_models_definitions['ca_collections']['FIELDS']['type_id']['LIST_CODE']);
-		self::_createListItem('test_object', BaseModel::$s_ca_models_definitions['ca_objects']['FIELDS']['type_id']['LIST_CODE']);
+		self::_createListItem('test_collection_type', BaseModel::$s_ca_models_definitions['ca_collections']['FIELDS']['type_id']['LIST_CODE']);
+		self::_createListItem('test_object_type1', BaseModel::$s_ca_models_definitions['ca_objects']['FIELDS']['type_id']['LIST_CODE']);
+		self::_createListItem('test_object_type2', BaseModel::$s_ca_models_definitions['ca_objects']['FIELDS']['type_id']['LIST_CODE']);
 
 		self::_createMetadataElement('element1');
 		self::_createMetadataElement('element2');
@@ -65,6 +66,7 @@ class RelationshipGeneratorPluginIntegrationTest extends AbstractPluginIntegrati
 		self::_createCollection('collection2');
 		self::_createCollection('collection3');
 		self::_createCollection('collection4');
+		self::_createCollection('collection5');
 	}
 
 	public static function tearDownAfterClass() {
@@ -78,6 +80,7 @@ class RelationshipGeneratorPluginIntegrationTest extends AbstractPluginIntegrati
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not have a relationship with collection2');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not have a relationship with collection3');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not have a relationship with collection4');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection5'), 'Object does not have a relationship with collection5');
 	}
 
 	public function testInsertedRecordMatchingSingleExactMatchRule() {
@@ -86,6 +89,7 @@ class RelationshipGeneratorPluginIntegrationTest extends AbstractPluginIntegrati
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not have a relationship with collection2');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not have a relationship with collection3');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not have a relationship with collection4');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection5'), 'Object does not have a relationship with collection5');
 	}
 
 	public function testInsertedRecordMatchingSingleRegexRule() {
@@ -94,6 +98,7 @@ class RelationshipGeneratorPluginIntegrationTest extends AbstractPluginIntegrati
 		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object has a relationship with collection2');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not have a relationship with collection3');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not have a relationship with collection4');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection5'), 'Object does not have a relationship with collection5');
 	}
 
 	public function testInsertedRecordMatchingMultipleRules() {
@@ -102,6 +107,7 @@ class RelationshipGeneratorPluginIntegrationTest extends AbstractPluginIntegrati
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not have a relationship with collection2');
 		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object has a relationship with collection3');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not have a relationship with collection4');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection5'), 'Object does not have a relationship with collection5');
 	}
 
 	public function testUpdatedRecordWasNotMatchingAnyRuleStillNotMatchingAnyRule() {
@@ -110,11 +116,13 @@ class RelationshipGeneratorPluginIntegrationTest extends AbstractPluginIntegrati
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not initially have a relationship with collection2');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not initially have a relationship with collection3');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not initially have a relationship with collection4');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection5'), 'Object does not have a relationship with collection5');
 		$vo_object = self::_updateObject('wasNotMatchingAnyRuleNowStillNotMatchingAnyRule', array( 'element1' => 'this value also does not match' ));
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object does not have a relationship with collection1 after update');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not have a relationship with collection2 after update');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not have a relationship with collection3 after update');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not have a relationship with collection4 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection5'), 'Object does not have a relationship with collection5');
 	}
 
 	public function testUpdatedRecordWasNotMatchingAnyRuleNowMatchingSingleRule() {
@@ -123,11 +131,13 @@ class RelationshipGeneratorPluginIntegrationTest extends AbstractPluginIntegrati
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not initially have a relationship with collection2');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not initially have a relationship with collection3');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not initially have a relationship with collection4');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection5'), 'Object does not have a relationship with collection5');
 		$vo_object = self::_updateObject('wasNotMatchingAnyRuleNowMatchingSingleRule', array( 'element1' => 'EXACT MATCH' ));
 		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object has a relationship with collection1 after update');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not have a relationship with collection2 after update');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not have a relationship with collection3 after update');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not have a relationship with collection4 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection5'), 'Object does not have a relationship with collection5');
 	}
 
 	public function testUpdatedRecordWasNotMatchingAnyRuleNowMatchingMultipleRules() {
@@ -136,11 +146,13 @@ class RelationshipGeneratorPluginIntegrationTest extends AbstractPluginIntegrati
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not initially have a relationship with collection2');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not initially have a relationship with collection3');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not initially have a relationship with collection4');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection5'), 'Object does not have a relationship with collection5');
 		$vo_object = self::_updateObject('wasNotMatchingAnyRuleNowMatchingMultipleRules', array( 'element1' => '42', 'element2' => 'XyZZy' ));
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object does not have a relationship with collection1 after update');
 		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object has a relationship with collection2 after update');
 		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object has a relationship with collection3 after update');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not have a relationship with collection4 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection5'), 'Object does not have a relationship with collection5');
 	}
 
 	public function testUpdatedRecordWasMatchingSingleRuleNowMatchingMultipleRules() {
@@ -149,11 +161,13 @@ class RelationshipGeneratorPluginIntegrationTest extends AbstractPluginIntegrati
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not initially have a relationship with collection2');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not initially have a relationship with collection3');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not initially have a relationship with collection4');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection5'), 'Object does not have a relationship with collection5');
 		$vo_object = self::_updateObject('wasWasMatchingSingleRuleNowMatchingMultipleRules', array( 'element2' => 'XYZZY' ));
 		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object has a relationship with collection1 after update');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not have a relationship with collection2 after update');
 		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object has a relationship with collection3 after update');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not have a relationship with collection4 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection5'), 'Object does not have a relationship with collection5');
 	}
 
 	public function testUpdatedRecordWasMatchingSingleRuleNowMatchingDifferentSingleRule() {
@@ -162,11 +176,13 @@ class RelationshipGeneratorPluginIntegrationTest extends AbstractPluginIntegrati
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not initially have a relationship with collection2');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not initially have a relationship with collection3');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not initially have a relationship with collection4');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection5'), 'Object does not have a relationship with collection5');
 		$vo_object = self::_updateObject('wasMatchingSingleRuleNowMatchingDifferentSingleRule', array( 'element1' => 'no longer matching', 'element2' => 'Xyzzy' ));
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object does not have a relationship with collection1 after update');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not have a relationship with collection2 after update');
 		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object has a relationship with collection3 after update');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not have a relationship with collection4 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection5'), 'Object does not have a relationship with collection5');
 	}
 
 	public function testUpdatedRecordWasMatchingSingleRuleNowNotMatchingAnyRule() {
@@ -175,11 +191,13 @@ class RelationshipGeneratorPluginIntegrationTest extends AbstractPluginIntegrati
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not initially have a relationship with collection2');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not initially have a relationship with collection3');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not initially have a relationship with collection4');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection5'), 'Object does not have a relationship with collection5');
 		$vo_object = self::_updateObject('wasMatchingSingleRuleNowNotMatchingAnyRule', array( 'element1' => 'no longer matching' ));
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object does not have a relationship with collection1 after update');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not have a relationship with collection2 after update');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not have a relationship with collection3 after update');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not have a relationship with collection4 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection5'), 'Object does not have a relationship with collection5');
 	}
 
 	public function testUpdatedRecordWasMatchingMultipleRulesNowMatchingSingleRule() {
@@ -188,11 +206,13 @@ class RelationshipGeneratorPluginIntegrationTest extends AbstractPluginIntegrati
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not initially have a relationship with collection2');
 		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object initially has a relationship with collection3');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not initially have a relationship with collection4');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection5'), 'Object does not have a relationship with collection5');
 		$vo_object = self::_updateObject('wasMatchingMultipleRulesNowMatchingSingleRule', array( 'element1' => 'no longer matching' ));
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object does not have a relationship with collection1 after update');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not have a relationship with collection2 after update');
 		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object has a relationship with collection3 after update');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not have a relationship with collection4 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection5'), 'Object does not have a relationship with collection5');
 	}
 
 	public function testUpdatedRecordWasMatchingMultipleRulesNowMatchingDifferentSingleRule() {
@@ -201,11 +221,13 @@ class RelationshipGeneratorPluginIntegrationTest extends AbstractPluginIntegrati
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not initially have a relationship with collection2');
 		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object initially has a relationship with collection3');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not initially have a relationship with collection4');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection5'), 'Object does not have a relationship with collection5');
 		$vo_object = self::_updateObject('wasMatchingMultipleRulesNowNotMatchingDifferentSingleRule', array( 'element1' => 'no longer matching NO LONGER', 'element2' => 'foo', 'element3' => 'barBBBBBBBBBBBBBAAAAAAAAAAAAAAAAAAAAAAAAAAAAARRRRRRRRRRRRRRRRRRRRRRRRRRRRRR' ));
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object does not have a relationship with collection1 after update');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not have a relationship with collection2 after update');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not have a relationship with collection3 after update');
 		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object has a relationship with collection4 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection5'), 'Object does not have a relationship with collection5');
 	}
 
 	public function testUpdatedRecordWasMatchingMultipleRulesNowNotMatchingAnyRule() {
@@ -214,11 +236,22 @@ class RelationshipGeneratorPluginIntegrationTest extends AbstractPluginIntegrati
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not initially have a relationship with collection2');
 		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object initially has a relationship with collection3');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not initially have a relationship with collection4');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection5'), 'Object does not have a relationship with collection5');
 		$vo_object = self::_updateObject('wasMatchingMultipleRulesNowNotMatchingAnyRule', array( 'element1' => 'no longer matching', 'element2' => 'yzxxz' ));
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object does not have a relationship with collection1 after update');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not have a relationship with collection2 after update');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not have a relationship with collection3 after update');
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not have a relationship with collection4 after update');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection5'), 'Object does not have a relationship with collection5');
+	}
+
+	public function testValueConverterAppliedCorrectly() {
+		$vo_object = self::_createObject('valueConverterAppliedCorrectly', array(), 'test_object_type2');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object does not have a relationship with collection1');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection2'), 'Object does not have a relationship with collection2');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection3'), 'Object does not have a relationship with collection3');
+		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection4'), 'Object does not have a relationship with collection4');
+		$this->assertEquals(1, self::_getCollectionRelationshipCount($vo_object, 'collection5'), 'Object has a relationship with collection5');
 	}
 
 	private static function _createRelationshipType($ps_code_base, $ps_table_name) {
@@ -279,7 +312,7 @@ class RelationshipGeneratorPluginIntegrationTest extends AbstractPluginIntegrati
 	private static function _createCollection($ps_idno_base) {
 		$vo_collection = new ca_collections();
 		$vo_collection->setMode(ACCESS_WRITE);
-		$vn_test_collection_list_item_id = self::_retrieveCreatedInstance('ca_list_items', 'test_collection')->getPrimaryKey();
+		$vn_test_collection_list_item_id = self::_retrieveCreatedInstance('ca_list_items', 'test_collection_type')->getPrimaryKey();
 		$vo_collection->set(array(
 			'idno' => self::_getIdno($ps_idno_base),
 			'type_id' => $vn_test_collection_list_item_id
@@ -300,17 +333,17 @@ class RelationshipGeneratorPluginIntegrationTest extends AbstractPluginIntegrati
 		return $vo_collection;
 	}
 
-	private static function _createObject($ps_idno_base, $pa_attributes) {
+	private static function _createObject($ps_idno_base, $pa_attributes, $ps_type_code = 'test_object_type1') {
+		$pn_type_id = self::_retrieveCreatedInstance('ca_list_items', $ps_type_code)->getPrimaryKey();
 		$vo_object = new ca_objects();
 		$vo_object->setMode(ACCESS_WRITE);
-		$vn_test_object_list_item_id = self::_retrieveCreatedInstance('ca_list_items', 'test_object')->getPrimaryKey();
 		$vo_object->set(array(
 			'idno' => self::_getIdno($ps_idno_base),
-			'type_id' => $vn_test_object_list_item_id
+			'type_id' => $pn_type_id
 		));
 		foreach ($pa_attributes as $vs_code_base => $vs_value) {
 			$vs_code = self::_getIdno($vs_code_base);
-			$vo_object->addMetadataElementToType($vs_code, $vn_test_object_list_item_id);
+			$vo_object->addMetadataElementToType($vs_code, $pn_type_id);
 			$vo_object->addAttribute(array( $vs_code => $vs_value ), $vs_code);
 		}
 		$vo_object->insert();
