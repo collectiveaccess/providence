@@ -1,0 +1,12 @@
+# Specify the format to use for the title, per record type
+
+title_formatters = {
+	ca_objects = {
+		0 = {
+			types = [ %%test_object_type1%%, %%test_object_type2%%, %%test_object_type3%% ],
+			templates = {
+				name = generated: <ifdef code="ca_collections">^ca_collections </ifdef>^ca_objects.idno
+			}
+		}
+	}
+}
