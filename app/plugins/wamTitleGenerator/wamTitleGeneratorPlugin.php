@@ -31,8 +31,6 @@ class wamTitleGeneratorPlugin extends BaseApplicationPlugin {
 	# -------------------------------------------------------
 	/** @var Configuration */
 	private $opo_config;
-
-	private static $opa_processed_records = array();
 	# -------------------------------------------------------
 	public function __construct($ps_plugin_path) {
 		parent::__construct();
@@ -56,22 +54,16 @@ class wamTitleGeneratorPlugin extends BaseApplicationPlugin {
 		return array();
 	}
 	# -------------------------------------------------------
-	public function hookAfterBundleInsert(&$pa_params) {
-		return $this->_rewriteLabel($pa_params);
-	}
 
-	public function hookAfterBundleUpdate(&$pa_params) {
+	public function hookSaveItem($pa_params) {
 		return $this->_rewriteLabel($pa_params);
 	}
 	# -------------------------------------------------------
 	private function _rewriteLabel(&$pa_params) {
-
 		$vs_table_name = $pa_params['table_name'];
 		$vn_id = $pa_params['id'];
-
-		if (isset(self::$opa_processed_records[$vs_table_name]) && isset(self::$opa_processed_records[$vs_table_name][$vn_id]) && self::$opa_processed_records[$vs_table_name][$vn_id]) {
-			return $pa_params;
-		}
+		$vb_modified_any = false;
+		$vn_locale_id = ca_locales::getDefaultCataloguingLocaleID();
 
 		/** @var BundlableLabelableBaseModelWithAttributes $vo_instance */
 		$vo_instance = $pa_params['instance'];
@@ -80,21 +72,25 @@ class wamTitleGeneratorPlugin extends BaseApplicationPlugin {
 		$va_formatters = $this->opo_config->getAssoc('title_formatters');
 		if (isset($va_formatters[$vs_table_name]) && isset($va_formatters[$vs_table_name][$vo_instance->getTypeCode()])) {
 			$va_templates = $va_formatters[$vs_table_name][$vo_instance->getTypeCode()];
-			foreach ($va_templates as $vs_label_type => $ps_template) {
-				$vs_new_label = caProcessTemplateForIDs($ps_template, $vs_table_name, array( $vn_id ));
+			foreach ($va_templates as $vs_label_field => $ps_template) {
+				$vs_new_label_value = caProcessTemplateForIDs($ps_template, $vs_table_name, array( $vn_id ));
 				if ($vo_instance->getPreferredLabelCount() > 0) {
-					$vo_instance->removeLabel($vo_instance->getPreferredLabelID(1));
+					$vs_existing_labels = $vo_instance->getPreferredLabels(array( $vn_locale_id ));
+					if (empty($vs_existing_labels) || $vs_new_label_value != $vs_existing_labels[$vn_id][$vn_locale_id][0][$vs_label_field]) {
+						$vo_instance->editLabel($vo_instance->getPreferredLabelID($vn_locale_id), array( $vs_label_field => $vs_new_label_value ), $vn_locale_id, null, true);
+						$vb_modified_any = true;
+					}
+				} else {
+					$vo_instance->addLabel(array( $vs_label_field => $vs_new_label_value ), $vn_locale_id, null, true);
+					$vb_modified_any = true;
 				}
-				$vo_instance->addLabel(array( $vs_label_type => $vs_new_label ), 1, null, true);
 			}
 		}
 
-		if (!isset(self::$opa_processed_records[$vs_table_name])) {
-			self::$opa_processed_records[$vs_table_name] = array();
+		// Only save if we actually changed something, otherwise we will end up in an infinite loop
+		if ($vb_modified_any) {
+			$vo_instance->update();
 		}
-		self::$opa_processed_records[$vs_table_name][$vn_id] = true;
-
-		$vo_instance->update();
 		return $pa_params;
 	}
 	# -------------------------------------------------------
