@@ -77,19 +77,22 @@ class wamTitleGeneratorPlugin extends BaseApplicationPlugin {
 		$vo_instance->setMode(ACCESS_WRITE);
 
 		$va_formatters = $this->opo_config->getAssoc('title_formatters');
-		if (isset($va_formatters[$vs_table_name]) && isset($va_formatters[$vs_table_name][$vo_instance->getTypeCode()])) {
-			$va_templates = $va_formatters[$vs_table_name][$vo_instance->getTypeCode()];
-			foreach ($va_templates as $vs_label_field => $ps_template) {
-				$vs_new_label_value = caProcessTemplateForIDs($ps_template, $vs_table_name, array( $vn_id ));
-				if ($vo_instance->getPreferredLabelCount() > 0) {
-					$vs_existing_labels = $vo_instance->getPreferredLabels(array( $vn_locale_id ));
-					if (empty($vs_existing_labels) || $vs_new_label_value !== $vs_existing_labels[$vn_id][$vn_locale_id][0][$vs_label_field]) {
-						$vo_instance->editLabel($vo_instance->getPreferredLabelID($vn_locale_id), array( $vs_label_field => $vs_new_label_value ), $vn_locale_id, null, true);
-						$vb_modified_any = true;
+		if (isset($va_formatters[$vs_table_name])) {
+			foreach ($va_formatters[$vs_table_name] as $va_formatters_for_table) {
+				if (in_array($vo_instance->getTypeCode(), $va_formatters_for_table['types'])) {
+					foreach ($va_formatters_for_table['templates'] as $vs_label_field => $ps_template) {
+						$vs_new_label_value = caProcessTemplateForIDs($ps_template, $vs_table_name, array( $vn_id ));
+						if ($vo_instance->getPreferredLabelCount() > 0) {
+							$vs_existing_labels = $vo_instance->getPreferredLabels(array( $vn_locale_id ));
+							if (empty($vs_existing_labels) || $vs_new_label_value !== $vs_existing_labels[$vn_id][$vn_locale_id][0][$vs_label_field]) {
+								$vo_instance->editLabel($vo_instance->getPreferredLabelID($vn_locale_id), array( $vs_label_field => $vs_new_label_value ), $vn_locale_id, null, true);
+								$vb_modified_any = true;
+							}
+						} else {
+							$vo_instance->addLabel(array( $vs_label_field => $vs_new_label_value ), $vn_locale_id, null, true);
+							$vb_modified_any = true;
+						}
 					}
-				} else {
-					$vo_instance->addLabel(array( $vs_label_field => $vs_new_label_value ), $vn_locale_id, null, true);
-					$vb_modified_any = true;
 				}
 			}
 		}
