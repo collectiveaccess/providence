@@ -28,16 +28,16 @@
 require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 
 class wamTitleGeneratorPlugin extends BaseApplicationPlugin {
-	# -------------------------------------------------------
+
 	/** @var Configuration */
 	private $opo_config;
-	# -------------------------------------------------------
+
 	public function __construct($ps_plugin_path) {
 		parent::__construct();
 		$this->description = _t('Generates title based upon rules you specify in the configuration file associated with the plugin');
 		$this->opo_config = Configuration::load($ps_plugin_path.'/conf/wamTitleGenerator.conf');
 	}
-	# -------------------------------------------------------
+
 	/**
 	 * Override checkStatus() to return true - the wamTitleGeneratorPlugin plugin always initializes ok
 	 */
@@ -49,16 +49,23 @@ class wamTitleGeneratorPlugin extends BaseApplicationPlugin {
 			'available' => ((bool)$this->opo_config->get('enabled'))
 		);
 	}
-	# -------------------------------------------------------
+
 	public static function getRoleActionList(){
 		return array();
 	}
-	# -------------------------------------------------------
 
 	public function hookSaveItem($pa_params) {
 		return $this->_rewriteLabel($pa_params);
 	}
-	# -------------------------------------------------------
+
+	public function hookAfterBundleInsert($pa_params) {
+		return $this->_rewriteLabel($pa_params);
+	}
+
+	public function hookAfterBundleUpdate($pa_params) {
+		return $this->_rewriteLabel($pa_params);
+	}
+
 	private function _rewriteLabel(&$pa_params) {
 		$vs_table_name = $pa_params['table_name'];
 		$vn_id = $pa_params['id'];
@@ -93,5 +100,4 @@ class wamTitleGeneratorPlugin extends BaseApplicationPlugin {
 		}
 		return $pa_params;
 	}
-	# -------------------------------------------------------
 }
