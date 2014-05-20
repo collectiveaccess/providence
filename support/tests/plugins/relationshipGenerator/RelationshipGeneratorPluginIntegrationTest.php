@@ -72,10 +72,6 @@ class RelationshipGeneratorPluginIntegrationTest extends AbstractPluginIntegrati
 		self::_cleanup();
 	}
 
-	protected static function _getConfigurationDirectory() {
-		return __DIR__ . '/conf/integration';
-	}
-
 	public function testInsertedRecordNotMatchingAnyRule() {
 		$vo_object = self::_createObject('notMatchingAnyRule', array( 'element1' => 'this value matches nothing' ));
 		$this->assertEquals(0, self::_getCollectionRelationshipCount($vo_object, 'collection1'), 'Object does not have a relationship with collection1');
