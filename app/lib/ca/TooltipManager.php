@@ -119,14 +119,14 @@
 				if (isset(TooltipManager::$opa_tooltips[$ps_namespace]) && is_array(TooltipManager::$opa_tooltips[$ps_namespace])) {
 					foreach(TooltipManager::$opa_tooltips[$ps_namespace] as $vs_id => $vs_content) {
 						$vs_class = (isset(TooltipManager::$opa_namespace_classes[$ps_namespace]) && TooltipManager::$opa_namespace_classes[$ps_namespace]) ? TooltipManager::$opa_namespace_classes[$ps_namespace] : "tooltipFormat";
-						$vs_buf .= "jQuery('{$vs_id}').tooltip({ tooltipClass: '{$vs_class}', show: 150, hide: 150, items: '*', content: function() { return '".preg_replace('![\n\r]{1}!', ' ', addslashes($vs_content))."'; }});";
+						$vs_buf .= "jQuery('{$vs_id}').attr('title', '".preg_replace('![\n\r]{1}!', ' ', addslashes($vs_content))."').tooltip({ tooltipClass: '{$vs_class}', show: 150, hide: 150});\n";
 					}
 				}
 				
 				if (isset(TooltipManager::$opa_tooltip_functions[$ps_namespace]) && is_array(TooltipManager::$opa_tooltip_functions[$ps_namespace])) {
 					foreach(TooltipManager::$opa_tooltip_functions[$ps_namespace] as $vs_id => $vs_code) {
 						$vs_class = (isset(TooltipManager::$opa_namespace_classes[$ps_namespace]) && TooltipManager::$opa_namespace_classes[$ps_namespace]) ? TooltipManager::$opa_namespace_classes[$ps_namespace] : "tooltipFormat";
-						$vs_buf .= "jQuery('{$vs_id}').tooltip({ tooltipClass: '{$vs_class}', show: 150, hide: 150, items: '*', content: function() { {$vs_code}; }});";
+						$vs_buf .= "jQuery('{$vs_id}').tooltip({ tooltipClass: '{$vs_class}', show: 150, hide: 150, items: '*', content: function() { {$vs_code}; }});\n";
 					}
 				}
 				

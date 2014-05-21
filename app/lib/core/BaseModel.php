@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2013 Whirl-i-Gig
+ * Copyright 2000-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -54,6 +54,7 @@ define("FT_DATE", 13);
 define("FT_HISTORIC_DATE", 14);
 define("FT_TIME", 15);
 define("FT_TIMERANGE", 16);
+
 # ------------------------------------------------------------------------------------
 # --- Display type constants
 # ------------------------------------------------------------------------------------
@@ -72,17 +73,13 @@ define("DT_TIMECODE", 12);
 define("DT_COUNTRY_LIST", 13);
 define("DT_STATEPROV_LIST", 14);
 define("DT_LOOKUP", 15);
+define("DT_FILE_BROWSER", 16);
+
 # ------------------------------------------------------------------------------------
 # --- Access mode constants
 # ------------------------------------------------------------------------------------
 define("ACCESS_READ", 0);
 define("ACCESS_WRITE", 1);
-
-# ------------------------------------------------------------------------------------
-# --- Text-markup constants
-# ------------------------------------------------------------------------------------
-define("__CA_MT_HTML__", 0);
-define("__CA_MT_TEXT_ONLY__", 1);
 
 # ------------------------------------------------------------------------------------
 # --- Hierarchy type constants
@@ -631,8 +628,8 @@ class BaseModel extends BaseObject {
 	 * 		DONT_PROCESS_GLOSSARY_TAGS: ?
 	 * 		CONVERT_HTML_BREAKS: similar to nl2br()
 	 * 		convertLineBreaks: same as CONVERT_HTML_BREAKS
-	 * 		GET_DIRECT_DATE: return raw date value from database if $ps_field adresses a date field, otherwise the value will be parsed using the TimeExpressionParser::getText() method
-	 * 		GET_DIRECT_TIME: return raw time value from database if $ps_field adresses a time field, otherwise the value will be parsed using the TimeExpressionParser::getText() method
+	 * 		getDirectDate: return raw date value from database if $ps_field adresses a date field, otherwise the value will be parsed using the TimeExpressionParser::getText() method
+	 * 		getDirectTime: return raw time value from database if $ps_field adresses a time field, otherwise the value will be parsed using the TimeExpressionParser::getText() method
 	 * 		TIMECODE_FORMAT: set return format for fields representing time ranges possible (string) values: COLON_DELIMITED, HOURS_MINUTES_SECONDS, RAW; data will be passed through floatval() by default
 	 * 		QUOTE: set return value into quotes
 	 * 		URL_ENCODE: value will be passed through urlencode()
@@ -906,7 +903,7 @@ class BaseModel extends BaseObject {
 			case (FT_HISTORIC_DATE):
 			case (FT_DATE):
 				$vn_timestamp = isset($this->_FIELD_VALUES[$ps_field]) ? $this->_FIELD_VALUES[$ps_field] : 0;
-				if (isset($pa_options["GET_DIRECT_DATE"]) && $pa_options["GET_DIRECT_DATE"]) {
+				if (caGetOption('GET_DIRECT_DATE', $pa_options, false) || caGetOption('getDirectDate', $pa_options, false)) {
 					$vs_prop = $this->_FIELD_VALUES[$ps_field];
 				} elseif ((isset($pa_options['sortable']) && $pa_options['sortable'])) {
 					$vs_prop = $vn_timestamp."/".$vn_timestamp;
@@ -926,7 +923,7 @@ class BaseModel extends BaseObject {
 				}
 				break;
 			case (FT_TIME):
-				if (isset($pa_options["GET_DIRECT_TIME"]) && $pa_options["GET_DIRECT_TIME"]) {
+				if (caGetOption('GET_DIRECT_TIME', $pa_options, false) || caGetOption('getDirectTime', $pa_options, false)) {
 					$vs_prop = $this->_FIELD_VALUES[$ps_field];
 				} else {
 					$o_tep = new TimeExpressionParser();
@@ -943,7 +940,7 @@ class BaseModel extends BaseObject {
 				
 				$vn_start_date = isset($this->_FIELD_VALUES[$vs_start_field_name]) ? $this->_FIELD_VALUES[$vs_start_field_name] : null;
 				$vn_end_date = isset($this->_FIELD_VALUES[$vs_end_field_name]) ? $this->_FIELD_VALUES[$vs_end_field_name] : null;
-				if (!isset($pa_options["GET_DIRECT_DATE"]) || !$pa_options["GET_DIRECT_DATE"]) {
+				if (!caGetOption('GET_DIRECT_DATE', $pa_options, false) && !caGetOption('getDirectDate', $pa_options, false)) {
 					$o_tep = new TimeExpressionParser();
 					if ($ps_field_type == FT_HISTORIC_DATERANGE) {
 						$o_tep->setHistoricTimestamps($vn_start_date, $vn_end_date);
@@ -954,7 +951,7 @@ class BaseModel extends BaseObject {
 				} elseif ((isset($pa_options['sortable']) && $pa_options['sortable'])) {
 					$vs_prop = $vn_start_date."/".$vn_timestamp;
 				} else {
-					$vs_prop = array($vn_start_date, $vn_end_date);
+					$vs_prop = $vn_start_date; //array($vn_start_date, $vn_end_date);
 				}
 				break;
 			case (FT_TIMERANGE):
@@ -964,7 +961,7 @@ class BaseModel extends BaseObject {
 				
 				$vn_start_date = isset($this->_FIELD_VALUES[$vs_start_field_name]) ? $this->_FIELD_VALUES[$vs_start_field_name] : null;
 				$vn_end_date = isset($this->_FIELD_VALUES[$vs_end_field_name]) ? $this->_FIELD_VALUES[$vs_end_field_name] : null;
-				if (!isset($pa_options["GET_DIRECT_TIME"]) || !$pa_options["GET_DIRECT_TIME"]) {
+				if (!caGetOption('GET_DIRECT_TIME', $pa_options, false) && !caGetOption('getDirectTime', $pa_options, false)) {
 					$o_tep = new TimeExpressionParser();
 					$o_tep->setTimes($vn_start_date, $vn_end_date);
 					$vs_prop = $o_tep->getText($pa_options);
@@ -1142,14 +1139,6 @@ class BaseModel extends BaseObject {
 
 				if ($vs_field == $this->primaryKey()) {
 					$vm_value = preg_replace("/[\"']/", "", $vm_value);
-				}
-
-				// what markup is supported for text fields?
-				$vs_markup_type = $this->getFieldInfo($vs_field, "MARKUP_TYPE");
-
-				// if markup is non-HTML then strip out HTML special chars for safety
-				if (!($vs_markup_type == __CA_MT_HTML__)) {
-					$vm_value = htmlspecialchars($vm_value, ENT_QUOTES, 'UTF-8');
 				}
 								
 				$vs_cur_value = isset($this->_FIELD_VALUES[$vs_field]) ? $this->_FIELD_VALUES[$vs_field] : null;
@@ -1781,7 +1770,7 @@ class BaseModel extends BaseObject {
 		if ($qr_res->nextRow()) {
 			foreach($this->FIELDS as $vs_field => $va_attr) {
 				$vs_cur_value = isset($this->_FIELD_VALUES[$vs_field]) ? $this->_FIELD_VALUES[$vs_field] : null;
-				$va_row =& $qr_res->getRow();
+				$va_row = $qr_res->getRow();
 				switch($va_attr["FIELD_TYPE"]) {
 					case FT_DATERANGE:
 					case FT_HISTORIC_DATERANGE:
@@ -1811,8 +1800,8 @@ class BaseModel extends BaseObject {
 			$this->_FILES_CLEAR = array();
 			
 			if ($vn_id = $this->getPrimaryKey()) {
-				if (sizeof(BaseModel::$s_instance_cache[$vs_table_name]) > 100) {		// Limit cache to 100 instances per table
-					array_pop(BaseModel::$s_instance_cache[$vs_table_name]);
+				while (sizeof(BaseModel::$s_instance_cache[$vs_table_name]) > 100) {		// Limit cache to 100 instances per table
+					array_shift(BaseModel::$s_instance_cache[$vs_table_name]);
 				}
 				BaseModel::$s_instance_cache[$vs_table_name][$vn_id] = $this->_FIELD_VALUES; 
 			}
@@ -2945,16 +2934,42 @@ class BaseModel extends BaseObject {
 		}
 	}
 	
+	/**
+	 * Perform search indexing on currently load row. All parameters are intended to override typical useful behavior.
+	 * Don't use these options unless you know what you're doing.
+	 *
+	 * @param array $pa_changed_field_values_array List of changed field values. [Default is to load list from model]
+	 * @param bool $pb_reindex_mode If set indexing is done in "reindex mode"; that is the row is reindexed from scratch as if the entire database is being reindexed. [Default is false]
+	 * @param string $ps_engine Name of the search engine to use. [Default is the engine configured using "search_engine_plugin" in app.conf] 
+	 *
+	 * @return bool true on success, false on failure of indexing
+	 */
 	public function doSearchIndexing($pa_changed_field_values_array=null, $pb_reindex_mode=false, $ps_engine=null) {
 		if (defined("__CA_DONT_DO_SEARCH_INDEXING__")) { return; }
 		if (is_null($pa_changed_field_values_array)) { 
 			$pa_changed_field_values_array = $this->getChangedFieldValuesArray();
 		}
 		
+		$o_indexer = $this->getSearchIndexer($ps_engine);
+		return $o_indexer->indexRow($this->tableNum(), $this->getPrimaryKey(), $this->getFieldValuesArray(), $pb_reindex_mode, null, $pa_changed_field_values_array, $this->_FIELD_VALUES_OLD);
+	}
+	
+	/**
+	 * Get a SearchIndexer instance. Will return a single instance repeatedly within the context of
+	 * any currently running transaction. That is, if the current model is in a transaction the indexing
+	 * will be performed within that transaction.
+	 *
+	 * @param string $ps_engine Name of the search engine to use. [Default is the engine configured using "search_engine_plugin" in app.conf] 
+	 *
+	 * @return SearchIndexer
+	 */
+	public function getSearchIndexer($ps_engine=null) {
 		if (!BaseModel::$search_indexer) {
 			BaseModel::$search_indexer = new SearchIndexer($this->getDb(), $ps_engine);
+		} else {
+			BaseModel::$search_indexer->setDb($this->getDb());
 		}
-		BaseModel::$search_indexer->indexRow($this->tableNum(), $this->getPrimaryKey(), $this->getFieldValuesArray(), $pb_reindex_mode, null, $pa_changed_field_values_array, $this->_FIELD_VALUES_OLD);
+		return BaseModel::$search_indexer;
 	}
 
 	/**
@@ -2977,11 +2992,9 @@ class BaseModel extends BaseObject {
 			$this->set('deleted', 1);
 			if ($vn_rc = $this->update(array('force' => true))) {
 				if(!defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
-					if (!BaseModel::$search_indexer) {
-						BaseModel::$search_indexer = new SearchIndexer($this->getDb());
-					}
-					BaseModel::$search_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
-					BaseModel::$search_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
+					$o_indexer = $this->getSearchIndexer();
+					$o_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
+					$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
 				}
 			}
 			$this->logChange("D");
@@ -3077,11 +3090,9 @@ class BaseModel extends BaseObject {
 			// analysis to startRowUnindexing() and only executing commands in commitRowUnIndexing(). For now we blithely assume that 
 			// SQL deletes always succeed. If they don't we can always reindex. Only the indexing is affected, not the underlying data.
 			if(!defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
-				if (!BaseModel::$search_indexer) {
-					BaseModel::$search_indexer = new SearchIndexer($this->getDb());
-				}
-				BaseModel::$search_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
-				BaseModel::$search_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
+				$o_indexer = $this->getSearchIndexer();
+				$o_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
+				$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
 			}
 
 			# --- Check ->many and many<->many relations
@@ -3244,6 +3255,7 @@ class BaseModel extends BaseObject {
 			return $media_info["MIRROR_STATUS"][$vi["accessUsingMirror"]];
 		}
 	}
+	
 	/**
 	 * Retry mirroring of given media field. Sets global error properties on failure.
 	 *
@@ -3633,6 +3645,7 @@ class BaseModel extends BaseObject {
 				unset($va_media_desc["VOLUME"]);
 				unset($va_media_desc["_undo_"]);
 				unset($va_media_desc["TRANSFORMATION_HISTORY"]);
+				unset($va_media_desc["_CENTER"]);
 				return array_keys($va_media_desc);
 			}
 		} else {
@@ -3819,7 +3832,7 @@ class BaseModel extends BaseObject {
 	}
 
 	/**
-	 * perform media processing for the given field if sth. has been uploaded
+	 * Perform media processing for the given field if something has been uploaded
 	 *
 	 * @access private
 	 * @param string $ps_field field name
@@ -4045,8 +4058,12 @@ class BaseModel extends BaseObject {
 				
 				$va_media_objects['_original'] = $m;
 				
+				// preserve center setting from any existing media
+				$va_center = null;
+				if (is_array($va_tmp = $this->getMediaInfo($ps_field))) { $va_center = caGetOption('_CENTER', $va_tmp, array()); }
 				$media_desc = array(
 					"ORIGINAL_FILENAME" => $this->_SET_FILES[$ps_field]['original_filename'],
+					"_CENTER" => $va_center,
 					"INPUT" => array(
 						"MIMETYPE" => $m->get("mimetype"),
 						"WIDTH" => $m->get("width"),
@@ -4339,6 +4356,13 @@ class BaseModel extends BaseObject {
 									}
 								}
 							} else {
+								if(is_array($this->_FIELD_VALUES[$ps_field]) && (is_array($va_media_center = $this->getMediaCenter($ps_field)))) {
+									$parameters['_centerX'] = caGetOption('x', $va_media_center, 0.5);
+									$parameters['_centerY'] = caGetOption('y', $va_media_center, 0.5);
+								
+									if (($parameters['_centerX'] < 0) || ($parameters['_centerX'] > 1)) { $parameters['_centerX'] = 0.5; }
+									if (($parameters['_centerY'] < 0) || ($parameters['_centerY'] > 1)) { $parameters['_centerY'] = 0.5; }
+								}
 								if (!($m->transform($operation, $parameters))) {
 									$error = 1;
 									$error_msg = "Couldn't do transformation '$operation'";
@@ -4629,7 +4653,7 @@ class BaseModel extends BaseObject {
 	 * @param string $ps_field The name of the media field
 	 * @param string $ps_op A valid media transformation op code, as defined by the media plugin handling the media being transformed.
 	 * @param array $pa_params The parameters for the op code, as defined by the media plugin handling the media being transformed.
-	 * @param array $pa_options An array of options. No options are current implemented.
+	 * @param array $pa_options An array of options. No options are currently implemented.
 	 *
 	 * @return bool True on success, false if an error occurred.
 	 */
@@ -4676,7 +4700,7 @@ class BaseModel extends BaseObject {
 	 * Remove all media transformation to media in specified field of current loaded row by reverting to the unmodified media.
 	 *
 	 * @param string $ps_field The name of the media field
-	 * @param array $pa_options An array of options. No options are current implemented.
+	 * @param array $pa_options An array of options. No options are currently implemented.
 	 *
 	 * @return bool True on success, false if an error occurred.
 	 */
@@ -4734,6 +4758,70 @@ class BaseModel extends BaseObject {
 			return null;
 		}
 		return isset($va_media_info['_undo_']);
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Return coordinates of center of image media as decimals between 0 and 1. By default this is dead-center (x=0.5, y=0.5)
+	 * but the user may override this to optimize cropping of images. Currently the center point is only used when cropping the image
+	 * from the "center" but it may be used for other transformation (Eg. rotation) in the future.
+	 *
+	 * @param string $ps_field The name of the media field
+	 * @param array $pa_options An array of options. No options are currently implemented.
+	 *
+	 * @return array An array with 'x' and 'y' keys containing coordinates, or null if no coordinates are available.
+	 */
+	public function getMediaCenter($ps_field, $pa_options=null) {
+		$va_media_info = $this->getMediaInfo($ps_field);
+		if (!is_array($va_media_info)) {
+			return null;
+		}
+		
+		$vn_current_center_x = caGetOption('x', $va_media_info['_CENTER'], 0.5);
+		if (($vn_current_center_x < 0) || ($vn_current_center_x > 1)) { $vn_current_center_x = 0.5; }
+		
+		$vn_current_center_y = caGetOption('y', $va_media_info['_CENTER'], 0.5);
+		if (($vn_current_center_y < 0) || ($vn_current_center_y > 1)) { $vn_current_center_y = 0.5; }
+		
+		return array('x' => $vn_current_center_x, 'y' => $vn_current_center_y);
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Sets the center of the currently loaded media. X and Y coordinates are fractions of the width and height respectively
+	 * expressed as decimals between 0 and 1. Currently the center point is only used when cropping the image
+	 * from the "center" but it may be used for other transformation (Eg. rotation) in the future.
+	 *
+	 * @param string $ps_field The name of the media field
+	 * @param float $pn_center_x X-coordinate for the new center, as a fraction of the width of the image. Value must be between 0 and 1.
+	 * @param float $pn_center_y Y-coordinate for the new center, as a fraction of the height of the image. Value must be between 0 and 1.
+	 * @param array $pa_options An array of options. No options are currently implemented.
+	 *
+	 * @return bool True on success, false if an error occurred.
+	 */
+	public function setMediaCenter($ps_field, $pn_center_x, $pn_center_y, $pa_options=null) {
+		$va_media_info = $this->getMediaInfo($ps_field);
+		if (!is_array($va_media_info)) {
+			return null;
+		}
+		
+		$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
+		
+		$vn_current_center_x = caGetOption('x', $va_media_info['_CENTER'], 0.5);
+		$vn_current_center_y = caGetOption('y', $va_media_info['_CENTER'], 0.5);
+		
+		// Is center different?
+		if(($vn_current_center_x == $pn_center_x) && ($vn_current_center_y == $pn_center_y)) { return true; }
+		
+		$va_media_info['_CENTER']['x'] = $pn_center_x;
+		$va_media_info['_CENTER']['y'] = $pn_center_y;
+		
+		// Regenerate derivatives 
+		$this->setMode(ACCESS_WRITE);
+		$this->setMediaInfo($ps_field, $va_media_info);
+		$this->update();
+		$this->set('media', $this->getMediaPath('media', 'original'), array('original_filename' => $vs_original_filename));
+		$this->update();
+		
+		return $this->numErrors() ? false : true;
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -6538,11 +6626,11 @@ class BaseModel extends BaseObject {
 	 * @access public
 	 * @param int $pn_id optional, id of record to be treated as root
 	 * @param array $pa_options
-	 *		returnDeleted = return deleted records in list (def. false)
+	 *		returnDeleted = return deleted records in list [default: false]
 	 *		additionalTableToJoin = name of table to join to hierarchical table (and return fields from); only fields related many-to-one are currently supported
-	 *		idsOnly = return simple array of primary key values for child records rather than full data array
+	 *		idsOnly = return simple array of primary key values for child records rather than full result
 	 *
-	 * @return DbResult
+	 * @return Mixed DbResult or array
 	 */
 	public function &getHierarchy($pn_id=null, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
@@ -7335,7 +7423,7 @@ class BaseModel extends BaseObject {
 				'select_item_text', 'hide_select_if_only_one_option', 'field_errors', 'display_form_field_tips', 'form_name',
 				'no_tooltips', 'tooltip_namespace', 'extraLabelText', 'width', 'height', 'label', 'list_code', 'hide_select_if_no_options', 'id',
 				'lookup_url', 'progress_indicator', 'error_icon', 'maxPixelWidth', 'displayMediaVersion', 'FIELD_TYPE', 'DISPLAY_TYPE', 'choiceList',
-				'readonly', 'description'
+				'readonly', 'description', 'hidden'
 			) 
 			as $vs_key) {
 			if(!isset($pa_options[$vs_key])) { $pa_options[$vs_key] = null; }
@@ -7473,7 +7561,7 @@ $pa_options["display_form_field_tips"] = true;
 			}
 
 			# --- Return hidden fields
-			if ($va_attr["DISPLAY_TYPE"] == DT_HIDDEN) {
+			if (($va_attr["DISPLAY_TYPE"] == DT_HIDDEN) || (caGetOption('hidden', $pa_options, false))) {
 				return '<input type="hidden" name="'.$pa_options["name"].'" value="'.$this->escapeHTML($vm_field_value).'"/>';
 			}
 
@@ -8703,6 +8791,16 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 *
+	 */
+	public function getRelationshipTableName($pm_rel_table_name_or_num) {
+		if ($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num)) {
+			if ($va_rel_info['t_item_rel']) { return $va_rel_info['t_item_rel']->tableName(); }
+		}
+		return null;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
 	 * Moves relationships from currently loaded row to another row specified by $pn_row_id. The existing relationship
 	 * rows are simply re-pointed to the new row, so this is a relatively fast operation. Note that this method does not copy 
 	 * relationships, it moves them. After the operation completes no relationships to the specified related table will exist for the current row.
@@ -8767,11 +8865,9 @@ $pa_options["display_form_field_tips"] = true;
 		$vn_rel_table_num = $t_item_rel->tableNum();
 		
 		// Reindex modified relationships
-		if (!BaseModel::$search_indexer) {
-			BaseModel::$search_indexer = new SearchIndexer($this->getDb());
-		}
+		$o_indexer = $this->getSearchIndexer();
 		foreach($va_to_reindex_relations as $vn_relation_id => $va_row) {
-			BaseModel::$search_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
+			$o_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
 		}
 		
 		return sizeof($va_to_reindex_relations);
@@ -8871,11 +8967,9 @@ $pa_options["display_form_field_tips"] = true;
 		$vn_rel_table_num = $t_item_rel->tableNum();
 		
 		// Reindex modified relationships
-		if (!BaseModel::$search_indexer) {
-			BaseModel::$search_indexer = new SearchIndexer($this->getDb());
-		}
+		$o_indexer = $this->getSearchIndexer();
 		foreach($va_new_relations as $vn_relation_id => $va_row) {
-			BaseModel::$search_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
+			$o_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
 		}
 		
 		return sizeof($va_new_relations);
@@ -9159,6 +9253,15 @@ $pa_options["display_form_field_tips"] = true;
 			return $this->SELF_RELATION_TABLE_NAME;
 		}
 		return null;
+	}	
+	# ------------------------------------------------------
+	/**
+	 * Returns true if model is a relationship
+	 *
+	 * @return bool
+	 */
+	public function isRelationship() {
+		return false;
 	}
 	# --------------------------------------------------------------------------------------------
 	# User tagging
@@ -10422,6 +10525,10 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 *			The default is AND
 	 *
+	 *		sort = field to sort on. Must be in <table>.<field> or <field> format and be an intrinsic field in the primary table. Sort order can be set using the sortDirection option.
+	 *		sortDirection = the direction of the sort. Values are ASC (ascending) and DESC (descending). Default is ASC.
+	 *		allowWildcards = consider "%" as a wildcard when searching. Any term including a "%" character will be queried using the SQL LIKE operator. [Default is false]
+	 *
 	 * @return mixed Depending upon the returnAs option setting, an array, subclass of BaseModel or integer may be returned.
 	 */
 	public static function find($pa_values, $pa_options=null) {
@@ -10439,11 +10546,16 @@ $pa_options["display_form_field_tips"] = true;
 		//
 		// Convert type id
 		//
-		if (method_exists($t_instance, "getTypeFieldName")) {
-			$vs_type_field_name = $t_instance->getTypeFieldName();
-			if (isset($pa_values[$vs_type_field_name]) && !is_numeric($pa_values[$vs_type_field_name])) {
-				if ($vn_id = ca_lists::getItemID($this->getTypeListCode(), $pa_values[$vs_type_field_name])) {
-					$pa_values[$vs_type_field_name] = $vn_id;
+		$vs_type_field_name = null;
+		if (method_exists($this, "getTypeFieldName")) {
+			$vs_type_field_name = $this->getTypeFieldName();
+			if(!is_array($pa_values[$vs_type_field_name])) { $pa_values[$vs_type_field_name] = array($pa_values[$vs_type_field_name]); }
+			
+			foreach($pa_values[$vs_type_field_name] as $vn_i => $vm_value) {
+				if (!is_numeric($vm_value)) {
+					if ($vn_id = ca_lists::getItemID($this->getTypeListCode(), $vm_value)) {
+						$pa_values[$vs_type_field_name][$vn_i] = $vn_id;
+					}
 				}
 			}
 		}
@@ -10452,15 +10564,21 @@ $pa_options["display_form_field_tips"] = true;
 		// Convert other intrinsic list references
 		//
 		foreach($pa_values as $vs_field => $vm_value) {
+			if ($vs_field == $vs_type_field_name) { continue; }
 			if($vs_list_code = $t_instance->getFieldInfo($vs_field, 'LIST_CODE')) {
-				if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) {
-					$pa_values[$vs_field] = $vn_id;
+				if(!is_array($vm_value)) { $pa_values[$vs_field] = $vm_value = array($vm_value); }
+				
+				foreach($vm_value as $vn_i => $vm_ivalue) {
+					if (is_numeric($vm_ivalue)) { continue; }
+					if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_ivalue)) {
+						$pa_values[$vs_field][$vn_i] = $vn_id;
+					}
 				}
 			}
 		}
 		
 		foreach ($pa_values as $vs_field => $vm_value) {
-			if (is_array($vm_value)) { continue; }
+			//if (is_array($vm_value)) { continue; }
 		
 			# support case where fieldname is in format table.fieldname
 			if (preg_match("/([\w_]+)\.([\w_]+)/", $vs_field, $va_matches)) {
@@ -10480,25 +10598,67 @@ $pa_options["display_form_field_tips"] = true;
 
 			if ($t_instance->_getFieldTypeType($vs_field) == 0) {
 				if (!is_numeric($vm_value) && !is_null($vm_value)) {
-					$vm_value = intval($vm_value);
+					if (is_array($vm_value)) {
+						foreach($vm_value as $vn_i => $vm_ivalue) {
+							$vm_value[$vn_i] = intval($vm_ivalue);
+						}
+					} else {
+						$vm_value = intval($vm_value);
+					}
 				}
 			} else {
-				$vm_value = $t_instance->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
+				if (is_array($vm_value) && sizeof($vm_value)) {
+					foreach($vm_value as $vn_i => $vm_ivalue) {
+						$vm_value[$vn_i] = $this->quote($vs_field, $vm_ivalue);
+					}
+				} else {
+					$vm_value = $t_instance->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
+				}
 			}
 
 			if (is_null($vm_value)) {
 				$va_sql_wheres[] = "({$vs_field} IS NULL)";
 			} else {
 				if ($vm_value === '') { continue; }
-				$va_sql_wheres[] = "({$vs_field} = {$vm_value})";
+				if (is_array($vm_value)) {
+					if(!sizeof($vm_value)) { continue; }
+					$va_sql_wheres[] = "({$vs_field} IN (".join(",", $vm_value)."))";
+				} elseif (caGetOption('allowWildcards', $pa_options, false) && (strpos($vm_value, '%') !== false)) {
+					$va_sql_wheres[] = "({$vs_field} LIKE {$vm_value})";
+				} else {
+					$va_sql_wheres[] = "({$vs_field} = {$vm_value})";
+				}
 			}
 		}
 		if(!sizeof($va_sql_wheres)) { return null; }
 		$vs_deleted_sql = ($t_instance->hasField('deleted')) ? '(deleted = 0) AND ' : '';
 		$vs_sql = "SELECT * FROM {$vs_table} WHERE {$vs_deleted_sql} (".join(" {$ps_boolean} ", $va_sql_wheres).")";
 		
-		if ($o_trans instanceof Transaction) {
-			$o_db = $o_trans->getDb();
+		$vs_orderby = '';
+		if ($vs_sort = caGetOption('sort', $pa_options, null)) {
+			$vs_sort_direction = caGetOption('sortDirection', $pa_options, 'ASC', array('validValues' => array('ASC', 'DESC')));
+			$va_tmp = explode(".", $vs_sort);
+			if (sizeof($va_tmp) > 0) {
+				switch($va_tmp[0]) {
+					case $vs_table:
+						if ($t_instance->hasField($va_tmp[1])) {
+							$vs_orderby = " ORDER BY {$vs_sort} {$vs_sort_direction}";
+						}
+						break;
+					default:
+						if (sizeof($va_tmp) == 1) {
+							if ($t_instance->hasField($va_tmp[0])) {
+								$vs_orderby = " ORDER BY {$vs_sort} {$vs_sort_direction}";
+							}
+						}
+						break;
+				}
+			}
+			if ($vs_orderby) { $vs_sql .= $vs_orderby; }
+		}
+		
+		if (isset($pa_options['transaction']) && ($pa_options['transaction'] instanceof Transaction)) {
+			$o_db = $pa_options['transaction']->getDb();
 		} else {
 			$o_db = new Db();
 		}

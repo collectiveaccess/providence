@@ -146,7 +146,12 @@
  			$t_importer = $this->getImporterInstance();
  			
  			$this->view->setVar('t_importer', $t_importer);
- 			$this->view->setVar('last_settings', $this->request->user->getVar('batch_metadata_last_settings'));
+ 			$this->view->setVar('last_settings', $va_last_settings = $this->request->user->getVar('batch_metadata_last_settings'));
+ 			
+ 			$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');	
+			$o_view->setVar('id', 'fileImportPath');	
+			$o_view->setVar('defaultPath', caGetOption('fileImportPath', $va_last_settings, null));
+			$this->view->setVar('file_browser', $o_view->render('settings_directory_browser_html.php'));
  			
 			$this->render('metadataimport/importer_run_html.php');
  		}
@@ -173,7 +178,9 @@
  				
  				'logLevel' => $this->request->getParameter("logLevel", pInteger),
  				'dryRun' => $this->request->getParameter("dryRun", pInteger),
- 				'debug' => $this->request->getParameter("debug", pInteger)
+ 				
+ 				'fileInput' => $this->request->getParameter("fileInput", pString),
+ 				'fileImportPath' => $this->request->getParameter("fileImportPath", pString)
  			);
  			
  			$va_last_settings = $va_options;
@@ -181,7 +188,13 @@
  			$va_last_settings['inputFormat'] = $this->request->getParameter("inputFormat", pString); 
  			$va_last_settings['logLevel'] = $this->request->getParameter("logLevel", pInteger); 
  			$va_last_settings['dryRun'] = $this->request->getParameter("dryRun", pInteger); 
- 			$va_last_settings['debug'] = $this->request->getParameter("debug", pInteger); 
+ 			if ($vs_file_input = $this->request->getParameter("fileInput", pString)) {
+ 				$va_last_settings['fileInput'] = $vs_file_input; 
+ 			}
+ 			if ($vs_file_import_path = $this->request->getParameter("fileImportPath", pString)) {
+ 				$va_last_settings['fileImportPath'] = $vs_file_import_path;
+ 			}
+ 			
  			$this->request->user->setVar('batch_metadata_last_settings', $va_last_settings);
  			
  			$this->view->setVar("t_subject", $t_subject);

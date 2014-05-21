@@ -28,7 +28,6 @@
  * ----------------------------------------------------------------------
  */
 	define('__CollectiveAccess_Installer__', 1);
-	$_SESSION = array();	
 	error_reporting(E_ALL ^ E_NOTICE);
 	set_time_limit(7200);
 	ini_set("memory_limit", "256M");	

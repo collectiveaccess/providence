@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2011 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -50,10 +50,12 @@ require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/LCSHAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/GeoNamesAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/FileAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/MediaAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/PlaceAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/OccurrenceAttributeValue.php');
+//require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/PlaceAttributeValue.php');
+//require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/OccurrenceAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/TaxonomyAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/InformationServiceAttributeValue.php');
+//require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/ObjectRepresentationsAttributeValue.php');
+//require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/EntitiesAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/core/Configuration.php');
  
 	class Attribute {

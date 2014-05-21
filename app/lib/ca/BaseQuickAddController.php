@@ -92,6 +92,23 @@
  				return;
  			}
  			
+ 			//
+ 			// Is record from correct source?
+ 			// 
+ 			$va_restrict_to_sources = null;
+ 			if ($t_subject->getAppConfig()->get('perform_source_access_checking')) {
+ 				$va_restrict_to_sources = caGetSourceRestrictionsForUser($this->ops_table_name, array('access' => $vn_subject_id ? __CA_BUNDLE_ACCESS_READONLY__ : __CA_BUNDLE_ACCESS_EDIT__));
+ 			
+ 				if (!$t_subject->get('source_id')) {
+ 					$t_subject->set('source_id', $t_subject->getDefaultSourceID(array('request' => $this->request)));
+ 				}
+ 			
+				if (is_array($va_restrict_to_sources) && !in_array($t_subject->get('source_id'), $va_restrict_to_sources)) {
+					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2562?r='.urlencode($this->request->getFullUrlPath()));
+					return;
+				}
+			}
+ 			
  			if(is_array($pa_values)) {
  				foreach($pa_values as $vs_key => $vs_val) {
  					$t_subject->set($vs_key, $vs_val);
@@ -237,6 +254,29 @@
  				return;
  			}
  			
+ 			//
+ 			// Is record from correct source?
+ 			// 
+ 			$va_restrict_to_sources = null;
+ 			if ($t_subject->getAppConfig()->get('perform_source_access_checking')) {
+ 				if (is_array($va_restrict_to_sources = caGetSourceRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_EDIT__)))) {
+					if (
+						(!$t_subject->get('source_id'))
+						||
+						($t_subject->get('source_id') && !in_array($t_subject->get('source_id'), $va_restrict_to_sources))
+						||
+						((strlen($vn_source_id = $this->request->getParameter('source_id', pInteger))) && !in_array($vn_source_id, $va_restrict_to_sources))
+					) {
+						$t_subject->set('source_id', $t_subject->getDefaultSourceID(array('request' => $this->request)));
+					}
+			
+					if (is_array($va_restrict_to_sources) && !in_array($t_subject->get('source_id'), $va_restrict_to_sources)) {
+						$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2562?r='.urlencode($this->request->getFullUrlPath()));
+						return;
+					}
+				}
+			}
+ 			
  			// Make sure request isn't empty
  			if(!sizeof($_POST)) {
  				$va_response = array(
@@ -336,9 +376,20 @@
  			
  			$vn_id = $t_subject->getPrimaryKey();
  			
+ 			$vn_relation_id = null;
  			if ($vn_id) {
  				$va_tmp = caProcessRelationshipLookupLabel($t_subject->makeSearchResult($t_subject->tableName(), array($vn_id)), $t_subject);
  				$va_name = array_pop($va_tmp);
+ 				 			
+				// Add relationship to added item here?
+				$pn_related_id = $this->request->getParameter('relatedID', pInteger);
+				$ps_related_table = $this->request->getParameter('relatedTable', pString);
+				$ps_relationship_type = $this->request->getParameter('relationshipType', pString);
+				if ($pn_related_id && $ps_related_table && $ps_relationship_type) {
+					if ($t_rel = $t_subject->addRelationship($ps_related_table, $pn_related_id, $ps_relationship_type)) {
+						$vn_relation_id = $t_rel->getPrimaryKey();
+					}
+				}
  			} else {
  				$va_name = array();
  			}
@@ -347,6 +398,7 @@
  				'id' => $vn_id,
  				'table' => $t_subject->tableName(),
 				'type_id' => method_exists($t_subject, "getTypeID") ? $t_subject->getTypeID() : null,
+				'relation_id' => $vn_relation_id,
  				'display' => $va_name['label'],
  				'errors' => $va_error_list
  			);

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,6 +33,7 @@
  /**
   *
   */
+ 	define("__CA_ATTRIBUTE_VALUE_TEXT__", 1);
  	
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AttributeValue.php');
@@ -165,6 +166,24 @@
 			'label' => _t('Value delimiter'),
 			'validForRootOnly' => 1,
 			'description' => _t('Delimiter to use between multiple values when used in a display.')
+		),
+		'isDependentValue' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Is dependent value?'),
+			'validForNonRootOnly' => 1,
+			'description' => _t('If set then this element is set using values in other fields in the same container. This is only relevant when the element is in a container and is ignored otherwise.')
+		),
+		'dependentValueTemplate' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'default' => '',
+			'width' => 90, 'height' => 4,
+			'label' => _t('Dependent value template'),
+			'validForNonRootOnly' => 1,
+			'description' => _t('Template to be used to format content for dependent values. Template should reference container values using their bare element code prefixed with a caret (^). Do not include the table or container codes.')
 		)
 	);
  
@@ -220,7 +239,8 @@
  		 *		usewysiwygeditor = if set, overrides element level setting for visual text editor
  		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
- 			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'minChars', 'maxChars', 'suggestExistingValues', 'usewysiwygeditor'));
+ 			
+ 			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'minChars', 'maxChars', 'suggestExistingValues', 'usewysiwygeditor', 'isDependentValue', 'dependentValueTemplate'));
  			
  			if (isset($pa_options['usewysiwygeditor'])) {
  				$va_settings['usewysiwygeditor'] = $pa_options['usewysiwygeditor'];
@@ -270,6 +290,31 @@
  					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 'class' => "{$vs_class}".($va_settings['usewysiwygeditor'] ? " ckeditor" : '')
  				)
  			);
+ 			
+ 			if ($va_settings['isDependentValue']) {
+ 				JavascriptLoadManager::register('displayTemplateParser');
+ 				
+ 				$t_element = new ca_metadata_elements($pa_element_info['element_id']);
+ 				$va_elements = $t_element->getElementsInSet($t_element->getHierarchyRootID());
+ 				
+ 				$va_element_list = array();
+ 				$va_element_dom_ids = array();
+ 				foreach($va_elements as $vn_i => $va_element) {
+ 					if ($va_element['datatype'] == __CA_ATTRIBUTE_VALUE_CONTAINER__) { continue; }
+ 					//$va_element_list[$va_element['element_id']] = $va_element_list[$va_element['element_code']] = '{{{'.$va_element['element_id'].'}}}';
+ 					$va_element_dom_ids[$va_element['element_code']] = "#{fieldNamePrefix}".$va_element['element_id']."_{n}";
+ 				}
+ 				
+ 				
+ 				$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() {
+ 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').html(caDisplayTemplateParser.processTemplate('".addslashes($va_settings['dependentValueTemplate'])."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT)."));
+ 				";
+ 				$vs_element .= "jQuery('".join(", ", $va_element_dom_ids)."').bind('keyup', function(e) { 
+ 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').html(caDisplayTemplateParser.processTemplate('".addslashes($va_settings['dependentValueTemplate'])."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT)."));
+ 				});";
+ 				
+ 				$vs_element .="});</script>";
+ 			}
  			
  			$vs_bundle_name = $vs_lookup_url = null;
  			if (isset($pa_options['t_subject']) && is_object($pa_options['t_subject'])) {

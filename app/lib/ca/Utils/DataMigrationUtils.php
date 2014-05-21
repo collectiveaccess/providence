@@ -191,6 +191,25 @@
 					$vb_label_errors = true;
 				}
 				
+				if ($o_idno = $t_entity->getIDNoPlugInInstance()) {
+					$va_values = $o_idno->htmlFormValuesAsArray('idno', $vs_idno);
+					if (!is_array($va_values)) { $va_values = array($va_values); }
+					if (!($vs_sep = $o_idno->getSeparator())) { $vs_sep = ''; }
+					if (($vs_proc_idno = join($vs_sep, $va_values)) && ($vs_proc_idno != $vs_idno)) {
+						$t_entity->set('idno', $vs_proc_idno);
+						$t_entity->update();
+						
+						if ($t_entity->numErrors()) {
+							if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+								print "[Error] "._t("Could not update idno for %1: %2", join("/", $pa_entity_name), join('; ', $t_entity->getErrors()))."\n";
+							}
+					
+							if ($o_log) { $o_log->logError(_t("Could not update idno for %1: %2", join("/", $pa_entity_name), join('; ', $t_entity->getErrors()))); }
+							return null;
+						}
+					}
+				}
+				
 				$vb_attr_errors = false;
 				if (is_array($pa_values)) {
 					foreach($pa_values as $vs_element => $va_values) {
@@ -426,6 +445,25 @@
 					}
 				}
 				
+				if ($o_idno = $t_place->getIDNoPlugInInstance()) {
+					$va_values = $o_idno->htmlFormValuesAsArray('idno', $vs_idno);
+					if (!is_array($va_values)) { $va_values = array($va_values); }
+					if (!($vs_sep = $o_idno->getSeparator())) { $vs_sep = ''; }
+					if (($vs_proc_idno = join($vs_sep, $va_values)) && ($vs_proc_idno != $vs_idno)) {
+						$t_place->set('idno', $vs_proc_idno);
+						$t_place->update();
+						
+						if ($t_place->numErrors()) {
+							if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+								print "[Error] "._t("Could not update idno for %1: %2", $ps_place_name, join('; ', $t_place->getErrors()))."\n";
+							}
+					
+							if ($o_log) { $o_log->logError(_t("Could not idno for %1: %2", $ps_place_name, join('; ', $t_place->getErrors()))); }
+							return null;
+						}
+					}
+				}
+				
 				if(is_array($va_nonpreferred_labels = caGetOption("nonPreferredLabels", $pa_options, null))) {
 					if (caIsAssociativeArray($va_nonpreferred_labels)) {
 						// single non-preferred label
@@ -586,6 +624,25 @@
 					$vb_label_errors = true;
 				}
 				
+				if ($o_idno = $t_occurrence->getIDNoPlugInInstance()) {
+					$va_values = $o_idno->htmlFormValuesAsArray('idno', $vs_idno);
+					if (!($vs_sep = $o_idno->getSeparator())) { $vs_sep = ''; }
+					if (!is_array($va_values)) { $va_values = array($va_values); }
+					if (($vs_proc_idno = join($vs_sep, $va_values)) && ($vs_proc_idno != $vs_idno)) {
+						$t_occurrence->set('idno', $vs_proc_idno);
+						$t_occurrence->update();
+						
+						if ($t_occurrence->numErrors()) {
+							if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+								print "[Error] "._t("Could not update idno for %1: %2", $ps_occ_name, join('; ', $t_occurrence->getErrors()))."\n";
+							}
+					
+							if ($o_log) { $o_log->logError(_t("Could not idno for %1: %2", $ps_occ_name, join('; ', $t_occurrence->getErrors()))); }
+							return null;
+						}
+					}
+				}
+				
 				unset($pa_values['access']);	
 				unset($pa_values['status']);
 				unset($pa_values['idno']);
@@ -715,7 +772,13 @@
 			
 			if ($pa_options['cache'] && isset(DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id])) {
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					return new ca_list_items(DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id]);
+					$t_item = new ca_list_items(DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id]);
+				
+					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
+						$t_item->setTransaction($pa_options['transaction']);
+					}
+					
+					return $t_item;
 				}
 				if ($o_event) { 
 					$o_event->beginItem($vs_event_source, 'ca_list_items', 'U'); 
@@ -827,6 +890,25 @@
 								print "[Error] "._t("Could not set non-preferred label for list item %1: %2", "{$vs_singular_label}/{$vs_plural_label}/{$ps_item_idno}", join('; ', $t_item->getErrors()))."\n";
 							}
 							if ($o_log) { $o_log->logError(_t("Could not set non-preferred label for list item %1: %2", "{$vs_singular_label}/{$vs_plural_label}/{$ps_item_idno}", join('; ', $t_item->getErrors()))); }
+						}
+					}
+				}
+				
+				if ($o_idno = $t_item->getIDNoPlugInInstance()) {
+					$va_values = $o_idno->htmlFormValuesAsArray('idno', $ps_item_idno);
+					if (!is_array($va_values)) { $va_values = array($va_values); }
+					if (!($vs_sep = $o_idno->getSeparator())) { $vs_sep = ''; }
+					if (($vs_proc_idno = join($vs_sep, $va_values)) && ($vs_proc_idno != $ps_item_idno)) {
+						$t_item->set('idno', $vs_proc_idno);
+						$t_item->update();
+						
+						if ($t_item->numErrors()) {
+							if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+								print "[Error] "._t("Could not update idno for %1: %2", $vs_plural_label, join('; ', $t_item->getErrors()))."\n";
+							}
+					
+							if ($o_log) { $o_log->logError(_t("Could not idno for %1: %2", $vs_plural_label, join('; ', $t_item->getErrors()))); }
+							return null;
 						}
 					}
 				}
@@ -956,6 +1038,25 @@
 					if ($o_log) { $o_log->logError(_t("Could not set preferred label for collection %1: %2", $ps_collection_name, join('; ', $t_collection->getErrors()))); }
 				
 					$vb_label_errors = true;
+				}
+				
+				if ($o_idno = $t_collection->getIDNoPlugInInstance()) {
+					$va_values = $o_idno->htmlFormValuesAsArray('idno', $vs_idno);
+					if (!is_array($va_values)) { $va_values = array($va_values); }
+					if (!($vs_sep = $o_idno->getSeparator())) { $vs_sep = ''; }
+					if (($vs_proc_idno = join($vs_sep, $va_values)) && ($vs_proc_idno != $vs_idno)) {
+						$t_collection->set('idno', $vs_proc_idno);
+						$t_collection->update();
+						
+						if ($t_collection->numErrors()) {
+							if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+								print "[Error] "._t("Could not update idno for %1: %2", $ps_collection_name, join('; ', $t_collection->getErrors()))."\n";
+							}
+					
+							if ($o_log) { $o_log->logError(_t("Could not idno for %1: %2", $ps_collection_name, join('; ', $t_collection->getErrors()))); }
+							return null;
+						}
+					}
 				}
 				
 				unset($pa_values['access']);	
@@ -1155,6 +1256,25 @@
 					$vb_label_errors = true;
 				}
 				
+				if ($o_idno = $t_location->getIDNoPlugInInstance()) {
+					$va_values = $o_idno->htmlFormValuesAsArray('idno', $vs_idno);
+					if (!is_array($va_values)) { $va_values = array($va_values); }
+					if (!($vs_sep = $o_idno->getSeparator())) { $vs_sep = ''; }
+					if (($vs_proc_idno = join($vs_sep, $va_values)) && ($vs_proc_idno != $vs_idno)) {
+						$t_location->set('idno', $vs_proc_idno);
+						$t_location->update();
+						
+						if ($t_location->numErrors()) {
+							if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+								print "[Error] "._t("Could not update idno for %1: %2", $ps_location_name, join('; ', $t_location->getErrors()))."\n";
+							}
+					
+							if ($o_log) { $o_log->logError(_t("Could not update idno for %1: %2", $ps_location_name, join('; ', $t_location->getErrors()))); }
+							return null;
+						}
+					}
+				}
+				
 				unset($pa_values['access']);	
 				unset($pa_values['status']);
 				unset($pa_values['idno']);
@@ -1352,6 +1472,25 @@
 					$vb_label_errors = true;
 				}
 				
+				if ($o_idno = $t_object->getIDNoPlugInInstance()) {
+					$va_values = $o_idno->htmlFormValuesAsArray('idno', $vs_idno);
+					if (!is_array($va_values)) { $va_values = array($va_values); }
+					if (!($vs_sep = $o_idno->getSeparator())) { $vs_sep = ''; }
+					if (($vs_proc_idno = join($vs_sep, $va_values)) && ($vs_proc_idno != $vs_idno)) {
+						$t_object->set('idno', $vs_proc_idno);
+						$t_object->update();
+						
+						if ($t_object->numErrors()) {
+							if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+								print "[Error] "._t("Could not update idno for %1: %2", $ps_object_name, join('; ', $t_object->getErrors()))."\n";
+							}
+					
+							if ($o_log) { $o_log->logError(_t("Could not object idno for %1: %2", $ps_object_name, join('; ', $t_object->getErrors()))); }
+							return null;
+						}
+					}
+				}
+				
 				unset($pa_values['access']);	
 				unset($pa_values['status']);
 				unset($pa_values['idno']);
@@ -1543,6 +1682,25 @@
 					if ($o_log) { $o_log->logError(_t("Could not set preferred label for lot %1: %2", $ps_lot_name, join('; ', $t_lot->getErrors()))); }
 				
 					$vb_label_errors = true;
+				}
+				
+				if ($o_idno = $t_lot->getIDNoPlugInInstance()) {
+					$va_values = $o_idno->htmlFormValuesAsArray('idno', $ps_idno_stub);
+					if (!is_array($va_values)) { $va_values = array($va_values); }
+					if (!($vs_sep = $o_idno->getSeparator())) { $vs_sep = ''; }
+					if (($vs_proc_idno = join($vs_sep, $va_values)) && ($vs_proc_idno != $ps_idno_stub)) {
+						$t_lot->set('idno', $vs_proc_idno);
+						$t_lot->update();
+						
+						if ($t_lot->numErrors()) {
+							if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+								print "[Error] "._t("Could not update idno for %1: %2", $ps_lot_name, join('; ', $t_lot->getErrors()))."\n";
+							}
+					
+							if ($o_log) { $o_log->logError(_t("Could not idno for %1: %2", $ps_lot_name, join('; ', $t_lot->getErrors()))); }
+							return null;
+						}
+					}
 				}
 				
 				unset($pa_values['access']);	
@@ -1739,6 +1897,25 @@
 					$vb_label_errors = true;
 				}
 				
+				if ($o_idno = $t_loan->getIDNoPlugInInstance()) {
+					$va_values = $o_idno->htmlFormValuesAsArray('idno', $vs_idno);
+					if (!is_array($va_values)) { $va_values = array($va_values); }
+					if (!($vs_sep = $o_idno->getSeparator())) { $vs_sep = ''; }
+					if (($vs_proc_idno = join($vs_sep, $va_values)) && ($vs_proc_idno != $vs_idno)) {
+						$t_loan->set('idno', $vs_proc_idno);
+						$t_loan->update();
+						
+						if ($t_loan->numErrors()) {
+							if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+								print "[Error] "._t("Could not update idno for %1: %2", $ps_lot_name, join('; ', $t_loan->getErrors()))."\n";
+							}
+					
+							if ($o_log) { $o_log->logError(_t("Could not update idno for %1: %2", $ps_lot_name, join('; ', $t_loan->getErrors()))); }
+							return null;
+						}
+					}
+				}
+				
 				unset($pa_values['access']);	
 				unset($pa_values['status']);
 				unset($pa_values['idno']);
@@ -1930,6 +2107,25 @@
 					if ($o_log) { $o_log->logError(_t("Could not set preferred label for movement %1: %2", $ps_movement_name, join('; ', $t_movement->getErrors()))); }
 				
 					$vb_label_errors = true;
+				}
+				
+				if ($o_idno = $t_movement->getIDNoPlugInInstance()) {
+					$va_values = $o_idno->htmlFormValuesAsArray('idno', $vs_idno);
+					if (!is_array($va_values)) { $va_values = array($va_values); }
+					if (!($vs_sep = $o_idno->getSeparator())) { $vs_sep = ''; }
+					if (($vs_proc_idno = join($vs_sep, $va_values)) && ($vs_proc_idno != $vs_idno)) {
+						$t_movement->set('idno', $vs_proc_idno);
+						$t_movement->update();
+						
+						if ($t_movement->numErrors()) {
+							if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+								print "[Error] "._t("Could not update idno for %1: %2", $ps_movement_name, join('; ', $t_movement->getErrors()))."\n";
+							}
+					
+							if ($o_log) { $o_log->logError(_t("Could not update idno for %1: %2", $ps_movement_name, join('; ', $t_movement->getErrors()))); }
+							return null;
+						}
+					}
 				}
 				
 				unset($pa_values['access']);	

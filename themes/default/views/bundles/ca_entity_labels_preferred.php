@@ -43,6 +43,8 @@
 	} else {
 		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'Labels');
 	}
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'Labels', $va_settings);
+	
 	$t_subject = $this->getVar('t_subject'); 
 	$vs_entity_class = $t_subject->getTypeSetting('entity_class');
 ?>
@@ -80,6 +82,11 @@
 								</td>
 							</tr>
 						</table>
+						<?php print $t_label->htmlFormElement('prefix', null, array('name' => "{fieldNamePrefix}prefix_{n}", 'id' => "{fieldNamePrefix}prefix_{n}", "value" => "{{suffix}}", 'hidden' => true)); ?>
+						<?php print $t_label->htmlFormElement('forename', null, array('name' => "{fieldNamePrefix}forename_{n}", 'id' => "{fieldNamePrefix}forename_{n}", "value" => "{{forename}}", 'hidden' => true)); ?>
+						<?php print $t_label->htmlFormElement('middlename', null, array('name' => "{fieldNamePrefix}middlename_{n}", 'id' => "{fieldNamePrefix}middlename_{n}", "value" => "{{middlename}}", 'hidden' => true)); ?>
+						<?php print $t_label->htmlFormElement('other_forenames', null, array('name' => "{fieldNamePrefix}other_forenames-{n}", 'id' => "{fieldNamePrefix}other_forenames_{n}", "value" => "{{other_forenames}}", 'hidden' => true)); ?>
+						<?php print $t_label->htmlFormElement('displayname', null, array('name' => "{fieldNamePrefix}displayname_{n}", 'id' => "{fieldNamePrefix}displayname_{n}", "value" => "{{displayname}}", 'hidden' => true)); ?>
 <?php
 			break;
 		case 'IND':

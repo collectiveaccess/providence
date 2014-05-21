@@ -42,6 +42,7 @@
  		# ------------------------------------------------------------------
  		private $opn_element_id;
  		private $ops_element_code;
+ 		private $opn_datatype;
  		private $opn_value_id;
  		private $opa_source_info;
  		private $ops_sort_value;
@@ -57,6 +58,7 @@
  		public function loadValueFromRow($pa_value_array) {
  			$this->opn_element_id = isset($pa_value_array['element_id']) ? $pa_value_array['element_id'] : null;
  			$this->ops_element_code = isset($pa_value_array['element_code']) ? $pa_value_array['element_code'] : null;
+ 			$this->opn_datatype = isset($pa_value_array['datatype']) ? $pa_value_array['datatype'] : null;
  			$this->opn_value_id = isset($pa_value_array['value_id']) ? $pa_value_array['value_id'] : null;
  			$this->opa_source_info = isset($pa_value_array['source_info']) ? $pa_value_array['source_info'] : null;
  			
@@ -89,6 +91,10 @@
  		# ------------------------------------------------------------------
  		public function getElementID() {
  			return $this->opn_element_id;
+ 		}
+ 		# ------------------------------------------------------------------
+ 		public function getDatatype() {
+ 			return $this->opn_datatype;
  		}
  		# ------------------------------------------------------------------
  		public function getValueID() {

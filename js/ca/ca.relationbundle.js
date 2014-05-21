@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -187,17 +187,17 @@ var caUI = caUI || {};
 					}
 				}
 				
-				jQuery('#' + options.itemID + id + ' select[name=' + options.fieldNamePrefix + 'type_id' + id + '] option').remove();	// clear existing options
+				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id + ' option').remove();	// clear existing options
 				jQuery.each(types, function (i, t) {
 					var type_direction = (t.direction) ? t.direction+ "_" : '';
-					jQuery('#' + options.itemID + id + ' select[name=' + options.fieldNamePrefix + 'type_id' + id + ']').append("<option value='" + type_direction + t.type_id + "'>" + t.typename + "</option>");
+					jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).append("<option value='" + type_direction + t.type_id + "'>" + t.typename + "</option>");
 				});
 				
 				// select default
-				jQuery('#' + options.itemID + id + ' select[name=' + options.fieldNamePrefix + 'type_id' + id + ']').attr('selectedIndex', default_index);
+				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).attr('selectedIndex', default_index);
 			
 				// set current type
-				jQuery('#' + options.itemID + id + ' select[name=' + options.fieldNamePrefix + 'type_id' + id + ']').data('item_type_id', type_id);
+				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).data('item_type_id', type_id);
 			}
 			that.showUnsavedChangesWarning(true);
 		}
@@ -243,9 +243,10 @@ var caUI = caUI || {};
 	
 		options.setDeleteButton = function(rowID) {
 			var curRowID = rowID;
+			if (!rowID) { return; }
 			var n = rowID.split("_").pop();
 			jQuery('#' + rowID + ' .caDeleteItemButton').click(
-				function() { that.deleteFromBundle(n); }
+				function(e) { that.deleteFromBundle(n); e.preventDefault(); return false; }
 			);
 		}
 		

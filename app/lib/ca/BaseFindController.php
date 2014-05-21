@@ -88,7 +88,17 @@
  			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
  			
  			// Make sure user has access to at least one type
- 			if ((method_exists($t_model, 'getTypeFieldName')) && $t_model->getTypeFieldName() && (!is_array($va_types = caGetTypeListForUser($this->ops_tablename, array('access' => __CA_BUNDLE_ACCESS_READONLY__))) || !sizeof($va_types))) {
+ 			if (
+ 				(method_exists($t_model, 'getTypeFieldName')) 
+ 				&& 
+ 				$t_model->getTypeFieldName() 
+ 				&& 
+ 				(
+ 					(!is_null($va_types = caGetTypeListForUser($this->ops_tablename, array('access' => __CA_BUNDLE_ACCESS_READONLY__))))
+ 					&& 
+ 					(is_array($va_types) && !sizeof($va_types))
+ 				)
+ 			) {
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
@@ -1034,7 +1044,7 @@
  			// Available sets
  			//
  			$t_set = new ca_sets();
- 			$this->view->setVar('available_sets', $x=caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID()))));
+ 			$this->view->setVar('available_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID()))));
 
 			$this->view->setVar('last_search', $this->opo_result_context->getSearchExpression());
  			
@@ -1354,18 +1364,26 @@
 							} else {
 								// Do edit
 								$t_instance->setMode(ACCESS_WRITE);
-								$t_instance->replaceAttribute(array(
-									'locale_id' => $g_ui_locale_id,
-									$ps_bundle => $ps_val
-								), $ps_bundle);
-							
+								
 								$vs_val_proc = null;
 								if ($vn_datatype == 3) {
-									// convert list codes to display text
-									$t_list_item = new ca_list_items((int)$ps_val);
-									if ($t_list_item->getPrimaryKey()) {
-										$vs_val_proc = $t_list_item->get('ca_list_items.preferred_labels.name_plural');
+									if ($vn_id = ca_list_items::find(array('preferred_labels' => array('name_plural' => $ps_val)), array('returnAs' => 'firstId'))) {
+										$t_instance->replaceAttribute(array(
+											'locale_id' => $g_ui_locale_id,
+											$ps_bundle => $vn_id
+										), $ps_bundle);
+									
+										// convert list codes to display text
+										$t_list_item = new ca_list_items((int)$vn_id);
+										if ($t_list_item->getPrimaryKey()) {
+											$vs_val_proc = $t_list_item->get('ca_list_items.preferred_labels.name_plural');
+										}
 									}
+								} else {
+									$t_instance->replaceAttribute(array(
+										'locale_id' => $g_ui_locale_id,
+										$ps_bundle => $ps_val
+									), $ps_bundle);
 								}
 					
 								$t_instance->update();

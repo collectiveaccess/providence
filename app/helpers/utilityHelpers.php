@@ -490,6 +490,16 @@ function caFileIsIncludable($ps_file) {
 		return str_replace("&amp;#", "&#", $ps_text);
 	}
 	# ----------------------------------------
+	/**
+	 * Return text with quotes escaped for use in a tab or comma-delimited file
+	 *
+	 * @param string $ps_text
+	 * @return string
+	 */
+	function caEscapeForDelimitedOutput($ps_text) {
+		return '"'.str_replace("\"", "\"\"", $ps_text).'"';
+	}
+	# ----------------------------------------
 	function caGetTempDirPath() {
 		if (function_exists('sys_get_temp_dir')) {
 			return sys_get_temp_dir();
@@ -742,7 +752,7 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 * Examples of valid expressions are:
 	 *		12 1/2" (= 12.5")
-	 *		12��� ft (= 12.667 ft)
+	 *		12 ⅔ ft (= 12.667 ft)
 	 *		"Total is 12 3/4 lbs" (= "Total is 12.75 lbs")
 	 *
 	 * Both text fractions (ex. 3/4) and Unicode fraction glyphs (ex. ��) may be used.
@@ -767,9 +777,9 @@ function caFileIsIncludable($ps_file) {
 			$sep = caGetDecimalSeparator($locale);
 			// replace unicode fractions with decimal equivalents
 			foreach(array(
-				'��' => $sep.'5', '���' => $sep.'333',
-				'���' => $sep.'667', '��' => $sep.'25',
-				'��'	=> $sep.'75') as $vs_glyph => $vs_val
+				'½' => $sep.'5', '⅓' => $sep.'333',
+				'⅔' => $sep.'667', '¼' => $sep.'25',
+				'¾'	=> $sep.'75') as $vs_glyph => $vs_val
 			) {
 				$ps_fractional_expression = preg_replace('![ ]*'.$vs_glyph.'!u', $vs_val, $ps_fractional_expression);	
 			}
@@ -940,7 +950,7 @@ function caFileIsIncludable($ps_file) {
 		$va_sort_keys = array();
 		foreach ($pa_sort_keys as $vs_field) {
 			$va_tmp = explode('.', $vs_field);
-			array_shift($va_tmp);
+			if (sizeof($va_tmp) > 1) { array_shift($va_tmp); }
 			$va_sort_keys[] = join(".", $va_tmp);
 		}
 		$va_sorted_by_key = array();
@@ -1022,6 +1032,7 @@ function caFileIsIncludable($ps_file) {
 	function caGetCacheObject($ps_prefix, $pn_lifetime=3600, $ps_cache_dir=null, $pn_cleaning_factor=100) {
 		if (!$ps_cache_dir) { $ps_cache_dir = __CA_APP_DIR__.'/tmp'; }
 		$va_frontend_options = array(
+			'cache_id_prefix' => $ps_prefix,
 			'lifetime' => $pn_lifetime, 				/* cache lives 1 hour */
 			'logging' => false,					/* do not use Zend_Log to log what happens */
 			'write_control' => true,			/* immediate read after write is enabled (we don't write often) */
@@ -1277,6 +1288,17 @@ function caFileIsIncludable($ps_file) {
 			return $o_tep->getHistoricTimestamps();
 		}
 		return null;
+	}
+	# ---------------------------------------
+	/**
+	  * Converts Unix timestamp to historic date timestamp
+	  *
+	  * @param int $pn_timestamp A Unix-format timestamp
+	  * @return float Equivalent value as floating point historic timestamp value, or null if Unix timestamp was not valid.
+	  */
+	function caUnixTimestampToHistoricTimestamps($pn_timestamp) {
+		$o_tep = new TimeExpressionParser();
+		return $o_tep->unixToHistoricTimestamp($pn_timestamp);
 	}
 	# ---------------------------------------
 	/**
@@ -1581,9 +1603,9 @@ function caFileIsIncludable($ps_file) {
 		}
 		
 		if (isset($pa_parse_options['forceLowercase']) && $pa_parse_options['forceLowercase']) {
-			$vm_val = mb_strtolower($vm_val);
+			$vm_val = is_array($vm_val) ? array_map('mb_strtolower', $vm_val) : mb_strtolower($vm_val);
 		} elseif (isset($pa_parse_options['forceUppercase']) && $pa_parse_options['forceUppercase']) {
-			$vm_val = mb_strtoupper($vm_val);
+			$vm_val = is_array($vm_val) ? array_map('mb_strtoupper', $vm_val) : mb_strtoupper($vm_val);
 		}
 		
 		$vs_cast_to = (isset($pa_parse_options['castTo']) && ($pa_parse_options['castTo'])) ? strtolower($pa_parse_options['castTo']) : '';

@@ -224,9 +224,6 @@
 3015 = Specified XML schema is not available
 3020 = Validation of file failed
 
-# --- Generic application plugin errors
-3000 = Access denied
-
 # --- Summary printing errors
 3100 = Could not generate PDF
 
@@ -245,3 +242,8 @@
 # --- Import/export errors
 3400 = Import of metadata is not allowed
 3410 = Import of media is not allowed
+
+# --- Generic application plugin errors
+3500 = Access denied
+3510 = Plugin does not exist
+3520 = Command does not exist

@@ -414,6 +414,8 @@
 		 *		rank - a numeric rank used to order the representations when listed
 		 *		returnRepresentation = if set the newly created ca_object_representations instance is returned rather than the link_id of the newly created relationship record
 		 *		matchOn = 
+		 *		centerX = Horizontal position of image center used when cropping as a percentage expressed as a decimal between 0 and 1. If omitted existing value is maintained. Note that both centerX and centerY must be specified for the center to be changed.
+		 *		centerY = Vertical position of image center used when cropping as a percentage expressed as a decimal between 0 and 1. If omitted existing value is maintained. Note that both centerX and centerY must be specified for the center to be changed.
 		 *
 		 * @return mixed Returns primary key (link_id) of the relatipnship row linking the newly created representation to the item; if the 'returnRepresentation' is set then an instance for the newly created ca_object_representations is returned instead; boolean false is returned on error
 		 */
@@ -536,6 +538,18 @@
 				}
 			}
 			
+			// Set image center if specified
+			$vn_center_x = caGetOption('centerX', $pa_options, null);
+			$vn_center_y = caGetOption('centerY', $pa_options, null);
+			if (strlen($vn_center_x) && (strlen($vn_center_y)) && ($vn_center_x >= 0) && ($vn_center_y >= 0) && ($vn_center_x <= 1) && ($vn_center_y <= 1)) {
+				$t_rep->setMediaCenter('media', (float)$vn_center_x, (float)$vn_center_y);
+				$t_rep->update();
+				if ($t_rep->numErrors()) {
+					$this->errors = array_merge($this->errors, $t_rep->errors());
+					return false;
+				}
+			}
+			
 			if (!($t_oxor = $this->_getRepresentationRelationshipTableInstance())) { return null; }
 			$vs_pk = $this->primaryKey();
 			
@@ -595,6 +609,8 @@
 		 * @param bool $pb_is_primary Sets 'primaryness' of representation. If you wish to leave the primary setting to its current value set this null or omit the parameter.
 		 * @param array $pa_values
 		 * @param array $pa_options
+		 *		centerX = Horizontal position of image center used when cropping as a percentage expressed as a decimal between 0 and 1. If omitted existing value is maintained. Note that both centerX and centerY must be specified for the center to be changed.
+		 *		centerY = Vertical position of image center used when cropping as a percentage expressed as a decimal between 0 and 1. If omitted existing value is maintained. Note that both centerX and centerY must be specified for the center to be changed.
 		 *
 		 * @return bool True on success, false on failure, null if no row has been loaded into the object model 
 		 */
@@ -652,6 +668,13 @@
 				if ($t_rep->numErrors()) {
 					$this->errors = array_merge($this->errors, $t_rep->errors());
 					return false;
+				}
+				
+				// Set image center if specified
+				$vn_center_x = caGetOption('centerX', $pa_options, null);
+				$vn_center_y = caGetOption('centerY', $pa_options, null);
+				if (strlen($vn_center_x) && (strlen($vn_center_y)) && ($vn_center_x >= 0) && ($vn_center_y >= 0) && ($vn_center_x <= 1) && ($vn_center_y <= 1)) {
+					$t_rep->setMediaCenter('media', (float)$vn_center_x, (float)$vn_center_y);
 				}
 					
 				if ($ps_media_path) {

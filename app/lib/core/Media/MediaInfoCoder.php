@@ -298,6 +298,7 @@ class MediaInfoCoder {
 		unset($va_media_info["VOLUME"]);
 		unset($va_media_info["_undo_"]);
 		unset($va_media_info["TRANSFORMATION_HISTORY"]);
+		unset($va_media_info["_CENTER"]);
 		
 		return array_keys($va_media_info);		
 	}
