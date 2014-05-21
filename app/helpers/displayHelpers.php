@@ -1919,8 +1919,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([A-Za-z0-9_\.:\/]+[%]{1}
 		$o_ifs = $o_doc("if");						// if 
 		$o_ifdefs = $o_doc("ifdef");				// if defined
 		$o_ifnotdefs = $o_doc("ifnotdef");			// if not defined
-		$o_mores = $o_doc("more");					// more tags ��� content suppressed if there are no defined values following the tag pair
-		$o_betweens = $o_doc("between");			// between tags ��� content suppressed if there are not defined values on both sides of the tag pair
+		$o_mores = $o_doc("more");					// more tags – content suppressed if there are no defined values following the tag pair
+		$o_betweens = $o_doc("between");			// between tags – content suppressed if there are not defined values on both sides of the tag pair
 		$o_ifcounts = $o_doc("ifcount");			// if count - conditionally return template if # of items is in-bounds
 		
 		$va_if = array();
@@ -2092,7 +2092,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([A-Za-z0-9_\.:\/]+[%]{1}
 			
 			if (!strlen(trim($va_proc_templates[$vn_i]))) { $va_proc_templates[$vn_i] = null; }
 			
-			if(!sizeof($va_tags)) { continue; } 	// if there are no tags in the template then we don't need to process further
+			if(!sizeof($va_tags)) { $vn_i++; continue; } 	// if there are no tags in the template then we don't need to process further
 		
 			if ($ps_resolve_links_using != $ps_tablename) {
 				$va_resolve_links_using_row_ids[] = $qr_res->get("{$ps_resolve_links_using}.{$vs_resolve_links_using_pk}");
@@ -2251,6 +2251,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([A-Za-z0-9_\.:\/]+[%]{1}
 												if (!is_array($va_hier)) { $va_hier = array($va_hier); }
 												$va_val_proc[] = join(caGetOption("delimiter", $va_tag_opts, "; "), $va_hier);
 											}
+											$va_val_proc = array(join(caGetOption("delimiter", $va_tag_opts, "; "), $va_val_proc));
 										} 
 										break;
 									case 'parent':
@@ -2318,7 +2319,6 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([A-Za-z0-9_\.:\/]+[%]{1}
 									$va_val[] = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_tag_opts, array('returnAsArray' => false)));
 								} else {
 									$va_val_tmp = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_tag_opts, array('returnAsArray' => true, 'filters' => $va_tag_filters)));
-									
 									$va_val = array();
 								
 									if (is_array($va_val_tmp)) {
@@ -2977,7 +2977,7 @@ $ca_relationship_lookup_parse_cache = array();
 		
 		$va_hierarchies = (method_exists($t_rel, "getHierarchyList")) ? $t_rel->getHierarchyList() : array();
 		
-		// Get root entries for hierarchies and remove from labels (we don't want to show the root labels ��� they are not meant for display)
+		// Get root entries for hierarchies and remove from labels (we don't want to show the root labels – they are not meant for display)
 		if (is_array($va_hierarchies)) {
 			foreach($va_hierarchies as $vn_root_id => $va_hier_info) {
 				foreach($va_parent_ids as $vn_item_id => $vn_parent_id) {
