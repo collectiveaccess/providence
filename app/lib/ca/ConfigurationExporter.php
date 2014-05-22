@@ -967,6 +967,7 @@ final class ConfigurationExporter {
 								$vo_setting = $this->opo_dom->createElement("setting",$vs_value);
 								$vo_setting->setAttribute("name", $vs_setting);
 								if($vs_setting=="label" || $vs_setting=="add_label"){
+									if(is_numeric($vs_key)) { $vs_key = $this->opt_locale->localeIDToCode($vs_key); }
 									$vo_setting->setAttribute("locale", $vs_key);
 								}
 								$vo_settings->appendChild($vo_setting);
