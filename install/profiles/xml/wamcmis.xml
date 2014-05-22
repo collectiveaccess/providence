@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" infoUrl="http://wamwpcmis.da.wa.gov.au">
-  <profileName>WA Museum CMIS</profileName>
+  <profileName>Western Australian Museum CMIS</profileName>
   <profileDescription>Western Australian Museum Collection Managment Information System</profileDescription>
   <locales>
     <locale lang="en" country="AU">English (Australian)</locale>
@@ -281,7 +281,7 @@
         </label>
       </labels>
       <items>
-        <item idno="internal" enabled="1" default="0">
+        <item idno="internal" enabled="1" default="1">
           <labels>
             <label locale="en_AU" preferred="1">
               <name_singular>Our collection</name_singular>
@@ -10925,6 +10925,13 @@
         </label>
       </labels>
     </list>
+    <list code="associated_specimen_types" hierarchical="0" system="1" vocabulary="0">
+      <labels>
+        <label locale="en_AU">
+          <name>Associated Specimen Types</name>
+        </label>
+      </labels>
+    </list>
   </lists>
   <elementSets>
     <metadataElement code="set_description" datatype="Text">
@@ -12228,14 +12235,6 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <restriction>
-          <table/>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="dcModified" datatype="DateRange">
@@ -13112,7 +13111,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="lifeStage" datatype="List" list="lifeStage">
+    <metadataElement code="lifeStage" datatype="List" list="life_stage_types">
       <labels>
         <label locale="en_AU">
           <name>Life Stage</name>
@@ -18243,6 +18242,72 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="verbatimBioFlag" datatype="List" list="yesNo">
+      <labels>
+        <label locale="en_AU">
+          <name>Verbatim Bio Flag</name>
+        </label>
+      </labels>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>DarwinCore</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="associatedSpecimen" datatype="List" list="associated_specimen_types">
+      <labels>
+        <label locale="en_AU">
+          <name>Associated Specimen</name>
+          <description>TODO</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="requireValue">0</setting>
+        <setting name="render">select</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>DarwinCore</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="caabFamilyNo" datatype="Integer">
+      <labels>
+        <label locale="en_AU">
+          <name>CAAB Family Number</name>
+          <description>Enter the CAAB Family Number for the taxon</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="maxChars">6</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_list_items</table>
+          <type>scientific_name</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
   </elementSets>
   <userInterfaces>
     <userInterface code="loan_cataloguers_ui" type="ca_loans">
@@ -18966,6 +19031,17 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
           <name>Natural History Editor</name>
         </label>
       </labels>
+      <typeRestrictions>
+        <restriction type="DarwinCore"/>
+        <restriction type="FossilSpecimen"/>
+        <restriction type="HumanObservation"/>
+        <restriction type="LivingSpecimen"/>
+        <restriction type="MachineObservation"/>
+        <restriction type="observation"/>
+        <restriction type="PreservedSpecimen"/>
+        <restriction type="arachnid_myriapod"/>
+        <restriction type="tz"/>
+      </typeRestrictions>
       <screens>
         <screen idno="record_level" default="1">
           <labels>
@@ -19210,12 +19286,26 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
               <bundle>ca_attribute_voucher</bundle>
               <settings>
                 <setting name="sortDirection">ASC</setting>
+                <setting name="readonly"/>
               </settings>
             </placement>
             <placement code="access">
               <bundle>access</bundle>
               <settings>
                 <setting name="readonly"/>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_verbatimBioFlag24">
+              <bundle>ca_attribute_verbatimBioFlag</bundle>
+              <settings>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="readonly"/>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_associatedSpecime">
+              <bundle>ca_attribute_associatedSpecimen</bundle>
+              <settings>
+                <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
             <placement code="lot_id17">
@@ -19542,6 +19632,16 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
           <name>Occurrence UI</name>
         </label>
       </labels>
+      <typeRestrictions>
+        <restriction type="resource"/>
+        <restriction type="exhibition"/>
+        <restriction type="anthropology_register"/>
+        <restriction type="conservation"/>
+      </typeRestrictions>
+      <groupAccess>
+        <permission group="admin" access="edit"/>
+        <permission group="cataloguer" access="read"/>
+      </groupAccess>
       <screens>
         <screen idno="basic_occurrence" default="1">
           <labels>
@@ -19978,6 +20078,14 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
           <name>Object lots editor</name>
         </label>
       </labels>
+      <typeRestrictions>
+        <restriction type="purchase"/>
+        <restriction type="restricted_gift"/>
+        <restriction type="bequest"/>
+        <restriction type="gift"/>
+        <restriction type="loan"/>
+        <restriction type="long_term_loan"/>
+      </typeRestrictions>
       <screens>
         <screen idno="basic" default="1">
           <labels>
@@ -20338,6 +20446,16 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
           <name>Scientific Name Editor</name>
         </label>
       </labels>
+      <typeRestrictions>
+        <restriction type="scientific_name"/>
+      </typeRestrictions>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
+      <groupAccess>
+        <permission group="admin" access="read"/>
+        <permission group="cataloguer" access="read"/>
+      </groupAccess>
       <screens>
         <screen idno="scientific_name_details" default="1">
           <labels>
@@ -20392,12 +20510,15 @@ e.g. "Malacostraca", "Canis lupus".</setting>
                 <setting name="readonly"/>
                 <setting name="dont_include_subtypes_in_type_restriction">0</setting>
                 <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
               </settings>
             </placement>
             <placement code="ca_attribute_parentheticalAuth">
               <bundle>ca_attribute_parentheticalAuthor</bundle>
               <settings>
                 <setting name="sortDirection">ASC</setting>
+                <setting name="readonly"/>
               </settings>
             </placement>
             <placement code="ca_attribute_namePublishedInYe">
@@ -20407,12 +20528,8 @@ e.g. "Malacostraca", "Canis lupus".</setting>
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_namePublishedIn6">
-              <bundle>ca_attribute_namePublishedIn</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
+            <placement code="ca_attribute_caabFamilyNo8">
+              <bundle>ca_attribute_caabFamilyNo</bundle>
             </placement>
             <placement code="is_enabled8">
               <bundle>is_enabled</bundle>
@@ -20445,6 +20562,13 @@ e.g. "Malacostraca", "Canis lupus".</setting>
           <name>Collecting Event Editor</name>
         </label>
       </labels>
+      <typeRestrictions>
+        <restriction type="collectingEvent"/>
+      </typeRestrictions>
+      <groupAccess>
+        <permission group="admin" access="edit"/>
+        <permission group="cataloguer" access="read"/>
+      </groupAccess>
       <screens>
         <screen idno="basic_collecting_event" default="1">
           <labels>
@@ -20625,108 +20749,18 @@ e.g. "Malacostraca", "Canis lupus".</setting>
         </screen>
       </screens>
     </userInterface>
-    <userInterface code="Identification_Editor" type="ca_occurrences">
-      <labels>
-        <label locale="en_AU">
-          <name>Identification Editor</name>
-        </label>
-      </labels>
-      <screens>
-        <screen idno="screen_30_0" default="0">
-          <labels>
-            <label locale="en_AU">
-              <name>Identification Information</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_attribute_scientificName1">
-              <bundle>ca_attribute_scientificName</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_objects1">
-              <bundle>ca_objects</bundle>
-              <settings>
-                <setting name="list_format">bubbles</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="display_template">^ca_objects.preferred_labels</setting>
-                <setting name="readonly"/>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_dateIdentified2">
-              <bundle>ca_attribute_dateIdentified</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_entities3">
-              <bundle>ca_entities</bundle>
-              <settings>
-                <setting name="label" locale="en_AU">Identified By</setting>
-                <setting name="add_label" locale="en_AU">add additional determiners</setting>
-                <setting name="description" locale="en_AU"> A list of names of people, groups, or organizations who assigned the Taxon to the subject.</setting>
-                <setting name="list_format">bubbles</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="display_template">^ca_entities.preferred_labels</setting>
-                <setting name="readonly"/>
-                <setting name="restrict_to_relationship_types">identifiedBy</setting>
-                <setting name="restrict_to_types">ind</setting>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_etAl5">
-              <bundle>ca_attribute_etAl</bundle>
-              <settings>
-                <setting name="description" locale="en_AU">Whether the identification is performed by more individuals than those listed above</setting>
-                <setting name="width">40</setting>
-                <setting name="readonly"/>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_identificationQua">
-              <bundle>ca_attribute_identificationQualifier</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_typeStatus7">
-              <bundle>ca_attribute_typeStatus</bundle>
-              <settings>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="readonly"/>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_idVerificationSta">
-              <bundle>ca_attribute_idVerificationStatus</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_identificationRem">
-              <bundle>ca_attribute_identificationRemarks</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-          </bundlePlacements>
-        </screen>
-      </screens>
-    </userInterface>
     <userInterface code="anthropology" type="ca_objects">
       <labels>
         <label locale="en_AU">
           <name>Anthropology Editor</name>
         </label>
       </labels>
+      <typeRestrictions>
+        <restriction type="anthropology"/>
+      </typeRestrictions>
+      <groupAccess>
+        <permission group="anthropology" access="read"/>
+      </groupAccess>
       <screens>
         <screen idno="anthropology_general" default="0">
           <labels>
@@ -21385,6 +21419,12 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <name>Object ⇔ Person/Organisation Relationship Details</name>
         </label>
       </labels>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
+      <groupAccess>
+        <permission group="anthropology" access="read"/>
+      </groupAccess>
       <screens>
         <screen idno="basic" default="0">
           <labels>
@@ -21417,6 +21457,17 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <name>Conservation Editor</name>
         </label>
       </labels>
+      <typeRestrictions>
+        <restriction type="conservation_analysis"/>
+        <restriction type="conservation_assignment"/>
+        <restriction type="conservation_job"/>
+      </typeRestrictions>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
+      <groupAccess>
+        <permission group="conservators" access="read"/>
+      </groupAccess>
       <screens>
         <screen idno="job_details" default="1">
           <labels>
@@ -21774,6 +21825,9 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <name>Identification / Determination Editor</name>
         </label>
       </labels>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
       <screens>
         <screen idno="identificationInformation" default="1">
           <labels>
@@ -21840,6 +21894,9 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <name>Places Editor</name>
         </label>
       </labels>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
       <screens>
         <screen idno="place_basic_info" default="0">
           <labels>
@@ -22576,6 +22633,15 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
             </label>
           </labels>
           <subTypeRight>ind</subTypeRight>
+        </type>
+        <type code="source" default="0">
+          <labels>
+            <label locale="en_AU">
+              <typename>has source</typename>
+              <typename_reverse>source of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>DarwinCore</subTypeLeft>
         </type>
       </types>
     </relationshipTable>
@@ -26365,6 +26431,15 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <name>Antropology Collections</name>
         </label>
       </labels>
+      <settings>
+        <setting name="show_empty_values">1</setting>
+      </settings>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
+      <groupAccess>
+        <permission group="anthropology" access="read"/>
+      </groupAccess>
       <bundlePlacements>
         <placement code="ca_collections_idno">
           <bundle>ca_collections.idno</bundle>
@@ -26386,8 +26461,8 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_collections.nonpreferred_labels</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">100</setting>
           </settings>
         </placement>
@@ -26395,20 +26470,20 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_collections.description</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
-            <setting name="filter"/>
+            <setting name="filter"></setting>
           </settings>
         </placement>
         <placement code="ca_collections_external_link">
           <bundle>ca_collections.external_link</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
-            <setting name="filter"/>
+            <setting name="filter"></setting>
           </settings>
         </placement>
         <placement code="ca_collections_access">
@@ -26429,30 +26504,30 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_collections.related</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
-            <setting name="remove_first_items"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
+            <setting name="remove_first_items">0</setting>
             <setting name="hierarchy_order">ASC</setting>
-            <setting name="hierarchy_limit"/>
+            <setting name="hierarchy_limit">0</setting>
             <setting name="hierarchical_delimiter"> ➔ </setting>
-            <setting name="restrict_to_relationship_types"/>
-            <setting name="restrict_to_types"/>
-            <setting name="show_hierarchy"/>
+            <setting name="restrict_to_relationship_types"></setting>
+            <setting name="restrict_to_types"></setting>
+            <setting name="show_hierarchy">0</setting>
           </settings>
         </placement>
         <placement code="ca_entities">
           <bundle>ca_entities</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
-            <setting name="remove_first_items"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
+            <setting name="remove_first_items">0</setting>
             <setting name="hierarchy_order">ASC</setting>
-            <setting name="hierarchy_limit"/>
+            <setting name="hierarchy_limit">0</setting>
             <setting name="hierarchical_delimiter"> ➔ </setting>
-            <setting name="restrict_to_relationship_types"/>
-            <setting name="restrict_to_types"/>
-            <setting name="show_hierarchy"/>
+            <setting name="restrict_to_relationship_types"></setting>
+            <setting name="restrict_to_types"></setting>
+            <setting name="show_hierarchy">0</setting>
           </settings>
         </placement>
         <placement code="ca_collections_lastModified">
@@ -26484,6 +26559,16 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <name>Identification</name>
         </label>
       </labels>
+      <settings>
+        <setting name="show_empty_values">1</setting>
+      </settings>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
+      <groupAccess>
+        <permission group="cataloguer" access="read"/>
+        <permission group="admin" access="edit"/>
+      </groupAccess>
       <bundlePlacements>
         <placement code="ca_occurrences_type_id">
           <bundle>ca_occurrences.type_id</bundle>
@@ -26495,11 +26580,11 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_objects</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
-            <setting name="remove_first_items"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
+            <setting name="remove_first_items">0</setting>
             <setting name="hierarchy_order">ASC</setting>
-            <setting name="hierarchy_limit"/>
+            <setting name="hierarchy_limit">0</setting>
             <setting name="hierarchical_delimiter"> ➔ </setting>
           </settings>
         </placement>
@@ -26507,13 +26592,13 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_list_items</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
+            <setting name="format"></setting>
             <setting name="restrict_to_types">228</setting>
-            <setting name="delimiter"/>
+            <setting name="delimiter"></setting>
             <setting name="show_hierarchy">1</setting>
-            <setting name="remove_first_items"/>
+            <setting name="remove_first_items">0</setting>
             <setting name="hierarchy_order">ASC</setting>
-            <setting name="hierarchy_limit"/>
+            <setting name="hierarchy_limit">0</setting>
             <setting name="hierarchical_delimiter"> ➔ </setting>
           </settings>
         </placement>
@@ -26522,7 +26607,7 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <settings>
             <setting name="label" locale="en_AU"/>
             <setting name="format">^label: &lt;em&gt;^scientificName&lt;/em&gt;</setting>
-            <setting name="delimiter"/>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
             <setting name="sense">singular</setting>
           </settings>
@@ -26532,13 +26617,13 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <settings>
             <setting name="label" locale="en_AU">Identified By</setting>
             <setting name="makeEditorLink">1</setting>
-            <setting name="format"/>
+            <setting name="format"></setting>
             <setting name="restrict_to_relationship_types">180</setting>
             <setting name="restrict_to_types">75</setting>
-            <setting name="delimiter"/>
-            <setting name="remove_first_items"/>
+            <setting name="delimiter"></setting>
+            <setting name="remove_first_items">0</setting>
             <setting name="hierarchy_order">ASC</setting>
-            <setting name="hierarchy_limit"/>
+            <setting name="hierarchy_limit">0</setting>
             <setting name="hierarchical_delimiter"> ➔ </setting>
           </settings>
         </placement>
@@ -26546,8 +26631,8 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_occurrences.etAl</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
             <setting name="sense">singular</setting>
           </settings>
@@ -26556,8 +26641,8 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_occurrences.dateIdentified</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
           </settings>
         </placement>
@@ -26565,8 +26650,8 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_occurrences.identificationQualifier</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
             <setting name="sense">singular</setting>
           </settings>
@@ -26575,8 +26660,8 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_occurrences.identificationRemarks</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
           </settings>
         </placement>
@@ -26584,8 +26669,8 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_occurrences.idVerificationStatus</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
             <setting name="sense">singular</setting>
           </settings>
@@ -26594,8 +26679,8 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_occurrences.typeStatus</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
             <setting name="sense">singular</setting>
           </settings>
@@ -26608,6 +26693,17 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <name>Natural History Object Display</name>
         </label>
       </labels>
+      <settings>
+        <setting name="show_empty_values">1</setting>
+      </settings>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
+      <groupAccess>
+        <permission group="arachnology" access="read"/>
+        <permission group="crustacea" access="read"/>
+        <permission group="admin" access="edit"/>
+      </groupAccess>
       <bundlePlacements>
         <placement code="ca_object_representations_media_tiny">
           <bundle>ca_object_representations.media.tiny</bundle>
@@ -26627,14 +26723,14 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_list_items</bundle>
           <settings>
             <setting name="label" locale="en_AU">Determined Scientific Name</setting>
-            <setting name="format"/>
+            <setting name="format"></setting>
             <setting name="restrict_to_relationship_types">200</setting>
             <setting name="restrict_to_types">228</setting>
-            <setting name="delimiter"/>
+            <setting name="delimiter"></setting>
             <setting name="show_hierarchy">1</setting>
             <setting name="remove_first_items">2</setting>
             <setting name="hierarchy_order">ASC</setting>
-            <setting name="hierarchy_limit"/>
+            <setting name="hierarchy_limit">0</setting>
             <setting name="hierarchical_delimiter"> ➔ </setting>
           </settings>
         </placement>
@@ -26649,23 +26745,23 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_collections</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
-            <setting name="remove_first_items"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
+            <setting name="remove_first_items">0</setting>
             <setting name="hierarchy_order">ASC</setting>
-            <setting name="hierarchy_limit"/>
+            <setting name="hierarchy_limit">0</setting>
             <setting name="hierarchical_delimiter"> ➔ </setting>
-            <setting name="makeEditorLink"/>
-            <setting name="restrict_to_relationship_types"/>
+            <setting name="makeEditorLink">0</setting>
+            <setting name="restrict_to_relationship_types"></setting>
             <setting name="restrict_to_types">107</setting>
-            <setting name="show_hierarchy"/>
+            <setting name="show_hierarchy">0</setting>
           </settings>
         </placement>
         <placement code="ca_occurrences">
           <bundle>ca_occurrences</bundle>
           <settings>
             <setting name="label" locale="en_AU">Collecting Event</setting>
-            <setting name="makeEditorLink"/>
+            <setting name="makeEditorLink">0</setting>
             <setting name="format">^ca_occurrences.idno
 [^ca_occurrences.eventDate]
 
@@ -26673,12 +26769,12 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
 </setting>
             <setting name="restrict_to_relationship_types">181</setting>
             <setting name="restrict_to_types">241</setting>
-            <setting name="delimiter"/>
-            <setting name="remove_first_items"/>
+            <setting name="delimiter"></setting>
+            <setting name="remove_first_items">0</setting>
             <setting name="hierarchy_order">ASC</setting>
-            <setting name="hierarchy_limit"/>
+            <setting name="hierarchy_limit">0</setting>
             <setting name="hierarchical_delimiter"> ➔ </setting>
-            <setting name="show_hierarchy"/>
+            <setting name="show_hierarchy">0</setting>
           </settings>
         </placement>
         <placement code="ca_occurrences">
@@ -26693,25 +26789,25 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
 ^ca_occurrences.identificationVerificationStatus
 ^ca_occurrences.dateIdentified
 </setting>
-            <setting name="delimiter"/>
-            <setting name="remove_first_items"/>
+            <setting name="delimiter"></setting>
+            <setting name="remove_first_items">0</setting>
             <setting name="hierarchy_order">ASC</setting>
-            <setting name="hierarchy_limit"/>
+            <setting name="hierarchy_limit">0</setting>
             <setting name="hierarchical_delimiter"> ➔ </setting>
-            <setting name="makeEditorLink"/>
+            <setting name="makeEditorLink">0</setting>
             <setting name="restrict_to_relationship_types">182</setting>
             <setting name="restrict_to_types">243</setting>
-            <setting name="show_hierarchy"/>
+            <setting name="show_hierarchy">0</setting>
           </settings>
         </placement>
         <placement code="ca_objects_accessionDate">
           <bundle>ca_objects.accessionDate</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
-            <setting name="filter"/>
+            <setting name="filter"></setting>
           </settings>
         </placement>
         <placement code="ca_objects_access">
@@ -26725,11 +26821,11 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_object_lots</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
-            <setting name="remove_first_items"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
+            <setting name="remove_first_items">0</setting>
             <setting name="hierarchy_order">ASC</setting>
-            <setting name="hierarchy_limit"/>
+            <setting name="hierarchy_limit">0</setting>
             <setting name="hierarchical_delimiter"> ➔ </setting>
           </settings>
         </placement>
@@ -26750,43 +26846,43 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_objects.associatedSequences</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
-            <setting name="filter"/>
-            <setting name="bottom_line"/>
+            <setting name="filter"></setting>
+            <setting name="bottom_line"></setting>
           </settings>
         </placement>
         <placement code="ca_objects_individualCount">
           <bundle>ca_objects.individualCount</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
-            <setting name="filter"/>
+            <setting name="filter"></setting>
           </settings>
         </placement>
         <placement code="ca_objects_sex">
           <bundle>ca_objects.sex</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
             <setting name="sense">singular</setting>
-            <setting name="filter"/>
+            <setting name="filter"></setting>
           </settings>
         </placement>
         <placement code="ca_objects_preparations">
           <bundle>ca_objects.preparations</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
-            <setting name="filter"/>
-            <setting name="bottom_line"/>
+            <setting name="filter"></setting>
+            <setting name="bottom_line"></setting>
           </settings>
         </placement>
         <placement code="ca_objects_status">
@@ -26811,6 +26907,15 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <name>Places Display</name>
         </label>
       </labels>
+      <settings>
+        <setting name="show_empty_values">1</setting>
+      </settings>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
+      <groupAccess>
+        <permission group="cataloguer" access="read"/>
+      </groupAccess>
       <bundlePlacements>
 </bundlePlacements>
     </display>
@@ -26820,13 +26925,23 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <name>Scientific Names</name>
         </label>
       </labels>
+      <settings>
+        <setting name="show_empty_values">1</setting>
+      </settings>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
+      <groupAccess>
+        <permission group="cataloguer" access="read"/>
+        <permission group="admin" access="read"/>
+      </groupAccess>
       <bundlePlacements>
         <placement code="ca_list_items_preferred_labels">
           <bundle>ca_list_items.preferred_labels</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">100</setting>
           </settings>
         </placement>
@@ -26834,11 +26949,11 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_collections</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
-            <setting name="remove_first_items"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
+            <setting name="remove_first_items">0</setting>
             <setting name="hierarchy_order">ASC</setting>
-            <setting name="hierarchy_limit"/>
+            <setting name="hierarchy_limit">0</setting>
             <setting name="hierarchical_delimiter"> ➔ </setting>
           </settings>
         </placement>
@@ -26852,8 +26967,8 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_list_items.scientificNameAuthorship</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
           </settings>
         </placement>
@@ -26861,8 +26976,8 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_list_items.namePublishedInYear</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
           </settings>
         </placement>
@@ -26870,8 +26985,8 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_list_items.namePublishedIn</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
           </settings>
         </placement>
@@ -26879,8 +26994,8 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_list_items.taxonRank</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
             <setting name="sense">singular</setting>
           </settings>
@@ -27242,6 +27357,12 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
       <settings>
         <setting name="form_width">3</setting>
       </settings>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
+      <groupAccess>
+        <permission group="anthropology" access="read"/>
+      </groupAccess>
       <bundlePlacements>
         <placement code="p48">
           <bundle>ca_collection_labels.name</bundle>
@@ -27352,6 +27473,9 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
       <settings>
         <setting name="form_width">3</setting>
       </settings>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
       <bundlePlacements>
         <placement code="p60">
           <bundle>ca_list_item_labels.name_singular</bundle>
@@ -27371,6 +27495,13 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
       <settings>
         <setting name="form_width">3</setting>
       </settings>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
+      <groupAccess>
+        <permission group="arachnology" access="read"/>
+        <permission group="crustacea" access="read"/>
+      </groupAccess>
       <bundlePlacements>
         <placement code="p61">
           <bundle>ca_objects.idno</bundle>
