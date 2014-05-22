@@ -491,6 +491,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		foreach($pm_fields as $vs_fld => $vs_val) {
 			if (($vs_fld == 'lot_id') && ($pb_assume_idno_stub_for_lot_id || preg_match("![^\d]+!", $vs_val))) {
 				$t_lot = new ca_object_lots();
+				if ($this->inTransaction()) { $t_lot->setTransaction($this->getTransaction()); }
 				if ($t_lot->load(array('idno_stub' => $vs_val))) {
 					$vn_lot_id = (int)$t_lot->getPrimaryKey();
 					$pm_fields[$vs_fld] = $vn_lot_id;

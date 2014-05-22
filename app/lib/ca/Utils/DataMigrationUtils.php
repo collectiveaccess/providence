@@ -806,7 +806,6 @@
 			}
 			
 			
-			
 			$vn_id = null;
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
@@ -841,7 +840,10 @@
 					$o_event->endItem($vn_item_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, '');
 				}
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					return new ca_list_items($vn_item_id);
+					$t_item = new ca_list_items($vn_item_id);
+					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
+						$t_item->setTransaction($pa_options['transaction']);
+					}
 				}
 				
 				return DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id];

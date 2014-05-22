@@ -296,6 +296,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		if(!($vn_list_id = $this->getPrimaryKey())) { return null; }
 		
 		$t_item = new ca_list_items();
+		if ($this->inTransaction()) { $t_item->setTransaction($this->getTransaction()); }
 		$t_item->setMode(ACCESS_WRITE);
 		
 		$t_item->set('list_id', $vn_list_id);
