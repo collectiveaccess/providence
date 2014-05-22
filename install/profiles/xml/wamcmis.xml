@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" infoUrl="http://wamwpcmis.da.wa.gov.au">
-  <profileName>WA Museum CMIS</profileName>
+  <profileName>Western Australian Museum CMIS</profileName>
   <profileDescription>Western Australian Museum Collection Managment Information System</profileDescription>
   <locales>
     <locale lang="en" country="AU">English (Australian)</locale>
@@ -190,6 +190,14 @@
                         </label>
                       </labels>
                     </item>
+                    <item idno="entomology" enabled="1" default="0">
+                      <labels>
+                        <label locale="en_AU" preferred="1">
+                          <name_singular>Entomology</name_singular>
+                          <name_plural>Entomology</name_plural>
+                        </label>
+                      </labels>
+                    </item>
                   </items>
                 </item>
                 <item idno="az" enabled="1" default="0">
@@ -273,7 +281,7 @@
         </label>
       </labels>
       <items>
-        <item idno="internal" enabled="1" default="0">
+        <item idno="internal" enabled="1" default="1">
           <labels>
             <label locale="en_AU" preferred="1">
               <name_singular>Our collection</name_singular>
@@ -10903,6 +10911,27 @@
         </item>
       </items>
     </list>
+    <list code="life_stage_types" hierarchical="1" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_AU">
+          <name>Life Stage Types</name>
+        </label>
+      </labels>
+    </list>
+    <list code="preparation_types" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_AU">
+          <name>Preparation Types</name>
+        </label>
+      </labels>
+    </list>
+    <list code="associated_specimen_types" hierarchical="0" system="1" vocabulary="0">
+      <labels>
+        <label locale="en_AU">
+          <name>Associated Specimen Types</name>
+        </label>
+      </labels>
+    </list>
   </lists>
   <elementSets>
     <metadataElement code="set_description" datatype="Text">
@@ -12268,6 +12297,14 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+        <restriction>
+          <table/>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="dcLanguage" datatype="List" list="languages">
@@ -12884,12 +12921,14 @@
     <metadataElement code="occurrenceRemarks" datatype="Text">
       <labels>
         <label locale="en_AU">
-          <name>occurrenceRemarks</name>
+          <name>General Note / Remarks</name>
           <description>Comments or notes about the Occurrence.</description>
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">70</setting>
+        <setting name="fieldWidth">655px</setting>
+        <setting name="fieldHeight">5</setting>
+        <setting name="usewysiwygeditor">1</setting>
       </settings>
       <typeRestrictions>
         <restriction>
@@ -12910,7 +12949,6 @@
         </restriction>
         <restriction>
           <table>ca_occurrences</table>
-          <type/>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -13073,7 +13111,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="lifeStage" datatype="Text">
+    <metadataElement code="lifeStage" datatype="List" list="life_stage_types">
       <labels>
         <label locale="en_AU">
           <name>Life Stage</name>
@@ -13081,23 +13119,17 @@
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">70</setting>
+        <setting name="requireValue">0</setting>
+        <setting name="render">select</setting>
       </settings>
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
+          <type>DarwinCore</type>
+          <includeSubtypes>1</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_occurrences</table>
-          <type>resource</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">256</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -13233,34 +13265,11 @@
         <setting name="lineBreakAfterNumberOfElements">2</setting>
       </settings>
       <elements>
-        <metadataElement code="preparationMedium" datatype="Text">
-          <labels>
-            <label locale="en_AU">
-              <name>Preparation Medium</name>
-            </label>
-          </labels>
-          <settings>
-            <setting name="minChars">0</setting>
-            <setting name="maxChars">255</setting>
-            <setting name="regex"/>
-            <setting name="fieldWidth">40</setting>
-            <setting name="fieldHeight">1</setting>
-            <setting name="usewysiwygeditor">0</setting>
-            <setting name="doesNotTakeLocale">0</setting>
-            <setting name="canBeUsedInSort">1</setting>
-            <setting name="suggestExistingValues">1</setting>
-            <setting name="suggestExistingValueSort">value</setting>
-            <setting name="default_text"/>
-            <setting name="canBeUsedInSearchForm">1</setting>
-            <setting name="canBeUsedInDisplay">1</setting>
-            <setting name="displayTemplate"/>
-            <setting name="displayDelimiter">,</setting>
-          </settings>
-        </metadataElement>
-        <metadataElement code="preparationType" datatype="Text">
+        <metadataElement code="preparationType" datatype="List" list="preparation_types">
           <labels>
             <label locale="en_AU">
               <name>Preparation Type</name>
+              <description>Select the preparation type and any numeric value associated with the preparation</description>
             </label>
           </labels>
           <settings>
@@ -13277,6 +13286,11 @@
             <setting name="default_text"/>
             <setting name="canBeUsedInSearchForm">1</setting>
             <setting name="canBeUsedInDisplay">1</setting>
+            <setting name="listWidth">40</setting>
+            <setting name="listHeight">200px</setting>
+            <setting name="requireValue">1</setting>
+            <setting name="render">select</setting>
+            <setting name="maxColumns">3</setting>
           </settings>
         </metadataElement>
         <metadataElement code="preparationCount" datatype="Numeric">
@@ -13307,9 +13321,10 @@
         <restriction>
           <table>ca_objects</table>
           <type>PreservedSpecimen</type>
+          <includeSubtypes>1</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="maxAttributesPerRow">256</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -17950,6 +17965,349 @@ Examples: &lt;em&gt;James L. Patton&lt;/em&gt;, &lt;em&gt;Theodore Pappenfuss&lt
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="associatedMedia" datatype="Container">
+      <labels>
+        <label locale="en_AU">
+          <name>Associated Media</name>
+        </label>
+      </labels>
+      <elements>
+        <metadataElement code="hasAssociatedMedia" datatype="List" list="yesNo">
+          <labels>
+            <label locale="en_AU">
+              <name>Has Associated Media?</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="listWidth">40</setting>
+            <setting name="listHeight">200px</setting>
+            <setting name="doesNotTakeLocale">1</setting>
+            <setting name="requireValue">0</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="render">yes_no_checkboxes</setting>
+            <setting name="maxColumns">3</setting>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+            <setting name="displayTemplate"/>
+            <setting name="displayDelimiter">,</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="associatedMediaCredit" datatype="Entities">
+          <labels>
+            <label locale="en_AU">
+              <name>Associated Media Credit</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="requireValue">0</setting>
+            <setting name="fieldWidth">60</setting>
+            <setting name="doesNotTakeLocale">1</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="associatedMediaValue" datatype="Text">
+          <labels>
+            <label locale="en_AU">
+              <name>Description</name>
+              <description>Enter a description of the associated media</description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">255</setting>
+            <setting name="regex"/>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="usewysiwygeditor">0</setting>
+            <setting name="doesNotTakeLocale">0</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="suggestExistingValues">0</setting>
+            <setting name="suggestExistingValueSort">value</setting>
+            <setting name="default_text"/>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+          </settings>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>DarwinCore</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="quarantine" datatype="List" list="yesNo">
+      <labels>
+        <label locale="en_AU">
+          <name>Quarantine</name>
+          <description>Whether the record has been quarantined</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="requireValue">0</setting>
+        <setting name="render">yes_no_checkboxes</setting>
+      </settings>
+      <elements>
+        <metadataElement code="quarantineNote" datatype="Text">
+          <labels>
+            <label locale="en_AU">
+              <name>Note</name>
+              <description>Enter a note about the qarantine status</description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">255</setting>
+            <setting name="regex"/>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="usewysiwygeditor">0</setting>
+            <setting name="doesNotTakeLocale">0</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="suggestExistingValues">1</setting>
+            <setting name="suggestExistingValueSort">value</setting>
+            <setting name="default_text"/>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+          </settings>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>entomology</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="reared" datatype="List" list="yesNo">
+      <labels>
+        <label locale="en_AU">
+          <name>Reared</name>
+          <description>Records whether the specimen was reared</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="requireValue">0</setting>
+        <setting name="render">yes_no_checkboxes</setting>
+      </settings>
+      <elements>
+        <metadataElement code="rearedNote" datatype="Text">
+          <labels>
+            <label locale="en_AU">
+              <name>Note</name>
+              <description>Enter a note regarding the rearing details</description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+            <setting name="regex"/>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="usewysiwygeditor">0</setting>
+            <setting name="doesNotTakeLocale">0</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="suggestExistingValues">1</setting>
+            <setting name="suggestExistingValueSort">value</setting>
+            <setting name="default_text"/>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+          </settings>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>entomology</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="multipleMounts" datatype="Integer">
+      <labels>
+        <label locale="en_AU">
+          <name>Multiple Mounts</name>
+          <description>Record the number of multiple mounts that exist for this specimen</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="maxChars">3</setting>
+        <setting name="maxValue">255</setting>
+        <setting name="fieldWidth">25</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>entomology</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="associatedTaxa" datatype="List" list="taxonomy">
+      <labels>
+        <label locale="en_AU">
+          <name>Associated Taxa</name>
+          <description>A list of identifiers or names of taxa and their associations with the Occurrence.&#13;
+Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/wiki/Occurrence</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="listWidth">665px</setting>
+        <setting name="requireValue">0</setting>
+        <setting name="render">horiz_hierbrowser_with_search</setting>
+      </settings>
+      <elements>
+        <metadataElement code="associatedTaxaNote" datatype="Text">
+          <labels>
+            <label locale="en_AU">
+              <name>Note</name>
+              <description>enter any qualifying note regarding the associated taxa list</description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">255</setting>
+            <setting name="regex"/>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="usewysiwygeditor">0</setting>
+            <setting name="doesNotTakeLocale">0</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="suggestExistingValues">1</setting>
+            <setting name="suggestExistingValueSort">value</setting>
+            <setting name="default_text"/>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+            <setting name="displayTemplate"/>
+            <setting name="displayDelimiter">,</setting>
+          </settings>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>DarwinCore</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="voucher" datatype="List" list="yesNo">
+      <labels>
+        <label locale="en_AU">
+          <name>Voucher</name>
+          <description>Records whether the object is a voucher specimen</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">yes_no_checkboxes</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>entomology</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="verbatimBioFlag" datatype="List" list="yesNo">
+      <labels>
+        <label locale="en_AU">
+          <name>Verbatim Bio Flag</name>
+        </label>
+      </labels>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>DarwinCore</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="associatedSpecimen" datatype="List" list="associated_specimen_types">
+      <labels>
+        <label locale="en_AU">
+          <name>Associated Specimen</name>
+          <description>TODO</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="requireValue">0</setting>
+        <setting name="render">select</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>DarwinCore</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="caabFamilyNo" datatype="Integer">
+      <labels>
+        <label locale="en_AU">
+          <name>CAAB Family Number</name>
+          <description>Enter the CAAB Family Number for the taxon</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="maxChars">6</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_list_items</table>
+          <type>scientific_name</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
   </elementSets>
   <userInterfaces>
     <userInterface code="loan_cataloguers_ui" type="ca_loans">
@@ -17969,11 +18327,11 @@ Examples: &lt;em&gt;James L. Patton&lt;/em&gt;, &lt;em&gt;Theodore Pappenfuss&lt
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_US">Short description of loan</setting>
+                <setting name="label" locale="en_AU">Short description of loan</setting>
                 <setting name="label" locale="en_CA">Short description of loan</setting>
                 <setting name="label" locale="fr_FR">Rapide description du prêt</setting>
                 <setting name="label" locale="sv_SE">Kort beskrivning av lån</setting>
-                <setting name="add_label" locale="en_US">Add short description</setting>
+                <setting name="add_label" locale="en_AU">Add short description</setting>
                 <setting name="add_label" locale="en_CA">Add short description</setting>
                 <setting name="add_label" locale="fr_FR">Ajouter une courte description</setting>
                 <setting name="add_label" locale="sv_SE">Lägg till kort beskrivning</setting>
@@ -18282,11 +18640,11 @@ Examples: &lt;em&gt;James L. Patton&lt;/em&gt;, &lt;em&gt;Theodore Pappenfuss&lt
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_US">Relationship names</setting>
+                <setting name="label" locale="en_AU">Relationship names</setting>
                 <setting name="label" locale="en_CA">Relationship names</setting>
                 <setting name="label" locale="fr_FR">Noms de relations</setting>
                 <setting name="label" locale="sv_SE">Relationsnamn</setting>
-                <setting name="add_label" locale="en_US">Add relationship name</setting>
+                <setting name="add_label" locale="en_AU">Add relationship name</setting>
                 <setting name="add_label" locale="en_CA">Add relationship name</setting>
                 <setting name="add_label" locale="fr_FR">Ajouter un nom de relation</setting>
                 <setting name="add_label" locale="sv_SE">Lägg till relationsnamn</setting>
@@ -18376,11 +18734,11 @@ Examples: &lt;em&gt;James L. Patton&lt;/em&gt;, &lt;em&gt;Theodore Pappenfuss&lt
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_US">Caption</setting>
+                <setting name="label" locale="en_AU">Caption</setting>
                 <setting name="label" locale="en_CA">Caption</setting>
                 <setting name="label" locale="fr_FR">Légende</setting>
                 <setting name="label" locale="sv_SE">Bildtext</setting>
-                <setting name="add_label" locale="en_US">Add caption</setting>
+                <setting name="add_label" locale="en_AU">Add caption</setting>
                 <setting name="add_label" locale="en_CA">Add caption</setting>
                 <setting name="add_label" locale="fr_FR">Ajouter une légende</setting>
                 <setting name="add_label" locale="sv_SE">Lägg till bildtext</setting>
@@ -18413,11 +18771,11 @@ Examples: &lt;em&gt;James L. Patton&lt;/em&gt;, &lt;em&gt;Theodore Pappenfuss&lt
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_US">Form name</setting>
+                <setting name="label" locale="en_AU">Form name</setting>
                 <setting name="label" locale="en_CA">Form name</setting>
                 <setting name="label" locale="fr_FR">Nom du formulaire</setting>
                 <setting name="label" locale="sv_SE">Formulär namn</setting>
-                <setting name="add_label" locale="en_US">Add form name</setting>
+                <setting name="add_label" locale="en_AU">Add form name</setting>
                 <setting name="add_label" locale="en_CA">Add form name</setting>
                 <setting name="add_label" locale="fr_FR">Ajouter un nom de formulaire</setting>
                 <setting name="add_label" locale="sv_SE">Lägg till formulärnamn</setting>
@@ -18465,11 +18823,11 @@ Examples: &lt;em&gt;James L. Patton&lt;/em&gt;, &lt;em&gt;Theodore Pappenfuss&lt
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_US">Display list name</setting>
+                <setting name="label" locale="en_AU">Display list name</setting>
                 <setting name="label" locale="en_CA">Display list name</setting>
                 <setting name="label" locale="fr_FR">Nom de la liste</setting>
                 <setting name="label" locale="sv_SE">Display listnamn</setting>
-                <setting name="add_label" locale="en_US">Add display list name</setting>
+                <setting name="add_label" locale="en_AU">Add display list name</setting>
                 <setting name="add_label" locale="en_CA">Add display list name</setting>
                 <setting name="add_label" locale="fr_FR">Ajouter un nom de liste</setting>
                 <setting name="add_label" locale="sv_SE">Lägg till display listnamn</setting>
@@ -18526,11 +18884,11 @@ Examples: &lt;em&gt;James L. Patton&lt;/em&gt;, &lt;em&gt;Theodore Pappenfuss&lt
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_US">Tour title</setting>
+                <setting name="label" locale="en_AU">Tour title</setting>
                 <setting name="label" locale="en_CA">Tour title</setting>
                 <setting name="label" locale="fr_FR">Tour title</setting>
                 <setting name="label" locale="sv_SE">Tur titel</setting>
-                <setting name="add_label" locale="en_US">Add title</setting>
+                <setting name="add_label" locale="en_AU">Add title</setting>
                 <setting name="add_label" locale="en_CA">Add title</setting>
                 <setting name="add_label" locale="fr_FR">Add title</setting>
                 <setting name="add_label" locale="sv_SE">Lägg till titel</setting>
@@ -18593,11 +18951,11 @@ Examples: &lt;em&gt;James L. Patton&lt;/em&gt;, &lt;em&gt;Theodore Pappenfuss&lt
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_US">Tour stop title</setting>
+                <setting name="label" locale="en_AU">Tour stop title</setting>
                 <setting name="label" locale="en_CA">Tour stop title</setting>
                 <setting name="label" locale="fr_FR">Tour stop title</setting>
                 <setting name="label" locale="sv_SE">Tur stopp titel</setting>
-                <setting name="add_label" locale="en_US">Add title</setting>
+                <setting name="add_label" locale="en_AU">Add title</setting>
                 <setting name="add_label" locale="en_CA">Add title</setting>
                 <setting name="add_label" locale="fr_FR">Add title</setting>
                 <setting name="add_label" locale="sv_SE">Lägg till titel</setting>
@@ -18673,6 +19031,17 @@ Examples: &lt;em&gt;James L. Patton&lt;/em&gt;, &lt;em&gt;Theodore Pappenfuss&lt
           <name>Natural History Editor</name>
         </label>
       </labels>
+      <typeRestrictions>
+        <restriction type="DarwinCore"/>
+        <restriction type="FossilSpecimen"/>
+        <restriction type="HumanObservation"/>
+        <restriction type="LivingSpecimen"/>
+        <restriction type="MachineObservation"/>
+        <restriction type="observation"/>
+        <restriction type="PreservedSpecimen"/>
+        <restriction type="arachnid_myriapod"/>
+        <restriction type="tz"/>
+      </typeRestrictions>
       <screens>
         <screen idno="record_level" default="1">
           <labels>
@@ -18841,6 +19210,27 @@ Examples: &lt;em&gt;James L. Patton&lt;/em&gt;, &lt;em&gt;Theodore Pappenfuss&lt
                 <setting name="restrictToTermsRelatedToCollection">0</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_quarantine12">
+              <bundle>ca_attribute_quarantine</bundle>
+              <settings>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="readonly"/>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_reared13">
+              <bundle>ca_attribute_reared</bundle>
+              <settings>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="readonly"/>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_multipleMounts14">
+              <bundle>ca_attribute_multipleMounts</bundle>
+              <settings>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="readonly"/>
+              </settings>
+            </placement>
             <placement code="ca_attribute_sex9">
               <bundle>ca_attribute_sex</bundle>
               <settings>
@@ -18862,6 +19252,13 @@ Examples: &lt;em&gt;James L. Patton&lt;/em&gt;, &lt;em&gt;Theodore Pappenfuss&lt
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_associatedMedia15">
+              <bundle>ca_attribute_associatedMedia</bundle>
+              <settings>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="readonly"/>
+              </settings>
+            </placement>
             <placement code="ca_attribute_associatedSequenc">
               <bundle>ca_attribute_associatedSequences</bundle>
               <settings>
@@ -18869,10 +19266,46 @@ Examples: &lt;em&gt;James L. Patton&lt;/em&gt;, &lt;em&gt;Theodore Pappenfuss&lt
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_occurrenceRemarks">
+              <bundle>ca_attribute_occurrenceRemarks</bundle>
+              <settings>
+                <setting name="label" locale="en_AU">General Note</setting>
+                <setting name="description" locale="en_AU">Enter any general notes about the record</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="readonly"/>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_associatedTaxa21">
+              <bundle>ca_attribute_associatedTaxa</bundle>
+              <settings>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="readonly"/>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_voucher22">
+              <bundle>ca_attribute_voucher</bundle>
+              <settings>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="readonly"/>
+              </settings>
+            </placement>
             <placement code="access">
               <bundle>access</bundle>
               <settings>
                 <setting name="readonly"/>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_verbatimBioFlag24">
+              <bundle>ca_attribute_verbatimBioFlag</bundle>
+              <settings>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="readonly"/>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_associatedSpecime">
+              <bundle>ca_attribute_associatedSpecimen</bundle>
+              <settings>
+                <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
             <placement code="lot_id17">
@@ -18906,8 +19339,24 @@ Examples: &lt;em&gt;James L. Patton&lt;/em&gt;, &lt;em&gt;Theodore Pappenfuss&lt
             </label>
           </labels>
           <bundlePlacements>
+            <placement code="ca_attribute_hasAssociatedMedi">
+              <bundle>ca_attribute_hasAssociatedMedia</bundle>
+              <settings>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
             <placement code="ca_object_representations">
               <bundle>ca_object_representations</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="display_template">^ca_object_representations.preferred_labels</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+              </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -19183,6 +19632,16 @@ Examples: &lt;em&gt;James L. Patton&lt;/em&gt;, &lt;em&gt;Theodore Pappenfuss&lt
           <name>Occurrence UI</name>
         </label>
       </labels>
+      <typeRestrictions>
+        <restriction type="resource"/>
+        <restriction type="exhibition"/>
+        <restriction type="anthropology_register"/>
+        <restriction type="conservation"/>
+      </typeRestrictions>
+      <groupAccess>
+        <permission group="admin" access="edit"/>
+        <permission group="cataloguer" access="read"/>
+      </groupAccess>
       <screens>
         <screen idno="basic_occurrence" default="1">
           <labels>
@@ -19372,7 +19831,7 @@ Examples: &lt;em&gt;James L. Patton&lt;/em&gt;, &lt;em&gt;Theodore Pappenfuss&lt
             <placement code="ca_observations">
               <bundle>ca_occurrences</bundle>
               <settings>
-                <setting name="label" locale="en_US">Related observations</setting>
+                <setting name="label" locale="en_AU">Related observations</setting>
               </settings>
             </placement>
             <placement code="ca_places">
@@ -19393,7 +19852,7 @@ Examples: &lt;em&gt;James L. Patton&lt;/em&gt;, &lt;em&gt;Theodore Pappenfuss&lt
             <placement code="ca_list_items">
               <bundle>ca_list_items</bundle>
               <settings>
-                <setting name="add_label" locale="en_US">Add term</setting>
+                <setting name="add_label" locale="en_AU">Add term</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -19501,7 +19960,7 @@ Examples: &lt;em&gt;James L. Patton&lt;/em&gt;, &lt;em&gt;Theodore Pappenfuss&lt
             <placement code="ca_list_items">
               <bundle>ca_list_items</bundle>
               <settings>
-                <setting name="add_label" locale="en_US">Add term</setting>
+                <setting name="add_label" locale="en_AU">Add term</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -19619,6 +20078,14 @@ Examples: &lt;em&gt;James L. Patton&lt;/em&gt;, &lt;em&gt;Theodore Pappenfuss&lt
           <name>Object lots editor</name>
         </label>
       </labels>
+      <typeRestrictions>
+        <restriction type="purchase"/>
+        <restriction type="restricted_gift"/>
+        <restriction type="bequest"/>
+        <restriction type="gift"/>
+        <restriction type="loan"/>
+        <restriction type="long_term_loan"/>
+      </typeRestrictions>
       <screens>
         <screen idno="basic" default="1">
           <labels>
@@ -19669,7 +20136,7 @@ Examples: &lt;em&gt;James L. Patton&lt;/em&gt;, &lt;em&gt;Theodore Pappenfuss&lt
             <placement code="ca_events">
               <bundle>ca_occurrences</bundle>
               <settings>
-                <setting name="label" locale="en_US">Related events</setting>
+                <setting name="label" locale="en_AU">Related events</setting>
               </settings>
             </placement>
             <placement code="ca_collections">
@@ -19789,7 +20256,7 @@ Examples: &lt;em&gt;James L. Patton&lt;/em&gt;, &lt;em&gt;Theodore Pappenfuss&lt
             <placement code="ca_events">
               <bundle>ca_occurrences</bundle>
               <settings>
-                <setting name="label" locale="en_US">Related events</setting>
+                <setting name="label" locale="en_AU">Related events</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -19849,7 +20316,7 @@ Examples: &lt;em&gt;James L. Patton&lt;/em&gt;, &lt;em&gt;Theodore Pappenfuss&lt
             <placement code="ca_list_items">
               <bundle>ca_list_items</bundle>
               <settings>
-                <setting name="add_label" locale="en_US">Add term</setting>
+                <setting name="add_label" locale="en_AU">Add term</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -19873,7 +20340,7 @@ Examples: &lt;em&gt;James L. Patton&lt;/em&gt;, &lt;em&gt;Theodore Pappenfuss&lt
             <placement code="ca_events">
               <bundle>ca_occurrences</bundle>
               <settings>
-                <setting name="label" locale="en_US">Related events</setting>
+                <setting name="label" locale="en_AU">Related events</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -19979,6 +20446,16 @@ Examples: &lt;em&gt;James L. Patton&lt;/em&gt;, &lt;em&gt;Theodore Pappenfuss&lt
           <name>Scientific Name Editor</name>
         </label>
       </labels>
+      <typeRestrictions>
+        <restriction type="scientific_name"/>
+      </typeRestrictions>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
+      <groupAccess>
+        <permission group="admin" access="read"/>
+        <permission group="cataloguer" access="read"/>
+      </groupAccess>
       <screens>
         <screen idno="scientific_name_details" default="1">
           <labels>
@@ -20033,12 +20510,15 @@ e.g. "Malacostraca", "Canis lupus".</setting>
                 <setting name="readonly"/>
                 <setting name="dont_include_subtypes_in_type_restriction">0</setting>
                 <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
               </settings>
             </placement>
             <placement code="ca_attribute_parentheticalAuth">
               <bundle>ca_attribute_parentheticalAuthor</bundle>
               <settings>
                 <setting name="sortDirection">ASC</setting>
+                <setting name="readonly"/>
               </settings>
             </placement>
             <placement code="ca_attribute_namePublishedInYe">
@@ -20048,12 +20528,8 @@ e.g. "Malacostraca", "Canis lupus".</setting>
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_namePublishedIn6">
-              <bundle>ca_attribute_namePublishedIn</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
+            <placement code="ca_attribute_caabFamilyNo8">
+              <bundle>ca_attribute_caabFamilyNo</bundle>
             </placement>
             <placement code="is_enabled8">
               <bundle>is_enabled</bundle>
@@ -20086,6 +20562,13 @@ e.g. "Malacostraca", "Canis lupus".</setting>
           <name>Collecting Event Editor</name>
         </label>
       </labels>
+      <typeRestrictions>
+        <restriction type="collectingEvent"/>
+      </typeRestrictions>
+      <groupAccess>
+        <permission group="admin" access="edit"/>
+        <permission group="cataloguer" access="read"/>
+      </groupAccess>
       <screens>
         <screen idno="basic_collecting_event" default="1">
           <labels>
@@ -20266,108 +20749,18 @@ e.g. "Malacostraca", "Canis lupus".</setting>
         </screen>
       </screens>
     </userInterface>
-    <userInterface code="Identification_Editor" type="ca_occurrences">
-      <labels>
-        <label locale="en_AU">
-          <name>Identification Editor</name>
-        </label>
-      </labels>
-      <screens>
-        <screen idno="screen_30_0" default="0">
-          <labels>
-            <label locale="en_AU">
-              <name>Identification Information</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_attribute_scientificName1">
-              <bundle>ca_attribute_scientificName</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_objects1">
-              <bundle>ca_objects</bundle>
-              <settings>
-                <setting name="list_format">bubbles</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="display_template">^ca_objects.preferred_labels</setting>
-                <setting name="readonly"/>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_dateIdentified2">
-              <bundle>ca_attribute_dateIdentified</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_entities3">
-              <bundle>ca_entities</bundle>
-              <settings>
-                <setting name="label" locale="en_AU">Identified By</setting>
-                <setting name="add_label" locale="en_AU">add additional determiners</setting>
-                <setting name="description" locale="en_AU"> A list of names of people, groups, or organizations who assigned the Taxon to the subject.</setting>
-                <setting name="list_format">bubbles</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="display_template">^ca_entities.preferred_labels</setting>
-                <setting name="readonly"/>
-                <setting name="restrict_to_relationship_types">identifiedBy</setting>
-                <setting name="restrict_to_types">ind</setting>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_etAl5">
-              <bundle>ca_attribute_etAl</bundle>
-              <settings>
-                <setting name="description" locale="en_AU">Whether the identification is performed by more individuals than those listed above</setting>
-                <setting name="width">40</setting>
-                <setting name="readonly"/>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_identificationQua">
-              <bundle>ca_attribute_identificationQualifier</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_typeStatus7">
-              <bundle>ca_attribute_typeStatus</bundle>
-              <settings>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="readonly"/>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_idVerificationSta">
-              <bundle>ca_attribute_idVerificationStatus</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_identificationRem">
-              <bundle>ca_attribute_identificationRemarks</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-          </bundlePlacements>
-        </screen>
-      </screens>
-    </userInterface>
     <userInterface code="anthropology" type="ca_objects">
       <labels>
         <label locale="en_AU">
           <name>Anthropology Editor</name>
         </label>
       </labels>
+      <typeRestrictions>
+        <restriction type="anthropology"/>
+      </typeRestrictions>
+      <groupAccess>
+        <permission group="anthropology" access="read"/>
+      </groupAccess>
       <screens>
         <screen idno="anthropology_general" default="0">
           <labels>
@@ -21026,6 +21419,12 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <name>Object ⇔ Person/Organisation Relationship Details</name>
         </label>
       </labels>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
+      <groupAccess>
+        <permission group="anthropology" access="read"/>
+      </groupAccess>
       <screens>
         <screen idno="basic" default="0">
           <labels>
@@ -21058,6 +21457,17 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <name>Conservation Editor</name>
         </label>
       </labels>
+      <typeRestrictions>
+        <restriction type="conservation_analysis"/>
+        <restriction type="conservation_assignment"/>
+        <restriction type="conservation_job"/>
+      </typeRestrictions>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
+      <groupAccess>
+        <permission group="conservators" access="read"/>
+      </groupAccess>
       <screens>
         <screen idno="job_details" default="1">
           <labels>
@@ -21415,6 +21825,9 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <name>Identification / Determination Editor</name>
         </label>
       </labels>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
       <screens>
         <screen idno="identificationInformation" default="1">
           <labels>
@@ -21481,6 +21894,9 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <name>Places Editor</name>
         </label>
       </labels>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
       <screens>
         <screen idno="place_basic_info" default="0">
           <labels>
@@ -22218,6 +22634,15 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           </labels>
           <subTypeRight>ind</subTypeRight>
         </type>
+        <type code="source" default="0">
+          <labels>
+            <label locale="en_AU">
+              <typename>has source</typename>
+              <typename_reverse>source of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>DarwinCore</subTypeLeft>
+        </type>
       </types>
     </relationshipTable>
     <relationshipTable name="ca_objects_x_collections">
@@ -22404,6 +22829,16 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
               <typename_reverse>is determined name for</typename_reverse>
             </label>
           </labels>
+          <subTypeRight>scientific_name</subTypeRight>
+        </type>
+        <type code="associated" default="0">
+          <labels>
+            <label locale="en_AU">
+              <typename>associated with</typename>
+              <typename_reverse>associated with</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>DarwinCore</subTypeLeft>
           <subTypeRight>scientific_name</subTypeRight>
         </type>
       </types>
@@ -23140,6 +23575,607 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
         <action>can_use_records_by_status_widget_ca_object_lots</action>
         <action>can_use_track_processing_widget</action>
       </actions>
+      <bundleLevelAccessControl>
+        <permission table="ca_objects" bundle="preferred_labels" access="edit"/>
+        <permission table="ca_objects" bundle="nonpreferred_labels" access="edit"/>
+        <permission table="ca_objects" bundle="object_id" access="edit"/>
+        <permission table="ca_objects" bundle="locale_id" access="edit"/>
+        <permission table="ca_objects" bundle="source_id" access="edit"/>
+        <permission table="ca_objects" bundle="idno" access="edit"/>
+        <permission table="ca_objects" bundle="item_status_id" access="edit"/>
+        <permission table="ca_objects" bundle="acquisition_type_id" access="edit"/>
+        <permission table="ca_objects" bundle="extent" access="edit"/>
+        <permission table="ca_objects" bundle="extent_units" access="edit"/>
+        <permission table="ca_objects" bundle="access" access="edit"/>
+        <permission table="ca_objects" bundle="status" access="edit"/>
+        <permission table="ca_objects" bundle="rank" access="edit"/>
+        <permission table="ca_objects" bundle="acl_inherit_from_ca_collections" access="edit"/>
+        <permission table="ca_objects" bundle="acl_inherit_from_parent" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_description" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_description_source" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_external_link" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_geonames" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_internal_notes" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_dcType" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_dcModified" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_dcLanguage" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_dcRights" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_dcBibCitation" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_institutionID" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_institutionCode" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_ownerInstitutionCode" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_informationWithheld" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_dataGeneralizations" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_dynamicProperties" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_occurrenceDetails" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_occurrenceRemarks" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_individualCount" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_sex" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_lifeStage" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_reproductiveCondition" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_behavior" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_establishmentMeans" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_occurrenceStatus" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_preparations" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_disposition" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_otherCatalogNumbers" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_associatedSequences" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_country" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_verbatimElevation" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_minimumElevationInMeters" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_maximumElevationInMeters" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_minDistAboveSurface" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_maxDistAboveSurface" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_pointRadiusSpatialFit" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_earliestEonOrLowestEonothem" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_latestEonOrHighestEonothem" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_earliestEraOrLowestErathem" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_latestEraOrHighestErathem" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_earliestPeriodOrLowestSystem" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_latestPeriodOrHighestSystem" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_earliestEpochOrLowestSeries" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_latestEpochOrHighestSeries" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_earliestAgeOrLowestStage" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_latestAgeOrHighestStage" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_lowestBiostratigraphicZone" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_highestBiostratigraphicZone" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_lithostratigraphicTerms" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_group" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_formation" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_member" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_bed" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_identificationRemarks" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_relationship_info" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_accessionDate" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_dctermscreated" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_dcSubject" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_SizeOrDuration" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_technique" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_colour" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_anthropologyMaterialTypes" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_audit" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_eventDate" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_eventRemarks" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_sightedDetails" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_languageName" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_collector_flag" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_siteDetails" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_tradition" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_languageAffiliation" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_supportingDocumentation" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_objectDetails" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_objectPublished" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_documentation" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_objectClassification" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_donation_date" access="edit"/>
+        <permission table="ca_objects" bundle="ca_object_representations" access="edit"/>
+        <permission table="ca_objects" bundle="ca_objects" access="edit"/>
+        <permission table="ca_objects" bundle="ca_entities" access="edit"/>
+        <permission table="ca_objects" bundle="ca_places" access="edit"/>
+        <permission table="ca_objects" bundle="ca_occurrences" access="edit"/>
+        <permission table="ca_objects" bundle="ca_collections" access="edit"/>
+        <permission table="ca_objects" bundle="ca_storage_locations" access="edit"/>
+        <permission table="ca_objects" bundle="ca_loans" access="edit"/>
+        <permission table="ca_objects" bundle="ca_movements" access="edit"/>
+        <permission table="ca_objects" bundle="ca_tour_stops" access="edit"/>
+        <permission table="ca_objects" bundle="ca_object_lots" access="edit"/>
+        <permission table="ca_objects" bundle="ca_list_items" access="edit"/>
+        <permission table="ca_objects" bundle="ca_sets" access="edit"/>
+        <permission table="ca_objects" bundle="hierarchy_navigation" access="edit"/>
+        <permission table="ca_objects" bundle="hierarchy_location" access="edit"/>
+        <permission table="ca_objects" bundle="ca_commerce_order_history" access="edit"/>
+        <permission table="ca_entities" bundle="preferred_labels" access="edit"/>
+        <permission table="ca_entities" bundle="nonpreferred_labels" access="edit"/>
+        <permission table="ca_entities" bundle="entity_id" access="edit"/>
+        <permission table="ca_entities" bundle="locale_id" access="edit"/>
+        <permission table="ca_entities" bundle="source_id" access="edit"/>
+        <permission table="ca_entities" bundle="idno" access="edit"/>
+        <permission table="ca_entities" bundle="lifespan" access="edit"/>
+        <permission table="ca_entities" bundle="access" access="edit"/>
+        <permission table="ca_entities" bundle="status" access="edit"/>
+        <permission table="ca_entities" bundle="rank" access="edit"/>
+        <permission table="ca_entities" bundle="ca_attribute_external_link" access="edit"/>
+        <permission table="ca_entities" bundle="ca_attribute_internal_notes" access="edit"/>
+        <permission table="ca_entities" bundle="ca_attribute_biography" access="edit"/>
+        <permission table="ca_entities" bundle="ca_attribute_address" access="edit"/>
+        <permission table="ca_entities" bundle="ca_attribute_telephone" access="edit"/>
+        <permission table="ca_entities" bundle="ca_attribute_url" access="edit"/>
+        <permission table="ca_entities" bundle="ca_attribute_email" access="edit"/>
+        <permission table="ca_entities" bundle="ca_attribute_sex" access="edit"/>
+        <permission table="ca_entities" bundle="ca_attribute_languageAffiliation" access="edit"/>
+        <permission table="ca_entities" bundle="ca_object_representations" access="edit"/>
+        <permission table="ca_entities" bundle="ca_entities" access="edit"/>
+        <permission table="ca_entities" bundle="ca_places" access="edit"/>
+        <permission table="ca_entities" bundle="ca_objects" access="edit"/>
+        <permission table="ca_entities" bundle="ca_occurrences" access="edit"/>
+        <permission table="ca_entities" bundle="ca_collections" access="edit"/>
+        <permission table="ca_entities" bundle="ca_object_lots" access="edit"/>
+        <permission table="ca_entities" bundle="ca_loans" access="edit"/>
+        <permission table="ca_entities" bundle="ca_movements" access="edit"/>
+        <permission table="ca_entities" bundle="ca_storage_locations" access="edit"/>
+        <permission table="ca_entities" bundle="ca_tour_stops" access="edit"/>
+        <permission table="ca_entities" bundle="ca_list_items" access="edit"/>
+        <permission table="ca_entities" bundle="ca_sets" access="edit"/>
+        <permission table="ca_entities" bundle="hierarchy_navigation" access="edit"/>
+        <permission table="ca_entities" bundle="hierarchy_location" access="edit"/>
+        <permission table="ca_places" bundle="preferred_labels" access="edit"/>
+        <permission table="ca_places" bundle="nonpreferred_labels" access="edit"/>
+        <permission table="ca_places" bundle="place_id" access="edit"/>
+        <permission table="ca_places" bundle="parent_id" access="edit"/>
+        <permission table="ca_places" bundle="locale_id" access="edit"/>
+        <permission table="ca_places" bundle="source_id" access="edit"/>
+        <permission table="ca_places" bundle="idno" access="edit"/>
+        <permission table="ca_places" bundle="lifespan" access="edit"/>
+        <permission table="ca_places" bundle="access" access="edit"/>
+        <permission table="ca_places" bundle="status" access="edit"/>
+        <permission table="ca_places" bundle="rank" access="edit"/>
+        <permission table="ca_places" bundle="ca_attribute_description" access="edit"/>
+        <permission table="ca_places" bundle="ca_attribute_description_source" access="edit"/>
+        <permission table="ca_places" bundle="ca_attribute_external_link" access="edit"/>
+        <permission table="ca_places" bundle="ca_attribute_geonames" access="edit"/>
+        <permission table="ca_places" bundle="ca_attribute_internal_notes" access="edit"/>
+        <permission table="ca_places" bundle="ca_attribute_dcType" access="edit"/>
+        <permission table="ca_places" bundle="ca_attribute_dcModified" access="edit"/>
+        <permission table="ca_places" bundle="ca_attribute_dcLanguage" access="edit"/>
+        <permission table="ca_places" bundle="ca_attribute_dcRights" access="edit"/>
+        <permission table="ca_places" bundle="ca_attribute_dcBibCitation" access="edit"/>
+        <permission table="ca_places" bundle="ca_attribute_institutionID" access="edit"/>
+        <permission table="ca_places" bundle="ca_attribute_institutionCode" access="edit"/>
+        <permission table="ca_places" bundle="ca_attribute_ownerInstitutionCode" access="edit"/>
+        <permission table="ca_places" bundle="ca_attribute_informationWithheld" access="edit"/>
+        <permission table="ca_places" bundle="ca_attribute_dataGeneralizations" access="edit"/>
+        <permission table="ca_places" bundle="ca_attribute_dynamicProperties" access="edit"/>
+        <permission table="ca_places" bundle="ca_attribute_occurrenceDetails" access="edit"/>
+        <permission table="ca_places" bundle="ca_attribute_occurrenceRemarks" access="edit"/>
+        <permission table="ca_places" bundle="ca_attribute_country" access="edit"/>
+        <permission table="ca_places" bundle="ca_attribute_verbatimElevation" access="edit"/>
+        <permission table="ca_places" bundle="ca_attribute_minimumElevationInMeters" access="edit"/>
+        <permission table="ca_places" bundle="ca_attribute_maximumElevationInMeters" access="edit"/>
+        <permission table="ca_places" bundle="ca_attribute_minDistAboveSurface" access="edit"/>
+        <permission table="ca_places" bundle="ca_attribute_maxDistAboveSurface" access="edit"/>
+        <permission table="ca_places" bundle="ca_attribute_pointRadiusSpatialFit" access="edit"/>
+        <permission table="ca_places" bundle="ca_attribute_georeference" access="edit"/>
+        <permission table="ca_places" bundle="ca_attribute_languageAffiliation" access="edit"/>
+        <permission table="ca_places" bundle="ca_object_representations" access="edit"/>
+        <permission table="ca_places" bundle="ca_entities" access="edit"/>
+        <permission table="ca_places" bundle="ca_objects" access="edit"/>
+        <permission table="ca_places" bundle="ca_object_lots" access="edit"/>
+        <permission table="ca_places" bundle="ca_places" access="edit"/>
+        <permission table="ca_places" bundle="ca_collections" access="edit"/>
+        <permission table="ca_places" bundle="ca_occurrences" access="edit"/>
+        <permission table="ca_places" bundle="ca_storage_locations" access="edit"/>
+        <permission table="ca_places" bundle="ca_loans" access="edit"/>
+        <permission table="ca_places" bundle="ca_movements" access="edit"/>
+        <permission table="ca_places" bundle="ca_tour_stops" access="edit"/>
+        <permission table="ca_places" bundle="ca_list_items" access="edit"/>
+        <permission table="ca_places" bundle="ca_sets" access="edit"/>
+        <permission table="ca_places" bundle="hierarchy_navigation" access="edit"/>
+        <permission table="ca_places" bundle="hierarchy_location" access="edit"/>
+        <permission table="ca_occurrences" bundle="preferred_labels" access="edit"/>
+        <permission table="ca_occurrences" bundle="nonpreferred_labels" access="edit"/>
+        <permission table="ca_occurrences" bundle="occurrence_id" access="edit"/>
+        <permission table="ca_occurrences" bundle="parent_id" access="edit"/>
+        <permission table="ca_occurrences" bundle="locale_id" access="edit"/>
+        <permission table="ca_occurrences" bundle="idno" access="edit"/>
+        <permission table="ca_occurrences" bundle="source_id" access="edit"/>
+        <permission table="ca_occurrences" bundle="access" access="edit"/>
+        <permission table="ca_occurrences" bundle="status" access="edit"/>
+        <permission table="ca_occurrences" bundle="rank" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_description" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_external_link" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_internal_notes" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_dcType" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_dcModified" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_dcLanguage" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_dcRights" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_dcBibCitation" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_institutionID" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_institutionCode" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_ownerInstitutionCode" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_informationWithheld" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_dataGeneralizations" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_dynamicProperties" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_occurrenceDetails" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_occurrenceRemarks" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_recordNumber" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_lifeStage" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_reproductiveCondition" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_behavior" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_establishmentMeans" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_occurrenceStatus" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_disposition" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_otherCatalogNumbers" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_associatedSequences" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_samplingProtocol" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_samplingEffort" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_eventDate" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_eventTime" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_habitat" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_eventRemarks" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_country" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_verbatimElevation" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_minimumElevationInMeters" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_maximumElevationInMeters" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_verbatimDepth" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_maximumDepthInMeters" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_minDistAboveSurface" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_maxDistAboveSurface" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_locationRemarks" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_pointRadiusSpatialFit" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_earliestEonOrLowestEonothem" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_latestEonOrHighestEonothem" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_earliestEraOrLowestErathem" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_latestEraOrHighestErathem" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_earliestPeriodOrLowestSystem" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_latestPeriodOrHighestSystem" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_earliestEpochOrLowestSeries" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_latestEpochOrHighestSeries" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_earliestAgeOrLowestStage" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_latestAgeOrHighestStage" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_lowestBiostratigraphicZone" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_highestBiostratigraphicZone" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_lithostratigraphicTerms" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_group" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_formation" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_member" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_bed" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_dateIdentified" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_identificationRemarks" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_identificationQualifier" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_typeStatus" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_georeference" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_scientificName" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_idVerificationStatus" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_etAl" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_distanceFromLocality" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_measurementOrFact" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_namePublishedInYear" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_taxonRank" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_minimumDepthInMeters" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_substrate" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_rft_pages" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_noPages" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_media" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_resourceDateRange" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_registerRecordData" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_registerClassification" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_rft_volume" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_conservation" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_conservation_request" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_JobDates" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_ConservationSlide" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_BWNeg" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_CNeg" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_Video" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_CDRom" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_ImageNotes" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_Requirements" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_Archive" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_ArtefactList" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_AssignmentDates" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_TreatmentSummary" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_AssignmentTimeMaterials" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_AnalysisRequested" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_AnalysisReceived" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_WordReference" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_ExcelReference" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_object_representations" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_entities" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_objects" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_object_lots" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_occurrences" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_collections" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_places" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_storage_locations" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_loans" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_movements" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_tour_stops" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_list_items" access="edit"/>
+        <permission table="ca_occurrences" bundle="ca_sets" access="edit"/>
+        <permission table="ca_occurrences" bundle="hierarchy_navigation" access="edit"/>
+        <permission table="ca_occurrences" bundle="hierarchy_location" access="edit"/>
+        <permission table="ca_collections" bundle="preferred_labels" access="edit"/>
+        <permission table="ca_collections" bundle="nonpreferred_labels" access="edit"/>
+        <permission table="ca_collections" bundle="collection_id" access="edit"/>
+        <permission table="ca_collections" bundle="locale_id" access="edit"/>
+        <permission table="ca_collections" bundle="idno" access="edit"/>
+        <permission table="ca_collections" bundle="source_id" access="edit"/>
+        <permission table="ca_collections" bundle="access" access="edit"/>
+        <permission table="ca_collections" bundle="status" access="edit"/>
+        <permission table="ca_collections" bundle="rank" access="edit"/>
+        <permission table="ca_collections" bundle="acl_inherit_from_parent" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_description" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_description_source" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_external_link" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_internal_notes" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_dcType" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_dcModified" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_dcLanguage" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_dcRights" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_dcBibCitation" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_institutionID" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_institutionCode" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_ownerInstitutionCode" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_informationWithheld" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_dataGeneralizations" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_dynamicProperties" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_occurrenceDetails" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_occurrenceRemarks" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_country" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_verbatimElevation" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_minimumElevationInMeters" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_maximumElevationInMeters" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_minDistAboveSurface" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_maxDistAboveSurface" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_pointRadiusSpatialFit" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_earliestEonOrLowestEonothem" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_latestEonOrHighestEonothem" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_earliestEraOrLowestErathem" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_latestEraOrHighestErathem" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_earliestPeriodOrLowestSystem" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_latestPeriodOrHighestSystem" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_earliestEpochOrLowestSeries" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_latestEpochOrHighestSeries" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_earliestAgeOrLowestStage" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_latestAgeOrHighestStage" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_lowestBiostratigraphicZone" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_highestBiostratigraphicZone" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_lithostratigraphicTerms" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_group" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_formation" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_member" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_bed" access="edit"/>
+        <permission table="ca_collections" bundle="ca_attribute_identificationRemarks" access="edit"/>
+        <permission table="ca_collections" bundle="ca_object_representations" access="edit"/>
+        <permission table="ca_collections" bundle="ca_entities" access="edit"/>
+        <permission table="ca_collections" bundle="ca_objects" access="edit"/>
+        <permission table="ca_collections" bundle="ca_places" access="edit"/>
+        <permission table="ca_collections" bundle="ca_collections" access="edit"/>
+        <permission table="ca_collections" bundle="ca_occurrences" access="edit"/>
+        <permission table="ca_collections" bundle="ca_object_lots" access="edit"/>
+        <permission table="ca_collections" bundle="ca_storage_locations" access="edit"/>
+        <permission table="ca_collections" bundle="ca_list_items" access="edit"/>
+        <permission table="ca_collections" bundle="ca_sets" access="edit"/>
+        <permission table="ca_collections" bundle="ca_loans" access="edit"/>
+        <permission table="ca_collections" bundle="ca_movements" access="edit"/>
+        <permission table="ca_collections" bundle="ca_tour_stops" access="edit"/>
+        <permission table="ca_collections" bundle="hierarchy_navigation" access="edit"/>
+        <permission table="ca_collections" bundle="hierarchy_location" access="edit"/>
+        <permission table="ca_object_lots" bundle="preferred_labels" access="edit"/>
+        <permission table="ca_object_lots" bundle="nonpreferred_labels" access="edit"/>
+        <permission table="ca_object_lots" bundle="lot_id" access="edit"/>
+        <permission table="ca_object_lots" bundle="lot_status_id" access="edit"/>
+        <permission table="ca_object_lots" bundle="idno_stub" access="edit"/>
+        <permission table="ca_object_lots" bundle="extent" access="edit"/>
+        <permission table="ca_object_lots" bundle="extent_units" access="edit"/>
+        <permission table="ca_object_lots" bundle="access" access="edit"/>
+        <permission table="ca_object_lots" bundle="status" access="edit"/>
+        <permission table="ca_object_lots" bundle="rank" access="edit"/>
+        <permission table="ca_object_lots" bundle="ca_attribute_description" access="edit"/>
+        <permission table="ca_object_lots" bundle="ca_attribute_lot_notes" access="edit"/>
+        <permission table="ca_object_lots" bundle="ca_attribute_dcType" access="edit"/>
+        <permission table="ca_object_lots" bundle="ca_attribute_dcModified" access="edit"/>
+        <permission table="ca_object_lots" bundle="ca_attribute_dcLanguage" access="edit"/>
+        <permission table="ca_object_lots" bundle="ca_attribute_dcRights" access="edit"/>
+        <permission table="ca_object_lots" bundle="ca_attribute_dcBibCitation" access="edit"/>
+        <permission table="ca_object_lots" bundle="ca_attribute_institutionID" access="edit"/>
+        <permission table="ca_object_lots" bundle="ca_attribute_institutionCode" access="edit"/>
+        <permission table="ca_object_lots" bundle="ca_attribute_ownerInstitutionCode" access="edit"/>
+        <permission table="ca_object_lots" bundle="ca_attribute_informationWithheld" access="edit"/>
+        <permission table="ca_object_lots" bundle="ca_attribute_dataGeneralizations" access="edit"/>
+        <permission table="ca_object_lots" bundle="ca_attribute_dynamicProperties" access="edit"/>
+        <permission table="ca_object_lots" bundle="ca_object_representations" access="edit"/>
+        <permission table="ca_object_lots" bundle="ca_entities" access="edit"/>
+        <permission table="ca_object_lots" bundle="ca_places" access="edit"/>
+        <permission table="ca_object_lots" bundle="ca_occurrences" access="edit"/>
+        <permission table="ca_object_lots" bundle="ca_collections" access="edit"/>
+        <permission table="ca_object_lots" bundle="ca_storage_locations" access="edit"/>
+        <permission table="ca_object_lots" bundle="ca_loans" access="edit"/>
+        <permission table="ca_object_lots" bundle="ca_movements" access="edit"/>
+        <permission table="ca_object_lots" bundle="ca_object_lots" access="edit"/>
+        <permission table="ca_object_lots" bundle="ca_list_items" access="edit"/>
+        <permission table="ca_object_lots" bundle="ca_sets" access="edit"/>
+        <permission table="ca_object_lots" bundle="ca_objects" access="edit"/>
+        <permission table="ca_loans" bundle="preferred_labels" access="edit"/>
+        <permission table="ca_loans" bundle="nonpreferred_labels" access="edit"/>
+        <permission table="ca_loans" bundle="loan_id" access="edit"/>
+        <permission table="ca_loans" bundle="idno" access="edit"/>
+        <permission table="ca_loans" bundle="status" access="edit"/>
+        <permission table="ca_loans" bundle="rank" access="edit"/>
+        <permission table="ca_loans" bundle="ca_attribute_loan_authorization_date" access="edit"/>
+        <permission table="ca_loans" bundle="ca_attribute_loan_in_date" access="edit"/>
+        <permission table="ca_loans" bundle="ca_attribute_loan_out_date" access="edit"/>
+        <permission table="ca_loans" bundle="ca_attribute_loan_return_date" access="edit"/>
+        <permission table="ca_loans" bundle="ca_attribute_loan_renewal_date" access="edit"/>
+        <permission table="ca_loans" bundle="ca_attribute_loan_conditions" access="edit"/>
+        <permission table="ca_loans" bundle="ca_attribute_loan_note" access="edit"/>
+        <permission table="ca_loans" bundle="ca_attribute_loan_purpose" access="edit"/>
+        <permission table="ca_loans" bundle="ca_object_representations" access="edit"/>
+        <permission table="ca_loans" bundle="ca_objects" access="edit"/>
+        <permission table="ca_loans" bundle="ca_object_lots" access="edit"/>
+        <permission table="ca_loans" bundle="ca_entities" access="edit"/>
+        <permission table="ca_loans" bundle="ca_places" access="edit"/>
+        <permission table="ca_loans" bundle="ca_occurrences" access="edit"/>
+        <permission table="ca_loans" bundle="ca_collections" access="edit"/>
+        <permission table="ca_loans" bundle="ca_loans" access="edit"/>
+        <permission table="ca_loans" bundle="ca_movements" access="edit"/>
+        <permission table="ca_loans" bundle="ca_storage_locations" access="edit"/>
+        <permission table="ca_loans" bundle="ca_list_items" access="edit"/>
+        <permission table="ca_movements" bundle="preferred_labels" access="edit"/>
+        <permission table="ca_movements" bundle="nonpreferred_labels" access="edit"/>
+        <permission table="ca_movements" bundle="movement_id" access="edit"/>
+        <permission table="ca_movements" bundle="idno" access="edit"/>
+        <permission table="ca_movements" bundle="status" access="edit"/>
+        <permission table="ca_movements" bundle="rank" access="edit"/>
+        <permission table="ca_movements" bundle="ca_attribute_movement_method" access="edit"/>
+        <permission table="ca_movements" bundle="ca_attribute_movement_note" access="edit"/>
+        <permission table="ca_movements" bundle="ca_attribute_planned_removal_date" access="edit"/>
+        <permission table="ca_movements" bundle="ca_attribute_removal_date" access="edit"/>
+        <permission table="ca_movements" bundle="ca_attribute_movement_reason" access="edit"/>
+        <permission table="ca_movements" bundle="ca_object_representations" access="edit"/>
+        <permission table="ca_movements" bundle="ca_objects" access="edit"/>
+        <permission table="ca_movements" bundle="ca_object_lots" access="edit"/>
+        <permission table="ca_movements" bundle="ca_entities" access="edit"/>
+        <permission table="ca_movements" bundle="ca_occurrences" access="edit"/>
+        <permission table="ca_movements" bundle="ca_places" access="edit"/>
+        <permission table="ca_movements" bundle="ca_loans" access="edit"/>
+        <permission table="ca_movements" bundle="ca_movements" access="edit"/>
+        <permission table="ca_movements" bundle="ca_collections" access="edit"/>
+        <permission table="ca_movements" bundle="ca_storage_locations" access="edit"/>
+        <permission table="ca_movements" bundle="ca_list_items" access="edit"/>
+        <permission table="ca_tours" bundle="preferred_labels" access="edit"/>
+        <permission table="ca_tours" bundle="nonpreferred_labels" access="edit"/>
+        <permission table="ca_tours" bundle="tour_id" access="edit"/>
+        <permission table="ca_tours" bundle="tour_code" access="edit"/>
+        <permission table="ca_tours" bundle="rank" access="edit"/>
+        <permission table="ca_tours" bundle="color" access="edit"/>
+        <permission table="ca_tours" bundle="icon" access="edit"/>
+        <permission table="ca_tours" bundle="access" access="edit"/>
+        <permission table="ca_tours" bundle="status" access="edit"/>
+        <permission table="ca_tours" bundle="ca_attribute_tour_description" access="edit"/>
+        <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
+        <permission table="ca_tour_stops" bundle="preferred_labels" access="edit"/>
+        <permission table="ca_tour_stops" bundle="nonpreferred_labels" access="edit"/>
+        <permission table="ca_tour_stops" bundle="stop_id" access="edit"/>
+        <permission table="ca_tour_stops" bundle="tour_id" access="edit"/>
+        <permission table="ca_tour_stops" bundle="idno" access="edit"/>
+        <permission table="ca_tour_stops" bundle="color" access="edit"/>
+        <permission table="ca_tour_stops" bundle="icon" access="edit"/>
+        <permission table="ca_tour_stops" bundle="rank" access="edit"/>
+        <permission table="ca_tour_stops" bundle="access" access="edit"/>
+        <permission table="ca_tour_stops" bundle="status" access="edit"/>
+        <permission table="ca_tour_stops" bundle="ca_attribute_tour_stop_description" access="edit"/>
+        <permission table="ca_tour_stops" bundle="ca_attribute_tour_stop_georeference" access="edit"/>
+        <permission table="ca_tour_stops" bundle="ca_objects" access="edit"/>
+        <permission table="ca_tour_stops" bundle="ca_entities" access="edit"/>
+        <permission table="ca_tour_stops" bundle="ca_places" access="edit"/>
+        <permission table="ca_tour_stops" bundle="ca_occurrences" access="edit"/>
+        <permission table="ca_tour_stops" bundle="ca_collections" access="edit"/>
+        <permission table="ca_tour_stops" bundle="ca_tour_stops" access="edit"/>
+        <permission table="ca_tour_stops" bundle="ca_list_items" access="edit"/>
+        <permission table="ca_tour_stops" bundle="hierarchy_navigation" access="edit"/>
+        <permission table="ca_tour_stops" bundle="hierarchy_location" access="edit"/>
+        <permission table="ca_object_representations" bundle="preferred_labels" access="edit"/>
+        <permission table="ca_object_representations" bundle="nonpreferred_labels" access="edit"/>
+        <permission table="ca_object_representations" bundle="representation_id" access="edit"/>
+        <permission table="ca_object_representations" bundle="locale_id" access="edit"/>
+        <permission table="ca_object_representations" bundle="idno" access="edit"/>
+        <permission table="ca_object_representations" bundle="media" access="edit"/>
+        <permission table="ca_object_representations" bundle="md5" access="edit"/>
+        <permission table="ca_object_representations" bundle="original_filename" access="edit"/>
+        <permission table="ca_object_representations" bundle="access" access="edit"/>
+        <permission table="ca_object_representations" bundle="status" access="edit"/>
+        <permission table="ca_object_representations" bundle="rank" access="edit"/>
+        <permission table="ca_object_representations" bundle="ca_attribute_caption" access="edit"/>
+        <permission table="ca_object_representations" bundle="ca_objects" access="edit"/>
+        <permission table="ca_object_representations" bundle="ca_entities" access="edit"/>
+        <permission table="ca_object_representations" bundle="ca_places" access="edit"/>
+        <permission table="ca_object_representations" bundle="ca_occurrences" access="edit"/>
+        <permission table="ca_object_representations" bundle="ca_representation_annotations" access="edit"/>
+        <permission table="ca_object_representations" bundle="ca_list_items" access="edit"/>
+        <permission table="ca_object_representations" bundle="ca_sets" access="edit"/>
+        <permission table="ca_object_representations" bundle="ca_loans" access="edit"/>
+        <permission table="ca_object_representations" bundle="ca_movements" access="edit"/>
+        <permission table="ca_object_representations" bundle="ca_object_lots" access="edit"/>
+        <permission table="ca_object_representations" bundle="ca_object_representations_media_display" access="edit"/>
+        <permission table="ca_representation_annotations" bundle="preferred_labels" access="edit"/>
+        <permission table="ca_representation_annotations" bundle="nonpreferred_labels" access="edit"/>
+        <permission table="ca_representation_annotations" bundle="annotation_id" access="edit"/>
+        <permission table="ca_representation_annotations" bundle="locale_id" access="edit"/>
+        <permission table="ca_representation_annotations" bundle="user_id" access="edit"/>
+        <permission table="ca_representation_annotations" bundle="preview" access="edit"/>
+        <permission table="ca_representation_annotations" bundle="access" access="edit"/>
+        <permission table="ca_representation_annotations" bundle="status" access="edit"/>
+        <permission table="ca_representation_annotations" bundle="ca_attribute_caption" access="edit"/>
+        <permission table="ca_representation_annotations" bundle="ca_objects" access="edit"/>
+        <permission table="ca_representation_annotations" bundle="ca_entities" access="edit"/>
+        <permission table="ca_representation_annotations" bundle="ca_places" access="edit"/>
+        <permission table="ca_representation_annotations" bundle="ca_occurrences" access="edit"/>
+        <permission table="ca_representation_annotations" bundle="ca_representation_annotation_properties" access="edit"/>
+        <permission table="ca_representation_annotations" bundle="ca_list_items" access="edit"/>
+      </bundleLevelAccessControl>
+      <typeLevelAccessControl>
+        <permission table="ca_objects" type="anthropology" access="edit"/>
+        <permission table="ca_objects" type="DublinCore" access="edit"/>
+        <permission table="ca_objects" type="FossilSpecimen" access="edit"/>
+        <permission table="ca_objects" type="HumanObservation" access="edit"/>
+        <permission table="ca_objects" type="LivingSpecimen" access="edit"/>
+        <permission table="ca_objects" type="MachineObservation" access="edit"/>
+        <permission table="ca_objects" type="DarwinCore" access="edit"/>
+        <permission table="ca_objects" type="observation" access="edit"/>
+        <permission table="ca_objects" type="PreservedSpecimen" access="edit"/>
+        <permission table="ca_objects" type="Root node for object_types" access="none"/>
+        <permission table="ca_entities" type="ind" access="edit"/>
+        <permission table="ca_entities" type="org" access="edit"/>
+        <permission table="ca_entities" type="Root node for entity_types" access="none"/>
+        <permission table="ca_places" type="city" access="edit"/>
+        <permission table="ca_places" type="continent" access="edit"/>
+        <permission table="ca_places" type="country" access="edit"/>
+        <permission table="ca_places" type="cultural_area" access="edit"/>
+        <permission table="ca_places" type="islandGroup" access="edit"/>
+        <permission table="ca_places" type="island" access="edit"/>
+        <permission table="ca_places" type="location" access="edit"/>
+        <permission table="ca_places" type="neighborhood" access="edit"/>
+        <permission table="ca_places" type="other" access="edit"/>
+        <permission table="ca_places" type="river" access="edit"/>
+        <permission table="ca_places" type="Root node for place_types" access="none"/>
+        <permission table="ca_places" type="state" access="edit"/>
+        <permission table="ca_places" type="waterBody" access="edit"/>
+        <permission table="ca_occurrences" type="conservation_analysis" access="edit"/>
+        <permission table="ca_occurrences" type="conservation_assignment" access="edit"/>
+        <permission table="ca_occurrences" type="collectingEvent" access="edit"/>
+        <permission table="ca_occurrences" type="conservation" access="edit"/>
+        <permission table="ca_occurrences" type="conservation_job" access="edit"/>
+        <permission table="ca_occurrences" type="exhibition" access="edit"/>
+        <permission table="ca_occurrences" type="identification" access="edit"/>
+        <permission table="ca_occurrences" type="anthropology_register" access="edit"/>
+        <permission table="ca_occurrences" type="resource" access="edit"/>
+        <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
+        <permission table="ca_collections" type="external" access="edit"/>
+        <permission table="ca_collections" type="internal" access="edit"/>
+        <permission table="ca_collections" type="Root node for collection_types" access="none"/>
+        <permission table="ca_object_lots" type="bequest" access="edit"/>
+        <permission table="ca_object_lots" type="gift" access="edit"/>
+        <permission table="ca_object_lots" type="loan" access="edit"/>
+        <permission table="ca_object_lots" type="long_term_loan" access="edit"/>
+        <permission table="ca_object_lots" type="purchase" access="edit"/>
+        <permission table="ca_object_lots" type="restricted_gift" access="edit"/>
+        <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
+        <permission table="ca_loans" type="in" access="edit"/>
+        <permission table="ca_loans" type="out" access="edit"/>
+        <permission table="ca_loans" type="Root node for loan_types" access="none"/>
+        <permission table="ca_movements" type="movement" access="edit"/>
+        <permission table="ca_movements" type="Root node for movement_types" access="none"/>
+        <permission table="ca_tours" type="full_length" access="edit"/>
+        <permission table="ca_tours" type="Root node for tour_types" access="none"/>
+        <permission table="ca_tours" type="short" access="edit"/>
+        <permission table="ca_tour_stops" type="secondary" access="edit"/>
+        <permission table="ca_tour_stops" type="primary" access="edit"/>
+        <permission table="ca_tour_stops" type="Root node for tour_stop_types" access="none"/>
+        <permission table="ca_object_representations" type="back" access="edit"/>
+        <permission table="ca_object_representations" type="front" access="edit"/>
+        <permission table="ca_object_representations" type="Root node for object_representation_types" access="none"/>
+      </typeLevelAccessControl>
     </role>
     <role code="az_cataloguer">
       <name>Aquatic Zoology Cataloguer</name>
@@ -25395,6 +26431,15 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <name>Antropology Collections</name>
         </label>
       </labels>
+      <settings>
+        <setting name="show_empty_values">1</setting>
+      </settings>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
+      <groupAccess>
+        <permission group="anthropology" access="read"/>
+      </groupAccess>
       <bundlePlacements>
         <placement code="ca_collections_idno">
           <bundle>ca_collections.idno</bundle>
@@ -25416,8 +26461,8 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_collections.nonpreferred_labels</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">100</setting>
           </settings>
         </placement>
@@ -25425,20 +26470,20 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_collections.description</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
-            <setting name="filter"/>
+            <setting name="filter"></setting>
           </settings>
         </placement>
         <placement code="ca_collections_external_link">
           <bundle>ca_collections.external_link</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
-            <setting name="filter"/>
+            <setting name="filter"></setting>
           </settings>
         </placement>
         <placement code="ca_collections_access">
@@ -25459,30 +26504,30 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_collections.related</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
-            <setting name="remove_first_items"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
+            <setting name="remove_first_items">0</setting>
             <setting name="hierarchy_order">ASC</setting>
-            <setting name="hierarchy_limit"/>
+            <setting name="hierarchy_limit">0</setting>
             <setting name="hierarchical_delimiter"> ➔ </setting>
-            <setting name="restrict_to_relationship_types"/>
-            <setting name="restrict_to_types"/>
-            <setting name="show_hierarchy"/>
+            <setting name="restrict_to_relationship_types"></setting>
+            <setting name="restrict_to_types"></setting>
+            <setting name="show_hierarchy">0</setting>
           </settings>
         </placement>
         <placement code="ca_entities">
           <bundle>ca_entities</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
-            <setting name="remove_first_items"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
+            <setting name="remove_first_items">0</setting>
             <setting name="hierarchy_order">ASC</setting>
-            <setting name="hierarchy_limit"/>
+            <setting name="hierarchy_limit">0</setting>
             <setting name="hierarchical_delimiter"> ➔ </setting>
-            <setting name="restrict_to_relationship_types"/>
-            <setting name="restrict_to_types"/>
-            <setting name="show_hierarchy"/>
+            <setting name="restrict_to_relationship_types"></setting>
+            <setting name="restrict_to_types"></setting>
+            <setting name="show_hierarchy">0</setting>
           </settings>
         </placement>
         <placement code="ca_collections_lastModified">
@@ -25514,6 +26559,16 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <name>Identification</name>
         </label>
       </labels>
+      <settings>
+        <setting name="show_empty_values">1</setting>
+      </settings>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
+      <groupAccess>
+        <permission group="cataloguer" access="read"/>
+        <permission group="admin" access="edit"/>
+      </groupAccess>
       <bundlePlacements>
         <placement code="ca_occurrences_type_id">
           <bundle>ca_occurrences.type_id</bundle>
@@ -25525,11 +26580,11 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_objects</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
-            <setting name="remove_first_items"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
+            <setting name="remove_first_items">0</setting>
             <setting name="hierarchy_order">ASC</setting>
-            <setting name="hierarchy_limit"/>
+            <setting name="hierarchy_limit">0</setting>
             <setting name="hierarchical_delimiter"> ➔ </setting>
           </settings>
         </placement>
@@ -25537,13 +26592,13 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_list_items</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
+            <setting name="format"></setting>
             <setting name="restrict_to_types">228</setting>
-            <setting name="delimiter"/>
+            <setting name="delimiter"></setting>
             <setting name="show_hierarchy">1</setting>
-            <setting name="remove_first_items"/>
+            <setting name="remove_first_items">0</setting>
             <setting name="hierarchy_order">ASC</setting>
-            <setting name="hierarchy_limit"/>
+            <setting name="hierarchy_limit">0</setting>
             <setting name="hierarchical_delimiter"> ➔ </setting>
           </settings>
         </placement>
@@ -25552,7 +26607,7 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <settings>
             <setting name="label" locale="en_AU"/>
             <setting name="format">^label: &lt;em&gt;^scientificName&lt;/em&gt;</setting>
-            <setting name="delimiter"/>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
             <setting name="sense">singular</setting>
           </settings>
@@ -25562,13 +26617,13 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <settings>
             <setting name="label" locale="en_AU">Identified By</setting>
             <setting name="makeEditorLink">1</setting>
-            <setting name="format"/>
+            <setting name="format"></setting>
             <setting name="restrict_to_relationship_types">180</setting>
             <setting name="restrict_to_types">75</setting>
-            <setting name="delimiter"/>
-            <setting name="remove_first_items"/>
+            <setting name="delimiter"></setting>
+            <setting name="remove_first_items">0</setting>
             <setting name="hierarchy_order">ASC</setting>
-            <setting name="hierarchy_limit"/>
+            <setting name="hierarchy_limit">0</setting>
             <setting name="hierarchical_delimiter"> ➔ </setting>
           </settings>
         </placement>
@@ -25576,8 +26631,8 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_occurrences.etAl</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
             <setting name="sense">singular</setting>
           </settings>
@@ -25586,8 +26641,8 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_occurrences.dateIdentified</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
           </settings>
         </placement>
@@ -25595,8 +26650,8 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_occurrences.identificationQualifier</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
             <setting name="sense">singular</setting>
           </settings>
@@ -25605,8 +26660,8 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_occurrences.identificationRemarks</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
           </settings>
         </placement>
@@ -25614,8 +26669,8 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_occurrences.idVerificationStatus</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
             <setting name="sense">singular</setting>
           </settings>
@@ -25624,8 +26679,8 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_occurrences.typeStatus</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
             <setting name="sense">singular</setting>
           </settings>
@@ -25638,6 +26693,17 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <name>Natural History Object Display</name>
         </label>
       </labels>
+      <settings>
+        <setting name="show_empty_values">1</setting>
+      </settings>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
+      <groupAccess>
+        <permission group="arachnology" access="read"/>
+        <permission group="crustacea" access="read"/>
+        <permission group="admin" access="edit"/>
+      </groupAccess>
       <bundlePlacements>
         <placement code="ca_object_representations_media_tiny">
           <bundle>ca_object_representations.media.tiny</bundle>
@@ -25657,14 +26723,14 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_list_items</bundle>
           <settings>
             <setting name="label" locale="en_AU">Determined Scientific Name</setting>
-            <setting name="format"/>
+            <setting name="format"></setting>
             <setting name="restrict_to_relationship_types">200</setting>
             <setting name="restrict_to_types">228</setting>
-            <setting name="delimiter"/>
+            <setting name="delimiter"></setting>
             <setting name="show_hierarchy">1</setting>
             <setting name="remove_first_items">2</setting>
             <setting name="hierarchy_order">ASC</setting>
-            <setting name="hierarchy_limit"/>
+            <setting name="hierarchy_limit">0</setting>
             <setting name="hierarchical_delimiter"> ➔ </setting>
           </settings>
         </placement>
@@ -25679,23 +26745,23 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_collections</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
-            <setting name="remove_first_items"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
+            <setting name="remove_first_items">0</setting>
             <setting name="hierarchy_order">ASC</setting>
-            <setting name="hierarchy_limit"/>
+            <setting name="hierarchy_limit">0</setting>
             <setting name="hierarchical_delimiter"> ➔ </setting>
-            <setting name="makeEditorLink"/>
-            <setting name="restrict_to_relationship_types"/>
+            <setting name="makeEditorLink">0</setting>
+            <setting name="restrict_to_relationship_types"></setting>
             <setting name="restrict_to_types">107</setting>
-            <setting name="show_hierarchy"/>
+            <setting name="show_hierarchy">0</setting>
           </settings>
         </placement>
         <placement code="ca_occurrences">
           <bundle>ca_occurrences</bundle>
           <settings>
             <setting name="label" locale="en_AU">Collecting Event</setting>
-            <setting name="makeEditorLink"/>
+            <setting name="makeEditorLink">0</setting>
             <setting name="format">^ca_occurrences.idno
 [^ca_occurrences.eventDate]
 
@@ -25703,12 +26769,12 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
 </setting>
             <setting name="restrict_to_relationship_types">181</setting>
             <setting name="restrict_to_types">241</setting>
-            <setting name="delimiter"/>
-            <setting name="remove_first_items"/>
+            <setting name="delimiter"></setting>
+            <setting name="remove_first_items">0</setting>
             <setting name="hierarchy_order">ASC</setting>
-            <setting name="hierarchy_limit"/>
+            <setting name="hierarchy_limit">0</setting>
             <setting name="hierarchical_delimiter"> ➔ </setting>
-            <setting name="show_hierarchy"/>
+            <setting name="show_hierarchy">0</setting>
           </settings>
         </placement>
         <placement code="ca_occurrences">
@@ -25723,25 +26789,25 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
 ^ca_occurrences.identificationVerificationStatus
 ^ca_occurrences.dateIdentified
 </setting>
-            <setting name="delimiter"/>
-            <setting name="remove_first_items"/>
+            <setting name="delimiter"></setting>
+            <setting name="remove_first_items">0</setting>
             <setting name="hierarchy_order">ASC</setting>
-            <setting name="hierarchy_limit"/>
+            <setting name="hierarchy_limit">0</setting>
             <setting name="hierarchical_delimiter"> ➔ </setting>
-            <setting name="makeEditorLink"/>
+            <setting name="makeEditorLink">0</setting>
             <setting name="restrict_to_relationship_types">182</setting>
             <setting name="restrict_to_types">243</setting>
-            <setting name="show_hierarchy"/>
+            <setting name="show_hierarchy">0</setting>
           </settings>
         </placement>
         <placement code="ca_objects_accessionDate">
           <bundle>ca_objects.accessionDate</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
-            <setting name="filter"/>
+            <setting name="filter"></setting>
           </settings>
         </placement>
         <placement code="ca_objects_access">
@@ -25755,11 +26821,11 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_object_lots</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
-            <setting name="remove_first_items"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
+            <setting name="remove_first_items">0</setting>
             <setting name="hierarchy_order">ASC</setting>
-            <setting name="hierarchy_limit"/>
+            <setting name="hierarchy_limit">0</setting>
             <setting name="hierarchical_delimiter"> ➔ </setting>
           </settings>
         </placement>
@@ -25780,43 +26846,43 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_objects.associatedSequences</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
-            <setting name="filter"/>
-            <setting name="bottom_line"/>
+            <setting name="filter"></setting>
+            <setting name="bottom_line"></setting>
           </settings>
         </placement>
         <placement code="ca_objects_individualCount">
           <bundle>ca_objects.individualCount</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
-            <setting name="filter"/>
+            <setting name="filter"></setting>
           </settings>
         </placement>
         <placement code="ca_objects_sex">
           <bundle>ca_objects.sex</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
             <setting name="sense">singular</setting>
-            <setting name="filter"/>
+            <setting name="filter"></setting>
           </settings>
         </placement>
         <placement code="ca_objects_preparations">
           <bundle>ca_objects.preparations</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
-            <setting name="filter"/>
-            <setting name="bottom_line"/>
+            <setting name="filter"></setting>
+            <setting name="bottom_line"></setting>
           </settings>
         </placement>
         <placement code="ca_objects_status">
@@ -25841,6 +26907,15 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <name>Places Display</name>
         </label>
       </labels>
+      <settings>
+        <setting name="show_empty_values">1</setting>
+      </settings>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
+      <groupAccess>
+        <permission group="cataloguer" access="read"/>
+      </groupAccess>
       <bundlePlacements>
 </bundlePlacements>
     </display>
@@ -25850,13 +26925,23 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <name>Scientific Names</name>
         </label>
       </labels>
+      <settings>
+        <setting name="show_empty_values">1</setting>
+      </settings>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
+      <groupAccess>
+        <permission group="cataloguer" access="read"/>
+        <permission group="admin" access="read"/>
+      </groupAccess>
       <bundlePlacements>
         <placement code="ca_list_items_preferred_labels">
           <bundle>ca_list_items.preferred_labels</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">100</setting>
           </settings>
         </placement>
@@ -25864,11 +26949,11 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_collections</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
-            <setting name="remove_first_items"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
+            <setting name="remove_first_items">0</setting>
             <setting name="hierarchy_order">ASC</setting>
-            <setting name="hierarchy_limit"/>
+            <setting name="hierarchy_limit">0</setting>
             <setting name="hierarchical_delimiter"> ➔ </setting>
           </settings>
         </placement>
@@ -25882,8 +26967,8 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_list_items.scientificNameAuthorship</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
           </settings>
         </placement>
@@ -25891,8 +26976,8 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_list_items.namePublishedInYear</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
           </settings>
         </placement>
@@ -25900,8 +26985,8 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_list_items.namePublishedIn</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
           </settings>
         </placement>
@@ -25909,8 +26994,8 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <bundle>ca_list_items.taxonRank</bundle>
           <settings>
             <setting name="label" locale="en_AU"/>
-            <setting name="format"/>
-            <setting name="delimiter"/>
+            <setting name="format"></setting>
+            <setting name="delimiter"></setting>
             <setting name="maximum_length">2048</setting>
             <setting name="sense">singular</setting>
           </settings>
@@ -26143,7 +27228,7 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
         <placement code="p19">
           <bundle>ca_occurrence_labels.name</bundle>
           <settings>
-            <setting name="label" locale="en_US">Title</setting>
+            <setting name="label" locale="en_AU">Title</setting>
           </settings>
         </placement>
         <placement code="p20">
@@ -26272,6 +27357,12 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
       <settings>
         <setting name="form_width">3</setting>
       </settings>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
+      <groupAccess>
+        <permission group="anthropology" access="read"/>
+      </groupAccess>
       <bundlePlacements>
         <placement code="p48">
           <bundle>ca_collection_labels.name</bundle>
@@ -26382,6 +27473,9 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
       <settings>
         <setting name="form_width">3</setting>
       </settings>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
       <bundlePlacements>
         <placement code="p60">
           <bundle>ca_list_item_labels.name_singular</bundle>
@@ -26401,6 +27495,13 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
       <settings>
         <setting name="form_width">3</setting>
       </settings>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
+      <groupAccess>
+        <permission group="arachnology" access="read"/>
+        <permission group="crustacea" access="read"/>
+      </groupAccess>
       <bundlePlacements>
         <placement code="p61">
           <bundle>ca_objects.idno</bundle>
