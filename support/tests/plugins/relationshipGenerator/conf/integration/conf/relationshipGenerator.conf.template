@@ -78,5 +78,18 @@ rules = {
 		related_table = ca_collections,
 		related_record = %%collectionDoesNotExist%%,
 		relationship_type = %%part%%
+	},
+	5 = {
+		source_tables = [ ca_objects ],
+		triggers = {
+			type_id = {
+				value_converter = caGetListItemIdno,
+				match_type = exact,
+				value = %%test_object_type2%%
+			}
+		},
+		related_table = ca_collections,
+		related_record = %%collection5%%,
+		relationship_type = %%part%%
 	}
 }
