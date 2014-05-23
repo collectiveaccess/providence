@@ -1735,6 +1735,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			$va_temp_tables[] = $vs_temp_table;	
 		}
 		
+		if (!sizeof($va_temp_tables)) { return array(); }
 		
 		// Get most relevant phrases from index
 		//
