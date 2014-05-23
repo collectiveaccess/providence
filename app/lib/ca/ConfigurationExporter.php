@@ -45,6 +45,7 @@ require_once(__CA_MODELS_DIR__."/ca_user_roles.php");
 require_once(__CA_MODELS_DIR__."/ca_user_groups.php");
 require_once(__CA_MODELS_DIR__."/ca_search_forms.php");
 require_once(__CA_MODELS_DIR__."/ca_search_form_placements.php");
+require_once(__CA_MODELS_DIR__."/ca_editor_ui_screens.php");
 
 
 
@@ -329,8 +330,11 @@ final class ConfigurationExporter {
 
 			foreach($t_element->getTypeRestrictions() as $va_restriction){
 				$t_restriction = new ca_metadata_type_restrictions($va_restriction["restriction_id"]);
+				
+				$vs_table_name = $this->opo_dm->getTableName($t_restriction->get("table_num"));
+				if(!(strlen($vs_table_name)>0)) { continue; } // there could be lingering restrictions for tables that have since been removed. don't export those.
 				$vo_restriction = $this->opo_dom->createElement("restriction");
-				$vo_table = $this->opo_dom->createElement("table",$this->opo_dm->getTableName($t_restriction->get("table_num")));
+				$vo_table = $this->opo_dom->createElement("table",$vs_table_name);
 				$vo_restriction->appendChild($vo_table);
 
 				if($t_restriction->get("type_id")){
@@ -761,6 +765,7 @@ final class ConfigurationExporter {
 	public function getRolesAsDOM(){
 		$t_role = new ca_user_roles();
 		$t_list = new ca_lists();
+		$t_ui_screens = new ca_editor_ui_screens();
 		
 		$vo_roles = $this->opo_dom->createElement("roles");
 		
@@ -792,13 +797,16 @@ final class ConfigurationExporter {
 					$va_tmp = explode('.', $vs_bundle);
 					$vs_table_name = $va_tmp[0];
 					$vs_bundle_name = $va_tmp[1];
-					$vs_access = $this->_convertACLConstantToString(intval($vn_val));
 
-					$vo_permission = $this->opo_dom->createElement("permission");
-					$vo_bundle_lvl_ac->appendChild($vo_permission);
-					$vo_permission->setAttribute('table',$vs_table_name);
-					$vo_permission->setAttribute('bundle',$vs_bundle_name);
-					$vo_permission->setAttribute('access',$vs_access);
+					if($t_ui_screens->isAvailableBundle($vs_table_name,$vs_bundle_name)){ // only add this entry to the export if it's actually a valid bundle
+						$vs_access = $this->_convertACLConstantToString(intval($vn_val));
+
+						$vo_permission = $this->opo_dom->createElement("permission");
+						$vo_bundle_lvl_ac->appendChild($vo_permission);
+						$vo_permission->setAttribute('table',$vs_table_name);
+						$vo_permission->setAttribute('bundle',$vs_bundle_name);
+						$vo_permission->setAttribute('access',$vs_access);
+					}
 				}
 				$vo_role->appendChild($vo_bundle_lvl_ac);
 			}
@@ -959,6 +967,7 @@ final class ConfigurationExporter {
 								$vo_setting = $this->opo_dom->createElement("setting",$vs_value);
 								$vo_setting->setAttribute("name", $vs_setting);
 								if($vs_setting=="label" || $vs_setting=="add_label"){
+									if(is_numeric($vs_key)) { $vs_key = $this->opt_locale->localeIDToCode($vs_key); }
 									$vo_setting->setAttribute("locale", $vs_key);
 								}
 								$vo_settings->appendChild($vo_setting);
