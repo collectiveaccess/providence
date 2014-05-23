@@ -205,7 +205,7 @@ class SearchIndexer extends SearchBase {
 				continue;
 			}
 
-			$qr_all = $o_db->query("SELECT ".$t_instance->primaryKey()." FROM $vs_table");
+			$qr_all = $o_db->query("SELECT ".$t_instance->primaryKey()." FROM {$vs_table}");
 
 			$vn_num_rows = $qr_all->numRows();
 			if ($pb_display_progress) {
@@ -214,19 +214,36 @@ class SearchIndexer extends SearchBase {
 
 			$vn_c = 0;
 			$va_ids = $qr_all->getAllFieldValues($t_instance->primaryKey());
-			
+
 			$va_element_ids = null;
 			if (method_exists($t_instance, "getApplicableElementCodes")) {
 				$va_element_ids = array_keys($t_instance->getApplicableElementCodes(null, false, false));
 			}
 			
 			$vn_table_num = $t_instance->tableNum();
+			$vs_table_pk = $t_instance->primaryKey();
+			$va_field_data = array();
+			
+			$va_intrinsic_list = $this->getFieldsToIndex($vs_table, $vs_table, array('intrinsicOnly' => true));
+			$va_intrinsic_list[$vs_table_pk] = array();
+			
 			foreach($va_ids as $vn_i => $vn_id) {
 				if ($va_element_ids && (!($vn_i % 200))) {	// Pre-load attribute values for next 200 items to index; improves index performance
-					ca_attributes::prefetchAttributes($o_db, $vn_table_num, array_slice($va_ids, $vn_i, 200), $va_element_ids);
+					ca_attributes::prefetchAttributes($o_db, $vn_table_num, $va_id_slice = array_slice($va_ids, $vn_i, 200), $va_element_ids);
+				
+					$qr_field_data = $o_db->query("
+						SELECT ".join(", ", array_keys($va_intrinsic_list))." 
+						FROM {$vs_table}
+						WHERE {$vs_table_pk} IN (?)	
+					", array($va_id_slice));	
+					
+					$va_field_data = array();
+					while($qr_field_data->nextRow()) {
+						$va_field_data[(int)$qr_field_data->get($vs_table_pk)] = $qr_field_data->getRow();
+					}
 				}
 				
-				$this->indexRow($vn_table_num, $vn_id, array(), true, null, array(), array());
+				$this->indexRow($vn_table_num, $vn_id, $va_field_data[$vn_id], true, null, array(), array());
 				if ($pb_display_progress && $pb_interactive_display) {
 					print CLIProgressBar::next();
 				}

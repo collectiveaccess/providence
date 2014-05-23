@@ -188,6 +188,7 @@ class ca_user_roles extends BaseModel {
 	protected $opo_app_plugin_manager;
 	
 	static $s_action_list;
+	static $s_bundle_list;
 	
 	# ------------------------------------------------------
 	# --- Constructor
@@ -205,6 +206,8 @@ class ca_user_roles extends BaseModel {
 		
  		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 		$this->opo_widget_manager = new WidgetManager();
+
+		ca_user_roles::$s_bundle_list = array();
 	}
 	# ------------------------------------------------------
 	public function getRoleList($ps_sort_field='', $ps_sort_direction='asc') {
@@ -295,13 +298,19 @@ class ca_user_roles extends BaseModel {
 	public function setAccessSettingForBundle($ps_table, $ps_bundle, $pn_access) {
 		if(!in_array($pn_access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__))) { return false; }
 		if(!$this->getPrimaryKey()) { return false; }
+		if(!$this->getAppDatamodel()->tableExists($ps_table)) { return false; }
 
 		$va_vars = $this->get('vars');
 		if(!is_array($va_vars)) { $va_vars = array(); }
 		if(!isset($va_vars['bundle_access_settings'])) { $va_vars['bundle_access_settings'] = array(); }
 
-		$t_ui_screens = new ca_editor_ui_screens();
-		if(!$t_ui_screens->isAvailableBundle($ps_table,$ps_bundle)) { return false; }
+		if(!is_array(ca_user_roles::$s_bundle_list) || !is_array(ca_user_roles::$s_bundle_list[$ps_table])) {
+			$t_ui_screens = new ca_editor_ui_screens();
+			ca_user_roles::$s_bundle_list[$ps_table] = array_keys($t_ui_screens->getAvailableBundles($ps_table,array('dontCache' => true)));
+		}
+		if(!in_array($ps_bundle, ca_user_roles::$s_bundle_list[$ps_table])) {
+			return false; 
+		}
 
 		$va_vars['bundle_access_settings'][$ps_table.".".$ps_bundle] = $pn_access;
 		$this->set('vars', $va_vars);

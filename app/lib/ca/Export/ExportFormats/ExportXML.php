@@ -56,7 +56,8 @@ class ExportXML extends BaseExportFormat {
 	}
 	# ------------------------------------------------------
 	public function processExport($pa_data,$pa_options=array()){
-		$pb_single_record = (isset($pa_options['singleRecord']) && $pa_options['singleRecord']);
+		$pb_single_record = caGetOption('singleRecord', $pa_options);
+		$pb_rdf_mode = caGetOption('rdfMode', $pa_options);
 
 		//caDebug($pa_data,"Data to build XML from");
 
@@ -69,13 +70,22 @@ class ExportXML extends BaseExportFormat {
 		// unfortunately DOMDocument is still unable to format
 		// arbitrary documents so we have to pre-format them
 		$vs_xml = caFormatXML($this->opo_dom->saveXML());
+
+		// Don't try to reload as DOMDocument in RDF mode:
+		// For loadXML() to work, all used namespaces have to be properly defined in the XML fragment passed.
+		// That is not necessarily the case in RDF mode, because those definitions are usually hardcoded in
+		// the RDF mode config in wrap_before and *not* on record-level in each mapping. This would lead
+		// to tons of warnings and ignored namespaces, so we simply skip it here. That means the pretty-print
+		// formatting may be a little messed up for the resulting XML but at least complete.
+		if($pb_rdf_mode) { return $vs_xml; }
+
 		$vo_doc = new DOMDocument();
 		$vo_doc->formatOutput = true;
 		$vo_doc->preserveWhiteSpace = false;
 		$vo_doc->loadXML($vs_xml);
 
-		// when dealing with a record set export, we don't want <?xml tags in front so
-		// that we can simply dump each record in a file and have valid XML as result
+		// when dealing with a record set export, we don't want <?xml tags in front of each record
+		// that way we can simply dump a sequence of records in a file and have well-formed XML as result
 		return ($pb_single_record ? $vo_doc->saveXML() : $vo_doc->saveXML($vo_doc->firstChild));
 	}
 	# ------------------------------------------------------

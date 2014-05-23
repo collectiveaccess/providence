@@ -116,9 +116,10 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 		 *
 		 * @return array
 		 */
-		public function getFieldsToIndex($pm_subject_table, $pm_content_table=null) {
-			if (isset(SearchBase::$s_fields_to_index_cache[$pm_subject_table.'/'.$pm_content_table])) {
-				return SearchBase::$s_fields_to_index_cache[$pm_subject_table.'/'.$pm_content_table];
+		public function getFieldsToIndex($pm_subject_table, $pm_content_table=null, $pa_options=null) {
+			$vs_key = caMakeCacheKeyFromOptions($pa_options);
+			if (isset(SearchBase::$s_fields_to_index_cache[$pm_subject_table.'/'.$pm_content_table.'/'.$vs_key])) {
+				return SearchBase::$s_fields_to_index_cache[$pm_subject_table.'/'.$pm_content_table.'/'.$vs_key];
 			}
 			if (is_numeric($pm_subject_table)) {
 				$vs_subject_table = $this->opo_datamodel->getTableName($pm_subject_table);
@@ -136,12 +137,28 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 				}
 			}
 			if(!($va_info = $this->opo_search_indexing_config->getAssoc($vs_subject_table))) {
-				return SearchBase::$s_fields_to_index_cache[$pm_subject_table.'/'.$pm_content_table] = SearchBase::$s_fields_to_index_cache[$vs_subject_table.'/'.$vs_content_table] = null;
+				return SearchBase::$s_fields_to_index_cache[$pm_subject_table.'/'.$pm_content_table.'/'.$vs_key] = SearchBase::$s_fields_to_index_cache[$vs_subject_table.'/'.$vs_content_table.'/'.$vs_key] = null;
 			}
 	
 			$va_fields_to_index = $va_info[$vs_content_table]['fields'];
 	
 			$t_subject = $this->opo_datamodel->getInstanceByTableName($vs_content_table, false);
+			
+			if (caGetOption('intrinsicOnly', $pa_options, false)) {
+				unset($va_fields_to_index['_metadata']);
+				foreach($va_fields_to_index as $vs_f => $va_data) {
+					if (substr($vs_f, 0, 14) === '_ca_attribute_') { unset($va_fields_to_index[$vs_f]); continue; }
+					if (!$t_subject->hasField($vs_f)) { unset($va_fields_to_index[$vs_f]); continue; }
+					if (($vs_start = $t_subject->getFieldInfo($vs_f, 'START') && ($vs_end = $t_subject->getFieldInfo($vs_f, 'END')))) {
+						$va_fields_to_index[$vs_start] = $va_data;
+						$va_fields_to_index[$vs_end] = $va_data;
+						unset($va_fields_to_index[$vs_f]);
+						
+					}
+				}
+				
+				return $va_fields_to_index;
+			}
 			
 			// Expand "_metadata" to all available metadata elements		
 			if (isset($va_fields_to_index['_metadata'])) {
@@ -167,7 +184,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 			}
 			
 			
-			return SearchBase::$s_fields_to_index_cache[$pm_subject_table.'/'.$pm_content_table] = SearchBase::$s_fields_to_index_cache[$vs_subject_table.'/'.$vs_content_table] = $va_fields_to_index;
+			return SearchBase::$s_fields_to_index_cache[$pm_subject_table.'/'.$pm_content_table.'/'.$vs_key] = SearchBase::$s_fields_to_index_cache[$vs_subject_table.'/'.$vs_content_table.'/'.$vs_key] = $va_fields_to_index;
 	
 		}
 		# ------------------------------------------------
