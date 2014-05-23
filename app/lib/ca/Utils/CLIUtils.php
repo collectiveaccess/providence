@@ -2204,5 +2204,106 @@
 			return _t('Verifies that media files on disk are consistent with file signatures recordded in the database at time of upload.');
 		}
 		# -------------------------------------------------------
+		/**
+		 * 
+		 */
+		public static function create_ngrams($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/core/Db.php");
+			
+			$o_db = new Db();
+			
+			$pb_clear = ((bool)$po_opts->getOption('clear'));	
+			$pa_sizes = explode(",",((string)$po_opts->getOption('sizes')));	
+			foreach($pa_sizes as $vn_i => $vn_size) {
+				$vn_size = (int)$vn_size;
+				if (!$vn_size || ($vn_size <= 0)) { unset($pa_sizes[$vn_i]); continue; }
+				$pa_sizes[$vn_i] = $vn_size;
+			}
+			if(!is_array($pa_sizes) || !sizeof($pa_sizes)) { $pa_sizes = array(4); }
+			
+			$vs_insert_ngram_sql = "
+				INSERT  INTO ca_sql_search_ngrams
+				(word_id, ngram, seq)
+				VALUES
+			";
+			
+			if ($pb_clear) {
+				$qr_res = $o_db->query("TRUNCATE TABLE ca_sql_search_ngrams");
+			}
+
+			//create ngrams
+			$qr_res = $o_db->query("SELECT word_id, word FROM ca_sql_search_words");
+			
+			print CLIProgressBar::start($qr_res->numRows(), _t('Starting...'));
+			
+			$vn_c = 0;
+			$vn_ngram_c = 0;
+			while($qr_res->nextRow()) {
+				print CLIProgressBar::next();
+				$vn_word_id = $qr_res->get('word_id');
+				$vs_word = $qr_res->get('word');
+				print CLIProgressBar::next(_t('Processing %1', $vs_word));
+				
+				if (!$pb_clear) {
+					$qr_chk = $o_db->query("SELECT word_id FROM ca_sql_search_ngrams WHERE word_id = ?", array($vn_word_id));
+					if ($qr_chk->nextRow()) {
+						continue;
+					}
+				}
+				
+				$vn_seq = 0;
+				foreach($pa_sizes as $vn_size) {
+					$va_ngrams = caNgrams((string)$vs_word, $vn_size);
+
+					$va_ngram_buf = array();
+					foreach($va_ngrams as $vs_ngram) {
+						$va_ngram_buf[] = "({$vn_word_id},'{$vs_ngram}',{$vn_seq})";
+						$vn_seq++;
+						$vn_ngram_c++;
+					}
+
+					if (sizeof($va_ngram_buf)) {
+						$o_db->query($vs_insert_ngram_sql."\n".join(",", $va_ngram_buf));
+					}
+				}
+				$vn_c++;
+			}
+			print CLIProgressBar::finish();
+			CLIUtils::addMessage(_t('Processed %1 words and created %2 ngrams', $vn_c, $vn_ngram_c));
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function create_ngramsParamList() {
+			return array(
+				"clear|c=s" => _t('Clear all existing ngrams. Default is false.'),
+				"sizes|s=s" => _t('Comma-delimited list of ngram sizes to generate. Default is 4.')
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function create_ngramsUtilityClass() {
+			return _t('Search');
+		}
+		
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function create_ngramsShortHelp() {
+			return _t('Create ngrams from search indices to support spell correction of search terms.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function create_ngramsHelp() {
+			return _t('Ngrams.');
+		}
+		# -------------------------------------------------------
 	}
 ?>
