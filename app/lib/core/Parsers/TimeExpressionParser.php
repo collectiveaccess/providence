@@ -344,7 +344,7 @@ class TimeExpressionParser {
 							# ----------------------
 							case TEP_TOKEN_UNDATED:
 								$va_dates['start']  = array(
-									'month' => null, 'day' => null, 'year' => nu,
+									'month' => null, 'day' => null, 'year' => null,
 									'hours' => null, 'minutes' => null, 'seconds' => null,
 									'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 0, 'is_undated' => true
 								);
