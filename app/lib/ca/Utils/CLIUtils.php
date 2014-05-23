@@ -2219,7 +2219,7 @@
 				if (!$vn_size || ($vn_size <= 0)) { unset($pa_sizes[$vn_i]); continue; }
 				$pa_sizes[$vn_i] = $vn_size;
 			}
-			if(!is_array($pa_sizes) || !sizeof($pa_sizes)) { $pa_sizes = array(4); }
+			if(!is_array($pa_sizes) || !sizeof($pa_sizes)) { $pa_sizes = array(2,3,4); }
 			
 			$vs_insert_ngram_sql = "
 				INSERT  INTO ca_sql_search_ngrams
