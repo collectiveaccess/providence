@@ -225,6 +225,10 @@
 		}
  		# ------------------------------------------------------------------
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
+            $o_conf = Configuration::load();
+            $o_date_config = Configuration::load($o_conf->get('datetime_config'));
+            $show_Undated = $o_date_config->get('showUndated');
+ 
  			$ps_value = trim($ps_value);
  			$va_settings = $this->getSettingValuesFromElementArray(
  				$pa_element_info, 
@@ -261,12 +265,24 @@
 				} else {
 					// Default to "undated" date for blanks
 					$o_config = $o_tep->getLanguageSettings();
-					$va_undated_dates = $o_config->getList('undatedDate');
-					return array(
-						'value_longtext1' => $va_undated_dates[0],
-						'value_decimal1' => null,
-						'value_decimal2' => null
-					);
+
+                    if ($show_Undated) {
+                        $va_undated_dates = $o_config->getList('undatedDate');
+
+                        return array(
+                            'value_longtext1' => $va_undated_dates[0],
+                            'value_decimal1' => null,
+                            'value_decimal2' => null
+                        );
+                    } else {
+
+                        return array(
+                            'value_longtext1' => $ps_value,
+                            'value_decimal1' => null,
+                            'value_decimal2' => null
+                        );
+
+                    }
 				}
 			}
 			return array(
