@@ -1652,6 +1652,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					ng.ngram IN (?) 
 				GROUP BY ng.word_id
 				ORDER BY sc DESC
+				LIMIT 1000
 			", $va_params);
 			$va_word_ids[$vn_i] = array();
 			$vn_c = 0;
