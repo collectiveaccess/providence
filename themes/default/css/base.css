@@ -1894,9 +1894,11 @@ div.searchNoResults {
 div.searchSuggestion {
     font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size:12px;
+    font-weight: normal;
+    font-style: italic;
     color: #134959;
-    margin-bottom: 5px;
-    text-align: center;
+    margin: 15px 0 5px 0;
+    text-align: left;
 }
 
 a.searchSuggestion {

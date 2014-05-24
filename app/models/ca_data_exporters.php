@@ -1219,6 +1219,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 * @param array $pa_options
 	 *		ignoreContext = don't switch context even though context may be set for current item
+	 *		relationship_type_id, relationship_type_code, relationship_typename =
+	 *			if this export is a sub-export (context-switch), we have no way of knowing the relationship
+	 *			to the 'parent' element in the export, so there has to be a means to pass it down to make it accessable
+	 *		
 	 */
 	public function processExporterItem($pn_item_id,$pn_table_num,$pn_record_id,$pa_options=array()){
 		$vb_ignore_context = (isset($pa_options['ignoreContext']) && $pa_options['ignoreContext']);
@@ -1235,6 +1239,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$va_check_access = $t_exporter_item->getSetting('checkAccess');
 
 			$vn_new_table_num = $this->getAppDatamodel()->getTableNum($vs_context);
+			$vb_context_is_related_table = false;
 
 			if($vn_new_table_num){ // switch to new table
 				$vs_key = $this->getAppDatamodel()->getTablePrimaryKeyName($vs_context);
@@ -1286,6 +1291,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 								'checkAccess' => $va_check_access,
 							)
 						);
+						$vb_context_is_related_table = true;
 					} else {
 						return array();
 					}
@@ -1296,6 +1302,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 			if(is_array($va_related)){
 				foreach($va_related as $va_rel){
+					// if we're dealing with a related table, pass on some info the relationship type to the context-switched invocation of processExporterItem(),
+					// because we can't access that information from the related item simply because we don't exactly know where the call originated
+					if($vb_context_is_related_table){
+							$pa_options['relationship_typename'] = $va_rel['relationship_typename'];
+							$pa_options['relationship_type_code'] = $va_rel['relationship_type_code'];
+							$pa_options['relationship_type_id'] = $va_rel['relationship_type_id'];
+					}
 					$va_rel_export = $this->processExporterItem($pn_item_id,$vn_new_table_num,$va_rel[$vs_key],array_merge(array('ignoreContext' => true),$pa_options));
 					$va_info = array_merge($va_info,$va_rel_export);
 				}
@@ -1315,7 +1328,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vs_element = $t_exporter_item->get('element');
 		$vb_repeat = $t_exporter_item->getSetting('repeat_element_for_multiple_values');
 
-		// if omitIfEmpty is set and returns nothing, we ignore this exporter item and all children
+		// if omitIfEmpty is set and get() returns nothing, we ignore this exporter item and all children
 		if($vs_omit_if_empty = $t_exporter_item->getSetting('omitIfEmpty')){
 			if(!(strlen($t_instance->get($vs_omit_if_empty))>0)){
 				return array();
@@ -1356,6 +1369,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					'text' => trim($va_matches[1]),
 					'element' => $vs_element,
 				);
+			} else if(in_array($vs_source, array("relationship_type_id", "relationship_type_code", "relationship_typename"))){
+				if(isset($pa_options[$vs_source]) && strlen($pa_options[$vs_source])>0) {
+					$va_item_info[] = array(
+						'text' => $pa_options[$vs_source],
+						'element' => $vs_element,
+					);
+				}
 			} else {
 				if(!$vb_repeat){
 					$va_item_info[] = array(
