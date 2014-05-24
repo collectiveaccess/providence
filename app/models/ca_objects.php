@@ -1252,7 +1252,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
  	}
  	# ------------------------------------------------------
  	/**
- 	 *
+ 	 * Return last storage location as an ca_objects_x_storage_locations instance
  	 */
  	public function getLastLocation($pa_options=null) {
  		$pn_object = caGetOption('object_id', $pa_options, null);
@@ -1278,6 +1278,16 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
  			return new ca_objects_x_storage_locations($qr_res->get('relation_id'));
  		}
  		return false;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * Return last storage location formatted using provided template
+ 	 */
+ 	public function getLastLocationForDisplay($ps_template, $pa_options=null) {
+ 		if ($t_last_loc = $this->getLastLocation($pa_options)) {
+ 			return $t_last_loc->getWithTemplate($ps_template, $pa_options);
+ 		}
+ 		return null;
  	}
  	# ------------------------------------------------------
  	/**
