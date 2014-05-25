@@ -897,13 +897,14 @@
 			}
 			
 			$vb_no_ncurses = (bool)$po_opts->getOption('disable-ncurses');
+			$vb_direct = (bool)$po_opts->getOption('direct');
 			
 			$vs_format = $po_opts->getOption('format');
 			$vs_log_dir = $po_opts->getOption('log');
 			$vn_log_level = CLIUtils::import_getLogLevel($po_opts);
 			
 			
-			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('format' => $vs_format, 'showCLIProgressBar' => true, 'useNcurses' => !$vb_no_ncurses && caCLIUseNcurses(), 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level))) {
+			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('noTransaction' => $vb_direct, 'format' => $vs_format, 'showCLIProgressBar' => true, 'useNcurses' => !$vb_no_ncurses && caCLIUseNcurses(), 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level))) {
 				CLIUtils::addError(_t("Could not import source %1", $vs_data_source));
 				return false;
 			} else {
@@ -954,7 +955,8 @@
 				"log|l-s" => _t('Path to directory in which to log import details. If not set no logs will be recorded.'),
 				"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
 				"disable-ncurses" => _t('If set the ncurses terminal library will not be used to display import progress.'),
-				"dryrun" => _t('If set import is performed without data actually being saved to the database. This is useful for previewing an import for errors.')
+				"dryrun" => _t('If set import is performed without data actually being saved to the database. This is useful for previewing an import for errors.'),
+				"direct" => _t('If set import is performed without a transaction. This allows viewing of imported data during the import, which may be useful during debugging/development. It may also lead to data corruption and should only be used for testing.')
 			);
 		}
 		# -------------------------------------------------------
@@ -1826,6 +1828,481 @@
 		 */
 		public static function reset_passwordHelp() {
 			return _t('Reset a user\'s password.');
+		}
+		# -------------------------------------------------------
+		/**
+		 * Load metadata dictionary
+		 */
+		public static function load_metadata_dictionary_from_excel_file($po_opts=null) {
+			
+			require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
+			require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
+			require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_entries.php');
+			
+			$t_entry = new ca_metadata_dictionary_entries();
+			$o_db = $t_entry->getDb();
+			$qr_res = $o_db->query("DELETE FROM ca_metadata_dictionary_rules");
+			$qr_res = $o_db->query("DELETE FROM ca_metadata_dictionary_entries");
+			
+			if (!($ps_source = (string)$po_opts->getOption('file'))) {
+				CLIUtils::addError(_t("You must specify a file"));
+				return false;
+			}
+			if (!file_exists($ps_source) || !is_readable($ps_source)) {
+				CLIUtils::addError(_t("You must specify a valid file"));
+				return false;
+			}
+			
+			try {
+				$o_file = PHPExcel_IOFactory::load($ps_source);
+			} catch (Exception $e) {
+				CLIUtils::addError(_t("You must specify a valid Excel .xls or .xlsx file: %1", $e->getMessage()));
+				return false;
+			}
+			$o_sheet = $o_file->getActiveSheet();
+			$o_rows = $o_sheet->getRowIterator();
+			
+			$vn_add_count = 0;
+			while ($o_rows->valid() && ($o_row = $o_rows->current())) {
+				$o_cells = $o_row->getCellIterator();
+				$o_cells->setIterateOnlyExistingCells(false); 
+				
+				$vn_c = 0;
+				$va_data = array();
+				
+				foreach ($o_cells as $o_cell) {
+					$vm_val = $o_cell->getValue();
+					if ($vm_val instanceof PHPExcel_RichText) {
+						$vs_val = '';
+						foreach($vm_val->getRichTextElements() as $vn_x => $o_item) {
+							$o_font = $o_item->getFont();
+							$vs_text = $o_item->getText();
+							if ($o_font && $o_font->getBold()) {
+								$vs_val .= "<strong>{$vs_text}</strong>";
+							} elseif($o_font && $o_font->getItalic()) {
+								$vs_val .= "<em>{$vs_text}</em>";
+							} else {
+								$vs_val .= $vs_text;
+							}
+						}
+					} else {
+						$vs_val = trim((string)$vm_val);
+					}
+					$va_data[$vn_c] = nl2br(preg_replace("![\n\r]{1}!", "\n\n", $vs_val));
+					$vn_c++;
+					
+					if ($vn_c > 4) { break; }
+				}
+				$o_rows->next();
+				
+				// Insert entries
+				$t_entry = new ca_metadata_dictionary_entries();
+				$t_entry->set('bundle_name', $va_data[0]);
+				$vn_add_count++;
+			
+				$t_entry->setMode(ACCESS_WRITE);
+				$t_entry->setSetting('label', '');
+				$t_entry->setSetting('definition', $va_data[2]);
+				$t_entry->setSetting('mandatory', (bool)$va_data[1] ? 1 : 0);
+				
+				$va_types = preg_split("![;,\|]{1}!", $va_data[3]);
+				if(!is_array($va_types)) { $va_types = array(); }
+				$va_types = array_filter($va_types,'strlen');
+				
+				$va_relationship_types = preg_split("![;,\|]{1}!", $va_data[4]);
+				if (!is_array($va_relationship_types)) { $va_relationship_types = array(); }
+				$va_relationship_types = array_filter($va_relationship_types,'strlen');
+				
+				$t_entry->setSetting('restrict_to_types', $va_types);
+				$t_entry->setSetting('restrict_to_relationship_types', $va_relationship_types);
+				
+				$vn_rc = ($t_entry->getPrimaryKey() > 0) ? $t_entry->update() : $t_entry->insert();
+				
+				if ($t_entry->numErrors()) {
+					CLIUtils::addError(_t("Error while adding definition for %1: %2", $va_data[0], join("; ", $t_entry->getErrors())));
+				}
+			}
+		
+
+			CLIUtils::addMessage(_t('Added %1 entries', $vn_add_count), array('color' => 'bold_green'));
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_metadata_dictionary_from_excel_fileParamList() {
+			return array(
+				"file|f=s" => _t('Excel XLSX file to load.')
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_metadata_dictionary_from_excel_fileUtilityClass() {
+			return _t('Maintenance');
+		}
+		
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_metadata_dictionary_from_excel_fileShortHelp() {
+			return _t('Load metadata dictionary entries from an Excel file');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_metadata_dictionary_from_excel_fileHelp() {
+			return _t('Load metadata dictionary entries from an Excel file using the format described at http://docs.collectiveaccess.org/metadata_dictionary');
+		}
+		# -------------------------------------------------------
+		/**
+		 * 
+		 */
+		public static function check_media_fixity($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/core/Db.php");
+			require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
+			
+			$ps_file_path = strtolower((string)$po_opts->getOption('file'));	
+			$ps_format = strtolower((string)$po_opts->getOption('format'));
+			if(!in_array($ps_format, array('text', 'tab', 'csv'))) { $ps_format = 'text'; }
+				
+			$o_db = new Db();
+			$o_dm = Datamodel::load();
+			$t_rep = new ca_object_representations();
+			
+			$vs_report_output = join(($ps_format == 'tab') ? "\t" : ",", array(_t('Type'), _t('Error'), _t('Name'), _t('ID'), _t('Version'), _t('File path'), _t('Expected MD5'), _t('Actual MD5')))."\n";
+			
+			// Verify object representations
+			$qr_reps = $o_db->query("SELECT representation_id, idno, media FROM ca_object_representations WHERE deleted = 0");
+			print CLIProgressBar::start($vn_rep_count = $qr_reps->numRows(), _t('Checking object representations'))."\n";
+			$vn_errors = 0;
+			while($qr_reps->nextRow()) {
+				$vn_representation_id = $qr_reps->get('representation_id');
+				print CLIProgressBar::next(1, _t("Checking representation media %1", $vn_representation_id));
+	
+				$va_media_versions = $qr_reps->getMediaVersions('media');
+				foreach($va_media_versions as $vs_version) {
+					$vs_path = $qr_reps->getMediaPath('media', $vs_version);
+					
+					$vs_database_md5 = $qr_reps->getMediaInfo('media', $vs_version, 'MD5');
+					$vs_file_md5 = md5_file($vs_path);
+					
+					if ($vs_database_md5 !== $vs_file_md5) {
+						$t_rep->load($vn_representation_id);
+						
+						$vs_message = _t("[Object representation][MD5 mismatch] %1; version %2 [%3]", $t_rep->get("ca_objects.preferred_labels.name")." (". $t_rep->get("ca_objects.idno")."); representation_id={$vn_representation_id}", $vs_version, $vs_path);
+						switch($ps_format) {
+							case 'text':
+							default:
+								$vs_report_output .= "{$vs_message}\n";
+								break;
+							case 'tab':
+							case 'csv':
+								$va_log = array(_t('Object representation'), ("MD5 mismatch"), caEscapeForDelimitedOutput($t_rep->get("ca_objects.preferred_labels.name")." (". $t_rep->get("ca_objects.idno").")"), $vn_representation_id, $vs_version, $vs_path, $vs_database_md5, $vs_file_md5);
+								$vs_report_output .= join(($ps_format == 'tab') ? "\t" : ",", $va_log)."\n";
+								break;
+						}
+						
+						CLIUtils::addError($vs_message);
+						$vn_errors++;
+					}
+				}
+			}
+			
+			print CLIProgressBar::finish();
+			CLIUtils::addMessage(_t('%1 errors for %2 representations', $vn_errors, $vn_rep_count));
+			
+			// get all Media elements
+			$va_elements = ca_metadata_elements::getElementsAsList(false, null, null, true, false, true, array(16)); // 16=media
+			
+			if (is_array($va_elements) && sizeof($va_elements)) {
+				if (is_array($va_element_ids = caExtractValuesFromArrayList($va_elements, 'element_id', array('preserveKeys' => false))) && sizeof($va_element_ids)) {
+					$qr_c = $o_db->query("
+						SELECT count(*) c 
+						FROM ca_attribute_values
+						WHERE
+							element_id in (?)
+					", array($va_element_ids));
+					if ($qr_c->nextRow()) { $vn_count = $qr_c->get('c'); } else { $vn_count = 0; }
+			
+					print CLIProgressBar::start($vn_count, _t('Checking attribute media'));
+					
+					$vn_errors = 0;
+					foreach($va_elements as $vs_element_code => $va_element_info) {
+						$qr_vals = $o_db->query("SELECT value_id FROM ca_attribute_values WHERE element_id = ?", (int)$va_element_info['element_id']);
+						$va_vals = $qr_vals->getAllFieldValues('value_id');
+						foreach($va_vals as $vn_value_id) {
+							$t_attr_val = new ca_attribute_values($vn_value_id);
+							if ($t_attr_val->getPrimaryKey()) {
+								$t_attr_val->setMode(ACCESS_WRITE);
+								$t_attr_val->useBlobAsMediaField(true);
+						
+								
+								print CLIProgressBar::next(1, _t("Checking attribute media %1", $vn_value_id));
+								
+								$va_media_versions = $t_attr_val->getMediaVersions('value_blob');
+								foreach($va_media_versions as $vs_version) {
+									$vs_path = $t_attr_val->getMediaPath('value_blob', $vs_version);
+				
+									$vs_database_md5 = $t_attr_val->getMediaInfo('value_blob', $vs_version, 'MD5');
+									$vs_file_md5 = md5_file($vs_path);
+				
+									if ($vs_database_md5 !== $vs_file_md5) {
+										$t_attr = new ca_attributes($vn_attribute_id = $t_attr_val->get('attribute_id'));
+										
+										$vs_label = "attribute_id={$vn_attribute_id}; value_id={$vn_value_id}";
+										if ($t_instance = $o_dm->getInstanceByTableNum($t_attr->get('table_num'), true)) {
+											if ($t_instance->load($t_attr->get('row_id'))) {
+												$vs_label = $t_instance->get($t_instance->tableName().'.preferred_labels');
+												if ($vs_idno = $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
+													$vs_label .= " ({$vs_label})";
+												}
+											}
+										}
+										
+										$vs_message = _t("[Media attribute][MD5 mismatch] %1; value_id=%2; version %3 [%4]", $vs_label, $vn_value_id, $vs_version, $vs_path);
+										
+										switch($ps_format) {
+											case 'text':
+											default:
+												$vs_report_output .= "{$vs_message}\n";
+												break;
+											case 'tab':
+											case 'csv':
+												$va_log = array(_t('Media attribute'), _t("MD5 mismatch"), caEscapeForDelimitedOutput($vs_label), $vn_value_id, $vs_version, $vs_path, $vs_database_md5, $vs_file_md5);
+												$vs_report_output .= join(($ps_format == 'tab') ? "\t" : ",", $va_log);
+												break;
+										}
+						
+										CLIUtils::addError($vs_message);
+										$vn_errors++;
+									}
+								}
+						
+							}
+						}
+					}
+					print CLIProgressBar::finish();
+					
+					CLIUtils::addMessage(_t('%1 errors for %2 attributes', $vn_errors, $vn_rep_count));
+				}
+			}
+			
+			// get all File elements
+			$va_elements = ca_metadata_elements::getElementsAsList(false, null, null, true, false, true, array(15)); // 15=file
+			
+			if (is_array($va_elements) && sizeof($va_elements)) {
+				if (is_array($va_element_ids = caExtractValuesFromArrayList($va_elements, 'element_id', array('preserveKeys' => false))) && sizeof($va_element_ids)) {
+					$qr_c = $o_db->query("
+						SELECT count(*) c 
+						FROM ca_attribute_values
+						WHERE
+							element_id in (?)
+					", array($va_element_ids));
+					if ($qr_c->nextRow()) { $vn_count = $qr_c->get('c'); } else { $vn_count = 0; }
+			
+					print CLIProgressBar::start($vn_count, _t('Checking attribute files'));
+					
+					$vn_errors = 0;
+					foreach($va_elements as $vs_element_code => $va_element_info) {
+						$qr_vals = $o_db->query("SELECT value_id FROM ca_attribute_values WHERE element_id = ?", (int)$va_element_info['element_id']);
+						$va_vals = $qr_vals->getAllFieldValues('value_id');
+						foreach($va_vals as $vn_value_id) {
+							$t_attr_val = new ca_attribute_values($vn_value_id);
+							if ($t_attr_val->getPrimaryKey()) {
+								$t_attr_val->setMode(ACCESS_WRITE);
+								$t_attr_val->useBlobAsFileField(true);
+						
+								
+								print CLIProgressBar::next(1, _t("Checking attribute file %1", $vn_value_id));
+								
+								$vs_path = $t_attr_val->getFilePath('value_blob');
+			
+								$vs_database_md5 = $t_attr_val->getFileInfo('value_blob', 'MD5');
+								$vs_file_md5 = md5_file($vs_path);
+			
+								if ($vs_database_md5 !== $vs_file_md5) {
+									$t_attr = new ca_attributes($vn_attribute_id = $t_attr_val->get('attribute_id'));
+									
+									$vs_label = "attribute_id={$vn_attribute_id}; value_id={$vn_value_id}";
+									if ($t_instance = $o_dm->getInstanceByTableNum($t_attr->get('table_num'), true)) {
+										if ($t_instance->load($t_attr->get('row_id'))) {
+											$vs_label = $t_instance->get($t_instance->tableName().'.preferred_labels');
+											if ($vs_idno = $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
+												$vs_label .= " ({$vs_label})";
+											}
+										}
+									}
+								
+									$vs_message = _t("[File attribute][MD5 mismatch] %1; value_id=%2; version %3 [%4]", $vs_label, $vn_value_id, $vs_version, $vs_path);		
+									
+									switch($ps_format) {
+										case 'text':
+										default:
+											$vs_report_output .= "{$vs_message}\n";
+											break;
+										case 'tab':
+										case 'csv':
+											$va_log = array(_t('File attribute'), _t("MD5 mismatch"), caEscapeForDelimitedOutput($vs_label), $vn_value_id, $vs_version, $vs_path, $vs_database_md5, $vs_file_md5);
+											$vs_report_output .= join(($ps_format == 'tab') ? "\t" : ",", $va_log);
+											break;
+									}
+					
+									CLIUtils::addError($vs_message);
+									$vn_errors++;
+								}
+						
+							}
+						}
+					}
+					print CLIProgressBar::finish();
+					
+					CLIUtils::addMessage(_t('%1 errors for %2 attributes', $vn_errors, $vn_rep_count));
+				}
+			}
+			
+			if ($ps_file_path) {
+				file_put_contents($ps_file_path, $vs_report_output);
+			}
+			
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_media_fixityParamList() {
+			return array(
+				"file|o=s" => _t('Location to write report to.'),
+				"format|f=s" => _t('Output format. (text|tab|csv)')	
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_media_fixityUtilityClass() {
+			return _t('Maintenance');
+		}
+		
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_media_fixityShortHelp() {
+			return _t('Verify media fixity using database file signatures');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_media_fixityHelp() {
+			return _t('Verifies that media files on disk are consistent with file signatures recordded in the database at time of upload.');
+		}
+		# -------------------------------------------------------
+		/**
+		 * 
+		 */
+		public static function create_ngrams($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/core/Db.php");
+			
+			$o_db = new Db();
+			
+			$pb_clear = ((bool)$po_opts->getOption('clear'));	
+			$pa_sizes = explode(",",((string)$po_opts->getOption('sizes')));	
+			foreach($pa_sizes as $vn_i => $vn_size) {
+				$vn_size = (int)$vn_size;
+				if (!$vn_size || ($vn_size <= 0)) { unset($pa_sizes[$vn_i]); continue; }
+				$pa_sizes[$vn_i] = $vn_size;
+			}
+			if(!is_array($pa_sizes) || !sizeof($pa_sizes)) { $pa_sizes = array(2,3,4); }
+			
+			$vs_insert_ngram_sql = "
+				INSERT  INTO ca_sql_search_ngrams
+				(word_id, ngram, seq)
+				VALUES
+			";
+			
+			if ($pb_clear) {
+				$qr_res = $o_db->query("TRUNCATE TABLE ca_sql_search_ngrams");
+			}
+
+			//create ngrams
+			$qr_res = $o_db->query("SELECT word_id, word FROM ca_sql_search_words");
+			
+			print CLIProgressBar::start($qr_res->numRows(), _t('Starting...'));
+			
+			$vn_c = 0;
+			$vn_ngram_c = 0;
+			while($qr_res->nextRow()) {
+				print CLIProgressBar::next();
+				$vn_word_id = $qr_res->get('word_id');
+				$vs_word = $qr_res->get('word');
+				print CLIProgressBar::next(_t('Processing %1', $vs_word));
+				
+				if (!$pb_clear) {
+					$qr_chk = $o_db->query("SELECT word_id FROM ca_sql_search_ngrams WHERE word_id = ?", array($vn_word_id));
+					if ($qr_chk->nextRow()) {
+						continue;
+					}
+				}
+				
+				$vn_seq = 0;
+				foreach($pa_sizes as $vn_size) {
+					$va_ngrams = caNgrams((string)$vs_word, $vn_size);
+
+					$va_ngram_buf = array();
+					foreach($va_ngrams as $vs_ngram) {
+						$va_ngram_buf[] = "({$vn_word_id},'{$vs_ngram}',{$vn_seq})";
+						$vn_seq++;
+						$vn_ngram_c++;
+					}
+
+					if (sizeof($va_ngram_buf)) {
+						$o_db->query($vs_insert_ngram_sql."\n".join(",", $va_ngram_buf));
+					}
+				}
+				$vn_c++;
+			}
+			print CLIProgressBar::finish();
+			CLIUtils::addMessage(_t('Processed %1 words and created %2 ngrams', $vn_c, $vn_ngram_c));
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function create_ngramsParamList() {
+			return array(
+				"clear|c=s" => _t('Clear all existing ngrams. Default is false.'),
+				"sizes|s=s" => _t('Comma-delimited list of ngram sizes to generate. Default is 4.')
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function create_ngramsUtilityClass() {
+			return _t('Search');
+		}
+		
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function create_ngramsShortHelp() {
+			return _t('Create ngrams from search indices to support spell correction of search terms.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function create_ngramsHelp() {
+			return _t('Ngrams.');
 		}
 		# -------------------------------------------------------
 	}

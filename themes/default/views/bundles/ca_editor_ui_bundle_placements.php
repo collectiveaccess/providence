@@ -29,7 +29,7 @@
 	$t_screen 								= $this->getVar('t_screen');
 	$vs_id_prefix 							= $this->getVar('placement_code').$this->getVar('id_prefix');
 	
-	$va_available_display_items 		= $t_screen->getAvailableBundles();
+	$va_available_display_items 			= $t_screen->getAvailableBundles();
 	
 	foreach($va_available_display_items as $vs_bundle => $va_item) {
 		unset($va_available_display_items[$vs_bundle]['settings']);	// strip lists of valid settings - we don't need to send them to the client and they can be fairly large
@@ -38,6 +38,7 @@
 	$va_to_display_items  				= $t_screen->getPlacementsInScreen(array('noCache' => true));
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'UIEditorBundlePlacements');
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'UIEditorBundlePlacements', $va_settings);
 ?>
 <div class="bundleDisplayPlacementEditorContainer" id="<?php print $vs_id_prefix; ?>UIEditorBundlePlacements">
 	<div id="bundleDisplayPlacementEditor" class="bundleDisplayPlacementEditor">

@@ -340,7 +340,7 @@
  			$pn_transaction_id = $this->request->getParameter('transaction_id', pInteger);
  			$t_trans = new ca_commerce_transactions($pn_transaction_id);
  			
- 			$this->view->setVar('communication_id', $pn_communication_id);
+ 			//$this->view->setVar('communication_id', $pn_communication_id);
  			$this->view->setVar('transaction_id', $pn_transaction_id);
  			
  			if ($t_trans->haveAccessToTransaction($this->request->getUserID())) {

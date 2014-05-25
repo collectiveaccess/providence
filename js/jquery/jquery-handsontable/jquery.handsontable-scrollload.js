@@ -53,21 +53,23 @@ function HandsontableScrollLoad() {
 		for(i=0; i < numRows; i++) {
 			if (!rowCheckMap[i]) {
 				isAutoloading = true;
-				//console.log("Autoload data starting at " + i + " for " + maxToLoad + " rows");
+				console.log("Autoload data starting at " + i + " for " + maxToLoad + " rows");
 				
 				var start = i;
 				var end = i + maxToLoad; 
 				if (end > numRows) { end = numRows; }
 				jQuery("." + settings.statusDisplayClassName).html("Loading " + start + "-" + end);
 				jQuery.getJSON( settings.dataLoadUrl, { start: i, n: maxToLoad }, function(newData, textStatus, jqXHR) {
+					
+					var rowHeaders = table.getRowHeader();
 					jQuery.each(newData, function(k, v) {
-						var rowHeaders = table.getRowHeader();
 						var rowIndex = i + parseInt(k);
 
 						rowCheckMap[rowIndex] = true;
 						data[rowIndex] = v;
 						rowHeaders[rowIndex] = (rowIndex + 1) + " " + settings.editLinkFormat.replace("%1", v['item_id']);
 					});
+					table.updateSettings({'rowHeaders': rowHeaders});
 					if (end >= numRows) { 
 						jQuery("." + settings.statusDisplayClassName).html("Loading complete"); 
 						setTimeout(function() {
@@ -123,21 +125,22 @@ function HandsontableScrollLoad() {
 		}
 		if (curRowIndex >= numRows) { return; }
 		if(!rowCheckMap[curRowIndex]) {
-			//console.log("Load data starting at " + curRowIndex + " for " + maxToLoad + " rows");
+			console.log("Load data starting at " + curRowIndex + " for " + maxToLoad + " rows");
 			
 			userIsLoading = true;
 			var n = numRows - curRowIndex;
 			if (n > maxToLoad) { n = maxToLoad; }
 			if (n <= 0) { return; }
 			jQuery.getJSON( settings.dataLoadUrl, { start: curRowIndex, n: n }, function(newData, textStatus, jqXHR) {
+				var rowHeaders = table.getRowHeader();
 				jQuery.each(newData, function(k, v) {
-					var rowHeaders = table.getRowHeader();
 					var rowIndex = curRowIndex + parseInt(k);
 
 					rowCheckMap[rowIndex] = true;
 					data[rowIndex] = v;
 					rowHeaders[rowIndex] = (rowIndex + 1) + " " + settings.editLinkFormat.replace("%1", v['item_id']);
 				});
+				table.updateSettings({'rowHeaders': rowHeaders});
 				userIsLoading = false;
 				table.render();
 			});

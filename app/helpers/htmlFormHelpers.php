@@ -265,8 +265,11 @@
 	 *		returnValueIfUnchecked = boolean indicating if checkbox should return value in request if unchecked; default is false
 	 */
 	function caHTMLCheckboxInput($ps_name, $pa_attributes=null, $pa_options=null) {
-		$vs_attr_string = _caHTMLMakeAttributeString($pa_attributes, $pa_options);
+		if (array_key_exists('checked', $pa_attributes) && !$pa_attributes['checked']) { unset($pa_attributes['checked']); }
+		if (array_key_exists('CHECKED', $pa_attributes) && !$pa_attributes['CHECKED']) { unset($pa_attributes['CHECKED']); }
 		
+		$vs_attr_string = _caHTMLMakeAttributeString($pa_attributes, $pa_options);
+	
 		if (isset($pa_options['returnValueIfUnchecked']) && $pa_options['returnValueIfUnchecked']) {
 			// javascript-y check box that returns form value even if unchecked
 			$vs_element = "<input name='{$ps_name}' {$vs_attr_string} type='checkbox'/>\n";
@@ -349,6 +352,9 @@
 			$vs_annotation_save_url	=		caGetOption("annotation_save_url", $pa_options, null);
 			$vs_help_load_url	=			caGetOption("help_load_url", $pa_options, null);
 			
+			$vs_annotation_editor_panel =	caGetOption("annotationEditorPanel", $pa_options, null);
+			$vs_annotation_editor_url =		caGetOption("annotationEditorUrl", $pa_options, null);
+			
 			$vs_viewer_base_url =			caGetOption("viewer_base_url", $pa_options, __CA_URL_ROOT__);
 			
 			$vb_directly_embed_flash = 		(bool)$pa_options['directly_embed_flash'];
@@ -393,6 +399,9 @@ $vs_tag = "
 								buttonUrlPath: '{$vs_viewer_base_url}/themes/default/graphics/buttons',
 								annotationLoadUrl: '{$vs_annotation_load_url}',
 								annotationSaveUrl: '{$vs_annotation_save_url}',
+								annotationEditorPanel: '{$vs_annotation_editor_panel}',
+								annotationEditorUrl: '{$vs_annotation_editor_url}',
+								annotationEditorLink: '".addslashes(_t('More...'))."',
 								helpLoadUrl: '{$vs_help_load_url}',
 								info: {
 									width: '{$vn_width}',

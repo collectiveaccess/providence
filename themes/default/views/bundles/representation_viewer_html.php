@@ -170,6 +170,8 @@
 				
 				$vn_c = 1;
 				while($o_children->nextHit()) {
+					if (!($vn_representation_id = (int)$o_children->get('ca_object_representations.representation_id'))) { continue; }
+					
 					$vs_thumbnail_url = $o_children->getMediaUrl('ca_object_representations.media', 'thumbnail');
 					$vs_thumbnail_path = $o_children->getMediaPath('ca_object_representations.media', 'thumbnail');
 					$va_thumbnail_info = $o_children->getMediaInfo('ca_object_representations.media', 'thumbnail');
@@ -183,7 +185,7 @@
 					$vn_object_id = (int)$o_children->get('ca_objects.object_id');
 					$va_pages[$vn_object_id] = array(
 						'title' => $vs_title = $o_children->get('ca_objects.preferred_labels.name'),
-						'object_id' => $vn_object_id, 'representation_id' => $vn_representation_id = (int)$o_children->get('ca_object_representations.representation_id'),
+						'object_id' => $vn_object_id, 'representation_id' => $vn_representation_id,
 						'thumbnail_url' => $vs_thumbnail_url, 'thumbnail_path' => $vs_thumbnail_path, 'thumbnail_width' => $va_thumbnail_info['WIDTH'], 'thumbnail_height' => $va_thumbnail_info['HEIGHT'], 'thumbnail_mimetype' => $va_thumbnail_info['MIMETYPE'],
 						'normal_url' => $vs_large_url, 'normal_path' => $vs_large_path, 'normal_width' => $va_large_info['WIDTH'], 'normal_height' => $va_large_info['HEIGHT'], 'normal_mimetype' => $va_large_info['MIMETYPE'],
 						'large_url' => $vs_page_url, 'large_path' => $vs_page_path, 'large_width' => $va_page_info['WIDTH'], 'large_height' => $va_page_info['HEIGHT'], 'large_mimetype' => $va_page_info['MIMETYPE']
@@ -235,6 +237,7 @@
 					
 					$vn_c = 1;
 					while($o_children->nextHit()) {
+						if (!($vn_representation_id = (int)$o_children->get('ca_object_representations.representation_id'))) { continue; }
 						$vs_preview_url = $o_children->getMediaUrl('ca_object_representations.media', 'preview');
 						$vs_preview_path = $o_children->getMediaPath('ca_object_representations.media', 'preview');
 						$va_preview_info = $o_children->getMediaInfo('ca_object_representations.media', 'preview');
@@ -247,7 +250,7 @@
 						
 						$va_pages[] = array(
 							'title' => $vs_title = $o_children->get('ca_objects.preferred_labels.name'),
-							'object_id' => $vn_object_id, 'representation_id' => $vn_representation_id = (int)$o_children->get('ca_object_representations.representation_id'),
+							'object_id' => $vn_object_id, 'representation_id' => $vn_representation_id,
 							'thumbnail_url' => $vs_preview_url, 'thumbnail_path' => $vs_preview_path, 'thumbnail_width' => $va_preview_info['WIDTH'], 'thumbnail_height' => $va_preview_info['HEIGHT'], 'thumbnail_mimetype' => $va_preview_info['MIMETYPE'],
 							'normal_url' => $vs_large_url, 'normal_path' => $vs_large_path, 'normal_width' => $va_large_info['WIDTH'], 'normal_height' => $va_large_info['HEIGHT'], 'normal_mimetype' => $va_large_info['MIMETYPE'],
 							'large_url' => $vs_page_url, 'large_path' => $vs_page_path, 'large_width' => $va_page_info['WIDTH'], 'large_height' => $va_page_info['HEIGHT'], 'large_mimetype' => $va_page_info['MIMETYPE']
@@ -630,11 +633,13 @@
 	// return standard tag
 	if (!is_array($va_display_options)) { $va_display_options = array(); }
 	$vs_tag = $t_rep->getMediaTag('media', $vs_show_version, array_merge($va_display_options, array(
-		'id' => ($vs_display_type == 'media_overlay') ? 'caMediaOverlayContentMedia' : 'caMediaDisplayContentMedia', 
+		'id' => $vs_viewer_id = (($vs_display_type == 'media_overlay') ? 'caMediaOverlayContentMedia' : 'caMediaDisplayContentMedia'), 
 		'viewer_base_url' => $this->request->getBaseUrlPath(),
 		'annotation_load_url' => caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetAnnotations', array('representation_id' => (int)$t_rep->getPrimaryKey(), 'object_id' => (int)$t_object->getPrimaryKey())),
 		'annotation_save_url' => caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'SaveAnnotations', array('representation_id' => (int)$t_rep->getPrimaryKey(), 'object_id' => (int)$t_object->getPrimaryKey())),
 		'help_load_url' => caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'ViewerHelp', array()),
+		'annotationEditorPanel' => 'caRepresentationAnnotationEditor',
+		'annotationEditorUrl' => caNavUrl($this->request, 'editor/representation_annotations', 'RepresentationAnnotationQuickAdd', 'Form', array('representation_id' => (int)$t_rep->getPrimaryKey())),
 		'captions' => $t_rep->getCaptionFileList()
 	)));
 	# --- should the media be clickable to open the overlay?
@@ -644,4 +649,49 @@
 		print "<a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($this->request, 'Detail', 'Object', 'GetRepresentationInfo', array('object_id' => $t_object->getPrimaryKey(), 'representation_id' => $t_rep->getPrimaryKey()))."\"); return false;' >".$vs_tag."</a>";
 	}
 ?>
+<script type="text/javascript">
+	var caRepresentationAnnotationEditor;
+	jQuery(document).ready(function() {
+		if (caUI.initPanel) {
+			caRepresentationAnnotationEditor = caUI.initPanel({ 
+				panelID: "caRepresentationAnnotationEditor",						/* DOM ID of the <div> enclosing the panel */
+				panelContentID: "caRepresentationAnnotationEditorContentArea",		/* DOM ID of the content area <div> in the panel */
+				panelTransitionSpeed: 400,						
+				closeButtonSelector: ".close",
+				center: true,
+				useExpose: false,
+				onCloseCallback: function() {
+					jQuery("#<?php print $vs_viewer_id; ?>").tileviewer("refreshAnnnotations");
+				}
+			});
+		}
+	});
+	
+	function caAnnoEditorDisableAnnotationForm() {
+		caRepresentationAnnotationEditor.hidePanel();
+	}
+	function caAnnoEditorTlReload() {
+		console.log("caught reload");
+	}
+	function caAnnoEditorTlLoad() {
+		console.log("caught load");
+	}
+	function caAnnoEditorEdit(annotation_id) {
+		//jQuery("#caRepresentationAnnotationEditorContentArea").load("<?php print caNavUrl($this->request, 'editor/representation_annotations', 'RepresentationAnnotationQuickAdd', 'Form', array('representation_id' => $vn_representation_id, 'annotation_id' => '')); ?>" + annotation_id, {}).show();
+		caRepresentationAnnotationEditor.hidePanel();
+		return false;
+	}
+	function caAnnoEditorGetPlayerTime() {
+		return 0;
+	}
+	function caAnnoEditorTlRemove() {
+		console.log("caught remove");
+	}
+</script>
+	</div>
+	<div id="caRepresentationAnnotationEditor" class="caRelationQuickAddPanel"> 
+		<div id="caRepresentationAnnotationEditorContentArea">
+		<div class='quickAddDialogHeader'><?php print _t('Edit annotation'); ?></div>
+		
+		</div>
 	</div>

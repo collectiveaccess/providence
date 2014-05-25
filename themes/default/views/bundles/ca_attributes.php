@@ -64,11 +64,19 @@
 				$vn_attr_id = $o_attr->getAttributeID();
 				$vn_element_id = $o_value->getElementID();
 				
-				if ($va_failed_updates[$vn_attr_id]) {
+				if ($va_failed_updates[$vn_attr_id] && !in_array($o_value->getDatatype(), array(
+					__CA_ATTRIBUTE_VALUE_LCSH__, 
+					__CA_ATTRIBUTE_VALUE_PLACE__,
+					__CA_ATTRIBUTE_VALUE_OCCURRENCE__,
+					__CA_ATTRIBUTE_VALUE_TAXONOMY__,
+					__CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__,
+					__CA_ATTRIBUTE_VALUE_OBJECTREPRESENTATIONS__,
+					__CA_ATTRIBUTE_VALUE_ENTITIES__
+				))) {
 					// copy value from failed update into form (so user can correct it)
 					$vs_display_val = $va_failed_updates[$vn_attr_id][$vn_element_id];
 				} else {
-					$vs_display_val = $o_value->getDisplayValue(array('request' => $this->request));
+					$vs_display_val = $o_value->getDisplayValue(array('request' => $this->request, 'includeID' => true));
 				}
 				
 				$va_initial_values[$vn_attr_id][$vn_element_id] = $vs_display_val;
@@ -119,6 +127,7 @@
 	} else {
 		print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 	}
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 ?>
 <div id="<?php print $vs_id_prefix; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php

@@ -150,7 +150,7 @@
 			$vn_attribute_id = $t_attr->addAttribute($this->tableNum(), $this->getPrimaryKey(), $t_element->getPrimaryKey(), $pa_values, $pa_info['options']);
 			if ($t_attr->numErrors()) {
 				foreach($t_attr->errors as $o_error) {
-					$this->postError($o_error->getErrorNumber(), $o_error->getErrorDescription(), $o_error->getErrorContext(), $pa_options['error_source']);
+					$this->postError($o_error->getErrorNumber(), $o_error->getErrorDescription(), $o_error->getErrorContext(), $pa_info['error_source']);
 				}
 				return false;
 			}
@@ -212,13 +212,13 @@
 			$t_attr->purify($this->purify());
 			if ($po_trans) { $t_attr->setTransaction($po_trans); }
 			if ((!$t_attr->getPrimaryKey()) || ($t_attr->get('table_num') != $this->tableNum()) || ($this->getPrimaryKey() != $t_attr->get('row_id'))) {
-				$this->postError(1969, _t('Can\'t edit invalid attribute'), 'BaseModelWithAttributes->editAttribute()', $pa_options['error_source']);
+				$this->postError(1969, _t('Can\'t edit invalid attribute'), 'BaseModelWithAttributes->editAttribute()', $pa_info['error_source']);
 				return false;
 			}
 			
 			if (!$t_attr->editAttribute($pa_values, $pa_info['options'])) {
 				foreach($t_attr->errors as $o_error) {
-					$this->postError($o_error->getErrorNumber(), $o_error->getErrorDescription(), $o_error->getErrorContext(), $pa_options['error_source']);
+					$this->postError($o_error->getErrorNumber(), $o_error->getErrorDescription(), $o_error->getErrorContext(), $pa_info['error_source']);
 				}
 				return false;
 			}
@@ -252,6 +252,7 @@
 			$t_attr = new ca_attributes($pn_attribute_id);
 			$t_attr->purify($this->purify());
 			if (!$t_attr->getPrimaryKey()) { return false; }
+			$vn_element_id = (int)$t_attr->get('element_id');
 			
 			$vn_add_cnt = 0;
 			if (isset($pa_extra_info['pending_adds']) && is_array($pa_extra_info['pending_adds'])) {
@@ -318,7 +319,7 @@
 				}
 				return false;
 			}
-			$this->setFieldValuesArray($this->addAttributesToFieldValuesArray());
+			//$this->setFieldValuesArray($this->addAttributesToFieldValuesArray());
 			return true;
 		}
 		# ------------------------------------------------------------------
@@ -388,7 +389,7 @@
 			$this->_initAttributeQueues();
 			
 			// set the field values array for this instance
-			$this->setFieldValuesArray($this->addAttributesToFieldValuesArray());
+			//$this->setFieldValuesArray($this->addAttributesToFieldValuesArray());
 			return true;
 		}
 		# ------------------------------------------------------------------
@@ -437,7 +438,7 @@
 			$this->setFieldValuesArray(array());
 			if ($vn_c = parent::load($pm_id)) {
 				// Copy attributes into field values array in BaseModel
-				$this->setFieldValuesArray($this->addAttributesToFieldValuesArray());
+				//$this->setFieldValuesArray($this->addAttributesToFieldValuesArray());
 			}
 			return $vn_c;
 		}
@@ -476,7 +477,7 @@
 				}
 				
 				// set the field values array for this instance
-				$this->setFieldValuesArray($va_field_values_with_updated_attributes);
+				//$this->setFieldValuesArray($va_field_values_with_updated_attributes);
 				
 				$this->doSearchIndexing($va_fields_changed_array);	// TODO: SHOULD SECOND PARAM (REINDEX) BE "TRUE"?
 				
@@ -519,10 +520,10 @@
 			if(parent::update($pa_options)) {
 				$this->_commitAttributes($this->getTransaction());
 				
-				$va_field_values_with_updated_attributes = $this->addAttributesToFieldValuesArray();	// copy committed attribute values to field values array
+			//	$va_field_values_with_updated_attributes = $this->addAttributesToFieldValuesArray();	// copy committed attribute values to field values array
 				
 				// set the field values array for this instance
-				$this->setFieldValuesArray($va_field_values_with_updated_attributes);
+				//$this->setFieldValuesArray($va_field_values_with_updated_attributes);
 				
 				$this->doSearchIndexing($va_fields_changed_array);
 				
@@ -690,7 +691,7 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			
 			$vs_template = 				(isset($pa_options['template'])) ? $pa_options['template'] : null;
-			$vs_delimiter = 				(isset($pa_options['delimiter'])) ? $pa_options['delimiter'] : ' ';
+			$vs_delimiter = 			(isset($pa_options['delimiter'])) ? $pa_options['delimiter'] : ' ';
 			$vb_return_as_array = 		(isset($pa_options['returnAsArray'])) ? (bool)$pa_options['returnAsArray'] : false;
 			$vb_return_all_locales = 	(isset($pa_options['returnAllLocales'])) ? (bool)$pa_options['returnAllLocales'] : false;
 			
@@ -786,9 +787,44 @@
 					}
 					break;
 				# -------------------------------------
-				case 3:		// table_name.field_name.sub_element
-					if(!$this->hasField($va_tmp[2])) {
+				case 3:		// table_name.field_name.sub_element / table_name.field_name.hierarchy
+				case 4:		// table_name.field_name.sub_element.hierarchy
+					if(!$this->hasField($va_tmp[2]) || ($va_tmp[2] === 'hierarchy')) {
 						if ($va_tmp[0] === $t_instance->tableName()) {
+							$vb_is_in_container = false;
+							
+							if	(!$this->hasField($va_tmp[1])) {
+								if (($va_tmp[2] === 'hierarchy') || ($va_tmp[3] === 'hierarchy')) {
+									if ($va_tmp[3] === 'hierarchy') { $vb_is_in_container = true; }
+									if (in_array($this->_getElementDatatype($vb_is_in_container ? $va_tmp[2] : $va_tmp[1]), array(__CA_ATTRIBUTE_VALUE_LIST__))) {
+										
+										$va_items = $this->get(join('.', $vb_is_in_container ? array($va_tmp[0], $va_tmp[1], $va_tmp[2]) : array($va_tmp[0], $va_tmp[1])), array('returnAsArray' => true));
+										$va_item_ids = $va_item_ids = caExtractValuesFromArrayList($va_items, $vb_is_in_container ? $va_tmp[2] : $va_tmp[1], array('preserveKeys' => false));
+							
+										$qr_items = caMakeSearchResult('ca_list_items', $va_item_ids);
+		
+										if (!$va_item_ids || !is_array($va_item_ids) || !sizeof($va_item_ids)) {  return $vb_return_as_array ? array() : null; } 
+									
+		
+										$va_get_spec = $va_tmp;
+										array_shift($va_get_spec); array_shift($va_get_spec);
+										if ($vb_is_in_container) { array_shift($va_get_spec); }
+										array_unshift($va_get_spec, 'ca_list_items');
+										
+										$vs_get_spec = join('.', $va_get_spec);
+										
+										$va_vals = array();
+										while($qr_items->nextHit()) {
+											$va_hier = $qr_items->get($vs_get_spec, array('returnAsArray' => true));
+											array_shift($va_hier);	// get rid of root
+											$va_vals[] = $vb_return_as_array ? $va_hier : join($vs_delimiter, $va_hier);
+										}
+										
+										return $va_vals;
+									}
+								} 
+							}
+			
 							if (!$t_instance->hasField($va_tmp[1])) {
 								// try it as an attribute
 									
@@ -933,6 +969,7 @@
 			}
 			
 			$va_list = $t_list->getItemsForList($this->getSourceListCode(), $pa_options);
+			if (caGetOption('idsOnly', $pa_options, false)) { return $va_list; }
 			return is_array($va_list) ? caExtractValuesByUserLocale($va_list): array();
 		}
 		# ------------------------------------------------------------------
@@ -1007,6 +1044,7 @@
 		 *
 		 */
 		public function getTypeName($pn_type_id=null) {
+			if (!is_numeric($pn_type_id)) { $pn_type_id = $this->getTypeIDForCode($pn_type_id); }
 			if ($t_list_item = $this->getTypeInstance($pn_type_id)) {
 				return $t_list_item->getLabelForDisplay(false);
 			}
@@ -1066,6 +1104,7 @@
 			}
 			
 			$va_list = $t_list->getItemsForList($this->getTypeListCode(), $pa_options);
+			if (caGetOption('idsOnly', $pa_options, false)) { return $va_list; }
 			return is_array($va_list) ? caExtractValuesByUserLocale($va_list): array();
 		}
 		# ------------------------------------------------------------------
@@ -1113,6 +1152,7 @@
 			$pa_options['limitToItemsWithID'] = caGetTypeRestrictionsForUser($this->tableName(), $pa_options);
 			
 			if (isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes'])) {
+				$pa_options['restrictToTypes'] = caMakeTypeIDList($this->tableName(), $pa_options['restrictToTypes'], $pa_options);
 				if (!$pa_options['limitToItemsWithID'] || !is_array($pa_options['limitToItemsWithID'])) {
 					$pa_options['limitToItemsWithID'] = $pa_options['restrictToTypes'];
 				} else {
@@ -1275,11 +1315,9 @@
 			
 			// get all elements of this element set
 			$va_element_set = $t_element->getElementsInSet();
-			
+
 			// get attributes of this element attached to this row
 			$va_attributes = $this->getAttributesByElement($pm_element_code_or_id);
-			
-			// TODO: how do we not-hardcode {fieldNamePrefix}? is this even a problem?
 			
 			$t_attr = new ca_attributes();
 			$t_attr->purify($this->purify());
@@ -1325,7 +1363,7 @@
 					'description' => $va_label['description'],
 					't_subject' => $this,
 					'request' => $po_request,
-					'ps_form_name' => $ps_form_name,
+					'form_name' => $ps_form_name,
 					'format' => ''
 				))));
 				
@@ -1450,12 +1488,14 @@
 					'request' => $po_request,
 					'nullOption' => '-',
 					'value' => $vs_value,
-					'forSearch' => true
+					'forSearch' => true,
+					'render' => 'lookup'
 				), array_merge($pa_options, $va_override_options));
 				
 				// We don't want to pass the entire set of values to ca_attributes::attributeHtmlFormElement() since it'll treat it as a simple list
 				// of values for an individual element and the 'values' array is actually set to values for *all* elements in the form
 				unset($va_element_opts['values']);
+				$va_element_opts['values'] = '';
 				
 				$vs_form_element = ca_attributes::attributeHtmlFormElement($va_element, $va_element_opts);
 				//
@@ -1466,6 +1506,9 @@
 				
 				// ... replace name of form element
 				$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_{n}', str_replace('.', '_', $this->tableName().'.'.$va_element['element_code']), $vs_form_element);
+				
+				$vs_form_element = str_replace('{n}', '', $vs_form_element);
+				$vs_form_element = str_replace('{'. $va_element['element_id'].'}', '', $vs_form_element);
 				
 				$va_elements_by_container[$va_element['parent_id'] ? $va_element['parent_id'] : $va_element['element_id']][] = $vs_form_element;
 				//if the elements datatype returns true from renderDataType, then force render the element
@@ -1495,13 +1538,17 @@
 		 *
 		 */
 		public function htmlFormElement($ps_field, $ps_format=null, $pa_options=null) {
-			switch($ps_field) {
-				case $this->getSourceFieldName():
-					if ((bool)$this->getAppConfig()->get('perform_source_access_checking')) {
-						$pa_options['value'] = $this->get($ps_field);
-						return $this->getSourceListAsHTMLFormElement($ps_field, array(), $pa_options);
-					}
-					break;
+			if ($vs_source_id_fld_name = $this->getSourceFieldName()) {
+				switch($ps_field) {
+					case $vs_source_id_fld_name:
+						if ((bool)$this->getAppConfig()->get('perform_source_access_checking')) {
+							$pa_options['value'] = $this->get($ps_field);
+							$pa_options['disableItemsWithID'] = caGetSourceRestrictionsForUser($this->tableName(), array('access' => __CA_BUNDLE_ACCESS_READONLY__, 'exactAccess' => true));
+							
+							return $this->getSourceListAsHTMLFormElement($ps_field, array(), $pa_options);
+						}
+						break;
+				}
 			}
 			
 			return parent::htmlFormElement($ps_field, $ps_format, $pa_options);
@@ -1552,7 +1599,7 @@
 			$va_attributes = ca_attributes::getAttributes($this->getDb(), $this->tableNum(), $vn_row_id, array($vn_element_id), array());
 		
 			$va_attribute_list =  is_array($va_attributes[$vn_element_id]) ? $va_attributes[$vn_element_id] : array();
-			
+		
 			$vs_sort_dir = (isset($pa_options['sort']) && (in_array(strtolower($pa_options['sortDirection']), array('asc', 'desc')))) ? strtolower($pa_options['sortDirection']) : 'asc';	
 			if (isset($pa_options['sort']) && ($vs_sort = $pa_options['sort'])) {
 				$va_tmp = array();
@@ -1833,9 +1880,6 @@
 		# ------------------------------------------------------------------
 		// --- Utilities
 		# ------------------------------------------------------------------
-		# ------------------------------------------------------------------
-		// --- Utilties
-		# ------------------------------------------------------------------
 		/**
 		 * Copies all attributes attached to the current row to the row specified by $pn_row_id
 		 *
@@ -1958,7 +2002,7 @@
 				return false;
 			}
 			$t_restriction = new ca_metadata_type_restrictions();
-			if ($t_restriction->load(array('element_id' => $t_element->getPrimaryKey(), 'type_id' => $type_id, 'table_num' => $this->tableNum()))) {
+			if ($t_restriction->load(array('element_id' => $t_element->getPrimaryKey(), 'type_id' => $pn_type_id, 'table_num' => $this->tableNum()))) {
 				$t_restriction->setMode(ACCESS_WRITE);
 				$t_restriction->delete();
 				if ($t_restriction->numErrors()) {

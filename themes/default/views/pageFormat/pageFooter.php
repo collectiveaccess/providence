@@ -14,18 +14,14 @@
 					print caNavLink($this->request, _t('Login'), '', 'system', 'auth', 'login');
 				}
 ?>
-				&nbsp;&nbsp;|&nbsp;&nbsp; &copy; 2013 Whirl-i-Gig, <a href="http://www.collectiveaccess.org" target="_blank">CollectiveAccess</a> <?php _p("is a trademark of"); ?> <a href="http://www.whirl-i-gig.com" target="_blank">Whirl-i-Gig</a>
+				&nbsp;&nbsp;|&nbsp;&nbsp; &copy; 2014 Whirl-i-Gig, <a href="http://www.collectiveaccess.org" target="_blank">CollectiveAccess</a> <?php _p("is a trademark of"); ?> <a href="http://www.whirl-i-gig.com" target="_blank">Whirl-i-Gig</a>
 				[<?php print $this->request->session->elapsedTime(4).'s'; ?>/<?php print caGetMemoryUsage(); ?>]
 				<?php if (Db::$monitor) { print " [<a href='#' onclick='jQuery(\"#caApplicationMonitor\").slideToggle(100); return false;'>$</a>]"; } ?>
 			</div></div><!-- end footer -->
 		</div><!-- end footerContainer -->
 		</div><!-- end center -->
 		
-		
-		<!-- Activate super-roundiness technology - anything with the classname rounded gets rounded corners here -->
 		<script type="text/javascript">
-			jQuery(document).ready(function() { jQuery('.rounded').corner('round 8px'); }); 
-		
 			// force content to fill window height
 			jQuery(document).ready(function() {
 				jQuery('#mainContent').css('min-height', (window.innerHeight - 40) + 'px');

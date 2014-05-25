@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,6 +28,8 @@
 
 	$vo_result 					= $this->getVar('result');
  	$vo_result_context 			= $this->getVar('result_context');
+ 	$t_subject = 			$this->getVar('t_subject');
+ 	$vs_table = 			$t_subject->tableName();
  ?>
  
  
@@ -35,10 +37,9 @@
 if($vo_result->numHits() > 0) {
 	print $this->render('Search/search_tools_html.php');
 
-	if($this->getVar('mode') === 'search'){
+	if(($this->getVar('mode') === 'search') && ($this->request->user->canDoAction('can_browse_'.$vs_table))){
 		print $this->render('Search/search_refine_html.php');
 	}
-	//print $this->render('Search/search_sets_html.php');
 }
 ?>
 <div style="clear: both;"><!-- empty --></div>
@@ -47,7 +48,7 @@ if($vo_result->numHits() > 0) {
 
 <?php
 	if($vo_result->numHits() > 0) {
-		if($this->getVar('mode') === 'search'){
+		if($this->getVar('mode') === 'search' && ($this->request->user->canDoAction('can_browse_'.$vs_table))){
 ?>
 			<a href='#' id='showRefine' onclick='return caHandleResultsUIBoxes("refine", "show");'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_FILTER__); ?></a>
 <?php
@@ -88,7 +89,7 @@ if($vo_result->numHits() > 0) {
 		print _t("#/page").": <select name='n' style='width: 50px;'>\n";
 		if(is_array($va_items_per_page) && sizeof($va_items_per_page) > 0){
 			foreach($va_items_per_page as $vn_items_per_p){
-				print "<option value='".(int)$vn_items_per_p."' ".(((int)$vn_items_per_p == $vn_current_items_per_page) ? "SELECTED='1'" : "").">".$vn_items_per_p."</option>\n";
+				print "<option value='".(int)$vn_items_per_p."' ".(((int)$vn_items_per_p == $vn_current_items_per_page) ? "SELECTED='1'" : "").">{$vn_items_per_p}</option>\n";
 			}
 		}
 		print "</select>\n";
@@ -100,7 +101,7 @@ if($vo_result->numHits() > 0) {
 		print _t("Layout").": <select name='view' style='width: 100px;'>\n";
 		if(is_array($va_views) && sizeof($va_views) > 0){
 			foreach($va_views as $vs_view => $vs_name){
-				print "<option value='".$vs_view."' ".(($vs_view == $vs_current_view) ? "SELECTED='1'" : "").">".$vs_name."</option>\n";
+				print "<option value='".$vs_view."' ".(($vs_view == $vs_current_view) ? "SELECTED='1'" : "").">{$vs_name}</option>\n";
 			}
 		}
 		print "</select>\n";
@@ -111,7 +112,7 @@ if($vo_result->numHits() > 0) {
 		print _t("Display").": <select name='display_id' style='width: 100px;'>\n";
 		if(is_array($va_display_lists) && sizeof($va_display_lists) > 0){
 			foreach($va_display_lists as $vn_display_id => $vs_display_name){
-				print "<option value='".$vn_display_id."' ".(($vn_display_id == $this->getVar("current_display_list")) ? "SELECTED='1'" : "").">".$vs_display_name."</option>\n";
+				print "<option value='".$vn_display_id."' ".(($vn_display_id == $this->getVar("current_display_list")) ? "SELECTED='1'" : "").">{$vs_display_name}</option>\n";
 			}
 		}
 		print "</select>\n";
@@ -128,14 +129,11 @@ if($vo_result->numHits() > 0) {
 		<div style='clear:both;height:1px;'>&nbsp;</div>
 	</div><!-- end bg -->
 </div><!-- end searchOptionsBox -->
-
 <?php
 	TooltipManager::add('#showOptions', _t("Display Options"));
 	TooltipManager::add('#showRefine', _t("Refine Results"));
 	TooltipManager::add('#showTools', _t("Export Tools"));
-
 ?>
-
 <script type="text/javascript">
 	function caHandleResultsUIBoxes(mode, action) {
 		var boxes = ['searchOptionsBox', 'searchRefineBox', 'searchToolsBox', 'searchSetsBox'];
@@ -163,6 +161,7 @@ if($vo_result->numHits() > 0) {
 				
 					currentBox = "searchToolsBox";
 					currentShowButton = "showTools";
+					jQuery("input.addItemToSetControl").show(); 
 				} 
 				break;
 			case 'sets':

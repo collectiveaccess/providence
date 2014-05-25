@@ -30,7 +30,7 @@
  
  	//
  	// This lookup controller doesn't extend BaseLookupController
- 	// since direct lookups on attributes are handled specially – not via the search engine
+ 	// since direct lookups on attributes are handled specially ��� not via the search engine
  	class AttributeValueController extends ActionController {
  		# -------------------------------------------------------
  		# AJAX handlers
@@ -60,7 +60,7 @@
 				return null;
 			}
 			
-			if ($this->request->user->getBundleAccessLevel($va_tmp[0], $vs_tmp[1]) == __CA_BUNDLE_ACCESS_NONE__) {
+			if ($this->request->user->getBundleAccessLevel($va_tmp[0], $va_tmp[1]) == __CA_BUNDLE_ACCESS_NONE__) {
 				print _t("You do not have access to this bundle");
 				return null;
 			}

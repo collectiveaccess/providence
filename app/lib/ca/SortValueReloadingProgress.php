@@ -43,7 +43,8 @@
 		
 		# -------------------------------------------------------
 		public function dispatchLoopShutdown() {	
-		
+			global $g_ui_locale_id;
+			
 			//
 			// Force output to be sent - we need the client to have the page before
 			// we start flushing progress bar updates
@@ -153,7 +154,7 @@
 								if (!$t_table->getPreferredLabelCount()) {
 									$t_table->addLabel(
 										array('name' => trim($va_media_info['ORIGINAL_FILENAME']) ? $va_media_info['ORIGINAL_FILENAME'] : _t('Representation')),
-										$pn_locale_id,
+										$g_ui_locale_id,
 										null,
 										true
 									);

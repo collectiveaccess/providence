@@ -307,7 +307,7 @@
 	
 						$vn_item_count++;
 	
-						$va_row_headers[] = ($vn_item_count)." ".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), 'caResultsEditorEditLink', $vs_subject_table, $vn_id);
+						$va_row_headers[] = ($vn_item_count)." ".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), 'caResultsEditorEditLink', $this->ops_tablename, $vn_id);
 	
 					}
 				}
@@ -464,6 +464,26 @@
 			
 			$t_model = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
 			
+			$o_config = Configuration::load();
+			if (!(is_array($va_sorts = $o_config->getList($this->ops_tablename.'_hierarchy_browser_sort_values'))) || !sizeof($va_sorts)) { $va_sorts = array(); }
+			foreach($va_sorts as $vn_i => $vs_sort_fld) {
+				$va_tmp = explode(".", $vs_sort_fld);
+				
+				if ($va_tmp[1] == 'preferred_labels') {
+					$va_tmp[0] = $vs_label_table_name;
+					if (!($va_tmp[1] = $va_tmp[2])) {
+						$va_tmp[1] = $vs_label_display_field_name;
+					}
+					unset($va_tmp[2]);
+					
+					$va_sorts[$vn_i] = join(".", $va_tmp);
+				}
+			}
+			
+			if (!in_array($vs_sort_dir = strtolower($o_config->get($this->ops_tablename.'_hierarchy_browser_sort_direction')), array('asc', 'desc'))) {
+				$vs_sort_dir = 'asc';
+			}
+			
 			$va_expanded_facet = array();
 			$t_item = new ca_list_items();
  			foreach($va_facet as $vn_id => $va_facet_item) {
@@ -570,6 +590,39 @@
 						}
 						break;
 				}
+				$vs_rank_fld = $t_item->getProperty('RANK');
+						
+				$va_sorted_items = array();
+				foreach($va_json_data as $vn_id => $va_node) {
+					if(!is_array($va_node)) { continue; }
+					$vs_key = preg_replace('![^A-Za-z0-9]!', '_', $va_node['name']);
+				
+					if (isset($va_node['sort']) && $va_node['sort']) {
+						$va_sorted_items[$va_node['sort']][$vs_key] = $va_node;
+					} else {
+						if ($vs_rank_fld && ($vs_rank = (int)sprintf("%08d", $va_node[$vs_rank_fld]))) {
+							$va_sorted_items[$vs_rank][$vs_key] = $va_node;
+						} else {
+							$va_sorted_items[$vs_key][$vs_key] = $va_node;
+						}
+					}
+				}
+				ksort($va_sorted_items);
+				if ($vs_sort_dir == 'desc') { $va_sorted_items = array_reverse($va_sorted_items); }
+				$va_json_data = array();
+				
+				$va_sorted_items = array_slice($va_sorted_items, $vn_start, $vn_max_items_per_page);
+				
+				foreach($va_sorted_items as $vs_k => $va_v) {
+					ksort($va_v);
+					if ($vs_sort_dir == 'desc') { $va_v = array_reverse($va_v); }
+					$va_json_data = array_merge($va_json_data, $va_v);
+				}
+				$va_json_data['_itemCount'] = sizeof($va_json_data);
+				$va_json_data['_sortOrder'] = array_keys($va_json_data);
+				$va_json_data['_primaryKey'] = $t_model->primaryKey();	// pass the name of the primary key so the hierbrowser knows where to look for item_id's
+ 				
+ 				
 				$va_level_data[$pn_id] = $va_json_data;
 			}
  			if (!trim($this->request->getParameter('init', pString))) {

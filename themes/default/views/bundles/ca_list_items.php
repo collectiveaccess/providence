@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -57,6 +57,12 @@
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
 	} else {
 		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel');
+	
+	}
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings);
+	
+	if(sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort) {
+		print caEditorBundleSortControls($this->request, $vs_id_prefix, $pa_settings);
 	}
 	
 	$va_errors = array();
@@ -198,7 +204,7 @@
 
 				<div style='width: 700px; height: <?php print $va_settings['hierarchicalBrowserHeight']; ?>;'>
 					
-					<div id='<?php print $vs_id_prefix; ?>_hierarchyBrowser{n}' style='width: 100%; height: 100%;' class='hierarchyBrowser'>
+					<div id='<?php print $vs_id_prefix; ?>_hierarchyBrowser{n}' style='width: 100%; height: 140px;' class='hierarchyBrowser'>
 						<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
 					</div><!-- end hierarchyBrowser -->	</div>
 					
@@ -266,23 +272,6 @@
 	</textarea>
 	
 	<div class="bundleContainer">
-<?php
-	if(sizeof($va_initial_values) && !$vb_read_only && !(bool)$va_settings['restrictToTermsRelatedToCollection'] && !$vs_sort) {
-?>
-		<div class="caItemListSortControlTrigger" id="<?php print $vs_id_prefix; ?>caItemListSortControlTrigger">
-			<?php print _t('Sort by'); ?>
-			<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/bg.gif" alt='Sort'/>
-		</div>
-		<div class="caItemListSortControls" id="<?php print $vs_id_prefix; ?>caItemListSortControls">
-			<a href='#' onclick="caRelationBundle<?php print $vs_id_prefix; ?>.sort('name'); return false;" class='caItemListSortControl'><?php print _t('name'); ?></a><br/>
-			<a href='#' onclick="caRelationBundle<?php print $vs_id_prefix; ?>.sort('idno'); return false;" class='caItemListSortControl'><?php print _t('idno'); ?></a><br/>
-			<a href='#' onclick="caRelationBundle<?php print $vs_id_prefix; ?>.sort('type'); return false;" class='caItemListSortControl'><?php print _t('type'); ?></a><br/>
-			<a href='#' onclick="caRelationBundle<?php print $vs_id_prefix; ?>.sort('entry'); return false;" class='caItemListSortControl'><?php print _t('entry'); ?></a><br/>
-		</div>
-<?php
-	}
-?>
-
 		<div class="caItemList">
 <?php
 	if (sizeof($va_errors)) {

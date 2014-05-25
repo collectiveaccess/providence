@@ -608,7 +608,7 @@ class TaskQueue extends BaseObject {
 		
 		if (is_array($va_opo_processes)) {
 			foreach($va_opo_processes as $va_proc_info) {
-				if ($va_proc_info['entity_key'] == $ps_entity_key) {
+				if ($va_proc_info['entity_key'] == $ps_row_key) {
 					return true;
 				} 
 			}

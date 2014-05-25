@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -66,9 +66,24 @@
 			if ($req->isLoggedIn()) {
 				set_time_limit(3600*24); // if it takes more than 24 hours we're in trouble
 			
+				if (isset($_FILES['sourceFile']['tmp_name']) && $_FILES['sourceFile']['tmp_name']) {
+					$vs_input = $_FILES['sourceFile']['tmp_name'];
+				} elseif(!($vs_input = $req->getParameter('sourceUrl', pString))) {
+					$vs_input = $req->getParameter('sourceText', pString);
+				}
+				
+				$vs_file_input = caGetOption('fileInput', $this->opa_options, null); 
+				$vs_base_import_dir = $req->config->get('batch_media_import_root_directory');
+				$vs_file_import_directory = caGetOption('fileImportPath', $this->opa_options, null); 
+				if (($vs_file_input === 'import') && (is_dir($vs_base_import_dir.'/'.$vs_file_import_directory))) { 
+					// grab files from import directory
+					$vs_input = $vs_base_import_dir.'/'.$vs_file_import_directory;
+				}
+
+				
 				$va_errors = BatchProcessor::importMetadata(
 					$req, 
-					(isset($_FILES['sourceFile']['tmp_name']) && $_FILES['sourceFile']['tmp_name']) ? $_FILES['sourceFile']['tmp_name'] : $req->getParameter('sourceUrl', pString),
+					$vs_input,
 					$req->getParameter('importer_id', pInteger),
 					$req->getParameter('inputFormat', pString),
 					array_merge($this->opa_options, array('progressCallback' => 'caIncrementBatchMetadataImportProgress', 'reportCallback' => 'caUpdateBatchMetadataImportResultsReport'))

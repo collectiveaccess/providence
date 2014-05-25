@@ -42,7 +42,7 @@
 	$vs_form_name = "LoanQuickAddForm";
 ?>		
 <form action="#" name="<?php print $vs_form_name; ?>" method="POST" enctype="multipart/form-data" id="<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>">
-	<div class='dialogHeader' style='position: fixed; width: 890px; z-index:33000;'><?php 
+	<div class='quickAddDialogHeader'><?php 
 	print "<div class='quickAddTypeList'>"._t('Quick Add %1', $t_subject->getTypeListAsHTMLFormElement('change_type_id', array('id' => "{$vs_form_name}TypeID{$vs_field_name_prefix}{$vs_n}", 'onchange' => "caSwitchTypeQuickAddForm{$vs_field_name_prefix}{$vs_n}();"), array('value' => $t_subject->get('type_id'), 'restrictToTypes' => $va_restrict_to_types)))."</div>"; 
 	
 	if ($vb_can_edit) {
@@ -67,6 +67,7 @@
 			
 			$va_form_elements = $t_subject->getBundleFormHTMLForScreen($this->getVar('screen'), array(
 					'request' => $this->request, 
+					'restrictToTypes' => array($t_subject->get('type_id')),
 					'formName' => $vs_form_name.$vs_field_name_prefix.$vs_n,
 					'forceLabelForNew' => $va_force_new_label							// force query text to be default in label fields
 			));
@@ -111,7 +112,6 @@
 						content += '</ul></div>';
 						
 						jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").html(content).slideDown(200);
-						jQuery('.rounded').corner('round 8px');
 						
 						var quickAddClearErrorInterval = setInterval(function() {
 							jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").slideUp(500);

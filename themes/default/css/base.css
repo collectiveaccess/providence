@@ -1,4 +1,4 @@
-@import url("//hello.myfonts.net/count/28ec2c");
+/* @import url("//hello.myfonts.net/count/28ec2c"); */
 
 @font-face {font-family: 'DIN-Regular';src: url('fonts/28EC2C_0_0.eot');src: url('fonts/28EC2C_0_0.eot?#iefix') format('embedded-opentype'),url('fonts/28EC2C_0_0.woff') format('woff'),url('fonts/28EC2C_0_0.ttf') format('truetype');}
 
@@ -150,6 +150,7 @@ h5 {
     border-right: 2px solid #ddd;
     margin-top: 28px;
     min-height: 1000px;
+    position:absolute;
 }
 * html #mainContent { width:736px; margin-left: 0px;} /* IE6 only fixes width */
 
@@ -166,18 +167,18 @@ h5 {
 /* --- SIDE NAVIGATION --- */
 #leftNav {
     clear: both;
-    width: 215px;
+    width: 211px;
     background-color: #fff;
     position: fixed;
     height: 100%;
-    padding-top:1px;
+    padding-top:27px; 
     border-right: #ddd solid 2px;
     border-left: #ddd solid 2px;
 }
 
 #leftNav #leftNavSidebar {
     overflow: auto;
-    width: 215px;
+    width: 212px;
     height: 100%;
     border-top: 2px solid #ddd;
 }
@@ -407,6 +408,17 @@ div.inspectorLotObjectTypeControls {
 a.inspectorOnLoan {
     color: #cc0000;
     font-style: italic;
+}
+
+.inspectorDeaccessioned {
+    color: #cc0000;
+    font-style: italic;
+}
+
+.inspectorCurrentLocation {
+    color: #aaa;
+    font-style: italic;
+    font-size: 10px;
 }
 
 #leftNav h4 div {  text-transform: none; font-weight: normal; padding-top: 5px; }
@@ -1134,6 +1146,8 @@ div.hint {
 }
 
 .bundleLabel {
+	position: relative;
+	
     font-family: "DIN-Regular", sans-serif;
     font-size:13px;
     color: #333;
@@ -1886,9 +1900,11 @@ div.searchNoResults {
 div.searchSuggestion {
     font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size:12px;
+    font-weight: normal;
+    font-style: italic;
     color: #134959;
-    margin-bottom: 5px;
-    text-align: center;
+    margin: 15px 0 5px 0;
+    text-align: left;
 }
 
 a.searchSuggestion {
@@ -1976,7 +1992,7 @@ select.searchSetSelect {
 	line-height: 1.4em;
 	position: absolute;
 	top: 100px;
-	left: 40%;
+	left: 25%;
 	width: 400px;
 	z-index:20000;
 }
@@ -2134,7 +2150,7 @@ a#hideRefine img {
 	line-height: 1.4em;
 	position: absolute;
 	top: 100px;
-	left: 40%;
+	left: 25%;
 	width: 400px;
 	z-index:20000;
 }
@@ -2979,6 +2995,18 @@ div.caObjectRepresentationDetailEditorDoneButton {
     text-align: center;
 }
 
+div.caObjectRepresentationSetCenterContainer {
+	position: relative;
+	text-align: center;
+	margin: auto;
+}
+
+#caObjectRepresentationSetCenterMarker {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}
+
 /* formats object representation extracted metadata for multifile metadata display */
 
 div.caMediaOverlayMultifileFileList {
@@ -3034,7 +3062,7 @@ div.attributeFileFileName {
 }
 
 div.attributeMediaThumbnail {
-    width: 160px;
+    width: 90%;
     /* float: left; */
 }
 
@@ -4482,8 +4510,11 @@ span.bundleDisplayEditorPlacementListItemTitle {
 }
 .elementSettingsUI {
 	position: absolute;
-	top: 550px;
+	top: 40px;
 	left: 400px;
+	overflow: auto;
+	width: 400px;
+	max-height:500px;
 	background-color: rgb(255, 255, 255);
 	padding: 20px;
 	border-radius: 4px;
@@ -4492,8 +4523,6 @@ span.bundleDisplayEditorPlacementListItemTitle {
 	-moz-box-shadow: 0 0 5px #888;
 	-webkit-box-shadow: 0 0 5px#888;
 	box-shadow: 0 0 5px #888;
-	width: 400px;
-	z-index: 200000;
 }
 .elementSettingsUI a{
 	float:right;
@@ -5147,7 +5176,7 @@ div.listRel {
     font-size: 11px;
     font-weight: normal;
     padding: 10px;
-    margin-bottom: 5px;
+    margin: 0 0 5px 7px;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
     border-radius: 5px;
@@ -5164,30 +5193,44 @@ div.listRel {
 }
 
 .caItemListSortControlTrigger {
-    position: absolute;
-    right: 20px;
-    top: -11px;
     font-size: 11px;
     padding: 4px;
-    margin-top: -12px;
+}
+
+.caItemListSortControlContainer {
+    position: absolute;
+    right: 40px;
+    top: 0px;
+    min-width: 50px;
+    
+    z-index: 14000;
 }
 
 .caItemListSortControls {
-    position: absolute;
-    right: 20px;
-    top: 0px;
     display: none;
-    width: 70px;
 
     line-height: 17px;
     font-size: 11px;
-    padding: 7px;
-    border: 1px solid #ddd;
-    background-color:#eeeeee;
+    padding: 3px 5px 5px 5px;
+    background-color: #fff;
+    
+    border: 1px solid #e6e6e6;
+
     z-index: 10000;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-    border-radius: 4px;
+}
+
+.caItemListSortControls ul {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+
+.caItemListSortControls ul li {
+    background-color: #fff;
+}
+
+.caItemListSortControls ul li a {
+	text-decoration: none;
 }
 
 .roundedRel .caDeleteItemButton, .roundedRel .caInterstitialEditButton {
@@ -5256,7 +5299,7 @@ div.preferenceSectionDivider {
     padding: 10px;
     line-height:1.3em;
     overflow: hidden;
-    height: 1.2em;
+    height: 2.4em;
 }
 
 #batchProcessingElapsedTime {
@@ -5266,6 +5309,12 @@ div.preferenceSectionDivider {
 }
 
 #batchProcessingCounts {
+    float: right;
+    font-size: 10px;
+    margin-top: 0px;
+}
+
+#batchProcessingFileCount {
     float: right;
     font-size: 10px;
     margin-top: 0px;
@@ -6169,12 +6218,9 @@ div.dialogHeader {
     display: none;
     margin: 0px;
     padding:0px !important;
-    border: 2px solid #eee;
+    border: 2px solid #999999;
     z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
     background-color: #FFFFFF;
-    border-radius:4px;
-    -moz-border-radius:4px;
-    -webkit-border-radius:4px;
 }
 
 #caRelationQuickAddPanel .close a{
@@ -6200,6 +6246,11 @@ div.quickAddFormTopPadding {
 }
 
 div.quickAddDialogHeader {
+	background-color: #cccccc;
+    font-size: 13px;
+    font-weight: bold !important;
+    padding: 5px;
+    
     position: fixed;
     width: 890px;
     z-index:33000;
@@ -6221,6 +6272,11 @@ input[type='text'].ui-autocomplete-loading {
     background: white url('../graphics/icons/indicator.gif') right center no-repeat;
 }
 
+
+div.componentAddTypeList {
+    float: left;
+    margin-top: 6px;
+}
 
 /** Debug **/
 
@@ -6689,7 +6745,7 @@ div.caRepresentationMediaReplicationControls {
     margin: 0;
     padding: 0;
 }
-
+ 
 .jcarousel li {
     float: left;
     width: 150px;
@@ -6704,4 +6760,107 @@ div.caRepresentationMediaReplicationControls {
 .jcarousel .loading {
     text-align: center;
     line-height: 70px; /* Fake vertical aligning */
+}
+
+/** Tool plugins **/
+.toolPluginHelpText {
+    margin: 5px 0 5px 0px;
+    font-size:13px;
+}
+
+/** Object location tracking **/
+.caCurrentLocation {
+	padding: 10px;
+	margin-right: 12px;
+}
+
+div.caLocationHistory {
+	border-top: 1px dotted #e6e6e6;
+	padding: 10px;
+	margin-right: 12px;
+}
+
+div.caLocationHistoryTab {
+	max-height: 400px;
+	overflow: auto;
+}
+
+/** Object use history **/
+div.caUseHistoryEntry {
+	position: relative;
+	display: table; 
+	overflow: hidden;
+	font-weight: normal;
+	font-size: 11px;
+	
+	width: 730px;
+	
+	margin: 5px 0 0 5px;
+	padding: 5px 0 5px 0;
+	border-top: 1px dotted #e6e6e6;
+}
+
+div.caUseHistoryButtonBar {
+	padding: 10px;
+	border-bottom: 1px dotted #e6e6e6;
+}
+
+div.caUseHistoryIconContainer {
+	float: left;
+	display: table; 
+	width: 60px;
+	height: 60px; 
+	overflow: hidden;
+	
+	border: 2px solid #333;
+    border-radius: 5px;
+    
+	margin: 0 10px 0 0;
+}
+
+div.caUseHistoryIcon {
+	display: table-cell; 
+	vertical-align: middle;
+}
+
+div.caUseHistoryIconText {
+	text-align: center;
+	font-size: 11px;
+	font-style: italic;
+}
+
+div.caUseHistoryDate {
+	position: absolute;
+	bottom: 3px;
+	right: 3px;
+	
+	font-style: italic;
+	font-size: 9px;
+}
+
+/** Metadata dictionary **/
+.caMetadataDictionaryDefinition {
+	padding: 10px;
+	background-color: #fff;
+	
+    border: 2px solid #e6e6e6;
+    
+	font-weight: normal;
+	font-size: 12px;
+}
+
+/** Metadata importer **/
+table.caFileSourceControls {
+	width: 700px
+}
+
+td.caFileSourceControls {
+	vertical-align: top;
+	padding-top: 4px;
+}
+
+td.caSourceFileControlRadio {
+	vertical-align: top;
+	width: 30px;
+	height: 35px;
 }

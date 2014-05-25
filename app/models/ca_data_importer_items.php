@@ -409,6 +409,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Convert newlines to HTML'),
 			'description' => _t('Convert newline characters in text to HTML &lt;BR/&gt; tags.')
 		);
+		$va_settings['useAsSingleValue'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Use as single value'),
+			'description' => _t('Force repeating values to be imported as a single value concatenated with the specified delimiter.')
+		);
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
 	# ------------------------------------------------------
@@ -487,8 +496,9 @@ class ca_data_importer_items extends BaseModel {
 		
 		$va_refinery_list = array();
 		foreach($va_refinery_names as $vs_name) {
-			$o_refinery = RefineryManager::getRefineryInstance($vs_name);
-			$va_refinery_list[$vs_name] = $o_refinery->getTitle();
+			if ($o_refinery = RefineryManager::getRefineryInstance($vs_name)) {
+				$va_refinery_list[$vs_name] = $o_refinery->getTitle();
+			}
 		}
 		
 		return $va_refinery_list;

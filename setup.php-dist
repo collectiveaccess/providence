@@ -156,7 +156,7 @@ define("__CA_APP_NAME__", "collectiveaccess");
 # 		If you must to set this manually, enter the correct directory but omit trailing slashes!
 # 		For Windows hosts, use a notation similar to "C:/PATH/TO/COLLECTIVEACCESS"; do NOT use backslashes
 #
-define("__CA_BASE_DIR__", pathinfo(preg_replace("!/install|/viewers/apps!", "", $_SERVER['SCRIPT_FILENAME']), PATHINFO_DIRNAME));
+define("__CA_BASE_DIR__", pathinfo(preg_replace("!/install|/viewers/apps!", "", isset($_SERVER['SCRIPT_FILENAME']) ? $_SERVER['SCRIPT_FILENAME'] : ''), PATHINFO_DIRNAME));
 
 
 #
@@ -172,7 +172,7 @@ define("__CA_BASE_DIR__", pathinfo(preg_replace("!/install|/viewers/apps!", "", 
 #
 # 		Example: If CollectiveAccess will be accessed via http://www.mysite.org/apps/ca then __CA_URL_ROOT__ would be set to /apps/ca
 #
-define("__CA_URL_ROOT__", str_replace($_SERVER['DOCUMENT_ROOT'], '', __CA_BASE_DIR__));
+define("__CA_URL_ROOT__", str_replace(isset($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT'] : '', '', __CA_BASE_DIR__));
 
 
 #
@@ -183,7 +183,7 @@ define("__CA_URL_ROOT__", str_replace($_SERVER['DOCUMENT_ROOT'], '', __CA_BASE_D
 #
 #		If you must set this manually, it must be the full host name. Do not include http:// or any other prefixes.
 #
-define("__CA_SITE_HOSTNAME__", $_SERVER['HTTP_HOST']);
+define("__CA_SITE_HOSTNAME__", isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '');
 
 #
 # If you use PayPal for e-commerce payments then you can set your account information 
@@ -217,7 +217,10 @@ define("__CA_CONF_DIR__", __CA_APP_DIR__."/conf");
 # Path to local config directory - configuration containing installation-specific configuration
 # Note that this is not the same as the __CA_CONF_DIR__, which contains general application configuration
 # Installation-specific configuration simply allows you to override selected application configuration as-needed without having to modify the stock config
-define("__CA_LOCAL_CONFIG_DIRECTORY__", __CA_CONF_DIR__."/local");
+# Note also that unit tests should generally ignore local configuration and use the base configuration only
+if (!defined('__CA_IS_UNIT_TEST__') || !__CA_IS_UNIT_TEST__) {
+	define("__CA_LOCAL_CONFIG_DIRECTORY__", __CA_CONF_DIR__."/local");
+}
 
 # Set path to instance configuration file
 # (If you want to run several CA distinct instances using a single install you can add additional configuration files here.)

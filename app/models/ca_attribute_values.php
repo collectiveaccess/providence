@@ -391,5 +391,26 @@ class ca_attribute_values extends BaseModel {
 		$this->_FIELD_VALUES['value_blob'] = caUnserializeForDatabase($this->_FIELD_VALUES['value_blob']);
 	}
 	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function getAttributeValueArray($pn_element_id, $pa_options=null) {
+		if (!$pn_element_id) { return null; }
+		$o_db = new Db();
+		$qr_attr = $o_db->query("
+			SELECT *
+			FROM ca_attribute_values cav
+			INNER JOIN ca_metadata_elements AS cme ON cme.element_id = cav.element_id
+			WHERE
+				cav.attribute_id = ?
+		", array((int)$pn_element_id));
+		
+		if($qr_attr->nextRow()) {
+			return $qr_attr->getRow();
+		}
+		
+		return null;
+	}
+	# ------------------------------------------------------
 }
 ?>

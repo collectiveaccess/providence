@@ -480,7 +480,7 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	function caEscapeHTML($ps_text, $vs_character_set='utf-8') {
-		if (!$opa_php_version) { $opa_php_version = caGetPHPVersion(); }
+		$opa_php_version = caGetPHPVersion();
 		
 		if ($opa_php_version['versionInt'] >= 50203) {
 			$ps_text = htmlspecialchars(stripslashes($ps_text), ENT_QUOTES, $vs_character_set, false);
@@ -488,6 +488,16 @@ function caFileIsIncludable($ps_file) {
 			$ps_text = htmlspecialchars(stripslashes($ps_text), ENT_QUOTES, $vs_character_set);
 		}
 		return str_replace("&amp;#", "&#", $ps_text);
+	}
+	# ----------------------------------------
+	/**
+	 * Return text with quotes escaped for use in a tab or comma-delimited file
+	 *
+	 * @param string $ps_text
+	 * @return string
+	 */
+	function caEscapeForDelimitedOutput($ps_text) {
+		return '"'.str_replace("\"", "\"\"", $ps_text).'"';
 	}
 	# ----------------------------------------
 	function caGetTempDirPath() {
@@ -742,10 +752,10 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 * Examples of valid expressions are:
 	 *		12 1/2" (= 12.5")
-	 *		12⅔ ft (= 12.667 ft)
+	 *		12 ⅔ ft (= 12.667 ft)
 	 *		"Total is 12 3/4 lbs" (= "Total is 12.75 lbs")
 	 *
-	 * Both text fractions (ex. 3/4) and Unicode fraction glyphs (ex. ¾) may be used.
+	 * Both text fractions (ex. 3/4) and Unicode fraction glyphs (ex. ��) may be used.
 	 *
 	 * @param string $ps_fractional_expression String including fractional expression to convert
 	 * @param string $locale The locale of the string to use the right decimal separator
@@ -940,7 +950,7 @@ function caFileIsIncludable($ps_file) {
 		$va_sort_keys = array();
 		foreach ($pa_sort_keys as $vs_field) {
 			$va_tmp = explode('.', $vs_field);
-			array_shift($va_tmp);
+			if (sizeof($va_tmp) > 1) { array_shift($va_tmp); }
 			$va_sort_keys[] = join(".", $va_tmp);
 		}
 		$va_sorted_by_key = array();
@@ -1019,12 +1029,13 @@ function caFileIsIncludable($ps_file) {
 	/**
 	  *
 	  */
-	function caGetCacheObject($ps_prefix, $pn_lifetime=3600, $ps_cache_dir=null, $pn_cleaning_factor=100) {
+	function caGetCacheObject($ps_prefix, $pn_lifetime=86400, $ps_cache_dir=null, $pn_cleaning_factor=100) {
 		if (!$ps_cache_dir) { $ps_cache_dir = __CA_APP_DIR__.'/tmp'; }
 		$va_frontend_options = array(
-			'lifetime' => $pn_lifetime, 				/* cache lives 1 hour */
+			'cache_id_prefix' => $ps_prefix,
+			'lifetime' => $pn_lifetime, 		
 			'logging' => false,					/* do not use Zend_Log to log what happens */
-			'write_control' => true,			/* immediate read after write is enabled (we don't write often) */
+			'write_control' => false,			/* immediate read after write is enabled (we don't write often) */
 			'automatic_cleaning_factor' => $pn_cleaning_factor, 	/* automatic cache cleaning */
 			'automatic_serialization' => true	/* we store arrays, so we have to enable that */
 		);
@@ -1277,6 +1288,17 @@ function caFileIsIncludable($ps_file) {
 			return $o_tep->getHistoricTimestamps();
 		}
 		return null;
+	}
+	# ---------------------------------------
+	/**
+	  * Converts Unix timestamp to historic date timestamp
+	  *
+	  * @param int $pn_timestamp A Unix-format timestamp
+	  * @return float Equivalent value as floating point historic timestamp value, or null if Unix timestamp was not valid.
+	  */
+	function caUnixTimestampToHistoricTimestamps($pn_timestamp) {
+		$o_tep = new TimeExpressionParser();
+		return $o_tep->unixToHistoricTimestamp($pn_timestamp);
 	}
 	# ---------------------------------------
 	/**
@@ -1581,9 +1603,9 @@ function caFileIsIncludable($ps_file) {
 		}
 		
 		if (isset($pa_parse_options['forceLowercase']) && $pa_parse_options['forceLowercase']) {
-			$vm_val = mb_strtolower($vm_val);
+			$vm_val = is_array($vm_val) ? array_map('mb_strtolower', $vm_val) : mb_strtolower($vm_val);
 		} elseif (isset($pa_parse_options['forceUppercase']) && $pa_parse_options['forceUppercase']) {
-			$vm_val = mb_strtoupper($vm_val);
+			$vm_val = is_array($vm_val) ? array_map('mb_strtoupper', $vm_val) : mb_strtoupper($vm_val);
 		}
 		
 		$vs_cast_to = (isset($pa_parse_options['castTo']) && ($pa_parse_options['castTo'])) ? strtolower($pa_parse_options['castTo']) : '';
@@ -1926,7 +1948,7 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Convert currency value to another currency.
 	 *
-	 * @param $ps_value string Currency value with specifier (Ex. $500, USD 500, ¥1200, CAD 750)
+	 * @param $ps_value string Currency value with specifier (Ex. $500, USD 500, ��1200, CAD 750)
 	 * @param $ps_to string Specifier of currency to convert value to (Ex. USD, CAD, EUR)
 	 * @param $pa_options array Options are:
 	 *		numericValue = return floating point numeric value only, without currency specifier. Default is false.

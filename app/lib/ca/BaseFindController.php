@@ -88,7 +88,17 @@
  			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
  			
  			// Make sure user has access to at least one type
- 			if ($t_model->getTypeFieldName() && (!is_array($va_types = caGetTypeListForUser($this->ops_tablename, array('access' => __CA_BUNDLE_ACCESS_READONLY__))) || !sizeof($va_types))) {
+ 			if (
+ 				(method_exists($t_model, 'getTypeFieldName')) 
+ 				&& 
+ 				$t_model->getTypeFieldName() 
+ 				&& 
+ 				(
+ 					(!is_null($va_types = caGetTypeListForUser($this->ops_tablename, array('access' => __CA_BUNDLE_ACCESS_READONLY__))))
+ 					&& 
+ 					(is_array($va_types) && !sizeof($va_types))
+ 				)
+ 			) {
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
@@ -918,12 +928,16 @@
  				if (!is_array($pa_ids) || !sizeof($pa_ids)) { 
  					$pa_ids = $this->opo_result_context->getResultList();
  				}
+ 				
+				$vn_file_count = 0;
+						
  				if (is_array($pa_ids) && sizeof($pa_ids)) {
  					$ps_version = $this->request->getParameter('version', pString);
 					if ($qr_res = $t_subject->makeSearchResult($t_subject->tableName(), $pa_ids, array('filterNonPrimaryRepresentations' => false))) {
 						$o_zip = new ZipFile();
 						if (!($vn_limit = ini_get('max_execution_time'))) { $vn_limit = 30; }
 						set_time_limit($vn_limit * 2);
+						
 						while($qr_res->nextHit()) {
 							if (!is_array($va_version_list = $qr_res->getMediaVersions('ca_object_representations.media')) || !in_array($ps_version, $va_version_list)) {
 								$vs_version = 'original';
@@ -973,6 +987,7 @@
 									$vs_path = $vs_path_with_embedding;
 								}
 								$o_zip->addFile($vs_path, $vs_filename, 0, array('compression' => 0));
+								$vn_file_count++;
 							}
 						}
 						$this->view->setVar('zip', $o_zip);
@@ -982,7 +997,11 @@
 					}
 				}
  				
- 				$this->render('Results/object_representation_download_binary.php');
+ 				if ($vn_file_count > 0) {
+ 					$this->render('Results/object_representation_download_binary.php');
+ 				} else {
+ 					$this->response->setHTTPResponseCode(204, _t('No files to download'));
+ 				}
  				return;
  			}
  			
@@ -1025,7 +1044,7 @@
  			// Available sets
  			//
  			$t_set = new ca_sets();
- 			$this->view->setVar('available_sets', $x=caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID()))));
+ 			$this->view->setVar('available_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID()))));
 
 			$this->view->setVar('last_search', $this->opo_result_context->getSearchExpression());
  			
@@ -1345,18 +1364,26 @@
 							} else {
 								// Do edit
 								$t_instance->setMode(ACCESS_WRITE);
-								$t_instance->replaceAttribute(array(
-									'locale_id' => $g_ui_locale_id,
-									$ps_bundle => $ps_val
-								), $ps_bundle);
-							
+								
 								$vs_val_proc = null;
 								if ($vn_datatype == 3) {
-									// convert list codes to display text
-									$t_list_item = new ca_list_items((int)$ps_val);
-									if ($t_list_item->getPrimaryKey()) {
-										$vs_val_proc = $t_list_item->get('ca_list_items.preferred_labels.name_plural');
+									if ($vn_id = ca_list_items::find(array('preferred_labels' => array('name_plural' => $ps_val)), array('returnAs' => 'firstId'))) {
+										$t_instance->replaceAttribute(array(
+											'locale_id' => $g_ui_locale_id,
+											$ps_bundle => $vn_id
+										), $ps_bundle);
+									
+										// convert list codes to display text
+										$t_list_item = new ca_list_items((int)$vn_id);
+										if ($t_list_item->getPrimaryKey()) {
+											$vs_val_proc = $t_list_item->get('ca_list_items.preferred_labels.name_plural');
+										}
 									}
+								} else {
+									$t_instance->replaceAttribute(array(
+										'locale_id' => $g_ui_locale_id,
+										$ps_bundle => $ps_val
+									), $ps_bundle);
 								}
 					
 								$t_instance->update();
