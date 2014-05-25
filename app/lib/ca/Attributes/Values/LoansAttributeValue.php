@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Attributes/Values/EntitiesAttributeValue.php : 
+ * app/lib/ca/Attributes/Values/LoansAttributeValue.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2014 Whirl-i-Gig
+ * Copyright 2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,21 +33,21 @@
  /**
   *
   */
-  	define("__CA_ATTRIBUTE_VALUE_ENTITIES__", 22);
+  	define("__CA_ATTRIBUTE_VALUE_LOANS__", 27);
   	
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AuthorityAttributeValue.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_entities.php');
+ 	require_once(__CA_MODELS_DIR__.'/ca_loans.php');
  
  	global $_ca_attribute_settings;
  	
- 	$_ca_attribute_settings['EntitiesAttributeValue'] = array(		// global
+ 	$_ca_attribute_settings['LoansAttributeValue'] = array(		// global
 		'requireValue' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_CHECKBOXES,
 			'default' => 1,
 			'width' => 1, 'height' => 1,
 			'label' => _t('Require value'),
-			'description' => _t('Check this option if you want to require that an entity be selected.')
+			'description' => _t('Check this option if you want to require that a loan be selected.')
 		),
 		'fieldWidth' => array(
 			'formatType' => FT_NUMBER,
@@ -109,22 +109,22 @@
 		)
 	);
  
-	class EntitiesAttributeValue extends AuthorityAttributeValue {
+	class LoansAttributeValue extends AuthorityAttributeValue {
  		# ------------------------------------------------------------------
  		/**
  		 * Name of table this attribute references
  		 */
- 		protected $ops_table_name = 'ca_entities';
+ 		protected $ops_table_name = 'ca_loans';
  		
  		/**
  		 * Display name, in singular sense, of table this attribute references. The name should be capitalized.
  		 */
- 		protected $ops_name_singular = 'Entity';
+ 		protected $ops_name_singular = 'Loan';
  		
  		/**
  		 * Display name, in plural sense, of table this attribute references. The name should be capitalized.
  		 */
- 		protected $ops_name_plural = 'Entities';
+ 		protected $ops_name_plural = 'Loans';
  		# ------------------------------------------------------------------
 	}
  ?>
