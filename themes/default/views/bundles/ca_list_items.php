@@ -387,9 +387,3 @@
 ?>
 	});
 </script>
-
-<?php
-	foreach($va_initial_values as $vn_id => $va_info) {
-		TooltipManager::add("#{$vs_id_prefix}_edit_related_{$vn_id}", "<h2>".$va_info['label']."</h2>");
-	}
-?>
