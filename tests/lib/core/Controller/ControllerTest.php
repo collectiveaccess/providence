@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * support/tests/lib/core/Models/DatamodelTest.php 
+ * tests/lib/core/Controller/ControllerTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,17 +30,14 @@
  * ----------------------------------------------------------------------
  */
 	require_once('PHPUnit/Autoload.php');
-	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
+	require_once(__CA_LIB_DIR__.'/core/Controller/AppController.php');
 	
-	class DatamodelTest extends PHPUnit_Framework_TestCase {
-		public function testInstantiateAllModels() {
-			$o_dm = Datamodel::load();
-			
-			$va_tables = $o_dm->getTableNames();
-			
-			foreach($va_tables as $vs_table) {
-				$this->assertInstanceOf($vs_table, $o_dm->getInstanceByTableName($vs_table));
-			}
+	class ControllerTest extends PHPUnit_Framework_TestCase {
+	
+		
+		public function testRequestDispatch() {
+		
 		}
+		
 	}
 ?>

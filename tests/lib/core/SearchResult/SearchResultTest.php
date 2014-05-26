@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * support/tests/lib/core/SearchResult/SearchResultTest.php 
+ * tests/lib/core/SearchResult/SearchResultTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

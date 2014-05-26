@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * support/tests/lib/ca/AttributeValues/GeocodeAttributeValueTest.php
+ * tests/lib/ca/AttributeValues/GeocodeAttributeValueTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

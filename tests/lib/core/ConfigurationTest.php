@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * support/tests/lib/core/ConfigurationTest.php 
+ * tests/lib/core/ConfigurationTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -35,7 +35,7 @@
 	
 	class ConfigurationTest extends PHPUnit_Framework_TestCase {
 		public function testScalars() {
-			$o_config = new Configuration(__CA_BASE_DIR__.'/support/tests/lib/core/data/test.conf');
+			$o_config = new Configuration(__CA_BASE_DIR__.'/tests/lib/core/data/test.conf');
 			
 			$this->assertEquals($o_config->get('a_scalar'), 'Hi there');
 			$this->assertEquals($o_config->get('a_translated_scalar'), 'Hej da!');
@@ -46,7 +46,7 @@
 		}
 		
 		public function testLists() {
-			$o_config = new Configuration(__CA_BASE_DIR__.'/support/tests/lib/core/data/test.conf');
+			$o_config = new Configuration(__CA_BASE_DIR__.'/tests/lib/core/data/test.conf');
 			
 			$va_array = $o_config->getList('a_list');
 			$this->assertEquals(sizeof($va_array), 4);
@@ -83,7 +83,7 @@
 		}
 		
 		public function testAssocLists() {
-			$o_config = new Configuration(__CA_BASE_DIR__.'/support/tests/lib/core/data/test.conf');
+			$o_config = new Configuration(__CA_BASE_DIR__.'/tests/lib/core/data/test.conf');
 			
 			$va_assoc = $o_config->getAssoc('an_associative_list');
 			$this->assertEquals(sizeof(array_keys($va_assoc)), 1);
@@ -114,7 +114,7 @@
 		}
 		
 		public function testBoolean() {
-			$o_config = new Configuration(__CA_BASE_DIR__.'/support/tests/lib/core/data/test.conf');
+			$o_config = new Configuration(__CA_BASE_DIR__.'/tests/lib/core/data/test.conf');
 			
 			$vb_scalar = $o_config->getBoolean('boolean_yes');
 			$this->assertTrue($vb_scalar);
@@ -129,7 +129,7 @@
 		}
 		
 		public function testMisc() {
-			$o_config = new Configuration(__CA_BASE_DIR__.'/support/tests/lib/core/data/test.conf');
+			$o_config = new Configuration(__CA_BASE_DIR__.'/tests/lib/core/data/test.conf');
 			
 			$va_keys = $o_config->getScalarKeys();
 			$this->assertTrue(is_array($va_keys));

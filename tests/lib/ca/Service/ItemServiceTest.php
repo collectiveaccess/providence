@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * support/tests/lib/core/Service/ItemServiceTest.php 
+ * tests/lib/core/Service/ItemServiceTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

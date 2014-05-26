@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * support/tests/models/ModelSchemaTests.php 
+ * tests/models/ModelSchemaTests.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

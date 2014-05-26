@@ -15,7 +15,7 @@
          stopOnIncomplete="false"
          stopOnSkipped="false"
          strict="false"
-         bootstrap="../../setup.php"
+         bootstrap="../setup.php"
          verbose="false">
 
 	<php>

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * support/tests/lib/core/Parsers/TimeExpressionParserTest.php 
+ * tests/lib/core/Parsers/TimeExpressionParserTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

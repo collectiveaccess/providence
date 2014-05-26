@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * support/tests/plugins/relationshipGenerator/RelationshipGeneratorPluginConfigurationTest.php
+ * tests/plugins/relationshipGenerator/RelationshipGeneratorPluginConfigurationTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

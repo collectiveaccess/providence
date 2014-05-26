@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * support/tests/helpers/UtilityHelpersTest.php
+ * tests/helpers/UtilityHelpersTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

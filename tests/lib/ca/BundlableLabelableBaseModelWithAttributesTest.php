@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * support/tests/lib/ca/BundlableLabelableBaseModelWithAttributesTests.php : table access class for table ca_users
+ * tests/lib/ca/BundlableLabelableBaseModelWithAttributesTests.php : table access class for table ca_users
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

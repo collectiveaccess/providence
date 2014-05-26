@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * support/tests/plugins/AbstractPluginIntegrationTest.php
+ * tests/plugins/AbstractPluginIntegrationTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

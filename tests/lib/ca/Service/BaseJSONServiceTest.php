@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * support/tests/lib/core/Service/BaseJSONServiceTest.php 
+ * tests/lib/core/Service/BaseJSONServiceTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

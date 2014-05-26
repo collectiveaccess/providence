@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * support/tests/plugins/relationshipGenerator/RelationshipGeneratorPluginIntegrationTest.php
+ * tests/plugins/relationshipGenerator/RelationshipGeneratorPluginIntegrationTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -31,7 +31,7 @@
  */
 
 require_once 'PHPUnit/Autoload.php';
-require_once(__CA_BASE_DIR__ . '/support/tests/plugins/AbstractPluginIntegrationTest.php');
+require_once(__CA_BASE_DIR__ . '/tests/plugins/AbstractPluginIntegrationTest.php');
 require_once(__CA_LIB_DIR__ . '/ca/ApplicationPluginManager.php');
 require_once __CA_APP_DIR__ . '/plugins/relationshipGenerator/relationshipGeneratorPlugin.php';
 require_once __CA_APP_DIR__ . '/models/ca_collections.php';

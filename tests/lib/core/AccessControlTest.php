@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * support/tests/lib/core/Controller/AccessControlTest.php 
+ * tests/lib/core/Controller/AccessControlTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
