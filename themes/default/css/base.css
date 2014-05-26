@@ -415,6 +415,12 @@ a.inspectorOnLoan {
     font-style: italic;
 }
 
+.inspectorCurrentLocation {
+    color: #aaa;
+    font-style: italic;
+    font-size: 10px;
+}
+
 #leftNav h4 div {  text-transform: none; font-weight: normal; padding-top: 5px; }
 #leftNav h3 div {  text-transform: none; font-weight: normal; padding-top: 5px; }
 
