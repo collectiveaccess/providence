@@ -787,9 +787,44 @@
 					}
 					break;
 				# -------------------------------------
-				case 3:		// table_name.field_name.sub_element
-					if(!$this->hasField($va_tmp[2])) {
+				case 3:		// table_name.field_name.sub_element / table_name.field_name.hierarchy
+				case 4:		// table_name.field_name.sub_element.hierarchy
+					if(!$this->hasField($va_tmp[2]) || ($va_tmp[2] === 'hierarchy')) {
 						if ($va_tmp[0] === $t_instance->tableName()) {
+							$vb_is_in_container = false;
+							
+							if	(!$this->hasField($va_tmp[1])) {
+								if (($va_tmp[2] === 'hierarchy') || ($va_tmp[3] === 'hierarchy')) {
+									if ($va_tmp[3] === 'hierarchy') { $vb_is_in_container = true; }
+									if (in_array($this->_getElementDatatype($vb_is_in_container ? $va_tmp[2] : $va_tmp[1]), array(__CA_ATTRIBUTE_VALUE_LIST__))) {
+										
+										$va_items = $this->get(join('.', $vb_is_in_container ? array($va_tmp[0], $va_tmp[1], $va_tmp[2]) : array($va_tmp[0], $va_tmp[1])), array('returnAsArray' => true));
+										$va_item_ids = $va_item_ids = caExtractValuesFromArrayList($va_items, $vb_is_in_container ? $va_tmp[2] : $va_tmp[1], array('preserveKeys' => false));
+							
+										$qr_items = caMakeSearchResult('ca_list_items', $va_item_ids);
+		
+										if (!$va_item_ids || !is_array($va_item_ids) || !sizeof($va_item_ids)) {  return $vb_return_as_array ? array() : null; } 
+									
+		
+										$va_get_spec = $va_tmp;
+										array_shift($va_get_spec); array_shift($va_get_spec);
+										if ($vb_is_in_container) { array_shift($va_get_spec); }
+										array_unshift($va_get_spec, 'ca_list_items');
+										
+										$vs_get_spec = join('.', $va_get_spec);
+										
+										$va_vals = array();
+										while($qr_items->nextHit()) {
+											$va_hier = $qr_items->get($vs_get_spec, array('returnAsArray' => true));
+											array_shift($va_hier);	// get rid of root
+											$va_vals[] = $vb_return_as_array ? $va_hier : join($vs_delimiter, $va_hier);
+										}
+										
+										return $va_vals;
+									}
+								} 
+							}
+			
 							if (!$t_instance->hasField($va_tmp[1])) {
 								// try it as an attribute
 									

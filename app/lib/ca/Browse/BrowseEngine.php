@@ -1850,7 +1850,7 @@
 			
 			$vs_browse_type_limit_sql = '';
 			if (($va_browse_type_ids = $this->getTypeRestrictionList()) && sizeof($va_browse_type_ids)) {		// type restrictions
-				$vs_browse_type_limit_sql = '('.$vs_browse_table_name.'.'.$t_subject->getTypeFieldName().' IN ('.join(', ', $va_browse_type_ids).'))';
+				$vs_browse_type_limit_sql = '('.$t_subject->tableName().'.'.$t_subject->getTypeFieldName().' IN ('.join(', ', $va_browse_type_ids).'))';
 				
 				if (is_array($va_facet_info['type_restrictions'])) { 		// facet type restrictions bind a facet to specific types; we check them here 
 					$va_restrict_to_types = $this->_convertTypeCodesToIDs($va_facet_info['type_restrictions']);
