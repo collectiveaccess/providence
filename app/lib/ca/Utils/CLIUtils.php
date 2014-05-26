@@ -161,8 +161,8 @@
 				"profile-name|n=s" => _t('Name of the profile to install (filename in profiles directory, minus the .xml extension).'),
 				"admin-email|e=s" => _t('Email address of the system administrator (user@domain.tld).'),
 				"overwrite" => _t('Flag must be set in order to overwrite an existing installation.  Also, the __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ global must be set to a true value.'),
-				"debug" => _t('Debug flag for installer.'),
-				"quiet" => _t('Suppress progress messages.')
+				"debug|d" => _t('Debug flag for installer.'),
+				"quiet|q" => _t('Suppress progress messages.')
 			);
 		}
 		# -------------------------------------------------------
