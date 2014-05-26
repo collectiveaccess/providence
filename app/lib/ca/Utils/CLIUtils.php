@@ -41,6 +41,158 @@
 		# CLI utility implementations
 		# -------------------------------------------------------
 		/**
+		 * Create a fresh installation of CollectiveAccess based on contents of setup.php.  This is essentially a CLI
+		 * command wrapper for the installation process, as /install/inc/page2.php is a web wrapper.
+		 */
+		public static function install($po_opts=null) {
+			require_once(__CA_BASE_DIR__ . '/install/inc/Installer.php');
+
+			if (!$po_opts->getOption('profile-name')) {
+				CLIUtils::addError(_t("Missing required parameter: profile-name"));
+				return false;
+			}
+			if (!$po_opts->getOption('admin-email')) {
+				CLIUtils::addError(_t("Missing required parameter: admin-email"));
+				return false;
+			}
+
+			$t_total = new Timer();
+			$vo_installer = new Installer(
+				__CA_BASE_DIR__ . '/install/profiles/xml',
+				$po_opts->getOption('profile-name'),
+				$po_opts->getOption('admin-email'),
+				$po_opts->getOption('overwrite'),
+				$po_opts->getOption('debug')
+			);
+			$vb_quiet = $po_opts->getOption('quiet');
+
+			// if profile validation against XSD failed, we already have an error here
+			if($vo_installer->numErrors()){
+				CLIUtils::addError(_t(
+					"There were errors parsing the profile(s): %1",
+					"\n * " . join("\n * ", $vo_installer->getErrors())
+				));
+				return false;
+			}
+
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Performing preinstall tasks")); }
+			$vo_installer->performPreInstallTasks();
+			
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Loading schema")); }
+			$vo_installer->loadSchema();
+			
+			if($vo_installer->numErrors()){
+				CLIUtils::addError(_t(
+					"There were errors loading the database schema: %1",
+					"\n * " . join("\n * ", $vo_installer->getErrors())
+				));
+				return false;
+			}
+
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing locales")); }
+			$vo_installer->processLocales();
+
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing lists")); }
+			$vo_installer->processLists();
+
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing relationship types")); }
+			$vo_installer->processRelationshipTypes();
+
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing metadata elements")); }
+			$vo_installer->processMetadataElements();
+
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing access roles")); }
+			$vo_installer->processRoles();
+
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing user groups")); }
+			$vo_installer->processGroups();
+
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing user logins")); }
+			$va_login_info = $vo_installer->processLogins();
+
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing user interfaces")); }
+			$vo_installer->processUserInterfaces();
+
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing displays")); }
+			$vo_installer->processDisplays();
+
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing search forms")); }
+			$vo_installer->processSearchForms();
+
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Setting up hierarchies")); }
+			$vo_installer->processMiscHierarchicalSetup();
+
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Installation complete")); }
+
+			$vs_time = _t("Installation took %1 seconds", $t_total->getTime(0));
+
+			if($vo_installer->numErrors()){
+				CLIUtils::addError(_t(
+					"There were errors during installation: %1\n(%2)",
+					"\n * " . join("\n * ", $vo_installer->getErrors()),
+					$vs_time
+				));
+				return false;
+			}
+
+			CLIUtils::addMessage(_t(
+				"Installation was successful!\n\nYou can now login with the following logins: %1\nMake a note of these passwords!",
+				"\n * " . join(
+					"\n * ",
+					array_map(
+						function ($username, $password) {
+							return _t("username %1 and password %2", $username, $password);
+						},
+						array_keys($va_login_info),
+						array_values($va_login_info)
+					)
+				)
+			));
+
+			CLIUtils::addMessage($vs_time);
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function installParamList() {
+			return array(
+				"profile-name|n=s" => _t('Name of the profile to install (filename in profiles directory, minus the .xml extension).'),
+				"admin-email|e=s" => _t('Email address of the system administrator (user@domain.tld).'),
+				"overwrite" => _t('Flag must be set in order to overwrite an existing installation.  Also, the __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ global must be set to a true value.'),
+				"debug" => _t('Debug flag for installer.'),
+				"quiet" => _t('Suppress progress messages.')
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function installUtilityClass() {
+			return _t('Configuration');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function installHelp() {
+			return _t("Performs a fresh installation of CollectiveAccess using the configured values in setup.php.
+
+\tThe profile name and administrator email address must be given as per the web-based installer.
+
+\tIf the database schema already exists, this operation will fail, unless the --overwrite flag is set, in which case all existing data will be deleted (use with caution!).");
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function installShortHelp() {
+			return _t("Performs a fresh installation of CollectiveAccess using the configured values in setup.php.");
+		}
+
+		# -------------------------------------------------------
+		/**
 		 * Rebuild search indices
 		 */
 		public static function rebuild_search_index($po_opts=null) {
