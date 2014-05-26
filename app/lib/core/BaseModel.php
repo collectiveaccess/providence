@@ -402,6 +402,16 @@ class BaseModel extends BaseObject {
 	}
 	
 	/**
+	 * Set Db object
+	 *
+	 * @return bool
+	 */
+	public function setDb($po_db) {
+		$this->o_db = $po_db;
+		return true;
+	}
+	
+	/**
 	 * Convenience method to return application configuration object. This is the same object
 	 * you'd get if you instantiated a Configuration() object without any parameters 
 	 *

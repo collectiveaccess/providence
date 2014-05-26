@@ -258,13 +258,113 @@
 		}
 		# ------------------------------------------------------------------
 		/**
-		 *
+		 * Intercept calls to get*ID, where * = the singular name of the authority attribute (Eg. "Entity")
+		 * and reroute to getID(). The provides support for legacy table-specific getID() calls.
 		 */
 		public function __call($ps_method, $pa_params) {
 			if ($ps_method == 'get'.$this->ops_name_singular.'ID') {
 				return $this->getID($pa_params[0]);
 			}
 			throw new Exception(_t('Method %1 does not exist for %2 attributes', $ps_method, $this->ops_name_singular));
+		}
+		# ------------------------------------------------------
+		/**
+		 * Returns a model instance for the table  associated with the specified attribute datatype number.
+		 * Eg. If you pass the __CA_ATTRIBUTE_VALUE_ENTITIES__ constant then a "ca_entities" instance will be returned.
+		 *
+		 * @param mixed $pn_type The name or number of the table
+		 * @return BaseModel A table instance or null if the datatype number is not an authority attribute datatype.
+		 */
+		public static function elementTypeToInstance($pn_type) {
+			$o_dm = Datamodel::load();
+			switch($pn_type) {
+				case __CA_ATTRIBUTE_VALUE_LIST____:
+					return $o_dm->getInstanceByTableName('ca_list_items', true);
+					break;
+				case __CA_ATTRIBUTE_VALUE_OBJECTS__:
+					return $o_dm->getInstanceByTableName('ca_objects', true);
+					break;
+				case __CA_ATTRIBUTE_VALUE_ENTITIES__:
+					return $o_dm->getInstanceByTableName('ca_entities', true);
+					break;
+				case __CA_ATTRIBUTE_VALUE_PLACES__:
+					return $o_dm->getInstanceByTableName('ca_places', true);
+					break;
+				case __CA_ATTRIBUTE_VALUE_OCCURRENCES__:
+					return $o_dm->getInstanceByTableName('ca_occurrences', true);
+					break;
+				case __CA_ATTRIBUTE_VALUE_COLLECTIONS__:
+					return $o_dm->getInstanceByTableName('ca_collections', true);
+					break;
+				case __CA_ATTRIBUTE_VALUE_LOANS__:
+					return $o_dm->getInstanceByTableName('ca_loans', true);
+					break;
+				case __CA_ATTRIBUTE_VALUE_MOVEMENTS__:
+					return $o_dm->getInstanceByTableName('ca_movements', true);
+					break;
+				case __CA_ATTRIBUTE_VALUE_STORAGELOCATIONS__:
+					return $o_dm->getInstanceByTableName('ca_storage_locations', true);
+					break;
+				case __CA_ATTRIBUTE_VALUE_OBJECTLOTS__:
+					return $o_dm->getInstanceByTableName('ca_object_lots', true);
+					break;
+			}
+			return null;
+		}
+		# ------------------------------------------------------
+		/**
+		 * Returns attribute datatype number associated with the authority attribute type for the specified table.
+		 * Eg. If you pass "ca_entities" then the __CA_ATTRIBUTE_VALUE_ENTITIES__ constant will be returned.
+		 *
+		 * @param mixed $pm_table_name_or_num The name or number of the table
+		 * @return int An attribute datatype number or null if the table does not have an associated attribute type
+		 */
+		public static function tableToElementType($pm_table_name_or_num) {
+			$o_dm = Datamodel::load();
+			$vs_table = $o_dm->getTableName($pm_table_name_or_num);
+			switch($vs_table) {
+				case 'ca_list_items':
+					require_once(__CA_LIB_DIR__."/ca/Attributes/Values/ListAttributeValue.php");
+					return __CA_ATTRIBUTE_VALUE_LIST____;
+					break;
+				case 'ca_objects':
+					require_once(__CA_LIB_DIR__."/ca/Attributes/Values/ObjectsAttributeValue.php");
+					return __CA_ATTRIBUTE_VALUE_OBJECTS__;
+					break;
+				case 'ca_entities':
+					require_once(__CA_LIB_DIR__."/ca/Attributes/Values/EntitiesAttributeValue.php");
+					return __CA_ATTRIBUTE_VALUE_ENTITIES__;
+					break;
+				case 'ca_places':
+					require_once(__CA_LIB_DIR__."/ca/Attributes/Values/PlacesAttributeValue.php");
+					return __CA_ATTRIBUTE_VALUE_PLACES__;
+					break;
+				case 'ca_occurrences':
+					require_once(__CA_LIB_DIR__."/ca/Attributes/Values/OccurrencesAttributeValue.php");
+					return __CA_ATTRIBUTE_VALUE_OCCURRENCES__;
+					break;
+				case 'ca_collections':
+					require_once(__CA_LIB_DIR__."/ca/Attributes/Values/CollectionsAttributeValue.php");
+					return __CA_ATTRIBUTE_VALUE_COLLECTIONS__;
+					break;
+				case 'ca_loans':
+					require_once(__CA_LIB_DIR__."/ca/Attributes/Values/LoansAttributeValue.php");
+					return __CA_ATTRIBUTE_VALUE_LOANS__;
+					break;
+				case 'ca_movements':
+					require_once(__CA_LIB_DIR__."/ca/Attributes/Values/MovementsAttributeValue.php");
+					return __CA_ATTRIBUTE_VALUE_MOVEMENTS__;
+					break;
+				case 'ca_storage_locations':
+					require_once(__CA_LIB_DIR__."/ca/Attributes/Values/StorageLocationsAttributeValue.php");
+					return __CA_ATTRIBUTE_VALUE_STORAGELOCATIONS__;
+					break;
+				case 'ca_object_lots':
+					require_once(__CA_LIB_DIR__."/ca/Attributes/Values/ObjectLotsAttributeValue.php");
+					return __CA_ATTRIBUTE_VALUE_OBJECTLOTS__;
+					break;
+			}
+			return null;
 		}
  		# ------------------------------------------------------------------
 	}
