@@ -2458,6 +2458,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 								
 								if (in_array($va_tmp[0], array('parent'))) {
 									$va_val[] = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_tag_opts, array('returnAsArray' => false)));
+								} elseif ($va_tmp[0] == '_hierarchyName') {
+									$va_val[] = $vs_hierarchy_name;
 								} else {
 									$va_val_tmp = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_tag_opts, array('returnAsArray' => true, 'filters' => $va_tag_filters)));
 									$va_val = array();

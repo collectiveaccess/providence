@@ -431,6 +431,10 @@ class SearchResult extends BaseObject {
  	 *
  	 *		sort = optional array of bundles to sort returned values on. Currently only supported when getting related values via simple related <table_name> and <table_name>.related invokations. Eg. from a ca_objects results you can use the 'sort' option got get('ca_entities'), get('ca_entities.related') or get('ca_objects.related'). The bundle specifiers are fields with or without tablename. Only those fields returned for the related tables (intrinsics and label fields) are sortable. You cannot sort on attributes.
 	 *		where = optional array of fields and field values to filter returned values on. The fields must be intrinsic and in the same table as the field being "get()'ed" Can be used to filter returned values from primary and related tables. This option can be useful when you want to fetch certain values from a related table. For example, you want to get the relationship source_info values, but only for relationships going to a specific related record. Note that multiple fields/values are effectively AND'ed together - all must match for a row to be returned - and that only equivalence is supported (eg. field equals value).
+	 *
+	 *		maxLevelsFromTop = for hierarchical gets, restricts the number of levels returned to the top-most starting with the root.
+	 *		maxLevelsFromBottom = for hierarchical gets, restricts the number of levels returned to the bottom-most starting with the lowest leaf node.
+	 *		maxLevels = synonym for maxLevelsFromBottom
 	 */
 	public function get($ps_field, $pa_options=null) {	
 		if (!is_array($pa_options)) { $pa_options = array(); }
@@ -768,6 +772,9 @@ class SearchResult extends BaseObject {
 					}
 					break;
 				case 'hierarchy':
+					$vn_max_levels_from_bottom = caGetOption('maxLevelsFromBottom', $pa_options, caGetOption('maxLevels', $pa_options, null));
+					$vn_max_levels_from_top = caGetOption('maxLevelsFromTop', $pa_options, null);
+					
 					if ($t_instance->isHierarchical()) {
 						$vs_field_spec = join('.', array_values($va_path_components['components']));
 						$vs_hier_pk_fld = $t_instance->primaryKey();
@@ -785,9 +792,21 @@ class SearchResult extends BaseObject {
 									// TODO: This is too slow
 									if($t_instance->load($vn_id)) {
 										$va_vals = $t_instance->get($vs_field_spec.".preferred_labels", array_merge($pa_options, array('returnAsArray' => true)));
+										
+										// Replace hierarchy name
+										$vn_first_key = array_shift(array_keys($va_vals));
+										$va_vals[$vn_first_key] = $t_instance->getHierarchyName();
+										if ($vn_max_levels_from_bottom > 0) {
+											if (($vn_start = sizeof($va_vals) - $vn_max_levels_from_bottom) < 0) { $vn_start = 0; }
+											$va_vals = array_slice($va_vals, $vn_start, $vn_max_levels_from_bottom, true);
+										} elseif($vn_max_levels_from_top > 0) {
+											$va_vals = array_slice($va_vals, 0, $vn_max_levels_from_top, true);
+										}
 									}
 								}
 							}
+							
+							
 							if ($vb_return_as_array) {
 								return $va_vals;
 							} else {
