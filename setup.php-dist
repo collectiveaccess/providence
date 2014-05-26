@@ -88,14 +88,14 @@ if (!defined("__CA_SMTP_PORT__")) {
 # below by uncommenting the __CA_SMTP_AUTH__, __CA_SMTP_USER__ and __CA_SMTP_PASSWORD__ lines and providing appropriate values
 #
 #if (!defined("__CA_SMTP_AUTH__")) {
-	define("__CA_SMTP_AUTH__", 'login');
-}
+#	define("__CA_SMTP_AUTH__", 'login');
+#}
 #if (!defined("__CA_SMTP_USER__")) {
-	define("__CA_SMTP_USER__", 'my_smtp_username');
-}
+#	define("__CA_SMTP_USER__", 'my_smtp_username');
+#}
 #if (!defined("__CA_SMTP_PASSWORD__")) {
-	define("__CA_SMTP_PASSWORD__", 'my_smtp_password');
-}
+#	define("__CA_SMTP_PASSWORD__", 'my_smtp_password');
+#}
 
 
 #
@@ -224,17 +224,17 @@ if (!defined("__CA_SITE_HOSTNAME__")) {
 # below by uncommenting the __CA_PAYPAL* lines and assigning them appropriate values
 #
 #if (!defined("__CA_PAYPAL_API_USERNAME__")) {
-	define("__CA_PAYPAL_API_USERNAME__", "your_paypal_api_username");
-}
+#	define("__CA_PAYPAL_API_USERNAME__", "your_paypal_api_username");
+#}
 #if (!defined("__CA_PAYPAL_API_PASSWORD__")) {
-	define("__CA_PAYPAL_API_PASSWORD__", "your_paypal_api_password");
-}
+#	define("__CA_PAYPAL_API_PASSWORD__", "your_paypal_api_password");
+#}
 #if (!defined("__CA_PAYPAL_API_SIGNATURE__")) {
-	define("__CA_PAYPAL_API_SIGNATURE__", "your_paypal_api_signature");
-}
+#	define("__CA_PAYPAL_API_SIGNATURE__", "your_paypal_api_signature");
+#}
 #if (!defined("__CA_PAYPAL_API_ENVIRONMENT__")) {
-	define("__CA_PAYPAL_API_ENVIRONMENT__", "sandbox");
-}		// "sandbox" for testing or "live" for production use
+#	define("__CA_PAYPAL_API_ENVIRONMENT__", "sandbox");
+#}		// "sandbox" for testing or "live" for production use
 
 
 # --------------------------------------------------------------------------------------------
