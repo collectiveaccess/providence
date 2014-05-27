@@ -2198,18 +2198,21 @@ select.searchToolsSelect {
 #searchSetTools a{
 	float: right;
 	clear: left;
-	width: 100%;
 	text-align: right;
 }
 #searchSetTools .searchSetsToggle a{
 	float: left;
 	clear: right;
-	width: 100%;
 	text-align: left;
 	margin-bottom: 15px;
 	margin-top: -14px;
 	font-size: 10px;
 }
+
+#caCreateSetFromResultsIndicator, #caAddToSetIDIndicator {
+	display: none;
+}
+
 #hideSets, #hideViz {
 	text-align: right;
 	float: right;
@@ -4876,7 +4879,7 @@ input.addItemToSetControlInThumbnails {
 }
 
 /* ------------- */
-/* representation ca_object_representation_media_display bundle styles */
+/* ca_object_representation_media_display bundle styles */
 /* ------------- */
 .objectRepresentationMediaDisplayDerivativeOptionsContainer {
     margin-top: 10px;
