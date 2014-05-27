@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,8 +26,8 @@
  * ----------------------------------------------------------------------
  */
  
- 	$t_subject = $this->getVar('t_subject');
- 	$o_result_context = $this->getVar('result_context');
+ 	$t_subject 			= $this->getVar('t_subject');
+ 	$o_result_context 	= $this->getVar('result_context');
 ?>
 <div class='setTools'>
 	<a href="#" id='searchSetToolsShow' onclick="$('.setTools').hide(); return caShowSearchSetTools();"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_SETS__); ?>Set Tools</a>

@@ -26,10 +26,10 @@
  * ----------------------------------------------------------------------
  */
 
-	$vo_result 					= $this->getVar('result');
- 	$vo_result_context 			= $this->getVar('result_context');
- 	$t_subject = 			$this->getVar('t_subject');
- 	$vs_table = 			$t_subject->tableName();
+	$vo_result 				= $this->getVar('result');
+ 	$vo_result_context 		= $this->getVar('result_context');
+ 	$t_subject 				= $this->getVar('t_subject');
+ 	$vs_table 				= $t_subject->tableName();
  ?>
  
  
