@@ -5,4 +5,4 @@ if (!defined("__CA_LOCAL_CONFIG_DIRECTORY__")) {
 }
 
 // Define config overrides for unit tests above, the following line will use remaining settings from main config.
-require_once('../setup.php');
+require_once(__DIR__ . '/../setup.php');
