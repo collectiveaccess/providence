@@ -19791,7 +19791,7 @@
           </labels>
           <settings/>
           <elements>
-            <metadataElement code="related_loan" datatype="Entities">
+            <metadataElement code="related_loan" datatype="Loans">
               <labels>
                 <label locale="en_US">
                   <name>Related Loan</name>
