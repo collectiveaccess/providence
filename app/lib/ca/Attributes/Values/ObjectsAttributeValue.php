@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Attributes/Values/ObjectRepresentationsAttributeValue.php : 
+ * app/lib/ca/Attributes/Values/ObjectsAttributeValue.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2014 Whirl-i-Gig
+ * Copyright 2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,21 +33,21 @@
  /**
   *
   */
-  	define("__CA_ATTRIBUTE_VALUE_OBJECTREPRESENTATIONS__", 21);
+  	define("__CA_ATTRIBUTE_VALUE_OBJECTS__", 29);
   	
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AuthorityAttributeValue.php');
- 	require_once(__CA_MODELS_DIR__.'/ca_object_representations.php');
+ 	require_once(__CA_MODELS_DIR__.'/ca_objects.php');
  
  	global $_ca_attribute_settings;
  	
- 	$_ca_attribute_settings['ObjectRepresentationsAttributeValue'] = array(		// global
+ 	$_ca_attribute_settings['ObjectsAttributeValue'] = array(		// global
 		'requireValue' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_CHECKBOXES,
 			'default' => 1,
 			'width' => 1, 'height' => 1,
 			'label' => _t('Require value'),
-			'description' => _t('Check this option if you want to require that an object representation be selected.')
+			'description' => _t('Check this option if you want to require that a object be selected.')
 		),
 		'fieldWidth' => array(
 			'formatType' => FT_NUMBER,
@@ -109,23 +109,22 @@
 		)
 	);
  
- 	class ObjectRepresentationsAttributeValue extends AuthorityAttributeValue {
+	class ObjectsAttributeValue extends AuthorityAttributeValue {
  		# ------------------------------------------------------------------
  		/**
  		 * Name of table this attribute references
  		 */
- 		protected $ops_table_name = 'ca_object_representations';
+ 		protected $ops_table_name = 'ca_objects';
  		
  		/**
  		 * Display name, in singular sense, of table this attribute references. The name should be capitalized.
  		 */
- 		protected $ops_name_singular = 'ObjectRepresentation';
+ 		protected $ops_name_singular = 'Object';
  		
  		/**
  		 * Display name, in plural sense, of table this attribute references. The name should be capitalized.
  		 */
- 		protected $ops_name_plural = 'ObjectRepresentations';
+ 		protected $ops_name_plural = 'Objects';
  		# ------------------------------------------------------------------
-	}
 	}
  ?>

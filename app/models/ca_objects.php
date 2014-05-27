@@ -491,6 +491,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		foreach($pm_fields as $vs_fld => $vs_val) {
 			if (($vs_fld == 'lot_id') && ($pb_assume_idno_stub_for_lot_id || preg_match("![^\d]+!", $vs_val))) {
 				$t_lot = new ca_object_lots();
+				if ($this->inTransaction()) { $t_lot->setTransaction($this->getTransaction()); }
 				if ($t_lot->load(array('idno_stub' => $vs_val))) {
 					$vn_lot_id = (int)$t_lot->getPrimaryKey();
 					$pm_fields[$vs_fld] = $vn_lot_id;
@@ -1251,7 +1252,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
  	}
  	# ------------------------------------------------------
  	/**
- 	 *
+ 	 * Return last storage location as an ca_objects_x_storage_locations instance
  	 */
  	public function getLastLocation($pa_options=null) {
  		$pn_object = caGetOption('object_id', $pa_options, null);
@@ -1277,6 +1278,16 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
  			return new ca_objects_x_storage_locations($qr_res->get('relation_id'));
  		}
  		return false;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * Return last storage location formatted using provided template
+ 	 */
+ 	public function getLastLocationForDisplay($ps_template, $pa_options=null) {
+ 		if ($t_last_loc = $this->getLastLocation($pa_options)) {
+ 			return $t_last_loc->getWithTemplate($ps_template, $pa_options);
+ 		}
+ 		return null;
  	}
  	# ------------------------------------------------------
  	/**

@@ -37,6 +37,7 @@
  	require_once(__CA_LIB_DIR__.'/core/BaseFindEngine.php');
  	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
  	require_once(__CA_LIB_DIR__.'/core/Db.php');
+ 	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AuthorityAttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/ca/Browse/BrowseResult.php');
  	require_once(__CA_LIB_DIR__.'/ca/Browse/BrowseCache.php');
  	require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
@@ -184,7 +185,7 @@
 					case 'attribute':
 						$t_element = new ca_metadata_elements();
 						if ($t_element->load(array('element_code' => $va_facet_info['element_code']))) {
-							if (($t_element->get('datatype') == 3) && ($vn_list_id = $t_element->get('list_id'))) { // 3 = list
+							if (($t_element->get('datatype') == __CA_ATTRIBUTE_VALUE_LIST__) && ($vn_list_id = $t_element->get('list_id'))) { // 3 = list
 								if ($vn_item_id = caGetListItemID($vn_list_id, $va_facet_info['single_value'])) {
 									$va_revised_facets[$vs_facet]['single_value'] = $vn_item_id;
 								}
@@ -417,10 +418,23 @@
 					}
 					
 					$vn_element_id = $t_element->getPrimaryKey();
-					switch($t_element->get('datatype')) {
-						case 3: // list
+					switch($vn_element_type = $t_element->get('datatype')) {
+						case __CA_ATTRIBUTE_VALUE_LIST__:
 							$t_list = new ca_lists();
 							return $t_list->getItemFromListForDisplayByItemID($t_element->get('list_id'), $pn_row_id , true);
+							break;
+						case __CA_ATTRIBUTE_VALUE_OBJECTS__:
+						case __CA_ATTRIBUTE_VALUE_ENTITIES__:
+						case __CA_ATTRIBUTE_VALUE_PLACES__:
+						case __CA_ATTRIBUTE_VALUE_OCCURRENCES__:
+						case __CA_ATTRIBUTE_VALUE_COLLECTIONS__:
+						case __CA_ATTRIBUTE_VALUE_LOANS__:
+						case __CA_ATTRIBUTE_VALUE_MOVEMENTS__:
+						case __CA_ATTRIBUTE_VALUE_STORAGELOCATIONS__:
+						case __CA_ATTRIBUTE_VALUE_OBJECTLOTS__:
+							if ($t_rel_item = AuthorityAttributeValue::elementTypeToInstance($vn_element_type)) {
+								return ($t_rel_item->load($pn_row_id)) ? $t_rel_item->getLabelForDisplay() : "???";
+							}
 							break;
 						default:
 							return urldecode($pn_row_id);
@@ -1078,7 +1092,7 @@
 										
 										if (is_array($va_value)) {
 											foreach($va_value as $vs_f => $vs_v) {
-												if ($vn_datatype == 3) {	// list
+												if ($vn_datatype == __CA_ATTRIBUTE_VALUE_LIST__) {
 													$t_list_item = new ca_list_items((int)$vs_v);
 													// Include sub-items
 													$va_item_ids = $t_list_item->getHierarchy((int)$vs_v, array('idsOnly' => true, 'includeSelf' => true));
@@ -1850,7 +1864,7 @@
 			
 			$vs_browse_type_limit_sql = '';
 			if (($va_browse_type_ids = $this->getTypeRestrictionList()) && sizeof($va_browse_type_ids)) {		// type restrictions
-				$vs_browse_type_limit_sql = '('.$vs_browse_table_name.'.'.$t_subject->getTypeFieldName().' IN ('.join(', ', $va_browse_type_ids).'))';
+				$vs_browse_type_limit_sql = '('.$t_subject->tableName().'.'.$t_subject->getTypeFieldName().' IN ('.join(', ', $va_browse_type_ids).'))';
 				
 				if (is_array($va_facet_info['type_restrictions'])) { 		// facet type restrictions bind a facet to specific types; we check them here 
 					$va_restrict_to_types = $this->_convertTypeCodesToIDs($va_facet_info['type_restrictions']);
@@ -2398,7 +2412,7 @@
 						return ((int)$qr_res->numRows() > 1) ? true : false;
 					} else {
 						$vs_sql = "
-							SELECT DISTINCT value_longtext1, value_decimal1, value_longtext2
+							SELECT DISTINCT value_longtext1, value_decimal1, value_longtext2, value_integer1
 							FROM ca_attributes
 							
 							{$vs_join_sql}
@@ -2418,27 +2432,48 @@
 						if ($va_facet_info['suppress'] && !is_array($va_facet_info['suppress'])) {
 							$va_facet_info['suppress'] = array($va_facet_info['suppress']);
 						}
-						if ($vn_element_type == 3) { // list
-							$t_list = new ca_lists();
-							$va_list_items = caExtractValuesByUserLocale($t_list->getItemsForList($t_element->get('list_id')));
+						
+						switch($vn_element_type) {
+							case __CA_ATTRIBUTE_VALUE_LIST__:
+								$t_list = new ca_lists();
+								$va_list_items = caExtractValuesByUserLocale($t_list->getItemsForList($t_element->get('list_id')));
 							
-							if (isset($va_facet_info['suppress']) && is_array($va_facet_info['suppress'])) {
-								$va_suppress_values = ca_lists::getItemIDsFromList($t_element->get('list_id'), $va_facet_info['suppress']);
-							}
-						} else {
-							if (isset($va_facet_info['suppress']) && is_array($va_facet_info['suppress'])) {
-								$va_suppress_values = $va_facet_info['suppress'];
-							}
+								if (isset($va_facet_info['suppress']) && is_array($va_facet_info['suppress'])) {
+									$va_suppress_values = ca_lists::getItemIDsFromList($t_element->get('list_id'), $va_facet_info['suppress']);
+								}
+								break;
+							case __CA_ATTRIBUTE_VALUE_OBJECTS__:
+							case __CA_ATTRIBUTE_VALUE_ENTITIES__:
+							case __CA_ATTRIBUTE_VALUE_PLACES__:
+							case __CA_ATTRIBUTE_VALUE_OCCURRENCES__:
+							case __CA_ATTRIBUTE_VALUE_COLLECTIONS__:
+							case __CA_ATTRIBUTE_VALUE_LOANS__:
+							case __CA_ATTRIBUTE_VALUE_MOVEMENTS__:
+							case __CA_ATTRIBUTE_VALUE_STORAGELOCATIONS__:
+							case __CA_ATTRIBUTE_VALUE_OBJECTLOTS__:
+								if ($t_rel_item = AuthorityAttributeValue::elementTypeToInstance($vn_element_type)) {
+									$va_ids = $qr_res->getAllFieldValues('value_integer1');
+									$va_auth_items = $t_rel_item->getPreferredDisplayLabelsForIDs($va_ids);
+									$qr_res->seek(0);
+								}
+								break;
+							default:
+								if (isset($va_facet_info['suppress']) && is_array($va_facet_info['suppress'])) {
+									$va_suppress_values = $va_facet_info['suppress'];
+								}
+								break;
 						}
 						
 						while($qr_res->nextRow()) {
 							$o_attr = Attribute::getValueInstance($vn_element_type, $qr_res->getRow());
 							if (!($vs_val = trim($o_attr->getDisplayValue()))) { continue; }
 							if (is_array($va_suppress_values) && (in_array($vs_val, $va_suppress_values))) { continue; }
+							if ($va_criteria[$vs_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
+							
+							$vn_id = $qr_res->get('value_integer1');
+								
 							switch($vn_element_type) {
-								case 3:	// list
-									if ($va_criteria[$vs_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
-									
+								case __CA_ATTRIBUTE_VALUE_LIST__:
 									$vn_child_count = 0;
 									foreach($va_list_items as $vn_id => $va_item) {
 										if ($va_item['parent_id'] == $vs_val) { $vn_child_count++; }	
@@ -2450,15 +2485,27 @@
 										'child_count' => $vn_child_count
 									);
 									break;
-								case 6: // currency
+								case __CA_ATTRIBUTE_VALUE_OBJECTS__:
+								case __CA_ATTRIBUTE_VALUE_ENTITIES__:
+								case __CA_ATTRIBUTE_VALUE_PLACES__:
+								case __CA_ATTRIBUTE_VALUE_OCCURRENCES__:
+								case __CA_ATTRIBUTE_VALUE_COLLECTIONS__:
+								case __CA_ATTRIBUTE_VALUE_LOANS__:
+								case __CA_ATTRIBUTE_VALUE_MOVEMENTS__:
+								case __CA_ATTRIBUTE_VALUE_STORAGELOCATIONS__:
+								case __CA_ATTRIBUTE_VALUE_OBJECTLOTS__:
+									$va_values[$vs_val] = array(
+										'id' => $vn_id,
+										'label' => $va_auth_items[$vn_id] ? $va_auth_items[$vn_id] : $vs_val
+									);
+									break;
+								case __CA_ATTRIBUTE_VALUE_CURRENCY__:
 									$va_values[sprintf("%014.2f", preg_replace("![\D]+!", "", $vs_val))] = array(
 										'id' => str_replace('/', '&#47;', $vs_val),
 										'label' => $vs_val
 									);
 									break;
 								default:
-									if ($va_criteria[$vs_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
-									
 									$va_values[$vs_val] = array(
 										'id' => str_replace('/', '&#47;', $vs_val),
 										'label' => $vs_val
@@ -2476,7 +2523,7 @@
 						}
 						
 						switch($vn_element_type) {
-							case 3:	// list
+							case __CA_ATTRIBUTE_VALUE_LIST__:
 								// preserve order of list
 								$va_values_sorted_by_list_order = array();
 								foreach($va_list_items as $vn_item_id => $va_item) {
@@ -3131,12 +3178,12 @@
 						break;
 					} else {
 						switch(sizeof($va_path = array_keys($this->opo_datamodel->getPath($vs_browse_table_name, $vs_rel_table_name)))) {
-							case 3:
+							case __CA_ATTRIBUTE_VALUE_LIST__:
 								$t_item_rel = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
 								$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[2], true);
 								$vs_key = 'relation_id';
 								break;
-							case 2:
+							case __CA_ATTRIBUTE_VALUE_DATERANGE__:
 								$t_item_rel = null;
 								$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
 								$vs_key = $t_rel_item->primaryKey();
@@ -3653,7 +3700,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 								return $pa_hits;
 							}
 							
-							if ((int)$t_element->get('datatype') == 3) {
+							if ((int)$t_element->get('datatype') == __CA_ATTRIBUTE_VALUE_LIST__) {
 								$vs_sortable_value_fld = 'lil.name_plural';
 								
 								$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
@@ -4352,12 +4399,12 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 		 */
 		private function _getRelativeFacetSQLData($ps_relative_to_table, $pa_options) {
 			switch(sizeof($va_path = array_keys($this->opo_datamodel->getPath($ps_relative_to_table, $this->ops_browse_table_name)))) {
-				case 3:
+				case __CA_ATTRIBUTE_VALUE_LIST__:
 					$t_item_rel = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
 					$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[2], true);
 					$vs_key = 'relation_id';
 					break;
-				case 2:
+				case __CA_ATTRIBUTE_VALUE_DATERANGE__:
 					$t_item_rel = null;
 					$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
 					$vs_key = $t_rel_item->primaryKey();
@@ -4393,12 +4440,12 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 			$t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true);
 			
 			switch(sizeof($va_path = array_keys($this->opo_datamodel->getPath($ps_relative_to_table, $this->ops_browse_table_name)))) {
-				case 3:
+				case __CA_ATTRIBUTE_VALUE_LIST__:
 					$t_item_rel = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
 					$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[2], true);
 					$vs_key = 'relation_id';
 					break;
-				case 2:
+				case __CA_ATTRIBUTE_VALUE_DATERANGE__:
 					$t_item_rel = null;
 					$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
 					$vs_key = $t_rel_item->primaryKey();

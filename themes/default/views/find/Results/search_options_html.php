@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,8 +26,10 @@
  * ----------------------------------------------------------------------
  */
 
-	$vo_result 					= $this->getVar('result');
- 	$vo_result_context 			= $this->getVar('result_context');
+	$vo_result 				= $this->getVar('result');
+ 	$vo_result_context 		= $this->getVar('result_context');
+ 	$t_subject 				= $this->getVar('t_subject');
+ 	$vs_table 				= $t_subject->tableName();
  ?>
  
  
@@ -35,7 +37,7 @@
 if($vo_result->numHits() > 0) {
 	print $this->render('Search/search_tools_html.php');
 
-	if($this->getVar('mode') === 'search'){
+	if(($this->getVar('mode') === 'search') && ($this->request->user->canDoAction('can_browse_'.$vs_table))){
 		print $this->render('Search/search_refine_html.php');
 	}
 }
@@ -46,7 +48,7 @@ if($vo_result->numHits() > 0) {
 
 <?php
 	if($vo_result->numHits() > 0) {
-		if($this->getVar('mode') === 'search'){
+		if($this->getVar('mode') === 'search' && ($this->request->user->canDoAction('can_browse_'.$vs_table))){
 ?>
 			<a href='#' id='showRefine' onclick='return caHandleResultsUIBoxes("refine", "show");'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_FILTER__); ?></a>
 <?php
@@ -127,7 +129,6 @@ if($vo_result->numHits() > 0) {
 		<div style='clear:both;height:1px;'>&nbsp;</div>
 	</div><!-- end bg -->
 </div><!-- end searchOptionsBox -->
-
 <?php
 	TooltipManager::add('#showOptions', _t("Display Options"));
 	TooltipManager::add('#showRefine', _t("Refine Results"));

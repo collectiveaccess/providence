@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,6 +40,7 @@
  require_once(__CA_APP_DIR__.'/models/ca_attributes.php');
  require_once(__CA_APP_DIR__.'/models/ca_attribute_values.php');
  require_once(__CA_APP_DIR__.'/models/ca_metadata_type_restrictions.php');
+ require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AuthorityAttributeValue.php');
 
  
 	class BaseModelWithAttributes extends BaseModel implements ITakesAttributes {
@@ -548,14 +549,14 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			
 			$vn_id = $this->getPrimaryKey();
-			if(parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
+			if(parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list) && (!$this->hasField('deleted') || caGetOption('hard', $pa_options, false))) {
 				// Delete any associated attributes and attribute_values
 				if (!($qr_res = $this->getDb()->query("
 					DELETE FROM ca_attribute_values 
 					USING ca_attributes 
 					INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id 
 					WHERE ca_attributes.table_num = ? AND ca_attributes.row_id = ?
-				", (int)$this->tableNum(), (int)$vn_id))) { 
+				", array((int)$this->tableNum(), (int)$vn_id)))) { 
 					$this->errors = $this->getDb()->errors();
 					if ($o_trans) { $o_trans->rollback(); }
 					
@@ -567,12 +568,46 @@
 					DELETE FROM ca_attributes
 					WHERE
 						table_num = ? AND row_id = ?
-				", (int)$this->tableNum(), (int)$vn_id))) {
+				", array((int)$this->tableNum(), (int)$vn_id)))) {
 					$this->errors = $this->getDb()->errors();
 					if ($o_trans) { $o_trans->rollback(); }
 					
 					if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 					return false;
+				}
+				
+				//
+				// Remove any authority attributes that reference this row
+				//
+				if ($vn_element_type = (int)AuthorityAttributeValue::tableToElementType($this->tableName())) {
+					if (($qr_res = $this->getDb()->query("
+						SELECT ca.table_num, ca.row_id FROM ca_attributes ca
+						INNER JOIN ca_attribute_values AS cav ON cav.attribute_id = ca.attribute_id 
+						INNER JOIN ca_metadata_elements AS cme ON cav.element_id = cme.element_id 
+						WHERE cme.datatype = ? AND cav.value_integer1 = ?
+					", array($vn_element_type, (int)$vn_id)))) { 
+						$va_ids = array();
+						while($qr_res->nextRow()) {
+							$va_ids[$qr_res->get('table_num')][] = $qr_res->get('row_id');
+						}
+						if (!($qr_res = $this->getDb()->query("
+							DELETE FROM ca_attribute_values 
+							USING ca_metadata_elements 
+							INNER JOIN ca_attribute_values ON ca_attribute_values.element_id = ca_metadata_elements.element_id 
+							WHERE ca_metadata_elements.datatype = ? AND ca_attribute_values.value_integer1 = ?
+						", array($vn_element_type, (int)$vn_id)))) { 
+							$this->errors = $this->getDb()->errors();
+							if ($o_trans) { $o_trans->rollback(); }
+					
+							if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
+							return false; 
+						} else {
+							$o_indexer = new SearchIndexer($this->getDb());
+							foreach($va_ids as $vs_table => $va_ids) {
+								$o_indexer->reindexRows($vs_table, $va_ids, array('transaction' => $o_trans));
+							}
+						}
+					}
 				}
 				
 				if ($o_trans) { $o_trans->commit(); }
@@ -787,9 +822,44 @@
 					}
 					break;
 				# -------------------------------------
-				case 3:		// table_name.field_name.sub_element
-					if(!$this->hasField($va_tmp[2])) {
+				case 3:		// table_name.field_name.sub_element / table_name.field_name.hierarchy
+				case 4:		// table_name.field_name.sub_element.hierarchy
+					if(!$this->hasField($va_tmp[2]) || ($va_tmp[2] === 'hierarchy')) {
 						if ($va_tmp[0] === $t_instance->tableName()) {
+							$vb_is_in_container = false;
+							
+							if	(!$this->hasField($va_tmp[1])) {
+								if (($va_tmp[2] === 'hierarchy') || ($va_tmp[3] === 'hierarchy')) {
+									if ($va_tmp[3] === 'hierarchy') { $vb_is_in_container = true; }
+									if (in_array($this->_getElementDatatype($vb_is_in_container ? $va_tmp[2] : $va_tmp[1]), array(__CA_ATTRIBUTE_VALUE_LIST__))) {
+										
+										$va_items = $this->get(join('.', $vb_is_in_container ? array($va_tmp[0], $va_tmp[1], $va_tmp[2]) : array($va_tmp[0], $va_tmp[1])), array('returnAsArray' => true));
+										$va_item_ids = $va_item_ids = caExtractValuesFromArrayList($va_items, $vb_is_in_container ? $va_tmp[2] : $va_tmp[1], array('preserveKeys' => false));
+							
+										$qr_items = caMakeSearchResult('ca_list_items', $va_item_ids);
+		
+										if (!$va_item_ids || !is_array($va_item_ids) || !sizeof($va_item_ids)) {  return $vb_return_as_array ? array() : null; } 
+									
+		
+										$va_get_spec = $va_tmp;
+										array_shift($va_get_spec); array_shift($va_get_spec);
+										if ($vb_is_in_container) { array_shift($va_get_spec); }
+										array_unshift($va_get_spec, 'ca_list_items');
+										
+										$vs_get_spec = join('.', $va_get_spec);
+										
+										$va_vals = array();
+										while($qr_items->nextHit()) {
+											$va_hier = $qr_items->get($vs_get_spec, array('returnAsArray' => true));
+											array_shift($va_hier);	// get rid of root
+											$va_vals[] = $vb_return_as_array ? $va_hier : join($vs_delimiter, $va_hier);
+										}
+										
+										return $va_vals;
+									}
+								} 
+							}
+			
 							if (!$t_instance->hasField($va_tmp[1])) {
 								// try it as an attribute
 									

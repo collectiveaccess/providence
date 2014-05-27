@@ -415,6 +415,12 @@ a.inspectorOnLoan {
     font-style: italic;
 }
 
+.inspectorCurrentLocation {
+    color: #aaa;
+    font-style: italic;
+    font-size: 10px;
+}
+
 #leftNav h4 div {  text-transform: none; font-weight: normal; padding-top: 5px; }
 #leftNav h3 div {  text-transform: none; font-weight: normal; padding-top: 5px; }
 
@@ -1894,9 +1900,11 @@ div.searchNoResults {
 div.searchSuggestion {
     font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size:12px;
+    font-weight: normal;
+    font-style: italic;
     color: #134959;
-    margin-bottom: 5px;
-    text-align: center;
+    margin: 15px 0 5px 0;
+    text-align: left;
 }
 
 a.searchSuggestion {
@@ -2190,18 +2198,21 @@ select.searchToolsSelect {
 #searchSetTools a{
 	float: right;
 	clear: left;
-	width: 100%;
 	text-align: right;
 }
 #searchSetTools .searchSetsToggle a{
 	float: left;
 	clear: right;
-	width: 100%;
 	text-align: left;
 	margin-bottom: 15px;
 	margin-top: -14px;
 	font-size: 10px;
 }
+
+#caCreateSetFromResultsIndicator, #caAddToSetIDIndicator {
+	display: none;
+}
+
 #hideSets, #hideViz {
 	text-align: right;
 	float: right;
@@ -4868,7 +4879,7 @@ input.addItemToSetControlInThumbnails {
 }
 
 /* ------------- */
-/* representation ca_object_representation_media_display bundle styles */
+/* ca_object_representation_media_display bundle styles */
 /* ------------- */
 .objectRepresentationMediaDisplayDerivativeOptionsContainer {
     margin-top: 10px;

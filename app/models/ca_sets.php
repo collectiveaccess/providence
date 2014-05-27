@@ -997,26 +997,39 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$vn_table_num = $this->get('table_num');
 		$vn_type_id = $this->get('type_id');
 		
-		$vn_c = 0;
-		foreach($pa_row_ids as $vn_row_id) {
-			// Add it to the set
-			$t_item = new ca_set_items();
-			$t_item->setMode(ACCESS_WRITE);
-			$t_item->set('set_id', $vn_set_id);
-			$t_item->set('table_num', $vn_table_num);
-			$t_item->set('row_id', $vn_row_id);
-			$t_item->set('type_id', $vn_type_id);
-		
-			$t_item->insert();
-		
-			if ($t_item->numErrors()) {
-				$this->errors = $t_item->errors;
-				//return false;
-			} else {
-				$vn_c++;
-			}
+		$va_item_values = array();
+		$va_rows_ids = array_unique($pa_row_ids);
+		foreach($va_rows_ids as $vn_row_id) {
+			$va_item_values[] = "(".(int)$vn_set_id.",".(int)$vn_table_num.",".(int)$vn_row_id.",".(int)$vn_type_id.")";
 		}
-		return $vn_c;
+		
+		if(sizeof($va_item_values)) {
+			// Quickly create set item links
+			// Peforming this with a single direct scales much much better than repeatedly populating a model and calling insert()
+			$this->getDb()->query("INSERT INTO ca_set_items (set_id, table_num, row_id, type_id) VALUES ".join(",", $va_item_values));
+			if ($this->getDb()->numErrors()) {
+				$this->errors = $this->getDb()->errors;
+				return false;
+			}
+			
+			// Get the item_ids for the newly created links
+			$qr_res = $this->getDb()->query("SELECT item_id FROM ca_set_items WHERE set_id = ? AND table_num = ? AND type_id = ? AND row_id IN (?)", array(
+				$vn_set_id, $vn_table_num, $vn_type_id, $va_row_ids
+			));
+			
+			$va_item_ids = $qr_res->getAllFieldValues('item_id');
+			
+			// Set the ranks of the newly created links
+			$qr_res = $this->getDb()->query("UPDATE ca_set_items SET rank = item_id WHERE set_id = ? AND table_num = ? AND type_id = ? AND row_id IN (?)", array(
+				$vn_set_id, $vn_table_num, $vn_type_id, $va_row_ids
+			));
+			
+			// Index the links
+			$o_indexer = new SearchIndexer($this->getDb());
+			$o_indexer->reindexRows('ca_set_items', $va_item_ids);
+		}
+		
+		return sizeof($va_item_values);
 	}
 	# ------------------------------------------------------
 	/**

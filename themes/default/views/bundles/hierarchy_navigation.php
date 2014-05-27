@@ -113,8 +113,13 @@
 				</div>
 			</div>
 		</div>
+<?php
+	}
+?>
 	</div>
-
+<?php
+	if ($pn_id > 0) {	
+?>
 	<script type="text/javascript">
 		var o<?php print $vs_id_prefix; ?>HierarchyBrowser;
 		jQuery(document).ready(function() {		
