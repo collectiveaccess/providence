@@ -46,3 +46,5 @@ before_script:
   - which phpunit
   - echo $PATH
   - cat $(which phpunit)
+  - rm $(which phpunit)
+  - which phpunit
