@@ -23,6 +23,8 @@ install:
   - export PATH="$PATH:$COLLECTIVEACCESS_HOME/support/bin"
   # Install the WAM CMIS profile
   - cmis-tools/bin/test-install
+  # Create setup.php as link to distributed base setup
+  - ln -s setup.php-dist setup.php
 
 before_script:
   # http://docs.travis-ci.com/user/languages/php/#Apache-%2B-PHP
