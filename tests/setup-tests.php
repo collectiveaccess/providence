@@ -1,5 +1,9 @@
 <?php
 
+if (!defined("__CA_BASE_DIR__")) {
+	define("__CA_BASE_DIR", dirname(__DIR__));
+}
+
 if (!defined("__CA_LOCAL_CONFIG_DIRECTORY__")) {
 	define("__CA_LOCAL_CONFIG_DIRECTORY__", __DIR__."/conf");
 }
