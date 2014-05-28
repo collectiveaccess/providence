@@ -185,7 +185,7 @@ if (!defined("__CA_APP_NAME__")) {
 # 		For Windows hosts, use a notation similar to "C:/PATH/TO/COLLECTIVEACCESS"; do NOT use backslashes
 #
 if (!defined("__CA_BASE_DIR__")) {
-	define("__CA_BASE_DIR__", pathinfo(preg_replace("!/install|/viewers/apps!", "", isset($_SERVER['SCRIPT_FILENAME']) ? $_SERVER['SCRIPT_FILENAME'] : ''), PATHINFO_DIRNAME));
+	define("__CA_BASE_DIR__", pathinfo(preg_replace("!/install|/viewers/apps|/support/tests|support/bin/!", "", isset($_SERVER['SCRIPT_FILENAME']) ? $_SERVER['SCRIPT_FILENAME'] : ''), PATHINFO_DIRNAME));
 }
 
 
@@ -285,8 +285,8 @@ if (!isset($_SERVER['HTTP_HOST']) || !isset($_CA_INSTANCE_CONFIG_FILES[$_SERVER[
 } 
 
 if (!(file_exists($_CA_CONFIG_PATH))) {
-	$opa_error_messages = array("Configuration files are missing for hostname '".$_SERVER['HTTP_HOST']."'!<br/>Please check the <em>__CA_BASE_DIR__</em> configuration setting in your <em>setup.php</em> file.");
-	if (!include_once("./themes/default/views/system/configuration_error_html.php")) {
+	$opa_error_messages = array("Configuration files are missing for hostname '".(isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '[unknown]')."'!<br/>Please check the <em>__CA_BASE_DIR__</em> configuration setting in your <em>setup.php</em> file.");
+	if (!include_once(__DIR__ . "/themes/default/views/system/configuration_error_html.php")) {
 		die("Fatal error: Configuration files are missing for hostname '".$_SERVER['HTTP_HOST']."'! Please check the __CA_BASE_DIR__ configuration setting in your setup.php file.");
 	}
 	exit();
