@@ -244,11 +244,14 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 			$va_trigger = array_merge($va_default_match_options, $va_trigger);
 			$vs_value_combination_operator = isset($va_trigger['value_combination_operator']) ? self::_getOperatorMethodName($va_trigger['value_combination_operator']) : $vs_default_value_combination_operator;
 			$vs_match_type = isset($va_trigger['match_type']) ? self::_getMatchTypeMethodName($va_trigger['match_type']) : $vs_default_match_type;
-			$va_values = self::_getValues($pa_params['table_name'], $pa_params['id'], $vs_field);
+			$vs_value_converter = isset($va_trigger['value_converter']) && function_exists($va_trigger['value_converter']) ? $va_trigger['value_converter'] : null;
 
 			// Track match status
 			$vb_field_matches = self::$vs_value_combination_operator();
-			foreach ($va_values as $vm_value) {
+			foreach (self::_getValues($pa_params['table_name'], $pa_params['id'], $vs_field) as $vm_value) {
+				if (!is_null($vs_value_converter)) {
+					$vm_value = call_user_func($vs_value_converter, $vm_value);
+				}
 				$vb_field_matches = self::$vs_value_combination_operator($vb_field_matches, self::$vs_match_type($vm_value, $va_trigger));
 			}
 			$vb_matches = self::$vs_field_combination_operator($vb_matches, $vb_field_matches);
@@ -320,7 +323,7 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 		$va_values = $vo_object->get($ps_field, array( 'returnAsArray' => true ));
 		if (is_array($va_values)) {
 			foreach ($va_values as $va_v) {
-				$va_result = array_merge($va_result, $va_v);
+				$va_result = array_merge($va_result, is_array($va_v) ? $va_v : array( $va_v ));
 			}
 		}
 		return $va_result;

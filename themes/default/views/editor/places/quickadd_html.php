@@ -122,6 +122,7 @@
 			$va_form_elements = $t_subject->getBundleFormHTMLForScreen($this->getVar('screen'), array(
 					'request' => $this->request, 
 					'formName' => $vs_form_name.$vs_field_name_prefix.$vs_n,
+					'restrictToTypes' => array($t_subject->get('type_id')),
 					'forceLabelForNew' => $va_force_new_label,							// force query text to be default in label fields
 					'omit' => array('parent_id')
 			));

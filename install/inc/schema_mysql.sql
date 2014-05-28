@@ -6086,34 +6086,6 @@ create table ca_mysql_fulltext_search (
 
 
 /*==========================================================================*/
-create table ca_did_you_mean_phrases (
-	phrase_id			int unsigned		not null auto_increment,
-	
-	table_num			tinyint unsigned 	not null,
-	
-	phrase				varchar(255) 		not null,
-	num_words			tinyint unsigned	not null,
-	
-	PRIMARY KEY								(phrase_id),
-	INDEX				i_table_num			(table_num),
-	INDEX				i_num_words			(num_words),
-	UNIQUE INDEX		u_all				(table_num, phrase)
-	
-) engine=innodb character set utf8 collate utf8_general_ci;
-
-
-/*==========================================================================*/
-create table ca_did_you_mean_ngrams (
-	phrase_id			int unsigned		not null references ca_did_you_mean_phrases(phrase_id),
-	ngram				varchar(255)		not null,
-	endpoint			tinyint unsigned	not null,
-	
-	INDEX				i_phrase_id			(phrase_id),
-	INDEX				i_ngram				(ngram)
-) engine=innodb character set utf8 collate utf8_general_ci;
-
-
-/*==========================================================================*/
 create table ca_watch_list
 (
    watch_id                       int unsigned                   not null AUTO_INCREMENT,
@@ -6464,10 +6436,9 @@ create table ca_sql_search_ngrams (
   ngram char(4) not null,
   seq tinyint(3) unsigned not null,
   
-  primary key (word_id,seq)
+  index i_ngram (ngram),
+  index i_word_id (word_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_ngram on ca_sql_search_ngrams(ngram);
 
 
 /*==========================================================================*/
@@ -6519,5 +6490,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 102 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (102, unix_timestamp());
+/* CURRENT MIGRATION: 103 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (103, unix_timestamp());

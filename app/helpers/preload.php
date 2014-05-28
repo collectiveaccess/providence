@@ -54,8 +54,6 @@
 	require_once(__CA_LIB_DIR__."/core/BaseModel.php");
 	require_once(__CA_LIB_DIR__."/core/Controller/AppController.php");
 	
-	require_once(__CA_LIB_DIR__."/ca/Search/DidYouMean.php");
-	
 	require_once(__CA_LIB_DIR__."/ca/MetaTagManager.php");
 	require_once(__CA_LIB_DIR__."/ca/JavascriptLoadManager.php");
 	require_once(__CA_LIB_DIR__."/ca/TooltipManager.php");
