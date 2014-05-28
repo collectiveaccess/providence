@@ -15,7 +15,7 @@ mysql:
 
 install:
   # Get the tools, we need the test-install script, which wraps `caUtils install`
-  - git clone git@github.com:wamuseum/cmis-tools.git
+  - git clone https://github.com/wamuseum/cmis-tools.git
   # Create the database instance for the test
   - mysqladmin -uroot create ca_test
   # Install the WAM CMIS profile
