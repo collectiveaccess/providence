@@ -1,0 +1,36 @@
+language: php
+
+php:
+  # PHP 5.4 (5.4.28) is the version currently being used on our production server
+  - 5.4
+  # PHP 5.5 is the current latest release
+  - 5.5
+
+mysql:
+  # MySQL settings, these correspond to the settings used by the test-install script
+  database: ca_test
+  username: ca_test
+  password: password
+  encoding: utf8
+
+install:
+  # Get the tools, we need the test-install script, which wraps `caUtils install`
+  - git clone git@github.com:wamuseum/cmis-tools.git
+  # Create the database instance for the test
+  - mysqladmin -uroot create ca_test
+  # Install the WAM CMIS profile
+  - cmis-tools/bin/test-install
+
+before_script:
+  # http://docs.travis-ci.com/user/languages/php/#Apache-%2B-PHP
+  # Install Apache
+  - sudo apt-get install apache2 libapache2-mod-fastcgi
+  # Setup php-fpm
+  - sudo cp ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf.default ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf
+  - sudo a2enmod rewrite actions fastcgi alias
+  - echo "cgi.fix_pathinfo = 1" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - ~/.phpenv/versions/$(phpenv version-name)/sbin/php-fpm
+  # Configure virtual hosts
+  - sudo cp -f .travis-apache2-vhost /etc/apache2/sites-avaialable/default
+  - sudo sed -e "s?%TRAVIS_BUILD_DIR%?$(pwd)?g" --in-place /etc/apache2/sites-available/default
+  - sudo service apache2 restart
