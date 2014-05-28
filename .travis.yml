@@ -44,3 +44,5 @@ before_script:
   # Temporary
   - pwd
   - which phpunit
+  - echo $PATH
+  - cat $(which phpunit)
