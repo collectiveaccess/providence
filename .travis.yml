@@ -18,6 +18,9 @@ install:
   - git clone https://github.com/wamuseum/cmis-tools.git
   # Create the database instance for the test
   - mysqladmin -uroot create ca_test
+  # Create the database user and grant privileges
+  - mysql -e "create user 'ca_test'@'localhost' identified by 'password';"
+  - mysql -e "grant all on ca_test.* to 'ca_test'@'localhost';"
   # Set environment variables
   - export COLLECTIVEACCESS_HOME="$(pwd)"
   - export PATH="$PATH:$COLLECTIVEACCESS_HOME/support/bin"
