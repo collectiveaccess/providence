@@ -46,6 +46,10 @@ before_script:
   - cd tests/
   # Temporary
   - pwd
-  - which phpunit
   - echo $PATH
+  - echo BEFORE
+  - which phpunit
   - cat $(which phpunit)
+  - rm $(which phpunit)
+  - echo AFTER
+  - which phpunit
