@@ -28,6 +28,7 @@ install:
   # Create a php.ini that adds phpunit to the include_path
   - echo "include_path = \"\${include_path}:/usr/bin/phpunit\"" >.travis.php.ini
   - phpenv config-add .travis.php.ini
+  - ls /home/travis/.phpenv/versions/5.4/etc/conf.d
   # Temporary, show the include_path
   - php -r 'echo ini_get("include_path"), "\n";'
 
