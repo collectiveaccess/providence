@@ -794,8 +794,14 @@ class SearchResult extends BaseObject {
 										$va_vals = $t_instance->get($vs_field_spec.".preferred_labels", array_merge($pa_options, array('returnAsArray' => true)));
 										
 										// Replace hierarchy name
-										$vn_first_key = array_shift(array_keys($va_vals));
-										$va_vals[$vn_first_key] = $t_instance->getHierarchyName();
+										if ($vb_return_all_locales) {
+											$vn_first_key = array_shift(array_keys($va_vals));
+											$va_vals[$vn_first_key] = array(0 => array($t_instance->getHierarchyName()));
+										} else {
+											$vn_first_key = array_shift(array_keys($va_vals));
+											$va_vals[$vn_first_key] = $t_instance->getHierarchyName();
+										}
+										
 										if ($vn_max_levels_from_bottom > 0) {
 											if (($vn_start = sizeof($va_vals) - $vn_max_levels_from_bottom) < 0) { $vn_start = 0; }
 											$va_vals = array_slice($va_vals, $vn_start, $vn_max_levels_from_bottom, true);
