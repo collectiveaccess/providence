@@ -28,8 +28,11 @@ install:
 
 before_script:
   # http://docs.travis-ci.com/user/languages/php/#Apache-%2B-PHP
-  # Install Apache, and replace phpunit with one that will put its classes on the include path
+  # Install Apache
   - sudo apt-get install apache2 libapache2-mod-fastcgi
+  # Use PEAR to install phpunit
+  - sudo pear config-set auto_discover 1
+  - sudo pear install pear.phpunit.de/PHPUnit
   # Setup php-fpm
   - sudo cp ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf.default ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf
   - sudo a2enmod rewrite actions fastcgi alias
