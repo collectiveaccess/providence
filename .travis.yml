@@ -26,7 +26,9 @@ install:
   # Create setup.php as link to setup.php-dist
   - ln -s setup.php-dist setup.php
   # Change phpunit.xml to use the setup.php used by test-install
-  - sed -e "s/bootstrap=\".*\"/bootstrap=\"cmis-tools/conf/test-install/setup.php\"/g" --in-place tests/phpunit.xml
+  - sed -e "s?bootstrap=\".*\"?bootstrap=\"cmis-tools/conf/test-install/setup.php\"?g" --in-place tests/phpunit.xml
+  - sudo sed -e "s?%TRAVIS_BUILD_DIR%?$(pwd)?g" --in-place /etc/apache2/sites-available/default
+
   - cat tests/phpunit.xml
 
 before_script:
