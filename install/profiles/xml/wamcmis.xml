@@ -10674,14 +10674,6 @@
       <items>
         <item idno="A" enabled="1" default="0">
           <labels>
-            <label preferred="1" locale="en_US">
-              <name_singular>A</name_singular>
-              <name_plural>A</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="A" enabled="1" default="0">
-          <labels>
             <label locale="en_AU" preferred="1">
               <name_singular>A</name_singular>
               <name_plural>A</name_plural>
@@ -18340,45 +18332,100 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_US">Short description of loan</setting>
-                <setting name="label" locale="en_CA">Short description of loan</setting>
-                <setting name="label" locale="fr_FR">Rapide description du prêt</setting>
-                <setting name="label" locale="sv_SE">Kort beskrivning av lån</setting>
-                <setting name="add_label" locale="en_US">Add short description</setting>
-                <setting name="add_label" locale="en_CA">Add short description</setting>
-                <setting name="add_label" locale="fr_FR">Ajouter une courte description</setting>
-                <setting name="add_label" locale="sv_SE">Lägg till kort beskrivning</setting>
+                <setting name="readonly"/>
+                <setting name="usewysiwygeditor"/>
               </settings>
             </placement>
             <placement code="idno">
               <bundle>idno</bundle>
+              <settings>
+                <setting name="readonly"/>
+              </settings>
             </placement>
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_AU">Relevant organisations and people</setting>
+                <setting name="description" locale="en_AU">The names of the people and/or organisations that the loan is in partnership with.</setting>
+                <setting name="readonly"/>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="display_template">^ca_entities.preferred_labels</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+              </settings>
             </placement>
             <placement code="ca_attribute_loan_authorizatio">
               <bundle>ca_attribute_loan_authorization_date</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_loan_in_date">
               <bundle>ca_attribute_loan_in_date</bundle>
-            </placement>
-            <placement code="ca_attribute_loan_out_date">
-              <bundle>ca_attribute_loan_out_date</bundle>
-            </placement>
-            <placement code="ca_attribute_loan_return_date">
-              <bundle>ca_attribute_loan_return_date</bundle>
+              <settings>
+                <setting name="label" locale="en_AU">Loan received date</setting>
+                <setting name="description" locale="en_AU">Date (dd/mm/yyyy) that the loan was received at the WAM</setting>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_loan_renewal_date">
               <bundle>ca_attribute_loan_renewal_date</bundle>
+              <settings>
+                <setting name="label" locale="en_AU">Loan due date</setting>
+                <setting name="description" locale="en_AU">Date (dd/mm/yyyy) that the loan is due to be returned</setting>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_loan_out_date">
+              <bundle>ca_attribute_loan_out_date</bundle>
+              <settings>
+                <setting name="label" locale="en_AU">Loan sent out date</setting>
+                <setting name="description" locale="en_AU">Date (dd/mm/yyyy) that the loan was sent out by the WAM</setting>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_loan_return_date">
+              <bundle>ca_attribute_loan_return_date</bundle>
+              <settings>
+                <setting name="description" locale="en_AU">Date (dd/mm/yyyy) that the loan was returned to the WAM</setting>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_loan_conditions">
               <bundle>ca_attribute_loan_conditions</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_loan_note">
               <bundle>ca_attribute_loan_note</bundle>
+              <settings>
+                <setting name="width">100%</setting>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_loan_purpose">
               <bundle>ca_attribute_loan_purpose</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="status12">
+              <bundle>status</bundle>
+              <settings>
+                <setting name="readonly"/>
+              </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -18426,6 +18473,7 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
               <settings>
+                <setting name="label" locale="en_AU">Related people and organisations</setting>
                 <setting name="readonly"/>
                 <setting name="dont_include_subtypes_in_type_restriction">0</setting>
                 <setting name="list_format">bubbles</setting>
@@ -18449,6 +18497,7 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
                 <setting name="readonly"/>
                 <setting name="dont_include_subtypes_in_type_restriction">0</setting>
                 <setting name="dontShowDeleteButton">0</setting>
+                <setting name="showCurrentOnly">1</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_planned_removal_d">
@@ -20783,9 +20832,6 @@ e.g. "Malacostraca", "Canis lupus".</setting>
       <typeRestrictions>
         <restriction type="anthropology"/>
       </typeRestrictions>
-      <userAccess>
-        <permission user="xavier.leenders" access="read"/>
-      </userAccess>
       <groupAccess>
         <permission group="anthropology" access="read"/>
       </groupAccess>
@@ -20847,7 +20893,7 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
             <placement code="ca_collections6">
               <bundle>ca_collections</bundle>
               <settings>
-                <setting name="label" locale="en_AU">Collection</setting>
+                <setting name="label" locale="en_AU">Related Collections</setting>
                 <setting name="add_label" locale="en_AU">add collection</setting>
                 <setting name="restrict_to_types">internal</setting>
                 <setting name="list_format">bubbles</setting>
@@ -20917,6 +20963,7 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
                 <setting name="restrict_to_relationship_types">permanent</setting>
                 <setting name="dont_include_subtypes_in_type_restriction">0</setting>
                 <setting name="dontShowDeleteButton">0</setting>
+                <setting name="showCurrentOnly">1</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_SizeOrDuration7">
@@ -20997,6 +21044,7 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
               <bundle>ca_attribute_donation_date</bundle>
               <settings>
                 <setting name="sortDirection">ASC</setting>
+                <setting name="readonly"/>
               </settings>
             </placement>
             <placement code="ca_entities2">
@@ -21023,6 +21071,7 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
               <settings>
                 <setting name="label" locale="en_AU">Date Collected</setting>
                 <setting name="sortDirection">ASC</setting>
+                <setting name="readonly"/>
               </settings>
             </placement>
             <placement code="ca_attribute_eventRemarks3">
@@ -21031,6 +21080,7 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
                 <setting name="label" locale="en_AU">Collecting Details</setting>
                 <setting name="description" locale="en_AU">Enter the details of the collecting event</setting>
                 <setting name="sortDirection">ASC</setting>
+                <setting name="usewysiwygeditor">1</setting>
                 <setting name="readonly"/>
               </settings>
             </placement>
@@ -21046,7 +21096,7 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
             <placement code="ca_places1">
               <bundle>ca_places</bundle>
               <settings>
-                <setting name="label" locale="en_AU">Places</setting>
+                <setting name="label" locale="en_AU">Locality</setting>
                 <setting name="description" locale="en_AU">DC.Coverage - designates the spatial element</setting>
                 <setting name="list_format">bubbles</setting>
                 <setting name="sortDirection">ASC</setting>
@@ -21529,6 +21579,24 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
                 <setting name="maxRelationshipsPerRow">1</setting>
                 <setting name="readonly"/>
                 <setting name="dontShowDeleteButton">0</setting>
+              </settings>
+            </placement>
+            <placement code="ca_entities3">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_AU">Contact name</setting>
+                <setting name="add_label" locale="en_AU">Add new contact</setting>
+                <setting name="description" locale="en_AU">Select the name of the person who should be the main contact for this conservation request.</setting>
+                <setting name="readonly"/>
+                <setting name="restrict_to_relationship_types">individual_request_cons</setting>
+                <setting name="restrict_to_types">ind</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="display_template">^ca_entities.preferred_labels</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
               </settings>
             </placement>
             <placement code="ca_attribute_JobDates3">
