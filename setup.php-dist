@@ -286,7 +286,7 @@ if (!isset($_SERVER['HTTP_HOST']) || !isset($_CA_INSTANCE_CONFIG_FILES[$_SERVER[
 
 if (!(file_exists($_CA_CONFIG_PATH))) {
 	$opa_error_messages = array("Configuration files are missing for hostname '".(isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '[unknown]')."'!<br/>Please check the <em>__CA_BASE_DIR__</em> configuration setting in your <em>setup.php</em> file.");
-	if (!include_once(__DIR__ . "/themes/default/views/system/configuration_error_html.php")) {
+	if (!include_once(__CA_BASE_DIR__ . "/themes/default/views/system/configuration_error_html.php")) {
 		die("Fatal error: Configuration files are missing for hostname '".$_SERVER['HTTP_HOST']."'! Please check the __CA_BASE_DIR__ configuration setting in your setup.php file.");
 	}
 	exit();
