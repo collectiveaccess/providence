@@ -29,7 +29,7 @@ install:
 before_script:
   # http://docs.travis-ci.com/user/languages/php/#Apache-%2B-PHP
   # Install Apache, and replace phpunit with one that will put its classes on the include path
-  - sudo apt-get install apache2 libapache2-mod-fastcgi phpunit
+  - sudo apt-get install apache2 libapache2-mod-fastcgi
   # Setup php-fpm
   - sudo cp ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf.default ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf
   - sudo a2enmod rewrite actions fastcgi alias
