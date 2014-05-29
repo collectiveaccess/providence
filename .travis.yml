@@ -23,8 +23,8 @@ install:
   - export PATH="$PATH:$COLLECTIVEACCESS_HOME/support/bin"
   # Install the WAM CMIS profile
   - cmis-tools/bin/test-install
-  # Create setup.php as link to distributed base setup
-  - ln -s setup.php-dist setup.php
+  # Create setup.php as link to setup from test-install script
+  - ln -s cmis-tools/conf/test-install/setup.php setup.php
 
 before_script:
   # Go into the tests directory to run the tests
