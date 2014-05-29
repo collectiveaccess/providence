@@ -29,10 +29,10 @@ install:
 before_script:
   # http://docs.travis-ci.com/user/languages/php/#Apache-%2B-PHP
   # Install Apache and PHP PEAR
-  - sudo apt-get install apache2 libapache2-mod-fastcgi php-pear
+  - sudo apt-get install apache2 libapache2-mod-fastcgi #php-pear
   # Use PEAR to install phpunit
-  - sudo pear config-set auto_discover 1
-  - sudo pear install pear.phpunit.de/PHPUnit
+  # - sudo pear config-set auto_discover 1
+  # - sudo pear install pear.phpunit.de/PHPUnit
   # Setup php-fpm
   - sudo cp ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf.default ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf
   - sudo a2enmod rewrite actions fastcgi alias
@@ -47,9 +47,9 @@ before_script:
   # Temporary
   - pwd
   - echo $PATH
-  - echo BEFORE
+  # - echo BEFORE
   - which phpunit
-  - cat $(which phpunit)
-  - rm $(which phpunit)
-  - echo AFTER
-  - which phpunit
+  # - cat $(which phpunit)
+  # - rm $(which phpunit)
+  # - echo AFTER
+  # - which phpunit
