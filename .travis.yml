@@ -28,26 +28,27 @@ install:
   # Create a php.ini that adds phpunit to the include_path
   - echo "include_path = \"\${include_path}:/usr/bin/phpunit\"" >.travis.php.ini
   - phpenv config-add .travis.php.ini
-  - ls /home/travis/.phpenv/versions/5.4/etc/conf.d
-  # Temporary, show the include_path
+  # Temporary
+  - ls -la /home/travis/.phpenv/versions/5.4/etc/conf.d
+  - cat /hmoe/travis/.phpenv/versions/5.4/etc/conf.d/.travis.php.ini
   - php -r 'echo ini_get("include_path"), "\n";'
 
 before_script:
   # http://docs.travis-ci.com/user/languages/php/#Apache-%2B-PHP
   # Install Apache and PHP PEAR
-  - sudo apt-get install apache2 libapache2-mod-fastcgi #php-pear
+  # - sudo apt-get install apache2 libapache2-mod-fastcgi #php-pear
   # Use PEAR to install phpunit
   # - sudo pear config-set auto_discover 1
   # - sudo pear install pear.phpunit.de/PHPUnit
   # Setup php-fpm
-  - sudo cp ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf.default ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf
-  - sudo a2enmod rewrite actions fastcgi alias
-  - echo "cgi.fix_pathinfo = 1" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
-  - ~/.phpenv/versions/$(phpenv version-name)/sbin/php-fpm
+  # - sudo cp ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf.default ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf
+  # - sudo a2enmod rewrite actions fastcgi alias
+  # - echo "cgi.fix_pathinfo = 1" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  # - ~/.phpenv/versions/$(phpenv version-name)/sbin/php-fpm
   # Configure virtual hosts
-  - sudo cp -f .travis-apache2-vhost /etc/apache2/sites-available/default
-  - sudo sed -e "s?%TRAVIS_BUILD_DIR%?$(pwd)?g" --in-place /etc/apache2/sites-available/default
-  - sudo service apache2 restart
+  # - sudo cp -f .travis-apache2-vhost /etc/apache2/sites-available/default
+  # - sudo sed -e "s?%TRAVIS_BUILD_DIR%?$(pwd)?g" --in-place /etc/apache2/sites-available/default
+  # - sudo service apache2 restart
   # Go into the tests directory to run the tests
   - cd tests/
   # Temporary
