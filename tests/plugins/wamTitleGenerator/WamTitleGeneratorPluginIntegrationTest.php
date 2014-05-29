@@ -30,7 +30,6 @@
  * ----------------------------------------------------------------------
  */
 
-require_once 'PHPUnit/Autoload.php';
 require_once(__CA_BASE_DIR__ . '/tests/plugins/AbstractPluginIntegrationTest.php');
 require_once __CA_APP_DIR__ . '/plugins/wamTitleGenerator/wamTitleGeneratorPlugin.php';
 
