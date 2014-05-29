@@ -26,11 +26,11 @@ install:
   # Create setup.php as link to distributed base setup
   - ln -s setup.php-dist setup.php
   # Create a php.ini that adds phpunit to the include_path
-  - echo "include_path = \"\${include_path}:/usr/bin/phpunit\"" >.travis.php.ini
-  - phpenv config-add .travis.php.ini
+  - echo "include_path = \"\${include_path}:/usr/bin/phpunit\"" >phpunit.ini
+  - phpenv config-add phpunit.ini
   # Temporary
   - ls -la /home/travis/.phpenv/versions/5.4/etc/conf.d
-  - cat /hmoe/travis/.phpenv/versions/5.4/etc/conf.d/.travis.php.ini
+  - cat /home/travis/.phpenv/versions/5.4/etc/conf.d/phpunit.ini
   - php -r 'echo ini_get("include_path"), "\n";'
 
 before_script:
