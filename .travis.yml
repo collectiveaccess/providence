@@ -25,38 +25,7 @@ install:
   - cmis-tools/bin/test-install
   # Create setup.php as link to distributed base setup
   - ln -s setup.php-dist setup.php
-  # Create a php.ini that adds phpunit to the include_path
-  - echo "include_path = \".:/home/travis/.phpenv/versions/5.4.27/pear:/home/travis/.phpenv/versions/5.4.27/share/pyrus/.pear/php:/usr/bin/phpunit\"" >phpunit.ini
-  - phpenv config-add phpunit.ini
-  # Temporary
-  - ls -la /home/travis/.phpenv/versions/5.4/etc/conf.d
-  - cat /home/travis/.phpenv/versions/5.4/etc/conf.d/phpunit.ini
-  - php -r 'echo ini_get("include_path"), "\n";'
 
 before_script:
-  # http://docs.travis-ci.com/user/languages/php/#Apache-%2B-PHP
-  # Install Apache and PHP PEAR
-  # - sudo apt-get install apache2 libapache2-mod-fastcgi #php-pear
-  # Use PEAR to install phpunit
-  # - sudo pear config-set auto_discover 1
-  # - sudo pear install pear.phpunit.de/PHPUnit
-  # Setup php-fpm
-  # - sudo cp ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf.default ~/.phpenv/versions/$(phpenv version-name)/etc/php-fpm.conf
-  # - sudo a2enmod rewrite actions fastcgi alias
-  # - echo "cgi.fix_pathinfo = 1" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
-  # - ~/.phpenv/versions/$(phpenv version-name)/sbin/php-fpm
-  # Configure virtual hosts
-  # - sudo cp -f .travis-apache2-vhost /etc/apache2/sites-available/default
-  # - sudo sed -e "s?%TRAVIS_BUILD_DIR%?$(pwd)?g" --in-place /etc/apache2/sites-available/default
-  # - sudo service apache2 restart
   # Go into the tests directory to run the tests
   - cd tests/
-  # Temporary
-  - pwd
-  - echo $PATH
-  # - echo BEFORE
-  - which phpunit
-  # - cat $(which phpunit)
-  # - rm $(which phpunit)
-  # - echo AFTER
-  # - which phpunit
