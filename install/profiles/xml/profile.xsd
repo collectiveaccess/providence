@@ -87,11 +87,17 @@
 			<xs:enumeration value="GeoNames"/>
 			<xs:enumeration value="File"/>
 			<xs:enumeration value="Media"/>
-			<xs:enumeration value="Place"/>
-			<xs:enumeration value="Occurrence"/>
 			<xs:enumeration value="Taxonomy"/>
 			<xs:enumeration value="InformationService"/>
+			<xs:enumeration value="Objects"/>
 			<xs:enumeration value="Entities"/>
+			<xs:enumeration value="Places"/>
+			<xs:enumeration value="Occurrences"/>
+			<xs:enumeration value="Collections"/>
+			<xs:enumeration value="Loans"/>
+			<xs:enumeration value="Movements"/>
+			<xs:enumeration value="StorageLocations"/>
+			<xs:enumeration value="ObjectRepresentations"/>
 		</xs:restriction>
 	</xs:simpleType>
 

@@ -746,6 +746,7 @@
 				}
 			}
 			$t_rep = new ca_object_representations();
+			if ($this->inTransaction()) { $t_rep->setTransaction($this->getTransaction()); }
 			if (!$t_rep->load($pn_representation_id)) {
 				$this->postError(750, _t("Representation id=%1 does not exist", $pn_representation_id), "RepresentableBaseModel->removeRepresentation()");
 				return false;

@@ -193,6 +193,7 @@
 				
 				if ($o_idno = $t_entity->getIDNoPlugInInstance()) {
 					$va_values = $o_idno->htmlFormValuesAsArray('idno', $vs_idno);
+					if (!is_array($va_values)) { $va_values = array($va_values); }
 					if (!($vs_sep = $o_idno->getSeparator())) { $vs_sep = ''; }
 					if (($vs_proc_idno = join($vs_sep, $va_values)) && ($vs_proc_idno != $vs_idno)) {
 						$t_entity->set('idno', $vs_proc_idno);
@@ -446,6 +447,7 @@
 				
 				if ($o_idno = $t_place->getIDNoPlugInInstance()) {
 					$va_values = $o_idno->htmlFormValuesAsArray('idno', $vs_idno);
+					if (!is_array($va_values)) { $va_values = array($va_values); }
 					if (!($vs_sep = $o_idno->getSeparator())) { $vs_sep = ''; }
 					if (($vs_proc_idno = join($vs_sep, $va_values)) && ($vs_proc_idno != $vs_idno)) {
 						$t_place->set('idno', $vs_proc_idno);
@@ -625,6 +627,7 @@
 				if ($o_idno = $t_occurrence->getIDNoPlugInInstance()) {
 					$va_values = $o_idno->htmlFormValuesAsArray('idno', $vs_idno);
 					if (!($vs_sep = $o_idno->getSeparator())) { $vs_sep = ''; }
+					if (!is_array($va_values)) { $va_values = array($va_values); }
 					if (($vs_proc_idno = join($vs_sep, $va_values)) && ($vs_proc_idno != $vs_idno)) {
 						$t_occurrence->set('idno', $vs_proc_idno);
 						$t_occurrence->update();
@@ -803,7 +806,6 @@
 			}
 			
 			
-			
 			$vn_id = null;
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
@@ -838,7 +840,10 @@
 					$o_event->endItem($vn_item_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, '');
 				}
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					return new ca_list_items($vn_item_id);
+					$t_item = new ca_list_items($vn_item_id);
+					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
+						$t_item->setTransaction($pa_options['transaction']);
+					}
 				}
 				
 				return DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id];
@@ -893,6 +898,7 @@
 				
 				if ($o_idno = $t_item->getIDNoPlugInInstance()) {
 					$va_values = $o_idno->htmlFormValuesAsArray('idno', $ps_item_idno);
+					if (!is_array($va_values)) { $va_values = array($va_values); }
 					if (!($vs_sep = $o_idno->getSeparator())) { $vs_sep = ''; }
 					if (($vs_proc_idno = join($vs_sep, $va_values)) && ($vs_proc_idno != $ps_item_idno)) {
 						$t_item->set('idno', $vs_proc_idno);
@@ -1038,6 +1044,7 @@
 				
 				if ($o_idno = $t_collection->getIDNoPlugInInstance()) {
 					$va_values = $o_idno->htmlFormValuesAsArray('idno', $vs_idno);
+					if (!is_array($va_values)) { $va_values = array($va_values); }
 					if (!($vs_sep = $o_idno->getSeparator())) { $vs_sep = ''; }
 					if (($vs_proc_idno = join($vs_sep, $va_values)) && ($vs_proc_idno != $vs_idno)) {
 						$t_collection->set('idno', $vs_proc_idno);
@@ -1253,6 +1260,7 @@
 				
 				if ($o_idno = $t_location->getIDNoPlugInInstance()) {
 					$va_values = $o_idno->htmlFormValuesAsArray('idno', $vs_idno);
+					if (!is_array($va_values)) { $va_values = array($va_values); }
 					if (!($vs_sep = $o_idno->getSeparator())) { $vs_sep = ''; }
 					if (($vs_proc_idno = join($vs_sep, $va_values)) && ($vs_proc_idno != $vs_idno)) {
 						$t_location->set('idno', $vs_proc_idno);
@@ -1468,6 +1476,7 @@
 				
 				if ($o_idno = $t_object->getIDNoPlugInInstance()) {
 					$va_values = $o_idno->htmlFormValuesAsArray('idno', $vs_idno);
+					if (!is_array($va_values)) { $va_values = array($va_values); }
 					if (!($vs_sep = $o_idno->getSeparator())) { $vs_sep = ''; }
 					if (($vs_proc_idno = join($vs_sep, $va_values)) && ($vs_proc_idno != $vs_idno)) {
 						$t_object->set('idno', $vs_proc_idno);
@@ -1679,6 +1688,7 @@
 				
 				if ($o_idno = $t_lot->getIDNoPlugInInstance()) {
 					$va_values = $o_idno->htmlFormValuesAsArray('idno', $ps_idno_stub);
+					if (!is_array($va_values)) { $va_values = array($va_values); }
 					if (!($vs_sep = $o_idno->getSeparator())) { $vs_sep = ''; }
 					if (($vs_proc_idno = join($vs_sep, $va_values)) && ($vs_proc_idno != $ps_idno_stub)) {
 						$t_lot->set('idno', $vs_proc_idno);
@@ -1891,6 +1901,7 @@
 				
 				if ($o_idno = $t_loan->getIDNoPlugInInstance()) {
 					$va_values = $o_idno->htmlFormValuesAsArray('idno', $vs_idno);
+					if (!is_array($va_values)) { $va_values = array($va_values); }
 					if (!($vs_sep = $o_idno->getSeparator())) { $vs_sep = ''; }
 					if (($vs_proc_idno = join($vs_sep, $va_values)) && ($vs_proc_idno != $vs_idno)) {
 						$t_loan->set('idno', $vs_proc_idno);
@@ -2102,6 +2113,7 @@
 				
 				if ($o_idno = $t_movement->getIDNoPlugInInstance()) {
 					$va_values = $o_idno->htmlFormValuesAsArray('idno', $vs_idno);
+					if (!is_array($va_values)) { $va_values = array($va_values); }
 					if (!($vs_sep = $o_idno->getSeparator())) { $vs_sep = ''; }
 					if (($vs_proc_idno = join($vs_sep, $va_values)) && ($vs_proc_idno != $vs_idno)) {
 						$t_movement->set('idno', $vs_proc_idno);
