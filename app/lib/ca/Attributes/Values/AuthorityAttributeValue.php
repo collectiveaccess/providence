@@ -106,7 +106,7 @@
  		
  			if (preg_match('![^\d]+!', $ps_value)) {
  				// try to convert idno to id
- 				if ($vn_id = call_user_func($this->ops_table_name.'::find', arrat(array('idno' => $ps_value), array('returnAs' => 'firstId')))) { 
+ 				if ($vn_id = call_user_func($this->ops_table_name.'::find', array(array('idno' => $ps_value), array('returnAs' => 'firstId')))) { 
  					$ps_value = $vn_id;
  				}
  			}
