@@ -47,6 +47,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
 require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
+require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__.'/core/Db/Transaction.php');
 
 BaseModel::$s_ca_models_definitions['ca_data_importers'] = array(
@@ -1176,6 +1177,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		ca_data_importers::$s_num_records_skipped = 0;
 		ca_data_importers::$s_import_error_list = array();
 		
+		$opa_app_plugin_manager = new ApplicationPluginManager();
+		
 		$va_notices = $va_errors = array();
 		
 		$pb_no_transaction 	= caGetOption('noTransaction', $pa_options, false, array('castTo' => 'bool'));
@@ -1929,9 +1932,14 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//
 			// Process data in subject record
 			//
-			//print_r($va_content_tree);
-			//die("END\n\n");
+			print_R($o_reader->getRow());
+			print_r($va_content_tree);
+			die("END\n\n");
 			//continue;
+			$opa_app_plugin_manager->hookDataImportContentTree(array('content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'transaction' => &$o_trans, 'log' => &$o_log, 'reader' => $o_reader, 'environment' => $va_environment));
+			
+			//print_r($va_content_tree);
+			//die("done\n");
 			
 			if (!sizeof($va_content_tree) && !str_replace("%", "", $vs_idno)) { continue; }
 	
