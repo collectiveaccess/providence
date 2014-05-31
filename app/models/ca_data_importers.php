@@ -1932,9 +1932,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//
 			// Process data in subject record
 			//
-			print_R($o_reader->getRow());
-			print_r($va_content_tree);
-			die("END\n\n");
+			//print_r($va_content_tree);
+			//die("END\n\n");
 			//continue;
 			$opa_app_plugin_manager->hookDataImportContentTree(array('content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'transaction' => &$o_trans, 'log' => &$o_log, 'reader' => $o_reader, 'environment' => $va_environment));
 			
