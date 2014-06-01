@@ -28,12 +28,14 @@
 
 	$vo_result 					= $this->getVar('result');
  	$vo_result_context 			= $this->getVar('result_context');
+ 	$t_subject = 			$this->getVar('t_subject');
+ 	$vs_table = 			$t_subject->tableName();
  ?>
 <a href='#' id='showOptions' onclick='return caHandleResultsUIBoxes("display", "show");'><?php print _t("Display Options"); ?> <img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/arrows/arrow_right_gray.gif" width="6" height="7" border="0"></a>
 
 <?php
 	if($vo_result->numHits() > 0) {
-		if($this->getVar('mode') === 'search'){
+		if($this->getVar('mode') === 'search' && ($this->request->user->canDoAction('can_browse_'.$vs_table))){
 ?>
 			<a href='#' id='showRefine' onclick='return caHandleResultsUIBoxes("refine", "show");'><?php print _t("Filter Search"); ?> <img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/arrows/arrow_right_gray.gif" width="6" height="7" border="0"></a>
 <?php
@@ -119,7 +121,7 @@
 </div><!-- end searchOptionsBox -->
 <?php
 if($vo_result->numHits() > 0) {
-	if($this->getVar('mode') === 'search'){
+	if($this->getVar('mode') === 'search' && ($this->request->user->canDoAction('can_browse_'.$vs_table))){
 		print $this->render('Search/search_refine_html.php');
 	}
 	print $this->render('Search/search_tools_html.php');
