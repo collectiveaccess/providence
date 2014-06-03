@@ -1,10 +1,9 @@
 <?php
 /**
  * @package dompdf
- * @link    http://www.dompdf.com/
+ * @link    http://dompdf.github.com/
  * @author  Benj Carson <benjcarson@digitaljunkies.ca>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
- * @version $Id: table_frame_decorator.cls.php 462 2012-01-29 22:44:23Z fabien.menager $
  */
 
 /**
@@ -68,11 +67,17 @@ class Table_Frame_Decorator extends Frame_Decorator {
   /**
    * Class constructor
    *
-   * @param Frame $frame the frame to decorate
+   * @param Frame  $frame the frame to decorate
+   * @param DOMPDF $dompdf
    */
   function __construct(Frame $frame, DOMPDF $dompdf) {
     parent::__construct($frame, $dompdf);
     $this->_cellmap = new Cellmap($this);
+    
+    if ( $frame->get_style()->table_layout === "fixed" ) {
+      $this->_cellmap->set_layout_fixed(true);
+    }
+    
     $this->_min_width = null;
     $this->_max_width = null;
     $this->_headers = array();
@@ -97,9 +102,12 @@ class Table_Frame_Decorator extends Frame_Decorator {
    * added to the clone.  This method is overidden in order to remove
    * frames from the cellmap properly.
    *
-   * @param Frame $row
+   * @param Frame $child
+   * @param bool  $force_pagebreak
+   *
+   * @return void
    */
-  function split($child = null, $force_pagebreak = false) {
+  function split(Frame $child = null, $force_pagebreak = false) {
 
     if ( is_null($child) ) {
       parent::split();
@@ -147,10 +155,10 @@ class Table_Frame_Decorator extends Frame_Decorator {
   /**
    * Return a copy of this frame with $node as its node
    * 
-   * @param DomNode $node 
+   * @param DOMNode $node
    * @return Frame
    */ 
-  function copy(DomNode $node) {
+  function copy(DOMNode $node) {
     $deco = parent::copy($node);
     
     // In order to keep columns' widths through pages
@@ -269,8 +277,7 @@ class Table_Frame_Decorator extends Frame_Decorator {
           // Okay, I have absolutely no idea why I need this clone here, but
           // if it's omitted, php (as of 2004-07-28) segfaults.
           $frame->set_style(clone $style);
-          $table_row = Frame_Factory::decorate_frame($frame, $this->_dompdf);
-          $table_row->set_root($this->_root);
+          $table_row = Frame_Factory::decorate_frame($frame, $this->_dompdf, $this->_root);
 
           // Add the cell to the row
           $table_row->append_child($child);
@@ -286,8 +293,9 @@ class Table_Frame_Decorator extends Frame_Decorator {
 
         // Normalise other table parts (i.e. row groups)
         foreach ($child->get_children() as $grandchild) {
-          if ( $grandchild->get_style()->display === "table-row" )
+          if ( $grandchild->get_style()->display === "table-row" ) {
             $grandchild->normalise();
+          }
         }
 
         // Add headers and footers

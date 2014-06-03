@@ -662,6 +662,14 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 				if ($t_item->hasField('is_deaccessioned') && $t_item->get('is_deaccessioned')) {
 					$vs_buf .= "<br/><div class='inspectorDeaccessioned'>"._t('Deaccessioned %1', $t_item->get('deaccession_date'))."</div>\n";
 					if ($vs_deaccession_notes = $t_item->get('deaccession_notes')) { TooltipManager::add(".inspectorDeaccessioned", $vs_deaccession_notes); }
+				} else {
+					if (method_exists($t_item, "getLastLocationForDisplay")) {
+						if ($vs_current_location = $t_item->getLastLocationForDisplay("<ifdef code='ca_storage_locations.parent.preferred_labels'>^ca_storage_locations.parent.preferred_labels ➜ </ifdef>^ca_storage_locations.preferred_labels.name")) {
+							$vs_buf .= "<br/><div class='inspectorCurrentLocation'>"._t('Location: %1', $vs_current_location)."</div>\n";
+							$vs_full_location_hierarchy = $t_item->getLastLocationForDisplay("^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_");
+							if ($vs_full_location_hierarchy !== $vs_current_location) { TooltipManager::add(".inspectorCurrentLocation", $vs_full_location_hierarchy); }
+						}
+					}
 				}
 					
 				$vs_label = '';
@@ -2379,8 +2387,18 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 										break;
 									case 'parent':
 										if (is_array($va_val)) {
-											foreach($va_val as $va_label) {
-												$va_val_proc[] = $va_label['name'];
+											
+											foreach($va_val as $vm_label) {
+												if (is_array($vm_label)) {
+													$t_rel = $o_dm->getInstanceByTableName($va_spec_bits[0], true);
+													if (!$t_rel || !method_exists($t_rel, "getLabelDisplayField")) {
+														$va_val_proc[] = join("; ", $vm_label);
+													} else {
+														$va_val_proc[] = $vm_label[$t_rel->getLabelDisplayField()];
+													}
+												} else {
+													$va_val_proc[] = $vm_label;
+												}
 											}
 										}
 										break;
@@ -2440,6 +2458,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 								
 								if (in_array($va_tmp[0], array('parent'))) {
 									$va_val[] = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_tag_opts, array('returnAsArray' => false)));
+								} elseif ($va_tmp[0] == '_hierarchyName') {
+									$va_val[] = $vs_hierarchy_name;
 								} else {
 									$va_val_tmp = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_tag_opts, array('returnAsArray' => true, 'filters' => $va_tag_filters)));
 									$va_val = array();

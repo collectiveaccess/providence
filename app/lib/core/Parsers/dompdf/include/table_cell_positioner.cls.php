@@ -1,10 +1,9 @@
 <?php
 /**
  * @package dompdf
- * @link    http://www.dompdf.com/
+ * @link    http://dompdf.github.com/
  * @author  Benj Carson <benjcarson@digitaljunkies.ca>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
- * @version $Id: table_cell_positioner.cls.php 448 2011-11-13 13:00:03Z fabien.menager $
  */
 
 /**

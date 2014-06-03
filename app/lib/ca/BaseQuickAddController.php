@@ -134,7 +134,6 @@
  					}
  					if (!$vn_type_id) {
  						$vn_type_id = $t_subject->getDefaultTypeID();
- 						$t_subject->set('type_id', $vn_type_id);
  					}
  				}
  			}

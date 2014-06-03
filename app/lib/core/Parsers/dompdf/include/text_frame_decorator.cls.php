@@ -1,12 +1,11 @@
 <?php
 /**
  * @package dompdf
- * @link    http://www.dompdf.com/
+ * @link    http://dompdf.github.com/
  * @author  Benj Carson <benjcarson@digitaljunkies.ca>
  * @author  Brian Sweeney <eclecticgeek@gmail.com>
- * @author  Fabien Ménager <fabien.menager@gmail.com>
+ * @author  Fabien MÃ©nager <fabien.menager@gmail.com>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
- * @version $Id: text_frame_decorator.cls.php 459 2012-01-25 21:38:50Z fabien.menager $
  */
 
 /**
@@ -75,7 +74,7 @@ class Text_Frame_Decorator extends Frame_Decorator {
     // This function is called in add_frame_to_line() and is used to
     // determine the line height, so we actually want to return the
     // 'line-height' property, not the actual margin box
-    $style = $this->get_style();
+    $style = $this->get_parent()->get_style();
     $font = $style->font_family;
     $size = $style->font_size;
 
@@ -87,7 +86,7 @@ class Text_Frame_Decorator extends Frame_Decorator {
     pre_r(($style->line_height / $size) * Font_Metrics::get_font_height($font, $size));
     */
 
-    return ($style->line_height / $size) * Font_Metrics::get_font_height($font, $size);
+    return ($style->line_height / ( $size > 0 ? $size : 1 )) * Font_Metrics::get_font_height($font, $size);
     
   }
 
@@ -131,7 +130,7 @@ class Text_Frame_Decorator extends Frame_Decorator {
   // text is added a sibling frame following this one and is returned.
   function split_text($offset) {
     if ( $offset == 0 )
-      return;
+      return null;
 
     if ( self::$_buggy_splittext ) {
       // workaround to solve DOMText::spliText() bug parsing multibyte strings

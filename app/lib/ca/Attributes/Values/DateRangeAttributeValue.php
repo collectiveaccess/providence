@@ -222,6 +222,10 @@
 		}
  		# ------------------------------------------------------------------
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
+            $o_conf = Configuration::load();
+            $o_date_config = Configuration::load($o_conf->get('datetime_config'));
+            $show_Undated = $o_date_config->get('showUndated');
+ 
  			$ps_value = trim($ps_value);
  			$va_settings = $this->getSettingValuesFromElementArray(
  				$pa_element_info, 
