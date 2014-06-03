@@ -35,7 +35,8 @@ install:
   - sed -e "s?bootstrap=\".*\"?bootstrap=\"../cmis-tools/conf/test-install/setup.php\"?g" --in-place tests/phpunit.xml
   - cat tests/phpunit.xml
   # Install the WAM CMIS profile
-  - cmis-tools/bin/test-install
+  - pwd
+  - $(pwd)/cmis-tools/bin/test-install
   - mysql -uca_test -ppassword ca_test -e "show tables;"
 
 before_script:
