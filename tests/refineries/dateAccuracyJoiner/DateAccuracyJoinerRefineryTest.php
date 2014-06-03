@@ -30,9 +30,7 @@
  * ----------------------------------------------------------------------
  */
 
-require_once 'PHPUnit/Autoload.php';
 require_once __CA_APP_DIR__ . '/refineries/dateAccuracyJoiner/dateAccuracyJoinerRefinery.php';
-
 
 class DateAccuracyJoinerRefineryTest extends PHPUnit_Framework_TestCase {
 
