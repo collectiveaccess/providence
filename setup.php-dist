@@ -185,7 +185,7 @@ if (!defined("__CA_APP_NAME__")) {
 # 		For Windows hosts, use a notation similar to "C:/PATH/TO/COLLECTIVEACCESS"; do NOT use backslashes
 #
 if (!defined("__CA_BASE_DIR__")) {
-	define("__CA_BASE_DIR__", pathinfo(preg_replace("!/install|/viewers/apps!", "", $_SERVER['SCRIPT_FILENAME']), PATHINFO_DIRNAME));
+	define("__CA_BASE_DIR__", pathinfo(preg_replace("!/install|/viewers/apps|/tests|support/bin/!", "", isset($_SERVER['SCRIPT_FILENAME']) ? $_SERVER['SCRIPT_FILENAME'] : __FILE__), PATHINFO_DIRNAME));
 }
 
 
@@ -203,7 +203,7 @@ if (!defined("__CA_BASE_DIR__")) {
 # 		Example: If CollectiveAccess will be accessed via http://www.mysite.org/apps/ca then __CA_URL_ROOT__ would be set to /apps/ca
 #
 if (!defined("__CA_URL_ROOT__")) {
-	define("__CA_URL_ROOT__", str_replace($_SERVER['DOCUMENT_ROOT'], '', __CA_BASE_DIR__));
+	define("__CA_URL_ROOT__", str_replace(isset($_SERVER['DOCUMENT_ROOT']) ? $_SERVER['DOCUMENT_ROOT'] : '', '', __CA_BASE_DIR__));
 }
 
 
@@ -216,9 +216,8 @@ if (!defined("__CA_URL_ROOT__")) {
 #		If you must set this manually, it must be the full host name. Do not include http:// or any other prefixes.
 #
 if (!defined("__CA_SITE_HOSTNAME__")) {
-	define("__CA_SITE_HOSTNAME__", $_SERVER['HTTP_HOST']);
+	define("__CA_SITE_HOSTNAME__", isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '');
 }
-
 
 #
 # If you use PayPal for e-commerce payments then you can set your account information 
@@ -286,8 +285,8 @@ if (!isset($_SERVER['HTTP_HOST']) || !isset($_CA_INSTANCE_CONFIG_FILES[$_SERVER[
 } 
 
 if (!(file_exists($_CA_CONFIG_PATH))) {
-	$opa_error_messages = array("Configuration files are missing for hostname '".$_SERVER['HTTP_HOST']."'!<br/>Please check the <em>__CA_BASE_DIR__</em> configuration setting in your <em>setup.php</em> file.");
-	if (!include_once("./themes/default/views/system/configuration_error_html.php")) {
+	$opa_error_messages = array("Configuration files are missing for hostname '".(isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '[unknown]')."'!<br/>Please check the <em>__CA_BASE_DIR__</em> configuration setting in your <em>setup.php</em> file.");
+	if (!include_once(__CA_BASE_DIR__ . "/themes/default/views/system/configuration_error_html.php")) {
 		die("Fatal error: Configuration files are missing for hostname '".$_SERVER['HTTP_HOST']."'! Please check the __CA_BASE_DIR__ configuration setting in your setup.php file.");
 	}
 	exit();
