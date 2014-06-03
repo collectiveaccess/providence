@@ -28,7 +28,7 @@ install:
   # Install the WAM CMIS profile
   - pwd
   - cat $(pwd)/tests/setup-tests.php
-  - support/bin/caUtils install --hostname=localhost --setup="$(pwd)/tests/setup-tests.php" --profile-name=wamcmis --admin-email=dev@gaiaresources.com.au
+  - support/bin/caUtils install --hostname=localhost --setup="$(pwd)/tests/setup-tests.php" --profile-name=wamcmis --admin-email=dev@gaiaresources.com.au >install.log
   - mysql -uca_test -ppassword ca_test -e "show tables;"
 
 before_script:
