@@ -14,7 +14,7 @@ if (!defined("__CA_DB_DATABASE__")) {
 	define("__CA_DB_DATABASE__", 'ca_test');
 }
 if (!defined("__CA_APP_DISPLAY_NAME__")) {
-	define("__CA_APP_DISPLAY_NAME__", "CollectiveAccess Unit Tests");
+	define("__CA_APP_DISPLAY_NAME__", 'CollectiveAccess Unit Tests');
 }
 if (!defined("__CA_ADMIN_EMAIL__")) {
 	define("__CA_ADMIN_EMAIL__", 'dev@gaiaresources.com.au');

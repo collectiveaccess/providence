@@ -6,18 +6,9 @@ php:
   # PHP 5.5 is the current latest release
   - 5.5
 
-mysql:
-  # MySQL settings, these correspond to the settings used by the test-install script
-  # TODO Do we even need this?
-  database: ca_test
-  username: ca_test
-  password: password
-  encoding: utf8
-
 install:
-  # Create the database instance for the test
+  # Initialise the database instance for the test
   - mysqladmin -uroot create ca_test
-  # Create the database user and grant privileges
   - mysql -uroot -e "create user 'ca_test'@'localhost' identified by 'password';"
   - mysql -uroot -e "grant all on ca_test.* to 'ca_test'@'localhost';"
   # Set environment variables
@@ -26,10 +17,7 @@ install:
   # Create setup.php
   - ln -s .travis.setup.php setup.php
   # Install the WAM CMIS profile
-  - pwd
-  - cat $(pwd)/tests/setup-tests.php
   - support/bin/caUtils install --hostname=localhost --setup="$(pwd)/tests/setup-tests.php" --profile-name=wamcmis --admin-email=dev@gaiaresources.com.au >install.log
-  - mysql -uca_test -ppassword ca_test -e "show tables;"
 
 before_script:
   # Go into the tests directory to run the tests
