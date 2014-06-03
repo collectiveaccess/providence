@@ -8,19 +8,13 @@ php:
 
 mysql:
   # MySQL settings, these correspond to the settings used by the test-install script
+  # TODO Do we even need this?
   database: ca_test
   username: ca_test
   password: password
   encoding: utf8
 
 install:
-  # Get the tools, we need the test-install script, which wraps `caUtils install`
-  # TEMPORARY: WHEN FINISHED CHANGE BACK TO wamuseum/cmis-tools
-  - git clone https://github.com/leftclickben/cmis-tools.git
-  # TEMPORARY
-  - cd cmis-tools/
-  - git checkout TravisCI
-  - cd ../
   # Create the database instance for the test
   - mysqladmin -uroot create ca_test
   # Create the database user and grant privileges
@@ -29,14 +23,12 @@ install:
   # Set environment variables
   - export COLLECTIVEACCESS_HOME="$(pwd)"
   - export PATH="$PATH:$COLLECTIVEACCESS_HOME/support/bin"
-  # Create setup.php as link to setup.php-dist
-  - ln -s setup.php-dist setup.php
-  # Change phpunit.xml to use the setup.php used by test-install
-  - sed -e "s?bootstrap=\".*\"?bootstrap=\"../cmis-tools/conf/test-install/setup.php\"?g" --in-place tests/phpunit.xml
-  - cat tests/phpunit.xml
+  # Create setup.php
+  - ln -s .travis.setup.php setup.php
   # Install the WAM CMIS profile
   - pwd
-  - $(pwd)/cmis-tools/bin/test-install
+  - cat $(pwd)/tests/setup-tests.php
+  - support/bin/caUtils install --hostname=localhost --setup="$(pwd)/tests/setup-tests.php" --profile-name=$profile --admin-email=dev@gaiaresources.com.au
   - mysql -uca_test -ppassword ca_test -e "show tables;"
 
 before_script:
