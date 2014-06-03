@@ -2300,7 +2300,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			if (is_array($va_mandatory_fields = $this->getMandatoryFields())) {
 				foreach($va_mandatory_fields as $vs_field) {
 					if (!in_array($vs_field, $va_fields_by_type['intrinsic'])) {
-						$va_fields_by_type['intrinsic'][] = $vs_field;
+						$va_fields_by_type['intrinsic']['mandatory_'.$vs_field] = $vs_field;
 					}
 				}
 			}
