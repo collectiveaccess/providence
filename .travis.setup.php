@@ -16,9 +16,6 @@ if (!defined("__CA_DB_DATABASE__")) {
 if (!defined("__CA_APP_DISPLAY_NAME__")) {
 	define("__CA_APP_DISPLAY_NAME__", 'CollectiveAccess Unit Tests');
 }
-if (!defined("__CA_ADMIN_EMAIL__")) {
-	define("__CA_ADMIN_EMAIL__", 'dev@gaiaresources.com.au');
-}
 
 # Include the defaults.
 require_once('setup.php-dist');
