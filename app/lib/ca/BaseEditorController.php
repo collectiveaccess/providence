@@ -374,11 +374,11 @@
  			}
  			
  			if ($vb_confirm = ($this->request->getParameter('confirm', pInteger) == 1) ? true : false) {
- 				$vb_we_set_transation = false;
+ 				$vb_we_set_transaction = false;
  				if (!$t_subject->inTransaction()) {
  					$o_t = new Transaction();
  					$t_subject->setTransaction($o_t);
- 					$vb_we_set_transation = true;
+ 					$vb_we_set_transaction = true;
  				}
  				
  				// Do we need to move relationships?
@@ -421,7 +421,7 @@
  					}
  				}
  				
- 				if ($vb_we_set_transation) {
+ 				if ($vb_we_set_transaction) {
  					if (!$vb_rc) {
  						$o_t->rollbackTransaction();	
  					} else {
