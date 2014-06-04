@@ -981,7 +981,7 @@
 				return false;
 			}
 			$vs_log_dir = $po_opts->getOption('log');
-			$vn_log_level = CLIUtils::import_getLogLevel($po_opts);
+			$vn_log_level = CLIUtils::getLogLevel($po_opts);
 
 			if (!($t_importer = ca_data_importers::loadImporterFromFile($vs_file_path, $va_errors, array('logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level)))) {
 				CLIUtils::addError(_t("Could not import '%1': %2", $vs_file_path, join("; ", $va_errors)));
@@ -1053,7 +1053,7 @@
 			
 			$vs_format = $po_opts->getOption('format');
 			$vs_log_dir = $po_opts->getOption('log');
-			$vn_log_level = CLIUtils::import_getLogLevel($po_opts);
+			$vn_log_level = CLIUtils::getLogLevel($po_opts);
 			
 			
 			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('noTransaction' => $vb_direct, 'format' => $vs_format, 'showCLIProgressBar' => true, 'useNcurses' => !$vb_no_ncurses && caCLIUseNcurses(), 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level))) {
@@ -1067,7 +1067,7 @@
 		/**
 		* Helper function to get log levels
 		*/
-		private static function import_getLogLevel($po_opts){
+		private static function getLogLevel($po_opts){
 			$vn_log_level = KLogger::INFO;
 			switch($vs_log_level = $po_opts->getOption('log-level')) {
 				case 'DEBUG':
@@ -1221,6 +1221,9 @@
 				return false;
 			}
 
+			$vs_log_dir = $po_opts->getOption('log');
+			$vn_log_level = CLIUtils::getLogLevel($po_opts);
+
 			// RDF mode
 			if($vb_rdf){
 				if (!($vs_config = $po_opts->getOption('config'))) {
@@ -1234,7 +1237,7 @@
 					return false;
 				}
 
-				if(ca_data_exporters::exportRDFMode($vs_config,$vs_filename,array('showCLIProgressBar' => true))){
+				if(ca_data_exporters::exportRDFMode($vs_config, $vs_filename,array('showCLIProgressBar' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level))){
 					print _t("Exported data to %1", CLIUtils::textWithColor($vs_filename, 'yellow'));
 					return true;
 				} else {
@@ -1261,14 +1264,14 @@
 			}
 			
 			if($vs_search){
-				if(!ca_data_exporters::exportRecordsFromSearchExpression($vs_mapping, $vs_search, $vs_filename, array('showCLIProgressBar' => true, 'useNcurses' => true))){
+				if(!ca_data_exporters::exportRecordsFromSearchExpression($vs_mapping, $vs_search, $vs_filename, array('showCLIProgressBar' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level))){
 					print _t("Could not export mapping %1", $vs_mapping)."\n";
 					return false;
 				} else {
 					print _t("Exported data to %1", $vs_filename)."\n";
 				}	
 			} else if($vs_id){
-				if($vs_export = ca_data_exporters::exportRecord($vs_mapping, $vs_id, $pa_options=array('singleRecord' => true))){
+				if($vs_export = ca_data_exporters::exportRecord($vs_mapping, $vs_id, array('singleRecord' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level))){
 					file_put_contents($vs_filename, $vs_export);
 					print _t("Exported data to %1", CLIUtils::textWithColor($vs_filename, 'yellow'));
 				} else {
@@ -1284,6 +1287,8 @@
 				"id|i=s" => _t('Primary key identifier of single item to export.'),
 				"file|f=s" => _t('Required. File to save export to.'),
 				"mapping|m=s" => _t('Mapping to export data with.'),
+				"log|l-s" => _t('Path to directory in which to log export details. If not set no logs will be recorded.'),
+				"log-level|d-s" => _t('Optional logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
 				"rdf" => _t('Switches to RDF export mode. You can use this to assemble record-level exports across authorities with multiple mappings in a single export (usually an RDF graph). -s, -i and -m are ignored and -c is required.'),
 				"config|c=s" => _t('Configuration file for RDF export mode.'),
 			);
@@ -1297,11 +1302,11 @@
 		}
 		# -------------------------------------------------------
 		public static function export_dataShortHelp() {
-			return _t("Export data to a MARC or XML file.");
+			return _t("Export data to a CSV, MARC or XML file.");
 		}
 		# -------------------------------------------------------
 		public static function export_dataHelp() {
-			return _t("Export data to a MARC or XML file.");
+			return _t("Export data to a CSV, MARC or XML file.");
 		}
 		# -------------------------------------------------------
 		/**
