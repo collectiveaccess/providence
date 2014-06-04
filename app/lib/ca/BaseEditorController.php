@@ -789,6 +789,8 @@
  				
  				// then reload the definitions (which includes bundle specs)
  				$t_subject->reloadLabelDefinitions();
+ 			} else {
+ 				$vn_type_id = $t_subject->getTypeID();
  			}
  			
  			$t_ui = $this->_getUI($vn_type_id, $pa_options);
