@@ -542,6 +542,7 @@
 		public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 			$vb_web_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
 			
+			$o_trans = null;
 			if (!$this->inTransaction()) {
 				$o_trans = new Transaction($this->getDb());
 				$this->setTransaction($o_trans);
@@ -549,7 +550,7 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			
 			$vn_id = $this->getPrimaryKey();
-			if(parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list) && (!$this->hasField('deleted') || caGetOption('hard', $pa_options, false))) {
+			if(($vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) && (!$this->hasField('deleted') || caGetOption('hard', $pa_options, false))) {
 				// Delete any associated attributes and attribute_values
 				if (!($qr_res = $this->getDb()->query("
 					DELETE FROM ca_attribute_values 
@@ -613,12 +614,12 @@
 				if ($o_trans) { $o_trans->commit(); }
 					
 				if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
-				return true;
+				return $vn_rc;
 			}
 			
 			if ($o_trans) { $o_trans->rollback(); }
 			if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
-			return false;
+			return $vn_rc;
 		}
 		# ------------------------------------------------------------------
 		/**
