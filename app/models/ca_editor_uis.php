@@ -519,6 +519,33 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ----------------------------------------
 	/**
+	 * Returns data for each placement in the currently loaded UI 
+	 * for the bundle named by $ps_bundle_name. Searches all screens of
+	 * the UI.
+	 *
+	 * @param string $ps_bundle_name The bundle name
+	 * @param RequestHTTP $po_request The current request
+	 *
+	 * @return array A list of placement info, one for each placement in the editor
+	 */
+	public function getPlacementsForBundle($ps_bundle_name, $po_request=null) {
+		if (!$this->getPrimaryKey()) { return null; }
+		
+		$va_found = array();
+		foreach($this->getScreens($po_request) as $va_screen) {
+			$vn_screen_id = $va_screen['screen_id'];
+			$va_placements = $this->getScreenBundlePlacements('Screen'.$vn_screen_id);
+			
+			foreach($va_placements as $va_placement) {
+				if ($va_placement['bundle_name'] === $ps_bundle_name) {
+					$va_found[] = $va_placement;
+				}
+			}
+		}
+		return $va_found;
+	}
+	# ----------------------------------------
+	/**
 	 *	Return navigation configuration fragment suitable for insertion into the navigation.conf structure.
 	 *	Can be used by lib/core/AppNavigation to dynamically insert navigation for screens into navigation tree
 	 *

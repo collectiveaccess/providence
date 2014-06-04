@@ -1,11 +1,10 @@
 <?php
 /**
  * @package dompdf
- * @link    http://www.dompdf.com/
+ * @link    http://dompdf.github.com/
  * @author  Benj Carson <benjcarson@digitaljunkies.ca>
- * @author  Fabien Ménager <fabien.menager@gmail.com>
+ * @author  Fabien MÃ©nager <fabien.menager@gmail.com>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
- * @version $Id: page_frame_reflower.cls.php 448 2011-11-13 13:00:03Z fabien.menager $
  */
 
 /**
@@ -29,22 +28,8 @@ class Page_Frame_Reflower extends Frame_Reflower {
    * @var Canvas
    */
   private $_canvas;
-  
-  /**
-   * The stacking context, containing all z-indexed frames
-   * @var array
-   */
-  private $_stacking_context = array();
 
   function __construct(Page_Frame_Decorator $frame) { parent::__construct($frame); }
-
-  /**
-   * @param $frame Frame
-   * @return void
-   */
-  function add_frame_to_stacking_context(Frame $frame, $z_index) {
-    $this->_stacking_context[$z_index][] = $frame;
-  }
   
   function apply_page_style(Frame $frame, $page_number){
     $style = $frame->get_style();
@@ -89,7 +74,7 @@ class Page_Frame_Reflower extends Frame_Reflower {
    * Paged layout:
    * http://www.w3.org/TR/CSS21/page.html
    */
-  function reflow(Frame_Decorator $block = null) {
+  function reflow(Block_Frame_Decorator $block = null) {
     $fixed_children = array();
     $prev_child = null;
     $child = $this->_frame->get_first_child();
@@ -141,24 +126,8 @@ class Page_Frame_Reflower extends Frame_Reflower {
       // Check for begin render callback
       $this->_check_callbacks("begin_page_render", $child);
       
-      $renderer = $this->_frame->get_renderer();
-
       // Render the page
-      $renderer->render($child);
-      
-      Renderer::$stacking_first_pass = false;
-      
-      // http://www.w3.org/TR/CSS21/visuren.html#z-index
-      ksort($this->_stacking_context);
-      
-      foreach( $this->_stacking_context as $_frames ) {
-        foreach ( $_frames as $_frame ) {
-          $renderer->render($_frame);
-        }
-      }
-      
-      Renderer::$stacking_first_pass = true;
-      $this->_stacking_context = array();
+      $this->_frame->get_renderer()->render($child);
       
       // Check for end render callback
       $this->_check_callbacks("end_page_render", $child);

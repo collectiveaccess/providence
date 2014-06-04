@@ -1,11 +1,10 @@
 <?php
 /**
  * @package dompdf
- * @link    http://www.dompdf.com/
+ * @link    http://dompdf.github.com/
  * @author  Benj Carson <benjcarson@digitaljunkies.ca>
  * @author  Helmut Tischer <htischer@weihenstephan.org>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
- * @version $Id: inline_frame_decorator.cls.php 448 2011-11-13 13:00:03Z fabien.menager $
  */
 
 /**
@@ -18,7 +17,7 @@ class Inline_Frame_Decorator extends Frame_Decorator {
   
   function __construct(Frame $frame, DOMPDF $dompdf) { parent::__construct($frame, $dompdf); }
 
-  function split($frame = null, $force_pagebreak = false) {
+  function split(Frame $frame = null, $force_pagebreak = false) {
 
     if ( is_null($frame) ) {
       $this->get_parent()->split($this, $force_pagebreak);
