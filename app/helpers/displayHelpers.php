@@ -659,11 +659,23 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 					$vs_buf .= "<strong>"._t("Viewing %1", $vs_type_name).": </strong>\n";
 				}
 				
-				if ($t_item->hasField('is_deaccessioned') && $t_item->get('is_deaccessioned')) {
+				if ($t_item->hasField('is_deaccessioned') && $t_item->get('is_deaccessioned') && ($t_item->get('deaccession_date', array('getDirectDate' => true)) <= caDateToHistoricTimestamp(_t('now')))) {
+					// If currently deaccessioned then display deaccession message
 					$vs_buf .= "<br/><div class='inspectorDeaccessioned'>"._t('Deaccessioned %1', $t_item->get('deaccession_date'))."</div>\n";
 					if ($vs_deaccession_notes = $t_item->get('deaccession_notes')) { TooltipManager::add(".inspectorDeaccessioned", $vs_deaccession_notes); }
 				} else {
-					if (method_exists($t_item, "getLastLocationForDisplay")) {
+					if (($t_ui && method_exists($t_item, "getObjectHistory")) && (is_array($va_placements = $t_ui->getPlacementsForBundle('ca_objects_history')) && (sizeof($va_placements) > 0))) {
+						//
+						// Output current "location" of object in life cycle. Configuration is taken from a ca_objects_history bundle configured for the current editor
+						//
+						$va_placement = array_shift($va_placements);
+						$va_bundle_settings = $va_placement['settings'];
+						if (is_array($va_history = $t_item->getObjectHistory($va_bundle_settings, array('limit' => 1, 'currentOnly' => true))) && (sizeof($va_history) > 0)) {
+							$va_current_location = array_shift(array_shift($va_history));
+							$vs_buf .= "<div class='inspectorCurrentLocation'><strong>"._t('Current:').'</strong><br/>'.$va_current_location['display']."</div>";
+						}
+					} elseif (method_exists($t_item, "getLastLocationForDisplay")) {
+						// If no ca_objects_history bundle is configured then display the last storage location
 						if ($vs_current_location = $t_item->getLastLocationForDisplay("<ifdef code='ca_storage_locations.parent.preferred_labels'>^ca_storage_locations.parent.preferred_labels ➜ </ifdef>^ca_storage_locations.preferred_labels.name")) {
 							$vs_buf .= "<br/><div class='inspectorCurrentLocation'>"._t('Location: %1', $vs_current_location)."</div>\n";
 							$vs_full_location_hierarchy = $t_item->getLastLocationForDisplay("^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_");

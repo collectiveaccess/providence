@@ -1271,7 +1271,7 @@ function caFileIsIncludable($ps_file) {
 		$o_tep = new TimeExpressionParser();
 		if ($o_tep->parse($ps_date_expression)) {
 			$va_date = $o_tep->getUnixTimestamps();
-			return $va_date['start'];
+			return isset($va_date['start']) ? $va_date['start'] : null;
 		}
 		return null;
 	}
@@ -1286,6 +1286,21 @@ function caFileIsIncludable($ps_file) {
 		$o_tep = new TimeExpressionParser();
 		if ($o_tep->parse($ps_date_expression)) {
 			return $o_tep->getHistoricTimestamps();
+		}
+		return null;
+	}
+	# ---------------------------------------
+	/**
+	  * Parses natural language date and returns an historic timestamp
+	  *
+	  * @param string $ps_date_expression A valid date/time expression as described in http://docs.collectiveaccess.org/wiki/Date_and_Time_Formats
+	  * @return float An historic timestamp for the date expression or null if expression cannot be parsed.
+	  */
+	function caDateToHistoricTimestamp($ps_date_expression) {
+		$o_tep = new TimeExpressionParser();
+		if ($o_tep->parse($ps_date_expression)) {
+			$va_date = $o_tep->getHistoricTimestamps();
+			return isset($va_date['start']) ? $va_date['start'] : null;
 		}
 		return null;
 	}
