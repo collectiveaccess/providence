@@ -412,7 +412,27 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 		}
 
 		if((sizeof($va_tmp)==2) && isset($va_tmp[0]) && ($va_tmp[0] == 'props')) {
-			return $this->getPropertyValue($va_tmp[1]);
+			$vm_val = $this->getPropertyValue($va_tmp[1]);
+			
+			// this should be moved into the property implementation but for now, points is the only occurrence 
+			// of this kind of thing and getProperty() doesn't support any options so this is a reasonable quick&dirty way. 
+			if(is_array($vm_val) && !caGetOption('returnAsArray',$pa_options)) {
+				switch($va_tmp[1]) {
+					case 'points' :
+						$va_return = array();
+						foreach($vm_val as $va_point) {
+							$va_return[] = $va_point['x'].','.$va_point['y'];
+						}
+						if(!($vs_delimiter = caGetOption('delimiter',$pa_options))){
+							$vs_delimiter = '; ';
+						}
+						return join($vs_delimiter, $va_return);
+						break;
+					default:
+						return $vm_val;
+				}
+			}
+			return $vm_val;
 		}
 
 		return parent::get($ps_field, $pa_options);
