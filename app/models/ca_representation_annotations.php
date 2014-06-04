@@ -412,7 +412,7 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 		}
 
 		if((sizeof($va_tmp)==2) && isset($va_tmp[0]) && ($va_tmp[0] == 'props')) {
-			$vm_prop = $this->getPropertyValue($va_tmp[1]);
+			return $this->getPropertyValue($va_tmp[1]);
 		}
 
 		return parent::get($ps_field, $pa_options);
