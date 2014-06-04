@@ -3589,14 +3589,15 @@ if (!$vb_batch) {
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
 						
-						if ($vn_location_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_idnew_0", pInteger)) {
+						if ($vn_location_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_idnew_0", pInteger)) {
 							if (
 								(is_array($va_relationship_types = caGetOption('ca_storage_locations_relationshipType', $va_bundle_settings, null)))
 								&& 
 								($vn_relationship_type_id = array_shift($va_relationship_types))
 							) {
-								if (!$this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id)) {
-									// TODO: error reporting
+								$this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id);
+								if ($this->numErrors()) {
+									$po_request->addActionErrors($this->errors(), 'ca_objects_location', 'general');
 								}
 							}
 						}
@@ -3607,9 +3608,7 @@ if (!$vb_batch) {
 					case 'ca_objects_history':
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
-						
-						//print_R($_REQUEST);
-
+					
 						// set storage location
 						if ($vn_location_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_idnew_0", pInteger)) {
 							if (
@@ -3617,8 +3616,9 @@ if (!$vb_batch) {
 								&& 
 								($vn_relationship_type_id = array_shift($va_relationship_types))
 							) {
-								if (!$this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id)) {
-									// TODO: error reporting
+								$this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id);
+								if ($this->numErrors()) {
+									$po_request->addActionErrors($this->errors(), 'ca_objects_history', 'general');
 								}
 							}
 						}
@@ -3626,8 +3626,9 @@ if (!$vb_batch) {
 						// set loan
 						if ($vn_loan_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_loan_idnew_0", pInteger)) {
 							if ($vn_loan_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_loan_type_idnew_0", pInteger)) {
-								if (!$this->addRelationship('ca_loans', $vn_loan_id, $vn_loan_type_id)) {
-									// TODO: error reporting
+								$this->addRelationship('ca_loans', $vn_loan_id, $vn_loan_type_id);
+								if ($this->numErrors()) {
+									$po_request->addActionErrors($this->errors(), 'ca_objects_history', 'general');
 								}
 							}
 						}
