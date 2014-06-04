@@ -29,18 +29,17 @@
  * 
  * ----------------------------------------------------------------------
  */
-	require_once('PHPUnit/Autoload.php');
-	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
-	
-	class DatamodelTest extends PHPUnit_Framework_TestCase {
-		public function testInstantiateAllModels() {
-			$o_dm = Datamodel::load();
-			
-			$va_tables = $o_dm->getTableNames();
-			
-			foreach($va_tables as $vs_table) {
-				$this->assertInstanceOf($vs_table, $o_dm->getInstanceByTableName($vs_table));
-			}
+require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
+
+class DatamodelTest extends PHPUnit_Framework_TestCase {
+	public function testInstantiateAllModels() {
+		$o_dm = Datamodel::load();
+
+		$va_tables = $o_dm->getTableNames();
+
+		foreach($va_tables as $vs_table) {
+			$this->assertInstanceOf($vs_table, $o_dm->getInstanceByTableName($vs_table));
 		}
 	}
+}
 ?>
