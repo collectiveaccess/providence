@@ -43,6 +43,7 @@
 		static $s_format_settings = array();
 		# -------------------------------------------------------
 		protected $ops_name = null;
+		protected $opo_log = null;
 		/**
 		 * The 'element' field in ca_data_exporter_items can have varying syntax and semantics, depending on the
 		 * exporter format used (e.g. for XML, @foo addresses the attribute 'foo' of the current element.
@@ -65,6 +66,23 @@
 		# -------------------------------------------------------
 		public function getDescription() {
 			return $this->ops_element_description;
+		}
+		# -------------------------------------------------------
+		public function setLogger($po_logger) {
+			if($po_logger instanceof KLogger){
+				$this->opo_log = $po_logger;
+			}
+		}
+		# -------------------------------------------------------
+		/**
+		 * Log given message on level debug if logger is available (must be set via setLogger()).
+		 * All export format messages are debug level because there's usually nothing interesting going on.
+		 * @param string $ps_message log message
+		 */
+		protected function log($ps_message) {
+			if($this->opo_log && ($this->opo_log instanceof KLogger)) {
+				$this->opo_log->logDebug($ps_message);
+			}
 		}
 		# -------------------------------------------------------
 		/**

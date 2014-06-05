@@ -60,6 +60,8 @@ class ExportXML extends BaseExportFormat {
 		$pb_rdf_mode = caGetOption('rdfMode', $pa_options);
 
 		//caDebug($pa_data,"Data to build XML from");
+		
+		$this->log("XML export formatter: Now processing export tree ...");
 
 		// XML exports should usually have only one top-level element (i.e. one root).
 		if(sizeof($pa_data)!=1){ return false; }
@@ -84,6 +86,8 @@ class ExportXML extends BaseExportFormat {
 		$vo_doc->preserveWhiteSpace = false;
 		$vo_doc->loadXML($vs_xml);
 
+		$this->log(_t("XML export formatter: Done processing export tree ..."));
+
 		// when dealing with a record set export, we don't want <?xml tags in front of each record
 		// that way we can simply dump a sequence of records in a file and have well-formed XML as result
 		return ($pb_single_record ? $vo_doc->saveXML() : $vo_doc->saveXML($vo_doc->firstChild));
@@ -96,6 +100,9 @@ class ExportXML extends BaseExportFormat {
 
 		$vs_element = $pa_item['element'];
 		$vs_text = (isset($pa_item['text']) ? $pa_item['text'] : null);
+
+		$this->log(_t("XML export formatter: Processing element or attribute '%1' with text '%2' and parent element '%3' ...", $vs_element, $vs_text, $po_parent->nodeName));
+
 		$vs_first = substr($vs_element,0,1);
 
 		if($vs_first == "@"){ // attribute

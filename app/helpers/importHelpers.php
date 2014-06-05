@@ -463,6 +463,8 @@
 	function caGenericImportSplitter($ps_refinery_name, $ps_item_prefix, $ps_table, $po_refinery_instance, &$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options) {
 		global $g_ui_locale_id;
 		
+		$po_refinery_instance->setReturnsMultipleValues(true);
+		
 		$o_dm = Datamodel::load();
 		
 		$po_refinery_instance->setReturnsMultipleValues(true);
@@ -684,7 +686,8 @@
 						}
 					
 						if ($vn_item_id) {
-							$va_val= array($vs_terminal => $vn_item_id);
+							$po_refinery_instance->setReturnsMultipleValues(false);
+							return $vn_item_id;
 						} else {
 							if ($o_log) { $o_log->logError(_t("[{$ps_refinery_name}Refinery] Could not add %2 %1", $vs_item, $ps_item_prefix)); }
 						}

@@ -399,6 +399,46 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 	}
 	# ------------------------------------------------------
 	/**
+	 * Override BundlableLabelableBaseModelWithAttribute::get() to allow getting 
+	 * annotation properties in simple get()-style notations like
+	 *   ca_representations_annotations.props.w
+	 */
+	public function get($ps_field, $pa_options=null) {
+		$va_tmp = explode('.', $ps_field);
+
+		// remove table name if needed
+		if(isset($va_tmp[0]) && ($va_tmp[0] == $this->tableName())) {
+			array_shift($va_tmp);
+		}
+
+		if((sizeof($va_tmp)==2) && isset($va_tmp[0]) && ($va_tmp[0] == 'props')) {
+			$vm_val = $this->getPropertyValue($va_tmp[1]);
+			
+			// this should be moved into the property implementation but for now, points is the only occurrence 
+			// of this kind of thing and getProperty() doesn't support any options so this is a reasonable quick&dirty way. 
+			if(is_array($vm_val) && !caGetOption('returnAsArray',$pa_options)) {
+				switch($va_tmp[1]) {
+					case 'points' :
+						$va_return = array();
+						foreach($vm_val as $va_point) {
+							$va_return[] = $va_point['x'].','.$va_point['y'];
+						}
+						if(!($vs_delimiter = caGetOption('delimiter',$pa_options))){
+							$vs_delimiter = '; ';
+						}
+						return join($vs_delimiter, $va_return);
+						break;
+					default:
+						return $vm_val;
+				}
+			}
+			return $vm_val;
+		}
+
+		return parent::get($ps_field, $pa_options);
+	}
+	# ------------------------------------------------------
+	/**
 	 * Returns true if currently set property values are valid and can be inserted into database, 
 	 * false if they violate some annotation-type-specific constraint
 	 */
