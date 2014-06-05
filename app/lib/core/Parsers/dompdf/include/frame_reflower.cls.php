@@ -1,10 +1,9 @@
 <?php
 /**
  * @package dompdf
- * @link    http://www.dompdf.com/
+ * @link    http://dompdf.github.com/
  * @author  Benj Carson <benjcarson@digitaljunkies.ca>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
- * @version $Id: frame_reflower.cls.php 448 2011-11-13 13:00:03Z fabien.menager $
  */
 
 /**
@@ -39,6 +38,13 @@ abstract class Frame_Reflower {
 
   function dispose() {
     clear_object($this);
+  }
+
+  /**
+   * @return DOMPDF
+   */
+  function get_dompdf() {
+    return $this->_frame->get_dompdf();
   }
 
   /**
@@ -116,7 +122,7 @@ abstract class Frame_Reflower {
 
   //........................................................................
 
-  abstract function reflow(Frame_Decorator $block = null);
+  abstract function reflow(Block_Frame_Decorator $block = null);
 
   //........................................................................
 
@@ -143,8 +149,13 @@ abstract class Frame_Reflower {
     $delta = $style->length_in_pt($dims, $cb_w);
 
     // Handle degenerate case
-    if ( !$this->_frame->get_first_child() )
-      return $this->_min_max_cache = array($delta, $delta,"min" => $delta, "max" => $delta);
+    if ( !$this->_frame->get_first_child() ) {
+      return $this->_min_max_cache = array(
+        $delta, $delta,
+        "min" => $delta, 
+        "max" => $delta,
+      );
+    }
 
     $low = array();
     $high = array();
@@ -163,21 +174,20 @@ abstract class Frame_Reflower {
 
         $minmax = $child->get_min_max_width();
 
-        if ( in_array( $iter->current()->get_style()->white_space, array("pre", "nowrap") ) )
+        if ( in_array( $iter->current()->get_style()->white_space, array("pre", "nowrap") ) ) {
           $inline_min += $minmax["min"];
-        else
+        }
+        else {
           $low[] = $minmax["min"];
+        }
 
         $inline_max += $minmax["max"];
         $iter->next();
 
       }
 
-      if ( $inline_max > 0 )
-        $high[] = $inline_max;
-
-      if ( $inline_min > 0 )
-        $low[] = $inline_min;
+      if ( $inline_max > 0 ) $high[] = $inline_max;
+      if ( $inline_min > 0 ) $low[]  = $inline_min;
 
       if ( $iter->valid() ) {
         list($low[], $high[]) = $iter->current()->get_min_max_width();
@@ -193,10 +203,8 @@ abstract class Frame_Reflower {
     $width = $style->width;
     if ( $width !== "auto" && !is_percent($width) ) {
       $width = $style->length_in_pt($width, $cb_w);
-      if ( $min < $width )
-        $min = $width;
-      if ( $max < $width )
-        $max = $width;
+      if ( $min < $width ) $min = $width;
+      if ( $max < $width ) $max = $width;
     }
 
     $min += $delta;
@@ -212,9 +220,9 @@ abstract class Frame_Reflower {
    * @return string
    */
   protected function _parse_string($string, $single_trim = false) {
-    if ($single_trim) {
-      $string = preg_replace("/^[\"\']/", "", $string);
-      $string = preg_replace("/[\"\']$/", "", $string);
+    if ( $single_trim ) {
+      $string = preg_replace('/^[\"\']/', "", $string);
+      $string = preg_replace('/[\"\']$/', "", $string);
     }
     else {
       $string = trim($string, "'\"");
@@ -224,9 +232,9 @@ abstract class Frame_Reflower {
                           array("",'"',"'"), $string);
 
     // Convert escaped hex characters into ascii characters (e.g. \A => newline)
-    $string = preg_replace_callback("/\\\\([0-9a-fA-F]{0,6})(\s)?(?(2)|(?=[^0-9a-fA-F]))/",
+    $string = preg_replace_callback("/\\\\([0-9a-fA-F]{0,6})/",
                                     create_function('$matches',
-                                                    'return chr(hexdec($matches[1]));'),
+                                                    'return unichr(hexdec($matches[1]));'),
                                     $string);
     return $string;
   }
@@ -234,18 +242,19 @@ abstract class Frame_Reflower {
   /**
    * Parses a CSS "quotes" property
    * 
-   * @return array An array of pairs of quotes
+   * @return array|null An array of pairs of quotes
    */
   protected function _parse_quotes() {
     
     // Matches quote types
-    $re = "/(\'[^\']*\')|(\"[^\"]*\")/";
+    $re = '/(\'[^\']*\')|(\"[^\"]*\")/';
     
     $quotes = $this->_frame->get_style()->quotes;
       
     // split on spaces, except within quotes
-    if (!preg_match_all($re, "$quotes", $matches, PREG_SET_ORDER))
-      return;
+    if ( !preg_match_all($re, "$quotes", $matches, PREG_SET_ORDER) ) {
+      return null;
+    }
       
     $quotes_array = array();
     foreach($matches as &$_quote){
@@ -262,7 +271,7 @@ abstract class Frame_Reflower {
   /**
    * Parses the CSS "content" property
    * 
-   * @return string The resulting string
+   * @return string|null The resulting string
    */
   protected function _parse_content() {
 
@@ -281,21 +290,25 @@ abstract class Frame_Reflower {
     $quotes = $this->_parse_quotes();
     
     // split on spaces, except within quotes
-    if (!preg_match_all($re, $content, $matches, PREG_SET_ORDER))
-      return;
+    if ( !preg_match_all($re, $content, $matches, PREG_SET_ORDER) ) {
+      return null;
+    }
       
     $text = "";
 
     foreach ($matches as $match) {
       
-      if ( isset($match[2]) && $match[2] !== "" )
+      if ( isset($match[2]) && $match[2] !== "" ) {
         $match[1] = $match[2];
-
-      if ( isset($match[6]) && $match[6] !== "" )
+      }
+      
+      if ( isset($match[6]) && $match[6] !== "" ) {
         $match[4] = $match[6];
+      }
 
-      if ( isset($match[8]) && $match[8] !== "" )
+      if ( isset($match[8]) && $match[8] !== "" ) {
         $match[7] = $match[8];
+      }
 
       if ( isset($match[1]) && $match[1] !== "" ) {
         
@@ -306,81 +319,101 @@ abstract class Frame_Reflower {
         // http://www.w3.org/TR/CSS21/generate.html#content
 
         $i = mb_strpos($match[1], ")");
-        if ( $i === false )
+        if ( $i === false ) {
           continue;
+        }
 
-        $args = explode(",", mb_substr($match[1], 8, $i - 8));
-        $counter_id = $args[0];
-
-        if ( $match[1][7] === "(" ) {
+        preg_match( '/(counters?)(^\()*?\(\s*([^\s,]+)\s*(,\s*["\']?([^"\'\)]+)["\']?\s*(,\s*([^\s)]+)\s*)?)?\)/i' , $match[1] , $args );
+        $counter_id = $args[3];
+        if ( strtolower( $args[1] ) == 'counter' ) {
           // counter(name [,style])
-
-          if ( isset($args[1]) )
-            $type = trim($args[1]);
-          else
+          if ( isset( $args[5] ) ) {
+            $type = trim( $args[5] );
+          }
+          else {
             $type = null;
-
-          $p = $this->_frame->lookup_counter_frame($counter_id);
+          }
+          $p = $this->_frame->lookup_counter_frame( $counter_id );
           
           $text .= $p->counter_value($counter_id, $type);
-
-        } else if ( $match[1][7] === "s" ) {
+          
+        }
+        else if ( strtolower( $args[1] ) == 'counters' ) {
           // counters(name, string [,style])
-          if ( isset($args[1]) )
-            $string = $this->_parse_string(trim($args[1]));
-          else
-            $string = "";
-
-          if ( isset($args[2]) )
-            $type = $args[2];
-          else
-            $type = null;
-
-          $p = $this->_frame->lookup_counter_frame($counter_id);
-          $tmp = "";
-          while ($p) {
-            $tmp = $p->counter_value($counter_id, $type) . $string . $tmp;
-            $p = $p->lookup_counter_frame($counter_id);
+          if ( isset($args[5]) ) {
+            $string = $this->_parse_string( $args[5] );
           }
-          $text .= $tmp;
-
-        } else
+          else {
+            $string = "";
+          }
+          
+          if ( isset( $args[7] ) ) {
+            $type = trim( $args[7] );
+          }
+          else {
+            $type = null;
+          }
+          
+          $p = $this->_frame->lookup_counter_frame($counter_id);
+          $tmp = array();
+          while ($p) {
+            // We only want to use the counter values when they actually increment the counter
+            if ( array_key_exists( $counter_id , $p->_counters ) ) {
+              array_unshift( $tmp , $p->counter_value($counter_id, $type) );
+            }
+            $p = $p->lookup_counter_frame($counter_id);
+            
+          }
+          $text .= implode( $string , $tmp );
+          
+        }
+        else {
           // countertops?
           continue;
-
-      } else if ( isset($match[4]) && $match[4] !== "" ) {
+        }
+        
+      }
+      else if ( isset($match[4]) && $match[4] !== "" ) {
         // String match
         $text .= $this->_parse_string($match[4]);
-
-      } else if ( isset($match[7]) && $match[7] !== "" ) {
+      }
+      else if ( isset($match[7]) && $match[7] !== "" ) {
         // Directive match
 
         if ( $match[7] === "open-quote" ) {
           // FIXME: do something here
           $text .= $quotes[0][0];
-        } else if ( $match[7] === "close-quote" ) {
+        }
+        else if ( $match[7] === "close-quote" ) {
           // FIXME: do something else here
           $text .= $quotes[0][1];
-        } else if ( $match[7] === "no-open-quote" ) {
+        }
+        else if ( $match[7] === "no-open-quote" ) {
           // FIXME:
-        } else if ( $match[7] === "no-close-quote" ) {
+        }
+        else if ( $match[7] === "no-close-quote" ) {
           // FIXME:
-        } else if ( mb_strpos($match[7],"attr(") === 0 ) {
+        }
+        else if ( mb_strpos($match[7],"attr(") === 0 ) {
 
           $i = mb_strpos($match[7],")");
-          if ( $i === false )
+          if ( $i === false ) {
             continue;
+          }
 
           $attr = mb_substr($match[7], 5, $i - 5);
-          if ( $attr == "" )
+          if ( $attr == "" ) {
             continue;
+          }
             
           $text .= $this->_frame->get_parent()->get_node()->getAttribute($attr);
-        } else
+        }
+        else {
           continue;
+        }
       }
     }
-
+    
     return $text;
   }
   
@@ -390,9 +423,26 @@ abstract class Frame_Reflower {
   protected function _set_content(){
     $frame = $this->_frame;
     $style = $frame->get_style();
+    
+    // if the element was pushed to a new page use the saved counter value, otherwise use the CSS reset value
+    if ( $style->counter_reset && ($reset = $style->counter_reset) !== "none" ) {
+      $vars = preg_split('/\s+/', trim($reset), 2);
+      $frame->reset_counter( $vars[0] , ( isset($frame->_counters['__'.$vars[0]]) ? $frame->_counters['__'.$vars[0]] : ( isset($vars[1]) ? $vars[1] : 0 ) ) );
+    }
+    
+    if ( $style->counter_increment && ($increment = $style->counter_increment) !== "none" ) {
+      $frame->increment_counters($increment);
+    }
   
     if ( $style->content && !$frame->get_first_child() && $frame->get_node()->nodeName === "dompdf_generated" ) {
       $content = $this->_parse_content();
+      // add generated content to the font subset
+      // FIXME: This is currently too late because the font subset has already been generated.
+      //        See notes in issue #750.
+      if ( $frame->get_dompdf()->get_option("enable_font_subsetting") && $frame->get_dompdf()->get_canvas() instanceof CPDF_Adapter ) {
+        $frame->get_dompdf()->get_canvas()->register_string_subset($style->font_family, $content);
+      }
+      
       $node = $frame->get_node()->ownerDocument->createTextNode($content);
       
       $new_style = $style->get_stylesheet()->create_style();
@@ -401,15 +451,8 @@ abstract class Frame_Reflower {
       $new_frame = new Frame($node);
       $new_frame->set_style($new_style);
       
-      Frame_Factory::decorate_frame($new_frame, $frame->get_dompdf());
-      $new_frame->get_decorator()->set_root($frame->get_root());
+      Frame_Factory::decorate_frame($new_frame, $frame->get_dompdf(), $frame->get_root());
       $frame->append_child($new_frame);
     }
-    
-    if ( $style->counter_reset && ($reset = $style->counter_reset) !== "none" )
-      $frame->reset_counter($reset);
-    
-    if ( $style->counter_increment && ($increment = $style->counter_increment) !== "none" )
-      $frame->increment_counters($increment);
   }
 }

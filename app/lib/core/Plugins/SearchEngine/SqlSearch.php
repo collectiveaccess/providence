@@ -1306,8 +1306,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					case __CA_ATTRIBUTE_VALUE_TIMECODE__:
 					case __CA_ATTRIBUTE_VALUE_MEDIA__:
 					case __CA_ATTRIBUTE_VALUE_FILE__:
-					//case 17:	//place
-					//case 18:	//occurrence
 						return;
 				}
 			}
@@ -1327,6 +1325,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		$vb_incremental_reindexing = (bool)$this->can('incremental_reindexing');
 		
+		if (!defined("__CollectiveAccess_IS_REINDEXING__") && $vb_incremental_reindexing) {
+			$this->removeRowIndexing($this->opn_indexing_subject_tablenum, $this->opn_indexing_subject_row_id, $pn_content_tablenum, $ps_content_fieldname);
+		}
 		if (!$va_words) {
 			WLPlugSearchEngineSqlSearch::$s_doc_content_buffer[] = '('.$this->opn_indexing_subject_tablenum.','.$this->opn_indexing_subject_row_id.','.$pn_content_tablenum.',\''.$ps_content_fieldname.'\','.$pn_content_row_id.',0,0,'.$vn_private.')';
 		} else {
@@ -1334,9 +1335,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				if(!strlen($vs_word)) { continue; }
 				if (!($vn_word_id = (int)$this->getWordID($vs_word))) { continue; }
 			
-				if (!defined("__CollectiveAccess_IS_REINDEXING__") && $vb_incremental_reindexing) {
-					$this->removeRowIndexing($this->opn_indexing_subject_tablenum, $this->opn_indexing_subject_row_id, $pn_content_tablenum, $ps_content_fieldname);
-				}
 				WLPlugSearchEngineSqlSearch::$s_doc_content_buffer[] = '('.$this->opn_indexing_subject_tablenum.','.$this->opn_indexing_subject_row_id.','.$pn_content_tablenum.',\''.$ps_content_fieldname.'\','.$pn_content_row_id.','.$vn_word_id.','.$vn_boost.','.$vn_private.')';
 			}
 		}

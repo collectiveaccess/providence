@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -101,7 +101,7 @@
 		 */
 		public static function getRefineryNames() {
 			$vs_base_refinery_dir = __CA_APP_DIR__.'/refineries';
-			
+			if(!file_exists($vs_base_refinery_dir)) { return array(); }
 			$va_refinery_dirs = array();
 			if (is_resource($r_dir = opendir($vs_base_refinery_dir))) {
 				while (($vs_refinery = readdir($r_dir)) !== false) {

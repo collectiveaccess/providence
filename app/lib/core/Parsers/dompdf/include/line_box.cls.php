@@ -1,10 +1,9 @@
 <?php
 /**
  * @package dompdf
- * @link    http://www.dompdf.com/
- * @author  Fabien Ménager <fabien.menager@gmail.com>
+ * @link    http://dompdf.github.com/
+ * @author  Fabien MÃ©nager <fabien.menager@gmail.com>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
- * @version $Id: line_box.cls.php 471 2012-02-06 21:59:10Z fabien.menager $
  */
 
 /**
@@ -24,7 +23,7 @@ class Line_Box {
   protected $_block_frame;
 
   /**
-   * @var array
+   * @var Frame[]
    */
   protected $_frames = array();
   
@@ -62,7 +61,10 @@ class Line_Box {
    * @var Frame
    */
   public $tallest_frame = null;
-  
+
+  /**
+   * @var bool[]
+   */
   public $floating_blocks = array();
   
   /**
@@ -85,22 +87,29 @@ class Line_Box {
   
   /**
    * Returns the floating elements inside the first floating parent
-   * @param $root
+   *
+   * @param Page_Frame_Decorator $root
+   *
+   * @return Frame[]
    */
-  function get_floats_inside($root) {
+  function get_floats_inside(Page_Frame_Decorator $root) {
+    $floating_frames = $root->get_floating_frames();
+    
+    if ( count($floating_frames) == 0 ) {
+      return $floating_frames;
+    }
+    
     // Find nearest floating element
     $p = $this->_block_frame;
     while( $p->get_style()->float === "none" ) {
       $parent = $p->get_parent();
       
-      if (!$parent) {
+      if ( !$parent ) {
         break;
       }
       
       $p = $parent;
     }
-    
-    $floating_frames = $root->get_floating_frames();  
     
     if ( $p == $root ) {
       return $floating_frames;
@@ -113,19 +122,19 @@ class Line_Box {
     foreach ($floating_frames as $_floating) {
       $p = $_floating->get_parent();
       
-      while(($p = $p->get_parent()) && $p !== $parent);
+      while (($p = $p->get_parent()) && $p !== $parent);
       
-      if ($p) {
+      if ( $p ) {
         $childs[] = $p;
       }
     }
     
     return $childs;
-    
   }
   
   function get_float_offsets() {
-    if ( !DOMPDF_ENABLE_CSS_FLOAT ) {
+    $enable_css_float = $this->_block_frame->get_dompdf()->get_option("enable_css_float");
+    if ( !$enable_css_float ) {
       return;
     }
       
@@ -133,12 +142,19 @@ class Line_Box {
     
     $reflower = $this->_block_frame->get_reflower();
     
-    if ( !$reflower ) return;
+    if ( !$reflower ) {
+      return;
+    }
     
     $cb_w = null;
   
     $block = $this->_block_frame;
     $root = $block->get_root();
+    
+    if ( !$root ) {
+      return;
+    }
+    
     $floating_frames = $this->get_floats_inside($root);
     
     foreach ( $floating_frames as $child_key => $floating_frame ) {
@@ -149,8 +165,6 @@ class Line_Box {
       }
       
       $floating_style = $floating_frame->get_style();
-      
-      $clear = $floating_style->clear;
       $float = $floating_style->float;
       
       $floating_width = $floating_frame->get_margin_width();
@@ -161,7 +175,7 @@ class Line_Box {
       
       $line_w = $this->get_width();
       
-      if (!$floating_frame->_float_next_line && ($cb_w <= $line_w + $floating_width) && ($cb_w > $line_w) ) {
+      if ( !$floating_frame->_float_next_line && ($cb_w <= $line_w + $floating_width) && ($cb_w > $line_w) ) {
         $floating_frame->_float_next_line = true;
         continue;
       }
@@ -185,7 +199,10 @@ class Line_Box {
       }
     }
   }
-  
+
+  /**
+   * @return float
+   */
   function get_width(){
     return $this->left + $this->w + $this->right;
   }
@@ -193,13 +210,20 @@ class Line_Box {
   /**
    * @return Block_Frame_Decorator
    */
-  function get_block_frame() { return $this->_block_frame; }
+  function get_block_frame() {
+    return $this->_block_frame;
+  }
 
   /**
-   * @return array
+   * @return Frame[]
    */
-  function &get_frames() { return $this->_frames; }
-  
+  function &get_frames() {
+    return $this->_frames;
+  }
+
+  /**
+   * @param Frame $frame
+   */
   function add_frame(Frame $frame) {
     $this->_frames[] = $frame;
   }

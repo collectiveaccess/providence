@@ -108,7 +108,7 @@
 			$t_entity = new ca_entities();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_entity->setTransaction($pa_options['transaction']);
-				$o_event->setTransaction($pa_options['transaction']);
+				if ($o_event) { $o_event->setTransaction($pa_options['transaction']); }
 			}
 			
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
@@ -325,7 +325,7 @@
 			$t_place = new ca_places();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_place->setTransaction($pa_options['transaction']);
-				$o_event->setTransaction($pa_options['transaction']);
+				if ($o_event) { $o_event->setTransaction($pa_options['transaction']); }
 			}
 			
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
@@ -545,7 +545,7 @@
 			$t_occurrence = new ca_occurrences();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_occurrence->setTransaction($pa_options['transaction']);
-				$o_event->setTransaction($pa_options['transaction']);
+				if ($o_event) { $o_event->setTransaction($pa_options['transaction']); }
 			}
 			
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
@@ -802,7 +802,7 @@
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_list->setTransaction($pa_options['transaction']);
 				$t_item->setTransaction($pa_options['transaction']);
-				$o_event->setTransaction($pa_options['transaction']);
+				if ($o_event) { $o_event->setTransaction($pa_options['transaction']); }
 			}
 			
 			
@@ -968,7 +968,7 @@
 			$t_collection = new ca_collections();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_collection->setTransaction($pa_options['transaction']);
-				$o_event->setTransaction($pa_options['transaction']);
+				if ($o_event) { $o_event->setTransaction($pa_options['transaction']); }
 			}
 			
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
@@ -1183,7 +1183,7 @@
 			$t_location = new ca_storage_locations();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_location->setTransaction($pa_options['transaction']);
-				$o_event->setTransaction($pa_options['transaction']);
+				if ($o_event) { $o_event->setTransaction($pa_options['transaction']); }
 			}
 			
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
@@ -1398,7 +1398,7 @@
 			$t_object = new ca_objects();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_object->setTransaction($pa_options['transaction']);
-				$o_event->setTransaction($pa_options['transaction']);
+				if ($o_event) { $o_event->setTransaction($pa_options['transaction']); }
 			}
 			
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
@@ -1614,7 +1614,7 @@
 			$t_lot = new ca_object_lots();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_lot->setTransaction($pa_options['transaction']);
-				$o_event->setTransaction($pa_options['transaction']);
+				if ($o_event) { $o_event->setTransaction($pa_options['transaction']); }
 			}
 			
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
@@ -1826,7 +1826,7 @@
 			$t_loan = new ca_loans();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_loan->setTransaction($pa_options['transaction']);
-				$o_event->setTransaction($pa_options['transaction']);
+				if ($o_event) { $o_event->setTransaction($pa_options['transaction']); }
 			}
 			
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
@@ -2038,7 +2038,7 @@
 			$t_movement = new ca_movements();
 			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 				$t_movement->setTransaction($pa_options['transaction']);
-				$o_event->setTransaction($pa_options['transaction']);
+				if ($o_event) { $o_event->setTransaction($pa_options['transaction']); } 
 			}
 			
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";

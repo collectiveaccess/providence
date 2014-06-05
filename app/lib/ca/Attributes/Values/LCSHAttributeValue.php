@@ -258,7 +258,12 @@
 							return false;
 						}
 					} else {
+						$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('vocabulary'));
+						print_R($va_settings);
 						$vs_feed_url = "http://id.loc.gov/search/?q=".rawurlencode($ps_value)."&start=1&format=atom";
+						if ($vs_voc = $va_settings['vocabulary']) {
+							$vs_feed_url .= '&q='.rawurlencode($vs_voc);
+						}
 					
 						$vb_feed_error = false;
 						try {

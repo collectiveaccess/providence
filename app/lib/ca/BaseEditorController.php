@@ -374,11 +374,11 @@
  			}
  			
  			if ($vb_confirm = ($this->request->getParameter('confirm', pInteger) == 1) ? true : false) {
- 				$vb_we_set_transation = false;
+ 				$vb_we_set_transaction = false;
  				if (!$t_subject->inTransaction()) {
  					$o_t = new Transaction();
  					$t_subject->setTransaction($o_t);
- 					$vb_we_set_transation = true;
+ 					$vb_we_set_transaction = true;
  				}
  				
  				// Do we need to move relationships?
@@ -421,7 +421,7 @@
  					}
  				}
  				
- 				if ($vb_we_set_transation) {
+ 				if ($vb_we_set_transaction) {
  					if (!$vb_rc) {
  						$o_t->rollbackTransaction();	
  					} else {
@@ -742,6 +742,27 @@
  		}
  		# -------------------------------------------------------
  		/**
+ 		 *
+ 		 */
+ 		protected function _getUI($pn_type_id=null, $pa_options=null) {
+ 			$t_ui = new ca_editor_uis();
+ 			if (isset($pa_options['ui']) && $pa_options['ui']) {
+ 				if (is_numeric($pa_options['ui'])) {
+ 					$t_ui->load((int)$pa_options['ui']);
+ 				}
+ 				if (!$t_ui->getPrimaryKey()) {
+ 					$t_ui->load(array('editor_code' => $pa_options['ui']));
+ 				}
+ 			}
+ 			
+ 			if (!$t_ui->getPrimaryKey()) {
+ 				$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, $pn_type_id);
+ 			}
+ 			
+ 			return $t_ui;
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
  		 * Initializes editor view with core set of values, loads model with record to be edited and selects user interface to use.
  		 *
  		 * @param $pa_options Array of options. Supported options are:
@@ -768,21 +789,11 @@
  				
  				// then reload the definitions (which includes bundle specs)
  				$t_subject->reloadLabelDefinitions();
+ 			} else {
+ 				$vn_type_id = $t_subject->getTypeID();
  			}
  			
- 			$t_ui = new ca_editor_uis();
- 			if (isset($pa_options['ui']) && $pa_options['ui']) {
- 				if (is_numeric($pa_options['ui'])) {
- 					$t_ui->load((int)$pa_options['ui']);
- 				}
- 				if (!$t_ui->getPrimaryKey()) {
- 					$t_ui->load(array('editor_code' => $pa_options['ui']));
- 				}
- 			}
- 			
- 			if (!$t_ui->getPrimaryKey()) {
- 				$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, $t_subject->getTypeID());
- 			}
+ 			$t_ui = $this->_getUI($vn_type_id, $pa_options);
  			
  			$this->view->setVar($t_subject->primaryKey(), $vn_subject_id);
  			$this->view->setVar('subject_id', $vn_subject_id);
@@ -1312,7 +1323,7 @@
  			
  			$vn_item_id 		= (isset($pa_parameters[$vs_pk])) ? $pa_parameters[$vs_pk] : null;
  			$vn_type_id 		= (isset($pa_parameters['type_id'])) ? $pa_parameters['type_id'] : null;
- 			
+ 		
  			$t_item->load($vn_item_id);
  			
  			if (!$this->_checkAccess($t_item, array('dontRedirectOnDelete' => true))) { 
@@ -1371,15 +1382,14 @@
 			$this->view->setVar('screen', $this->request->getActionExtra());						// name of screen
 			$this->view->setVar('result_context', $this->getResultContext());
 			
-//			$t_mappings = new ca_bundle_mappings();
-			$va_mappings = array(); //$t_mappings->getAvailableMappings($t_item->tableNum(), array('E', 'X'));
+			$this->view->setVar('t_ui', $t_ui = $this->_getUI($vn_type_id, $pa_options));
 			
-			$va_export_options = array();
-			foreach($va_mappings as $vn_mapping_id => $va_mapping_info) {
-				$va_export_options[$va_mapping_info['name']] = $va_mapping_info['mapping_id'];
-			}
-			$this->view->setVar('available_mappings', $va_mappings);
-			$this->view->setVar('available_mappings_as_html_select', sizeof($va_export_options) ? caHTMLSelect('mapping_id', $va_export_options, array("style" => "width: 120px;")) : '');
+			//$va_export_options = array();
+			//foreach($va_mappings as $vn_mapping_id => $va_mapping_info) {
+			//	$va_export_options[$va_mapping_info['name']] = $va_mapping_info['mapping_id'];
+			//}
+			//$this->view->setVar('available_mappings', $va_export_options);
+			//$this->view->setVar('available_mappings_as_html_select', sizeof($va_export_options) ? caHTMLSelect('mapping_id', $va_export_options, array("style" => "width: 120px;")) : '');
  		}
  		# ------------------------------------------------------------------
 		/**

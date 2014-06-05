@@ -402,6 +402,16 @@ class BaseModel extends BaseObject {
 	}
 	
 	/**
+	 * Set Db object
+	 *
+	 * @return bool
+	 */
+	public function setDb($po_db) {
+		$this->o_db = $po_db;
+		return true;
+	}
+	
+	/**
 	 * Convenience method to return application configuration object. This is the same object
 	 * you'd get if you instantiated a Configuration() object without any parameters 
 	 *
@@ -2417,7 +2427,7 @@ class BaseModel extends BaseObject {
 		if ($this->getMode() == ACCESS_WRITE) {
 			// do form timestamp check
 			if (isset($_REQUEST['form_timestamp']) && ($vn_form_timestamp = $_REQUEST['form_timestamp'])) {
-				$va_possible_conflicts = $this->getChangeLog(null, array('range' => array('start' => $vn_form_timestamp, 'end' => time()), 'excludeUnitID' => $this->getCurrentLoggingUnitID()));
+				$va_possible_conflicts = $this->getChangeLog(null, array('forTable' => true, 'range' => array('start' => $vn_form_timestamp, 'end' => time()), 'excludeUnitID' => $this->getCurrentLoggingUnitID()));
 				
 				if (sizeof($va_possible_conflicts)) {
 					$va_conflict_users = array();
@@ -2986,20 +2996,32 @@ class BaseModel extends BaseObject {
 	 */
 	public function delete ($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 		if(!is_array($pa_options)) { $pa_options = array(); }
+		
 		$vn_id = $this->getPrimaryKey();
 		if ($this->hasField('deleted') && (!isset($pa_options['hard']) || !$pa_options['hard'])) {
-			$this->setMode(ACCESS_WRITE);
-			$this->set('deleted', 1);
-			if ($vn_rc = $this->update(array('force' => true))) {
-				if(!defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
-					$o_indexer = $this->getSearchIndexer();
-					$o_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
-					$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
+			if ($this->getMode() == ACCESS_WRITE) {
+				$vb_we_set_transaction = false;
+				if (!$this->inTransaction()) {
+					$o_t = new Transaction($this->getDb());
+					$this->setTransaction($o_t);
+					$vb_we_set_transaction = true;
 				}
+				$this->setMode(ACCESS_WRITE);
+				$this->set('deleted', 1);
+				if ($vn_rc = $this->update(array('force' => true))) {
+					if(!defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
+						$o_indexer = $this->getSearchIndexer();
+						$o_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
+						$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
+					}
+				}
+				$this->logChange("D");
+				if ($vb_we_set_transaction) { $this->removeTransaction(true); }
+				return $vn_rc;
+			} else {
+				$this->postError(400, _t("Mode was %1; must be write", $this->getMode(true)),"BaseModel->delete()");
+				return false;
 			}
-			$this->logChange("D");
-			
-			return $vn_rc;
 		}
 		$this->clearErrors();
 		if ((!$this->getPrimaryKey()) && (!is_array($pa_fields))) {	# is there a record loaded?
