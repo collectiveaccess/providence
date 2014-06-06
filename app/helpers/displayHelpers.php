@@ -1019,11 +1019,27 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 					$vs_buf .= "<strong>".($vb_is_currently_part_of_lot ? $vs_part_of_lot_msg : $vs_will_be_part_of_lot_msg)."</strong>: " . caNavLink($po_view->request, $vs_lot_displayname, '', 'editor/object_lots', 'ObjectLotEditor', 'Edit', array('lot_id' => $vn_lot_id));
 				}
 				
-				
+				$va_object_container_types = $po_view->request->config->getList('ca_objects_container_types');
+				$va_object_component_types = $po_view->request->config->getList('ca_objects_component_types');
+				$vb_can_add_component = (($vs_table_name === 'ca_objects') && $t_item->getPrimaryKey() && ($po_view->request->user->canDoAction('can_create_ca_objects')) && (sizeof($va_object_component_types)) && in_array($t_item->getTypeCode(), $va_object_container_types));
+		
 				if (method_exists($t_item, 'getComponentCount')) {
 					if ($vn_component_count = $t_item->getComponentCount()) {
-						if ($t_ui) { $vs_buf .= $t_ui->getScreenWithBundle("ca_objects_component_list", $po_view->request); }
-						$vs_buf .= '<br/>('.(($vn_component_count == 1) ? _t('%1 component', $vn_component_count) : _t('%1 components', $vn_component_count)).')';
+						if ($t_ui && ($vs_component_list_screen = $t_ui->getScreenWithBundle("ca_objects_components_list", $po_view->request)) && ($vs_component_list_screen !== $po_view->request->getActionExtra())) { 
+							$vs_component_count_link = caNavLink($po_view->request, (($vn_component_count == 1) ? _t('%1 component', $vn_component_count) : _t('%1 components', $vn_component_count)), '', '*', '*', $po_view->request->getAction().'/'.$vs_component_list_screen, array($t_item->primaryKey() => $t_item->getPrimaryKey()));
+						} else {
+							$vs_component_count_link = (($vn_component_count == 1) ? _t('%1 component', $vn_component_count) : _t('%1 components', $vn_component_count));
+						}
+						$vs_buf .= "<br/><strong>"._t('Has').":</strong> {$vs_component_count_link}";
+					}
+					
+					if ($vb_can_add_component) {
+						$vs_buf .= ' <a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($po_view->request, '*', 'ObjectComponent', 'Form', array('parent_id' => $t_item->getPrimaryKey())).'"); return false;\')>'.caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__).'</a>';
+			
+						$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
+						$vo_change_type_view->setVar('t_item', $t_item);
+			
+						FooterManager::add($vo_change_type_view->render("create_component_html.php"));
 					}
 				}
 			}
@@ -1439,31 +1455,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			}
 		}
 		
-		$va_object_container_types = $po_view->request->config->getList('ca_objects_container_types');
-		$va_object_component_types = $po_view->request->config->getList('ca_objects_component_types');
-		$vb_can_add_component = (($vs_table_name === 'ca_objects') && $t_item->getPrimaryKey() && ($po_view->request->user->canDoAction('can_create_ca_objects')) && (sizeof($va_object_component_types)) && in_array($t_item->getTypeCode(), $va_object_container_types));
 		
-		if ($vb_can_add_component) {
-			$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; border-bottom: 1px solid #aaaaaa;  margin: 5px 0 0 0; padding: 0 0 5px 0; font-size: 10px;">';
-		}
-
-		//
-		// Add component link for ca_objects
-		//
-		if ($vb_can_add_component) {
-			$vs_buf .= '<div style="float: left;" id="caAddComponentButton">';
-			$vs_buf .= _t('Add component').' <a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($po_view->request, '*', 'ObjectComponent', 'Form', array('parent_id' => $t_item->getPrimaryKey())).'"); return false;\')>'.caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__).'</a>';
-			$vs_buf .= "</div>\n";
-			
-			$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
-			$vo_change_type_view->setVar('t_item', $t_item);
-			
-			FooterManager::add($vo_change_type_view->render("create_component_html.php"));
-		}
-		
-		if ($vb_can_add_component) {
-			$vs_buf .= '<br style="clear: both;"/></div>';
-		}
 
 		if($po_view->request->user->canDoAction('can_export_'.$vs_table_name) && $t_item->getPrimaryKey() && (sizeof(ca_data_exporters::getExporters($t_item->tableNum()))>0)) {
 			$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" id="caExportItemButton">';

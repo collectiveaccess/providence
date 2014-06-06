@@ -280,13 +280,14 @@
 			);
 	
 			$t_movement = new ca_movements();
-	
 			$va_form_elements = $t_movement->getBundleFormHTMLForScreen($va_nav['defaultScreen'], array(
 					'request' => $this->request, 
-					'formName' => 'mv',
+					'formName' => $vs_id_prefix.'StorageLocationMovementForm',
 					'omit' => array('ca_storage_locations')
 			));
-			print caHTMLHiddenInput('_movement_screen', array('value' => $va_nav['defaultScreen']));
+			print caHTMLHiddenInput($vs_id_prefix.'_movement_screen', array('value' => $va_nav['defaultScreen']));
+			print caHTMLHiddenInput($vs_id_prefix.'_movement_form_name', array('value' => $vs_id_prefix.'StorageLocationMovementForm'));
+			
 			print join("\n", $va_form_elements);
 ?>
 			</div>
@@ -418,8 +419,8 @@
 		jQuery('#<?php print $vs_id_prefix; ?>HierarchyBrowseAddUnder select').unbind('change');
 		jQuery('#<?php print $vs_id_prefix; ?>HierarchyBrowseAddNextTo select').unbind('change');		
 		
-		jQuery("#<?php print $vs_id_prefix; ?>HierarchyBrowserTabs").tabs({ selected: 0 });					// Activate tabs
-		jQuery('#<?php print $vs_id_prefix; ?>HierarchyBrowserContainer').hide(0);			// Hide extended options
+		jQuery("#<?php print $vs_id_prefix; ?>HierarchyBrowserTabs").tabs({ selected: 0 });			// Activate tabs
+		jQuery('#<?php print $vs_id_prefix; ?>HierarchyBrowserContainer').hide(0);					// Hide extended options
 	});
 	
 	if (typeof  _navigateToNewForm != 'function') {
@@ -487,9 +488,7 @@
 				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
 				editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
 				disabledButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__); ?>",
-
-				
-					
+		
 				currentSelectionIDID: '<?php print $vs_id_prefix; ?>_new_parent_id',
 				currentSelectionDisplayID: '<?php print $vs_id_prefix; ?>HierarchyBrowserSelectionMessage',
 				currentSelectionDisplayFormat: '<?php print addslashes(_t('Will be moved under <em>%1</em> after next save.')); ?>',
