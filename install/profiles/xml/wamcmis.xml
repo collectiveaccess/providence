@@ -166,14 +166,6 @@
             </label>
           </labels>
           <items>
-            <item idno="FossilSpecimen" enabled="1" default="0">
-              <labels>
-                <label locale="en_AU" preferred="1">
-                  <name_singular>Fossil Specimen</name_singular>
-                  <name_plural>Fossil Specimen</name_plural>
-                </label>
-              </labels>
-            </item>
             <item idno="tz" enabled="1" default="0">
               <labels>
                 <label locale="en_AU" preferred="1">
@@ -289,6 +281,72 @@
                 <label locale="en_AU" preferred="1">
                   <name_singular>Anthropology Record</name_singular>
                   <name_plural>Anthropology Records</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="history" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>History</name_singular>
+                  <name_plural>History</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="early_childhood" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>History - Museum of Early Childhood</name_singular>
+                  <name_plural>History - Museum of Early Childhood</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="eps" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>EPS Record</name_singular>
+              <name_plural>EPS Records</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="mineral_simpson" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Mineral - Simpson</name_singular>
+                  <name_plural>Minerals - Simpson</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="mineral" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Mineral</name_singular>
+                  <name_plural>Minerals</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="mineral_mdc" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Mineral - MDC</name_singular>
+                  <name_plural>Minerals - MDC</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="vertebrate_palaeontology" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Vertebrate Palaeontology</name_singular>
+                  <name_plural>Vertebrate Palaeontology</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="invertebrate_palaeontology" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Invertebrate Palaeontology</name_singular>
+                  <name_plural>Invertebrate Palaeontology</name_plural>
                 </label>
               </labels>
             </item>
@@ -422,6 +480,22 @@
             <label locale="en_AU" preferred="1">
               <name_singular>donation</name_singular>
               <name_plural>donation</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="presention" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>presention</name_singular>
+              <name_plural>presention</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="seizure" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>seizure</name_singular>
+              <name_plural>seizure</name_plural>
             </label>
           </labels>
         </item>
@@ -10964,6 +11038,118 @@
             </label>
           </labels>
         </item>
+        <item idno="juvenile" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>juvenile</name_singular>
+              <name_plural>juvenile</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="ootheca" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>ootheca</name_singular>
+              <name_plural>ootheca</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="unknown" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>unknown</name_singular>
+              <name_plural>unknown</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="pupa" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>pupa</name_singular>
+              <name_plural>pupa</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="immature" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>immature</name_singular>
+              <name_plural>immature</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="p" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>p</name_singular>
+              <name_plural>p</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="metamorphling_larva" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>metamorphling;larva</name_singular>
+              <name_plural>metamorphling;larva</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="larva" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>larva</name_singular>
+              <name_plural>larva</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="5th_instar" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>5th instar</name_singular>
+              <name_plural>5th instar</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="foetus" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>foetus</name_singular>
+              <name_plural>foetus</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="egg" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>egg</name_singular>
+              <name_plural>egg</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="chick" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>chick</name_singular>
+              <name_plural>chick</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="pullus" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>pullus</name_singular>
+              <name_plural>pullus</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="2nd_instar" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>2nd instar</name_singular>
+              <name_plural>2nd instar</name_plural>
+            </label>
+          </labels>
+        </item>
       </items>
     </list>
     <list code="preparation_types" hierarchical="0" system="0" vocabulary="1">
@@ -10997,7 +11183,233 @@
                 </label>
               </labels>
             </item>
+            <item idno="liver_blood_muscle" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>liver;blood;muscle</name_singular>
+                  <name_plural>liver;blood;muscle</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="heart_blood_tail" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>heart;blood;tail</name_singular>
+                  <name_plural>heart;blood;tail</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="toe" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>toe</name_singular>
+                  <name_plural>toe</name_plural>
+                </label>
+              </labels>
+            </item>
           </items>
+        </item>
+        <item idno="Organs_Dissected" enabled="0" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Organs Dissected</name_singular>
+              <name_plural>Organs Dissected</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="left_kidney" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>left kidney</name_singular>
+                  <name_plural>left kidney</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="crop_gut" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>crop;gut</name_singular>
+                  <name_plural>crop;gut</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="spleen" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>spleen</name_singular>
+                  <name_plural>spleen</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="heart" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>heart</name_singular>
+                  <name_plural>heart</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="liver_heart" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>liver;heart</name_singular>
+                  <name_plural>liver;heart</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="left_adrenal" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>left adrenal</name_singular>
+                  <name_plural>left adrenal</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="kidney" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>kidney</name_singular>
+                  <name_plural>kidney</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="testis" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>testis</name_singular>
+                  <name_plural>testis</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="epididymis" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>epididymis</name_singular>
+                  <name_plural>epididymis</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="in_formalin" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>in formalin</name_singular>
+                  <name_plural>in formalin</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="gut_6" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>gut 6</name_singular>
+                  <name_plural>gut 6</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="ovaries" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>ovaries</name_singular>
+                  <name_plural>ovaries</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="tract_taken" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>tract taken</name_singular>
+                  <name_plural>tract taken</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="penis_removed" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>penis removed</name_singular>
+                  <name_plural>penis removed</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="right_kidney_" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>right kidney;</name_singular>
+                  <name_plural>right kidney;</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="right_adrenal" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>right adrenal</name_singular>
+                  <name_plural>right adrenal</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="testes" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>testes</name_singular>
+                  <name_plural>testes</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="ep" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>ep</name_singular>
+                  <name_plural>ep</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="ed" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>ed</name_singular>
+                  <name_plural>ed</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="lungs" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>lungs</name_singular>
+                  <name_plural>lungs</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="brain" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>brain</name_singular>
+                  <name_plural>brain</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="right_kidney" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>right kidney</name_singular>
+                  <name_plural>right kidney</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="panc" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>panc</name_singular>
+                  <name_plural>panc</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="Fixing" enabled="0" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Fixing</name_singular>
+              <name_plural>Fixing</name_plural>
+            </label>
+          </labels>
         </item>
       </items>
     </list>
@@ -11013,6 +11425,62 @@
             <label locale="en_AU" preferred="1">
               <name_singular>G</name_singular>
               <name_plural>G</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Y" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Y</name_singular>
+              <name_plural>Y</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="D" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>D</name_singular>
+              <name_plural>D</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="E" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>E</name_singular>
+              <name_plural>E</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="F" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>F</name_singular>
+              <name_plural>F</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="N" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>N</name_singular>
+              <name_plural>N</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="S" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>S</name_singular>
+              <name_plural>S</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="FO" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>FO</name_singular>
+              <name_plural>FO</name_plural>
             </label>
           </labels>
         </item>
@@ -19167,12 +19635,6 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
       </labels>
       <typeRestrictions>
         <restriction type="DarwinCore"/>
-        <restriction type="FossilSpecimen"/>
-        <restriction type=""/>
-        <restriction type=""/>
-        <restriction type=""/>
-        <restriction type=""/>
-        <restriction type=""/>
         <restriction type="arachnid_myriapod"/>
         <restriction type="tz"/>
       </typeRestrictions>
@@ -21507,13 +21969,7 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <typeRestrictions>
             <restriction type="anthropology"/>
             <restriction type="DublinCore"/>
-            <restriction type="FossilSpecimen"/>
-            <restriction type=""/>
-            <restriction type=""/>
-            <restriction type=""/>
             <restriction type="DarwinCore"/>
-            <restriction type=""/>
-            <restriction type=""/>
           </typeRestrictions>
           <bundlePlacements>
             <placement code="item_status_id1">
@@ -24282,7 +24738,6 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
       <typeLevelAccessControl>
         <permission table="ca_objects" type="anthropology" access="edit"/>
         <permission table="ca_objects" type="DublinCore" access="edit"/>
-        <permission table="ca_objects" type="FossilSpecimen" access="edit"/>
         <permission table="ca_objects" type="DarwinCore" access="edit"/>
         <permission table="ca_objects" type="Root node for object_types" access="none"/>
         <permission table="ca_entities" type="ind" access="edit"/>
@@ -24995,7 +25450,6 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
         <permission table="ca_objects" type="anthropology" access="none"/>
         <permission table="ca_objects" type="arachnid_myriapod" access="edit"/>
         <permission table="ca_objects" type="DublinCore" access="none"/>
-        <permission table="ca_objects" type="FossilSpecimen" access="edit"/>
         <permission table="ca_objects" type="DarwinCore" access="edit"/>
         <permission table="ca_objects" type="Root node for object_types" access="none"/>
         <permission table="ca_objects" type="tz" access="edit"/>
@@ -25753,7 +26207,6 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
         <permission table="ca_objects" type="anthropology" access="none"/>
         <permission table="ca_objects" type="arachnid_myriapod" access="edit"/>
         <permission table="ca_objects" type="DublinCore" access="none"/>
-        <permission table="ca_objects" type="FossilSpecimen" access="edit"/>
         <permission table="ca_objects" type="DarwinCore" access="edit"/>
         <permission table="ca_objects" type="Root node for object_types" access="none"/>
         <permission table="ca_objects" type="tz" access="edit"/>
@@ -26558,7 +27011,6 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
         <permission table="ca_objects" type="arachnid_myriapod" access="none"/>
         <permission table="ca_objects" type="DublinCore" access="edit"/>
         <permission table="ca_objects" type="insect" access="none"/>
-        <permission table="ca_objects" type="FossilSpecimen" access="none"/>
         <permission table="ca_objects" type="DarwinCore" access="none"/>
         <permission table="ca_objects" type="Root node for object_types" access="none"/>
         <permission table="ca_objects" type="tz" access="none"/>
