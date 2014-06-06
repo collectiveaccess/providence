@@ -250,6 +250,7 @@ class WamTitleGeneratorPluginIntegrationTest extends AbstractPluginIntegrationTe
 	 */
 	private static function _getLabel($po_object, $ps_label_field) {
 		$vn_locale_id = ca_locales::getDefaultCataloguingLocaleID();
-		return $po_object->getPreferredLabels(array( $vn_locale_id ))[$po_object->getPrimaryKey()][$vn_locale_id][0][$ps_label_field];
+		$va_labels = $po_object->getPreferredLabels(array( $vn_locale_id ));
+		return $va_labels[$po_object->getPrimaryKey()][$vn_locale_id][0][$ps_label_field];
 	}
 }
