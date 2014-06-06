@@ -164,10 +164,11 @@ abstract class AbstractPluginIntegrationTest extends PHPUnit_Framework_TestCase 
 
 			// Replace placeholders with generated (unique) values
 			while (strpos($vs_line, '%%') !== false) {
+				$vs_className = get_called_class();
 				$vs_line = preg_replace_callback(
 					'/%%(.*?)%%/',
-					function ($pa_match) {
-						return sizeof($pa_match) > 1 ? self::_getIdno($pa_match[1]) : '::: ERROR PARSING CONFIGURATION TEMPLATE :::';
+					function ($pa_match) use ($vs_className) {
+						return sizeof($pa_match) > 1 ? call_user_func(array( $vs_className, '_getIdno' ), $pa_match[1]) : '::: ERROR PARSING CONFIGURATION TEMPLATE :::';
 					},
 					$vs_line
 				);
