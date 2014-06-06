@@ -1,7 +1,8 @@
 language: php
 
 php:
-  # Test against current PHP and previous version
+  # Test against current PHP and previous 2 versions
+  - 5.3
   - 5.4
   - 5.5
 
