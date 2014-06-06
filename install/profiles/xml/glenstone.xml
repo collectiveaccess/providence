@@ -708,6 +708,14 @@
             </label>
           </labels>
         </item>
+        <item idno="no_access" enabled="1" default="0" value="4">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>No Discovery UI Access</name_singular>
+              <name_plural>No Discovery UI Access</name_plural>
+            </label>
+          </labels>
+        </item>
       </items>
     </list>
     <list code="list_item_sources" hierarchical="0" system="1" vocabulary="0">
@@ -797,6 +805,14 @@
             <label locale="en_US" preferred="1">
               <name_singular>GF Library</name_singular>
               <name_plural>GF Library</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Other" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Other</name_singular>
+              <name_plural>Other</name_plural>
             </label>
           </labels>
         </item>
@@ -1906,6 +1922,14 @@
             <label locale="en_US" preferred="1">
               <name_singular>Pop Art</name_singular>
               <name_plural>Pop Art</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Viennese_Actionism" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Viennese Actionism</name_singular>
+              <name_plural>Viennese Actionism</name_plural>
             </label>
           </labels>
         </item>
@@ -9831,6 +9855,14 @@
             </label>
           </labels>
         </item>
+        <item idno="film" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Film</name_singular>
+              <name_plural>Film</name_plural>
+            </label>
+          </labels>
+        </item>
         <item idno="textile" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -13300,6 +13332,127 @@
       </items>
     </list>
     <!--Object Rep Lists  -->
+    <list code="object_views" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Object View</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="null" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular> </name_singular>
+              <name_plural> </name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="recto" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>recto</name_singular>
+              <name_plural>recto</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="verso" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>verso</name_singular>
+              <name_plural>verso</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="bottom" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>bottom</name_singular>
+              <name_plural>bottom</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="center" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>center</name_singular>
+              <name_plural>center</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="left" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>left</name_singular>
+              <name_plural>left</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="right" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>right</name_singular>
+              <name_plural>right</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="3_4view" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>3/4 view</name_singular>
+              <name_plural>3/4 view</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="color_blocked" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>color blocked</name_singular>
+              <name_plural>color blocked</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="scale" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>scale</name_singular>
+              <name_plural>scale</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="detail" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>detail</name_singular>
+              <name_plural>detail</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="color_corrected" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>color corrected</name_singular>
+              <name_plural>color corrected</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="profile_view" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>profile view</name_singular>
+              <name_plural>profile view</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="in_progress" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>in progress</name_singular>
+              <name_plural>in progress</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
     <list code="photographer" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -22369,7 +22522,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="maxColumns">3</setting>
+        <setting name="maxColumns">2</setting>
         <setting name="render">checklist</setting>
       </settings>
       <typeRestrictions>
@@ -22767,6 +22920,48 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="media_notes" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Image Notes</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">3</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_object_representations">
+          <table>ca_object_representations</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="object_views" datatype="List" list="object_views">
+      <labels>
+        <label locale="en_US">
+          <name>Object View</name>
+          <description/>
+        </label>
+      </labels>
+      <settings/>
+      <typeRestrictions>
+        <restriction code="ca_object_representations">
+          <table>ca_object_representations</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
     <metadataElement code="photographer" datatype="List" list="photographer">
       <labels>
         <label locale="en_US">
@@ -22834,7 +23029,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="image_notes" datatype="Text">
+    <metadataElement code="image_RRnotes" datatype="Text">
       <labels>
         <label locale="en_US">
           <name>Image R &amp; R Notes</name>
@@ -27915,7 +28110,7 @@
                <settings>
                  <setting name="ca_object_lots_showTypes">collection</setting>
                  <setting name="ca_object_lots_collection_color">BFBFBF</setting>
-                 <setting name="ca_object_lots_collection_dateElement">invoice_date</setting>
+                 <setting name="ca_object_lots_collection_dateElement">accession_date</setting>
                  <setting name="ca_object_lots_collection_displayTemplate"><![CDATA[<l>^ca_object_lots.preferred_labels</l><br>
 <ifdef code="ca_object_lots.invoice_date">Invoice Date:</ifdef> ^ca_object_lots.invoice_date<br>
 Source: <unit relativeTo="ca_object_lots">
@@ -29774,6 +29969,12 @@ Via: <unit relativeTo="ca_movements">
             <placement code="ca_attribute_credit_line">
               <bundle>ca_attribute_credit_line</bundle>
             </placement>
+            <placement code="ca_attribute_object_views">
+              <bundle>ca_attribute_object_views</bundle>
+            </placement>
+            <placement code="ca_attribute_media_notes">
+              <bundle>ca_attribute_media_notes</bundle>
+            </placement>
              <placement code="ca_attribute_photographer">
               <bundle>ca_attribute_photographer</bundle>
             </placement>
@@ -29786,8 +29987,8 @@ Via: <unit relativeTo="ca_movements">
             <placement code="ca_attribute_image_contact">
               <bundle>ca_attribute_image_contact</bundle>
             </placement>
-            <placement code="ca_attribute_image_notes">
-              <bundle>ca_attribute_image_notes</bundle>
+            <placement code="ca_attribute_image_RRnotes">
+              <bundle>ca_attribute_image_RRnotes</bundle>
             </placement>
             <placement code="ca_attribute_date_obtained">
               <bundle>ca_attribute_date_obtained</bundle>
@@ -29795,8 +29996,8 @@ Via: <unit relativeTo="ca_movements">
             <placement code="ca_attribute_date_terminated">
               <bundle>ca_attribute_date_terminated</bundle>
             </placement>
-            <placement code="media">
-              <bundle>media</bundle>
+            <placement code="media_display">
+              <bundle>media_display</bundle>
             </placement>
             <placement code="access">
               <bundle>access</bundle>
@@ -30190,6 +30391,12 @@ Via: <unit relativeTo="ca_movements">
               <bundle>ca_attribute_loan_documents</bundle>
               <settings>
                 <setting name="sortDirection">DESC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_object_representations">
+              <bundle>ca_object_representations</bundle>
+                <settings>
+                <setting name="label" locale="en_US">Loan Images/Media</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -31734,6 +31941,20 @@ Via: <unit relativeTo="ca_movements">
         </type>
       </types>
     </relationshipTable>
+    <relationshipTable name="ca_loans_x_representations">
+      <types>
+        <type code="depicts" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>depicts</typename>
+              <typename_reverse>depicts</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
     <relationshipTable name="ca_object_representations_x_places">
       <types>
         <type code="depicts" default="1">
@@ -32723,13 +32944,52 @@ Via: <unit relativeTo="ca_movements">
       <typeRestrictions>
         <restriction type="artwork">artwork</restriction>        
       </typeRestrictions>
-      <userAccess>
-        <permission user="rebecca" access="edit"/>
-      </userAccess>
       <groupAccess>
         <permission group="collection" access="edit"/>
       </groupAccess>
       <bundlePlacements>
+        <placement code="idno">
+          <bundle>ca_objects.idno</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Accession #</setting>
+          </settings>
+        </placement>
+        <placement code="artist">
+          <bundle>ca_entities</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Artist</setting>
+            <setting name="restrict_to_relationship_types">artist</setting>
+            <setting name="format"><![CDATA[
+              <unit relativeTo="ca_entities" delimiter="; ">
+              <l>^ca_entities.preferred_labels.surname<ifdef code="ca_entities.preferred_labels.forename">,</ifdef> ^ca_entities.preferred_labels.forename ^ca_entities.preferred_labels.middlename</l>
+              </unit>]]></setting>
+          </settings>
+        </placement>
+        <placement code="preferred_labels">
+          <bundle>ca_objects.preferred_labels</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Title</setting>
+          </settings>
+        </placement>
+        <placement code="date">
+          <bundle>ca_objects.creation_date</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Date</setting>
+          </settings>
+        </placement>
+        <placement code="medium">
+          <bundle>ca_objects.medium</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Medium</setting>
+          </settings>
+        </placement> 
+        <placement code="dimensions">
+          <bundle>ca_objects.dimensions</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Dimensions</setting>
+            <setting name="format"><![CDATA[<unit relativeTo="ca_objects.dimensions" delimiter="; ">^ca_objects.dimensions.display_dimensions <ifdef code="ca_objects.dimensions.Type">(</ifdef>^ca_objects.dimensions.Type<ifdef code="ca_objects.dimensions.Type">)</ifdef></unit>]]></setting>
+          </settings>
+        </placement>
         <placement code="ca_attribute_general_condition">
           <bundle>ca_objects.general_condition</bundle>
           <settings>
@@ -32737,10 +32997,11 @@ Via: <unit relativeTo="ca_movements">
              <unit relativeTo="ca_objects.general_condition" delimiter="<br>">
              ^ca_objects.general_condition.general_condition_specific 
              <ifdef code="ca_objects.general_condition.general_condition_person">(</ifdef>^ca_objects.general_condition.general_condition_person<ifdef code="ca_objects.general_condition.general_condition_person">)</ifdef>
-             <ifdef code="ca_objects.general_condition.general_condition_value">:</ifdef>
+             <ifdef code="ca_objects.general_condition.general_condition_comments">:</ifdef>
              ^ca_objects.general_condition.general_condition_value 
-             <ifdef code="ca_objects.general_condition.general_condition_date">on</ifdef> ^ca_objects.general_condition.general_condition_date
-              </unit>]]></setting>
+             ^ca_objects.general_condition.general_condition_comments
+             ^ca_objects.general_condition.general_condition_date
+              <br></unit>]]></setting>
           </settings>
         </placement>
         <placement code="ca_attribute_frame_condition">
@@ -33613,6 +33874,25 @@ Via: <unit relativeTo="ca_movements">
             <setting name="label" locale="en_US">Title</setting>
           </settings>
         </placement>
+        <placement code="date">
+          <bundle>ca_objects.creation_date</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Date</setting>
+          </settings>
+        </placement>
+        <placement code="medium">
+          <bundle>ca_objects.medium</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Medium</setting>
+          </settings>
+        </placement> 
+        <placement code="dimensions">
+          <bundle>ca_objects.dimensions</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Dimensions</setting>
+            <setting name="format"><![CDATA[<unit relativeTo="ca_objects.dimensions" delimiter="; ">^ca_objects.dimensions.display_dimensions <ifdef code="ca_objects.dimensions.Type">(</ifdef>^ca_objects.dimensions.Type<ifdef code="ca_objects.dimensions.Type">)</ifdef></unit>]]></setting>
+          </settings>
+        </placement>
         <placement code="borrowers">
           <bundle>ca_loans</bundle>
           <settings>
@@ -34338,6 +34618,11 @@ Is Gift?: ^ca_objects.price_copy.is_gift
   </displays>
   <logins>
     <login user_name="admin" password="changeme" fname="CollectiveAccess" lname="Administrator"
+      email="info@collectiveaccess.org">
+      <role code="admin"/>
+      <group code="admin"/>
+    </login>
+    <login user_name="founder" password="changeme" fname="Glenstone" lname="Founder"
       email="info@collectiveaccess.org">
       <role code="admin"/>
       <group code="admin"/>
