@@ -80,11 +80,11 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 
 	public function checkStatus() {
 		$va_errors = array();
-		$vo_this = $this;
+		$vo_config = $this->opo_config;
 		$this->_testConfigurationSection(
 			_t('top level'),
 			self::_getTopLevelConfigurationRequirements(),
-			function ($key) use ($vo_this) { return $vo_this->opo_config->get($key); },
+			function ($key) use ($vo_config) { return $vo_config->get($key); },
 			$va_errors
 		);
 		$va_rules = $this->opo_config->get('rules');
