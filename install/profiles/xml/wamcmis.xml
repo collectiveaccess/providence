@@ -11169,7 +11169,7 @@
           <items>
             <item idno="default" enabled="1" default="0">
               <labels>
-                <label preferred="1" locale="en_US">
+                <label preferred="1" locale="en_AU">
                   <name_singular>default</name_singular>
                   <name_plural>default</name_plural>
                 </label>
@@ -19242,11 +19242,11 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_US">Relationship names</setting>
+                <setting name="label" locale="en_AU">Relationship names</setting>
                 <setting name="label" locale="en_CA">Relationship names</setting>
                 <setting name="label" locale="fr_FR">Noms de relations</setting>
                 <setting name="label" locale="sv_SE">Relationsnamn</setting>
-                <setting name="add_label" locale="en_US">Add relationship name</setting>
+                <setting name="add_label" locale="en_AU">Add relationship name</setting>
                 <setting name="add_label" locale="en_CA">Add relationship name</setting>
                 <setting name="add_label" locale="fr_FR">Ajouter un nom de relation</setting>
                 <setting name="add_label" locale="sv_SE">Lägg till relationsnamn</setting>
@@ -19336,11 +19336,11 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_US">Caption</setting>
+                <setting name="label" locale="en_AU">Caption</setting>
                 <setting name="label" locale="en_CA">Caption</setting>
                 <setting name="label" locale="fr_FR">Légende</setting>
                 <setting name="label" locale="sv_SE">Bildtext</setting>
-                <setting name="add_label" locale="en_US">Add caption</setting>
+                <setting name="add_label" locale="en_AU">Add caption</setting>
                 <setting name="add_label" locale="en_CA">Add caption</setting>
                 <setting name="add_label" locale="fr_FR">Ajouter une légende</setting>
                 <setting name="add_label" locale="sv_SE">Lägg till bildtext</setting>
@@ -19373,11 +19373,11 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_US">Form name</setting>
+                <setting name="label" locale="en_AU">Form name</setting>
                 <setting name="label" locale="en_CA">Form name</setting>
                 <setting name="label" locale="fr_FR">Nom du formulaire</setting>
                 <setting name="label" locale="sv_SE">Formulär namn</setting>
-                <setting name="add_label" locale="en_US">Add form name</setting>
+                <setting name="add_label" locale="en_AU">Add form name</setting>
                 <setting name="add_label" locale="en_CA">Add form name</setting>
                 <setting name="add_label" locale="fr_FR">Ajouter un nom de formulaire</setting>
                 <setting name="add_label" locale="sv_SE">Lägg till formulärnamn</setting>
@@ -19425,11 +19425,11 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_US">Display list name</setting>
+                <setting name="label" locale="en_AU">Display list name</setting>
                 <setting name="label" locale="en_CA">Display list name</setting>
                 <setting name="label" locale="fr_FR">Nom de la liste</setting>
                 <setting name="label" locale="sv_SE">Display listnamn</setting>
-                <setting name="add_label" locale="en_US">Add display list name</setting>
+                <setting name="add_label" locale="en_AU">Add display list name</setting>
                 <setting name="add_label" locale="en_CA">Add display list name</setting>
                 <setting name="add_label" locale="fr_FR">Ajouter un nom de liste</setting>
                 <setting name="add_label" locale="sv_SE">Lägg till display listnamn</setting>
@@ -19486,11 +19486,11 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_US">Tour title</setting>
+                <setting name="label" locale="en_AU">Tour title</setting>
                 <setting name="label" locale="en_CA">Tour title</setting>
                 <setting name="label" locale="fr_FR">Tour title</setting>
                 <setting name="label" locale="sv_SE">Tur titel</setting>
-                <setting name="add_label" locale="en_US">Add title</setting>
+                <setting name="add_label" locale="en_AU">Add title</setting>
                 <setting name="add_label" locale="en_CA">Add title</setting>
                 <setting name="add_label" locale="fr_FR">Add title</setting>
                 <setting name="add_label" locale="sv_SE">Lägg till titel</setting>
@@ -19553,11 +19553,11 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_US">Tour stop title</setting>
+                <setting name="label" locale="en_AU">Tour stop title</setting>
                 <setting name="label" locale="en_CA">Tour stop title</setting>
                 <setting name="label" locale="fr_FR">Tour stop title</setting>
                 <setting name="label" locale="sv_SE">Tur stopp titel</setting>
-                <setting name="add_label" locale="en_US">Add title</setting>
+                <setting name="add_label" locale="en_AU">Add title</setting>
                 <setting name="add_label" locale="en_CA">Add title</setting>
                 <setting name="add_label" locale="fr_FR">Add title</setting>
                 <setting name="add_label" locale="sv_SE">Lägg till titel</setting>
@@ -20427,7 +20427,7 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="ca_observations">
               <bundle>ca_occurrences</bundle>
               <settings>
-                <setting name="label" locale="en_US">Related observations</setting>
+                <setting name="label" locale="en_AU">Related observations</setting>
               </settings>
             </placement>
             <placement code="ca_places">
@@ -20448,7 +20448,7 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="ca_list_items">
               <bundle>ca_list_items</bundle>
               <settings>
-                <setting name="add_label" locale="en_US">Add term</setting>
+                <setting name="add_label" locale="en_AU">Add term</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -20556,7 +20556,7 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="ca_list_items">
               <bundle>ca_list_items</bundle>
               <settings>
-                <setting name="add_label" locale="en_US">Add term</setting>
+                <setting name="add_label" locale="en_AU">Add term</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -20732,7 +20732,7 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="ca_events">
               <bundle>ca_occurrences</bundle>
               <settings>
-                <setting name="label" locale="en_US">Related events</setting>
+                <setting name="label" locale="en_AU">Related events</setting>
               </settings>
             </placement>
             <placement code="ca_collections">
@@ -20852,7 +20852,7 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="ca_events">
               <bundle>ca_occurrences</bundle>
               <settings>
-                <setting name="label" locale="en_US">Related events</setting>
+                <setting name="label" locale="en_AU">Related events</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -20912,7 +20912,7 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="ca_list_items">
               <bundle>ca_list_items</bundle>
               <settings>
-                <setting name="add_label" locale="en_US">Add term</setting>
+                <setting name="add_label" locale="en_AU">Add term</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -20936,7 +20936,7 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="ca_events">
               <bundle>ca_occurrences</bundle>
               <settings>
-                <setting name="label" locale="en_US">Related events</setting>
+                <setting name="label" locale="en_AU">Related events</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -28049,7 +28049,7 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
         <placement code="p19">
           <bundle>ca_occurrence_labels.name</bundle>
           <settings>
-            <setting name="label" locale="en_US">Title</setting>
+            <setting name="label" locale="en_AU">Title</setting>
           </settings>
         </placement>
         <placement code="p20">
@@ -28160,7 +28160,7 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
         <setting name="form_width">3</setting>
       </settings>
       <userAccess>
-        <permission user="ross.chadwick" access="edit"/>
+        <permission user="administrator" access="edit"/>
       </userAccess>
       <bundlePlacements>
         <placement code="p47">
