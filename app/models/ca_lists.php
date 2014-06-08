@@ -1435,8 +1435,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				className: '".(($vs_render_as == 'vert_hierbrowser') ? 'hierarchyBrowserLevelVertical' : 'hierarchyBrowserLevel')."',
 				classNameContainer: '".(($vs_render_as == 'vert_hierbrowser') ? 'hierarchyBrowserContainerVertical' : 'hierarchyBrowserContainer')."',
 				
-				editButtonIcon: '<img src=\"".$pa_options['request']->getThemeUrlPath()."/graphics/buttons/arrow_grey_right.gif\" border=\"0\" title=\"Edit\"/>',
-				
+				editButtonIcon: \"".caNavIcon($pa_options['request'], __CA_NAV_BUTTON_RIGHT_ARROW__)."\",
+				disabledButtonIcon: \"".caNavIcon($pa_options['request'], __CA_NAV_BUTTON_DOT__)."\",
 				initItemID: '{".$pa_options['element_id']."}',
 				defaultItemID: '".$t_list->getDefaultItemID()."',
 				useAsRootID: '".$t_root_item->getPrimaryKey()."',
