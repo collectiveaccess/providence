@@ -88,7 +88,7 @@
 			$vb_ids_only = (bool)caGetOption('idsOnly', $pa_options, false);
 			
 			if ($vb_ids_only) { return $this->opn_id; }
-			return $this->opn_id ? caProcessTemplateForIDs($ps_template, $this->ops_table_name, array($this->opn_id), array()).($vb_include_id ? " [".$this->opn_id."]" : '') : "";
+			return $this->opn_id ? caProcessTemplateForIDs($ps_template, $this->ops_table_name, array($this->opn_id), $pa_options).($vb_include_id ? " [".$this->opn_id."]" : '') : "";
 		}
 		# ------------------------------------------------------------------
  		/**
@@ -122,6 +122,9 @@
 			}
 			$o_dm = Datamodel::load();
  			$t_item = $o_dm->getInstanceByTableName($this->ops_table_name, true);
+ 			if($o_trans = caGetOption('transaction', $pa_options, null)) {
+ 				$t_item->setTransaction($o_trans);
+ 			}
  			if (!$t_item->load((int)$ps_value)) {
  				if ($ps_value) {
  					$this->postError(1970, _t('%1 id %2 is not a valid id for %3 [%4]', $this->ops_name_singular, $ps_value, $pa_element_info['displayLabel'], $pa_element_info['element_code']), $this->ops_name_plural.'AttributeValue->parseValue()');
