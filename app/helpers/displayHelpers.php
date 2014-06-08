@@ -1021,7 +1021,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 				
 				$va_object_container_types = $po_view->request->config->getList('ca_objects_container_types');
 				$va_object_component_types = $po_view->request->config->getList('ca_objects_component_types');
-				$vb_can_add_component = (($vs_table_name === 'ca_objects') && $t_item->getPrimaryKey() && ($po_view->request->user->canDoAction('can_create_ca_objects')) && (sizeof($va_object_component_types)) && in_array($t_item->getTypeCode(), $va_object_container_types));
+				$vb_can_add_component = (($vs_table_name === 'ca_objects') && $t_item->getPrimaryKey() && ($po_view->request->user->canDoAction('can_create_ca_objects')) && $t_item->canTakeComponents());
 		
 				if (method_exists($t_item, 'getComponentCount')) {
 					if ($vn_component_count = $t_item->getComponentCount()) {
@@ -1032,15 +1032,15 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 						}
 						$vs_buf .= "<br/><strong>"._t('Has').":</strong> {$vs_component_count_link}";
 					}
-					
-					if ($vb_can_add_component) {
-						$vs_buf .= ' <a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($po_view->request, '*', 'ObjectComponent', 'Form', array('parent_id' => $t_item->getPrimaryKey())).'"); return false;\')>'.caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__).'</a>';
-			
-						$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
-						$vo_change_type_view->setVar('t_item', $t_item);
-			
-						FooterManager::add($vo_change_type_view->render("create_component_html.php"));
-					}
+				}
+									
+				if ($vb_can_add_component) {
+					$vs_buf .= ' <a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($po_view->request, '*', 'ObjectComponent', 'Form', array('parent_id' => $t_item->getPrimaryKey())).'"); return false;\')>'.caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__).'</a>';
+	
+					$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
+					$vo_change_type_view->setVar('t_item', $t_item);
+	
+					FooterManager::add($vo_change_type_view->render("create_component_html.php"));
 				}
 			}
 			
