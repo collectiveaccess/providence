@@ -59,7 +59,7 @@
 					<div id="<?php print $vs_id_prefix; ?>Tabs-location" class="hierarchyBrowseTab">	
 <?php
 						if ($vs_current_location) { 
-							print "<div class='caCurrentLocation'>{$vs_current_location}</div>";	 
+							print "<div class='caCurrentLocation' style='background-color:#".$va_settings['currentLocationColor']."'>{$vs_current_location}</div>";	 
 						} else {
 ?>
 							<?php print _t('No location set'); ?>
