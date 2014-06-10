@@ -160,6 +160,13 @@
 			$ps_error = '';
 			return true;
 		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for attribute value
+		 * 
+		 * @return int Attribute value type code
+		 */
+		abstract public function getType();
  		# ------------------------------------------------------------------
 	}
  ?>

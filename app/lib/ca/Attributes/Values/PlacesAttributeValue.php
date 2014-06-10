@@ -126,5 +126,14 @@
  		 */
  		protected $ops_name_plural = 'Places';
  		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for places attribute value
+		 * 
+		 * @return int Attribute value type code
+		 */
+		public function getType() {
+			return __CA_ATTRIBUTE_VALUE_PLACES__;
+		}
+ 		# ------------------------------------------------------------------
 	}
  ?>

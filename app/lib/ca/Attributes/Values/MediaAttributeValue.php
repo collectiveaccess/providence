@@ -282,5 +282,14 @@
 			return null;
 		}
  		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for media attribute value
+		 * 
+		 * @return int Attribute value type code
+		 */
+		public function getType() {
+			return __CA_ATTRIBUTE_VALUE_MEDIA__;
+		}
+ 		# ------------------------------------------------------------------
 	}
  ?>

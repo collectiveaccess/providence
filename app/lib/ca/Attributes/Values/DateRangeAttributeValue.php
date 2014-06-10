@@ -353,5 +353,14 @@
 			return 'value_decimal1';
 		}
  		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for date range attribute value
+		 * 
+		 * @return int Attribute value type code
+		 */
+		public function getType() {
+			return __CA_ATTRIBUTE_VALUE_DATERANGE__;
+		}
+ 		# ------------------------------------------------------------------
 	}
  ?>
