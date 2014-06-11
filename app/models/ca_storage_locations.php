@@ -382,24 +382,36 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 	 */
 	public function saveBundlesForScreen($pm_screen, $po_request, &$pa_options) {
 		if ($vn_rc = parent::saveBundlesForScreen($pm_screen, $po_request, $pa_options)) {
-			$va_movement_opts = array_merge($pa_options, array('formName' => 'mv'));
-			unset($va_movement_opts['ui_instance']);
+			unset($pa_options['ui_instance']);
 			
 			// get list of objects currently associated with this storage location
 			$va_object_ids = $this->getCurrentObjectIDs();
+
+			$vs_movement_storage_location_relationship_type = $this->getAppConfig()->get('record_movement_information_when_moving_storage_location_movement_to_storage_location_relationship_type');
+			$vs_movement_object_relationship_type = $this->getAppConfig()->get('record_movement_information_when_moving_storage_location_movement_to_object_relationship_type');
 			
-			if (is_array($va_object_ids) && sizeof($va_object_ids)) {
-				$t_movement = new ca_movements();
 			
-				$vs_screen = $po_request->getParameter('_movement_screen', pString);
-		
-				$t_movement->set('type_id', $t_movement->getDefaultTypeID());
-				$t_movement->saveBundlesForScreen($vs_screen, $po_request, $va_movement_opts);
+			foreach($_REQUEST as $vs_key => $vs_val) {
+				if (preg_match('!^(.*)_movement_form_name$!', $vs_key, $va_matches)) {
+					$vs_form_name = $po_request->getParameter($va_matches[1].'_movement_form_name', pString);
+					$vs_screen = $po_request->getParameter($va_matches[1].'_movement_screen', pString);
+					
+					if (is_array($va_object_ids) && sizeof($va_object_ids)) {
+						$t_movement = new ca_movements();
+						$t_movement->set('type_id', $t_movement->getDefaultTypeID());
+						
+						$va_movement_opts = array_merge($pa_options, array('formName' => $vs_form_name));
+						$t_movement->saveBundlesForScreen($vs_screen, $po_request, $va_movement_opts);
 			
-				$t_movement->addRelationship('ca_storage_locations', $this->getPrimaryKey(), 'location_tracking');
-				
-				foreach($va_object_ids as $vn_object_id) {
-					$t_movement->addRelationship('ca_objects', $vn_object_id, 'location');
+						if ($vs_movement_storage_location_relationship_type) {
+							$t_movement->addRelationship('ca_storage_locations', $this->getPrimaryKey(), $vs_movement_storage_location_relationship_type);
+						}
+						if ($vs_movement_object_relationship_type) {
+							foreach($va_object_ids as $vn_object_id) {
+								$t_movement->addRelationship('ca_objects', $vn_object_id, $vs_movement_object_relationship_type);
+							}
+						}
+					}
 				}
 			}
 		}

@@ -32,7 +32,7 @@
 	$t_subject					= $this->getVar('t_subject');
 	$va_settings 				= $this->getVar('settings');
 
-	$vb_read_only				=	(isset($va_settings['readonly']) && $va_settings['readonly']);
+	$vb_read_only				= (isset($va_settings['readonly']) && $va_settings['readonly']);
 	
 	if (!($vs_add_label 		= $this->getVar('add_label'))) { $vs_add_label = _t('Update location'); }
 	
@@ -42,8 +42,6 @@
 	$vs_relationship_type		= $this->getVar('location_relationship_type');
 	$vs_change_location_url		= $this->getVar('location_change_url');
 	
-	// HACKS
-	$va_settings['useHierarchicalBrowser'] = true;	// TODO: fix
 	$va_lookup_params = array();
 	
 	

@@ -107,9 +107,9 @@
 						
 							jQuery.jGrowl('<?php print addslashes(_t('Created %1 ', $t_subject->getTypeName())); ?> <em>' + resp.display + '</em>', { header: '<?php print addslashes(_t("Quick add %1", $t_subject->getTypeName())); ?>' }); 
 						} else {
-							console.log("done with relation", resp);
 							if(caBundleUpdateManager) { 
 								caBundleUpdateManager.reloadBundle('ca_objects_location'); 
+								caBundleUpdateManager.reloadBundle('ca_objects_history'); 
 								caBundleUpdateManager.reloadInspector(); 
 							}
 						}
