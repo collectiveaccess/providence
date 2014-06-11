@@ -260,6 +260,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			// create root in ca_list_items
 			$t_item_root = new ca_list_items();
 			$t_item_root->setMode(ACCESS_WRITE);
+			if ($this->inTransaction()) { $t_item_root->setTransaction($this->getTransaction()); }
 			$t_item_root->set('list_id', $this->getPrimaryKey());
 			$t_item_root->set('idno', $vs_title = 'Root node for '.$this->get('list_code'));
 			$t_item_root->set('is_enabled', 0);
@@ -296,8 +297,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		if(!($vn_list_id = $this->getPrimaryKey())) { return null; }
 		
 		$t_item = new ca_list_items();
-		if ($this->inTransaction()) { $t_item->setTransaction($this->getTransaction()); }
 		$t_item->setMode(ACCESS_WRITE);
+		
+		if ($this->inTransaction()) { $t_item->setTransaction($this->getTransaction()); }
 		
 		$t_item->set('list_id', $vn_list_id);
 		$t_item->set('item_value', $ps_value);
@@ -314,6 +316,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$vn_item_id = $t_item->insert();
 		
 		if ($t_item->numErrors()) { 
+			print_R($t_item->getErrors());
 			$this->errors = array_merge($this->errors, $t_item->errors);
 			return false;
 		}
@@ -1112,12 +1115,16 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *	limitToItemsRelatedToCollectionWithRelationshipTypes = array of collection type names or type_ids; returned items will be restricted to those attached to the specified collectionss with the specified relationship type
 	 *	limitToListIDs = array of list_ids to restrict returned items to when using "limitToItemsRelatedToCollections"
 	 *
-	 *  indentForHierarchy = indicate hierarchy with indentation. Default is true. 
+	 *  indentForHierarchy = indicate hierarchy with indentation. [Default is true]
+	 * 	transaction = transaction to perform database operations within. [Default is null]
 	 * 
 	 * @return string - HTML code for the <select> element; empty string if the list is empty
 	 */
 	static public function getListAsHTMLFormElement($pm_list_name_or_id, $ps_name, $pa_attributes=null, $pa_options=null) {
 		$t_list = new ca_lists();
+		if($o_trans = caGetOption('transaction', $pa_options, null)) {
+			$t_list->setTransaction($o_trans);
+		}
 		
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (!(isset($pa_options['limitToItemsRelatedToCollection']) && is_array($pa_options['limitToItemsRelatedToCollections']))) {
@@ -1435,8 +1442,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				className: '".(($vs_render_as == 'vert_hierbrowser') ? 'hierarchyBrowserLevelVertical' : 'hierarchyBrowserLevel')."',
 				classNameContainer: '".(($vs_render_as == 'vert_hierbrowser') ? 'hierarchyBrowserContainerVertical' : 'hierarchyBrowserContainer')."',
 				
-				editButtonIcon: '<img src=\"".$pa_options['request']->getThemeUrlPath()."/graphics/buttons/arrow_grey_right.gif\" border=\"0\" title=\"Edit\"/>',
-				
+				editButtonIcon: \"".caNavIcon($pa_options['request'], __CA_NAV_BUTTON_RIGHT_ARROW__)."\",
+				disabledButtonIcon: \"".caNavIcon($pa_options['request'], __CA_NAV_BUTTON_DOT__)."\",
 				initItemID: '{".$pa_options['element_id']."}',
 				defaultItemID: '".$t_list->getDefaultItemID()."',
 				useAsRootID: '".$t_root_item->getPrimaryKey()."',
@@ -1598,6 +1605,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @param array $pa_options Array of options:
 	 * 		dont_include_sub_items = if set, returned list is not expanded to include sub-items
 	 *		dontIncludeSubItems = synonym for dont_include_sub_items
+	 * 		transaction = transaction to perform database operations within. [Default is null]
 	 *
 	 * @return array List of numeric item_ids
 	 */
@@ -1609,6 +1617,11 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		}
 		$t_list = new ca_lists();
 		$t_item = new ca_list_items();
+		if($o_trans = caGetOption('transaction', $pa_options, null)) {
+			$t_list->setTransaction($o_trans);
+			$t_item->setTransaction($o_trans);
+		}
+		
 		$va_item_ids = array();
 		foreach($pa_idnos as $vs_idno) {
 			$vn_item_id = null;
@@ -1635,14 +1648,20 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	/**
 	 *
+	 * 	transaction = transaction to perform database operations within. [Default is null]
 	 */
 	static public function getItemID($pm_list_name_or_id, $ps_idno, $pa_options=null) {
 		if ((!isset($pa_options['noCache']) || !isset($pa_options['noCache'])) && isset(ca_lists::$s_item_id_cache[$pm_list_name_or_id][$ps_idno])) {
 			return ca_lists::$s_item_id_cache[$pm_list_name_or_id][$ps_idno];
 		}
+		if($o_trans = caGetOption('transaction', $pa_options, null)) {
+			$o_db = $o_trans->getDb();
+		} else {
+			$o_db = new Db();
+		}
 		$vn_item_id = null;
 		if ($vn_list_id = ca_lists::getListID($pm_list_name_or_id)) {
-			$o_db = new Db();
+			
 			$qr_res = $o_db->query("SELECT item_id FROM ca_list_items WHERE deleted = 0 AND list_id = ? AND idno = ?", (int)$vn_list_id, (string)$ps_idno);
 			
 			if ($qr_res->nextRow()) {
@@ -1659,7 +1678,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 * @param array $pa_list A list of relationship numeric type_ids
 	 * @param array $pa_options Options include:
-	 *			NONE YET
+	 * 		transaction = transaction to perform database operations within. [Default is null]
 	 * @return array A list of corresponding type_codes 
 	 */
 	 static public function itemIDsToIDNOs($pa_ids, $pa_options=null) {
@@ -1679,7 +1698,12 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 		}
 	 	}
 	 	
-	 	$o_db = new Db();
+	 	if($o_trans = caGetOption('transaction', $pa_options, null)) {
+			$o_db = $o_trans->getDb();
+		} else {
+			$o_db = new Db();
+		}
+		
 	 	$qr_res = $o_db->query("
 	 		SELECT item_id, idno 
 	 		FROM ca_list_items

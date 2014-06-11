@@ -168,7 +168,7 @@ class ca_objects_x_object_representations extends BaseRepresentationRelationship
 	protected $RELATIONSHIP_RIGHT_TABLENAME = 'ca_object_representations';
 	protected $RELATIONSHIP_LEFT_FIELDNAME = 'object_id';
 	protected $RELATIONSHIP_RIGHT_FIELDNAME = 'representation_id';
-	protected $RELATIONSHIP_TYPE_FIELDNAME = 'type_id';
+	protected $RELATIONSHIP_TYPE_FIELDNAME = null;
 	
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields

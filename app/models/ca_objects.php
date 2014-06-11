@@ -1465,9 +1465,12 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		if (!$pn_object_id) { return null; }
 		
 		$va_component_types = $this->getAppConfig()->getList('ca_objects_component_types');
-		if (!is_array($va_component_types) || !sizeof($va_component_types)) { return 0; }
 		
-		$va_ids = ca_objects::find(array('parent_id' => $pn_object_id, 'type_id' => $va_component_types, array('returnAs' => 'ids')));
+		if (is_array($va_component_types) && (sizeof($va_component_types) && !in_array('*', $va_component_types))) {
+			$va_ids = ca_objects::find(array('parent_id' => $pn_object_id, 'type_id' => $va_component_types, array('returnAs' => 'ids')));
+		} else {
+			$va_ids = ca_objects::find(array('parent_id' => $pn_object_id, array('returnAs' => 'ids')));
+		}
 	
 		if (!is_array($va_ids)) { return 0; }
 		return sizeof($va_ids);	
@@ -1497,9 +1500,12 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$vs_return_as = caGetOption('returnAs', $pa_options, 'info');
 	
 		$va_component_types = $this->getAppConfig()->getList('ca_objects_component_types');
-		if (!is_array($va_component_types) || !sizeof($va_component_types)) { return 0; }
 		
-		$vm_res = ca_objects::find(array('parent_id' => $pn_object_id, 'type_id' => $va_component_types), array('sort' => 'ca_objects.idno', 'returnAs' => ($vs_return_as == 'info') ? 'searchResult' : $vs_return_as));
+		if (is_array($va_component_types) && (sizeof($va_component_types) && !in_array('*', $va_component_types))) {
+			$vm_res = ca_objects::find(array('parent_id' => $pn_object_id, 'type_id' => $va_component_types), array('sort' => 'ca_objects.idno', 'returnAs' => ($vs_return_as == 'info') ? 'searchResult' : $vs_return_as));
+		} else {
+			$vm_res = ca_objects::find(array('parent_id' => $pn_object_id), array('sort' => 'ca_objects.idno', 'returnAs' => ($vs_return_as == 'info') ? 'searchResult' : $vs_return_as));
+		}
 	
 		if ($vs_return_as == 'info') {
 			$va_data = array();
@@ -1525,9 +1531,10 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 	 * @return bool 
 	 */
 	public function canTakeComponents() {
-		$va_component_types = $this->getAppConfig()->getList('ca_objects_container_types');
-		if (!is_array($va_component_types) || !sizeof($va_component_types)) { return false; }
-		return in_array($this->getTypeCode(), $va_component_types);
+		$va_container_types = $this->getAppConfig()->getList('ca_objects_container_types');
+		if (!is_array($va_container_types) || !sizeof($va_container_types)) { return false; }
+		if (in_array('*', $va_container_types)) { return true; }
+		return in_array($this->getTypeCode(), $va_container_types);
 	}
  	# ------------------------------------------------------
 }

@@ -185,6 +185,7 @@
 						classNameContainer: 'hierarchyBrowserContainer',
 						
 						editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
+						disabledButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__); ?>",
 						
 						//initItemID: <?php print (int)$this->request->session->getVar('ca_storage_locations_browse_last_id'); ?>,
 						indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',

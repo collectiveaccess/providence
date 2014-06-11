@@ -463,6 +463,8 @@
 	function caGenericImportSplitter($ps_refinery_name, $ps_item_prefix, $ps_table, $po_refinery_instance, &$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options) {
 		global $g_ui_locale_id;
 		
+		$po_refinery_instance->setReturnsMultipleValues(true);
+		
 		$o_dm = Datamodel::load();
 		
 		$po_refinery_instance->setReturnsMultipleValues(true);
@@ -632,7 +634,7 @@
 				
 						$vs_item = BaseRefinery::parsePlaceholder($vs_item, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 						if(!is_array($va_attr_vals)) { $va_attr_vals = array(); }
-						$va_attr_vals_with_parent = array_merge($va_attr_vals, array('parent_id' => $va_val['_parent_id']));
+						$va_attr_vals_with_parent = array_merge($va_attr_vals, array('parent_id' => $va_val['parent_id'] ? $va_val['parent_id'] : $va_val['_parent_id']));
 
 					
 						$pa_options = array_merge(array_merge(array('matchOn' => array('idno', 'label')), $pa_options));
@@ -684,7 +686,8 @@
 						}
 					
 						if ($vn_item_id) {
-							$va_val= array($vs_terminal => $vn_item_id);
+							$po_refinery_instance->setReturnsMultipleValues(false);
+							return $vn_item_id;
 						} else {
 							if ($o_log) { $o_log->logError(_t("[{$ps_refinery_name}Refinery] Could not add %2 %1", $vs_item, $ps_item_prefix)); }
 						}
