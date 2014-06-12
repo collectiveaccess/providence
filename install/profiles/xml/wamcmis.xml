@@ -350,6 +350,14 @@
                 </label>
               </labels>
             </item>
+            <item idno="subfossil" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Subfossil</name_singular>
+                  <name_plural>Subfossils</name_plural>
+                </label>
+              </labels>
+            </item>
           </items>
         </item>
       </items>
@@ -496,6 +504,22 @@
             <label locale="en_AU" preferred="1">
               <name_singular>seizure</name_singular>
               <name_plural>seizure</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="subsample" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>subsample</name_singular>
+              <name_plural>subsample</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="exchange" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>exchange</name_singular>
+              <name_plural>exchange</name_plural>
             </label>
           </labels>
         </item>
@@ -11150,6 +11174,46 @@
             </label>
           </labels>
         </item>
+        <item idno="queen" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>queen</name_singular>
+              <name_plural>queen</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="all_castes__full_series_" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>all castes (full series)</name_singular>
+              <name_plural>all castes (full series)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="4th_instar" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>4th instar</name_singular>
+              <name_plural>4th instar</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="3rd_instar" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>3rd instar</name_singular>
+              <name_plural>3rd instar</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="mature" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>mature</name_singular>
+              <name_plural>mature</name_plural>
+            </label>
+          </labels>
+        </item>
       </items>
     </list>
     <list code="preparation_types" hierarchical="0" system="0" vocabulary="1">
@@ -11169,7 +11233,7 @@
           <items>
             <item idno="default" enabled="1" default="0">
               <labels>
-                <label preferred="1" locale="en_AU">
+                <label preferred="1" locale="en_US">
                   <name_singular>default</name_singular>
                   <name_plural>default</name_plural>
                 </label>
@@ -11204,6 +11268,38 @@
                 <label locale="en_AU" preferred="1">
                   <name_singular>toe</name_singular>
                   <name_plural>toe</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="muscleliver" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>muscleliver</name_singular>
+                  <name_plural>muscleliver</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="fat" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>fat</name_singular>
+                  <name_plural>fat</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="tail" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>tail</name_singular>
+                  <name_plural>tail</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="liver_kidney_muscle" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>liver;kidney;muscle</name_singular>
+                  <name_plural>liver;kidney;muscle</name_plural>
                 </label>
               </labels>
             </item>
@@ -11401,6 +11497,126 @@
                 </label>
               </labels>
             </item>
+            <item idno="prostate" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>prostate</name_singular>
+                  <name_plural>prostate</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="_0" enabled="1" default="0" value=".0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>.0</name_singular>
+                  <name_plural>.0</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="spleen_heart_liver_left_adrena" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>spleen;heart;liver;left adrenal;kidney;testis;epididymis;in formalin</name_singular>
+                  <name_plural>spleen;heart;liver;left adrenal;kidney;testis;epididymis;in formalin</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="sperm" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>sperm</name_singular>
+                  <name_plural>sperm</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="sperm_prep" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>sperm prep</name_singular>
+                  <name_plural>sperm prep</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="gizzard" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>gizzard</name_singular>
+                  <name_plural>gizzard</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="phallus" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>phallus</name_singular>
+                  <name_plural>phallus</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="testis_epididymis" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>testis;epididymis</name_singular>
+                  <name_plural>testis;epididymis</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="lung" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>lung</name_singular>
+                  <name_plural>lung</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="trachea" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>trachea</name_singular>
+                  <name_plural>trachea</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="reproductive_tract" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>reproductive tract</name_singular>
+                  <name_plural>reproductive tract</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="blood" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>blood</name_singular>
+                  <name_plural>blood</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="pancreas" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>pancreas</name_singular>
+                  <name_plural>pancreas</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="em" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>em</name_singular>
+                  <name_plural>em</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="gut_crop" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>gut;crop</name_singular>
+                  <name_plural>gut;crop</name_plural>
+                </label>
+              </labels>
+            </item>
           </items>
         </item>
         <item idno="Fixing" enabled="0" default="0">
@@ -11481,6 +11697,102 @@
             <label locale="en_AU" preferred="1">
               <name_singular>FO</name_singular>
               <name_plural>FO</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="6" enabled="1" default="0" value="6">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>6</name_singular>
+              <name_plural>6</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="W" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>W</name_singular>
+              <name_plural>W</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="4" enabled="1" default="0" value="4">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>4</name_singular>
+              <name_plural>4</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="_" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="R" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>R</name_singular>
+              <name_plural>R</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="SE" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>SE</name_singular>
+              <name_plural>SE</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="eps_taxonomy" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_AU">
+          <name>EPS Taxonomy</name>
+        </label>
+      </labels>
+    </list>
+    <list code="loan_status_types" hierarchical="0" system="0" vocabulary="0" defaultSort="1">
+      <labels>
+        <label locale="en_AU">
+          <name>Loan Status Types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="on_loan_from_other_org" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>On loan from other organisation</name_singular>
+              <name_plural>On loan from other organisation</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="in_loan_to_other_org" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>In loan to other organisation</name_singular>
+              <name_plural>In loan to other organisation</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="loan_completed" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Loan completed</name_singular>
+              <name_plural>Loan completed</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="loan_overdue" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Loan overdue</name_singular>
+              <name_plural>Loan overdue</name_plural>
             </label>
           </labels>
         </item>
@@ -18853,6 +19165,25 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="loan_status" datatype="List" list="loan_status_types">
+      <labels>
+        <label locale="en_AU">
+          <name>Loan status</name>
+          <description>The current status of the loan.</description>
+        </label>
+      </labels>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_loans</table>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
   </elementSets>
   <userInterfaces>
     <userInterface code="loan_cataloguers_ui" type="ca_loans">
@@ -18896,6 +19227,9 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow"/>
               </settings>
+            </placement>
+            <placement code="ca_attribute_loan_status4">
+              <bundle>ca_attribute_loan_status</bundle>
             </placement>
             <placement code="ca_attribute_loan_authorizatio">
               <bundle>ca_attribute_loan_authorization_date</bundle>
@@ -19242,11 +19576,11 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_AU">Relationship names</setting>
+                <setting name="label" locale="en_US">Relationship names</setting>
                 <setting name="label" locale="en_CA">Relationship names</setting>
                 <setting name="label" locale="fr_FR">Noms de relations</setting>
                 <setting name="label" locale="sv_SE">Relationsnamn</setting>
-                <setting name="add_label" locale="en_AU">Add relationship name</setting>
+                <setting name="add_label" locale="en_US">Add relationship name</setting>
                 <setting name="add_label" locale="en_CA">Add relationship name</setting>
                 <setting name="add_label" locale="fr_FR">Ajouter un nom de relation</setting>
                 <setting name="add_label" locale="sv_SE">Lägg till relationsnamn</setting>
@@ -19336,11 +19670,11 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_AU">Caption</setting>
+                <setting name="label" locale="en_US">Caption</setting>
                 <setting name="label" locale="en_CA">Caption</setting>
                 <setting name="label" locale="fr_FR">Légende</setting>
                 <setting name="label" locale="sv_SE">Bildtext</setting>
-                <setting name="add_label" locale="en_AU">Add caption</setting>
+                <setting name="add_label" locale="en_US">Add caption</setting>
                 <setting name="add_label" locale="en_CA">Add caption</setting>
                 <setting name="add_label" locale="fr_FR">Ajouter une légende</setting>
                 <setting name="add_label" locale="sv_SE">Lägg till bildtext</setting>
@@ -19373,11 +19707,11 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_AU">Form name</setting>
+                <setting name="label" locale="en_US">Form name</setting>
                 <setting name="label" locale="en_CA">Form name</setting>
                 <setting name="label" locale="fr_FR">Nom du formulaire</setting>
                 <setting name="label" locale="sv_SE">Formulär namn</setting>
-                <setting name="add_label" locale="en_AU">Add form name</setting>
+                <setting name="add_label" locale="en_US">Add form name</setting>
                 <setting name="add_label" locale="en_CA">Add form name</setting>
                 <setting name="add_label" locale="fr_FR">Ajouter un nom de formulaire</setting>
                 <setting name="add_label" locale="sv_SE">Lägg till formulärnamn</setting>
@@ -19425,11 +19759,11 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_AU">Display list name</setting>
+                <setting name="label" locale="en_US">Display list name</setting>
                 <setting name="label" locale="en_CA">Display list name</setting>
                 <setting name="label" locale="fr_FR">Nom de la liste</setting>
                 <setting name="label" locale="sv_SE">Display listnamn</setting>
-                <setting name="add_label" locale="en_AU">Add display list name</setting>
+                <setting name="add_label" locale="en_US">Add display list name</setting>
                 <setting name="add_label" locale="en_CA">Add display list name</setting>
                 <setting name="add_label" locale="fr_FR">Ajouter un nom de liste</setting>
                 <setting name="add_label" locale="sv_SE">Lägg till display listnamn</setting>
@@ -19486,11 +19820,11 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_AU">Tour title</setting>
+                <setting name="label" locale="en_US">Tour title</setting>
                 <setting name="label" locale="en_CA">Tour title</setting>
                 <setting name="label" locale="fr_FR">Tour title</setting>
                 <setting name="label" locale="sv_SE">Tur titel</setting>
-                <setting name="add_label" locale="en_AU">Add title</setting>
+                <setting name="add_label" locale="en_US">Add title</setting>
                 <setting name="add_label" locale="en_CA">Add title</setting>
                 <setting name="add_label" locale="fr_FR">Add title</setting>
                 <setting name="add_label" locale="sv_SE">Lägg till titel</setting>
@@ -19553,11 +19887,11 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_AU">Tour stop title</setting>
+                <setting name="label" locale="en_US">Tour stop title</setting>
                 <setting name="label" locale="en_CA">Tour stop title</setting>
                 <setting name="label" locale="fr_FR">Tour stop title</setting>
                 <setting name="label" locale="sv_SE">Tur stopp titel</setting>
-                <setting name="add_label" locale="en_AU">Add title</setting>
+                <setting name="add_label" locale="en_US">Add title</setting>
                 <setting name="add_label" locale="en_CA">Add title</setting>
                 <setting name="add_label" locale="fr_FR">Add title</setting>
                 <setting name="add_label" locale="sv_SE">Lägg till titel</setting>
@@ -19635,6 +19969,12 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
       </labels>
       <typeRestrictions>
         <restriction type="DarwinCore"/>
+        <restriction type=""/>
+        <restriction type=""/>
+        <restriction type=""/>
+        <restriction type=""/>
+        <restriction type=""/>
+        <restriction type=""/>
         <restriction type="arachnid_myriapod"/>
         <restriction type="tz"/>
       </typeRestrictions>
@@ -20427,7 +20767,7 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="ca_observations">
               <bundle>ca_occurrences</bundle>
               <settings>
-                <setting name="label" locale="en_AU">Related observations</setting>
+                <setting name="label" locale="en_US">Related observations</setting>
               </settings>
             </placement>
             <placement code="ca_places">
@@ -20448,7 +20788,7 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="ca_list_items">
               <bundle>ca_list_items</bundle>
               <settings>
-                <setting name="add_label" locale="en_AU">Add term</setting>
+                <setting name="add_label" locale="en_US">Add term</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -20556,7 +20896,7 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="ca_list_items">
               <bundle>ca_list_items</bundle>
               <settings>
-                <setting name="add_label" locale="en_AU">Add term</setting>
+                <setting name="add_label" locale="en_US">Add term</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -20732,7 +21072,7 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="ca_events">
               <bundle>ca_occurrences</bundle>
               <settings>
-                <setting name="label" locale="en_AU">Related events</setting>
+                <setting name="label" locale="en_US">Related events</setting>
               </settings>
             </placement>
             <placement code="ca_collections">
@@ -20852,7 +21192,7 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="ca_events">
               <bundle>ca_occurrences</bundle>
               <settings>
-                <setting name="label" locale="en_AU">Related events</setting>
+                <setting name="label" locale="en_US">Related events</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -20912,7 +21252,7 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="ca_list_items">
               <bundle>ca_list_items</bundle>
               <settings>
-                <setting name="add_label" locale="en_AU">Add term</setting>
+                <setting name="add_label" locale="en_US">Add term</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -20936,7 +21276,7 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <placement code="ca_events">
               <bundle>ca_occurrences</bundle>
               <settings>
-                <setting name="label" locale="en_AU">Related events</setting>
+                <setting name="label" locale="en_US">Related events</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -21969,7 +22309,13 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           <typeRestrictions>
             <restriction type="anthropology"/>
             <restriction type="DublinCore"/>
+            <restriction type=""/>
+            <restriction type=""/>
+            <restriction type=""/>
+            <restriction type=""/>
             <restriction type="DarwinCore"/>
+            <restriction type=""/>
+            <restriction type=""/>
           </typeRestrictions>
           <bundlePlacements>
             <placement code="item_status_id1">
@@ -22014,6 +22360,9 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
               <settings>
                 <setting name="readonly"/>
               </settings>
+            </placement>
+            <placement code="ca_sets8">
+              <bundle>ca_sets</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -28049,7 +28398,7 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
         <placement code="p19">
           <bundle>ca_occurrence_labels.name</bundle>
           <settings>
-            <setting name="label" locale="en_AU">Title</setting>
+            <setting name="label" locale="en_US">Title</setting>
           </settings>
         </placement>
         <placement code="p20">
@@ -28160,7 +28509,7 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
         <setting name="form_width">3</setting>
       </settings>
       <userAccess>
-        <permission user="administrator" access="edit"/>
+        <permission user="ross.chadwick" access="edit"/>
       </userAccess>
       <bundlePlacements>
         <placement code="p47">
