@@ -350,6 +350,14 @@
                 </label>
               </labels>
             </item>
+            <item idno="subfossil" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Subfossil</name_singular>
+                  <name_plural>Subfossils</name_plural>
+                </label>
+              </labels>
+            </item>
           </items>
         </item>
       </items>
@@ -496,6 +504,22 @@
             <label locale="en_AU" preferred="1">
               <name_singular>seizure</name_singular>
               <name_plural>seizure</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="subsample" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>subsample</name_singular>
+              <name_plural>subsample</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="exchange" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>exchange</name_singular>
+              <name_plural>exchange</name_plural>
             </label>
           </labels>
         </item>
@@ -11150,6 +11174,46 @@
             </label>
           </labels>
         </item>
+        <item idno="queen" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>queen</name_singular>
+              <name_plural>queen</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="all_castes__full_series_" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>all castes (full series)</name_singular>
+              <name_plural>all castes (full series)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="4th_instar" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>4th instar</name_singular>
+              <name_plural>4th instar</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="3rd_instar" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>3rd instar</name_singular>
+              <name_plural>3rd instar</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="mature" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>mature</name_singular>
+              <name_plural>mature</name_plural>
+            </label>
+          </labels>
+        </item>
       </items>
     </list>
     <list code="preparation_types" hierarchical="0" system="0" vocabulary="1">
@@ -11183,27 +11247,27 @@
                 </label>
               </labels>
             </item>
-            <item idno="liver_blood_muscle" enabled="1" default="0">
-              <labels>
-                <label locale="en_AU" preferred="1">
-                  <name_singular>liver;blood;muscle</name_singular>
-                  <name_plural>liver;blood;muscle</name_plural>
-                </label>
-              </labels>
-            </item>
-            <item idno="heart_blood_tail" enabled="1" default="0">
-              <labels>
-                <label locale="en_AU" preferred="1">
-                  <name_singular>heart;blood;tail</name_singular>
-                  <name_plural>heart;blood;tail</name_plural>
-                </label>
-              </labels>
-            </item>
             <item idno="toe" enabled="1" default="0">
               <labels>
                 <label locale="en_AU" preferred="1">
                   <name_singular>toe</name_singular>
                   <name_plural>toe</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="fat" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>fat</name_singular>
+                  <name_plural>fat</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="tail" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>tail</name_singular>
+                  <name_plural>tail</name_plural>
                 </label>
               </labels>
             </item>
@@ -11401,6 +11465,102 @@
                 </label>
               </labels>
             </item>
+            <item idno="prostate" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>prostate</name_singular>
+                  <name_plural>prostate</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="_0" enabled="1" default="0" value=".0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>.0</name_singular>
+                  <name_plural>.0</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="sperm" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>sperm</name_singular>
+                  <name_plural>sperm</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="sperm_prep" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>sperm prep</name_singular>
+                  <name_plural>sperm prep</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="gizzard" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>gizzard</name_singular>
+                  <name_plural>gizzard</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="phallus" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>phallus</name_singular>
+                  <name_plural>phallus</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="lung" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>lung</name_singular>
+                  <name_plural>lung</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="trachea" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>trachea</name_singular>
+                  <name_plural>trachea</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="reproductive_tract" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>reproductive tract</name_singular>
+                  <name_plural>reproductive tract</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="blood" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>blood</name_singular>
+                  <name_plural>blood</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="pancreas" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>pancreas</name_singular>
+                  <name_plural>pancreas</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="em" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>em</name_singular>
+                  <name_plural>em</name_plural>
+                </label>
+              </labels>
+            </item>
           </items>
         </item>
         <item idno="Fixing" enabled="0" default="0">
@@ -11481,6 +11641,102 @@
             <label locale="en_AU" preferred="1">
               <name_singular>FO</name_singular>
               <name_plural>FO</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="6" enabled="1" default="0" value="6">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>6</name_singular>
+              <name_plural>6</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="W" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>W</name_singular>
+              <name_plural>W</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="4" enabled="1" default="0" value="4">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>4</name_singular>
+              <name_plural>4</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="_" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="R" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>R</name_singular>
+              <name_plural>R</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="SE" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>SE</name_singular>
+              <name_plural>SE</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="eps_taxonomy" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_AU">
+          <name>EPS Taxonomy</name>
+        </label>
+      </labels>
+    </list>
+    <list code="loan_status_types" hierarchical="0" system="0" vocabulary="0" defaultSort="1">
+      <labels>
+        <label locale="en_AU">
+          <name>Loan Status Types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="on_loan_from_other_org" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>On loan from other organisation</name_singular>
+              <name_plural>On loan from other organisation</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="in_loan_to_other_org" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>In loan to other organisation</name_singular>
+              <name_plural>In loan to other organisation</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="loan_completed" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Loan completed</name_singular>
+              <name_plural>Loan completed</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="loan_overdue" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Loan overdue</name_singular>
+              <name_plural>Loan overdue</name_plural>
             </label>
           </labels>
         </item>
@@ -18853,6 +19109,25 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="loan_status" datatype="List" list="loan_status_types">
+      <labels>
+        <label locale="en_AU">
+          <name>Loan status</name>
+          <description>The current status of the loan.</description>
+        </label>
+      </labels>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_loans</table>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
   </elementSets>
   <userInterfaces>
     <userInterface code="loan_cataloguers_ui" type="ca_loans">
@@ -18896,6 +19171,9 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow"/>
               </settings>
+            </placement>
+            <placement code="ca_attribute_loan_status4">
+              <bundle>ca_attribute_loan_status</bundle>
             </placement>
             <placement code="ca_attribute_loan_authorizatio">
               <bundle>ca_attribute_loan_authorization_date</bundle>
@@ -22014,6 +22292,9 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
               <settings>
                 <setting name="readonly"/>
               </settings>
+            </placement>
+            <placement code="ca_sets8">
+              <bundle>ca_sets</bundle>
             </placement>
           </bundlePlacements>
         </screen>
