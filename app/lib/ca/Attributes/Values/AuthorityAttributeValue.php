@@ -280,7 +280,7 @@
 		public static function elementTypeToInstance($pn_type) {
 			$o_dm = Datamodel::load();
 			switch($pn_type) {
-				case __CA_ATTRIBUTE_VALUE_LIST____:
+				case __CA_ATTRIBUTE_VALUE_LIST__:
 					return $o_dm->getInstanceByTableName('ca_list_items', true);
 					break;
 				case __CA_ATTRIBUTE_VALUE_OBJECTS__:
