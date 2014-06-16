@@ -78,13 +78,13 @@
 			<span class="ui-helper-hidden-accessible" role="status" aria-live="polite"></span>
 		</div>
 <?php
-	if ($t_item && $t_subject) {
+		if ($t_item && $t_subject) {
 ?>
 		<div class="hierarchyBrowserHelpText">
 			<?php print _t("Click on a %1 to see more specific %2 within that %3, or use the search field. Click on the arrow next to a %4 to find %5 related to it.", $t_item->getProperty('NAME_SINGULAR'), $t_item->getProperty('NAME_PLURAL'), $t_item->getProperty('NAME_SINGULAR'), $t_item->getProperty('NAME_SINGULAR'), $t_subject->getProperty('NAME_PLURAL') ); ?>
 		</div>
 <?php
-	}
+		}
 ?>
 	</div>
 	
