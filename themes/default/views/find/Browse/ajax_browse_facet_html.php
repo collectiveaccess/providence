@@ -89,38 +89,38 @@
 	</div>
 	
 	<script type="text/javascript">
-			var oHierBrowser;
-			
-			jQuery(document).ready(function() {
-				
-				oHierBrowser = caUI.initHierBrowser('hierarchyBrowser', {
-					levelDataUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacetHierarchyLevel', array('facet' => $vs_facet_name)); ?>',
-					initDataUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacetHierarchyAncestorList', array('facet' => $vs_facet_name)); ?>',
-					
-					editUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'addCriteria', array('facet' => $vs_facet_name, 'id' => '')); ?>',
-					editButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/glyphicons_223_chevron-right.png" border="0" title="<?php print _t("Browse with this term"); ?>">',
-					
-					initItemID: '<?php print $this->getVar('browse_last_id'); ?>',
-					indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
-					
-					currentSelectionDisplayID: 'browseCurrentSelection'
-				});
+		var oHierBrowser;
 
-				jQuery('#hierarchyBrowserSearch').autocomplete({
-					source: '<?php print $va_service_urls['search']; ?>',
-					minLength: 3,
-					delay: 800,
-					html: true,
-					select: function(event, ui) {
-						if (parseInt(ui.item.id) > 0) {
-							oHierBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item
-						}
-						event.preventDefault();
-						jQuery('#hierarchyBrowserSearch').val('');
-					}
-				});
+		jQuery(document).ready(function() {
+
+			oHierBrowser = caUI.initHierBrowser('hierarchyBrowser', {
+				levelDataUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacetHierarchyLevel', array('facet' => $vs_facet_name)); ?>',
+				initDataUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacetHierarchyAncestorList', array('facet' => $vs_facet_name)); ?>',
+
+				editUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'addCriteria', array('facet' => $vs_facet_name, 'id' => '')); ?>',
+				editButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/glyphicons_223_chevron-right.png" border="0" title="<?php print _t("Browse with this term"); ?>">',
+
+				initItemID: '<?php print $this->getVar('browse_last_id'); ?>',
+				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
+
+				currentSelectionDisplayID: 'browseCurrentSelection'
 			});
-		</script>
+
+			jQuery('#hierarchyBrowserSearch').autocomplete({
+				source: '<?php print $va_service_urls['search']; ?>',
+				minLength: 3,
+				delay: 800,
+				html: true,
+				select: function(event, ui) {
+					if (parseInt(ui.item.id) > 0) {
+						oHierBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item
+					}
+					event.preventDefault();
+					jQuery('#hierarchyBrowserSearch').val('');
+				}
+			});
+		});
+	</script>
 <?php
 			break;
 		# ------------------------------------------------------------
