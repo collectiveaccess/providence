@@ -106,19 +106,19 @@
 					currentSelectionDisplayID: 'browseCurrentSelection'
 				});
 
-				jQuery('#hierarchyBrowserSearch').autocomplete(
-					{
-						source: '<?php print $va_service_urls['search']; ?>',
-						minLength: 3, delay: 800, html: true,
-						select: function(event, ui) {
-							if (parseInt(ui.item.id) > 0) {
-								oHierBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item
-							}
-							event.preventDefault();
-							jQuery('#hierarchyBrowserSearch').val('');
+				jQuery('#hierarchyBrowserSearch').autocomplete({
+					source: '<?php print $va_service_urls['search']; ?>',
+					minLength: 3,
+					delay: 800,
+					html: true,
+					select: function(event, ui) {
+						if (parseInt(ui.item.id) > 0) {
+							oHierBrowser.setUpHierarchy(ui.item.id);	// jump browser to selected item
 						}
+						event.preventDefault();
+						jQuery('#hierarchyBrowserSearch').val('');
 					}
-				);
+				});
 			});
 		</script>
 <?php
