@@ -664,6 +664,10 @@
  			// Get list of regex packages that user can use to extract object idno's from filenames
 			$va_regex_list = $po_request->config->getAssoc('mediaFilenameToObjectIdnoRegexes');
  			if (!is_array($va_regex_list)) { $va_regex_list = array(); }
+
+			// Get list of replacements that user can use to transform file names to match object idnos
+			$va_replacements_list = $po_request->config->getAssoc('mediaFilenameReplacements');
+ 			if (!is_array($va_replacements_list)) { $va_replacements_list = array(); } 			
  			
  			// Get list of files (or file name patterns) to skip
  			$va_skip_list = preg_split("![\r\n]+!", $vs_skip_file_list);
@@ -724,9 +728,32 @@
 								default:
 								case 'FILE_NAME':
 									$va_names_to_match = array($f);
-									$o_log->logDebug(_t("Trying to match on file name '%1'", $d, $f));
+									$o_log->logDebug(_t("Trying to match on file name '%1'", $f));
 									break;
 							}
+
+							// are there any replacements? if so, try to match each element in $va_names_to_match AND all results of the replacements
+							if(is_array($va_replacements_list) && (sizeof($va_replacements_list)>0)) {
+								$va_names_to_match_copy = $va_names_to_match;
+								foreach($va_names_to_match_copy as $vs_name){
+									foreach($va_replacements_list as $vs_replacement_code => $va_replacement) {
+										if(isset($va_replacement['search']) && $va_replacement['search']) {
+											$vs_replace = caGetOption('replace',$va_replacement,'');
+
+											$vs_replacement_result = preg_replace('!'.$va_replacement['search'].'!', $vs_replace, $vs_name);
+
+											if($vs_replacement_result && strlen($vs_replacement_result)>0){
+												$o_log->logDebug(_t("The result for replacement with code %1 applied to value '%2' is '%3' and was added to the list of file names used for matching.", $vs_replacement_code, $vs_name, $vs_replacement_result));
+												$va_names_to_match[] = $vs_replacement_result;
+											}
+										} else {
+											$o_log->logDebug(_t("Skipped replacement %1 because no search expression was defined.", $vs_replacement_code));
+										}
+									}
+								}
+							}
+
+							file_put_contents("/tmp/replace", print_r($va_names_to_match,true),FILE_APPEND);
 							
 							foreach($va_names_to_match as $vs_match_name) {
 								if (preg_match('!'.$vs_regex.'!', $vs_match_name, $va_matches)) {
