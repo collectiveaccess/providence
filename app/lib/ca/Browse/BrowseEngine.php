@@ -4243,10 +4243,13 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 			}
 			
 			$va_relative_to_join = array();
-			if ($t_item_rel) {
+
+			if ($t_item_rel) { // foo_x_bar Table exists ==> join foo_x_bar and relative_to table
 				$va_relative_to_join[] = "INNER JOIN ".$t_item_rel->tableName()." ON ".$t_item_rel->tableName().".".$t_item->primaryKey()." = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey();
+				$va_relative_to_join[] = "INNER JOIN {$ps_relative_to_table} ON {$ps_relative_to_table}.{$vs_target_browse_table_pk} = ".$t_item_rel->tableName().".".$t_target->primaryKey();
+			} else { // path of length 2, i.e. direct relationship like ca_objects.lot_id = ca_object_lots.lot_id ==> join relative_to and browse target tables directly
+				$va_relative_to_join[] = "INNER JOIN {$ps_relative_to_table} ON {$ps_relative_to_table}.{$vs_target_browse_table_pk} = ".$t_rel_item->tableName().".".$t_target->primaryKey();
 			}
-			$va_relative_to_join[] = "INNER JOIN {$ps_relative_to_table} ON {$ps_relative_to_table}.{$vs_target_browse_table_pk} = ".$t_item_rel->tableName().".".$t_target->primaryKey();
 			
 			$vs_relative_to_join = join("\n", $va_relative_to_join);
 			
