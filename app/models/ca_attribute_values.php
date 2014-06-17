@@ -244,8 +244,9 @@ class ca_attribute_values extends BaseModel {
 	public function addValue($ps_value, $pa_element_info, $pn_attribute_id, $pa_options=null) {
 		$this->clear();
 		
-		//$t_element = new ca_metadata_elements($pa_element_info['element_id']);
 		$t_element = ca_attributes::getElementInstance($pa_element_info['element_id']);
+		
+		if ($this->inTransaction()) { $pa_options['transaction'] = $this->getTransaction(); }
 		
 		$this->setMode(ACCESS_WRITE);
 		$this->set('attribute_id', $pn_attribute_id);
@@ -302,7 +303,8 @@ class ca_attribute_values extends BaseModel {
 	public function editValue($ps_value, $pa_options=null) {
 		if (!$this->getPrimaryKey()) { return null; }
 		
-		//$t_element = new ca_metadata_elements($this->get('element_id'));
+		if ($this->inTransaction()) { $pa_options['transaction'] = $this->getTransaction(); }
+		
 		$t_element = ca_attributes::getElementInstance($this->get('element_id'));
 		$pa_element_info = $t_element->getFieldValuesArray();
 		

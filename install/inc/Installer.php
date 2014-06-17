@@ -288,9 +288,9 @@ class Installer {
 		$vo_dm = Datamodel::load();
 		$vo_db = new Db();
 		if (defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__') && __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ && ($this->opb_overwrite)) {
-			$vo_db->query('DROP DATABASE IF EXISTS '.__CA_DB_DATABASE__);
-			$vo_db->query('CREATE DATABASE '.__CA_DB_DATABASE__);
-			$vo_db->query('USE '.__CA_DB_DATABASE__);
+			$vo_db->query('DROP DATABASE IF EXISTS `'.__CA_DB_DATABASE__.'`');
+			$vo_db->query('CREATE DATABASE `'.__CA_DB_DATABASE__.'`');
+			$vo_db->query('USE `'.__CA_DB_DATABASE__.'`');
 		}
 
 		$va_ca_tables = $vo_dm->getTableNames();
@@ -620,11 +620,13 @@ class Installer {
 		require_once(__CA_MODELS_DIR__."/ca_editor_ui_screens.php");
 		require_once(__CA_MODELS_DIR__."/ca_lists.php");
 		require_once(__CA_MODELS_DIR__."/ca_list_items.php");
+		require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
 
 		$vo_dm = Datamodel::load();
 
 		$t_list = new ca_lists();
 		$t_list_item = new ca_list_items();
+		$t_rel_types = new ca_relationship_types();
 
 		if($this->ops_base_name){ // "merge" profile and its base
 			$va_uis = array();
@@ -646,6 +648,10 @@ class Installer {
 				$this->addError("Invalid type {$vs_type} for UI code {$vs_ui_code}");
 				return false;
 			}
+
+			// model instance of UI type
+			$t_instance = $vo_dm->getInstanceByTableNum($vn_type);
+			
 			// create ui row
 			$t_ui = new ca_editor_uis();
 			$t_ui->setMode(ACCESS_WRITE);
@@ -668,14 +674,18 @@ class Installer {
 			if($vo_ui->typeRestrictions){
 				foreach($vo_ui->typeRestrictions->children() as $vo_restriction){
 					$vs_restriction_type = self::getAttribute($vo_restriction, "type");
+					
+					if (strlen($vs_restriction_type)>0) {
+						// interstitial with type restriction -> code is relationship type code
+						if($t_instance instanceof BaseRelationshipModel){
+							$vn_type_id = $t_rel_types->getRelationshipTypeID($t_instance->tableName(),$vs_restriction_type);
+						} else { // "normal" type restriction -> code is from actual type list
+							$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
+							$vn_type_id = $t_list->getItemIDFromList($vs_type_list_name,$vs_restriction_type);
+						}
 
-					$t_instance = $vo_dm->getInstanceByTableNum($vn_type);
-					$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
-
-					if(strlen($vs_restriction_type)>0){
-						$vn_item_id = $t_list->getItemIDFromList($vs_type_list_name,$vs_restriction_type);
-						if($vn_item_id){
-							 $t_ui->addTypeRestriction($vn_item_id);	
+						if($vn_type_id) {
+							$t_ui->addTypeRestriction($vn_type_id);
 						}
 					}
 				}
@@ -721,13 +731,17 @@ class Installer {
 					foreach($vo_screen->typeRestrictions->children() as $vo_restriction){
 						$vs_restriction_type = self::getAttribute($vo_restriction, "type");
 
-						$t_instance = $vo_dm->getInstanceByTableNum($vn_type);
-						$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
+						if (strlen($vs_restriction_type)>0) {
+							// interstitial with type restriction -> code is relationship type code
+							if($t_instance instanceof BaseRelationshipModel){
+								$vn_type_id = $t_rel_types->getRelationshipTypeID($t_instance->tableName(),$vs_restriction_type);
+							} else { // "normal" type restriction -> code is from actual type list
+								$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
+								$vn_type_id = $t_list->getItemIDFromList($vs_type_list_name,$vs_restriction_type);
+							}
 
-						if(strlen($vs_restriction_type)>0){
-							$vn_item_id = $t_list->getItemIDFromList($vs_type_list_name,$vs_restriction_type);
-							if($vn_item_id){
-								$t_ui_screens->addTypeRestriction($vn_item_id);
+							if($vn_type_id) {
+								$t_ui_screens->addTypeRestriction($vn_type_id);
 							}
 						}
 					}
