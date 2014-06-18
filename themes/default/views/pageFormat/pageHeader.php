@@ -44,6 +44,9 @@
 		<title><?php print $this->appconfig->get("window_title").($vs_window_title ? " : {$vs_window_title}" : ''); ?></title>
 		<link rel="stylesheet" href="<?php print $this->request->getThemeUrlPath(); ?>/css/base.css" type="text/css" media="screen" />
 		<link rel="stylesheet" href="<?php print $this->request->getThemeUrlPath(); ?>/css/sets.css" type="text/css" media="screen" />
+		<!--[if IE]>
+		<link href="<?php print $this->request->getThemeUrlPath(); ?>/css/ie.css" media="screen" rel="stylesheet" type="text/css" />
+		<![endif]-->
 
 		<script type="text/javascript">window.caBasePath = '<?php print $this->request->getBaseUrlPath(); ?>';</script>
 		<!--[if (!IE)|(gte IE 8)]><!-->
@@ -54,9 +57,6 @@
 		<!--[if lte IE 7]>
 		<link href="<?php print $this->request->getBaseUrlPath(); ?>/viewer.css" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<?php print $this->request->getBaseUrlPath(); ?>/plain.css" media="screen" rel="stylesheet" type="text/css" />
-		<![endif]-->
-		<!--[if IE]>
-		<link href="<?php print $this->request->getBaseUrlPath(); ?>/ie.css" media="screen" rel="stylesheet" type="text/css" />
 		<![endif]-->
 		<link rel="stylesheet" href="<?php print $this->request->getBaseUrlPath(); ?>/js/jquery/jquery-tileviewer/jquery.tileviewer.css" type="text/css" media="screen" />
 		<link rel="stylesheet" href="<?php print $this->request->getBaseUrlPath(); ?>/js/jquery/fullcalendar/fullcalendar.css" type="text/css" media="screen" />
