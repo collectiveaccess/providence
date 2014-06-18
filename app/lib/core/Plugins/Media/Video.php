@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004-2013 Whirl-i-Gig
+ * Copyright 2004-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -176,8 +176,8 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$this->ops_path_to_qt_faststart = $this->opo_external_app_config->get('qt-faststart_app');
 		$this->opb_ffmpeg_available = caMediaPluginFFfmpegInstalled($this->ops_path_to_ffmpeg);
 
-		$this->ops_mediainfo_path = $this->opo_external_app_config->get('mediainfo_app');
-		$this->opb_mediainfo_available = caMediaInfoInstalled($this->ops_mediainfo_path);
+		$this->ops_mediainfo_path = caGetExternalApplicationPath('mediainfo');
+		$this->opb_mediainfo_available = caMediaInfoInstalled();
 
 		$this->info["INSTANCE"] = $this;
 		return $this->info;
@@ -190,7 +190,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$va_status['available'] = true;
 		
 		if(!$this->opb_ffmpeg_available){
-			$va_status['errors'][] = _t("Incoming Audio files will not be transcoded because ffmpeg is not installed.");
+			$va_status['errors'][] = _t("Incoming video files will not be transcoded because ffmpeg is not installed.");
 		}
 		
 		if ($this->opb_mediainfo_available) { 
@@ -324,7 +324,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$this->handle = $this->ohandle = $ID3->analyze($filepath);
 			
 			if($this->opb_mediainfo_available){
-				$this->metadata = caExtractMetadataWithMediaInfo($this->ops_mediainfo_path, $filepath);
+				$this->metadata = caExtractMetadataWithMediaInfo($filepath);
 			} else {
 				$this->metadata = $this->handle;
 			}
