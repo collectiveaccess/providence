@@ -367,7 +367,11 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		$vs_opts_md5 = caMakeCacheKeyFromOptions($pa_options);
 		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->get('editor_type')))) { return null; }
 		
-		$va_types = $t_instance->getTypeList();
+		if($t_instance instanceof BaseRelationshipModel) {
+			$va_types = $t_instance->getRelationshipTypes();
+		} else {
+			$va_types = $t_instance->getTypeList();	
+		}
 		
 		$o_db = $this->getDb();
 		$va_type_list = caMakeTypeIDList($this->get('editor_type'), array($pn_type_id), array('dontIncludeSubtypesInTypeRestriction' => true));
@@ -397,7 +401,8 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			if($qr_res->get('restriction_type_id')) {
-				$va_screens[$vn_screen_id][$vn_screen_locale_id]['typeRestrictions'][$qr_res->get('restriction_type_id')] = $va_types[$qr_res->get('restriction_type_id')]['name_plural'];
+				$vs_key_to_add = ($t_instance instanceof BaseRelationshipModel) ? 'type_code' : 'name_plural';
+				$va_screens[$vn_screen_id][$vn_screen_locale_id]['typeRestrictions'][$qr_res->get('restriction_type_id')] = $va_types[$qr_res->get('restriction_type_id')][$vs_key_to_add];
 			}
 		}
 		
