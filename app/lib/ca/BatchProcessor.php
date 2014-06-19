@@ -740,10 +740,19 @@
 								$va_names_to_match_copy = $va_names_to_match;
 								foreach($va_names_to_match_copy as $vs_name){
 									foreach($va_replacements_list as $vs_replacement_code => $va_replacement) {
-										if(isset($va_replacement['search']) && $va_replacement['search']) {
-											$vs_replace = caGetOption('replace',$va_replacement,'');
+										if(isset($va_replacement['search']) && is_array($va_replacement['search'])) {
+											$va_replace = caGetOption('replace',$va_replacement);
+											$va_search = array();
 
-											$vs_replacement_result = preg_replace('!'.$va_replacement['search'].'!', $vs_replace, $vs_name);
+											foreach($va_replacement['search'] as $vs_search){
+												$va_search[] = '!'.$vs_search.'!';
+											}
+
+											$vs_replacement_result = @preg_replace($va_search, $va_replace, $vs_name);
+
+											if(is_null($vs_replacement_result)) {
+												$o_log->logError(_t("There was an error in preg_replace while processing replacement %1.", $vs_replacement_code));
+											}
 
 											if($vs_replacement_result && strlen($vs_replacement_result)>0){
 												$o_log->logDebug(_t("The result for replacement with code %1 applied to value '%2' is '%3' and was added to the list of file names used for matching.", $vs_replacement_code, $vs_name, $vs_replacement_result));
@@ -755,8 +764,6 @@
 									}
 								}
 							}
-
-							file_put_contents("/tmp/replace", print_r($va_names_to_match,true),FILE_APPEND);
 							
 							foreach($va_names_to_match as $vs_match_name) {
 								if (preg_match('!'.$vs_regex.'!', $vs_match_name, $va_matches)) {
