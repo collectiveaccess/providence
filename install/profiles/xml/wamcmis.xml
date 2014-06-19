@@ -177,8 +177,8 @@
                 <item idno="arachnid_myriapod" enabled="1" default="0">
                   <labels>
                     <label locale="en_AU" preferred="1">
-                      <name_singular>Arachnid/Myriapod</name_singular>
-                      <name_plural>Arachnids/Myriapods</name_plural>
+                      <name_singular>Arachnid / Myriapod</name_singular>
+                      <name_plural>Arachnids / Myriapods</name_plural>
                     </label>
                   </labels>
                 </item>
@@ -347,14 +347,6 @@
                 <label locale="en_AU" preferred="1">
                   <name_singular>Invertebrate Palaeontology</name_singular>
                   <name_plural>Invertebrate Palaeontology</name_plural>
-                </label>
-              </labels>
-            </item>
-            <item idno="subfossil" enabled="1" default="0">
-              <labels>
-                <label locale="en_AU" preferred="1">
-                  <name_singular>Subfossil</name_singular>
-                  <name_plural>Subfossils</name_plural>
                 </label>
               </labels>
             </item>
@@ -932,6 +924,16 @@
               <name_plural>locations</name_plural>
             </label>
           </labels>
+          <items>
+            <item idno="site" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>site</name_singular>
+                  <name_plural>sites</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
         </item>
         <item idno="river" enabled="1" default="0">
           <labels>
@@ -980,6 +982,14 @@
             <label locale="en_AU" preferred="1">
               <name_singular>cultural area</name_singular>
               <name_plural>cultural areas</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="region" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Region</name_singular>
+              <name_plural>Regions</name_plural>
             </label>
           </labels>
         </item>
@@ -11742,6 +11752,20 @@
         </item>
       </items>
     </list>
+    <list code="geological_formation" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_AU">
+          <name>Geological Formation</name>
+        </label>
+      </labels>
+    </list>
+    <list code="geologic_time_scale" hierarchical="1" system="0" vocabulary="1" defaultSort="2">
+      <labels>
+        <label locale="en_AU">
+          <name>Geologic Time Scale</name>
+        </label>
+      </labels>
+    </list>
   </lists>
   <elementSets>
     <metadataElement code="set_description" datatype="Text">
@@ -14961,614 +14985,6 @@ Examples: "1 m", "3 ft"</description>
         <label locale="en_AU">
           <name>earliestEonOrLowestEonothem</name>
           <description>The full name of the earliest possible geochronologic eon or lowest chrono-stratigraphic eonothem or the informal name (Precambrian) attributable to the stratigraphic horizon from which the cataloged item was collected.</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">70</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction>
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_occurrences</table>
-          <type/>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="latestEonOrHighestEonothem" datatype="Text">
-      <labels>
-        <label locale="en_AU">
-          <name>latestEonOrHighestEonothem</name>
-          <description>The full name of the latest possible geochronologic eon or highest chrono-stratigraphic eonothem or the informal name (Precambrian) attributable to the stratigraphic horizon from which the cataloged item was collected.</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">70</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction>
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_occurrences</table>
-          <type/>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="earliestEraOrLowestErathem" datatype="Text">
-      <labels>
-        <label locale="en_AU">
-          <name>latestEonOrHighestEonothem</name>
-          <description>The full name of the earliest possible geochronologic era or lowest chronostratigraphic erathem attributable to the stratigraphic horizon from which the cataloged item was collected.</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">70</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction>
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_occurrences</table>
-          <type/>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="latestEraOrHighestErathem" datatype="Text">
-      <labels>
-        <label locale="en_AU">
-          <name>latestEraOrHighestErathem</name>
-          <description>The full name of the latest possible geochronologic era or highest chronostratigraphic erathem attributable to the stratigraphic horizon from which the cataloged item was collected.</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">70</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction>
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_occurrences</table>
-          <type/>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="earliestPeriodOrLowestSystem" datatype="Text">
-      <labels>
-        <label locale="en_AU">
-          <name>earliestPeriodOrLowestSystem</name>
-          <description>The full name of the earliest possible geochronologic period or lowest chronostratigraphic system attributable to the stratigraphic horizon from which the cataloged item was collected.</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">70</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction>
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_occurrences</table>
-          <type/>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="latestPeriodOrHighestSystem" datatype="Text">
-      <labels>
-        <label locale="en_AU">
-          <name>latestPeriodOrHighestSystem</name>
-          <description>The full name of the latest possible geochronologic period or highest chronostratigraphic system attributable to the stratigraphic horizon from which the cataloged item was collected.</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">70</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction>
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_occurrences</table>
-          <type/>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="earliestEpochOrLowestSeries" datatype="Text">
-      <labels>
-        <label locale="en_AU">
-          <name>earliestEpochOrLowestSeries</name>
-          <description>The full name of the earliest possible geochronologic epoch or lowest chronostratigraphic series attributable to the stratigraphic horizon from which the cataloged item was collected.</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">70</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction>
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_occurrences</table>
-          <type/>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="latestEpochOrHighestSeries" datatype="Text">
-      <labels>
-        <label locale="en_AU">
-          <name>latestEpochOrHighestSeries</name>
-          <description>The full name of the latest possible geochronologic epoch or highest chronostratigraphic series attributable to the stratigraphic horizon from which the cataloged item was collected.</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">70</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction>
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_occurrences</table>
-          <type/>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="earliestAgeOrLowestStage" datatype="Text">
-      <labels>
-        <label locale="en_AU">
-          <name>earliestAgeOrLowestStage</name>
-          <description>The full name of the earliest possible geochronologic age or lowest chronostratigraphic stage attributable to the stratigraphic horizon from which the cataloged item was collected.</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">70</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction>
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_occurrences</table>
-          <type/>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="latestAgeOrHighestStage" datatype="Text">
-      <labels>
-        <label locale="en_AU">
-          <name>latestAgeOrHighestStage</name>
-          <description>The full name of the latest possible geochronologic age or highest chronostratigraphic stage attributable to the stratigraphic horizon from which the cataloged item was collected.</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">70</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction>
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_occurrences</table>
-          <type/>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="lowestBiostratigraphicZone" datatype="Text">
-      <labels>
-        <label locale="en_AU">
-          <name>lowestBiostratigraphicZone</name>
-          <description>The full name of the lowest possible geological biostratigraphic zone of the stratigraphic horizon from which the cataloged item was collected.</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">70</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction>
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_occurrences</table>
-          <type/>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="highestBiostratigraphicZone" datatype="Text">
-      <labels>
-        <label locale="en_AU">
-          <name>highestBiostratigraphicZone</name>
-          <description>The full name of the highest possible geological biostratigraphic zone of the stratigraphic horizon from which the cataloged item was collected.</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">70</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction>
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_occurrences</table>
-          <type/>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="lithostratigraphicTerms" datatype="Text">
-      <labels>
-        <label locale="en_AU">
-          <name>lithostratigraphicTerms</name>
-          <description>The combination of all litho-stratigraphic names for the rock from which the cataloged item was collected.</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">70</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction>
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_occurrences</table>
-          <type/>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="group" datatype="Text">
-      <labels>
-        <label locale="en_AU">
-          <name>group</name>
-          <description>The full name of the lithostratigraphic group from which the cataloged item was collected.</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">70</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction>
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_occurrences</table>
-          <type/>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="formation" datatype="Text">
-      <labels>
-        <label locale="en_AU">
-          <name>formation</name>
-          <description>The full name of the lithostratigraphic formation from which the cataloged item was collected.</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">70</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction>
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_occurrences</table>
-          <type/>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="member" datatype="Text">
-      <labels>
-        <label locale="en_AU">
-          <name>member</name>
-          <description>The full name of the lithostratigraphic member from which the cataloged item was collected.</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">70</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction>
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_occurrences</table>
-          <type/>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_collections</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="bed" datatype="Text">
-      <labels>
-        <label locale="en_AU">
-          <name>bed</name>
-          <description>The full name of the lithostratigraphic bed from which the cataloged item was collected.</description>
         </label>
       </labels>
       <settings>
@@ -19128,6 +18544,65 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="GeologicalContext" datatype="Container">
+      <labels>
+        <label locale="en_AU">
+          <name>Geological Context</name>
+          <description>The category of information pertaining to a location within a geological context, such as stratigraphy.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="lineBreakAfterNumberOfElements">2</setting>
+        <setting name="canBeUsedInSearchForm">0</setting>
+        <setting name="canBeUsedInDisplay">0</setting>
+      </settings>
+      <elements>
+        <metadataElement code="stratigraphy" datatype="List" list="geologic_time_scale">
+          <labels>
+            <label locale="en_AU">
+              <name>Stratigraphy</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="listWidth">40</setting>
+            <setting name="listHeight">650px</setting>
+            <setting name="doesNotTakeLocale">1</setting>
+            <setting name="requireValue">0</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="render">horiz_hierbrowser_with_search</setting>
+            <setting name="maxColumns">3</setting>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+            <setting name="displayTemplate"/>
+            <setting name="displayDelimiter">,</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="formation" datatype="List" list="geological_formation">
+          <labels>
+            <label locale="en_AU">
+              <name>Formation</name>
+              <description>The full name of the lithostratigraphic formation from which the cataloged item was collected.</description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="listWidth">30</setting>
+            <setting name="listHeight">200px</setting>
+          </settings>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>vertebrate_palaeontology</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
   </elementSets>
   <userInterfaces>
     <userInterface code="loan_cataloguers_ui" type="ca_loans">
@@ -20247,6 +19722,11 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
                 <setting name="list_format">bubbles</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="display_template">^ca_objects.preferred_labels</setting>
+                <setting name="readonly"/>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
               </settings>
             </placement>
             <placement code="ca_storage_locations2">
@@ -20257,6 +19737,12 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
                 <setting name="display_template">^ca_storage_locations.preferred_labels</setting>
                 <setting name="useHierarchicalBrowser">1</setting>
                 <setting name="hierarchicalBrowserHeight">200px</setting>
+                <setting name="readonly"/>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">1</setting>
               </settings>
             </placement>
             <placement code="ca_loans3">
@@ -20265,6 +19751,11 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
                 <setting name="list_format">bubbles</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="display_template">^ca_loans.preferred_labels</setting>
+                <setting name="readonly"/>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
               </settings>
             </placement>
             <placement code="ca_movements4">
@@ -20273,11 +19764,33 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
                 <setting name="list_format">bubbles</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="display_template">^ca_movements.preferred_labels</setting>
+                <setting name="readonly"/>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="showCurrentOnly">1</setting>
+              </settings>
+            </placement>
+            <placement code="ca_occurrences5">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="label" locale="en_AU">Conservation Jobs</setting>
+                <setting name="readonly"/>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="display_template">^ca_occurrences.preferred_labels</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
               </settings>
             </placement>
             <placement code="ca_sets5">
               <bundle>ca_sets</bundle>
-              <settings/>
+              <settings>
+                <setting name="readonly"/>
+              </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -24533,22 +24046,6 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
         <permission table="ca_objects" bundle="ca_attribute_maxDistAboveSurface" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_pointRadiusSpatialFit" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_earliestEonOrLowestEonothem" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_latestEonOrHighestEonothem" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_earliestEraOrLowestErathem" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_latestEraOrHighestErathem" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_earliestPeriodOrLowestSystem" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_latestPeriodOrHighestSystem" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_earliestEpochOrLowestSeries" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_latestEpochOrHighestSeries" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_earliestAgeOrLowestStage" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_latestAgeOrHighestStage" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_lowestBiostratigraphicZone" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_highestBiostratigraphicZone" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_lithostratigraphicTerms" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_group" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_formation" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_member" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_bed" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_relationship_info" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_accessionDate" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_dctermscreated" access="edit"/>
@@ -24726,22 +24223,6 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
         <permission table="ca_occurrences" bundle="ca_attribute_locationRemarks" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_pointRadiusSpatialFit" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_earliestEonOrLowestEonothem" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_latestEonOrHighestEonothem" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_earliestEraOrLowestErathem" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_latestEraOrHighestErathem" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_earliestPeriodOrLowestSystem" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_latestPeriodOrHighestSystem" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_earliestEpochOrLowestSeries" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_latestEpochOrHighestSeries" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_earliestAgeOrLowestStage" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_latestAgeOrHighestStage" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_lowestBiostratigraphicZone" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_highestBiostratigraphicZone" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_lithostratigraphicTerms" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_group" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_formation" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_member" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_bed" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_dateIdentified" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_identificationRemarks" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_identificationQualifier" access="edit"/>
@@ -24832,22 +24313,6 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
         <permission table="ca_collections" bundle="ca_attribute_maxDistAboveSurface" access="edit"/>
         <permission table="ca_collections" bundle="ca_attribute_pointRadiusSpatialFit" access="edit"/>
         <permission table="ca_collections" bundle="ca_attribute_earliestEonOrLowestEonothem" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_latestEonOrHighestEonothem" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_earliestEraOrLowestErathem" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_latestEraOrHighestErathem" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_earliestPeriodOrLowestSystem" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_latestPeriodOrHighestSystem" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_earliestEpochOrLowestSeries" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_latestEpochOrHighestSeries" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_earliestAgeOrLowestStage" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_latestAgeOrHighestStage" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_lowestBiostratigraphicZone" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_highestBiostratigraphicZone" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_lithostratigraphicTerms" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_group" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_formation" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_member" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_bed" access="edit"/>
         <permission table="ca_collections" bundle="ca_object_representations" access="edit"/>
         <permission table="ca_collections" bundle="ca_entities" access="edit"/>
         <permission table="ca_collections" bundle="ca_objects" access="edit"/>
@@ -25242,22 +24707,6 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
         <permission table="ca_objects" bundle="ca_attribute_maxDistAboveSurface" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_pointRadiusSpatialFit" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_earliestEonOrLowestEonothem" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_latestEonOrHighestEonothem" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_earliestEraOrLowestErathem" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_latestEraOrHighestErathem" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_earliestPeriodOrLowestSystem" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_latestPeriodOrHighestSystem" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_earliestEpochOrLowestSeries" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_latestEpochOrHighestSeries" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_earliestAgeOrLowestStage" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_latestAgeOrHighestStage" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_lowestBiostratigraphicZone" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_highestBiostratigraphicZone" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_lithostratigraphicTerms" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_group" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_formation" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_member" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_bed" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_relationship_info" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_accessionDate" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_dctermscreated" access="edit"/>
@@ -25436,22 +24885,6 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
         <permission table="ca_occurrences" bundle="ca_attribute_locationRemarks" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_pointRadiusSpatialFit" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_earliestEonOrLowestEonothem" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_latestEonOrHighestEonothem" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_earliestEraOrLowestErathem" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_latestEraOrHighestErathem" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_earliestPeriodOrLowestSystem" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_latestPeriodOrHighestSystem" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_earliestEpochOrLowestSeries" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_latestEpochOrHighestSeries" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_earliestAgeOrLowestStage" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_latestAgeOrHighestStage" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_lowestBiostratigraphicZone" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_highestBiostratigraphicZone" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_lithostratigraphicTerms" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_group" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_formation" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_member" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_bed" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_dateIdentified" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_identificationRemarks" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_identificationQualifier" access="edit"/>
@@ -25542,22 +24975,6 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
         <permission table="ca_collections" bundle="ca_attribute_maxDistAboveSurface" access="edit"/>
         <permission table="ca_collections" bundle="ca_attribute_pointRadiusSpatialFit" access="edit"/>
         <permission table="ca_collections" bundle="ca_attribute_earliestEonOrLowestEonothem" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_latestEonOrHighestEonothem" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_earliestEraOrLowestErathem" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_latestEraOrHighestErathem" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_earliestPeriodOrLowestSystem" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_latestPeriodOrHighestSystem" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_earliestEpochOrLowestSeries" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_latestEpochOrHighestSeries" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_earliestAgeOrLowestStage" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_latestAgeOrHighestStage" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_lowestBiostratigraphicZone" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_highestBiostratigraphicZone" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_lithostratigraphicTerms" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_group" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_formation" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_member" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_bed" access="edit"/>
         <permission table="ca_collections" bundle="ca_object_representations" access="edit"/>
         <permission table="ca_collections" bundle="ca_entities" access="edit"/>
         <permission table="ca_collections" bundle="ca_objects" access="edit"/>
@@ -25999,22 +25416,6 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
         <permission table="ca_objects" bundle="ca_attribute_maxDistAboveSurface" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_pointRadiusSpatialFit" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_earliestEonOrLowestEonothem" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_latestEonOrHighestEonothem" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_earliestEraOrLowestErathem" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_latestEraOrHighestErathem" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_earliestPeriodOrLowestSystem" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_latestPeriodOrHighestSystem" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_earliestEpochOrLowestSeries" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_latestEpochOrHighestSeries" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_earliestAgeOrLowestStage" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_latestAgeOrHighestStage" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_lowestBiostratigraphicZone" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_highestBiostratigraphicZone" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_lithostratigraphicTerms" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_group" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_formation" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_member" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_bed" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_relationship_info" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_accessionDate" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_dctermscreated" access="edit"/>
@@ -26193,22 +25594,6 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
         <permission table="ca_occurrences" bundle="ca_attribute_locationRemarks" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_pointRadiusSpatialFit" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_earliestEonOrLowestEonothem" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_latestEonOrHighestEonothem" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_earliestEraOrLowestErathem" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_latestEraOrHighestErathem" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_earliestPeriodOrLowestSystem" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_latestPeriodOrHighestSystem" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_earliestEpochOrLowestSeries" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_latestEpochOrHighestSeries" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_earliestAgeOrLowestStage" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_latestAgeOrHighestStage" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_lowestBiostratigraphicZone" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_highestBiostratigraphicZone" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_lithostratigraphicTerms" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_group" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_formation" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_member" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_bed" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_dateIdentified" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_identificationRemarks" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_identificationQualifier" access="edit"/>
@@ -26299,22 +25684,6 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
         <permission table="ca_collections" bundle="ca_attribute_maxDistAboveSurface" access="edit"/>
         <permission table="ca_collections" bundle="ca_attribute_pointRadiusSpatialFit" access="edit"/>
         <permission table="ca_collections" bundle="ca_attribute_earliestEonOrLowestEonothem" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_latestEonOrHighestEonothem" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_earliestEraOrLowestErathem" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_latestEraOrHighestErathem" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_earliestPeriodOrLowestSystem" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_latestPeriodOrHighestSystem" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_earliestEpochOrLowestSeries" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_latestEpochOrHighestSeries" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_earliestAgeOrLowestStage" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_latestAgeOrHighestStage" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_lowestBiostratigraphicZone" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_highestBiostratigraphicZone" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_lithostratigraphicTerms" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_group" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_formation" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_member" access="edit"/>
-        <permission table="ca_collections" bundle="ca_attribute_bed" access="edit"/>
         <permission table="ca_collections" bundle="ca_object_representations" access="edit"/>
         <permission table="ca_collections" bundle="ca_entities" access="edit"/>
         <permission table="ca_collections" bundle="ca_objects" access="edit"/>
@@ -26671,7 +26040,6 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
         <permission table="ca_objects" bundle="ca_attribute_associatedSpecimen" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_associatedTaxa" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_audit" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_bed" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_behavior" access="edit"/>
         <permission table="ca_objects" bundle="ca_collections" access="edit"/>
         <permission table="ca_objects" bundle="ca_commerce_order_history" access="edit"/>
@@ -26708,24 +26076,17 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
         <permission table="ca_objects" bundle="ca_attribute_documentation" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_donation_date" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_dynamicProperties" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_earliestAgeOrLowestStage" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_earliestEonOrLowestEonothem" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_earliestEpochOrLowestSeries" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_earliestEraOrLowestErathem" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_earliestPeriodOrLowestSystem" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_establishmentMeans" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_eventDate" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_eventRemarks" access="edit"/>
         <permission table="ca_objects" bundle="extent" access="edit"/>
         <permission table="ca_objects" bundle="extent_units" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_external_link" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_formation" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_francisStStore" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_geonames" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_group" access="edit"/>
         <permission table="ca_objects" bundle="hierarchy_location" access="edit"/>
         <permission table="ca_objects" bundle="hierarchy_navigation" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_highestBiostratigraphicZone" access="edit"/>
         <permission table="ca_objects" bundle="idno" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_individualCount" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_informationWithheld" access="edit"/>
@@ -26735,18 +26096,10 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
         <permission table="ca_objects" bundle="item_status_id" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_languageAffiliation" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_languageName" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_latestAgeOrHighestStage" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_latestEonOrHighestEonothem" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_latestEpochOrHighestSeries" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_latestEraOrHighestErathem" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_latestPeriodOrHighestSystem" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_lifeStage" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_lithostratigraphicTerms" access="edit"/>
         <permission table="ca_objects" bundle="locale_id" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_lowestBiostratigraphicZone" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_maxDistAboveSurface" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_maximumElevationInMeters" access="edit"/>
-        <permission table="ca_objects" bundle="ca_attribute_member" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_minDistAboveSurface" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_minimumElevationInMeters" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_multipleMounts" access="edit"/>
@@ -26885,7 +26238,6 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
         <permission table="ca_occurrences" bundle="ca_attribute_WordReference" access="none"/>
         <permission table="ca_occurrences" bundle="access" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_associatedSequences" access="none"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_bed" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_behavior" access="none"/>
         <permission table="ca_occurrences" bundle="ca_collections" access="none"/>
         <permission table="ca_occurrences" bundle="ca_entities" access="none"/>
@@ -26914,24 +26266,17 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
         <permission table="ca_occurrences" bundle="ca_attribute_disposition" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_distanceFromLocality" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_dynamicProperties" access="none"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_earliestAgeOrLowestStage" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_earliestEonOrLowestEonothem" access="none"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_earliestEpochOrLowestSeries" access="none"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_earliestEraOrLowestErathem" access="none"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_earliestPeriodOrLowestSystem" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_establishmentMeans" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_etAl" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_eventDate" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_eventRemarks" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_eventTime" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_external_link" access="none"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_formation" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_georeference" access="none"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_group" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_habitat" access="none"/>
         <permission table="ca_occurrences" bundle="hierarchy_location" access="none"/>
         <permission table="ca_occurrences" bundle="hierarchy_navigation" access="none"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_highestBiostratigraphicZone" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_idVerificationStatus" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_identificationQualifier" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_identificationRemarks" access="none"/>
@@ -26940,21 +26285,13 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
         <permission table="ca_occurrences" bundle="ca_attribute_institutionCode" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_institutionID" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_internal_notes" access="none"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_latestAgeOrHighestStage" access="none"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_latestEonOrHighestEonothem" access="none"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_latestEpochOrHighestSeries" access="none"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_latestEraOrHighestErathem" access="none"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_latestPeriodOrHighestSystem" access="none"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_lithostratigraphicTerms" access="none"/>
         <permission table="ca_occurrences" bundle="locale_id" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_locationRemarks" access="none"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_lowestBiostratigraphicZone" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_maxDistAboveSurface" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_maximumDepthInMeters" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_maximumElevationInMeters" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_measurementOrFact" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_media" access="none"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_member" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_minDistAboveSurface" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_minimumDepthInMeters" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_minimumElevationInMeters" access="none"/>
@@ -26990,7 +26327,6 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
         <permission table="ca_occurrences" bundle="ca_attribute_verbatimElevation" access="none"/>
         <permission table="ca_collections" bundle="access" access="read"/>
         <permission table="ca_collections" bundle="acl_inherit_from_parent" access="read"/>
-        <permission table="ca_collections" bundle="ca_attribute_bed" access="read"/>
         <permission table="ca_collections" bundle="ca_collections" access="read"/>
         <permission table="ca_collections" bundle="ca_entities" access="read"/>
         <permission table="ca_collections" bundle="ca_list_items" access="read"/>
@@ -27015,33 +26351,18 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
         <permission table="ca_collections" bundle="ca_attribute_description" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_description_source" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_dynamicProperties" access="read"/>
-        <permission table="ca_collections" bundle="ca_attribute_earliestAgeOrLowestStage" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_earliestEonOrLowestEonothem" access="read"/>
-        <permission table="ca_collections" bundle="ca_attribute_earliestEpochOrLowestSeries" access="read"/>
-        <permission table="ca_collections" bundle="ca_attribute_earliestEraOrLowestErathem" access="read"/>
-        <permission table="ca_collections" bundle="ca_attribute_earliestPeriodOrLowestSystem" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_external_link" access="read"/>
-        <permission table="ca_collections" bundle="ca_attribute_formation" access="read"/>
-        <permission table="ca_collections" bundle="ca_attribute_group" access="read"/>
         <permission table="ca_collections" bundle="hierarchy_location" access="read"/>
         <permission table="ca_collections" bundle="hierarchy_navigation" access="read"/>
-        <permission table="ca_collections" bundle="ca_attribute_highestBiostratigraphicZone" access="read"/>
         <permission table="ca_collections" bundle="idno" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_informationWithheld" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_institutionCode" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_institutionID" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_internal_notes" access="read"/>
-        <permission table="ca_collections" bundle="ca_attribute_latestAgeOrHighestStage" access="read"/>
-        <permission table="ca_collections" bundle="ca_attribute_latestEonOrHighestEonothem" access="read"/>
-        <permission table="ca_collections" bundle="ca_attribute_latestEpochOrHighestSeries" access="read"/>
-        <permission table="ca_collections" bundle="ca_attribute_latestEraOrHighestErathem" access="read"/>
-        <permission table="ca_collections" bundle="ca_attribute_latestPeriodOrHighestSystem" access="read"/>
-        <permission table="ca_collections" bundle="ca_attribute_lithostratigraphicTerms" access="read"/>
         <permission table="ca_collections" bundle="locale_id" access="read"/>
-        <permission table="ca_collections" bundle="ca_attribute_lowestBiostratigraphicZone" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_maxDistAboveSurface" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_maximumElevationInMeters" access="read"/>
-        <permission table="ca_collections" bundle="ca_attribute_member" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_minDistAboveSurface" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_minimumElevationInMeters" access="read"/>
         <permission table="ca_collections" bundle="nonpreferred_labels" access="read"/>
