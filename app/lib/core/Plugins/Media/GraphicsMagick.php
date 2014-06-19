@@ -1056,7 +1056,7 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 			$va_output = array();
 			exec($this->ops_graphicsmagick_path." identify -format '%[IPTC:".$vs_tag_code."]' ".caEscapeShellArg($ps_filepath), $va_output, $vn_return);
 			if ($va_output[0]) {
-				$va_iptc[str_replace(":", ",", $vs_tag_code).' ['.$vs_tag_name.']'] = trim($va_output[0]);
+				$va_iptc[$vs_tag_name] = trim($va_output[0]);
 			}
 		}
 			
