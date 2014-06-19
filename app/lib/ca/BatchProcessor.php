@@ -568,6 +568,9 @@
  			$vn_object_status 					= $pa_options['ca_objects_status'];
  			$vn_object_representation_status 	= $pa_options['ca_object_representations_status'];
  			
+ 			$vn_object_mapping_id				= $pa_options['ca_objects_mapping_id'];
+ 			$vn_object_representation_mapping_id= $pa_options['ca_object_representations_mapping_id'];
+ 			
  			$vs_idno_mode 						= $pa_options['idnoMode'];
  			$vs_idno 							= $pa_options['idno'];
  			
@@ -938,6 +941,14 @@
 				}
 				
 				if ($t_object->getPrimaryKey()) {
+					// Perform import of embedded metadata (if required)
+					if ($vn_object_mapping_id) {
+						ca_data_importers::importDataFromSource($vs_directory.'/'.$f, $vn_object_mapping_id, array('logLevel' => $vs_log_level, 'format' => 'exif', 'forceImportForPrimaryKeys' => array($t_object->getPrimaryKey(), 'transaction' => $o_trans)));
+					}	
+					if ($vn_object_representation_mapping_id) {
+						ca_data_importers::importDataFromSource($vs_directory.'/'.$f, $vn_object_representation_mapping_id, array('logLevel' => $vs_log_level, 'format' => 'exif', 'forceImportForPrimaryKeys' => array($t_new_rep->getPrimaryKey()), 'transaction' => $o_trans));
+					}					
+					
 					$va_notices[$t_object->getPrimaryKey()] = array(
 						'idno' => $t_object->get($t_object->getProperty('ID_NUMBERING_ID_FIELD')),
 						'label' => $t_object->getLabelForDisplay(),
