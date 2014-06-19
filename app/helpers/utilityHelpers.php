@@ -1884,14 +1884,44 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
+	 * Creates new array with all keys forced to lowercase.
 	 *
+	 * @param array $pa_array
+	 * @param array $pa_options No options are supported (yet)
+	 *
+	 * @return array
+	 */
+	function caMakeArrayKeysLowercase($pa_array, $pa_options=null) {
+		if (!is_array($pa_array)) { return $pa_array; }
+		$va_new_array = array();
+		foreach($pa_array as $vs_k => $vm_v) {
+			$vs_k_lc = strtolower($vs_k);
+			if (is_array($vm_v)) {
+				$va_new_array[$vs_k_lc] = caMakeArrayKeysLowercase($vm_v, $pa_options);
+			} else {
+				$va_new_array[$vs_k_lc] = $vm_v;
+			}
+		}
+		return $va_new_array;
+	}
+	# ----------------------------------------
+	/**
+	 * Check if array is associative (text or mixed indices)
+	 *
+	 * @param array $pa_array
+	 *
+	 * @return bool
 	 */
 	function caIsAssociativeArray($pa_array) {
 	  return (bool)count(array_filter(array_keys($pa_array), 'is_string'));
 	}
 	# ----------------------------------------
 	/**
+	 * Check if array is indexed (numeric indices)
 	 *
+	 * @param array $pa_array
+	 *
+	 * @return bool
 	 */
 	function caIsIndexedArray($pa_array) {
 		return (is_array($pa_array) && !caIsAssociativeArray($pa_array));

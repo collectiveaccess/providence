@@ -568,6 +568,9 @@
  			$vn_object_status 					= $pa_options['ca_objects_status'];
  			$vn_object_representation_status 	= $pa_options['ca_object_representations_status'];
  			
+ 			$vn_object_mapping_id				= $pa_options['ca_objects_mapping_id'];
+ 			$vn_object_representation_mapping_id= $pa_options['ca_object_representations_mapping_id'];
+ 			
  			$vs_idno_mode 						= $pa_options['idnoMode'];
  			$vs_idno 							= $pa_options['idno'];
  			
@@ -664,6 +667,10 @@
  			// Get list of regex packages that user can use to extract object idno's from filenames
 			$va_regex_list = $po_request->config->getAssoc('mediaFilenameToObjectIdnoRegexes');
  			if (!is_array($va_regex_list)) { $va_regex_list = array(); }
+
+			// Get list of replacements that user can use to transform file names to match object idnos
+			$va_replacements_list = $po_request->config->getAssoc('mediaFilenameReplacements');
+ 			if (!is_array($va_replacements_list)) { $va_replacements_list = array(); } 			
  			
  			// Get list of files (or file name patterns) to skip
  			$va_skip_list = preg_split("![\r\n]+!", $vs_skip_file_list);
@@ -724,8 +731,38 @@
 								default:
 								case 'FILE_NAME':
 									$va_names_to_match = array($f);
-									$o_log->logDebug(_t("Trying to match on file name '%1'", $d, $f));
+									$o_log->logDebug(_t("Trying to match on file name '%1'", $f));
 									break;
+							}
+
+							// are there any replacements? if so, try to match each element in $va_names_to_match AND all results of the replacements
+							if(is_array($va_replacements_list) && (sizeof($va_replacements_list)>0)) {
+								$va_names_to_match_copy = $va_names_to_match;
+								foreach($va_names_to_match_copy as $vs_name){
+									foreach($va_replacements_list as $vs_replacement_code => $va_replacement) {
+										if(isset($va_replacement['search']) && is_array($va_replacement['search'])) {
+											$va_replace = caGetOption('replace',$va_replacement);
+											$va_search = array();
+
+											foreach($va_replacement['search'] as $vs_search){
+												$va_search[] = '!'.$vs_search.'!';
+											}
+
+											$vs_replacement_result = @preg_replace($va_search, $va_replace, $vs_name);
+
+											if(is_null($vs_replacement_result)) {
+												$o_log->logError(_t("There was an error in preg_replace while processing replacement %1.", $vs_replacement_code));
+											}
+
+											if($vs_replacement_result && strlen($vs_replacement_result)>0){
+												$o_log->logDebug(_t("The result for replacement with code %1 applied to value '%2' is '%3' and was added to the list of file names used for matching.", $vs_replacement_code, $vs_name, $vs_replacement_result));
+												$va_names_to_match[] = $vs_replacement_result;
+											}
+										} else {
+											$o_log->logDebug(_t("Skipped replacement %1 because no search expression was defined.", $vs_replacement_code));
+										}
+									}
+								}
 							}
 							
 							foreach($va_names_to_match as $vs_match_name) {
@@ -911,6 +948,14 @@
 				}
 				
 				if ($t_object->getPrimaryKey()) {
+					// Perform import of embedded metadata (if required)
+					if ($vn_object_mapping_id) {
+						ca_data_importers::importDataFromSource($vs_directory.'/'.$f, $vn_object_mapping_id, array('logLevel' => $vs_log_level, 'format' => 'exif', 'forceImportForPrimaryKeys' => array($t_object->getPrimaryKey(), 'transaction' => $o_trans)));
+					}	
+					if ($vn_object_representation_mapping_id) {
+						ca_data_importers::importDataFromSource($vs_directory.'/'.$f, $vn_object_representation_mapping_id, array('logLevel' => $vs_log_level, 'format' => 'exif', 'forceImportForPrimaryKeys' => array($t_new_rep->getPrimaryKey()), 'transaction' => $o_trans));
+					}					
+					
 					$va_notices[$t_object->getPrimaryKey()] = array(
 						'idno' => $t_object->get($t_object->getProperty('ID_NUMBERING_ID_FIELD')),
 						'label' => $t_object->getLabelForDisplay(),
