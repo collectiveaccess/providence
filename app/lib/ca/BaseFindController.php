@@ -89,8 +89,8 @@
  			
  			// Make sure user has access to at least one type
  			if ((method_exists($t_model, 'getTypeFieldName')) && $t_model->getTypeFieldName() && (!is_array($va_types = caGetTypeListForUser($this->ops_tablename, array('access' => __CA_BUNDLE_ACCESS_READONLY__))) || !sizeof($va_types))) {
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
+ 				//$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
+ 				//return;
  			}
 			
 			$va_display_list = array();
