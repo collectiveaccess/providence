@@ -670,7 +670,34 @@
 
 			// Get list of replacements that user can use to transform file names to match object idnos
 			$va_replacements_list = $po_request->config->getAssoc('mediaFilenameReplacements');
- 			if (!is_array($va_replacements_list)) { $va_replacements_list = array(); } 			
+ 			if (!is_array($va_replacements_list)) { $va_replacements_list = array(); }
+
+ 			// check if replacements are safe to use with preg_replace
+ 			foreach($va_replacements_list as $vs_replacement_code => $va_replacement) {
+ 				if(!isset($va_replacement['search']) || !is_array($va_replacement['search'])) {
+ 					$o_log->logError(_t("List of search expressions for replacement %1 is invalid. Check your configuration."));
+ 					unset($va_replacements_list[$vs_replacement_code]);
+ 					continue;
+ 				}
+ 				if(!isset($va_replacement['replace']) || !is_array($va_replacement['replace'])) {
+ 					$o_log->logError(_t("List of replacement patterns for replacement %1 is invalid. Check your configuration."));
+ 					unset($va_replacements_list[$vs_replacement_code]);
+ 					continue;
+ 				}
+ 				if(sizeof($va_replacement['search']) != sizeof($va_replacement['replace'])) {
+ 					$o_log->logError(_t("The search and replacement pattern lists for replacement %1 have different lengths. Check your configuration."));
+ 					unset($va_replacements_list[$vs_replacement_code]);
+ 					continue;
+ 				}
+
+ 				foreach($va_replacement['search'] as $vs_search){
+ 					if (@preg_match('!'.$vs_search.'!', "Just a test") === false) {
+						$o_log->logError(_t("One of the search patterns for replacement %1 is not a valid PCRE. Check your configuration."));
+						unset($va_replacements_list[$vs_replacement_code]);
+ 						continue(2);
+					}
+ 				}
+ 			}
  			
  			// Get list of files (or file name patterns) to skip
  			$va_skip_list = preg_split("![\r\n]+!", $vs_skip_file_list);
@@ -793,7 +820,7 @@
 												$va_notices[$vs_relative_directory.'/'.$vs_match_name.'_match'] = array(
 													'idno' => $t_object->get($t_object->getProperty('ID_NUMBERING_ID_FIELD')),
 													'label' => $t_object->getLabelForDisplay(),
-													'message' => $vs_msg = _t('Matched media %1 from %2 to object using %2', $f, $vs_relative_directory, $vs_regex_name),
+													'message' => $vs_msg = _t('Matched media %1 from %2 to object using %3', $f, $vs_relative_directory, $vs_regex_name),
 													'status' => 'MATCHED'
 												);
 												$o_log->logInfo($vs_msg);
