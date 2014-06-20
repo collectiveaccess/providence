@@ -258,7 +258,7 @@
 							$vs_units = Zend_Measure_Length::KILOMETER;
 							break;
 						default:	
-							$this->postError(1970, _t('%1 is not a valid unit of measurement', $va_matches[2]), 'LengthAttributeValue->parseValue()');
+							$this->postError(1970, _t('%1 is not a valid unit of length [%2]', $va_matches[2], $ps_value), 'LengthAttributeValue->parseValue()');
 							return false;
 							break;
 					}

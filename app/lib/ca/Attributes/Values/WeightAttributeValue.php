@@ -236,7 +236,7 @@
  						$vs_units = Zend_Measure_Weight::STONE;
  						break;
  					default:
- 						$this->postError(1970, _t('%1 is not a valid unit of measurement', $va_matches[2]), 'WeightAttributeValue->parseValue()');
+ 						$this->postError(1970, _t('%1 is not a valid unit of weight [%2]', $va_matches[2], $ps_value), 'WeightAttributeValue->parseValue()');
  						return false;
  						break;
  				}

@@ -1013,11 +1013,56 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 		$o_xmp = new XMPParser();
 		if ($o_xmp->parse($ps_filepath)) {
 			if (is_array($va_xmp_metadata = $o_xmp->getMetadata()) && sizeof($va_xmp_metadata)) {
-				$va_metadata['XMP'] = $va_xmp_metadata;
+				$va_metadata['XMP'] = array();
+				foreach($va_xmp_metadata as $vs_xmp_tag => $va_xmp_values) {
+					 $va_metadata['XMP'][$vs_xmp_tag] = join('; ',$va_xmp_values);
+				}
+				
 			}
 		}
 			
-		// GM doesn't seem to support DPX or IPTC metadata extraction :-(
+		exec($this->ops_graphicsmagick_path." identify -format '%[DPX:*]' ".caEscapeShellArg($ps_filepath), $va_output, $vn_return);
+		if ($va_output[0]) { $va_metadata['DPX'] = $va_output; }
+			
+		$va_iptc_tags = array(
+			'credit' => '2:110',
+			'byline' => '2:080',
+			'date_created' => '2:055',
+			'time_created' => '2:060',
+			'caption' => '2:120',
+			'copyright' => '2:116',
+			'title' => '2:005',
+			'genre' => '2:004',
+			'urgency' => '2:010',
+			'category' => '2:015',
+			'supplemental category' => '2:020',
+			'keywords' => '2:025',
+			'special_instructions' => '2:040',
+			'byline' => '2:080',
+			'bylinetitle' => '2:085',
+			'city' => '2:090',
+			'location' => '2:092',
+			'province' => '2:095',
+			'countrycode' => '2:100',
+			'countryname' => '2:101',
+			'headline' => '2:105',
+			'credit' => '2:110',
+			'source' => '2:115',
+			'description writer' => '2:122'
+		);
+			
+		$va_iptc = array();
+		foreach($va_iptc_tags as $vs_tag_name => $vs_tag_code) {
+			$va_output = array();
+			exec($this->ops_graphicsmagick_path." identify -format '%[IPTC:".$vs_tag_code."]' ".caEscapeShellArg($ps_filepath), $va_output, $vn_return);
+			if ($va_output[0]) {
+				$va_iptc[$vs_tag_name] = trim($va_output[0]);
+			}
+		}
+			
+		if (sizeof($va_iptc)) {
+			$va_metadata['IPTC'] = $va_iptc;
+		}
 			
 		return $va_metadata;
 	}

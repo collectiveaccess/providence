@@ -3340,10 +3340,8 @@ span.hierarchyBrowserCurrentSelectionText {
 
 div.hierarchyBrowserSearchBar {
 	float: right;
-	padding: 0px;
-	margin-bottom: 5px;
-	margin-top: 5px;
-	padding-right: 27px;
+	padding: 0;
+	margin: 5px 0 5px 10px;
 }
 
 input.hierarchyBrowserSearchBar {
