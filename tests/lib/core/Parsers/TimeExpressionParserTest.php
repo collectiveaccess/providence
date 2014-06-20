@@ -223,6 +223,19 @@
 			$this->assertEquals($va_parse[1], "1945.050823595900");
 		}
 
+		public function testHistoricDayDateWithUmlautForGermanLocale() {
+			$o_tep = new TimeExpressionParser();
+			$o_tep->setLanguage('de_DE');
+			$vb_res = $o_tep->parse('11. März 1870');
+			$this->assertEquals($vb_res, true);
+			$va_parse = $o_tep->getHistoricTimestamps();
+		
+			$this->assertEquals($va_parse['start'], "1870.031100000000");
+			$this->assertEquals($va_parse['end'], "1870.031123595900");
+			$this->assertEquals($va_parse[0], "1870.031100000000");
+			$this->assertEquals($va_parse[1], "1870.031123595900");
+		}
+
 		public function testCenturyDatesForGermanLocale() {
 			$o_tep = new TimeExpressionParser();
 			$o_tep->setLanguage('de_DE');
