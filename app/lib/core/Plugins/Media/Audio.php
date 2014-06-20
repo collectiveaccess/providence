@@ -611,8 +611,8 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		if ($mimetype == "audio/mpeg") {
 			// try to write getID3 tags (if set)
 			if (is_array($pa_options) && is_array($pa_options) && sizeof($pa_options) > 0) {
-				require_once('parsers/getid3/getid3.php');
-				require_once('parsers/getid3/write.php');
+				require_once(__CA_LIB_DIR__.'/core/Parsers/getid3/getid3.php');
+				require_once(__CA_LIB_DIR__.'/core/Parsers/getid3/write.php');
 				$o_getID3 = new getID3();
 				$o_tagwriter = new getid3_writetags();
 				$o_tagwriter->filename   = $filepath.".".$ext;
