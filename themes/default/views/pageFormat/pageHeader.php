@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -65,6 +65,15 @@
 	if (file_exists($this->request->getThemeDirectoryPath().'/css/local.css')) {
 		print '<link rel="stylesheet" href="'.$this->request->getThemeUrlPath().'/css/local.css" type="text/css" media="screen" />
 ';
+	}
+	
+	//
+	// Pull in JS and CSS for debug bar
+	// 
+	if(Debug::isEnabled()) {
+		$o_debugbar_renderer = Debug::$bar->getJavascriptRenderer();
+		$o_debugbar_renderer->setBaseUrl(__CA_URL_ROOT__.$o_debugbar_renderer->getBaseUrl());
+		print $o_debugbar_renderer->renderHead();
 	}
 ?>
 		<script type="text/javascript">
