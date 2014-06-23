@@ -1271,15 +1271,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					// This bundle is only available when editing objects of type ca_editor_uis
 					case 'ca_editor_ui_type_restrictions':
 						if ($vb_batch) { return null; } // not supported in batch mode
-						if (($t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->get('editor_type'), true)) && (is_subclass_of($t_instance, 'BaseRelationshipModel'))) { return null; } // interstitial forms don't support UI type restrictions
 						$vs_element .= $this->getTypeRestrictionsHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
 						break;
 					# -------------------------------
 					// This bundle is only available when editing objects of type ca_editor_ui_screens
 					case 'ca_editor_ui_screen_type_restrictions':
 						$t_editor = new ca_editor_uis($this->get('ui_id'));
-						if (
-							$t_editor && ($t_instance = $this->getAppDatamodel()->getInstanceByTableNum($t_editor->get('editor_type'), true)) && (is_subclass_of($t_instance, 'BaseRelationshipModel'))) { return null; } // interstitial forms don't support UI type restrictions
 						$vs_element .= $this->getTypeRestrictionsHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
 						break;
 					# -------------------------------
@@ -2133,6 +2130,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 			$va_opts['template'] = caGetBundleDisplayTemplate($this, $ps_related_table, $pa_bundle_settings);
 			$va_opts['primaryIDs'] = array($this->tableName() => array($this->getPrimaryKey()));
+			$va_opts['request'] = $po_request;
 			$va_initial_values = caProcessRelationshipLookupLabel($qr_rel_items, $t_item_rel, $va_opts);
 		}
 

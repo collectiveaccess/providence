@@ -327,7 +327,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		}
 		$va_available_uis_by_type = $po_request->user->_getUIListByType($vn_table_num);
 
-		if ($pn_type_id) {
+		if ($pn_type_id && $va_uis_by_type) {
 			if (!is_array($va_uis_by_type)) { 
 				if (!isset($va_available_uis_by_type[$pn_type_id][$va_uis_by_type]) && !isset($va_available_uis_by_type['__all__'][$va_uis_by_type])) {
 					$pn_type_id = null;
@@ -373,7 +373,11 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		$vs_opts_md5 = caMakeCacheKeyFromOptions($pa_options);
 		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->get('editor_type')))) { return null; }
 		
-		$va_types = $t_instance->getTypeList();
+		if($t_instance instanceof BaseRelationshipModel) {
+			$va_types = $t_instance->getRelationshipTypes();
+		} else {
+			$va_types = $t_instance->getTypeList();	
+		}
 		
 		$o_db = $this->getDb();
 		$va_type_list = caMakeTypeIDList($this->get('editor_type'), array($pn_type_id), array('dontIncludeSubtypesInTypeRestriction' => true));
@@ -403,7 +407,8 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			if($qr_res->get('restriction_type_id')) {
-				$va_screens[$vn_screen_id][$vn_screen_locale_id]['typeRestrictions'][$qr_res->get('restriction_type_id')] = $va_types[$qr_res->get('restriction_type_id')]['name_plural'];
+				$vs_key_to_add = ($t_instance instanceof BaseRelationshipModel) ? 'type_code' : 'name_plural';
+				$va_screens[$vn_screen_id][$vn_screen_locale_id]['typeRestrictions'][$qr_res->get('restriction_type_id')] = $va_types[$qr_res->get('restriction_type_id')][$vs_key_to_add];
 			}
 		}
 		
@@ -843,9 +848,14 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		if (!is_array($va_settings)) { $va_settings = array(); }
 		
 		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->get('editor_type')))) { return false; }
-		
-		$va_type_list = $t_instance->getTypeList();
-		if (!isset($va_type_list[$pn_type_id])) { return false; }
+
+		if ($t_instance instanceof BaseRelationshipModel) { // interstitial type restriction incoming
+			$va_rel_type_list = $t_instance->getRelationshipTypes();
+			if(!isset($va_rel_type_list[$pn_type_id])) { return false; }
+		} else { // "normal" (list-based) type restriction
+			$va_type_list = $t_instance->getTypeList();
+			if (!isset($va_type_list[$pn_type_id])) { return false; }
+		}
 		
 		$t_restriction = new ca_editor_ui_type_restrictions();
 		$t_restriction->setMode(ACCESS_WRITE);
@@ -882,8 +892,13 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->get('editor_type')))) { return false; }
+
+		if ($t_instance instanceof BaseRelationshipModel) { // interstitial type restrictions
+			$va_type_list = $t_instance->getRelationshipTypes();
+		} else { // "normal" (list-based) type restrictions
+			$va_type_list = $t_instance->getTypeList();
+		}
 		
-		$va_type_list = $t_instance->getTypeList();
 		$va_current_restrictions = $this->getTypeRestrictions();
 		$va_current_type_ids = array();
 		foreach($va_current_restrictions as $vn_i => $va_restriction) {
@@ -1026,9 +1041,9 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	public function getTypeRestrictionsHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null) {
 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 		
-		$o_view->setVar('t_ui', $this);			
-		$o_view->setVar('id_prefix', $ps_form_name);	
-		$o_view->setVar('placement_code', $ps_placement_code);	
+		$o_view->setVar('t_ui', $this);
+		$o_view->setVar('id_prefix', $ps_form_name);
+		$o_view->setVar('placement_code', $ps_placement_code);
 		$o_view->setVar('request', $po_request);
 		
 		$va_type_restrictions = $this->getTypeRestrictions();
@@ -1040,8 +1055,12 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($vn_table_num = $this->get('editor_type')))) { return null; }
-		
-		$o_view->setVar('type_restrictions', $t_instance->getTypeListAsHTMLFormElement('type_restrictions[]', array('multiple' => 1, 'height' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)));
+
+		if($t_instance instanceof BaseRelationshipModel) { // interstitial
+			$o_view->setVar('type_restrictions', $t_instance->getRelationshipTypesAsHTMLSelect($t_instance->getLeftTableName(),null,null,array('name' => 'type_restrictions[]', 'multiple' => 1, 'size' => 5), array('values' => $va_restriction_type_ids)));
+		} else { // list-based
+			$o_view->setVar('type_restrictions', $t_instance->getTypeListAsHTMLFormElement('type_restrictions[]', array('multiple' => 1, 'height' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)));
+		}
 	
 		return $o_view->render('ca_editor_ui_type_restrictions.php');
 	}
