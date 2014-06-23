@@ -88,7 +88,7 @@
 			$vb_ids_only = (bool)caGetOption('idsOnly', $pa_options, false);
 			
 			if ($vb_ids_only) { return $this->opn_id; }
-			return $this->opn_id ? caProcessTemplateForIDs($ps_template, $this->ops_table_name, array($this->opn_id), $pa_options).($vb_include_id ? " [".$this->opn_id."]" : '') : "";
+			return $this->opn_id ? caProcessTemplateForIDs($ps_template, $this->ops_table_name, array($this->opn_id), array_merge($pa_options, array('returnAsArray' => false))).($vb_include_id ? " [".$this->opn_id."]" : '') : "";
 		}
 		# ------------------------------------------------------------------
  		/**
