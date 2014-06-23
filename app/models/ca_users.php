@@ -292,6 +292,16 @@ class ca_users extends BaseModel {
 	static $s_user_bundle_access_cache = array();
 	static $s_user_action_access_cache = array();
 	static $s_user_type_with_access_cache = array();
+
+	/**
+	 * List of tables that can have bundle- or type-level access control
+	 */
+	static $s_bundlable_tables = array(
+		'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences',
+		'ca_collections', 'ca_storage_locations', 'ca_loans', 'ca_movements',
+		'ca_object_representations', 'ca_representation_annotations', 'ca_sets', 
+		'ca_set_items', 'ca_lists', 'ca_list_items', 'ca_tours', 'ca_tour_stops'
+	);
 	
 	# ------------------------------------------------------
 	# --- Constructor
@@ -3020,32 +3030,38 @@ class ca_users extends BaseModel {
 	public function getBundleAccessLevel($ps_table_name, $ps_bundle_name) {
 		$vs_cache_key = $ps_table_name.'/'.$ps_bundle_name."/".$this->getPrimaryKey();
 		if (isset(ca_users::$s_user_bundle_access_cache[$vs_cache_key])) { return ca_users::$s_user_bundle_access_cache[$vs_cache_key]; }
-		$va_roles = array_merge($this->getUserRoles(), $this->getGroupRoles());
-		$vn_access = -1;
-		foreach($va_roles as $vn_role_id => $va_role_info) {
-			$va_vars = $va_role_info['vars'];
-			
-			if (is_array($va_vars['bundle_access_settings'])) {
-				if (isset($va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name]) && ((int)$va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name] > $vn_access)) {
-					$vn_access = (int)$va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name];
-					
-					if ($vn_access == __CA_BUNDLE_ACCESS_EDIT__) { break; }	// already at max
-				} else {
-					if (isset($va_vars['bundle_access_settings'][$ps_table_name.'.ca_attribute_'.$ps_bundle_name]) && ((int)$va_vars['bundle_access_settings'][$ps_table_name.'.ca_attribute_'.$ps_bundle_name] > $vn_access)) {
-						$vn_access = (int)$va_vars['bundle_access_settings'][$ps_table_name.'.ca_attribute_'.$ps_bundle_name];
+
+		if(in_array($ps_table_name, ca_users::$s_bundlable_tables)) { // bundle-level access control only applies to these tables
+			$va_roles = array_merge($this->getUserRoles(), $this->getGroupRoles());
+			$vn_access = -1;
+			foreach($va_roles as $vn_role_id => $va_role_info) {
+				$va_vars = $va_role_info['vars'];
+				
+				if (is_array($va_vars['bundle_access_settings'])) {
+					if (isset($va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name]) && ((int)$va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name] > $vn_access)) {
+						$vn_access = (int)$va_vars['bundle_access_settings'][$ps_table_name.'.'.$ps_bundle_name];
 						
 						if ($vn_access == __CA_BUNDLE_ACCESS_EDIT__) { break; }	// already at max
+					} else {
+						if (isset($va_vars['bundle_access_settings'][$ps_table_name.'.ca_attribute_'.$ps_bundle_name]) && ((int)$va_vars['bundle_access_settings'][$ps_table_name.'.ca_attribute_'.$ps_bundle_name] > $vn_access)) {
+							$vn_access = (int)$va_vars['bundle_access_settings'][$ps_table_name.'.ca_attribute_'.$ps_bundle_name];
+							
+							if ($vn_access == __CA_BUNDLE_ACCESS_EDIT__) { break; }	// already at max
+						}
 					}
 				}
 			}
+			if ($vn_access < 0) {
+				$vn_access = (int)$this->getAppConfig()->get('default_bundle_access_level');
+			}
+			
+			ca_users::$s_user_bundle_access_cache[$vs_cache_key] = $vn_access;
+			
+			return $vn_access;
+		} else {
+			// no bundle level access control for tables not explicitly listed in $s_bundlable_tables
+			return (ca_users::$s_user_bundle_access_cache[$vs_cache_key] = __CA_BUNDLE_ACCESS_EDIT__);
 		}
-		if ($vn_access < 0) {
-			$vn_access = (int)$this->getAppConfig()->get('default_bundle_access_level');
-		}
-		
-		ca_users::$s_user_bundle_access_cache[$vs_cache_key] = $vn_access;
-		
-		return $vn_access;
 	}
 	# ----------------------------------------
 	/**
@@ -3058,34 +3074,41 @@ class ca_users extends BaseModel {
 	public function getTypeAccessLevel($ps_table_name, $pm_type_code_or_id) {
 		$vs_cache_key = $ps_table_name.'/'.$pm_type_code_or_id."/".$this->getPrimaryKey();
 		if (isset(ca_users::$s_user_type_access_cache[$vs_cache_key])) { return ca_users::$s_user_type_access_cache[$vs_cache_key]; }
-		$va_roles = array_merge($this->getUserRoles(), $this->getGroupRoles());
-		
-		if (is_numeric($pm_type_code_or_id)) { 
-			$vn_type_id = (int)$pm_type_code_or_id; 
-		} else {
-			$t_list = new ca_lists();
-			$t_instance = $this->getAppDatamodel()->getInstanceByTableName($ps_table_name, true);
-			$vn_type_id = (int)$t_list->getItemIDFromList($t_instance->getTypeListCode(), $pm_type_code_or_id);
-		}
-		$vn_access = -1;
-		foreach($va_roles as $vn_role_id => $va_role_info) {
-			$va_vars = $va_role_info['vars'];
+
+		if(in_array($ps_table_name, ca_users::$s_bundlable_tables)) { // type-level access control only applies to these tables
+			$va_roles = array_merge($this->getUserRoles(), $this->getGroupRoles());
 			
-			if (is_array($va_vars['type_access_settings'])) {
-				if (isset($va_vars['type_access_settings'][$ps_table_name.'.'.$vn_type_id]) && ((int)$va_vars['type_access_settings'][$ps_table_name.'.'.$vn_type_id] > $vn_access)) {
-					$vn_access = (int)$va_vars['type_access_settings'][$ps_table_name.'.'.$vn_type_id];
-					
-					if ($vn_access == __CA_BUNDLE_ACCESS_EDIT__) { break; }	// already at max
+			if (is_numeric($pm_type_code_or_id)) { 
+				$vn_type_id = (int)$pm_type_code_or_id; 
+			} else {
+				$t_list = new ca_lists();
+				$t_instance = $this->getAppDatamodel()->getInstanceByTableName($ps_table_name, true);
+				$vn_type_id = (int)$t_list->getItemIDFromList($t_instance->getTypeListCode(), $pm_type_code_or_id);
+			}
+			$vn_access = -1;
+			foreach($va_roles as $vn_role_id => $va_role_info) {
+				$va_vars = $va_role_info['vars'];
+				
+				if (is_array($va_vars['type_access_settings'])) {
+					if (isset($va_vars['type_access_settings'][$ps_table_name.'.'.$vn_type_id]) && ((int)$va_vars['type_access_settings'][$ps_table_name.'.'.$vn_type_id] > $vn_access)) {
+						$vn_access = (int)$va_vars['type_access_settings'][$ps_table_name.'.'.$vn_type_id];
+						
+						if ($vn_access == __CA_BUNDLE_ACCESS_EDIT__) { break; }	// already at max
+					}
 				}
 			}
+			
+			if ($vn_access < 0) {
+				$vn_access = (int)$this->getAppConfig()->get('default_type_access_level');
+			}
+			
+			ca_users::$s_user_type_access_cache[$ps_table_name.'/'.$vn_type_id."/".$this->getPrimaryKey()] = ca_users::$s_user_type_access_cache[$vs_cache_key] = $vn_access;
+			return $vn_access;
+		} else {
+			// no type level access control for tables not explicitly listed in $s_bundlable_tables
+			ca_users::$s_user_type_access_cache[$ps_table_name.'/'.$vn_type_id."/".$this->getPrimaryKey()] = ca_users::$s_user_type_access_cache[$vs_cache_key] = __CA_BUNDLE_ACCESS_EDIT__;
+			return __CA_BUNDLE_ACCESS_EDIT__;
 		}
-		
-		if ($vn_access < 0) {
-			$vn_access = (int)$this->getAppConfig()->get('default_type_access_level');
-		}
-		
-		ca_users::$s_user_type_access_cache[$ps_table_name.'/'.$vn_type_id."/".$this->getPrimaryKey()] = ca_users::$s_user_type_access_cache[$vs_cache_key] = $vn_access;
-		return $vn_access;
 	}
 	# ----------------------------------------
 	/**

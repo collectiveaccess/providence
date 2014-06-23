@@ -26,6 +26,7 @@
  * ----------------------------------------------------------------------
  */
 
+	require_once(__CA_MODELS_DIR__.'/ca_users.php');
  	require_once(__CA_MODELS_DIR__.'/ca_user_roles.php');
  	require_once(__CA_MODELS_DIR__.'/ca_editor_ui_screens.php');
  	require_once(__CA_MODELS_DIR__.'/ca_lists.php');
@@ -33,8 +34,6 @@
  	class RolesController extends ActionController {
  		# -------------------------------------------------------
  		private $pt_role;
- 		
- 		private $opa_bundleable_tables = array('ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_object_lots', 'ca_storage_locations', 'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops', 'ca_object_representations', 'ca_representation_annotations');
  		# -------------------------------------------------------
  		#
  		# -------------------------------------------------------
@@ -51,7 +50,7 @@
 			$vn_default_bundle_access_level = (int)$this->request->config->get('default_bundle_access_level');
 	
 			$va_bundle_list = $va_table_names = array(); 
-			foreach($this->opa_bundleable_tables as $vs_table) {
+			foreach(ca_users::$s_bundlable_tables as $vs_table) {
 				$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
 				
 				$va_table_names[$vs_table] = caUcFirstUTF8Safe($t_instance->getProperty('NAME_PLURAL'));
@@ -74,7 +73,7 @@
 			$va_type_list = array();
 			$va_type_access_settings = $va_role_vars['type_access_settings'];
 			
-			foreach($this->opa_bundleable_tables as $vs_table) {
+			foreach(ca_users::$s_bundlable_tables as $vs_table) {
 				$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
 				if (!($vs_list_code = $t_instance->getTypeListCode())) { continue; }
 				
@@ -125,7 +124,7 @@
  			// save bundle access settings
  			$t_screen = new ca_editor_ui_screens();
  			$va_bundle_access_settings = array();
- 			foreach($this->opa_bundleable_tables as $vs_table) {
+ 			foreach(ca_users::$s_bundlable_tables as $vs_table) {
 				$va_available_bundles = $t_screen->getAvailableBundles($vs_table);
 				foreach($va_available_bundles as $vs_bundle_name => $va_bundle_info) {
 					$vs_bundle_name_proc = $vs_table.'_'.str_replace(".", "_", $vs_bundle_name);
@@ -141,7 +140,7 @@
 				// save type access settings
 				$va_type_access_settings = array();
 				
-				foreach($this->opa_bundleable_tables as $vs_table) {
+				foreach(ca_users::$s_bundlable_tables as $vs_table) {
 					if ((!caTableIsActive($vs_table)) && ($vs_table != 'ca_object_representations')) { continue; }
 					$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
 					if (!($vs_list_code = $t_instance->getTypeListCode())) { continue; }
