@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2013 Whirl-i-Gig
+ * Copyright 2012-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -127,11 +127,20 @@
 			<span class="formLabelText"><?php print _t('Matching'); ?></span> 
 				<div class="bundleContainer">
 					<div class="caLabelList" >
-						<p>
+						<table style="width: 100%;">
+							<tr>
+								<td class='formLabel'>
 <?php
 			print $this->getVar('match_mode');
 ?>	
-						</p>
+								</td>
+								<td class='formLabel'>
+<?php
+			print _t("Limit to types")."<br/>\n".$this->getVar('ca_objects_limit_to_types_list');
+?>	
+								</td>
+							</tr>
+						</table>
 					</div>
 				</div>
 		</div>

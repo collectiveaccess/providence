@@ -114,6 +114,7 @@
 			), array(), array('value' => $va_last_settings['matchMode'])));
  			
  			$this->view->setVar('ca_objects_type_list', $t_object->getTypeListAsHTMLFormElement('ca_objects_type_id', null, array('value' => $va_last_settings['ca_objects_type_id'])));
+ 			$this->view->setVar('ca_objects_limit_to_types_list', $t_object->getTypeListAsHTMLFormElement('ca_objects_limit_matching_to_type_ids[]', array('multiple' => 1), array('height' => '100px', 'values' => $va_last_settings['ca_objects_limit_matching_to_type_ids'])));
  			$this->view->setVar('ca_object_representations_type_list', $t_rep->getTypeListAsHTMLFormElement('ca_object_representations_type_id', null, array('value' => $va_last_settings['ca_object_representations_type_id'])));
  		
  			//
@@ -169,6 +170,7 @@
  				'deleteMediaOnImport' => (bool)$this->request->getParameter('delete_media_on_import', pInteger),
  				'importMode' => $this->request->getParameter('import_mode', pString),
  				'matchMode' => $this->request->getParameter('match_mode', pString),
+ 				'ca_objects_limit_matching_to_type_ids' => $this->request->getParameter('ca_objects_limit_matching_to_type_ids', pArray),
  				'ca_objects_type_id' => $this->request->getParameter('ca_objects_type_id', pInteger),
  				'ca_object_representations_type_id' => $this->request->getParameter('ca_object_representations_type_id', pInteger),
  				'ca_objects_status' => $this->request->getParameter('ca_objects_status', pInteger),
