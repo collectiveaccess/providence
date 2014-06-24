@@ -156,7 +156,7 @@
 					);
 				}
 				
-				if (method_exists($t_model, 'getLabelTableInstance')) {
+				if (method_exists($t_model, 'getLabelTableInstance') && !(($this->ops_tablename === 'ca_objects') && ($this->request->config->get('ca_objects_dont_use_labels')))) {
 					$t_label = $t_model->getLabelTableInstance();
 					$va_display_list[$this->ops_tablename.'.preferred_labels'] = array(
 						'placement_id' => $this->ops_tablename.'.preferred_labels',
