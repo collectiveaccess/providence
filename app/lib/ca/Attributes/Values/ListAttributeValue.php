@@ -346,5 +346,14 @@
 			return true;
 		}
  		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for list attribute value
+		 * 
+		 * @return int Attribute value type code
+		 */
+		public function getType() {
+			return __CA_ATTRIBUTE_VALUE_LIST__;
+		}
+ 		# ------------------------------------------------------------------
 	}
  ?>

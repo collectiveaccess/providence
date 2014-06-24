@@ -233,7 +233,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		// Filter list of tables importers can be used for to those enabled in current config
-		BaseModel::$s_ca_models_definitions['ca_data_importers']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = caFilterTableList(BaseModel::$s_ca_models_definitions['ca_data_importers']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST']);
+		BaseModel::$s_ca_models_definitions['ca_data_importers']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = (BaseModel::$s_ca_models_definitions['ca_data_importers']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST']);
 		
 		parent::__construct($pn_id);
 		
@@ -1169,6 +1169,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 *			KLogger::DEBUG = Debugging messages
 	 *		dryRun = do import but don't actually save data
 	 *		environment = an array of environment values to provide to the import process. The keys manifest themselves as mappable tags.
+	 *		forceImportForPrimaryKeys = list of primary key ids to force mapped source data into. The number of keys passed should equal or exceed the number of rows in the source data. [Default is empty] 
+	 *		transaction = transaction to perform import within. Will not be used if noTransaction option is set. [Default is to create a new transaction]
 	 *		noTransaction = don't wrap the import in a transaction. [Default is false]
 	 */
 	static public function importDataFromSource($ps_source, $ps_mapping, $pa_options=null) {
@@ -1182,6 +1184,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$va_notices = $va_errors = array();
 		
 		$pb_no_transaction 	= caGetOption('noTransaction', $pa_options, false, array('castTo' => 'bool'));
+		$pa_force_import_for_primary_keys = caGetOption('forceImportForPrimaryKeys', $pa_options, null);
 
 		if (!($t_mapping = ca_data_importers::mappingExists($ps_mapping))) {
 			return null;
@@ -1191,7 +1194,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		$o_trans = null;
 		
-		if (!$pb_no_transaction) { $t_mapping->setTransaction($o_trans = new Transaction()); }
+		if (!$pb_no_transaction) { 
+			if(!($o_trans = caGetOption('transaction', $pa_option, null))) { $o_trans = new Transaction(); }
+			$t_mapping->setTransaction($o_trans); 
+		}
 		
 		$po_request 	= caGetOption('request', $pa_options, null);
 		$pb_dry_run 	= caGetOption('dryRun', $pa_options, false);
@@ -1574,7 +1580,14 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//
 			// Look for existing record?
 			//
-			if ($vs_existing_record_policy != 'none') {
+			if (is_array($pa_force_import_for_primary_keys) && sizeof($pa_force_import_for_primary_keys) > 0) {
+				$vn_id = array_shift($pa_force_import_for_primary_keys);
+				if (!$t_subject->load($vn_id)) { 
+					$o_log->logInfo(_t('[%1] Skipped import because of forced primary key \'%1\' does not exist', $vn_id));
+					ca_data_importers::$s_num_records_skipped++;
+					continue;	// skip because primary key does not exist
+				}
+			} elseif ($vs_existing_record_policy != 'none') {
 				switch($vs_existing_record_policy) {
 					case 'skip_on_idno':
 						if (!$vb_idno_is_template) {

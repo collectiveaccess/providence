@@ -275,5 +275,14 @@
 			return 'value_integer1';
 		}
  		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for integer attribute value
+		 * 
+		 * @return int Attribute value type code
+		 */
+		public function getType() {
+			return __CA_ATTRIBUTE_VALUE_INTEGER__;
+		}
+ 		# ------------------------------------------------------------------
 	}
  ?>

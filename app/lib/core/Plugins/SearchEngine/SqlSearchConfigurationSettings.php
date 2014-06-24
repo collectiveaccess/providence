@@ -109,7 +109,7 @@ class SqlSearchConfigurationSettings extends ASearchConfigurationSettings {
 		$vo_app_config = Configuration::load();
 		$vs_db_type = $vo_app_config->get('db_type');
 		
-		if ($vs_db_type === 'mysql') {
+		if (in_array($vs_db_type, array('mysql', 'mysqli', 'pdo_mysql'))) {
 			return __CA_SEARCH_CONFIG_OK__;
 		}
 		return __CA_SEARCH_CONFIG_ERROR__;

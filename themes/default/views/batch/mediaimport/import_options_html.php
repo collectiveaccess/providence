@@ -279,17 +279,22 @@
 			</div>
 		</div>
 		<div class='bundleLabel'>
-			<span class="formLabelText"><?php print _t('Status &amp; access'); ?></span> 
+			<span class="formLabelText"><?php print (($this->getVar('ca_object_representations_mapping_list_count') > 1) || ($this->getVar('ca_objects_mapping_list_count') > 1)) ? _t('Status, access &amp; metadata extraction') : _t('Status &amp; access'); ?></span> 
 				<div class="bundleContainer">
 					<div class="caLabelList" >
 						<div style='padding:10px 0px 10px 10px;'>
 							<table style="width: 100%;">
-								<tr>
+								<tr style="vertical-align: top;">
 									<td class='formLabel'>
 <?php 
 											print _t('Set object status to<br/>%1', $t_object->htmlFormElement('status', '', array('name' => 'ca_objects_status')));
 											print "<br/>";
 											print _t('Set object access to<br/>%1', $t_object->htmlFormElement('access', '', array('name' => 'ca_objects_access')));
+											
+											if ($this->getVar('ca_objects_mapping_list_count') > 1) {
+												print "<br/>";
+												print _t('Extract embedded metadata into object using mapping<br/>%1', $this->getVar('ca_objects_mapping_list'));
+											}
 ?>									
 									</td>
 									<td class='formLabel'>
@@ -297,6 +302,11 @@
 											print _t('Set representation status to<br/>%1', $t_rep->htmlFormElement('status', '', array('name' => 'ca_object_representations_status')));
 											print "<br/>";
 											print _t('Set representation access to<br/>%1', $t_rep->htmlFormElement('access', '', array('name' => 'ca_object_representations_access')));
+											
+											if ($this->getVar('ca_object_representations_mapping_list_count') > 1) {
+												print "<br/>";
+												print _t('Extract embedded metadata into representation using mapping<br/>%1', $this->getVar('ca_object_representations_mapping_list'));
+											}
 ?>									
 									</td>								
 								</tr>

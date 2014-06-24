@@ -315,5 +315,14 @@
 			return 'value_longtext1';
 		}
  		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for information service attribute value
+		 * 
+		 * @return int Attribute value type code
+		 */
+		public function getType() {
+			return __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__;
+		}
+ 		# ------------------------------------------------------------------
 	}
  ?>
