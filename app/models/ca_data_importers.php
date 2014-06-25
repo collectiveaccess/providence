@@ -1862,21 +1862,30 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							
 						$vn_max_length = (!is_array($vm_val) && isset($va_item['settings']['maxLength']) && (int)$va_item['settings']['maxLength']) ? (int)$va_item['settings']['maxLength'] : null;
 					
-						if (isset($va_item['settings']['delimiter']) && strlen($vs_item_delimiter = $va_item['settings']['delimiter'])) {
-							$va_val_list = explode($vs_item_delimiter, $vm_val);
-						
-							// Add delimited values
-							foreach($va_val_list as $vs_list_val) {
-								$vs_list_val = trim(ca_data_importers::replaceValue($vs_list_val, $va_item));
-								if ($vn_max_length && (mb_strlen($vs_list_val) > $vn_max_length)) {
-									$vs_list_val = mb_substr($vs_list_val, 0, $vn_max_length);
+						//if (isset($va_item['settings']['delimiter']) && strlen($vs_item_delimiter = $va_item['settings']['delimiter'])) {
+						if(isset($va_item['settings']['delimiter']) && $va_item['settings']['delimiter']) {
+							if (!is_array($va_item['settings']['delimiter'])) { $va_item['settings']['delimiter'] = array($va_item['settings']['delimiter']); }
+							//$va_val_list = explode($vs_item_delimiter, $vm_val);
+							
+							if (sizeof($va_item['settings']['delimiter'][$vn_index])) {
+								foreach($va_item['settings']['delimiter'] as $vn_index => $vs_delim) {
+									$va_item['settings']['delimiter'][$vn_index] = preg_quote($vs_delim, "!");
 								}
-								$va_group_buf[$vn_c] = array($vs_item_terminal => $vs_list_val, '_errorPolicy' => $vs_item_error_policy);
-								$vn_c++;
-							}
+								$va_val_list = preg_split("!(".join("|", $va_item['settings']['delimiter']).")!", $vm_val);
 						
-							$vn_row++;
-							continue;	// Don't add "regular" value below
+								// Add delimited values
+								foreach($va_val_list as $vs_list_val) {
+									$vs_list_val = trim(ca_data_importers::replaceValue($vs_list_val, $va_item));
+									if ($vn_max_length && (mb_strlen($vs_list_val) > $vn_max_length)) {
+										$vs_list_val = mb_substr($vs_list_val, 0, $vn_max_length);
+									}
+									$va_group_buf[$vn_c] = array($vs_item_terminal => $vs_list_val, '_errorPolicy' => $vs_item_error_policy);
+									$vn_c++;
+								}
+						
+								$vn_row++;
+								continue;	// Don't add "regular" value below
+							}
 						}
 					
 						if ($vn_max_length && (mb_strlen($vm_val) > $vn_max_length)) {
