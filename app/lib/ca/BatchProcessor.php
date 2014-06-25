@@ -563,6 +563,7 @@
  			$vn_object_type_id 					= $pa_options['ca_objects_type_id'];
  			$vn_rep_type_id 					= $pa_options['ca_object_representations_type_id'];
  			
+ 			$va_object_limit_matching_to_type_ids = $pa_options['ca_objects_limit_matching_to_type_ids'];
  			$vn_object_access					= $pa_options['ca_objects_access'];
  			$vn_object_representation_access 	= $pa_options['ca_object_representations_access'];
  			$vn_object_status 					= $pa_options['ca_objects_status'];
@@ -806,6 +807,8 @@
 										if(!is_array($va_fields_to_match_on = $po_request->config->getList('batch_media_import_match_on')) || !sizeof($va_fields_to_match_on)) {
 											$batch_media_import_match_on = array('idno');
 										}
+										
+										$vs_bool = 'OR';
 										$va_values = array();
 										foreach($va_fields_to_match_on as $vs_fld) {
 											if (in_array($vs_fld, array('preferred_labels', 'nonpreferred_labels'))) {
@@ -815,7 +818,12 @@
 											}
 										}
 										
-										if ($vn_object_id = ca_objects::find($va_values, array('returnAs' => 'firstId', 'boolean' => 'OR'))) {
+										if (is_array($va_object_limit_matching_to_type_ids) && sizeof($va_object_limit_matching_to_type_ids) > 0) {
+											$va_values['type_id'] = $va_object_limit_matching_to_type_ids;
+											$vs_bool = 'AND';
+										}
+										
+										if ($vn_object_id = ca_objects::find($va_values, array('returnAs' => 'firstId', 'boolean' => $vs_bool))) {
 											if ($t_object->load($vn_object_id)) {
 												$va_notices[$vs_relative_directory.'/'.$vs_match_name.'_match'] = array(
 													'idno' => $t_object->get($t_object->getProperty('ID_NUMBERING_ID_FIELD')),

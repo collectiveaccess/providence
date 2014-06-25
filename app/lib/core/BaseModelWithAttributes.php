@@ -1524,8 +1524,8 @@
 					'request' => $po_request,
 					'nullOption' => '-',
 					'value' => $vs_value,
-					'forSearch' => true,
-					'render' => 'lookup'
+					'forSearch' => true
+					//'render' => 'lookup'
 				), array_merge($pa_options, $va_override_options));
 				
 				// We don't want to pass the entire set of values to ca_attributes::attributeHtmlFormElement() since it'll treat it as a simple list

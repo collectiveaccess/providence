@@ -1590,10 +1590,16 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			} elseif ($vs_existing_record_policy != 'none') {
 				switch($vs_existing_record_policy) {
 					case 'skip_on_idno':
-						if (!$vb_idno_is_template && $t_subject->load(array($t_subject->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno, 'deleted' => 0))) {
-							$o_log->logInfo(_t('[%1] Skipped import because of existing record matched on identifier by policy %2', $vs_idno, $vs_existing_record_policy));
-							ca_data_importers::$s_num_records_skipped++;
-							continue(2);	// skip because idno matched
+						if (!$vb_idno_is_template) {
+							$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
+								array('type_id' => $vs_type, $t_subject->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno, 'deleted' => 0),
+								array('returnAs' => 'ids')
+							));
+							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
+								$o_log->logInfo(_t('[%1] Skipped import because of existing record matched on identifier by policy %2', $vs_idno, $vs_existing_record_policy));
+								ca_data_importers::$s_num_records_skipped++;
+								continue(2);	// skip because idno matched
+							}
 						}
 						break;
 					case 'skip_on_preferred_labels':
@@ -1601,7 +1607,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							array('type_id' => $vs_type, 'preferred_labels' => $va_pref_label_values, 'deleted' => 0),
 							array('returnAs' => 'ids')
 						));
-						if (is_array($va_ids) && sizeof($va_ids)) {
+						if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
 							$o_log->logInfo(_t('[%1] Skipped import because of existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy));
 							ca_data_importers::$s_num_records_skipped++;
 							continue(2);	// skip because label matched
@@ -1611,9 +1617,16 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					case 'merge_on_idno':
 					case 'merge_on_idno_and_preferred_labels_with_replace':
 					case 'merge_on_idno_with_replace':
-						if (!$vb_idno_is_template && $t_subject->load(array($t_subject->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno, 'deleted' => 0))) {
-							$o_log->logInfo(_t('[%1] Merged with existing record matched on identifer by policy %2', $vs_idno, $vs_existing_record_policy));
-							break;
+						if (!$vb_idno_is_template) {
+							$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
+								array('type_id' => $vs_type, $t_subject->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno, 'deleted' => 0),
+								array('returnAs' => 'ids')
+							));
+							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
+								$t_subject->load($va_ids[0]);
+								$o_log->logInfo(_t('[%1] Merged with existing record matched on identifer by policy %2', $vs_idno, $vs_existing_record_policy));
+								break;
+							}
 						}
 						if (in_array($vs_existing_record_policy, array('merge_on_idno', 'merge_on_idno_with_replace'))) { break; }	// fall through if merge_on_idno_and_preferred_labels
 					case 'merge_on_preferred_labels':
@@ -1622,24 +1635,30 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							array('type_id' => $vs_type, 'preferred_labels' => $va_pref_label_values, 'deleted' => 0),
 							array('returnAs' => 'ids')
 						));
-						if (is_array($va_ids) && sizeof($va_ids)) {
+						if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
 							$t_subject->load($va_ids[0]);
 							$o_log->logInfo(_t('[%1] Merged with existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy));
 						}
 						break;	
 					case 'overwrite_on_idno_and_preferred_labels':
 					case 'overwrite_on_idno':
-						if (!$vb_idno_is_template && $vs_idno && $t_subject->load(array($t_subject->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno, 'deleted' => 0))) {
-					
-							$t_subject->setMode(ACCESS_WRITE);
-							$t_subject->delete(true, array('hard' => true));
-							if ($t_subject->numErrors()) {
-								ca_data_importers::logImportError(_t('[%1] Could not delete existing record matched on identifier by policy %2', $vs_idno, $vs_existing_record_policy));
-								// Don't stop?
-							} else {
-								$o_log->logInfo(_t('[%1] Overwrote existing record matched on identifier by policy %2', $vs_idno, $vs_existing_record_policy));
-								$t_subject->clear();
-								break;
+						if (!$vb_idno_is_template && $vs_idno) {
+							$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
+								array('type_id' => $vs_type, $t_subject->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno, 'deleted' => 0),
+								array('returnAs' => 'ids')
+							));
+							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
+								$t_subject->load($va_ids[0]);
+								$t_subject->setMode(ACCESS_WRITE);
+								$t_subject->delete(true, array('hard' => true));
+								if ($t_subject->numErrors()) {
+									ca_data_importers::logImportError(_t('[%1] Could not delete existing record matched on identifier by policy %2', $vs_idno, $vs_existing_record_policy));
+									// Don't stop?
+								} else {
+									$o_log->logInfo(_t('[%1] Overwrote existing record matched on identifier by policy %2', $vs_idno, $vs_existing_record_policy));
+									$t_subject->clear();
+									break;
+								}
 							}
 						}
 						if ($vs_existing_record_policy == 'overwrite_on_idno') { break; }	// fall through if overwrite_on_idno_and_preferred_labels
@@ -1648,7 +1667,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							array('type_id' => $vs_type, 'preferred_labels' => $va_pref_label_values, 'deleted' => 0),
 							array('returnAs' => 'ids')
 						));
-						if (is_array($va_ids) && sizeof($va_ids)) {
+						if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
 							$t_subject->load($va_ids[0]);
 							$t_subject->setMode(ACCESS_WRITE);
 							$t_subject->delete(true, array('hard' => true));
@@ -2166,6 +2185,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										} 
 										$va_elements_set_for_this_record[$vs_element] = true;
 										$t_subject->addAttribute($va_element_content, $vs_element, null, array('showRepeatCountErrors' => true, 'alwaysTreatValueAsIdno' => true));
+										
 										if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Failed to add value for %2; values were %3: ", $vs_idno, $vs_element, ca_data_importers::formatValuesForLog($va_element_content)), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 											if ($vs_item_error_policy == 'stop') {

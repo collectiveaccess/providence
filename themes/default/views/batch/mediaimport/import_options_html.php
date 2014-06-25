@@ -127,11 +127,20 @@
 			<span class="formLabelText"><?php print _t('Matching'); ?></span> 
 				<div class="bundleContainer">
 					<div class="caLabelList" >
-						<p>
+						<table style="width: 100%;">
+							<tr>
+								<td class='formLabel'>
 <?php
 			print $this->getVar('match_mode');
 ?>	
-						</p>
+								</td>
+								<td class='formLabel'>
+<?php
+			print _t("Limit to types")."<br/>\n".$this->getVar('ca_objects_limit_to_types_list');
+?>	
+								</td>
+							</tr>
+						</table>
 					</div>
 				</div>
 		</div>

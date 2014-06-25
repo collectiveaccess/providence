@@ -192,6 +192,7 @@ class SearchIndexer extends SearchBase {
 		}
 		
 		$vn_tc = 0;
+		
 		foreach($va_table_names as $vn_table_num => $va_table_info) {
 			$vs_table = $va_table_info['name'];
 			$t_table_timer = new Timer();
@@ -228,9 +229,11 @@ class SearchIndexer extends SearchBase {
 			$va_intrinsic_list[$vs_table_pk] = array();
 			
 			foreach($va_ids as $vn_i => $vn_id) {
-				if ($va_element_ids && (!($vn_i % 200))) {	// Pre-load attribute values for next 200 items to index; improves index performance
-					ca_attributes::prefetchAttributes($o_db, $vn_table_num, $va_id_slice = array_slice($va_ids, $vn_i, 200), $va_element_ids);
-				
+				if (!($vn_i % 200)) {	// Pre-load attribute values for next 200 items to index; improves index performance
+					$va_id_slice = array_slice($va_ids, $vn_i, 200);
+					if ($va_element_ids) {
+						ca_attributes::prefetchAttributes($o_db, $vn_table_num, $va_id_slice, $va_element_ids);
+					}
 					$qr_field_data = $o_db->query("
 						SELECT ".join(", ", array_keys($va_intrinsic_list))." 
 						FROM {$vs_table}
