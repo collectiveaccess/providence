@@ -239,6 +239,8 @@
 				isSortable: false,
 				listSortItems: 'div.roundedRel',			
 				autocompleteInputID: '<?php print $vs_id_prefix; ?>_autocomplete',
+				quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
+				quickaddUrl: '<?php print caNavUrl($this->request, 'editor/storage_locations', 'StorageLocationQuickAdd', 'Form', array('location_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'])); ?>',
 				minRepeats: 0,
 				maxRepeats: 1,
 				addMode: 'prepend'
