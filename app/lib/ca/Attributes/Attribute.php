@@ -50,12 +50,8 @@ require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/LCSHAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/GeoNamesAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/FileAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/MediaAttributeValue.php');
-//require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/PlaceAttributeValue.php');
-//require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/OccurrenceAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/TaxonomyAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/InformationServiceAttributeValue.php');
-//require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/ObjectRepresentationsAttributeValue.php');
-//require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/EntitiesAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/core/Configuration.php');
  
 	class Attribute {

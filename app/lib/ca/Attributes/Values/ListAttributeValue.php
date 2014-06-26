@@ -226,6 +226,7 @@
  			
  			$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? true : (bool)$pa_element_info['settings']['requireValue'];
 
+			$ps_orig_value = $ps_value;
  			if ($vb_treat_value_as_idno || preg_match('![^\d]+!', $ps_value)) {
  				// try to convert idno to item_id
  				if ($vn_id = ca_lists::getItemID($pa_element_info['list_id'], $ps_value, $pa_options)) {
@@ -237,7 +238,11 @@
 					'value_longtext1' => null,
 					'item_id' => null
 				);
- 			} 
+ 			} elseif ($vb_require_value && !(int)$ps_value) {
+ 				$this->postError(1970, _t('Value %1 [%2] cannot be blank', $pa_element_info['displayLabel'], $pa_element_info['element_code']), 'ListAttributeValue->parseValue()');
+ 				return false;
+ 			}
+ 			
  			if (strlen($ps_value) && !is_numeric($ps_value)) { 
  				$this->postError(1970, _t('Item_id %2 is not valid for element %1',$pa_element_info["element_code"], $ps_value), 'ListAttributeValue->parseValue()');
 				return false;
@@ -252,13 +257,16 @@
  				if ($ps_value) {
  					$this->postError(1970, _t('%1 is not a valid list item_id for %2 [%3]', $ps_value, $pa_element_info['displayLabel'], $pa_element_info['element_code']), 'ListAttributeValue->parseValue()');
  				} else {
- 					//$this->postError(1970, _t('Value %1 [%2] cannot be blank', $pa_element_info['displayLabel'], $pa_element_info['element_code']), 'ListAttributeValue->parseValue()');
+ 					if ($vb_require_value) {
+ 						$this->postError(1970, _t('Value %1 [%2] cannot be blank', $pa_element_info['displayLabel'], $pa_element_info['element_code']), 'ListAttributeValue->parseValue()');
+ 						return false;
+ 					}
  					return null;
  				}
 				return false;
  			}
  			if ((int)$t_item->get('list_id') != (int)$pa_element_info['list_id']) {
- 				$this->postError(1970, _t('Item is not in the correct list for element %1. List id is %2 but should be %3', $pa_element_info["element_code"], $t_item->get('list_id'), $pa_element_info['list_id']), 'ListAttributeValue->parseValue()');
+ 				$this->postError(1970, _t('Item is not in the correct list for element %1. List id is %2 but should be %3. Value was %4', $pa_element_info["element_code"], $t_item->get('list_id'), $pa_element_info['list_id'], "{$ps_orig_value}/{$ps_value}"), 'ListAttributeValue->parseValue()');
 				return false;
  			}
  			return array(
@@ -344,6 +352,15 @@
 			}
 			
 			return true;
+		}
+ 		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for list attribute value
+		 * 
+		 * @return int Attribute value type code
+		 */
+		public function getType() {
+			return __CA_ATTRIBUTE_VALUE_LIST__;
 		}
  		# ------------------------------------------------------------------
 	}

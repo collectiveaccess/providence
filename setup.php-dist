@@ -241,9 +241,15 @@ if (!defined("__CA_SITE_HOSTNAME__")) {
 # IT IS VERY UNLIKELY THAT YOU WILL NEED TO CHANGE ANYTHING UNDER THIS LINE
 # --------------------------------------------------------------------------------------------
 
-# Only MySQL databases are currently supported so leave this set to 'mysql'!
+# Only MySQL databases are currently supported but there are three available 
+# methods to interact with them:
+#		Use 'mysql' if you need to use the old PHP "mysql" drivers. This is the default for older versions and can be used if all else fails. 
+#		Use 'mysqli' to use the PHP MySQLi drivers. This is the current default.
+#		Use 'pdo_mysql' to use the PHP MySQL PDO driver. This has not been fully tested yet but should generally work ok.
+#
+#  When in doubt, try MySQLi first and then fall back to mysql
 if (!defined("__CA_DB_TYPE__")) {
-	define("__CA_DB_TYPE__", 'mysql');
+	define("__CA_DB_TYPE__", 'mysqli');
 }
 
 # Path to CollectiveAccess 'app' directory 

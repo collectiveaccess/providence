@@ -126,5 +126,14 @@
  		 */
  		protected $ops_name_plural = 'Entities';
  		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for entities attribute value
+		 * 
+		 * @return int Attribute value type code
+		 */
+		public function getType() {
+			return __CA_ATTRIBUTE_VALUE_ENTITIES__;
+		}
+ 		# ------------------------------------------------------------------
 	}
  ?>

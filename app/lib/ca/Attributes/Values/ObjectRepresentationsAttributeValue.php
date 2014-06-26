@@ -126,6 +126,15 @@
  		 */
  		protected $ops_name_plural = 'ObjectRepresentations';
  		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for object representations attribute value
+		 * 
+		 * @return int Attribute value type code
+		 */
+		public function getType() {
+			return __CA_ATTRIBUTE_VALUE_OBJECTREPRESENTATIONS__;
+		}
+ 		# ------------------------------------------------------------------
 	}
 	}
  ?>
