@@ -92,6 +92,7 @@
 		var oHierBrowser;
 
 		jQuery(document).ready(function() {
+
 			oHierBrowser = caUI.initHierBrowser('hierarchyBrowser', {
 				levelDataUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacetHierarchyLevel', array('facet' => $vs_facet_name)); ?>',
 				initDataUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacetHierarchyAncestorList', array('facet' => $vs_facet_name)); ?>',
@@ -104,20 +105,20 @@
 
 				currentSelectionDisplayID: 'browseCurrentSelection'
 			});
-		});
 
-		jQuery('#hierarchyBrowserSearch').autocomplete({
-			source: '<?php print $va_service_urls['search']; ?>',
-			minLength: 3,
-			delay: 800,
-			html: true,
-			select: function(event, ui) {
-				if (parseInt(ui.item.id) > 0) {
-					oHierBrowser.setUpHierarchy(ui.item.id); // jump browser to selected item
+			jQuery('#hierarchyBrowserSearch').autocomplete({
+				source: '<?php print $va_service_urls['search']; ?>',
+				minLength: 3,
+				delay: 800,
+				html: true,
+				select: function(event, ui) {
+					if (parseInt(ui.item.id) > 0) {
+						oHierBrowser.setUpHierarchy(ui.item.id); // jump browser to selected item
+					}
+					event.preventDefault();
+					jQuery('#hierarchyBrowserSearch').val('');
 				}
-				event.preventDefault();
-				jQuery('#hierarchyBrowserSearch').val('');
-			}
+			});
 		});
 	</script>
 <?php
