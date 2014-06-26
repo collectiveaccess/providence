@@ -1459,7 +1459,7 @@ class Installer {
 				}
 
 				$vs_setting_name = self::getAttribute($vo_setting, "name");
-				$vs_value = trim((string) $vo_setting);
+				$vs_value = (string) $vo_setting;
 				
 				if((strlen($vs_setting_name)>0) && (strlen($vs_value)>0)){ // settings need at least name and value
 					if ($vs_locale) { // settings with locale (those can't repeat)
