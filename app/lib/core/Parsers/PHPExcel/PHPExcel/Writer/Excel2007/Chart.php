@@ -2,7 +2,7 @@
 /**
  * PHPExcel
  *
- * Copyright (c) 2006 - 2012 PHPExcel
+ * Copyright (c) 2006 - 2014 PHPExcel
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,9 +20,9 @@
  *
  * @category   PHPExcel
  * @package    PHPExcel_Writer_Excel2007
- * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
+ * @copyright  Copyright (c) 2006 - 2014 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version    ##VERSION##, ##DATE##
+ * @version    1.8.0, 2014-03-02
  */
 
 
@@ -31,7 +31,7 @@
  *
  * @category   PHPExcel
  * @package    PHPExcel_Writer_Excel2007
- * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
+ * @copyright  Copyright (c) 2006 - 2014 PHPExcel (http://www.codeplex.com/PHPExcel)
  */
 class PHPExcel_Writer_Excel2007_Chart extends PHPExcel_Writer_Excel2007_WriterPart
 {
@@ -230,6 +230,7 @@ class PHPExcel_Writer_Excel2007_Chart extends PHPExcel_Writer_Excel2007_WriterPa
 		}
 
 		$id1 = $id2 = 0;
+		$this->_seriesIndex = 0;
 		$objWriter->startElement('c:plotArea');
 
 			$layout = $plotArea->getLayout();
@@ -297,6 +298,20 @@ class PHPExcel_Writer_Excel2007_Chart extends PHPExcel_Writer_Excel2007_WriterPa
 					} elseif ($chartType === PHPExcel_Chart_DataSeries::TYPE_STOCKCHART) {
 
 							$objWriter->startElement('c:hiLowLines');
+							$objWriter->endElement();
+
+							$objWriter->startElement( 'c:upDownBars' );
+
+							$objWriter->startElement( 'c:gapWidth' );
+							$objWriter->writeAttribute('val', 300);
+							$objWriter->endElement();
+
+							$objWriter->startElement( 'c:upBars' );
+							$objWriter->endElement();
+
+							$objWriter->startElement( 'c:downBars' );
+							$objWriter->endElement();
+
 							$objWriter->endElement();
 					}
 
@@ -737,11 +752,11 @@ class PHPExcel_Writer_Excel2007_Chart extends PHPExcel_Writer_Excel2007_WriterPa
 			$objWriter->startElement('c:ser');
 
 				$objWriter->startElement('c:idx');
-					$objWriter->writeAttribute('val', $plotSeriesIdx);
+					$objWriter->writeAttribute('val', $this->_seriesIndex + $plotSeriesIdx);
 				$objWriter->endElement();
 
 				$objWriter->startElement('c:order');
-					$objWriter->writeAttribute('val', $plotSeriesRef);
+					$objWriter->writeAttribute('val', $this->_seriesIndex + $plotSeriesRef);
 				$objWriter->endElement();
 
 				if (($groupType == PHPExcel_Chart_DataSeries::TYPE_PIECHART) ||
@@ -778,10 +793,15 @@ class PHPExcel_Writer_Excel2007_Chart extends PHPExcel_Writer_Excel2007_WriterPa
 				}
 
 				//	Formatting for the points
-				if ($groupType == PHPExcel_Chart_DataSeries::TYPE_LINECHART) {
+				if (($groupType == PHPExcel_Chart_DataSeries::TYPE_LINECHART) ||
+                    ($groupType == PHPExcel_Chart_DataSeries::TYPE_STOCKCHART)) {
 					$objWriter->startElement('c:spPr');
 						$objWriter->startElement('a:ln');
 							$objWriter->writeAttribute('w', 12700);
+            				if ($groupType == PHPExcel_Chart_DataSeries::TYPE_STOCKCHART) {
+						        $objWriter->startElement('a:noFill');
+						        $objWriter->endElement();
+                            }
 						$objWriter->endElement();
 					$objWriter->endElement();
 				}
@@ -865,6 +885,8 @@ class PHPExcel_Writer_Excel2007_Chart extends PHPExcel_Writer_Excel2007_WriterPa
 			$objWriter->endElement();
 
 		}
+
+		$this->_seriesIndex += $plotSeriesIdx + 1;
 	}
 
 	/**
