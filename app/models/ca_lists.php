@@ -1622,23 +1622,25 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			$t_item->setTransaction($o_trans);
 		}
 		
-		$va_item_ids = array();
+		$va_tmp = $va_item_ids = array();
 		foreach($pa_idnos as $vs_idno) {
 			$vn_item_id = null;
 			if (is_numeric($vs_idno)) { 
-				$vn_item_id = (int)$vs_idno; 
+				$va_tmp = array((int)$vs_idno); 
 			} else {
-				$vn_item_id = (int)$t_list->getItemIDFromList($pm_list_name_or_id, $vs_idno);
+				$va_tmp = ca_list_items::find(array('idno' => $vs_idno, 'deleted' => 0), array('returnAs' => 'ids', 'transaction' => $o_trans));
 			}
 			
-			if ($vn_item_id && !(isset($pa_options['noChildren']) || $pa_options['noChildren'])) {
-				if ($qr_children = $t_item->getHierarchy($vn_item_id, array())) {
-					while($qr_children->nextRow()) {
-						$va_item_ids[$qr_children->get('item_id')] = true;
+			if (sizeof($va_tmp) && !(isset($pa_options['noChildren']) || $pa_options['noChildren'])) {
+				foreach($va_tmp as $vn_item_id) {
+					if ($qr_children = $t_item->getHierarchy($vn_item_id, array())) {
+						while($qr_children->nextRow()) {
+							$va_item_ids[$qr_children->get('item_id')] = true;
+						}
 					}
 				}
 			} else {
-				if ($vn_item_id) {
+				foreach($va_tmp as $vn_item_id) {
 					$va_item_ids[$vn_item_id] = true;
 				}
 			}

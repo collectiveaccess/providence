@@ -126,5 +126,14 @@
  		 */
  		protected $ops_name_plural = 'Loans';
  		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for loan attribute value
+		 * 
+		 * @return int Attribute value type code
+		 */
+		public function getType() {
+			return __CA_ATTRIBUTE_VALUE_LOANS__;
+		}
+ 		# ------------------------------------------------------------------
 	}
  ?>

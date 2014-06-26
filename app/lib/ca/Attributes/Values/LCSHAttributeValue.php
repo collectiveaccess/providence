@@ -259,7 +259,7 @@
 						}
 					} else {
 						$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('vocabulary'));
-						print_R($va_settings);
+						
 						$vs_feed_url = "http://id.loc.gov/search/?q=".rawurlencode($ps_value)."&start=1&format=atom";
 						if ($vs_voc = $va_settings['vocabulary']) {
 							$vs_feed_url .= '&q='.rawurlencode($vs_voc);
@@ -385,6 +385,15 @@
 		 */
 		public function sortField() {
 			return 'value_longtext1';
+		}
+ 		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for LCSH attribute value
+		 * 
+		 * @return int Attribute value type code
+		 */
+		public function getType() {
+			return __CA_ATTRIBUTE_VALUE_LCSH__;
 		}
  		# ------------------------------------------------------------------
 	}
