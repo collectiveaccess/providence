@@ -563,6 +563,7 @@
  			$vn_object_type_id 					= $pa_options['ca_objects_type_id'];
  			$vn_rep_type_id 					= $pa_options['ca_object_representations_type_id'];
  			
+ 			$va_object_limit_matching_to_type_ids = $pa_options['ca_objects_limit_matching_to_type_ids'];
  			$vn_object_access					= $pa_options['ca_objects_access'];
  			$vn_object_representation_access 	= $pa_options['ca_object_representations_access'];
  			$vn_object_status 					= $pa_options['ca_objects_status'];
@@ -675,24 +676,24 @@
  			// check if replacements are safe to use with preg_replace
  			foreach($va_replacements_list as $vs_replacement_code => $va_replacement) {
  				if(!isset($va_replacement['search']) || !is_array($va_replacement['search'])) {
- 					$o_log->logError(_t("List of search expressions for replacement %1 is invalid. Check your configuration."));
+ 					$o_log->logError(_t("List of search expressions for replacement %1 is invalid. Check your configuration.", $vs_replacement_code));
  					unset($va_replacements_list[$vs_replacement_code]);
  					continue;
  				}
  				if(!isset($va_replacement['replace']) || !is_array($va_replacement['replace'])) {
- 					$o_log->logError(_t("List of replacement patterns for replacement %1 is invalid. Check your configuration."));
+ 					$o_log->logError(_t("List of replacement patterns for replacement %1 is invalid. Check your configuration.", $vs_replacement_code));
  					unset($va_replacements_list[$vs_replacement_code]);
  					continue;
  				}
  				if(sizeof($va_replacement['search']) != sizeof($va_replacement['replace'])) {
- 					$o_log->logError(_t("The search and replacement pattern lists for replacement %1 have different lengths. Check your configuration."));
+ 					$o_log->logError(_t("The search and replacement pattern lists for replacement %1 have different lengths. Check your configuration.", $vs_replacement_code));
  					unset($va_replacements_list[$vs_replacement_code]);
  					continue;
  				}
 
  				foreach($va_replacement['search'] as $vs_search){
  					if (@preg_match('!'.$vs_search.'!', "Just a test") === false) {
-						$o_log->logError(_t("One of the search patterns for replacement %1 is not a valid PCRE. Check your configuration."));
+						$o_log->logError(_t("One of the search patterns for replacement %1 is not a valid PCRE. Check your configuration.", $vs_replacement_code));
 						unset($va_replacements_list[$vs_replacement_code]);
  						continue(2);
 					}
@@ -744,6 +745,9 @@
 				$va_extracted_idnos_from_filename = array();
 				if (in_array($vs_import_mode, array('TRY_TO_MATCH', 'ALWAYS_MATCH')) || (is_array($va_create_relationship_for) && sizeof($va_create_relationship_for))) {
 					foreach($va_regex_list as $vs_regex_name => $va_regex_info) {
+
+						$o_log->logDebug(_t("Processing mediaFilenameToObjectIdnoRegexes entry %1",$vs_regex_name));
+
 						foreach($va_regex_info['regexes'] as $vs_regex) {
 							$va_names_to_match = array();
 							switch($vs_match_mode) {
@@ -765,7 +769,7 @@
 							// are there any replacements? if so, try to match each element in $va_names_to_match AND all results of the replacements
 							if(is_array($va_replacements_list) && (sizeof($va_replacements_list)>0)) {
 								$va_names_to_match_copy = $va_names_to_match;
-								foreach($va_names_to_match_copy as $vs_name){
+								foreach($va_names_to_match_copy as $vs_name) {
 									foreach($va_replacements_list as $vs_replacement_code => $va_replacement) {
 										if(isset($va_replacement['search']) && is_array($va_replacement['search'])) {
 											$va_replace = caGetOption('replace',$va_replacement);
@@ -791,9 +795,14 @@
 									}
 								}
 							}
+
+							$o_log->logDebug("Names to match: ".print_r($va_names_to_match, true));
 							
 							foreach($va_names_to_match as $vs_match_name) {
 								if (preg_match('!'.$vs_regex.'!', $vs_match_name, $va_matches)) {
+
+									$o_log->logDebug(_t("Matched name %1 on regex %2",$vs_match_name,$vs_regex));
+
 									if (!$vs_idno || (strlen($va_matches[1]) < strlen($vs_idno))) {
 										$vs_idno = $va_matches[1];
 									}
@@ -806,6 +815,8 @@
 										if(!is_array($va_fields_to_match_on = $po_request->config->getList('batch_media_import_match_on')) || !sizeof($va_fields_to_match_on)) {
 											$batch_media_import_match_on = array('idno');
 										}
+										
+										$vs_bool = 'OR';
 										$va_values = array();
 										foreach($va_fields_to_match_on as $vs_fld) {
 											if (in_array($vs_fld, array('preferred_labels', 'nonpreferred_labels'))) {
@@ -815,7 +826,14 @@
 											}
 										}
 										
-										if ($vn_object_id = ca_objects::find($va_values, array('returnAs' => 'firstId', 'boolean' => 'OR'))) {
+										if (is_array($va_object_limit_matching_to_type_ids) && sizeof($va_object_limit_matching_to_type_ids) > 0) {
+											$va_values['type_id'] = $va_object_limit_matching_to_type_ids;
+											$vs_bool = 'AND';
+										}
+										
+										$o_log->logDebug("Trying to find objects using boolean {$vs_bool} and values ".print_r($va_values,true));
+										
+										if ($vn_object_id = ca_objects::find($va_values, array('returnAs' => 'firstId', 'boolean' => $vs_bool))) {
 											if ($t_object->load($vn_object_id)) {
 												$va_notices[$vs_relative_directory.'/'.$vs_match_name.'_match'] = array(
 													'idno' => $t_object->get($t_object->getProperty('ID_NUMBERING_ID_FIELD')),
@@ -828,6 +846,8 @@
 											break(3);
 										}
 									}
+								} else {
+									$o_log->logDebug(_t("Couldn't match name %1 on regex %2",$vs_match_name,$vs_regex));
 								}
 							}
 						}

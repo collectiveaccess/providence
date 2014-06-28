@@ -178,8 +178,13 @@
 				return $vm_val;
 			}
 			
-			if (!is_null($pn_index) && !is_null($vs_get_at_index = caGetOption('returnDelimitedValueAt', $pa_options, null)) && ($vs_delimiter = caGetOption("delimiter", $pa_options, ';'))) {
-				$va_val = explode($vs_delimiter, $vm_val);
+			if (!is_null($pn_index) && !is_null($vs_get_at_index = caGetOption('returnDelimitedValueAt', $pa_options, null)) && ($va_delimiter = caGetOption("delimiter", $pa_options, ';'))) {
+				if (!is_array($va_delimiter)) { $va_delimiter = array($va_delimiter); }
+				foreach($va_delimiter as $vn_index => $vs_delim) {
+					if (!trim($vs_delim, "\t ")) { unset($va_delimiter[$vn_index]); continue; }
+					$va_delimiter[$vn_index] = preg_quote($vs_delim, "!");
+				}
+				$va_val = preg_split("!(".join("|", $va_delimiter).")!", $vm_val);
 				$vm_val = (isset($va_val[$vs_get_at_index])) ? $va_val[$vs_get_at_index] : null;
 			}
 			

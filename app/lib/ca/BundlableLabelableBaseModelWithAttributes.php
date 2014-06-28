@@ -3593,7 +3593,7 @@ if (!$vb_batch) {
 								&& 
 								($vn_relationship_type_id = array_shift($va_relationship_types))
 							) {
-								$this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id);
+								$this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id, null, null, null, null, array('allowDuplicates' => true));
 								if ($this->numErrors()) {
 									$po_request->addActionErrors($this->errors(), 'ca_objects_location', 'general');
 								}
@@ -3614,7 +3614,7 @@ if (!$vb_batch) {
 								&& 
 								($vn_relationship_type_id = array_shift($va_relationship_types))
 							) {
-								$this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id);
+								$this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id, null, null, null, null, array('allowDuplicates' => true));
 								if ($this->numErrors()) {
 									$po_request->addActionErrors($this->errors(), 'ca_objects_history', 'general');
 								}

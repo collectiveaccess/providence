@@ -114,18 +114,26 @@
 						$o_dm = Datamodel::load();
 						$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
 						$va_type_list = $t_instance->getTypeList();
+						
+						$vb_show_labels = !(($vs_table === 'ca_objects') && ($t_instance->getAppConfig()->get('ca_objects_dont_use_labels')));
+						
 						while($o_res->nextHit()) {
-							if ($vs_idno_display = trim($o_res->get($va_info['displayidno']))) {
-								$vs_idno_display = ' ('.$vs_idno_display.')';
+							$vs_idno_display = trim($o_res->get($va_info['displayidno']));
+							
+							if ($vb_show_labels) {
+								$vs_label = $o_res->get($vs_table.'.preferred_labels');
+							} else {
+								$vs_label = $vs_idno_display;
+								$vs_idno_display = '';
 							}
 							$vs_type_display = '';
 							if (($vn_type_id = trim($o_res->get($vs_table.'.type_id'))) && $va_type_list[$vn_type_id]) {
 								$vs_type_display = ' ['.$va_type_list[$vn_type_id]['name_singular'].']';
 							}
 							if($this->request->user->canAccess($va_info["module"],$va_info["controller"],$va_info["action"],array($va_info["primary_key"] => $o_res->get($va_info["primary_key"])))){
-								print '<li class="quickSearchList">'.caNavLink($this->request, $o_res->get($vs_table.'.preferred_labels'), null, $va_info['module'], $va_info['controller'], $va_info['action'], array($va_info['primary_key'] => $o_res->get($va_info['primary_key'])))." ".$vs_idno_display." {$vs_type_display}</li>\n";
+								print '<li class="quickSearchList">'.caNavLink($this->request, $vs_label, null, $va_info['module'], $va_info['controller'], $va_info['action'], array($va_info['primary_key'] => $o_res->get($va_info['primary_key'])))." ".($vs_idno_display ? "({$vs_idno_display})" : "")." {$vs_type_display}</li>\n";
 							} else {
-								print '<li class="quickSearchList">'.caNavLink($this->request, $o_res->get($vs_table.'.preferred_labels'), null, $va_info['module'], $va_info['controller'], "Summary", array($va_info['primary_key'] => $o_res->get($va_info['primary_key'])))." ".$vs_idno_display." {$vs_type_display}</li>\n";
+								print '<li class="quickSearchList">'.caNavLink($this->request, $vs_label, null, $va_info['module'], $va_info['controller'], "Summary", array($va_info['primary_key'] => $o_res->get($va_info['primary_key'])))." ".($vs_idno_display ? "({$vs_idno_display})" : "")." {$vs_type_display}</li>\n";
 							}
 						}
 	?>
