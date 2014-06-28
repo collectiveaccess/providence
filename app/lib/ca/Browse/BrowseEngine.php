@@ -3763,15 +3763,16 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 						if ($va_field_info['START'] && $va_field_info['END']) {
 							$va_orderbys[] = $va_field_info['START'].' '.$ps_direction;
 							$va_orderbys[] = $va_field_info['END'].' '.$ps_direction;
+							
+							$vs_sortable_value_fld = $va_field_info['START'];
 						} else {
 							$va_orderbys[] = $vs_field.' '.$ps_direction;
+							$vs_sortable_value_fld = $vs_field;
 						}
 						
 						if ($t_table->hasField('locale_id')) {
 							$vs_locale_where = ", ".$vs_table_name.".locale_id";
 						}
-						
-						$vs_sortable_value_fld = $vs_field;
 					}
 				} else {
 					// sort field is in related table 
