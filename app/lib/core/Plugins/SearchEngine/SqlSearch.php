@@ -1206,14 +1206,16 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$qr_res = $this->opo_db->query($vs_sql, is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum));
 								$va_ids = $qr_res->getAllFieldValues("row_id");
 								
-								$vs_sql = "
-									DELETE FROM {$ps_dest_table} 
-									WHERE 
-										row_id IN (?)
-								";
+								if (sizeof($va_ids) > 0) {
+									$vs_sql = "
+										DELETE FROM {$ps_dest_table} 
+										WHERE 
+											row_id IN (?)
+									";
 							
-								$qr_res = $this->opo_db->query($vs_sql, array($va_ids));
-								//print "$vs_sql<hr>";
+									$qr_res = $this->opo_db->query($vs_sql, array($va_ids));
+									//print "$vs_sql<hr>";
+								}
 								break;
 							default:
 							case 'OR':
