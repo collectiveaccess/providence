@@ -1391,6 +1391,8 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 									// reindex any rows that have authority metadata elements that reference this
 									if (method_exists($t_dep, "getAuthorityElementReferences") && is_array($va_element_references = $t_dep->getAuthorityElementReferences(array('row_id' => $vn_row_id)))) {
 										foreach($va_element_references as $vn_element_table_num => $va_references) {
+											if(!is_array($va_references) || (sizeof($va_references) == 0)) { continue; }
+											
 											$va_element_fields_to_index = $this->getFieldsToIndex($vn_element_table_num, $vn_element_table_num);
 											$vs_element_table_name = $t_dep->getAppDatamodel()->getTableName($vn_element_table_num);
 											$vs_element_table_pk = $t_dep->getAppDatamodel()->getTablePrimaryKeyName($vn_element_table_num);
@@ -1399,8 +1401,8 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 												SELECT *
 												FROM {$vs_element_table_name}
 												WHERE {$vs_element_table_pk} IN (?)	
-											", array_keys($va_references));	
-				
+											", array(array_keys($va_references)));	
+											
 											$va_field_data = array();
 											while($qr_field_data->nextRow()) {
 												$va_field_data[(int)$qr_field_data->get($vs_element_table_pk)] = $qr_field_data->getRow();
