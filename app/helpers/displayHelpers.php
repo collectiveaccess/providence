@@ -594,7 +594,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		require_once(__CA_MODELS_DIR__.'/ca_sets.php');
 		require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
 		
-		$t_item 				= $po_view->getVar('t_item'); if (!$t_item) print caPrintStacktrace();
+		$t_item 				= $po_view->getVar('t_item'); 
 		$vs_table_name = $t_item->tableName();
 		if (($vs_priv_table_name = $vs_table_name) == 'ca_list_items') {
 			$vs_priv_table_name = 'ca_lists';
@@ -623,7 +623,6 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		// action extra to preserve currently open screen across next/previous links
 		$vs_screen_extra 	= ($po_view->getVar('screen')) ? '/'.$po_view->getVar('screen') : '';
 		if ($vs_type_name == "list item") {
-			print "<div style='height:12px;'></div>";
 			$vs_style = "style='height:auto;'";
 		}
 		if (($vn_item_id) | ($po_view->request->getAction() === 'Delete')) {
