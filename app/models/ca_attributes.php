@@ -506,6 +506,7 @@ class ca_attributes extends BaseModel {
 	 * @param $pa_row_ids array List of row_ids to fetch attributes for
 	 * @param $pa_options array Optional array of options. Supported options include:
 	 *			resetCache = Clear cache before prefetch. [Default is false]
+	 *
 	 * @return boolean Always return true
 	 */
 	static public function prefetchAttributes($po_db, $pn_table_num, $pa_row_ids, $pa_element_ids, $pa_options=null) {
@@ -616,19 +617,30 @@ class ca_attributes extends BaseModel {
 	/**
 	 * Retrieve attributes attached to specified row_id in specified table
 	 * Returns a list (indexed array) of Attribute objects.
+	 *
+	 * @param Db $po_db Db() instance to use for database access
+	 * @param int $pn_table_num Table number of table to fetch attributes values for
+	 * @param int $pn_row_id Row to fetch attribute values for
+	 * @param array $pa_element_ids Array of element_ids to fetch values for
+	 * @param array $pa_options Options include:
+	 *		noCache = Don't use cached attribute values. [Default is false]
+	 *
+	 * @return array
 	 */
 	static public function getAttributes($po_db, $pn_table_num, $pn_row_id, $pa_element_ids, $pa_options=null) {
+		$pb_no_cache = (isset($pa_options['noCache']) && $pa_options['noCache']);
+		if ($pb_no_cache) { $pa_options['resetCache'] = true; }
 		
 		$va_element_ids = array();
 		foreach($pa_element_ids as $vn_element_id) {
-			if (!isset(ca_attributes::$s_get_attributes_cache[$pn_table_num.'/'.$pn_row_id][$vn_element_id])) {
+			if (!isset(ca_attributes::$s_get_attributes_cache[$pn_table_num.'/'.$pn_row_id][$vn_element_id]) || $pb_no_cache) {
 				$va_element_ids[] = $vn_element_id;
 			}
 		}
 		
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (sizeof($va_element_ids)) {
-			if (!(ca_attributes::prefetchAttributes($po_db, $pn_table_num, array($pn_row_id), $va_element_ids))) {
+			if (!(ca_attributes::prefetchAttributes($po_db, $pn_table_num, array($pn_row_id), $va_element_ids, $pa_options))) {
 				return null;
 			}
 		}
@@ -641,8 +653,6 @@ class ca_attributes extends BaseModel {
 	 * @return array Array of values indexed on row_id, then locale_id and finally an index (to accommodate repeating values)
 	 */
 	static public function getRawAttributeValuesForIDs($po_db, $pn_table_num, $pa_row_ids, $pn_element_id, $pa_options=null) {
-		
-		
 		$qr_attrs = $po_db->query("
 			SELECT 
 				caa.attribute_id, caa.locale_id, caa.element_id element_set_id, caa.row_id,
@@ -673,12 +683,12 @@ class ca_attributes extends BaseModel {
 	/**
 	 * Return number of attributes with specified element_id attached to specified row in specified table.
 	 *
-	 * @param $po_db - Db() instance to use for database access
-	 * @param $pn_table_num - table_num of table attributes to count are attached to
-	 * @param $pn_row_id - row_id of row attributes to count are attached to
-	 * @param $pn_element_id - metadata element of attribute to count
+	 * @param Db $po_db Db() instance to use for database access
+	 * @param int $pn_table_num Table number of table attributes to count are attached to
+	 * @param int $pn_row_id row_id of row attributes to count are attached to
+	 * @param int $pn_element_id Metadata element of attribute to count
 	 *
-	 * @return int - number of attributes with specified element_id attached to specified row
+	 * @return int number of attributes with specified element_id attached to specified row
 	 */
 	static public function getAttributeCount($po_db, $pn_table_num, $pn_row_id, $pn_element_id) {
 		$qr_attrs = $po_db->query("
