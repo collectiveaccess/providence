@@ -2084,12 +2084,17 @@
 		 *
 		 * @param array $pa_options Option include:
 		 *		countOnly = Return number of references only. [Default is false]
+		 *		row_id = Return references for specified row. [Default is to return references for currently loaded row]
 		 *
 		 * @return mixed A list of references, key'ed on table number and then primary key value; values are arrays of element_ids. If the 'countOnly' option is set then an integer count of the references is returned.
 		 */
 		public function getAuthorityElementReferences($pa_options=null) {
 			if (!($vn_datatype = $this->authorityElementDatatype())) { return null; }
-			if (!($vn_id = $this->getPrimaryKey())) { return null; }
+			if (!($vn_id = caGetOption('row_id', $pa_options, null))) { 
+				if (!($vn_id = $this->getPrimaryKey())) { 
+					return null; 
+				}
+			}
 			
 			$pn_count_only = caGetOption('countOnly', $pa_options, false);
 			
