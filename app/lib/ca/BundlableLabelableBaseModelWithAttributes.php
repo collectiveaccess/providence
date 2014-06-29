@@ -53,8 +53,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	protected $opo_idno_plugin_instance;
 	
 	static $s_idno_instance_cache = array();
-	
-	protected $_rowAsSearchResult;
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
@@ -62,12 +60,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_entries.php');
 		
 		parent::__construct($pn_id);	# call superclass constructor
-
-		if ($pn_id) {
-			if ($this->_rowAsSearchResult = $this->makeSearchResult($this->tableName(), array($pn_id))) {
-				$this->_rowAsSearchResult->nextHit();
-			}
-		}
 		
 		$this->initLabelDefinitions();
 	}
@@ -79,12 +71,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		global $AUTH_CURRENT_USER_ID;
 		
 		$vn_rc = parent::load($pm_id);
-		
-		if ($vn_id = $this->getPrimaryKey()) {
-			if ($this->_rowAsSearchResult = $this->makeSearchResult($this->tableName(), array($vn_id))) {
-				$this->_rowAsSearchResult->nextHit();
-			}
-		}
 		
 		if ($this->getAppConfig()->get('perform_item_level_access_checking')) {
 			if ($this->checkACLAccessForUser(new ca_users($AUTH_CURRENT_USER_ID)) == __CA_ACL_NO_ACCESS__) {
@@ -218,13 +204,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$this->opo_app_plugin_manager->hookAfterBundleInsert(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this));
 		
 		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
-		
-		if ($vn_id = $this->getPrimaryKey()) {
-			if ($this->_rowAsSearchResult = $this->makeSearchResult($this->tableName(), array($vn_id))) {
-				$this->_rowAsSearchResult->nextHit();
-			}
-		}
-		
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
@@ -508,11 +487,139 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *		returnAsLinkTarget = Optional link target. If any plugin implementing hookGetAsLink() responds to the specified target then the plugin will be used to generate the links rather than CA's default link generator.
 	 */
 	public function get($ps_field, $pa_options=null) {
-		if ($this->hasField($ps_field)) { return BaseModel::get($ps_field, $pa_options); }
-		if($this->_rowAsSearchResult) {
-			return $this->_rowAsSearchResult->get($ps_field, $pa_options);
+		if(!is_array($pa_options)) { $pa_options = array(); }
+		
+		$vs_template =				caGetOption('template', $pa_options, null);
+		$vb_return_as_array =		caGetOption('returnAsArray', $pa_options, null, array('castTo' => 'bool'));
+	
+		$vb_return_as_link =		caGetOption('returnAsLink', $pa_options, false);
+		$vs_return_as_link_text =	caGetOption('returnAsLinkText', $pa_options, false);
+		$vs_return_as_link_target =	caGetOption('returnAsLinkTarget', $pa_options, '');
+		$vs_return_as_link_target =	caGetOption('returnAsLinkAttributes', $pa_options, null, array('castTo' => 'array'));
+		
+		$vb_return_all_locales =	caGetOption('returnAllLocales', $pa_options, false);
+		$vs_delimiter =				caGetOption('delimiter', $pa_options, '; ');
+		$va_restrict_to_rel_types =	caGetOption('restrictToRelationshipTypes', $pa_options, null, array('castTo' => 'array'));
+		
+		if ($vb_return_all_locales && !$vb_return_as_array) { $vb_return_as_array = true; }
+		
+		$va_get_where = 			(isset($pa_options['where']) && is_array($pa_options['where']) && sizeof($pa_options['where'])) ? $pa_options['where'] : null;
+		
+		
+		// does get refer to an attribute?
+		$va_tmp = explode('.', $ps_field);
+		
+		if(sizeof($va_tmp) > 1) {
+			if ($va_tmp[0] != $this->tableName()) {
+				$vs_access_chk_key  = $ps_field;
+			} else {
+				$va_tmp2 = $va_tmp;
+				array_shift($va_tmp2);
+				$vs_access_chk_key  = join(".", $va_tmp2); 
+			}
+		} else {
+			$vs_access_chk_key = $ps_field;
 		}
-		return null;
+		
+		
+		if (!$this->hasField($va_tmp[sizeof($va_tmp)-1]) || $this->getFieldInfo($va_tmp[sizeof($va_tmp)-1], 'ALLOW_BUNDLE_ACCESS_CHECK')) {
+			if (caGetBundleAccessLevel($this->tableName(), $vs_access_chk_key) == __CA_BUNDLE_ACCESS_NONE__) {
+				return null;
+			}
+		}
+		
+		switch(sizeof($va_tmp)) {
+			# -------------------------------------
+			case 1:
+			case 2:		// table_name.field_name || table_name.related
+			case 3:		// table_name.field_name.sub_element || table_name.related.field_name
+			case 4:		// table_name.related.field_name.sub_element
+			case 5:		// table_name.related.hierarchy.field_name.sub_element
+			
+				if ($t_instance = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true)) {
+				
+					$va_opts = array();
+					
+					$vb_is_related = false;
+					$vb_is_hierarchy = false;
+					if ($va_tmp[1] === 'related') {
+						array_splice($va_tmp, 1, 1);
+						$vb_is_related = true;
+					}
+					if ($vb_is_related || ($va_tmp[0] !== $this->tableName())) {		// must be related table			
+						$va_related_items = $this->getRelatedItems($va_tmp[0], $pa_options);
+
+						if ($vb_return_as_array && (sizeof($va_tmp) == 1)) {
+							//
+							// When spec is a related table to be returned as arrray
+							// Just return the getRelatedItems() output
+							//
+							if ($vb_return_all_locales) { 
+								$va_related_tmp = array();
+								foreach($va_related_items as $vn_i => $va_related_item) {
+									$va_related_tmp[$vn_i][$va_related_item['locale_id']] = $va_related_item;
+								}
+								return $va_related_tmp;
+							} else {
+								return $va_related_items;
+							}
+						}
+							
+						if (!$vb_return_as_array) {
+							//
+							// Adjust specs non-array gets(), adding preferred labels if no specific element is specified
+							//
+							
+							if (($va_tmp[1] == 'hierarchy') && (sizeof($va_tmp) == 2)) {
+								$va_tmp[] = "preferred_labels";
+								$va_opts['hierarchicalDelimiter'] = caGetOption('hierarchicalDelimiter', $pa_options, '; ');
+							}
+				
+							if (sizeof($va_tmp) == 1) { $va_tmp[] = 'preferred_labels'; }
+						}
+					
+						$vs_pk = $t_instance->primaryKey();
+						$va_ids = caExtractValuesFromArrayList($va_related_items, $vs_pk, array('preserveKeys' => false));
+						if (!is_array($va_ids) || !sizeof($va_ids)) { return null; }
+					
+						$qr_res = caMakeSearchResult($va_tmp[0], $va_ids);
+				
+						$va_vals = array();
+						
+						if ($vs_template = caGetOption('template', $pa_options, null)) {
+							$va_opts['template'] = $vs_template;
+							$vs_get_spec = $va_tmp[0];
+						} else {
+							$vs_get_spec = join(".", $va_tmp);
+						}
+						while($qr_res->nextHit()) {
+							if ($vb_return_all_locales) {
+								// Return all locales get
+								if (is_array($va_vals_by_locale_list = $qr_res->get($vs_get_spec, array_merge($pa_options, array('returnAsArray' => true, 'returnAllLocales' => true))))) {
+									foreach($va_vals_by_locale_list as $vn_attr_id => $va_vals_by_locale) {
+										$va_vals[] = $va_vals_by_locale;
+									}
+								}
+								continue;
+							} elseif($va_tmp[1] == 'hierarchy') {
+								$va_vals[] = $qr_res->get($vs_get_spec, $pa_options);
+							} else {
+								$va_vals[] = $qr_res->get($vs_get_spec, array_merge($pa_options, array('returnAsArray' => false)));
+							}
+						}
+						if($vb_return_as_array) {
+							return $va_vals;
+						} else {
+							return join($vs_delimiter, $va_vals);
+						}
+					}
+				}
+				break;
+			# -------------------------------------
+		}
+		
+			
+		return parent::get($ps_field, $pa_options);
 	}
 	# ------------------------------------------------------------------
 	/**
