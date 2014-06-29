@@ -127,7 +127,7 @@
  			if($o_trans = caGetOption('transaction', $pa_options, null)) {
  				$t_item->setTransaction($o_trans);
  			}
- 			if (!$t_item->load((int)$ps_value)) {
+ 			if (!$t_item->load(array($t_item->primaryKey() => (int)$ps_value, 'deleted' => 0))) {
  				if ($ps_value) {
  					$this->postError(1970, _t('%1 id %2 is not a valid id for %3 [%4]', $this->ops_name_singular, $ps_value, $pa_element_info['displayLabel'], $pa_element_info['element_code']), $this->ops_name_plural.'AttributeValue->parseValue()');
  				} else {
