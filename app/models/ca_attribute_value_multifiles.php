@@ -34,10 +34,6 @@
    *
    */
 
-require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
-require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
-
-
 BaseModel::$s_ca_models_definitions['ca_attribute_value_multifiles'] = array(
  	'NAME_SINGULAR' 	=> _t('attribute value multifile'),
  	'NAME_PLURAL' 		=> _t('attribute value multifiles'),
@@ -97,7 +93,7 @@ BaseModel::$s_ca_models_definitions['ca_attribute_value_multifiles'] = array(
  	)
 );
 
-class ca_attribute_value_multifiles extends BundlableLabelableBaseModelWithAttributes implements IBundleProvider {
+class ca_attribute_value_multifiles extends BaseModel {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
