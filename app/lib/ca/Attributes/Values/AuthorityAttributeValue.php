@@ -76,6 +76,8 @@
  		 * @return string The value
  		 */
 		public function getDisplayValue($pa_options=null) {
+			if (!is_array($pa_options)) { $pa_options = array(); }
+			
 			$o_config = Configuration::load();
 			if(is_array($va_lookup_template = $o_config->getList($this->ops_table_name.'_lookup_settings'))) {
 				$vs_default_template = join($o_config->get($this->ops_table_name.'_lookup_delimiter'), $va_lookup_template);
@@ -88,7 +90,7 @@
 			$vb_ids_only = (bool)caGetOption('idsOnly', $pa_options, false);
 			
 			if ($vb_ids_only) { return $this->opn_id; }
-			return $this->opn_id ? caProcessTemplateForIDs($ps_template, $this->ops_table_name, array($this->opn_id), array_merge($pa_options, array('returnAsArray' => false))).($vb_include_id ? " [".$this->opn_id."]" : '') : "";
+			return $this->opn_id ? caProcessTemplateForIDs($ps_template, $this->ops_table_name, array($this->opn_id), array_merge($pa_options, array('returnAsArray' => false, 'returnAllLocales' => false))).($vb_include_id ? " [".$this->opn_id."]" : '') : "";
 		}
 		# ------------------------------------------------------------------
  		/**
