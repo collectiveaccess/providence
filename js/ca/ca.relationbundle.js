@@ -203,7 +203,7 @@ var caUI = caUI || {};
 				});
 				
 				// select default
-				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).attr('selectedIndex', default_index);
+				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).prop('selectedIndex', default_index);
 			
 				// set current type
 				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).data('item_type_id', type_id);

@@ -650,9 +650,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			$vs_buf .= "<br style='clear: both;'/></div></h4>\n";
 		} else {	
 			if ($vn_item_id) {
-				if($po_view->request->user->canDoAction("can_edit_".$vs_priv_table_name) && (sizeof($t_item->getTypeList()) > 1)){
-
-										
+				if($po_view->request->user->canDoAction("can_edit_".$vs_priv_table_name) && (sizeof($t_item->getTypeList()) > 1)){		
 					$vs_buf .= "<strong>"._t("Editing %1", $vs_type_name).": </strong>\n";
 				}else{
 					$vs_buf .= "<strong>"._t("Viewing %1", $vs_type_name).": </strong>\n";
@@ -682,51 +680,55 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 						}
 					}
 				}
-					
+					//ca_objects_dont_use_labels
 				$vs_label = '';
-				if ($vs_get_spec = $po_view->request->config->get("{$vs_table_name}_inspector_display_title")) {
-					$vs_label = caProcessTemplateForIDs($vs_get_spec, $vs_table_name, array($t_item->getPrimaryKey()));
-				} else {
-					$va_object_collection_collection_ancestors = $po_view->getVar('object_collection_collection_ancestors');
-					if (
-						($t_item->tableName() == 'ca_objects') && 
-						$t_item->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && 
-						is_array($va_object_collection_collection_ancestors) && sizeof($va_object_collection_collection_ancestors)
-					) {
-						$va_collection_links = array();
-						foreach($va_object_collection_collection_ancestors as $va_collection_ancestor) {
-							$va_collection_links[] = caEditorLink($po_view->request, $va_collection_ancestor['label'], '', 'ca_collections', $va_collection_ancestor['collection_id']);
+				$vb_dont_use_labels_for_ca_objects = (bool)$t_item->getAppConfig()->get('ca_objects_dont_use_labels');
+				if(!($vs_table_name === 'ca_objects') && $vb_dont_use_labels_for_ca_objects) {
+					if ($vs_get_spec = $po_view->request->config->get("{$vs_table_name}_inspector_display_title")) {
+						$vs_label = caProcessTemplateForIDs($vs_get_spec, $vs_table_name, array($t_item->getPrimaryKey()));
+					} else {
+						$va_object_collection_collection_ancestors = $po_view->getVar('object_collection_collection_ancestors');
+						if (
+							($t_item->tableName() == 'ca_objects') && 
+							$t_item->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && 
+							is_array($va_object_collection_collection_ancestors) && sizeof($va_object_collection_collection_ancestors)
+						) {
+							$va_collection_links = array();
+							foreach($va_object_collection_collection_ancestors as $va_collection_ancestor) {
+								$va_collection_links[] = caEditorLink($po_view->request, $va_collection_ancestor['label'], '', 'ca_collections', $va_collection_ancestor['collection_id']);
+							}
+							$vs_label .= join(" / ", $va_collection_links).' &gt; ';
 						}
-						$vs_label .= join(" / ", $va_collection_links).' &gt; ';
-					}
 					
-					if (method_exists($t_item, 'getLabelForDisplay')) {
-						$vn_parent_index = (sizeof($va_ancestors) - 1);
-						if ($vn_parent_id && (($vs_table_name != 'ca_places') || ($vn_parent_index > 0))) {
-							$va_parent = $va_ancestors[$vn_parent_index];
-							$vs_disp_fld = $t_item->getLabelDisplayField();
+						if (method_exists($t_item, 'getLabelForDisplay')) {
+							$vn_parent_index = (sizeof($va_ancestors) - 1);
+							if ($vn_parent_id && (($vs_table_name != 'ca_places') || ($vn_parent_index > 0))) {
+								$va_parent = $va_ancestors[$vn_parent_index];
+								$vs_disp_fld = $t_item->getLabelDisplayField();
 							
-							if ($va_parent['NODE'][$vs_disp_fld] && ($vs_editor_link = caEditorLink($po_view->request, $va_parent['NODE'][$vs_disp_fld], '', $vs_table_name, $va_parent['NODE'][$t_item->primaryKey()]))) {
-								$vs_label .= $vs_editor_link.' &gt; '.$t_item->getLabelForDisplay();
+								if ($va_parent['NODE'][$vs_disp_fld] && ($vs_editor_link = caEditorLink($po_view->request, $va_parent['NODE'][$vs_disp_fld], '', $vs_table_name, $va_parent['NODE'][$t_item->primaryKey()]))) {
+									$vs_label .= $vs_editor_link.' &gt; '.$t_item->getLabelForDisplay();
+								} else {
+									$vs_label .= ($va_parent['NODE'][$vs_disp_fld] ? $va_parent['NODE'][$vs_disp_fld].' &gt; ' : '').$t_item->getLabelForDisplay();
+								}
 							} else {
-								$vs_label .= ($va_parent['NODE'][$vs_disp_fld] ? $va_parent['NODE'][$vs_disp_fld].' &gt; ' : '').$t_item->getLabelForDisplay();
+								$vs_label .= $t_item->getLabelForDisplay();
+								if (($vs_table_name === 'ca_editor_uis') && (in_array($po_view->request->getAction(), array('EditScreen', 'DeleteScreen', 'SaveScreen')))) {
+									$t_screen = new ca_editor_ui_screens($po_view->request->getParameter('screen_id', pInteger));
+									if (!($vs_screen_name = $t_screen->getLabelForDisplay())) {
+										$vs_screen_name = _t('new screen');
+									}
+									$vs_label .= " &gt; ".$vs_screen_name;
+								} 
+							
 							}
 						} else {
-							$vs_label .= $t_item->getLabelForDisplay();
-							if (($vs_table_name === 'ca_editor_uis') && (in_array($po_view->request->getAction(), array('EditScreen', 'DeleteScreen', 'SaveScreen')))) {
-								$t_screen = new ca_editor_ui_screens($po_view->request->getParameter('screen_id', pInteger));
-								if (!($vs_screen_name = $t_screen->getLabelForDisplay())) {
-									$vs_screen_name = _t('new screen');
-								}
-								$vs_label .= " &gt; ".$vs_screen_name;
-							} 
-							
+							$vs_label .= $t_item->get('name');
 						}
-					} else {
-						$vs_label .= $t_item->get('name');
 					}
 				}
 				
+				$vb_show_idno = (bool)($vs_idno = $t_item->get($t_item->getProperty('ID_NUMBERING_ID_FIELD')));
 				
 				if (!$vs_label) { 
 					switch($vs_table_name) {
@@ -746,13 +748,18 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 							}
 							break;
 						default:
-							$vs_label = '['._t('BLANK').']'; 
+							if (($vs_table_name === 'ca_objects') && $vb_dont_use_labels_for_ca_objects) {
+								$vs_label = $vs_idno;
+								$vb_show_idno = false;
+							} else {
+								$vs_label =  '['._t('BLANK').']'; 
+							}
 							break;
 					}
 				}
 			
-				$vs_idno = $t_item->get($t_item->getProperty('ID_NUMBERING_ID_FIELD'));
-				$vs_buf .= "<div style='width:190px; overflow:hidden;'>{$vs_label}"."<a title='$vs_idno'>".($vs_idno ? " ({$vs_idno})" : '')."</a></div>";
+				
+				$vs_buf .= "<div style='width:190px; overflow:hidden;'>{$vs_label}".(($vb_show_idno) ? "<a title='$vs_idno'>".($vs_idno ? " ({$vs_idno})" : '') : "")."</a></div>";
 				if (($vs_table_name === 'ca_object_lots') && $t_item->getPrimaryKey()) {
 					$vs_buf .= "<div id='inspectorLotMediaDownload'><strong>".((($vn_num_objects = $t_item->numObjects()) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
 				} 
