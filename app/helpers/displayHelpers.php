@@ -681,10 +681,10 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 						}
 					}
 				}
-					//ca_objects_dont_use_labels
+				
 				$vs_label = '';
 				$vb_dont_use_labels_for_ca_objects = (bool)$t_item->getAppConfig()->get('ca_objects_dont_use_labels');
-				if(!($vs_table_name === 'ca_objects') && $vb_dont_use_labels_for_ca_objects) {
+				if(!(($vs_table_name === 'ca_objects') && $vb_dont_use_labels_for_ca_objects)){
 					if ($vs_get_spec = $po_view->request->config->get("{$vs_table_name}_inspector_display_title")) {
 						$vs_label = caProcessTemplateForIDs($vs_get_spec, $vs_table_name, array($t_item->getPrimaryKey()));
 					} else {
