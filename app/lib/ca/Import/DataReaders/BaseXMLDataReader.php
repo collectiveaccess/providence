@@ -141,7 +141,7 @@ class BaseXMLDataReader extends BaseDataReader {
 			$this->ops_xpath = $this->_convertXPathExpression($ps_base_path);
 		}
 		
-		$this->opo_xml = DOMDocument::load($ps_source);
+		$this->opo_xml = DOMDocument::load($ps_source, LIBXML_NSCLEAN);
 		$this->opo_xpath = new DOMXPath($this->opo_xml);
 		
 		if ($this->ops_xml_namespace_prefix && $this->ops_xml_namespace) {
@@ -326,7 +326,7 @@ class BaseXMLDataReader extends BaseDataReader {
 		foreach($va_tmp as $vn_i => $vs_spec_element) {
 			if(!$vs_spec_element) { continue; }
 			if (
-				(strpos($vs_spec_element, ":") === false)
+				!(preg_match("!^[A-Za-z0-9\-_]+:[A-Za-z0-9\-_]+!", $vs_spec_element))
 				&&
 				(strpos($vs_spec_element, "@") !== 0)
 			) {
