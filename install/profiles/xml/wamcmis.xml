@@ -33,6 +33,14 @@
             </label>
           </labels>
         </item>
+        <item idno="mineral" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Mineral</name_singular>
+              <name_plural>Minerals</name_plural>
+            </label>
+          </labels>
+        </item>
       </items>
     </list>
     <list code="list_item_label_types" hierarchical="1" system="0" vocabulary="0">
@@ -1123,6 +1131,14 @@
               </items>
             </item>
           </items>
+        </item>
+        <item idno="map" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Map</name_singular>
+              <name_plural>Maps</name_plural>
+            </label>
+          </labels>
         </item>
       </items>
     </list>
@@ -11765,6 +11781,1049 @@
           <name>Geologic Time Scale</name>
         </label>
       </labels>
+      <items>
+        <item idno="Mesozoic" enabled="0" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Mesozoic</name_singular>
+              <name_plural>Mesozoic</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="Jurassic" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Jurassic</name_singular>
+                  <name_plural>Jurassic</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="Middle_Jurassic" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Middle Jurassic</name_singular>
+                      <name_plural>Middle Jurassic</name_plural>
+                    </label>
+                  </labels>
+                  <items>
+                    <item idno="Bajocian" enabled="1" default="0">
+                      <labels>
+                        <label locale="en_AU" preferred="1">
+                          <name_singular>Bajocian</name_singular>
+                          <name_plural>Bajocian</name_plural>
+                        </label>
+                      </labels>
+                    </item>
+                  </items>
+                </item>
+                <item idno="Upper_Jurassic" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Upper Jurassic</name_singular>
+                      <name_plural>Upper Jurassic</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Rhaetic" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Rhaetic</name_singular>
+                      <name_plural>Rhaetic</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Lower_Lias" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Lower Lias</name_singular>
+                      <name_plural>Lower Lias</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="Cretaceous" enabled="0" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Cretaceous</name_singular>
+                  <name_plural>Cretaceous</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="Upper_Cretaceous" enabled="0" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Upper Cretaceous</name_singular>
+                      <name_plural>Upper Cretaceous</name_plural>
+                    </label>
+                  </labels>
+                  <items>
+                    <item idno="Maastrichtian" enabled="1" default="0">
+                      <labels>
+                        <label locale="en_AU" preferred="1">
+                          <name_singular>Maastrichtian</name_singular>
+                          <name_plural>Maastrichtian</name_plural>
+                        </label>
+                      </labels>
+                    </item>
+                  </items>
+                </item>
+                <item idno="Late_Cretaceous" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Late Cretaceous</name_singular>
+                      <name_plural>Late Cretaceous</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Maastrichtian" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Maastrichtian</name_singular>
+                      <name_plural>Maastrichtian</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Albian_Aptian" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Albian-Aptian</name_singular>
+                      <name_plural>Albian-Aptian</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Campanian" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Campanian</name_singular>
+                      <name_plural>Campanian</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Lower_Cretaceous" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Lower Cretaceous</name_singular>
+                      <name_plural>Lower Cretaceous</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Albian" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Albian</name_singular>
+                      <name_plural>Albian</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Santonian" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Santonian</name_singular>
+                      <name_plural>Santonian</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="Triassic" enabled="0" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Triassic</name_singular>
+                  <name_plural>Triassic</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="Lower_Triassic" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Lower Triassic</name_singular>
+                      <name_plural>Lower Triassic</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Rhaetic" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Rhaetic</name_singular>
+                      <name_plural>Rhaetic</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+          </items>
+        </item>
+        <item idno="Cenozoic" enabled="0" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Cenozoic</name_singular>
+              <name_plural>Cenozoic</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="Neogene" enabled="0" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Neogene</name_singular>
+                  <name_plural>Neogene</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="Pliocene" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Pliocene</name_singular>
+                      <name_plural>Pliocene</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Lower_Miocene" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Lower Miocene</name_singular>
+                      <name_plural>Lower Miocene</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="_Pliocene" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>?Pliocene</name_singular>
+                      <name_plural>?Pliocene</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="_Miocene" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>?Miocene</name_singular>
+                      <name_plural>?Miocene</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Miocene" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Miocene</name_singular>
+                      <name_plural>Miocene</name_plural>
+                    </label>
+                  </labels>
+                  <items>
+                    <item idno="Mid_Miocene" enabled="1" default="0">
+                      <labels>
+                        <label locale="en_AU" preferred="1">
+                          <name_singular>Mid Miocene</name_singular>
+                          <name_plural>Mid Miocene</name_plural>
+                        </label>
+                      </labels>
+                    </item>
+                  </items>
+                </item>
+                <item idno="Middle_Miocene" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Middle Miocene</name_singular>
+                      <name_plural>Middle Miocene</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Holocene" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Holocene</name_singular>
+                      <name_plural>Holocene</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Pleistocene" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Pleistocene</name_singular>
+                      <name_plural>Pleistocene</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="Paleogene" enabled="0" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Paleogene</name_singular>
+                  <name_plural>Paleogene</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="Upper_Eocene" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Upper Eocene</name_singular>
+                      <name_plural>Upper Eocene</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Oligocene" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Oligocene</name_singular>
+                      <name_plural>Oligocene</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="_Oligocene" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>?Oligocene</name_singular>
+                      <name_plural>?Oligocene</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Eocene" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Eocene</name_singular>
+                      <name_plural>Eocene</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Late_Eocene" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Late Eocene</name_singular>
+                      <name_plural>Late Eocene</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Paleocene" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Paleocene</name_singular>
+                      <name_plural>Paleocene</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="Quaternary" enabled="0" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Quaternary</name_singular>
+                  <name_plural>Quaternary</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="Holocene" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Holocene</name_singular>
+                      <name_plural>Holocene</name_plural>
+                    </label>
+                  </labels>
+                  <items>
+                    <item idno="Probably_middle_Holocene" enabled="1" default="0">
+                      <labels>
+                        <label locale="en_AU" preferred="1">
+                          <name_singular>Probably middle Holocene</name_singular>
+                          <name_plural>Probably middle Holocene</name_plural>
+                        </label>
+                      </labels>
+                    </item>
+                    <item idno="Middle_Holocene" enabled="1" default="0">
+                      <labels>
+                        <label locale="en_AU" preferred="1">
+                          <name_singular>Middle Holocene</name_singular>
+                          <name_plural>Middle Holocene</name_plural>
+                        </label>
+                      </labels>
+                    </item>
+                    <item idno="Mid_Holocene" enabled="1" default="0">
+                      <labels>
+                        <label locale="en_AU" preferred="1">
+                          <name_singular>Mid Holocene</name_singular>
+                          <name_plural>Mid Holocene</name_plural>
+                        </label>
+                      </labels>
+                    </item>
+                  </items>
+                </item>
+                <item idno="Pleistocene" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Pleistocene</name_singular>
+                      <name_plural>Pleistocene</name_plural>
+                    </label>
+                  </labels>
+                  <items>
+                    <item idno="Middle_Pleistocene" enabled="1" default="0">
+                      <labels>
+                        <label locale="en_AU" preferred="1">
+                          <name_singular>Middle Pleistocene</name_singular>
+                          <name_plural>Middle Pleistocene</name_plural>
+                        </label>
+                      </labels>
+                    </item>
+                  </items>
+                </item>
+                <item idno="Pleistocene__presumably_" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Pleistocene (presumably)</name_singular>
+                      <name_plural>Pleistocene (presumably)</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Holocene__presumably" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Holocene, presumably</name_singular>
+                      <name_plural>Holocene, presumably</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Holocene_" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Holocene?</name_singular>
+                      <name_plural>Holocene?</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="_Holocene" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>?Holocene</name_singular>
+                      <name_plural>?Holocene</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Modern" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Modern</name_singular>
+                      <name_plural>Modern</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Late_Pleistocene" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Late Pleistocene</name_singular>
+                      <name_plural>Late Pleistocene</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Historic" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Historic</name_singular>
+                      <name_plural>Historic</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="Middle_Oligocene" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Middle Oligocene</name_singular>
+                  <name_plural>Middle Oligocene</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="_Miocene" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>?Miocene</name_singular>
+                  <name_plural>?Miocene</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Eocene" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Eocene</name_singular>
+                  <name_plural>Eocene</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="Late_Eocene" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Late Eocene</name_singular>
+                      <name_plural>Late Eocene</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="_Neogene" enabled="0" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>?Neogene</name_singular>
+                  <name_plural>?Neogene</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="__Pliocene" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>? Pliocene</name_singular>
+                      <name_plural>? Pliocene</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="_Pliocene" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>?Pliocene</name_singular>
+                      <name_plural>?Pliocene</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="Quaternaryq" enabled="0" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Quaternaryq</name_singular>
+                  <name_plural>Quaternaryq</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="Pleistocene" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Pleistocene</name_singular>
+                      <name_plural>Pleistocene</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Holocene" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Holocene</name_singular>
+                      <name_plural>Holocene</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="_Oligocene" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>?Oligocene</name_singular>
+                  <name_plural>?Oligocene</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Tertiary" enabled="0" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Tertiary</name_singular>
+                  <name_plural>Tertiary</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="Oligocene" enabled="0" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Oligocene</name_singular>
+                      <name_plural>Oligocene</name_plural>
+                    </label>
+                  </labels>
+                  <items>
+                    <item idno="early_Oligocene" enabled="1" default="0">
+                      <labels>
+                        <label locale="en_AU" preferred="1">
+                          <name_singular>early Oligocene</name_singular>
+                          <name_plural>early Oligocene</name_plural>
+                        </label>
+                      </labels>
+                    </item>
+                  </items>
+                </item>
+                <item idno="Pliocene" enabled="0" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Pliocene</name_singular>
+                      <name_plural>Pliocene</name_plural>
+                    </label>
+                  </labels>
+                  <items>
+                    <item idno="mid_Pliocene" enabled="1" default="0">
+                      <labels>
+                        <label locale="en_AU" preferred="1">
+                          <name_singular>mid Pliocene</name_singular>
+                          <name_plural>mid Pliocene</name_plural>
+                        </label>
+                      </labels>
+                    </item>
+                  </items>
+                </item>
+              </items>
+            </item>
+            <item idno="Pliocene" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Pliocene</name_singular>
+                  <name_plural>Pliocene</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Paleocene" enabled="0" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Paleocene</name_singular>
+                  <name_plural>Paleocene</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="Middle_Paleocene" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Middle Paleocene</name_singular>
+                      <name_plural>Middle Paleocene</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="Miocene" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Miocene</name_singular>
+                  <name_plural>Miocene</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="medial" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>medial</name_singular>
+                      <name_plural>medial</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Mid_Miocene" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Mid Miocene</name_singular>
+                      <name_plural>Mid Miocene</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="_Quaternary" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>?Quaternary</name_singular>
+                  <name_plural>?Quaternary</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Late_Oligocene" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Late Oligocene</name_singular>
+                  <name_plural>Late Oligocene</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Batesfordian" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Batesfordian</name_singular>
+                  <name_plural>Batesfordian</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Kalimnan" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Kalimnan</name_singular>
+                  <name_plural>Kalimnan</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Plio_Pleistocene" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Plio-Pleistocene</name_singular>
+                  <name_plural>Plio-Pleistocene</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="late_Miocene" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>late Miocene</name_singular>
+                  <name_plural>late Miocene</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Balcombian" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Balcombian</name_singular>
+                  <name_plural>Balcombian</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="_Pliocene" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>?Pliocene</name_singular>
+                  <name_plural>?Pliocene</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Upper_Paleocene" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Upper Paleocene</name_singular>
+                  <name_plural>Upper Paleocene</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Upper_Oligocene" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Upper Oligocene</name_singular>
+                  <name_plural>Upper Oligocene</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Pleistocene" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Pleistocene</name_singular>
+                  <name_plural>Pleistocene</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="Early_Miocene" enabled="0" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Early Miocene</name_singular>
+                  <name_plural>Early Miocene</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="Longfordian" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Longfordian</name_singular>
+                      <name_plural>Longfordian</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="_Oligocene_____Miocene" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>?Oligocene / ? Miocene</name_singular>
+                  <name_plural>?Oligocene / ? Miocene</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="_Eocene" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>?Eocene</name_singular>
+                  <name_plural>?Eocene</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="Cenozoic" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Cenozoic</name_singular>
+              <name_plural>Cenozoic</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Palaeozoic" enabled="0" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Palaeozoic</name_singular>
+              <name_plural>Palaeozoic</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="Devonian" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Devonian</name_singular>
+                  <name_plural>Devonian</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="Upper" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Upper</name_singular>
+                      <name_plural>Upper</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Frasnian" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Frasnian</name_singular>
+                      <name_plural>Frasnian</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="_Frasnian" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>?Frasnian</name_singular>
+                      <name_plural>?Frasnian</name_plural>
+                    </label>
+                  </labels>
+                </item>
+                <item idno="Late_Devonian" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Late Devonian</name_singular>
+                      <name_plural>Late Devonian</name_plural>
+                    </label>
+                  </labels>
+                  <items>
+                    <item idno="Frasnian" enabled="1" default="0">
+                      <labels>
+                        <label locale="en_AU" preferred="1">
+                          <name_singular>Frasnian</name_singular>
+                          <name_plural>Frasnian</name_plural>
+                        </label>
+                      </labels>
+                    </item>
+                  </items>
+                </item>
+              </items>
+            </item>
+            <item idno="Ordovician" enabled="0" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Ordovician</name_singular>
+                  <name_plural>Ordovician</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="Upper_Ordovician" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Upper Ordovician</name_singular>
+                      <name_plural>Upper Ordovician</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="Carboniferous" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Carboniferous</name_singular>
+                  <name_plural>Carboniferous</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="Lower_Carboniferous" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Lower Carboniferous</name_singular>
+                      <name_plural>Lower Carboniferous</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+            <item idno="Permian" enabled="0" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Permian</name_singular>
+                  <name_plural>Permian</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="Early_Permian" enabled="0" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Early Permian</name_singular>
+                      <name_plural>Early Permian</name_plural>
+                    </label>
+                  </labels>
+                  <items>
+                    <item idno="Sakmanian" enabled="1" default="0">
+                      <labels>
+                        <label locale="en_AU" preferred="1">
+                          <name_singular>Sakmanian</name_singular>
+                          <name_plural>Sakmanian</name_plural>
+                        </label>
+                      </labels>
+                    </item>
+                  </items>
+                </item>
+              </items>
+            </item>
+          </items>
+        </item>
+        <item idno="Cenozoic" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Cenozoic</name_singular>
+              <name_plural>Cenozoic</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Holocene__presumably" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Holocene, presumably</name_singular>
+              <name_plural>Holocene, presumably</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Mesozoic" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Mesozoic</name_singular>
+              <name_plural>Mesozoic</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="_Mesozoic" enabled="0" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>?Mesozoic</name_singular>
+              <name_plural>?Mesozoic</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="_Jurassic" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>?Jurassic</name_singular>
+                  <name_plural>?Jurassic</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="_Cretaceous" enabled="0" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>?Cretaceous</name_singular>
+                  <name_plural>?Cretaceous</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="_Lower_Cretaceous" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>?Lower Cretaceous</name_singular>
+                      <name_plural>?Lower Cretaceous</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+          </items>
+        </item>
+        <item idno="_Cenozoic" enabled="0" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>?Cenozoic</name_singular>
+              <name_plural>?Cenozoic</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="_Pliocene" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>?Pliocene</name_singular>
+                  <name_plural>?Pliocene</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="_Quaternary" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>?Quaternary</name_singular>
+                  <name_plural>?Quaternary</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
+        </item>
+        <item idno="Balcombian" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Balcombian</name_singular>
+              <name_plural>Balcombian</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Upper_Lutetian" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Upper Lutetian</name_singular>
+              <name_plural>Upper Lutetian</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Cenoz" enabled="0" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Cenoz</name_singular>
+              <name_plural>Cenoz</name_plural>
+            </label>
+          </labels>
+          <items>
+            <item idno="Neogene" enabled="0" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>Neogene</name_singular>
+                  <name_plural>Neogene</name_plural>
+                </label>
+              </labels>
+              <items>
+                <item idno="Holocene" enabled="1" default="0">
+                  <labels>
+                    <label locale="en_AU" preferred="1">
+                      <name_singular>Holocene</name_singular>
+                      <name_plural>Holocene</name_plural>
+                    </label>
+                  </labels>
+                </item>
+              </items>
+            </item>
+          </items>
+        </item>
+      </items>
+    </list>
+    <list code="chemical_elements" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_AU">
+          <name>Chemical Elements</name>
+        </label>
+      </labels>
+    </list>
+    <list code="minerals" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_AU">
+          <name>Minerals</name>
+        </label>
+      </labels>
+    </list>
+    <list code="host_rock_types" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_AU">
+          <name>Host Rock</name>
+        </label>
+      </labels>
     </list>
   </lists>
   <elementSets>
@@ -12651,6 +13710,31 @@
             <setting name="displayDelimiter">,</setting>
           </settings>
         </metadataElement>
+        <metadataElement code="coordinateUncertainty" datatype="Text">
+          <labels>
+            <label locale="en_AU">
+              <name>Coorinate Uncertainty</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+            <setting name="regex"/>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="usewysiwygeditor">0</setting>
+            <setting name="doesNotTakeLocale">0</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="suggestExistingValues">1</setting>
+            <setting name="suggestExistingValueSort">value</setting>
+            <setting name="default_text"/>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+            <setting name="displayTemplate"/>
+            <setting name="displayDelimiter">,</setting>
+            <setting name="isDependentValue">0</setting>
+          </settings>
+        </metadataElement>
       </elements>
       <typeRestrictions>
         <restriction>
@@ -12674,6 +13758,36 @@
         <restriction>
           <table>ca_storage_locations</table>
           <type>site</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_objects</table>
+          <type>tz</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_objects</table>
+          <type>mineral_simpson</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_objects</table>
+          <type>mineral_mdc</type>
+          <includeSubtypes>1</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -13385,6 +14499,15 @@
         </restriction>
         <restriction>
           <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_occurrences</table>
+          <type/>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -15524,13 +16647,22 @@ http://palaeontology.palass-pubs.org/pdf/Vol%2031/Pages%20223-227.pdf2011.</desc
       <settings>
         <setting name="dateRangeBoundaries">1800 - tomorrow</setting>
         <setting name="default_text">now</setting>
-        <setting name="displayTemplate">^dctermsCreated</setting>
       </settings>
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
           <settings>
             <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_occurrences</table>
+          <type>resource</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
@@ -15968,7 +17100,7 @@ Examples: "mm", "C", "km", "ha".</description>
           <includeSubtypes>1</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -16353,6 +17485,34 @@ This is a legacy field for anthropology and will be excluded from the user inter
           <description>Attach media to the record</description>
         </label>
       </labels>
+      <elements>
+        <metadataElement code="mediaDescription" datatype="Text">
+          <labels>
+            <label locale="en_AU">
+              <name>Description</name>
+              <description>Add a description for the associated media</description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+            <setting name="regex"/>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="usewysiwygeditor">0</setting>
+            <setting name="doesNotTakeLocale">0</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="suggestExistingValues">0</setting>
+            <setting name="suggestExistingValueSort">value</setting>
+            <setting name="default_text"/>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+            <setting name="displayTemplate"/>
+            <setting name="displayDelimiter">,</setting>
+            <setting name="isDependentValue">0</setting>
+          </settings>
+        </metadataElement>
+      </elements>
       <typeRestrictions>
         <restriction>
           <table>ca_occurrences</table>
@@ -18603,6 +19763,228 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="siteDetailsPalaeontology" datatype="Container">
+      <labels>
+        <label locale="en_AU">
+          <name>Site Details (Palaeontology)</name>
+          <description>Enter the Site Details</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="canBeUsedInSearchForm">0</setting>
+        <setting name="canBeUsedInDisplay">0</setting>
+        <setting name="displayDelimiter"/>
+      </settings>
+      <elements>
+        <metadataElement code="siteNumber" datatype="Text">
+          <labels>
+            <label locale="en_AU">
+              <name>Site Number</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+            <setting name="regex"/>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="usewysiwygeditor">0</setting>
+            <setting name="doesNotTakeLocale">0</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="suggestExistingValues">1</setting>
+            <setting name="suggestExistingValueSort">value</setting>
+            <setting name="default_text"/>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+            <setting name="displayTemplate"/>
+            <setting name="displayDelimiter">,</setting>
+            <setting name="isDependentValue">0</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="excavation" datatype="Text">
+          <labels>
+            <label locale="en_AU">
+              <name>Excavation</name>
+              <description>Enter the excavation name within the site</description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+            <setting name="regex"/>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="usewysiwygeditor">0</setting>
+            <setting name="doesNotTakeLocale">0</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="suggestExistingValues">1</setting>
+            <setting name="suggestExistingValueSort">value</setting>
+            <setting name="default_text"/>
+          </settings>
+        </metadataElement>
+        <metadataElement code="layer" datatype="Text">
+          <labels>
+            <label locale="en_AU">
+              <name>Layer</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+            <setting name="regex"/>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="usewysiwygeditor">0</setting>
+            <setting name="doesNotTakeLocale">0</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="suggestExistingValues">1</setting>
+            <setting name="suggestExistingValueSort">value</setting>
+            <setting name="default_text"/>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+            <setting name="displayTemplate"/>
+            <setting name="displayDelimiter">,</setting>
+            <setting name="isDependentValue">0</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="depthInDeposit" datatype="Text">
+          <labels>
+            <label locale="en_AU">
+              <name>Depth in Deposit</name>
+              <description>Enter the depth within the deposit.</description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+            <setting name="regex"/>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="usewysiwygeditor">0</setting>
+            <setting name="doesNotTakeLocale">0</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="suggestExistingValues">1</setting>
+            <setting name="suggestExistingValueSort">value</setting>
+            <setting name="default_text"/>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+            <setting name="displayTemplate"/>
+            <setting name="displayDelimiter">,</setting>
+            <setting name="isDependentValue">0</setting>
+          </settings>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>vertebrate_palaeontology</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="chemical_formula" datatype="Text">
+      <labels>
+        <label locale="en_AU">
+          <name>Formula</name>
+          <description>Specify the chemical formula of the mineral</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="suggestExistingValues">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_list_items</table>
+          <type>mineral</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="mineral" datatype="List" list="minerals">
+      <labels>
+        <label locale="en_AU">
+          <name>Mineral</name>
+          <description>Specify the minerals associated with the object.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">lookup</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>mineral_mdc</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_objects</table>
+          <type>mineral_simpson</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="host_rock" datatype="List" list="host_rock_types">
+      <labels>
+        <label locale="en_AU">
+          <name>Host Rock</name>
+          <description>Specify the host rock of the object</description>
+        </label>
+      </labels>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>mineral_simpson</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_objects</table>
+          <type>mineral_mdc</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="mine_name" datatype="Text">
+      <labels>
+        <label locale="en_AU">
+          <name>Mine Name</name>
+          <description>Specify the mine name for the mineral</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="suggestExistingValues">1</setting>
+      </settings>
+      <typeRestrictions/>
+    </metadataElement>
   </elementSets>
   <userInterfaces>
     <userInterface code="loan_cataloguers_ui" type="ca_loans">
@@ -18908,39 +20290,80 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
           <bundlePlacements>
             <placement code="hier_location">
               <bundle>hierarchy_location</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="open_hierarchy">1</setting>
+              </settings>
             </placement>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="usewysiwygeditor"/>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_chemical_formula3">
+              <bundle>ca_attribute_chemical_formula</bundle>
             </placement>
             <placement code="idno">
               <bundle>idno</bundle>
+              <settings>
+                <setting name="readonly"/>
+              </settings>
             </placement>
             <placement code="item_value">
               <bundle>item_value</bundle>
+              <settings>
+                <setting name="readonly"/>
+              </settings>
             </placement>
             <placement code="is_enabled">
               <bundle>is_enabled</bundle>
+              <settings>
+                <setting name="readonly"/>
+              </settings>
             </placement>
             <placement code="is_default">
               <bundle>is_default</bundle>
+              <settings>
+                <setting name="readonly"/>
+              </settings>
             </placement>
             <placement code="rank">
               <bundle>rank</bundle>
+              <settings>
+                <setting name="readonly"/>
+              </settings>
             </placement>
             <placement code="color">
               <bundle>color</bundle>
+              <settings>
+                <setting name="readonly"/>
+              </settings>
             </placement>
             <placement code="icon">
               <bundle>icon</bundle>
+              <settings>
+                <setting name="readonly"/>
+              </settings>
             </placement>
             <placement code="validation_format">
               <bundle>validation_format</bundle>
+              <settings>
+                <setting name="readonly"/>
+              </settings>
             </placement>
             <placement code="access">
               <bundle>access</bundle>
+              <settings>
+                <setting name="readonly"/>
+              </settings>
             </placement>
             <placement code="status">
               <bundle>status</bundle>
+              <settings>
+                <setting name="readonly"/>
+              </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -19729,6 +21152,77 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
                 <setting name="maxRelationshipsPerRow"/>
               </settings>
             </placement>
+            <placement code="ca_objects_history2">
+              <bundle>ca_objects_history</bundle>
+              <settings>
+                <setting name="width">100%</setting>
+                <setting name="readonly"/>
+                <setting name="ca_object_lots_bequest_dateElement">dcModified</setting>
+                <setting name="ca_object_lots_bequest_color">#EEEEEE</setting>
+                <setting name="ca_object_lots_gift_dateElement">dcModified</setting>
+                <setting name="ca_object_lots_gift_color">#EEEEEE</setting>
+                <setting name="ca_object_lots_loan_dateElement">dcModified</setting>
+                <setting name="ca_object_lots_loan_color">bfdeff</setting>
+                <setting name="ca_object_lots_loan_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;</setting>
+                <setting name="ca_object_lots_long_term_loan_dateElement">dcModified</setting>
+                <setting name="ca_object_lots_long_term_loan_color">d3aaeb</setting>
+                <setting name="ca_object_lots_long_term_loan_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;</setting>
+                <setting name="ca_object_lots_purchase_dateElement">dcModified</setting>
+                <setting name="ca_object_lots_purchase_color">#EEEEEE</setting>
+                <setting name="ca_object_lots_restricted_gift_dateElement">dcModified</setting>
+                <setting name="ca_object_lots_restricted_gift_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_conservation_analysis_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_conservation_analysis_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_conservation_assignment_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_conservation_assignment_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_collectingEvent_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_collectingEvent_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_conservation_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_conservation_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_conservation_job_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_conservation_job_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_exhibition_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_exhibition_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_identification_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_identification_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_anthropology_register_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_anthropology_register_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_resource_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_resource_color">#EEEEEE</setting>
+                <setting name="ca_movements_movement_dateElement">planned_removal_date</setting>
+                <setting name="ca_movements_movement_color">#EEEEEE</setting>
+                <setting name="ca_loans_showTypes">7813</setting>
+                <setting name="ca_loans_showTypes">70</setting>
+                <setting name="ca_loans_showTypes">71</setting>
+                <setting name="ca_loans_custodial_dateElement">loan_out_date</setting>
+                <setting name="ca_loans_custodial_color">f09393</setting>
+                <setting name="ca_loans_custodial_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;&lt;br&gt;&#13;
+&lt;ifdef code="ca_loans.loan_period"&gt;Loan Period:&lt;/ifdef&gt; ^ca_loans.loan_period&lt;br&gt;&#13;
+Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
+&lt;unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="borrower"&gt;^ca_entities.preferred_labels&lt;/unit&gt;&lt;/unit&gt;</setting>
+                <setting name="ca_loans_in_dateElement">loan_out_date</setting>
+                <setting name="ca_loans_in_color">ffc2ff</setting>
+                <setting name="ca_loans_in_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;&lt;br&gt;&#13;
+&lt;ifdef code="ca_loans.loan_period"&gt;Loan Period:&lt;/ifdef&gt; ^ca_loans.loan_period&lt;br&gt;&#13;
+Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
+&lt;unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="borrower"&gt;^ca_entities.preferred_labels&lt;/unit&gt;&lt;/unit&gt;</setting>
+                <setting name="ca_loans_out_dateElement">loan_out_date</setting>
+                <setting name="ca_loans_out_color">f0e090</setting>
+                <setting name="ca_loans_out_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;&lt;br&gt;&#13;
+&lt;ifdef code="ca_loans.loan_period"&gt;Loan Period:&lt;/ifdef&gt; ^ca_loans.loan_period&lt;br&gt;&#13;
+Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
+&lt;unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="borrower"&gt;^ca_entities.preferred_labels&lt;/unit&gt;&lt;/unit&gt;</setting>
+                <setting name="ca_storage_locations_showRelationshipTypes">19</setting>
+                <setting name="ca_storage_locations_showRelationshipTypes">197</setting>
+                <setting name="ca_storage_locations_showRelationshipTypes">198</setting>
+                <setting name="ca_storage_locations_color">80ff59</setting>
+                <setting name="ca_storage_locations_displayTemplate">&lt;l&gt;^ca_storage_locations.preferred_labels&lt;/l&gt;</setting>
+                <setting name="showDeaccessionInformation">1</setting>
+                <setting name="deaccession_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_map_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_map_color">#EEEEEE</setting>
+              </settings>
+            </placement>
             <placement code="ca_storage_locations2">
               <bundle>ca_storage_locations</bundle>
               <settings>
@@ -20040,7 +21534,7 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <restriction type="resource"/>
             <restriction type="anthropology_register"/>
             <restriction type="exhibition"/>
-            <restriction type="conservation"/>
+            <restriction type="map"/>
           </typeRestrictions>
           <bundlePlacements>
             <placement code="preferred_labels">
@@ -20057,11 +21551,43 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
                 <setting name="readonly"/>
               </settings>
             </placement>
+            <placement code="ca_entities3">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_AU">Author / Creator</setting>
+                <setting name="add_label" locale="en_AU">Add author</setting>
+                <setting name="description" locale="en_AU">Specify the author or creator of the resource</setting>
+                <setting name="width">600px</setting>
+                <setting name="readonly"/>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="display_template">^ca_entities.preferred_labels</setting>
+                <setting name="documentation_url">http://purl.org/dc/terms/creator</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_dctermscreated4">
+              <bundle>ca_attribute_dctermscreated</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
             <placement code="ca_attribute_rft_volume4">
               <bundle>ca_attribute_rft_volume</bundle>
               <settings>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="readonly"/>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_rft_pages15">
+              <bundle>ca_attribute_rft_pages</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_description5">
@@ -20107,64 +21633,14 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
               <bundle>ca_attribute_conservation_request</bundle>
               <settings>
                 <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_entities9">
-              <bundle>ca_entities</bundle>
-              <settings>
-                <setting name="label" locale="en_AU">Requested by</setting>
-                <setting name="restrict_to_relationship_types">individual_request_cons</setting>
-                <setting name="restrict_to_types">ind</setting>
-                <setting name="list_format">bubbles</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="display_template">^ca_entities.preferred_labels</setting>
-                <setting name="minRelationshipsPerRow">1</setting>
-                <setting name="maxRelationshipsPerRow"/>
                 <setting name="readonly"/>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-              </settings>
-            </placement>
-            <placement code="ca_storage_locations9">
-              <bundle>ca_storage_locations</bundle>
-              <settings>
-                <setting name="label" locale="en_AU">Internal Location</setting>
-                <setting name="description" locale="en_AU">Enter the internal location for the event.</setting>
-                <setting name="restrict_to_types">building</setting>
-                <setting name="restrict_to_types">floor</setting>
-                <setting name="restrict_to_types">room</setting>
-                <setting name="restrict_to_types">site</setting>
-                <setting name="list_format">bubbles</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="display_template">^ca_storage_locations.preferred_labels</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow">1</setting>
-                <setting name="useHierarchicalBrowser">1</setting>
-                <setting name="hierarchicalBrowserHeight">200px</setting>
-                <setting name="readonly"/>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="dontShowDeleteButton">0</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_conservation12">
               <bundle>ca_attribute_conservation</bundle>
               <settings>
                 <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_entities13">
-              <bundle>ca_entities</bundle>
-              <settings>
-                <setting name="label" locale="en_AU">Conservator</setting>
-                <setting name="add_label" locale="en_AU">add conservator</setting>
-                <setting name="description" locale="en_AU">Choose the person who actually did the conservation.</setting>
-                <setting name="restrict_to_relationship_types">individual_conserved_cons</setting>
-                <setting name="restrict_to_types">ind</setting>
-                <setting name="list_format">bubbles</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="display_template">^ca_entities.preferred_labels</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow"/>
+                <setting name="readonly"/>
               </settings>
             </placement>
             <placement code="ca_attribute_media7">
@@ -21473,12 +22949,83 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
                 <setting name="readonly"/>
                 <setting name="dont_include_subtypes_in_type_restriction">0</setting>
                 <setting name="dontShowDeleteButton">0</setting>
+                <setting name="showCurrentOnly">1</setting>
+              </settings>
+            </placement>
+            <placement code="ca_objects_history5">
+              <bundle>ca_objects_history</bundle>
+              <settings>
+                <setting name="width">100%</setting>
+                <setting name="readonly"/>
+                <setting name="ca_object_lots_bequest_dateElement">dcModified</setting>
+                <setting name="ca_object_lots_bequest_color">#EEEEEE</setting>
+                <setting name="ca_object_lots_gift_dateElement">dcModified</setting>
+                <setting name="ca_object_lots_gift_color">#EEEEEE</setting>
+                <setting name="ca_object_lots_loan_dateElement">dcModified</setting>
+                <setting name="ca_object_lots_loan_color">bfdeff</setting>
+                <setting name="ca_object_lots_loan_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;</setting>
+                <setting name="ca_object_lots_long_term_loan_dateElement">dcModified</setting>
+                <setting name="ca_object_lots_long_term_loan_color">d3aaeb</setting>
+                <setting name="ca_object_lots_purchase_dateElement">dcModified</setting>
+                <setting name="ca_object_lots_purchase_color">#EEEEEE</setting>
+                <setting name="ca_object_lots_restricted_gift_dateElement">dcModified</setting>
+                <setting name="ca_object_lots_restricted_gift_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_conservation_analysis_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_conservation_analysis_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_conservation_assignment_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_conservation_assignment_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_collectingEvent_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_collectingEvent_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_conservation_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_conservation_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_conservation_job_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_conservation_job_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_exhibition_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_exhibition_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_identification_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_identification_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_map_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_map_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_anthropology_register_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_anthropology_register_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_resource_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_resource_color">#EEEEEE</setting>
+                <setting name="ca_movements_movement_dateElement">planned_removal_date</setting>
+                <setting name="ca_movements_movement_color">#EEEEEE</setting>
+                <setting name="ca_loans_showTypes">7813</setting>
+                <setting name="ca_loans_showTypes">70</setting>
+                <setting name="ca_loans_showTypes">71</setting>
+                <setting name="ca_loans_custodial_dateElement">loan_authorization_date</setting>
+                <setting name="ca_loans_custodial_color">f09393</setting>
+                <setting name="ca_loans_custodial_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;&lt;br&gt;&#13;
+&lt;ifdef code="ca_loans.loan_period"&gt;Loan Period:&lt;/ifdef&gt; ^ca_loans.loan_period&lt;br&gt;&#13;
+Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
+&lt;unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="borrower"&gt;^ca_entities.preferred_labels&lt;/unit&gt;&lt;/unit&gt;</setting>
+                <setting name="ca_loans_in_dateElement">loan_authorization_date</setting>
+                <setting name="ca_loans_in_color">ffc2ff</setting>
+                <setting name="ca_loans_in_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;&lt;br&gt;&#13;
+&lt;ifdef code="ca_loans.loan_period"&gt;Loan Period:&lt;/ifdef&gt; ^ca_loans.loan_period&lt;br&gt;&#13;
+Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
+&lt;unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="borrower"&gt;^ca_entities.preferred_labels&lt;/unit&gt;&lt;/unit&gt;</setting>
+                <setting name="ca_loans_out_dateElement">loan_authorization_date</setting>
+                <setting name="ca_loans_out_color">f0e090</setting>
+                <setting name="ca_loans_out_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;&lt;br&gt;&#13;
+&lt;ifdef code="ca_loans.loan_period"&gt;Loan Period:&lt;/ifdef&gt; ^ca_loans.loan_period&lt;br&gt;&#13;
+Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
+&lt;unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="borrower"&gt;^ca_entities.preferred_labels&lt;/unit&gt;&lt;/unit&gt;</setting>
+                <setting name="ca_storage_locations_showRelationshipTypes">19</setting>
+                <setting name="ca_storage_locations_showRelationshipTypes">197</setting>
+                <setting name="ca_storage_locations_showRelationshipTypes">198</setting>
+                <setting name="ca_storage_locations_color">80ff59</setting>
+                <setting name="showDeaccessionInformation">1</setting>
+                <setting name="deaccession_color">#EEEEEE</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_francisStStore2">
               <bundle>ca_attribute_francisStStore</bundle>
               <settings>
                 <setting name="sortDirection">ASC</setting>
+                <setting name="readonly"/>
               </settings>
             </placement>
             <placement code="ca_entities2">
@@ -21538,6 +23085,7 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
                 <setting name="readonly"/>
                 <setting name="dont_include_subtypes_in_type_restriction">0</setting>
                 <setting name="dontShowDeleteButton">0</setting>
+                <setting name="showCurrentOnly">1</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -23184,6 +24732,15 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           </labels>
           <subTypeRight>conservation_job</subTypeRight>
         </type>
+        <type code="object_map" default="0">
+          <labels>
+            <label locale="en_AU">
+              <typename>related to</typename>
+              <typename_reverse>related to</typename_reverse>
+            </label>
+          </labels>
+          <subTypeRight>map</subTypeRight>
+        </type>
       </types>
     </relationshipTable>
     <relationshipTable name="ca_objects_x_objects">
@@ -23387,16 +24944,6 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           </labels>
           <subTypeRight>identification</subTypeRight>
         </type>
-        <type code="scientificNameAuthorship" default="0">
-          <labels>
-            <label locale="en_AU">
-              <typename>authored</typename>
-              <typename_reverse>authored by</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft>ind</subTypeLeft>
-          <subTypeRight/>
-        </type>
         <type code="entity_register" default="0">
           <labels>
             <label locale="en_AU">
@@ -23406,6 +24953,15 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           </labels>
           <subTypeRight>anthropology_register</subTypeRight>
         </type>
+          <type code="dcCreator" default="0">
+            <labels>
+              <label locale="en_AU">
+                <typename>created</typename>
+                <typename_reverse>created by</typename_reverse>
+              </label>
+            </labels>
+            <subTypeRight>resource</subTypeRight>
+          </type>
         <type code="individual_request_cons" default="0">
           <labels>
             <label locale="en_AU">
@@ -23414,7 +24970,7 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
             </label>
           </labels>
           <subTypeLeft>ind</subTypeLeft>
-          <subTypeRight>conservation</subTypeRight>
+          <subTypeRight>conservation_job</subTypeRight>
         </type>
         <type code="individual_conserved_cons" default="0">
           <labels>
@@ -23423,6 +24979,8 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
               <typename_reverse>was conserved by</typename_reverse>
             </label>
           </labels>
+          <subTypeLeft>ind</subTypeLeft>
+          <subTypeRight>conservation</subTypeRight>
         </type>
         <type code="client_x_conservation" default="0">
           <labels>
@@ -23443,6 +25001,15 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
           </labels>
           <subTypeLeft>org</subTypeLeft>
           <subTypeRight>conservation_analysis</subTypeRight>
+        </type>
+        <type code="entity_resource" default="0">
+          <labels>
+            <label locale="en_AU">
+              <typename>related</typename>
+              <typename_reverse>related</typename_reverse>
+            </label>
+          </labels>
+          <subTypeRight>resource</subTypeRight>
         </type>
       </types>
     </relationshipTable>
