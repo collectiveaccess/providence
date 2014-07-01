@@ -463,6 +463,8 @@
 	function caGenericImportSplitter($ps_refinery_name, $ps_item_prefix, $ps_table, $po_refinery_instance, &$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options) {
 		global $g_ui_locale_id;
 		
+		$po_refinery_instance->setReturnsMultipleValues(true);
+		
 		$o_dm = Datamodel::load();
 		
 		$po_refinery_instance->setReturnsMultipleValues(true);
@@ -491,9 +493,17 @@
 		} else {
 			$va_delimited_items = array($pm_value);
 		}
-		if (!is_array($va_delimited_items)) { $va_delimited_items = array($va_delimited_items); }
 		
-		$vs_delimiter = $pa_item['settings']["{$ps_refinery_name}_delimiter"];
+		if (!is_array($va_delimited_items)) { $va_delimited_items = array($va_delimited_items); }
+		$va_delimiter = $pa_item['settings']["{$ps_refinery_name}_delimiter"];
+		if (!is_array($va_delimiter)) { $va_delimiter = array($va_delimiter); }
+							
+		if (sizeof($va_delimiter)) {
+			foreach($va_delimiter as $vn_index => $vs_delim) {
+				if (!trim($vs_delim, "\t ")) { unset($va_delimiter[$vn_index]); continue; }
+				$va_delimiter[$vn_index] = preg_quote($vs_delim, "!");
+			}
+		}
 		
 		$va_vals = array();
 		$vn_c = 0;
@@ -507,8 +517,8 @@
 			(($vs_terminal != $ps_table) && (sizeof($va_group_dest) > 1))
 		) {		
 			foreach($va_delimited_items as $vn_x => $vs_delimited_item) {
-				$va_items = ($vs_delimiter) ? explode($vs_delimiter, $vs_delimited_item) : array($vs_delimited_item);
-				
+				$va_items = sizeof($va_delimiter) ? preg_split("!(".join("|", $va_delimiter).")!", $vs_delimited_item) : array($vs_delimited_item);
+
 				foreach($va_items as $vn_i => $vs_item) {
 					if (!($vs_item = trim($vs_item))) { continue; }
 					if (is_array($va_skip_values = $pa_item['settings']["{$ps_refinery_name}_skipIfValue"]) && in_array($vs_item, $va_skip_values)) {
@@ -555,8 +565,18 @@
 						//
 						// Storage location specific options
 						//
-						if (($ps_refinery_name == 'storageLocationSplitter') && ($vs_hier_delimiter = $pa_item['settings']['storageLocationSplitter_hierarchicalDelimiter'])) {
-							$va_location_hier = explode($vs_hier_delimiter, $vs_item);
+						if (($ps_refinery_name == 'storageLocationSplitter') && ($va_hier_delimiter = $pa_item['settings']['storageLocationSplitter_hierarchicalDelimiter'])) {
+							if (!is_array($va_hier_delimiter)) { $va_hier_delimiter = array($va_hier_delimiter); }
+							
+							if (sizeof($va_hier_delimiter)) {
+								foreach($va_hier_delimiter as $vn_index => $vs_delim) {
+									if (!trim($vs_delim, "\t ")) { unset($va_hier_delimiter[$vn_index]); continue; }
+									$va_hier_delimiter[$vn_index] = preg_quote($vs_delim, "!");
+								}
+							}
+							
+							$va_location_hier = preg_split("!(".join("|", $va_hier_delimiter).")!", $vs_item);
+							
 							if (sizeof($va_location_hier) > 1) {
 					
 								$vn_location_id = null;
@@ -632,7 +652,7 @@
 				
 						$vs_item = BaseRefinery::parsePlaceholder($vs_item, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 						if(!is_array($va_attr_vals)) { $va_attr_vals = array(); }
-						$va_attr_vals_with_parent = array_merge($va_attr_vals, array('parent_id' => $va_val['_parent_id']));
+						$va_attr_vals_with_parent = array_merge($va_attr_vals, array('parent_id' => $va_val['parent_id'] ? $va_val['parent_id'] : $va_val['_parent_id']));
 
 					
 						$pa_options = array_merge(array_merge(array('matchOn' => array('idno', 'label')), $pa_options));
@@ -684,7 +704,8 @@
 						}
 					
 						if ($vn_item_id) {
-							$va_val= array($vs_terminal => $vn_item_id);
+							$po_refinery_instance->setReturnsMultipleValues(false);
+							return $vn_item_id;
 						} else {
 							if ($o_log) { $o_log->logError(_t("[{$ps_refinery_name}Refinery] Could not add %2 %1", $vs_item, $ps_item_prefix)); }
 						}

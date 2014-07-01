@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -326,13 +326,44 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
-	 * Extracts media metadata using "mediainfo"
-	 * @param string $ps_mediainfo_path path to mediainfo binary
-	 * @param string $ps_filepath file path
+	 * Detects if ExifTool (http://www.sno.phy.queensu.ca/~phil/exiftool/) is installed in the given path.
+	 *
+	 * @param string $ps_exiftool_path path to ExifTool
+	 * @return boolean 
 	 */
-	function caExtractMetadataWithMediaInfo($ps_mediainfo_path,$ps_filepath){
+	function caExifToolInstalled($ps_exiftool_path=null) {
+		if(!$ps_exiftool_path) { $ps_exiftool_path = caGetExternalApplicationPath('exiftool'); }
+		
+		global $_MEDIAHELPER_PLUGIN_CACHE_EXIFTOOL;
+		if (isset($_MEDIAHELPER_PLUGIN_CACHE_EXIFTOOL[$ps_exiftool_path])) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_EXIFTOOL[$ps_exiftool_path];
+		} else {
+			$_MEDIAHELPER_PLUGIN_CACHE_EXIFTOOL = array();
+		}
+		if (!trim($ps_exiftool_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_exiftool_path)) || !file_exists($ps_exiftool_path)) { return false; }
+		
+		if (!file_exists($ps_exiftool_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_EXIFTOOL[$ps_exiftool_path] = false; }
+		exec($ps_exiftool_path." > /dev/null",$va_output,$vn_return);
+	
+		if($vn_return == 0) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_EXIFTOOL[$ps_exiftool_path] = true;
+		}
+		return $_MEDIAHELPER_PLUGIN_CACHE_EXIFTOOL[$ps_exiftool_path] = false;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Extracts media metadata using MediaInfo
+	 *
+	 * @param string $ps_filepath file path
+	 * @param string $ps_mediainfo_path optional path to MediaInfo binary. If omitted the path configured in external_applications.conf is used.
+	 *
+	 * @return array Extracted metadata
+	 */
+	function caExtractMetadataWithMediaInfo($ps_filepath, $ps_mediainfo_path=null){
+		if(!$ps_mediainfo_path) { $ps_mediainfo_path = caGetExternalApplicationPath('mediainfo'); }
 		if (!trim($ps_mediainfo_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_mediainfo_path)) || !file_exists($ps_mediainfo_path)) { return false; }
-		exec($ps_mediainfo_path." ".caEscapeShellArg($ps_filepath),$va_output,$vn_return);
+		
+		exec($ps_mediainfo_path." ".caEscapeShellArg($ps_filepath), $va_output, $vn_return);
 		$vs_cat = "GENERIC";
 		$va_return = array();
 		foreach($va_output as $vs_line){
@@ -351,6 +382,26 @@
 		}
 
 		return $va_return;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Extracts media metadata using ExifTool
+	 *
+	 * @param string $ps_filepath file path
+	 * @param string $ps_exiftool_path optional path to ExifTool binary. If omitted the path configured in external_applications.conf is used.
+	 * 
+	 * @return array Extracted metadata
+	 */
+	function caExtractMetadataWithExifTool($ps_filepath, $ps_mediainfo_path=null){
+		if (caExifToolInstalled()) {
+			if (!$vs_path_to_exif_tool) { $vs_path_to_exif_tool = caGetExternalApplicationPath('exiftool'); }
+			exec("{$vs_path_to_exif_tool} -json -a -u -g1 ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
+			
+			if (!is_array($va_data = array_pop(json_decode(join(" ", $va_output), true)))) { return false; }
+			
+			return $va_data;
+		}
+		return null;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**

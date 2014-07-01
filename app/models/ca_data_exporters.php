@@ -785,9 +785,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			// noop, because we don't care: mappings without replacements are still valid
 		}
 
-		//caDebug($va_mapping,"Extracted mapping from XLSX");
-		//caDebug($va_settings,"Mapping settings extracted from XLSX");
-
 		// Do checks on mapping
 		if (!$va_settings['code']) { 
 			$pa_errors[] = _t("Error: You must set a code for your mapping!");
@@ -864,9 +861,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			
 			$vn_parent_id = null;
 			if($va_info['parent_id']){ $vn_parent_id = $va_id_map[$va_info['parent_id']]; }
-
-			//caDebug($va_item_settings,"Settings for new exporter item");
-
+			
 			$t_item = $t_exporter->addItem($vn_parent_id,$va_info['element'],$va_info['source'],$va_item_settings);
 
 			if ($t_exporter->numErrors()) {
@@ -929,7 +924,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vs_wrap_before = $o_config->get('wrap_before');
 		$vs_wrap_after = $o_config->get('wrap_after');
 		$va_nodes = $o_config->get('nodes');
-		//caDebug($va_nodes,"Node config");
 
 		if($vs_wrap_before){
 			file_put_contents($ps_filename, $vs_wrap_before."\n", FILE_APPEND);
@@ -1293,13 +1287,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		// if someone wants to mangle the whole tree ... well, go right ahead
 		$o_manager = new ApplicationPluginManager();
 
-		//caDebug($va_export, "Export before tree plugin hook");
 		if(is_null($va_plugin_export = $o_manager->hookExportRecord(array('exporter_instance' => $t_exporter, 'record_id' => $pn_record_id, 'export' => $va_export)))){
 			return; // skip this record if plugin returns null
 		} else {
 			$va_export = $va_plugin_export['export'];
 		}
-		//caDebug($va_export,"Export after tree plugin hook");
 		
 		$pa_options['settings'] = $t_exporter->getSettings();
 

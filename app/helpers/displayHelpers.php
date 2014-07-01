@@ -293,8 +293,9 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 				$vs_typename = _t('relationship type');
 				break;
 			default:
+				// Check relationships
 				$va_tables = array(
-					'ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_list_items', 'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops', 'ca_object_representations'
+					'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_list_items', 'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops', 'ca_object_representations'
 				);
 				
 				if (!in_array($t_instance->tableName(), $va_tables)) { return null; }
@@ -304,12 +305,25 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 					
 					if (!($vn_c = sizeof($va_items))) { continue; }
 					if ($vn_c == 1) {
-						$va_buf[] = _t("Has %1 reference to %2", $vn_c, caGetTableDisplayName($vs_table, true))."<br>\n";
+						$va_buf[] = _t("Has %1 relationship to %2", $vn_c, caGetTableDisplayName($vs_table, true))."<br>\n";
 					} else {
-						$va_buf[] = _t("Has %1 references to %2", $vn_c, caGetTableDisplayName($vs_table, true))."<br>\n";
+						$va_buf[] = _t("Has %1 relationships to %2", $vn_c, caGetTableDisplayName($vs_table, true))."<br>\n";
 					}
 					$vn_count += $vn_c;
 				}
+				
+				// Check attributes
+				if ($vn_datatype = $t_instance->authorityElementDatatype()) {
+					if ($vn_c = $t_instance->getAuthorityElementReferences(array('countOnly' => true))) {
+						if ($vn_c == 1) {
+							$va_buf[] = _t("Is referenced %1 time", $vn_c)."<br>\n";
+						} else {
+							$va_buf[] = _t("Is referenced %1 times", $vn_c)."<br>\n";
+						}
+						$vn_count += $vn_c;
+					}
+				}
+				
 				$vs_typename = $t_instance->getTypeName();
 		}
 		
@@ -327,7 +341,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			$vs_output .= caHTMLHiddenInput('remapToID', array('value' => '', 'id' => 'remapToID'));
 			$vs_output .= "<script type='text/javascript'>";
 			
-			$va_service_info = caJSONLookupServiceUrl($po_request, $t_instance->tableName(), array('noSymbols' => 1, 'exclude' => (int)$t_instance->getPrimaryKey(), 'table_num' => (int)$t_instance->get('table_num')));
+			$va_service_info = caJSONLookupServiceUrl($po_request, $t_instance->tableName(), array('noSymbols' => 1, 'noInline' => 1, 'exclude' => (int)$t_instance->getPrimaryKey(), 'table_num' => (int)$t_instance->get('table_num')));
 			$vs_output .= "jQuery(document).ready(function() {";
 			$vs_output .= "jQuery('#remapTo').autocomplete(
 					{
@@ -594,7 +608,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		require_once(__CA_MODELS_DIR__.'/ca_sets.php');
 		require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
 		
-		$t_item 				= $po_view->getVar('t_item'); if (!$t_item) print caPrintStacktrace();
+		$t_item 				= $po_view->getVar('t_item'); 
 		$vs_table_name = $t_item->tableName();
 		if (($vs_priv_table_name = $vs_table_name) == 'ca_list_items') {
 			$vs_priv_table_name = 'ca_lists';
@@ -623,7 +637,6 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		// action extra to preserve currently open screen across next/previous links
 		$vs_screen_extra 	= ($po_view->getVar('screen')) ? '/'.$po_view->getVar('screen') : '';
 		if ($vs_type_name == "list item") {
-			print "<div style='height:12px;'></div>";
 			$vs_style = "style='height:auto;'";
 		}
 		if (($vn_item_id) | ($po_view->request->getAction() === 'Delete')) {
@@ -651,9 +664,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			$vs_buf .= "<br style='clear: both;'/></div></h4>\n";
 		} else {	
 			if ($vn_item_id) {
-				if($po_view->request->user->canDoAction("can_edit_".$vs_priv_table_name) && (sizeof($t_item->getTypeList()) > 1)){
-
-										
+				if($po_view->request->user->canDoAction("can_edit_".$vs_priv_table_name) && (sizeof($t_item->getTypeList()) > 1)){		
 					$vs_buf .= "<strong>"._t("Editing %1", $vs_type_name).": </strong>\n";
 				}else{
 					$vs_buf .= "<strong>"._t("Viewing %1", $vs_type_name).": </strong>\n";
@@ -683,51 +694,55 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 						}
 					}
 				}
-					
+				
 				$vs_label = '';
-				if ($vs_get_spec = $po_view->request->config->get("{$vs_table_name}_inspector_display_title")) {
-					$vs_label = caProcessTemplateForIDs($vs_get_spec, $vs_table_name, array($t_item->getPrimaryKey()));
-				} else {
-					$va_object_collection_collection_ancestors = $po_view->getVar('object_collection_collection_ancestors');
-					if (
-						($t_item->tableName() == 'ca_objects') && 
-						$t_item->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && 
-						is_array($va_object_collection_collection_ancestors) && sizeof($va_object_collection_collection_ancestors)
-					) {
-						$va_collection_links = array();
-						foreach($va_object_collection_collection_ancestors as $va_collection_ancestor) {
-							$va_collection_links[] = caEditorLink($po_view->request, $va_collection_ancestor['label'], '', 'ca_collections', $va_collection_ancestor['collection_id']);
+				$vb_dont_use_labels_for_ca_objects = (bool)$t_item->getAppConfig()->get('ca_objects_dont_use_labels');
+				if(!(($vs_table_name === 'ca_objects') && $vb_dont_use_labels_for_ca_objects)){
+					if ($vs_get_spec = $po_view->request->config->get("{$vs_table_name}_inspector_display_title")) {
+						$vs_label = caProcessTemplateForIDs($vs_get_spec, $vs_table_name, array($t_item->getPrimaryKey()));
+					} else {
+						$va_object_collection_collection_ancestors = $po_view->getVar('object_collection_collection_ancestors');
+						if (
+							($t_item->tableName() == 'ca_objects') && 
+							$t_item->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && 
+							is_array($va_object_collection_collection_ancestors) && sizeof($va_object_collection_collection_ancestors)
+						) {
+							$va_collection_links = array();
+							foreach($va_object_collection_collection_ancestors as $va_collection_ancestor) {
+								$va_collection_links[] = caEditorLink($po_view->request, $va_collection_ancestor['label'], '', 'ca_collections', $va_collection_ancestor['collection_id']);
+							}
+							$vs_label .= join(" / ", $va_collection_links).' &gt; ';
 						}
-						$vs_label .= join(" / ", $va_collection_links).' &gt; ';
-					}
 					
-					if (method_exists($t_item, 'getLabelForDisplay')) {
-						$vn_parent_index = (sizeof($va_ancestors) - 1);
-						if ($vn_parent_id && (($vs_table_name != 'ca_places') || ($vn_parent_index > 0))) {
-							$va_parent = $va_ancestors[$vn_parent_index];
-							$vs_disp_fld = $t_item->getLabelDisplayField();
+						if (method_exists($t_item, 'getLabelForDisplay')) {
+							$vn_parent_index = (sizeof($va_ancestors) - 1);
+							if ($vn_parent_id && (($vs_table_name != 'ca_places') || ($vn_parent_index > 0))) {
+								$va_parent = $va_ancestors[$vn_parent_index];
+								$vs_disp_fld = $t_item->getLabelDisplayField();
 							
-							if ($va_parent['NODE'][$vs_disp_fld] && ($vs_editor_link = caEditorLink($po_view->request, $va_parent['NODE'][$vs_disp_fld], '', $vs_table_name, $va_parent['NODE'][$t_item->primaryKey()]))) {
-								$vs_label .= $vs_editor_link.' &gt; '.$t_item->getLabelForDisplay();
+								if ($va_parent['NODE'][$vs_disp_fld] && ($vs_editor_link = caEditorLink($po_view->request, $va_parent['NODE'][$vs_disp_fld], '', $vs_table_name, $va_parent['NODE'][$t_item->primaryKey()]))) {
+									$vs_label .= $vs_editor_link.' &gt; '.$t_item->getLabelForDisplay();
+								} else {
+									$vs_label .= ($va_parent['NODE'][$vs_disp_fld] ? $va_parent['NODE'][$vs_disp_fld].' &gt; ' : '').$t_item->getLabelForDisplay();
+								}
 							} else {
-								$vs_label .= ($va_parent['NODE'][$vs_disp_fld] ? $va_parent['NODE'][$vs_disp_fld].' &gt; ' : '').$t_item->getLabelForDisplay();
+								$vs_label .= $t_item->getLabelForDisplay();
+								if (($vs_table_name === 'ca_editor_uis') && (in_array($po_view->request->getAction(), array('EditScreen', 'DeleteScreen', 'SaveScreen')))) {
+									$t_screen = new ca_editor_ui_screens($po_view->request->getParameter('screen_id', pInteger));
+									if (!($vs_screen_name = $t_screen->getLabelForDisplay())) {
+										$vs_screen_name = _t('new screen');
+									}
+									$vs_label .= " &gt; ".$vs_screen_name;
+								} 
+							
 							}
 						} else {
-							$vs_label .= $t_item->getLabelForDisplay();
-							if (($vs_table_name === 'ca_editor_uis') && (in_array($po_view->request->getAction(), array('EditScreen', 'DeleteScreen', 'SaveScreen')))) {
-								$t_screen = new ca_editor_ui_screens($po_view->request->getParameter('screen_id', pInteger));
-								if (!($vs_screen_name = $t_screen->getLabelForDisplay())) {
-									$vs_screen_name = _t('new screen');
-								}
-								$vs_label .= " &gt; ".$vs_screen_name;
-							} 
-							
+							$vs_label .= $t_item->get('name');
 						}
-					} else {
-						$vs_label .= $t_item->get('name');
 					}
 				}
 				
+				$vb_show_idno = (bool)($vs_idno = $t_item->get($t_item->getProperty('ID_NUMBERING_ID_FIELD')));
 				
 				if (!$vs_label) { 
 					switch($vs_table_name) {
@@ -747,13 +762,18 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 							}
 							break;
 						default:
-							$vs_label = '['._t('BLANK').']'; 
+							if (($vs_table_name === 'ca_objects') && $vb_dont_use_labels_for_ca_objects) {
+								$vs_label = $vs_idno;
+								$vb_show_idno = false;
+							} else {
+								$vs_label =  '['._t('BLANK').']'; 
+							}
 							break;
 					}
 				}
 			
-				$vs_idno = $t_item->get($t_item->getProperty('ID_NUMBERING_ID_FIELD'));
-				$vs_buf .= "<div style='width:190px; overflow:hidden;'>{$vs_label}"."<a title='$vs_idno'>".($vs_idno ? " ({$vs_idno})" : '')."</a></div>";
+				
+				$vs_buf .= "<div style='width:190px; overflow:hidden;'>{$vs_label}".(($vb_show_idno) ? "<a title='$vs_idno'>".($vs_idno ? " ({$vs_idno})" : '') : "")."</a></div>";
 				if (($vs_table_name === 'ca_object_lots') && $t_item->getPrimaryKey()) {
 					$vs_buf .= "<div id='inspectorLotMediaDownload'><strong>".((($vn_num_objects = $t_item->numObjects()) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
 				} 
@@ -1019,12 +1039,28 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 					$vs_buf .= "<strong>".($vb_is_currently_part_of_lot ? $vs_part_of_lot_msg : $vs_will_be_part_of_lot_msg)."</strong>: " . caNavLink($po_view->request, $vs_lot_displayname, '', 'editor/object_lots', 'ObjectLotEditor', 'Edit', array('lot_id' => $vn_lot_id));
 				}
 				
-				
+				$va_object_container_types = $po_view->request->config->getList('ca_objects_container_types');
+				$va_object_component_types = $po_view->request->config->getList('ca_objects_component_types');
+				$vb_can_add_component = (($vs_table_name === 'ca_objects') && $t_item->getPrimaryKey() && ($po_view->request->user->canDoAction('can_create_ca_objects')) && $t_item->canTakeComponents());
+		
 				if (method_exists($t_item, 'getComponentCount')) {
 					if ($vn_component_count = $t_item->getComponentCount()) {
-						if ($t_ui) { $vs_buf .= $t_ui->getScreenWithBundle("ca_objects_component_list", $po_view->request); }
-						$vs_buf .= '<br/>('.(($vn_component_count == 1) ? _t('%1 component', $vn_component_count) : _t('%1 components', $vn_component_count)).')';
+						if ($t_ui && ($vs_component_list_screen = $t_ui->getScreenWithBundle("ca_objects_components_list", $po_view->request)) && ($vs_component_list_screen !== $po_view->request->getActionExtra())) { 
+							$vs_component_count_link = caNavLink($po_view->request, (($vn_component_count == 1) ? _t('%1 component', $vn_component_count) : _t('%1 components', $vn_component_count)), '', '*', '*', $po_view->request->getAction().'/'.$vs_component_list_screen, array($t_item->primaryKey() => $t_item->getPrimaryKey()));
+						} else {
+							$vs_component_count_link = (($vn_component_count == 1) ? _t('%1 component', $vn_component_count) : _t('%1 components', $vn_component_count));
+						}
+						$vs_buf .= "<br/><strong>"._t('Has').":</strong> {$vs_component_count_link}";
 					}
+				}
+									
+				if ($vb_can_add_component) {
+					$vs_buf .= ' <a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($po_view->request, '*', 'ObjectComponent', 'Form', array('parent_id' => $t_item->getPrimaryKey())).'"); return false;\')>'.caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__).'</a>';
+	
+					$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
+					$vo_change_type_view->setVar('t_item', $t_item);
+	
+					FooterManager::add($vo_change_type_view->render("create_component_html.php"));
 				}
 			}
 			
@@ -1439,31 +1475,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			}
 		}
 		
-		$va_object_container_types = $po_view->request->config->getList('ca_objects_container_types');
-		$va_object_component_types = $po_view->request->config->getList('ca_objects_component_types');
-		$vb_can_add_component = (($vs_table_name === 'ca_objects') && $t_item->getPrimaryKey() && ($po_view->request->user->canDoAction('can_create_ca_objects')) && (sizeof($va_object_component_types)) && in_array($t_item->getTypeCode(), $va_object_container_types));
 		
-		if ($vb_can_add_component) {
-			$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; border-bottom: 1px solid #aaaaaa;  margin: 5px 0 0 0; padding: 0 0 5px 0; font-size: 10px;">';
-		}
-
-		//
-		// Add component link for ca_objects
-		//
-		if ($vb_can_add_component) {
-			$vs_buf .= '<div style="float: left;" id="caAddComponentButton">';
-			$vs_buf .= _t('Add component').' <a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($po_view->request, '*', 'ObjectComponent', 'Form', array('parent_id' => $t_item->getPrimaryKey())).'"); return false;\')>'.caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__).'</a>';
-			$vs_buf .= "</div>\n";
-			
-			$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
-			$vo_change_type_view->setVar('t_item', $t_item);
-			
-			FooterManager::add($vo_change_type_view->render("create_component_html.php"));
-		}
-		
-		if ($vb_can_add_component) {
-			$vs_buf .= '<br style="clear: both;"/></div>';
-		}
 
 		if($po_view->request->user->canDoAction('can_export_'.$vs_table_name) && $t_item->getPrimaryKey() && (sizeof(ca_data_exporters::getExporters($t_item->tableNum()))>0)) {
 			$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" id="caExportItemButton">';
@@ -3177,6 +3189,7 @@ $ca_relationship_lookup_parse_cache = array();
 			foreach ($pa_options['relatedItems'] as $vn_relation_id => $va_relation) {
 				$va_items[$va_relation[$vs_rel_pk]]['relation_id'] = $va_relation['relation_id'];
 				$va_items[$va_relation[$vs_rel_pk]]['relationship_type_id'] = $va_items[$va_relation[$vs_rel_pk]]['type_id'] = ($va_relation['direction']) ?  $va_relation['direction'].'_'.$va_relation['relationship_type_id'] : $va_relation['relationship_type_id'];
+				$va_items[$va_relation[$vs_rel_pk]]['rel_type_id'] = $va_relation['relationship_type_id'];
 				$va_items[$va_relation[$vs_rel_pk]]['relationship_typename'] = $va_relation['relationship_typename'];
 				$va_items[$va_relation[$vs_rel_pk]]['idno'] = $va_relation[$vs_idno_fld];
 				$va_items[$va_relation[$vs_rel_pk]]['idno_sort'] = $va_relation[$vs_idno_sort_fld];
@@ -3256,6 +3269,13 @@ $ca_relationship_lookup_parse_cache = array();
 			}
 			
 			unset($va_item['_l']);
+
+			$po_request = caGetOption('request',$pa_options);
+			if($po_request && ca_editor_uis::loadDefaultUI($pt_rel->tableName(),$po_request,$va_item['rel_type_id'])) {
+				$va_item['hasInterstitialUI'] = true;
+			} else {
+				$va_item['hasInterstitialUI'] = false;
+			}
 			
 			$va_initial_values[$va_item['relation_id'] ? (int)$va_item['relation_id'] : $va_item[$vs_rel_pk]] = array_merge(
 				$va_item,

@@ -1524,8 +1524,8 @@
 					'request' => $po_request,
 					'nullOption' => '-',
 					'value' => $vs_value,
-					'forSearch' => true,
-					'render' => 'lookup'
+					'forSearch' => true
+					//'render' => 'lookup'
 				), array_merge($pa_options, $va_override_options));
 				
 				// We don't want to pass the entire set of values to ca_attributes::attributeHtmlFormElement() since it'll treat it as a simple list
@@ -1632,7 +1632,7 @@
 			if (!$vn_row_id) { return null; }
 
 			$vn_element_id = $this->_getElementID($pm_element_code_or_id);
-			$va_attributes = ca_attributes::getAttributes($this->getDb(), $this->tableNum(), $vn_row_id, array($vn_element_id), array());
+			$va_attributes = ca_attributes::getAttributes($this->getDb(), $this->tableNum(), $vn_row_id, array($vn_element_id), $pa_options);
 		
 			$va_attribute_list =  is_array($va_attributes[$vn_element_id]) ? $va_attributes[$vn_element_id] : array();
 		
@@ -2046,6 +2046,163 @@
 					return false;
 				}
 			}
+			return true;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns attribute data type code for authority element used to reference this model. 
+		 * Eg. for the ca_entities model the __CA_ATTRIBUTE_VALUE_ENTITIES__ constant (numeric 22) is returned.
+		 * Returns null if the model cannot be referenced using a metadata element.
+		 *
+		 * @return int
+		 */
+		public function authorityElementDatatype() {
+			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/CollectionsAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/EntitiesAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/LoansAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/MovementsAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/ObjectLotsAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/ObjectRepresentationsAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/ObjectsAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/OccurrencesAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/PlacesAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/StorageLocationsAttributeValue.php');
+			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/ListAttributeValue.php');
+			
+			$va_element_datatypes = array(
+				'ca_objects' => __CA_ATTRIBUTE_VALUE_OBJECTS__, 'ca_object_lots' => __CA_ATTRIBUTE_VALUE_OBJECTLOTS__, 'ca_entities' => __CA_ATTRIBUTE_VALUE_ENTITIES__, 'ca_places' => __CA_ATTRIBUTE_VALUE_PLACES__, 'ca_occurrences' => __CA_ATTRIBUTE_VALUE_OCCURRENCES__, 'ca_collections' => __CA_ATTRIBUTE_VALUE_COLLECTIONS__, 'ca_storage_locations' => __CA_ATTRIBUTE_VALUE_STORAGELOCATIONS__, 'ca_list_items' => __CA_ATTRIBUTE_VALUE_LIST__, 'ca_loans' => __CA_ATTRIBUTE_VALUE_LOANS__, 'ca_movements' => __CA_ATTRIBUTE_VALUE_MOVEMENTS__, 'ca_object_representations' => __CA_ATTRIBUTE_VALUE_OBJECTREPRESENTATIONS__
+			);
+			
+			if (isset($va_element_datatypes[$this->tableName()])) { 
+				return $va_element_datatypes[$this->tableName()];
+			}
+			return null;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns a list of row_ids indexed by table that reference the currently loaded row using authority metadata elements.
+		 *
+		 * @param array $pa_options Option include:
+		 *		countOnly = Return number of references only. [Default is false]
+		 *		row_id = Return references for specified row. [Default is to return references for currently loaded row]
+		 *
+		 * @return mixed A list of references, key'ed on table number and then primary key value; values are arrays of element_ids. If the 'countOnly' option is set then an integer count of the references is returned.
+		 */
+		public function getAuthorityElementReferences($pa_options=null) {
+			if (!($vn_datatype = $this->authorityElementDatatype())) { return null; }
+			if (!($vn_id = caGetOption('row_id', $pa_options, null))) { 
+				if (!($vn_id = $this->getPrimaryKey())) { 
+					return null; 
+				}
+			}
+			
+			$pn_count_only = caGetOption('countOnly', $pa_options, false);
+			
+			$o_db = $this->getDb();
+			$qr_res = $o_db->query("
+				SELECT cav.value_id, a.element_id, a.attribute_id, a.table_num, a.row_id 
+				FROM ca_attribute_values cav
+				INNER JOIN ca_attributes AS a ON a.attribute_id = cav.attribute_id
+				WHERE
+					cav.element_id IN (SELECT element_id FROM ca_metadata_elements WHERE datatype = ?) AND cav.value_integer1 = ?
+			", array($vn_datatype, $vn_id));
+			
+			
+			$va_references = array();
+			
+			$o_dm = Datamodel::load();
+			while($qr_res->nextRow()) {
+				$va_row = $qr_res->getRow();
+				$va_references[$va_row['table_num']][$va_row['row_id']][] = $va_row['element_id'];
+			}
+			foreach($va_references as $vn_table_num => $va_rows) {
+				$va_row_ids = array_keys($va_rows);
+				if ((sizeof($va_row_ids) > 0) && $t_instance = $o_dm->getInstanceByTableNum($vn_table_num, true)) {
+					$vs_pk = $t_instance->primaryKey();
+					$qr_del = $o_db->query("SELECT {$vs_pk} FROM ".$t_instance->tableName()." WHERE {$vs_pk} IN (?) AND deleted = 1", array($va_row_ids));
+					
+					while($qr_del->nextRow()) {
+						unset($va_references[$vn_table_num][$qr_del->get($vs_pk)]);
+					}
+				}
+			}
+			
+			if ($pn_count_only) {
+				$vn_c = 0;
+				foreach($va_references as $vn_table_num => $va_rows) {
+					$vn_c += sizeof($va_rows);
+				}
+				
+				return $vn_c;
+			}
+			
+			return $va_references;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 *
+		 */
+		public function moveAuthorityElementReferences($pn_to_id, $pa_options=null) {
+			if (!($vn_datatype = $this->authorityElementDatatype())) { return null; }
+			if (!($vn_id = $this->getPrimaryKey())) { return null; }
+			
+			if (is_array($va_references = $this->getAuthorityElementReferences()) && sizeof($va_references)) {
+				$o_db = $this->getDb();
+				$qr_res = $o_db->query("
+						UPDATE ca_attribute_values 
+						SET value_integer1 = ?, value_longtext1 = ? 
+						WHERE 
+							element_id IN (SELECT element_id FROM ca_metadata_elements WHERE datatype = ?)
+							AND
+							value_integer1 = ?",
+					array((int)$pn_to_id, (string)$pn_to_id, $vn_datatype, $vn_id));
+				if(!$o_db->numErrors()) {
+					$o_indexer = $this->getSearchIndexer();
+					foreach($va_references as $vs_table_num => $va_rows) {
+						foreach($va_rows as $vn_row_id => $va_element_ids) {
+							$va_changed_values = array();
+							foreach($va_element_ids as $vn_element_id) {
+								$va_changed_values["_ca_attribute_{$vn_element_id}"] = true;
+							}
+							$o_indexer->indexRow($vs_table_num, $vn_row_id, null, false, null, $va_changed_values);
+						}
+					}
+				}
+			}
+			
+			return true;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 *
+		 */
+		public function deleteAuthorityElementReferences($pa_options=null) {
+			if (!($vn_datatype = $this->authorityElementDatatype())) { return null; }
+			if (!($vn_id = $this->getPrimaryKey())) { return null; }
+			
+			if (is_array($va_references = $this->getAuthorityElementReferences()) && sizeof($va_references)) {
+				$o_db = $this->getDb();
+				$qr_res = $o_db->query("
+						DELETE FROM ca_attribute_values 
+						WHERE 
+							element_id IN (SELECT element_id FROM ca_metadata_elements WHERE datatype = ?)
+							AND
+							value_integer1 = ?",
+					array($vn_datatype, $vn_id));
+				if(!$o_db->numErrors()) {
+					$o_indexer = $this->getSearchIndexer();
+					foreach($va_references as $vs_table_num => $va_rows) {
+						foreach($va_rows as $vn_row_id => $va_element_ids) {
+							$va_changed_values = array();
+							foreach($va_element_ids as $vn_element_id) {
+								$va_changed_values["_ca_attribute_{$vn_element_id}"] = true;
+							}
+							$o_indexer->indexRow($vs_table_num, $vn_row_id, null, false, null, $va_changed_values);
+						}
+					}
+				}
+			}
+			
 			return true;
 		}
 		# ------------------------------------------------------------------

@@ -28,8 +28,12 @@
  
 	class historyMenuPlugin extends BaseApplicationPlugin {
 		# -------------------------------------------------------
+		private $opo_config;
+		# -------------------------------------------------------
 		public function __construct($ps_plugin_path) {
 			$this->description = _t('Adds a "history" menu listing all recently edited items');
+			$this->opo_config = Configuration::load($ps_plugin_path . DIRECTORY_SEPARATOR . 'conf' . DIRECTORY_SEPARATOR . 'historyMenu.conf');
+
 			parent::__construct();
 		}
 		# -------------------------------------------------------
@@ -109,6 +113,11 @@
 			if ($o_req = $this->getRequest()) {
 				$o_dm = Datamodel::load();
 				$va_activity_lists = array();
+
+				if($this->opo_config instanceof Configuration) {
+					$va_menu_item_names = $this->opo_config->getAssoc('menuItemNames');
+				}
+
 				foreach(array(
 					'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 
 					'ca_collections', 'ca_storage_locations', 'ca_loans', 'ca_movements', 'ca_list_items', 'ca_sets', 'ca_tours', 'ca_tour_stops'
@@ -198,9 +207,15 @@
 								)
 							);
 						}
+
+						if(is_array($va_menu_item_names) && isset($va_menu_item_names[$vs_table_name])){
+							$vs_display_name = $va_menu_item_names[$vs_table_name];
+						} else {
+							$vs_display_name = caUcFirstUTF8Safe(_t($t_instance->getProperty('NAME_PLURAL')));
+						}
 					
 						$va_activity_lists[$vs_table_name] = array(
-							'displayName' => caUcFirstUTF8Safe(_t($t_instance->getProperty('NAME_PLURAL'))),
+							'displayName' => $vs_display_name,
 							'submenu' => array(
 								"type" => 'static',
 								'navigation' => $va_activity_menu_list

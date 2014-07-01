@@ -172,13 +172,22 @@
  		 *				bottom - For hierarchy specifications (eg. ca_objects.hierarchy) this option, if set, will limit the returned hierarchy to the first X nodes from the lowest node up. Default is to not limit.
  		 * 				hierarchicalDelimiter - Text to place between items in a hierarchy for a hierarchical specification (eg. ca_objects.hierarchy) when returning as a string
  		 *				removeFirstItems - If set to a non-zero value, the specified number of items at the top of the hierarchy will be omitted. For example, if set to 2, the root and first child of the hierarchy will be omitted. Default is zero (don't delete anything).
-
+		 *				transaction = the transaction to execute database actions within. [Default is null]
  		 * @return string The value
  		 */
 		public function getDisplayValue($pa_options=null) {
 			$vn_list_id = (is_array($pa_options) && isset($pa_options['list_id'])) ? (int)$pa_options['list_id'] : null;
 			if ($vn_list_id > 0) {
 				$t_list = new ca_lists();
+				
+				if ($o_trans = caGetOption('transaction', $pa_options, null)) {
+					$t_list->setTransaction($o_trans);
+				}
+				if ($pa_options['showHierarchy'] || $vb_return_idno) { 
+					$t_item = new ca_list_items(); 
+					if ($o_trans) { $t_item->setTransaction($o_trans); }
+				}
+				
 				
 				$vb_return_idno = ((isset($pa_options['returnIdno']) && (bool)$pa_options['returnIdno']));
 				if ($vb_return_idno) {
@@ -188,10 +197,10 @@
 				}
 				// do we need to get the hierarchy?
 				if ($pa_options['showHierarchy']) {
-					$t_item = new ca_list_items($this->ops_text_value);
+					$t_item->load($this->ops_text_value);
 					return $t_item->get('ca_list_items.hierarchy.'.$vs_get_spec, $pa_options);
 				} elseif($vb_return_idno) {
-					$t_item = new ca_list_items($this->ops_text_value);
+					$t_item->load($this->ops_text_value);
 					return $t_item->get('ca_list_items.'.$vs_get_spec, $pa_options);
 				}
 				
@@ -217,9 +226,10 @@
  			
  			$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? true : (bool)$pa_element_info['settings']['requireValue'];
 
+			$ps_orig_value = $ps_value;
  			if ($vb_treat_value_as_idno || preg_match('![^\d]+!', $ps_value)) {
  				// try to convert idno to item_id
- 				if ($vn_id = ca_lists::getItemID($pa_element_info['list_id'], $ps_value)) {
+ 				if ($vn_id = ca_lists::getItemID($pa_element_info['list_id'], $ps_value, $pa_options)) {
  					$ps_value = $vn_id;
  				}
  			}
@@ -228,23 +238,35 @@
 					'value_longtext1' => null,
 					'item_id' => null
 				);
- 			} 
+ 			} elseif ($vb_require_value && !(int)$ps_value) {
+ 				$this->postError(1970, _t('Value %1 [%2] cannot be blank', $pa_element_info['displayLabel'], $pa_element_info['element_code']), 'ListAttributeValue->parseValue()');
+ 				return false;
+ 			}
+ 			
  			if (strlen($ps_value) && !is_numeric($ps_value)) { 
  				$this->postError(1970, _t('Item_id %2 is not valid for element %1',$pa_element_info["element_code"], $ps_value), 'ListAttributeValue->parseValue()');
 				return false;
 			}
- 			$t_item = new ca_list_items((int)$ps_value);
- 			if (!$t_item->getPrimaryKey()) {
+ 			$t_item = new ca_list_items();
+ 			
+ 			if($o_trans = caGetOption('transaction', $pa_options, null)) {
+ 				$t_item->setTransaction($o_trans);
+ 			}
+ 			
+ 			if (!$t_item->load((int)$ps_value)) {
  				if ($ps_value) {
  					$this->postError(1970, _t('%1 is not a valid list item_id for %2 [%3]', $ps_value, $pa_element_info['displayLabel'], $pa_element_info['element_code']), 'ListAttributeValue->parseValue()');
  				} else {
- 					//$this->postError(1970, _t('Value %1 [%2] cannot be blank', $pa_element_info['displayLabel'], $pa_element_info['element_code']), 'ListAttributeValue->parseValue()');
+ 					if ($vb_require_value) {
+ 						$this->postError(1970, _t('Value %1 [%2] cannot be blank', $pa_element_info['displayLabel'], $pa_element_info['element_code']), 'ListAttributeValue->parseValue()');
+ 						return false;
+ 					}
  					return null;
  				}
 				return false;
  			}
  			if ((int)$t_item->get('list_id') != (int)$pa_element_info['list_id']) {
- 				$this->postError(1970, _t('Item is not in the correct list for element %1. List id is %2 but should be %3', $pa_element_info["element_code"], $t_item->get('list_id'), $pa_element_info['list_id']), 'ListAttributeValue->parseValue()');
+ 				$this->postError(1970, _t('Item is not in the correct list for element %1. List id is %2 but should be %3. Value was %4', $pa_element_info["element_code"], $t_item->get('list_id'), $pa_element_info['list_id'], "{$ps_orig_value}/{$ps_value}"), 'ListAttributeValue->parseValue()');
 				return false;
  			}
  			return array(
@@ -330,6 +352,15 @@
 			}
 			
 			return true;
+		}
+ 		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for list attribute value
+		 * 
+		 * @return int Attribute value type code
+		 */
+		public function getType() {
+			return __CA_ATTRIBUTE_VALUE_LIST__;
 		}
  		# ------------------------------------------------------------------
 	}

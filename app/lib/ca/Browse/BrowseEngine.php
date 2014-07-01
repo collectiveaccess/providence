@@ -1120,9 +1120,6 @@
 												INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id
 												WHERE
 													(ca_attribute_values.element_id = ?) {$vs_attr_sql}";
-											//caDebug($vs_sql);
-											//caDebug(intval($vs_target_browse_table_num)."/".$vn_element_id."/".$vn_row_id);
-											//caDebug($va_attr_values);
 											$qr_res = $this->opo_db->query($vs_sql, $va_attr_values);
 										} else {
 											
@@ -2433,11 +2430,16 @@
 							$va_facet_info['suppress'] = array($va_facet_info['suppress']);
 						}
 						
+						$va_list_parent_ids = array();
+						
 						switch($vn_element_type) {
 							case __CA_ATTRIBUTE_VALUE_LIST__:
 								$t_list = new ca_lists();
 								$va_list_items = caExtractValuesByUserLocale($t_list->getItemsForList($t_element->get('list_id')));
 							
+								foreach($va_list_items as $vn_id => $va_item) {
+									$va_list_parent_ids[$va_item['parent_id']] = true;
+								}
 								if (isset($va_facet_info['suppress']) && is_array($va_facet_info['suppress'])) {
 									$va_suppress_values = ca_lists::getItemIDsFromList($t_element->get('list_id'), $va_facet_info['suppress']);
 								}
@@ -2470,13 +2472,15 @@
 							if (is_array($va_suppress_values) && (in_array($vs_val, $va_suppress_values))) { continue; }
 							if ($va_criteria[$vs_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
 							
+							
 							$vn_id = $qr_res->get('value_integer1');
 								
 							switch($vn_element_type) {
 								case __CA_ATTRIBUTE_VALUE_LIST__:
 									$vn_child_count = 0;
-									foreach($va_list_items as $vn_id => $va_item) {
-										if ($va_item['parent_id'] == $vs_val) { $vn_child_count++; }	
+																
+									if ($va_list_parent_ids[$vs_val]) {
+										 $vn_child_count++;
 									}
 									$va_values[$vs_val] = array(
 										'id' => $vs_val,
@@ -3763,15 +3767,16 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 						if ($va_field_info['START'] && $va_field_info['END']) {
 							$va_orderbys[] = $va_field_info['START'].' '.$ps_direction;
 							$va_orderbys[] = $va_field_info['END'].' '.$ps_direction;
+							
+							$vs_sortable_value_fld = $va_field_info['START'];
 						} else {
 							$va_orderbys[] = $vs_field.' '.$ps_direction;
+							$vs_sortable_value_fld = $vs_field;
 						}
 						
 						if ($t_table->hasField('locale_id')) {
 							$vs_locale_where = ", ".$vs_table_name.".locale_id";
 						}
-						
-						$vs_sortable_value_fld = $vs_field;
 					}
 				} else {
 					// sort field is in related table 
@@ -4469,10 +4474,13 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 			}
 			
 			$va_relative_to_join = array();
-			if ($t_item_rel) {
+
+			if ($t_item_rel) { // foo_x_bar Table exists ==> join foo_x_bar and relative_to table
 				$va_relative_to_join[] = "INNER JOIN ".$t_item_rel->tableName()." ON ".$t_item_rel->tableName().".".$t_item->primaryKey()." = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey();
+				$va_relative_to_join[] = "INNER JOIN {$ps_relative_to_table} ON {$ps_relative_to_table}.{$vs_target_browse_table_pk} = ".$t_item_rel->tableName().".".$t_target->primaryKey();
+			} else { // path of length 2, i.e. direct relationship like ca_objects.lot_id = ca_object_lots.lot_id ==> join relative_to and browse target tables directly
+				$va_relative_to_join[] = "INNER JOIN {$ps_relative_to_table} ON {$ps_relative_to_table}.{$vs_target_browse_table_pk} = ".$t_rel_item->tableName().".".$t_target->primaryKey();
 			}
-			$va_relative_to_join[] = "INNER JOIN {$ps_relative_to_table} ON {$ps_relative_to_table}.{$vs_target_browse_table_pk} = ".$t_item_rel->tableName().".".$t_target->primaryKey();
 			
 			$vs_relative_to_join = join("\n", $va_relative_to_join);
 			

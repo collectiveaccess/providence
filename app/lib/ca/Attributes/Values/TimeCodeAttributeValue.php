@@ -216,5 +216,14 @@
 			return 'value_decimal1';
 		}
  		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for timecode attribute value
+		 * 
+		 * @return int Attribute value type code
+		 */
+		public function getType() {
+			return __CA_ATTRIBUTE_VALUE_TIMECODE__;
+		}
+ 		# ------------------------------------------------------------------
 	}
  ?>
