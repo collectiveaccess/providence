@@ -62,6 +62,17 @@
 	function caGetAvailablePrintTemplates($ps_type, $pa_options=null) {
 		$vs_template_path = caGetPrintTemplateDirectoryPath($ps_type);
 		$vs_tablename = caGetOption('table', $pa_options, null);
+		
+		if ($o_cache = caGetCacheObject('caPrintTemplatesList_'.$ps_type)) {
+			$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $ps_type);
+			if (
+				($va_list = $o_cache->load($vs_cache_key))
+				&&
+				(($vn_mtime = $o_cache->load("{$vs_cache_key}_mtime")) >= filemtime($vs_template_path))
+				&&
+				(($vn_mtime = $o_cache->load("{$vs_cache_key}_local_mtime")) >= filemtime("{$vs_template_path}/local"))
+			) { return $va_list; }
+		}
 
 		$va_templates = array();
 		foreach(array("{$vs_template_path}", "{$vs_template_path}/local") as $vs_path) {
@@ -89,6 +100,12 @@
 			}
 
 			sort($va_templates);
+			
+			if ($o_cache) {
+				$o_cache->save($va_templates, $vs_cache_key);
+				$o_cache->save(filemtime($vs_template_path), "{$vs_cache_key}_mtime");
+				$o_cache->save(filemtime("{$vs_template_path}/local"), "{$vs_cache_key}_local_mtime");
+			}
 		}
 
 		return $va_templates;
@@ -110,7 +127,15 @@
 			return false;
 		}
 		
-		// TODO: add caching
+		if ($o_cache = caGetCacheObject('caPrintTemplatesList_'.$ps_type)) {
+			$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $ps_type.'/'.$vs_template_path);
+			
+			if (
+				($va_info = $o_cache->load($vs_cache_key))
+				&&
+				(($vn_mtime = $o_cache->load("{$vs_cache_key}_mtime")) >= filemtime($vs_template_path))
+			) { return $va_info; }
+		}
 		
 		$vs_template = file_get_contents($vs_template_path);
 		
@@ -124,6 +149,11 @@
 		}
 		$va_info['tables'] = preg_split("![,;]{1}!", $va_info['tables']);
 		$va_info['path'] = $vs_template_path;
+		
+		if ($o_cache) {
+			$o_cache->save($va_info, $vs_cache_key);
+			$o_cache->save(filemtime($vs_template_path), "{$vs_cache_key}_mtime");
+		}
 		
 		return $va_info;
 	}
