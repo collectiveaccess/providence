@@ -261,6 +261,7 @@
 			$va_export_options = array_merge($va_export_options, caGetAvailablePrintTemplates('results', array('table' => $this->ops_tablename)));
 			
 			$this->view->setVar('export_formats', $va_export_options);
+			$this->view->setVar('current_export_format', $this->opo_result_context->getParameter('last_export_type'));
 			
  			//
  			// Available sets
@@ -591,6 +592,8 @@
 			$this->view->setVar('criteria_summary', $vs_criteria_summary = $this->getCriteriaForDisplay());	// add displayable description of current search/browse parameters
 			$this->view->setVar('criteria_summary_truncated', mb_substr($vs_criteria_summary, 0, 60).((mb_strlen($vs_criteria_summary) > 60) ? '...' : ''));
 			
+			$this->opo_result_context->setParameter('last_export_type', $ps_output_type);
+			$this->opo_result_context->saveContext();
 			
 			if(substr($ps_output_type, 0, 4) !== '_pdf') {
 				switch($ps_output_type) {
