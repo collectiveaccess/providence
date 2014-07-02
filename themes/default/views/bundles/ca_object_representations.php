@@ -485,6 +485,7 @@
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 			templateValues: ['status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'media', 'locale_id', 'icon', 'type', 'dimensions', 'filename', 'num_multifiles', 'metadata', 'rep_type_id', 'type_id', 'typename', 'fetched', 'label', 'rep_label', 'id', 'fetched_from','mimetype', 'center_x', 'center_y'],
 			initialValues: <?php print json_encode($va_inital_values); ?>,
+			initialValueOrder: <?php print json_encode(array_keys($va_inital_values)); ?>,
 			errors: <?php print json_encode($va_errors); ?>,
 			forceNewValues: <?php print json_encode($va_failed_inserts); ?>,
 			itemID: '<?php print $vs_id_prefix; ?>Item_',
