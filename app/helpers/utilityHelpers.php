@@ -1155,7 +1155,7 @@ function caFileIsIncludable($ps_file) {
 	  * @return string An MD5 cache key for the options array
 	  */
 	function caMakeCacheKeyFromOptions($pa_options, $ps_additional_text=null) {
-		if (!is_array($pa_options)) { return md5($pa_options); }
+		if (!is_array($pa_options)) { return md5($pa_options.$ps_additional_text); }
 		foreach($pa_options as $vs_key => $vm_value) {
 			if (is_object($vm_value)) { unset($pa_options[$vs_key]); }
 		}

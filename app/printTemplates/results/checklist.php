@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/templates/footer.php : standard PDF report footer
+ * app/templates/checklist.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -26,33 +26,56 @@
  * -=-=-=-=-=- CUT HERE -=-=-=-=-=-
  * Template configuration:
  *
- * @name Footer
- * @type fragment
+ * @name PDF (checklist)
+ * @type page
+ * @pageSize letter
+ * @pageOrientation portrait
+ * @tables ca_objects
  *
  * ----------------------------------------------------------------------
  */
- 	
- 	
+
+	$t_display				= $this->getVar('t_display');
+	$va_display_list 		= $this->getVar('display_list');
 	$vo_result 				= $this->getVar('result');
+	$vn_items_per_page 		= $this->getVar('current_items_per_page');
+	$vs_current_sort 		= $this->getVar('current_sort');
+	$vs_default_action		= $this->getVar('default_action');
+	$vo_ar					= $this->getVar('access_restrictions');
+	$vo_result_context 		= $this->getVar('result_context');
 	$vn_num_items			= (int)$vo_result->numHits();
 	
-	if($this->request->config->get('report_header_enabled')) {
+	$vn_start 				= 0;
+
+	print $this->render("pdfStart.php");
+	print $this->render("header.php");
+	print $this->render("footer.php");
 ?>
-<div id='footer'>
+		<div id='body'>
 <?php
-	if($this->request->config->get('report_show_search_term')) {
-		print "<span class='footerText'>".$this->getVar('criteria_summary_truncated')."</span>";
-	}
-	
-	if($this->request->config->get('report_show_number_results')) {
-		print "<span class='footerText'>".(($vn_num_items == 1) ? _t('%1 item', $vn_num_items) : _t('%1 items', $vn_num_items))."</span>";
-	}
-	
-	if($this->request->config->get('report_show_timestamp')) {
-		print "<span class='footerText'>".caGetLocalizedDate(null, array('dateFormat' => 'delimited'))."</span>";
-	}
+
+		$vo_result->seek(0);
+		
+		$vn_line_count = 0;
+		while($vo_result->nextHit()) {
+			$vn_object_id = $vo_result->get('ca_objects.object_id');		
 ?>
-</div>
+			<div class="row">
+<?php 
+					if ($vs_tag = $vo_result->get('ca_object_representations.media.tiny')) {
+						print "<div class=\"imageTiny\">{$vs_tag}</div>";
+					} else {
+?>
+						<div class="imageTinyPlaceholder">&nbsp;</div>
+<?php					
+					}
+?>
+				<?php print $vo_result->getWithTemplate('^ca_objects.preferred_labels.name (^ca_objects.idno)'); ?>
+			</div>
 <?php
-	}
+		}
+?>
+		</div>
+<?php
+	print $this->render("pdfEnd.php");
 ?>
