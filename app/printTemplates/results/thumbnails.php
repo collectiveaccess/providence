@@ -57,7 +57,8 @@
 
 		$vo_result->seek(0);
 		
-		$vn_line_count = 0;
+		$vn_lines_on_page = 0;
+		$vn_items_in_line = 0;
 		while($vo_result->nextHit()) {
 			$vn_object_id = $vo_result->get('ca_objects.object_id');		
 ?>
@@ -68,10 +69,16 @@
 			</div>
 <?php
 
-			$vn_line_count++;
-			if ($vn_line_count >= 3) {
-				$vn_line_count = 0;
+			$vn_items_in_line++;
+			if ($vn_items_in_line >= 3) {
+				$vn_items_in_line = 0;
+				$vn_lines_on_page++;
 				print "<br class=\"clear\"/>\n";
+			}
+			
+			if ($vn_lines_on_page >= 4) { 
+				$vn_lines_on_page = 0;
+				print "<div class=\"pageBreak\">&nbsp;</div>\n";
 			}
 		}
 ?>
