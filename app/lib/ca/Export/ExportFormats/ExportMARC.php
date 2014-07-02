@@ -75,9 +75,6 @@ class ExportMARC extends BaseExportFormat {
 	public function processExport($pa_data,$pa_options=array()){
 		$pb_single_record = (isset($pa_options['singleRecord']) && $pa_options['singleRecord']);
 
-		//caDebug($pa_data,"Data to build MARC from");
-		//caDebug($pa_options,"Export format options");
-
 		$o_record = new File_MARC_Record();
 
 		foreach($pa_data as $va_item){
