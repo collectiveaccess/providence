@@ -8882,6 +8882,28 @@ $pa_options["display_form_field_tips"] = true;
 				UPDATE ".$t_item_rel->tableName()." SET {$vs_item_pk} = ? WHERE {$vs_item_pk} = ?
 			", (int)$pn_to_id, (int)$vn_row_id);
 			if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
+			
+			if ($t_item_rel->hasField('is_primary')) { // make sure there's only one primary
+				$qr_res = $o_db->query("
+					SELECT * FROM ".$t_item_rel->tableName()." WHERE {$vs_item_pk} = ?
+				", (int)$pn_to_id);
+				
+				$vn_first_primary_relation_id = null;
+				
+				$vs_rel_pk = $t_item_rel->primaryKey();
+				while($qr_res->nextRow()) {
+					if ($qr_res->get('is_primary')) {
+						$vn_first_primary_relation_id = (int)$qr_res->get($vs_rel_pk);
+						break;
+					}
+				}
+				
+				if ($vn_first_primary_relation_id) {
+					$o_db->query("
+						UPDATE ".$t_item_rel->tableName()." SET is_primary = 0 WHERE {$vs_rel_pk} <> ? AND {$vs_item_pk} = ?
+					", array($vn_first_primary_relation_id, (int)$pn_to_id));
+				}
+			}
 		}
 		
 		$vn_rel_table_num = $t_item_rel->tableNum();
