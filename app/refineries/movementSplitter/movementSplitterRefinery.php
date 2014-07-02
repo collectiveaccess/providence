@@ -36,7 +36,7 @@
 			$this->ops_description = _t('Provides several movement-related import functions: splitting of multiple movements in a string into individual values, mapping of type and relationship type for related movements, and merging movement data with movement names.');
 			
 			$this->opb_returns_multiple_values = true;
-			
+			$this->opb_supports_related_entities = true;
 			parent::__construct();
 		}
 		# -------------------------------------------------------

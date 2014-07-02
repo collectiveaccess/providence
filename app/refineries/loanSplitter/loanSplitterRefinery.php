@@ -36,6 +36,7 @@
 			$this->ops_description = _t('Provides several loan-related import functions: splitting of multiple loans in a string into individual values, mapping of type and relationship type for related loans, and merging loan data with loan names.');
 
 			$this->opb_returns_multiple_values = true;
+			$this->opb_supports_related_entities = true;
 			
 			parent::__construct();
 		}
