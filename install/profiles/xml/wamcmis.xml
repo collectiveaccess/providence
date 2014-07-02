@@ -11720,13 +11720,7 @@
         </item>
       </items>
     </list>
-    <list code="eps_taxonomy" hierarchical="0" system="0" vocabulary="1">
-      <labels>
-        <label locale="en_AU">
-          <name>EPS Taxonomy</name>
-        </label>
-      </labels>
-    </list>
+    <list code="eps_taxonomy" hierarchical="1" system="0" vocabulary="1"><labels><label locale="en_AU"><name>EPS Taxonomy</name></label></labels><items><item idno="eps_animalia" enabled="1" default="0"><labels><label locale="en_AU" preferred="1"><name_singular>Animal</name_singular><name_plural>Animals</name_plural></label></labels></item></items></list>
     <list code="loan_status_types" hierarchical="0" system="0" vocabulary="0" defaultSort="1">
       <labels>
         <label locale="en_AU">
@@ -11768,13 +11762,7 @@
         </item>
       </items>
     </list>
-    <list code="geological_formation" hierarchical="0" system="0" vocabulary="1">
-      <labels>
-        <label locale="en_AU">
-          <name>Geological Formation</name>
-        </label>
-      </labels>
-    </list>
+    <list code="geological_formation" hierarchical="0" system="0" vocabulary="1"><labels><label locale="en_AU"><name>Geological Formation</name></label></labels></list>
     <list code="geologic_time_scale" hierarchical="1" system="0" vocabulary="1" defaultSort="2">
       <labels>
         <label locale="en_AU">
@@ -13735,6 +13723,21 @@
             <setting name="isDependentValue">0</setting>
           </settings>
         </metadataElement>
+        <metadataElement code="georeference_source_reference" datatype="Occurrences">
+          <labels>
+            <label locale="en_AU">
+              <name>Georeference Source Reference</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="requireValue">0</setting>
+            <setting name="fieldWidth">60</setting>
+            <setting name="doesNotTakeLocale">1</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+          </settings>
+        </metadataElement>
       </elements>
       <typeRestrictions>
         <restriction>
@@ -13744,7 +13747,7 @@
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
         <restriction>
@@ -13758,6 +13761,7 @@
         <restriction>
           <table>ca_storage_locations</table>
           <type>site</type>
+          <includeSubtypes>1</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -19918,6 +19922,8 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
         </label>
       </labels>
       <settings>
+        <setting name="listHeight"/>
+        <setting name="requireValue">0</setting>
         <setting name="render">lookup</setting>
       </settings>
       <typeRestrictions>
@@ -19950,6 +19956,11 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
           <description>Specify the host rock of the object</description>
         </label>
       </labels>
+      <settings>
+        <setting name="listHeight"/>
+        <setting name="requireValue">0</setting>
+        <setting name="render">lookup</setting>
+      </settings>
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
@@ -19984,6 +19995,48 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
         <setting name="suggestExistingValues">1</setting>
       </settings>
       <typeRestrictions/>
+    </metadataElement>
+    <metadataElement code="element" datatype="Text">
+      <labels>
+        <label locale="en_AU">
+          <name>Elements</name>
+          <description>Specify the elements that make up the mineral</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="suggestExistingValues">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_list_items</table>
+          <type>mineral</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_objects</table>
+          <type>mineral_simpson</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_objects</table>
+          <type>mineral_mdc</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
     </metadataElement>
   </elementSets>
   <userInterfaces>
@@ -20302,8 +20355,15 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
                 <setting name="usewysiwygeditor"/>
               </settings>
             </placement>
+            <placement code="ca_attribute_element3">
+              <bundle>ca_attribute_element</bundle>
+            </placement>
             <placement code="ca_attribute_chemical_formula3">
               <bundle>ca_attribute_chemical_formula</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
             </placement>
             <placement code="idno">
               <bundle>idno</bundle>
@@ -23947,6 +24007,225 @@ Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
         </screen>
       </screens>
     </userInterface>
+    <userInterface code="minerals" type="ca_objects">
+      <labels>
+        <label locale="en_AU">
+          <name>Minerals Editor</name>
+        </label>
+      </labels>
+      <typeRestrictions>
+        <restriction type="mineral"/>
+        <restriction type="mineral_mdc"/>
+        <restriction type="mineral_simpson"/>
+      </typeRestrictions>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
+      <groupAccess>
+        <permission group="mineralogy" access="read"/>
+      </groupAccess>
+      <screens>
+        <screen idno="basic_minerals" default="1">
+          <labels>
+            <label locale="en_AU">
+              <name>Basic Information</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction type="mineral"/>
+            <restriction type="mineral_mdc"/>
+            <restriction type="mineral_simpson"/>
+          </typeRestrictions>
+          <bundlePlacements>
+            <placement code="idno3">
+              <bundle>idno</bundle>
+              <settings>
+                <setting name="readonly"/>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_host_rock16">
+              <bundle>ca_attribute_host_rock</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_mineral6">
+              <bundle>ca_attribute_mineral</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_element12">
+              <bundle>ca_attribute_element</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_collections7">
+              <bundle>ca_collections</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="restrict_to_types">internal</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="display_template">^ca_collections.preferred_labels</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+              </settings>
+            </placement>
+            <placement code="ca_object_representations5">
+              <bundle>ca_object_representations</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="display_template">^ca_object_representations.preferred_labels</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+              </settings>
+            </placement>
+            <placement code="ca_objects_components_list10">
+              <bundle>ca_objects_components_list</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="displayTemplate">&lt;l&gt;^ca_objects.preferred_labels.name&lt;/l&gt; (^ca_objects.idno)</setting>
+              </settings>
+            </placement>
+            <placement code="ca_objects_location11">
+              <bundle>ca_objects_location</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="locationTrackingMode">ca_movements</setting>
+                <setting name="ca_movements_dateElement">planned_removal_date</setting>
+                <setting name="currentLocationColor">#EEEEEE</setting>
+                <setting name="futureLocationColor">#EEEEEE</setting>
+                <setting name="pastLocationColor">#EEEEEE</setting>
+                <setting name="useHierarchicalBrowser">1</setting>
+              </settings>
+            </placement>
+            <placement code="ca_places13">
+              <bundle>ca_places</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="restrict_to_relationship_types">located</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="display_template">^ca_places.preferred_labels</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow">1</setting>
+                <setting name="useHierarchicalBrowser">1</setting>
+                <setting name="hierarchicalBrowserHeight">200px</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_georeference15">
+              <bundle>ca_attribute_georeference</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_storage_locations8">
+              <bundle>ca_storage_locations</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="display_template">^ca_storage_locations.preferred_labels</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="useHierarchicalBrowser">1</setting>
+                <setting name="hierarchicalBrowserHeight">200px</setting>
+                <setting name="showCurrentOnly">1</setting>
+              </settings>
+            </placement>
+            <placement code="ca_objects_history14">
+              <bundle>ca_objects_history</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="ca_object_lots_bequest_dateElement">dcModified</setting>
+                <setting name="ca_object_lots_bequest_color">#EEEEEE</setting>
+                <setting name="ca_object_lots_gift_dateElement">dcModified</setting>
+                <setting name="ca_object_lots_gift_color">#EEEEEE</setting>
+                <setting name="ca_object_lots_loan_dateElement">dcModified</setting>
+                <setting name="ca_object_lots_loan_color">#EEEEEE</setting>
+                <setting name="ca_object_lots_long_term_loan_dateElement">dcModified</setting>
+                <setting name="ca_object_lots_long_term_loan_color">#EEEEEE</setting>
+                <setting name="ca_object_lots_purchase_dateElement">dcModified</setting>
+                <setting name="ca_object_lots_purchase_color">#EEEEEE</setting>
+                <setting name="ca_object_lots_restricted_gift_dateElement">dcModified</setting>
+                <setting name="ca_object_lots_restricted_gift_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_conservation_analysis_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_conservation_analysis_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_conservation_assignment_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_conservation_assignment_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_collectingEvent_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_collectingEvent_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_conservation_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_conservation_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_conservation_job_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_conservation_job_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_exhibition_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_exhibition_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_identification_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_identification_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_map_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_map_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_anthropology_register_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_anthropology_register_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_resource_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_resource_color">#EEEEEE</setting>
+                <setting name="ca_movements_movement_dateElement">planned_removal_date</setting>
+                <setting name="ca_movements_movement_color">#EEEEEE</setting>
+                <setting name="ca_loans_custodial_dateElement">loan_authorization_date</setting>
+                <setting name="ca_loans_custodial_color">#EEEEEE</setting>
+                <setting name="ca_loans_in_dateElement">loan_authorization_date</setting>
+                <setting name="ca_loans_in_color">#EEEEEE</setting>
+                <setting name="ca_loans_out_dateElement">loan_authorization_date</setting>
+                <setting name="ca_loans_out_color">#EEEEEE</setting>
+                <setting name="ca_storage_locations_color">#EEEEEE</setting>
+                <setting name="showDeaccessionInformation">1</setting>
+                <setting name="deaccession_color">#EEEEEE</setting>
+              </settings>
+            </placement>
+            <placement code="ca_occurrences17">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="label" locale="en_AU">Maps / References</setting>
+                <setting name="add_label" locale="en_AU">add map / reference</setting>
+                <setting name="readonly"/>
+                <setting name="restrict_to_types">map</setting>
+                <setting name="restrict_to_types">resource</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="display_template">^ca_occurrences.preferred_labels</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow">255</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_occurrenceRemarks">
+              <bundle>ca_attribute_occurrenceRemarks</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
   </userInterfaces>
   <relationshipTypes>
     <relationshipTable name="ca_loans_x_entities">
@@ -24953,16 +25232,16 @@ Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
           </labels>
           <subTypeRight>anthropology_register</subTypeRight>
         </type>
-          <type code="dcCreator" default="0">
-            <labels>
-              <label locale="en_AU">
-                <typename>created</typename>
-                <typename_reverse>created by</typename_reverse>
-              </label>
-            </labels>
-            <subTypeRight>resource</subTypeRight>
-          </type>
-        <type code="individual_request_cons" default="0">
+				<type code="dcCreator" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>created</typename>
+							<typename_reverse>created by</typename_reverse>
+						</label>
+					</labels>
+					<subTypeRight>resource</subTypeRight>
+				</type>
+			<type code="individual_request_cons" default="0">
           <labels>
             <label locale="en_AU">
               <typename>requested</typename>
@@ -28291,6 +28570,11 @@ Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
       <roles>
         <role>az_cataloguer</role>
       </roles>
+    </group>
+    <group code="mineralogy">
+      <name>Minerals</name>
+      <description>A group for curators of the minerals databases</description>
+      <roles/>
     </group>
   </groups>
   <displays>
