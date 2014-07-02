@@ -36,6 +36,7 @@
 			$this->ops_description = _t('Provides several list item-related import functions: splitting of many items in a string into separate names, and merging entity data with item names.');
 			
 			$this->opb_returns_multiple_values = true;
+			$this->opb_supports_related_entities = true;
 			
 			parent::__construct();
 		}
@@ -183,15 +184,6 @@
 				'default' => '',
 				'label' => _t('Non-preferred labels'),
 				'description' => _t('List of non-preferred labels to apply to list items.')
-			),
-		 'listItemSplitter_relatedEntities' => array(
-				 'formatType' => FT_TEXT,
-				 'displayType' => DT_SELECT,
-				 'width' => 10, 'height' => 1,
-				 'takesLocale' => false,
-				 'default' => '',
-				 'label' => _t('Related entities'),
-				 'description' => _t('Entities related to the list item being created.')
 			)
 		);
 ?>

@@ -34,7 +34,8 @@
 			$this->ops_name = 'entitySplitter';
 			$this->ops_title = _t('Entity splitter');
 			$this->ops_description = _t('Provides several entity-related import functions: splitting of entity names into component names (forename, surname, Etc.), splitting of many names in a string into separate names, and merging entity data with entity names (life dates, nationality, Etc.).');
-			
+
+			$this->opb_supports_related_entities = true;
 			$this->opb_returns_multiple_values = true;
 			
 			parent::__construct();
@@ -151,15 +152,6 @@
 				'default' => '',
 				'label' => _t('Interstitial attributes'),
 				'description' => _t('Sets or maps metadata for the interstitial entity <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found.')
-			),
-			'entitySplitter_relatedEntities' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_SELECT,
-				'width' => 10, 'height' => 1,
-				'takesLocale' => false,
-				'default' => '',
-				'label' => _t('Related entities'),
-				'description' => _t('Entities related to the entity being created.')
 			),
 			'entitySplitter_nonPreferredLabels' => array(
 				'formatType' => FT_TEXT,
