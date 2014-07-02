@@ -1711,14 +1711,14 @@ class BaseModel extends BaseObject {
 	public function load($pm_id=null, $pb_use_cache=true) {
 		$this->clear();
 		$vs_table_name = $this->tableName();
-		if ($pb_use_cache && is_numeric($pm_id) && isset(BaseModel::$s_instance_cache[$vs_table_name][$pm_id]) && is_array(BaseModel::$s_instance_cache[$vs_table_name][$pm_id])) {
-			$this->_FIELD_VALUES = BaseModel::$s_instance_cache[$vs_table_name][$pm_id];
+		if ($pb_use_cache && is_numeric($pm_id) && isset(BaseModel::$s_instance_cache[$vs_table_name][(int)$pm_id]) && is_array(BaseModel::$s_instance_cache[$vs_table_name][(int)$pm_id])) {
+			$this->_FIELD_VALUES = BaseModel::$s_instance_cache[$vs_table_name][(int)$pm_id];
 			$this->_FIELD_VALUES_OLD = $this->_FIELD_VALUES;
 			$this->_FILES_CLEAR = array();
 			return true;
 		}
 		
-		if ($pm_id == null) {
+		if (is_null($pm_id)) {
 			return false;
 		}
 
@@ -1809,11 +1809,11 @@ class BaseModel extends BaseObject {
 			$this->_FIELD_VALUES_OLD = $this->_FIELD_VALUES;
 			$this->_FILES_CLEAR = array();
 			
-			if ($vn_id = $this->getPrimaryKey()) {
-				while (sizeof(BaseModel::$s_instance_cache[$vs_table_name]) > 100) {		// Limit cache to 100 instances per table
-					array_shift(BaseModel::$s_instance_cache[$vs_table_name]);
+			if ($vn_id = $this->_FIELD_VALUES[$this->primaryKey()]) {
+				if (sizeof(BaseModel::$s_instance_cache[$vs_table_name]) > 100) { 
+					BaseModel::$s_instance_cache[$vs_table_name] = array_slice(BaseModel::$s_instance_cache[$vs_table_name], 0, 50, true);
 				}
-				BaseModel::$s_instance_cache[$vs_table_name][$vn_id] = $this->_FIELD_VALUES; 
+				BaseModel::$s_instance_cache[$vs_table_name][(int)$vn_id] = $this->_FIELD_VALUES; 
 			}
 			return true;
 		} else {
@@ -2348,11 +2348,12 @@ class BaseModel extends BaseObject {
 					
 					$this->_FIELD_VALUE_CHANGED = array();					
 						
-					if (sizeof(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) > 100) {		// Limit cache to 100 instances per table
-						array_pop(BaseModel::$s_instance_cache[$vs_table_name]);
+					if (sizeof(BaseModel::$s_instance_cache[$vs_table_name]) > 100) { 	// Limit cache to 100 instances per table
+						BaseModel::$s_instance_cache[$vs_table_name] = array_slice(BaseModel::$s_instance_cache[$vs_table_name], 0, 50, true);
 					}
+					
 					// Update instance cache
-					BaseModel::$s_instance_cache[$vs_table_name][$vn_id] = $this->_FIELD_VALUES;
+					BaseModel::$s_instance_cache[$vs_table_name][(int)$vn_id] = $this->_FIELD_VALUES;
 					return $vn_id;
 				} else {
 					foreach($o_db->errors() as $o_e) {
@@ -2929,10 +2930,10 @@ class BaseModel extends BaseObject {
 				$this->_FIELD_VALUE_CHANGED = array();
 				
 				// Update instance cache
-				if (sizeof(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) > 100) {		// Limit cache to 100 instances per table
-					array_pop(BaseModel::$s_instance_cache[$vs_table_name]);
+				if (sizeof(BaseModel::$s_instance_cache[$vs_table_name]) > 100) { 	// Limit cache to 100 instances per table
+					BaseModel::$s_instance_cache[$vs_table_name] = array_slice(BaseModel::$s_instance_cache[$vs_table_name], 0, 50, true);
 				}
-				BaseModel::$s_instance_cache[$vs_table_name][$this->getPrimaryKey()] = $this->_FIELD_VALUES;
+				BaseModel::$s_instance_cache[$vs_table_name][(int)$this->getPrimaryKey()] = $this->_FIELD_VALUES;
 				return true;
 			} else {
 				if ($vb_we_set_transaction) { $this->removeTransaction(false); }
@@ -10697,7 +10698,7 @@ $pa_options["display_form_field_tips"] = true;
 				while($qr_res->nextRow()) {
 					$t_instance = new $vs_table;
 					if ($o_trans) { $t_instance->setTransaction($o_trans); }
-					if ($t_instance->load($qr_res->get($vs_pk))) {
+					if ($t_instance->load((int)$qr_res->get($vs_pk))) {
 						return $t_instance;
 					}
 				}
