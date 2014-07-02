@@ -1,0 +1,14 @@
+/* Stylesheet used by DOMPDF to format PDF report output */
+
+@page { margin: 55px 66px; }
+#header { position: fixed; left: 0px; top: -50px; right: 0px; height: 55px;  text-align: left; vertical-align: top; margin: 0px 5px 10px 5px; padding: 0px 5px 2px 10px; }
+#footer { position: fixed; left: 0px; bottom: -50px; right: 0px; height: 20px; text-align: center; vertical-align: bottom; margin: 0px 5px 10px 5px; padding: 3px 5px 2px 10px; }
+#header .pagingText:after { content: counter(page, decimal); }
+#body { z-index: 30000; }
+
+.headerText { font: "arial, helvetica, sans-serif"; font-size: 12px; color: #<?php print $vs_color; ?>; margin: -5px 0px 10px 25px; }
+.pagingText { position: absolute; top: 10px; right: 10px; font: "arial, helvetica, sans-serif"; font-size: 12px; color: #<?php print $vs_color; ?>; text-align: right;  margin: -5px 0px 10px 25px; }
+.footerText { font: "arial, helvetica, sans-serif"; font-size: 12px; color: #<?php print $vs_color; ?>; margin: -5px 0px 0px 45px;  }
+
+.thumbnail { font: "arial, helvetica, sans-serif"; font-size: 11px; color: #<?php print $vs_color; ?>; border: 1px solid #999; width: 200px; height: 160px; float: left; text-align: center; margin-left: 10px; padding: 5px; overflow: none;}	
+.clear { clear: both; }
