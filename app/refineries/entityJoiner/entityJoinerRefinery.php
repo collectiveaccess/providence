@@ -37,6 +37,8 @@
 			$this->ops_name = 'entityJoiner';
 			$this->ops_title = _t('Entity joiner');
 			$this->ops_description = _t('Converts data with partial entity names into a valid entities for import.');
+
+			$this->opb_supports_related_entities = true;
 			
 			parent::__construct();
 		}
@@ -324,15 +326,6 @@
 				'default' => '',
 				'label' => _t('Interstitial attributes'),
 				'description' => _t('Sets or maps metadata for the interstitial entity <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found.')
-			),
-			'entityJoiner_relatedEntities' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_SELECT,
-				'width' => 10, 'height' => 1,
-				'takesLocale' => false,
-				'default' => '',
-				'label' => _t('Related entities'),
-				'description' => _t('Entities related to the entity being created.')
 			)
 		);
 ?>

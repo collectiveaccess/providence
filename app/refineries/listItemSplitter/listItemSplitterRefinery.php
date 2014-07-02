@@ -36,6 +36,7 @@
 			$this->ops_description = _t('Provides several list item-related import functions: splitting of many items in a string into separate names, and merging entity data with item names.');
 			
 			$this->opb_returns_multiple_values = true;
+			$this->opb_supports_related_entities = true;
 			
 			parent::__construct();
 		}
