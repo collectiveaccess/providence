@@ -90,6 +90,7 @@
 						'description' => _t('Entities related to the record being created by the %refinery.', array('refinery' => $this->getTitle()))
 				);
 			}
+			return $va_base_settings;
 		}
 		# -------------------------------------------------------
 		/**
