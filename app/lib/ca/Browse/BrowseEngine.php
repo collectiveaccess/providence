@@ -1120,9 +1120,6 @@
 												INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id
 												WHERE
 													(ca_attribute_values.element_id = ?) {$vs_attr_sql}";
-											//caDebug($vs_sql);
-											//caDebug(intval($vs_target_browse_table_num)."/".$vn_element_id."/".$vn_row_id);
-											//caDebug($va_attr_values);
 											$qr_res = $this->opo_db->query($vs_sql, $va_attr_values);
 										} else {
 											
@@ -3770,15 +3767,16 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 						if ($va_field_info['START'] && $va_field_info['END']) {
 							$va_orderbys[] = $va_field_info['START'].' '.$ps_direction;
 							$va_orderbys[] = $va_field_info['END'].' '.$ps_direction;
+							
+							$vs_sortable_value_fld = $va_field_info['START'];
 						} else {
 							$va_orderbys[] = $vs_field.' '.$ps_direction;
+							$vs_sortable_value_fld = $vs_field;
 						}
 						
 						if ($t_table->hasField('locale_id')) {
 							$vs_locale_where = ", ".$vs_table_name.".locale_id";
 						}
-						
-						$vs_sortable_value_fld = $vs_field;
 					}
 				} else {
 					// sort field is in related table 

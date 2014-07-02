@@ -227,6 +227,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	
 	static $s_element_list_cache;
 	static $s_element_set_cache;
+	static $s_element_set_id_cache;
 	
 	static $s_settings_cache = array();
 	static $s_setting_value_cache = array();
@@ -287,13 +288,19 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	/**
 		Returns array of elements in set of currently loaded row
 	 */
-	public function getElementsInSet($pn_element_id=null, $pb_use_cache=true) {
+	public function getElementsInSet($pn_element_id=null, $pb_use_cache=true, $pa_options=null) {
 		if (!$pn_element_id) {
 			$pn_element_id = $this->getPrimaryKey();
 		}
 		if (!$pn_element_id) { return null; }
 		
-		if ($pb_use_cache && isset(ca_metadata_elements::$s_element_set_cache[$pn_element_id])) { return ca_metadata_elements::$s_element_set_cache[$pn_element_id]; }
+		if ($pb_use_cache && isset(ca_metadata_elements::$s_element_set_cache[$pn_element_id])) { 
+			if (caGetOption('idsOnly', $pa_options, false)) {
+				return ca_metadata_elements::$s_element_set_id_cache[$pn_element_id];
+			} else {
+				return ca_metadata_elements::$s_element_set_cache[$pn_element_id]; 
+			}
+		}
 		
 		$va_hier = $this->getHierarchyAsList($pn_element_id);
 		$va_element_set = array();
@@ -302,6 +309,9 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		foreach($va_hier as $va_element) {
 			$va_element_ids[] = $va_element['NODE']['element_id'];
 		}
+		ca_metadata_elements::$s_element_set_id_cache[$pn_element_id] = $va_element_ids;
+		
+		if (caGetOption('idsOnly', $pa_options, false)) { return $va_element_ids; }
 		
 		// Get labels
 		$va_labels = $this->getPreferredDisplayLabelsForIDs($va_element_ids);

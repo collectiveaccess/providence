@@ -330,12 +330,8 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 			'rows'	=> $this->getOption('limit')	// how many results to fetch
 		));
 		
-		//caDebug($va_get,'Solr GET parameters');
-
 		$vo_http_response = $vo_http_client->request();
 		$va_result = json_decode($vo_http_response->getBody(), true);
-		
-		//caDebug($va_result,'Result body');
 		
 		return new WLPlugSearchEngineSolrResult($va_result["response"]["docs"], $pn_subject_tablenum);
 	}
@@ -673,8 +669,6 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		/* send data */
 		$vo_http_client = new Zend_Http_Client();
 		foreach($va_post_xml as $vs_core => $vs_post_xml) {
-
-			//caDebug($vs_post_xml,$vs_core);
 
 			$vo_http_client->setUri(
 				$this->opo_search_config->get('search_solr_url')."/". /* general url */

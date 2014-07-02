@@ -58,8 +58,6 @@ class ExportXML extends BaseExportFormat {
 	public function processExport($pa_data,$pa_options=array()){
 		$pb_single_record = caGetOption('singleRecord', $pa_options);
 		$pb_rdf_mode = caGetOption('rdfMode', $pa_options);
-
-		//caDebug($pa_data,"Data to build XML from");
 		
 		$this->log("XML export formatter: Now processing export tree ...");
 
@@ -95,8 +93,6 @@ class ExportXML extends BaseExportFormat {
 	# ------------------------------------------------------
 	private function processItem($pa_item,$po_parent){
 		if(!($po_parent instanceof DOMNode)) return false;
-
-		//caDebug($pa_item,"Data passed to XML item processor");
 
 		$vs_element = $pa_item['element'];
 		$vs_text = (isset($pa_item['text']) ? $pa_item['text'] : null);

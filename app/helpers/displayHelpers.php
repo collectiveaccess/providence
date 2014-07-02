@@ -293,8 +293,9 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 				$vs_typename = _t('relationship type');
 				break;
 			default:
+				// Check relationships
 				$va_tables = array(
-					'ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_list_items', 'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops', 'ca_object_representations'
+					'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_list_items', 'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops', 'ca_object_representations'
 				);
 				
 				if (!in_array($t_instance->tableName(), $va_tables)) { return null; }
@@ -304,12 +305,25 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 					
 					if (!($vn_c = sizeof($va_items))) { continue; }
 					if ($vn_c == 1) {
-						$va_buf[] = _t("Has %1 reference to %2", $vn_c, caGetTableDisplayName($vs_table, true))."<br>\n";
+						$va_buf[] = _t("Has %1 relationship to %2", $vn_c, caGetTableDisplayName($vs_table, true))."<br>\n";
 					} else {
-						$va_buf[] = _t("Has %1 references to %2", $vn_c, caGetTableDisplayName($vs_table, true))."<br>\n";
+						$va_buf[] = _t("Has %1 relationships to %2", $vn_c, caGetTableDisplayName($vs_table, true))."<br>\n";
 					}
 					$vn_count += $vn_c;
 				}
+				
+				// Check attributes
+				if ($vn_datatype = $t_instance->authorityElementDatatype()) {
+					if ($vn_c = $t_instance->getAuthorityElementReferences(array('countOnly' => true))) {
+						if ($vn_c == 1) {
+							$va_buf[] = _t("Is referenced %1 time", $vn_c)."<br>\n";
+						} else {
+							$va_buf[] = _t("Is referenced %1 times", $vn_c)."<br>\n";
+						}
+						$vn_count += $vn_c;
+					}
+				}
+				
 				$vs_typename = $t_instance->getTypeName();
 		}
 		
@@ -327,7 +341,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			$vs_output .= caHTMLHiddenInput('remapToID', array('value' => '', 'id' => 'remapToID'));
 			$vs_output .= "<script type='text/javascript'>";
 			
-			$va_service_info = caJSONLookupServiceUrl($po_request, $t_instance->tableName(), array('noSymbols' => 1, 'exclude' => (int)$t_instance->getPrimaryKey(), 'table_num' => (int)$t_instance->get('table_num')));
+			$va_service_info = caJSONLookupServiceUrl($po_request, $t_instance->tableName(), array('noSymbols' => 1, 'noInline' => 1, 'exclude' => (int)$t_instance->getPrimaryKey(), 'table_num' => (int)$t_instance->get('table_num')));
 			$vs_output .= "jQuery(document).ready(function() {";
 			$vs_output .= "jQuery('#remapTo').autocomplete(
 					{
@@ -594,7 +608,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		require_once(__CA_MODELS_DIR__.'/ca_sets.php');
 		require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
 		
-		$t_item 				= $po_view->getVar('t_item'); if (!$t_item) print caPrintStacktrace();
+		$t_item 				= $po_view->getVar('t_item'); 
 		$vs_table_name = $t_item->tableName();
 		if (($vs_priv_table_name = $vs_table_name) == 'ca_list_items') {
 			$vs_priv_table_name = 'ca_lists';
@@ -623,7 +637,6 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		// action extra to preserve currently open screen across next/previous links
 		$vs_screen_extra 	= ($po_view->getVar('screen')) ? '/'.$po_view->getVar('screen') : '';
 		if ($vs_type_name == "list item") {
-			print "<div style='height:12px;'></div>";
 			$vs_style = "style='height:auto;'";
 		}
 		if (($vn_item_id) | ($po_view->request->getAction() === 'Delete')) {
@@ -682,10 +695,10 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 						}
 					}
 				}
-					//ca_objects_dont_use_labels
+				
 				$vs_label = '';
 				$vb_dont_use_labels_for_ca_objects = (bool)$t_item->getAppConfig()->get('ca_objects_dont_use_labels');
-				if(!($vs_table_name === 'ca_objects') && $vb_dont_use_labels_for_ca_objects) {
+				if(!(($vs_table_name === 'ca_objects') && $vb_dont_use_labels_for_ca_objects)){
 					if ($vs_get_spec = $po_view->request->config->get("{$vs_table_name}_inspector_display_title")) {
 						$vs_label = caProcessTemplateForIDs($vs_get_spec, $vs_table_name, array($t_item->getPrimaryKey()));
 					} else {

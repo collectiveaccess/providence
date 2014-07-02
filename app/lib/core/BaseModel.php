@@ -8403,7 +8403,7 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		$t_item_rel = $va_rel_info['t_item_rel'];
 		$t_item_rel->clear();
-		if ($this->inTransaction()) { $t_item_rel->setTransaction($this->getTransaction()); }
+		if ($this->inTransaction()) { $o_trans = $this->getTransaction(); $t_item_rel->setTransaction($o_trans); }
 		
 		if ($pm_type_id && !is_numeric($pm_type_id)) {
 			$t_rel_type = new ca_relationship_types();
@@ -8882,6 +8882,28 @@ $pa_options["display_form_field_tips"] = true;
 				UPDATE ".$t_item_rel->tableName()." SET {$vs_item_pk} = ? WHERE {$vs_item_pk} = ?
 			", (int)$pn_to_id, (int)$vn_row_id);
 			if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
+			
+			if ($t_item_rel->hasField('is_primary')) { // make sure there's only one primary
+				$qr_res = $o_db->query("
+					SELECT * FROM ".$t_item_rel->tableName()." WHERE {$vs_item_pk} = ?
+				", (int)$pn_to_id);
+				
+				$vn_first_primary_relation_id = null;
+				
+				$vs_rel_pk = $t_item_rel->primaryKey();
+				while($qr_res->nextRow()) {
+					if ($qr_res->get('is_primary')) {
+						$vn_first_primary_relation_id = (int)$qr_res->get($vs_rel_pk);
+						break;
+					}
+				}
+				
+				if ($vn_first_primary_relation_id) {
+					$o_db->query("
+						UPDATE ".$t_item_rel->tableName()." SET is_primary = 0 WHERE {$vs_rel_pk} <> ? AND {$vs_item_pk} = ?
+					", array($vn_first_primary_relation_id, (int)$pn_to_id));
+				}
+			}
 		}
 		
 		$vn_rel_table_num = $t_item_rel->tableNum();

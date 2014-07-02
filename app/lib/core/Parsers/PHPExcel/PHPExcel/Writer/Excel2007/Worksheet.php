@@ -2,7 +2,7 @@
 /**
  * PHPExcel
  *
- * Copyright (c) 2006 - 2012 PHPExcel
+ * Copyright (c) 2006 - 2014 PHPExcel
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,9 +20,9 @@
  *
  * @category   PHPExcel
  * @package	PHPExcel_Writer_Excel2007
- * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
+ * @copyright  Copyright (c) 2006 - 2014 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license	http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version	##VERSION##, ##DATE##
+ * @version	1.8.0, 2014-03-02
  */
 
 
@@ -31,7 +31,7 @@
  *
  * @category   PHPExcel
  * @package	PHPExcel_Writer_Excel2007
- * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
+ * @copyright  Copyright (c) 2006 - 2014 PHPExcel (http://www.codeplex.com/PHPExcel)
  */
 class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_WriterPart
 {
@@ -148,6 +148,12 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
 		// sheetPr
 		$objWriter->startElement('sheetPr');
 		//$objWriter->writeAttribute('codeName',		$pSheet->getTitle());
+		if($pSheet->getParent()->hasMacros()){//if the workbook have macros, we need to have codeName for the sheet
+			if($pSheet->hasCodeName()==false){
+				$pSheet->setCodeName($pSheet->getTitle());
+			}
+			$objWriter->writeAttribute('codeName',		$pSheet->getCodeName());
+		}
 			$autoFilterRange = $pSheet->getAutoFilter()->getRange();
 			if (!empty($autoFilterRange)) {
 				$objWriter->writeAttribute('filterMode', 1);
@@ -1074,12 +1080,9 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
 						$objWriter->writeAttribute('t', $mappedType);
 						break;
 					case 'f':			// Formula
-						$calculatedValue = null;
-						if ($this->getParentWriter()->getPreCalculateFormulas()) {
-							$calculatedValue = $pCell->getCalculatedValue();
-						} else {
-							$calculatedValue = $cellValue;
-						}
+						$calculatedValue = ($this->getParentWriter()->getPreCalculateFormulas()) ?
+						    $pCell->getCalculatedValue() :
+						    $cellValue;
 						if (is_string($calculatedValue)) {
 							$objWriter->writeAttribute('t', 'str');
 						}
@@ -1125,7 +1128,7 @@ class PHPExcel_Writer_Excel2007_Worksheet extends PHPExcel_Writer_Excel2007_Writ
 						}
 						if ($this->getParentWriter()->getOffice2003Compatibility() === false) {
 							if ($this->getParentWriter()->getPreCalculateFormulas()) {
-								$calculatedValue = $pCell->getCalculatedValue();
+//								$calculatedValue = $pCell->getCalculatedValue();
 								if (!is_array($calculatedValue) && substr($calculatedValue, 0, 1) != '#') {
 									$objWriter->writeElement('v', PHPExcel_Shared_String::FormatNumber($calculatedValue));
 								} else {

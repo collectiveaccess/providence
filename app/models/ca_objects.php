@@ -1173,7 +1173,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$o_view->setVar('t_subject', $this);
 		
 		//
-		// Load update
+		// Loan update
 		//
 
 		$t_loan_rel = new ca_loans_x_objects();
