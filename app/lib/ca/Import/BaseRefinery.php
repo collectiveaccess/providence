@@ -172,7 +172,8 @@
 				$vm_val = caProcessImportItemSettingsForValue($vm_val, $pa_item['settings']);
 				
 				if (caGetOption("returnAsString", $pa_options, false)) {
-					$vs_delimiter = caGetOption("delimiter", $pa_options, ';');
+					$va_delimiter = caGetOption("delimiter", $pa_options, ';');
+					if (is_array($va_delimiter)) { $vs_delimiter = array_shift($va_delimiter); } else { $vs_delimiter = $va_delimiter; }
 					return join($vs_delimiter, $vm_val);
 				}
 				return $vm_val;
