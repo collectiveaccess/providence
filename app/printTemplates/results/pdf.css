@@ -7,7 +7,7 @@
 #body { z-index: 30000; }
 
 .headerText { font: "arial, helvetica, sans-serif"; font-size: 12px; margin: -5px 0px 10px 25px; }
-.pagingText { position: absolute; top: 10px; right: 10px; font: "arial, helvetica, sans-serif"; font-size: 12px; color: #<?php print $vs_color; ?>; text-align: right;  margin: -5px 0px 10px 25px; }
+.pagingText { position: absolute; top: 10px; right: 10px; font: "arial, helvetica, sans-serif"; font-size: 12px; text-align: right;  margin: -5px 0px 10px 25px; }
 .footerText { font: "arial, helvetica, sans-serif"; font-size: 12px;  margin: -5px 0px 0px 45px;  }
 
 .thumbnail { font: "arial, helvetica, sans-serif"; font-size: 11px; border: 1px solid #999; width: 200px; height: 210px; float: left; text-align: center; margin-left: 10px; padding: 3px; overflow: none;}	

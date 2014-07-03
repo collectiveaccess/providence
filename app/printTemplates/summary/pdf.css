@@ -6,9 +6,9 @@
 #header .pagingText:after { content: counter(page, decimal); }
 #body { z-index: 30000; }
 
-.headerText { font: "arial, helvetica, sans-serif"; font-size: 12px; color: #<?php print $vs_color; ?>; margin: -5px 0px 10px 25px; }
-.pagingText { position: absolute; top: 10px; right: 10px; font: "arial, helvetica, sans-serif"; font-size: 12px; color: #<?php print $vs_color; ?>; text-align: right;  margin: -5px 0px 10px 25px; }
-.footerText { font: "arial, helvetica, sans-serif"; font-size: 12px; color: #<?php print $vs_color; ?>; margin: -5px 0px 0px 45px;  }
+.headerText { font: "arial, helvetica, sans-serif"; font-size: 12px; margin: -5px 0px 10px 25px; }
+.pagingText { position: absolute; top: 10px; right: 10px; font: "arial, helvetica, sans-serif"; font-size: 12px; text-align: right;  margin: -5px 0px 10px 25px; }
+.footerText { font: "arial, helvetica, sans-serif"; font-size: 12px; margin: -5px 0px 0px 45px;  }
 
 span.label { font: "arial, helvetica, sans-serif"; font-size: 12px; font-weight: bold }
 div.data { font: "arial, helvetica, sans-serif"; font-size: 12px; border-bottom: 1px solid #cccccc; margin-top: 10px; }
@@ -16,5 +16,5 @@ div.data { font: "arial, helvetica, sans-serif"; font-size: 12px; border-bottom:
 .representationList { width: 100%; margin-top:10px; text-align: center; }
 
 
-.thumbnail { font: "arial, helvetica, sans-serif"; font-size: 11px; color: #<?php print $vs_color; ?>; border: 1px solid #999; width: 200px; height: 160px; float: left; text-align: center; margin-left: 10px; padding: 5px; overflow: none;}	
+.thumbnail { font: "arial, helvetica, sans-serif"; font-size: 11px; border: 1px solid #999; width: 200px; height: 160px; float: left; text-align: center; margin-left: 10px; padding: 5px; overflow: none;}	
 .clear { clear: both; }
