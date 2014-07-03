@@ -1868,7 +1868,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		$ps_template = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_doc->html()));	// replace template with parsed version; this allows us to do text find/replace later
 		
 		// Parse units from template
-		$o_units = $o_doc('unit:not(unit > unit)');	// only process non-nested <unit> tags
+		$o_units = $o_doc('unit');	// only process non-nested <unit> tags
 		$va_units = array();
 		$vn_unit_id = 1;
 		foreach($o_units as $o_unit) {
@@ -1876,6 +1876,11 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 			
 			$vs_html = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_unit->html()));
 			$vs_content = $o_unit->getInnerText();
+			
+			// is this nested in another unit? We skip these
+			foreach($va_units as $va_tmp) {
+				if (strpos($va_tmp['directive'], $vs_html) !== false) { continue(2); }
+			}
 			
 			$va_units[] = $va_unit = array(
 				'tag' => $vs_unit_tag = "[[#{$vn_unit_id}]]",
@@ -1888,7 +1893,6 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 			$ps_template = str_ireplace($va_unit['directive'], $vs_unit_tag, $ps_template);
 			$vn_unit_id++;
 		}
-		
 		
 		$o_doc = str_get_dom($ps_template);		// parse template again with units replaced by unit tags in the format [[#X]]
 		$ps_template = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_doc->html()));	// replace template with parsed version; this allows us to do text find/replace later
@@ -1906,8 +1910,10 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		$o_ifs = $o_doc("if");						// if 
 		$o_ifdefs = $o_doc("ifdef");				// if defined
 		$o_ifnotdefs = $o_doc("ifnotdef");			// if not defined
-		$o_mores = $o_doc("more");					// more tags - content suppressed if there are no defined values following the tag pair
-		$o_betweens = $o_doc("between");			// between tags - content suppressed if there are not defined values on both sides of the tag pair
+
+		$o_mores = $o_doc("more");					// more tags – content suppressed if there are no defined values following the tag pair
+		$o_betweens = $o_doc("between");			// between tags – content suppressed if there are not defined values on both sides of the tag pair
+
 		$o_ifcounts = $o_doc("ifcount");			// if count - conditionally return template if # of items is in-bounds
 		
 		$va_if = array();
@@ -1926,7 +1932,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 			
 			$vs_code = (string)$o_ifdef->getAttribute('code');
 			$vs_code_proc = preg_replace("!%(.*)$!", '', $vs_code);
-			if (!in_array($vs_code_proc, $va_tags)) { $va_tags[] = $vs_code_proc; }
+			if (!in_array($vs_code_proc, $va_tags)) { $va_tags += preg_split('![,\|]{1}!', $vs_code_proc); }
 			
 			$vs_html = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_ifdef->html()));
 			$vs_content = $o_ifdef->getInnerText();
@@ -1943,7 +1949,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 			
 			$vs_code = (string)$o_ifnotdef->getAttribute('code');
 			$vs_code_proc = preg_replace("!%(.*)$!", '', $vs_code);
-			if (!in_array($vs_code_proc, $va_tags)) { $va_tags[] = $vs_code_proc; }
+			if (!in_array($vs_code_proc, $va_tags)) { $va_tags += preg_split('![,\|]{1}!', $vs_code_proc); }
 			
 			$vs_html = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_ifnotdef->html()));
 			$vs_content = $o_ifnotdef->getInnerText();
@@ -1986,7 +1992,10 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 			$vn_min = (int)$o_ifcount->getAttribute('min');
 			if (!($vn_max = (int)$o_ifcount->getAttribute('max'))) { $vn_max = null; }
 			
-			$va_ifcounts[] = array('directive' => $vs_html, 'content' => $vs_content, 'min' => $vn_min, 'max' => $vn_max, 'code' => $vs_code);
+			$va_restrict_to_types = preg_split("![,; ]+!", $o_ifcount->getAttribute('restrictToTypes')); 
+			$va_restrict_to_relationship_types = preg_split("![,; ]+!", $o_ifcount->getAttribute('restrictToRelationshipTypes')); 
+			
+			$va_ifcounts[] = array('directive' => $vs_html, 'content' => $vs_content, 'min' => $vn_min, 'max' => $vn_max, 'code' => $vs_code, 'restrictToTypes' => $va_restrict_to_types, 'restrictToRelationshipTypes' => $va_restrict_to_relationship_types);
 		}
 		
 		$va_resolve_links_using_row_ids = array();
@@ -1995,21 +2004,26 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 		while($qr_res->nextHit()) {
 			$vs_pk_val = $qr_res->get($vs_pk);
 			$va_proc_templates[$vn_i] = $ps_template;
-		
 			// Process <ifcount> directives
 			foreach($va_ifcounts as $va_ifcount) {
-				if($t_table = $o_dm->getInstanceByTableName($va_ifcount['code'], true)) {
-					$vn_count = sizeof($qr_res->get($va_ifcount['code'].".".$t_table->primaryKey(), array('returnAsArray' => true)));
-				} else {
-					$vn_count = sizeof($qr_res->get($va_ifcount['code'], array('returnAsArray' => true)));
-				}	
-				if (($va_ifcount['min'] <= $vn_count) && (($va_ifcount['max'] >= $vn_count) || !$va_ifcount['max'])) {
-					$va_proc_templates[$vn_i]  = str_replace($va_ifcount['directive'], $va_ifcount['content'], $va_proc_templates[$vn_i] );
-				} else {
-					$va_proc_templates[$vn_i]  = str_replace($va_ifcount['directive'], '', $va_proc_templates[$vn_i] );
+				if (is_array($va_if_codes = preg_split("![\|,;]+!", $va_ifcount['code']))) {
+					$vn_count = 0;
+					foreach($va_if_codes as $vs_if_code) {
+						if($t_table = $o_dm->getInstanceByTableName($vs_if_code, true)) {
+							$vn_count += sizeof($qr_res->get($vs_if_code.".".$t_table->primaryKey(), array('restrictToTypes' => $va_ifcount['restrictToTypes'], 'restrictToRelationshipTypes' => $va_ifcount['restrictToRelationshipTypes'], 'returnAsArray' => true)));
+						} else {
+							$vn_count += sizeof($qr_res->get($vs_if_code, array('returnAsArray' => true, 'restrictToTypes' => $va_ifcount['restrictToTypes'], 'restrictToRelationshipTypes' => $va_ifcount['restrictToRelationshipTypes'])));
+						}	
+					}
+					
+					if (($va_ifcount['min'] <= $vn_count) && (($va_ifcount['max'] >= $vn_count) || !$va_ifcount['max'])) {
+						$va_proc_templates[$vn_i]  = str_replace($va_ifcount['directive'], $va_ifcount['content'], $va_proc_templates[$vn_i] );
+					} else {
+						$va_proc_templates[$vn_i]  = str_replace($va_ifcount['directive'], '', $va_proc_templates[$vn_i] );
+					}
 				}
 			}
-		
+			
 			foreach($va_units as $va_unit) {
 				if (!$va_unit['content']) { continue; }
 				$va_relative_to_tmp = $va_unit['relativeTo'] ? explode(".", $va_unit['relativeTo']) : array($ps_tablename);
@@ -2051,6 +2065,12 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 							$va_relative_ids = $pa_row_ids;
 							break;
 					}
+					
+				
+					$va_tmpl_val = caProcessTemplateForIDs($va_unit['content'], $va_relative_to_tmp[0], $va_relative_ids, array_merge($pa_options, array('returnAsArray' => true, 'delimiter' => $vs_unit_delimiter, 'resolveLinksUsing' => null)));
+					foreach($va_tmpl_val as $vn_tmpl_i => $vs_tmpl_v) {
+						$va_proc_templates[$vn_tmpl_i] = str_ireplace($va_unit['tag'], $vs_tmpl_v, $va_proc_templates[$vn_tmpl_i]);
+					}
 				} else { 
 					switch(strtolower($va_relative_to_tmp[1])) {
 						case 'hierarchy':
@@ -2078,11 +2098,11 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 							
 							break;
 					}
+									
+					$vs_tmpl_val = caProcessTemplateForIDs($va_unit['content'], $va_relative_to_tmp[0], $va_relative_ids, array_merge($pa_options, array('delimiter' => $vs_unit_delimiter, 'resolveLinksUsing' => null)));
+				
+					$va_proc_templates[$vn_i] = str_ireplace($va_unit['tag'], $vs_tmpl_val, $va_proc_templates[$vn_i]);
 				}
-				
-				$vs_tmpl_val = caProcessTemplateForIDs($va_unit['content'], $va_relative_to_tmp[0], $va_relative_ids, array_merge($pa_options, array('delimiter' => $vs_unit_delimiter, 'resolveLinksUsing' => null)));
-				
-				$va_proc_templates[$vn_i] = str_ireplace($va_unit['tag'], $vs_tmpl_val, $va_proc_templates[$vn_i]);
 			}
 			
 			if (!strlen(trim($va_proc_templates[$vn_i]))) { $va_proc_templates[$vn_i] = null; }
@@ -2132,8 +2152,9 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 				
 				switch($vs_tag) {
 					case 'DATE':
-						$vs_format = urldecode(caGetOption('format', $va_tag_opts, 'm/d/Y'));
+						$vs_format = urldecode(caGetOption('format', $va_tag_opts, 'd M Y'));
 						$va_proc_templates[$vn_i] = str_replace("^{$vs_tag}", date($vs_format), $va_proc_templates[$vn_i]);
+						continue(2);
 						break;
 				}
 			
@@ -2214,7 +2235,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 								}
 								
 								if ($va_spec_bits[1] != '_hierarchyName') {
-									$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_additional_options, array("returnAsArray" => true, "returnAllLocales" => true, 'filters' => $va_tag_filters)));
+									$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_additional_options, array("returnAsArray" => true, "returnAllLocales" => true, 'filters' => $va_tag_filters, 'primaryIDs' => $va_primary_ids)));
 								} else {
 									$va_val = array();
 								}
@@ -2246,12 +2267,23 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 												if (!is_array($va_hier)) { $va_hier = array($va_hier); }
 												$va_val_proc[] = join(caGetOption("delimiter", $va_tag_opts, "; "), $va_hier);
 											}
+											$va_val_proc = array(join(caGetOption("delimiter", $va_tag_opts, "; "), $va_val_proc));
 										} 
 										break;
 									case 'parent':
 										if (is_array($va_val)) {
-											foreach($va_val as $va_label) {
-												$va_val_proc[] = $va_label['name'];
+											
+											foreach($va_val as $vm_label) {
+												if (is_array($vm_label)) {
+													$t_rel = $o_dm->getInstanceByTableName($va_spec_bits[0], true);
+													if (!$t_rel || !method_exists($t_rel, "getLabelDisplayField")) {
+														$va_val_proc[] = join("; ", $vm_label);
+													} else {
+														$va_val_proc[] = $vm_label[$t_rel->getLabelDisplayField()];
+													}
+												} else {
+													$va_val_proc[] = $vm_label;
+												}
 											}
 										}
 										break;
@@ -2311,9 +2343,10 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 								
 								if (in_array($va_tmp[0], array('parent'))) {
 									$va_val[] = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_tag_opts, array('returnAsArray' => false)));
+								} elseif ($va_tmp[0] == '_hierarchyName') {
+									$va_val[] = $vs_hierarchy_name;
 								} else {
 									$va_val_tmp = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_tag_opts, array('returnAsArray' => true, 'filters' => $va_tag_filters)));
-									
 									$va_val = array();
 								
 									if (is_array($va_val_tmp)) {
@@ -2408,7 +2441,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 						$vb_value_is_set = (
 							(isset($va_tags[$vs_tag_to_test]) && (sizeof($va_tags[$vs_tag_to_test]) > 1)) 
 							|| 
-							((sizeof($va_tags[$vs_tag_to_test]) == 1) && (strlen($va_tags[$vs_tag_to_test][0]) > 0)));
+							((sizeof($va_tags[$vs_tag_to_test]) == 1) && (strlen(trim($va_tags[$vs_tag_to_test][0])) > 0)));
 							
 						switch($vs_bool) {
 							case 'OR':
@@ -2443,7 +2476,9 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 					}
 					$vb_output = true;
 					foreach($va_tag_list as $vs_tag_to_test) {
-						$vb_value_is_set = (bool)(isset($va_tags[$vs_tag_to_test]) && (sizeof($va_tags[$vs_tag_to_test]) > 1) || ((sizeof($va_tags[$vs_tag_to_test]) == 1) && (strlen($va_tags[$vs_tag_to_test][0]) > 0)));
+						$vb_value_is_set = (bool)(isset($va_tags[$vs_tag_to_test]) && (sizeof($va_tags[$vs_tag_to_test]) > 1) 
+						|| 
+						((sizeof($va_tags[$vs_tag_to_test]) == 1) && (strlen(trim($va_tags[$vs_tag_to_test][0])) > 0)));
 						switch($vs_bool) {
 							case 'OR':
 								if (!$vb_value_is_set) { $vb_output = true; break(2); }		// any must be not defined; if anything is not set output
@@ -2542,9 +2577,11 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 				foreach($va_tags_tmp as $vs_tag) {
 					$vs_pt = str_replace('^'.$vs_tag, is_array($va_tags[$vs_tag]) ? join(" | ", $va_tags[$vs_tag]) : $va_tags[$vs_tag] , $vs_pt);
 				}
-				$va_pt_vals[] = $vs_pt;
+				if ($vs_pt) { $va_pt_vals[] = $vs_pt; } 
 			
-				$va_acc[] = join(isset($pa_options['delimiter']) ? $pa_options['delimiter'] : $vs_delimiter, $va_pt_vals);
+				if ($vs_acc_val = join(isset($pa_options['delimiter']) ? $pa_options['delimiter'] : $vs_delimiter, $va_pt_vals)) {
+					$va_acc[] = $vs_acc_val;
+				}
 			}
 			$va_proc_templates[$vn_i] = join($vs_delimiter, $va_acc);
 		}
