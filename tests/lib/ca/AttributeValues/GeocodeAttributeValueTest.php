@@ -37,8 +37,8 @@ class GeocodeAttributeValueTest extends PHPUnit_Framework_TestCase {
 		$o_val = new GeocodeAttributeValue();
 
 		$va_return = $o_val->parseValue('[52.52000660000002,13.404954]',array());
-		$this->assertEquals('52.52000660000002', $va_return['value_decimal1'], 'The correct latitude is returned from a lat/long pair');
-		$this->assertEquals('13.404954', $va_return['value_decimal2'], 'The correct latitude is returned from a lat/long pair');
+		$this->assertEquals('52.52000660000002', $va_return['value_decimal1'], 'The correct latitude is returned from a lat/long pair', 0.00001);
+		$this->assertEquals('13.404954', $va_return['value_decimal2'], 'The correct latitude is returned from a lat/long pair', 0.00001);
 		// they do get rounded a bit in this format
 		$this->assertEquals('52.5200066,13.404954', $va_return['value_longtext2'], 'The correct latitude,longitude text value is returned from a lat/long pair');
 	}
@@ -48,8 +48,8 @@ class GeocodeAttributeValueTest extends PHPUnit_Framework_TestCase {
 
 		// google use this as example in their API docs, so let's hope it doesn't move ;-)
 		$va_return = $o_val->parseValue('1600 Amphitheatre Parkway, Mountain View, CA',array());
-		$this->assertEquals('37.4219985', $va_return['value_decimal1'], 'The correct latitude is returned from an address lookup', 0.00001);
-		$this->assertEquals('-122.0839544', $va_return['value_decimal2'], 'The correct longitude is returned from an address lookup', 0.00001);
+		$this->assertEquals('37.4219951', $va_return['value_decimal1'], 'The correct latitude is returned from an address lookup', 0.00001);
+		$this->assertEquals('-122.0840046', $va_return['value_decimal2'], 'The correct longitude is returned from an address lookup', 0.00001);
 		$this->assertRegExp('/^37.4219\d*,-122.0839\d*$/', $va_return['value_longtext2'], 'The correct latitude,longitude text value is returned from an address lookup');
 	}
 
