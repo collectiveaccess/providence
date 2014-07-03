@@ -63,6 +63,12 @@
 		 *
 		 */
 		protected $opb_returns_multiple_values;
+
+		/**
+		 * @var bool if the refinery supports relationships
+		 */
+		protected $opb_supports_relationships = false;
+
 		# -------------------------------------------------------
 		public function __construct() {
 		
@@ -72,7 +78,19 @@
 		 *
 		 */
 		public function getRefinerySettings() {
-			return BaseRefinery::$s_refinery_settings[$this->getName()]; 
+			$va_base_settings = BaseRefinery::$s_refinery_settings[$this->getName()];
+			if ($this->supportsRelationships()){
+				$va_base_settings[$this->getName() . '_relationships'] =  array(
+						'formatType' => FT_TEXT,
+						'displayType' => DT_SELECT,
+						'width' => 10, 'height' => 1,
+						'takesLocale' => false,
+						'default' => '',
+						'label' => _t('Relationships'),
+						'description' => _t('A list (array) of relationships related to the %refinery.', array('refinery' => $this->getTitle()))
+				);
+			}
+			return $va_base_settings;
 		}
 		# -------------------------------------------------------
 		/**
@@ -95,7 +113,14 @@
 		public function getDescription() {
 			return $this->ops_description; 
 		}
-		
+		# -------------------------------------------------------
+		/**
+		 * @return boolean
+		 */
+		public function supportsRelationships() {
+			return $this->opb_supports_relationships;
+		}
+
 		# -------------------------------------------------------
 		/**
 		 * Process template expression, replacing "^" prefixed placeholders with data values
