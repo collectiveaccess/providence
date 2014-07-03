@@ -57,6 +57,7 @@ class Datamodel {
 	static $s_datamodel_one_to_many_rel_cache = array();
 	
 	static $s_datamodel_model_table_name_cache = null;
+	static $s_datamodel_model_table_num_cache = null;
 	# --------------------------------------------------------------------------------------------
 	/**
 	 *
@@ -163,12 +164,12 @@ class Datamodel {
 	 */
 	public function getTableNum($ps_table) {
 		if (is_numeric($ps_table) ) { return $ps_table; }
-		if (isset(Datamodel::$s_datamodel_model_table_name_cache[$ps_table])) { return Datamodel::$s_datamodel_model_table_name_cache[$ps_table]; }
+		if (isset(Datamodel::$s_datamodel_model_table_num_cache[$ps_table])) { return Datamodel::$s_datamodel_model_table_num_cache[$ps_table]; }
 		
 		if ($this->opo_graph->hasNode($ps_table)) {
-			return Datamodel::$s_datamodel_model_table_name_cache[$ps_table] = $this->opo_graph->getAttribute("num", $ps_table);
+			return Datamodel::$s_datamodel_model_table_num_cache[$ps_table] = $this->opo_graph->getAttribute("num", $ps_table);
 		} else {
-			return Datamodel::$s_datamodel_model_table_name_cache[$ps_table] = null;
+			return Datamodel::$s_datamodel_model_table_num_cache[$ps_table] = null;
 		}
 	}
 	# --------------------------------------------------------------------------------------------

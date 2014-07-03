@@ -38,6 +38,7 @@
 			$this->ops_description = _t('Provides several collection-related import functions: splitting of multiple collections in a string into individual values, mapping of type and relationship type for related collections, and merging collection data with names.');
 			
 			$this->opb_returns_multiple_values = true;
+			$this->opb_supports_relationships = true;
 			
 			parent::__construct();
 		}
