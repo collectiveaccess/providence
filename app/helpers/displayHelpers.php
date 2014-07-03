@@ -2018,7 +2018,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		$ps_template = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_doc->html()));	// replace template with parsed version; this allows us to do text find/replace later
 		
 		// Parse units from template
-		$o_units = $o_doc('unit:not(unit > unit)');	// only process non-nested <unit> tags
+		$o_units = $o_doc('unit');	// only process non-nested <unit> tags
 		$va_units = array();
 		$vn_unit_id = 1;
 		foreach($o_units as $o_unit) {
@@ -2026,6 +2026,11 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			
 			$vs_html = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_unit->html()));
 			$vs_content = $o_unit->getInnerText();
+			
+			// is this nested in another unit? We skip these
+			foreach($va_units as $va_tmp) {
+				if (strpos($va_tmp['directive'], $vs_html) !== false) { continue(2); }
+			}
 			
 			$va_units[] = $va_unit = array(
 				'tag' => $vs_unit_tag = "[[#{$vn_unit_id}]]",
@@ -2038,7 +2043,6 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			$ps_template = str_ireplace($va_unit['directive'], $vs_unit_tag, $ps_template);
 			$vn_unit_id++;
 		}
-		
 		
 		$o_doc = str_get_dom($ps_template);		// parse template again with units replaced by unit tags in the format [[#X]]
 		$ps_template = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_doc->html()));	// replace template with parsed version; this allows us to do text find/replace later
@@ -2169,7 +2173,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 					}
 				}
 			}
-		
+			
 			foreach($va_units as $va_unit) {
 				if (!$va_unit['content']) { continue; }
 				$va_relative_to_tmp = $va_unit['relativeTo'] ? explode(".", $va_unit['relativeTo']) : array($ps_tablename);
@@ -2211,6 +2215,12 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 							$va_relative_ids = $pa_row_ids;
 							break;
 					}
+					
+				
+					$va_tmpl_val = caProcessTemplateForIDs($va_unit['content'], $va_relative_to_tmp[0], $va_relative_ids, array_merge($pa_options, array('returnAsArray' => true, 'delimiter' => $vs_unit_delimiter, 'resolveLinksUsing' => null)));
+					foreach($va_tmpl_val as $vn_tmpl_i => $vs_tmpl_v) {
+						$va_proc_templates[$vn_tmpl_i] = str_ireplace($va_unit['tag'], $vs_tmpl_v, $va_proc_templates[$vn_tmpl_i]);
+					}
 				} else { 
 					switch(strtolower($va_relative_to_tmp[1])) {
 						case 'hierarchy':
@@ -2238,11 +2248,11 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 							
 							break;
 					}
+									
+					$vs_tmpl_val = caProcessTemplateForIDs($va_unit['content'], $va_relative_to_tmp[0], $va_relative_ids, array_merge($pa_options, array('delimiter' => $vs_unit_delimiter, 'resolveLinksUsing' => null)));
+				
+					$va_proc_templates[$vn_i] = str_ireplace($va_unit['tag'], $vs_tmpl_val, $va_proc_templates[$vn_i]);
 				}
-				
-				$vs_tmpl_val = caProcessTemplateForIDs($va_unit['content'], $va_relative_to_tmp[0], $va_relative_ids, array_merge($pa_options, array('delimiter' => $vs_unit_delimiter, 'resolveLinksUsing' => null)));
-				
-				$va_proc_templates[$vn_i] = str_ireplace($va_unit['tag'], $vs_tmpl_val, $va_proc_templates[$vn_i]);
 			}
 			
 			if (!strlen(trim($va_proc_templates[$vn_i]))) { $va_proc_templates[$vn_i] = null; }
