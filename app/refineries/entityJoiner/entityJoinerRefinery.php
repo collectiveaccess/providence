@@ -38,7 +38,7 @@
 			$this->ops_title = _t('Entity joiner');
 			$this->ops_description = _t('Converts data with partial entity names into a valid entities for import.');
 
-			$this->opb_supports_related_entities = true;
+			$this->opb_supports_relationships = true;
 			
 			parent::__construct();
 		}
@@ -138,11 +138,8 @@
 				if (isset($pa_options['mapping']) && is_array($va_attr_vals = caProcessInterstitialAttributes('entityJoiner', $pa_options['mapping']->get('table_num'), 'ca_entities', $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'log' => $o_log)))) {
 					$va_val = array_merge($va_val, $va_attr_vals);
 				}
-				
-				// Set relatedEntities
-				if (is_array($va_attr_vals = caProcessRefineryRelated("entityJoiner", "ca_entities", $pa_item['settings']['entityJoiner_relatedEntities'], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'log' => $o_log)))) {
-					$va_val = array_merge($va_val, $va_attr_vals);
-				}
+
+				caProcessRefineryRelatedMultiple($this, $pa_item, $pa_source_data, $vn_c, $o_log, caGetOption('reader', $pa_options, null), $va_val, $va_vals);
 				
 				// nonpreferred labels
 				if (is_array($pa_item['settings']['entityJoiner_nonpreferred_labels'])) {
