@@ -34,6 +34,7 @@
    *
    */
    require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
+   require_once(__CA_LIB_DIR__.'/ca/Import/BaseDataReader.php');
 
 	# ---------------------------------------
 	/**
@@ -627,13 +628,10 @@
 						if (isset($pa_options['mapping']) && is_array($va_attr_vals = caProcessInterstitialAttributes($ps_refinery_name, $pa_options['mapping']->get('table_num'), $ps_table, $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader)))) {
 							$va_val = array_merge($va_val, $va_attr_vals);
 						}
-				
-						// Set relatedEntities
-						// TODO: generalize for all of types of records
-						if (is_array($va_attr_vals = caProcessRefineryRelated($ps_refinery_name, "ca_entities", $pa_item['settings']["{$ps_refinery_name}_relatedEntities"], $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader)))) {
-							$va_val = array_merge($va_val, $va_attr_vals);
-						}
-				
+
+						// Set relationships on the related table
+						caProcessRefineryRelatedMultiple($po_refinery_instance, $pa_item, $pa_source_data, $pn_value_index, $o_log, $o_reader, $va_val, $va_attr_vals);
+
 						// Set nonpreferred labels
 						if (is_array($va_non_preferred_labels = $pa_item['settings']["{$ps_refinery_name}_nonPreferredLabels"])) {
 							$pa_options['nonPreferredLabels'] = array();
@@ -819,7 +817,41 @@
 		}
 		return $va_vals;
 	}
-	# ---------------------------------------
+# ---------------------------------------
+/**
+ * Uses caProcessRefineryRelated to set a list of relationships on related records. Also takes legacy relatedEntities into account
+ * @param $po_refinery_instance instanceof BaseRefinery
+ * @param $pa_item array
+ * @param $pa_source_data array
+ * @param $pn_value_index int
+ * @param $o_log KLogger
+ * @param $o_reader instanceof BaseDataReader
+ * @param $va_val array
+ * @param $va_attr_vals array
+ */
+function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_source_data, $pn_value_index, $o_log, $o_reader, &$va_val, &$va_attr_vals) {
+	$vs_relationship_settings_key = $po_refinery_instance->getName() . '_relationships';
+	// Set relatedEntities to support legacy mappings
+	if (is_array($va_related_entities_settings = $pa_item['settings'][$po_refinery_instance->getName() . '_relatedEntities'])) {
+		$pa_item['settings'][] = is_array($pa_item['settings'][$vs_relationship_settings_key]) ? $pa_item['settings'][$vs_relationship_settings_key] : array();
+		foreach ($va_related_entities_settings as $va_related_entity_setting) {
+			$va_related_entity_setting['relatedTable'] = isset($va_related_entity_setting['relatedTable']) ? $va_related_entity_setting['relatedTable'] : 'ca_entities';
+			$pa_item['settings'][$vs_relationship_settings_key][] = $va_related_entity_setting;
+		}
+	}
+	// Set relationships
+	if (is_array($va_relationships = $pa_item['settings'][$vs_relationship_settings_key])) {
+		foreach ($va_relationships as $va_relationship_settings) {
+			if ($vs_table_name = caGetOption('relatedTable', $va_relationship_settings)) {
+				if (is_array($va_attr_vals = caProcessRefineryRelated($po_refinery_instance->getName(), $vs_table_name, $va_relationship_settings, $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader)))) {
+					$va_val = array_merge($va_val, $va_attr_vals);
+				}
+			}
+		}
+	}
+}
+
+# ---------------------------------------
 	/**
 	 * Apply item settings to value; used by refineries to apply regular expressions to values get()'ed from reader class
 	 *

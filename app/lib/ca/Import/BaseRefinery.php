@@ -65,9 +65,9 @@
 		protected $opb_returns_multiple_values;
 
 		/**
-		 * @var bool if the refinery supports related entities
+		 * @var bool if the refinery supports relationships
 		 */
-		protected $opb_supports_related_entities = false;
+		protected $opb_supports_relationships = false;
 
 		# -------------------------------------------------------
 		public function __construct() {
@@ -79,15 +79,15 @@
 		 */
 		public function getRefinerySettings() {
 			$va_base_settings = BaseRefinery::$s_refinery_settings[$this->getName()];
-			if ($this->supportsRelatedEntities()){
-				$va_base_settings[$this->getName() . '_relatedEntities'] =  array(
+			if ($this->supportsRelationships()){
+				$va_base_settings[$this->getName() . '_relationships'] =  array(
 						'formatType' => FT_TEXT,
 						'displayType' => DT_SELECT,
 						'width' => 10, 'height' => 1,
 						'takesLocale' => false,
 						'default' => '',
-						'label' => _t('Related entities'),
-						'description' => _t('Entities related to the record being created by the %refinery.', array('refinery' => $this->getTitle()))
+						'label' => _t('Relationships'),
+						'description' => _t('A list (array) of relationships related to the %refinery.', array('refinery' => $this->getTitle()))
 				);
 			}
 			return $va_base_settings;
@@ -117,8 +117,8 @@
 		/**
 		 * @return boolean
 		 */
-		public function supportsRelatedEntities() {
-			return $this->opb_supports_related_entities;
+		public function supportsRelationships() {
+			return $this->opb_supports_relationships;
 		}
 
 		# -------------------------------------------------------
