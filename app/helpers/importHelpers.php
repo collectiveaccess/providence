@@ -34,6 +34,7 @@
    *
    */
    require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
+   require_once(__CA_LIB_DIR__.'/ca/Import/BaseDataReader.php');
 
 	# ---------------------------------------
 	/**
@@ -628,8 +629,17 @@
 							$va_val = array_merge($va_val, $va_attr_vals);
 						}
 				
+
+						// Set relationships
+						if (is_array($va_relationships = $pa_item['settings']["{$ps_refinery_name}_relationships"])){
+							foreach($va_relationships as $vs_table_name => $va_relationship_settings){
+								if (is_array($va_attr_vals = caProcessRefineryRelated($ps_refinery_name, $vs_table_name, $va_relationship_settings, $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader)))) {
+									$va_val = array_merge($va_val, $va_attr_vals);
+								}
+							}
+						}
 						// Set relatedEntities
-						// TODO: generalize for all of types of records
+						// TODO: Remove this in favour of the relationships above?
 						if (is_array($va_attr_vals = caProcessRefineryRelated($ps_refinery_name, "ca_entities", $pa_item['settings']["{$ps_refinery_name}_relatedEntities"], $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader)))) {
 							$va_val = array_merge($va_val, $va_attr_vals);
 						}
