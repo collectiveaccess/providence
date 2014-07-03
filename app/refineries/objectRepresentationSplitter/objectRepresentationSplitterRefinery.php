@@ -36,7 +36,7 @@
 			$this->ops_description = _t('Splits object representations');
 			
 			$this->opb_returns_multiple_values = true;
-			$this->opb_supports_related_entities = true;
+			$this->opb_supports_relationships = true;
 			
 			parent::__construct();
 		}
