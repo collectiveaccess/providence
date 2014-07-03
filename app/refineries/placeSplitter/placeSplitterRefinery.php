@@ -36,7 +36,7 @@
 			$this->ops_description = _t('Provides several place-related import functions: splitting of multiple places in a string into individual values, mapping of type and relationship type for related places, building place hierarchies and merging place data with names.');
 			
 			$this->opb_returns_multiple_values = true;
-			$this->opb_supports_related_entities = true;
+			$this->opb_supports_relationships = true;
 
 			parent::__construct();
 		}

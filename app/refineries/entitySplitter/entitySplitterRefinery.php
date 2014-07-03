@@ -35,7 +35,7 @@
 			$this->ops_title = _t('Entity splitter');
 			$this->ops_description = _t('Provides several entity-related import functions: splitting of entity names into component names (forename, surname, Etc.), splitting of many names in a string into separate names, and merging entity data with entity names (life dates, nationality, Etc.).');
 
-			$this->opb_supports_related_entities = true;
+			$this->opb_supports_relationships = true;
 			$this->opb_returns_multiple_values = true;
 			
 			parent::__construct();
