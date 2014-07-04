@@ -833,7 +833,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						// Constants don't use refineries
 						$vs_refinery = $va_refinery_options = null;
 					}
-					$va_replacement_values = array();
+					
+					$va_original_values = $va_replacement_values = array();
 					if ($va_options && is_array($va_options) && isset($va_options['transformValuesUsingWorksheet']) && $va_options['transformValuesUsingWorksheet']) {
 						if ($o_opt_sheet = $o_excel->getSheetByName($va_options['transformValuesUsingWorksheet'])) {
 							foreach ($o_opt_sheet->getRowIterator() as $o_sheet_row) {
