@@ -2882,6 +2882,31 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			'end' => $va_end['year'].','.$va_end['month'].','.$va_end['day'],
 		);
 	}
+    # ------------------------------------------------------------------------------------------------
+    /**
+     * Returns date range for calendar display
+     *
+     * @param int $pn_start_timestamp Start of date range, as Unix timestamp
+     * @param array $pa_options All options supported by TimeExpressionParser::getText() are supported
+     *
+     * @return string Localized date range expression
+     */
+    function caGetDateRangeForCalendar($pa_historic_timestamps, $pa_options=null) {
+        $o_tep = new TimeExpressionParser();
+
+        $va_start = $o_tep->getHistoricDateParts($pa_historic_timestamps[0]);
+        $va_end = $o_tep->getHistoricDateParts($pa_historic_timestamps[1]);
+
+        if ($va_start['year'] < 0) { $va_start['year'] = 1900; }
+        if ($va_end['year'] >= 2000000) { $va_end['year'] = date("Y"); }
+
+        return array(
+            'start'=> $va_start,
+            'end' => $va_end,
+            'start_iso' => $o_tep->getISODateTime($va_start, 'FULL'),
+            'end_iso' => $o_tep->getISODateTime($va_end, 'FULL')
+        );
+    }
 	# ------------------------------------------------------------------------------------------------
 	/**
 	 * Returns text describing dimensions of object representation
