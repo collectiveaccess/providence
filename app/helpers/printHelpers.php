@@ -35,6 +35,8 @@
    */
    
 
+	global $g_print_measurement_cache;
+	$g_print_measurement_cache = array();
 	
 	# ---------------------------------------
 	/**
@@ -50,6 +52,9 @@
 			case 'summary': 
 				return  __CA_APP_DIR__.'/printTemplates/summary';
 				break;
+			case 'labels': 
+				return  __CA_APP_DIR__.'/printTemplates/labels';
+				break;
 		}
 		return null;
 	}
@@ -62,6 +67,7 @@
 	function caGetAvailablePrintTemplates($ps_type, $pa_options=null) {
 		$vs_template_path = caGetPrintTemplateDirectoryPath($ps_type);
 		$vs_tablename = caGetOption('table', $pa_options, null);
+		$vs_type = caGetOption('type', $pa_options, 'page');
 		
 		if ($o_cache = caGetCacheObject('caPrintTemplatesList_'.$ps_type)) {
 			$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $ps_type);
@@ -83,7 +89,7 @@
 					if (in_array($vs_template, array(".", ".."))) { continue; }
 					$vs_template_tag = pathinfo($vs_template, PATHINFO_FILENAME);
 					if (is_array($va_template_info = caGetPrintTemplateDetails($ps_type, $vs_template_tag))) {
-						if (caGetOption('type', $va_template_info, null) !== 'page')  { continue; }
+						if (caGetOption('type', $va_template_info, null) !== $vs_type)  { continue; }
 						
 						if ($vs_tablename && (!in_array($vs_tablename, $va_template_info['tables'])) && (!in_array('*', $va_template_info['tables']))) {
 							continue;
@@ -140,7 +146,11 @@
 		$vs_template = file_get_contents($vs_template_path);
 		
 		$va_info = array();
-		foreach(array("@name", "@type", "@pageSize", "@pageOrientation", "@tables") as $vs_tag) {
+		foreach(array(
+			"@name", "@type", "@pageSize", "@pageOrientation", "@tables", 
+			"@marginLeft", "@marginRight", "@marginTop", "@marginBottom",
+			"@horizontalGutter", "@verticalGutter", "@labelWidth", "@labelHeight"
+		) as $vs_tag) {
 			if (preg_match("!{$vs_tag}([^\n\n]+)!", $vs_template, $va_matches)) {
 				$va_info[str_replace("@", "", $vs_tag)] = trim($va_matches[1]);
 			} else {
@@ -156,6 +166,41 @@
 		}
 		
 		return $va_info;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caConvertMeasurementToPoints($ps_value) {
+		global $g_print_measurement_cache;
+		
+		if (isset($g_print_measurement_cache[$ps_value])) { return $g_print_measurement_cache[$ps_value]; }
+		
+		if (!preg_match("/^([\d\.]+)[ ]*([A-Za-z]*)$/", $ps_value, $va_matches)) {
+			return $g_print_measurement_cache[$ps_value] = $ps_value;
+		}
+		
+		switch(strtolower($va_matches[2])) {
+			case 'in':
+				$ps_value_in_points = $va_matches[1] * 72;
+				break;
+			case 'cm':
+				$ps_value_in_points = $va_matches[1] * 28.346;
+				break;
+			case 'mm':
+				$ps_value_in_points = $va_matches[1] * 2.8346;
+				break;
+			case '':
+			case 'px':
+			case 'p':
+				$ps_value_in_points = $va_matches[1];
+				break;
+			default:
+				$ps_value_in_points = $ps_value;
+				break;
+		}
+		
+		return $g_print_measurement_cache[$ps_value] = $ps_value_in_points;
 	}
 	# ---------------------------------------
 ?>

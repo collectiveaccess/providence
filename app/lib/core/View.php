@@ -232,6 +232,9 @@ class View extends BaseObject {
 				// if no l10ed version of the view, render the default one which has no locale as last extension (eg. splash_intro_text_html.php)
 				$va_tags = $this->compile($vs_path.'/'.$ps_filename);
 				break;
+			} elseif (file_exists($ps_filename)) {
+				$va_tags = $this->compile($ps_filename);
+				break;
 			}
 		}
 		
@@ -243,10 +246,7 @@ class View extends BaseObject {
 	 */
 	public function render($ps_filename, $pb_dont_do_var_replacement=false, $pa_options=null) {
 		global $g_ui_locale;
-		
-		if (!($vb_dont_try_to_force_update_cache = caGetOption('dontTryToForceUpdateCache', $pa_options, false))) {
-			$this->ops_last_render = null;
-		}
+		$this->ops_last_render = null;
 		
 		$vb_output = false;
 		$vs_buf = null;
@@ -271,15 +271,16 @@ class View extends BaseObject {
 			if (!$vb_output) {
 				$this->postError(2400, _t("View %1 was not found", $ps_filename), "View->render()");
 			}
-		
-			if (!$pb_dont_do_var_replacement) {
-				$va_compile = $this->compile($vs_path.'/'.$ps_filename);
-				$va_vars = $this->getAllVars();
-				foreach($va_compile as $vs_var) {
-					$vm_val = isset($va_vars[$vs_var]) ? $va_vars[$vs_var] : '';
-					$vn_count = 0;
-					$vs_buf = str_replace('{{{'.$vs_var.'}}}', $vm_val, $vs_buf, $vn_count);				
-				}
+		}
+		if (!$pb_dont_do_var_replacement && $vb_output) {
+			$va_compile = $this->compile($vs_path.'/'.$ps_filename);
+			
+			$va_vars = $this->getAllVars();
+			
+			foreach($va_compile as $vs_var) {
+				$vm_val = isset($va_vars[$vs_var]) ? $va_vars[$vs_var] : '';
+				$vn_count = 0;
+				$vs_buf = str_replace('{{{'.$vs_var.'}}}', $vm_val, $vs_buf, $vn_count);				
 			}
 		}
 		
