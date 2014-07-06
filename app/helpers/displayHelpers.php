@@ -2136,7 +2136,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			
 			
 			$vn_min = (int)$o_ifcount->getAttribute('min');
-			if (!($vn_max = (int)$o_ifcount->getAttribute('max'))) { $vn_max = null; }
+			$vn_max = (int)$o_ifcount->getAttribute('max');
+			if (!strlen($o_ifcount->getAttribute('max'))) { $vn_max = null; } 
 			
 			$va_restrict_to_types = preg_split("![,; ]+!", $o_ifcount->getAttribute('restrictToTypes')); 
 			$va_restrict_to_relationship_types = preg_split("![,; ]+!", $o_ifcount->getAttribute('restrictToRelationshipTypes')); 
@@ -2150,6 +2151,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		while($qr_res->nextHit()) {
 			$vs_pk_val = $qr_res->get($vs_pk);
 			$va_proc_templates[$vn_i] = $ps_template;
+		
 			// Process <ifcount> directives
 			foreach($va_ifcounts as $va_ifcount) {
 				if (is_array($va_if_codes = preg_split("![\|,;]+!", $va_ifcount['code']))) {
@@ -2162,7 +2164,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 						}	
 					}
 					
-					if (($va_ifcount['min'] <= $vn_count) && (($va_ifcount['max'] >= $vn_count) || !$va_ifcount['max'])) {
+					if (($va_ifcount['min'] <= $vn_count) && (($va_ifcount['max'] >= $vn_count) || is_null($va_ifcount['max']))) {
 						$va_proc_templates[$vn_i]  = str_replace($va_ifcount['directive'], $va_ifcount['content'], $va_proc_templates[$vn_i] );
 					} else {
 						$va_proc_templates[$vn_i]  = str_replace($va_ifcount['directive'], '', $va_proc_templates[$vn_i] );
