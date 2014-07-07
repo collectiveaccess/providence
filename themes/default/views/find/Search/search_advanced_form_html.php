@@ -115,7 +115,7 @@
 		jQuery('#AdvancedSearchForm textarea').val('');
 		jQuery('#AdvancedSearchForm input[type=text]').val('');
 		jQuery('#AdvancedSearchForm input[type=hidden]').val('');
-		jQuery('#AdvancedSearchForm select').prop('selectedIndex', -1);
+		jQuery('#AdvancedSearchForm select').val('');
 		jQuery('#AdvancedSearchForm input[type=checkbox]').attr('checked', 0);
 	}
 </script>
