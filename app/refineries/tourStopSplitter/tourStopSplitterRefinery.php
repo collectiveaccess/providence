@@ -36,7 +36,8 @@
 			$this->ops_description = _t('Provides several tourstop location-related import functions.');
 			
 			$this->opb_returns_multiple_values = true;
-			
+			$this->opb_supports_relationships = true;
+
 			parent::__construct();
 		}
 		# -------------------------------------------------------

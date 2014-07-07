@@ -1,61 +1,83 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE html>
 <html>
 <head>
-<link rel='stylesheet' type='text/css' href='../fullcalendar/fullcalendar.css' />
-<link rel='stylesheet' type='text/css' href='../fullcalendar/fullcalendar.print.css' media='print' />
-<script type='text/javascript' src='../jquery/jquery-1.7.1.min.js'></script>
-<script type='text/javascript' src='../jquery/jquery-ui-1.8.17.custom.min.js'></script>
-<script type='text/javascript' src='../fullcalendar/fullcalendar.min.js'></script>
-<script type='text/javascript'>
+<meta charset='utf-8' />
+<link href='../fullcalendar.css' rel='stylesheet' />
+<link href='../fullcalendar.print.css' rel='stylesheet' media='print' />
+<script src='../lib/moment.min.js'></script>
+<script src='../lib/jquery.min.js'></script>
+<script src='../lib/jquery-ui.custom.min.js'></script>
+<script src='../fullcalendar.min.js'></script>
+<script>
 
 	$(document).ready(function() {
 	
 		$('#calendar').fullCalendar({
-		
-			editable: true,
-			
-			events: "json-events.php",
-			
-			eventDrop: function(event, delta) {
-				alert(event.title + ' was moved ' + delta + ' days\n' +
-					'(should probably update your database)');
+			header: {
+				left: 'prev,next today',
+				center: 'title',
+				right: 'month,agendaWeek,agendaDay'
 			},
-			
+			defaultDate: '2014-06-12',
+			editable: true,
+			events: {
+				url: 'php/get-events.php',
+				error: function() {
+					$('#script-warning').show();
+				}
+			},
 			loading: function(bool) {
-				if (bool) $('#loading').show();
-				else $('#loading').hide();
+				$('#loading').toggle(bool);
 			}
-			
 		});
 		
 	});
 
 </script>
-<style type='text/css'>
+<style>
 
 	body {
-		margin-top: 40px;
-		text-align: center;
-		font-size: 14px;
+		margin: 0;
+		padding: 0;
 		font-family: "Lucida Grande",Helvetica,Arial,Verdana,sans-serif;
-		}
-		
+		font-size: 14px;
+	}
+
+	#script-warning {
+		display: none;
+		background: #eee;
+		border-bottom: 1px solid #ddd;
+		padding: 0 10px;
+		line-height: 40px;
+		text-align: center;
+		font-weight: bold;
+		font-size: 12px;
+		color: red;
+	}
+
 	#loading {
+		display: none;
 		position: absolute;
-		top: 5px;
-		right: 5px;
-		}
+		top: 10px;
+		right: 10px;
+	}
 
 	#calendar {
 		width: 900px;
-		margin: 0 auto;
-		}
+		margin: 40px auto;
+	}
 
 </style>
 </head>
 <body>
-<div id='loading' style='display:none'>loading...</div>
-<div id='calendar'></div>
-<p>json-events.php needs to be running in the same directory.</p>
+
+	<div id='script-warning'>
+		<code>php/get-events.php</code> must be running.
+	</div>
+
+	<div id='loading'>loading...</div>
+
+	<div id='calendar'></div>
+
 </body>
 </html>

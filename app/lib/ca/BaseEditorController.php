@@ -34,6 +34,7 @@
   *
   */
  
+ 	require_once(__CA_APP_DIR__."/helpers/printHelpers.php");
  	require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
  	require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
  	require_once(__CA_MODELS_DIR__."/ca_attributes.php");
@@ -43,6 +44,7 @@
  	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
  	require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
 	require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
+ 	require_once(__CA_LIB_DIR__.'/core/Parsers/dompdf/dompdf_config.inc.php');
  
  	class BaseEditorController extends ActionController {
  		# -------------------------------------------------------
@@ -535,8 +537,6 @@
  		 * @param array $pa_options Array of options passed through to _initView 
  		 */
 		public function PrintSummary($pa_options=null) {
-			require_once(__CA_LIB_DIR__."/core/Print/html2pdf/html2pdf.class.php");
-
 			JavascriptLoadManager::register('tableList');
  			list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
  			
@@ -589,18 +589,32 @@
 				$this->view->setVar('placements', array());
 			}
 			
+			//
+			// PDF output
+			//
+			if(!is_array($va_template_info = caGetPrintTemplateDetails('summary', "{$this->ops_table_name}_summary"))) {
+				if(!is_array($va_template_info = caGetPrintTemplateDetails('summary', "summary"))) {
+					$this->postError(3110, _t("Could not find view for PDF"),"BaseEditorController->PrintSummary()");
+					return;
+				}
+			}
+			
 			try {
-				$vs_content = $this->render('print_summary_html.php');
-				$vo_html2pdf = new HTML2PDF('P',$vs_format,'en');
-				$vo_html2pdf->setDefaultFont("dejavusans");
-				$vo_html2pdf->WriteHTML($vs_content);
-				$vo_html2pdf->Output('summary.pdf');
+				$this->view->setVar('base_path', $vs_base_path = pathinfo($va_template_info['path'], PATHINFO_DIRNAME));
+				$this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
+				
+				$vs_content = $this->render($va_template_info['path']);
+				$o_dompdf = new DOMPDF();
+				$o_dompdf->load_html($vs_content);
+				$o_dompdf->set_paper(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'));
+				$o_dompdf->set_base_path(caGetPrintTemplateDirectoryPath('summary'));
+				$o_dompdf->render();
+				$o_dompdf->stream(caGetOption('filename', $va_template_info, 'print_summary.pdf'));
+	
 				$vb_printed_properly = true;
 			} catch (Exception $e) {
 				$vb_printed_properly = false;
-				$o_event_log = new Eventlog();
-				$o_event_log->log(array('CODE' => 'DEBG', 'MESSAGE' => $vs_msg = _t("Could not generate PDF: %1", preg_replace('![^A-Za-z0-9 \-\?\/\.]+!', ' ', $e->getMessage())), 'SOURCE' => 'BaseEditorController->PrintSummary()'));
-				$this->postError(3100, $vs_msg,"BaseEditorController->PrintSummary()");
+				$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
 			}
 		}
  		# -------------------------------------------------------

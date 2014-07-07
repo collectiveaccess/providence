@@ -36,6 +36,7 @@
 			$this->ops_description = _t('Splits objects');
 			
 			$this->opb_returns_multiple_values = true;
+			$this->opb_supports_relationships = true;
 			
 			parent::__construct();
 		}

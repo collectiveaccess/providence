@@ -765,14 +765,15 @@
 			if (!$ps_item_idno) { $ps_item_idno = $vs_plural_label; }
 			
 			if(!isset($pa_options['cache'])) { $pa_options['cache'] = true; }
+			$vs_cache_key = $pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id.'/'.$vs_singular_label.'/'.$vs_plural_label;
 			
 			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
-			
-			if ($pa_options['cache'] && isset(DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id])) {
+			$pa_options['cache'] = false;
+			if ($pa_options['cache'] && isset(DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key])) {
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					$t_item = new ca_list_items(DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id]);
+					$t_item = new ca_list_items(DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key]);
 				
 					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 						$t_item->setTransaction($pa_options['transaction']);
@@ -782,11 +783,11 @@
 				}
 				if ($o_event) { 
 					$o_event->beginItem($vs_event_source, 'ca_list_items', 'U'); 
-					$o_event->endItem(DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id], __CA_DATA_IMPORT_ITEM_SUCCESS__, '');
+					$o_event->endItem(DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key], __CA_DATA_IMPORT_ITEM_SUCCESS__, '');
 				}
 				if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using idno", $ps_item_idno, $pm_list_code_or_id)); }
 				
-				return DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id];
+				return DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key];
 			}
 			
 			if (!($vn_list_id = ca_lists::getListID($pm_list_code_or_id))) { 
@@ -794,7 +795,7 @@
 					print "[Error] "._t("Could not find list with list code %1", $pm_list_code_or_id)."\n";
 				}
 				if ($o_log) { $o_log->logError(_t("Could not find list with list code %1", $pm_list_code_or_id)); }
-				return DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id] = null; 
+				return DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key] = null; 
 			}
 			
 			$t_list = new ca_lists();
@@ -833,7 +834,7 @@
 			}
 			
 			if ($vn_item_id) {
-				DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id] = $vn_item_id;
+				DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key] = $vn_item_id;
 				
 				if ($o_event) { 
 					$o_event->beginItem($vs_event_source, 'ca_list_items', 'U'); 
@@ -846,7 +847,7 @@
 					}
 				}
 				
-				return DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id];
+				return DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key];
 			}
 				
 			if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
@@ -915,7 +916,7 @@
 					}
 				}
 				
-				$vn_item_id = DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id] = $t_item->getPrimaryKey();
+				$vn_item_id = DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key] = $t_item->getPrimaryKey();
 				
 				if ($o_event) {
 					if ($vb_label_errors) {

@@ -2136,7 +2136,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			
 			
 			$vn_min = (int)$o_ifcount->getAttribute('min');
-			if (!($vn_max = (int)$o_ifcount->getAttribute('max'))) { $vn_max = null; }
+			$vn_max = (int)$o_ifcount->getAttribute('max');
+			if (!strlen($o_ifcount->getAttribute('max'))) { $vn_max = null; } 
 			
 			$va_restrict_to_types = preg_split("![,; ]+!", $o_ifcount->getAttribute('restrictToTypes')); 
 			$va_restrict_to_relationship_types = preg_split("![,; ]+!", $o_ifcount->getAttribute('restrictToRelationshipTypes')); 
@@ -2150,6 +2151,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		while($qr_res->nextHit()) {
 			$vs_pk_val = $qr_res->get($vs_pk);
 			$va_proc_templates[$vn_i] = $ps_template;
+		
 			// Process <ifcount> directives
 			foreach($va_ifcounts as $va_ifcount) {
 				if (is_array($va_if_codes = preg_split("![\|,;]+!", $va_ifcount['code']))) {
@@ -2162,7 +2164,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 						}	
 					}
 					
-					if (($va_ifcount['min'] <= $vn_count) && (($va_ifcount['max'] >= $vn_count) || !$va_ifcount['max'])) {
+					if (($va_ifcount['min'] <= $vn_count) && (($va_ifcount['max'] >= $vn_count) || is_null($va_ifcount['max']))) {
 						$va_proc_templates[$vn_i]  = str_replace($va_ifcount['directive'], $va_ifcount['content'], $va_proc_templates[$vn_i] );
 					} else {
 						$va_proc_templates[$vn_i]  = str_replace($va_ifcount['directive'], '', $va_proc_templates[$vn_i] );
@@ -2882,6 +2884,31 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			'end' => $va_end['year'].','.$va_end['month'].','.$va_end['day'],
 		);
 	}
+    # ------------------------------------------------------------------------------------------------
+    /**
+     * Returns date range for calendar display
+     *
+     * @param int $pn_start_timestamp Start of date range, as Unix timestamp
+     * @param array $pa_options All options supported by TimeExpressionParser::getText() are supported
+     *
+     * @return string Localized date range expression
+     */
+    function caGetDateRangeForCalendar($pa_historic_timestamps, $pa_options=null) {
+        $o_tep = new TimeExpressionParser();
+
+        $va_start = $o_tep->getHistoricDateParts($pa_historic_timestamps[0]);
+        $va_end = $o_tep->getHistoricDateParts($pa_historic_timestamps[1]);
+
+        if ($va_start['year'] < 0) { $va_start['year'] = 1900; }
+        if ($va_end['year'] >= 2000000) { $va_end['year'] = date("Y"); }
+
+        return array(
+            'start'=> $va_start,
+            'end' => $va_end,
+            'start_iso' => $o_tep->getISODateTime($va_start, 'FULL'),
+            'end_iso' => $o_tep->getISODateTime($va_end, 'FULL')
+        );
+    }
 	# ------------------------------------------------------------------------------------------------
 	/**
 	 * Returns text describing dimensions of object representation
