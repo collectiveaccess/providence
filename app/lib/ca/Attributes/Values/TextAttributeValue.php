@@ -237,6 +237,7 @@
  		 * @param array $pa_element_info
  		 * @param array $pa_options Array of options:
  		 *		usewysiwygeditor = if set, overrides element level setting for visual text editor
+ 		 *		forSearch = if set, settings and options regarding visual text editor are ignored and it's never used
  		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
  			
@@ -244,6 +245,10 @@
  			
  			if (isset($pa_options['usewysiwygeditor'])) {
  				$va_settings['usewysiwygeditor'] = $pa_options['usewysiwygeditor'];
+ 			}
+
+ 			if (isset($pa_options['forSearch']) && $pa_options['forSearch']) {
+ 				unset($va_settings['usewysiwygeditor']);
  			}
  			
  			$vs_width = trim((isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth']);
