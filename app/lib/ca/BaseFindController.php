@@ -300,6 +300,8 @@
 		protected function _genLabels($po_result, $ps_label_code, $ps_output_filename, $ps_title=null) {
 			if((bool)$this->request->config->get('use_legacy_print_labels_generator')) { return $this->_genLabelsLegacy($po_result, $ps_label_code, $ps_output_filename, $ps_title); }
 			
+			$vs_border = ((bool)$this->request->config->get('add_print_label_borders')) ? "border: 1px dotted #000000; " : "";
+			
 			//
 			// PDF output
 			//
@@ -359,7 +361,7 @@
 							$this->view->setVar($vs_tag, "?{$vs_tag}");
 						}
 					}
-					$vs_content .= "<div style=\"border: 1px dotted #000000; position: absolute; width: {$vn_width}px; height: {$vn_height}px; left: {$vn_left}px; top: {$vn_top}px; overflow: hidden;\">";
+					$vs_content .= "<div style=\"{$vs_border} position: absolute; width: {$vn_width}px; height: {$vn_height}px; left: {$vn_left}px; top: {$vn_top}px; overflow: hidden;\">";
 					$vs_content .= $this->render($va_template_info['path']);
 					$vs_content .= "</div>\n";
 					
