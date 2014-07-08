@@ -238,7 +238,7 @@ def("DOMPDF_DEFAULT_FONT", "serif");
  *
  * @var int
  */
-def("DOMPDF_DPI", 96);
+def("DOMPDF_DPI", 72);
 
 /**
  * Enable inline PHP
@@ -252,7 +252,7 @@ def("DOMPDF_DPI", 96);
  *
  * @var bool
  */
-def("DOMPDF_ENABLE_PHP", false);
+def("DOMPDF_ENABLE_PHP", true);
 
 /**
  * Enable inline Javascript
@@ -281,7 +281,7 @@ def("DOMPDF_ENABLE_JAVASCRIPT", true);
  *
  * @var bool
  */
-def("DOMPDF_ENABLE_REMOTE", false);
+def("DOMPDF_ENABLE_REMOTE", true);
 
 /**
  * The debug output log
@@ -300,7 +300,7 @@ def("DOMPDF_FONT_HEIGHT_RATIO", 1.1);
  * Allows people to disabled CSS float support
  * @var bool
  */
-def("DOMPDF_ENABLE_CSS_FLOAT", false);
+def("DOMPDF_ENABLE_CSS_FLOAT", true);
 
 /**
  * Enable the built in DOMPDF autoloader

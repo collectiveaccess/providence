@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2013 Whirl-i-Gig
+ * Copyright 2007-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -285,8 +285,7 @@ class RequestHTTP extends Request {
 		if ($this->config->get('always_use_default_theme')) { $pb_use_default = true; }
 		if (!$pb_use_default && $this->isLoggedIn()) {
 			$vs_theme = $this->user->getPreference('ui_theme');
-		} 
-		if (!$vs_theme) {
+		} else {
 			$vs_theme = $this->config->get('theme');		// default theme
 		}
 		return $this->config->get('themes_url').'/'.$vs_theme;
@@ -296,11 +295,28 @@ class RequestHTTP extends Request {
 		if ($this->config->get('always_use_default_theme')) { $pb_use_default = true; }
 		if (!$pb_use_default && $this->isLoggedIn()) {
 			$vs_theme = $this->user->getPreference('ui_theme');
-		} 
-		if (!$vs_theme) {
+		} else {
 			$vs_theme = $this->config->get('theme');		// default theme
 		}
 		return $this->config->get('themes_directory').'/'.$vs_theme;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Returns url path to "default" theme. This is not (necessarily) the same as the configured theme for the installation
+	 * that is returned when calling getThemeUrlPath() with the $pb_use_default parameter set. The path returned
+	 * by this method is the url path to the base theme named "default"
+	 */
+	public function getDefaultThemeUrlPath() {
+		return $this->config->get('themes_url').'/default';
+	}
+	# -------------------------------------------------------
+	/**
+	 * Returns path to "default" theme. This is not (necessarily) the same as the configured theme for the installation
+	 * that is returned when calling getThemeDirectoryPath() with the $pb_use_default parameter set. The path returned
+	 * by this method is the path to the base theme named "default"
+	 */
+	public function getDefaultThemeDirectoryPath() {
+		return $this->config->get('themes_directory').'/default';
 	}
 	# -------------------------------------------------------
 	public function getServiceViewPath(){
@@ -648,6 +664,7 @@ class RequestHTTP extends Request {
 					$vs_tmp1 = $vs_tmp2 = null;
 					if (($vn_auth_type = $this->user->authenticate($vs_tmp1, $vs_tmp2, $pa_options["options"]))) {	# error means user_id in session is invalid
 						if (($pa_options['noPublicUsers'] && $this->user->isPublicUser()) || !$this->user->isActive()) {
+							$o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
 							$vb_login_successful = false;
 							break;
 						}
@@ -659,9 +676,8 @@ class RequestHTTP extends Request {
 				}
 				if (!$vb_login_successful) {																	// throw user to login screen
 					if (!$pa_options["dont_redirect_to_login"]) {
-						//header("Location: ".$this->getBasePath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_path"));
+						$o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login with redirect for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
 						$this->opo_response->addHeader("Location", $this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_path"));
-						//exit;
 					}
 					return false;
 				}
