@@ -1139,7 +1139,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	public function getPresetsAsHTMLFormElement($pa_options=null) {
 		if (!($vn_element_id = $this->getPrimaryKey())) { return null; }		// element must be loaded
 	
-		$o_presets = Configuration::load(__CA_APP_DIR__."/conf/attributePresets.conf");
+		$o_presets = Configuration::load(__CA_APP_DIR__."/conf/attribute_presets.conf");
 		
 		if ($va_presets = $o_presets->getAssoc($this->get('element_code'))) {
 			$vs_form_element_name = caGetOption('name', $pa_options, "{fieldNamePrefix}_presets_{n}");
@@ -1168,7 +1168,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	public function getPresetsJavascript($ps_field_prefix, $pa_options=null) {
 		if (!($vn_element_id = $this->getPrimaryKey())) { return null; }		// element must be loaded
 	
-		$o_presets = Configuration::load(__CA_APP_DIR__."/conf/attributePresets.conf");
+		$o_presets = Configuration::load(__CA_APP_DIR__."/conf/attribute_presets.conf");
 		
 		if ($va_presets = $o_presets->getAssoc($this->get('element_code'))) {
 			$va_elements = $this->getElementsInSet();
