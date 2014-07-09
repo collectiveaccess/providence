@@ -123,7 +123,6 @@ wam.resize = function() {
 wam.init = function() {
 	wam.fixEditorWidth();
 	wam.userSort();
-	// wam.resize();
 };
 
 
