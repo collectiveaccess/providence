@@ -29,7 +29,7 @@
  * @name PDF (thumbnails)
  * @type page
  * @pageSize letter
- * @pageOrientation portrait
+ * @pageOrientation landscape
  * @tables ca_objects
  *
  * ----------------------------------------------------------------------

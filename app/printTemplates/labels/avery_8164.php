@@ -45,18 +45,20 @@
  
  	$vo_result = $this->getVar('result');	
  ?>
- <div style="position: absolute; left: 0.125in; top: 0.125in; width: 1.5in; height: 0.25in; border: 1px solid #cc0000; overflow: hidden;">
- 	{{{^ca_objects.preferred_labels.name; ^ca_objects.description}}}
+ <div class="titleText" style="position: absolute; left: 0.125in; top: 0.125in; width: 1.75in; height: 0.5in; overflow: hidden;">
+ 	{{{<ifdef code="ca_objects.idno">(^ca_objects.idno)</ifdef>}}}
+ 	
+ 	{{{<ifdef code="ca_objects.work_description"><div class="smallText">^ca_objects.work_description</div></ifdef>}}}
  </div>
  
- <div class="code128" style="position: absolute; left: 0.125in; top: 2.125in; width: 1.5in; height: 0.25in; border: 1px solid #cc0000; overflow: hidden;">
- 	<?php print $vo_result->get('ca_objects.idno'); ?>
+ <div class="barcode" style="position: absolute; left: 0.125in; top: 1.5in; width: 1.5in; height: 0.75in;">
+ 	{{{barcode:code128:5:^ca_objects.idno}}}
  </div>
  
- <div class="small" style="position: absolute; left: 2.125in; top: 2.125in; width: 1in; height: 0.25in; border: 1px solid #cc0000; overflow: hidden;">
- 	<?php print $vo_result->get('ca_objects.idno'); ?>
+ <div class="bodyText" style="position: absolute; left: 0.125in; top: 3in; width: 3.5in; height: 0.375in;">
+ 	{{{^ca_objects.preferred_labels.name <ifdef code="ca_objects.idno">(^ca_objects.idno)</ifdef>}}}
  </div>
  
- <div style="position: absolute; right: 0.125in; top: 0.125in; width: 1.5in; height: 150px; border: 1px solid #cc0000; overflow: hidden;">
- 	<?php print $vo_result->get('ca_object_representations.media.preview'); ?>
+ <div class="thumbnail" style="position: absolute; right: 0.125in; top: 0.125in; overflow: hidden;">
+ 	<?php print $vo_result->get('ca_object_representations.media.thumbnail'); ?>
  </div>
