@@ -34,6 +34,7 @@
   *
   */
  
+ 	require_once(__CA_APP_DIR__."/helpers/printHelpers.php");
  	require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
  	require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
  	require_once(__CA_MODELS_DIR__."/ca_attributes.php");
@@ -43,6 +44,7 @@
  	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
  	require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
 	require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
+ 	require_once(__CA_LIB_DIR__.'/core/Parsers/dompdf/dompdf_config.inc.php');
  
  	class BaseEditorController extends ActionController {
  		# -------------------------------------------------------
@@ -374,11 +376,11 @@
  			}
  			
  			if ($vb_confirm = ($this->request->getParameter('confirm', pInteger) == 1) ? true : false) {
- 				$vb_we_set_transation = false;
+ 				$vb_we_set_transaction = false;
  				if (!$t_subject->inTransaction()) {
  					$o_t = new Transaction();
  					$t_subject->setTransaction($o_t);
- 					$vb_we_set_transation = true;
+ 					$vb_we_set_transaction = true;
  				}
  				
  				// Do we need to move relationships?
@@ -390,18 +392,19 @@
  								$this->notification->addNotification(($vn_c == 1) ? _t("Transferred %1 relationship to type <em>%2</em>", $vn_c, $t_target->getLabelForDisplay()) : _t("Transferred %1 relationships to type <em>%2</em>", $vn_c, $t_target->getLabelForDisplay()), __NOTIFICATION_TYPE_INFO__);	
  							}
  							break;
- 						case 'ca_list_items':
- 							// update existing metadata attributes to use remapped value
- 							break;
  						default:
+ 							// update relationships
 							$va_tables = array(
-								'ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_list_items', 'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops', 'ca_object_representations'
+								'ca_objects', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations', 'ca_list_items', 'ca_loans', 'ca_movements', 'ca_tours', 'ca_tour_stops', 'ca_object_representations', 'ca_list_items'
 							);
 							
 							$vn_c = 0;
 							foreach($va_tables as $vs_table) {
 								$vn_c += $t_subject->moveRelationships($vs_table, $vn_remap_id);
 							}
+							
+							// update existing metadata attributes to use remapped value
+							$t_subject->moveAuthorityElementReferences($vn_remap_id);
 							
 							if ($vn_c > 0) {
 								$t_target = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
@@ -410,6 +413,8 @@
 							}
 						break;
 					}
+				} else {
+					$t_subject->deleteAuthorityElementReferences();
 				}
  				
  				$t_subject->setMode(ACCESS_WRITE);
@@ -421,7 +426,7 @@
  					}
  				}
  				
- 				if ($vb_we_set_transation) {
+ 				if ($vb_we_set_transaction) {
  					if (!$vb_rc) {
  						$o_t->rollbackTransaction();	
  					} else {
@@ -532,8 +537,6 @@
  		 * @param array $pa_options Array of options passed through to _initView 
  		 */
 		public function PrintSummary($pa_options=null) {
-			require_once(__CA_LIB_DIR__."/core/Print/html2pdf/html2pdf.class.php");
-
 			JavascriptLoadManager::register('tableList');
  			list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
  			
@@ -586,18 +589,39 @@
 				$this->view->setVar('placements', array());
 			}
 			
+			//
+			// PDF output
+			//
+			if(!is_array($va_template_info = caGetPrintTemplateDetails('summary', "{$this->ops_table_name}_summary"))) {
+				if(!is_array($va_template_info = caGetPrintTemplateDetails('summary', "summary"))) {
+					$this->postError(3110, _t("Could not find view for PDF"),"BaseEditorController->PrintSummary()");
+					return;
+				}
+			}
+			
+			$va_barcode_files_to_delete = array();
+			
 			try {
-				$vs_content = $this->render('print_summary_html.php');
-				$vo_html2pdf = new HTML2PDF('P',$vs_format,'en');
-				$vo_html2pdf->setDefaultFont("dejavusans");
-				$vo_html2pdf->WriteHTML($vs_content);
-				$vo_html2pdf->Output('summary.pdf');
+				$this->view->setVar('base_path', $vs_base_path = pathinfo($va_template_info['path'], PATHINFO_DIRNAME));
+				$this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
+				
+				$va_barcode_files_to_delete += caDoPrintViewTagSubstitution($this->view, $t_subject, $va_template_info['path'], array('checkAccess' => $this->opa_access_values));
+				
+				$vs_content = $this->render($va_template_info['path']);
+				$o_dompdf = new DOMPDF();
+				$o_dompdf->load_html($vs_content);
+				$o_dompdf->set_paper(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'));
+				$o_dompdf->set_base_path(caGetPrintTemplateDirectoryPath('summary'));
+				$o_dompdf->render();
+				$o_dompdf->stream(caGetOption('filename', $va_template_info, 'print_summary.pdf'));
+	
 				$vb_printed_properly = true;
+				
+				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
 			} catch (Exception $e) {
+				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
 				$vb_printed_properly = false;
-				$o_event_log = new Eventlog();
-				$o_event_log->log(array('CODE' => 'DEBG', 'MESSAGE' => $vs_msg = _t("Could not generate PDF: %1", preg_replace('![^A-Za-z0-9 \-\?\/\.]+!', ' ', $e->getMessage())), 'SOURCE' => 'BaseEditorController->PrintSummary()'));
-				$this->postError(3100, $vs_msg,"BaseEditorController->PrintSummary()");
+				$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
 			}
 		}
  		# -------------------------------------------------------
@@ -742,6 +766,27 @@
  		}
  		# -------------------------------------------------------
  		/**
+ 		 *
+ 		 */
+ 		protected function _getUI($pn_type_id=null, $pa_options=null) {
+ 			$t_ui = new ca_editor_uis();
+ 			if (isset($pa_options['ui']) && $pa_options['ui']) {
+ 				if (is_numeric($pa_options['ui'])) {
+ 					$t_ui->load((int)$pa_options['ui']);
+ 				}
+ 				if (!$t_ui->getPrimaryKey()) {
+ 					$t_ui->load(array('editor_code' => $pa_options['ui']));
+ 				}
+ 			}
+ 			
+ 			if (!$t_ui->getPrimaryKey()) {
+ 				$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, $pn_type_id);
+ 			}
+ 			
+ 			return $t_ui;
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
  		 * Initializes editor view with core set of values, loads model with record to be edited and selects user interface to use.
  		 *
  		 * @param $pa_options Array of options. Supported options are:
@@ -768,21 +813,11 @@
  				
  				// then reload the definitions (which includes bundle specs)
  				$t_subject->reloadLabelDefinitions();
+ 			} else {
+ 				$vn_type_id = $t_subject->getTypeID();
  			}
  			
- 			$t_ui = new ca_editor_uis();
- 			if (isset($pa_options['ui']) && $pa_options['ui']) {
- 				if (is_numeric($pa_options['ui'])) {
- 					$t_ui->load((int)$pa_options['ui']);
- 				}
- 				if (!$t_ui->getPrimaryKey()) {
- 					$t_ui->load(array('editor_code' => $pa_options['ui']));
- 				}
- 			}
- 			
- 			if (!$t_ui->getPrimaryKey()) {
- 				$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, $t_subject->getTypeID());
- 			}
+ 			$t_ui = $this->_getUI($vn_type_id, $pa_options);
  			
  			$this->view->setVar($t_subject->primaryKey(), $vn_subject_id);
  			$this->view->setVar('subject_id', $vn_subject_id);
@@ -1312,7 +1347,7 @@
  			
  			$vn_item_id 		= (isset($pa_parameters[$vs_pk])) ? $pa_parameters[$vs_pk] : null;
  			$vn_type_id 		= (isset($pa_parameters['type_id'])) ? $pa_parameters['type_id'] : null;
- 			
+ 		
  			$t_item->load($vn_item_id);
  			
  			if (!$this->_checkAccess($t_item, array('dontRedirectOnDelete' => true))) { 
@@ -1371,15 +1406,14 @@
 			$this->view->setVar('screen', $this->request->getActionExtra());						// name of screen
 			$this->view->setVar('result_context', $this->getResultContext());
 			
-//			$t_mappings = new ca_bundle_mappings();
-			$va_mappings = array(); //$t_mappings->getAvailableMappings($t_item->tableNum(), array('E', 'X'));
+			$this->view->setVar('t_ui', $t_ui = $this->_getUI($vn_type_id, $pa_options));
 			
-			$va_export_options = array();
-			foreach($va_mappings as $vn_mapping_id => $va_mapping_info) {
-				$va_export_options[$va_mapping_info['name']] = $va_mapping_info['mapping_id'];
-			}
-			$this->view->setVar('available_mappings', $va_mappings);
-			$this->view->setVar('available_mappings_as_html_select', sizeof($va_export_options) ? caHTMLSelect('mapping_id', $va_export_options, array("style" => "width: 120px;")) : '');
+			//$va_export_options = array();
+			//foreach($va_mappings as $vn_mapping_id => $va_mapping_info) {
+			//	$va_export_options[$va_mapping_info['name']] = $va_mapping_info['mapping_id'];
+			//}
+			//$this->view->setVar('available_mappings', $va_export_options);
+			//$this->view->setVar('available_mappings_as_html_select', sizeof($va_export_options) ? caHTMLSelect('mapping_id', $va_export_options, array("style" => "width: 120px;")) : '');
  		}
  		# ------------------------------------------------------------------
 		/**

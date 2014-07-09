@@ -710,13 +710,18 @@ function caFileIsIncludable($ps_file) {
 	 * Prints stack trace from point of invokation
 	 *
 	 * @param array $pa_options Optional array of options. Support options are:
-	 *		html - if true, then HTML formatted output will be returned; otherwise plain-text output is returned; default is false
-	 *		print - if true output is printed to standard output; default is false
+	 *		html = if true, then HTML formatted output will be returned; otherwise plain-text output is returned. [Default is false]
+	 *		print = if true output is printed to standard output. [Default is false]
+	 *		skip = number of calls to skip from the top of the stack. [Default is 0]
 	 * @return string Stack trace output
 	 */
 	function caPrintStacktrace($pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		$va_trace = debug_backtrace();
+		
+		if (isset($pa_options['skip']) && ($pa_options['skip'] > 0)) {
+			$va_trace = array_slice($va_trace, $pa_options['skip']);
+		}
 		
 		$va_buf = array();
 		foreach($va_trace as $va_line) {
@@ -762,6 +767,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return string $ps_fractional_expression with fractions replaced with decimal equivalents
 	 */
 	function caConvertFractionalNumberToDecimal($ps_fractional_expression, $locale="en_US") {
+		$ps_fractional_expression = preg_replace("![\n\r\t ]+!", " ", $ps_fractional_expression);
 		// convert ascii fractions (eg. 1/2) to decimal
 		if (preg_match('!^([\d]*)[ ]*([\d]+)/([\d]+)!', $ps_fractional_expression, $va_matches)) {
 			if ((float)$va_matches[2] > 0) {
@@ -1145,15 +1151,16 @@ function caFileIsIncludable($ps_file) {
 	  * Creates an md5-based cached key from an array of options
 	  *
 	  * @param array $pa_options An options array
+	  * @param string $ps_additional_text Additional text to add to key
 	  * @return string An MD5 cache key for the options array
 	  */
-	function caMakeCacheKeyFromOptions($pa_options) {
-		if (!is_array($pa_options)) { return md5($pa_options); }
+	function caMakeCacheKeyFromOptions($pa_options, $ps_additional_text=null) {
+		if (!is_array($pa_options)) { return md5($pa_options.$ps_additional_text); }
 		foreach($pa_options as $vs_key => $vm_value) {
 			if (is_object($vm_value)) { unset($pa_options[$vs_key]); }
 		}
 		
-		return md5(print_R($pa_options, true));
+		return md5(print_R($pa_options, true).$ps_additional_text);
 	}
 	# ---------------------------------------
 	/**
@@ -1271,7 +1278,7 @@ function caFileIsIncludable($ps_file) {
 		$o_tep = new TimeExpressionParser();
 		if ($o_tep->parse($ps_date_expression)) {
 			$va_date = $o_tep->getUnixTimestamps();
-			return $va_date['start'];
+			return isset($va_date['start']) ? $va_date['start'] : null;
 		}
 		return null;
 	}
@@ -1286,6 +1293,21 @@ function caFileIsIncludable($ps_file) {
 		$o_tep = new TimeExpressionParser();
 		if ($o_tep->parse($ps_date_expression)) {
 			return $o_tep->getHistoricTimestamps();
+		}
+		return null;
+	}
+	# ---------------------------------------
+	/**
+	  * Parses natural language date and returns an historic timestamp
+	  *
+	  * @param string $ps_date_expression A valid date/time expression as described in http://docs.collectiveaccess.org/wiki/Date_and_Time_Formats
+	  * @return float An historic timestamp for the date expression or null if expression cannot be parsed.
+	  */
+	function caDateToHistoricTimestamp($ps_date_expression) {
+		$o_tep = new TimeExpressionParser();
+		if ($o_tep->parse($ps_date_expression)) {
+			$va_date = $o_tep->getHistoricTimestamps();
+			return isset($va_date['start']) ? $va_date['start'] : null;
 		}
 		return null;
 	}
@@ -1868,14 +1890,44 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
+	 * Creates new array with all keys forced to lowercase.
 	 *
+	 * @param array $pa_array
+	 * @param array $pa_options No options are supported (yet)
+	 *
+	 * @return array
+	 */
+	function caMakeArrayKeysLowercase($pa_array, $pa_options=null) {
+		if (!is_array($pa_array)) { return $pa_array; }
+		$va_new_array = array();
+		foreach($pa_array as $vs_k => $vm_v) {
+			$vs_k_lc = strtolower($vs_k);
+			if (is_array($vm_v)) {
+				$va_new_array[$vs_k_lc] = caMakeArrayKeysLowercase($vm_v, $pa_options);
+			} else {
+				$va_new_array[$vs_k_lc] = $vm_v;
+			}
+		}
+		return $va_new_array;
+	}
+	# ----------------------------------------
+	/**
+	 * Check if array is associative (text or mixed indices)
+	 *
+	 * @param array $pa_array
+	 *
+	 * @return bool
 	 */
 	function caIsAssociativeArray($pa_array) {
 	  return (bool)count(array_filter(array_keys($pa_array), 'is_string'));
 	}
 	# ----------------------------------------
 	/**
+	 * Check if array is indexed (numeric indices)
 	 *
+	 * @param array $pa_array
+	 *
+	 * @return bool
 	 */
 	function caIsIndexedArray($pa_array) {
 		return (is_array($pa_array) && !caIsAssociativeArray($pa_array));

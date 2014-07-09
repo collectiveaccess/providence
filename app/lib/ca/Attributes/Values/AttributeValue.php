@@ -160,6 +160,17 @@
 			$ps_error = '';
 			return true;
 		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for attribute value
+		 * @todo There is a bug in PHP 5.3.x that prevents us from using this definition. The resulting error is: Can't inherit abstract function IAttributeValue::getType() (previously declared abstract in AttributeValue).
+		 *       There is an abstract function getType() here and the same thing is defined in the Interface. The AttributeValue implementations inherit from this class and implement the Interface,
+		 *       which makes PHP versions prior to 5.3.9 barf (even though it shouldn't). It's fixed in 5.3.9+. The widely used RHEL/CentOS 6.5 (latest version as of July 2014) still uses PHP 5.3.3 though.
+		 * 
+		 * @return int Attribute value type code
+		 */
+		/*abstract public function getType();*/
+
  		# ------------------------------------------------------------------
 	}
  ?>

@@ -111,8 +111,11 @@
 			}
 			
  			// Set type restrictions to component types
-			$this->view->setVar('restrict_to_types', $this->request->config->getList('ca_objects_component_types'));
+ 			$va_component_types = $this->request->config->getList('ca_objects_component_types');
  			
+ 			if (is_array($va_component_types) && sizeof($va_component_types) && !in_array('*', $va_component_types)) {
+				$this->view->setVar('restrict_to_types', $va_component_types);
+ 			}
  			
  			$this->request->setParameter('type_id', $vn_type_id);
  			$t_subject->set('type_id', $vn_type_id);

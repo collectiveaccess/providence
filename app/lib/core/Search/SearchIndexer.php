@@ -87,7 +87,7 @@ class SearchIndexer extends SearchBase {
 	/**
 	 * Constructor takes Db() instance which it uses for all database access. You should pass an instance in
 	 * because all the database accesses need to be in the same transactional context as whatever else you're doing. In
-	 * the case of Table::insert(), Table::update() and Table::delete() [the main users of , they're always in a transactional context
+	 * the case of BaseModel::insert(), BaseModel::update() and BaseModel::delete()they're always in a transactional context
 	 * so this is critical. If you don't pass an Db() instance then the constructor creates a new one, which is useful for
 	 * cases where you're reindexing and not in a transaction.
 	 */
@@ -192,6 +192,7 @@ class SearchIndexer extends SearchBase {
 		}
 		
 		$vn_tc = 0;
+		
 		foreach($va_table_names as $vn_table_num => $va_table_info) {
 			$vs_table = $va_table_info['name'];
 			$t_table_timer = new Timer();
@@ -228,9 +229,11 @@ class SearchIndexer extends SearchBase {
 			$va_intrinsic_list[$vs_table_pk] = array();
 			
 			foreach($va_ids as $vn_i => $vn_id) {
-				if ($va_element_ids && (!($vn_i % 200))) {	// Pre-load attribute values for next 200 items to index; improves index performance
-					ca_attributes::prefetchAttributes($o_db, $vn_table_num, $va_id_slice = array_slice($va_ids, $vn_i, 200), $va_element_ids);
-				
+				if (!($vn_i % 200)) {	// Pre-load attribute values for next 200 items to index; improves index performance
+					$va_id_slice = array_slice($va_ids, $vn_i, 200);
+					if ($va_element_ids) {
+						ca_attributes::prefetchAttributes($o_db, $vn_table_num, $va_id_slice, $va_element_ids);
+					}
 					$qr_field_data = $o_db->query("
 						SELECT ".join(", ", array_keys($va_intrinsic_list))." 
 						FROM {$vs_table}
@@ -834,7 +837,14 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 									if ($vb_is_attr) {
 										$this->opo_engine->indexField($vn_related_tablenum, 'A'.$va_matches[1], $qr_res->get($vs_related_pk), $vs_fld_data, $va_rel_field_info);
 									} else {
-										$this->opo_engine->indexField($vn_related_tablenum, 'I'.$this->opo_datamodel->getFieldNum($vs_related_table, $vs_rel_field), $qr_res->get($vs_related_pk), $vs_fld_data, $va_rel_field_info);
+										if (((isset($va_rel_field_info['INDEX_AS_IDNO']) && $va_rel_field_info['INDEX_AS_IDNO']) || in_array('INDEX_AS_IDNO', $va_rel_field_info)) && method_exists($t_rel, "getIDNoPlugInInstance") && ($o_idno = $t_rel->getIDNoPlugInInstance())) {
+											// specialized identifier (idno) processing; used IDNumbering plugin to generate searchable permutations of identifier
+											$va_values = $o_idno->getIndexValues($vs_fld_data);
+											$this->opo_engine->indexField($pn_subject_tablenum, 'I'.$this->opo_datamodel->getFieldNum($vs_related_table, $vs_rel_field), $qr_res->get($vs_related_pk), join(" ", $va_values), $va_rel_field_info);
+										} else {
+											// regular intrinsic
+											$this->opo_engine->indexField($vn_related_tablenum, 'I'.$this->opo_datamodel->getFieldNum($vs_related_table, $vs_rel_field), $qr_res->get($vs_related_pk), $vs_fld_data, $va_rel_field_info);
+										}
 									}
 									break;	
 							}
@@ -916,7 +926,6 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 				
 				$o_indexer = new SearchIndexer($this->opo_db);
 				foreach($va_rows_to_reindex_by_row_id as $va_row_to_reindex) {
-					
 					$t_rel = $this->opo_datamodel->getInstanceByTableNum($va_row_to_reindex['field_table_num'], true);
 					
 					if (substr($va_row_to_reindex['field_name'], 0, 14) == '_ca_attribute_') {		// is attribute
@@ -939,22 +948,27 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 							switch($va_row_to_reindex['indexing_info']['datatype']) {
 								case __CA_ATTRIBUTE_VALUE_CONTAINER__: 		// container
 									// index components of complex multi-value attributes
-									$va_attributes = $t_rel->getAttributesByElement($vs_element_code, array('row_id' => $va_row_to_reindex['field_row_id']));
+									foreach($va_row_to_reindex['row_ids'] as $vn_rel_row_id) {
+										$this->opo_engine->startRowIndexing($va_row_to_reindex['table_num'], $vn_rel_row_id);
+										
+										$va_attributes = $t_rel->getAttributesByElement($vs_element_code, array('row_id' => $va_row_to_reindex['field_row_id']));
 				
-									if (sizeof($va_attributes)) { 
-										foreach($va_attributes as $vo_attribute) {
-											foreach($vo_attribute->getValues() as $vo_value) {
-												$vn_list_id = $this->_getElementListID($vo_value->getElementID());
-												$this->opo_engine->indexField($vn_related_tablenum, 'A'.$vo_value->getElementID(), $va_row_to_reindex['field_row_id'], $vo_value->getDisplayValue($vn_list_id), $va_row_to_reindex['indexing_info']);
+										if (sizeof($va_attributes)) { 
+											foreach($va_attributes as $vo_attribute) {
+												foreach($vo_attribute->getValues() as $vo_value) {
+													$vn_list_id = $this->_getElementListID($vo_value->getElementID());
+													$this->opo_engine->indexField($va_row_to_reindex['table_num'], 'A'.$vo_value->getElementID(), $va_row_to_reindex['field_row_id'], $vo_value->getDisplayValue($vn_list_id), $va_row_to_reindex['indexing_info']);
+												}
+											}
+										} else {
+											// we are deleting a container so cleanup existing sub-values
+											$va_sub_elements = $this->opo_metadata_element->getElementsInSet($vs_element_code);
+					
+											foreach($va_sub_elements as $vn_i => $va_element_info) {
+												$this->opo_engine->indexField($va_row_to_reindex['table_num'], 'A'.$va_element_info['element_id'], $va_row_to_reindex['field_row_id'], '', $va_row_to_reindex['indexing_info']);
 											}
 										}
-									} else {
-										// we are deleting a container so cleanup existing sub-values
-										$va_sub_elements = $this->opo_metadata_element->getElementsInSet($vs_element_code);
-					
-										foreach($va_sub_elements as $vn_i => $va_element_info) {
-											$this->opo_engine->indexField($va_row_to_reindex['table_num'], 'A'.$va_element_info['element_id'], $va_row_to_reindex['field_row_id'], '', $va_row_to_reindex['indexing_info']);
-										}
+										$this->opo_engine->commitRowIndexing();
 									}
 									break;
 								case __CA_ATTRIBUTE_VALUE_LIST__:			// list
@@ -1068,22 +1082,32 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 		$pn_subject_tablenum = $pt_subject->tableNum();
 		$vn_element_id = $this->_getElementID($pm_element_code_or_id);
 		
-		$vn_datatype = isset($pa_data['datatype']) ? $pa_data['datatype'] : $this->_getElementDataType($vn_element_id);		
+		$vn_datatype = isset($pa_data['datatype']) ? $pa_data['datatype'] : $this->_getElementDataType($vn_element_id);	
+		
 		switch($vn_datatype) {
 			case __CA_ATTRIBUTE_VALUE_CONTAINER__: 		// container
 				// index components of complex multi-value attributes
 				if (sizeof($va_attributes)) { 
 					foreach($va_attributes as $vo_attribute) {
 						/* index each element of the container */
+						
+						$va_sub_element_ids = $this->opo_metadata_element->getElementsInSet($pm_element_code_or_id, true, array('idsOnly' => true));
+					
+						$va_sub_element_ids = array_flip($va_sub_element_ids);
 						foreach($vo_attribute->getValues() as $vo_value) {
 							$vn_list_id = $this->_getElementListID($vo_value->getElementID());											
-							$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vo_value->getElementID(), $pn_row_id, $vo_value->getDisplayValue($vn_list_id), $pa_data);																																															
+							$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vo_value->getElementID(), $pn_row_id, $vo_value->getDisplayValue($vn_list_id), $pa_data);		
+							unset($va_sub_element_ids[$vo_value->getElementID()]);																																							
+						}
+						
+						// Clear out any elements that aren't defined
+						foreach(array_keys($va_sub_element_ids) as $vn_element_id) {
+							$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $pn_row_id, '', $pa_data);	
 						}
 					}
 				} else {
 					// we are deleting a container so cleanup existing sub-values
 					$va_sub_elements = $this->opo_metadata_element->getElementsInSet($pm_element_code_or_id);
-					
 					foreach($va_sub_elements as $vn_i => $va_element_info) {
 						$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $pn_row_id, '', $pa_data);
 					}
@@ -1105,6 +1129,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 				// sub-elements *are* indexed however, so advanced search forms passing ids instead of text will work.
 				$va_tmp = array();
 				$va_attributes = $pt_subject->getAttributesByElement($vn_element_id, array('row_id' => $pn_row_id));
+				
 				if (is_array($va_attributes) && sizeof($va_attributes)) {
 					foreach($va_attributes as $vo_attribute) {
 						foreach($vo_attribute->getValues() as $vo_value) {
@@ -1261,6 +1286,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 		$vs_subject_pk = $t_subject->primaryKey();
 		
 // Loop through dependent tables
+
 		foreach($va_deps as $vs_dep_table) {
 		
 			$t_dep 				= $this->opo_datamodel->getInstanceByTableName($vs_dep_table, true);
@@ -1368,6 +1394,48 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 									$va_dependent_rows[$vs_key]['field_nums'][$vs_field] = $vn_fld_num;
 									$va_dependent_rows[$vs_key]['field_names'][$vn_fld_num] = $vs_field;
 									$va_dependent_rows[$vs_key]['indexing_info'][$vs_field] = $va_indexing_info;
+									
+									// reindex any rows that have authority metadata elements that reference this
+									if (method_exists($t_dep, "getAuthorityElementReferences") && is_array($va_element_references = $t_dep->getAuthorityElementReferences(array('row_id' => $vn_row_id)))) {
+										foreach($va_element_references as $vn_element_table_num => $va_references) {
+											if(!is_array($va_references) || (sizeof($va_references) == 0)) { continue; }
+											
+											$va_element_fields_to_index = $this->getFieldsToIndex($vn_element_table_num, $vn_element_table_num);
+											$vs_element_table_name = $t_dep->getAppDatamodel()->getTableName($vn_element_table_num);
+											$vs_element_table_pk = $t_dep->getAppDatamodel()->getTablePrimaryKeyName($vn_element_table_num);
+				
+											$qr_field_data = $this->opo_db->query("
+												SELECT *
+												FROM {$vs_element_table_name}
+												WHERE {$vs_element_table_pk} IN (?)	
+											", array(array_keys($va_references)));	
+											
+											$va_field_data = array();
+											while($qr_field_data->nextRow()) {
+												$va_field_data[(int)$qr_field_data->get($vs_element_table_pk)] = $qr_field_data->getRow();
+											}
+			
+											foreach($va_references as $vn_element_row_id => $va_element_ids) {
+												$vs_key = $vn_element_table_num.'/'.$vn_element_row_id.'/'.$vn_element_table_num.'/'.$vn_element_row_id;
+												if (!isset($va_dependent_rows[$vs_key])) {
+													$va_dependent_rows[$vs_key] = array(
+														'table_num' => $vn_element_table_num,
+														'row_id' => $vn_element_row_id,
+														'field_table_num' => $vn_element_table_num,
+														'field_row_id' => $vn_element_row_id,
+														'field_values' => $va_field_data[$vn_element_row_id],
+														'field_nums' => array(),
+														'field_names' => array()
+													);
+												}
+												foreach($va_element_ids as $vn_element_id) {
+													$va_dependent_rows[$vs_key]['field_nums']['_ca_attribute_'.$vn_element_id] = 'A'.$vn_element_id;	
+													$va_dependent_rows[$vs_key]['field_names']['A'.$vn_element_id] = '_ca_attribute_'.$vn_element_id;	
+													$va_dependent_rows[$vs_key]['indexing_info']['_ca_attribute_'.$vn_element_id] = $va_element_fields_to_index['_ca_attribute_'.$vn_element_id];
+												}
+											}
+										}
+									}
 								}
 							}
 						}
@@ -1641,4 +1709,3 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 	}
 	# ------------------------------------------------
 }
-?>

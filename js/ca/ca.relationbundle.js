@@ -169,7 +169,7 @@ var caUI = caUI || {};
 			} else {
 				if (options.relationshipTypes && (typeList = options.relationshipTypes[type_id])) {
 					for(i=0; i < typeList.length; i++) {
-						types.push({type_id: typeList[i].type_id, typename: typeList[i].typename, direction: typeList[i].direction});
+						types.push({type_id: typeList[i].type_id, typename: typeList[i].typename, direction: typeList[i].direction, rank: typeList[i].rank });
 						
 						if (typeList[i].is_default === '1') {
 							default_index = (types.length - 1);
@@ -179,13 +179,22 @@ var caUI = caUI || {};
 				// look for null (these are unrestricted and therefore always displayed)
 				if (options.relationshipTypes && (typeList = options.relationshipTypes['NULL'])) {
 					for(i=0; i < typeList.length; i++) {
-						types.push({type_id: typeList[i].type_id, typename: typeList[i].typename, direction: typeList[i].direction});
+						types.push({type_id: typeList[i].type_id, typename: typeList[i].typename, direction: typeList[i].direction, rank: typeList[i].rank });
 						
 						if (typeList[i].is_default === '1') {
 							default_index = (types.length - 1);
 						}
 					}
 				}
+				
+				types.sort(function(a,b) {
+					a.rank = parseInt(a.rank);
+					b.rank = parseInt(b.rank);
+					if (a.rank != b.rank) {
+						return (a.rank > b.rank) ? 1 : ((b.rank > a.rank) ? -1 : 0);
+					} 
+					return (a.typename > b.typename) ? 1 : ((b.typename > a.typename) ? -1 : 0);
+				});
 				
 				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id + ' option').remove();	// clear existing options
 				jQuery.each(types, function (i, t) {
@@ -194,7 +203,7 @@ var caUI = caUI || {};
 				});
 				
 				// select default
-				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).attr('selectedIndex', default_index);
+				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).prop('selectedIndex', default_index);
 			
 				// set current type
 				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).data('item_type_id', type_id);

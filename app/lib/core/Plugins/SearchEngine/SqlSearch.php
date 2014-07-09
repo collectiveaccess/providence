@@ -1206,14 +1206,16 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$qr_res = $this->opo_db->query($vs_sql, is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum));
 								$va_ids = $qr_res->getAllFieldValues("row_id");
 								
-								$vs_sql = "
-									DELETE FROM {$ps_dest_table} 
-									WHERE 
-										row_id IN (?)
-								";
+								if (sizeof($va_ids) > 0) {
+									$vs_sql = "
+										DELETE FROM {$ps_dest_table} 
+										WHERE 
+											row_id IN (?)
+									";
 							
-								$qr_res = $this->opo_db->query($vs_sql, array($va_ids));
-								//print "$vs_sql<hr>";
+									$qr_res = $this->opo_db->query($vs_sql, array($va_ids));
+									//print "$vs_sql<hr>";
+								}
 								break;
 							default:
 							case 'OR':
@@ -1458,7 +1460,20 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			$this->removeRowIndexing($pn_subject_tablenum, $vn_subject_row_id, $pn_content_tablenum, $ps_content_fieldnum, $pn_content_row_id);
 		}
 		
-		$va_words = $this->_tokenize($ps_content);
+		if (caGetOption("DONT_TOKENIZE", $pa_options, false) || in_array('DONT_TOKENIZE', $pa_options)) {
+			$va_words = array($ps_content);
+		} else {
+			$va_words = $this->_tokenize($ps_content);
+		}
+		
+		if (caGetOption("INDEX_AS_IDNO", $pa_options, false) || in_array('INDEX_AS_IDNO', $pa_options)) {
+			$t_content = $this->opo_datamodel->getInstanceByTableNum($pn_content_tablenum, true);
+			if (method_exists($t_content, "getIDNoPlugInInstance") && ($o_idno = $t_content->getIDNoPlugInInstance())) {
+				$va_values = $o_idno->getIndexValues($ps_content);
+				$va_words += $va_values;
+			}
+		}
+		
 		$va_literal_content = caGetOption("literalContent", $pa_options, null);
 		if ($va_literal_content && !is_array($va_literal_content)) { $va_literal_content = array($va_literal_content); }
 		
@@ -1618,9 +1633,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			// set ngram length based upon length of word
 			// shorter words require shorter ngrams to detect similarity
 			$vn_token_len = strlen($vs_token);
-			if ($vn_token_len <= 6) {
+			if ($vn_token_len <= 8) {
 				$vn_ngram_len = 2;
-			} elseif($vn_token_len <= 9) {
+			} elseif($vn_token_len <= 11) {
 				$vn_ngram_len = 3;	
 			} else {
 				$vn_ngram_len = 4;
@@ -1638,14 +1653,14 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			$va_params = array($va_ngrams);
 			//if ($vn_table_num) { $va_params[] = $vn_table_num; }
 			$qr_res = $this->opo_db->query("
-				SELECT ng.word_id, sw.word, (count(*)/{$vn_num_ngrams}) sc
+				SELECT ng.word_id, sw.word, count(*) sc
 				FROM ca_sql_search_ngrams ng
 				INNER JOIN ca_sql_search_words AS sw ON sw.word_id = ng.word_id
 				WHERE
-					ng.ngram IN (?) 
+					ng.ngram IN (?)
 				GROUP BY ng.word_id
-				ORDER BY sc DESC
-				LIMIT 1000
+				ORDER BY (length(sw.word) - (count(*) * {$vn_ngram_len})), (".($vn_ngram_len * $vn_num_ngrams).") - ((count(*) * {$vn_ngram_len}))
+				LIMIT 250
 			", $va_params);
 			$va_word_ids[$vn_i] = array();
 			$vn_c = 0;
@@ -1654,20 +1669,19 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			$vs_token_metaphone = metaphone($vs_token);
 			while($qr_res->nextRow()) {
 				$vs_word = $qr_res->get('word');
-				
-				if(preg_match("![\d]+!", $vs_word)) { continue; } 	// skip anything with a number
+				if(preg_match("![^A-Za-z ]+!", $vs_word)) { continue; } 	// skip anything that is not entirely letters and space
 				$vn_word_id = $qr_res->get('word_id');
 				
 				// Is it an exact match?
 				if ($vs_word == $vs_token) {
-					$va_word_ids[$vn_i][$vn_word_id] = -100;
+					$va_word_ids[$vn_i][$vn_word_id] = -250;
 					$vn_c++;
 					continue;
 				}
 				
 				// Does it sound like the word we're looking for (in English at least)
 				if (metaphone($vs_word) == $vs_token_metaphone) {
-					$va_word_ids[$vn_i][$vn_word_id] = -100;
+					$va_word_ids[$vn_i][$vn_word_id] = -150;
 					$vn_c++;
 					continue;
 				}
@@ -1676,13 +1690,13 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				if (strpos($vs_word, $vs_token) === false) { 
 					if (($vn_score = levenshtein($vs_word, $vs_token)) > 3) { continue; }
 				} else {
-					$vn_score = 0;
+					$vn_score -= 150;
 				}
 				
 				// does it begin with the same character?
 				for($i=1; $i <= mb_strlen($vs_word); $i++) {
 					if (mb_substr($vs_word, 0, $i) === mb_substr($vs_token, 0, $i)) {
-						$vn_score--;
+						$vn_score -= 25;
 					} else {
 						break;
 					}
@@ -1690,7 +1704,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				$va_word_ids[$vn_i][$vn_word_id] = $vn_score;
 				$vn_c++;
 			
-				if ($vn_c > 500) { break; }	// give up when we're found 500 possible hits
+				//if ($vn_c > 25) { break; }	// give up when we're found 500 possible hits
 			}
 		}
 		
@@ -1702,71 +1716,89 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		// Look for phrases that use any sequence of matched words in proper order
 		//
-		foreach($va_word_ids as $vn_i => $va_word_list) {
-			if (!sizeof($va_word_list)) { continue; }
-			asort($va_word_list, SORT_NUMERIC);
-			$va_word_list = array_keys(array_slice($va_word_list, 0, 100, true));
-			$vn_w++;
-			$vs_temp_table = 'ca_sql_search_suggest_'.md5("/".$vn_i."/".print_R($va_word_list, true));
-			$this->_createTempTable($vs_temp_table);
+		if (sizeof($va_word_ids) > 1) {
+			foreach($va_word_ids as $vn_i => $va_word_list) {
+				if (!sizeof($va_word_list)) { continue; }
+				asort($va_word_list, SORT_NUMERIC);
+				$va_word_list = array_keys(array_slice($va_word_list, 0, 30, true));
+				$vn_w++;
+				$vs_temp_table = 'ca_sql_search_suggest_'.md5("/".$vn_i."/".print_R($va_word_list, true));
+				$this->_createTempTable($vs_temp_table);
 			
-			$vs_sql = "
-				INSERT INTO {$vs_temp_table}
-				SELECT swi.index_id + 1, 1
-				FROM ca_sql_search_word_index swi
-				".(sizeof($va_temp_tables) ? " INNER JOIN ".$va_temp_tables[sizeof($va_temp_tables) - 1]." AS tt ON swi.index_id = tt.row_id" : "")."
-				WHERE 
-					swi.word_id IN (?) {$vs_table_sql}
-					".($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '')."
-			";
+				$vs_sql = "
+					INSERT INTO {$vs_temp_table}
+					SELECT swi.index_id + 1, 1
+					FROM ca_sql_search_word_index swi
+					".(sizeof($va_temp_tables) ? " INNER JOIN ".$va_temp_tables[sizeof($va_temp_tables) - 1]." AS tt ON swi.index_id = tt.row_id" : "")."
+					WHERE 
+						swi.word_id IN (?) {$vs_table_sql}
+						".($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '')."
+				";
 			
-			$va_params = array($va_word_list);
-			if ($vn_table_num) { $va_params[] = $vn_table_num; }
+				$va_params = array($va_word_list);
+				if ($vn_table_num) { $va_params[] = $vn_table_num; }
 			
-			$qr_res = $this->opo_db->query($vs_sql, $va_params);
+				$qr_res = $this->opo_db->query($vs_sql, $va_params);
 			
 			
-			$va_temp_tables[] = $vs_temp_table;	
-		}
-		
-		if (!sizeof($va_temp_tables)) { return array(); }
-		
-		// Get most relevant phrases from index
-		//
-		$vs_results_table = array_pop($va_temp_tables);
-		$qr_result = $this->opo_db->query("SELECT * FROM {$vs_results_table} LIMIT 50");
-		
-		$va_phrases = array();
-		while($qr_result->nextRow()) {
-			$va_indices = array();
-			$vn_index_id = $qr_result->get('row_id') - 1;
-			
-			for($i=0; $i < sizeof($va_tokens); $i++) {
-				$va_indices[] = $vn_index_id;
-				$vn_index_id--;
+				$va_temp_tables[] = $vs_temp_table;	
 			}
+		
+			if (!sizeof($va_temp_tables)) { return array(); }
+		
+			// Get most relevant phrases from index
+			//
+			$vs_results_table = array_pop($va_temp_tables);
+			$qr_result = $this->opo_db->query("SELECT * FROM {$vs_results_table} LIMIT 50");
+		
+			$va_phrases = array();
+			while($qr_result->nextRow()) {
+				$va_indices = array();
+				$vn_index_id = $qr_result->get('row_id') - 1;
 			
-			$qr_foo = $this->opo_db->query("
-				SELECT sw.word, swi.index_id 
+				for($i=0; $i < sizeof($va_tokens); $i++) {
+					$va_indices[] = $vn_index_id;
+					$vn_index_id--;
+				}
+			
+				$qr_phrases = $this->opo_db->query("
+					SELECT sw.word, swi.index_id 
+					FROM ca_sql_search_words sw
+					INNER JOIN ca_sql_search_word_index AS swi ON sw.word_id = swi.word_id
+					WHERE
+						(swi.index_id IN (?))
+				", array($va_indices));
+			
+				$va_acc = array();
+				while($qr_phrases->nextRow()) {
+					$va_acc[] = $qr_phrases->get('word');
+				}
+				$va_phrases[] = join(" ", $va_acc);
+			}
+		
+			foreach($va_temp_tables as $vs_temp_table) {
+				$this->_dropTempTable($vs_temp_table);
+			}
+			$this->_dropTempTable($vs_results_table);
+		
+			$va_phrases = array_unique($va_phrases);
+		} else {
+			// handle single word
+			if (!sizeof($va_word_ids[0])) { return array(); }
+			asort($va_word_ids[0], SORT_NUMERIC);
+			$va_word_ids[0] = array_slice($va_word_ids[0], 0, 3, true);
+			$qr_phrases = $this->opo_db->query("
+				SELECT sw.word
 				FROM ca_sql_search_words sw
-				INNER JOIN ca_sql_search_word_index AS swi ON sw.word_id = swi.word_id
 				WHERE
-					(swi.index_id IN (?))
-			", array($va_indices));
-			
-			$va_acc = array();
-			while($qr_foo->nextRow()) {
-				$va_acc[] = $qr_foo->get('word');
+					(sw.word_id IN (?))
+			", array(array_keys($va_word_ids[0])));
+		
+			$va_phrases = array();
+			while($qr_phrases->nextRow()) {
+				$va_phrases[] = $qr_phrases->get('word');
 			}
-			$va_phrases[] = join(" ", $va_acc);
 		}
-		
-		foreach($va_temp_tables as $vs_temp_table) {
-			$this->_dropTempTable($vs_temp_table);
-		}
-		$this->_dropTempTable($vs_results_table);
-		
-		$va_phrases = array_unique($va_phrases);
 		
 		if (caGetOption('returnAsLink', $pa_options, false) && ($po_request = caGetOption('request', $pa_options, null))) {
 			foreach($va_phrases as $vn_i => $vs_phrase) {

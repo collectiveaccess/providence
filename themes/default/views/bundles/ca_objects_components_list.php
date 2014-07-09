@@ -41,26 +41,19 @@
 	
 	$vn_num_components = ($qr_components = $t_subject->getComponents(array('returnAs' => 'searchResult'))) ? $qr_components->numHits() : 0;
 	
+	print "({$vn_num_components})";	// print number of components next to the bundle title
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 ?>
 
 <div id="<?php print $vs_id_prefix; ?>">
 	<div class="bundleContainer">
 		<div class="caItemList">
-<?php
-	if ($vn_num_components) {
-?>
-			<div>
-<?php
-				print ($vn_num_components == 1) ? _t('%1 component', $vn_num_components) : _t('%1 components', $vn_num_components);
-?>	
-			</div>
-<?php
-	}
-?>
 			<div class="labelInfo">	
 <?php
 	if ($vn_num_components) {
+?>
+		<div style="column-count:3; -webkit-column-count:3; -moz-column-count:3;">
+<?php
 		while($qr_components->nextHit()) {
 ?>
 				<div style="font-weight: normal;">
@@ -68,6 +61,9 @@
 				</div>
 <?php
 		}
+?>
+		</div>
+<?php
 	} else {
 ?>
 				<div><?php print _t('No components defined'); ?></div>

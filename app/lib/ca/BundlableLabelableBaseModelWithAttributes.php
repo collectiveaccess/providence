@@ -70,7 +70,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	public function load ($pm_id=null, $pb_use_cache=true) {
 		global $AUTH_CURRENT_USER_ID;
 		
-		$vn_rc = parent::load($pm_id);
+		$vn_rc = parent::load($pm_id, $pb_use_cache);
 		
 		if ($this->getAppConfig()->get('perform_item_level_access_checking')) {
 			if ($this->checkACLAccessForUser(new ca_users($AUTH_CURRENT_USER_ID)) == __CA_ACL_NO_ACCESS__) {
@@ -1378,15 +1378,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					// This bundle is only available when editing objects of type ca_editor_uis
 					case 'ca_editor_ui_type_restrictions':
 						if ($vb_batch) { return null; } // not supported in batch mode
-						if (($t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->get('editor_type'), true)) && (is_subclass_of($t_instance, 'BaseRelationshipModel'))) { return null; } // interstitial forms don't support UI type restrictions
 						$vs_element .= $this->getTypeRestrictionsHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
 						break;
 					# -------------------------------
 					// This bundle is only available when editing objects of type ca_editor_ui_screens
 					case 'ca_editor_ui_screen_type_restrictions':
 						$t_editor = new ca_editor_uis($this->get('ui_id'));
-						if (
-							$t_editor && ($t_instance = $this->getAppDatamodel()->getInstanceByTableNum($t_editor->get('editor_type'), true)) && (is_subclass_of($t_instance, 'BaseRelationshipModel'))) { return null; } // interstitial forms don't support UI type restrictions
 						$vs_element .= $this->getTypeRestrictionsHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
 						break;
 					# -------------------------------
@@ -2240,6 +2237,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 			$va_opts['template'] = caGetBundleDisplayTemplate($this, $ps_related_table, $pa_bundle_settings);
 			$va_opts['primaryIDs'] = array($this->tableName() => array($this->getPrimaryKey()));
+			$va_opts['request'] = $po_request;
 			$va_initial_values = caProcessRelationshipLookupLabel($qr_rel_items, $t_item_rel, $va_opts);
 		}
 
@@ -2300,7 +2298,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			if (is_array($va_mandatory_fields = $this->getMandatoryFields())) {
 				foreach($va_mandatory_fields as $vs_field) {
 					if (!in_array($vs_field, $va_fields_by_type['intrinsic'])) {
-						$va_fields_by_type['intrinsic'][] = $vs_field;
+						$va_fields_by_type['intrinsic']['mandatory_'.$vs_field] = $vs_field;
 					}
 				}
 			}
@@ -3589,14 +3587,15 @@ if (!$vb_batch) {
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
 						
-						if ($vn_location_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_idnew_0", pInteger)) {
+						if ($vn_location_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_idnew_0", pInteger)) {
 							if (
 								(is_array($va_relationship_types = caGetOption('ca_storage_locations_relationshipType', $va_bundle_settings, null)))
 								&& 
 								($vn_relationship_type_id = array_shift($va_relationship_types))
 							) {
-								if (!$this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id)) {
-									// TODO: error reporting
+								$this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id, null, null, null, null, array('allowDuplicates' => true));
+								if ($this->numErrors()) {
+									$po_request->addActionErrors($this->errors(), 'ca_objects_location', 'general');
 								}
 							}
 						}
@@ -3607,9 +3606,7 @@ if (!$vb_batch) {
 					case 'ca_objects_history':
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
-						
-						//print_R($_REQUEST);
-
+					
 						// set storage location
 						if ($vn_location_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_idnew_0", pInteger)) {
 							if (
@@ -3617,8 +3614,9 @@ if (!$vb_batch) {
 								&& 
 								($vn_relationship_type_id = array_shift($va_relationship_types))
 							) {
-								if (!$this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id)) {
-									// TODO: error reporting
+								$this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id, null, null, null, null, array('allowDuplicates' => true));
+								if ($this->numErrors()) {
+									$po_request->addActionErrors($this->errors(), 'ca_objects_history', 'general');
 								}
 							}
 						}
@@ -3626,8 +3624,9 @@ if (!$vb_batch) {
 						// set loan
 						if ($vn_loan_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_loan_idnew_0", pInteger)) {
 							if ($vn_loan_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_loan_type_idnew_0", pInteger)) {
-								if (!$this->addRelationship('ca_loans', $vn_loan_id, $vn_loan_type_id)) {
-									// TODO: error reporting
+								$this->addRelationship('ca_loans', $vn_loan_id, $vn_loan_type_id);
+								if ($this->numErrors()) {
+									$po_request->addActionErrors($this->errors(), 'ca_objects_history', 'general');
 								}
 							}
 						}
@@ -4030,7 +4029,7 @@ if (!$vb_batch) {
 		}
 		
 		$va_source_ids = caMergeSourceRestrictionLists($t_rel_item, $pa_options);
-		if (($vs_source_id_fld = $t_rel_item->getSourceFieldName()) && is_array($va_source_ids) && (sizeof($va_source_ids) > 0)) {
+		if (method_exists($t_rel_item, "getSourceFieldName") && ($vs_source_id_fld = $t_rel_item->getSourceFieldName()) && is_array($va_source_ids) && (sizeof($va_source_ids) > 0)) {
 			$va_wheres[] = "({$vs_related_table}.{$vs_source_id_fld} IN (".join(',', $va_source_ids)."))";
 		}
 		
@@ -4585,6 +4584,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * 
 	 */
 	public function getIDNoPlugInInstance() {
+		if (!$this->opo_idno_plugin_instance) { return null; }
 		$this->opo_idno_plugin_instance->setDb($this->getDb());	// Make sure returned instance is using current transaction database handle
 		return $this->opo_idno_plugin_instance;
 	}

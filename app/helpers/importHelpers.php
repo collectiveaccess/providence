@@ -34,6 +34,7 @@
    *
    */
    require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
+   require_once(__CA_LIB_DIR__.'/ca/Import/BaseDataReader.php');
 
 	# ---------------------------------------
 	/**
@@ -463,6 +464,8 @@
 	function caGenericImportSplitter($ps_refinery_name, $ps_item_prefix, $ps_table, $po_refinery_instance, &$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options) {
 		global $g_ui_locale_id;
 		
+		$po_refinery_instance->setReturnsMultipleValues(true);
+		
 		$o_dm = Datamodel::load();
 		
 		$po_refinery_instance->setReturnsMultipleValues(true);
@@ -491,9 +494,17 @@
 		} else {
 			$va_delimited_items = array($pm_value);
 		}
-		if (!is_array($va_delimited_items)) { $va_delimited_items = array($va_delimited_items); }
 		
-		$vs_delimiter = $pa_item['settings']["{$ps_refinery_name}_delimiter"];
+		if (!is_array($va_delimited_items)) { $va_delimited_items = array($va_delimited_items); }
+		$va_delimiter = $pa_item['settings']["{$ps_refinery_name}_delimiter"];
+		if (!is_array($va_delimiter)) { $va_delimiter = array($va_delimiter); }
+							
+		if (sizeof($va_delimiter)) {
+			foreach($va_delimiter as $vn_index => $vs_delim) {
+				if (!trim($vs_delim, "\t ")) { unset($va_delimiter[$vn_index]); continue; }
+				$va_delimiter[$vn_index] = preg_quote($vs_delim, "!");
+			}
+		}
 		
 		$va_vals = array();
 		$vn_c = 0;
@@ -507,8 +518,8 @@
 			(($vs_terminal != $ps_table) && (sizeof($va_group_dest) > 1))
 		) {		
 			foreach($va_delimited_items as $vn_x => $vs_delimited_item) {
-				$va_items = ($vs_delimiter) ? explode($vs_delimiter, $vs_delimited_item) : array($vs_delimited_item);
-				
+				$va_items = sizeof($va_delimiter) ? preg_split("!(".join("|", $va_delimiter).")!", $vs_delimited_item) : array($vs_delimited_item);
+
 				foreach($va_items as $vn_i => $vs_item) {
 					if (!($vs_item = trim($vs_item))) { continue; }
 					if (is_array($va_skip_values = $pa_item['settings']["{$ps_refinery_name}_skipIfValue"]) && in_array($vs_item, $va_skip_values)) {
@@ -533,7 +544,7 @@
 						}
 			
 						if((!isset($va_val['_type']) || !$va_val['_type']) && ($vs_type_opt = $pa_item['settings']["{$ps_refinery_name}_{$ps_item_prefix}TypeDefault"])) {
-							if (!($va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $vs_delimiter, 'returnDelimitedValueAt' => $vn_x)))) {
+							if (!($va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnDelimitedValueAt' => $vn_x)))) {
 								$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader));
 							}
 						}
@@ -555,8 +566,18 @@
 						//
 						// Storage location specific options
 						//
-						if (($ps_refinery_name == 'storageLocationSplitter') && ($vs_hier_delimiter = $pa_item['settings']['storageLocationSplitter_hierarchicalDelimiter'])) {
-							$va_location_hier = explode($vs_hier_delimiter, $vs_item);
+						if (($ps_refinery_name == 'storageLocationSplitter') && ($va_hier_delimiter = $pa_item['settings']['storageLocationSplitter_hierarchicalDelimiter'])) {
+							if (!is_array($va_hier_delimiter)) { $va_hier_delimiter = array($va_hier_delimiter); }
+							
+							if (sizeof($va_hier_delimiter)) {
+								foreach($va_hier_delimiter as $vn_index => $vs_delim) {
+									if (!trim($vs_delim, "\t ")) { unset($va_hier_delimiter[$vn_index]); continue; }
+									$va_hier_delimiter[$vn_index] = preg_quote($vs_delim, "!");
+								}
+							}
+							
+							$va_location_hier = preg_split("!(".join("|", $va_hier_delimiter).")!", $vs_item);
+							
 							if (sizeof($va_location_hier) > 1) {
 					
 								$vn_location_id = null;
@@ -607,13 +628,10 @@
 						if (isset($pa_options['mapping']) && is_array($va_attr_vals = caProcessInterstitialAttributes($ps_refinery_name, $pa_options['mapping']->get('table_num'), $ps_table, $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader)))) {
 							$va_val = array_merge($va_val, $va_attr_vals);
 						}
-				
-						// Set relatedEntities
-						// TODO: generalize for all of types of records
-						if (is_array($va_attr_vals = caProcessRefineryRelated($ps_refinery_name, "ca_entities", $pa_item['settings']["{$ps_refinery_name}_relatedEntities"], $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader)))) {
-							$va_val = array_merge($va_val, $va_attr_vals);
-						}
-				
+
+						// Set relationships on the related table
+						caProcessRefineryRelatedMultiple($po_refinery_instance, $pa_item, $pa_source_data, $pn_value_index, $o_log, $o_reader, $va_val, $va_attr_vals);
+
 						// Set nonpreferred labels
 						if (is_array($va_non_preferred_labels = $pa_item['settings']["{$ps_refinery_name}_nonPreferredLabels"])) {
 							$pa_options['nonPreferredLabels'] = array();
@@ -632,7 +650,7 @@
 				
 						$vs_item = BaseRefinery::parsePlaceholder($vs_item, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 						if(!is_array($va_attr_vals)) { $va_attr_vals = array(); }
-						$va_attr_vals_with_parent = array_merge($va_attr_vals, array('parent_id' => $va_val['_parent_id']));
+						$va_attr_vals_with_parent = array_merge($va_attr_vals, array('parent_id' => $va_val['parent_id'] ? $va_val['parent_id'] : $va_val['_parent_id']));
 
 					
 						$pa_options = array_merge(array_merge(array('matchOn' => array('idno', 'label')), $pa_options));
@@ -684,7 +702,8 @@
 						}
 					
 						if ($vn_item_id) {
-							$va_val= array($vs_terminal => $vn_item_id);
+							$po_refinery_instance->setReturnsMultipleValues(false);
+							return $vn_item_id;
 						} else {
 							if ($o_log) { $o_log->logError(_t("[{$ps_refinery_name}Refinery] Could not add %2 %1", $vs_item, $ps_item_prefix)); }
 						}
@@ -798,7 +817,41 @@
 		}
 		return $va_vals;
 	}
-	# ---------------------------------------
+# ---------------------------------------
+/**
+ * Uses caProcessRefineryRelated to set a list of relationships on related records. Also takes legacy relatedEntities into account
+ * @param $po_refinery_instance instanceof BaseRefinery
+ * @param $pa_item array
+ * @param $pa_source_data array
+ * @param $pn_value_index int
+ * @param $o_log KLogger
+ * @param $o_reader instanceof BaseDataReader
+ * @param $va_val array
+ * @param $va_attr_vals array
+ */
+function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_source_data, $pn_value_index, $o_log, $o_reader, &$va_val, &$va_attr_vals) {
+	$vs_relationship_settings_key = $po_refinery_instance->getName() . '_relationships';
+	// Set relatedEntities to support legacy mappings
+	if (is_array($va_related_entities_settings = $pa_item['settings'][$po_refinery_instance->getName() . '_relatedEntities'])) {
+		$pa_item['settings'][] = is_array($pa_item['settings'][$vs_relationship_settings_key]) ? $pa_item['settings'][$vs_relationship_settings_key] : array();
+		foreach ($va_related_entities_settings as $va_related_entity_setting) {
+			$va_related_entity_setting['relatedTable'] = isset($va_related_entity_setting['relatedTable']) ? $va_related_entity_setting['relatedTable'] : 'ca_entities';
+			$pa_item['settings'][$vs_relationship_settings_key][] = $va_related_entity_setting;
+		}
+	}
+	// Set relationships
+	if (is_array($va_relationships = $pa_item['settings'][$vs_relationship_settings_key])) {
+		foreach ($va_relationships as $va_relationship_settings) {
+			if ($vs_table_name = caGetOption('relatedTable', $va_relationship_settings)) {
+				if (is_array($va_attr_vals = caProcessRefineryRelated($po_refinery_instance->getName(), $vs_table_name, $va_relationship_settings, $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader)))) {
+					$va_val = array_merge($va_val, $va_attr_vals);
+				}
+			}
+		}
+	}
+}
+
+# ---------------------------------------
 	/**
 	 * Apply item settings to value; used by refineries to apply regular expressions to values get()'ed from reader class
 	 *

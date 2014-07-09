@@ -51,8 +51,6 @@ class ExportCSV extends BaseExportFormat {
 	}
 	# ------------------------------------------------------
 	public function processExport($pa_data,$pa_options=array()){
-		//caDebug($pa_data,"Data to build CSV from");
-		//caDebug($pa_options,"Export format options");
 		$va_csv = array();
 		
 		foreach($pa_data as $pa_item){
@@ -73,8 +71,6 @@ class ExportCSV extends BaseExportFormat {
 
 		$vs_delimiter = (isset($pa_options['settings']['CSV_delimiter']) ? $pa_options['settings']['CSV_delimiter'] : ',');
 		$vs_enclosure = (isset($pa_options['settings']['CSV_enclosure']) ? $pa_options['settings']['CSV_enclosure'] : '"');
-
-		//caDebug($va_csv);
 
 		return $vs_enclosure . join($vs_enclosure.$vs_delimiter.$vs_enclosure,$va_csv) . $vs_enclosure;
 	}

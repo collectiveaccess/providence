@@ -37,7 +37,8 @@
 			$this->ops_description = _t('Provides several storage location-related import functions: splitting of multiple locations in a string into individual values, mapping of type and relationship type for related locations, building location hierarchies and merging location data with names.');
 			
 			$this->opb_returns_multiple_values = true;
-			
+			$this->opb_supports_relationships = true;
+
 			parent::__construct();
 		}
 		# -------------------------------------------------------

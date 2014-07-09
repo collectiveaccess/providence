@@ -275,7 +275,7 @@ var caUI = caUI || {};
 		
 			// attach interstitial edit button
 			if (this.interstitialButtonClassName) {
-				if (!this.readonly) {
+				if (!this.readonly && ('hasInterstitialUI' in initialValues) && (initialValues['hasInterstitialUI'] == true)) {
 					jQuery(this.container + " #" +this.itemID + templateValues.n + " ." + this.interstitialButtonClassName).click(function(e) { 
 						// Trigger interstitial edit panel
 						var u = options.interstitialUrl + "/relation_id/" + initialValues['relation_id'] + "/placement_id/" + that.placementID + "/n/" + templateValues.n + "/field_name_prefix/" + that.fieldNamePrefix;

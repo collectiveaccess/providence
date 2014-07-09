@@ -315,8 +315,8 @@
 			
  			switch($pa_options['output_format']) {
  				# ------------------------------------
- 				case 'PDF':
- 					$this->_genPDF($vo_result, $this->request->getParameter("label_form", pString), $vs_search, $vs_search);
+ 				case 'LABELS':
+ 					$this->_genLabels($vo_result, $this->request->getParameter("label_form", pString), $vs_search, $vs_search);
  					break;
  				# ------------------------------------
  				case 'EXPORT':

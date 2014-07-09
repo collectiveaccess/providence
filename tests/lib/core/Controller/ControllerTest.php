@@ -29,15 +29,14 @@
  * 
  * ----------------------------------------------------------------------
  */
-	require_once('PHPUnit/Autoload.php');
-	require_once(__CA_LIB_DIR__.'/core/Controller/AppController.php');
-	
-	class ControllerTest extends PHPUnit_Framework_TestCase {
-	
-		
-		public function testRequestDispatch() {
-		
-		}
-		
+require_once(__CA_LIB_DIR__.'/core/Controller/AppController.php');
+
+class ControllerTest extends PHPUnit_Framework_TestCase {
+
+
+	public function testRequestDispatch() {
+
 	}
+
+}
 ?>

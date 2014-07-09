@@ -2,7 +2,7 @@
 /**
  * PHPExcel
  *
- * Copyright (c) 2006 - 2012 PHPExcel
+ * Copyright (c) 2006 - 2014 PHPExcel
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,9 +20,9 @@
  *
  * @category   PHPExcel
  * @package    PHPExcel_CachedObjectStorage
- * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
+ * @copyright  Copyright (c) 2006 - 2014 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version    ##VERSION##, ##DATE##
+ * @version    1.8.0, 2014-03-02
  */
 
 
@@ -31,7 +31,7 @@
  *
  * @category   PHPExcel
  * @package    PHPExcel_CachedObjectStorage
- * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
+ * @copyright  Copyright (c) 2006 - 2014 PHPExcel (http://www.codeplex.com/PHPExcel)
  */
 class PHPExcel_CachedObjectStorage_SQLite extends PHPExcel_CachedObjectStorage_CacheBase implements PHPExcel_CachedObjectStorage_ICache {
 
@@ -57,7 +57,7 @@ class PHPExcel_CachedObjectStorage_SQLite extends PHPExcel_CachedObjectStorage_C
      * @throws	PHPExcel_Exception
      */
 	protected function _storeData() {
-		if ($this->_currentCellIsDirty) {
+		if ($this->_currentCellIsDirty && !empty($this->_currentObjectID)) {
 			$this->_currentObject->detach();
 
 			if (!$this->_DBHandle->queryExec("INSERT OR REPLACE INTO kvp_".$this->_TableName." VALUES('".$this->_currentObjectID."','".sqlite_escape_string(serialize($this->_currentObject))."')"))
@@ -116,8 +116,8 @@ class PHPExcel_CachedObjectStorage_SQLite extends PHPExcel_CachedObjectStorage_C
 
 		$cellResult = $cellResultSet->fetchSingle();
 		$this->_currentObject = unserialize($cellResult);
-		//	Re-attach the parent worksheet
-		$this->_currentObject->attach($this->_parent);
+        //    Re-attach this as the cell's parent
+        $this->_currentObject->attach($this);
 
 		//	Return requested entry
 		return $this->_currentObject;
@@ -167,6 +167,32 @@ class PHPExcel_CachedObjectStorage_SQLite extends PHPExcel_CachedObjectStorage_C
 
 		$this->_currentCellIsDirty = false;
 	}	//	function deleteCacheData()
+
+
+	/**
+	 * Move a cell object from one address to another
+	 *
+	 * @param	string		$fromAddress	Current address of the cell to move
+	 * @param	string		$toAddress		Destination address of the cell to move
+	 * @return	boolean
+	 */
+	public function moveCell($fromAddress, $toAddress) {
+		if ($fromAddress === $this->_currentObjectID) {
+			$this->_currentObjectID = $toAddress;
+		}
+
+		$query = "DELETE FROM kvp_".$this->_TableName." WHERE id='".$toAddress."'";
+		$result = $this->_DBHandle->exec($query);
+		if ($result === false)
+			throw new PHPExcel_Exception($this->_DBHandle->lastErrorMsg());
+
+		$query = "UPDATE kvp_".$this->_TableName." SET id='".$toAddress."' WHERE id='".$fromAddress."'";
+		$result = $this->_DBHandle->exec($query);
+		if ($result === false)
+			throw new PHPExcel_Exception($this->_DBHandle->lastErrorMsg());
+
+		return TRUE;
+	}	//	function moveCell()
 
 
 	/**
@@ -256,6 +282,9 @@ class PHPExcel_CachedObjectStorage_SQLite extends PHPExcel_CachedObjectStorage_C
 	 * Destroy this cell collection
 	 */
 	public function __destruct() {
+		if (!is_null($this->_DBHandle)) {
+			$this->_DBHandle->queryExec('DROP TABLE kvp_'.$this->_TableName);
+		}
 		$this->_DBHandle = null;
 	}	//	function __destruct()
 

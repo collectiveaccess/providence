@@ -36,7 +36,7 @@
 			$this->ops_description = _t('Provides several occurrence-related import functions: splitting of multiple occurrences in a string into individual values, mapping of type and relationship type for related occurrences, building occurrence hierarchies and merging occurrence data with names.');
 			
 			$this->opb_returns_multiple_values = true;
-			
+			$this->opb_supports_relationships = true;
 			parent::__construct();
 		}
 		# -------------------------------------------------------

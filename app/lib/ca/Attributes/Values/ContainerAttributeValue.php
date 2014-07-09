@@ -135,5 +135,14 @@
 			return null;
 		}
  		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for container attribute value
+		 * 
+		 * @return int Attribute value type code
+		 */
+		public function getType() {
+			return __CA_ATTRIBUTE_VALUE_CONTAINER__;
+		}
+ 		# ------------------------------------------------------------------
 	}
  ?>

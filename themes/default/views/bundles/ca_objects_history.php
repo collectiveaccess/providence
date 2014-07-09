@@ -32,7 +32,7 @@
 	$t_subject					= $this->getVar('t_subject');
 	$va_settings 				= $this->getVar('settings');
 
-	$vb_read_only				=	(isset($va_settings['readonly']) && $va_settings['readonly']);
+	$vb_read_only				= (isset($va_settings['readonly']) && $va_settings['readonly']);
 	
 	if (!($vs_add_label 		= $this->getVar('add_label'))) { $vs_add_label = _t('Update location'); }
 	
@@ -42,8 +42,6 @@
 	$vs_relationship_type		= $this->getVar('location_relationship_type');
 	$vs_change_location_url		= $this->getVar('location_change_url');
 	
-	// HACKS
-	$va_settings['useHierarchicalBrowser'] = true;	// TODO: fix
 	$va_lookup_params = array();
 	
 	
@@ -90,7 +88,7 @@
 			<table class="caListItem">
 				<tr>
 					<td>
-						<input type="text" size="60" name="<?php print $vs_id_prefix; ?>_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_autocomplete{n}" class="lookupBg"/>
+						<input type="text" size="60" name="<?php print $vs_id_prefix; ?>_location_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_location_autocomplete{n}" class="lookupBg"/>
 						<input type="hidden" name="<?php print $vs_id_prefix; ?>_location_id{n}" id="<?php print $vs_id_prefix; ?>_location_id{n}" value="{id}"/>
 					</td>
 					<td>
@@ -241,6 +239,8 @@
 				isSortable: false,
 				listSortItems: 'div.roundedRel',			
 				autocompleteInputID: '<?php print $vs_id_prefix; ?>_autocomplete',
+				quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
+				quickaddUrl: '<?php print caNavUrl($this->request, 'editor/storage_locations', 'StorageLocationQuickAdd', 'Form', array('location_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'])); ?>',
 				minRepeats: 0,
 				maxRepeats: 1,
 				addMode: 'prepend'

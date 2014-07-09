@@ -41,6 +41,158 @@
 		# CLI utility implementations
 		# -------------------------------------------------------
 		/**
+		 * Create a fresh installation of CollectiveAccess based on contents of setup.php.  This is essentially a CLI
+		 * command wrapper for the installation process, as /install/inc/page2.php is a web wrapper.
+		 */
+		public static function install($po_opts=null) {
+			require_once(__CA_BASE_DIR__ . '/install/inc/Installer.php');
+
+			if (!$po_opts->getOption('profile-name')) {
+				CLIUtils::addError(_t("Missing required parameter: profile-name"));
+				return false;
+			}
+			if (!$po_opts->getOption('admin-email')) {
+				CLIUtils::addError(_t("Missing required parameter: admin-email"));
+				return false;
+			}
+
+			$t_total = new Timer();
+			$vo_installer = new Installer(
+				__CA_BASE_DIR__ . '/install/profiles/xml',
+				$po_opts->getOption('profile-name'),
+				$po_opts->getOption('admin-email'),
+				$po_opts->getOption('overwrite'),
+				$po_opts->getOption('debug')
+			);
+			$vb_quiet = $po_opts->getOption('quiet');
+
+			// if profile validation against XSD failed, we already have an error here
+			if($vo_installer->numErrors()){
+				CLIUtils::addError(_t(
+					"There were errors parsing the profile(s): %1",
+					"\n * " . join("\n * ", $vo_installer->getErrors())
+				));
+				return false;
+			}
+
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Performing preinstall tasks")); }
+			$vo_installer->performPreInstallTasks();
+			
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Loading schema")); }
+			$vo_installer->loadSchema();
+			
+			if($vo_installer->numErrors()){
+				CLIUtils::addError(_t(
+					"There were errors loading the database schema: %1",
+					"\n * " . join("\n * ", $vo_installer->getErrors())
+				));
+				return false;
+			}
+
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing locales")); }
+			$vo_installer->processLocales();
+
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing lists")); }
+			$vo_installer->processLists();
+
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing relationship types")); }
+			$vo_installer->processRelationshipTypes();
+
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing metadata elements")); }
+			$vo_installer->processMetadataElements();
+
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing access roles")); }
+			$vo_installer->processRoles();
+
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing user groups")); }
+			$vo_installer->processGroups();
+
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing user logins")); }
+			$va_login_info = $vo_installer->processLogins();
+
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing user interfaces")); }
+			$vo_installer->processUserInterfaces();
+
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing displays")); }
+			$vo_installer->processDisplays();
+
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing search forms")); }
+			$vo_installer->processSearchForms();
+
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Setting up hierarchies")); }
+			$vo_installer->processMiscHierarchicalSetup();
+
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Installation complete")); }
+
+			$vs_time = _t("Installation took %1 seconds", $t_total->getTime(0));
+
+			if($vo_installer->numErrors()){
+				CLIUtils::addError(_t(
+					"There were errors during installation: %1\n(%2)",
+					"\n * " . join("\n * ", $vo_installer->getErrors()),
+					$vs_time
+				));
+				return false;
+			}
+
+			CLIUtils::addMessage(_t(
+				"Installation was successful!\n\nYou can now login with the following logins: %1\nMake a note of these passwords!",
+				"\n * " . join(
+					"\n * ",
+					array_map(
+						function ($username, $password) {
+							return _t("username %1 and password %2", $username, $password);
+						},
+						array_keys($va_login_info),
+						array_values($va_login_info)
+					)
+				)
+			));
+
+			CLIUtils::addMessage($vs_time);
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function installParamList() {
+			return array(
+				"profile-name|n=s" => _t('Name of the profile to install (filename in profiles directory, minus the .xml extension).'),
+				"admin-email|e=s" => _t('Email address of the system administrator (user@domain.tld).'),
+				"overwrite" => _t('Flag must be set in order to overwrite an existing installation.  Also, the __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ global must be set to a true value.'),
+				"debug|d" => _t('Debug flag for installer.'),
+				"quiet|q" => _t('Suppress progress messages.')
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function installUtilityClass() {
+			return _t('Configuration');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function installHelp() {
+			return _t("Performs a fresh installation of CollectiveAccess using the configured values in setup.php.
+
+\tThe profile name and administrator email address must be given as per the web-based installer.
+
+\tIf the database schema already exists, this operation will fail, unless the --overwrite flag is set, in which case all existing data will be deleted (use with caution!).");
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function installShortHelp() {
+			return _t("Performs a fresh installation of CollectiveAccess using the configured values in setup.php.");
+		}
+
+		# -------------------------------------------------------
+		/**
 		 * Rebuild search indices
 		 */
 		public static function rebuild_search_index($po_opts=null) {
@@ -560,7 +712,7 @@
 		 *
 		 */
 		public static function reprocess_mediaHelp() {
-			return _t("CollectiveAccess generates derivatives for all uploaded media. More here...");
+			return _t("CollectiveAccess generates derivatives for all uploaded media.");
 		}
 		# -------------------------------------------------------
 		/**
@@ -811,7 +963,7 @@
 		 *
 		 */
 		public static function update_database_schemaHelp() {
-			return _t("Updates database schema to current version. More here...");
+			return _t("Updates database schema to current version.");
 		}
 		# -------------------------------------------------------
 		/**
@@ -829,7 +981,7 @@
 				return false;
 			}
 			$vs_log_dir = $po_opts->getOption('log');
-			$vn_log_level = CLIUtils::import_getLogLevel($po_opts);
+			$vn_log_level = CLIUtils::getLogLevel($po_opts);
 
 			if (!($t_importer = ca_data_importers::loadImporterFromFile($vs_file_path, $va_errors, array('logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level)))) {
 				CLIUtils::addError(_t("Could not import '%1': %2", $vs_file_path, join("; ", $va_errors)));
@@ -870,7 +1022,7 @@
 		 *
 		 */
 		public static function load_import_mappingHelp() {
-			return _t("Loads import mapping from Excel XLSX format file. More here...");
+			return _t("Loads import mapping from Excel XLSX format file.");
 		}
 		# -------------------------------------------------------
 		/**
@@ -898,14 +1050,18 @@
 			
 			$vb_no_ncurses = (bool)$po_opts->getOption('disable-ncurses');
 			$vb_direct = (bool)$po_opts->getOption('direct');
+			$vb_no_search_indexing = (bool)$po_opts->getOption('no-search-indexing');
 			
 			$vs_format = $po_opts->getOption('format');
 			$vs_log_dir = $po_opts->getOption('log');
-			$vn_log_level = CLIUtils::import_getLogLevel($po_opts);
+			$vn_log_level = CLIUtils::getLogLevel($po_opts);
 			
+			if ($vb_no_search_indexing) { 
+				define("__CA_DONT_DO_SEARCH_INDEXING__", true);
+			}
 			
 			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('noTransaction' => $vb_direct, 'format' => $vs_format, 'showCLIProgressBar' => true, 'useNcurses' => !$vb_no_ncurses && caCLIUseNcurses(), 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level))) {
-				CLIUtils::addError(_t("Could not import source %1", $vs_data_source));
+				CLIUtils::addError(_t("Could not import source %1: %2", $vs_data_source, join("; ", ca_data_importers::getErrorList())));
 				return false;
 			} else {
 				CLIUtils::addMessage(_t("Imported data from source %1", $vs_data_source));
@@ -915,7 +1071,7 @@
 		/**
 		* Helper function to get log levels
 		*/
-		private static function import_getLogLevel($po_opts){
+		private static function getLogLevel($po_opts){
 			$vn_log_level = KLogger::INFO;
 			switch($vs_log_level = $po_opts->getOption('log-level')) {
 				case 'DEBUG':
@@ -956,7 +1112,8 @@
 				"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
 				"disable-ncurses" => _t('If set the ncurses terminal library will not be used to display import progress.'),
 				"dryrun" => _t('If set import is performed without data actually being saved to the database. This is useful for previewing an import for errors.'),
-				"direct" => _t('If set import is performed without a transaction. This allows viewing of imported data during the import, which may be useful during debugging/development. It may also lead to data corruption and should only be used for testing.')
+				"direct" => _t('If set import is performed without a transaction. This allows viewing of imported data during the import, which may be useful during debugging/development. It may also lead to data corruption and should only be used for testing.'),
+				"no-search-indexing" => _t('If set indexing of changes made during import is not done. This may significantly reduce import time, but will neccessitate a reindex of the entire database after the import.')
 			);
 		}
 		# -------------------------------------------------------
@@ -971,14 +1128,14 @@
 		 *
 		 */
 		public static function import_dataShortHelp() {
-			return _t("Import data from an Excel XLSX, tab or comma delimited text or XML file.");
+			return _t("Import data from many types of data sources.");
 		}
 		# -------------------------------------------------------
 		/**
 		 *
 		 */
 		public static function import_dataHelp() {
-			return _t("Import data from an Excel XLSX, tab or comma delimited text or XML file. More here...");
+			return _t("Import data from many types of data sources including other CollectiveAccess systems, MySQL databases and Excel, delimited text, XML and MARC files.");
 		}
 		# -------------------------------------------------------
 		/**
@@ -1044,7 +1201,7 @@
 		 *
 		 */
 		public static function load_export_mappingHelp() {
-			return _t("Loads export mapping from Excel XLSX format file. More here...");
+			return _t("Loads export mapping from Excel XLSX format file.");
 		}
 		# -------------------------------------------------------
 		public static function export_data($po_opts=null) {
@@ -1069,6 +1226,9 @@
 				return false;
 			}
 
+			$vs_log_dir = $po_opts->getOption('log');
+			$vn_log_level = CLIUtils::getLogLevel($po_opts);
+
 			// RDF mode
 			if($vb_rdf){
 				if (!($vs_config = $po_opts->getOption('config'))) {
@@ -1082,7 +1242,7 @@
 					return false;
 				}
 
-				if(ca_data_exporters::exportRDFMode($vs_config,$vs_filename,array('showCLIProgressBar' => true))){
+				if(ca_data_exporters::exportRDFMode($vs_config, $vs_filename,array('showCLIProgressBar' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level))){
 					print _t("Exported data to %1", CLIUtils::textWithColor($vs_filename, 'yellow'));
 					return true;
 				} else {
@@ -1109,14 +1269,14 @@
 			}
 			
 			if($vs_search){
-				if(!ca_data_exporters::exportRecordsFromSearchExpression($vs_mapping, $vs_search, $vs_filename, array('showCLIProgressBar' => true, 'useNcurses' => true))){
+				if(!ca_data_exporters::exportRecordsFromSearchExpression($vs_mapping, $vs_search, $vs_filename, array('showCLIProgressBar' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level))){
 					print _t("Could not export mapping %1", $vs_mapping)."\n";
 					return false;
 				} else {
 					print _t("Exported data to %1", $vs_filename)."\n";
 				}	
 			} else if($vs_id){
-				if($vs_export = ca_data_exporters::exportRecord($vs_mapping, $vs_id, $pa_options=array('singleRecord' => true))){
+				if($vs_export = ca_data_exporters::exportRecord($vs_mapping, $vs_id, array('singleRecord' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level))){
 					file_put_contents($vs_filename, $vs_export);
 					print _t("Exported data to %1", CLIUtils::textWithColor($vs_filename, 'yellow'));
 				} else {
@@ -1132,6 +1292,8 @@
 				"id|i=s" => _t('Primary key identifier of single item to export.'),
 				"file|f=s" => _t('Required. File to save export to.'),
 				"mapping|m=s" => _t('Mapping to export data with.'),
+				"log|l-s" => _t('Path to directory in which to log export details. If not set no logs will be recorded.'),
+				"log-level|d-s" => _t('Optional logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
 				"rdf" => _t('Switches to RDF export mode. You can use this to assemble record-level exports across authorities with multiple mappings in a single export (usually an RDF graph). -s, -i and -m are ignored and -c is required.'),
 				"config|c=s" => _t('Configuration file for RDF export mode.'),
 			);
@@ -1145,11 +1307,11 @@
 		}
 		# -------------------------------------------------------
 		public static function export_dataShortHelp() {
-			return _t("Export data to a MARC or XML file.");
+			return _t("Export data to a CSV, MARC or XML file.");
 		}
 		# -------------------------------------------------------
 		public static function export_dataHelp() {
-			return _t("Export data to a MARC or XML file.");
+			return _t("Export data to a CSV, MARC or XML file.");
 		}
 		# -------------------------------------------------------
 		/**

@@ -1711,14 +1711,14 @@ class BaseModel extends BaseObject {
 	public function load($pm_id=null, $pb_use_cache=true) {
 		$this->clear();
 		$vs_table_name = $this->tableName();
-		if ($pb_use_cache && is_numeric($pm_id) && isset(BaseModel::$s_instance_cache[$vs_table_name][$pm_id]) && is_array(BaseModel::$s_instance_cache[$vs_table_name][$pm_id])) {
-			$this->_FIELD_VALUES = BaseModel::$s_instance_cache[$vs_table_name][$pm_id];
+		if ($pb_use_cache && is_numeric($pm_id) && isset(BaseModel::$s_instance_cache[$vs_table_name][(int)$pm_id]) && is_array(BaseModel::$s_instance_cache[$vs_table_name][(int)$pm_id])) {
+			$this->_FIELD_VALUES = BaseModel::$s_instance_cache[$vs_table_name][(int)$pm_id];
 			$this->_FIELD_VALUES_OLD = $this->_FIELD_VALUES;
 			$this->_FILES_CLEAR = array();
 			return true;
 		}
 		
-		if ($pm_id == null) {
+		if (is_null($pm_id)) {
 			return false;
 		}
 
@@ -1809,11 +1809,11 @@ class BaseModel extends BaseObject {
 			$this->_FIELD_VALUES_OLD = $this->_FIELD_VALUES;
 			$this->_FILES_CLEAR = array();
 			
-			if ($vn_id = $this->getPrimaryKey()) {
-				while (sizeof(BaseModel::$s_instance_cache[$vs_table_name]) > 100) {		// Limit cache to 100 instances per table
-					array_shift(BaseModel::$s_instance_cache[$vs_table_name]);
+			if ($vn_id = $this->_FIELD_VALUES[$this->primaryKey()]) {
+				if (sizeof(BaseModel::$s_instance_cache[$vs_table_name]) > 100) { 
+					BaseModel::$s_instance_cache[$vs_table_name] = array_slice(BaseModel::$s_instance_cache[$vs_table_name], 0, 50, true);
 				}
-				BaseModel::$s_instance_cache[$vs_table_name][$vn_id] = $this->_FIELD_VALUES; 
+				BaseModel::$s_instance_cache[$vs_table_name][(int)$vn_id] = $this->_FIELD_VALUES; 
 			}
 			return true;
 		} else {
@@ -2348,11 +2348,12 @@ class BaseModel extends BaseObject {
 					
 					$this->_FIELD_VALUE_CHANGED = array();					
 						
-					if (sizeof(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) > 100) {		// Limit cache to 100 instances per table
-						array_pop(BaseModel::$s_instance_cache[$vs_table_name]);
+					if (sizeof(BaseModel::$s_instance_cache[$vs_table_name]) > 100) { 	// Limit cache to 100 instances per table
+						BaseModel::$s_instance_cache[$vs_table_name] = array_slice(BaseModel::$s_instance_cache[$vs_table_name], 0, 50, true);
 					}
+					
 					// Update instance cache
-					BaseModel::$s_instance_cache[$vs_table_name][$vn_id] = $this->_FIELD_VALUES;
+					BaseModel::$s_instance_cache[$vs_table_name][(int)$vn_id] = $this->_FIELD_VALUES;
 					return $vn_id;
 				} else {
 					foreach($o_db->errors() as $o_e) {
@@ -2929,10 +2930,10 @@ class BaseModel extends BaseObject {
 				$this->_FIELD_VALUE_CHANGED = array();
 				
 				// Update instance cache
-				if (sizeof(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) > 100) {		// Limit cache to 100 instances per table
-					array_pop(BaseModel::$s_instance_cache[$vs_table_name]);
+				if (sizeof(BaseModel::$s_instance_cache[$vs_table_name]) > 100) { 	// Limit cache to 100 instances per table
+					BaseModel::$s_instance_cache[$vs_table_name] = array_slice(BaseModel::$s_instance_cache[$vs_table_name], 0, 50, true);
 				}
-				BaseModel::$s_instance_cache[$vs_table_name][$this->getPrimaryKey()] = $this->_FIELD_VALUES;
+				BaseModel::$s_instance_cache[$vs_table_name][(int)$this->getPrimaryKey()] = $this->_FIELD_VALUES;
 				return true;
 			} else {
 				if ($vb_we_set_transaction) { $this->removeTransaction(false); }
@@ -2996,20 +2997,32 @@ class BaseModel extends BaseObject {
 	 */
 	public function delete ($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 		if(!is_array($pa_options)) { $pa_options = array(); }
+		
 		$vn_id = $this->getPrimaryKey();
 		if ($this->hasField('deleted') && (!isset($pa_options['hard']) || !$pa_options['hard'])) {
-			$this->setMode(ACCESS_WRITE);
-			$this->set('deleted', 1);
-			if ($vn_rc = $this->update(array('force' => true))) {
-				if(!defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
-					$o_indexer = $this->getSearchIndexer();
-					$o_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
-					$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
+			if ($this->getMode() == ACCESS_WRITE) {
+				$vb_we_set_transaction = false;
+				if (!$this->inTransaction()) {
+					$o_t = new Transaction($this->getDb());
+					$this->setTransaction($o_t);
+					$vb_we_set_transaction = true;
 				}
+				$this->setMode(ACCESS_WRITE);
+				$this->set('deleted', 1);
+				if ($vn_rc = $this->update(array('force' => true))) {
+					if(!defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
+						$o_indexer = $this->getSearchIndexer();
+						$o_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
+						$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
+					}
+				}
+				$this->logChange("D");
+				if ($vb_we_set_transaction) { $this->removeTransaction(true); }
+				return $vn_rc;
+			} else {
+				$this->postError(400, _t("Mode was %1; must be write", $this->getMode(true)),"BaseModel->delete()");
+				return false;
 			}
-			$this->logChange("D");
-			
-			return $vn_rc;
 		}
 		$this->clearErrors();
 		if ((!$this->getPrimaryKey()) && (!is_array($pa_fields))) {	# is there a record loaded?
@@ -8391,7 +8404,7 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		$t_item_rel = $va_rel_info['t_item_rel'];
 		$t_item_rel->clear();
-		if ($this->inTransaction()) { $t_item_rel->setTransaction($this->getTransaction()); }
+		if ($this->inTransaction()) { $o_trans = $this->getTransaction(); $t_item_rel->setTransaction($o_trans); }
 		
 		if ($pm_type_id && !is_numeric($pm_type_id)) {
 			$t_rel_type = new ca_relationship_types();
@@ -8870,6 +8883,28 @@ $pa_options["display_form_field_tips"] = true;
 				UPDATE ".$t_item_rel->tableName()." SET {$vs_item_pk} = ? WHERE {$vs_item_pk} = ?
 			", (int)$pn_to_id, (int)$vn_row_id);
 			if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
+			
+			if ($t_item_rel->hasField('is_primary')) { // make sure there's only one primary
+				$qr_res = $o_db->query("
+					SELECT * FROM ".$t_item_rel->tableName()." WHERE {$vs_item_pk} = ?
+				", (int)$pn_to_id);
+				
+				$vn_first_primary_relation_id = null;
+				
+				$vs_rel_pk = $t_item_rel->primaryKey();
+				while($qr_res->nextRow()) {
+					if ($qr_res->get('is_primary')) {
+						$vn_first_primary_relation_id = (int)$qr_res->get($vs_rel_pk);
+						break;
+					}
+				}
+				
+				if ($vn_first_primary_relation_id) {
+					$o_db->query("
+						UPDATE ".$t_item_rel->tableName()." SET is_primary = 0 WHERE {$vs_rel_pk} <> ? AND {$vs_item_pk} = ?
+					", array($vn_first_primary_relation_id, (int)$pn_to_id));
+				}
+			}
 		}
 		
 		$vn_rel_table_num = $t_item_rel->tableNum();
@@ -10685,7 +10720,7 @@ $pa_options["display_form_field_tips"] = true;
 				while($qr_res->nextRow()) {
 					$t_instance = new $vs_table;
 					if ($o_trans) { $t_instance->setTransaction($o_trans); }
-					if ($t_instance->load($qr_res->get($vs_pk))) {
+					if ($t_instance->load((int)$qr_res->get($vs_pk))) {
 						return $t_instance;
 					}
 				}
