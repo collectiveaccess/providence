@@ -129,4 +129,13 @@ wam.init = function() {
 
 $(function() {
 	wam.init();
+	$('input.dateBg:not(.hasDatepicker)').datepicker(
+			{
+				dateFormat:'yy-mm-dd',
+				changeMonth: true,
+				changeYear: true,
+				showOtherMonths: true,
+				showButtonPanel: true
+			}
+	);
 });
