@@ -110,7 +110,7 @@
 			'default' => '',
 			'width' => 90, 'height' => 1,
 			'label' => _t('Tile server URL'),
-			'validForRootOnly' => 1,
+			'validForRootOnly' => 0,
 			'description' => _t('URL for tileserver to load custom tiles from, with placeholders for X, Y and Z values in the format <em>${x}</em>. Ex. http://tileserver.net/maps/${z}/${x}/${y}.png. Leave blank if you do not wish to use custom map tiles.')
 		),
 		'tileLayerName' => array(
@@ -119,7 +119,7 @@
 			'default' => '',
 			'width' => 90, 'height' => 1,
 			'label' => _t('Tile layer name'),
-			'validForRootOnly' => 1,
+			'validForRootOnly' => 0,
 			'description' => _t('Display name for layer containing tiles loaded from tile server specified in the <em>tile server URL</em> setting.')
 		),
 		'layerSwitcherControl' => array(
