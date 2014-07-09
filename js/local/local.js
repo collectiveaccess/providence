@@ -51,7 +51,7 @@ wam.fixEditorWidth = function() {
 wam.userSort = function() {
 
 	var form = $('.sectionBox>form');
-	var screenId = $('#leftNavSidebar').find(' .sf-menu-selected').attr('id');
+	var screenId = $('#leftNavSidebar').find('.sf-menu-selected').attr('id');
 	var cookieName = 'customArrangement_' + screenId;
 	var resetSortOrder = function() {
 			$.cookie(cookieName, null);
@@ -119,21 +119,24 @@ wam.resize = function() {
 	var op = {};
 	$(selector).resizable(op);
 };
-wam.init = function() {
-	wam.fixEditorWidth();
-	wam.userSort();
-};
-
-
-$(function() {
-	wam.init();
+wam.initDatepickers = function () {
 	$('input.dateBg:not(.hasDatepicker)').datepicker(
 			{
-				dateFormat:'yy-mm-dd',
+				dateFormat: 'yy-mm-dd',
 				changeMonth: true,
 				changeYear: true,
 				showOtherMonths: true,
 				showButtonPanel: true
 			}
 	);
+};
+wam.init = function() {
+	wam.fixEditorWidth();
+	wam.userSort();
+	wam.initDatepickers();
+};
+
+
+$(function() {
+	wam.init();
 });
