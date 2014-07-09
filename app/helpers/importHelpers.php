@@ -319,18 +319,21 @@
 		return $va_attr_vals;
 	}
 	# ---------------------------------------
-	/**
-	 * 
-	 *
-	 * @param array $pa_attributes 
-	 * @param array $pa_source_data
-	 * @param array $pa_item
-	 * @param int $pn_c
-	 * @param KLogger $o_log
-	 * 
-	 * @return array
-	 */
-	function caProcessRefineryRelated($ps_refinery_name, $ps_related_table, $pa_related_option_list, $pa_source_data, $pa_item, $pn_c, $pa_options=null) {
+/**
+ * Process relationships on the refinery
+ *
+ * @param $ps_related_table
+ * @param $pa_related_option_list
+ * @param array $pa_source_data
+ * @param array $pa_item
+ * @param int $pn_c
+ * @param null $pa_options
+ * @internal param array $pa_attributes
+ * @internal param \KLogger $o_log
+ *
+ * @return array
+ */
+	function caProcessRefineryRelated($ps_related_table, $pa_related_option_list, $pa_source_data, $pa_item, $pn_c, $pa_options = null) {
 		$o_reader = caGetOption('reader', $pa_options, null);
 		$o_log = caGetOption('log', $pa_options, null);
 		$o_trans = caGetOption('transaction', $pa_options, null);
@@ -848,7 +851,7 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	if (is_array($va_relationships = $pa_item['settings'][$vs_relationship_settings_key])) {
 		foreach ($va_relationships as $va_relationship_settings) {
 			if ($vs_table_name = caGetOption('relatedTable', $va_relationship_settings)) {
-				if (is_array($va_attr_vals = caProcessRefineryRelated($po_refinery_instance->getName(), $vs_table_name, $va_relationship_settings, $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader)))) {
+				if (is_array($va_attr_vals = caProcessRefineryRelated($va_relationship_settings, $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader)))) {
 					$va_val = array_merge($va_val, $va_attr_vals);
 				}
 			}
