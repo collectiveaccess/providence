@@ -40,7 +40,6 @@
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
 	require_once(__CA_LIB_DIR__."/core/Parsers/ZipFile.php");
 	require_once(__CA_LIB_DIR__."/core/AccessRestrictions.php");
- 	require_once(__CA_LIB_DIR__.'/core/Print/PrintForms.php');
  	require_once(__CA_LIB_DIR__.'/ca/Visualizer.php');
  	require_once(__CA_LIB_DIR__.'/core/Parsers/dompdf/dompdf_config.inc.php');
  	
@@ -341,26 +340,11 @@
 				$va_defined_vars = array_keys($this->view->getAllVars());		// get list defined vars (we don't want to copy over them)
 				$va_tag_list = $this->getTagListForView($va_template_info['path']);				// get list of tags in view
 				
+				$va_barcode_files_to_delete = array();
+				
 				while($po_result->nextHit()) {
-					//
-					// Tag substitution
-					//
-					// Views can contain tags in the form {{{tagname}}}. Some tags, such as "itemType" and "detailType" are defined by
-					// the detail controller. More usefully, you can pull data from the item being detailed by using a valid "get" expression
-					// as a tag (Eg. {{{ca_objects.idno}}}. Even more usefully for some, you can also use a valid bundle display template
-					// (see http://docs.collectiveaccess.org/wiki/Bundle_Display_Templates) as a tag. The template will be evaluated in the 
-					// context of the item being detailed.
-					//
-					foreach($va_tag_list as $vs_tag) {
-						if (in_array($vs_tag, $va_defined_vars)) { continue; }
-						if ((strpos($vs_tag, "^") !== false) || (strpos($vs_tag, "<") !== false)) {
-							$this->view->setVar($vs_tag, $po_result->getWithTemplate($vs_tag, array('checkAccess' => $this->opa_access_values)));
-						} elseif (strpos($vs_tag, ".") !== false) {
-							$this->view->setVar($vs_tag, $po_result->get($vs_tag, array('checkAccess' => $this->opa_access_values)));
-						} else {
-							$this->view->setVar($vs_tag, "?{$vs_tag}");
-						}
-					}
+					$va_barcode_files_to_delete += caDoPrintViewTagSubstitution($this->view, $po_result, $va_template_info['path'], array('checkAccess' => $this->opa_access_values));
+					
 					$vs_content .= "<div style=\"{$vs_border} position: absolute; width: {$vn_width}px; height: {$vn_height}px; left: {$vn_left}px; top: {$vn_top}px; overflow: hidden;\">";
 					$vs_content .= $this->render($va_template_info['path']);
 					$vs_content .= "</div>\n";
@@ -393,7 +377,12 @@
 				$o_dompdf->stream(caGetOption('filename', $va_template_info, 'labels.pdf'));
 
 				$vb_printed_properly = true;
+				
+				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
+				
 			} catch (Exception $e) {
+				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
+				
 				$vb_printed_properly = false;
 				$this->postError(3100, _t("Could not generate PDF"),"BaseFindController->PrintSummary()");
 			}
@@ -419,6 +408,7 @@
 		 * @see BaseFindController::_genLabels
 		 */
 		protected function _genLabelsLegacy($po_result, $ps_label_code, $ps_output_filename, $ps_title=null) {
+ 			require_once(__CA_LIB_DIR__.'/core/Print/PrintForms.php');
 			$o_print_form = new PrintForms($this->request->config->get($this->ops_tablename.'_print_forms'));
 			
 			if (!$o_print_form->setForm($ps_label_code)) {

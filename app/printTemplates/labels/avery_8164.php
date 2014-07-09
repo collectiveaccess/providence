@@ -50,6 +50,11 @@
  	
  	{{{<ifdef code="ca_objects.work_description"><div class="smallText">^ca_objects.work_description</div></ifdef>}}}
  </div>
+ 
+ <div class="barcode" style="position: absolute; left: 0.125in; top: 1.5in; width: 1.5in; height: 0.75in;">
+ 	{{{barcode:code128:5:^ca_objects.idno}}}
+ </div>
+ 
  <div class="bodyText" style="position: absolute; left: 0.125in; top: 3in; width: 3.5in; height: 0.375in;">
  	{{{^ca_objects.preferred_labels.name <ifdef code="ca_objects.idno">(^ca_objects.idno)</ifdef>}}}
  </div>
