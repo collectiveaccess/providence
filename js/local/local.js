@@ -51,7 +51,7 @@ wam.fixEditorWidth = function() {
 wam.userSort = function() {
 
 	var form = $('.sectionBox>form');
-	var screenId = $('#leftNavSidebar .sf-menu-selected').attr('id');
+	var screenId = $('#leftNavSidebar').find(' .sf-menu-selected').attr('id');
 	var cookieName = 'customArrangement_' + screenId;
 	var resetSortOrder = function() {
 			$.cookie(cookieName, null);
@@ -61,8 +61,7 @@ wam.userSort = function() {
 	var sortToolbar = $('<div class="control-box sortToolbar"></div>');
 	var addResetButton = function() {
 			if (!$('.resetSortOrder').length) {
-				var resetButton = $('<span class="sortButton resetSortOrder"><a class="form-button" href="#" title="Resets the order of fields on this page to the order defined by your system administrator"><span class="form-button">Reset Sort</span></a></span>').click(resetSortOrder).appendTo(sortToolbar);
-				// sortToolbar.append(resetButton);
+				$('<span class="sortButton resetSortOrder"><a class="form-button" href="#" title="Resets the order of fields on this page to the order defined by your system administrator"><span class="form-button">Reset Sort</span></a></span>').click(resetSortOrder).appendTo(sortToolbar);
 			}
 		};
 	var enableSort = function() {
@@ -71,7 +70,7 @@ wam.userSort = function() {
 				items: '.sortable',
 				cursor: 'move',
 				cancel: '.sorted',//No longer sort elements with this class
-				update: function(event, ui) {
+				update: function() {
 					$.cookie(cookieName, form.sortable('toArray'));
 					addResetButton();
 				}
