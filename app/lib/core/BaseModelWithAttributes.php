@@ -1092,8 +1092,8 @@
 		 *
 		 * @return string - idno (aka "item code") for current row's type or null if no row is loaded or model does not support types
 		 */
-		public function getTypeCode() {
-			if ($t_list_item = $this->getTypeInstance()) {
+		public function getTypeCode($pn_type_id=null) {
+			if ($t_list_item = $this->getTypeInstance($pn_type_id)) {
 				return $t_list_item->get('idno');
 			}
 			return null;
@@ -1483,6 +1483,8 @@
 				return false;
 			}
 			
+			$vs_element_code = $t_element->get('element_code');
+			
 			// get all elements of this element set
 			$va_element_set = $t_element->getElementsInSet();
 			
@@ -1514,8 +1516,9 @@
 				
 				$va_label = $this->getAttributeLabelAndDescription($va_element['element_id']);
 				
-				$vs_element = $this->tableName().'.'.$va_element['element_code'];
-				$vs_value = (isset($pa_options['values']) && isset($pa_options['values'][$vs_element])) ? $pa_options['values'][$vs_element] : '';
+				$vs_subelement_code = $this->tableName().'.'.(($vs_element_code !== $va_element['element_code']) ? "{$vs_element_code}." : "").$va_element['element_code'];
+				
+				$vs_value = (isset($pa_options['values']) && isset($pa_options['values'][$vs_subelement_code])) ? $pa_options['values'][$vs_subelement_code] : '';
 				
 				$va_element_opts = array_merge(array(
 					'label' => $va_label['name'],
@@ -1541,7 +1544,7 @@
 				$vs_form_element = str_replace('{{'.$va_element['element_id'].'}}', $vs_value, $vs_form_element);
 				
 				// ... replace name of form element
-				$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_{n}', str_replace('.', '_', $this->tableName().'.'.$va_element['element_code']), $vs_form_element);
+				$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_{n}', str_replace('.', '_', $vs_subelement_code), $vs_form_element);
 				
 				$vs_form_element = str_replace('{n}', '', $vs_form_element);
 				$vs_form_element = str_replace('{'. $va_element['element_id'].'}', '', $vs_form_element);
