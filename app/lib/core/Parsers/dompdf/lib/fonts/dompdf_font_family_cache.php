@@ -143,4 +143,11 @@
     'italic' => DOMPDF_FONT_DIR . 'DejaVuSans-Oblique',
     'bold_italic' => DOMPDF_FONT_DIR . 'DejaVuSans-BoldOblique',
   ),
+  'din-regular' => 
+  array (
+    'normal' => DOMPDF_FONT_DIR . '28EC2C_0_0',
+    'bold' => DOMPDF_FONT_DIR . '28EC2C_0_0',
+    'italic' => DOMPDF_FONT_DIR . '28EC2C_0_0',
+    'bold_italic' => DOMPDF_FONT_DIR . '28EC2C_0_0',
+  ),
 ) ?>
