@@ -77,7 +77,7 @@
 		'nullOptionText' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
-			'default' => '',
+			'default' => 'Not set',
 			'width' => 90, 'height' => 1,
 			'label' => _t('No value text'),
 			'description' => _t('Text to use as label for the "no value" option when a value is not required.')
