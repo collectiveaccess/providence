@@ -805,6 +805,8 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$pb_no_cache 				= caGetOption('noCache', $pa_options, false);
 		if (!$pb_no_cache && isset(ca_objects::$s_object_use_cache[$vs_cache_key])) { return ca_objects::$s_object_use_cache[$vs_cache_key]; }
 		
+		$pb_display_label_only 		= caGetOption('displayLabelOnly', $pa_options, false);
+		
 		$pb_get_current_only 		= caGetOption('currentOnly', $pa_options, false);
 		$pn_limit 					= caGetOption('limit', $pa_options, null);
 		
@@ -858,10 +860,14 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 				if (!in_array($vn_type_id, $va_lot_types)) { continue; }
 				if ($pb_get_current_only && ($va_date['sortable'] > $vn_current_date)) { continue; }
 				
+				
+				$vs_default_display_template = '^ca_object_lots.preferred_labels.name (^ca_object_lots.idno_stub)';
+				$vs_display_template = $pb_display_label_only ? "" : caGetOption("ca_object_lots_{$va_lot_type_info[$vn_type_id]['idno']}_displayTemplate", $pa_bundle_settings, $vs_default_display_template);
+				
 				$va_history[$va_date['sortable']][] = array(
 					'type' => 'ca_object_lots',
 					'id' => $vn_lot_id,
-					'display' => $t_lot->getWithTemplate(caGetOption("ca_object_lots_{$va_lot_type_info[$vn_type_id]['idno']}_displayTemplate", $pa_bundle_settings, '^ca_object_lots.preferred_labels.name (^ca_object_lots.idno_stub)')),
+					'display' => $t_lot->getWithTemplate($vs_display_template),
 					'color' => $vs_color,
 					'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag($va_lot_type_info[$vn_type_id]['icon'], 'icon'),
 					'typename_singular' => $vs_typename = $va_lot_type_info[$vn_type_id]['name_singular'],
@@ -908,7 +914,10 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 						'display' => caGetLocalizedDate($vn_date)
 					);
 				}
-		
+				
+				$vs_default_display_template = '^ca_loans.preferred_labels.name (^ca_loans.idno)';
+				$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption("ca_loans_{$va_loan_type_info[$vn_type_id]['idno']}_displayTemplate", $pa_bundle_settings, $vs_default_display_template);
+				
 				foreach($va_dates as $va_date) {
 					if (!$va_date['sortable']) { continue; }
 					if (!in_array($vn_type_id, $va_loan_types)) { continue; }
@@ -922,7 +931,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 					$va_history[$va_date['sortable']][] = array(
 						'type' => 'ca_loans',
 						'id' => $vn_loan_id,
-						'display' => $qr_loans->getWithTemplate(caGetOption("ca_loans_{$va_loan_type_info[$vn_type_id]['idno']}_displayTemplate", $pa_bundle_settings, '^ca_loans.preferred_labels.name (^ca_loans.idno)')),
+						'display' => $qr_loans->getWithTemplate($vs_display_template),
 						'color' => $vs_color,
 						'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag($va_loan_type_info[$vn_type_id]['icon'], 'icon'),
 						'typename_singular' => $vs_typename = $va_loan_type_info[$vn_type_id]['name_singular'],
@@ -971,6 +980,9 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 					);
 				}
 		
+				$vs_default_display_template = '^ca_movements.preferred_labels.name (^ca_movements.idno)';
+				$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption("ca_movements_{$va_movement_type_info[$vn_type_id]['idno']}_displayTemplate", $pa_bundle_settings, $vs_default_display_template);
+				
 				foreach($va_dates as $va_date) {
 					if (!$va_date['sortable']) { continue; }
 					if (!in_array($vn_type_id, $va_movement_types)) { continue; }
@@ -984,7 +996,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 					$va_history[$va_date['sortable']][] = array(
 						'type' => 'ca_movements',
 						'id' => $vn_movement_id,
-						'display' => $qr_movements->getWithTemplate(caGetOption("ca_movements_{$va_movement_type_info[$vn_type_id]['idno']}_displayTemplate", $pa_bundle_settings, '^ca_movements.preferred_labels.name (^ca_movements.idno)')),
+						'display' => $qr_movements->getWithTemplate($vs_display_template),
 						'color' => $vs_color,
 						'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag($va_movement_type_info[$vn_type_id]['icon'], 'icon'),
 						'typename_singular' => $vs_typename = $va_movement_type_info[$vn_type_id]['name_singular'],
@@ -1033,6 +1045,9 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 						'display' => caGetLocalizedDate($vn_date)
 					);
 				}
+				
+				$vs_default_display_template = '^ca_occurrences.preferred_labels.name (^ca_occurrences.idno)';
+				$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption("ca_occurrences_{$va_occurrence_type_info[$vn_type_id]['idno']}_displayTemplate", $pa_bundle_settings, $vs_default_display_template);
 		
 				foreach($va_dates as $va_date) {
 					if (!$va_date['sortable']) { continue; }
@@ -1047,7 +1062,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 					$va_history[$va_date['sortable']][] = array(
 						'type' => 'ca_occurrences',
 						'id' => $vn_occurrence_id,
-						'display' => $qr_occurrences->getWithTemplate(caGetOption("ca_occurrences_{$va_occurrence_type_info[$vn_type_id]['idno']}_displayTemplate", $pa_bundle_settings, '^ca_occurrences.preferred_labels.name (^ca_occurrences.idno)')),
+						'display' => $qr_occurrences->getWithTemplate($vs_display_template),
 						'color' => $vs_color,
 						'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag($va_occurrence_type_info[$vn_type_id]['icon'], 'icon'),
 						'typename_singular' => $vs_typename = $va_occurrence_type_info[$vn_type_id]['name_singular'],
@@ -1071,6 +1086,9 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 			
 			$qr_locations = caMakeSearchResult('ca_objects_x_storage_locations', $va_locations);
 			
+			$vs_default_display_template = '^ca_storage_locations.parent.preferred_labels.name ➜ ^ca_storage_locations.preferred_labels.name (^ca_storage_locations.idno)';
+			$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption('ca_storage_locations_displayTemplate', $pa_bundle_settings, $vs_default_display_template);
+			
 			while($qr_locations->nextHit()) {
 				$vn_location_id = $qr_locations->get('ca_objects_x_storage_locations.location_id');
 				
@@ -1093,7 +1111,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 				$va_history[$va_date['sortable']][] = array(
 					'type' => 'ca_storage_locations',
 					'id' => $vn_location_id,
-					'display' => $qr_locations->getWithTemplate("<unit relativeTo='ca_storage_locations'>".caGetOption('ca_storage_locations_displayTemplate', $pa_bundle_settings, '^ca_storage_locations.idno')."</unit>"),
+					'display' => $qr_locations->getWithTemplate("<unit relativeTo='ca_storage_locations'>{$vs_display_template}</unit>"),
 					'color' => $vs_color,
 					'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag($va_location_type_info[$vn_type_id]['icon'], 'icon'),
 					'typename_singular' => $vs_name_singular, //$vs_typename = $va_location_type_info[$vn_type_id]['name_singular'],
@@ -1109,11 +1127,15 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 			$vs_color = caGetOption('deaccession_color', $pa_bundle_settings, 'cccccc');
 			
 			$vn_date = $this->get('deaccession_date', array('getDirectDate'=> true));
+			
+			$vs_default_display_template = '^ca_objects.deaccession_notes';
+			$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption('deaccession_displayTemplate', $pa_bundle_settings, $vs_default_display_template);
+			
 			if (!($pb_get_current_only && ($vn_date > $vn_current_date))) {
 				$va_history[$vn_date][] = array(
 					'type' => 'ca_objects_deaccession',
 					'id' => $this->getPrimaryKey(),
-					'display' => $this->getWithTemplate("<unit>".caGetOption('deaccession_displayTemplate', $pa_bundle_settings, '^ca_objects.deaccession_notes')."</unit>"),
+					'display' => $this->getWithTemplate("<unit>{$vs_display_template}</unit>"),
 					'color' => $vs_color,
 					'icon_url' => '',
 					'typename_singular' => $vs_name_singular = _t('deaccession'), 
