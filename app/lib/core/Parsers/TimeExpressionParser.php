@@ -732,7 +732,7 @@ class TimeExpressionParser {
 		$ps_expression = preg_replace("/([\d]{4})-([\d]{2})-([\d]{2})/", "$1#$2#$3", $ps_expression);
 		
 		# distinguish w3cdtf dates since we already use '-' for ranges
-		$ps_expression = preg_replace("/([\d]{4})-([\d]{2})([^\d]+)/", "$1#$2$3", $ps_expression);
+		$ps_expression = preg_replace("/([\d]{4})-([\d]{2})([^\d\-\/\.]+)/", "$1#$2$3", $ps_expression);
 		
 		# distinguish dd-MMM-yy and dd-MMM-yyyy dates since we already use '-' for ranges (ex. 10-JUN-80 or 10-JUN-1980)
 		$ps_expression = preg_replace("/([\d]{1,2})-([A-Za-z]{3,15})-([\d]{2,4})/", "$1#$2#$3", $ps_expression);
@@ -758,9 +758,9 @@ class TimeExpressionParser {
 			$ps_expression = preg_replace('!([\d]{3})[\-]{1}$!', '\1_', $ps_expression);
 			$ps_expression = preg_replace('!([\d]{3})[\-]{1}[\D]+!', '\1_', $ps_expression);
 		}
-		
-		$ps_expression = preg_replace("![\-]{1}!", " - ", $ps_expression);
-		
+		Debug::msg("1: $ps_expression");
+		$ps_expression = preg_replace("![\-\–\—]{1}!", " - ", $ps_expression);
+		Debug::msg("2: $ps_expression");
 		$va_era_list = array_merge(array_keys($this->opo_language_settings->getAssoc("ADBCTable")), array($this->opo_language_settings->get("dateADIndicator"), $this->opo_language_settings->get("dateBCIndicator")));
 		foreach($va_era_list as $vs_era) {
 			$ps_expression = preg_replace("/([\d]+)".$vs_era."[ ]*/i", "$1 $vs_era ", $ps_expression); #str_replace($vs_era, " ".$vs_era, $ps_expression);
