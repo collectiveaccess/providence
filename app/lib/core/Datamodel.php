@@ -55,6 +55,9 @@ class Datamodel {
 	
 	static $s_datamodel_many_to_one_rel_cache = array();
 	static $s_datamodel_one_to_many_rel_cache = array();
+	
+	static $s_datamodel_model_table_name_cache = null;
+	static $s_datamodel_model_table_num_cache = null;
 	# --------------------------------------------------------------------------------------------
 	/**
 	 *
@@ -161,10 +164,12 @@ class Datamodel {
 	 */
 	public function getTableNum($ps_table) {
 		if (is_numeric($ps_table) ) { return $ps_table; }
+		if (isset(Datamodel::$s_datamodel_model_table_num_cache[$ps_table])) { return Datamodel::$s_datamodel_model_table_num_cache[$ps_table]; }
+		
 		if ($this->opo_graph->hasNode($ps_table)) {
-			return $this->opo_graph->getAttribute("num", $ps_table);
+			return Datamodel::$s_datamodel_model_table_num_cache[$ps_table] = $this->opo_graph->getAttribute("num", $ps_table);
 		} else {
-			return null;
+			return Datamodel::$s_datamodel_model_table_num_cache[$ps_table] = null;
 		}
 	}
 	# --------------------------------------------------------------------------------------------
@@ -172,12 +177,13 @@ class Datamodel {
 	 *
 	 */
 	public function getTableName($pn_tablenum) {
+		if (isset(Datamodel::$s_datamodel_model_table_name_cache[$pn_tablenum])) { return Datamodel::$s_datamodel_model_table_name_cache[$pn_tablenum]; }
 		if (!is_numeric($pn_tablenum) ) { return $pn_tablenum; }
 		$pn_tablenum = intval($pn_tablenum);
 		if ($this->opo_graph->hasNode("t#".$pn_tablenum)) {
-			return $this->opo_graph->getAttribute("name", "t#".$pn_tablenum);
+			return Datamodel::$s_datamodel_model_table_name_cache[$pn_tablenum] = $this->opo_graph->getAttribute("name", "t#".$pn_tablenum);
 		} else {
-			return null;
+			return Datamodel::$s_datamodel_model_table_name_cache[$pn_tablenum] = null;
 		}
 	}
 	# --------------------------------------------------------------------------------------------

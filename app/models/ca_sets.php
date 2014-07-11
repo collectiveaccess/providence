@@ -1504,9 +1504,9 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 	 * Returns list of types present for items in set
 	 *
 	 * @param array $pa_options
-	 *		user_id - Restricts access to sets accessible by the current user. If omitted then all sets, regardless of access are returned.
-	 *		checkAccess - Restricts returned sets to those with an public access level with the specified values. If omitted sets are returned regardless of public access (ca_sets.access) value. Can be a single value or array if you wish to filter on multiple public access values.
-	 *
+	 *		user_id = Restricts access to sets accessible by the current user. If omitted then all sets, regardless of access are returned.
+	 *		checkAccess = Restricts returned sets to those with an public access level with the specified values. If omitted sets are returned regardless of public access (ca_sets.access) value. Can be a single value or array if you wish to filter on multiple public access values.
+	 *		includeParents =  Include parent types in the returned type list. [Default is false]
 	 * @return array List of types. Keys are integer type_ids, values are plural type names for the current locale
 	 */
 	public function getTypesForItems($pa_options=null) {
@@ -1545,6 +1545,21 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		while($qr_res->nextRow()) {
 			$va_type_ids[$vn_type_id = $qr_res->get($vs_type_id_fld)] = $va_type_list[$vn_type_id]['name_plural'];
 		}
+		
+		if (caGetOption('includeParents', $pa_options, false)) {
+			$t_item = new ca_list_items();
+			$va_expanded_types = $va_type_ids;
+			$va_labels = $t_item->getPreferredDisplayLabelsForIDs($va_type_ids);
+			foreach($va_type_ids as $vn_type_id => $vs_type) {
+				if (is_array($va_parents = $t_item->getHierarchyAncestors($vn_type_id, array('idsOnly' => true)))) {
+					foreach($va_parents as $vn_parent_id) {
+						$va_expanded_types[$vn_parent_id] = $va_labels[$vn_parent_id];
+					}
+				}
+			}
+			$va_type_ids = $va_expanded_types;
+		}
+		
 		return $va_type_ids;
 	}
 	# ------------------------------------------------------

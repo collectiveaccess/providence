@@ -102,7 +102,21 @@ var caUI = caUI || {};
 					}
 				}
 			});
-			return t;
+			
+			// Process <ifdef> tags
+			var $h = jQuery("<div>" + t + "</div>");
+			jQuery.each(tagList, function(k, tag) {
+				var tagBits = tag.split(/\~/);
+				var tagRoot = tagBits[0].replace("^", "");
+				var val = jQuery(values[tagRoot]).val();
+				
+				if(val && (val.length > 0)) { 
+					$h.find("ifdef[code=" + tagRoot + "]").replaceWith($h.find(y="ifdef[code=" + tagRoot + "]").html());
+				} else {
+					$h.find("ifdef[code=" + tagRoot + "]").remove();
+				}
+			});
+			return $h.html().trim();
 		};
 		
 		that.convertFractionalNumberToDecimal = function(fractionalExpression, locale) {
@@ -113,6 +127,7 @@ var caUI = caUI || {};
 				if (parseFloat(matches[2]) > 0) {
 					val = parseFloat(matches[2])/parseFloat(matches[3]);
 				}
+				
 				val += parseFloat(matches[1]);
 				
 				fractionalExpression = fractionalExpression.replace(matches[0], val);

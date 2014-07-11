@@ -207,6 +207,12 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	protected $LABEL_TABLE_NAME = 'ca_editor_ui_labels';
 	
+	# ------------------------------------------------------
+	# Search
+	# ------------------------------------------------------
+	protected $SEARCH_CLASSNAME = 'EditorUISearch';
+	protected $SEARCH_RESULT_CLASSNAME = 'EditorUISearchResult';
+	
 	
 	static $s_available_ui_cache = array();
 	static $s_default_ui_cache = array();
