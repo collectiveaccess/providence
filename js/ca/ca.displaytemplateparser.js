@@ -113,7 +113,6 @@ var caUI = caUI || {};
 				if (parseFloat(matches[2]) > 0) {
 					val = parseFloat(matches[2])/parseFloat(matches[3]);
 				}
-				console.log(matches);
 				val += parseFloat(matches[1]);
 				
 				fractionalExpression = fractionalExpression.replace(matches[0], val);
