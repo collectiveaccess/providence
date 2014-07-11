@@ -1458,7 +1458,20 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			$this->removeRowIndexing($pn_subject_tablenum, $vn_subject_row_id, $pn_content_tablenum, $ps_content_fieldnum, $pn_content_row_id);
 		}
 		
-		$va_words = $this->_tokenize($ps_content);
+		if (caGetOption("DONT_TOKENIZE", $pa_options, false) || in_array('DONT_TOKENIZE', $pa_options)) {
+			$va_words = array($ps_content);
+		} else {
+			$va_words = $this->_tokenize($ps_content);
+		}
+		
+		if (caGetOption("INDEX_AS_IDNO", $pa_options, false) || in_array('INDEX_AS_IDNO', $pa_options)) {
+			$t_content = $this->opo_datamodel->getInstanceByTableNum($pn_content_tablenum, true);
+			if (method_exists($t_content, "getIDNoPlugInInstance") && ($o_idno = $t_content->getIDNoPlugInInstance())) {
+				$va_values = $o_idno->getIndexValues($ps_content);
+				$va_words += $va_values;
+			}
+		}
+		
 		$va_literal_content = caGetOption("literalContent", $pa_options, null);
 		if ($va_literal_content && !is_array($va_literal_content)) { $va_literal_content = array($va_literal_content); }
 		
