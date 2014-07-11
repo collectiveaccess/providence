@@ -675,22 +675,24 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 					$vs_buf .= "<br/><div class='inspectorDeaccessioned'>"._t('Deaccessioned %1', $t_item->get('deaccession_date'))."</div>\n";
 					if ($vs_deaccession_notes = $t_item->get('deaccession_notes')) { TooltipManager::add(".inspectorDeaccessioned", $vs_deaccession_notes); }
 				} else {
-					if (($t_ui && method_exists($t_item, "getObjectHistory")) && (is_array($va_placements = $t_ui->getPlacementsForBundle('ca_objects_history')) && (sizeof($va_placements) > 0))) {
-						//
-						// Output current "location" of object in life cycle. Configuration is taken from a ca_objects_history bundle configured for the current editor
-						//
-						$va_placement = array_shift($va_placements);
-						$va_bundle_settings = $va_placement['settings'];
-						if (is_array($va_history = $t_item->getObjectHistory($va_bundle_settings, array('limit' => 1, 'currentOnly' => true))) && (sizeof($va_history) > 0)) {
-							$va_current_location = array_shift(array_shift($va_history));
-							$vs_buf .= "<div class='inspectorCurrentLocation'><strong>"._t('Current:').'</strong><br/>'.$va_current_location['display']."</div>";
-						}
-					} elseif (method_exists($t_item, "getLastLocationForDisplay")) {
-						// If no ca_objects_history bundle is configured then display the last storage location
-						if ($vs_current_location = $t_item->getLastLocationForDisplay("<ifdef code='ca_storage_locations.parent.preferred_labels'>^ca_storage_locations.parent.preferred_labels ➜ </ifdef>^ca_storage_locations.preferred_labels.name")) {
-							$vs_buf .= "<br/><div class='inspectorCurrentLocation'>"._t('Location: %1', $vs_current_location)."</div>\n";
-							$vs_full_location_hierarchy = $t_item->getLastLocationForDisplay("^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_");
-							if ($vs_full_location_hierarchy !== $vs_current_location) { TooltipManager::add(".inspectorCurrentLocation", $vs_full_location_hierarchy); }
+					if ($po_view->request->user->canDoAction('can_see_current_location_in_inspector_ca_objects')) {
+						if (($t_ui && method_exists($t_item, "getObjectHistory")) && (is_array($va_placements = $t_ui->getPlacementsForBundle('ca_objects_history')) && (sizeof($va_placements) > 0))) {
+							//
+							// Output current "location" of object in life cycle. Configuration is taken from a ca_objects_history bundle configured for the current editor
+							//
+							$va_placement = array_shift($va_placements);
+							$va_bundle_settings = $va_placement['settings'];
+							if (is_array($va_history = $t_item->getObjectHistory($va_bundle_settings, array('displayLabelOnly' => true, 'limit' => 1, 'currentOnly' => true))) && (sizeof($va_history) > 0)) {
+								$va_current_location = array_shift(array_shift($va_history));
+								if ($va_current_location['display']) { $vs_buf .= "<div class='inspectorCurrentLocation'><strong>"._t('Current:').'</strong><br/>'.$va_current_location['display']."</div>"; }
+							}
+						} elseif (method_exists($t_item, "getLastLocationForDisplay")) {
+							// If no ca_objects_history bundle is configured then display the last storage location
+							if ($vs_current_location = $t_item->getLastLocationForDisplay("<ifdef code='ca_storage_locations.parent.preferred_labels'>^ca_storage_locations.parent.preferred_labels ➜ </ifdef>^ca_storage_locations.preferred_labels.name")) {
+								$vs_buf .= "<br/><div class='inspectorCurrentLocation'>"._t('Location: %1', $vs_current_location)."</div>\n";
+								$vs_full_location_hierarchy = $t_item->getLastLocationForDisplay("^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_");
+								if ($vs_full_location_hierarchy !== $vs_current_location) { TooltipManager::add(".inspectorCurrentLocation", $vs_full_location_hierarchy); }
+							}
 						}
 					}
 				}
@@ -796,11 +798,19 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 				
 				$vs_buf .= "<div id='inspectorMedia'>";
 			
+				$vn_r = $vn_primary_index = 0;
 				foreach($va_reps as $va_rep) {
 					if (!($va_rep['info']['preview170']['WIDTH'] && $va_rep['info']['preview170']['HEIGHT'])) { continue; }
+				
+					if ($vb_is_primary = (isset($va_rep['is_primary']) && (bool)$va_rep['is_primary'])) {
+						$vn_primary_index = $vn_r;
+					}
+					
 					$va_imgs[] = "{url:'".$va_rep['urls']['preview170']."', width: ".$va_rep['info']['preview170']['WIDTH'].", height: ".
 					$va_rep['info']['preview170']['HEIGHT'].", link: '#', onclick:  'caMediaPanel.showPanel(\'".
 					caNavUrl($po_view->request, 'editor/objects', 'ObjectEditor', 'GetRepresentationInfo', array('object_id' => ($vs_table_name == 'ca_objects') ? $vn_item_id : 0, 'representation_id' => $va_rep['representation_id']))."\')'}";
+					
+					$vn_r++;
 				}
 
 					if (sizeof($va_reps) > 1) {
@@ -835,7 +845,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 							containerWidth: 170, containerHeight: 170,
 							imageCounterID: 'inspectorInfoRepScrollingViewerCounter',
 							scrollingImageClass: 'inspectorInfoRepScrollerImage',
-							scrollingImagePrefixID: 'inspectorInfoRep'
+							scrollingImagePrefixID: 'inspectorInfoRep',
+							initialIndex: {$vn_primary_index}
 							
 					});
 				</script>";
@@ -2136,7 +2147,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			
 			
 			$vn_min = (int)$o_ifcount->getAttribute('min');
-			if (!($vn_max = (int)$o_ifcount->getAttribute('max'))) { $vn_max = null; }
+			$vn_max = (int)$o_ifcount->getAttribute('max');
+			if (!strlen($o_ifcount->getAttribute('max'))) { $vn_max = null; } 
 			
 			$va_restrict_to_types = preg_split("![,; ]+!", $o_ifcount->getAttribute('restrictToTypes')); 
 			$va_restrict_to_relationship_types = preg_split("![,; ]+!", $o_ifcount->getAttribute('restrictToRelationshipTypes')); 
@@ -2150,6 +2162,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		while($qr_res->nextHit()) {
 			$vs_pk_val = $qr_res->get($vs_pk);
 			$va_proc_templates[$vn_i] = $ps_template;
+		
 			// Process <ifcount> directives
 			foreach($va_ifcounts as $va_ifcount) {
 				if (is_array($va_if_codes = preg_split("![\|,;]+!", $va_ifcount['code']))) {
@@ -2162,7 +2175,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 						}	
 					}
 					
-					if (($va_ifcount['min'] <= $vn_count) && (($va_ifcount['max'] >= $vn_count) || !$va_ifcount['max'])) {
+					if (($va_ifcount['min'] <= $vn_count) && (($va_ifcount['max'] >= $vn_count) || is_null($va_ifcount['max']))) {
 						$va_proc_templates[$vn_i]  = str_replace($va_ifcount['directive'], $va_ifcount['content'], $va_proc_templates[$vn_i] );
 					} else {
 						$va_proc_templates[$vn_i]  = str_replace($va_ifcount['directive'], '', $va_proc_templates[$vn_i] );
@@ -2882,6 +2895,31 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			'end' => $va_end['year'].','.$va_end['month'].','.$va_end['day'],
 		);
 	}
+    # ------------------------------------------------------------------------------------------------
+    /**
+     * Returns date range for calendar display
+     *
+     * @param int $pn_start_timestamp Start of date range, as Unix timestamp
+     * @param array $pa_options All options supported by TimeExpressionParser::getText() are supported
+     *
+     * @return string Localized date range expression
+     */
+    function caGetDateRangeForCalendar($pa_historic_timestamps, $pa_options=null) {
+        $o_tep = new TimeExpressionParser();
+
+        $va_start = $o_tep->getHistoricDateParts($pa_historic_timestamps[0]);
+        $va_end = $o_tep->getHistoricDateParts($pa_historic_timestamps[1]);
+
+        if ($va_start['year'] < 0) { $va_start['year'] = 1900; }
+        if ($va_end['year'] >= 2000000) { $va_end['year'] = date("Y"); }
+
+        return array(
+            'start'=> $va_start,
+            'end' => $va_end,
+            'start_iso' => $o_tep->getISODateTime($va_start, 'FULL'),
+            'end_iso' => $o_tep->getISODateTime($va_end, 'FULL')
+        );
+    }
 	# ------------------------------------------------------------------------------------------------
 	/**
 	 * Returns text describing dimensions of object representation

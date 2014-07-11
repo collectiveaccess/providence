@@ -712,7 +712,7 @@
 		 *
 		 */
 		public static function reprocess_mediaHelp() {
-			return _t("CollectiveAccess generates derivatives for all uploaded media. More here...");
+			return _t("CollectiveAccess generates derivatives for all uploaded media.");
 		}
 		# -------------------------------------------------------
 		/**
@@ -963,7 +963,7 @@
 		 *
 		 */
 		public static function update_database_schemaHelp() {
-			return _t("Updates database schema to current version. More here...");
+			return _t("Updates database schema to current version.");
 		}
 		# -------------------------------------------------------
 		/**
@@ -1022,7 +1022,7 @@
 		 *
 		 */
 		public static function load_import_mappingHelp() {
-			return _t("Loads import mapping from Excel XLSX format file. More here...");
+			return _t("Loads import mapping from Excel XLSX format file.");
 		}
 		# -------------------------------------------------------
 		/**
@@ -1050,14 +1050,18 @@
 			
 			$vb_no_ncurses = (bool)$po_opts->getOption('disable-ncurses');
 			$vb_direct = (bool)$po_opts->getOption('direct');
+			$vb_no_search_indexing = (bool)$po_opts->getOption('no-search-indexing');
 			
 			$vs_format = $po_opts->getOption('format');
 			$vs_log_dir = $po_opts->getOption('log');
 			$vn_log_level = CLIUtils::getLogLevel($po_opts);
 			
+			if ($vb_no_search_indexing) { 
+				define("__CA_DONT_DO_SEARCH_INDEXING__", true);
+			}
 			
 			if (!ca_data_importers::importDataFromSource($vs_data_source, $vs_mapping, array('noTransaction' => $vb_direct, 'format' => $vs_format, 'showCLIProgressBar' => true, 'useNcurses' => !$vb_no_ncurses && caCLIUseNcurses(), 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level))) {
-				CLIUtils::addError(_t("Could not import source %1", $vs_data_source));
+				CLIUtils::addError(_t("Could not import source %1: %2", $vs_data_source, join("; ", ca_data_importers::getErrorList())));
 				return false;
 			} else {
 				CLIUtils::addMessage(_t("Imported data from source %1", $vs_data_source));
@@ -1108,7 +1112,8 @@
 				"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
 				"disable-ncurses" => _t('If set the ncurses terminal library will not be used to display import progress.'),
 				"dryrun" => _t('If set import is performed without data actually being saved to the database. This is useful for previewing an import for errors.'),
-				"direct" => _t('If set import is performed without a transaction. This allows viewing of imported data during the import, which may be useful during debugging/development. It may also lead to data corruption and should only be used for testing.')
+				"direct" => _t('If set import is performed without a transaction. This allows viewing of imported data during the import, which may be useful during debugging/development. It may also lead to data corruption and should only be used for testing.'),
+				"no-search-indexing" => _t('If set indexing of changes made during import is not done. This may significantly reduce import time, but will neccessitate a reindex of the entire database after the import.')
 			);
 		}
 		# -------------------------------------------------------
@@ -1123,14 +1128,14 @@
 		 *
 		 */
 		public static function import_dataShortHelp() {
-			return _t("Import data from an Excel XLSX, tab or comma delimited text or XML file.");
+			return _t("Import data from many types of data sources.");
 		}
 		# -------------------------------------------------------
 		/**
 		 *
 		 */
 		public static function import_dataHelp() {
-			return _t("Import data from an Excel XLSX, tab or comma delimited text or XML file. More here...");
+			return _t("Import data from many types of data sources including other CollectiveAccess systems, MySQL databases and Excel, delimited text, XML and MARC files.");
 		}
 		# -------------------------------------------------------
 		/**
@@ -1196,7 +1201,7 @@
 		 *
 		 */
 		public static function load_export_mappingHelp() {
-			return _t("Loads export mapping from Excel XLSX format file. More here...");
+			return _t("Loads export mapping from Excel XLSX format file.");
 		}
 		# -------------------------------------------------------
 		public static function export_data($po_opts=null) {

@@ -141,8 +141,13 @@ class BaseXMLDataReader extends BaseDataReader {
 			$this->ops_xpath = $this->_convertXPathExpression($ps_base_path);
 		}
 		
-		$this->opo_xml = DOMDocument::load($ps_source, LIBXML_NSCLEAN);
-		$this->opo_xpath = new DOMXPath($this->opo_xml);
+		if(!($this->opo_xml = @DOMDocument::load($ps_source))) { return false;}
+		
+		try {
+			$this->opo_xpath = new DOMXPath($this->opo_xml);
+		} catch (Exception $e) {
+			return false;
+		}
 		
 		if ($this->ops_xml_namespace_prefix && $this->ops_xml_namespace) {
 			$this->opo_xpath->registerNamespace($this->ops_xml_namespace_prefix, $this->ops_xml_namespace);

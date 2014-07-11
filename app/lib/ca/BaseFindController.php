@@ -40,7 +40,6 @@
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
 	require_once(__CA_LIB_DIR__."/core/Parsers/ZipFile.php");
 	require_once(__CA_LIB_DIR__."/core/AccessRestrictions.php");
- 	require_once(__CA_LIB_DIR__.'/core/Print/PrintForms.php');
  	require_once(__CA_LIB_DIR__.'/ca/Visualizer.php');
  	require_once(__CA_LIB_DIR__.'/core/Parsers/dompdf/dompdf_config.inc.php');
  	
@@ -236,7 +235,11 @@
  			$this->view->setVar('display_lists', $va_displays);	
  			
  			# --- print forms used for printing search results as labels - in tools show hide under page bar
- 			$this->view->setVar('print_forms', $this->getPrintForms());
+ 			if ((bool)$this->request->config->get('use_legacy_print_labels_generator')) {
+ 				$this->view->setVar('label_formats', $this->getLegacyPrintForms());
+ 			} else {
+ 				$this->view->setVar('label_formats', caGetAvailablePrintTemplates('labels', array('table' => $this->ops_tablename, 'type' => 'label')));
+ 			}
  			
  			# --- export options used to export search results - in tools show hide under page bar
  			$vn_table_num = $this->opo_datamodel->getTableNum($this->ops_tablename);
@@ -278,7 +281,6 @@
 			}
 			
 			$this->view->setVar('result_context', $this->opo_result_context);
-			
 			$this->view->setVar('access_restrictions',AccessRestrictions::load());
  		}
 		# -------------------------------------------------------
@@ -288,52 +290,125 @@
 		  * Action to trigger generation of label-formatted PDF of current find result set
 		  */
  		public function printLabels() {
- 			return $this->Index(array('output_format' => 'PDF'));
+ 			return $this->Index(array('output_format' => 'LABELS'));
+		}
+		# -------------------------------------------------------
+		/**
+		 * Generates and outputs label-formatted PDF version of search results using DOMPDF
+		 */
+		protected function _genLabels($po_result, $ps_label_code, $ps_output_filename, $ps_title=null) {
+			if((bool)$this->request->config->get('use_legacy_print_labels_generator')) { return $this->_genLabelsLegacy($po_result, $ps_label_code, $ps_output_filename, $ps_title); }
+			
+			$vs_border = ((bool)$this->request->config->get('add_print_label_borders')) ? "border: 1px dotted #000000; " : "";
+			
+			//
+			// PDF output
+			//
+			$va_template_info = caGetPrintTemplateDetails('labels', substr($ps_label_code, 5));
+			if (!is_array($va_template_info)) {
+				$this->postError(3110, _t("Could not find view for PDF"),"BaseFindController->_genPDF()");
+				return;
+			}
+			
+			try {
+				$this->view->setVar('title', $ps_title);
+				$this->view->setVar('base_path', $vs_base_path = pathinfo($va_template_info['path'], PATHINFO_DIRNAME));
+				$this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
+			
+				$vs_content = $this->render("pdfStart.php");
+				
+				// render labels
+				$vn_width = 				caConvertMeasurementToPoints(caGetOption('labelWidth', $va_template_info, null));
+				$vn_height = 				caConvertMeasurementToPoints(caGetOption('labelHeight', $va_template_info, null));
+				
+				$vn_top_margin = 			caConvertMeasurementToPoints(caGetOption('marginTop', $va_template_info, null));
+				$vn_bottom_margin = 		caConvertMeasurementToPoints(caGetOption('marginBottom', $va_template_info, null));
+				$vn_left_margin = 			caConvertMeasurementToPoints(caGetOption('marginLeft', $va_template_info, null));
+				$vn_right_margin = 			caConvertMeasurementToPoints(caGetOption('marginRight', $va_template_info, null));
+				
+				$vn_horizontal_gutter = 	caConvertMeasurementToPoints(caGetOption('horizontalGutter', $va_template_info, null));
+				$vn_vertical_gutter = 		caConvertMeasurementToPoints(caGetOption('verticalGutter', $va_template_info, null));
+				
+				$va_page_size =				CPDF_Adapter::$PAPER_SIZES[caGetOption('pageSize', $va_template_info, null)];
+				$vn_page_width = 			$va_page_size[2] - $va_page_size[0];
+				$vn_page_height = 			$va_page_size[3] - $va_page_size[1];
+				
+				$vn_label_count = 0;
+				$vn_left = $vn_left_margin;
+				$vn_top = $vn_top_margin;
+				
+				$va_defined_vars = array_keys($this->view->getAllVars());		// get list defined vars (we don't want to copy over them)
+				$va_tag_list = $this->getTagListForView($va_template_info['path']);				// get list of tags in view
+				
+				$va_barcode_files_to_delete = array();
+				
+				while($po_result->nextHit()) {
+					$va_barcode_files_to_delete += caDoPrintViewTagSubstitution($this->view, $po_result, $va_template_info['path'], array('checkAccess' => $this->opa_access_values));
+					
+					$vs_content .= "<div style=\"{$vs_border} position: absolute; width: {$vn_width}px; height: {$vn_height}px; left: {$vn_left}px; top: {$vn_top}px; overflow: hidden;\">";
+					$vs_content .= $this->render($va_template_info['path']);
+					$vs_content .= "</div>\n";
+					
+					$vn_label_count++;
+					
+					$vn_left += $vn_vertical_gutter + $vn_width;
+					
+					if (($vn_left + $vn_width) > $vn_page_width) {
+						$vn_left = $vn_left_margin;
+						$vn_top += $vn_horizontal_gutter + $vn_height;
+					}
+					if (($vn_top + $vn_height) > $vn_page_height) {
+						// next page
+						if ($vn_label_count < $po_result->numHits()) { $vs_content .= "<div class=\"pageBreak\">&nbsp;</div>\n"; }
+						$vn_left = $vn_left_margin;
+						$vn_top = $vn_top_margin;
+					}
+					
+					
+				}
+				
+				$vs_content .= $this->render("pdfEnd.php");
+				
+				$o_dompdf = new DOMPDF();
+				$o_dompdf->load_html($vs_content);
+				$o_dompdf->set_paper(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'));
+				$o_dompdf->set_base_path(caGetPrintTemplateDirectoryPath('labels'));
+				$o_dompdf->render();
+				$o_dompdf->stream(caGetOption('filename', $va_template_info, 'labels.pdf'));
+
+				$vb_printed_properly = true;
+				
+				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
+				
+			} catch (Exception $e) {
+				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
+				
+				$vb_printed_properly = false;
+				$this->postError(3100, _t("Could not generate PDF"),"BaseFindController->PrintSummary()");
+			}
+			
 		}
 		# -------------------------------------------------------
  		/**
- 		 * Returns list of available label print formats
+ 		 * Returns list of available legacy label print formats
+		 * The legacy method of label generation is retained for backward compatibility and will be removed in an upcoming version
+ 		 *
+ 		 * @deprecated Deprecated since version 1.5
  		 */
- 		public function getPrintForms() {
+ 		public function getLegacyPrintForms() {
  			require_once(__CA_LIB_DIR__.'/core/Print/PrintForms.php');
 			return PrintForms::getAvailableForms($this->request->config->get($this->ops_tablename.'_print_forms'));
 		}
 		# -------------------------------------------------------
- 		/**
- 		 * Returns list of available result print formats
- 		 */
- 		public function getResultPrintForms() {
- 		
-			$o_print_tables = Configuration::load($this->request->config->get('find_results_download_config'));
-			$va_layout_settings = array();
-			$counter = 0;
-			
-			if (is_array($va_tables = $o_print_tables->getAssocKeys())) {
-				foreach($va_tables as $vs_table_id) {		
-					if($vs_table_id == $this->ops_tablename || $vs_table_id == 'all_tables') {
-						if(is_array($va_layouts = $o_print_tables->getAssoc($vs_table_id))) {
-							foreach($va_layouts as $va_layout_id => $vs_layout_values) {
-								$va_layout_settings[$counter]['code'] = $va_layout_id;
-								if(array_key_exists('name', $vs_layout_values)) {
-									$va_layout_settings[$counter]['name'] = $vs_layout_values['name'];
-								}
-								else {
-									$va_layout_settings[$counter]['name'] = $vs_layout_values['name'];
-								}
-								++$counter;
-							}
-						}
-					}
-				}
-			}
-			return $va_layout_settings;
-		}
-		# -------------------------------------------------------
 		/**
-		 * Generates and outputs label-formatted PDF version of search results
+		 * Generates and outputs label-formatted PDF version of search results using old "built-in" label generator
+		 * This method of label generation is retained for backward compatibility and will be removed in an upcoming version
+		 *
+		 * @deprecated Deprecated since version 1.5
+		 * @see BaseFindController::_genLabels
 		 */
-		protected function _genPDF($po_result, $ps_label_code, $ps_output_filename, $ps_title=null) {
-
+		protected function _genLabelsLegacy($po_result, $ps_label_code, $ps_output_filename, $ps_title=null) {
+ 			require_once(__CA_LIB_DIR__.'/core/Print/PrintForms.php');
 			$o_print_form = new PrintForms($this->request->config->get($this->ops_tablename.'_print_forms'));
 			
 			if (!$o_print_form->setForm($ps_label_code)) {
