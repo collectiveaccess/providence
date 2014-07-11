@@ -76,6 +76,7 @@
  		 * @return string The value
  		 */
 		public function getDisplayValue($pa_options=null) {
+			if(!is_array($pa_options)) { $pa_options = array(); }
 			$o_config = Configuration::load();
 			if(is_array($va_lookup_template = $o_config->getList($this->ops_table_name.'_lookup_settings'))) {
 				$vs_default_template = join($o_config->get($this->ops_table_name.'_lookup_delimiter'), $va_lookup_template);
