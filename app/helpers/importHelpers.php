@@ -506,6 +506,11 @@
 			}
 		}
 		
+		if (!is_array($va_match_on) && $va_match_on) { $va_match_on = array($va_match_on); }
+		if (is_array($va_match_on = $pa_item['settings']["{$ps_refinery_name}_matchOn"])) {
+			$pa_options['matchOn'] = $va_match_on;
+		}
+		
 		$va_vals = array();
 		$vn_c = 0;
 		if (!($t_instance = $o_dm->getInstanceByTableName($ps_table, true))) { return array(); }
