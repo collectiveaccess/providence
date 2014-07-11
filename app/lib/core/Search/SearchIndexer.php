@@ -837,7 +837,14 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 									if ($vb_is_attr) {
 										$this->opo_engine->indexField($vn_related_tablenum, 'A'.$va_matches[1], $qr_res->get($vs_related_pk), $vs_fld_data, $va_rel_field_info);
 									} else {
-										$this->opo_engine->indexField($vn_related_tablenum, 'I'.$this->opo_datamodel->getFieldNum($vs_related_table, $vs_rel_field), $qr_res->get($vs_related_pk), $vs_fld_data, $va_rel_field_info);
+										if (((isset($va_rel_field_info['INDEX_AS_IDNO']) && $va_rel_field_info['INDEX_AS_IDNO']) || in_array('INDEX_AS_IDNO', $va_rel_field_info)) && method_exists($t_rel, "getIDNoPlugInInstance") && ($o_idno = $t_rel->getIDNoPlugInInstance())) {
+											// specialized identifier (idno) processing; used IDNumbering plugin to generate searchable permutations of identifier
+											$va_values = $o_idno->getIndexValues($vs_fld_data);
+											$this->opo_engine->indexField($pn_subject_tablenum, 'I'.$this->opo_datamodel->getFieldNum($vs_related_table, $vs_rel_field), $qr_res->get($vs_related_pk), join(" ", $va_values), $va_rel_field_info);
+										} else {
+											// regular intrinsic
+											$this->opo_engine->indexField($vn_related_tablenum, 'I'.$this->opo_datamodel->getFieldNum($vs_related_table, $vs_rel_field), $qr_res->get($vs_related_pk), $vs_fld_data, $va_rel_field_info);
+										}
 									}
 									break;	
 							}
