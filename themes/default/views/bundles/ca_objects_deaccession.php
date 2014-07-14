@@ -50,7 +50,7 @@
 				</div>
 				<div id='<?php print $vs_id_prefix; ?>DeaccessionContainer' <?php print ((bool)$t_subject->get('is_deaccessioned') ? "" : "style='display: none;'"); ?>>
 <?php
-	print $t_subject->htmlFormElement('deaccession_date', "<div class='formLabel' style='float: left;'>^EXTRA^LABEL<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_date", 'id' => "{$vs_id_prefix}DeaccessionDate"));
+	print $t_subject->htmlFormElement('deaccession_date', "<div class='formLabel' style='float: left;'>^EXTRA^LABEL<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_date", 'id' => "{$vs_id_prefix}DeaccessionDate", 'classname' => 'dateBg'));
 	print $t_subject->htmlFormElement('deaccession_type_id', "<div class='formLabel' style='float: left;'>^EXTRA"._t('Type')."<br/>^ELEMENT</div>", array('name' => "{$vs_id_prefix}deaccession_type_id", 'id' => "{$vs_id_prefix}DeaccessionTypeID"));
 ?>
 	<br class="clear"/>
@@ -68,4 +68,7 @@
 		jQuery('#<?php print $vs_id_prefix; ?>IsDeaccessioned').is(':checked') ? jQuery('#<?php print $vs_id_prefix; ?>DeaccessionContainer').slideDown(250) : jQuery('#<?php print $vs_id_prefix; ?>DeaccessionContainer').slideUp(250);
 		return true;
 	}
+	jQuery(document).ready(function() {
+		jQuery('#<?php print $vs_id_prefix; ?>DeaccessionDate').datepicker({constrainInput: false});
+	});
 </script>
