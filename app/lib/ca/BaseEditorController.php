@@ -599,9 +599,13 @@
 				}
 			}
 			
+			$va_barcode_files_to_delete = array();
+			
 			try {
 				$this->view->setVar('base_path', $vs_base_path = pathinfo($va_template_info['path'], PATHINFO_DIRNAME));
 				$this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
+				
+				$va_barcode_files_to_delete += caDoPrintViewTagSubstitution($this->view, $t_subject, $va_template_info['path'], array('checkAccess' => $this->opa_access_values));
 				
 				$vs_content = $this->render($va_template_info['path']);
 				$o_dompdf = new DOMPDF();
@@ -612,7 +616,10 @@
 				$o_dompdf->stream(caGetOption('filename', $va_template_info, 'print_summary.pdf'));
 	
 				$vb_printed_properly = true;
+				
+				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
 			} catch (Exception $e) {
+				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
 				$vb_printed_properly = false;
 				$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
 			}

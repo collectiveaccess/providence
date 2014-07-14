@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -51,7 +51,9 @@ var caUI = caUI || {};
 			noImageLink: options.noImageLink,
 			
 			scrollingImageClass: options.scrollingImageClass ? options.scrollingImageClass : 'imageScrollerImage',
-			scrollingImageIDPrefix: options.scrollingImageIDPrefix ? options.scrollingImageIDPrefix : 'imageScrollerImage'
+			scrollingImageIDPrefix: options.scrollingImageIDPrefix ? options.scrollingImageIDPrefix : 'imageScrollerImage',
+			
+			initialIndex: 0
 			
 		}, options);
 		
@@ -111,7 +113,7 @@ var caUI = caUI || {};
 			}
 		}
 		
-		that.scrollToImage(0, true);
+		that.scrollToImage(that.initialIndex, true);
 		
 		return that;
 	};
