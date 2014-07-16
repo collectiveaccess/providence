@@ -232,7 +232,7 @@
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			$vb_treat_value_as_idno = caGetOption('alwaysTreatValueAsIdno', $pa_options, false);
  			
- 			$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? true : (bool)$pa_element_info['settings']['requireValue'];
+ 			$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? false : (bool)$pa_element_info['settings']['requireValue'];
 
 			$ps_orig_value = $ps_value;
  			if ($vb_treat_value_as_idno || preg_match('![^\d]+!', $ps_value)) {
