@@ -1059,9 +1059,11 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 		);
 
 		$va_iptc = array();
-		foreach($va_iptc_raw as $vs_iptc_tag => $va_iptc_tag_data){
-			if(isset($va_iptc_tags[$vs_iptc_tag])) {
-				$va_iptc[$va_iptc_tags[$vs_iptc_tag]] = join('; ',$va_iptc_tag_data);
+		if (is_array($va_iptc_raw)) {
+			foreach($va_iptc_raw as $vs_iptc_tag => $va_iptc_tag_data){
+				if(isset($va_iptc_tags[$vs_iptc_tag])) {
+					$va_iptc[$va_iptc_tags[$vs_iptc_tag]] = join('; ',$va_iptc_tag_data);
+				}
 			}
 		}
 
