@@ -133,7 +133,7 @@
 			}
 			
 			$va_match_on = caGetOption("{$ps_refinery_name}_dontMatchOnLabel", $pa_item['settings'], false) ? array('idno') : array('idno', 'label');
-			$pa_options = array_merge(array_merge(array('matchOn' => $va_match_on), $pa_options));
+			$pa_options = array_merge(array('matchOn' => $va_match_on), $pa_options);
 			
 			switch($ps_table) {
 				case 'ca_objects':
@@ -404,7 +404,7 @@
 				$vs_idno_stub = BaseRefinery::parsePlaceholder($pa_related_options['idno_stub'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));	
 			}	
 			
-			$pa_options = array_merge(array_merge(array('matchOn' => array('idno', 'label')), $pa_options));
+			$pa_options = array_merge(array('matchOn' => array('idno', 'label'), $pa_options));
 			
 			switch($ps_related_table) {
 				case 'ca_objects':
@@ -506,8 +506,10 @@
 			}
 		}
 		
-		if (!is_array($va_match_on) && $va_match_on) { $va_match_on = array($va_match_on); }
-		if (is_array($va_match_on = $pa_item['settings']["{$ps_refinery_name}_matchOn"])) {
+		$va_match_on = caGetOption('matchOn', $pa_options, null);
+		if (!is_array($va_match_on) && $va_match_on) { 
+			$va_match_on = array($va_match_on); 
+		} elseif (is_array($va_match_on = $pa_item['settings']["{$ps_refinery_name}_matchOn"])) {
 			$pa_options['matchOn'] = $va_match_on;
 		}
 		
@@ -658,7 +660,7 @@
 						$va_attr_vals_with_parent = array_merge($va_attr_vals, array('parent_id' => $va_val['parent_id'] ? $va_val['parent_id'] : $va_val['_parent_id']));
 
 					
-						$pa_options = array_merge(array_merge(array('matchOn' => array('idno', 'label')), $pa_options));
+						$pa_options = array_merge(array('matchOn' => array('idno', 'label'), $pa_options));
 					
 						switch($ps_table) {
 							case 'ca_objects':
@@ -737,7 +739,6 @@
 						switch($ps_table) {
 							case 'ca_entities':
 								$va_val['preferred_labels'] = DataMigrationUtils::splitEntityName($vs_item);
-								//if (!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
 								break;
 							case 'ca_list_items':
 								$va_val['preferred_labels'] = array('name_singular' => str_replace("_", " ", $vs_item), 'name_plural' => str_replace("_", " ", $vs_item));
@@ -751,11 +752,10 @@
 							case 'ca_places':
 							case 'ca_objects':
 								$va_val['preferred_labels'] = array('name' => $vs_item);
-								//if (!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
 								break;
 							case 'ca_object_lots':
 								$va_val['preferred_labels'] = array('name' => $vs_item);
-								//if (!isset($va_val['idno_stub'])) { $va_val['idno_stub'] = $vs_item; }
+								
 								if (isset($va_val['_status'])) {
 									$va_val['lot_status_id'] = $va_val['_status'];
 								}
@@ -765,7 +765,6 @@
 								if (!($vs_batch_media_directory = $t_instance->getAppConfig()->get('batch_media_import_root_directory'))) { break; }
 							
 								if(!isset($va_val['preferred_labels'])) { $va_val['preferred_labels'] = array('name' => $vs_item); }
-								//if (!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
 							
 								if (isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) && $pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] && isset($va_val['media']['media']) && ($va_val['media']['media'])) {
 									$va_val['media']['media'] = $vs_batch_media_directory.'/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'].'/'.$va_val['media']['media'];
@@ -811,7 +810,7 @@
 					} else {
 						if ($o_log) { $o_log->logError(_t("[{$ps_refinery_name}Refinery] Could not add %2 %1: cannot map %3 using %1", $vs_item, $ps_item_prefix, join(".", $va_group_dest))); }
 					}
-				
+					$va_val['_matchOn'] = $va_match_on;
 					$va_vals[] = $va_val;
 					$vn_c++;
 				}
@@ -820,6 +819,7 @@
 			if ($o_log) { $o_log->logError(_t("[{$ps_refinery_name}Refinery] Cannot map %1 using this refinery", $pa_group['destination'])); }
 			return array();
 		}
+		
 		return $va_vals;
 	}
 # ---------------------------------------

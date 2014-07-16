@@ -140,7 +140,7 @@
 						break;
 					case 'idno':
 						if ($vs_idno == '%') { break; }	// don't try to match on an unreplaced idno placeholder
-						if (($vs_idno || trim($pa_entity_name['displayname'])) && ($vn_id = (ca_entities::find(array('idno' => $vs_idno ? $vs_idno : $pa_entity_name['displayname']), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
+						if (($vs_idno || trim($pa_entity_name['_originalText'])) && ($vn_id = (ca_entities::find(array('idno' => $vs_idno ? $vs_idno : $pa_entity_name['_originalText']), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
 							break(2);
 						}
 						break;
@@ -2245,7 +2245,7 @@
 		 */
 		static function splitEntityName($ps_text, $pa_options=null) {
 			global $g_ui_locale;
-			$ps_text = trim(preg_replace("![ ]+!", " ", $ps_text));
+			$ps_text_proc = trim(preg_replace("![ ]+!", " ", $ps_text));
 			
 			if (isset($pa_options['locale']) && $pa_options['locale']) {
 				$vs_locale = $pa_options['locale'];
@@ -2264,9 +2264,9 @@
 			}
 			
 			$va_name = array();
-			if (strpos($ps_text, ',') !== false) {
+			if (strpos($ps_text_proc, ',') !== false) {
 				// is comma delimited
-				$va_tmp = explode(',', $ps_text);
+				$va_tmp = explode(',', $ps_text_proc);
 				$va_name['surname'] = $va_tmp[0];
 				
 				if(sizeof($va_tmp) > 1) {
@@ -2274,30 +2274,30 @@
 				}
 			} else {
 				// check for titles
-				$ps_text = preg_replace('/[^\p{L}\p{N} \-]+/u', ' ', $ps_text);
+				$ps_text_proc = preg_replace('/[^\p{L}\p{N} \-]+/u', ' ', $ps_text_proc);
 				foreach($va_titles as $vs_title) {
-					if (preg_match("!^({$vs_title})!", $ps_text, $va_matches)) {
+					if (preg_match("!^({$vs_title})!", $ps_text_proc, $va_matches)) {
 						$va_name['prefix'] = $va_matches[1];
-						$ps_text = str_replace($va_matches[1], '', $ps_text);
+						$ps_text_proc = str_replace($va_matches[1], '', $ps_text_proc);
 					}
 				}
 				
 				// check for suffixes
 				foreach($va_corp_suffixes as $vs_suffix) {
-					if (preg_match("!({$vs_suffix})$!", $ps_text, $va_matches)) {
+					if (preg_match("!({$vs_suffix})$!", $ps_text_proc, $va_matches)) {
 						$va_name['suffix'] = $va_matches[1];
-						$ps_text = str_replace($va_matches[1], '', $ps_text);
+						$ps_text_proc = str_replace($va_matches[1], '', $ps_text_proc);
 					}
 				}
 				
-				$va_tmp = preg_split('![ ]+!', trim($ps_text));
+				$va_tmp = preg_split('![ ]+!', trim($ps_text_proc));
 				
 				$va_name = array(
 					'surname' => '', 'forename' => '', 'middlename' => '', 'displayname' => ''
 				);
 				switch(sizeof($va_tmp)) {
 					case 1:
-						$va_name['surname'] = $ps_text;
+						$va_name['surname'] = $ps_text_proc;
 						break;
 					case 2:
 						$va_name['forename'] = $va_tmp[0];
@@ -2310,7 +2310,7 @@
 						break;
 					case 4:
 					default:
-						if (strpos($ps_text, ' '._t('and').' ') !== false) {
+						if (strpos($ps_text_proc, ' '._t('and').' ') !== false) {
 							$va_name['surname'] = array_pop($va_tmp);
 							$va_name['forename'] = join(' ', $va_tmp);
 						} else {
@@ -2322,7 +2322,8 @@
 				}
 			}
 			
-			$va_name['displayname'] = $ps_text;
+			$va_name['displayname'] = $ps_text_proc;
+			$va_name['_originalText'] = $ps_text;
 			foreach($va_name as $vs_k => $vs_v) {
 				$va_name[$vs_k] = trim($vs_v);
 			}
