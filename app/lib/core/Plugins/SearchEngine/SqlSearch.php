@@ -152,7 +152,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		if (!is_array(WLPlugSearchEngineSqlSearch::$s_metadata_elements)) {
 			WLPlugSearchEngineSqlSearch::$s_metadata_elements = ca_metadata_elements::getRootElementsAsList();
 		}
-		$this->debug = false;
+		$this->debug = true;
 	}
 	# -------------------------------------------------------
 	# Initialization and capabilities
@@ -816,7 +816,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									break;
 							}
 						} else {
-							if ($vs_table && $vs_field && ($t_table = $this->opo_datamodel->getInstanceByTableName($vs_table, true)) && (($vs_table_num = $t_table->tableNum()) == $pn_subject_tablenum)) {
+							if ($vs_table && $vs_field && ($t_table = $this->opo_datamodel->getInstanceByTableName($vs_table, true)) ) {
+								$vs_table_num = $t_table->tableNum();
 								if (is_numeric($vs_field)) {
 									$vs_fld_num = 'I'.$vs_field;
 									$vn_fld_num = (int)$vs_field;
