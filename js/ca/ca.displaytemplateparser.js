@@ -65,7 +65,8 @@ var caUI = caUI || {};
 			var tagRegex = /\^([\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.~:\/]+)/g;
 			var tagList = template.match(tagRegex)
 			var unitRegex = /[\d\.\,]+(.*)$/;
-			
+			console.log(template);
+			console.log(tagList);
 			jQuery.each(tagList, function(i, tag) {
 				if(tag.indexOf("~") === -1) {
 					var tagProc = tag.replace("^", "");
@@ -111,7 +112,10 @@ var caUI = caUI || {};
 				var val = jQuery(values[tagRoot]).val();
 				
 				if(val && (val.length > 0)) { 
-					$h.find("ifdef[code=" + tagRoot + "]").replaceWith($h.find(y="ifdef[code=" + tagRoot + "]").html());
+					jQuery.each($h.find("ifdef[code=" + tagRoot + "]"), function(k, v) { 
+						jQuery(v).replaceWith(jQuery(v).html());
+					});
+					//$h.find("ifdef[code=" + tagRoot + "]").replaceWith($h.find(y="ifdef[code=" + tagRoot + "]").html());
 				} else {
 					$h.find("ifdef[code=" + tagRoot + "]").remove();
 				}
