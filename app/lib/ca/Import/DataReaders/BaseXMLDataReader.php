@@ -331,7 +331,7 @@ class BaseXMLDataReader extends BaseDataReader {
 		foreach($va_tmp as $vn_i => $vs_spec_element) {
 			if(!$vs_spec_element) { continue; }
 			if (
-				(strpos($vs_spec_element, ":") === false)
+				!(preg_match("!^[A-Za-z0-9\-_]+:[A-Za-z0-9\-_]+!", $vs_spec_element))
 				&&
 				(strpos($vs_spec_element, "@") !== 0)
 			) {
