@@ -3954,7 +3954,7 @@ if (!$vb_batch) {
  		// check for new relations to add
  		if ($vb_batch) {
 			$vs_batch_mode = $_REQUEST["{$ps_placement_code}{$ps_form_prefix}_batch_mode"];
- 			if ($vb_batch_mode == '_disabled_') { return true; }
+ 			if ($vs_batch_mode == '_disabled_') { return true; }
 			if ($vs_batch_mode == '_delete_') {				// remove all relationships and return
 				$this->removeRelationships($ps_bundlename);
 				return true;
@@ -5559,7 +5559,7 @@ $pa_options["display_form_field_tips"] = true;
 					if ($t_rel->hasField($vs_element)) {
 						$t_rel->set($vs_element, $va_value);
 						continue;
-					}				
+					}
 					if (is_array($va_value)) {
 						if (!isset($va_value['locale_id'])) {
 							$va_value['locale_id'] = $g_ui_locale_id ? $g_ui_locale_id : ca_locales::getDefaultCataloguingLocaleID();
@@ -5570,7 +5570,7 @@ $pa_options["display_form_field_tips"] = true;
 						// scalar value (simple single value attribute)
 						if ($va_value) {
 							$t_rel->addAttribute(array(
-								'locale_id' => $pn_locale_id,
+								'locale_id' =>  $g_ui_locale_id ? $g_ui_locale_id : ca_locales::getDefaultCataloguingLocaleID(),
 								$vs_element => $va_value
 							), $vs_element);
 						}
@@ -5595,8 +5595,9 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param int $pn_rel_id primary key value of row to creation relationship to.
 	 * @param mixed $pm_type_id Relationship type type_code or type_id, as defined in the ca_relationship_types table. This is required for all relationships that use relationship types. This includes all of the most common types of relationships.
 	 * @param string $ps_effective_date Optional date expression to qualify relation with. Any expression that the TimeExpressionParser can handle is supported here.
-	 * @param string $ps_source_info Text field for storing information about source of relationship. Not currently used.
+	 * @param mixed $pa_source_info Array or text for storing information about source of relationship. Not currently used.
 	 * @param string $ps_direction Optional direction specification for self-relationships (relationships linking two rows in the same table). Valid values are 'ltor' (left-to-right) and  'rtol' (right-to-left); the direction determines which "side" of the relationship the currently loaded row is on: 'ltor' puts the current row on the left side. For many self-relations the direction determines the nature and display text for the relationship.
+	 * @param null $pn_rank
 	 * @param array $pa_options Array of additional options:
 	 *		allowDuplicates = if set to true, attempts to edit a relationship to match one that already exists will succeed. Default is false – duplicate relationships will not be created.
 	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to create a duplicate relationship. Default is false – don't set error. editRelationship() will always return false when editing of a relationship fails, no matter how the setErrorOnDuplicate option is set.
@@ -5605,12 +5606,12 @@ $pa_options["display_form_field_tips"] = true;
 	public function editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $pa_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
 		global $g_ui_locale_id;
 		
-		if ($t_rel = parent::editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options)) {
+		if ($t_rel = parent::editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id, $ps_effective_date, $pa_source_info, $ps_direction, $pn_rank, $pa_options)) {
 			// are there interstitials to add?
 			if (isset($pa_options['interstitialValues']) && is_array($pa_options['interstitialValues'])) {
 				$t_rel->setMode(ACCESS_WRITE);
 				
-				foreach($pa_options['interstitialValues'] as $vs_element => $va_value) { 	
+				foreach($pa_options['interstitialValues'] as $vs_element => $va_value) {
 					if ($t_rel->hasField($vs_element)) {
 						$t_rel->set($vs_element, $va_value);
 						continue;
@@ -5625,7 +5626,7 @@ $pa_options["display_form_field_tips"] = true;
 						// scalar value (simple single value attribute)
 						if ($va_value) {
 							$t_rel->replaceAttribute(array(
-								'locale_id' => $pn_locale_id,
+								'locale_id' => $g_ui_locale_id ? $g_ui_locale_id : ca_locales::getDefaultCataloguingLocaleID(),
 								$vs_element => $va_value
 							), $vs_element);
 						}
