@@ -601,7 +601,7 @@ class RequestHTTP extends Request {
 		
 		foreach(array(
 			'no_headers', 'dont_redirect_to_login', 'dont_create_new_session', 'dont_redirect_to_welcome',
-			'user_name', 'password', 'options', 'noPublicUsers', 'dont_redirect', 'no_headers'
+			'user_name', 'password', 'options', 'noPublicUsers', 'dont_redirect', 'no_headers', 'redirect'
 		) as $vs_key) {
 			if (!isset($pa_options[$vs_key])) { $pa_options[$vs_key] = null; }
 		}
@@ -740,7 +740,9 @@ class RequestHTTP extends Request {
 			
 			//$this->user->close(); ** will be called externally **
 			$AUTH_CURRENT_USER_ID = $vn_user_id;
-			if (!$pa_options["dont_redirect_to_welcome"]) {
+			if($pa_options['redirect']){
+				$this->opo_response->addHeader("Location", $pa_options['redirect']);
+			}else if (!$pa_options["dont_redirect_to_welcome"]) {
 				//header("Location: ".$this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_welcome_path"));				// redirect to "welcome" page
 				$this->opo_response->addHeader("Location", $this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_welcome_path"));
 				//exit;

@@ -36,12 +36,21 @@
 			if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
 				if(!initializeLocale($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) die("Error loading locale ".$g_ui_locale);
 			}
+			// Redirect to the default action
+			$vs_redirect = caNavUrl($this->opo_request, null, null, null, null);
+			if(
+				isset($_SERVER['HTTP_REFERER']) &&
+				strpos($_SERVER['HTTP_REFERER'], "$_SERVER[REQUEST_SCHEME]://$_SERVER[HTTP_HOST]" . __CA_URL_ROOT__ . caNavUrl($this->opo_request, null, null, null)) === 0 &&
+				strpos($_SERVER['HTTP_REFERER'],__CA_URL_ROOT__ . '/system/Auth/') !== -1){
+				$vs_redirect = $_SERVER['HTTP_REFERER'];
+			}
+		    $this->getView()->setVar('redirect', $vs_redirect);
  			$this->render('login_html.php');
  		}
  		# -------------------------------------------------------
  		public function DoLogin() {
  			global $g_ui_locale;
-			if (!$this->request->doAuthentication(array('dont_redirect' => true, 'noPublicUsers' => true, 'user_name' => $this->request->getParameter('username', pString), 'password' => $this->request->getParameter('password', pString)))) {
+			if (!$this->request->doAuthentication(array('dont_redirect' => true, 'noPublicUsers' => true, 'user_name' => $this->request->getParameter('username', pString), 'password' => $this->request->getParameter('password', pString), 'redirect' => $this->request->getParameter('redirect', pString)))) {
 				$this->notification->addNotification(_t("Login was invalid"), __NOTIFICATION_TYPE_ERROR__);
  				
  				$this->view->setVar('notifications', $this->notification->getNotifications());
