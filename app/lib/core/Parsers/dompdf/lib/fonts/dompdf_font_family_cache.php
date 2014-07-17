@@ -150,4 +150,32 @@
     'italic' => DOMPDF_FONT_DIR . '28EC2C_0_0',
     'bold_italic' => DOMPDF_FONT_DIR . '28EC2C_0_0',
   ),
+  'source sans pro' => 
+  array (
+    'normal' => DOMPDF_FONT_DIR . 'SourceSansPro-Regular',
+    'bold' => DOMPDF_FONT_DIR . 'SourceSansPro-Regular',
+    'italic' => DOMPDF_FONT_DIR . 'SourceSansPro-Regular',
+    'bold_italic' => DOMPDF_FONT_DIR . 'SourceSansPro-Regular',
+  ),
+  'source' => 
+  array (
+    'normal' => DOMPDF_FONT_DIR . 'SourceSansPro-Regular',
+    'bold' => DOMPDF_FONT_DIR . 'SourceSansPro-Regular',
+    'italic' => DOMPDF_FONT_DIR . 'SourceSansPro-Regular',
+    'bold_italic' => DOMPDF_FONT_DIR . 'SourceSansPro-Regular',
+  ),
+  'source sans' => 
+  array (
+    'normal' => DOMPDF_FONT_DIR . 'SourceSansPro',
+    'bold' => DOMPDF_FONT_DIR . 'SourceSansPro',
+    'italic' => DOMPDF_FONT_DIR . 'SourceSansPro',
+    'bold_italic' => DOMPDF_FONT_DIR . 'SourceSansPro',
+  ),
+  'sans light' => 
+  array (
+    'normal' => DOMPDF_FONT_DIR . 'SansLightPlain',
+    'bold' => DOMPDF_FONT_DIR . 'SansLightPlain',
+    'italic' => DOMPDF_FONT_DIR . 'SansLightItalic',
+    'bold_italic' => DOMPDF_FONT_DIR . 'SansLightPlain',
+  ),
 ) ?>

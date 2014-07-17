@@ -152,7 +152,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		if (!is_array(WLPlugSearchEngineSqlSearch::$s_metadata_elements)) {
 			WLPlugSearchEngineSqlSearch::$s_metadata_elements = ca_metadata_elements::getRootElementsAsList();
 		}
-		$this->debug = false;
+		$this->debug = true;
 	}
 	# -------------------------------------------------------
 	# Initialization and capabilities
@@ -816,7 +816,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									break;
 							}
 						} else {
-							if ($vs_table && $vs_field && ($t_table = $this->opo_datamodel->getInstanceByTableName($vs_table, true)) && (($vs_table_num = $t_table->tableNum()) == $pn_subject_tablenum)) {
+							if ($vs_table && $vs_field && ($t_table = $this->opo_datamodel->getInstanceByTableName($vs_table, true)) ) {
+								$vs_table_num = $t_table->tableNum();
 								if (is_numeric($vs_field)) {
 									$vs_fld_num = 'I'.$vs_field;
 									$vn_fld_num = (int)$vs_field;
@@ -837,6 +838,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 												// This allows us to do "intelligent" querying... for example on date ranges
 												// parsed from natural language input and for length dimensions using unit conversion
 												//
+												Debug::msg("datatype is ".$t_element->get('datatype')."/".__CA_ATTRIBUTE_VALUE_DATERANGE__);
 												switch($t_element->get('datatype')) {
 													case __CA_ATTRIBUTE_VALUE_DATERANGE__:	
 														$vb_all_numbers = true;
@@ -1151,7 +1153,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							$vs_sql .= " HAVING count(distinct sw.word_id) = {$vn_num_terms}";
 						}
 						
-						if ($this->debug) { print 'FIRST: '.$vs_sql." [$pn_subject_tablenum]<hr>\n"; }
+						if ($this->debug) { Debug::msg('FIRST: '.$vs_sql." [$pn_subject_tablenum]"); }
 						//print $vs_sql;
 						$qr_res = $this->opo_db->query($vs_sql, is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum));
 					} else {
@@ -1180,7 +1182,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$vs_sql .= " HAVING count(distinct sw.word_id) = {$vn_num_terms}";
 								}
 	
-								if ($this->debug) { print 'AND:'.$vs_sql."<hr>\n"; }
+								if ($this->debug) { Debug::msg('AND: '.$vs_sql); }
 								$qr_res = $this->opo_db->query($vs_sql, is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum));
 								$qr_res = $this->opo_db->query("TRUNCATE TABLE {$ps_dest_table}");
 								$qr_res = $this->opo_db->query("INSERT INTO {$ps_dest_table} SELECT row_id, boost FROM {$ps_dest_table}_acc");
@@ -1212,7 +1214,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										WHERE 
 											row_id IN (?)
 									";
-							
+									if ($this->debug) { Debug::msg('NOT '.$vs_sql); }
 									$qr_res = $this->opo_db->query($vs_sql, array($va_ids));
 									//print "$vs_sql<hr>";
 								}
@@ -1236,7 +1238,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										swi.row_id
 								";
 	
-								if ($this->debug) { print 'OR'.$vs_sql."<hr>\n"; }
+								if ($this->debug) { Debug::msg('OR '.$vs_sql); }
 								$qr_res = $this->opo_db->query($vs_sql, is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum));
 								break;
 						}
@@ -1261,7 +1263,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	public function startRowIndexing($pn_subject_tablenum, $pn_subject_row_id) {
 		$this->_setMode('indexing');
 		
-		if ($this->debug) { print "[SqlSearchDebug] startRowIndexing: $pn_subject_tablenum/$pn_subject_row_id<br>\n"; }
+		if ($this->debug) { Debug::msg("[SqlSearchDebug] startRowIndexing: $pn_subject_tablenum/$pn_subject_row_id"); }
 
 		$this->opn_indexing_subject_tablenum = $pn_subject_tablenum;
 		$this->opn_indexing_subject_row_id = $pn_subject_row_id;
@@ -1277,7 +1279,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			$vn_boost = intval($pa_options['BOOST']);
 		}
 		
-		if ($this->debug) { print "[SqlSearchDebug] indexField: $pn_content_tablenum/$ps_content_fieldname [$pn_content_row_id] =&gt; $pm_content<br>\n"; }
+		if ($this->debug) { Debug::msg("[SqlSearchDebug] indexField: $pn_content_tablenum/$ps_content_fieldname [$pn_content_row_id] =&gt; $pm_content"); }
 	
 		if (in_array((string)'DONT_TOKENIZE', array_values($pa_options), true)) { 
 			$pa_options['DONT_TOKENIZE'] = true;  
@@ -1360,7 +1362,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			while(sizeof(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer)) {
 				$this->opo_db->query($this->ops_insert_word_index_sql."\n".join(",", array_splice(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer, 0, $vn_max_word_segment_size)));
 			}
-			if ($this->debug) { print "[SqlSearchDebug] Commit row indexing<br>\n"; }
+			if ($this->debug) { Debug::msg("[SqlSearchDebug] Commit row indexing"); }
 		}
 	
 		// clean up
@@ -1499,7 +1501,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		foreach($pa_subject_row_ids as $vn_row_id) {
 			if (!$vn_row_id) { 
-				if ($this->debug) { print "[SqlSearchDebug] Cannot index row because row id is missing!<br>\n"; }
+				if ($this->debug) { Debug::msg("[SqlSearchDebug] Cannot index row because row id is missing!"); }
 				continue; 
 			}
 			$vn_seq = 0;
@@ -1522,7 +1524,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		if (sizeof($va_row_insert_sql)) {
 			$vs_sql = $this->ops_insert_word_index_sql."\n".join(",", $va_row_insert_sql);
 			$this->opo_db->query($vs_sql);
-			if ($this->debug) { print "[SqlSearchDebug] Commit row indexing<br>\n"; }
+			if ($this->debug) { Debug::msg("[SqlSearchDebug] Commit row indexing"); }
 		}				
 	}
 	# -------------------------------------------------
