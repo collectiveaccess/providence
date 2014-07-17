@@ -1910,10 +1910,10 @@
 						
 						if ($t_loan->numErrors()) {
 							if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
-								print "[Error] "._t("Could not update idno for %1: %2", $ps_lot_name, join('; ', $t_loan->getErrors()))."\n";
+								print "[Error] "._t("Could not update idno for %1: %2", $ps_loan_name, join('; ', $t_loan->getErrors()))."\n";
 							}
 					
-							if ($o_log) { $o_log->logError(_t("Could not update idno for %1: %2", $ps_lot_name, join('; ', $t_loan->getErrors()))); }
+							if ($o_log) { $o_log->logError(_t("Could not update idno for %1: %2", $ps_loan_name, join('; ', $t_loan->getErrors()))); }
 							return null;
 						}
 					}
