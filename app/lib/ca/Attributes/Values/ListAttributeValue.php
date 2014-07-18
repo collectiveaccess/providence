@@ -69,10 +69,18 @@
 		'requireValue' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_CHECKBOXES,
-			'default' => 1,
+			'default' => 0,
 			'width' => 1, 'height' => 1,
 			'label' => _t('Require value'),
 			'description' => _t('Check this option if you want to require that a list item be selected.')
+		),
+		'nullOptionText' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'default' => 'Not set',
+			'width' => 90, 'height' => 1,
+			'label' => _t('No value text'),
+			'description' => _t('Text to use as label for the "no value" option when a value is not required.')
 		),
 		'canBeUsedInSort' => array(
 			'formatType' => FT_NUMBER,
@@ -224,7 +232,7 @@
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			$vb_treat_value_as_idno = caGetOption('alwaysTreatValueAsIdno', $pa_options, false);
  			
- 			$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? true : (bool)$pa_element_info['settings']['requireValue'];
+ 			$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? false : (bool)$pa_element_info['settings']['requireValue'];
 
 			$ps_orig_value = $ps_value;
  			if ($vb_treat_value_as_idno || preg_match('![^\d]+!', $ps_value)) {
@@ -293,12 +301,15 @@
  			if (isset($pa_options['nullOption']) && strlen($pa_options['nullOption'])) {
  				$vb_null_option = $pa_options['nullOption'];
  			} else {
- 				$vb_null_option = !$vb_require_value ? _t('-NONE-') : null;
+ 				$vb_null_option = !$vb_require_value ? $pa_element_info['settings']['nullOptionText'] : null;
  			}
  			
  			$vs_render = caGetOption('render', $pa_options, caGetOption('render', $pa_element_info['settings'], ''));
  			
- 			return ca_lists::getListAsHTMLFormElement($pa_element_info['list_id'], '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', array('id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}'), array_merge($pa_options, array('render' => $vs_render, 'maxColumns' => $pa_element_info['settings']['maxColumns'], 'element_id' => $pa_element_info['element_id'], 'nullOption' => $vb_null_option)));
+ 			$vn_max_columns = $pa_element_info['settings']['maxColumns'];
+ 			if (!$vb_require_value) { $vn_max_columns++; }
+ 			
+ 			return ca_lists::getListAsHTMLFormElement($pa_element_info['list_id'], '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', array('id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}'), array_merge($pa_options, array('render' => $vs_render, 'maxColumns' => $vn_max_columns, 'element_id' => $pa_element_info['element_id'], 'nullOption' => $vb_null_option)));
  		}
  		# ------------------------------------------------------------------
  		public function getAvailableSettings($pa_element_info=null) {

@@ -159,4 +159,16 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		return null;
 	}
 	# ---------------------------------------
+	/**
+	 * Fetch the id of the root item in list
+	 *
+	 * @param string $ps_list_code List code
+	 * @return int item_id of the root list item or null if no default item was found
+	 */
+	function caGetListRootID($ps_list_code) {
+		$t_list = new ca_lists();
+		
+		return $t_list->getRootListItemID($ps_list_code);
+	}
+	# ---------------------------------------
 ?>

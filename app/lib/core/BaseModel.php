@@ -8106,9 +8106,9 @@ $pa_options["display_form_field_tips"] = true;
 							$vs_max_length = '';
 							if ($vn_max_length > 0) $vs_max_length = 'maxlength="'.$vn_max_length.'"';
 							if ($vn_display_height > 1) {
-								$vs_element = '<'.$vs_text_area_tag_name.' name="'.$pa_options["name"].'" rows="'.$vn_display_height.'" cols="'.$vn_display_width.'" wrap="soft" '.$vs_js.' '.$vs_css_class_attr." style='{$vs_dim_style}'".($pa_options['readonly'] ? ' readonly="readonly" ' : '').">".$this->escapeHTML($vm_field_value).'</'.$vs_text_area_tag_name.'>';
+								$vs_element = '<'.$vs_text_area_tag_name.' name="'.$pa_options["name"].'" id="'.$pa_options["id"].'" rows="'.$vn_display_height.'" cols="'.$vn_display_width.'" wrap="soft" '.$vs_js.' '.$vs_css_class_attr." style='{$vs_dim_style}'".($pa_options['readonly'] ? ' readonly="readonly" ' : '').">".$this->escapeHTML($vm_field_value).'</'.$vs_text_area_tag_name.'>';
 							} else {
-								$vs_element = '<input type="text" name="'.$pa_options["name"].'" value="'.$this->escapeHTML($vm_field_value)."\" size='{$vn_display_width}' {$vs_max_length} {$vs_js} {$vs_css_class_attr}' style='{$vs_dim_style}'".($pa_options['readonly'] ? ' readonly="readonly" ' : '')."/>";
+								$vs_element = '<input type="text" name="'.$pa_options["name"].'" id="'.$pa_options["id"].'" value="'.$this->escapeHTML($vm_field_value)."\" size='{$vn_display_width}' {$vs_max_length} {$vs_js} {$vs_css_class_attr}' style='{$vs_dim_style}'".($pa_options['readonly'] ? ' readonly="readonly" ' : '')."/>";
 							}
 							break;
 					}
@@ -8125,9 +8125,9 @@ $pa_options["display_form_field_tips"] = true;
 							$vs_max_length = '';
 							if ($vn_max_length > 0) $vs_max_length = 'maxlength="'.$vn_max_length.'"';
 							if ($vn_display_height > 1) {
-								$vs_element = '<'.$vs_text_area_tag_name.' name="'.$pa_options["name"].'" rows="'.$vn_display_height.'" cols="'.$vn_display_width.'" wrap="soft" '.$vs_js.' '.$vs_css_class_attr." style='{$vs_dim_style}'".($pa_options['readonly'] ? ' readonly="readonly" ' : '').">".$this->escapeHTML($vm_field_value).'</'.$vs_text_area_tag_name.'>';
+								$vs_element = '<'.$vs_text_area_tag_name.' name="'.$pa_options["name"].'" id="'.$pa_options["id"].'" rows="'.$vn_display_height.'" cols="'.$vn_display_width.'" wrap="soft" '.$vs_js.' '.$vs_css_class_attr." style='{$vs_dim_style}'".($pa_options['readonly'] ? ' readonly="readonly" ' : '').">".$this->escapeHTML($vm_field_value).'</'.$vs_text_area_tag_name.'>';
 							} else {
-								$vs_element = '<input type="text" name="'.$pa_options["name"].'" value="'.$this->escapeHTML($vm_field_value)."\" size='{$vn_display_width}' {$vn_max_length} {$vs_js} {$vs_css_class_attr} style='{$vs_dim_style}'".($pa_options['readonly'] ? ' readonly="readonly" ' : '')."/>";
+								$vs_element = '<input type="text" name="'.$pa_options["name"].'" id="'.$pa_options["id"].'" value="'.$this->escapeHTML($vm_field_value)."\" size='{$vn_display_width}' {$vn_max_length} {$vs_js} {$vs_css_class_attr} style='{$vs_dim_style}'".($pa_options['readonly'] ? ' readonly="readonly" ' : '')."/>";
 							}
 							break;
 					}
@@ -8143,9 +8143,9 @@ $pa_options["display_form_field_tips"] = true;
 							$vs_max_length = '';
 							if ($vn_max_length > 0) $vs_max_length = 'maxlength="'.$vn_max_length.'"';
 							if ($vn_display_height > 1) {
-								$vs_element = '<'.$vs_text_area_tag_name.' name="'.$pa_options["name"].'" rows="'.$vn_display_height.'" cols="'.$vn_display_width.'" wrap="soft" '.$vs_js.' '.$vs_css_class_attr." style='{$vs_dim_style}'".($pa_options['readonly'] ? ' readonly="readonly" ' : '').">".$this->escapeHTML($vm_field_value).'</'.$vs_text_area_tag_name.'>';
+								$vs_element = '<'.$vs_text_area_tag_name.' name="'.$pa_options["name"].'" id="'.$pa_options["id"].'" rows="'.$vn_display_height.'" cols="'.$vn_display_width.'" wrap="soft" '.$vs_js.' '.$vs_css_class_attr." style='{$vs_dim_style}'".($pa_options['readonly'] ? ' readonly="readonly" ' : '').">".$this->escapeHTML($vm_field_value).'</'.$vs_text_area_tag_name.'>';
 							} else {
-								$vs_element = '<input type="text" name="'.$pa_options["name"].'" value="'.$this->escapeHTML($vm_field_value)."\" size='{$vn_display_width}' {$vs_max_length} {$vs_js} {$vs_css_class_attr}  style='{$vs_dim_style}'".($pa_options['readonly'] ? ' readonly="readonly" ' : '')."/>";
+								$vs_element = '<input type="text" name="'.$pa_options["name"].'" id="'.$pa_options["id"].'" value="'.$this->escapeHTML($vm_field_value)."\" size='{$vn_display_width}' {$vs_max_length} {$vs_js} {$vs_css_class_attr}  style='{$vs_dim_style}'".($pa_options['readonly'] ? ' readonly="readonly" ' : '')."/>";
 							}
 							break;
 					}
@@ -8161,15 +8161,15 @@ $pa_options["display_form_field_tips"] = true;
 					$vs_max_length = '';
 					if ($vn_max_length > 0) $vs_max_length = 'maxlength="'.$vn_max_length.'"';
 					if ($vn_display_height > 1) {
-						$vs_element = '<'.$vs_text_area_tag_name.' name="'.$pa_options["name"].'" rows="'.$vn_display_height.'" cols="'.$vn_display_width.'" wrap="soft" '.$vs_js.' '.$vs_css_class_attr." style='{$vs_dim_style}'".($pa_options['readonly'] ? ' readonly="readonly" ' : '').">".$this->escapeHTML($vs_timecode).'</'.$vs_text_area_tag_name.'>';
+						$vs_element = '<'.$vs_text_area_tag_name.' name="'.$pa_options["name"].'" id="'.$pa_options["id"].'" rows="'.$vn_display_height.'" cols="'.$vn_display_width.'" wrap="soft" '.$vs_js.' '.$vs_css_class_attr." style='{$vs_dim_style}'".($pa_options['readonly'] ? ' readonly="readonly" ' : '').">".$this->escapeHTML($vs_timecode).'</'.$vs_text_area_tag_name.'>';
 					} else {
-						$vs_element = '<input type="text" NAME="'.$pa_options["name"].'" value="'.$this->escapeHTML($vs_timecode)."\" size='{$vn_display_width}' {$vs_max_length} {$vs_js} {$vs_css_class_attr} style='{$vs_dim_style}'".($pa_options['readonly'] ? ' readonly="readonly" ' : '')."/>";
+						$vs_element = '<input type="text" NAME="'.$pa_options["name"].'" id="'.$pa_options["id"].'" value="'.$this->escapeHTML($vs_timecode)."\" size='{$vn_display_width}' {$vs_max_length} {$vs_js} {$vs_css_class_attr} style='{$vs_dim_style}'".($pa_options['readonly'] ? ' readonly="readonly" ' : '')."/>";
 					}
 					break;
 				# ----------------------------
 				case(FT_MEDIA):
 				case(FT_FILE):
-					$vs_element = '<input type="file" name="'.$pa_options["name"].'" '.$vs_js.'/>';
+					$vs_element = '<input type="file" name="'.$pa_options["name"].'" id="'.$pa_options["id"].'" '.$vs_js.'/>';
 					
 					// show current media icon 
 					if ($vs_version = (array_key_exists('displayMediaVersion', $pa_options)) ? $pa_options['displayMediaVersion'] : 'icon') {
@@ -8185,7 +8185,7 @@ $pa_options["display_form_field_tips"] = true;
 					$vn_max_length = $va_attr["BOUNDS_LENGTH"][1];
 					$vs_max_length = '';
 					if ($vn_max_length > 0) $vs_max_length = 'maxlength="'.$vn_max_length.'"';
-					$vs_element = '<input type="password" name="'.$pa_options["name"].'" value="'.$this->escapeHTML($vm_field_value).'" size="'.$vn_display_width.'" '.$vs_max_length.' '.$vs_js.' autocomplete="off" '.$vs_css_class_attr." style='{$vs_dim_style}'".($pa_options['readonly'] ? ' readonly="readonly" ' : '')."/>";
+					$vs_element = '<input type="password" name="'.$pa_options["name"].'" id="'.$pa_options["id"].'" value="'.$this->escapeHTML($vm_field_value).'" size="'.$vn_display_width.'" '.$vs_max_length.' '.$vs_js.' autocomplete="off" '.$vs_css_class_attr." style='{$vs_dim_style}'".($pa_options['readonly'] ? ' readonly="readonly" ' : '')."/>";
 					break;
 				# ----------------------------
 				case(FT_BIT):
@@ -8393,8 +8393,8 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param string $ps_source_info Text field for storing information about source of relationship. Not currently used.
 	 * @param string $ps_direction Optional direction specification for self-relationships (relationships linking two rows in the same table). Valid values are 'ltor' (left-to-right) and  'rtol' (right-to-left); the direction determines which "side" of the relationship the currently loaded row is on: 'ltor' puts the current row on the left side. For many self-relations the direction determines the nature and display text for the relationship.
 	 * @param array $pa_options Array of additional options:
-	 *		allowDuplicates = if set to true, attempts to add a relationship that already exists will succeed. Default is false ��� duplicate relationships will not be created.
-	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to add a duplicate relationship. Default is false ��� don't set error. addRelationship() will always return false when creation of a duplicate relationship fails, no matter how the setErrorOnDuplicate option is set.
+	 *		allowDuplicates = if set to true, attempts to add a relationship that already exists will succeed. Default is false - duplicate relationships will not be created.
+	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to add a duplicate relationship. Default is false - don't set error. addRelationship() will always return false when creation of a duplicate relationship fails, no matter how the setErrorOnDuplicate option is set.
 	 * @return BaseRelationshipModel Loaded relationship model instance on success, false on error.
 	 */
 	public function addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {

@@ -760,7 +760,7 @@ function caFileIsIncludable($ps_file) {
 	 *		12 ⅔ ft (= 12.667 ft)
 	 *		"Total is 12 3/4 lbs" (= "Total is 12.75 lbs")
 	 *
-	 * Both text fractions (ex. 3/4) and Unicode fraction glyphs (ex. ��) may be used.
+	 * Both text fractions (ex. 3/4) and Unicode fraction glyphs (ex. ¾) may be used.
 	 *
 	 * @param string $ps_fractional_expression String including fractional expression to convert
 	 * @param string $locale The locale of the string to use the right decimal separator
@@ -1138,9 +1138,9 @@ function caFileIsIncludable($ps_file) {
 				break;
 			case 'document':
 				if ($vb_return_as_regex) {
-					return 'application/pdf|application/postscript|text/xml|text/html|text/plain|application/msword';
+					return 'application/pdf|application/postscript|text/xml|text/html|text/plain|application/msword|officedocument';
 				} else {
-					return array('application/pdf', 'application/postscript', 'text/xml', 'text/html', 'text/plain', 'application/msword');
+					return array('application/pdf', 'application/postscript', 'text/xml', 'text/html', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
 				}
 				break;
 		}
@@ -2000,7 +2000,7 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Convert currency value to another currency.
 	 *
-	 * @param $ps_value string Currency value with specifier (Ex. $500, USD 500, ��1200, CAD 750)
+	 * @param $ps_value string Currency value with specifier (Ex. $500, USD 500, ¥1200, CAD 750)
 	 * @param $ps_to string Specifier of currency to convert value to (Ex. USD, CAD, EUR)
 	 * @param $pa_options array Options are:
 	 *		numericValue = return floating point numeric value only, without currency specifier. Default is false.
@@ -2032,6 +2032,27 @@ function caFileIsIncludable($ps_file) {
 		} catch (Exception $e) {
 			return null;
 		}
+	}
+	# ----------------------------------------
+	/**
+	 * 
+	 *
+	 * @return array 
+	 */
+	function caParseTagOptions($ps_tag, $pa_options=null) {
+		$vs_tag_proc = $ps_tag;
+		$va_opts = array();
+		if (sizeof($va_tmp = explode('%', $ps_tag)) > 1) {
+			$vs_tag_proc = array_shift($va_tmp);
+			$va_params_raw = explode("&", join("%", $va_tmp));
+		
+			foreach($va_params_raw as $vs_param_raw) {
+				$va_tmp = explode('=', $vs_param_raw);
+				$va_opts[$va_tmp[0]] = $va_tmp[1];
+			}
+		}
+		
+		return array('tag' => $vs_tag_proc, 'options' => $va_opts);
 	}
 	# ----------------------------------------
 ?>
