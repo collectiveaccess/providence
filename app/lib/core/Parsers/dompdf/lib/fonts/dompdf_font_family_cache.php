@@ -175,7 +175,7 @@
   array (
     'normal' => DOMPDF_FONT_DIR . 'SansLightPlain',
     'bold' => DOMPDF_FONT_DIR . 'SansLightPlain',
-    'italic' => DOMPDF_FONT_DIR . 'SansLightPlain',
+    'italic' => DOMPDF_FONT_DIR . 'SansLightItalic',
     'bold_italic' => DOMPDF_FONT_DIR . 'SansLightPlain',
   ),
 ) ?>
