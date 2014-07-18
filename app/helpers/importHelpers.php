@@ -659,9 +659,8 @@
 						if(!is_array($va_attr_vals)) { $va_attr_vals = array(); }
 						$va_attr_vals_with_parent = array_merge($va_attr_vals, array('parent_id' => $va_val['parent_id'] ? $va_val['parent_id'] : $va_val['_parent_id']));
 
-					
-						$pa_options = array_merge(array('matchOn' => array('idno', 'label'), $pa_options));
-					
+						$pa_options = array('matchOn' => array('idno', 'label')) +  $pa_options;
+						
 						switch($ps_table) {
 							case 'ca_objects':
 								$vn_item_id = DataMigrationUtils::getObjectID($vs_item, $va_val['parent_id'], $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
@@ -694,7 +693,6 @@
 							case 'ca_list_items':
 								$va_attr_vals_with_parent['is_enabled'] = 1;
 								$vn_item_id = DataMigrationUtils::getListItemID($pa_options['list_id'], $vs_item, $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
-							
 								break;
 							case 'ca_storage_locations':
 								$vn_item_id = DataMigrationUtils::getStorageLocationID($vs_item, $va_val['parent_id'], $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
@@ -709,8 +707,10 @@
 						}
 					
 						if ($vn_item_id) {
-							$po_refinery_instance->setReturnsMultipleValues(false);
-							return $vn_item_id;
+							//$po_refinery_instance->setReturnsMultipleValues(false);
+							//return $vn_item_id;
+							$va_vals[][$vs_terminal] = $vn_item_id;
+							continue;
 						} else {
 							if ($o_log) { $o_log->logError(_t("[{$ps_refinery_name}Refinery] Could not add %2 %1", $vs_item, $ps_item_prefix)); }
 						}
