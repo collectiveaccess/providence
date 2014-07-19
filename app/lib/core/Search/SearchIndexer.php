@@ -918,6 +918,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 								'field_name' => $vs_fld_name,
 								'field_row_id' => $va_row_to_reindex['field_row_id'],
 								'field_values' => $va_row_to_reindex['field_values'],
+								'relationship_type_id' => $va_row_to_reindex['relationship_type_id'],
 								'indexing_info' => $va_row_to_reindex['indexing_info'][$vs_fld_name]
 							);
 						}
@@ -938,6 +939,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 				
 				$o_indexer = new SearchIndexer($this->opo_db);
 				foreach($va_rows_to_reindex_by_row_id as $va_row_to_reindex) {
+					$vn_rel_type_id = $va_row_to_reindex['relationship_type_id'];
 					$t_rel = $this->opo_datamodel->getInstanceByTableNum($va_row_to_reindex['field_table_num'], true);
 					
 					if (substr($va_row_to_reindex['field_name'], 0, 14) == '_ca_attribute_') {		// is attribute
@@ -951,7 +953,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 						
 						$vs_content = is_array($va_content['values']) ? join(" ", $va_content['values']) : "";
 						
-						$this->opo_engine->updateIndexingInPlace($va_row_to_reindex['table_num'], $va_row_to_reindex['row_ids'], $va_row_to_reindex['field_table_num'], $va_row_to_reindex['field_num'], $va_row_to_reindex['field_row_id'], $vs_content, array_merge($va_row_to_reindex['indexing_info'], array('literalContent' => $va_content['path'])));
+						$this->opo_engine->updateIndexingInPlace($va_row_to_reindex['table_num'], $va_row_to_reindex['row_ids'], $va_row_to_reindex['field_table_num'], $va_row_to_reindex['field_num'], $va_row_to_reindex['field_row_id'], $vs_content, array_merge($va_row_to_reindex['indexing_info'], array('relationship_type_id' => $vn_rel_type_id, 'literalContent' => $va_content['path'])));
 					} else {
 						$vs_element_code = substr($va_row_to_reindex['field_name'], 14);
 						
@@ -1011,7 +1013,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 										$vs_v = join(' ;  ', array_merge(array($vn_item_id), array_keys($va_new_values[$vn_item_id])));	
 									}
 				
-									$this->opo_engine->updateIndexingInPlace($va_row_to_reindex['table_num'], $va_row_to_reindex['row_ids'], $va_row_to_reindex['field_table_num'], $va_row_to_reindex['field_num'], $va_row_to_reindex['field_row_id'], $vs_v, $va_row_to_reindex['indexing_info']);
+									$this->opo_engine->updateIndexingInPlace($va_row_to_reindex['table_num'], $va_row_to_reindex['row_ids'], $va_row_to_reindex['field_table_num'], $va_row_to_reindex['field_num'], $va_row_to_reindex['field_row_id'], $vs_v, array_merge($va_row_to_reindex['indexing_info'], array('relationship_type_id' => $vn_rel_type_id)));
 
 									break;
 								default:
@@ -1030,11 +1032,11 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 										if(!$vn_item_id) { continue; }
 										$vs_v = join(' ;  ', $va_tmp);	
 									}
-									$this->opo_engine->updateIndexingInPlace($va_row_to_reindex['table_num'], $va_row_to_reindex['row_ids'], $va_row_to_reindex['field_table_num'], $va_row_to_reindex['field_num'], $va_row_to_reindex['field_row_id'], $vs_v, $va_row_to_reindex['indexing_info']);
+									$this->opo_engine->updateIndexingInPlace($va_row_to_reindex['table_num'], $va_row_to_reindex['row_ids'], $va_row_to_reindex['field_table_num'], $va_row_to_reindex['field_num'], $va_row_to_reindex['field_row_id'], $vs_v, array_merge($va_row_to_reindex['indexing_info'], array('relationship_type_id' => $vn_rel_type_id)));
 									break;
 							}
 						} else {			
-							$this->opo_engine->updateIndexingInPlace($va_row_to_reindex['table_num'], $va_row_to_reindex['row_ids'], $va_row_to_reindex['field_table_num'], $va_row_to_reindex['field_num'], $va_row_to_reindex['field_row_id'], $va_row_to_reindex['field_values'][$va_row_to_reindex['field_name']], $va_row_to_reindex['indexing_info']);
+							$this->opo_engine->updateIndexingInPlace($va_row_to_reindex['table_num'], $va_row_to_reindex['row_ids'], $va_row_to_reindex['field_table_num'], $va_row_to_reindex['field_num'], $va_row_to_reindex['field_row_id'], $va_row_to_reindex['field_values'][$va_row_to_reindex['field_name']], array_merge($va_row_to_reindex['indexing_info'], array('relationship_type_id' => $vn_rel_type_id)));
 						}
 					}
 				}
@@ -1391,6 +1393,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 									
 									$vn_fld_row_id = $qr_rel_rows->get($vn_rel_pk);
 									$vn_row_id = $qr_rel_rows->get($vs_dep_pk);
+									$vn_rel_type_id = $qr_rel_rows->get('type_id');
 									$vs_key = $vn_dep_tablenum.'/'.$vn_row_id.'/'.$vn_rel_tablenum.'/'.$vn_fld_row_id;
 									
 									if (!isset($va_dependent_rows[$vs_key])) {
@@ -1400,6 +1403,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 											'field_table_num' => $vn_rel_tablenum,
 											'field_row_id' => $vn_fld_row_id,
 											'field_values' => $qr_rel_rows->getRow(),
+											'relationship_type_id' => $vn_rel_type_id,
 											'field_nums' => array(),
 											'field_names' => array()
 										);

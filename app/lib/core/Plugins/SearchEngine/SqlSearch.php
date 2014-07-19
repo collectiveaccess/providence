@@ -397,8 +397,13 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		return true;
 	}
 	# -------------------------------------------------------
-	private function _getElementIDForAccessPoint($ps_access_point) {
-		list($vs_table, $vs_field) = explode('.', $ps_access_point);
+	private function _getElementIDForAccessPoint($pn_subject_tablenum, $ps_access_point) {
+		$va_tmp = explode('/', $ps_access_point);
+		list($vs_table, $vs_field) = explode('.', $va_tmp[0]);
+		
+		$vs_rel_table = caGetRelationshipTableName($pn_subject_tablenum, $vs_table);
+		$va_rel_type_ids = ($va_tmp[1] && $vs_rel_table) ? caMakeRelationshipTypeIDList($vs_rel_table, array($va_tmp[1])) : null;
+		
 		if (!($t_table = $this->opo_datamodel->getInstanceByTableName($vs_table, true))) { return null; }
 		$vs_table_num = $t_table->tableNum();
 		
@@ -413,12 +418,12 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			if ($t_element->load(array('element_code' => $vs_field))) {
 				switch ($t_element->get('datatype')) {
 					default:
-						return array('table_num' => $vs_table_num, 'element_id' => $t_element->getPrimaryKey(), 'field_num' => 'A'.$t_element->getPrimaryKey(), 'datatype' => $t_element->get('datatype'), 'element_info' => $t_element->getFieldValuesArray());
+						return array('access_point' => $va_tmp[0], 'relationship_type' => $va_tmp[1], 'table_num' => $vs_table_num, 'element_id' => $t_element->getPrimaryKey(), 'field_num' => 'A'.$t_element->getPrimaryKey(), 'datatype' => $t_element->get('datatype'), 'element_info' => $t_element->getFieldValuesArray(), 'relationship_type_ids' => $va_rel_type_ids);
 						break;
 				}
 			}
 		} else {
-			return array('table_num' => $vs_table_num, 'field_num' => 'I'.$vs_fld_num, 'field_num_raw' => $vs_fld_num, 'datatype' => null);
+			return array('access_point' => $va_tmp[0], 'relationship_type' => $va_tmp[1], 'table_num' => $vs_table_num, 'field_num' => 'I'.$vs_fld_num, 'field_num_raw' => $vs_fld_num, 'datatype' => null, 'relationship_type_ids' => $va_rel_type_ids);
 		}
 
 		return null;
@@ -443,7 +448,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			
 			
 			$va_direct_query_temp_tables = array();	// List of temporary tables created by direct search queries; tables listed here are dropped at the end of processing for the query element		
-			
 			
 			switch(get_class($o_lucene_query_element)) {
 				case 'Zend_Search_Lucene_Search_Query_Boolean':
@@ -527,7 +531,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						case 'Zend_Search_Lucene_Search_Query_Range':
 							$va_lower_term = $o_lucene_query_element->getLowerTerm();
 							$va_upper_term = $o_lucene_query_element->getUpperTerm();
-							$va_element = $this->_getElementIDForAccessPoint($va_lower_term->field);
+							$va_element = $this->_getElementIDForAccessPoint($pn_subject_tablenum, $va_lower_term->field);
 							
 							switch($va_element['datatype']) {
 								case __CA_ATTRIBUTE_VALUE_GEOCODE__:
@@ -650,15 +654,19 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							
 							$va_ap_tmp = explode(".", $vs_access_point);
 							$vn_fld_table = $vn_fld_num = null;
-							if(sizeof($va_ap_tmp) == 2) {
-								$va_element = $this->_getElementIDForAccessPoint($vs_access_point);
+							if(sizeof($va_ap_tmp) >= 2) {
+								$va_element = $this->_getElementIDForAccessPoint($pn_subject_tablenum, $vs_access_point);
+								
 								if ($va_element) {
 									$vs_fld_num = $va_element['field_num'];
 									$vs_fld_table_num = $va_element['table_num'];
 									$vs_fld_limit_sql = " AND (swi.field_table_num = {$vs_fld_table_num} AND swi.field_num = '{$vs_fld_num}')";
+									
+									if (is_array($va_element['relationship_type_ids']) && sizeof($va_element['relationship_type_ids'])) {
+										$vs_fld_limit_sql .= " AND (swi.rel_type_id IN (".join(",", $va_element['relationship_type_ids'])."))";
+									}
 								}
 							}
-							
 							
 							$va_temp_tables = array();
 							$vn_w = 0;
@@ -716,7 +724,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							}
 							break;
 						default:
-							$vs_access_point = $o_lucene_query_element->getTerm()->field;
+							$va_access_point_info = $this->_getElementIDForAccessPoint($pn_subject_tablenum, $o_lucene_query_element->getTerm()->field);
+							$vs_access_point = $va_access_point_info['access_point'];
+							
 							$vs_term = $o_lucene_query_element->getTerm()->text;
 						
 							if ($vs_access_point && (mb_strtoupper($vs_term) == _t('[BLANK]'))) {
@@ -1129,6 +1139,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						$va_ft_terms = $va_ft_like_terms = $va_ft_like_terms = array();
 					}
 					
+					$vs_rel_type_id_sql = null;
+					if((is_array($va_access_point_info['relationship_type_ids']) && sizeof($va_access_point_info['relationship_type_ids']))) {
+						$vs_rel_type_id_sql = " AND (swi.rel_type_id IN (".join(",", $va_access_point_info['relationship_type_ids'])."))";
+					}
 					
 					//print "OP=$vs_op<br>";
 					if ($vn_i == 0) {
@@ -1144,6 +1158,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								{$vs_sql_where}
 								AND
 								swi.table_num = ?
+								{$vs_rel_type_id_sql}
 								".($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '')."
 							GROUP BY swi.row_id 
 						";
@@ -1172,6 +1187,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										{$vs_sql_where}
 										AND
 										swi.table_num = ?
+										{$vs_rel_type_id_sql}
 										".($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '')."
 									GROUP BY
 										swi.row_id
@@ -1201,6 +1217,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									INNER JOIN ca_sql_search_word_index AS swi ON sw.word_id = swi.word_id
 									WHERE 
 										".($vs_sql_where ? "{$vs_sql_where} AND " : "")." swi.table_num = ? 
+										{$vs_rel_type_id_sql}
 										".($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '');
 								
 								//print "$vs_sql<hr>";
@@ -1232,6 +1249,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										{$vs_sql_where}
 										AND
 										swi.table_num = ?
+										{$vs_rel_type_id_sql}
 										".($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '')."
 									GROUP BY
 										swi.row_id

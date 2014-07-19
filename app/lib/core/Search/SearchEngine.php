@@ -834,13 +834,14 @@ class SearchEngine extends SearchBase {
 			}
 		}
 		
-		// is it preferred labels? Rewrite the field for that.
-		$va_tmp = explode('.', $vs_fld);
-		if ($va_tmp[1] == 'preferred_labels') {
-			if ($t_instance = $this->opo_datamodel->getInstanceByTableName($va_tmp[0], true)) {
+		// is it a label? Rewrite the field for that.
+		$va_tmp = explode('/', $vs_fld);
+		$va_tmp2 = explode('.', $va_tmp[0]);
+		if (in_array($va_tmp2[1], array('preferred_labels', 'nonpreferred_labels'))) {
+			if ($t_instance = $this->opo_datamodel->getInstanceByTableName($va_tmp2[0], true)) {
 				if (method_exists($t_instance, "getLabelTableName")) {
 					return array(
-						'terms' => array(new Zend_Search_Lucene_Index_Term($po_term->getTerm()->text, $t_instance->getLabelTableName().'.'.$t_instance->getLabelDisplayField())),
+						'terms' => array(new Zend_Search_Lucene_Index_Term($po_term->getTerm()->text, $t_instance->getLabelTableName().'.'.$t_instance->getLabelDisplayField().($va_tmp[1] ? '/'.$va_tmp[1] : ''))),
 						'signs' => array($pb_sign)
 					);
 				}
@@ -892,13 +893,14 @@ class SearchEngine extends SearchBase {
 			}
 		}
 		
-		// is it preferred labels? Rewrite the field for that.
-		$va_tmp = explode('.', $vs_fld);
-		if ($va_tmp[1] == 'preferred_labels') {
-			if ($t_instance = $this->opo_datamodel->getInstanceByTableName($va_tmp[0], true)) {
+		// is it a labels? Rewrite the field for that.
+		$va_tmp = explode('/', $vs_fld);
+		$va_tmp2 = explode('.', $va_tmp[0]);
+		if (in_array($va_tmp2[1], array('preferred_labels', 'nonpreferred_labels'))) {
+			if ($t_instance = $this->opo_datamodel->getInstanceByTableName($va_tmp2[0], true)) {
 				if (method_exists($t_instance, "getLabelTableName")) {
 					return array(
-						'terms' => array(new Zend_Search_Lucene_Search_Query_Phrase($va_index_term_strings, null, $t_instance->getLabelTableName().'.'.$t_instance->getLabelDisplayField())),
+						'terms' => array(new Zend_Search_Lucene_Search_Query_Phrase($va_index_term_strings, null, $t_instance->getLabelTableName().'.'.$t_instance->getLabelDisplayField().($va_tmp[1] ? '/'.$va_tmp[1] : ''))),
 						'signs' => array($pb_sign)
 					);
 				}
