@@ -306,6 +306,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Skip group if expression'),
 			'description' => _t('Skip all of the elements in the group if value for the expression is true.')
 		);
+		$va_settings['skipIfExpression'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Skip if expression'),
+			'description' => _t('Skip mapping if value for the expression is true.')
+		);
 		$va_settings['default'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,

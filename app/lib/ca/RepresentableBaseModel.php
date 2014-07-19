@@ -804,6 +804,43 @@
 			return false;
 		}
 		# ------------------------------------------------------
+		/** 
+		 * Link existing media represention to currently loaded item
+		 *
+		 * @param $pn_representation_id - 
+		 * @param $pb_is_primary - if set to true, representation is designated "primary." Primary representation are used in cases where only one representation is required (such as search results). If a primary representation is already attached to this item, then it will be changed to non-primary as only one representation can be primary at any given time. If no primary representations exist, then the new representation will always be marked primary no matter what the setting of this parameter (there must always be a primary representation, if representations are defined).
+		 * @param $pa_options - an array of options passed through to BaseModel::set() when creating the new representation. Currently supported options:
+		 *		rank - a numeric rank used to order the representations when listed
+		 *
+		 * @return mixed Returns primary key (link_id) of the relatipnship row linking the  representation to the item; boolean false is returned on error
+		 */
+		public function linkRepresentation($pn_representation_id, $pb_is_primary, $pa_options=null) {
+			if (!($vn_id = $this->getPrimaryKey())) { return null; }
+			if (!$pn_locale_id) { $pn_locale_id = ca_locales::getDefaultCataloguingLocaleID(); }
+		
+			if (!ca_object_representations::find(array('representation_id' => $pn_representation_id), array('transaction' => $this->getTransaction()))) { return null; }
+			if (!($t_oxor = $this->_getRepresentationRelationshipTableInstance())) { return null; }
+			$vs_pk = $this->primaryKey();
+			
+			if ($this->inTransaction()) {
+				$t_oxor->setTransaction($this->getTransaction());
+			}
+			$t_oxor->setMode(ACCESS_WRITE);
+			$t_oxor->set($vs_pk, $vn_id);
+			$t_oxor->set('representation_id', $pn_representation_id);
+			$t_oxor->set('is_primary', $pb_is_primary ? 1 : 0);
+			$t_oxor->set('rank', isset($pa_options['rank']) ? (int)$pa_options['rank'] : $pn_representation_id);
+			if ($t_oxor->hasField('type_id')) { $t_oxor->set('type_id', isset($pa_options['type_id']) ? (int)$pa_options['type_id'] : null); }
+			$t_oxor->insert();
+		
+		
+			if ($t_oxor->numErrors()) {
+				$this->errors = array_merge($this->errors, $t_oxor->errors());
+				return false;
+			}
+			return $t_oxor->getPrimaryKey();
+		}
+		# ------------------------------------------------------
 		/**
 		 * Returns number of representations attached to the current item of the specified class. 
 		 *

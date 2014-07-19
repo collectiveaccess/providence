@@ -263,12 +263,28 @@ class BaseXMLDataReader extends BaseDataReader {
 		
 		$va_values = array();
 		foreach($o_node_list as $o_node) {
-			$va_values[] = $o_node->nodeValue;
+			//$va_values[] = $o_node->nodeValue;
+			$va_values[] = $this->getInnerXML($o_node);
 		}
 		
 		if ($vb_return_as_array) { return $va_values; }
 		return join($vs_delimiter, $va_values);
 	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @return string
+	 */
+	private function getInnerXML($po_node) { 
+		$vs_buf = ''; 
+		$vo_children = $po_node->childNodes; 
+		foreach ($vo_children as $vo_child) { 
+			$vs_buf .= $vo_child->ownerDocument->saveXML( $vo_child ); 
+		} 
+
+		return $vs_buf;  
+    }
 	# -------------------------------------------------------
 	/**
 	 * 
