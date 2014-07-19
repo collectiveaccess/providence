@@ -509,6 +509,8 @@ class Datamodel {
 	 *
 	 */
 	public function getPath($ps_left_table, $ps_right_table) {
+		if (is_numeric($ps_left_table)) { $ps_left_table = $this->getTableName($ps_left_table); }
+		if (is_numeric($ps_right_table)) { $ps_right_table = $this->getTableName($ps_right_table); }
 		if (isset(DataModel::$s_get_path_cache[$ps_left_table.'/'.$ps_right_table])) { return DataModel::$s_get_path_cache[$ps_left_table.'/'.$ps_right_table]; }
 		
 		$vo_cache = $this->_getCacheObject();

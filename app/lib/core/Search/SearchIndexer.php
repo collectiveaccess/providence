@@ -588,6 +588,7 @@ class SearchIndexer extends SearchBase {
 						// if the field is a daterange type get content from start and end fields
 						$start_field = $va_field_list[$vs_field]['START'];
 						$end_field = $va_field_list[$vs_field]['END'];
+						if(!$pa_field_data[$start_field] || !$pa_field_data[$start_field]) { continue; }
 						$pn_content = $pa_field_data[$start_field] . " - " .$pa_field_data[$end_field];
 					} else {
 						$va_content = array();
