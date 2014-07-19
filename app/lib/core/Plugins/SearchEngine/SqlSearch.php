@@ -94,7 +94,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		$this->ops_insert_word_index_sql = "
 			INSERT  INTO ca_sql_search_word_index
-			(table_num, row_id, field_table_num, field_num, field_row_id, word_id, boost, access)
+			(table_num, row_id, field_table_num, field_num, field_row_id, word_id, boost, access, rel_type_id)
 			VALUES
 		";
 		
@@ -152,7 +152,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		if (!is_array(WLPlugSearchEngineSqlSearch::$s_metadata_elements)) {
 			WLPlugSearchEngineSqlSearch::$s_metadata_elements = ca_metadata_elements::getRootElementsAsList();
 		}
-		$this->debug = true;
+		$this->debug = false;
 	}
 	# -------------------------------------------------------
 	# Initialization and capabilities
@@ -838,7 +838,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 												// This allows us to do "intelligent" querying... for example on date ranges
 												// parsed from natural language input and for length dimensions using unit conversion
 												//
-												Debug::msg("datatype is ".$t_element->get('datatype')."/".__CA_ATTRIBUTE_VALUE_DATERANGE__);
 												switch($t_element->get('datatype')) {
 													case __CA_ATTRIBUTE_VALUE_DATERANGE__:	
 														$vb_all_numbers = true;
@@ -1290,6 +1289,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		}
 		$vb_tokenize = $pa_options['DONT_TOKENIZE'] ? false : true;
 		
+		$vn_rel_type_id = (isset($pa_options['relationship_type_id']) && ($pa_options['relationship_type_id'] > 0)) ? (int)$pa_options['relationship_type_id'] : 0;
+		
 		if (!isset($pa_options['PRIVATE'])) { $pa_options['PRIVATE'] = 0; }
 		if (in_array('PRIVATE', $pa_options, true)) { $pa_options['PRIVATE'] = 1; }
 		$vn_private = $pa_options['PRIVATE'] ? 1 : 0;
@@ -1333,13 +1334,13 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			$this->removeRowIndexing($this->opn_indexing_subject_tablenum, $this->opn_indexing_subject_row_id, $pn_content_tablenum, $ps_content_fieldname);
 		}
 		if (!$va_words) {
-			WLPlugSearchEngineSqlSearch::$s_doc_content_buffer[] = '('.$this->opn_indexing_subject_tablenum.','.$this->opn_indexing_subject_row_id.','.$pn_content_tablenum.',\''.$ps_content_fieldname.'\','.$pn_content_row_id.',0,0,'.$vn_private.')';
+			WLPlugSearchEngineSqlSearch::$s_doc_content_buffer[] = '('.$this->opn_indexing_subject_tablenum.','.$this->opn_indexing_subject_row_id.','.$pn_content_tablenum.',\''.$ps_content_fieldname.'\','.$pn_content_row_id.',0,0,'.$vn_private.','.$vn_rel_type_id.')';
 		} else {
 			foreach($va_words as $vs_word) {
 				if(!strlen($vs_word)) { continue; }
 				if (!($vn_word_id = (int)$this->getWordID($vs_word))) { continue; }
 			
-				WLPlugSearchEngineSqlSearch::$s_doc_content_buffer[] = '('.$this->opn_indexing_subject_tablenum.','.$this->opn_indexing_subject_row_id.','.$pn_content_tablenum.',\''.$ps_content_fieldname.'\','.$pn_content_row_id.','.$vn_word_id.','.$vn_boost.','.$vn_private.')';
+				WLPlugSearchEngineSqlSearch::$s_doc_content_buffer[] = '('.$this->opn_indexing_subject_tablenum.','.$this->opn_indexing_subject_row_id.','.$pn_content_tablenum.',\''.$ps_content_fieldname.'\','.$pn_content_row_id.','.$vn_word_id.','.$vn_boost.','.$vn_private.','.$vn_rel_type_id.')';
 			}
 		}
 	}
@@ -1488,6 +1489,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		if (in_array('PRIVATE', $pa_options, true)) { $pa_options['PRIVATE'] = 1; }
 		$vn_private = $pa_options['PRIVATE'] ? 1 : 0;
 		
+		$vn_rel_type_id = (int)caGetOption('relationship_type_id', $pa_options, 0);
 		
 		$va_row_insert_sql = array();
 		
@@ -1507,14 +1509,14 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			$vn_seq = 0;
 			foreach($va_words as $vs_word) {
 				if (!($vn_word_id = $this->getWordID($vs_word))) { continue; }
-				$va_row_insert_sql[] = "({$pn_subject_tablenum}, {$vn_row_id}, {$pn_content_tablenum}, '{$ps_content_fieldnum}', {$pn_content_row_id}, {$vn_word_id}, {$vn_boost}, {$vn_private})";
+				$va_row_insert_sql[] = "({$pn_subject_tablenum}, {$vn_row_id}, {$pn_content_tablenum}, '{$ps_content_fieldnum}', {$pn_content_row_id}, {$vn_word_id}, {$vn_boost}, {$vn_private}, {$vn_rel_type_id})";
 				$vn_seq++;
 			}
 			
 			if (is_array($va_literal_content)) {
 				foreach($va_literal_content as $vs_literal) {
 					if (!($vn_word_id = $this->getWordID($vs_literal))) { continue; }
-					$va_row_insert_sql[] = "({$pn_subject_tablenum}, {$vn_row_id}, {$pn_content_tablenum}, '{$ps_content_fieldnum}', {$pn_content_row_id}, {$vn_word_id}, {$vn_boost}, {$vn_private})";
+					$va_row_insert_sql[] = "({$pn_subject_tablenum}, {$vn_row_id}, {$pn_content_tablenum}, '{$ps_content_fieldnum}', {$pn_content_row_id}, {$vn_word_id}, {$vn_boost}, {$vn_private}, {$vn_rel_type_id})";
 					$vn_seq++;
 				}
 			}
