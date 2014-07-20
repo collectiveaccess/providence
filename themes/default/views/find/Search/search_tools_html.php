@@ -31,7 +31,7 @@
 <div id="searchToolsBox">
 	<div class="bg">
 <?php
-	if (is_array($va_forms = $this->getVar('print_forms')) && sizeof($va_forms)) {
+	if (is_array($va_forms = $this->getVar('label_formats')) && sizeof($va_forms)) {
 ?>
 		<div class="col">
 <?php
@@ -39,7 +39,7 @@
 			print caFormTag($this->request, 'printLabels', 'caPrintLabelsForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); 
 	
 			$va_options = array();
-			foreach($this->getVar('print_forms') as $vn_ => $va_form_info) {
+			foreach($this->getVar('label_formats') as $vn_ => $va_form_info) {
 				$va_options[$va_form_info['name']] = $va_form_info['code'];
 			}
 			

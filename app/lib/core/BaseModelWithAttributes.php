@@ -617,7 +617,7 @@
 				return $vn_rc;
 			}
 			
-			if ($o_trans) { $o_trans->rollback(); }
+			if ($o_trans) { $vn_rc ? $o_trans->commit() : $o_trans->rollback(); }
 			if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 			return $vn_rc;
 		}
@@ -1092,8 +1092,8 @@
 		 *
 		 * @return string - idno (aka "item code") for current row's type or null if no row is loaded or model does not support types
 		 */
-		public function getTypeCode() {
-			if ($t_list_item = $this->getTypeInstance()) {
+		public function getTypeCode($pn_type_id=null) {
+			if ($t_list_item = $this->getTypeInstance($pn_type_id)) {
 				return $t_list_item->get('idno');
 			}
 			return null;
@@ -1241,6 +1241,7 @@
 		  * 
 		  */
 		public function htmlFormElementForSearch($po_request, $ps_field, $pa_options=null) {
+			if(!$pa_options) { $pa_options = array(); }
 			$va_tmp = explode('.', $ps_field);
 			
 			if (!in_array($va_tmp[0], array('created', 'modified'))) {		// let change log searches filter down to BaseModel
@@ -1483,6 +1484,8 @@
 				return false;
 			}
 			
+			$vs_element_code = $t_element->get('element_code');
+			
 			// get all elements of this element set
 			$va_element_set = $t_element->getElementsInSet();
 			
@@ -1514,8 +1517,9 @@
 				
 				$va_label = $this->getAttributeLabelAndDescription($va_element['element_id']);
 				
-				$vs_element = $this->tableName().'.'.$va_element['element_code'];
-				$vs_value = (isset($pa_options['values']) && isset($pa_options['values'][$vs_element])) ? $pa_options['values'][$vs_element] : '';
+				$vs_subelement_code = $this->tableName().'.'.(($vs_element_code !== $va_element['element_code']) ? "{$vs_element_code}." : "").$va_element['element_code'];
+				
+				$vs_value = (isset($pa_options['values']) && isset($pa_options['values'][$vs_subelement_code])) ? $pa_options['values'][$vs_subelement_code] : '';
 				
 				$va_element_opts = array_merge(array(
 					'label' => $va_label['name'],
@@ -1524,8 +1528,8 @@
 					'request' => $po_request,
 					'nullOption' => '-',
 					'value' => $vs_value,
-					'forSearch' => true
-					//'render' => 'lookup'
+					'forSearch' => true,
+					'render' => (isset($va_element['settings']['render']) && ($va_element['settings']['render'] == 'lookup')) ? $va_element['settings']['render'] : 'select'
 				), array_merge($pa_options, $va_override_options));
 				
 				// We don't want to pass the entire set of values to ca_attributes::attributeHtmlFormElement() since it'll treat it as a simple list
@@ -1541,7 +1545,7 @@
 				$vs_form_element = str_replace('{{'.$va_element['element_id'].'}}', $vs_value, $vs_form_element);
 				
 				// ... replace name of form element
-				$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_{n}', str_replace('.', '_', $this->tableName().'.'.$va_element['element_code']), $vs_form_element);
+				$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_{n}', str_replace('.', '_', $vs_subelement_code), $vs_form_element);
 				
 				$vs_form_element = str_replace('{n}', '', $vs_form_element);
 				$vs_form_element = str_replace('{'. $va_element['element_id'].'}', '', $vs_form_element);
@@ -1924,8 +1928,8 @@
 		 * @return bool True on success, false if an error occurred
 		 *
 		 * Supported options
-		 *	restrictToAttributesByCodes = array of attributes codes to restrict the duplication
-		 *	restrictToAttributesByIds = array of attributes ids to restrict the duplication
+		 *	restrictToAttributesByCodes = array of element codes to restrict the duplication to
+		 *	restrictToAttributesByIds = array of element ids to restrict the duplication to
 		 *
 		 */
 		public function copyAttributesTo($pn_row_id, $pa_options=null) {
@@ -1937,8 +1941,8 @@
 				$vb_we_set_transaction = true;
 			}
 
-			$va_restrictToAttributesByCodes = caGetOption('restrictToAttributesByCodes', $pa_options, null);
-			$va_restrictToAttributesByIds = caGetOption('restrictToAttributesByIds', $pa_options, null);
+			$va_restrictToAttributesByCodes = caGetOption('restrictToAttributesByCodes', $pa_options, array());
+			$va_restrictToAttributesByIds = caGetOption('restrictToAttributesByIds', $pa_options, array());
 
 			if (!($t_dupe = $this->_DATAMODEL->getInstanceByTableNum($this->tableNum()))) { return null; }
 			$t_dupe->purify($this->purify());

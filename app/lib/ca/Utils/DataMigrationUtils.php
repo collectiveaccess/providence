@@ -45,6 +45,7 @@
  	require_once(__CA_MODELS_DIR__.'/ca_movements.php');
  	require_once(__CA_MODELS_DIR__.'/ca_storage_locations.php');
  	require_once(__CA_MODELS_DIR__.'/ca_data_import_events.php');
+ 	require_once(__CA_APP_DIR__.'/helpers/batchHelpers.php');
  	
 	define("__CA_DATA_IMPORT_ERROR__", 0);
 	define("__CA_DATA_IMPORT_WARNING__", 1);
@@ -76,7 +77,7 @@
 		}
 		# -------------------------------------------------------
 		/** 
-		 * Returns entity_id for the entity with the specified name, regardless of specified type. If the entity does not already 
+		 * Returns entity_id for the entity with the specified name (and type) or idno (regardless of specified type.) If the entity does not already 
 		 * exist then it will be created with the specified name, type and locale, as well as with any specified values in the $pa_values array.
 		 * $pa_values keys should be either valid entity fields or attributes.
 		 *
@@ -140,7 +141,7 @@
 						break;
 					case 'idno':
 						if ($vs_idno == '%') { break; }	// don't try to match on an unreplaced idno placeholder
-						if (($vs_idno || trim($pa_entity_name['displayname'])) && ($vn_id = (ca_entities::find(array('idno' => $vs_idno ? $vs_idno : $pa_entity_name['displayname']), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
+						if (($vs_idno || trim($pa_entity_name['_originalText'])) && ($vn_id = (ca_entities::find(array('idno' => $vs_idno ? $vs_idno : $pa_entity_name['_originalText']), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {
 							break(2);
 						}
 						break;
@@ -294,7 +295,7 @@
 		}
 		# -------------------------------------------------------
 		/** 
-		 * Returns place_id for the place with the specified name, regardless of specified type. If the place does not already 
+		 * Returns place_id for the place with the specified name (and type) or idno (regardless of specified type.) If the place does not already 
 		 * exist then it will be created with the specified name, type and locale, as well as with any specified values in the $pa_values array.
 		 * $pa_values keys should be either valid place fields or attributes.
 		 *
@@ -306,7 +307,7 @@
 		 * @param array $pa_options An optional array of options, which include:
 		 *				outputErrors - if true, errors will be printed to console [default=false]
 		 *				matchOn = optional list indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails.
-		 *				dontCreate - if true then new entities will not be created [default=false]
+		 *				dontCreate - if true then new places will not be created [default=false]
 		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
 		 *				returnInstance = return ca_places instance rather than place_id. Default is false. 
 		 *				generateIdnoWithTemplate = A template to use when setting the idno. The template is a value with automatically-set SERIAL values replaced with % characters. Eg. 2012.% will set the created row's idno value to 2012.121 (assuming that 121 is the next number in the serial sequence.) The template is NOT used if idno is passed explicitly as a value in $pa_values.
@@ -514,7 +515,7 @@
 		}
 		# -------------------------------------------------------
 		/** 
-		 * Returns occurrence_id for the occurrence with the specified name, regardless of specified type. If the occurrence does not already 
+		 * Returns occurrence_id for the occurrence with the specified name(and type) or idno (regardless of specified type.) If the occurrence does not already 
 		 * exist then it will be created with the specified name, type and locale, as well as with any specified values in the $pa_values array.
 		 * $pa_values keys should be either valid occurrence fields or attributes.
 		 *
@@ -526,7 +527,7 @@
 		 * @param array $pa_options An optional array of options, which include:
 		 *				outputErrors - if true, errors will be printed to console [default=false]
 		 *				matchOn = optional list indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails.
-		 *				dontCreate - if true then new entities will not be created [default=false]
+		 *				dontCreate - if true then new occurrences will not be created [default=false]
 		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
 		 *				returnInstance = return ca_occurrences instance rather than occurrence_id. Default is false. 
 		 *				generateIdnoWithTemplate = A template to use when setting the idno. The template is a value with automatically-set SERIAL values replaced with % characters. Eg. 2012.% will set the created row's idno value to 2012.121 (assuming that 121 is the next number in the serial sequence.) The template is NOT used if idno is passed explicitly as a value in $pa_values.
@@ -738,7 +739,7 @@
 		 *
 		 * @param array $pa_options An optional array of options, which include:
 		 *				outputErrors - if true, errors will be printed to console [default=false]
-		 *				dontCreate - if true then new items will not be created [default=false]
+		 *				dontCreate - if true then new list items will not be created [default=false]
 		 *				matchOn = optional list indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails.
 		 *				cache = cache item_ids of previously created/loaded items [default=true]
 		 *				returnInstance = return ca_occurrences instance rather than occurrence_id. Default is false. 
@@ -765,14 +766,15 @@
 			if (!$ps_item_idno) { $ps_item_idno = $vs_plural_label; }
 			
 			if(!isset($pa_options['cache'])) { $pa_options['cache'] = true; }
+			$vs_cache_key = $pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id.'/'.$vs_singular_label.'/'.$vs_plural_label;
 			
 			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
-			
-			if ($pa_options['cache'] && isset(DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id])) {
+			$pa_options['cache'] = false;
+			if ($pa_options['cache'] && isset(DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key])) {
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					$t_item = new ca_list_items(DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id]);
+					$t_item = new ca_list_items(DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key]);
 				
 					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 						$t_item->setTransaction($pa_options['transaction']);
@@ -782,11 +784,11 @@
 				}
 				if ($o_event) { 
 					$o_event->beginItem($vs_event_source, 'ca_list_items', 'U'); 
-					$o_event->endItem(DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id], __CA_DATA_IMPORT_ITEM_SUCCESS__, '');
+					$o_event->endItem(DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key], __CA_DATA_IMPORT_ITEM_SUCCESS__, '');
 				}
 				if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using idno", $ps_item_idno, $pm_list_code_or_id)); }
 				
-				return DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id];
+				return DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key];
 			}
 			
 			if (!($vn_list_id = ca_lists::getListID($pm_list_code_or_id))) { 
@@ -794,8 +796,9 @@
 					print "[Error] "._t("Could not find list with list code %1", $pm_list_code_or_id)."\n";
 				}
 				if ($o_log) { $o_log->logError(_t("Could not find list with list code %1", $pm_list_code_or_id)); }
-				return DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id] = null; 
+				return DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key] = null; 
 			}
+			if (!$vn_parent_id) { $vn_parent_id = caGetListRootID($pm_list_code_or_id); }
 			
 			$t_list = new ca_lists();
 			$t_item = new ca_list_items();
@@ -833,7 +836,7 @@
 			}
 			
 			if ($vn_item_id) {
-				DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id] = $vn_item_id;
+				DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key] = $vn_item_id;
 				
 				if ($o_event) { 
 					$o_event->beginItem($vs_event_source, 'ca_list_items', 'U'); 
@@ -846,7 +849,7 @@
 					}
 				}
 				
-				return DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id];
+				return DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key];
 			}
 				
 			if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
@@ -915,7 +918,7 @@
 					}
 				}
 				
-				$vn_item_id = DataMigrationUtils::$s_cached_list_item_ids[$pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id] = $t_item->getPrimaryKey();
+				$vn_item_id = DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key] = $t_item->getPrimaryKey();
 				
 				if ($o_event) {
 					if ($vb_label_errors) {
@@ -938,7 +941,7 @@
 		}
 		# -------------------------------------------------------
 		/** 
-		 * Returns collection_id for the collection with the specified name, regardless of specified type. If the collection does not already 
+		 * Returns collection_id for the collection with the specified name (and type) or idno (regardless of specified type.) If the collection does not already 
 		 * exist then it will be created with the specified name, type and locale, as well as with any specified values in the $pa_values array.
 		 * $pa_values keys should be either valid collection fields or attributes.
 		 *
@@ -1152,7 +1155,7 @@
 		}
 		# -------------------------------------------------------
 		/** 
-		 * Returns location_id for the storage location with the specified name, regardless of specified type. If the location does not already 
+		 * Returns location_id for the storage location with the specified name (and type) or idno (regardless of specified type.) If the location does not already 
 		 * exist then it will be created with the specified name, type and locale, as well as with any specified values in the $pa_values array.
 		 * $pa_values keys should be either valid storage location fields or attributes.
 		 *
@@ -1164,7 +1167,7 @@
 		 * @param array $pa_options An optional array of options, which include:
 		 *				outputErrors - if true, errors will be printed to console [default=false]
 		 *				matchOn = optional list indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails.
-		 *				dontCreate - if true then new entities will not be created [default=false]
+		 *				dontCreate - if true then new locations will not be created [default=false]
 		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
 		 *				returnInstance = return ca_storage_locations instance rather than location_id. Default is false. 
 		 *				generateIdnoWithTemplate = A template to use when setting the idno. The template is a value with automatically-set SERIAL values replaced with % characters. Eg. 2012.% will set the created row's idno value to 2012.121 (assuming that 121 is the next number in the serial sequence.) The template is NOT used if idno is passed explicitly as a value in $pa_values.
@@ -1367,7 +1370,7 @@
 		}
 		# -------------------------------------------------------
 		/** 
-		 * Returns object_id for the object with the specified name, regardless of specified type. If the object does not already 
+		 * Returns object_id for the object with the specified name (and type) or idno (regardless of specified type.) If the object does not already 
 		 * exist then it will be created with the specified name, type and locale, as well as with any specified values in the $pa_values array.
 		 * $pa_values keys should be either valid object fields or attributes.
 		 *
@@ -1379,7 +1382,7 @@
 		 * @param array $pa_options An optional array of options, which include:
 		 *				outputErrors - if true, errors will be printed to console [default=false]
 		 *				matchOn = optional list indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails.
-		 *				dontCreate - if true then new entities will not be created [default=false]
+		 *				dontCreate - if true then new objects will not be created [default=false]
 		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
 		 *				returnInstance = return ca_objects instance rather than object_id. Default is false. 
 		 *				generateIdnoWithTemplate = A template to use when setting the idno. The template is a value with automatically-set SERIAL values replaced with % characters. Eg. 2012.% will set the created row's idno value to 2012.121 (assuming that 121 is the next number in the serial sequence.) The template is NOT used if idno is passed explicitly as a value in $pa_values.
@@ -1585,7 +1588,7 @@
 		}
 		# -------------------------------------------------------
 		/** 
-		 * Returns lot_id for the lot with the specified idno, regardless of specified type. If the lot does not already 
+		 * Returns lot_id for the lot with the specified label (and type) or idno (regardless of specified type.) If the lot does not already 
 		 * exist then it will be created with the specified idno, name, type and locale, as well as with any specified values in the $pa_values array.
 		 * $pa_values keys should be either valid lot fields or attributes.
 		 *
@@ -1596,7 +1599,7 @@
 		 * @param array $pa_values An optional array of additional values to populate newly created object records with. These values are *only* used for newly created objects; they will not be applied if the object named already exists. The array keys should be names of ca_object_lots fields or valid object attributes. Values should be either a scalar (for single-value attributes) or an array of values for (multi-valued attributes)
 		 * @param array $pa_options An optional array of options, which include:
 		 *				outputErrors - if true, errors will be printed to console [default=false]
-		 *				dontCreate - if true then new entities will not be created [default=false]
+		 *				dontCreate - if true then new lots will not be created [default=false]
 		 *				matchOn = optional list indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails.
 		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
 		 *				returnInstance = return ca_object_lots instance rather than object_id. Default is false. 
@@ -1796,7 +1799,266 @@
 		}
 		# -------------------------------------------------------
 		/** 
-		 * Returns loan_id for the loan with the specified name, regardless of specified type. If the loan does not already 
+		 * Returns representation_id for the object representation with the specified name (and type) or idno (regardless of specified type.) If the object does
+		 * not already exist then it will be created with the specified name, type and locale, as well as with any specified values in the $pa_values array.
+		 * $pa_values keys should be either valid object fields or attributes.
+		 *
+		 * @param string $ps_representation_name Object label name
+		 * @param int $pn_type_id The type_id of the object type to use if the representation needs to be created
+		 * @param int $pn_locale_id The locale_id to use if the representation needs to be created (will be used for both the object locale as well as the label locale)
+		 * @param array $pa_values An optional array of additional values to populate newly created representation records with. These values are *only* used for newly created representation; they will not be applied if the representation named already exists. The array keys should be names of ca_object_representations fields or valid representation attributes. Values should be either a scalar (for single-value attributes) or an array of values for (multi-valued attributes)
+		 * @param array $pa_options An optional array of options, which include:
+		 *				outputErrors - if true, errors will be printed to console [default=false]
+		 *				matchOn = optional list indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails.
+		 *				dontCreate - if true then new representations will not be created [default=false]
+		 * 				transaction - if Transaction object is passed, use it for all Db-related tasks [default=null]
+		 *				returnInstance = return ca_object_representations instance rather than representation_id. Default is false. 
+		 *				generateIdnoWithTemplate = A template to use when setting the idno. The template is a value with automatically-set SERIAL values replaced with % characters. Eg. 2012.% will set the created row's idno value to 2012.121 (assuming that 121 is the next number in the serial sequence.) The template is NOT used if idno is passed explicitly as a value in $pa_values.
+		 *				importEvent = if ca_data_import_events instance is passed then the insert/update of the representation will be logged as part of the import
+		 *				importEventSource = if importEvent is passed, then the value set for importEventSource is used in the import event log as the data source. If omitted a default value of "?" is used
+		 *				nonPreferredLabels = an optional array of nonpreferred labels to add to any newly created representations. Each label in the array is an array with required representation label values.
+		 *				log = if KLogger instance is passed then actions will be logged
+		 */
+		static function getObjectRepresentationID($ps_representation_name, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
+			if (!is_array($pa_options)) { $pa_options = array(); }
+			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = false; }
+			
+			$pa_match_on = caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
+			
+			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
+			$t_rep = new ca_object_representations();
+			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
+				$t_rep->setTransaction($pa_options['transaction']);
+				if ($o_event) { $o_event->setTransaction($pa_options['transaction']); }
+			}
+			
+			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
+			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
+
+			$vs_idno = isset($pa_values['idno']) ? (string)$pa_values['idno'] : null;
+			
+			if (preg_match("!\%!", $vs_idno)) {
+				$pa_options['generateIdnoWithTemplate'] = $vs_idno;
+				$vs_idno = null;
+			}
+			if (!$vs_idno) {
+				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
+					$vs_idno = $t_rep->setIdnoWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
+				}
+			}
+			
+			
+			$va_regex_list = caBatchGetMediaFilenameToIdnoRegexList(array('log' => $o_log));
+
+			// Get list of replacements that user can use to transform file names to match object idnos
+			$va_replacements_list = caBatchGetMediaFilenameReplacementRegexList(array('log' => $o_log));
+			
+			$vn_id = null;
+			foreach($pa_match_on as $vs_match_on) {
+				switch(strtolower($vs_match_on)) {
+					case 'label':
+						if (trim($ps_representation_name)) {
+							if ($vn_id = (ca_object_representations::find(array('preferred_labels' => array('name' => $ps_representation_name), 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+								break(2);
+							}
+						}
+						break;
+					case 'idno':
+						if (!$vs_idno) { break; }
+						if ($vs_idno == '%') { break; }	// don't try to match on an unreplaced idno placeholder
+						
+						$va_idnos_to_match = array($vs_idno);
+						
+						if (is_array($va_replacements_list)) { 
+							foreach($va_replacements_list as $vs_replacement_code => $va_replacement) {
+								if(isset($va_replacement['search']) && is_array($va_replacement['search'])) {
+									$va_replace = caGetOption('replace',$va_replacement);
+									$va_search = array();
+
+									foreach($va_replacement['search'] as $vs_search){
+										$va_search[] = '!'.$vs_search.'!';
+									}
+
+									if ($vs_idno_proc = @preg_replace($va_search, $va_replace, $vs_idno)) {
+										$va_idnos_to_match[] = $vs_idno_proc;
+									}
+								}
+							}
+						}
+						
+						if (is_array($va_regex_list) && sizeof($va_regex_list)) {
+							foreach($va_regex_list as $vs_regex_name => $va_regex_info) {
+								foreach($va_regex_info['regexes'] as $vs_regex) {
+									foreach($va_idnos_to_match as $vs_idno_match) {
+										if(!$vs_idno_match) { continue; }			
+										if (preg_match('!'.$vs_regex.'!', $vs_idno_match, $va_matches)) {
+											if ($vn_id = (ca_object_representations::find(array('idno' => $va_matches[1]), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+												break(5);
+											}
+										}
+									}
+								}
+							}
+						} else {	
+							foreach($va_idnos_to_match as $vs_idno_match) {		
+								if(!$vs_idno_match) { continue; }			
+								if ($vn_id = (ca_object_representations::find(array('idno' => $vs_idno_match), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+									break(3);
+								}
+							}
+						}
+						break;
+				}
+			}
+			
+			if (!$vn_id) {
+				if (isset($pa_options['dontCreate']) && $pa_options['dontCreate']) { return false; }
+				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_object_representations', 'I'); }
+				
+				$t_rep->setMode(ACCESS_WRITE);
+				$t_rep->set('locale_id', $pn_locale_id);
+				$t_rep->set('type_id', $pn_type_id);
+				$t_rep->set('source_id', isset($pa_values['source_id']) ? $pa_values['source_id'] : null);
+				$t_rep->set('access', isset($pa_values['access']) ? $pa_values['access'] : 0);
+				$t_rep->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
+				if(isset($pa_values['media']) && $pa_values['media']) { $t_rep->set('media', $pa_values['media']); }
+				
+				$t_rep->set('idno', $vs_idno);
+				
+				$t_rep->insert();
+				
+				if ($t_rep->numErrors()) {
+					if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+						print "[Error] "._t("Could not insert object %1: %2", $ps_representation_name, join('; ', $t_rep->getErrors()))."\n";
+					}
+					
+					if ($o_log) { $o_log->logError(_t("Could not insert object %1: %2", $ps_representation_name, join('; ', $t_rep->getErrors()))); }
+					return null;
+				}
+				
+				$vb_label_errors = false;
+				$t_rep->addLabel(array('name' => $ps_representation_name), $pn_locale_id, null, true);
+				
+				if ($t_rep->numErrors()) {
+					if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+						print "[Error] "._t("Could not set preferred label for object %1: %2", $ps_representation_name, join('; ', $t_rep->getErrors()))."\n";
+					}
+					if ($o_log) { $o_log->logError(_t("Could not set preferred label for object %1: %2", $ps_representation_name, join('; ', $t_rep->getErrors()))); }
+				
+					$vb_label_errors = true;
+				}
+				
+				if ($o_idno = $t_rep->getIDNoPlugInInstance()) {
+					$va_values = $o_idno->htmlFormValuesAsArray('idno', $vs_idno);
+					if (!is_array($va_values)) { $va_values = array($va_values); }
+					if (!($vs_sep = $o_idno->getSeparator())) { $vs_sep = ''; }
+					if (($vs_proc_idno = join($vs_sep, $va_values)) && ($vs_proc_idno != $vs_idno)) {
+						$t_rep->set('idno', $vs_proc_idno);
+						$t_rep->update();
+						
+						if ($t_rep->numErrors()) {
+							if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+								print "[Error] "._t("Could not update idno for %1: %2", $ps_representation_name, join('; ', $t_rep->getErrors()))."\n";
+							}
+					
+							if ($o_log) { $o_log->logError(_t("Could not object idno for %1: %2", $ps_representation_name, join('; ', $t_rep->getErrors()))); }
+							return null;
+						}
+					}
+				}
+				
+				unset($pa_values['access']);	
+				unset($pa_values['status']);
+				unset($pa_values['idno']);
+				unset($pa_values['source_id']);
+				
+				$vb_attr_errors = false;
+				if (is_array($pa_values)) {
+					foreach($pa_values as $vs_element => $va_values) {
+						if (!caIsIndexedArray($va_values)) {
+							$va_values = array($va_values);
+						}	
+						foreach($va_values as $va_value) {	 					
+							if (is_array($va_value)) {
+								// array of values (complex multi-valued attribute)
+								$t_rep->addAttribute(
+									array_merge($va_value, array(
+										'locale_id' => $pn_locale_id
+									)), $vs_element);
+							} else {
+								// scalar value (simple single value attribute)
+								if ($va_value) {
+									$t_rep->addAttribute(array(
+										'locale_id' => $pn_locale_id,
+										$vs_element => $va_value
+									), $vs_element);
+								}
+							}
+						}
+					}
+					$t_rep->update();
+										
+					if ($t_rep->numErrors()) {
+						if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+							print "[Error] "._t("Could not set values for representation %1: %2", $ps_representation_name, join('; ', $t_rep->getErrors()))."\n";
+						}
+						if ($o_log) { $o_log->logError(_t("Could not set values for representation %1: %2", $ps_representation_name, join('; ', $t_rep->getErrors()))); }
+				
+						$vb_attr_errors = true;
+					}
+				}
+				
+				if(is_array($va_nonpreferred_labels = caGetOption("nonPreferredLabels", $pa_options, null))) {
+					if (caIsAssociativeArray($va_nonpreferred_labels)) {
+						// single non-preferred label
+						$va_labels = array($va_nonpreferred_labels);
+					} else {
+						// list of non-preferred labels
+						$va_labels = $va_nonpreferred_labels;
+					}
+					foreach($va_labels as $va_label) {
+						$t_rep->addLabel($va_label, $pn_locale_id, null, false);
+						
+						if ($t_rep->numErrors()) {
+							if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
+								print "[Error] "._t("Could not set non-preferred label for representation %1: %2", $ps_representation_name, join('; ', $t_rep->getErrors()))."\n";
+							}
+							if ($o_log) { $o_log->logError(_t("Could not set non-preferred label for representation %1: %2", $ps_representation_name, join('; ', $t_rep->getErrors()))); }
+						}
+					}
+				}
+				
+				$vn_representation_id = $t_rep->getPrimaryKey();
+				
+				if ($o_event) { 
+					if ($vb_attr_errors || $vb_label_errors) {
+						$o_event->endItem($vn_representation_id, __CA_DATA_IMPORT_ITEM_PARTIAL_SUCCESS__, _t("Errors setting field values: %1", join('; ', $t_rep->getErrors()))); 
+					} else {
+						$o_event->endItem($vn_representation_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, ''); 
+					}
+				}
+				
+				if ($o_log) { $o_log->logInfo(_t("Created new representation %1", $ps_representation_name)); }
+				
+				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
+					return $t_rep;
+				}
+			} else {
+				if ($o_event) { $o_event->beginItem($vs_event_source, 'ca_object_representations', 'U'); }
+				$vn_representation_id = $vn_id;
+				if ($o_event) { $o_event->endItem($vn_representation_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, ''); }
+				if ($o_log) { $o_log->logDebug(_t("Found existing representation %1 in DataMigrationUtils::getObjectRepresentationID()", $ps_representation_name)); }
+				
+				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
+					return new ca_object_representations($vn_representation_id);
+				}
+			}
+				
+			return $vn_representation_id;
+		}
+		# -------------------------------------------------------
+		/** 
+		 * Returns loan_id for the loan with the specified name (and type) or idno (regardless of specified type.) If the loan does not already 
 		 * exist then it will be created with the specified name, type and locale, as well as with any specified values in the $pa_values array.
 		 * $pa_values keys should be either valid loan fields or attributes.
 		 *
@@ -2008,7 +2270,7 @@
 		}
 		# -------------------------------------------------------
 		/** 
-		 * Returns movement_id for the movement with the specified name, regardless of specified type. If the movement does not already 
+		 * Returns movement_id for the movement with the specified name (and type) or idno (regardless of specified type.) If the movement does not already 
 		 * exist then it will be created with the specified name, type and locale, as well as with any specified values in the $pa_values array.
 		 * $pa_values keys should be either valid movement fields or attributes.
 		 *
@@ -2244,7 +2506,7 @@
 		 */
 		static function splitEntityName($ps_text, $pa_options=null) {
 			global $g_ui_locale;
-			$ps_text = trim(preg_replace("![ ]+!", " ", $ps_text));
+			$ps_text_proc = trim(preg_replace("![ ]+!", " ", $ps_text));
 			
 			if (isset($pa_options['locale']) && $pa_options['locale']) {
 				$vs_locale = $pa_options['locale'];
@@ -2263,9 +2525,9 @@
 			}
 			
 			$va_name = array();
-			if (strpos($ps_text, ',') !== false) {
+			if (strpos($ps_text_proc, ',') !== false) {
 				// is comma delimited
-				$va_tmp = explode(',', $ps_text);
+				$va_tmp = explode(',', $ps_text_proc);
 				$va_name['surname'] = $va_tmp[0];
 				
 				if(sizeof($va_tmp) > 1) {
@@ -2273,30 +2535,30 @@
 				}
 			} else {
 				// check for titles
-				$ps_text = preg_replace('/[^\p{L}\p{N} \-]+/u', ' ', $ps_text);
+				$ps_text_proc = preg_replace('/[^\p{L}\p{N} \-]+/u', ' ', $ps_text_proc);
 				foreach($va_titles as $vs_title) {
-					if (preg_match("!^({$vs_title})!", $ps_text, $va_matches)) {
+					if (preg_match("!^({$vs_title})!", $ps_text_proc, $va_matches)) {
 						$va_name['prefix'] = $va_matches[1];
-						$ps_text = str_replace($va_matches[1], '', $ps_text);
+						$ps_text_proc = str_replace($va_matches[1], '', $ps_text_proc);
 					}
 				}
 				
 				// check for suffixes
 				foreach($va_corp_suffixes as $vs_suffix) {
-					if (preg_match("!({$vs_suffix})$!", $ps_text, $va_matches)) {
+					if (preg_match("!({$vs_suffix})$!", $ps_text_proc, $va_matches)) {
 						$va_name['suffix'] = $va_matches[1];
-						$ps_text = str_replace($va_matches[1], '', $ps_text);
+						$ps_text_proc = str_replace($va_matches[1], '', $ps_text_proc);
 					}
 				}
 				
-				$va_tmp = preg_split('![ ]+!', trim($ps_text));
+				$va_tmp = preg_split('![ ]+!', trim($ps_text_proc));
 				
 				$va_name = array(
 					'surname' => '', 'forename' => '', 'middlename' => '', 'displayname' => ''
 				);
 				switch(sizeof($va_tmp)) {
 					case 1:
-						$va_name['surname'] = $ps_text;
+						$va_name['surname'] = $ps_text_proc;
 						break;
 					case 2:
 						$va_name['forename'] = $va_tmp[0];
@@ -2309,7 +2571,7 @@
 						break;
 					case 4:
 					default:
-						if (strpos($ps_text, ' '._t('and').' ') !== false) {
+						if (strpos($ps_text_proc, ' '._t('and').' ') !== false) {
 							$va_name['surname'] = array_pop($va_tmp);
 							$va_name['forename'] = join(' ', $va_tmp);
 						} else {
@@ -2321,7 +2583,8 @@
 				}
 			}
 			
-			$va_name['displayname'] = $ps_text;
+			$va_name['displayname'] = $ps_text_proc;
+			$va_name['_originalText'] = $ps_text;
 			foreach($va_name as $vs_k => $vs_v) {
 				$va_name[$vs_k] = trim($vs_v);
 			}

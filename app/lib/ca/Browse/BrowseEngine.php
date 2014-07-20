@@ -1148,14 +1148,15 @@
 								# -----------------------------------------------------
 								case 'normalizedDates':
 									$t_element = new ca_metadata_elements();
-									if (!$t_element->load(array('element_code' => $va_facet_info['element_code']))) {
+									
+									$vb_is_element = $vb_is_field = false;
+									if (!($vb_is_element = $t_element->load(array('element_code' => $va_facet_info['element_code']))) && !($vb_is_field = ($t_item->hasField($va_facet_info['element_code']) && ($t_item->getFieldInfo($va_facet_info['element_code'], 'FIELD_TYPE') === FT_HISTORIC_DATERANGE)))) {
 										return array();
 									}
 									
 									// TODO: check that it is a *single-value* (ie. no hierarchical ca_metadata_elements) DateRange attribute
 									
 									$vs_normalization = $va_facet_info['normalization'];
-									$vn_element_id = $t_element->getPrimaryKey();
 									$o_tep = new TimeExpressionParser();
 									
 									if ($va_facet_info['relative_to']) {
@@ -1168,68 +1169,129 @@
 										}
 									}
 									
+									$vn_element_id = $vb_is_element ? $t_element->getPrimaryKey() : null;
+									
+									$vs_browse_start_fld = $vs_browse_start_fld = null;
+									if ($vb_is_field) {										
+										$vs_browse_start_fld = $t_item->getFieldInfo($va_facet_info['element_code'], 'START');
+										$vs_browse_end_fld = $t_item->getFieldInfo($va_facet_info['element_code'], 'END');
+									}
+									
 									foreach($va_row_ids as $vn_row_id) {
 										$vn_row_id = urldecode($vn_row_id);
 										if (!$o_tep->parse($vn_row_id)) { continue; } // invalid date?
 										
 										$va_dates = $o_tep->getHistoricTimestamps();
 										
-										if ($vn_i == 0) {
-											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_acc
-												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
-												FROM ".$this->ops_browse_table_name."
-												{$vs_relative_to_join}
-												INNER JOIN ca_attributes ON ca_attributes.row_id = ".$vs_target_browse_table_name.'.'.$vs_target_browse_table_pk." AND ca_attributes.table_num = ?
-												INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id
-												WHERE
-													(ca_attribute_values.element_id = ?) AND
+										if ($vb_is_element) {
+											if ($vn_i == 0) {
+												$vs_sql = "
+													INSERT IGNORE INTO ca_browses_acc
+													SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+													FROM ".$this->ops_browse_table_name."
+													{$vs_relative_to_join}
+													INNER JOIN ca_attributes ON ca_attributes.row_id = ".$vs_target_browse_table_name.'.'.$vs_target_browse_table_pk." AND ca_attributes.table_num = ?
+													INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id
+													WHERE
+														(ca_attribute_values.element_id = ?) AND
 													
-													(
 														(
-															(ca_attribute_values.value_decimal1 <= ?) AND
-															(ca_attribute_values.value_decimal2 >= ?)
+															(
+																(ca_attribute_values.value_decimal1 <= ?) AND
+																(ca_attribute_values.value_decimal2 >= ?)
+															)
+															OR
+															(ca_attribute_values.value_decimal1 BETWEEN ? AND ?)
+															OR 
+															(ca_attribute_values.value_decimal2 BETWEEN ? AND ?)
 														)
-														OR
-														(ca_attribute_values.value_decimal1 BETWEEN ? AND ?)
-														OR 
-														(ca_attribute_values.value_decimal2 BETWEEN ? AND ?)
-													)
-											";
-											//print $vs_sql;
-											$qr_res = $this->opo_db->query($vs_sql, intval($vs_target_browse_table_num), $vn_element_id, $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end']);
+												";
+												//print $vs_sql;
+												$qr_res = $this->opo_db->query($vs_sql, intval($vs_target_browse_table_num), $vn_element_id, $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end']);
+											} else {
+											
+												$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_tmp");
+												$vs_sql = "
+													INSERT IGNORE INTO ca_browses_tmp
+													SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+													FROM ".$this->ops_browse_table_name."
+													{$vs_relative_to_join}
+													INNER JOIN ca_attributes ON ca_attributes.row_id = ".$vs_target_browse_table_name.'.'.$vs_target_browse_table_pk." AND ca_attributes.table_num = ?
+													INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id
+													INNER JOIN ca_browses_acc ON ca_browses_acc.row_id = ".$t_item->tableName().'.'.$t_item->primaryKey()."
+													WHERE
+														(ca_attribute_values.element_id = ?) AND
+													
+														(
+															(
+																(ca_attribute_values.value_decimal1 <= ?) AND
+																(ca_attribute_values.value_decimal2 >= ?)
+															)
+															OR
+															(ca_attribute_values.value_decimal1 BETWEEN ? AND ?)
+															OR 
+															(ca_attribute_values.value_decimal2 BETWEEN ? AND ?)
+														)
+												";
+												//print $vs_sql;
+												$qr_res = $this->opo_db->query($vs_sql, intval($vs_target_browse_table_num), $vn_element_id, $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end']);
+											
+											
+												$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_acc");
+												$qr_res = $this->opo_db->query("INSERT IGNORE INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
+											} 
 										} else {
-											
-											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_tmp");
-											$vs_sql = "
-												INSERT IGNORE INTO ca_browses_tmp
-												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
-												FROM ".$this->ops_browse_table_name."
-												{$vs_relative_to_join}
-												INNER JOIN ca_attributes ON ca_attributes.row_id = ".$vs_target_browse_table_name.'.'.$vs_target_browse_table_pk." AND ca_attributes.table_num = ?
-												INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id
-												INNER JOIN ca_browses_acc ON ca_browses_acc.row_id = ".$t_item->tableName().'.'.$t_item->primaryKey()."
-												WHERE
-													(ca_attribute_values.element_id = ?) AND
-													
-													(
+											// is intrinsic
+											if ($vn_i == 0) {
+												$vs_sql = "
+													INSERT IGNORE INTO ca_browses_acc
+													SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+													FROM ".$this->ops_browse_table_name."
+													{$vs_relative_to_join}
+													WHERE
 														(
-															(ca_attribute_values.value_decimal1 <= ?) AND
-															(ca_attribute_values.value_decimal2 >= ?)
+															(
+																({$this->ops_browse_table_name}.{$vs_browse_start_fld} <= ?) AND
+																({$this->ops_browse_table_name}.{$vs_browse_end_fld} >= ?)
+															)
+															OR
+															({$this->ops_browse_table_name}.{$vs_browse_start_fld} BETWEEN ? AND ?)
+															OR 
+															({$this->ops_browse_table_name}.{$vs_browse_end_fld} BETWEEN ? AND ?)
 														)
-														OR
-														(ca_attribute_values.value_decimal1 BETWEEN ? AND ?)
-														OR 
-														(ca_attribute_values.value_decimal2 BETWEEN ? AND ?)
-													)
-											";
-											//print $vs_sql;
-											$qr_res = $this->opo_db->query($vs_sql, intval($vs_target_browse_table_num), $vn_element_id, $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end']);
+												";
+												//print $vs_sql;
+												$qr_res = $this->opo_db->query($vs_sql, $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end']);
+											} else {
+											
+												$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_tmp");
+												$vs_sql = "
+													INSERT IGNORE INTO ca_browses_tmp
+													SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+													FROM ".$this->ops_browse_table_name."
+													{$vs_relative_to_join}
+													INNER JOIN ca_browses_acc ON ca_browses_acc.row_id = ".$t_item->tableName().'.'.$t_item->primaryKey()."
+													WHERE
+														(
+															(
+																({$this->ops_browse_table_name}.{$vs_browse_start_fld} <= ?) AND
+																({$this->ops_browse_table_name}.{$vs_browse_end_fld} >= ?)
+															)
+															OR
+															({$this->ops_browse_table_name}.{$vs_browse_start_fld} BETWEEN ? AND ?)
+															OR 
+															({$this->ops_browse_table_name}.{$vs_browse_end_fld} BETWEEN ? AND ?)
+														)
+												";
+												//print $vs_sql;
+												$qr_res = $this->opo_db->query($vs_sql, $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end']);
 											
 											
-											$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_acc");
-											$qr_res = $this->opo_db->query("INSERT IGNORE INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
-										} 
+												$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_acc");
+												$qr_res = $this->opo_db->query("INSERT IGNORE INTO ca_browses_acc SELECT row_id FROM ca_browses_tmp");
+											} 
+											
+										}
 										
 										$vn_i++;
 									}
@@ -3018,36 +3080,40 @@
 				case 'normalizedDates':
 					$t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true);
 					$t_element = new ca_metadata_elements();
-					if (!$t_element->load(array('element_code' => $va_facet_info['element_code']))) {
+					
+					$vb_is_element = $vb_is_field = false;
+					if (!($vb_is_element = $t_element->load(array('element_code' => $va_facet_info['element_code']))) && !($vb_is_field = ($t_item->hasField($va_facet_info['element_code']) && ($t_item->getFieldInfo($va_facet_info['element_code'], 'FIELD_TYPE') === FT_HISTORIC_DATERANGE)))) {
 						return array();
 					}
 					
+					if ($vb_is_element) {
+						$va_joins = array(
+							'INNER JOIN ca_attribute_values ON ca_attributes.attribute_id = ca_attribute_values.attribute_id',
+							'INNER JOIN '.$vs_browse_table_name.' ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_attributes.row_id AND ca_attributes.table_num = '.intval($vs_browse_table_num)
+						);
+					} else {
+						$va_joins = array();
+					}
+					
 					$va_wheres = array();
-					
-					$vn_element_id = $t_element->getPrimaryKey();
-					
 					$vs_normalization = $va_facet_info['normalization'];	// how do we construct the date ranges presented to uses. In other words - how do we want to allow users to browse dates? By year, decade, century?
 					
-					$va_joins = array(
-						'INNER JOIN ca_attribute_values ON ca_attributes.attribute_id = ca_attribute_values.attribute_id',
-						'INNER JOIN '.$vs_browse_table_name.' ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_attributes.row_id AND ca_attributes.table_num = '.intval($vs_browse_table_num)
-					);
 					if (sizeof($va_results) && ($this->numCriteria() > 0)) {
 						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
 					}
-					
+				
 					if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_item->hasField('access')) {
 						$va_wheres[] = "(".$vs_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
 					}
-					
+				
 					if ($vs_browse_type_limit_sql) {
 						$va_wheres[] = $vs_browse_type_limit_sql;
 					}
-					
+				
 					if ($t_item->hasField('deleted')) {
 						$va_wheres[] = "(".$vs_browse_table_name.".deleted = 0)";
 					}
-					
+				
 					if ($va_facet_info['relative_to']) {
 						if ($t_subject->hasField('deleted')) {
 							$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
@@ -3057,7 +3123,6 @@
 							$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
 						}
 					}
-					
 					if ($this->opo_config->get('perform_item_level_access_checking')) {
 						if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
 							// Join to limit what browse table items are used to generate facet
@@ -3075,95 +3140,189 @@
 						}
 					}
 					
-					$vs_join_sql = join("\n", $va_joins);
-					
 					$vs_where_sql = '';
 					if (is_array($va_wheres) && sizeof($va_wheres) && ($vs_where_sql = join(' AND ', $va_wheres))) {
 						$vs_where_sql = ' AND ('.$vs_where_sql.')';
 					}
 					
-					$vs_dir = (strtoupper($va_facet_info['sort']) === 'DESC') ? "DESC" : "ASC";
 					
-					$o_tep = new TimeExpressionParser();
-					$vn_min_date = $vn_max_date = null;
-					$vs_min_sql = $vs_max_sql = '';
-					if (isset($va_facet_info['minimum_date'])) {
-						if ($o_tep->parse($va_facet_info['minimum_date'])) {
-							$va_tmp = $o_tep->getHistoricTimestamps();
-							$vn_min_date = (float)$va_tmp['start'];
-							$vs_min_sql = " AND (ca_attribute_values.value_decimal1 >= {$vn_min_date})";
-						}
-					}
-					if (isset($va_facet_info['maximum_date'])) {
-						if ($o_tep->parse($va_facet_info['maximum_date'])) {
-							$va_tmp = $o_tep->getHistoricTimestamps();
-							$vn_max_date = (float)$va_tmp['end'];
-							$vs_max_sql = " AND (ca_attribute_values.value_decimal2 <= {$vn_max_date})";
-						}
-					}
 					
-					if ($vb_check_availability_only) {
-						$vs_sql = "
-							SELECT 1
-							FROM ca_attributes
-							{$vs_join_sql}
-							WHERE
-								ca_attribute_values.element_id = ? 
-								{$vs_min_sql}
-								{$vs_max_sql}
-								{$vs_where_sql}
-								LIMIT 1";
-						//print $vs_sql;
-						$qr_res = $this->opo_db->query($vs_sql, $vn_element_id);
+					$vs_join_sql = join("\n", $va_joins);
+					
+					if ($vb_is_element) {
+						$vn_element_id = $t_element->getPrimaryKey();
 						
-						return ((int)$qr_res->numRows() > 0) ? true : false;
-					} else {
-						$vs_sql = "
-							SELECT DISTINCT ca_attribute_values.value_decimal1, ca_attribute_values.value_decimal2
-							FROM ca_attributes
-							{$vs_join_sql}
-							WHERE
-								ca_attribute_values.element_id = ? 
-								{$vs_min_sql}
-								{$vs_max_sql}
-								{$vs_where_sql}
-						";
-						//print $vs_sql;
-						$qr_res = $this->opo_db->query($vs_sql, $vn_element_id);
+						$vs_dir = (strtoupper($va_facet_info['sort']) === 'DESC') ? "DESC" : "ASC";
 					
-						$va_values = array();
-						while($qr_res->nextRow()) {
-							$vn_start = $qr_res->get('value_decimal1');
-							$vn_end = $qr_res->get('value_decimal2');
-							
-							if (!($vn_start && $vn_end)) { continue; }
-							$va_normalized_values = $o_tep->normalizeDateRange($vn_start, $vn_end, $vs_normalization);
-							foreach($va_normalized_values as $vn_sort_value => $vs_normalized_value) {
-								if ($va_criteria[$vs_normalized_value]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
-									
-								if (is_numeric($vs_normalized_value) && (int)$vs_normalized_value === 0) { continue; }		// don't include year=0
-								$va_values[$vn_sort_value][$vs_normalized_value] = array(
-									'id' => $vs_normalized_value,
-									'label' => $vs_normalized_value
-								);	
-								if (!is_null($vs_single_value) && ($vs_normalized_value == $vs_single_value)) {
-									$vb_single_value_is_present = true;
-								}
+						$o_tep = new TimeExpressionParser();
+						$vn_min_date = $vn_max_date = null;
+						$vs_min_sql = $vs_max_sql = '';
+						if (isset($va_facet_info['minimum_date'])) {
+							if ($o_tep->parse($va_facet_info['minimum_date'])) {
+								$va_tmp = $o_tep->getHistoricTimestamps();
+								$vn_min_date = (float)$va_tmp['start'];
+								$vs_min_sql = " AND (ca_attribute_values.value_decimal1 >= {$vn_min_date})";
 							}
 						}
-						
-						if (!is_null($vs_single_value) && !$vb_single_value_is_present) {
-							return array();
+						if (isset($va_facet_info['maximum_date'])) {
+							if ($o_tep->parse($va_facet_info['maximum_date'])) {
+								$va_tmp = $o_tep->getHistoricTimestamps();
+								$vn_max_date = (float)$va_tmp['end'];
+								$vs_max_sql = " AND (ca_attribute_values.value_decimal2 <= {$vn_max_date})";
+							}
 						}
+					
+						if ($vb_check_availability_only) {
+							$vs_sql = "
+								SELECT 1
+								FROM ca_attributes
+								{$vs_join_sql}
+								WHERE
+									ca_attribute_values.element_id = ? 
+									{$vs_min_sql}
+									{$vs_max_sql}
+									{$vs_where_sql}
+									LIMIT 1";
+							//print $vs_sql;
+							$qr_res = $this->opo_db->query($vs_sql, $vn_element_id);
 						
-						ksort($va_values);
+							return ((int)$qr_res->numRows() > 0) ? true : false;
+						} else {
+							$vs_sql = "
+								SELECT DISTINCT ca_attribute_values.value_decimal1, ca_attribute_values.value_decimal2
+								FROM ca_attributes
+								{$vs_join_sql}
+								WHERE
+									ca_attribute_values.element_id = ? 
+									{$vs_min_sql}
+									{$vs_max_sql}
+									{$vs_where_sql}
+							";
+							//print $vs_sql;
+							$qr_res = $this->opo_db->query($vs_sql, $vn_element_id);
+					
+							$va_values = array();
+							while($qr_res->nextRow()) {
+								$vn_start = $qr_res->get('value_decimal1');
+								$vn_end = $qr_res->get('value_decimal2');
+							
+								if (!($vn_start && $vn_end)) { continue; }
+								$va_normalized_values = $o_tep->normalizeDateRange($vn_start, $vn_end, $vs_normalization);
+								foreach($va_normalized_values as $vn_sort_value => $vs_normalized_value) {
+									if ($va_criteria[$vs_normalized_value]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
+									
+									if (is_numeric($vs_normalized_value) && (int)$vs_normalized_value === 0) { continue; }		// don't include year=0
+									$va_values[$vn_sort_value][$vs_normalized_value] = array(
+										'id' => $vs_normalized_value,
+										'label' => $vs_normalized_value
+									);	
+									if (!is_null($vs_single_value) && ($vs_normalized_value == $vs_single_value)) {
+										$vb_single_value_is_present = true;
+									}
+								}
+							}
 						
-						if ($vs_dir == 'DESC') { $va_values = array_reverse($va_values); }
-						$va_sorted_values = array();
-						foreach($va_values as $vn_sort_value => $va_values_for_sort_value) {
-							$va_sorted_values = array_merge($va_sorted_values, $va_values_for_sort_value);
+							if (!is_null($vs_single_value) && !$vb_single_value_is_present) {
+								return array();
+							}
+						
+							ksort($va_values);
+						
+							if ($vs_dir == 'DESC') { $va_values = array_reverse($va_values); }
+							$va_sorted_values = array();
+							foreach($va_values as $vn_sort_value => $va_values_for_sort_value) {
+								$va_sorted_values = array_merge($va_sorted_values, $va_values_for_sort_value);
+							}
+							return $va_sorted_values;
 						}
-						return $va_sorted_values;
+					} else {
+						// is intrinsic
+						$vs_dir = (strtoupper($va_facet_info['sort']) === 'DESC') ? "DESC" : "ASC";
+						
+						$vs_browse_start_fld = $t_item->getFieldInfo($va_facet_info['element_code'], 'START');
+						$vs_browse_end_fld = $t_item->getFieldInfo($va_facet_info['element_code'], 'END');
+					
+						$o_tep = new TimeExpressionParser();
+						$vn_min_date = $vn_max_date = null;
+						$vs_min_sql = $vs_max_sql = '';
+						if (isset($va_facet_info['minimum_date'])) {
+							if ($o_tep->parse($va_facet_info['minimum_date'])) {
+								$va_tmp = $o_tep->getHistoricTimestamps();
+								$vn_min_date = (float)$va_tmp['start'];
+								$vs_min_sql = " AND ({$vs_browse_table_name}.{$vs_browse_start_fld} >= {$vn_min_date})";
+							}
+						}
+						if (isset($va_facet_info['maximum_date'])) {
+							if ($o_tep->parse($va_facet_info['maximum_date'])) {
+								$va_tmp = $o_tep->getHistoricTimestamps();
+								$vn_max_date = (float)$va_tmp['end'];
+								$vs_max_sql = " AND ({$vs_browse_table_name}.{$vs_browse_end_fld} <= {$vn_max_date})";
+							}
+						}
+					
+						if ($vb_check_availability_only) {
+							$vs_sql = "
+								SELECT 1
+								FROM {$vs_browse_table_name}
+								{$vs_join_sql}
+								WHERE
+									1 = 1
+									{$vs_min_sql}
+									{$vs_max_sql}
+									{$vs_where_sql}
+									LIMIT 1";
+							//print $vs_sql;
+							$qr_res = $this->opo_db->query($vs_sql);
+						
+							return ((int)$qr_res->numRows() > 0) ? true : false;
+						} else {
+							$vs_sql = "
+								SELECT DISTINCT {$vs_browse_table_name}.{$vs_browse_start_fld}, {$vs_browse_table_name}.{$vs_browse_end_fld}
+								FROM {$vs_browse_table_name}
+								{$vs_join_sql}
+								WHERE
+									1 = 1
+									{$vs_min_sql}
+									{$vs_max_sql}
+									{$vs_where_sql}
+							";
+							//print $vs_sql;
+							$qr_res = $this->opo_db->query($vs_sql);
+					
+							$va_values = array();
+							while($qr_res->nextRow()) {
+								$vn_start = $qr_res->get($vs_browse_start_fld);
+								$vn_end = $qr_res->get($vs_browse_end_fld);
+							
+								if (!($vn_start && $vn_end)) { continue; }
+								$va_normalized_values = $o_tep->normalizeDateRange($vn_start, $vn_end, $vs_normalization);
+								foreach($va_normalized_values as $vn_sort_value => $vs_normalized_value) {
+									if ($va_criteria[$vs_normalized_value]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
+									
+									if (is_numeric($vs_normalized_value) && (int)$vs_normalized_value === 0) { continue; }		// don't include year=0
+									$va_values[$vn_sort_value][$vs_normalized_value] = array(
+										'id' => $vs_normalized_value,
+										'label' => $vs_normalized_value
+									);	
+									if (!is_null($vs_single_value) && ($vs_normalized_value == $vs_single_value)) {
+										$vb_single_value_is_present = true;
+									}
+								}
+							}
+						
+							if (!is_null($vs_single_value) && !$vb_single_value_is_present) {
+								return array();
+							}
+						
+							ksort($va_values);
+						
+							if ($vs_dir == 'DESC') { $va_values = array_reverse($va_values); }
+							$va_sorted_values = array();
+							foreach($va_values as $vn_sort_value => $va_values_for_sort_value) {
+								$va_sorted_values = array_merge($va_sorted_values, $va_values_for_sort_value);
+							}
+							return $va_sorted_values;
+						}
 					}
 					break;
 				# -----------------------------------------------------
@@ -3743,9 +3902,9 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 								$va_row = $qr_sort->getRow();
 								if (!$va_row['row_id']) { continue; }
 								if ($vn_num_locales > 1) {
-									$va_sorted_hits[$va_row['row_id']][$va_row['locale_id']] .= trim(str_replace(array("'", '"'), array('', ''), $va_row[$vs_sort_field]));
+									$va_sorted_hits[$va_row['row_id']][$va_row['locale_id']] .= trim(str_replace(array("'", '"'), array('', ''), caRemoveAccents($va_row[$vs_sort_field])));
 								} else {
-									$va_sorted_hits[$va_row['row_id']] .= trim(str_replace(array("'", '"'), array('', ''), $va_row[$vs_sort_field]));
+									$va_sorted_hits[$va_row['row_id']] .= trim(str_replace(array("'", '"'), array('', ''), caRemoveAccents($va_row[$vs_sort_field])));
 								}
 								unset($pa_hits[$va_row['row_id']]);
 							}
@@ -3844,7 +4003,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 				
 				while($qr_sort->nextRow()) {
 					$va_row = $qr_sort->getRow();
-					if (!($vs_sortable_value = str_replace(array("'", '"'), array('', ''), $va_row[$vs_sort_field]))) {
+					if (!($vs_sortable_value = str_replace(array("'", '"'), array('', ''), caRemoveAccents($va_row[$vs_sort_field])))) {
 						$vs_sortable_value = '';
 					}
 					if (($vn_num_locales > 1) && $vs_locale_where) {

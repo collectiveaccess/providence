@@ -113,6 +113,7 @@
  		 */
 		public function getDisplayValue($pa_options=null) {
 			if(!is_array($pa_options)) { $pa_options = array(); }
+			if(isset($pa_options['forDuplication']) && $pa_options['forDuplication']) { $pa_options['return'] = 'path'; $pa_options['version'] = 'original'; }
 			if(!isset($pa_options['showMediaInfo'])) { $pa_options['showMediaInfo'] = false; }
 			if(!isset($pa_options['version'])) { $pa_options['version'] = 'thumbnail'; }
 			$vs_version = $pa_options['version'];

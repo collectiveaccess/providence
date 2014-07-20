@@ -36,6 +36,7 @@
 			$this->ops_description = _t('Splits object representations');
 			
 			$this->opb_returns_multiple_values = true;
+			$this->opb_supports_relationships = true;
 			
 			parent::__construct();
 		}
@@ -79,6 +80,15 @@
 				'default' => '',
 				'label' => _t('Delimiter'),
 				'description' => _t('Sets the value of the delimiter to break on, separating data source values')
+			),
+			'objectRepresentationSplitter_matchOn' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Match on'),
+				'description' => _t('List indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails')
 			),
 			'objectRepresentationSplitter_objectRepresentationType' => array(
 				'formatType' => FT_TEXT,

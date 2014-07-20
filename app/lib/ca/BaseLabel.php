@@ -39,7 +39,9 @@
  
 	class BaseLabel extends BaseModel {
 		# -------------------------------------------------------
-		
+		public function __construct($pn_id=null, $pb_use_cache=true) {
+			parent::__construct($pn_id, $pb_use_cache);
+		}
 		# -------------------------------------------------------
 		public function insert($pa_options=null) {
 			$this->_generateSortableValue();	// populate sort field
@@ -152,5 +154,15 @@
 			}
 		}
 		# -------------------------------------------------------
+		/**
+		 * Set label type list; can vary depending upon whether label is preferred or nonpreferred
+		 */
+		public function setLabelTypeList($ps_list_idno) {
+			if ($this->hasField('type_id')) { 
+				$this->FIELDS['type_id']['LIST_CODE'] = $ps_list_idno; 
+				return true;
+			}
+			return false;
+		}
+		# -------------------------------------------------------
 	}
-?>

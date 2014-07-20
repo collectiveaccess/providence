@@ -1504,7 +1504,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					// This bundle is only available for objects
 					case 'ca_objects_deaccession':		// object deaccession information
 						//if ($vb_batch) { return null; } // not supported in batch mode
-						if (!$this->getPrimaryKey()) { return null; }	// not supported for new records
+						if (!$vb_batch && !$this->getPrimaryKey()) { return null; }	// not supported for new records
 						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
 					
 						$vs_element .= $this->getObjectDeaccessionHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
@@ -3636,7 +3636,7 @@ if (!$vb_batch) {
 					// This bundle is only available for objects
 					case 'ca_objects_deaccession':		// object deaccession information
 						//if ($vb_batch) { return null; } // not supported in batch mode
-						if (!$this->getPrimaryKey()) { return null; }	// not supported for new records
+						if (!$vb_batch && !$this->getPrimaryKey()) { return null; }	// not supported for new records
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
 					
 						$this->set('is_deaccessioned', $vb_is_deaccessioned = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}is_deaccessioned", pInteger));
@@ -4584,6 +4584,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * 
 	 */
 	public function getIDNoPlugInInstance() {
+		if (!$this->opo_idno_plugin_instance) { return null; }
 		$this->opo_idno_plugin_instance->setDb($this->getDb());	// Make sure returned instance is using current transaction database handle
 		return $this->opo_idno_plugin_instance;
 	}
