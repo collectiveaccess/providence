@@ -617,7 +617,7 @@
 				return $vn_rc;
 			}
 			
-			if ($o_trans) { $o_trans->rollback(); }
+			if ($o_trans) { $vn_rc ? $o_trans->commit() : $o_trans->rollback(); }
 			if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 			return $vn_rc;
 		}
@@ -1928,8 +1928,8 @@
 		 * @return bool True on success, false if an error occurred
 		 *
 		 * Supported options
-		 *	restrictToAttributesByCodes = array of attributes codes to restrict the duplication
-		 *	restrictToAttributesByIds = array of attributes ids to restrict the duplication
+		 *	restrictToAttributesByCodes = array of element codes to restrict the duplication to
+		 *	restrictToAttributesByIds = array of element ids to restrict the duplication to
 		 *
 		 */
 		public function copyAttributesTo($pn_row_id, $pa_options=null) {
@@ -1941,8 +1941,8 @@
 				$vb_we_set_transaction = true;
 			}
 
-			$va_restrictToAttributesByCodes = caGetOption('restrictToAttributesByCodes', $pa_options, null);
-			$va_restrictToAttributesByIds = caGetOption('restrictToAttributesByIds', $pa_options, null);
+			$va_restrictToAttributesByCodes = caGetOption('restrictToAttributesByCodes', $pa_options, array());
+			$va_restrictToAttributesByIds = caGetOption('restrictToAttributesByIds', $pa_options, array());
 
 			if (!($t_dupe = $this->_DATAMODEL->getInstanceByTableNum($this->tableNum()))) { return null; }
 			$t_dupe->purify($this->purify());
