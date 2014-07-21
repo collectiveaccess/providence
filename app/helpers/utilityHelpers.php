@@ -1678,15 +1678,22 @@ function caFileIsIncludable($ps_file) {
 	 * Note that function is of limited use outside of the case it was designed for: to remove binary entries from extracted EXIF metadata arrays.
 	 *
 	 * @param array $pa_array The array to sanitize
-	 * @param array $pa_options No options are currently supported
+	 * @param array $pa_options
+	 *        allowStdClass = stdClass object array values are allowed. This is useful for arrays that are about to be passed to json_encode
 	 * @return array The sanitized array
 	 */
 	function caSanitizeArray($pa_array, $pa_options=null) {
 		if (!is_array($pa_array)) { return array(); }
+		$vb_allow_stdclass = caGetOption('allowStdClass',$pa_options,false);
+
 		foreach($pa_array as $vn_k => $vm_v) {
 			if (is_array($vm_v)) {
 				$pa_array[$vn_k] = caSanitizeArray($vm_v);
 			} else {
+				if($vb_allow_stdclass && is_object($vm_v) && (get_class($vm_v) == 'stdClass')){
+					continue;
+				}
+
 				if ((!preg_match("!^[\p{L}\p{N}\p{P}]+!", $vm_v)) || (!mb_detect_encoding($vm_v))) {
 					unset($pa_array[$vn_k]);
 				}
