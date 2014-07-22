@@ -12792,27 +12792,9 @@
         </item>
       </items>
     </list>
-    <list code="chemical_elements" hierarchical="0" system="0" vocabulary="1">
-      <labels>
-        <label locale="en_AU">
-          <name>Chemical Elements</name>
-        </label>
-      </labels>
-    </list>
-    <list code="minerals" hierarchical="0" system="0" vocabulary="1">
-      <labels>
-        <label locale="en_AU">
-          <name>Minerals</name>
-        </label>
-      </labels>
-    </list>
-    <list code="host_rock_types" hierarchical="0" system="0" vocabulary="1">
-      <labels>
-        <label locale="en_AU">
-          <name>Host Rock</name>
-        </label>
-      </labels>
-    </list>
+    <list code="chemical_elements" hierarchical="0" system="0" vocabulary="1"><labels><label locale="en_AU"><name>Chemical Elements</name></label></labels></list>
+    <list code="minerals" hierarchical="0" system="0" vocabulary="1"><labels><label locale="en_AU"><name>Minerals</name></label></labels></list>
+    <list code="host_rock_types" hierarchical="0" system="0" vocabulary="1"><labels><label locale="en_AU"><name>Host Rock</name></label></labels></list>
   </lists>
   <elementSets>
     <metadataElement code="set_description" datatype="Text">
@@ -12954,6 +12936,15 @@
         <restriction>
           <table>ca_loans</table>
           <type>in</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_loans</table>
+          <type>custodial</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -13701,7 +13692,7 @@
         <metadataElement code="coordinateUncertainty" datatype="Text">
           <labels>
             <label locale="en_AU">
-              <name>Coorinate Uncertainty</name>
+              <name>Coordinate Uncertainty</name>
             </label>
           </labels>
           <settings>
@@ -13718,8 +13709,6 @@
             <setting name="default_text"/>
             <setting name="canBeUsedInSearchForm">1</setting>
             <setting name="canBeUsedInDisplay">1</setting>
-            <setting name="displayTemplate"/>
-            <setting name="displayDelimiter">,</setting>
             <setting name="isDependentValue">0</setting>
           </settings>
         </metadataElement>
@@ -14503,15 +14492,6 @@
         </restriction>
         <restriction>
           <table>ca_object_lots</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
-          <table>ca_occurrences</table>
-          <type/>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -17072,6 +17052,7 @@ Examples: "mm", "C", "km", "ha".</description>
       </labels>
       <settings>
         <setting name="doesNotTakeLocale">0</setting>
+        <setting name="requireValue">0</setting>
         <setting name="render">horiz_hierbrowser_with_search</setting>
       </settings>
       <typeRestrictions>
@@ -19344,6 +19325,16 @@ Examples: &lt;em&gt;James L. Patton&lt;/em&gt;, &lt;em&gt;Theodore Pappenfuss&lt
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+        <restriction>
+          <table>ca_objects</table>
+          <type>invertebrate_palaeontology</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="associatedMedia" datatype="Container">
@@ -20033,6 +20024,121 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="determinationPlantsInverts" datatype="Text">
+      <labels>
+        <label locale="en_AU">
+          <name>Determination</name>
+          <description>Enter the determination of the object</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="suggestExistingValues">1</setting>
+      </settings>
+      <elements>
+        <metadataElement code="dateIdPlantsInvertebrates" datatype="DateRange">
+          <labels>
+            <label locale="en_AU">
+              <name>Date Identified</name>
+              <description>Enter the date of identification</description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="dateRangeBoundaries"/>
+            <setting name="fieldWidth"/>
+            <setting name="doesNotTakeLocale">0</setting>
+            <setting name="canBeUsedInSort">0</setting>
+            <setting name="useDatePicker">1</setting>
+            <setting name="mustNotBeBlank">0</setting>
+            <setting name="isLifespan">0</setting>
+            <setting name="default_text"/>
+            <setting name="suggestExistingValues">0</setting>
+            <setting name="suggestExistingValueSort">value</setting>
+            <setting name="canBeUsedInSearchForm">0</setting>
+            <setting name="canBeUsedInDisplay">0</setting>
+          </settings>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>invertebrate_palaeontology</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="recatalogued" datatype="Text">
+      <labels>
+        <label locale="en_AU">
+          <name>Recatalogued</name>
+          <description>Details of related records</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <elements>
+        <metadataElement code="recatalogued_date" datatype="DateRange">
+          <labels>
+            <label locale="en_AU">
+              <name>Date</name>
+              <description>Specify the date of recatalogueing</description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="dateRangeBoundaries"/>
+            <setting name="fieldWidth"/>
+            <setting name="doesNotTakeLocale">1</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="useDatePicker">0</setting>
+            <setting name="mustNotBeBlank">0</setting>
+            <setting name="isLifespan">0</setting>
+            <setting name="default_text"/>
+            <setting name="suggestExistingValues">0</setting>
+            <setting name="suggestExistingValueSort">value</setting>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+            <setting name="displayTemplate"/>
+            <setting name="displayDelimiter">,</setting>
+          </settings>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>invertebrate_palaeontology</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="figured" datatype="Text">
+      <labels>
+        <label locale="en_AU">
+          <name>Figured</name>
+        </label>
+      </labels>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>invertebrate_palaeontology</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -21222,11 +21328,9 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
                 <setting name="ca_object_lots_gift_dateElement">dcModified</setting>
                 <setting name="ca_object_lots_gift_color">#EEEEEE</setting>
                 <setting name="ca_object_lots_loan_dateElement">dcModified</setting>
-                <setting name="ca_object_lots_loan_color">bfdeff</setting>
-                <setting name="ca_object_lots_loan_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;</setting>
+                <setting name="ca_object_lots_loan_color">ffffff</setting>
                 <setting name="ca_object_lots_long_term_loan_dateElement">dcModified</setting>
-                <setting name="ca_object_lots_long_term_loan_color">d3aaeb</setting>
-                <setting name="ca_object_lots_long_term_loan_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;</setting>
+                <setting name="ca_object_lots_long_term_loan_color">ffffff</setting>
                 <setting name="ca_object_lots_purchase_dateElement">dcModified</setting>
                 <setting name="ca_object_lots_purchase_color">#EEEEEE</setting>
                 <setting name="ca_object_lots_restricted_gift_dateElement">dcModified</setting>
@@ -21249,67 +21353,37 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
                 <setting name="ca_occurrences_anthropology_register_color">#EEEEEE</setting>
                 <setting name="ca_occurrences_resource_dateElement">dcModified</setting>
                 <setting name="ca_occurrences_resource_color">#EEEEEE</setting>
-                <setting name="ca_movements_movement_dateElement">planned_removal_date</setting>
-                <setting name="ca_movements_movement_color">#EEEEEE</setting>
+                <setting name="ca_movements_showTypes">73</setting>
+                <setting name="ca_movements_movement_dateElement">removal_date</setting>
+                <setting name="ca_movements_movement_color">75bad6</setting>
+                <setting name="ca_movements_movement_displayTemplate">&lt;l&gt;^ca_movements.preferred_labels&lt;/l&gt;</setting>
                 <setting name="ca_loans_showTypes">7813</setting>
                 <setting name="ca_loans_showTypes">70</setting>
                 <setting name="ca_loans_showTypes">71</setting>
-                <setting name="ca_loans_custodial_dateElement">loan_out_date</setting>
+                <setting name="ca_loans_custodial_dateElement">loan_in_date</setting>
                 <setting name="ca_loans_custodial_color">f09393</setting>
                 <setting name="ca_loans_custodial_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;&lt;br&gt;&#13;
-&lt;ifdef code="ca_loans.loan_period"&gt;Loan Period:&lt;/ifdef&gt; ^ca_loans.loan_period&lt;br&gt;&#13;
 Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
-&lt;unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="borrower"&gt;^ca_entities.preferred_labels&lt;/unit&gt;&lt;/unit&gt;</setting>
-                <setting name="ca_loans_in_dateElement">loan_out_date</setting>
+&lt;unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="lender"&gt;^ca_entities.preferred_labels&lt;/unit&gt;&lt;/unit&gt;</setting>
+                <setting name="ca_loans_in_dateElement">loan_in_date</setting>
                 <setting name="ca_loans_in_color">ffc2ff</setting>
                 <setting name="ca_loans_in_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;&lt;br&gt;&#13;
-&lt;ifdef code="ca_loans.loan_period"&gt;Loan Period:&lt;/ifdef&gt; ^ca_loans.loan_period&lt;br&gt;&#13;
 Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
-&lt;unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="borrower"&gt;^ca_entities.preferred_labels&lt;/unit&gt;&lt;/unit&gt;</setting>
+&lt;unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="lender"&gt;^ca_entities.preferred_labels&lt;/unit&gt;&lt;/unit&gt;</setting>
                 <setting name="ca_loans_out_dateElement">loan_out_date</setting>
                 <setting name="ca_loans_out_color">f0e090</setting>
                 <setting name="ca_loans_out_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;&lt;br&gt;&#13;
-&lt;ifdef code="ca_loans.loan_period"&gt;Loan Period:&lt;/ifdef&gt; ^ca_loans.loan_period&lt;br&gt;&#13;
-Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
+Lent to: &lt;unit relativeTo="ca_loans"&gt;&#13;
 &lt;unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="borrower"&gt;^ca_entities.preferred_labels&lt;/unit&gt;&lt;/unit&gt;</setting>
                 <setting name="ca_storage_locations_showRelationshipTypes">19</setting>
                 <setting name="ca_storage_locations_showRelationshipTypes">197</setting>
                 <setting name="ca_storage_locations_showRelationshipTypes">198</setting>
                 <setting name="ca_storage_locations_color">80ff59</setting>
                 <setting name="ca_storage_locations_displayTemplate">&lt;l&gt;^ca_storage_locations.preferred_labels&lt;/l&gt;</setting>
-                <setting name="showDeaccessionInformation">1</setting>
+                <setting name="showDeaccessionInformation"/>
                 <setting name="deaccession_color">#EEEEEE</setting>
                 <setting name="ca_occurrences_map_dateElement">dcModified</setting>
                 <setting name="ca_occurrences_map_color">#EEEEEE</setting>
-              </settings>
-            </placement>
-            <placement code="ca_storage_locations2">
-              <bundle>ca_storage_locations</bundle>
-              <settings>
-                <setting name="list_format">bubbles</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="display_template">^ca_storage_locations.preferred_labels</setting>
-                <setting name="useHierarchicalBrowser">1</setting>
-                <setting name="hierarchicalBrowserHeight">200px</setting>
-                <setting name="readonly"/>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow"/>
-                <setting name="showCurrentOnly">1</setting>
-              </settings>
-            </placement>
-            <placement code="ca_loans3">
-              <bundle>ca_loans</bundle>
-              <settings>
-                <setting name="list_format">bubbles</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="display_template">^ca_loans.preferred_labels</setting>
-                <setting name="readonly"/>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow"/>
               </settings>
             </placement>
             <placement code="ca_movements4">
@@ -23022,10 +23096,9 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
                 <setting name="ca_object_lots_gift_dateElement">dcModified</setting>
                 <setting name="ca_object_lots_gift_color">#EEEEEE</setting>
                 <setting name="ca_object_lots_loan_dateElement">dcModified</setting>
-                <setting name="ca_object_lots_loan_color">bfdeff</setting>
-                <setting name="ca_object_lots_loan_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;</setting>
+                <setting name="ca_object_lots_loan_color">ffffff</setting>
                 <setting name="ca_object_lots_long_term_loan_dateElement">dcModified</setting>
-                <setting name="ca_object_lots_long_term_loan_color">d3aaeb</setting>
+                <setting name="ca_object_lots_long_term_loan_color">ffffff</setting>
                 <setting name="ca_object_lots_purchase_dateElement">dcModified</setting>
                 <setting name="ca_object_lots_purchase_color">#EEEEEE</setting>
                 <setting name="ca_object_lots_restricted_gift_dateElement">dcModified</setting>
@@ -23050,34 +23123,34 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
                 <setting name="ca_occurrences_anthropology_register_color">#EEEEEE</setting>
                 <setting name="ca_occurrences_resource_dateElement">dcModified</setting>
                 <setting name="ca_occurrences_resource_color">#EEEEEE</setting>
-                <setting name="ca_movements_movement_dateElement">planned_removal_date</setting>
-                <setting name="ca_movements_movement_color">#EEEEEE</setting>
+                <setting name="ca_movements_showTypes">73</setting>
+                <setting name="ca_movements_movement_dateElement">removal_date</setting>
+                <setting name="ca_movements_movement_color">75bad6</setting>
+                <setting name="ca_movements_movement_displayTemplate">&lt;l&gt;^ca_movements.preferred_labels&lt;/l&gt;</setting>
                 <setting name="ca_loans_showTypes">7813</setting>
                 <setting name="ca_loans_showTypes">70</setting>
                 <setting name="ca_loans_showTypes">71</setting>
-                <setting name="ca_loans_custodial_dateElement">loan_authorization_date</setting>
+                <setting name="ca_loans_custodial_dateElement">loan_in_date</setting>
                 <setting name="ca_loans_custodial_color">f09393</setting>
                 <setting name="ca_loans_custodial_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;&lt;br&gt;&#13;
-&lt;ifdef code="ca_loans.loan_period"&gt;Loan Period:&lt;/ifdef&gt; ^ca_loans.loan_period&lt;br&gt;&#13;
 Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
 &lt;unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="borrower"&gt;^ca_entities.preferred_labels&lt;/unit&gt;&lt;/unit&gt;</setting>
-                <setting name="ca_loans_in_dateElement">loan_authorization_date</setting>
+                <setting name="ca_loans_in_dateElement">loan_in_date</setting>
                 <setting name="ca_loans_in_color">ffc2ff</setting>
                 <setting name="ca_loans_in_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;&lt;br&gt;&#13;
-&lt;ifdef code="ca_loans.loan_period"&gt;Loan Period:&lt;/ifdef&gt; ^ca_loans.loan_period&lt;br&gt;&#13;
 Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
 &lt;unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="borrower"&gt;^ca_entities.preferred_labels&lt;/unit&gt;&lt;/unit&gt;</setting>
-                <setting name="ca_loans_out_dateElement">loan_authorization_date</setting>
+                <setting name="ca_loans_out_dateElement">loan_out_date</setting>
                 <setting name="ca_loans_out_color">f0e090</setting>
                 <setting name="ca_loans_out_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;&lt;br&gt;&#13;
-&lt;ifdef code="ca_loans.loan_period"&gt;Loan Period:&lt;/ifdef&gt; ^ca_loans.loan_period&lt;br&gt;&#13;
 Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
 &lt;unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="borrower"&gt;^ca_entities.preferred_labels&lt;/unit&gt;&lt;/unit&gt;</setting>
                 <setting name="ca_storage_locations_showRelationshipTypes">19</setting>
                 <setting name="ca_storage_locations_showRelationshipTypes">197</setting>
                 <setting name="ca_storage_locations_showRelationshipTypes">198</setting>
                 <setting name="ca_storage_locations_color">80ff59</setting>
-                <setting name="showDeaccessionInformation">1</setting>
+                <setting name="ca_storage_locations_displayTemplate">&lt;l&gt;^ca_storage_locations.preferred_labels&lt;/l&gt;</setting>
+                <setting name="showDeaccessionInformation"/>
                 <setting name="deaccession_color">#EEEEEE</setting>
               </settings>
             </placement>
@@ -23935,46 +24008,51 @@ Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="usewysiwygeditor"/>
+                <setting name="readonly"/>
               </settings>
             </placement>
             <placement code="idno2">
               <bundle>idno</bundle>
-              <settings/>
+              <settings>
+                <setting name="readonly"/>
+              </settings>
             </placement>
             <placement code="ca_attribute_description3">
               <bundle>ca_attribute_description</bundle>
               <settings>
                 <setting name="sortDirection">ASC</setting>
+                <setting name="readonly"/>
               </settings>
             </placement>
             <placement code="nonpreferred_labels4">
               <bundle>nonpreferred_labels</bundle>
               <settings>
                 <setting name="usewysiwygeditor"/>
+                <setting name="readonly"/>
               </settings>
             </placement>
             <placement code="ca_attribute_georeference5">
               <bundle>ca_attribute_georeference</bundle>
               <settings>
                 <setting name="sortDirection">ASC</setting>
+                <setting name="readonly"/>
               </settings>
             </placement>
-            <placement code="hierarchy_location6">
-              <bundle>hierarchy_location</bundle>
-              <settings>
-                <setting name="open_hierarchy">1</setting>
-              </settings>
+            <placement code="hierarchy_navigation6">
+              <bundle>hierarchy_navigation</bundle>
             </placement>
             <placement code="ca_attribute_languageAffiliati">
               <bundle>ca_attribute_languageAffiliation</bundle>
               <settings>
                 <setting name="sortDirection">ASC</setting>
+                <setting name="readonly"/>
               </settings>
             </placement>
             <placement code="ca_attribute_internal_notes8">
               <bundle>ca_attribute_internal_notes</bundle>
               <settings>
                 <setting name="sortDirection">ASC</setting>
+                <setting name="readonly"/>
               </settings>
             </placement>
             <placement code="ca_places9">
@@ -23987,21 +24065,29 @@ Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
                 <setting name="maxRelationshipsPerRow"/>
                 <setting name="useHierarchicalBrowser">1</setting>
                 <setting name="hierarchicalBrowserHeight">200px</setting>
+                <setting name="readonly"/>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="dontShowDeleteButton">0</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_geonames10">
               <bundle>ca_attribute_geonames</bundle>
               <settings>
                 <setting name="sortDirection">ASC</setting>
+                <setting name="readonly"/>
               </settings>
             </placement>
             <placement code="access11">
               <bundle>access</bundle>
-              <settings/>
+              <settings>
+                <setting name="readonly"/>
+              </settings>
             </placement>
             <placement code="status12">
               <bundle>status</bundle>
-              <settings/>
+              <settings>
+                <setting name="readonly"/>
+              </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -24152,6 +24238,216 @@ Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
             <placement code="ca_objects_history14">
               <bundle>ca_objects_history</bundle>
               <settings>
+                <setting name="width">100%</setting>
+                <setting name="readonly"/>
+                <setting name="ca_object_lots_bequest_dateElement">dcModified</setting>
+                <setting name="ca_object_lots_bequest_color">#EEEEEE</setting>
+                <setting name="ca_object_lots_gift_dateElement">dcModified</setting>
+                <setting name="ca_object_lots_gift_color">#EEEEEE</setting>
+                <setting name="ca_object_lots_loan_dateElement">dcModified</setting>
+                <setting name="ca_object_lots_loan_color">ffffff</setting>
+                <setting name="ca_object_lots_long_term_loan_dateElement">dcModified</setting>
+                <setting name="ca_object_lots_long_term_loan_color">ffffff</setting>
+                <setting name="ca_object_lots_purchase_dateElement">dcModified</setting>
+                <setting name="ca_object_lots_purchase_color">#EEEEEE</setting>
+                <setting name="ca_object_lots_restricted_gift_dateElement">dcModified</setting>
+                <setting name="ca_object_lots_restricted_gift_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_conservation_analysis_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_conservation_analysis_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_conservation_assignment_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_conservation_assignment_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_collectingEvent_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_collectingEvent_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_conservation_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_conservation_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_conservation_job_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_conservation_job_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_exhibition_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_exhibition_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_identification_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_identification_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_map_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_map_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_anthropology_register_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_anthropology_register_color">#EEEEEE</setting>
+                <setting name="ca_occurrences_resource_dateElement">dcModified</setting>
+                <setting name="ca_occurrences_resource_color">#EEEEEE</setting>
+                <setting name="ca_movements_showTypes">73</setting>
+                <setting name="ca_movements_movement_dateElement">removal_date</setting>
+                <setting name="ca_movements_movement_color">75bad6</setting>
+                <setting name="ca_movements_movement_displayTemplate">&lt;l&gt;^ca_movements.preferred_labels&lt;/l&gt;</setting>
+                <setting name="ca_loans_showTypes">7813</setting>
+                <setting name="ca_loans_showTypes">70</setting>
+                <setting name="ca_loans_showTypes">71</setting>
+                <setting name="ca_loans_custodial_dateElement">loan_in_date</setting>
+                <setting name="ca_loans_custodial_color">f09393</setting>
+                <setting name="ca_loans_custodial_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;&lt;br&gt;&#13;
+Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
+&lt;unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="borrower"&gt;^ca_entities.preferred_labels&lt;/unit&gt;&lt;/unit&gt;</setting>
+                <setting name="ca_loans_in_dateElement">loan_in_date</setting>
+                <setting name="ca_loans_in_color">ffc2ff</setting>
+                <setting name="ca_loans_in_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;&lt;br&gt;&#13;
+Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
+&lt;unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="borrower"&gt;^ca_entities.preferred_labels&lt;/unit&gt;&lt;/unit&gt;</setting>
+                <setting name="ca_loans_out_dateElement">loan_out_date</setting>
+                <setting name="ca_loans_out_color">f0e090</setting>
+                <setting name="ca_loans_out_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;&lt;br&gt;&#13;
+Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
+&lt;unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="borrower"&gt;^ca_entities.preferred_labels&lt;/unit&gt;&lt;/unit&gt;</setting>
+                <setting name="ca_storage_locations_showRelationshipTypes">19</setting>
+                <setting name="ca_storage_locations_showRelationshipTypes">197</setting>
+                <setting name="ca_storage_locations_showRelationshipTypes">198</setting>
+                <setting name="ca_storage_locations_color">80ff59</setting>
+                <setting name="ca_storage_locations_displayTemplate">&lt;l&gt;^ca_storage_locations.preferred_labels&lt;/l&gt;</setting>
+                <setting name="showDeaccessionInformation"/>
+                <setting name="deaccession_color">#EEEEEE</setting>
+              </settings>
+            </placement>
+            <placement code="ca_occurrences17">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="label" locale="en_AU">Maps / References</setting>
+                <setting name="add_label" locale="en_AU">add map / reference</setting>
+                <setting name="readonly"/>
+                <setting name="restrict_to_types">map</setting>
+                <setting name="restrict_to_types">resource</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="display_template">^ca_occurrences.preferred_labels</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow">255</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_occurrenceRemarks">
+              <bundle>ca_attribute_occurrenceRemarks</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+    <userInterface code="eps_palaeontology" type="ca_objects">
+      <labels>
+        <label locale="en_AU">
+          <name>EPS Palaeontology</name>
+        </label>
+      </labels>
+      <typeRestrictions>
+        <restriction type="invertebrate_palaeontology"/>
+        <restriction type="vertebrate_palaeontology"/>
+      </typeRestrictions>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
+      <groupAccess>
+        <permission group="vertebrate_palaeo" access="read"/>
+        <permission group="invert_palaeo" access="read"/>
+      </groupAccess>
+      <screens>
+        <screen idno="eps_palaeo_basic" default="1">
+          <labels>
+            <label locale="en_AU">
+              <name>Basic Information</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction type="invertebrate_palaeontology"/>
+            <restriction type="vertebrate_palaeontology"/>
+          </typeRestrictions>
+          <bundlePlacements>
+            <placement code="idno1">
+              <bundle>idno</bundle>
+              <settings>
+                <setting name="readonly"/>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_accessionDate2">
+              <bundle>ca_attribute_accessionDate</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_determinationPlan">
+              <bundle>ca_attribute_determinationPlantsInverts</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_identifiedBy3">
+              <bundle>ca_attribute_identifiedBy</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_list_items4">
+              <bundle>ca_list_items</bundle>
+              <settings>
+                <setting name="label" locale="en_AU">Identifications / Determinations</setting>
+                <setting name="add_label" locale="en_AU">add determination / identification</setting>
+                <setting name="description" locale="en_AU">You can enter details about the identification of this record. Ensure that you have the first item in the list is the current identification of the object.</setting>
+                <setting name="readonly"/>
+                <setting name="restrict_to_relationship_types">identification</setting>
+                <setting name="restrict_to_types">scientific_name</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="colorFirstItem">a7e8d5</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="display_template">&lt;p&gt;&lt;l&gt;&lt;strong&gt;^ca_list_items.preferred_labels&lt;/strong&gt;&lt;/l&gt;&lt;/p&gt;&#13;
+&lt;table class="table table-bordered"&gt;&#13;
+    &lt;tbody&gt;&#13;
+        &lt;tr&gt;&#13;
+            &lt;th&gt;By&lt;/th&gt;&#13;
+            &lt;th&gt;On&lt;/th&gt;&#13;
+            &lt;th&gt;Qualifier&lt;/th&gt;&#13;
+            &lt;th&gt;Verification Status&lt;/th&gt;&#13;
+            &lt;th&gt;Type Status&lt;/th&gt;&#13;
+            &lt;th&gt;Remarks&lt;/th&gt;&#13;
+        &lt;/tr&gt;&#13;
+        &lt;unit&gt;&#13;
+        &lt;tr&gt;&#13;
+            &lt;td&gt;&#13;
+                ^ca_objects_x_vocabulary_terms.identifiedBy&#13;
+                &lt;ifdef code="ca_objects_x_vocabulary_terms.etal"&gt;&#13;
+                &lt;em&gt;et al.&lt;/em&gt;&#13;
+                &lt;/ifdef&gt;&#13;
+            &lt;/td&gt;&#13;
+            &lt;td&gt;^ca_objects_x_vocabulary_terms.dateIdentified&lt;/td&gt;&#13;
+            &lt;td&gt;&#13;
+                ^ca_objects_x_vocabulary_terms.identificationQualifier&#13;
+            &lt;/td&gt;&#13;
+            &lt;td&gt;^ca_objects_x_vocabulary_terms.identificationVerificationStatus&lt;/td&gt;&#13;
+            &lt;td&gt;&#13;
+                ^ca_objects_x_vocabulary_terms.typeStatus&#13;
+            &lt;/td&gt;&#13;
+            &lt;td&gt;^ca_objects_x_vocabulary_terms.identificationRemarks&#13;
+            &lt;/td&gt;&#13;
+        &lt;/tr&gt;&#13;
+        &lt;/unit&gt;&#13;
+    &lt;/tbody&gt;&#13;
+&lt;/table&gt;&#13;
+</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="restrict_to_lists">eps_taxonomy</setting>
+                <setting name="useHierarchicalBrowser">1</setting>
+                <setting name="hierarchicalBrowserHeight">200px</setting>
+                <setting name="restrictToTermsRelatedToCollection">0</setting>
+                <setting name="restrictToTermsOnCollectionUseRelationshipType">116</setting>
+              </settings>
+            </placement>
+            <placement code="ca_objects_history5">
+              <bundle>ca_objects_history</bundle>
+              <settings>
+                <setting name="width">100%</setting>
                 <setting name="readonly"/>
                 <setting name="ca_object_lots_bequest_dateElement">dcModified</setting>
                 <setting name="ca_object_lots_bequest_color">#EEEEEE</setting>
@@ -24185,38 +24481,67 @@ Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
                 <setting name="ca_occurrences_anthropology_register_color">#EEEEEE</setting>
                 <setting name="ca_occurrences_resource_dateElement">dcModified</setting>
                 <setting name="ca_occurrences_resource_color">#EEEEEE</setting>
-                <setting name="ca_movements_movement_dateElement">planned_removal_date</setting>
-                <setting name="ca_movements_movement_color">#EEEEEE</setting>
-                <setting name="ca_loans_custodial_dateElement">loan_authorization_date</setting>
-                <setting name="ca_loans_custodial_color">#EEEEEE</setting>
-                <setting name="ca_loans_in_dateElement">loan_authorization_date</setting>
-                <setting name="ca_loans_in_color">#EEEEEE</setting>
-                <setting name="ca_loans_out_dateElement">loan_authorization_date</setting>
-                <setting name="ca_loans_out_color">#EEEEEE</setting>
-                <setting name="ca_storage_locations_color">#EEEEEE</setting>
-                <setting name="showDeaccessionInformation">1</setting>
+                <setting name="ca_movements_showTypes">73</setting>
+                <setting name="ca_movements_movement_dateElement">removal_date</setting>
+                <setting name="ca_movements_movement_color">75bad6</setting>
+                <setting name="ca_movements_movement_displayTemplate">&lt;l&gt;^ca_movements.preferred_labels&lt;/l&gt;</setting>
+                <setting name="ca_loans_showTypes">7813</setting>
+                <setting name="ca_loans_showTypes">70</setting>
+                <setting name="ca_loans_showTypes">71</setting>
+                <setting name="ca_loans_custodial_dateElement">loan_in_date</setting>
+                <setting name="ca_loans_custodial_color">f09393</setting>
+                <setting name="ca_loans_custodial_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;&lt;br&gt;&#13;
+Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
+&lt;unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="borrower"&gt;^ca_entities.preferred_labels&lt;/unit&gt;&lt;/unit&gt;</setting>
+                <setting name="ca_loans_in_dateElement">loan_in_date</setting>
+                <setting name="ca_loans_in_color">ffc2ff</setting>
+                <setting name="ca_loans_in_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;&lt;br&gt;&#13;
+Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
+&lt;unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="borrower"&gt;^ca_entities.preferred_labels&lt;/unit&gt;&lt;/unit&gt;</setting>
+                <setting name="ca_loans_out_dateElement">loan_out_date</setting>
+                <setting name="ca_loans_out_color">f0e090</setting>
+                <setting name="ca_loans_out_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;&lt;br&gt;&#13;
+Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
+&lt;unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="borrower"&gt;^ca_entities.preferred_labels&lt;/unit&gt;&lt;/unit&gt;f09393</setting>
+                <setting name="ca_storage_locations_showRelationshipTypes">19</setting>
+                <setting name="ca_storage_locations_showRelationshipTypes">197</setting>
+                <setting name="ca_storage_locations_showRelationshipTypes">198</setting>
+                <setting name="ca_storage_locations_color">80ff59</setting>
+                <setting name="ca_storage_locations_displayTemplate">&lt;l&gt;^ca_storage_locations.preferred_labels&lt;/l&gt;</setting>
+                <setting name="showDeaccessionInformation"/>
                 <setting name="deaccession_color">#EEEEEE</setting>
               </settings>
             </placement>
-            <placement code="ca_occurrences17">
-              <bundle>ca_occurrences</bundle>
+            <placement code="ca_attribute_eventDate7">
+              <bundle>ca_attribute_eventDate</bundle>
               <settings>
-                <setting name="label" locale="en_AU">Maps / References</setting>
-                <setting name="add_label" locale="en_AU">add map / reference</setting>
                 <setting name="readonly"/>
-                <setting name="restrict_to_types">map</setting>
-                <setting name="restrict_to_types">resource</setting>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="list_format">bubbles</setting>
                 <setting name="sortDirection">ASC</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-                <setting name="display_template">^ca_occurrences.preferred_labels</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow">255</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_occurrenceRemarks">
-              <bundle>ca_attribute_occurrenceRemarks</bundle>
+            <placement code="ca_attribute_eventRemarks8">
+              <bundle>ca_attribute_eventRemarks</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_GeologicalContext">
+              <bundle>ca_attribute_GeologicalContext</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_siteDetailsPalaeo">
+              <bundle>ca_attribute_siteDetailsPalaeontology</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_internal_notes11">
+              <bundle>ca_attribute_internal_notes</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="sortDirection">ASC</setting>
@@ -24233,7 +24558,7 @@ Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <type code="lender" default="0">
           <labels>
             <label locale="en_AU">
-              <typename>is lent from</typename>
+              <typename>is borrowed from</typename>
               <typename_reverse>is lender of</typename_reverse>
             </label>
           </labels>
@@ -24241,7 +24566,7 @@ Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <type code="borrower" default="0">
           <labels>
             <label locale="en_AU">
-              <typename>is borrowed from</typename>
+              <typename>is lent to</typename>
               <typename_reverse>is borrower of</typename_reverse>
             </label>
           </labels>
@@ -25232,16 +25557,16 @@ Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
           </labels>
           <subTypeRight>anthropology_register</subTypeRight>
         </type>
-				<type code="dcCreator" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>created</typename>
-							<typename_reverse>created by</typename_reverse>
-						</label>
-					</labels>
-					<subTypeRight>resource</subTypeRight>
-				</type>
-			<type code="individual_request_cons" default="0">
+          <type code="dcCreator" default="0">
+            <labels>
+              <label locale="en_AU">
+                <typename>created</typename>
+                <typename_reverse>created by</typename_reverse>
+              </label>
+            </labels>
+            <subTypeRight>resource</subTypeRight>
+          </type>
+        <type code="individual_request_cons" default="0">
           <labels>
             <label locale="en_AU">
               <typename>requested</typename>
@@ -28574,6 +28899,16 @@ Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
     <group code="mineralogy">
       <name>Minerals</name>
       <description>A group for curators of the minerals databases</description>
+      <roles/>
+    </group>
+    <group code="invert_palaeo">
+      <name>Invertebrate Palaeontology</name>
+      <description/>
+      <roles/>
+    </group>
+    <group code="vertebrate_palaeo">
+      <name>Vertebrate Palaeontology</name>
+      <description/>
       <roles/>
     </group>
   </groups>
