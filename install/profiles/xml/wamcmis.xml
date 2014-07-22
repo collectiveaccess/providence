@@ -23068,24 +23068,6 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
             <restriction type="DublinCore"/>
           </typeRestrictions>
           <bundlePlacements>
-            <placement code="ca_storage_locations1">
-              <bundle>ca_storage_locations</bundle>
-              <settings>
-                <setting name="label" locale="en_AU">Current Location</setting>
-                <setting name="restrict_to_relationship_types">related</setting>
-                <setting name="list_format">bubbles</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="display_template">^ca_storage_locations.preferred_labels</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow">1</setting>
-                <setting name="useHierarchicalBrowser">1</setting>
-                <setting name="hierarchicalBrowserHeight">200px</setting>
-                <setting name="readonly"/>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-                <setting name="showCurrentOnly">1</setting>
-              </settings>
-            </placement>
             <placement code="ca_objects_history5">
               <bundle>ca_objects_history</bundle>
               <settings>
@@ -24217,22 +24199,6 @@ Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
               <settings>
                 <setting name="readonly"/>
                 <setting name="sortDirection">ASC</setting>
-              </settings>
-            </placement>
-            <placement code="ca_storage_locations8">
-              <bundle>ca_storage_locations</bundle>
-              <settings>
-                <setting name="readonly"/>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="list_format">bubbles</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-                <setting name="display_template">^ca_storage_locations.preferred_labels</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow"/>
-                <setting name="useHierarchicalBrowser">1</setting>
-                <setting name="hierarchicalBrowserHeight">200px</setting>
-                <setting name="showCurrentOnly">1</setting>
               </settings>
             </placement>
             <placement code="ca_objects_history14">
