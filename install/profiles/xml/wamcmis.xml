@@ -1338,6 +1338,22 @@
             </label>
           </labels>
         </item>
+        <item idno="pallet" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>pallet</name_singular>
+              <name_plural>pallets</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="drum" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>drum</name_singular>
+              <name_plural>drums</name_plural>
+            </label>
+          </labels>
+        </item>
       </items>
     </list>
     <list code="storage_location_label_types" hierarchical="0" system="0" vocabulary="0">
@@ -12795,6 +12811,13 @@
     <list code="chemical_elements" hierarchical="0" system="0" vocabulary="1"><labels><label locale="en_AU"><name>Chemical Elements</name></label></labels></list>
     <list code="minerals" hierarchical="0" system="0" vocabulary="1"><labels><label locale="en_AU"><name>Minerals</name></label></labels></list>
     <list code="host_rock_types" hierarchical="0" system="0" vocabulary="1"><labels><label locale="en_AU"><name>Host Rock</name></label></labels></list>
+    <list code="lithostratigraphic_provenance" hierarchical="0" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_AU">
+          <name>Lithostratigraphic Provenance</name>
+        </label>
+      </labels>
+    </list>
   </lists>
   <elementSets>
     <metadataElement code="set_description" datatype="Text">
@@ -13780,6 +13803,16 @@
         <restriction>
           <table>ca_objects</table>
           <type>mineral_mdc</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_objects</table>
+          <type>invertebrate_palaeontology</type>
           <includeSubtypes>1</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
@@ -19756,6 +19789,16 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <setting name="minimumAttributeBundlesToDisplay">0</setting>
           </settings>
         </restriction>
+        <restriction>
+          <table>ca_objects</table>
+          <type>invertebrate_palaeontology</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="siteDetailsPalaeontology" datatype="Container">
@@ -19766,9 +19809,9 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
         </label>
       </labels>
       <settings>
+        <setting name="lineBreakAfterNumberOfElements">2</setting>
         <setting name="canBeUsedInSearchForm">0</setting>
         <setting name="canBeUsedInDisplay">0</setting>
-        <setting name="displayDelimiter"/>
       </settings>
       <elements>
         <metadataElement code="siteNumber" datatype="Text">
@@ -20131,6 +20174,119 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
           <name>Figured</name>
         </label>
       </labels>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>invertebrate_palaeontology</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="storageLocationNotes" datatype="Text">
+      <labels>
+        <label locale="en_AU">
+          <name>Storage Location Notes</name>
+          <description>Additional information relating to the current location of the object</description>
+        </label>
+      </labels>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>invertebrate_palaeontology</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="number_of_specimens" datatype="Numeric">
+      <labels>
+        <label locale="en_AU">
+          <name>Number of specimens</name>
+          <description>Enter the number of specimens. This field is similar to but not entirely compatible with DarwinCore individualCount field.</description>
+        </label>
+      </labels>
+      <elements>
+        <metadataElement code="number_of_specimens_text" datatype="Text">
+          <labels>
+            <label locale="en_AU">
+              <name>Text value</name>
+              <description>Additional field to capture information not captured by the integer field for number of specimens</description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+            <setting name="regex"/>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="usewysiwygeditor">0</setting>
+            <setting name="doesNotTakeLocale">0</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="suggestExistingValues">0</setting>
+            <setting name="suggestExistingValueSort">value</setting>
+            <setting name="default_text"/>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+            <setting name="displayTemplate"/>
+            <setting name="displayDelimiter">,</setting>
+            <setting name="isDependentValue">0</setting>
+          </settings>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>eps</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="locality" datatype="Text">
+      <labels>
+        <label locale="en_AU">
+          <name>Locality</name>
+          <description>The specific description of the place. Less specific geographic information can be provided in other geographic terms (higherGeography, continent, country, stateProvince, county, municipality, waterBody, island, islandGroup). This term may contain information modified from the original to correct perceived errors or standardize the description.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="suggestExistingValues">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>invertebrate_palaeontology</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="lithostratigraphic_provenance" datatype="List" list="lithostratigraphic_provenance">
+      <labels>
+        <label locale="en_AU">
+          <name>Lithostratigraphic Provenance</name>
+          <description>Specify the lithostratigraphic provenance of the object.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="requireValue">0</setting>
+        <setting name="render">select</setting>
+      </settings>
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
@@ -24410,6 +24566,13 @@ Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
                 <setting name="restrictToTermsOnCollectionUseRelationshipType">116</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_number_of_specime">
+              <bundle>ca_attribute_number_of_specimens</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
             <placement code="ca_objects_history5">
               <bundle>ca_objects_history</bundle>
               <settings>
@@ -24478,6 +24641,31 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
                 <setting name="deaccession_color">#EEEEEE</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_storageLocationNo">
+              <bundle>ca_attribute_storageLocationNotes</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_entities9">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_AU">Collectors</setting>
+                <setting name="add_label" locale="en_AU">add collectors</setting>
+                <setting name="description" locale="en_AU">Record the details of the individuals responsible for collecting the object</setting>
+                <setting name="readonly"/>
+                <setting name="restrict_to_relationship_types">discover</setting>
+                <setting name="restrict_to_types">ind</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="display_template">^ca_entities.preferred_labels</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+              </settings>
+            </placement>
             <placement code="ca_attribute_eventDate7">
               <bundle>ca_attribute_eventDate</bundle>
               <settings>
@@ -24494,6 +24682,23 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
             </placement>
             <placement code="ca_attribute_GeologicalContext">
               <bundle>ca_attribute_GeologicalContext</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_lithostratigraphi">
+              <bundle>ca_attribute_lithostratigraphic_provenance</bundle>
+            </placement>
+            <placement code="ca_attribute_locality12">
+              <bundle>ca_attribute_locality</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_georeference13">
+              <bundle>ca_attribute_georeference</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="sortDirection">ASC</setting>
@@ -28165,6 +28370,7 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <action>can_use_track_processing_widget</action>
       </actions>
       <bundleLevelAccessControl>
+        <permission table="ca_objects" bundle="ca_attribute_GeologicalContext" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_SizeOrDuration" access="edit"/>
         <permission table="ca_objects" bundle="access" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_accessionDate" access="edit"/>
@@ -28209,21 +28415,27 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_objects" bundle="ca_attribute_dctermscreated" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_description" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_description_source" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_determinationPlantsInverts" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_disposition" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_documentation" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_donation_date" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_dynamicProperties" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_earliestEonOrLowestEonothem" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_element" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_establishmentMeans" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_eventDate" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_eventRemarks" access="edit"/>
         <permission table="ca_objects" bundle="extent" access="edit"/>
         <permission table="ca_objects" bundle="extent_units" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_external_link" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_figured" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_francisStStore" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_geonames" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_georeference" access="edit"/>
         <permission table="ca_objects" bundle="hierarchy_location" access="edit"/>
         <permission table="ca_objects" bundle="hierarchy_navigation" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_host_rock" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_identifiedBy" access="edit"/>
         <permission table="ca_objects" bundle="idno" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_individualCount" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_informationWithheld" access="edit"/>
@@ -28238,6 +28450,7 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_objects" bundle="ca_attribute_maxDistAboveSurface" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_maximumElevationInMeters" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_minDistAboveSurface" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_mineral" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_minimumElevationInMeters" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_multipleMounts" access="edit"/>
         <permission table="ca_objects" bundle="nonpreferred_labels" access="edit"/>
@@ -28256,19 +28469,58 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_objects" bundle="ca_attribute_quarantine" access="edit"/>
         <permission table="ca_objects" bundle="rank" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_reared" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_recatalogued" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_relationship_info" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_reproductiveCondition" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_sex" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_sightedDetails" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_siteDetails" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_siteDetailsPalaeontology" access="edit"/>
         <permission table="ca_objects" bundle="source_id" access="edit"/>
         <permission table="ca_objects" bundle="status" access="edit"/>
+        <permission table="ca_objects" bundle="ca_attribute_storageLocationNotes" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_supportingDocumentation" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_technique" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_tradition" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_verbatimBioFlag" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_verbatimElevation" access="edit"/>
         <permission table="ca_objects" bundle="ca_attribute_voucher" access="edit"/>
+        <permission table="ca_object_lots" bundle="access" access="read"/>
+        <permission table="ca_object_lots" bundle="ca_collections" access="read"/>
+        <permission table="ca_object_lots" bundle="ca_entities" access="read"/>
+        <permission table="ca_object_lots" bundle="ca_list_items" access="read"/>
+        <permission table="ca_object_lots" bundle="ca_loans" access="read"/>
+        <permission table="ca_object_lots" bundle="ca_movements" access="read"/>
+        <permission table="ca_object_lots" bundle="ca_object_lots" access="read"/>
+        <permission table="ca_object_lots" bundle="ca_object_representations" access="read"/>
+        <permission table="ca_object_lots" bundle="ca_objects" access="read"/>
+        <permission table="ca_object_lots" bundle="ca_occurrences" access="read"/>
+        <permission table="ca_object_lots" bundle="ca_places" access="read"/>
+        <permission table="ca_object_lots" bundle="ca_sets" access="read"/>
+        <permission table="ca_object_lots" bundle="ca_storage_locations" access="read"/>
+        <permission table="ca_object_lots" bundle="ca_attribute_dataGeneralizations" access="read"/>
+        <permission table="ca_object_lots" bundle="ca_attribute_dcBibCitation" access="read"/>
+        <permission table="ca_object_lots" bundle="ca_attribute_dcLanguage" access="read"/>
+        <permission table="ca_object_lots" bundle="ca_attribute_dcModified" access="read"/>
+        <permission table="ca_object_lots" bundle="ca_attribute_dcRights" access="read"/>
+        <permission table="ca_object_lots" bundle="ca_attribute_dcType" access="read"/>
+        <permission table="ca_object_lots" bundle="ca_attribute_description" access="read"/>
+        <permission table="ca_object_lots" bundle="ca_attribute_dynamicProperties" access="read"/>
+        <permission table="ca_object_lots" bundle="extent" access="read"/>
+        <permission table="ca_object_lots" bundle="extent_units" access="read"/>
+        <permission table="ca_object_lots" bundle="idno_stub" access="read"/>
+        <permission table="ca_object_lots" bundle="ca_attribute_informationWithheld" access="read"/>
+        <permission table="ca_object_lots" bundle="ca_attribute_institutionCode" access="read"/>
+        <permission table="ca_object_lots" bundle="ca_attribute_institutionID" access="read"/>
+        <permission table="ca_object_lots" bundle="lot_id" access="read"/>
+        <permission table="ca_object_lots" bundle="ca_attribute_lot_notes" access="read"/>
+        <permission table="ca_object_lots" bundle="lot_status_id" access="read"/>
+        <permission table="ca_object_lots" bundle="nonpreferred_labels" access="read"/>
+        <permission table="ca_object_lots" bundle="ca_attribute_ownerInstitutionCode" access="read"/>
+        <permission table="ca_object_lots" bundle="preferred_labels" access="read"/>
+        <permission table="ca_object_lots" bundle="rank" access="read"/>
+        <permission table="ca_object_lots" bundle="source_id" access="edit"/>
+        <permission table="ca_object_lots" bundle="status" access="read"/>
         <permission table="ca_entities" bundle="access" access="edit"/>
         <permission table="ca_entities" bundle="ca_attribute_address" access="edit"/>
         <permission table="ca_entities" bundle="ca_attribute_biography" access="edit"/>
@@ -28399,6 +28651,7 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_occurrences" bundle="ca_attribute_dcModified" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_dcRights" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_dcType" access="none"/>
+        <permission table="ca_occurrences" bundle="ca_attribute_dctermscreated" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_description" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_disposition" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_distanceFromLocality" access="none"/>
@@ -28512,42 +28765,45 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_collections" bundle="source_id" access="read"/>
         <permission table="ca_collections" bundle="status" access="read"/>
         <permission table="ca_collections" bundle="ca_attribute_verbatimElevation" access="read"/>
-        <permission table="ca_object_lots" bundle="access" access="read"/>
-        <permission table="ca_object_lots" bundle="ca_collections" access="read"/>
-        <permission table="ca_object_lots" bundle="ca_entities" access="read"/>
-        <permission table="ca_object_lots" bundle="ca_list_items" access="read"/>
-        <permission table="ca_object_lots" bundle="ca_loans" access="read"/>
-        <permission table="ca_object_lots" bundle="ca_movements" access="read"/>
-        <permission table="ca_object_lots" bundle="ca_object_lots" access="read"/>
-        <permission table="ca_object_lots" bundle="ca_object_representations" access="read"/>
-        <permission table="ca_object_lots" bundle="ca_objects" access="read"/>
-        <permission table="ca_object_lots" bundle="ca_occurrences" access="read"/>
-        <permission table="ca_object_lots" bundle="ca_places" access="read"/>
-        <permission table="ca_object_lots" bundle="ca_sets" access="read"/>
-        <permission table="ca_object_lots" bundle="ca_storage_locations" access="read"/>
-        <permission table="ca_object_lots" bundle="ca_attribute_dataGeneralizations" access="read"/>
-        <permission table="ca_object_lots" bundle="ca_attribute_dcBibCitation" access="read"/>
-        <permission table="ca_object_lots" bundle="ca_attribute_dcLanguage" access="read"/>
-        <permission table="ca_object_lots" bundle="ca_attribute_dcModified" access="read"/>
-        <permission table="ca_object_lots" bundle="ca_attribute_dcRights" access="read"/>
-        <permission table="ca_object_lots" bundle="ca_attribute_dcType" access="read"/>
-        <permission table="ca_object_lots" bundle="ca_attribute_description" access="read"/>
-        <permission table="ca_object_lots" bundle="ca_attribute_dynamicProperties" access="read"/>
-        <permission table="ca_object_lots" bundle="extent" access="read"/>
-        <permission table="ca_object_lots" bundle="extent_units" access="read"/>
-        <permission table="ca_object_lots" bundle="idno_stub" access="read"/>
-        <permission table="ca_object_lots" bundle="ca_attribute_informationWithheld" access="read"/>
-        <permission table="ca_object_lots" bundle="ca_attribute_institutionCode" access="read"/>
-        <permission table="ca_object_lots" bundle="ca_attribute_institutionID" access="read"/>
-        <permission table="ca_object_lots" bundle="lot_id" access="read"/>
-        <permission table="ca_object_lots" bundle="ca_attribute_lot_notes" access="read"/>
-        <permission table="ca_object_lots" bundle="lot_status_id" access="read"/>
-        <permission table="ca_object_lots" bundle="nonpreferred_labels" access="read"/>
-        <permission table="ca_object_lots" bundle="ca_attribute_ownerInstitutionCode" access="read"/>
-        <permission table="ca_object_lots" bundle="preferred_labels" access="read"/>
-        <permission table="ca_object_lots" bundle="rank" access="read"/>
-        <permission table="ca_object_lots" bundle="source_id" access="edit"/>
-        <permission table="ca_object_lots" bundle="status" access="read"/>
+        <permission table="ca_storage_locations" bundle="access" access="edit"/>
+        <permission table="ca_storage_locations" bundle="ca_attribute_address" access="edit"/>
+        <permission table="ca_storage_locations" bundle="ca_collections" access="edit"/>
+        <permission table="ca_storage_locations" bundle="ca_entities" access="edit"/>
+        <permission table="ca_storage_locations" bundle="ca_list_items" access="edit"/>
+        <permission table="ca_storage_locations" bundle="ca_loans" access="edit"/>
+        <permission table="ca_storage_locations" bundle="ca_movements" access="edit"/>
+        <permission table="ca_storage_locations" bundle="ca_object_lots" access="edit"/>
+        <permission table="ca_storage_locations" bundle="ca_object_representations" access="edit"/>
+        <permission table="ca_storage_locations" bundle="ca_objects" access="edit"/>
+        <permission table="ca_storage_locations" bundle="ca_occurrences" access="edit"/>
+        <permission table="ca_storage_locations" bundle="ca_places" access="edit"/>
+        <permission table="ca_storage_locations" bundle="ca_sets" access="edit"/>
+        <permission table="ca_storage_locations" bundle="ca_storage_locations" access="edit"/>
+        <permission table="ca_storage_locations" bundle="color" access="edit"/>
+        <permission table="ca_storage_locations" bundle="ca_attribute_dataGeneralizations" access="edit"/>
+        <permission table="ca_storage_locations" bundle="ca_attribute_dcBibCitation" access="edit"/>
+        <permission table="ca_storage_locations" bundle="ca_attribute_dcLanguage" access="edit"/>
+        <permission table="ca_storage_locations" bundle="ca_attribute_dcModified" access="edit"/>
+        <permission table="ca_storage_locations" bundle="ca_attribute_dcRights" access="edit"/>
+        <permission table="ca_storage_locations" bundle="ca_attribute_dcType" access="edit"/>
+        <permission table="ca_storage_locations" bundle="ca_attribute_description" access="edit"/>
+        <permission table="ca_storage_locations" bundle="ca_attribute_dynamicProperties" access="edit"/>
+        <permission table="ca_storage_locations" bundle="ca_attribute_georeference" access="edit"/>
+        <permission table="ca_storage_locations" bundle="hierarchy_location" access="edit"/>
+        <permission table="ca_storage_locations" bundle="hierarchy_navigation" access="edit"/>
+        <permission table="ca_storage_locations" bundle="icon" access="edit"/>
+        <permission table="ca_storage_locations" bundle="idno" access="edit"/>
+        <permission table="ca_storage_locations" bundle="ca_attribute_informationWithheld" access="edit"/>
+        <permission table="ca_storage_locations" bundle="ca_attribute_institutionCode" access="edit"/>
+        <permission table="ca_storage_locations" bundle="ca_attribute_institutionID" access="edit"/>
+        <permission table="ca_storage_locations" bundle="ca_attribute_internal_notes" access="edit"/>
+        <permission table="ca_storage_locations" bundle="location_id" access="edit"/>
+        <permission table="ca_storage_locations" bundle="nonpreferred_labels" access="edit"/>
+        <permission table="ca_storage_locations" bundle="ca_attribute_ownerInstitutionCode" access="edit"/>
+        <permission table="ca_storage_locations" bundle="preferred_labels" access="edit"/>
+        <permission table="ca_storage_locations" bundle="rank" access="edit"/>
+        <permission table="ca_storage_locations" bundle="source_id" access="edit"/>
+        <permission table="ca_storage_locations" bundle="status" access="edit"/>
         <permission table="ca_loans" bundle="access" access="edit"/>
         <permission table="ca_loans" bundle="ca_collections" access="none"/>
         <permission table="ca_loans" bundle="ca_entities" access="none"/>
@@ -28570,6 +28826,7 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_loans" bundle="ca_attribute_loan_purpose" access="none"/>
         <permission table="ca_loans" bundle="ca_attribute_loan_renewal_date" access="none"/>
         <permission table="ca_loans" bundle="ca_attribute_loan_return_date" access="none"/>
+        <permission table="ca_loans" bundle="ca_attribute_loan_status" access="edit"/>
         <permission table="ca_loans" bundle="nonpreferred_labels" access="none"/>
         <permission table="ca_loans" bundle="preferred_labels" access="none"/>
         <permission table="ca_loans" bundle="rank" access="none"/>
@@ -28599,39 +28856,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_movements" bundle="ca_attribute_removal_date" access="edit"/>
         <permission table="ca_movements" bundle="source_id" access="edit"/>
         <permission table="ca_movements" bundle="status" access="edit"/>
-        <permission table="ca_tours" bundle="access" access="none"/>
-        <permission table="ca_tours" bundle="ca_tour_stops_list" access="none"/>
-        <permission table="ca_tours" bundle="color" access="none"/>
-        <permission table="ca_tours" bundle="icon" access="none"/>
-        <permission table="ca_tours" bundle="nonpreferred_labels" access="none"/>
-        <permission table="ca_tours" bundle="preferred_labels" access="none"/>
-        <permission table="ca_tours" bundle="rank" access="none"/>
-        <permission table="ca_tours" bundle="source_id" access="edit"/>
-        <permission table="ca_tours" bundle="status" access="none"/>
-        <permission table="ca_tours" bundle="tour_code" access="none"/>
-        <permission table="ca_tours" bundle="ca_attribute_tour_description" access="none"/>
-        <permission table="ca_tours" bundle="tour_id" access="none"/>
-        <permission table="ca_tour_stops" bundle="access" access="none"/>
-        <permission table="ca_tour_stops" bundle="ca_collections" access="none"/>
-        <permission table="ca_tour_stops" bundle="ca_entities" access="none"/>
-        <permission table="ca_tour_stops" bundle="ca_list_items" access="none"/>
-        <permission table="ca_tour_stops" bundle="ca_objects" access="none"/>
-        <permission table="ca_tour_stops" bundle="ca_occurrences" access="none"/>
-        <permission table="ca_tour_stops" bundle="ca_places" access="none"/>
-        <permission table="ca_tour_stops" bundle="ca_tour_stops" access="none"/>
-        <permission table="ca_tour_stops" bundle="color" access="none"/>
-        <permission table="ca_tour_stops" bundle="hierarchy_location" access="none"/>
-        <permission table="ca_tour_stops" bundle="hierarchy_navigation" access="none"/>
-        <permission table="ca_tour_stops" bundle="icon" access="none"/>
-        <permission table="ca_tour_stops" bundle="idno" access="none"/>
-        <permission table="ca_tour_stops" bundle="nonpreferred_labels" access="none"/>
-        <permission table="ca_tour_stops" bundle="preferred_labels" access="none"/>
-        <permission table="ca_tour_stops" bundle="rank" access="none"/>
-        <permission table="ca_tour_stops" bundle="status" access="none"/>
-        <permission table="ca_tour_stops" bundle="stop_id" access="none"/>
-        <permission table="ca_tour_stops" bundle="tour_id" access="none"/>
-        <permission table="ca_tour_stops" bundle="ca_attribute_tour_stop_description" access="none"/>
-        <permission table="ca_tour_stops" bundle="ca_attribute_tour_stop_georeference" access="none"/>
         <permission table="ca_object_representations" bundle="access" access="edit"/>
         <permission table="ca_object_representations" bundle="ca_entities" access="edit"/>
         <permission table="ca_object_representations" bundle="ca_list_items" access="edit"/>
@@ -28672,45 +28896,35 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_representation_annotations" bundle="preview" access="edit"/>
         <permission table="ca_representation_annotations" bundle="status" access="edit"/>
         <permission table="ca_representation_annotations" bundle="user_id" access="edit"/>
-        <permission table="ca_storage_locations" bundle="access" access="edit"/>
-        <permission table="ca_storage_locations" bundle="ca_attribute_address" access="edit"/>
-        <permission table="ca_storage_locations" bundle="ca_collections" access="edit"/>
-        <permission table="ca_storage_locations" bundle="ca_entities" access="edit"/>
-        <permission table="ca_storage_locations" bundle="ca_list_items" access="edit"/>
-        <permission table="ca_storage_locations" bundle="ca_loans" access="edit"/>
-        <permission table="ca_storage_locations" bundle="ca_movements" access="edit"/>
-        <permission table="ca_storage_locations" bundle="ca_object_lots" access="edit"/>
-        <permission table="ca_storage_locations" bundle="ca_object_representations" access="edit"/>
-        <permission table="ca_storage_locations" bundle="ca_objects" access="edit"/>
-        <permission table="ca_storage_locations" bundle="ca_occurrences" access="edit"/>
-        <permission table="ca_storage_locations" bundle="ca_places" access="edit"/>
-        <permission table="ca_storage_locations" bundle="ca_sets" access="edit"/>
-        <permission table="ca_storage_locations" bundle="ca_storage_locations" access="edit"/>
-        <permission table="ca_storage_locations" bundle="color" access="edit"/>
-        <permission table="ca_storage_locations" bundle="ca_attribute_dataGeneralizations" access="edit"/>
-        <permission table="ca_storage_locations" bundle="ca_attribute_dcBibCitation" access="edit"/>
-        <permission table="ca_storage_locations" bundle="ca_attribute_dcLanguage" access="edit"/>
-        <permission table="ca_storage_locations" bundle="ca_attribute_dcModified" access="edit"/>
-        <permission table="ca_storage_locations" bundle="ca_attribute_dcRights" access="edit"/>
-        <permission table="ca_storage_locations" bundle="ca_attribute_dcType" access="edit"/>
-        <permission table="ca_storage_locations" bundle="ca_attribute_description" access="edit"/>
-        <permission table="ca_storage_locations" bundle="ca_attribute_dynamicProperties" access="edit"/>
-        <permission table="ca_storage_locations" bundle="ca_attribute_georeference" access="edit"/>
-        <permission table="ca_storage_locations" bundle="hierarchy_location" access="edit"/>
-        <permission table="ca_storage_locations" bundle="hierarchy_navigation" access="edit"/>
-        <permission table="ca_storage_locations" bundle="icon" access="edit"/>
-        <permission table="ca_storage_locations" bundle="idno" access="edit"/>
-        <permission table="ca_storage_locations" bundle="ca_attribute_informationWithheld" access="edit"/>
-        <permission table="ca_storage_locations" bundle="ca_attribute_institutionCode" access="edit"/>
-        <permission table="ca_storage_locations" bundle="ca_attribute_institutionID" access="edit"/>
-        <permission table="ca_storage_locations" bundle="ca_attribute_internal_notes" access="edit"/>
-        <permission table="ca_storage_locations" bundle="location_id" access="edit"/>
-        <permission table="ca_storage_locations" bundle="nonpreferred_labels" access="edit"/>
-        <permission table="ca_storage_locations" bundle="ca_attribute_ownerInstitutionCode" access="edit"/>
-        <permission table="ca_storage_locations" bundle="preferred_labels" access="edit"/>
-        <permission table="ca_storage_locations" bundle="rank" access="edit"/>
-        <permission table="ca_storage_locations" bundle="source_id" access="edit"/>
-        <permission table="ca_storage_locations" bundle="status" access="edit"/>
+        <permission table="ca_sets" bundle="access" access="edit"/>
+        <permission table="ca_sets" bundle="ca_set_items" access="edit"/>
+        <permission table="ca_sets" bundle="ca_user_groups" access="edit"/>
+        <permission table="ca_sets" bundle="ca_users" access="edit"/>
+        <permission table="ca_sets" bundle="nonpreferred_labels" access="edit"/>
+        <permission table="ca_sets" bundle="preferred_labels" access="edit"/>
+        <permission table="ca_sets" bundle="rank" access="edit"/>
+        <permission table="ca_sets" bundle="ca_attribute_set_chron_date_element_code" access="edit"/>
+        <permission table="ca_sets" bundle="set_code" access="edit"/>
+        <permission table="ca_sets" bundle="ca_attribute_set_description" access="edit"/>
+        <permission table="ca_sets" bundle="set_id" access="edit"/>
+        <permission table="ca_sets" bundle="ca_attribute_set_presentation_type" access="edit"/>
+        <permission table="ca_sets" bundle="status" access="edit"/>
+        <permission table="ca_set_items" bundle="ca_attribute_caption" access="edit"/>
+        <permission table="ca_set_items" bundle="item_id" access="edit"/>
+        <permission table="ca_set_items" bundle="nonpreferred_labels" access="edit"/>
+        <permission table="ca_set_items" bundle="preferred_labels" access="edit"/>
+        <permission table="ca_set_items" bundle="row_id" access="edit"/>
+        <permission table="ca_set_items" bundle="ca_attribute_set_item_description" access="edit"/>
+        <permission table="ca_set_items" bundle="ca_attribute_set_item_is_primary" access="edit"/>
+        <permission table="ca_set_items" bundle="table_num" access="edit"/>
+        <permission table="ca_lists" bundle="default_sort" access="edit"/>
+        <permission table="ca_lists" bundle="is_hierarchical" access="edit"/>
+        <permission table="ca_lists" bundle="is_system_list" access="edit"/>
+        <permission table="ca_lists" bundle="list_code" access="edit"/>
+        <permission table="ca_lists" bundle="list_id" access="edit"/>
+        <permission table="ca_lists" bundle="nonpreferred_labels" access="edit"/>
+        <permission table="ca_lists" bundle="preferred_labels" access="edit"/>
+        <permission table="ca_lists" bundle="use_as_vocabulary" access="edit"/>
         <permission table="ca_list_items" bundle="access" access="edit"/>
         <permission table="ca_list_items" bundle="ca_collections" access="edit"/>
         <permission table="ca_list_items" bundle="ca_entities" access="edit"/>
@@ -28724,7 +28938,9 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="ca_places" access="edit"/>
         <permission table="ca_list_items" bundle="ca_storage_locations" access="edit"/>
         <permission table="ca_list_items" bundle="ca_attribute_caabFamilyNo" access="edit"/>
+        <permission table="ca_list_items" bundle="ca_attribute_chemical_formula" access="edit"/>
         <permission table="ca_list_items" bundle="color" access="edit"/>
+        <permission table="ca_list_items" bundle="ca_attribute_element" access="edit"/>
         <permission table="ca_list_items" bundle="hierarchy_location" access="edit"/>
         <permission table="ca_list_items" bundle="hierarchy_navigation" access="edit"/>
         <permission table="ca_list_items" bundle="icon" access="edit"/>
@@ -28743,21 +28959,77 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
         <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
+        <permission table="ca_tours" bundle="access" access="none"/>
+        <permission table="ca_tours" bundle="ca_tour_stops_list" access="none"/>
+        <permission table="ca_tours" bundle="color" access="none"/>
+        <permission table="ca_tours" bundle="icon" access="none"/>
+        <permission table="ca_tours" bundle="nonpreferred_labels" access="none"/>
+        <permission table="ca_tours" bundle="preferred_labels" access="none"/>
+        <permission table="ca_tours" bundle="rank" access="none"/>
+        <permission table="ca_tours" bundle="source_id" access="edit"/>
+        <permission table="ca_tours" bundle="status" access="none"/>
+        <permission table="ca_tours" bundle="tour_code" access="none"/>
+        <permission table="ca_tours" bundle="ca_attribute_tour_description" access="none"/>
+        <permission table="ca_tours" bundle="tour_id" access="none"/>
+        <permission table="ca_tour_stops" bundle="access" access="none"/>
+        <permission table="ca_tour_stops" bundle="ca_collections" access="none"/>
+        <permission table="ca_tour_stops" bundle="ca_entities" access="none"/>
+        <permission table="ca_tour_stops" bundle="ca_list_items" access="none"/>
+        <permission table="ca_tour_stops" bundle="ca_objects" access="none"/>
+        <permission table="ca_tour_stops" bundle="ca_occurrences" access="none"/>
+        <permission table="ca_tour_stops" bundle="ca_places" access="none"/>
+        <permission table="ca_tour_stops" bundle="ca_tour_stops" access="none"/>
+        <permission table="ca_tour_stops" bundle="color" access="none"/>
+        <permission table="ca_tour_stops" bundle="hierarchy_location" access="none"/>
+        <permission table="ca_tour_stops" bundle="hierarchy_navigation" access="none"/>
+        <permission table="ca_tour_stops" bundle="icon" access="none"/>
+        <permission table="ca_tour_stops" bundle="idno" access="none"/>
+        <permission table="ca_tour_stops" bundle="nonpreferred_labels" access="none"/>
+        <permission table="ca_tour_stops" bundle="preferred_labels" access="none"/>
+        <permission table="ca_tour_stops" bundle="rank" access="none"/>
+        <permission table="ca_tour_stops" bundle="status" access="none"/>
+        <permission table="ca_tour_stops" bundle="stop_id" access="none"/>
+        <permission table="ca_tour_stops" bundle="tour_id" access="none"/>
+        <permission table="ca_tour_stops" bundle="ca_attribute_tour_stop_description" access="none"/>
+        <permission table="ca_tour_stops" bundle="ca_attribute_tour_stop_georeference" access="none"/>
       </bundleLevelAccessControl>
       <typeLevelAccessControl>
         <permission table="ca_objects" type="anthropology" access="edit"/>
         <permission table="ca_objects" type="az" access="none"/>
         <permission table="ca_objects" type="arachnid_myriapod" access="none"/>
+        <permission table="ca_objects" type="crustacea" access="none"/>
         <permission table="ca_objects" type="DublinCore" access="edit"/>
         <permission table="ca_objects" type="insect" access="none"/>
+        <permission table="ca_objects" type="eps" access="none"/>
+        <permission table="ca_objects" type="fish" access="none"/>
+        <permission table="ca_objects" type="history" access="read"/>
+        <permission table="ca_objects" type="early_childhood" access="read"/>
+        <permission table="ca_objects" type="invertebrate_palaeontology" access="none"/>
+        <permission table="ca_objects" type="mammal" access="none"/>
+        <permission table="ca_objects" type="mineral" access="none"/>
+        <permission table="ca_objects" type="mineral_mdc" access="none"/>
+        <permission table="ca_objects" type="mineral_simpson" access="none"/>
+        <permission table="ca_objects" type="miz" access="none"/>
+        <permission table="ca_objects" type="mollusc" access="none"/>
         <permission table="ca_objects" type="DarwinCore" access="none"/>
+        <permission table="ca_objects" type="bird" access="none"/>
+        <permission table="ca_objects" type="reptile" access="none"/>
         <permission table="ca_objects" type="Root node for object_types" access="none"/>
         <permission table="ca_objects" type="tz" access="none"/>
+        <permission table="ca_objects" type="vertebrate_palaeontology" access="none"/>
+        <permission table="ca_objects" type="worm" access="none"/>
+        <permission table="ca_object_lots" type="bequest" access="edit"/>
+        <permission table="ca_object_lots" type="gift" access="edit"/>
+        <permission table="ca_object_lots" type="loan" access="none"/>
+        <permission table="ca_object_lots" type="long_term_loan" access="none"/>
+        <permission table="ca_object_lots" type="purchase" access="edit"/>
+        <permission table="ca_object_lots" type="restricted_gift" access="edit"/>
+        <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
         <permission table="ca_entities" type="ind" access="edit"/>
         <permission table="ca_entities" type="org" access="edit"/>
         <permission table="ca_entities" type="Root node for entity_types" access="none"/>
         <permission table="ca_places" type="city" access="edit"/>
-        <permission table="ca_places" type="continent" access="edit"/>
+        <permission table="ca_places" type="continent" access="read"/>
         <permission table="ca_places" type="country" access="edit"/>
         <permission table="ca_places" type="cultural_area" access="edit"/>
         <permission table="ca_places" type="islandGroup" access="edit"/>
@@ -28765,8 +29037,10 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_places" type="location" access="edit"/>
         <permission table="ca_places" type="neighborhood" access="edit"/>
         <permission table="ca_places" type="other" access="edit"/>
+        <permission table="ca_places" type="region" access="edit"/>
         <permission table="ca_places" type="river" access="edit"/>
         <permission table="ca_places" type="Root node for place_types" access="none"/>
+        <permission table="ca_places" type="site" access="edit"/>
         <permission table="ca_places" type="state" access="edit"/>
         <permission table="ca_places" type="waterBody" access="edit"/>
         <permission table="ca_occurrences" type="conservation_analysis" access="none"/>
@@ -28776,47 +29050,50 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_occurrences" type="conservation_job" access="none"/>
         <permission table="ca_occurrences" type="exhibition" access="edit"/>
         <permission table="ca_occurrences" type="identification" access="none"/>
+        <permission table="ca_occurrences" type="map" access="edit"/>
         <permission table="ca_occurrences" type="anthropology_register" access="edit"/>
         <permission table="ca_occurrences" type="resource" access="edit"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
         <permission table="ca_collections" type="external" access="read"/>
         <permission table="ca_collections" type="internal" access="read"/>
         <permission table="ca_collections" type="Root node for collection_types" access="none"/>
-        <permission table="ca_object_lots" type="bequest" access="edit"/>
-        <permission table="ca_object_lots" type="gift" access="edit"/>
-        <permission table="ca_object_lots" type="loan" access="none"/>
-        <permission table="ca_object_lots" type="long_term_loan" access="none"/>
-        <permission table="ca_object_lots" type="purchase" access="edit"/>
-        <permission table="ca_object_lots" type="restricted_gift" access="edit"/>
-        <permission table="ca_object_lots" type="Root node for object_lot_types" access="none"/>
+        <permission table="ca_storage_locations" type="building" access="read"/>
+        <permission table="ca_storage_locations" type="cabinet" access="edit"/>
+        <permission table="ca_storage_locations" type="column" access="edit"/>
+        <permission table="ca_storage_locations" type="drawer" access="edit"/>
+        <permission table="ca_storage_locations" type="drum" access="edit"/>
+        <permission table="ca_storage_locations" type="floor" access="read"/>
+        <permission table="ca_storage_locations" type="pallet" access="edit"/>
+        <permission table="ca_storage_locations" type="room" access="read"/>
+        <permission table="ca_storage_locations" type="Root node for storage_location_types" access="none"/>
+        <permission table="ca_storage_locations" type="row" access="edit"/>
+        <permission table="ca_storage_locations" type="shelf" access="edit"/>
+        <permission table="ca_storage_locations" type="site" access="read"/>
         <permission table="ca_loans" type="custodial" access="edit"/>
         <permission table="ca_loans" type="in" access="edit"/>
         <permission table="ca_loans" type="out" access="edit"/>
         <permission table="ca_loans" type="Root node for loan_types" access="none"/>
         <permission table="ca_movements" type="movement" access="edit"/>
         <permission table="ca_movements" type="Root node for movement_types" access="none"/>
+        <permission table="ca_object_representations" type="back" access="edit"/>
+        <permission table="ca_object_representations" type="front" access="edit"/>
+        <permission table="ca_object_representations" type="Root node for object_representation_types" access="none"/>
+        <permission table="ca_sets" type="public_presentation" access="edit"/>
+        <permission table="ca_sets" type="Root node for set_types" access="none"/>
+        <permission table="ca_sets" type="user" access="edit"/>
+        <permission table="ca_set_items" type="public_presentation" access="edit"/>
+        <permission table="ca_set_items" type="Root node for set_types" access="none"/>
+        <permission table="ca_set_items" type="user" access="edit"/>
+        <permission table="ca_list_items" type="concept" access="edit"/>
+        <permission table="ca_list_items" type="mineral" access="read"/>
+        <permission table="ca_list_items" type="Root node for list_item_types" access="none"/>
+        <permission table="ca_list_items" type="scientific_name" access="read"/>
         <permission table="ca_tours" type="full_length" access="none"/>
         <permission table="ca_tours" type="Root node for tour_types" access="none"/>
         <permission table="ca_tours" type="short" access="none"/>
         <permission table="ca_tour_stops" type="secondary" access="none"/>
         <permission table="ca_tour_stops" type="primary" access="none"/>
         <permission table="ca_tour_stops" type="Root node for tour_stop_types" access="none"/>
-        <permission table="ca_object_representations" type="back" access="edit"/>
-        <permission table="ca_object_representations" type="front" access="edit"/>
-        <permission table="ca_object_representations" type="Root node for object_representation_types" access="none"/>
-        <permission table="ca_storage_locations" type="building" access="edit"/>
-        <permission table="ca_storage_locations" type="cabinet" access="edit"/>
-        <permission table="ca_storage_locations" type="column" access="edit"/>
-        <permission table="ca_storage_locations" type="drawer" access="edit"/>
-        <permission table="ca_storage_locations" type="floor" access="edit"/>
-        <permission table="ca_storage_locations" type="room" access="edit"/>
-        <permission table="ca_storage_locations" type="Root node for storage_location_types" access="none"/>
-        <permission table="ca_storage_locations" type="row" access="edit"/>
-        <permission table="ca_storage_locations" type="shelf" access="edit"/>
-        <permission table="ca_storage_locations" type="site" access="edit"/>
-        <permission table="ca_list_items" type="concept" access="edit"/>
-        <permission table="ca_list_items" type="Root node for list_item_types" access="none"/>
-        <permission table="ca_list_items" type="scientific_name" access="edit"/>
       </typeLevelAccessControl>
     </role>
   </roles>
