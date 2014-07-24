@@ -191,3 +191,30 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		return array_keys($va_ids);
 	}
 	# ---------------------------------------
+	/**
+	 * Fetch the list of defined types for a table 
+	 *
+	 * @param mixed $pm_table_name_or_num 
+	 * @return array Returns an array keys by type_id with type information, or null if the table is invalid.
+	 */
+	function caGetTypeList($pm_table_name_or_num, $pa_options=null) {
+		$o_dm = Datamodel::load();
+		if (($t_instance = $o_dm->getInstance($pm_table_name_or_num)) && (method_exists($t_instance, "getTypeList"))) {
+			return $t_instance->getTypeList($pa_options);
+		}
+
+		return null;
+	}
+	# ---------------------------------------
+	/**
+	 * Fetch the id of the root item in list
+	 *
+	 * @param string $ps_list_code List code
+	 * @return int item_id of the root list item or null if no default item was found
+	 */
+	function caGetListRootID($ps_list_code) {
+		$t_list = new ca_lists();
+
+		return $t_list->getRootListItemID($ps_list_code);
+	}
+	# ---------------------------------------
