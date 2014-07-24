@@ -53,7 +53,6 @@ class wamDataImporterPlugin extends BaseApplicationPlugin {
 		return array();
 	}
 
-
 	/**
 	 * Hook into the content tree import
 	 * @param $pa_params array with the following keys:
@@ -64,7 +63,65 @@ class wamDataImporterPlugin extends BaseApplicationPlugin {
 	 * 'reader' => $o_reader
 	 * 'environment' => $va_environment
 	 */
-	public function hookDataImportContentTree($pa_params){
-		caDebug($pa_params['environment'], 'environment', true);
+	public function hookDataImportContentTree(&$pa_params){
+		global $g_ui_locale_id;
+
+		foreach ($pa_params['content_tree'] as $table_name => $table_content_tree) {
+			foreach ($table_content_tree as $table_content_index => $table_content) {
+				if (isset($table_content['_interstitial']) && isset($table_content['_interstitial']['_translations'])) {
+					// Apply all translations
+					foreach ($table_content['_interstitial']['_translations'] as $name => $translation_settings) {
+						$translation_settings = json_decode($translation_settings, true);
+						if (isset($table_content['_interstitial'][$name])) {
+							if (isset($translation_settings['delimiters'])) {
+								// Ensure we have an array
+								if (!is_array($translation_settings['delimiters'])) {
+									$translation_settings['delimiters'] = array( $translation_settings['delimiters'] );
+								}
+								// Quote the delimiters for preg_split
+								$translation_settings['delimiters'] = array_map(
+										function ($delimiter) {
+											return preg_quote($delimiter, '!');
+										},
+										$translation_settings['delimiters']
+								);
+								// Split the value based on given delimiters
+								$table_content['_interstitial'][$name] = preg_split("!(".join("|", $translation_settings['delimiters']).")!", $table_content['_interstitial'][$name]);
+							}
+							foreach ($table_content['_interstitial'][$name] as $value_index => $value) {
+								switch ($translation_settings['type']) {
+									case 'ca_entities':
+										$table_content['_interstitial'][$name][$value_index] = DataMigrationUtils::getEntityID(
+												DataMigrationUtils::splitEntityName($value),
+												'ind',
+												$g_ui_locale_id,
+												null,
+												array( 'matchOnDisplayName' => true )
+										);
+										break;
+
+									default:
+										if (isset($pa_params['log'])) {
+											$pa_params['log']->logError(sprintf('Unknown interstitial translation type "%s" on "%s" for idno "%s"', $translation_settings['type'], $name, $pa_params['idno']));
+										}
+								}
+							}
+						} else {
+							if (isset($pa_params['log'])) {
+								$pa_params['log']->logError(sprintf('Unknown interstitial name "%s" specified in translation of type "%s" for idno "%s"', $name, $translation_settings['type'], $pa_params['idno']));
+							}
+						}
+					}
+
+					// Save the translated value back into the content tree
+					$pa_params['content_tree'][$table_name][$table_content_index] = $table_content;
+
+					// Remove translations special key so it is not added as an interstitial
+					unset($pa_params['content_tree'][$table_name][$table_content_index]['_interstitial']['_translations']);
+				}
+			}
+		}
+
+		return $pa_params;
 	}
 }
