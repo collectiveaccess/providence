@@ -1545,7 +1545,9 @@
 				$vs_form_element = str_replace('{{'.$va_element['element_id'].'}}', $vs_value, $vs_form_element);
 				
 				// ... replace name of form element
-				$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_{n}', str_replace('.', '_', $vs_subelement_code), $vs_form_element);
+				$vs_fld_name = str_replace('.', '_', $vs_subelement_code);
+				if (caGetOption('asArrayElement', $pa_options, false)) { $vs_fld_name .= "[]"; } 
+				$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_{n}', $vs_fld_name, $vs_form_element);
 				
 				$vs_form_element = str_replace('{n}', '', $vs_form_element);
 				$vs_form_element = str_replace('{'. $va_element['element_id'].'}', '', $vs_form_element);
