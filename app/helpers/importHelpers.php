@@ -319,18 +319,21 @@
 		return $va_attr_vals;
 	}
 	# ---------------------------------------
-	/**
-	 * 
-	 *
-	 * @param array $pa_attributes 
-	 * @param array $pa_source_data
-	 * @param array $pa_item
-	 * @param int $pn_c
-	 * @param KLogger $o_log
-	 * 
-	 * @return array
-	 */
-	function caProcessRefineryRelated($ps_refinery_name, $ps_related_table, $pa_related_option_list, $pa_source_data, $pa_item, $pn_c, $pa_options=null) {
+/**
+ * Process relationships on the refinery
+ *
+ * @param $ps_related_table
+ * @param $pa_related_option_list
+ * @param array $pa_source_data
+ * @param array $pa_item
+ * @param int $pn_c
+ * @param null $pa_options
+ * @internal param array $pa_attributes
+ * @internal param \KLogger $o_log
+ *
+ * @return array
+ */
+	function caProcessRefineryRelated($ps_related_table, $pa_related_option_list, $pa_source_data, $pa_item, $pn_c, $pa_options = null) {
 		$o_reader = caGetOption('reader', $pa_options, null);
 		$o_log = caGetOption('log', $pa_options, null);
 		$o_trans = caGetOption('transaction', $pa_options, null);
@@ -354,7 +357,7 @@
 			$vn_parent_id = BaseRefinery::parsePlaceholder($pa_related_options['parent_id'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 		
 			if (!$vs_name) { $vs_name = $vs_idno; }
-		
+
 		
 			if ($ps_related_table == 'ca_entities') {
 				$t_entity = new ca_entities();
