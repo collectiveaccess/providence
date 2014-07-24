@@ -328,8 +328,6 @@
  * @param array $pa_item
  * @param int $pn_c
  * @param null $pa_options
- * @internal param array $pa_attributes
- * @internal param \KLogger $o_log
  *
  * @return array
  */
