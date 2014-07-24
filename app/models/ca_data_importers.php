@@ -1891,10 +1891,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							
 						$vn_max_length = (!is_array($vm_val) && isset($va_item['settings']['maxLength']) && (int)$va_item['settings']['maxLength']) ? (int)$va_item['settings']['maxLength'] : null;
 					
-						//if (isset($va_item['settings']['delimiter']) && strlen($vs_item_delimiter = $va_item['settings']['delimiter'])) {
 						if(isset($va_item['settings']['delimiter']) && $va_item['settings']['delimiter']) {
 							if (!is_array($va_item['settings']['delimiter'])) { $va_item['settings']['delimiter'] = array($va_item['settings']['delimiter']); }
-							//$va_val_list = explode($vs_item_delimiter, $vm_val);
 							
 							if (sizeof($va_item['settings']['delimiter'][$vn_index])) {
 								foreach($va_item['settings']['delimiter'] as $vn_index => $vs_delim) {
