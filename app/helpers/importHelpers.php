@@ -357,7 +357,7 @@
 			$vn_parent_id = BaseRefinery::parsePlaceholder($pa_related_options['parent_id'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 		
 			if (!$vs_name) { $vs_name = $vs_idno; }
-		
+
 		
 			if ($ps_related_table == 'ca_entities') {
 				$t_entity = new ca_entities();
@@ -851,7 +851,7 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	if (is_array($va_relationships = $pa_item['settings'][$vs_relationship_settings_key])) {
 		foreach ($va_relationships as $va_relationship_settings) {
 			if ($vs_table_name = caGetOption('relatedTable', $va_relationship_settings)) {
-				if (is_array($va_attr_vals = caProcessRefineryRelated($va_relationship_settings, $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader)))) {
+				if (is_array($va_attr_vals = caProcessRefineryRelated($vs_table_name, $va_relationship_settings, $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader)))) {
 					$va_val = array_merge($va_val, $va_attr_vals);
 				}
 			}
