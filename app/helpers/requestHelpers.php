@@ -63,5 +63,33 @@
 				
 		return false;
 	}
+	# --------------------------------------------------------------------------------------------
+	 /**
+	  * Return true if system is configured to use identifers (idno's) rather than internal numeric CA primary keys
+	  * in urls when referring to a specific record
+	  *
+	  * @return bool
+	  */
+	function caUseIdentifiersInUrls() {
+		$o_config = Configuration::load();
+		return (bool)$o_config->get('use_identifiers_in_urls');
+	}
+	# --------------------------------------------------------------------------------------------
+	 /**
+	  * 
+	  *
+	  * @return string
+	  */
+	function caUrlNameToTable($ps_name) {
+		$va_url_names_to_tables = array(
+ 			'objects' 		=> 'ca_objects',
+ 			'entities' 		=> 'ca_entities',
+ 			'places' 		=> 'ca_places',
+ 			'occurrences' 	=> 'ca_occurrences',
+ 			'collections' 	=> 'ca_collections'
+ 		);
+ 		
+ 		return isset($va_url_names_to_tables[$ps_name]) ? $va_url_names_to_tables[$ps_name] : null;
+	}
 	# ---------------------------------------------------------------------------------------------
  ?>
