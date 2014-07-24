@@ -416,6 +416,26 @@
 		$t_rel_type = new ca_relationship_types();
 		return $t_rel_type->relationshipTypeListToIDs($pm_table_name_or_num, $pa_types, $pa_options);
 	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	function caGetRelationshipTableName($pm_table_name_or_num_left, $pm_table_name_or_num_right, $pa_options=null) {
+		$o_dm = Datamodel::load();
+		
+		$va_path = $o_dm->getPath($pm_table_name_or_num_left, $pm_table_name_or_num_right);
+		if (!is_array($va_path)) { return null; }
+		
+		
+		foreach(array_keys($va_path) as $vs_table) {
+			if ($t_instance = $o_dm->getInstanceByTableName($vs_table, true)) {
+				if (method_exists($t_instance, "isRelationship") && $t_instance->isRelationship() && $t_instance->hasField('type_id')) {
+					return $vs_table;
+				}
+			}
+		}
+		return null;
+	}
 	# ---------------------------------------------------------------------------------------------
 	/**
 	 * Merges types specified with any specified "restrict_to_types"/"restrictToTypes" option, user access settings and types configured in app.conf

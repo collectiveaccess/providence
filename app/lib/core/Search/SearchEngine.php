@@ -58,7 +58,7 @@ class SearchEngine extends SearchBase {
 	private $opa_result_filters;
 	
 	/**
-	 * @var subject type_id to limit searach to (eg. only search ca_objects with type_id = 10)
+	 * @var subject type_id to limit search to (eg. only search ca_objects with type_id = 10)
 	 */
 	private $opa_search_type_ids = null;
 	
@@ -129,6 +129,7 @@ class SearchEngine extends SearchBase {
 	 *		user_id = If set item level access control is performed relative to specified user_id, otherwise defaults to logged in user
 	 *		dontFilterByACL = if true ACL checking is not performed on results
 	 *		appendToSearch = 
+	 *		restrictSearchToFields = 
 	 *
 	 * @return SearchResult Results packages in a SearchResult object, or sub-class of SearchResult if an instance was passed in $po_result
 	 * @uses TimeExpressionParser::parse
@@ -175,13 +176,19 @@ class SearchEngine extends SearchBase {
 		$t_table = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
 		$vs_pk = $t_table->primaryKey();
 		
+		$vs_cache_key = md5($ps_search."/".print_R($this->getTypeRestrictionList(), true));
+		
 		$o_cache = new SearchCache();
 		if (
-			(!$vb_no_cache && ($o_cache->load($ps_search, $this->opn_tablenum, $pa_options)))
+			(!$vb_no_cache && ($o_cache->load($vs_cache_key, $this->opn_tablenum, $pa_options)))
 		) {
 			$va_hits = $o_cache->getResults();
 			if (isset($pa_options['sort']) && $pa_options['sort'] && ($pa_options['sort'] != '_natural')) {
 				$va_hits = $this->sortHits($va_hits, $pa_options['sort'], (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
+			} else {
+				if (($pa_options['sort'] == '_natural') && ($pa_options['sort_direction'] == 'desc')) {
+					$va_hits = array_flip(array_reverse(array_keys($va_hits)));
+				}
 			}
 			$o_res = new WLPlugSearchEngineCachedResult(array_keys($va_hits), $this->opn_tablenum);
 		} else {
@@ -222,15 +229,18 @@ class SearchEngine extends SearchBase {
 				$va_access_values = $pa_options['checkAccess'];
 				$this->addResultFilter($this->ops_tablename.'.access', 'IN', join(",",$va_access_values));
 			} 
-				
-			// Filter on type	
-			if (is_array($va_type_ids = $this->getTypeRestrictionList())) {
+					
+			if (is_array($va_type_ids = $this->getTypeRestrictionList()) && sizeof($va_type_ids)) {
 				$this->addResultFilter($this->ops_tablename.'.type_id', 'IN', join(",",$va_type_ids));
 			}
 			
 			// Filter on source
 			if (is_array($va_source_ids = $this->getSourceRestrictionList())) {
 				$this->addResultFilter($this->ops_tablename.'.source_id', 'IN', join(",",$va_source_ids));
+			}
+			
+			if (is_array($va_restrict_to_fields = caGetOption('restrictSearchToFields', $pa_options, null)) && $this->opo_engine->can('restrict_to_fields')) {
+				$this->opo_engine->setOption('restrictSearchToFields', $va_restrict_to_fields);
 			}
 			
 			$o_res =  $this->opo_engine->search($this->opn_tablenum, $vs_search, $this->opa_result_filters, $o_rewritten_query);
@@ -247,15 +257,19 @@ class SearchEngine extends SearchBase {
 			if ((!isset($pa_options['dontFilterByACL']) || !$pa_options['dontFilterByACL']) && $this->opo_app_config->get('perform_item_level_access_checking') && method_exists($t_table, "supportsACL") && $t_table->supportsACL()) {
 				$va_hits = $this->filterHitsByACL($va_hits, $vn_user_id, __CA_ACL_READONLY_ACCESS__);
 			}
-					
+			
 			if (isset($pa_options['sort']) && $pa_options['sort'] && ($pa_options['sort'] != '_natural')) {
 				$va_hits = $this->sortHits($va_hits, $pa_options['sort'], (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
+			} else {
+				if (($pa_options['sort'] == '_natural') && ($pa_options['sort_direction'] == 'desc')) {
+					$va_hits = array_flip(array_reverse(array_keys($va_hits)));
+				}
 			}
 			
 			$o_res = new WLPlugSearchEngineCachedResult($va_hit_values = array_keys($va_hits), $this->opn_tablenum);
 			
 			// cache for later use
-			$o_cache->save($ps_search, $this->opn_tablenum, $va_hits, null, null, array_merge($pa_options, array('filters' => $this->getResultFilters())));
+			$o_cache->save($vs_cache_key, $this->opn_tablenum, $va_hits, null, null, array_merge($pa_options, array('filters' => $this->getResultFilters())));
 	
 			// log search
 			$o_log = new Searchlog();
@@ -464,7 +478,9 @@ class SearchEngine extends SearchBase {
 		
 		$vn_num_locales = ca_locales::numberOfCataloguingLocales();
 		
-		foreach($va_fields as $vs_field) {				
+		foreach($va_fields as $vs_field) {		
+			if (!trim($vs_field)) { continue; }		
+						
 			$va_joins = $va_orderbys = array();
 			$vs_locale_where = $vs_is_preferred_sql = '';
 			
@@ -541,9 +557,9 @@ class SearchEngine extends SearchBase {
 							$va_row = $qr_sort->getRow();
 							if (!$va_row['row_id']) { continue; }
 							if ($vn_num_locales > 1) {
-								$va_sorted_hits[$va_row['row_id']][$va_row['locale_id']] .= trim(str_replace(array("'", '"'), array('', ''), $va_row[$vs_sort_field]));
+								$va_sorted_hits[$va_row['row_id']][$va_row['locale_id']] .= trim(str_replace(array("'", '"'), array('', ''), caRemoveAccents($va_row[$vs_sort_field])));
 							} else {
-								$va_sorted_hits[$va_row['row_id']] .= trim(str_replace(array("'", '"'), array('', ''), $va_row[$vs_sort_field]));
+								$va_sorted_hits[$va_row['row_id']] .= trim(str_replace(array("'", '"'), array('', ''), caRemoveAccents($va_row[$vs_sort_field])));
 							}
 							unset($pa_hits[$va_row['row_id']]);
 						}
@@ -643,7 +659,7 @@ class SearchEngine extends SearchBase {
 			
 			while($qr_sort->nextRow()) {
 				$va_row = $qr_sort->getRow();
-				if (!($vs_sortable_value = str_replace(array("'", '"'), array('', ''), $va_row[$vs_sort_field]))) {
+				if (!($vs_sortable_value = str_replace(array("'", '"'), array('', ''), caRemoveAccents($va_row[$vs_sort_field])))) {
 					$vs_sortable_value = '';
 				}
 				if (($vn_num_locales > 1) && $vs_locale_where) {
@@ -705,7 +721,7 @@ class SearchEngine extends SearchBase {
 					} else { 
 						for($vn_j = 0; $vn_j < sizeof($va_rewritten_terms['terms']); $vn_j++) {
 							$va_terms[] = new Zend_Search_Lucene_Search_Query_MultiTerm(array($va_rewritten_terms['terms'][$vn_j]), array($va_rewritten_terms['signs'][$vn_j]));
-							$va_signs[] = $va_rewritten_terms['signs'][$vn_j] ? true : null;
+							$va_signs[] = $va_rewritten_terms['signs'][$vn_j] ? true : is_null($va_rewritten_terms['signs'][$vn_j]) ? null : false;
 						}
 					}
 					break;
@@ -739,15 +755,15 @@ class SearchEngine extends SearchBase {
 				case 'Zend_Search_Lucene_Search_Query_MultiTerm':
 					$va_tmp = $this->_rewriteQuery($o_term);
 					$va_terms[] = new Zend_Search_Lucene_Search_Query_MultiTerm($va_tmp['terms'], $va_tmp['signs']);
-					$va_signs[] = $va_old_signs[$vn_i] ? $va_old_signs[$vn_i] : true;
+					$va_signs[] = $va_old_signs[$vn_i];
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Boolean':
 					$va_tmp = $this->_rewriteQuery($o_term);
 					$va_terms[] = new Zend_Search_Lucene_Search_Query_Boolean($va_tmp['terms'], $va_tmp['signs']);
-					$va_signs[] = $va_old_signs[$vn_i] ? $va_old_signs[$vn_i] : true;
+					$va_signs[] = $va_old_signs[$vn_i];
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Range':
-					$va_signs[] = $va_old_signs[$vn_i] ? $va_old_signs[$vn_i] : true;
+					$va_signs[] = $va_old_signs[$vn_i] ;
 					$va_terms = array_merge($va_terms, $this->_rewriteRange($o_term));
 					break;
 				default:
@@ -818,13 +834,14 @@ class SearchEngine extends SearchBase {
 			}
 		}
 		
-		// is it preferred labels? Rewrite the field for that.
-		$va_tmp = explode('.', $vs_fld);
-		if ($va_tmp[1] == 'preferred_labels') {
-			if ($t_instance = $this->opo_datamodel->getInstanceByTableName($va_tmp[0], true)) {
+		// is it a label? Rewrite the field for that.
+		$va_tmp = explode('/', $vs_fld);
+		$va_tmp2 = explode('.', $va_tmp[0]);
+		if (in_array($va_tmp2[1], array('preferred_labels', 'nonpreferred_labels'))) {
+			if ($t_instance = $this->opo_datamodel->getInstanceByTableName($va_tmp2[0], true)) {
 				if (method_exists($t_instance, "getLabelTableName")) {
 					return array(
-						'terms' => array(new Zend_Search_Lucene_Index_Term($po_term->getTerm()->text, $t_instance->getLabelTableName().'.'.$t_instance->getLabelDisplayField())),
+						'terms' => array(new Zend_Search_Lucene_Index_Term($po_term->getTerm()->text, $t_instance->getLabelTableName().'.'.$t_instance->getLabelDisplayField().($va_tmp[1] ? '/'.$va_tmp[1] : ''))),
 						'signs' => array($pb_sign)
 					);
 				}
@@ -876,13 +893,14 @@ class SearchEngine extends SearchBase {
 			}
 		}
 		
-		// is it preferred labels? Rewrite the field for that.
-		$va_tmp = explode('.', $vs_fld);
-		if ($va_tmp[1] == 'preferred_labels') {
-			if ($t_instance = $this->opo_datamodel->getInstanceByTableName($va_tmp[0], true)) {
+		// is it a labels? Rewrite the field for that.
+		$va_tmp = explode('/', $vs_fld);
+		$va_tmp2 = explode('.', $va_tmp[0]);
+		if (in_array($va_tmp2[1], array('preferred_labels', 'nonpreferred_labels'))) {
+			if ($t_instance = $this->opo_datamodel->getInstanceByTableName($va_tmp2[0], true)) {
 				if (method_exists($t_instance, "getLabelTableName")) {
 					return array(
-						'terms' => array(new Zend_Search_Lucene_Search_Query_Phrase($va_index_term_strings, null, $t_instance->getLabelTableName().'.'.$t_instance->getLabelDisplayField())),
+						'terms' => array(new Zend_Search_Lucene_Search_Query_Phrase($va_index_term_strings, null, $t_instance->getLabelTableName().'.'.$t_instance->getLabelDisplayField().($va_tmp[1] ? '/'.$va_tmp[1] : ''))),
 						'signs' => array($pb_sign)
 					);
 				}
@@ -1022,7 +1040,7 @@ class SearchEngine extends SearchBase {
 	 */
 	public function addResultFilter($ps_field, $ps_operator, $pm_value) {
 		$ps_operator = strtolower($ps_operator);
-		if (!in_array($ps_operator, array('=', '<', '>', '<=', '>=', '-', 'in', '<>', 'is', 'is not'))) { return false; }
+		if (!in_array($ps_operator, array('=', '<', '>', '<=', '>=', '-', 'in', 'not in', '<>', 'is', 'is not'))) { return false; }
 		
 		$this->opa_result_filters[] = array(
 			'field' => $ps_field,
@@ -1098,7 +1116,7 @@ class SearchEngine extends SearchBase {
 	public function getTypeRestrictionList() {
 		if (function_exists("caGetTypeRestrictionsForUser")) {
 			$va_pervasive_types = caGetTypeRestrictionsForUser($this->ops_tablename);	// restrictions set in app.conf or by associated user role
-			if (!is_array($va_pervasive_types)) { return $this->opa_search_type_ids; }
+			if (!is_array($va_pervasive_types) || !sizeof($va_pervasive_types)) { return $this->opa_search_type_ids; }
 				
 			if (is_array($this->opa_search_type_ids) && sizeof($this->opa_search_type_ids)) {
 				$va_filtered_types = array();
