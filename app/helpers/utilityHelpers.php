@@ -1213,29 +1213,6 @@ function caFileIsIncludable($ps_file) {
 		return $result.$newLine;
 	}
 	# ---------------------------------------
-	function caFormatXML($ps_xml){  
-		require_once(__CA_LIB_DIR__.'/core/Parsers/XMLFormatter.php');
-
-		$va_options = array(
-			"paddingString" => " ",
-			"paddingMultiplier" => 2,
-			"wordwrapCData" => false,
-		);
-
-		$vr_input = fopen('data://text/plain,'.$ps_xml, 'r');
-		$vr_output = fopen('php://temp', 'w+');
-
-		$vo_formatter = new XML_Formatter($vr_input, $vr_output, $va_options);
-
-		try {
-			$vo_formatter->format();
-			rewind($vr_output);
-			return stream_get_contents($vr_output)."\n";
-		} catch (EXception $e) {
-			return false;
-		}
-	}
-	# ---------------------------------------
 	/**
 	  * Parses natural language date and returns pair of Unix timestamps defining date/time range
 	  *
