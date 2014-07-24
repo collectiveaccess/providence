@@ -5331,7 +5331,7 @@ $pa_options["display_form_field_tips"] = true;
 						// scalar value (simple single value attribute)
 						if ($va_value) {
 							$t_rel->addAttribute(array(
-								'locale_id' =>  $g_ui_locale_id ? $g_ui_locale_id : ca_locales::getDefaultCataloguingLocaleID(),
+								'locale_id' => $g_ui_locale_id ? $g_ui_locale_id : ca_locales::getDefaultCataloguingLocaleID(),
 								$vs_element => $va_value
 							), $vs_element);
 						}
@@ -5358,7 +5358,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param string $ps_effective_date Optional date expression to qualify relation with. Any expression that the TimeExpressionParser can handle is supported here.
 	 * @param mixed $pa_source_info Array or text for storing information about source of relationship. Not currently used.
 	 * @param string $ps_direction Optional direction specification for self-relationships (relationships linking two rows in the same table). Valid values are 'ltor' (left-to-right) and  'rtol' (right-to-left); the direction determines which "side" of the relationship the currently loaded row is on: 'ltor' puts the current row on the left side. For many self-relations the direction determines the nature and display text for the relationship.
-	 * @param null $pn_rank
+	 * @param null|int $pn_rank
 	 * @param array $pa_options Array of additional options:
 	 *		allowDuplicates = if set to true, attempts to edit a relationship to match one that already exists will succeed. Default is false – duplicate relationships will not be created.
 	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to create a duplicate relationship. Default is false – don't set error. editRelationship() will always return false when editing of a relationship fails, no matter how the setErrorOnDuplicate option is set.
