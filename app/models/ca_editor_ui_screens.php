@@ -1630,4 +1630,3 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ----------------------------------------
 }
-?>
