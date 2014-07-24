@@ -528,7 +528,25 @@
 				$va_items = sizeof($va_delimiter) ? preg_split("!(".join("|", $va_delimiter).")!", $vs_delimited_item) : array($vs_delimited_item);
 
 				foreach($va_items as $vn_i => $vs_item) {
-					if (!($vs_item = trim($vs_item))) { continue; }
+					$va_parents = $pa_item['settings']["{$ps_refinery_name}_parents"];
+					
+					if (!($vs_item = trim($vs_item))) { 
+						if (is_array($va_parents) && (sizeof($va_parents) > 0)) {
+							// try to ladder up the parents hierarchy since the base value is blank (see PROV-972)
+							$vs_display_field = $t_instance->getLabelDisplayField();
+							while(sizeof($va_parents) > 0) {
+								$va_p = array_pop($va_parents);
+								if ($vs_laddered_val = BaseRefinery::parsePlaceholder($va_p[$vs_display_field], $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnDelimitedValueAt' => $vn_x))) {
+									if ($o_log) { $o_log->logDebug(_t('[{$ps_refinery_name}] Used parent value %1 because the mapped value was blank', $vs_item)); }
+									$vs_item = $vs_laddered_val;
+									break;
+								}
+							}
+						}
+						if (!$vs_item) { 
+							continue; 
+						}
+					}
 					if (is_array($va_skip_values = $pa_item['settings']["{$ps_refinery_name}_skipIfValue"]) && in_array($vs_item, $va_skip_values)) {
 						if ($o_log) { $o_log->logDebug(_t('[{$ps_refinery_name}] Skipped %1 because it was in the skipIfValue list', $vs_item)); }
 						continue;
@@ -538,8 +556,8 @@
 					$va_val = array();
 				
 					// Set value as hierarchy
-					if ($va_parents = $pa_item['settings']["{$ps_refinery_name}_hierarchy"]) {
-						$va_attr_vals = $va_val = caProcessRefineryParents($ps_refinery_name, $ps_table, $va_parents, $pa_source_data, $pa_item, $pn_value_index, array_merge($pa_options, array('hierarchyMode' => true)));
+					if ($va_hierarchy_setting = $pa_item['settings']["{$ps_refinery_name}_hierarchy"]) {
+						$va_attr_vals = $va_val = caProcessRefineryParents($ps_refinery_name, $ps_table, $va_hierarchy_setting, $pa_source_data, $pa_item, $pn_value_index, array_merge($pa_options, array('hierarchyMode' => true)));
 						$vs_item = $va_val['_preferred_label'];
 					} else {
 		
@@ -613,7 +631,7 @@
 							}
 						} else {
 							// Set parents
-							if ($va_parents = $pa_item['settings']["{$ps_refinery_name}_parents"]) {
+							if ($va_parents) {
 								$va_val['parent_id'] = $va_val['_parent_id'] = caProcessRefineryParents($ps_refinery_name, $ps_table, $va_parents, $pa_source_data, $pa_item, $pn_value_index, $pa_options);
 							}
 				

@@ -1231,29 +1231,6 @@ function caFileIsIncludable($ps_file) {
 		return $result.$newLine;
 	}
 	# ---------------------------------------
-	function caFormatXML($ps_xml){  
-		require_once(__CA_LIB_DIR__.'/core/Parsers/XMLFormatter.php');
-
-		$va_options = array(
-			"paddingString" => " ",
-			"paddingMultiplier" => 2,
-			"wordwrapCData" => false,
-		);
-
-		$vr_input = fopen('data://text/plain,'.$ps_xml, 'r');
-		$vr_output = fopen('php://temp', 'w+');
-
-		$vo_formatter = new XML_Formatter($vr_input, $vr_output, $va_options);
-
-		try {
-			$vo_formatter->format();
-			rewind($vr_output);
-			return stream_get_contents($vr_output)."\n";
-		} catch (EXception $e) {
-			return false;
-		}
-	}
-	# ---------------------------------------
 	/**
 	  * Parses natural language date and returns pair of Unix timestamps defining date/time range
 	  *
@@ -1678,15 +1655,22 @@ function caFileIsIncludable($ps_file) {
 	 * Note that function is of limited use outside of the case it was designed for: to remove binary entries from extracted EXIF metadata arrays.
 	 *
 	 * @param array $pa_array The array to sanitize
-	 * @param array $pa_options No options are currently supported
+	 * @param array $pa_options
+	 *        allowStdClass = stdClass object array values are allowed. This is useful for arrays that are about to be passed to json_encode
 	 * @return array The sanitized array
 	 */
 	function caSanitizeArray($pa_array, $pa_options=null) {
 		if (!is_array($pa_array)) { return array(); }
+		$vb_allow_stdclass = caGetOption('allowStdClass',$pa_options,false);
+
 		foreach($pa_array as $vn_k => $vm_v) {
 			if (is_array($vm_v)) {
 				$pa_array[$vn_k] = caSanitizeArray($vm_v);
 			} else {
+				if($vb_allow_stdclass && is_object($vm_v) && (get_class($vm_v) == 'stdClass')){
+					continue;
+				}
+
 				if ((!preg_match("!^[\p{L}\p{N}\p{P}]+!", $vm_v)) || (!mb_detect_encoding($vm_v))) {
 					unset($pa_array[$vn_k]);
 				}
