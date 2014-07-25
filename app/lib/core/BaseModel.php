@@ -10728,7 +10728,7 @@ $pa_options["display_form_field_tips"] = true;
 			} else {
 				if (is_array($vm_value) && sizeof($vm_value)) {
 					foreach($vm_value as $vn_i => $vm_ivalue) {
-						$vm_value[$vn_i] = $this->quote($vs_field, $vm_ivalue);
+						$vm_value[$vn_i] = $t_instance->quote($vs_field, $vm_ivalue);
 					}
 				} else {
 					$vm_value = $t_instance->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
