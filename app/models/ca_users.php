@@ -2553,118 +2553,94 @@ class ca_users extends BaseModel {
 	}
 	# ----------------------------------------
 	/**
-	 * Do LDAP authentification (creates user based on directory 
+	 * Do LDAP authentification (creates user based on directory
 	 * information and config preferences in authentication.conf)
 	 * @param string $ps_username username
 	 * @param string $ps_password password
+	 * @return bool
 	 */
 	private function authenticateLDAP($ps_username="",$ps_password=""){
 		if(!function_exists("ldap_connect")){
 			die("PHP's LDAP module is required for LDAP authentication!");
 		}
-		
-		// ldap config
+
 		$vs_ldaphost = $this->opo_auth_config->get("ldap_host");
 		$vs_ldapport = $this->opo_auth_config->get("ldap_port");
 		$vs_base_dn = $this->opo_auth_config->get("ldap_base_dn");
 		$va_group_cn = $this->opo_auth_config->getList("ldap_group_cn");
 		$vs_user_ou = $this->opo_auth_config->get("ldap_user_ou");
-		
-		
-		$vo_ldap = ldap_connect($vs_ldaphost,$vs_ldapport) or die("could not connect to LDAP server");
-		ldap_set_option($vo_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+		$vs_attribute_member_of = $this->opo_auth_config->get("ldap_attribute_member_of");
+		$vs_attribute_email = $this->opo_auth_config->get("ldap_attribute_email");
+		$vs_attribute_fname = $this->opo_auth_config->get("ldap_attribute_fname");
+		$vs_attribute_lname = $this->opo_auth_config->get("ldap_attribute_lname");
+		$vs_bind_rdn = $this->postProcessLDAPConfigValue("ldap_bind_rdn_format", $ps_username, $vs_user_ou, $vs_base_dn);
+		$vs_search_dn = $this->postProcessLDAPConfigValue("ldap_search_dn_format", $ps_username, $vs_user_ou, $vs_base_dn);
+		$vs_search_filter = $this->postProcessLDAPConfigValue("ldap_search_filter_format", $ps_username, $vs_user_ou, $vs_base_dn);
 
-		$vs_dn = "uid={$ps_username},{$vs_user_ou},{$vs_base_dn}";
-			
-		if($vo_ldap){
-			
-			// log in
-			
-			$vo_bind = @ldap_bind($vo_ldap, $vs_dn, $ps_password);
-			if(!$vo_bind) { // wrong credentials
-				//print ldap_error($vo_ldap);
-				ldap_unbind($vo_ldap);
-				return false;
-			}
-		
-			if(is_array($va_group_cn) && sizeof($va_group_cn)>0){
-				if(!$this->_LDAPmemberInOneGroup($ps_username, $va_group_cn, $vo_ldap, $vs_base_dn)){
-					ldap_unbind($vo_ldap);
-					return false;
-				}
-			}
-			
-			if(!$this->load(array("user_name" => $ps_username))){ // first user login, authentication via LDAP successful
-				
-				/* query directory service for additional info on user */
-				$vo_results = ldap_search($vo_ldap, $vs_dn, "uid={$ps_username}");
-				if($vo_results){
-					// default user config
-					$va_roles = $this->opo_auth_config->get("ldap_users_default_roles");
-					$va_groups = $this->opo_auth_config->get("ldap_users_default_groups");
-					$vn_active = $this->opo_auth_config->get("ldap_users_auto_active");
-					
-					$vo_entry = ldap_first_entry($vo_ldap, $vo_results);
-					if(!$vo_entry) return false;
-					
-					$va_attrs = ldap_get_attributes($vo_ldap, $vo_entry);
-					$vs_email = $va_attrs["mail"][0];
-					$vs_fname = $va_attrs["givenName"][0];
-					$vs_lname = $va_attrs["sn"][0];
-					
-					$this->set("user_name",$ps_username);
-					$this->set("email",$vs_email);
-					$this->set("password",$ps_password);
-					$this->set("fname",$vs_fname);
-					$this->set("lname",$vs_lname);
-					$this->set("active",$vn_active);
-
-					$vn_mode = $this->getMode();
-					$this->setMode(ACCESS_WRITE);
-
-					$this->insert();
-					if(!$this->getPrimaryKey()){
-						// log record creation failed
-						return false;
-					} 
-
-					$this->addRoles($va_roles);
-					$this->addToGroups($va_groups);
-
-					$this->setMode($vn_mode);
-				} else {
-					// user not found, probably some sort of search restriction
-					return false;
-				}				
-			}
-			
-			ldap_unbind($vo_ldap);
-			return true;
-		} else {
-			// log couldn't connect to server
+		$vo_ldap = ldap_connect($vs_ldaphost, $vs_ldapport) or die("could not connect to LDAP server");
+		if (!$vo_ldap) {
 			return false;
 		}
+
+		ldap_set_option($vo_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+		$vo_bind = @ldap_bind($vo_ldap, $vs_bind_rdn, $ps_password);
+		if (!$vo_bind) {
+			// wrong credentials
+			ldap_unbind($vo_ldap);
+			return false;
+		}
+
+		$vo_results = ldap_search($vo_ldap, $vs_search_dn, $vs_search_filter);
+		if (!$vo_results) {
+			// search error
+			ldap_unbind($vo_ldap);
+			return false;
+		}
+
+		$vo_entry = ldap_first_entry($vo_ldap, $vo_results);
+		if (!$vo_entry) {
+			// no results returned
+			ldap_unbind($vo_ldap);
+			return false;
+		}
+
+		$va_attrs = ldap_get_attributes($vo_ldap, $vo_entry);
+		if (sizeof(array_intersect($va_group_cn, $va_attrs[$vs_attribute_member_of])) === 0) {
+			// user is not in any relevant groups
+			ldap_unbind($vo_ldap);
+			return false;
+		}
+
+		if (!$this->load(array( "user_name" => $ps_username ))) {
+			// first user login, authentication via LDAP successful
+			$this->set("user_name",$ps_username);
+			$this->set("password",$ps_password);
+			$this->set("email",$va_attrs[$vs_attribute_email][0]);
+			$this->set("fname",$va_attrs[$vs_attribute_fname][0]);
+			$this->set("lname",$va_attrs[$vs_attribute_lname][0]);
+			$this->set("active",$this->opo_auth_config->get("ldap_users_auto_active"));
+
+			$vn_mode = $this->getMode();
+			$this->setMode(ACCESS_WRITE);
+			$this->insert();
+			if (!$this->getPrimaryKey()) {
+				return false;
+			}
+			$this->addRoles($this->opo_auth_config->get("ldap_users_default_roles"));
+			$this->addToGroups($this->opo_auth_config->get("ldap_users_default_groups"));
+			$this->setMode($vn_mode);
+		}
+
+		ldap_unbind($vo_ldap);
+		return true;
 	}
 	# ----------------------------------------
-	/**
-	 * LDAP helper
-	 * Checks if user is member in at least one of the groups in the given group list
-	 */
-	private function _LDAPmemberInOneGroup($ps_user,$pa_groups,$po_ldap,$ps_base_dn){
-		$vb_return = false;
-		if(is_array($pa_groups)){
-			foreach($pa_groups as $vs_group_cn){
-				$vs_filter = "(cn=$vs_group_cn)";
-				$vo_result = ldap_search($po_ldap, $ps_base_dn, $vs_filter,array("memberuid"));
-				$va_entries = ldap_get_entries($po_ldap, $vo_result);
-				if($va_members = $va_entries[0]["memberuid"]){
-					if(in_array($ps_user, $va_members)){
-						$vb_return = true;
-					}
-				}
-			}
-		}
-		return $vb_return;
+	private function postProcessLDAPConfigValue($key, $ps_username, $ps_user_ou, $ps_base_dn) {
+		$result = $this->opo_auth_config->get($key);
+		$result = str_replace('{username}', $ps_username, $result);
+		$result = str_replace('{user_ou}', $ps_user_ou, $result);
+		$result = str_replace('{base_dn}', $ps_base_dn, $result);
+		return $result;
 	}
 	# ----------------------------------------
 	/**
