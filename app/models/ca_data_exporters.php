@@ -1586,8 +1586,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		$o_log->logInfo(_t("Extracted data for this mapping is as follows:"));
 
-		foreach($va_item_info as $va_item){
-			$o_log->logInfo(sprintf("    element:%-20s value: %-10s",$va_item['element'],$va_item['text']));
+		foreach($va_item_info as $va_tmp) {
+			$o_log->logInfo(sprintf("    element:%-20s value: %-10s",$va_tmp['element'],$va_tmp['text']));
 		}
 
 		$va_children = $t_exporter_item->getHierarchyChildren();
@@ -1597,9 +1597,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$o_log->logInfo(_t("Now proceeding to process %1 direct children in the mapping hierarchy", sizeof($va_children)));
 
 			foreach($va_children as $va_child) {
-				foreach($va_item_info as &$va_item){
+				foreach($va_item_info as &$va_info){
 					$va_child_export = $this->processExporterItem($va_child['item_id'],$pn_table_num,$pn_record_id,$pa_options);	
-					$va_item['children'] = array_merge((array)$va_item['children'],$va_child_export);
+					$va_info['children'] = array_merge((array)$va_info['children'],$va_child_export);
 				}
 			}
 		}
@@ -1649,4 +1649,3 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 }
-?>

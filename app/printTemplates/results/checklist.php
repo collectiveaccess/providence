@@ -49,7 +49,7 @@
 
 	print $this->render("pdfStart.php");
 	print $this->render("header.php");
-	print $this->render("footer.php");
+	print $this->render("../footer.php");
 ?>
 		<div id='body'>
 <?php
@@ -61,16 +61,32 @@
 			$vn_object_id = $vo_result->get('ca_objects.object_id');		
 ?>
 			<div class="row">
+			<table>
+			<tr>
+				<td>
 <?php 
-					if ($vs_tag = $vo_result->get('ca_object_representations.media.tiny')) {
+					if ($vs_tag = $vo_result->get('ca_object_representations.media.thumbnail')) {
 						print "<div class=\"imageTiny\">{$vs_tag}</div>";
 					} else {
 ?>
 						<div class="imageTinyPlaceholder">&nbsp;</div>
 <?php					
-					}
+					}	
+?>								
+
+				</td><td>
+					<div class="metaBlock">
+<?php				
+					print "<div class='title'>".$vo_result->getWithTemplate('^ca_objects.preferred_labels.name (^ca_objects.idno)')."</div>"; 
+					foreach($va_display_list as $vn_placement_id => $va_display_item) {
+						$vs_display_value = $t_display->getDisplayValue($vo_result, $vn_placement_id, array('forReport' => true, 'purify' => true));
+						print "<div class='metadata'><span class='displayHeader' style='font-family:\"DIN-Regular\";'>".$va_display_item['display']."</span>: <span class='displayValue'>".(strlen($vs_display_value) > 1200 ? strip_tags(substr($vs_display_value, 0, 1197))."..." : $vs_display_value)."</span></div>";		
+					}							
 ?>
-				<?php print $vo_result->getWithTemplate('^ca_objects.preferred_labels.name (^ca_objects.idno)'); ?>
+					</div>				
+				</td>	
+			</tr>
+			</table>	
 			</div>
 <?php
 		}

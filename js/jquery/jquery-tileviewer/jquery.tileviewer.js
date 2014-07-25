@@ -251,7 +251,7 @@ var methods = {
                     },
                     
                     load_annotations: function() {     
-                    	if (!options.use_annotations) { return; }
+                    	if (!options.use_annotations || !options.annotationLoadUrl.trim()) { return; }
                     	
                     	jQuery.getJSON(options.annotationLoadUrl, function(data) {
                     		view.annotations = [];
@@ -2820,7 +2820,6 @@ var methods = {
 //
 // End ANNOTATIONS: mousemove handler
 //                    
-
                     if(view.mousedown) {
                         //dragging
                         switch(view.mode) {
@@ -2830,7 +2829,7 @@ var methods = {
 								layer.xpos = x - view.pan.xhot;
 								layer.ypos = y - view.pan.yhot;
 								view.draw();//TODO - should I call needdraw instead?
-                           		break;        
+								break;        
                         }
                     } else {
                         //just hovering

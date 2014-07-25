@@ -69,7 +69,7 @@
 		'requireValue' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_CHECKBOXES,
-			'default' => 1,
+			'default' => 0,
 			'width' => 1, 'height' => 1,
 			'label' => _t('Require value'),
 			'description' => _t('Check this option if you want to require that a list item be selected.')
@@ -184,6 +184,10 @@
  		 * @return string The value
  		 */
 		public function getDisplayValue($pa_options=null) {
+			if($vb_return_idno = ((isset($pa_options['returnIdno']) && (bool)$pa_options['returnIdno']))) {
+				return caGetListItemIdno($this->ops_text_value); 
+			}
+				
 			$vn_list_id = (is_array($pa_options) && isset($pa_options['list_id'])) ? (int)$pa_options['list_id'] : null;
 			if ($vn_list_id > 0) {
 				$t_list = new ca_lists();
@@ -191,26 +195,18 @@
 				if ($o_trans = caGetOption('transaction', $pa_options, null)) {
 					$t_list->setTransaction($o_trans);
 				}
+				$t_item = new ca_list_items(); 
 				if ($pa_options['showHierarchy'] || $vb_return_idno) { 
-					$t_item = new ca_list_items(); 
 					if ($o_trans) { $t_item->setTransaction($o_trans); }
 				}
 				
-				
-				$vb_return_idno = ((isset($pa_options['returnIdno']) && (bool)$pa_options['returnIdno']));
-				if ($vb_return_idno) {
-					$vs_get_spec = 'idno';
-				} else {
-					$vs_get_spec = ((isset($pa_options['useSingular']) && $pa_options['useSingular']) ? 'name_singular' : 'name_plural');
-				}
+				$vs_get_spec = ((isset($pa_options['useSingular']) && $pa_options['useSingular']) ? 'name_singular' : 'name_plural');
+
 				// do we need to get the hierarchy?
 				if ($pa_options['showHierarchy']) {
 					$t_item->load($this->ops_text_value);
 					return $t_item->get('ca_list_items.hierarchy.'.$vs_get_spec, $pa_options);
-				} elseif($vb_return_idno) {
-					$t_item->load($this->ops_text_value);
-					return $t_item->get('ca_list_items.'.$vs_get_spec, $pa_options);
-				}
+				} 
 				
 				return $t_list->getItemFromListForDisplayByItemID($vn_list_id, $this->ops_text_value, (isset($pa_options['useSingular']) && $pa_options['useSingular']) ? false : true);
 			}
@@ -232,7 +228,7 @@
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			$vb_treat_value_as_idno = caGetOption('alwaysTreatValueAsIdno', $pa_options, false);
  			
- 			$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? true : (bool)$pa_element_info['settings']['requireValue'];
+ 			$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? false : (bool)$pa_element_info['settings']['requireValue'];
 
 			$ps_orig_value = $ps_value;
  			if ($vb_treat_value_as_idno || preg_match('![^\d]+!', $ps_value)) {

@@ -82,7 +82,9 @@
 		 */ 
 		public function addLabel($pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false) {
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
-		
+			
+			$vs_table_name = $this->tableName();
+			
 			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName()))) { return null; }
 			if ($this->inTransaction()) {
 				$o_trans = $this->getTransaction();
@@ -99,6 +101,9 @@
 					}
 				}
 			}
+			
+			$t_label->setLabelTypeList($this->getAppConfig()->get($pb_is_preferred ? "{$vs_table_name}_preferred_label_type_list" : "{$vs_table_name}_nonpreferred_label_type_list"));
+			
 			$t_label->set('locale_id', $pn_locale_id);
 			if ($t_label->hasField('type_id')) { $t_label->set('type_id', $pn_type_id); }
 			if ($t_label->hasField('is_preferred')) { $t_label->set('is_preferred', $pb_is_preferred ? 1 : 0); }
@@ -126,6 +131,8 @@
 		public function editLabel($pn_label_id, $pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false) {
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
 			
+			$vs_table_name = $this->tableName();
+			
 			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName()))) { return null; }
 			if ($this->inTransaction()) {
 				$o_trans = $this->getTransaction();
@@ -136,6 +143,8 @@
 			
 			if (!($t_label->load($pn_label_id))) { return null; }
 		
+			$t_label->setLabelTypeList($this->getAppConfig()->get($pb_is_preferred ? "{$vs_table_name}_preferred_label_type_list" : "{$vs_table_name}_nonpreferred_label_type_list"));
+			
 			$vb_has_changed = false;
 			foreach($pa_label_values as $vs_field => $vs_value) {
 				if ($t_label->hasField($vs_field)) { 
@@ -171,7 +180,6 @@
 			
 			$this->opo_app_plugin_manager->hookAfterLabelUpdate(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 		
-			
 			if ($t_label->numErrors()) { 
 				$this->errors = $t_label->errors;
 				return false;
@@ -322,9 +330,10 @@
 		 * "boolean" option as "AND" and $pa_values set to array("idno" => "2012.001", "access" => 1).
 		 * You could find all rows with either the idno or the access values by setting "boolean" to "OR"
 		 *
-		 * Keys in the $pa_values parameters must be valid fields in the table which the model sub-class represents, or valid attributes. For example:
+		 * Keys in the $pa_values parameters must be valid fields in the table which the model sub-class represents. You may also search on preferred and
+		 * non-preferred labels by specified keys and values for label table fields in "preferred_labels" and "nonpreferred_labels" sub-arrays. For example:
 		 *
-		 array("idno" => 2012.001", "access" => 1, "preferred_labels" => array("name" => "Luna Park at Night"))
+		 * array("idno" => 2012.001", "access" => 1, "preferred_labels" => array("name" => "Luna Park at Night"))
 		 *
 		 * will find rows with the idno, access and preferred label values.
 		 *

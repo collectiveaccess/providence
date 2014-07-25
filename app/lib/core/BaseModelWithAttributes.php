@@ -617,7 +617,7 @@
 				return $vn_rc;
 			}
 			
-			if ($o_trans) { $o_trans->rollback(); }
+			if ($o_trans) { $vn_rc ? $o_trans->commit() : $o_trans->rollback(); }
 			if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 			return $vn_rc;
 		}
@@ -1241,6 +1241,7 @@
 		  * 
 		  */
 		public function htmlFormElementForSearch($po_request, $ps_field, $pa_options=null) {
+			if(!$pa_options) { $pa_options = array(); }
 			$va_tmp = explode('.', $ps_field);
 			
 			if (!in_array($va_tmp[0], array('created', 'modified'))) {		// let change log searches filter down to BaseModel
@@ -1544,7 +1545,9 @@
 				$vs_form_element = str_replace('{{'.$va_element['element_id'].'}}', $vs_value, $vs_form_element);
 				
 				// ... replace name of form element
-				$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_{n}', str_replace('.', '_', $vs_subelement_code), $vs_form_element);
+				$vs_fld_name = str_replace('.', '_', $vs_subelement_code);
+				if (caGetOption('asArrayElement', $pa_options, false)) { $vs_fld_name .= "[]"; } 
+				$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_{n}', $vs_fld_name, $vs_form_element);
 				
 				$vs_form_element = str_replace('{n}', '', $vs_form_element);
 				$vs_form_element = str_replace('{'. $va_element['element_id'].'}', '', $vs_form_element);
@@ -1767,7 +1770,7 @@
 					
 					if (get_class($o_value) == 'ListAttributeValue') {
 						$t_element = $this->_getElementInstance($o_value->getElementID());
-						$vn_list_id = (!isset($pa_options['convertCodesToDisplayText']) || !$pa_options['convertCodesToDisplayText']) ? null : $t_element->get('list_id');
+						$vn_list_id = (!isset($pa_options['convertCodesToDisplayText']) || !(bool)$pa_options['convertCodesToDisplayText']) ? null : $t_element->get('list_id');
 					} else {
 						$vn_list_id = null;
 					}
@@ -1927,8 +1930,8 @@
 		 * @return bool True on success, false if an error occurred
 		 *
 		 * Supported options
-		 *	restrictToAttributesByCodes = array of attributes codes to restrict the duplication
-		 *	restrictToAttributesByIds = array of attributes ids to restrict the duplication
+		 *	restrictToAttributesByCodes = array of element codes to restrict the duplication to
+		 *	restrictToAttributesByIds = array of element ids to restrict the duplication to
 		 *
 		 */
 		public function copyAttributesTo($pn_row_id, $pa_options=null) {
@@ -1940,8 +1943,8 @@
 				$vb_we_set_transaction = true;
 			}
 
-			$va_restrictToAttributesByCodes = caGetOption('restrictToAttributesByCodes', $pa_options, null);
-			$va_restrictToAttributesByIds = caGetOption('restrictToAttributesByIds', $pa_options, null);
+			$va_restrictToAttributesByCodes = caGetOption('restrictToAttributesByCodes', $pa_options, array());
+			$va_restrictToAttributesByIds = caGetOption('restrictToAttributesByIds', $pa_options, array());
 
 			if (!($t_dupe = $this->_DATAMODEL->getInstanceByTableNum($this->tableNum()))) { return null; }
 			$t_dupe->purify($this->purify());

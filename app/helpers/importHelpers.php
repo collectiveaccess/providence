@@ -529,7 +529,25 @@
 				$va_items = sizeof($va_delimiter) ? preg_split("!(".join("|", $va_delimiter).")!", $vs_delimited_item) : array($vs_delimited_item);
 
 				foreach($va_items as $vn_i => $vs_item) {
-					if (!($vs_item = trim($vs_item))) { continue; }
+					$va_parents = $pa_item['settings']["{$ps_refinery_name}_parents"];
+					
+					if (!($vs_item = trim($vs_item))) { 
+						if (is_array($va_parents) && (sizeof($va_parents) > 0)) {
+							// try to ladder up the parents hierarchy since the base value is blank (see PROV-972)
+							$vs_display_field = $t_instance->getLabelDisplayField();
+							while(sizeof($va_parents) > 0) {
+								$va_p = array_pop($va_parents);
+								if ($vs_laddered_val = BaseRefinery::parsePlaceholder($va_p[$vs_display_field], $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnDelimitedValueAt' => $vn_x))) {
+									if ($o_log) { $o_log->logDebug(_t('[{$ps_refinery_name}] Used parent value %1 because the mapped value was blank', $vs_item)); }
+									$vs_item = $vs_laddered_val;
+									break;
+								}
+							}
+						}
+						if (!$vs_item) { 
+							continue; 
+						}
+					}
 					if (is_array($va_skip_values = $pa_item['settings']["{$ps_refinery_name}_skipIfValue"]) && in_array($vs_item, $va_skip_values)) {
 						if ($o_log) { $o_log->logDebug(_t('[{$ps_refinery_name}] Skipped %1 because it was in the skipIfValue list', $vs_item)); }
 						continue;
@@ -539,8 +557,8 @@
 					$va_val = array();
 				
 					// Set value as hierarchy
-					if ($va_parents = $pa_item['settings']["{$ps_refinery_name}_hierarchy"]) {
-						$va_attr_vals = $va_val = caProcessRefineryParents($ps_refinery_name, $ps_table, $va_parents, $pa_source_data, $pa_item, $pn_value_index, array_merge($pa_options, array('hierarchyMode' => true)));
+					if ($va_hierarchy_setting = $pa_item['settings']["{$ps_refinery_name}_hierarchy"]) {
+						$va_attr_vals = $va_val = caProcessRefineryParents($ps_refinery_name, $ps_table, $va_hierarchy_setting, $pa_source_data, $pa_item, $pn_value_index, array_merge($pa_options, array('hierarchyMode' => true)));
 						$vs_item = $va_val['_preferred_label'];
 					} else {
 		
@@ -614,7 +632,7 @@
 							}
 						} else {
 							// Set parents
-							if ($va_parents = $pa_item['settings']["{$ps_refinery_name}_parents"]) {
+							if ($va_parents) {
 								$va_val['parent_id'] = $va_val['_parent_id'] = caProcessRefineryParents($ps_refinery_name, $ps_table, $va_parents, $pa_source_data, $pa_item, $pn_value_index, $pa_options);
 							}
 				
@@ -660,9 +678,8 @@
 						if(!is_array($va_attr_vals)) { $va_attr_vals = array(); }
 						$va_attr_vals_with_parent = array_merge($va_attr_vals, array('parent_id' => $va_val['parent_id'] ? $va_val['parent_id'] : $va_val['_parent_id']));
 
-					
-						$pa_options = array_merge(array('matchOn' => array('idno', 'label'), $pa_options));
-					
+						$pa_options = array('matchOn' => array('idno', 'label')) +  $pa_options;
+						
 						switch($ps_table) {
 							case 'ca_objects':
 								$vn_item_id = DataMigrationUtils::getObjectID($vs_item, $va_val['parent_id'], $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
@@ -695,7 +712,6 @@
 							case 'ca_list_items':
 								$va_attr_vals_with_parent['is_enabled'] = 1;
 								$vn_item_id = DataMigrationUtils::getListItemID($pa_options['list_id'], $vs_item, $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
-							
 								break;
 							case 'ca_storage_locations':
 								$vn_item_id = DataMigrationUtils::getStorageLocationID($vs_item, $va_val['parent_id'], $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
@@ -710,8 +726,10 @@
 						}
 					
 						if ($vn_item_id) {
-							$po_refinery_instance->setReturnsMultipleValues(false);
-							return $vn_item_id;
+							//$po_refinery_instance->setReturnsMultipleValues(false);
+							//return $vn_item_id;
+							$va_vals[][$vs_terminal] = $vn_item_id;
+							continue;
 						} else {
 							if ($o_log) { $o_log->logError(_t("[{$ps_refinery_name}Refinery] Could not add %2 %1", $vs_item, $ps_item_prefix)); }
 						}
