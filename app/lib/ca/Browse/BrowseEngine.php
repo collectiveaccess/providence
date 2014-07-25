@@ -3902,9 +3902,9 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 								$va_row = $qr_sort->getRow();
 								if (!$va_row['row_id']) { continue; }
 								if ($vn_num_locales > 1) {
-									$va_sorted_hits[$va_row['row_id']][$va_row['locale_id']] .= trim(str_replace(array("'", '"'), array('', ''), $va_row[$vs_sort_field]));
+									$va_sorted_hits[$va_row['row_id']][$va_row['locale_id']] .= trim(str_replace(array("'", '"'), array('', ''), caRemoveAccents($va_row[$vs_sort_field])));
 								} else {
-									$va_sorted_hits[$va_row['row_id']] .= trim(str_replace(array("'", '"'), array('', ''), $va_row[$vs_sort_field]));
+									$va_sorted_hits[$va_row['row_id']] .= trim(str_replace(array("'", '"'), array('', ''), caRemoveAccents($va_row[$vs_sort_field])));
 								}
 								unset($pa_hits[$va_row['row_id']]);
 							}
@@ -4003,7 +4003,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 				
 				while($qr_sort->nextRow()) {
 					$va_row = $qr_sort->getRow();
-					if (!($vs_sortable_value = str_replace(array("'", '"'), array('', ''), $va_row[$vs_sort_field]))) {
+					if (!($vs_sortable_value = str_replace(array("'", '"'), array('', ''), caRemoveAccents($va_row[$vs_sort_field])))) {
 						$vs_sortable_value = '';
 					}
 					if (($vn_num_locales > 1) && $vs_locale_where) {

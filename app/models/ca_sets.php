@@ -998,8 +998,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$vn_type_id = $this->get('type_id');
 		
 		$va_item_values = array();
-		$va_rows_ids = array_unique($pa_row_ids);
-		foreach($va_rows_ids as $vn_row_id) {
+		$va_row_ids = array_unique($pa_row_ids);
+		foreach($va_row_ids as $vn_row_id) {
 			$va_item_values[] = "(".(int)$vn_set_id.",".(int)$vn_table_num.",".(int)$vn_row_id.",".(int)$vn_type_id.")";
 		}
 		
@@ -1014,9 +1014,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			
 			// Get the item_ids for the newly created links
 			$qr_res = $this->getDb()->query("SELECT item_id FROM ca_set_items WHERE set_id = ? AND table_num = ? AND type_id = ? AND row_id IN (?)", array(
-				$vn_set_id, $vn_table_num, $vn_type_id, $va_row_ids
+				(int)$vn_set_id, (int)$vn_table_num, (int)$vn_type_id, $va_row_ids
 			));
-			
 			$va_item_ids = $qr_res->getAllFieldValues('item_id');
 			
 			// Set the ranks of the newly created links
@@ -1247,7 +1246,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * Returns information on items in current set
 	 *
 	 * @param array $pa_options Optional array of options. Supported options are:
-	 *			user_id = user_id of the current user; used to determine paintings may be shown
+	 *			user_id = user_id of the current user; used to determine what may be shown
 	 *			thumbnailVersions = A list of of a media versions to return with each item. Only used if the set content type is ca_objects.
 	 *			thumbnailVersion = Same as 'thumbnailVersions' except it is a single value. (Maintained for compatibility with older code.)
 	 *			limit = Limits the total number of records to be returned
@@ -1481,6 +1480,10 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		$vs_rel_table_name = $t_rel_table->tableName();
 		$vs_rel_table_pk = $t_rel_table->primaryKey();
 		
+		$vs_access_sql = '';
+		if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_table->hasField('access')) {
+			$vs_access_sql = ' AND '.$vs_rel_table_name.'.access IN ('.join(',', $pa_options['checkAccess']).')';
+		}	
 		$vs_deleted_sql = '';
 		if ($t_rel_table->hasField('deleted')) {
 			$vs_deleted_sql = ' AND deleted = 0';
@@ -1491,7 +1494,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			FROM ca_set_items
 			INNER JOIN {$vs_rel_table_name} ON {$vs_rel_table_name}.{$vs_rel_table_pk} = ca_set_items.row_id
 			WHERE
-				ca_set_items.set_id = ? {$vs_deleted_sql}
+				ca_set_items.set_id = ? {$vs_deleted_sql} {$vs_access_sql}
 		", (int)$vn_set_id);
 		
 		if ($qr_res->nextRow()) {
@@ -1813,5 +1816,310 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		return $vn_table_num;
 	}
 	# ------------------------------------------------------
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	# ------------------------------------------------------
+	# new functions for pawtucket lightbox
+	# ------------------------------------------------------
+	/*
+	* options
+	*			user_id -> ca_users.user_id that owns or has access to set
+	*			owner - if set, returns only sets owned by the passed user_id
+	*			table - if set, list is restricted to sets that can contain the specified item. You can pass a table name or number. If omitted sets containing any content will be returned.
+	*			setType - Restricts returned sets to those of the specified type. You can pass a type_id or list item code for the set type. If omitted sets are returned regardless of type.
+	*			access - read = 1, write = 2; Restricts returned sets to those with at least the specified access level for the specified user. If "owner" is true then this option has no effect.
+	*			checkAccess - Restricts returned sets to those with an access level of the specified values. If omitted sets are returned regardless of public access (ca_sets.access) value. Can be a single value or array if you wish to filter on multiple public access values.
+	*
+	*
+	*
+	*/
+	public function getSetsForUser($pa_options){
+		if (!is_array($pa_options)) { $pa_options = array(); }
+		$pn_user_id = isset($pa_options['user_id']) ? (int)$pa_options['user_id'] : null;
+		$pm_table_name_or_num = isset($pa_options['table']) ? $pa_options['table'] : null;
+		if ($pm_table_name_or_num && !($vn_table_num = $this->_getTableNum($pm_table_name_or_num))) { return null; }
+		$pm_type = isset($pa_options['setType']) ? $pa_options['setType'] : null;
+		$pn_access = isset($pa_options['access']) ? $pa_options['access'] : null;
+		$pa_public_access = isset($pa_options['checkAccess']) ? $pa_options['checkAccess'] : null;
+		if ($pa_public_access && is_numeric($pa_public_access) && !is_array($pa_public_access)) {
+			$pa_public_access = array($pa_public_access);
+		}
+		for($vn_i=0; $vn_i < sizeof($pa_public_access); $vn_i++) { $pa_public_access[$vn_i] = intval($pa_public_access[$vn_i]); }
+		
+		if($pn_user_id){
+			$va_extra_joins = array();
+			$va_sql_wheres = array("(cs.deleted = 0)");
+			$va_sql_params = array();
+			$o_db = $this->getDb();
+			
+			if ($vn_table_num) {
+				$va_sql_wheres[] = "(cs.table_num = ?)";
+				$va_sql_params[] = (int)$vn_table_num;
+			}
+			if (!is_null($pa_public_access) && is_array($pa_public_access) && sizeof($pa_public_access)) {
+				$va_sql_wheres[] = "(cs.access IN (?))";
+				$va_sql_params[] = $pa_public_access;
+			}			
+			if (isset($pm_type) && $pm_type) {
+				if(is_numeric($pm_type)){
+					$va_sql_wheres[] = "(cs.type_id = ?)";
+					$va_sql_params[] = (int)$pm_type;
+				}else{
+					# --- look up code of set type
+					$t_list = new ca_lists();
+					$vn_type_id = $t_list->getItemIDFromList("set_types", $pm_type);
+					if($vn_type_id){
+						$va_sql_wheres[] = "(cs.type_id = ?)";
+						$va_sql_params[] = (int)$vn_type_id;
+					}
+				}
+			}
+			if($pa_options["owner"]){
+				$va_sql_wheres[] = "(cs.user_id = ".$pn_user_id.")";
+			}else{
+				# --- if owner is not set to true, we're finding all sets the user has access to or is owner of
+				# --- we also check the users' access to the set if set
+				$t_user = new ca_users();
+				$t_user->load($pn_user_id);
+				
+				if ($t_user->getPrimaryKey()) {
+					$vs_access_sql = ($pn_access > 0) ? " AND (access >= ".intval($pn_access).")" : "";
+					if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {
+						$vs_sql = "(
+							(cs.user_id = ".intval($pn_user_id).") OR 
+							(cs.set_id IN (
+									SELECT set_id 
+									FROM ca_sets_x_user_groups 
+									WHERE 
+										group_id IN (".join(',', array_keys($va_groups)).") {$vs_access_sql}
+										AND
+										(
+											 (sdatetime IS NULL AND edatetime IS NULL)
+											 OR 
+											 (
+												sdatetime <= ".time()." AND edatetime >= ".time()."
+											 )
+										)
+								)
+							)
+						)";
+					} else {
+						$vs_sql = "(cs.user_id = {$pn_user_id})";
+					}
+					
+					$vs_sql .= " OR (cs.set_id IN (
+											SELECT set_id 
+											FROM ca_sets_x_users 
+											WHERE 
+												user_id = {$pn_user_id} {$vs_access_sql}
+												AND
+												(
+													 (sdatetime IS NULL AND edatetime IS NULL)
+													 OR 
+													 (
+														sdatetime <= ".time()." AND edatetime >= ".time()."
+													 )
+												)
+										)
+									)";
+					
+					
+					$va_sql_wheres[] = "({$vs_sql})";
+				}
+			}
+			$qr_res = $o_db->query("SELECT cs.set_id, cs.user_id, type_id, cu.fname, cu.lname
+									FROM ca_sets cs
+									INNER JOIN ca_users AS cu ON cs.user_id = cu.user_id
+									".join("\n", $va_extra_joins)."
+									".(sizeof($va_sql_wheres) ? "WHERE " : "")." ".join(" AND ", $va_sql_wheres)."
+									", $va_sql_params);
+			$va_sets = array();
+			$t_list = new ca_lists();
+			while($qr_res->nextRow()) {
+				$vn_table_num = $qr_res->get('table_num');
+				if (!isset($va_type_name_cache[$vn_table_num]) || !($vs_set_type = $va_type_name_cache[$vn_table_num])) {
+					$vs_set_type = $va_type_name_cache[$vn_table_num] = $this->getSetContentTypeName($vn_table_num, array('number' => 'plural'));
+				}
+				
+				$vs_type = $t_list->getItemFromListForDisplayByItemID('set_types', $qr_res->get('type_id'));
+			
+				$va_sets[$qr_res->get('set_id')] = array_merge($qr_res->getRow(), array('set_content_type' => $vs_set_type, 'set_type' => $vs_type));
+			}
+			return $va_sets;
+		}else{
+			return false;
+		}
+	}
+	# ---------------------------------------------------------------
+	public function getSetChangeLog($va_set_ids){
+		if(is_array($va_set_ids) && sizeof($va_set_ids)){
+			$o_dm = $this->getAppDatamodel();
+			$o_db = $this->getDB();
+
+
+// 			$q_change_log_sets = $o_db->query("
+// 						SELECT DISTINCT
+// 							wcl.log_id, wcl.log_datetime, wcl.user_id, wcl.changetype, wcl.logged_table_num, wcl.logged_row_id,
+// 							wclsnap.snapshot, wcl.unit_id, wu.email, wu.fname, wu.lname
+// 						FROM ca_change_log wcl
+// 						INNER JOIN ca_change_log_snapshots AS wclsnap ON wclsnap.log_id = wcl.log_id
+// 						LEFT JOIN ca_change_log_subjects AS wcls ON wcl.log_id = wcls.log_id
+// 						LEFT JOIN ca_users AS wu ON wcl.user_id = wu.user_id
+// 						WHERE
+// 							(
+// 								(wcl.logged_table_num = ".((int)$o_dm->getTableNum("ca_set_items")).") AND (wcl.logged_row_id IN (".implode(", ", $va_set_ids)."))
+// 							)
+// 						ORDER BY wcl.log_datetime desc
+// 					");
+// 				$va_set_change_log = array();
+// 				if($q_change_log_sets->numRows()){
+// 					while($q_change_log_sets->nextRow()){
+// 						$va_tmp = array();
+// 						$va_tmp = $q_change_log_sets->getRow();
+// 						$va_tmp['snapshot'] = caUnserializeForDatabase($q_change_log_sets->get('snapshot'));
+// 						$va_set_change_log[$q_change_log_sets->get('log_datetime')] = $va_tmp;
+// 					}
+// 				}
+			
+			global $g_ui_locale_id;
+			$q_change_log = $o_db->query("
+						SELECT DISTINCT
+							wcl.log_id, wcl.log_datetime log_datetime, wcl.user_id, wcl.changetype, wcl.logged_table_num, wcl.logged_row_id,
+							wclsnap.snapshot, wcl.unit_id, wu.email, wu.fname, wu.lname, csl.name, wcl.logged_row_id set_id
+						FROM ca_change_log wcl
+						INNER JOIN ca_change_log_snapshots AS wclsnap ON wclsnap.log_id = wcl.log_id
+						LEFT JOIN ca_change_log_subjects AS wcls ON wcl.log_id = wcls.log_id
+						LEFT JOIN ca_users AS wu ON wcl.user_id = wu.user_id
+						INNER JOIN ca_set_labels AS csl ON csl.set_id = wcl.logged_row_id
+						WHERE
+							(
+								(wcl.logged_table_num = ".((int)$this->tableNum()).") AND (wcl.logged_row_id IN (".implode(", ", $va_set_ids)."))
+								AND (csl.locale_id = ?)
+							)
+						UNION
+						SELECT DISTINCT
+							wcl.log_id, wcl.log_datetime, wcl.user_id, wcl.changetype, wcl.logged_table_num, wcl.logged_row_id,
+							wclsnap.snapshot, wcl.unit_id, wu.email, wu.fname, wu.lname, csl.name, wcls.subject_row_id set_id
+						FROM ca_change_log wcl
+						INNER JOIN ca_change_log_snapshots AS wclsnap ON wclsnap.log_id = wcl.log_id
+						LEFT JOIN ca_change_log_subjects AS wcls ON wcl.log_id = wcls.log_id
+						LEFT JOIN ca_users AS wu ON wcl.user_id = wu.user_id
+						INNER JOIN ca_set_labels AS csl ON csl.set_id = wcls.subject_row_id
+						WHERE
+							 (
+								(wcls.subject_table_num = ".((int)$this->tableNum()).") AND (wcls.subject_row_id IN (".implode(", ", $va_set_ids).")) AND wcl.logged_table_num IN (".$o_dm->getTableNum("ca_set_items").", ".$o_dm->getTableNum("ca_sets_x_users").", ".$o_dm->getTableNum("ca_sets_x_user_groups").")
+								AND (csl.locale_id = ?)
+							)
+						ORDER BY log_datetime desc
+					", $g_ui_locale_id, $g_ui_locale_id);
+				$va_set_change_log = array();
+				if($q_change_log->numRows()){
+					while($q_change_log->nextRow()){
+						$va_tmp = array();
+						$va_tmp = $q_change_log->getRow();
+ 						$va_tmp['snapshot'] = caUnserializeForDatabase($q_change_log->get('snapshot'));
+ 						$va_set_change_log[$q_change_log->get('log_datetime')] = $va_tmp;
+					}
+				}
+				
+				# --- comments
+				# --- set comments
+				$q_set_comments = $o_db->query("
+								SELECT c.created_on log_datetime, c.comment, wu.email, wu.fname, wu.lname, c.table_num, c.row_id set_id, csl.name
+								FROM ca_item_comments c
+								LEFT JOIN ca_users AS wu ON c.user_id = wu.user_id
+								INNER JOIN ca_set_labels AS csl ON csl.set_id = c.row_id
+								WHERE c.table_num = ".((int)$this->tableNum())." AND c.row_id IN (".implode(", ", $va_set_ids).")
+								ORDER BY c.created_on desc
+							");
+				if($q_set_comments->numRows()){
+					while($q_set_comments->nextRow()){
+						$va_tmp = array();
+						$va_tmp = $q_set_comments->getRow();
+ 						$va_tmp["logged_table_num"] = $o_dm->getTableNum("ca_item_comments");
+ 						$va_set_change_log[$q_set_comments->get('log_datetime')] = $va_tmp;
+					}
+				}
+				
+				# --- item comments
+				$q_set_item_comments = $o_db->query("
+								SELECT c.created_on log_datetime, c.comment, wu.email, wu.fname, wu.lname, c.table_num, si.set_id set_id, csl.name
+								FROM ca_item_comments c
+								LEFT JOIN ca_users AS wu ON c.user_id = wu.user_id
+								INNER JOIN ca_set_items as si ON si.item_id = c.row_id
+								INNER JOIN ca_set_labels AS csl ON csl.set_id = si.set_id
+								WHERE c.table_num = ".($o_dm->getTableNum("ca_set_items"))." AND si.set_id IN (".implode(", ", $va_set_ids).")
+								ORDER BY c.created_on desc
+							");
+				if($q_set_item_comments->numRows()){
+					while($q_set_item_comments->nextRow()){
+						$va_tmp = array();
+						$va_tmp = $q_set_item_comments->getRow();
+ 						$va_tmp["logged_table_num"] = $o_dm->getTableNum("ca_item_comments");
+ 						$va_set_change_log[$q_set_item_comments->get('log_datetime')] = $va_tmp;
+					}
+				}
+				ksort($va_set_change_log);
+				return array_reverse($va_set_change_log);
+		}else{
+			return false;
+		}
+	}
+	# ---------------------------------------------------------------
+	# --- returns array of users with access to set
+	# ---------------------------------------------------------------
+	public function getSetUsers(){
+		if (!($vn_set_id = $this->getPrimaryKey())) { return null; }
+		$o_db = $this->getDB();
+		$va_users = array();
+		# --- add the owner of the set
+		$q_set_users = $o_db->query("
+						SELECT u.user_id, u.email, u.fname, u.lname, su.access
+						FROM ca_sets_x_users su
+						INNER JOIN ca_users AS u ON su.user_id = u.user_id
+						WHERE su.set_id = ?
+						", $vn_set_id);
+		if($q_set_users->numRows()){
+			while($q_set_users->nextRow()){
+				$va_users[$q_set_users->get("user_id")] = array("user_id" => $q_set_users->get("user_id"), "name" => trim($q_set_users->get("fname")." ".$q_set_users->get("lname")), "email" => $q_set_users->get("email"), "access" => $q_set_users->get("access"));
+			}
+		}
+		$q_set_owner = $o_db->query("
+						SELECT u.user_id, u.email, u.fname, u.lname
+						FROM ca_users u
+						WHERE u.user_id = ?
+						", $this->get("user_id"));
+		if($q_set_owner->numRows()){
+			$q_set_owner->nextRow();
+			$va_users[$this->get("user_id")] = array("owner" => true, "user_id" => $this->get("user_id"), "name" => trim($q_set_owner->get("fname")." ".$q_set_owner->get("lname")), "email" => $q_set_owner->get("email"), "access" => 2);
+		}
+		return $va_users;
+	}
+	# ---------------------------------------------------------------
+	public function getSetGroups(){
+		if (!($vn_set_id = $this->getPrimaryKey())) { return null; }
+		$o_db = $this->getDB();
+		$va_groups = array();
+		$q_set_groups = $o_db->query("
+						SELECT g.group_id, g.name, sg.access
+						FROM ca_sets_x_user_groups sg
+						INNER JOIN ca_user_groups AS g ON sg.group_id = g.group_id
+						WHERE sg.set_id = ?
+						", $vn_set_id);
+		if($q_set_groups->numRows()){
+			while($q_set_groups->nextRow()){
+				$va_groups[$q_set_groups->get("group_id")] = array("group_id" => $q_set_groups->get("group_id"), "name" => $q_set_groups->get("name"), "access" => $q_set_groups->get("access"));
+			}
+		}
+		return $va_groups;
+	}
+	# ---------------------------------------------------------------
 }
 ?>

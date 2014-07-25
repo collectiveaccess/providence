@@ -111,7 +111,9 @@ var caUI = caUI || {};
 				var val = jQuery(values[tagRoot]).val();
 				
 				if(val && (val.length > 0)) { 
-					$h.find("ifdef[code=" + tagRoot + "]").replaceWith($h.find(y="ifdef[code=" + tagRoot + "]").html());
+					jQuery.each($h.find("ifdef[code=" + tagRoot + "]"), function(k, v) { 
+						jQuery(v).replaceWith(jQuery(v).html());
+					});
 				} else {
 					$h.find("ifdef[code=" + tagRoot + "]").remove();
 				}

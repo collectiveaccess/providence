@@ -124,7 +124,15 @@ class ItemService extends BaseJSONService {
 				$va_options = array();
 			}
 
-			$va_return[$vs_bundle] = $t_instance->get($vs_bundle,$va_options);
+			$vm_return = $t_instance->get($vs_bundle,$va_options);
+
+			// render 'empty' arrays as JSON objects, not as lists (which is the default behavior of json_encode)
+			if(is_array($vm_return) && sizeof($vm_return)==0){
+				$va_return[$vs_bundle] = new stdClass;
+			} else {
+				$va_return[$vs_bundle] = $vm_return;
+			}
+
 		}
 
 		return $va_return;

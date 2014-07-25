@@ -50,7 +50,7 @@
 
 	print $this->render("pdfStart.php");
 	print $this->render("header.php");
-	print $this->render("footer.php");
+	print $this->render("../footer.php");
 ?>
 		<div id='body'>
 <?php
@@ -63,9 +63,9 @@
 			$vn_object_id = $vo_result->get('ca_objects.object_id');		
 ?>
 			<div class="thumbnail">
-				<?php print $vo_result->get('ca_object_representations.media.preview'); ?>
+				<?php print "<div class='imgThumb'>".$vo_result->get('ca_object_representations.media.preview')."</div>"; ?>
 				<br/>
-				<?php print $vo_result->getWithTemplate('^ca_objects.preferred_labels.name (^ca_objects.idno)'); ?>
+				<?php print "<div class='caption'>".$vo_result->getWithTemplate('^ca_objects.preferred_labels.name (^ca_objects.idno)')."</div>"; ?>
 			</div>
 <?php
 
@@ -76,7 +76,7 @@
 				print "<br class=\"clear\"/>\n";
 			}
 			
-			if ($vn_lines_on_page >= 4) { 
+			if ($vn_lines_on_page >= 2) { 
 				$vn_lines_on_page = 0;
 				print "<div class=\"pageBreak\">&nbsp;</div>\n";
 			}

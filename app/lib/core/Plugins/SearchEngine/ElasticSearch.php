@@ -303,7 +303,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		$o_rewritten_query = new Zend_Search_Lucene_Search_Query_Boolean($va_terms, $va_signs);	
 		$ps_search_expression = $this->_queryToString($o_rewritten_query);
 		if ($vs_filter_query = $this->_filterValueToQueryValue($pa_filters)) {
-			$ps_search_expression .= ' AND ('.$vs_filter_query.')';
+			$ps_search_expression = "({$ps_search_expression}) AND ({$vs_filter_query})";
 		}
 		
 		$vo_http_client = new Zend_Http_Client();
@@ -314,6 +314,33 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			"_search"
 		);
 		
+		
+		if (
+			preg_match_all("!([A-Za-z0-9_\-\.]+)[/]{1}([A-Za-z0-9_\-]+):(\"[^\"]*\")!", $ps_search_expression, $va_matches)
+			||
+			preg_match_all("!([A-Za-z0-9_\-\.]+)[/]{1}([A-Za-z0-9_\-]+):([^ ]*)!", $ps_search_expression, $va_matches)
+		) {
+			foreach($va_matches[0] as $vn_i => $vs_element) {
+				$vs_fld = $va_matches[1][$vn_i];
+				if (!($vs_rel_type = trim($va_matches[2][$vn_i]))) { continue; }
+				
+				$va_tmp = explode(".", $vs_fld);
+				
+				$vs_rel_table = caGetRelationshipTableName($pn_subject_tablenum, $va_tmp[0]);
+				$va_rel_type_ids = ($vs_rel_type && $vs_rel_table) ? caMakeRelationshipTypeIDList($vs_rel_table, array($vs_rel_type)) : null;
+				
+				$va_new_elements = array();
+				foreach($va_rel_type_ids as $vn_rel_type_id) {
+					$va_new_elements[] = "(".$va_matches[1][$vn_i]."/".$vn_rel_type_id.":".$va_matches[3][$vn_i].")";
+				}
+				
+				$ps_search_expression = str_replace($vs_element, "(".join(" OR ", $va_new_elements).")", $ps_search_expression);
+			}
+		}
+		
+		$ps_search_expression = str_replace("/", '\\/', $ps_search_expression); // escape forward slashes used to delimit relationship type qualifier
+		
+		Debug::msg("[ElasticSearch] Running query {$ps_search_expression}");
 		$vo_http_client->setParameterGet(array(
 			'size' => intval($this->opa_options["limit"]),
 			'q' => $ps_search_expression,
@@ -464,6 +491,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$pm_content = serialize($pm_content);
 		}
 	
+		$vn_rel_type_id = (isset($pa_options['relationship_type_id']) && ($pa_options['relationship_type_id'] > 0)) ? (int)$pa_options['relationship_type_id'] : null;
 		$ps_content_tablename = $this->opo_datamodel->getTableName($pn_content_tablenum);
 		if ($ps_content_fieldname[0] === 'A') {
 			// Metadata attribute
@@ -527,6 +555,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$ps_content_fieldname = $this->opo_datamodel->getFieldName($ps_content_tablename, $vn_field_num_proc);
 		}
 		$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname][] = $pm_content;
+		if ($vn_rel_type_id) { // add relationship type-specific indexing
+			$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname.'/'.$vn_rel_type_id][] = $pm_content;
+		}
 	}
 	# -------------------------------------------------------
 	/**
