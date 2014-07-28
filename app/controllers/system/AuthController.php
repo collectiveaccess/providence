@@ -25,31 +25,25 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__.'/ca/WidgetManager.php');
- 
- 	class AuthController extends ActionController {
- 		# -------------------------------------------------------
+	require_once(__CA_LIB_DIR__.'/ca/WidgetManager.php');
+
+	class AuthController extends ActionController {
+		# -------------------------------------------------------
 		
- 		# -------------------------------------------------------
- 		public function Login() {
- 			global $g_ui_locale;
+		# -------------------------------------------------------
+		public function Login() {
+			global $g_ui_locale;
 			if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
 				if(!initializeLocale($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) die("Error loading locale ".$g_ui_locale);
 			}
 			// Redirect to the default action
-			$vs_redirect = caNavUrl($this->opo_request, null, null, null, null);
-			if(
-				isset($_SERVER['HTTP_REFERER']) &&
-				strpos($_SERVER['HTTP_REFERER'], "$_SERVER[REQUEST_SCHEME]://$_SERVER[HTTP_HOST]" . __CA_URL_ROOT__ . caNavUrl($this->opo_request, null, null, null)) === 0 &&
-				strpos($_SERVER['HTTP_REFERER'],__CA_URL_ROOT__ . '/system/Auth/') !== -1){
-				$vs_redirect = $_SERVER['HTTP_REFERER'];
-			}
-		    $this->getView()->setVar('redirect', $vs_redirect);
- 			$this->render('login_html.php');
- 		}
- 		# -------------------------------------------------------
- 		public function DoLogin() {
- 			global $g_ui_locale;
+			$vs_redirect = $this->request->getParameter('redirect', pString);
+			$this->getView()->setVar('redirect', $vs_redirect);
+			$this->render('login_html.php');
+		}
+		# -------------------------------------------------------
+		public function DoLogin() {
+			global $g_ui_locale;
 			if (!$this->request->doAuthentication(array('dont_redirect' => true, 'noPublicUsers' => true, 'user_name' => $this->request->getParameter('username', pString), 'password' => $this->request->getParameter('password', pString), 'redirect' => $this->request->getParameter('redirect', pString)))) {
 				$this->notification->addNotification(_t("Login was invalid"), __NOTIFICATION_TYPE_ERROR__);
  				
@@ -57,7 +51,7 @@
 				if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
 					if(!initializeLocale($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) die("Error loading locale ".$g_ui_locale);
 				}
- 				$this->render('login_html.php');
+				$this->render('login_html.php');
 			} else {
 				//
 				// Reset locale globals
@@ -73,27 +67,27 @@
 				AppNavigation::clearMenuBarCache($this->request);	// want to clear menu bar on login
 				
 				// Notify the user of the good news
- 				$this->notification->addNotification(_t("You are now logged in"), __NOTIFICATION_TYPE_INFO__);
- 				
+				$this->notification->addNotification(_t("You are now logged in"), __NOTIFICATION_TYPE_INFO__);
+
 							
 				$this->render('welcome_html.php');
- 			}
- 		}
- 		# -------------------------------------------------------
- 		public function Welcome() {
- 			AppNavigation::clearMenuBarCache($this->request);	// clear menu bar cache on welcome (stealth debugging tool)
- 			
- 			$this->render('welcome_html.php');
- 		}
- 		# -------------------------------------------------------
- 		public function Logout() {
- 			$this->request->deauthenticate();
- 			
+			}
+		}
+		# -------------------------------------------------------
+		public function Welcome() {
+			AppNavigation::clearMenuBarCache($this->request);	// clear menu bar cache on welcome (stealth debugging tool)
+
+			$this->render('welcome_html.php');
+		}
+		# -------------------------------------------------------
+		public function Logout() {
+			$this->request->deauthenticate();
+
 			AppNavigation::clearMenuBarCache($this->request);	// clear menu bar cache on logout just in case
- 			$this->notification->addNotification(_t("You are now logged out"), __NOTIFICATION_TYPE_INFO__);
- 			$this->view->setVar('notifications', $this->notification->getNotifications());
- 			$this->render('logged_out_html.php');
-  		}
- 		# -------------------------------------------------------
- 	}
- ?>
+			$this->notification->addNotification(_t("You are now logged out"), __NOTIFICATION_TYPE_INFO__);
+			$this->view->setVar('notifications', $this->notification->getNotifications());
+			$this->render('logged_out_html.php');
+		}
+		# -------------------------------------------------------
+	}
+?>

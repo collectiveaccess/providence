@@ -69,7 +69,7 @@
 						<div class="loginFormElement"><?php print _t("Password"); ?>:<br/>
 							<input type="password" name="password" size="25"/>
 						</div>
-						<input name="redirect" value="<?php
+						<input name="redirect" type="hidden" value="<?php
 						echo $this->getVar('redirect');
 						?>" />
 
