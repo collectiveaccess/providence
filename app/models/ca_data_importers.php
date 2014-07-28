@@ -1975,9 +1975,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$va_content_tree["related.{$vs_subject_table}"] = $va_self_related_content;
 				}
 			}
-			
+
 			$vn_row++;
-				
+
 			$o_log->logDebug(_t('Finished building content tree for %1 at %2 seconds', $vs_idno, $t->getTime(4)));
 			$o_log->logDebug(_t("Content tree is\n%1", print_R($va_content_tree, true)));
 			//
@@ -2005,11 +2005,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				
 				// Look for parent_id in the content tree
 				$vs_parent_id_fld = $t_subject->getProperty('HIERARCHY_PARENT_ID_FLD');
-				foreach($va_content_tree as $vs_table_name => $va_content) {
-					if ($vs_table_name == $vs_subject_table) {		
-						foreach($va_content as $vn_i => $va_element_data) {
-							foreach($va_element_data as $vs_element => $va_element_content) {	
-								switch($vs_element) {
+				foreach ($va_content_tree as $vs_table_name => $va_content) {
+					if ($vs_table_name == $vs_subject_table) {
+						foreach ($va_content as $va_element_data) {
+							foreach ($va_element_data as $vs_element => $va_element_content) {
+								switch ($vs_element) {
 									case $vs_parent_id_fld:
 										if ($va_element_content[$vs_parent_id_fld]) {
 											$t_subject->set($vs_parent_id_fld, $va_element_content[$vs_parent_id_fld], array('treatParentIDAsIdno' => true));
@@ -2041,7 +2041,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				}
 				$o_log->logDebug(_t('Created idno %1 at %2 seconds', $vs_idno, $t->getTime(4)));
 			} else {
-				$o_event->beginItem($vn_row_id, $t_subject->tableNum(), 'U') ;
+				$o_event->beginItem($vn_row, $t_subject->tableNum(), 'U') ;
 				// update
 				$t_subject->setMode(ACCESS_WRITE);
 				if ($vb_idno_is_template) {
@@ -2125,7 +2125,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								$t_subject->clearErrors();
 								$t_subject->setMode(ACCESS_WRITE);
 								switch($vs_element) {
-									case 'preferred_labels':									
+									case 'preferred_labels':
 										$t_subject->addLabel(
 											$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, true
 										);
@@ -2155,7 +2155,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											continue(5);
 										}
 										break;
-									case 'nonpreferred_labels':								
+									case 'nonpreferred_labels':
 										$t_subject->addLabel(
 											$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, false
 										);
@@ -2663,4 +2663,3 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 }
-?>

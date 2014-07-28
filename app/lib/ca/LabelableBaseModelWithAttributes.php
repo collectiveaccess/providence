@@ -330,9 +330,10 @@
 		 * "boolean" option as "AND" and $pa_values set to array("idno" => "2012.001", "access" => 1).
 		 * You could find all rows with either the idno or the access values by setting "boolean" to "OR"
 		 *
-		 * Keys in the $pa_values parameters must be valid fields in the table which the model sub-class represents, or valid attributes. For example:
+		 * Keys in the $pa_values parameters must be valid fields in the table which the model sub-class represents. You may also search on preferred and
+		 * non-preferred labels by specified keys and values for label table fields in "preferred_labels" and "nonpreferred_labels" sub-arrays. For example:
 		 *
-		 array("idno" => 2012.001", "access" => 1, "preferred_labels" => array("name" => "Luna Park at Night"))
+		 * array("idno" => 2012.001", "access" => 1, "preferred_labels" => array("name" => "Luna Park at Night"))
 		 *
 		 * will find rows with the idno, access and preferred label values.
 		 *

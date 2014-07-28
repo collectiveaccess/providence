@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2013 Whirl-i-Gig
+ * Copyright 2011-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,24 +46,27 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 * @param string $ps_list List code or list label
 	 * @return int list_id of list or null if no matching list was found
 	 */
+	$g_list_id_cache = array();
 	function caGetListID($ps_list) {
+		global $g_list_id_cache;
+		if(isset($g_list_id_cache[$ps_list])) { return $g_list_id_cache[$ps_list]; }
 		$t_list = new ca_lists();
 		
 		if (is_numeric($ps_list)) {
 			if ($t_list->load((int)$ps_list)) {
-				return $t_list->getPrimaryKey();
+				return $g_list_id_cache[$ps_list] = $t_list->getPrimaryKey();
 			}
 		}
 		
 		if ($t_list->load(array('list_code' => $ps_list))) {
-			return $t_list->getPrimaryKey();
+			return $g_list_id_cache[$ps_list] = $t_list->getPrimaryKey();
 		}
 		
 		$t_label = new ca_list_labels();
 		if ($t_label->load(array('name' => $ps_list))) {
-			return $t_label->get('list_id');
+			return $g_list_id_cache[$ps_list] = $t_label->get('list_id');
 		}
-		return null;
+		return $g_list_id_cache[$ps_list] = null;
 	}
 	# ---------------------------------------
 	/**
@@ -73,10 +76,13 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 * @param string $ps_idno idno of item to get item_id for
 	 * @return int item_id of list item or null if no matching item was found
 	 */
+	$g_list_item_id_cache = array();
 	function caGetListItemID($ps_list_code, $ps_idno) {
+		global $g_list_item_id_cache;
+		if(isset($g_list_item_id_cache[$ps_list_code.'/'.$ps_idno])) { return $g_list_item_id_cache[$ps_list_code.'/'.$ps_idno]; }
 		$t_list = new ca_lists();
 		
-		return $t_list->getItemIDFromList($ps_list_code, $ps_idno);
+		return $g_list_item_id_cache[$ps_list_code.'/'.$ps_idno] = $t_list->getItemIDFromList($ps_list_code, $ps_idno);
 	}
 	# ---------------------------------------
 	/**
@@ -100,9 +106,12 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 * @param int $pn_item_id item_id to get idno for
 	 * @return string idno of list item or null if no matching item was found
 	 */
+	$g_list_item_idno_cache = array();
 	function caGetListItemIdno($pn_item_id) {
+		global $g_list_item_idno_cache;
+		if(isset($g_list_item_idno_cache[$pn_item_id])) { return $g_list_item_idno_cache[$pn_item_id]; }
 		$t_item = new ca_list_items($pn_item_id);
-		return $t_item->get('idno');
+		return $g_list_item_idno_cache[$pn_item_id] = $t_item->get('idno');
 	}
 	# ---------------------------------------
 	/**
@@ -113,10 +122,13 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 * @param bool $pb_return_plural If true, return plural version of label. Default is to return singular version of label.
 	 * @return string The label of the list item, or null if no matching item was found
 	 */
+	$g_list_item_label_cache = array();
 	function caGetListItemForDisplay($ps_list_code, $ps_idno, $pb_return_plural=false) {
+		global $g_list_item_label_cache;
+		if(isset($g_list_item_label_cache[$ps_list_code.'/'.$ps_idno.'/'.(int)$pb_return_plural])) { return $g_list_item_label_cache[$ps_list_code.'/'.$ps_idno.'/'.(int)$pb_return_plural]; }
 		$t_list = new ca_lists();
 		
-		return $t_list->getItemFromListForDisplay($ps_list_code, $ps_idno, $pb_return_plural);
+		return $g_list_item_label_cache[$ps_list_code.'/'.$ps_idno.'/'.(int)$pb_return_plural] = $t_list->getItemFromListForDisplay($ps_list_code, $ps_idno, $pb_return_plural);
 	}
 	# ---------------------------------------
 	/**
@@ -126,10 +138,13 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 * @param string $ps_label The label value to search for
 	 * @return int item_id of list item or null if no matching item was found
 	 */
+	$g_list_item_id_for_label_cache = array();
 	function caGetListItemIDForLabel($ps_list_code, $ps_label) {
+		global $g_list_item_id_for_label_cache;
+		if(isset($g_list_item_id_for_label_cache[$ps_list_code.'/'.$ps_label])) { return $g_list_item_id_for_label_cache[$ps_list_code.'/'.$ps_label]; }
 		$t_list = new ca_lists();
 		
-		return $t_list->getItemIDFromListByLabel($ps_list_code, $ps_label);
+		return $g_list_item_id_for_label_cache[$ps_list_code.'/'.$ps_label] = $t_list->getItemIDFromListByLabel($ps_list_code, $ps_label);
 	}
 	# ---------------------------------------
 	/**
@@ -138,10 +153,42 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 * @param string $ps_list_code List code
 	 * @return int item_id of list item or null if no default item was found
 	 */
+	$g_default_list_item_id_cache = array();
 	function caGetDefaultItemID($ps_list_code) {
+		global $g_default_list_item_id_cache;
+		if(isset($g_default_list_item_id_cache[$ps_list_code])) { return $g_default_list_item_id_cache[$ps_list_code]; }
 		$t_list = new ca_lists();
 		
-		return $t_list->getDefaultItemID($ps_list_code);
+		return $g_default_list_item_id_cache[$ps_list_code] = $t_list->getDefaultItemID($ps_list_code);
+	}
+	# ---------------------------------------
+	/**
+	 * Converts the given list of list idnos or item_ids into a list of numeric item_ids
+	 *
+	 * @param mixed $pm_list List code or list_id
+	 * @param array $pa_list_items List of item idnos and/or item_ids 
+	 * @param array $pa_options Array of options:
+	 *			None yet
+	 *
+	 * @return array List of numeric item_ids
+	 */
+	function caMakeListItemIDList($pm_list, $pa_list_items, $pa_options=null) {
+		if (!($vn_list_id = caGetListID($pm_list))) return array();
+		$t_item = new ca_list_items();
+		
+		$va_ids = array();
+		
+		foreach($pa_list_items as $vm_item) {
+			if (is_numeric($vm_item) && ((int)$vm_item > 0)) {
+				$va_ids[(int)$vm_item] = true;
+			} else {
+				if ($vn_id = caGetListItemID($vn_list_id, $vm_item)) {
+					$va_ids[(int)$vn_id] = true;
+				}
+			}
+		}
+		
+		return array_keys($va_ids);
 	}
 	# ---------------------------------------
 	/**
@@ -155,7 +202,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		if (($t_instance = $o_dm->getInstance($pm_table_name_or_num)) && (method_exists($t_instance, "getTypeList"))) {
 			return $t_instance->getTypeList($pa_options);
 		}
-		
+
 		return null;
 	}
 	# ---------------------------------------
@@ -167,8 +214,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 */
 	function caGetListRootID($ps_list_code) {
 		$t_list = new ca_lists();
-		
+
 		return $t_list->getRootListItemID($ps_list_code);
 	}
 	# ---------------------------------------
-?>
