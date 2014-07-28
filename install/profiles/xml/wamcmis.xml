@@ -13287,6 +13287,7 @@
       <settings>
         <setting name="fieldWidth">70</setting>
         <setting name="fieldHeight">6</setting>
+        <setting name="maxChars">128000000</setting>
       </settings>
       <typeRestrictions>
         <restriction>
@@ -15135,8 +15136,8 @@
     <metadataElement code="behavior" datatype="Text">
       <labels>
         <label locale="en_AU">
-          <name>Behavior</name>
-          <description>A description of the behavior shown by the subject at the time the Occurrence was recorded. Recommended best practice is to use a controlled vocabulary.</description>
+          <name>Behaviour</name>
+          <description>A description of the behaviour shown by the subject at the time the Occurrence was recorded. Recommended best practice is to use a controlled vocabulary.</description>
         </label>
       </labels>
       <settings>
@@ -15513,6 +15514,34 @@
         <setting name="requireValue">0</setting>
         <setting name="render">checklist</setting>
       </settings>
+      <elements>
+        <metadataElement code="samplingProtocolText" datatype="Text">
+          <labels>
+            <label locale="en_AU">
+              <name>Text value</name>
+              <description>Enter a text value to refine your sampling protocol</description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+            <setting name="regex"/>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="usewysiwygeditor">0</setting>
+            <setting name="doesNotTakeLocale">0</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="suggestExistingValues">1</setting>
+            <setting name="suggestExistingValueSort">value</setting>
+            <setting name="default_text"/>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+            <setting name="displayTemplate"/>
+            <setting name="displayDelimiter">,</setting>
+            <setting name="isDependentValue">0</setting>
+          </settings>
+        </metadataElement>
+      </elements>
       <typeRestrictions>
         <restriction>
           <table>ca_occurrences</table>
@@ -19377,26 +19406,6 @@ Examples: &lt;em&gt;James L. Patton&lt;/em&gt;, &lt;em&gt;Theodore Pappenfuss&lt
         </label>
       </labels>
       <elements>
-        <metadataElement code="hasAssociatedMedia" datatype="List" list="yesNo">
-          <labels>
-            <label locale="en_AU">
-              <name>Has Associated Media?</name>
-            </label>
-          </labels>
-          <settings>
-            <setting name="listWidth">40</setting>
-            <setting name="listHeight">200px</setting>
-            <setting name="doesNotTakeLocale">1</setting>
-            <setting name="requireValue">0</setting>
-            <setting name="canBeUsedInSort">1</setting>
-            <setting name="render">yes_no_checkboxes</setting>
-            <setting name="maxColumns">3</setting>
-            <setting name="canBeUsedInSearchForm">1</setting>
-            <setting name="canBeUsedInDisplay">1</setting>
-            <setting name="displayTemplate"/>
-            <setting name="displayDelimiter">,</setting>
-          </settings>
-        </metadataElement>
         <metadataElement code="associatedMediaCredit" datatype="Entities">
           <labels>
             <label locale="en_AU">
@@ -20274,6 +20283,15 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+        <restriction>
+          <table>ca_occurrences</table>
+          <type>collectingEvent</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="lithostratigraphic_provenance" datatype="List" list="lithostratigraphic_provenance">
@@ -20295,6 +20313,117 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="eventNoteBottom" datatype="Text">
+      <labels>
+        <label locale="en_AU">
+          <name>Sea Bottom Notes</name>
+          <description>Describe the sea floor. This field relates to collecting events in the fishes collection.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="suggestExistingValues">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_occurrences</table>
+          <type>collectingEvent</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="fieldNotes" datatype="Text">
+      <labels>
+        <label locale="en_AU">
+          <name>Field Notes</name>
+          <description>the text of notes taken in the field about the Event.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="usewysiwygeditor">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_occurrences</table>
+          <type>collectingEvent</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="epifauna" datatype="Text">
+      <labels>
+        <label locale="en_AU">
+          <name>Epifauna</name>
+          <description>Enter details of the epifauna associated with the collecting event</description>
+        </label>
+      </labels>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_occurrences</table>
+          <type>collectingEvent</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="measurementTemperature" datatype="Numeric">
+      <labels>
+        <label locale="en_AU">
+          <name>Temperature (°C)</name>
+          <description>Enter the temperature relating to the collecting event. If it is a range enter the lower value in the first field and the second value in the second field.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="minValue">-273</setting>
+        <setting name="maxValue">1000</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+        <setting name="displayTemplate">&lt;ifdef code="measurmentTemperature&gt;^measurementTemperature °C&lt;/ifdef&gt;</setting>
+        <setting name="displayDelimiter"> - </setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_occurrences</table>
+          <type>collectingEvent</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">2</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="measurementSalinity" datatype="Text">
+      <labels>
+        <label locale="en_AU">
+          <name>Salinity</name>
+          <description>Please enter the salinity of the collecting event.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="maxChars">30</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_occurrences</table>
+          <type>collectingEvent</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">2</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -22730,6 +22859,15 @@ e.g. "Malacostraca", "Canis lupus".</setting>
             </label>
           </labels>
           <bundlePlacements>
+            <placement code="preferred_labels1">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_AU">Event Name</setting>
+                <setting name="add_label" locale="en_AU">Event Name</setting>
+                <setting name="usewysiwygeditor"/>
+                <setting name="readonly"/>
+              </settings>
+            </placement>
             <placement code="idno2">
               <bundle>idno</bundle>
               <settings>
@@ -22776,16 +22914,6 @@ e.g. "Malacostraca", "Canis lupus".</setting>
                 <setting name="maxRelationshipsPerRow"/>
               </settings>
             </placement>
-            <placement code="preferred_labels1">
-              <bundle>preferred_labels</bundle>
-              <settings>
-                <setting name="label" locale="en_AU">Location Remarks</setting>
-                <setting name="add_label" locale="en_AU">Locality name</setting>
-                <setting name="description" locale="en_AU">Please enter the name of the collecting locality</setting>
-                <setting name="usewysiwygeditor"/>
-                <setting name="readonly"/>
-              </settings>
-            </placement>
             <placement code="ca_attribute_distanceFromLocal">
               <bundle>ca_attribute_distanceFromLocality</bundle>
               <settings>
@@ -22814,6 +22942,13 @@ e.g. "Malacostraca", "Canis lupus".</setting>
               <bundle>ca_attribute_georeference</bundle>
               <settings>
                 <setting name="label" locale="en_AU">Coordinates</setting>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_locationRemarks9">
+              <bundle>ca_attribute_locationRemarks</bundle>
+              <settings>
                 <setting name="readonly"/>
                 <setting name="sortDirection">ASC</setting>
               </settings>
@@ -22869,7 +23004,6 @@ e.g. "Malacostraca", "Canis lupus".</setting>
                 <setting name="label" locale="en_AU">Records (of Specimens)</setting>
                 <setting name="add_label" locale="en_AU">add more objects</setting>
                 <setting name="description" locale="en_AU">Record the specimens that were collected at this event</setting>
-                <setting name="restrict_to_types">FossilSpecimen</setting>
                 <setting name="list_format">bubbles</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="display_template">^ca_objects.idno</setting>
@@ -22887,11 +23021,45 @@ e.g. "Malacostraca", "Canis lupus".</setting>
                 <setting name="readonly"/>
               </settings>
             </placement>
+            <placement code="ca_attribute_fieldNotes18">
+              <bundle>ca_attribute_fieldNotes</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
             <placement code="ca_attribute_habitat16">
               <bundle>ca_attribute_habitat</bundle>
               <settings>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="readonly"/>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_eventNoteBottom20">
+              <bundle>ca_attribute_eventNoteBottom</bundle>
+            </placement>
+            <placement code="ca_attribute_epifauna21">
+              <bundle>ca_attribute_epifauna</bundle>
+            </placement>
+            <placement code="ca_attribute_behavior20">
+              <bundle>ca_attribute_behavior</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_measurementTemper">
+              <bundle>ca_attribute_measurementTemperature</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_measurementSalini">
+              <bundle>ca_attribute_measurementSalinity</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_measurementOrFact">
