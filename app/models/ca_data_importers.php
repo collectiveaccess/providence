@@ -1107,7 +1107,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				ncurses_mvwaddstr($r_ncurses_win, $vn_i+1, 2, mb_substr($vs_message, 0, $vn_max_x - 4));
 			}
 			
-			ncurses_refresh();
+			ncurses_refresh($vn_i);
 			ncurses_wrefresh($r_ncurses_win);
 		}
 		
@@ -1196,7 +1196,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$o_trans = null;
 		
 		if (!$pb_no_transaction) { 
-			if(!($o_trans = caGetOption('transaction', $pa_option, null))) { $o_trans = new Transaction(); }
+			if(!($o_trans = caGetOption('transaction', $pa_options, null))) { $o_trans = new Transaction(); }
 			$t_mapping->setTransaction($o_trans); 
 		}
 		
@@ -1230,12 +1230,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		if ($vb_use_ncurses = (isset($pa_options['useNcurses']) && ($pa_options['useNcurses'])) ? true : false) {
 			$vb_use_ncurses = caCLIUseNcurses();
 		}
-		$vb_use_ncurses = false;
 		$vn_error_window_height = null;
 
 		$vn_max_x = $vn_max_y = null;
 		if($vb_use_ncurses) {
-			$r_ncurse = ncurses_init();
+			ncurses_init();
 			$r_screen = ncurses_newwin( 0, 0, 0, 0); 
 			ncurses_border(0,0, 0,0, 0,0, 0,0);
 			
@@ -1263,7 +1262,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			ncurses_mvwaddstr($r_status, 0, 1, _t(" Import status "));
 			ncurses_wattroff($r_status, NCURSES_A_REVERSE);
 			
-			ncurses_refresh();
+			ncurses_refresh(0);
 			ncurses_wrefresh($r_progress);
 			ncurses_wrefresh($r_errors);
 			ncurses_wrefresh($r_status);
@@ -1476,7 +1475,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					_t("Source: %1", $ps_source).str_repeat(" ", 5).
 					date("Y-m-d H:i:s").str_repeat(" ", 5)
 				);
-				ncurses_refresh();
+				ncurses_refresh(0);
 				ncurses_wrefresh($r_status);
 			}
 			
@@ -1545,7 +1544,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				if (!is_array($vs_idno) && ($vs_idno[0] == '^') && preg_match("!^\^[^ ]+$!", $vs_idno)) {
 					// Parse placeholder when it's at the beginning of the value
 
-					if (!is_null($vm_parsed_val = BaseRefinery::parsePlaceholder($vs_idno, $va_row, $va_item, $vn_c, array('reader' => $o_reader, 'returnAsString' => true)))) {
+					if (!is_null($vm_parsed_val = BaseRefinery::parsePlaceholder($vs_idno, $va_row, $va_item, null, array('reader' => $o_reader, 'returnAsString' => true)))) {
 						$vs_idno = $vm_parsed_val;
 					}
 				}
@@ -1896,7 +1895,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							if (!is_array($va_item['settings']['delimiter'])) { $va_item['settings']['delimiter'] = array($va_item['settings']['delimiter']); }
 							//$va_val_list = explode($vs_item_delimiter, $vm_val);
 							
-							if (sizeof($va_item['settings']['delimiter'][$vn_index])) {
+							if (sizeof($va_item['settings']['delimiter'])) {
 								foreach($va_item['settings']['delimiter'] as $vn_index => $vs_delim) {
 									$va_item['settings']['delimiter'][$vn_index] = preg_quote($vs_delim, "!");
 								}
@@ -1986,7 +1985,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//print_r($va_content_tree);
 			//die("END\n\n");
 			//continue;
-			$opa_app_plugin_manager->hookDataImportContentTree(array('mapping' => $t_mapping, 'content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'transaction' => &$o_trans, 'log' => &$o_log, 'reader' => $o_reader, 'environment' => $va_environment));
+			$opa_app_plugin_manager->hookDataImportContentTree(array('content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'transaction' => &$o_trans, 'log' => &$o_log, 'reader' => $o_reader, 'environment' => $va_environment,'importEvent' => $o_event, 'importEventSource' => $vn_row));
 			
 			//print_r($va_content_tree);
 			//die("done\n");
