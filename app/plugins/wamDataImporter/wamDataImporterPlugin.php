@@ -69,8 +69,8 @@ class wamDataImporterPlugin extends BaseApplicationPlugin {
 
 			foreach ($va_table_content_tree as $vs_table_content_index => $va_table_content) {
 				$this->_processBundles($pa_params, $va_table_content, $vs_table_name, $vs_table_content_index);
-				if(isset($va_table_content['_interstitials'])){
-					$this->_processBundles($pa_params, $va_table_content, $vs_table_name, $vs_table_content_index, '_interstitials');
+				if(isset($va_table_content['_interstitial'])){
+					$this->_processBundles($pa_params, $va_table_content, $vs_table_name, $vs_table_content_index, '_interstitial');
 				}
 			}
 		}
