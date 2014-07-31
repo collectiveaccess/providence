@@ -15503,7 +15503,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="samplingProtocol" datatype="List" list="samplingProtocol">
+    <metadataElement code="samplingProtocol" datatype="Container" list="associated_specimen_types">
       <labels>
         <label locale="en_AU">
           <name>samplingProtocol</name>
@@ -15511,10 +15511,28 @@
         </label>
       </labels>
       <settings>
-        <setting name="requireValue">0</setting>
-        <setting name="render">checklist</setting>
+        <setting name="doesNotTakeLocale">1</setting>
       </settings>
       <elements>
+        <metadataElement code="samplingProtocolValue" datatype="List" list="samplingProtocol">
+          <labels>
+            <label locale="en_AU">
+              <name>Value</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="listWidth">40</setting>
+            <setting name="listHeight"/>
+            <setting name="doesNotTakeLocale">1</setting>
+            <setting name="requireValue">0</setting>
+            <setting name="nullOptionText">Not set</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="render">lookup</setting>
+            <setting name="maxColumns">3</setting>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+          </settings>
+        </metadataElement>
         <metadataElement code="samplingProtocolText" datatype="Text">
           <labels>
             <label locale="en_AU">
@@ -15548,7 +15566,7 @@
           <type>collectingEvent</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">255</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -15647,8 +15665,37 @@
       </labels>
       <settings>
         <setting name="doesNotTakeLocale">0</setting>
-        <setting name="render">checklist</setting>
+        <setting name="requireValue">0</setting>
+        <setting name="render">select</setting>
       </settings>
+      <elements>
+        <metadataElement code="habitatText" datatype="Text">
+          <labels>
+            <label locale="en_AU">
+              <name>Habitat Text</name>
+              <description>Enter the habitat if the dropdown does not apply</description>
+            </label>
+          </labels>
+          <settings>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+            <setting name="regex"/>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="usewysiwygeditor">0</setting>
+            <setting name="doesNotTakeLocale">0</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="suggestExistingValues">0</setting>
+            <setting name="suggestExistingValueSort">value</setting>
+            <setting name="default_text"/>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+            <setting name="displayTemplate"/>
+            <setting name="displayDelimiter">,</setting>
+            <setting name="isDependentValue">0</setting>
+          </settings>
+        </metadataElement>
+      </elements>
       <typeRestrictions>
         <restriction>
           <table>ca_occurrences</table>
@@ -20348,6 +20395,7 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
         </label>
       </labels>
       <settings>
+        <setting name="fieldWidth">650px</setting>
         <setting name="usewysiwygeditor">1</setting>
       </settings>
       <typeRestrictions>
