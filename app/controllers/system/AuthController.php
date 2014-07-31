@@ -44,14 +44,15 @@
 		# -------------------------------------------------------
 		public function DoLogin() {
 			global $g_ui_locale;
-			if (!$this->request->doAuthentication(array('dont_redirect' => true, 'noPublicUsers' => true, 'user_name' => $this->request->getParameter('username', pString), 'password' => $this->request->getParameter('password', pString), 'redirect' => $this->request->getParameter('redirect', pString)))) {
+			$vs_redirect_url = $this->request->getParameter('redirect', pString) ?: caNavUrl($this->request, null, null, null);
+			if (!$this->request->doAuthentication(array('dont_redirect' => true, 'noPublicUsers' => true, 'user_name' => $this->request->getParameter('username', pString), 'password' => $this->request->getParameter('password', pString)))) {
 				$this->notification->addNotification(_t("Login was invalid"), __NOTIFICATION_TYPE_ERROR__);
  				
  				$this->view->setVar('notifications', $this->notification->getNotifications());
 				if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
 					if(!initializeLocale($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) die("Error loading locale ".$g_ui_locale);
 				}
-				$this->render('login_html.php');
+				$this->redirect(sprintf('%s?redirect=%s', caNavUrl($this->request, 'system', 'auth', 'login'), urlencode($vs_redirect_url)));
 			} else {
 				//
 				// Reset locale globals
@@ -69,8 +70,7 @@
 				// Notify the user of the good news
 				$this->notification->addNotification(_t("You are now logged in"), __NOTIFICATION_TYPE_INFO__);
 
-							
-				$this->render('welcome_html.php');
+				$this->redirect($vs_redirect_url);
 			}
 		}
 		# -------------------------------------------------------

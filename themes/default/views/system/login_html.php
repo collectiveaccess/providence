@@ -69,9 +69,7 @@
 						<div class="loginFormElement"><?php print _t("Password"); ?>:<br/>
 							<input type="password" name="password" size="25"/>
 						</div>
-						<input name="redirect" type="hidden" value="<?php
-						echo $this->getVar('redirect');
-						?>" />
+						<input name="redirect" type="hidden" value="<?php echo $this->getVar('redirect'); ?>" />
 
 						<div class="loginSubmitButton"><?php print caFormSubmitButton($this->request, __CA_NAV_BUTTON_LOGIN__, _t("Login"),"login", array('icon_position' => __CA_NAV_BUTTON_ICON_POS_RIGHT__)); ?></div>
 						<script type="text/javascript">
