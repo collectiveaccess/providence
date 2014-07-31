@@ -1299,13 +1299,18 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Processes single exporter item for a given record
+	 *
+	 * @param int $pn_item_id Primary of exporter item
+	 * @param int $pn_table_num Table num of item to export
+	 * @param int $pn_record_id Primary key value of item to export
 	 * @param array $pa_options
 	 *		ignoreContext = don't switch context even though context may be set for current item
 	 *		relationship_type_id, relationship_type_code, relationship_typename =
 	 *			if this export is a sub-export (context-switch), we have no way of knowing the relationship
 	 *			to the 'parent' element in the export, so there has to be a means to pass it down to make it accessable
 	 *		logger = KLogger instance to use for logging. This option is mandatory!
-	 *		
+	 * @return array Item info
 	 */
 	public function processExporterItem($pn_item_id,$pn_table_num,$pn_record_id,$pa_options=array()){
 
@@ -1530,15 +1535,16 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$g_ui_locale = $vs_old_ui_locale;
 		}
 
-		$o_log->logDebug(_t("We're now processing other settings like default, prefix, suffix, filterByRegExp, maxLength, plugins and replacements for this mapping"));
+		$o_log->logDebug(_t("We're now processing other settings like default, prefix, suffix, skipIfExpression, filterByRegExp, maxLength, plugins and replacements for this mapping"));
 		$o_log->logDebug(_t("Local data before processing is: %1", print_r($va_item_info,true)));
 
-		// handle settings and plugin hooks
+		// handle other settings and plugin hooks
 		$vs_default = $t_exporter_item->getSetting('default');
 		$vs_prefix = $t_exporter_item->getSetting('prefix');
 		$vs_suffix = $t_exporter_item->getSetting('suffix');
 		$vs_regexp = $t_exporter_item->getSetting('filterByRegExp');
-		$vn_maxlength = $t_exporter_item->getSetting('maxLength');
+		$vn_max_length = $t_exporter_item->getSetting('maxLength');
+		$vs_skip_if_expr = $t_exporter_item->getSetting('skipIfExpression');
 
 		$vs_original_values = $t_exporter_item->getSetting('original_values');
 		$vs_replacement_values = $t_exporter_item->getSetting('replacement_values');
@@ -1546,14 +1552,27 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$va_replacements = ca_data_exporter_items::getReplacementArray($vs_original_values,$vs_replacement_values);
 		
 		foreach($va_item_info as $vn_key => &$va_item){
-			// if returned value is null then we skip the item
+			// if returned value from plugin is null then we skip the item
 			if(is_null($va_plugin_item = $this->opo_app_plugin_manager->hookExportItemBeforeSettings(array('instance' => $t_instance, 'exporter_item_instance' => $t_exporter_item, 'export_item' => $va_item)))){
 				continue;
 			} else {
 				$va_item = $va_plugin_item['export_item'];
 			}
 
-			// filter by regexp
+			// handle skipIfExpression setting
+			if($vs_skip_if_expr){
+				// @todo: Add mapping variables
+				$va_vars = array();
+				// Add current value as variable "value", accessible in expressions as ^value
+				$va_vars['value'] = $va_item['text'];
+
+				if(ExpressionParser::evaluate($vs_skip_if_expr, $va_vars)){
+					unset($va_item_info[$vn_key]);
+					continue;
+				}
+			}
+
+			// filter by regex (deprecated since you can do the same thing and more with skipIfExpression)
 			if((strlen($va_item['text'])>0) && $vs_regexp){
 				if(!preg_match("!".$vs_regexp."!", $va_item['text'])) {
  					unset($va_item_info[$vn_key]);
@@ -1572,8 +1591,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				$va_item['text'] = $vs_prefix.$va_item['text'].$vs_suffix;
 			}
 
-			if($vn_maxlength && (strlen($va_item['text']) > $vn_maxlength)){
-				$va_item['text'] = substr($va_item['text'], 0, $vn_maxlength)." ...";
+			if($vn_max_length && (strlen($va_item['text']) > $vn_max_length)){
+				$va_item['text'] = substr($va_item['text'], 0, $vn_max_length)." ...";
 			}
 
 			// if returned value is null then we skip the item

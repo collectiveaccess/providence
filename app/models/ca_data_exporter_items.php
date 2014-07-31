@@ -314,6 +314,16 @@ class ca_data_exporter_items extends BaseModel {
 			'description' => _t('If set, id values refering to foreign keys are returned as preferred label text in the current locale.')
 		);
 
+		$va_settings['skipIfExpression'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Skip if expression'),
+			'description' => _t('The current mapping is skipped if the given expression evaluates to true.')
+		);
+
 		$va_settings['filterByRegExp'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
