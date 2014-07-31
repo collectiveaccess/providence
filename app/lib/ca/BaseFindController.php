@@ -839,10 +839,11 @@
 				$t_set->addLabel(array('name' => $vs_set_name), $g_ui_locale_id, null, true);
 			
 				$vn_added_items_count = $t_set->addItems($va_row_ids);
+				
+				$this->view->setVar('set_id', $t_set->getPrimaryKey());
+				$this->view->setVar('t_set', $t_set);
 			}
  		
-			$this->view->setVar('set_id', $t_set->getPrimaryKey());
-			$this->view->setVar('t_set', $t_set);
 			$this->view->setVar('set_name', $vs_set_name);
 			$this->view->setVar('set_code', $vs_set_code);
 			$this->view->setVar('num_items_added', $vn_added_items_count);

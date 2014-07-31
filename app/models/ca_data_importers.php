@@ -1107,7 +1107,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				ncurses_mvwaddstr($r_ncurses_win, $vn_i+1, 2, mb_substr($vs_message, 0, $vn_max_x - 4));
 			}
 			
-			ncurses_refresh();
+			ncurses_refresh($vn_i);
 			ncurses_wrefresh($r_ncurses_win);
 		}
 		
@@ -1196,7 +1196,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$o_trans = null;
 		
 		if (!$pb_no_transaction) { 
-			if(!($o_trans = caGetOption('transaction', $pa_option, null))) { $o_trans = new Transaction(); }
+			if(!($o_trans = caGetOption('transaction', $pa_options, null))) { $o_trans = new Transaction(); }
 			$t_mapping->setTransaction($o_trans); 
 		}
 		
@@ -1230,12 +1230,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		if ($vb_use_ncurses = (isset($pa_options['useNcurses']) && ($pa_options['useNcurses'])) ? true : false) {
 			$vb_use_ncurses = caCLIUseNcurses();
 		}
-		$vb_use_ncurses = false;
 		$vn_error_window_height = null;
 
 		$vn_max_x = $vn_max_y = null;
 		if($vb_use_ncurses) {
-			$r_ncurse = ncurses_init();
+			ncurses_init();
 			$r_screen = ncurses_newwin( 0, 0, 0, 0); 
 			ncurses_border(0,0, 0,0, 0,0, 0,0);
 			
@@ -1263,7 +1262,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			ncurses_mvwaddstr($r_status, 0, 1, _t(" Import status "));
 			ncurses_wattroff($r_status, NCURSES_A_REVERSE);
 			
-			ncurses_refresh();
+			ncurses_refresh(0);
 			ncurses_wrefresh($r_progress);
 			ncurses_wrefresh($r_errors);
 			ncurses_wrefresh($r_status);
@@ -1476,7 +1475,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					_t("Source: %1", $ps_source).str_repeat(" ", 5).
 					date("Y-m-d H:i:s").str_repeat(" ", 5)
 				);
-				ncurses_refresh();
+				ncurses_refresh(0);
 				ncurses_wrefresh($r_status);
 			}
 			
@@ -1545,7 +1544,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				if (!is_array($vs_idno) && ($vs_idno[0] == '^') && preg_match("!^\^[^ ]+$!", $vs_idno)) {
 					// Parse placeholder when it's at the beginning of the value
 
-					if (!is_null($vm_parsed_val = BaseRefinery::parsePlaceholder($vs_idno, $va_row, $va_item, $vn_c, array('reader' => $o_reader, 'returnAsString' => true)))) {
+					if (!is_null($vm_parsed_val = BaseRefinery::parsePlaceholder($vs_idno, $va_row, $va_item, null, array('reader' => $o_reader, 'returnAsString' => true)))) {
 						$vs_idno = $vm_parsed_val;
 					}
 				}
@@ -1894,7 +1893,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						if(isset($va_item['settings']['delimiter']) && $va_item['settings']['delimiter']) {
 							if (!is_array($va_item['settings']['delimiter'])) { $va_item['settings']['delimiter'] = array($va_item['settings']['delimiter']); }
 							
-							if (sizeof($va_item['settings']['delimiter'][$vn_index])) {
+							if (sizeof($va_item['settings']['delimiter'])) {
 								foreach($va_item['settings']['delimiter'] as $vn_index => $vs_delim) {
 									$va_item['settings']['delimiter'][$vn_index] = preg_quote($vs_delim, "!");
 								}
@@ -1973,9 +1972,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$va_content_tree["related.{$vs_subject_table}"] = $va_self_related_content;
 				}
 			}
-			
+
 			$vn_row++;
-				
+
 			$o_log->logDebug(_t('Finished building content tree for %1 at %2 seconds', $vs_idno, $t->getTime(4)));
 			$o_log->logDebug(_t("Content tree is\n%1", print_R($va_content_tree, true)));
 			//
@@ -1984,7 +1983,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//print_r($va_content_tree);
 			//die("END\n\n");
 			//continue;
-			$opa_app_plugin_manager->hookDataImportContentTree(array('mapping' => $t_mapping, 'content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'transaction' => &$o_trans, 'log' => &$o_log, 'reader' => $o_reader, 'environment' => $va_environment));
+			$opa_app_plugin_manager->hookDataImportContentTree(array('mapping' => $t_mapping, 'content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'transaction' => &$o_trans, 'log' => &$o_log, 'reader' => $o_reader, 'environment' => $va_environment,'importEvent' => $o_event, 'importEventSource' => $vn_row));
 			
 			//print_r($va_content_tree);
 			//die("done\n");
@@ -2003,11 +2002,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				
 				// Look for parent_id in the content tree
 				$vs_parent_id_fld = $t_subject->getProperty('HIERARCHY_PARENT_ID_FLD');
-				foreach($va_content_tree as $vs_table_name => $va_content) {
-					if ($vs_table_name == $vs_subject_table) {		
-						foreach($va_content as $vn_i => $va_element_data) {
-							foreach($va_element_data as $vs_element => $va_element_content) {	
-								switch($vs_element) {
+				foreach ($va_content_tree as $vs_table_name => $va_content) {
+					if ($vs_table_name == $vs_subject_table) {
+						foreach ($va_content as $va_element_data) {
+							foreach ($va_element_data as $vs_element => $va_element_content) {
+								switch ($vs_element) {
 									case $vs_parent_id_fld:
 										if ($va_element_content[$vs_parent_id_fld]) {
 											$t_subject->set($vs_parent_id_fld, $va_element_content[$vs_parent_id_fld], array('treatParentIDAsIdno' => true));
@@ -2039,7 +2038,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				}
 				$o_log->logDebug(_t('Created idno %1 at %2 seconds', $vs_idno, $t->getTime(4)));
 			} else {
-				$o_event->beginItem($vn_row_id, $t_subject->tableNum(), 'U') ;
+				$o_event->beginItem($vn_row, $t_subject->tableNum(), 'U') ;
 				// update
 				$t_subject->setMode(ACCESS_WRITE);
 				if ($vb_idno_is_template) {
@@ -2123,7 +2122,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								$t_subject->clearErrors();
 								$t_subject->setMode(ACCESS_WRITE);
 								switch($vs_element) {
-									case 'preferred_labels':									
+									case 'preferred_labels':
 										$t_subject->addLabel(
 											$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, true
 										);
@@ -2153,7 +2152,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											continue(5);
 										}
 										break;
-									case 'nonpreferred_labels':								
+									case 'nonpreferred_labels':
 										$t_subject->addLabel(
 											$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, false
 										);
@@ -2661,4 +2660,3 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 }
-?>

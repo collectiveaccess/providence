@@ -342,6 +342,11 @@ class BaseModel extends BaseObject {
 	static $s_instance_cache = array();
 	
 	/**
+	 * 
+	 */
+	static $s_field_value_arrays_for_IDs_cache = array();
+	
+	/**
 	 * Constructor
 	 * In general you should not call this constructor directly. Any table in your database
 	 * should be represented by an extension of this class.
@@ -1057,7 +1062,7 @@ class BaseModel extends BaseObject {
 	 * @param array $pa_ids List of primary keys to fetch field values for
 	 * @param array $pa_fields List of fields to return values for. 
 	 * @param array $pa_options options array; can be omitted:
-	 * 		There are no options yet.
+	 * 		noCache = don't use cached values. Default is false (ie. use cached values)
 	 * @return array An array with keys set to primary keys of fetched rows and values set to either (a) a field value when
 	 * only a single field is requested or (b) an array key'ed on field name when more than one field is requested
 	 *
@@ -1067,12 +1072,19 @@ class BaseModel extends BaseObject {
 		if ((!is_array($pa_ids) && (int)$pa_ids > 0)) { $pa_ids = array($pa_ids); }
 		if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
 		
+		$vb_dont_use_cache = caGetOption('noCache', $pa_options, false);
+		
+		$vs_cache_key = md5(join(",", $pa_ids)."/".join(",", $pa_fields));
+		if (!$vb_dont_use_cache && isset(BaseModel::$s_field_value_arrays_for_IDs_cache[$vn_table_num = $this->tableNum()][$vs_cache_key])) {
+			return BaseModel::$s_field_value_arrays_for_IDs_cache[$vn_table_num][$vs_cache_key];
+		}
+		
 		$va_ids = array();
 		foreach($pa_ids as $vn_id) {
 			if ((int)$vn_id <= 0) { continue; }
 			$va_ids[] = (int)$vn_id;
 		}
-		if (!sizeof($va_ids)) { return null; }
+		if (!sizeof($va_ids)) { return BaseModel::$s_field_value_arrays_for_IDs_cache[$vn_table_num][$vs_cache_key] = null; }
 		
 		
 		$vs_table_name = $this->tableName();
@@ -1107,7 +1119,7 @@ class BaseModel extends BaseObject {
 				$va_vals[(int)$qr_res->get($vs_pk)] = $qr_res->getRow();
 			}
 		}
-		return $va_vals;
+		return BaseModel::$s_field_value_arrays_for_IDs_cache[$vn_table_num][$vs_cache_key] = $va_vals;
 	}
 
 	/**
@@ -6697,7 +6709,7 @@ class BaseModel extends BaseObject {
 					
 					$va_count = array();
 					if (($this->hasField($vs_hier_id_fld)) && (!($vn_hierarchy_id = $this->get($vs_hier_id_fld))) && (!($vn_hierarchy_id = $qr_root->get($vs_hier_id_fld)))) {
-						$this->postError(2030, _t("Hierarchy ID must be specified"), "Table->getHierarchy()");
+						$this->postError(2030, _t("Hierarchy ID must be specified"), "BaseModel->getHierarchy()");
 						return false;
 					}
 					
@@ -6717,9 +6729,9 @@ class BaseModel extends BaseObject {
 						if (isset($pa_options['additionalTableJoinType']) && ($pa_options['additionalTableJoinType'] === 'LEFT')) {
 							$ps_additional_table_join_type = 'LEFT';
 						}
-						if (is_array($va_rel = $this->getAppDatamodel()->getOneToManyRelations($this->tableName(), $ps_additional_table_to_join))) {
+						if (is_array($va_rel = $this->getAppDatamodel()->getOneToManyRelations($vs_table_name, $ps_additional_table_to_join))) {
 							// one-many rel
-							$va_sql_joins[] = "{$ps_additional_table_join_type} JOIN {$ps_additional_table_to_join} ON ".$this->tableName().'.'.$va_rel['one_table_field']." = {$ps_additional_table_to_join}.".$va_rel['many_table_field'];
+							$va_sql_joins[] = "{$ps_additional_table_join_type} JOIN {$ps_additional_table_to_join} ON {$vs_table_name}".'.'.$va_rel['one_table_field']." = {$ps_additional_table_to_join}.".$va_rel['many_table_field'];
 						} else {
 							// TODO: handle many-many cases
 						}
@@ -6862,30 +6874,22 @@ class BaseModel extends BaseObject {
 	 * Returns a list of primary keys comprising all child rows
 	 * 
 	 * @param int $pn_id node to start from - default is the hierarchy root
+	 * @param array $pa_options
 	 * @return array id list
 	 */
-	public function &getHierarchyIDs($pn_id=null, $pa_options=null) {
-		if ($qr_hier = $this->getHierarchy($pn_id, $pa_options)) {
-			$va_ids = array();
-			$vs_pk = $this->primaryKey();
-			while($qr_hier->nextRow()) {
-				$va_ids[] = $qr_hier->get($vs_pk);
-			}
-			
-			return $va_ids;
-		} else {
-			return null;
-		}
+	public function getHierarchyIDs($pn_id=null, $pa_options=null) {
+		return $this->getHierarchyAsList($pn_id, array_merge($pa_options, array('idsOnly' => true)));
 	}
-	
 	# --------------------------------------------------------------------------------------------
 	/**
-	 * 
+	 * Count child rows for specified parent rows
+	 *
+	 * @param array list of primary keys for which to fetch child counts
 	 * @param array, optional associative array of options. Valid keys for the array are:
-	 *		returnDeleted = return deleted records in list (def. false)
-	 * @return array
+	 *		returnDeleted = return deleted records in list [Default is false]
+	 * @return array List of counts key'ed on primary key values
 	 */
-	public function &getHierarchyChildCountsForIDs($pa_ids, $pa_options=null) {
+	public function getHierarchyChildCountsForIDs($pa_ids, $pa_options=null) {
 		if (!$this->isHierarchical()) { return null; }
 		$va_additional_table_wheres = array();
 		
@@ -7130,7 +7134,7 @@ class BaseModel extends BaseObject {
 	 *		returnDeleted = return deleted records in list (def. false)
 	 * @return array 
 	 */
-	public function &getHierarchySiblings($pn_id=null, $pa_options=null) {
+	public function getHierarchySiblings($pn_id=null, $pa_options=null) {
 		$pb_ids_only = (isset($pa_options['idsOnly']) && $pa_options['idsOnly']) ? true : false;
 		
 		if (!$pn_id) { $pn_id = $this->getPrimaryKey(); }
@@ -7326,6 +7330,41 @@ class BaseModel extends BaseObject {
 			return null;
 		}
 	}
+	# --------------------------------------------------------------------------------------------
+	# New hierarchy API (2014)
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @param string $ps_template 
+	 * @param array $pa_options
+	 * @return array
+	 */
+	public function hierarchyWithTemplate($ps_template, $pa_options=null) {
+		$vs_pk = $this->primaryKey();
+		$pn_id = caGetOption($vs_pk, $pa_options, null);
+		$va_hier = $this->getHierarchyAsList($pn_id, array_merge($pa_options, array('idsOnly' => false)));
+		
+		$va_levels = $va_ids = array();
+		foreach($va_hier as $vn_i => $va_item) {
+			$vn_id = $va_item['NODE'][$vs_pk];
+			$va_levels[$vn_i] = $va_item['LEVEL'];
+			$va_ids[] = $vn_id;
+		}
+		
+		$va_vals = caProcessTemplateForIDs($ps_template, $this->tableName(), $va_ids, array('returnAsArray'=> true));
+		
+		$va_hierarchy_data = array();
+		foreach($va_vals as $vn_i => $vs_val) {
+			$va_hierarchy_data[] = array(
+				'level' => $va_levels[$vn_i],
+				'display' => $vs_val
+			);
+		}
+		return $va_hierarchy_data;
+	}
+	# --------------------------------------------------------------------------------------------
+	# Hierarchical indices
 	# --------------------------------------------------------------------------------------------
 	public function rebuildAllHierarchicalIndexes() {
 		$vs_hier_left_fld 		= $this->getProperty("HIERARCHY_LEFT_INDEX_FLD");
@@ -8910,9 +8949,11 @@ $pa_options["display_form_field_tips"] = true;
 		$vn_rel_table_num = $t_item_rel->tableNum();
 		
 		// Reindex modified relationships
-		$o_indexer = $this->getSearchIndexer();
+		if (!BaseModel::$search_indexer) {
+			BaseModel::$search_indexer = new SearchIndexer($this->getDb());
+		}
 		foreach($va_to_reindex_relations as $vn_relation_id => $va_row) {
-			$o_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
+			BaseModel::$search_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
 		}
 		
 		return sizeof($va_to_reindex_relations);
@@ -8959,6 +9000,7 @@ $pa_options["display_form_field_tips"] = true;
 				$va_to_reindex_relations[(int)$qr_res->get('relation_id')] = $qr_res->getRow();	
 			}
 			if (!sizeof($va_to_reindex_relations)) { return 0; }
+			
 			$va_new_relations = array();
 			foreach($va_to_reindex_relations as $vn_relation_id => $va_row) {
 				$t_item_rel->clear();
@@ -9012,9 +9054,11 @@ $pa_options["display_form_field_tips"] = true;
 		$vn_rel_table_num = $t_item_rel->tableNum();
 		
 		// Reindex modified relationships
-		$o_indexer = $this->getSearchIndexer();
+		if (!BaseModel::$search_indexer) {
+			BaseModel::$search_indexer = new SearchIndexer($this->getDb());
+		}
 		foreach($va_new_relations as $vn_relation_id => $va_row) {
-			$o_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
+			BaseModel::$search_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
 		}
 		
 		return sizeof($va_new_relations);
@@ -9569,8 +9613,9 @@ $pa_options["display_form_field_tips"] = true;
 	 *				media2_original_filename = original file name to set for comment "media2"
 	 *				media3_original_filename = original file name to set for comment "media3"
 	 *				media4_original_filename = original file name to set for comment "media4"
+	 *  @param $ps_location [string] = location of user
 	 */
-	public function addComment($ps_comment, $pn_rating=null, $pn_user_id=null, $pn_locale_id=null, $ps_name=null, $ps_email=null, $pn_access=0, $pn_moderator=null, $pa_options=null, $ps_media1=null, $ps_media2=null, $ps_media3=null, $ps_media4=null) {
+	public function addComment($ps_comment, $pn_rating=null, $pn_user_id=null, $pn_locale_id=null, $ps_name=null, $ps_email=null, $pn_access=0, $pn_moderator=null, $pa_options=null, $ps_media1=null, $ps_media2=null, $ps_media3=null, $ps_media4=null, $ps_location=null) {
 		global $g_ui_locale_id;
 		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
 		if (!$pn_locale_id) { $pn_locale_id = $g_ui_locale_id; }
@@ -9599,6 +9644,7 @@ $pa_options["display_form_field_tips"] = true;
 		$t_comment->set('media2', $ps_media2, array('original_filename' => $pa_options['media2_original_filename']));
 		$t_comment->set('media3', $ps_media3, array('original_filename' => $pa_options['media3_original_filename']));
 		$t_comment->set('media4', $ps_media4, array('original_filename' => $pa_options['media4_original_filename']));
+		$t_comment->set('location', $ps_location);
 		
 		if (!is_null($pn_moderator)) {
 			$t_comment->set('moderated_by_user_id', $pn_moderator);
@@ -9838,6 +9884,32 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/** 
+	 * Returns number of user comments for item
+	 */ 
+	public function getNumComments($pb_moderation_status=true) {
+		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
+	
+		$vs_moderation_sql = '';
+		if (!is_null($pb_moderation_status)) {
+			$vs_moderation_sql = ($pb_moderation_status) ? ' AND (ca_item_comments.moderated_on IS NOT NULL)' : ' AND (ca_item_comments.moderated_on IS NULL)';
+		}
+		
+		$o_db = $this->getDb();
+		$qr_comments = $o_db->query("
+			SELECT count(*) c
+			FROM ca_item_comments
+			WHERE
+				(comment != '') AND (table_num = ?) AND (row_id = ?) {$vs_moderation_sql}
+		", $this->tableNum(), $vn_row_id);
+		
+		if ($qr_comments->nextRow()) {
+			return round($qr_comments->get('c'));
+		} else {
+			return null;
+		}
+	}
+	# --------------------------------------------------------------------------------------------
+	/** 
 	 * Returns number of user ratings for item
 	 */ 
 	public function getNumRatings($pb_moderation_status=true) {
@@ -9953,6 +10025,7 @@ $pa_options["display_form_field_tips"] = true;
 	public function registerItemView($pn_user_id=null) {
 		global $g_ui_locale_id;
 		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
+		if (!$pn_locale_id) { $pn_locale_id = $g_ui_locale_id; }
 		
 		$vn_table_num = $this->tableNum();
 		
@@ -9961,7 +10034,7 @@ $pa_options["display_form_field_tips"] = true;
 		$t_view->set('table_num', $vn_table_num);
 		$t_view->set('row_id', $vn_row_id);
 		$t_view->set('user_id', $pn_user_id);
-		$t_view->set('locale_id', $g_ui_locale_id);
+		$t_view->set('locale_id', $pn_locale_id);
 	
 		$t_view->insert();
 		
@@ -10186,7 +10259,7 @@ $pa_options["display_form_field_tips"] = true;
 	# --------------------------------------------------------------------------------------------
 	/**
 	 * Returns the most recently viewed items, up to a maximum of $pn_limit (default is 10)
-	 * Note that the limit is just that ��� a limit. getRecentlyViewedItems() may return fewer
+	 * Note that the limit is just that – a limit. getRecentlyViewedItems() may return fewer
 	 * than the limit either because there fewer viewed items than your limit or because fetching
 	 * additional views would take too long. (To ensure adequate performance getRecentlyViewedItems() uses a cache of 
 	 * recent views. If there is no cache available it will query the database to look at the most recent (4 x your limit) viewings. 
@@ -10420,6 +10493,7 @@ $pa_options["display_form_field_tips"] = true;
 				{$vs_limit_sql}
 			) AS random_items 
 			INNER JOIN {$vs_table_name} ON {$vs_table_name}.{$vs_primary_key} = random_items.{$vs_primary_key}
+			{$vs_deleted_sql}
 		";
 		$qr_res = $o_db->query($vs_sql);
 		
@@ -10797,4 +10871,3 @@ require_once(__CA_APP_DIR__.'/models/ca_item_tags.php');
 require_once(__CA_APP_DIR__.'/models/ca_items_x_tags.php');
 require_once(__CA_APP_DIR__.'/models/ca_item_comments.php');
 require_once(__CA_APP_DIR__.'/models/ca_item_views.php');
-?>
