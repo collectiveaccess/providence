@@ -404,7 +404,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		$vs_rel_table = caGetRelationshipTableName($pn_subject_tablenum, $vs_table);
 		$va_rel_type_ids = ($va_tmp[1] && $vs_rel_table) ? caMakeRelationshipTypeIDList($vs_rel_table, array($va_tmp[1])) : null;
 		
-		if (!($t_table = $this->opo_datamodel->getInstanceByTableName($vs_table, true))) { return null; }
+		if (!($t_table = $this->opo_datamodel->getInstanceByTableName($vs_table, true))) { 
+			return array('access_point' => $va_tmp[0]);
+		}
 		$vs_table_num = $t_table->tableNum();
 		
 		if (is_numeric($vs_field)) {
@@ -726,7 +728,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						default:
 							$va_access_point_info = $this->_getElementIDForAccessPoint($pn_subject_tablenum, $o_lucene_query_element->getTerm()->field);
 							$vs_access_point = $va_access_point_info['access_point'];
-							
 							$vs_term = $o_lucene_query_element->getTerm()->text;
 						
 							if ($vs_access_point && (mb_strtoupper($vs_term) == _t('[BLANK]'))) {
