@@ -212,4 +212,83 @@ abstract class AbstractPluginIntegrationTest extends PHPUnit_Framework_TestCase 
 	protected static function _retrieveCreatedInstance($ps_class, $ps_key) {
 		return isset(self::$s_created_instances[$ps_class]) && isset(self::$s_created_instances[$ps_class][$ps_key]) ? self::$s_created_instances[$ps_class][$ps_key] : null;
 	}
+
+	protected static function _createRelationshipType($ps_code_base, $ps_table_name) {
+		$vo_relationship_type = new ca_relationship_types();
+		$vo_relationship_type->setMode(ACCESS_WRITE);
+		$vo_relationship_type->set(array(
+				'type_code' => AbstractPluginIntegrationTest::_getIdno($ps_code_base),
+				'table_num' => $vo_relationship_type->getAppDatamodel()->getTableNum($ps_table_name)
+		));
+		$vo_relationship_type->insert();
+		$vo_relationship_type->addLabel(
+				array(
+						'typename' => $ps_code_base,
+						'typename_reverse' => $ps_code_base . ' reverse'
+				),
+				ca_locales::getDefaultCataloguingLocaleID(),
+				null,
+				true
+		);
+		AbstractPluginIntegrationTest::_recordCreatedInstance($vo_relationship_type, $ps_code_base);
+		return $vo_relationship_type;
+	}
+
+	protected static function _createListItem($ps_idno_base, $pn_list_id) {
+		$vo_list_item = new ca_list_items();
+		$vo_list_item->setMode(ACCESS_WRITE);
+		$vo_list_item->set(array(
+				'idno' => AbstractPluginIntegrationTest::_getIdno($ps_idno_base),
+				'list_id' => $pn_list_id,
+				'is_enabled' => true
+		));
+		$vo_list_item->insert();
+		$vo_list_item->addLabel(
+				array(
+						'name_singular' => $ps_idno_base,
+						'name_plural' => $ps_idno_base
+				),
+				ca_locales::getDefaultCataloguingLocaleID(),
+				null,
+				true
+		);
+		AbstractPluginIntegrationTest::_recordCreatedInstance($vo_list_item, $ps_idno_base);
+		return $vo_list_item;
+	}
+
+	protected static function _createMetadataElement($ps_code_base) {
+		$vo_metadata_element = new ca_metadata_elements();
+		$vo_metadata_element->setMode(ACCESS_WRITE);
+		$vo_metadata_element->set(array(
+				'element_code' => AbstractPluginIntegrationTest::_getIdno($ps_code_base),
+				'datatype' => 1
+		));
+		$vo_metadata_element->insert();
+		AbstractPluginIntegrationTest::_recordCreatedInstance($vo_metadata_element, $ps_code_base);
+		return $vo_metadata_element;
+	}
+
+	protected static function _createCollection($ps_idno_base) {
+		$vo_collection = new ca_collections();
+		$vo_collection->setMode(ACCESS_WRITE);
+		$vn_test_collection_list_item_id = AbstractPluginIntegrationTest::_retrieveCreatedInstance('ca_list_items', 'test_collection_type')->getPrimaryKey();
+		$vo_collection->set(array(
+				'idno' => AbstractPluginIntegrationTest::_getIdno($ps_idno_base),
+				'type_id' => $vn_test_collection_list_item_id
+		));
+		foreach (AbstractPluginIntegrationTest::_retrieveCreatedInstancesByClass('ca_metadata_elements') as $vo_metadata_element) {
+			$vo_collection->addMetadataElementToType($vo_metadata_element->get('element_code'), $vn_test_collection_list_item_id);
+		}
+		$vo_collection->insert();
+		$vo_collection->addLabel(
+				array(
+						'name' => $ps_idno_base
+				),
+				ca_locales::getDefaultCataloguingLocaleID(),
+				null,
+				true
+		);
+		AbstractPluginIntegrationTest::_recordCreatedInstance($vo_collection, $ps_idno_base);
+		return $vo_collection;
+	}
 }
