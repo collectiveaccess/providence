@@ -2063,4 +2063,43 @@ function caFileIsIncludable($ps_file) {
 		return array('width' => (int)$pn_target_width, 'height' => (int)$pn_target_height);
 	}
 	# ----------------------------------------
+	/**
+	 * Returns true if the date expression includes the current date/time
+	 *
+	 * @param string $ps_date_expression
+	 * @return bool
+	 */
+	function caIsCurrentDate($ps_date_expression) {
+		if ($va_date = caDateToHistoricTimestamps($ps_date_expression)) {
+			$va_now = caDateToHistoricTimestamps(_t('now'));
+			if (
+				(($va_date['start'] <= $va_now['start'])
+				&&
+				($va_date['end'] >= $va_now['start']))
+			) {
+				return true;
+			}
+		}
+		return false;
+	}
+	# ----------------------------------------
+	/**
+	 * Returns true if the date expression ends after the current date/time. 
+	 * Only the end point of the expression is considered. 
+	 *
+	 * @param string $ps_date_expression
+	 * @return bool
+	 */
+	function caDateEndsInFuture($ps_date_expression) {
+		if ($va_date = caDateToHistoricTimestamps($ps_date_expression)) {
+			$va_now = caDateToHistoricTimestamps(_t('now'));
+			if (
+				($va_date['end'] >= $va_now['end'])
+			) {
+				return true;
+			}
+		}
+		return false;
+	}
+	# ----------------------------------------
 ?>
