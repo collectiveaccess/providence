@@ -2040,9 +2040,15 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
-	 * 
+	 * Scales width and height to fit target bounding box while preserving aspect ratio
 	 *
-	 * @return array 
+	 * @param int $pn_original_width
+	 * @param int $pn_original_height
+	 * @param int $pn_target_width
+	 * @param int $pn_target_height
+	 * @param array $pa_options No options are supported (yet)
+	 *
+	 * @return array Array with "width" and "height" keys for scaled dimensions
 	 */
 	function caFitImageDimensions($pn_original_width, $pn_original_height, $pn_target_width, $pn_target_height, $pa_options=null) {
 		$pn_original_width = preg_replace('![^\d]+!', '', $pn_original_width);
