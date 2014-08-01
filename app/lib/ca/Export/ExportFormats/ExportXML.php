@@ -121,7 +121,7 @@ class ExportXML extends BaseExportFormat {
 	public function getMappingErrors($t_mapping){
 		$va_errors = array();
 
-		$va_top = $t_mapping->getTopLevelItems();
+		$va_top = $t_mapping->getTopLevelItems(array('dontIncludeVariables' => true));
 		if(sizeof($va_top)!==1){
 			$va_errors[] = _t("XML documents must have exactly one root element");
 		}

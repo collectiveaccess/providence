@@ -208,6 +208,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	public static $s_exporter_item_cache = array();
 	public static $s_mapping_check_cache = array();
 	public static $s_instance_cache = array();
+	public static $s_variables = array();
 
 	protected $opo_app_plugin_manager;
 	
@@ -329,6 +330,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 *                          includeSettingsForm
 	 *                          id_prefix
 	 *                          orderForDeleteCascade
+	 *							dontIncludeVariables
 	 * @return array array of items, keyed by their primary key
 	 */
 	public function getItems($pa_options=array()){
@@ -337,6 +339,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vb_include_settings_form = isset($pa_options['includeSettingsForm']) ? (bool)$pa_options['includeSettingsForm'] : false;
 		$vb_only_top_level = isset($pa_options['onlyTopLevel']) ? (bool)$pa_options['onlyTopLevel'] : false;
 		$vb_order_for_delete_cascade = isset($pa_options['orderForDeleteCascade']) ? (bool)$pa_options['orderForDeleteCascade'] : false;
+		$vb_dont_include_vars = caGetOption('dontIncludeVariables',$pa_options);
 
 		$vs_id_prefix = isset($pa_options['id_prefix']) ? $pa_options['id_prefix'] : '';
 
@@ -344,7 +347,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		$va_conditions = array();
 		if($vb_only_top_level){
-			$va_conditions[] ="AND parent_id IS NULL";
+			$va_conditions[] = "AND parent_id IS NULL";
+		}
+
+		if($vb_dont_include_vars){
+			$va_conditions[] = "AND element not like \"_VARIABLE_:%\"";
 		}
 
 		if($vb_order_for_delete_cascade){
@@ -373,7 +380,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		return $va_items;
 	}
 	# ------------------------------------------------------
-	public function getTopLevelItems($pa_options=array()){
+	public function getTopLevelItems($pa_options=array()) {
 		return $this->getItems(array_merge(array('onlyTopLevel' => true),$pa_options));
 	}
 	# ------------------------------------------------------
@@ -632,6 +639,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			switch($vs_mode) {
 				case 'Mapping':
 				case 'Constant':
+				case 'Variable':
 				case 'RepeatMappings':
 					$o_id = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
 					$o_parent = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
@@ -664,6 +672,16 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						$vs_source = "_CONSTANT_:{$vs_source}";
 					}
 
+					if ($vs_mode == 'Variable') {
+						if(preg_match("/^[A-Za-z0-9\_\-]+$/",$vs_element)){
+							$vs_element = "_VARIABLE_:{$vs_element}";
+						} else {
+							$pa_errors[] = _t("Variable name %1 is invalid. It should only contain ASCII letters, numbers, hyphens and underscores. The variable was not created.",$vs_element);
+							continue(2);
+						}
+
+					}
+
 					$va_options = null;
 					if ($vs_options_json = (string)$o_options->getValue()) { 
 						if (is_null($va_options = @json_decode($vs_options_json, true))) {
@@ -680,7 +698,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						'options' => $va_options,
 					);
 
-					// allow mapping repitition
+					// allow mapping repetition
 					if($vs_mode == 'RepeatMappings'){
 						if(strlen($vs_source)<1) {// ignore repitition rows without value
 							continue;
@@ -1228,6 +1246,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	static public function exportRecord($ps_exporter_code, $pn_record_id, $pa_options=array()){
 
+		// The variable cache is valid for the whole record export.
+		// It's being modified in ca_data_exporters::processExporterItem
+		// and then reset here if we move on to the next record.
+		ca_data_exporters::$s_variables = array();
+
 		$o_log = caGetOption('logger', $pa_options);
 
 		// only set up new logging facilities if no existing one has been passed down
@@ -1561,12 +1584,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 			// handle skipIfExpression setting
 			if($vs_skip_if_expr){
-				// @todo: Add mapping variables
-				$va_vars = array();
 				// Add current value as variable "value", accessible in expressions as ^value
-				$va_vars['value'] = $va_item['text'];
-
-				if(ExpressionParser::evaluate($vs_skip_if_expr, $va_vars)){
+				if(ExpressionParser::evaluate($vs_skip_if_expr, array_merge(array('value' => $va_item['text']),ca_data_exporters::$s_variables))){
 					unset($va_item_info[$vn_key]);
 					continue;
 				}
@@ -1593,6 +1612,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 			if($vn_max_length && (strlen($va_item['text']) > $vn_max_length)){
 				$va_item['text'] = substr($va_item['text'], 0, $vn_max_length)." ...";
+			}
+
+			// if this is a variable, set the value and delete it from the export tree
+			$va_matches = array();
+			if(preg_match("/^_VARIABLE_:(.*)$/",$va_item['element'],$va_matches)) {
+				ca_data_exporters::$s_variables[$va_matches[1]] = $va_item['text'];
+				unset($va_item_info[$vn_key]);
+				continue;
 			}
 
 			// if returned value is null then we skip the item
