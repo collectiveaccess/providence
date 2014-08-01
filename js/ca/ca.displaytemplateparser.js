@@ -69,7 +69,12 @@ var caUI = caUI || {};
 			jQuery.each(tagList, function(i, tag) {
 				if(tag.indexOf("~") === -1) {
 					var tagProc = tag.replace("^", "");
-					t=t.replace(tag, jQuery(values[tagProc]).val());
+					
+					if (jQuery('select' + values[tagProc] + ' option:selected').length) {
+						t=t.replace(tag, jQuery('select' + values[tagProc] + ' option:selected').text());
+					} else {
+						t=t.replace(tag, jQuery(values[tagProc]).val());
+					}
 				} else {
 					var tagBits = tag.split(/\~/);
 					var tagRoot = tagBits[0].replace("^", "");
