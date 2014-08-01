@@ -217,7 +217,7 @@ abstract class AbstractPluginIntegrationTest extends PHPUnit_Framework_TestCase 
 		$vo_relationship_type = new ca_relationship_types();
 		$vo_relationship_type->setMode(ACCESS_WRITE);
 		$vo_relationship_type->set(array(
-				'type_code' => AbstractPluginIntegrationTest::_getIdno($ps_code_base),
+				'type_code' => self::_getIdno($ps_code_base),
 				'table_num' => $vo_relationship_type->getAppDatamodel()->getTableNum($ps_table_name)
 		));
 		$vo_relationship_type->insert();
@@ -230,7 +230,7 @@ abstract class AbstractPluginIntegrationTest extends PHPUnit_Framework_TestCase 
 				null,
 				true
 		);
-		AbstractPluginIntegrationTest::_recordCreatedInstance($vo_relationship_type, $ps_code_base);
+		self::_recordCreatedInstance($vo_relationship_type, $ps_code_base);
 		return $vo_relationship_type;
 	}
 
@@ -238,7 +238,7 @@ abstract class AbstractPluginIntegrationTest extends PHPUnit_Framework_TestCase 
 		$vo_list_item = new ca_list_items();
 		$vo_list_item->setMode(ACCESS_WRITE);
 		$vo_list_item->set(array(
-				'idno' => AbstractPluginIntegrationTest::_getIdno($ps_idno_base),
+				'idno' => self::_getIdno($ps_idno_base),
 				'list_id' => $pn_list_id,
 				'is_enabled' => true
 		));
@@ -252,7 +252,7 @@ abstract class AbstractPluginIntegrationTest extends PHPUnit_Framework_TestCase 
 				null,
 				true
 		);
-		AbstractPluginIntegrationTest::_recordCreatedInstance($vo_list_item, $ps_idno_base);
+		self::_recordCreatedInstance($vo_list_item, $ps_idno_base);
 		return $vo_list_item;
 	}
 
@@ -260,23 +260,23 @@ abstract class AbstractPluginIntegrationTest extends PHPUnit_Framework_TestCase 
 		$vo_metadata_element = new ca_metadata_elements();
 		$vo_metadata_element->setMode(ACCESS_WRITE);
 		$vo_metadata_element->set(array(
-				'element_code' => AbstractPluginIntegrationTest::_getIdno($ps_code_base),
+				'element_code' => self::_getIdno($ps_code_base),
 				'datatype' => 1
 		));
 		$vo_metadata_element->insert();
-		AbstractPluginIntegrationTest::_recordCreatedInstance($vo_metadata_element, $ps_code_base);
+		self::_recordCreatedInstance($vo_metadata_element, $ps_code_base);
 		return $vo_metadata_element;
 	}
 
 	protected static function _createCollection($ps_idno_base) {
 		$vo_collection = new ca_collections();
 		$vo_collection->setMode(ACCESS_WRITE);
-		$vn_test_collection_list_item_id = AbstractPluginIntegrationTest::_retrieveCreatedInstance('ca_list_items', 'test_collection_type')->getPrimaryKey();
+		$vn_test_collection_list_item_id = self::_retrieveCreatedInstance('ca_list_items', 'test_collection_type')->getPrimaryKey();
 		$vo_collection->set(array(
-				'idno' => AbstractPluginIntegrationTest::_getIdno($ps_idno_base),
+				'idno' => self::_getIdno($ps_idno_base),
 				'type_id' => $vn_test_collection_list_item_id
 		));
-		foreach (AbstractPluginIntegrationTest::_retrieveCreatedInstancesByClass('ca_metadata_elements') as $vo_metadata_element) {
+		foreach (self::_retrieveCreatedInstancesByClass('ca_metadata_elements') as $vo_metadata_element) {
 			$vo_collection->addMetadataElementToType($vo_metadata_element->get('element_code'), $vn_test_collection_list_item_id);
 		}
 		$vo_collection->insert();
@@ -288,7 +288,30 @@ abstract class AbstractPluginIntegrationTest extends PHPUnit_Framework_TestCase 
 				null,
 				true
 		);
-		AbstractPluginIntegrationTest::_recordCreatedInstance($vo_collection, $ps_idno_base);
+		self::_recordCreatedInstance($vo_collection, $ps_idno_base);
 		return $vo_collection;
+	}
+
+	protected static function _createEntity($ps_idno_base) {
+		$vo_entity = new ca_entities();
+		$vo_entity->setMode(ACCESS_WRITE);
+		$vn_test_collection_list_item_id = self::_retrieveCreatedInstance('ca_list_items', 'test_entity_type')->getPrimaryKey();
+		$vo_entity->set(array(
+				'idno' => self::_getIdno($ps_idno_base),
+				'type_id' => $vn_test_collection_list_item_id
+		));
+		$vo_entity->insert();
+		$vo_entity->addLabel(
+				array(
+						'forename' => $ps_idno_base,
+						'displayname' => $ps_idno_base,
+						'surname' => $ps_idno_base
+				),
+				ca_locales::getDefaultCataloguingLocaleID(),
+				null,
+				true
+		);
+		self::_recordCreatedInstance($vo_entity, $ps_idno_base);
+		return $vo_entity;
 	}
 }
