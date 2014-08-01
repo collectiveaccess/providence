@@ -316,7 +316,6 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$vn_item_id = $t_item->insert();
 		
 		if ($t_item->numErrors()) { 
-			print_R($t_item->getErrors());
 			$this->errors = array_merge($this->errors, $t_item->errors);
 			return false;
 		}
@@ -1676,7 +1675,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 * Converts a list of relationship type_id's to a list of type_code strings. The conversion is literal without hierarchical expansion.
+	 * Converts a list of item_id's to a list of idno strings. The conversion is literal without hierarchical expansion.
 	 *
 	 * @param array $pa_list A list of relationship numeric type_ids
 	 * @param array $pa_options Options include:

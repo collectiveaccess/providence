@@ -1231,29 +1231,6 @@ function caFileIsIncludable($ps_file) {
 		return $result.$newLine;
 	}
 	# ---------------------------------------
-	function caFormatXML($ps_xml){  
-		require_once(__CA_LIB_DIR__.'/core/Parsers/XMLFormatter.php');
-
-		$va_options = array(
-			"paddingString" => " ",
-			"paddingMultiplier" => 2,
-			"wordwrapCData" => false,
-		);
-
-		$vr_input = fopen('data://text/plain,'.$ps_xml, 'r');
-		$vr_output = fopen('php://temp', 'w+');
-
-		$vo_formatter = new XML_Formatter($vr_input, $vr_output, $va_options);
-
-		try {
-			$vo_formatter->format();
-			rewind($vr_output);
-			return stream_get_contents($vr_output)."\n";
-		} catch (EXception $e) {
-			return false;
-		}
-	}
-	# ---------------------------------------
 	/**
 	  * Parses natural language date and returns pair of Unix timestamps defining date/time range
 	  *
@@ -2060,6 +2037,69 @@ function caFileIsIncludable($ps_file) {
 		}
 		
 		return array('tag' => $vs_tag_proc, 'options' => $va_opts);
+	}
+	# ----------------------------------------
+	/**
+	 * Scales width and height to fit target bounding box while preserving aspect ratio
+	 *
+	 * @param int $pn_original_width
+	 * @param int $pn_original_height
+	 * @param int $pn_target_width
+	 * @param int $pn_target_height
+	 * @param array $pa_options No options are supported (yet)
+	 *
+	 * @return array Array with "width" and "height" keys for scaled dimensions
+	 */
+	function caFitImageDimensions($pn_original_width, $pn_original_height, $pn_target_width, $pn_target_height, $pa_options=null) {
+		$pn_original_width = preg_replace('![^\d]+!', '', $pn_original_width);
+		$pn_original_height = preg_replace('![^\d]+!', '', $pn_original_height);
+		if ($pn_original_width > $pn_original_height) {
+			$vn_scale_factor = $pn_target_width/$pn_original_width;
+			$pn_target_height = $vn_scale_factor * $pn_original_height;
+		} else {
+			$vn_scale_factor = $pn_target_height/$pn_original_height;
+			$pn_target_width = $vn_scale_factor * $pn_original_width;
+		}
+		return array('width' => (int)$pn_target_width, 'height' => (int)$pn_target_height);
+	}
+	# ----------------------------------------
+	/**
+	 * Returns true if the date expression includes the current date/time
+	 *
+	 * @param string $ps_date_expression
+	 * @return bool
+	 */
+	function caIsCurrentDate($ps_date_expression) {
+		if ($va_date = caDateToHistoricTimestamps($ps_date_expression)) {
+			$va_now = caDateToHistoricTimestamps(_t('now'));
+			if (
+				(($va_date['start'] <= $va_now['start'])
+				&&
+				($va_date['end'] >= $va_now['start']))
+			) {
+				return true;
+			}
+		}
+		return false;
+	}
+	# ----------------------------------------
+	/**
+	 * Returns true if the date expression ends after the current date/time. 
+	 * Only the end point of the expression is considered. 
+	 *
+	 * @param string $ps_date_expression
+	 * @return bool
+	 */
+	function caDateEndsInFuture($ps_date_expression) {
+		if ($va_date = caDateToHistoricTimestamps($ps_date_expression)) {
+			$va_now = caDateToHistoricTimestamps(_t('now'));
+			if (
+				($va_date['end'] >= $va_now['end'])
+			) {
+				return true;
+			}
+		}
+		return false;
 	}
 	# ----------------------------------------
 ?>

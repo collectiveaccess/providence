@@ -294,7 +294,14 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Generates an HTML <img> or Tilepic embed tag with supplied URL and attributes
 	 *
+	 * @param $ps_url string The image URL
+	 * @param $pa_options array Options include:
+	 *		scaleCSSWidthTo = width in pixels to *style* via CSS the returned image to. Does not actually alter the image. Aspect ratio of the image is preserved, with the combination of scaleCSSWidthTo and scaleCSSHeightTo being taken as a bounding box for the image. Only applicable to standard <img> tags. Tilepic display size cannot be styled using CSS; use the "width" and "height" options instead.
+	 *		scaleCSSHeightTo = height in pixels to *style* via CSS the returned image to.
+	 *
+	 * @return string
 	 */
 	function caHTMLImage($ps_url, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
@@ -304,6 +311,18 @@
 			'width', 'height',
 			'vspace', 'hspace', 'alt', 'title', 'usemap', 'align', 'border', 'class', 'style') as $vs_attr) {
 				if (isset($pa_options[$vs_attr])) { $va_attributes[$vs_attr] = $pa_options[$vs_attr]; }
+		}
+		
+		$vn_scale_css_width_to = caGetOption('scaleCSSWidthTo', $pa_options, null);
+		$vn_scale_css_height_to = caGetOption('scaleCSSHeightTo', $pa_options, null);
+		
+		if ($vn_scale_css_width_to || $vn_scale_css_height_to) {
+			if (!$vn_scale_css_width_to) { $vn_scale_css_width_to = $vn_scale_css_height_to; }
+			if (!$vn_scale_css_height_to) { $vn_scale_css_height_to = $vn_scale_css_width_to; }
+			
+			$va_scaled_dimensions = caFitImageDimensions($va_attributes['width'], $va_attributes['height'], $vn_scale_css_width_to, $vn_scale_css_height_to);
+			$va_attributes['width'] = $va_scaled_dimensions['width'].'px';
+			$va_attributes['height'] = $va_scaled_dimensions['height'].'px';
 		}
 		
 		$vs_attr_string = _caHTMLMakeAttributeString($va_attributes, $pa_options);

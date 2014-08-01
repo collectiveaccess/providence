@@ -321,7 +321,7 @@ class Db_mysql extends DbDriverBase {
 					break;
 				case 2006:		// gone away
 					// reconnect
-					if ($po_caller->connect()) {
+					if ($this->connect()) {
 						if ($r_res = mysql_query($vs_sql, $this->opr_db)) {
 							return new DbResult($this, $r_res);
 						}
