@@ -53,7 +53,6 @@ class RelationshipGeneratorPluginIntegrationTest extends AbstractPluginIntegrati
 
 		self::_createRelationshipType('part', 'ca_objects_x_collections');
 
-		self::_createListItem('test_collection_type', BaseModel::$s_ca_models_definitions['ca_collections']['FIELDS']['type_id']['LIST_CODE']);
 		self::_createListItem('test_object_type1', BaseModel::$s_ca_models_definitions['ca_objects']['FIELDS']['type_id']['LIST_CODE']);
 		self::_createListItem('test_object_type2', BaseModel::$s_ca_models_definitions['ca_objects']['FIELDS']['type_id']['LIST_CODE']);
 

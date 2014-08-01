@@ -271,13 +271,16 @@ abstract class AbstractPluginIntegrationTest extends PHPUnit_Framework_TestCase 
 	protected static function _createCollection($ps_idno_base) {
 		$vo_collection = new ca_collections();
 		$vo_collection->setMode(ACCESS_WRITE);
-		$vn_test_collection_list_item_id = self::_retrieveCreatedInstance('ca_list_items', 'test_collection_type')->getPrimaryKey();
+		$vo_test_collection_type_list_item = self::_retrieveCreatedInstance('ca_list_items', 'test_collection_type');
+		if (is_null($vo_test_collection_type_list_item)) {
+			$vo_test_collection_type_list_item = self::_createListItem('test_collection_type', BaseModel::$s_ca_models_definitions['ca_collections']['FIELDS']['type_id']['LIST_CODE']);
+		}
 		$vo_collection->set(array(
 				'idno' => self::_getIdno($ps_idno_base),
-				'type_id' => $vn_test_collection_list_item_id
+				'type_id' => $vo_test_collection_type_list_item->getPrimaryKey()
 		));
 		foreach (self::_retrieveCreatedInstancesByClass('ca_metadata_elements') as $vo_metadata_element) {
-			$vo_collection->addMetadataElementToType($vo_metadata_element->get('element_code'), $vn_test_collection_list_item_id);
+			$vo_collection->addMetadataElementToType($vo_metadata_element->get('element_code'), $vo_test_collection_type_list_item->getPrimaryKey());
 		}
 		$vo_collection->insert();
 		$vo_collection->addLabel(
@@ -295,10 +298,13 @@ abstract class AbstractPluginIntegrationTest extends PHPUnit_Framework_TestCase 
 	protected static function _createEntity($ps_idno_base) {
 		$vo_entity = new ca_entities();
 		$vo_entity->setMode(ACCESS_WRITE);
-		$vn_test_collection_list_item_id = self::_retrieveCreatedInstance('ca_list_items', 'test_entity_type')->getPrimaryKey();
+		$vo_test_entity_type_list_item = self::_retrieveCreatedInstance('ca_list_items', 'test_entity_type');
+		if (is_null($vo_test_entity_type_list_item)) {
+			$vo_test_entity_type_list_item = self::_createListItem('test_collection_type', BaseModel::$s_ca_models_definitions['ca_collections']['FIELDS']['type_id']['LIST_CODE']);
+		}
 		$vo_entity->set(array(
 				'idno' => self::_getIdno($ps_idno_base),
-				'type_id' => $vn_test_collection_list_item_id
+				'type_id' => $vo_test_entity_type_list_item->getPrimaryKey()
 		));
 		$vo_entity->insert();
 		$vo_entity->addLabel(
