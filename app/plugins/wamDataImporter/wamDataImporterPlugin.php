@@ -66,7 +66,6 @@ class wamDataImporterPlugin extends BaseApplicationPlugin {
 	 */
 	public function hookDataImportContentTree(&$pa_params){
 		foreach ($pa_params['content_tree'] as $vs_table_name => $va_table_content_tree) {
-
 			foreach ($va_table_content_tree as $vs_table_content_index => $va_table_content) {
 				$this->_processBundles($pa_params, $va_table_content, $vs_table_name, $vs_table_content_index);
 				if(isset($va_table_content['_interstitial'])){
@@ -74,7 +73,6 @@ class wamDataImporterPlugin extends BaseApplicationPlugin {
 				}
 			}
 		}
-
 		return $pa_params;
 	}
 
@@ -97,10 +95,7 @@ class wamDataImporterPlugin extends BaseApplicationPlugin {
 		if (isset($va_table_content) && isset($va_table_content['_translations'])) {
 			// Apply all translations
 			foreach ($va_table_content['_translations'] as $vs_name => $vs_translation_settings_json) {
-
 				$va_translation_settings = json_decode($vs_translation_settings_json, true);
-
-
 				if(json_last_error() !== JSON_ERROR_NONE){
 					if($o_log){
 						$o_log->logError(sprintf('Failed to parse JSON string "%s" while proccessing "%s" for idno "%s"', $vs_translation_settings_json,  $vs_name, $pa_params['idno']));
@@ -172,12 +167,11 @@ class wamDataImporterPlugin extends BaseApplicationPlugin {
 	 * @param null/array $pa_import_event_source
 	 */
 	protected function _processEntityBundle(&$table_content, $translation_settings, $value, $vs_name, $value_index, $po_import_event = null, $pa_import_event_source = null) {
-		global $g_ui_locale_id;
 		$vs_entity_type = caGetOption('entityType', $translation_settings, 'ind');
 		$table_content[$vs_name][$value_index] = DataMigrationUtils::getEntityID(
 				DataMigrationUtils::splitEntityName($value),
 				$vs_entity_type,
-				$g_ui_locale_id,
+				ca_locales::getDefaultCataloguingLocaleID(),
 				null,
 				array('matchOnDisplayName' => true, 'importEvent' => $po_import_event, 'importEventSource' => $pa_import_event_source)
 		);
@@ -193,10 +187,8 @@ class wamDataImporterPlugin extends BaseApplicationPlugin {
 	 * @param $pa_event_source null/array
 	 * @param $pa_params array
 	 * @param $o_log null/KLogger
-	 * @internal int $g_ui_locale_id
 	 */
 	protected function _processListItemBundle(&$pa_table_content, $pa_translation_settings, $value, $vs_name, $value_index, $o_import_event, $pa_event_source, &$pa_params, $o_log) {
-		global $g_ui_locale_id;
 		$vs_list_code = caGetOption('list', $pa_translation_settings);
 		if (!isset($vs_list_code) && $o_log) {
 			$o_log->logError(sprintf('No list set in "%s" translation type "%s" on "%s" for idno "%s"', $pa_translation_settings['table'], $vs_name, $pa_params['idno']));
@@ -225,6 +217,6 @@ class wamDataImporterPlugin extends BaseApplicationPlugin {
 				'importEventSource' => $pa_event_source,
 		);
 
-		$pa_table_content[$vs_name][$value_index] = DataMigrationUtils::getListItemID($vs_list_code, $vs_item_idno, $ps_type, $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
+		$pa_table_content[$vs_name][$value_index] = DataMigrationUtils::getListItemID($vs_list_code, $vs_item_idno, $ps_type, ca_locales::getDefaultCataloguingLocaleID(), $va_attr_vals_with_parent, $pa_options);
 	}
 }
