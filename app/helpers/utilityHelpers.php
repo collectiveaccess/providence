@@ -2039,4 +2039,22 @@ function caFileIsIncludable($ps_file) {
 		return array('tag' => $vs_tag_proc, 'options' => $va_opts);
 	}
 	# ----------------------------------------
+	/**
+	 * 
+	 *
+	 * @return array 
+	 */
+	function caFitImageDimensions($pn_original_width, $pn_original_height, $pn_target_width, $pn_target_height, $pa_options=null) {
+		$pn_original_width = preg_replace('![^\d]+!', '', $pn_original_width);
+		$pn_original_height = preg_replace('![^\d]+!', '', $pn_original_height);
+		if ($pn_original_width > $pn_original_height) {
+			$vn_scale_factor = $pn_target_width/$pn_original_width;
+			$pn_target_height = $vn_scale_factor * $pn_original_height;
+		} else {
+			$vn_scale_factor = $pn_target_height/$pn_original_height;
+			$pn_target_width = $vn_scale_factor * $pn_original_width;
+		}
+		return array('width' => (int)$pn_target_width, 'height' => (int)$pn_target_height);
+	}
+	# ----------------------------------------
 ?>
