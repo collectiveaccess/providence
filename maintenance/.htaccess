@@ -1,0 +1,3 @@
+<FilesMatch "^(index\.html)?$">
+        Allow from all
+</FilesMatch>
