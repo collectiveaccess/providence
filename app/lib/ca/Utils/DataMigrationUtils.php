@@ -778,13 +778,12 @@
 			if (!$ps_item_idno) { $ps_item_idno = $vs_plural_label; }
 
 			if(!isset($pa_options['cache'])) { $pa_options['cache'] = true; }
-			$vs_cache_key = $pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id.'/'.$vs_singular_label.'/'.$vs_plural_label;
-
+			// Create a cache key and compress it to save memory
+			$vs_cache_key = crc32($pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id.'/'.$vs_singular_label.'/'.$vs_plural_label . '/' . json_encode($pa_match_on));
 			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			/** @var KLogger $o_log */
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
-			$pa_options['cache'] = false;
 			if ($pa_options['cache'] && isset(DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key])) {
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
 					$t_item = new ca_list_items(DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key]);
