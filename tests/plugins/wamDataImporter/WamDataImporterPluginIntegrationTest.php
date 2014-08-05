@@ -54,6 +54,18 @@ class WamDataImporterPluginIntegrationTest extends AbstractPluginIntegrationTest
 		self::_createListItem('Aus bus', self::_getIdno('taxonomy'), 'scientific_name');
 		self::_createEntity('Linnaeus');
 		self::_createEntity('Darwin');
+
+
+		self::_createListItem('collecting_event', BaseModel::$s_ca_models_definitions['ca_occurrences']['FIELDS']['type_id']['LIST_CODE']);
+
+		self::_createListItem('test_list_item_type', BaseModel::$s_ca_models_definitions['ca_list_items']['FIELDS']['type_id']['LIST_CODE']);
+		$vo_container = self::_createMetadataElement('samplingProtocolContainer', __CA_ATTRIBUTE_VALUE_CONTAINER__);
+		$vo_protocol_value = self::_createMetadataElement('samplingProtocolValue', __CA_ATTRIBUTE_VALUE_LIST__);
+		$vo_protocol_list = self::_createList('samplingProtocol');
+		$vo_protocol_value->set('list_id', $vo_protocol_list->getPrimaryKey());
+		$vo_protocol_value->set('parent_id', $vo_container->getPrimaryKey());
+		$vo_protocol_text = self::_createMetadataElement('samplingProtocolText', __CA_ATTRIBUTE_VALUE_TEXT__);
+		$vo_protocol_text->set('parent_id', $vo_container->getPrimaryKey());
 	}
 
 	public static function tearDownAfterClass() {
@@ -209,14 +221,14 @@ class WamDataImporterPluginIntegrationTest extends AbstractPluginIntegrationTest
 		// ACT
 		$vo_plugin->hookDataImportContentTree($va_params);
 		// ASSERT
-		$vo_created_entities = array(
+		$va_created_records = array(
 			new ca_entities(DataMigrationUtils::getEntityID(DataMigrationUtils::splitEntityName('Hooker'), self::_getIdno('test_entity_type'), ca_locales::getDefaultCataloguingLocaleID(), null, array( 'matchOnDisplayName' => true, 'dontCreate' => true )))
 		);
 		$va_identified_by = $va_params['content_tree']['ca_list_items'][0]['_interstitial'][self::_getIdno('identifiedBy')];
 		$this->assertEquals(1, sizeof($va_identified_by));
-		$this->assertEquals($vo_created_entities[0]->getPrimaryKey(), $va_identified_by[0]);
+		$this->assertEquals($va_created_records[0]->getPrimaryKey(), $va_identified_by[0]);
 		// CLEANUP
-		self::_cleanupEntities($vo_created_entities);
+		self::_cleanupCreatedRecords($va_created_records);
 	}
 
 	public function testIdentificationOfExistingListItemByMultipleNewEntities() {
@@ -252,22 +264,83 @@ class WamDataImporterPluginIntegrationTest extends AbstractPluginIntegrationTest
 		// ACT
 		$vo_plugin->hookDataImportContentTree($va_params);
 		// ASSERT
-		$vo_created_entities = array(
+		$va_created_records = array(
 			new ca_entities(DataMigrationUtils::getEntityID(DataMigrationUtils::splitEntityName('Banks'), self::_getIdno('test_entity_type'), ca_locales::getDefaultCataloguingLocaleID(), null, array( 'matchOnDisplayName' => true, 'dontCreate' => true ))),
 			new ca_entities(DataMigrationUtils::getEntityID(DataMigrationUtils::splitEntityName('Cook'), self::_getIdno('test_entity_type'), ca_locales::getDefaultCataloguingLocaleID(), null, array( 'matchOnDisplayName' => true, 'dontCreate' => true )))
 		);
 		$va_identified_by = $va_params['content_tree']['ca_list_items'][0]['_interstitial'][self::_getIdno('identifiedBy')];
 		$this->assertEquals(2, sizeof($va_identified_by));
-		$this->assertEquals($vo_created_entities[0]->getPrimaryKey(), $va_identified_by[0]);
-		$this->assertEquals($vo_created_entities[1]->getPrimaryKey(), $va_identified_by[1]);
+		$this->assertEquals($va_created_records[0]->getPrimaryKey(), $va_identified_by[0]);
+		$this->assertEquals($va_created_records[1]->getPrimaryKey(), $va_identified_by[1]);
 		// CLEANUP
-		self::_cleanupEntities($vo_created_entities);
+		self::_cleanupCreatedRecords($va_created_records);
 	}
 
-	private static function _cleanupEntities($va_entities) {
-		foreach ($va_entities as $vo_entity) {
-			$vo_entity->setMode(ACCESS_WRITE);
-			$vo_entity->delete(true, array( 'hard' => true ));
+
+	public function testSplitElementOnRelatedOccurrenceListItem(){
+		// ARRANGE
+		$vo_plugin = new wamDataImporterPlugin(__DIR__ . '/conf/integration');
+		$vs_idno = 'test_object';
+		$va_params = array(
+			'content_tree' => array(
+				'ca_occurrences' =>  array(
+					array(
+						'_type' => self::_getIdno('collecting_event'),
+						self::_getIdno('samplingProtocolContainer') => array(
+							self::_getIdno('samplingProtocolValue') => 'WET PITFALL TRAP',
+							self::_getIdno('samplingProtocolText') => 'Running around in a pitfall trap'
+						),
+						'_translations' => array(
+							self::_getIdno('samplingProtocolContainer') => json_encode(
+								array(
+									'element' => self::_getIdno('samplingProtocolValue'),
+									'table' => 'ca_list_items',
+									'list' => self::_getIdno('samplingProtocol'),
+									'type' => self::_getIdno('test_list_item_type'),
+									'entityType' => self::_getIdno('test_entity_type')
+								)
+							)
+						)
+					)
+				)
+			),
+			'idno' => $vs_idno
+		);
+		// ACT
+		$vo_plugin->hookDataImportContentTree($va_params);
+
+		// ASSERT
+
+
+		$va_created_records = array(
+			DataMigrationUtils::getListItemID(
+				self::_getIdno('samplingProtocol'),
+				null,
+				self::_getIdno('test_list_item_type'),
+				ca_locales::getDefaultCataloguingLocaleID(),
+				array(
+					'preferred_labels' => array(
+						'name_singular' => 'WET PITFALL TRAP'
+					)
+				),
+				array(
+					'dontCreate' => true,
+					'returnInstance' => true
+				)
+			)
+		);
+		$va_sampling_protocol = $va_params['content_tree']['ca_occurrences'][0][self::_getIdno('samplingProtocolContainer')];
+		$this->assertEquals(2, sizeof($va_sampling_protocol));
+		$this->assertEquals($va_created_records[0]->getPrimaryKey(), $va_sampling_protocol[self::_getIdno('samplingProtocolValue')]);
+		// CLEANUP
+		self::_cleanupCreatedRecords($va_created_records);
+
+
+	}
+	private static function _cleanupCreatedRecords($pa_records) {
+		foreach ($pa_records as $vo_record) {
+			$vo_record->setMode(ACCESS_WRITE);
+			$vo_record->delete(true, array( 'hard' => true ));
 		}
 	}
 }
