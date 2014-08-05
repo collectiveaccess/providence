@@ -144,7 +144,7 @@ class WamDataImporterPluginIntegrationTest extends AbstractPluginIntegrationTest
 		$vo_plugin->hookDataImportContentTree($va_params);
 		// ASSERT
 		$va_identified_by = $va_params['content_tree']['ca_list_items'][0]['_interstitial'][self::_getIdno('identifiedBy')];
-		$this->assertEquals(2, sizeof($va_identified_by));
+		$this->assertCount(2, $va_identified_by);
 		$this->assertEquals(self::_retrieveCreatedInstance('ca_entities', 'Linnaeus')->getPrimaryKey(), $va_identified_by[0]);
 		$this->assertEquals(self::_retrieveCreatedInstance('ca_entities', 'Darwin')->getPrimaryKey(), $va_identified_by[1]);
 	}
@@ -183,7 +183,7 @@ class WamDataImporterPluginIntegrationTest extends AbstractPluginIntegrationTest
 		$vo_plugin->hookDataImportContentTree($va_params);
 		// ASSERT
 		$va_identified_by = $va_params['content_tree']['ca_list_items'][0]['_interstitial'][self::_getIdno('identifiedBy')];
-		$this->assertEquals(2, sizeof($va_identified_by));
+		$this->assertCount(2, $va_identified_by);
 		$this->assertEquals(self::_retrieveCreatedInstance('ca_entities', 'Linnaeus')->getPrimaryKey(), $va_identified_by[0]);
 		$this->assertEquals(self::_retrieveCreatedInstance('ca_entities', 'Darwin')->getPrimaryKey(), $va_identified_by[1]);
 	}
@@ -269,7 +269,7 @@ class WamDataImporterPluginIntegrationTest extends AbstractPluginIntegrationTest
 			new ca_entities(DataMigrationUtils::getEntityID(DataMigrationUtils::splitEntityName('Cook'), self::_getIdno('test_entity_type'), ca_locales::getDefaultCataloguingLocaleID(), null, array( 'matchOnDisplayName' => true, 'dontCreate' => true )))
 		);
 		$va_identified_by = $va_params['content_tree']['ca_list_items'][0]['_interstitial'][self::_getIdno('identifiedBy')];
-		$this->assertEquals(2, sizeof($va_identified_by));
+		$this->assertCount(2, $va_identified_by);
 		$this->assertEquals($va_created_records[0]->getPrimaryKey(), $va_identified_by[0]);
 		$this->assertEquals($va_created_records[1]->getPrimaryKey(), $va_identified_by[1]);
 		// CLEANUP
@@ -330,8 +330,9 @@ class WamDataImporterPluginIntegrationTest extends AbstractPluginIntegrationTest
 			)
 		);
 		$va_sampling_protocol = $va_params['content_tree']['ca_occurrences'][0][self::_getIdno('samplingProtocolContainer')];
-		$this->assertEquals(2, sizeof($va_sampling_protocol));
-		$this->assertEquals($va_created_records[0]->getPrimaryKey(), $va_sampling_protocol[self::_getIdno('samplingProtocolValue')]);
+		$this->assertCount(2, $va_sampling_protocol, 'Number of elements should match the source');
+		$this->assertEquals($va_created_records[0]->getPrimaryKey(), $va_sampling_protocol[self::_getIdno('samplingProtocolValue')], 'Retrieved value should match');
+		$this->assertEquals('Running around in a pitfall trap', $va_sampling_protocol[self::_getIdno('samplingProtocolText')], 'Should not change the field that is not the target element.');
 		// CLEANUP
 		self::_cleanupCreatedRecords($va_created_records);
 
