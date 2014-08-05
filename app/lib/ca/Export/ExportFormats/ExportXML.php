@@ -60,7 +60,7 @@ class ExportXML extends BaseExportFormat {
 	public function processExport($pa_data,$pa_options=array()){
 		$pb_single_record = caGetOption('singleRecord', $pa_options);
 		//$pb_rdf_mode = caGetOption('rdfMode', $pa_options);
-		$pb_dont_use_cdata = (bool) caGetOption('dontUseCDATA', $pa_options['settings'], false);
+		$pb_strip_cdata = (bool) caGetOption('stripCDATA', $pa_options['settings'], false);
 
 		//caDebug($pa_data,"Data to build XML from");
 		
@@ -69,16 +69,23 @@ class ExportXML extends BaseExportFormat {
 		// XML exports should usually have only one top-level element (i.e. one root).
 		if(sizeof($pa_data)!=1){ return false; }
 
-		$this->processItem(array_pop($pa_data),$this->opo_dom,$pb_dont_use_cdata);
+		$this->processItem(array_pop($pa_data),$this->opo_dom);
 
 		$this->log(_t("XML export formatter: Done processing export tree ..."));
 
 		// when dealing with a record set export, we don't want <?xml tags in front of each record
 		// that way we can simply dump a sequence of records in a file and have well-formed XML as result
-		return ($pb_single_record ? $this->opo_dom->saveXML() : $this->opo_dom->saveXML($this->opo_dom->firstChild));
+		$vs_return = ($pb_single_record ? $this->opo_dom->saveXML() : $this->opo_dom->saveXML($this->opo_dom->firstChild));
+
+		if($pb_strip_cdata) {
+			$vs_return = str_replace('<![CDATA[', '', $vs_return);
+			$vs_return = str_replace(']]>','',$vs_return);
+		}
+
+		return $vs_return;
 	}
 	# ------------------------------------------------------
-	private function processItem($pa_item, $po_parent,$pb_dont_use_cdata=false){
+	private function processItem($pa_item, $po_parent){
 		if(!($po_parent instanceof DOMNode)) return false;
 
 		//caDebug($pa_item,"Data passed to XML item processor");
@@ -101,15 +108,10 @@ class ExportXML extends BaseExportFormat {
 
 			if(strlen($vs_text)>0){
 
-				if(($vs_escaped_text != $vs_text) && !$pb_dont_use_cdata) { // sth was escaped by caEscapeForXML -> wrap in CDATA if option allows
+				if($vs_escaped_text != $vs_text) { // sth was escaped by caEscapeForXML -> wrap in CDATA
 					$vo_new_element = $this->opo_dom->createElement($vs_element);
 					$vo_new_element->appendChild(new DOMCdataSection($vs_text));
-				}  elseif($pb_dont_use_cdata) { // somebody wants to make sure, field content is inserted as-is, no matter what
-					$vo_new_element = $this->opo_dom->createElement($vs_element);
-					$vo_fragment = $this->opo_dom->createDocumentFragment();
-					$vo_fragment->appendXML($vs_text);
-					$vo_new_element->appendChild($vo_fragment);
-				} else { // the default behavior of DOMDocument should be okay for the rest
+				}  else { // add text as-is using DOMDocument
 					$vo_new_element = $this->opo_dom->createElement($vs_element,$vs_text);
 				}
 				
@@ -122,7 +124,7 @@ class ExportXML extends BaseExportFormat {
 		if(is_array($pa_item['children'])){
 			foreach($pa_item['children'] as $va_child){
 				if(!empty($va_child)){
-					$this->processItem($va_child,$vo_new_element,$pb_dont_use_cdata);
+					$this->processItem($va_child,$vo_new_element);
 				}
 			}
 		}
@@ -178,12 +180,12 @@ class ExportXML extends BaseExportFormat {
 }
 
 BaseExportFormat::$s_format_settings['XML'] = array(
-	'dontUseCDATA' => array(
+	'stripCDATA' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_CHECKBOXES,
 		'default' => 0,
 		'width' => 1, 'height' => 1,
-		'label' => _t("Don't Use CDATA"),
-		'description' => _t("Do not wrap field content in CDATA sections if there are invalid XML characters.")
+		'label' => _t("Strip CDATA"),
+		'description' => _t("By default the exporter wraps field content that contains invalid XML in CDATA sections to make sure the XML is valid regardless of the field content. If this option is set, the exporter explicitly strips the CDATA tags before returning the XML text. Use only if you know what you're doing!")
 	),
 );
