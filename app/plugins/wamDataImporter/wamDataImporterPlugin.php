@@ -209,7 +209,7 @@ class wamDataImporterPlugin extends BaseApplicationPlugin {
 
 		$va_attr_vals_with_parent['parent_id'] = $vn_parent_id;
 		$va_attr_vals_with_parent['is_enabled'] = 1;
-		$vs_item_idno = caGetOption('idno', $va_attr_vals_with_parent, is_array($value) ? null : preg_replace('/\W+/', '_', $value));
+		$vs_item_idno = caGetOption('idno', $va_attr_vals_with_parent, is_array($value) ? null : $value);
 
 		$pa_options = array(
 				'matchOn' => array('label', 'idno'),
