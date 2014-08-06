@@ -92,6 +92,15 @@
 				'label' => _t('Match on'),
 				'description' => _t('List indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails')
 			),
+			'collectionSplitter_dontCreate' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => false,
+				'label' => _t('Do not create new records'),
+				'description' => _t('If set splitter will only match on existing records and will not create new ones.')
+			),
 			'collectionSplitter_skipIfValue' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_FIELD,

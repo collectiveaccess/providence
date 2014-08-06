@@ -514,6 +514,8 @@
 			$pa_options['matchOn'] = $va_match_on;
 		}
 		
+		$pb_dont_create = caGetOption('dontCreate', $pa_options, (bool)$pa_item['settings']["{$ps_refinery_name}_matchOn"]);
+		
 		$va_vals = array();
 		$vn_c = 0;
 		if (!($t_instance = $o_dm->getInstanceByTableName($ps_table, true))) { return array(); }
@@ -731,7 +733,7 @@
 							$va_vals[][$vs_terminal] = $vn_item_id;
 							continue;
 						} else {
-							if ($o_log) { $o_log->logError(_t("[{$ps_refinery_name}Refinery] Could not add %2 %1", $vs_item, $ps_item_prefix)); }
+							if ($o_log && !$pb_dont_create) { $o_log->logError(_t("[{$ps_refinery_name}Refinery] Could not add %2 %1", $vs_item, $ps_item_prefix)); }
 						}
 					} elseif ((sizeof($va_group_dest) == 1) && ($vs_terminal == $ps_table)) {
 						// Set relationship type
@@ -830,6 +832,7 @@
 						if ($o_log) { $o_log->logError(_t("[{$ps_refinery_name}Refinery] Could not add %2 %1: cannot map %3 using %1", $vs_item, $ps_item_prefix, join(".", $va_group_dest))); }
 					}
 					$va_val['_matchOn'] = $va_match_on;
+					if ($pb_dont_create) { $va_val['_dontCreate'] = 1; }
 					$va_vals[] = $va_val;
 					$vn_c++;
 				}
