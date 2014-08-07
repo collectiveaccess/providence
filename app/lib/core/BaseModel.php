@@ -721,10 +721,14 @@ class BaseModel extends BaseObject {
 								$vs_version = array_shift($va_tmp);
 							}
 							
-							if (isset($pa_options['returnURL']) && $pa_options['returnURL']) {
-								return $this->getMediaUrl($va_tmp[1], $vs_version, $pa_options);
+							if (isset($va_tmp[3])) {
+								return $this->getMediaInfo($va_tmp[1], $vs_version, 'width');
 							} else {
-								return $this->getMediaTag($va_tmp[1], $vs_version, $pa_options);
+								if (isset($pa_options['returnURL']) && $pa_options['returnURL']) {
+									return $this->getMediaUrl($va_tmp[1], $vs_version);
+								} else {
+									return $this->getMediaTag($va_tmp[1], $vs_version);
+								}
 							}
 						}
 						
@@ -3586,7 +3590,10 @@ class BaseModel extends BaseObject {
 			if (!$ps_property) {
 				return $va_media_info[$ps_version];
 			} else {
-				return $va_media_info[$ps_version][$ps_property];
+				// Try key as passed, then all UPPER and all lowercase
+				if($vs_v = $va_media_info[$ps_version][$ps_property]) { return $vs_v; }
+				if($vs_v = $va_media_info[$ps_version][strtoupper($ps_property)]) { return $vs_v; }
+				if($vs_v = $va_media_info[$ps_version][strtolower($ps_property)]) { return $vs_v; }
 			}
 		} else {
 			return $va_media_info;
@@ -6047,6 +6054,7 @@ class BaseModel extends BaseObject {
 		if ($va_tmp[0] != $this->tableName()) { return null; }
 		
 		if ($this->hasField($va_tmp[1])) {
+			if (caGetOption('asArrayElement', $pa_options, false)) { $ps_field .= "[]"; } 
 			return $this->htmlFormElement($va_tmp[1], '^ELEMENT', array_merge($pa_options, array(
 					'name' => $ps_field,
 					'id' => str_replace(".", "_", $ps_field),
