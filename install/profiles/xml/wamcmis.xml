@@ -201,8 +201,8 @@
                 <item idno="bird" enabled="1" default="0">
                   <labels>
                     <label locale="en_AU" preferred="1">
-                      <name_singular>Ornithology (Bird)</name_singular>
-                      <name_plural>Ornithology (Birds)</name_plural>
+                      <name_singular>Ornithology</name_singular>
+                      <name_plural>Ornithology</name_plural>
                     </label>
                   </labels>
                 </item>
@@ -14283,7 +14283,6 @@
         </label>
       </labels>
       <settings>
-        <setting name="requireValue">0</setting>
         <setting name="render">select</setting>
       </settings>
       <typeRestrictions>
@@ -14953,6 +14952,16 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+        <restriction>
+          <table>ca_objects</table>
+          <type>tz</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="individualCount" datatype="Text">
@@ -15055,7 +15064,6 @@
         </label>
       </labels>
       <settings>
-        <setting name="requireValue">0</setting>
         <setting name="render">select</setting>
       </settings>
       <typeRestrictions>
@@ -15087,7 +15095,6 @@
         </label>
       </labels>
       <settings>
-        <setting name="requireValue">0</setting>
         <setting name="render">select</setting>
       </settings>
       <typeRestrictions>
@@ -15147,6 +15154,8 @@
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
+          <type>tz</type>
+          <includeSubtypes>1</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -15503,10 +15512,10 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="samplingProtocol" datatype="Container" list="associated_specimen_types">
+    <metadataElement code="samplingProtocol" datatype="Container">
       <labels>
         <label locale="en_AU">
-          <name>samplingProtocol</name>
+          <name>Sampling Protocol</name>
           <description>The name of, reference to, or description of the method or protocol used during an Event.</description>
         </label>
       </labels>
@@ -15514,25 +15523,6 @@
         <setting name="doesNotTakeLocale">1</setting>
       </settings>
       <elements>
-        <metadataElement code="samplingProtocolValue" datatype="List" list="samplingProtocol">
-          <labels>
-            <label locale="en_AU">
-              <name>Value</name>
-            </label>
-          </labels>
-          <settings>
-            <setting name="listWidth">40</setting>
-            <setting name="listHeight"/>
-            <setting name="doesNotTakeLocale">1</setting>
-            <setting name="requireValue">0</setting>
-            <setting name="nullOptionText">Not set</setting>
-            <setting name="canBeUsedInSort">1</setting>
-            <setting name="render">lookup</setting>
-            <setting name="maxColumns">3</setting>
-            <setting name="canBeUsedInSearchForm">1</setting>
-            <setting name="canBeUsedInDisplay">1</setting>
-          </settings>
-        </metadataElement>
         <metadataElement code="samplingProtocolText" datatype="Text">
           <labels>
             <label locale="en_AU">
@@ -15559,11 +15549,40 @@
             <setting name="isDependentValue">0</setting>
           </settings>
         </metadataElement>
+        <metadataElement code="samplingProtocolValue" datatype="List" list="samplingProtocol">
+          <labels>
+            <label locale="en_AU">
+              <name>Value</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="listWidth">40</setting>
+            <setting name="listHeight"/>
+            <setting name="doesNotTakeLocale">1</setting>
+            <setting name="requireValue">0</setting>
+            <setting name="nullOptionText">Not set</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="render">lookup</setting>
+            <setting name="maxColumns">3</setting>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+          </settings>
+        </metadataElement>
       </elements>
       <typeRestrictions>
         <restriction>
           <table>ca_occurrences</table>
           <type>collectingEvent</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_objects</table>
+          <type>tz</type>
+          <includeSubtypes>1</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">255</setting>
@@ -15597,7 +15616,7 @@
     <metadataElement code="eventDate" datatype="DateRange">
       <labels>
         <label locale="en_AU">
-          <name>eventDate</name>
+          <name>Event Date</name>
           <description>The date-time or interval during which an Event occurred. For occurrences, this is the date-time when the event was recorded. Not suitable for a time in a geological context. Recommended best practice is to use an encoding scheme, such as ISO 8601:2004(E). See &lt;a href="http://wiki.collectiveaccess.org/wiki/Date_and_Time_Formats"&gt;CollectiveAccess Date and Time formats&lt;/a&gt; for valid values.</description>
         </label>
       </labels>
@@ -15631,12 +15650,22 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+        <restriction>
+          <table>ca_objects</table>
+          <type>tz</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="eventTime" datatype="TimeCode">
       <labels>
         <label locale="en_AU">
-          <name>eventTime</name>
+          <name>Event Time</name>
           <description>The time or interval during which an Event occurred. Recommended best practice is to use an encoding scheme, such as ISO 8601:2004(E).</description>
         </label>
       </labels>
@@ -15654,6 +15683,16 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+        <restriction>
+          <table>ca_objects</table>
+          <type>tz</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="habitat" datatype="List" list="habitatType">
@@ -15665,7 +15704,6 @@
       </labels>
       <settings>
         <setting name="doesNotTakeLocale">0</setting>
-        <setting name="requireValue">0</setting>
         <setting name="render">select</setting>
       </settings>
       <elements>
@@ -15706,12 +15744,22 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+        <restriction>
+          <table>ca_objects</table>
+          <type>tz</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="eventRemarks" datatype="Text">
       <labels>
         <label locale="en_AU">
-          <name>eventRemarks</name>
+          <name>Event Remarks</name>
           <description>Comments or notes about the Event.</description>
         </label>
       </labels>
@@ -15736,6 +15784,16 @@
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">0</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_objects</table>
+          <type>tz</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -16312,7 +16370,6 @@ http://palaeontology.palass-pubs.org/pdf/Vol%2031/Pages%20223-227.pdf2011.</desc
         </label>
       </labels>
       <settings>
-        <setting name="requireValue">0</setting>
         <setting name="render">checklist</setting>
         <setting name="maxColumns">6</setting>
       </settings>
@@ -16345,7 +16402,6 @@ http://palaeontology.palass-pubs.org/pdf/Vol%2031/Pages%20223-227.pdf2011.</desc
         </label>
       </labels>
       <settings>
-        <setting name="requireValue">0</setting>
         <setting name="render">select</setting>
       </settings>
       <elements>
@@ -16407,6 +16463,7 @@ http://palaeontology.palass-pubs.org/pdf/Vol%2031/Pages%20223-227.pdf2011.</desc
       </labels>
       <settings>
         <setting name="canBeUsedInSort">0</setting>
+        <setting name="requireValue">1</setting>
         <setting name="render">select</setting>
       </settings>
       <typeRestrictions>
@@ -16581,6 +16638,7 @@ http://palaeontology.palass-pubs.org/pdf/Vol%2031/Pages%20223-227.pdf2011.</desc
       <settings>
         <setting name="doesNotTakeLocale">0</setting>
         <setting name="displayTemplate">Scientific Name: &lt;em&gt;scientificName&lt;/em&gt;</setting>
+        <setting name="requireValue">1</setting>
         <setting name="render">horiz_hierbrowser_with_search</setting>
       </settings>
       <typeRestrictions>
@@ -16603,7 +16661,6 @@ http://palaeontology.palass-pubs.org/pdf/Vol%2031/Pages%20223-227.pdf2011.</desc
         </label>
       </labels>
       <settings>
-        <setting name="requireValue">0</setting>
         <setting name="render">select</setting>
         <setting name="displayTemplate">Identification Verification Status: ^idVerificationStatus</setting>
       </settings>
@@ -16637,7 +16694,6 @@ http://palaeontology.palass-pubs.org/pdf/Vol%2031/Pages%20223-227.pdf2011.</desc
         </label>
       </labels>
       <settings>
-        <setting name="requireValue">0</setting>
         <setting name="displayTemplate">&lt;em&gt;et al.&lt;/em&gt;</setting>
         <setting name="render">yes_no_checkboxes</setting>
       </settings>
@@ -16699,6 +16755,16 @@ http://palaeontology.palass-pubs.org/pdf/Vol%2031/Pages%20223-227.pdf2011.</desc
         <restriction>
           <table>ca_occurrences</table>
           <type>collectingEvent</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_objects</table>
+          <type>tz</type>
+          <includeSubtypes>1</includeSubtypes>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -16990,7 +17056,6 @@ Examples: "mm", "C", "km", "ha".</description>
         </label>
       </labels>
       <settings>
-        <setting name="requireValue">0</setting>
         <setting name="render">yes_no_checkboxes</setting>
       </settings>
       <typeRestrictions>
@@ -17014,6 +17079,7 @@ Examples: "mm", "C", "km", "ha".</description>
         </label>
       </labels>
       <settings>
+        <setting name="requireValue">1</setting>
         <setting name="render">horiz_hierbrowser_with_search</setting>
       </settings>
       <typeRestrictions>
@@ -17161,7 +17227,6 @@ Examples: "mm", "C", "km", "ha".</description>
       </labels>
       <settings>
         <setting name="doesNotTakeLocale">0</setting>
-        <setting name="requireValue">0</setting>
         <setting name="render">horiz_hierbrowser_with_search</setting>
       </settings>
       <typeRestrictions>
@@ -17208,7 +17273,6 @@ Examples: "mm", "C", "km", "ha".</description>
         </label>
       </labels>
       <settings>
-        <setting name="requireValue">0</setting>
         <setting name="render">yes_no_checkboxes</setting>
       </settings>
       <elements>
@@ -17370,7 +17434,6 @@ Examples: "mm", "C", "km", "ha".</description>
       </labels>
       <settings>
         <setting name="doesNotTakeLocale">0</setting>
-        <setting name="requireValue">0</setting>
         <setting name="render">select</setting>
       </settings>
       <typeRestrictions>
@@ -17395,7 +17458,6 @@ This is a legacy field for anthropology and will be excluded from the user inter
         </label>
       </labels>
       <settings>
-        <setting name="requireValue">0</setting>
         <setting name="render">yes_no_checkboxes</setting>
       </settings>
       <typeRestrictions>
@@ -17648,6 +17710,7 @@ This is a legacy field for anthropology and will be excluded from the user inter
         </label>
       </labels>
       <settings>
+        <setting name="requireValue">1</setting>
         <setting name="render">select</setting>
       </settings>
       <typeRestrictions>
@@ -17911,7 +17974,6 @@ This is a legacy field for anthropology and will be excluded from the user inter
         </label>
       </labels>
       <settings>
-        <setting name="requireValue">0</setting>
         <setting name="render">select</setting>
       </settings>
       <typeRestrictions>
@@ -17951,7 +18013,6 @@ This is a legacy field for anthropology and will be excluded from the user inter
         </label>
       </labels>
       <settings>
-        <setting name="requireValue">0</setting>
         <setting name="render">yes_no_checkboxes</setting>
       </settings>
       <typeRestrictions>
@@ -17998,7 +18059,6 @@ This is a legacy field for anthropology and will be excluded from the user inter
         </label>
       </labels>
       <settings>
-        <setting name="requireValue">0</setting>
         <setting name="render">yes_no_checkboxes</setting>
       </settings>
       <typeRestrictions>
@@ -18085,7 +18145,6 @@ This is a legacy field for anthropology and will be excluded from the user inter
       <settings>
         <setting name="listWidth"/>
         <setting name="listHeight"/>
-        <setting name="requireValue">0</setting>
         <setting name="render">horiz_hierbrowser_with_search</setting>
       </settings>
       <typeRestrictions>
@@ -18466,7 +18525,6 @@ This is a legacy field for anthropology and will be excluded from the user inter
         <setting name="doesNotTakeLocale">0</setting>
         <setting name="canBeUsedInSearchForm">0</setting>
         <setting name="canBeUsedInDisplay">0</setting>
-        <setting name="requireValue">0</setting>
         <setting name="render">checklist</setting>
       </settings>
       <typeRestrictions>
@@ -18489,7 +18547,6 @@ This is a legacy field for anthropology and will be excluded from the user inter
         </label>
       </labels>
       <settings>
-        <setting name="requireValue">0</setting>
         <setting name="render">checklist</setting>
       </settings>
       <typeRestrictions>
@@ -18512,7 +18569,6 @@ This is a legacy field for anthropology and will be excluded from the user inter
         </label>
       </labels>
       <settings>
-        <setting name="requireValue">0</setting>
         <setting name="render">checklist</setting>
       </settings>
       <typeRestrictions>
@@ -18765,7 +18821,6 @@ This is a legacy field for anthropology and will be excluded from the user inter
         </label>
       </labels>
       <settings>
-        <setting name="requireValue">0</setting>
         <setting name="render">yes_no_checkboxes</setting>
       </settings>
       <typeRestrictions>
@@ -19512,7 +19567,6 @@ Examples: &lt;em&gt;James L. Patton&lt;/em&gt;, &lt;em&gt;Theodore Pappenfuss&lt
         </label>
       </labels>
       <settings>
-        <setting name="requireValue">0</setting>
         <setting name="render">yes_no_checkboxes</setting>
       </settings>
       <elements>
@@ -19561,7 +19615,6 @@ Examples: &lt;em&gt;James L. Patton&lt;/em&gt;, &lt;em&gt;Theodore Pappenfuss&lt
         </label>
       </labels>
       <settings>
-        <setting name="requireValue">0</setting>
         <setting name="render">yes_no_checkboxes</setting>
       </settings>
       <elements>
@@ -19637,7 +19690,6 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
       </labels>
       <settings>
         <setting name="listWidth">665px</setting>
-        <setting name="requireValue">0</setting>
         <setting name="render">horiz_hierbrowser_with_search</setting>
       </settings>
       <elements>
@@ -19688,6 +19740,7 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
         </label>
       </labels>
       <settings>
+        <setting name="requireValue">1</setting>
         <setting name="render">yes_no_checkboxes</setting>
       </settings>
       <typeRestrictions>
@@ -19730,7 +19783,6 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
         </label>
       </labels>
       <settings>
-        <setting name="requireValue">0</setting>
         <setting name="render">select</setting>
       </settings>
       <typeRestrictions>
@@ -20013,7 +20065,6 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
       </labels>
       <settings>
         <setting name="listHeight"/>
-        <setting name="requireValue">0</setting>
         <setting name="render">lookup</setting>
       </settings>
       <typeRestrictions>
@@ -20048,7 +20099,6 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
       </labels>
       <settings>
         <setting name="listHeight"/>
-        <setting name="requireValue">0</setting>
         <setting name="render">lookup</setting>
       </settings>
       <typeRestrictions>
@@ -20339,6 +20389,16 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+        <restriction>
+          <table>ca_objects</table>
+          <type>tz</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="lithostratigraphic_provenance" datatype="List" list="lithostratigraphic_provenance">
@@ -20349,7 +20409,6 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
         </label>
       </labels>
       <settings>
-        <setting name="requireValue">0</setting>
         <setting name="render">select</setting>
       </settings>
       <typeRestrictions>
@@ -20473,6 +20532,26 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">2</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="on_loan" datatype="List" list="yesNo">
+      <labels>
+        <label locale="en_AU">
+          <name>On Loan</name>
+          <description>A simple flag as to whether the object is on loan. Loans should be processed via the loans module. This field relates to the Loan Status field in the Entomology collection.</description>
+        </label>
+      </labels>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>insect</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
           </settings>
         </restriction>
       </typeRestrictions>
@@ -21416,6 +21495,10 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
 &lt;p&gt;&#13;
 ^ca_occurrences.measurementOrFact&#13;
 &lt;/p&gt;&#13;
+&lt;b&gt;Habitat&lt;/b&gt;&#13;
+&lt;p&gt;&#13;
+^ca_occurrences.habitat&#13;
+&lt;/p&gt;&#13;
 </setting>
                 <setting name="readonly"/>
                 <setting name="dont_include_subtypes_in_type_restriction">0</setting>
@@ -21577,6 +21660,7 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
               <bundle>ca_attribute_associatedSpecimen</bundle>
               <settings>
                 <setting name="sortDirection">ASC</setting>
+                <setting name="readonly"/>
               </settings>
             </placement>
             <placement code="lot_id17">
@@ -21631,7 +21715,7 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
             </placement>
           </bundlePlacements>
         </screen>
-        <screen idno="screen_14_2" default="0">
+        <screen idno="darwincore_relationships" default="0">
           <labels>
             <label locale="en_AU">
               <name>Relationships</name>
@@ -21712,25 +21796,18 @@ Lent to: &lt;unit relativeTo="ca_loans"&gt;&#13;
                 <setting name="ca_storage_locations_showRelationshipTypes">197</setting>
                 <setting name="ca_storage_locations_showRelationshipTypes">198</setting>
                 <setting name="ca_storage_locations_color">80ff59</setting>
-                <setting name="ca_storage_locations_displayTemplate">&lt;l&gt;^ca_storage_locations.preferred_labels&lt;/l&gt;</setting>
+                <setting name="ca_storage_locations_displayTemplate">&lt;l&gt;^ca_storage_locations.hierarchy.preferred_labels%delimiter=_➔_&lt;/l&gt;</setting>
                 <setting name="showDeaccessionInformation"/>
                 <setting name="deaccession_color">#EEEEEE</setting>
                 <setting name="ca_occurrences_map_dateElement">dcModified</setting>
                 <setting name="ca_occurrences_map_color">#EEEEEE</setting>
               </settings>
             </placement>
-            <placement code="ca_movements4">
-              <bundle>ca_movements</bundle>
+            <placement code="ca_attribute_on_loan3">
+              <bundle>ca_attribute_on_loan</bundle>
               <settings>
-                <setting name="list_format">bubbles</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="display_template">^ca_movements.preferred_labels</setting>
                 <setting name="readonly"/>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow"/>
-                <setting name="showCurrentOnly">1</setting>
+                <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
             <placement code="ca_occurrences5">
@@ -21797,6 +21874,127 @@ Lent to: &lt;unit relativeTo="ca_loans"&gt;&#13;
             <placement code="access8">
               <bundle>access</bundle>
               <settings/>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="tz_locality" default="0">
+          <labels>
+            <label locale="en_AU">
+              <name>Locality / Collecting Details</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction type="tz"/>
+            <restriction type="arachnid_myriapod"/>
+            <restriction type="insect"/>
+            <restriction type="mammal"/>
+            <restriction type="bird"/>
+            <restriction type="reptile"/>
+          </typeRestrictions>
+          <bundlePlacements>
+            <placement code="ca_occurrences1">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="label" locale="en_AU">Collecting Event</setting>
+                <setting name="add_label" locale="en_AU">add collecting event</setting>
+                <setting name="readonly"/>
+                <setting name="restrict_to_relationship_types">object_collecting_event</setting>
+                <setting name="restrict_to_types">collectingEvent</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="display_template">&lt;l&gt;^ca_occurrences.idno&lt;/l&gt;&#13;
+&lt;l&gt;&#13;
+^ca_occurrences.preferred_labels&#13;
+&lt;/l&gt;&#13;
+&lt;b&gt;(&#13;
+^ca_occurrences.eventDate)&#13;
+&lt;/b&gt;&#13;
+&lt;p&gt;&#13;
+&lt;b&gt;Collector:&lt;/b&gt;&#13;
+^ca_entities.preferred_labels&lt;/p&gt;&#13;
+&lt;p&gt;&#13;
+&lt;b&gt;Substrate:&lt;/b&gt;&#13;
+^ca_occurrences.substrate&lt;/p&gt;&#13;
+&lt;p&gt;&#13;
+&lt;b&gt;Remarks:&lt;/b&gt;&#13;
+^ca_occurrences.eventRemarks&#13;
+&lt;/p&gt;&#13;
+&lt;p&gt;&#13;
+^ca_occurrences.measurementOrFact&#13;
+&lt;/p&gt;&#13;
+&lt;b&gt;Habitat&lt;/b&gt;&#13;
+&lt;p&gt;&#13;
+^ca_occurrences.habitat&#13;
+&lt;/p&gt;&#13;
+</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_eventDate1">
+              <bundle>ca_attribute_eventDate</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_eventTime2">
+              <bundle>ca_attribute_eventTime</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_georeference4">
+              <bundle>ca_attribute_georeference</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_locality5">
+              <bundle>ca_attribute_locality</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_distanceFromLocal">
+              <bundle>ca_attribute_distanceFromLocality</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_places8">
+              <bundle>ca_places</bundle>
+              <settings>
+                <setting name="label" locale="en_AU">Place</setting>
+                <setting name="add_label" locale="en_AU">add new place</setting>
+                <setting name="readonly"/>
+                <setting name="restrict_to_relationship_types">located</setting>
+                <setting name="restrict_to_types">location</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="display_template">^ca_places.hierarchy%delimiter=_➔_%removeFirstItems=2&#13;
+&#13;
+^ca_places.preferred_labels</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow">1</setting>
+                <setting name="useHierarchicalBrowser">1</setting>
+                <setting name="hierarchicalBrowserHeight">200px</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_samplingProtocol9">
+              <bundle>ca_attribute_samplingProtocol</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -23245,32 +23443,15 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
 ^ca_places.georeference &#13;
 ^ca_places.georeference.coordinates&#13;
 ^ca_places.description</setting>
-                <setting name="useHierarchicalBrowser">0</setting>
+                <setting name="useHierarchicalBrowser">1</setting>
                 <setting name="hierarchicalBrowserHeight">200px</setting>
-                <setting name="readonly"/>
+                <setting name="readonly">1</setting>
                 <setting name="restrict_to_relationship_types">located</setting>
                 <setting name="restrict_to_types">location</setting>
                 <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="dontShowDeleteButton">1</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow">1</setting>
-              </settings>
-            </placement>
-            <placement code="ca_storage_locations6">
-              <bundle>ca_storage_locations</bundle>
-              <settings>
-                <setting name="list_format">bubbles</setting>
-                <setting name="sortDirection">ASC</setting>
-                <setting name="display_template">^ca_storage_locations.hierarchy.preferred_labels%delimiter=_&gt;_</setting>
-                <setting name="minRelationshipsPerRow"/>
-                <setting name="maxRelationshipsPerRow">1</setting>
-                <setting name="useHierarchicalBrowser">0</setting>
-                <setting name="hierarchicalBrowserHeight">120px</setting>
-                <setting name="readonly"/>
-                <setting name="restrict_to_relationship_types">permanent</setting>
-                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
-                <setting name="dontShowDeleteButton">0</setting>
-                <setting name="showCurrentOnly">1</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_SizeOrDuration7">
@@ -23407,15 +23588,18 @@ DC.Coverage - designates a temporal element to the object''s history';</setting>
                 <setting name="description" locale="en_AU">DC.Coverage - designates the spatial element</setting>
                 <setting name="list_format">bubbles</setting>
                 <setting name="sortDirection">ASC</setting>
-                <setting name="display_template">^ca_places.preferred_labels&#13;
+                <setting name="display_template">&lt;l&gt;^ca_places.preferred_labels&lt;/l&gt;&lt;br /&gt;&#13;
+^ca_places.hierarchy.preferred_labels%delimiter=_➔_&#13;
+^ca_places.georeference &#13;
 ^ca_places.georeference.coordinates&#13;
-&lt;img src="https://api.tiles.mapbox.com/v3/examples.map-vyofok3q/pin-l-monument+C44(-77.04,38.89)/-77.04,38.89,13/400x300.png" /&gt;</setting>
+^ca_places.description</setting>
                 <setting name="minRelationshipsPerRow"/>
                 <setting name="maxRelationshipsPerRow">1</setting>
                 <setting name="useHierarchicalBrowser">1</setting>
                 <setting name="hierarchicalBrowserHeight">200px</setting>
                 <setting name="readonly"/>
                 <setting name="restrict_to_relationship_types">located</setting>
+                <setting name="restrict_to_types">location</setting>
                 <setting name="dont_include_subtypes_in_type_restriction">0</setting>
                 <setting name="dontShowDeleteButton">0</setting>
               </settings>
@@ -23503,7 +23687,7 @@ Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
                 <setting name="ca_storage_locations_showRelationshipTypes">197</setting>
                 <setting name="ca_storage_locations_showRelationshipTypes">198</setting>
                 <setting name="ca_storage_locations_color">80ff59</setting>
-                <setting name="ca_storage_locations_displayTemplate">&lt;l&gt;^ca_storage_locations.preferred_labels&lt;/l&gt;</setting>
+                <setting name="ca_storage_locations_displayTemplate">&lt;l&gt;^ca_storage_locations.hierarchy.preferred_labels%delimiter=_➔_&lt;/l&gt;</setting>
                 <setting name="showDeaccessionInformation"/>
                 <setting name="deaccession_color">#EEEEEE</setting>
               </settings>
@@ -24636,7 +24820,7 @@ Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
                 <setting name="ca_storage_locations_showRelationshipTypes">197</setting>
                 <setting name="ca_storage_locations_showRelationshipTypes">198</setting>
                 <setting name="ca_storage_locations_color">80ff59</setting>
-                <setting name="ca_storage_locations_displayTemplate">&lt;l&gt;^ca_storage_locations.preferred_labels&lt;/l&gt;</setting>
+                <setting name="ca_storage_locations_displayTemplate">&lt;l&gt;^ca_storage_locations.hierarchy.preferred_labels%delimiter=_➔_&lt;/l&gt;</setting>
                 <setting name="showDeaccessionInformation"/>
                 <setting name="deaccession_color">#EEEEEE</setting>
               </settings>
@@ -24852,7 +25036,7 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
                 <setting name="ca_storage_locations_showRelationshipTypes">197</setting>
                 <setting name="ca_storage_locations_showRelationshipTypes">198</setting>
                 <setting name="ca_storage_locations_color">80ff59</setting>
-                <setting name="ca_storage_locations_displayTemplate">&lt;l&gt;^ca_storage_locations.preferred_labels&lt;/l&gt;</setting>
+                <setting name="ca_storage_locations_displayTemplate">&lt;l&gt;^ca_storage_locations.hierarchy.preferred_labels%delimiter=_➔_&lt;/l&gt;</setting>
                 <setting name="showDeaccessionInformation"/>
                 <setting name="deaccession_color">#EEEEEE</setting>
               </settings>
@@ -24905,6 +25089,10 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
             </placement>
             <placement code="ca_attribute_lithostratigraphi">
               <bundle>ca_attribute_lithostratigraphic_provenance</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_locality12">
               <bundle>ca_attribute_locality</bundle>
