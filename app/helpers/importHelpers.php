@@ -514,7 +514,7 @@
 			$pa_options['matchOn'] = $va_match_on;
 		}
 		
-		$pb_dont_create = caGetOption('dontCreate', $pa_options, (bool)$pa_item['settings']["{$ps_refinery_name}_matchOn"]);
+		$pb_dont_create = caGetOption('dontCreate', $pa_options, (bool)$pa_item['settings']["{$ps_refinery_name}_dontCreate"]);
 		
 		$va_vals = array();
 		$vn_c = 0;
