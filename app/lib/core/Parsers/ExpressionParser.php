@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -76,7 +76,9 @@ class ExpressionParser {
             'min'           => 'min',
             'rand'          => 'rand',
             'round'         => 'round',
-            'random'		=> 'rand'
+            'random'		=> 'rand',
+            'current'		=> 'caIsCurrentDate',
+            'future'		=> 'caDateEndsInFuture'
     );
     
     private $opa_tokens;
@@ -128,31 +130,33 @@ class ExpressionParser {
         			}
         			break;
         		case '/':
-        			if ($ps_expression[$vn_i - 1] === ' ') {
-						$vb_in_variable_name = false;
-						if (!$vb_escaped && !$vb_in_quoted_literal && !$vb_in_regex) {
-							$vb_in_regex = true;
-							$vs_buf = '/';
-						} elseif($vb_in_regex && !$vb_escaped && !$vb_in_quoted_literal) {
-							$vb_in_regex = false;
-							$vs_buf .= '/';
-							array_push($this->opa_tokens, $vs_buf);
-							$vs_buf = '';
-						} else {
-							$vs_buf .= $vs_c;
-						}
+					$vb_in_variable_name = false;
+					if (!$vb_escaped && !$vb_in_quoted_literal && !$vb_in_regex && ($ps_expression[$vn_i - 1] === ' ')) {
+						$vb_in_regex = true;
+						$vs_buf = '/';
 						break;
+					} elseif($vb_in_regex && !$vb_escaped && !$vb_in_quoted_literal) {
+						$vb_in_regex = false;
+						$vs_buf .= '/';
+						array_push($this->opa_tokens, $vs_buf);
+						$vs_buf = '';
+						break;
+					} else {
+						if ($vs_s !== '/') { 
+							$vs_buf .= $vs_c;
+							break;
+						}
 					}
         		case '(':
         		case ')':
         		case '+':
         		case '-':
         		case '*':
-        		//case '/':
         		case '=':
         		case '<':
         		case '>':
         		case '!':
+        		//case '/':  [can fall through from above]
         			if ($vb_in_quoted_literal || $vb_in_regex) {
         				$vs_buf .= $vs_c;
         			} else {
@@ -225,7 +229,6 @@ class ExpressionParser {
         }
         if (strlen($vs_buf) > 0) { array_push($this->opa_tokens, $vs_buf); }
         
-        //print_R($this->opa_tokens);
 		return sizeof($this->opa_tokens);
 	}
 	# -------------------------------------------------------------------
@@ -357,9 +360,6 @@ class ExpressionParser {
 		$va_funcs = array();
 		
 		while($va_token = $this->peekToken()) {
-			//$this->skipToken();
-			//print "STATE IS $vn_state\n";
-			//print_R($va_token);
 			if ($this->getParseError()) { break; }
 			switch($vn_state) {
 				# -------------------------------------------------------
@@ -790,6 +790,27 @@ class ExpressionParser {
         $e = new ExpressionParser();
         return $e->evaluateExpression($ps_expression, $pa_variables);
     }
+    
+	# -------------------------------------------------------------------
+	/**
+	 * Returns list of variables defined in the expression
+	 *
+	 * @param string $ps_expression
+	 * @return array
+	 */
+	static public function getVariableList($ps_expression) {
+		$o_exp = new ExpressionParser();
+		if ($o_exp->tokenize($ps_expression));
+		
+		$va_vars = array();
+		while($va_token = $o_exp->getToken()) {
+			if ($va_token['type'] == EEP_TOKEN_VARIABLE) {
+				$va_vars[] = $va_token['varname'];
+			}
+		}
+		
+		return $va_vars;
+	}
     # -------------------------------------------------------------------
     /**
      * 

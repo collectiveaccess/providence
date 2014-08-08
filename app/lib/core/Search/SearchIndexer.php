@@ -338,7 +338,7 @@ class SearchIndexer extends SearchBase {
 				}
 			}
 			
-			$this->indexRow($vn_table_num, $vn_id, $va_field_data[$vn_id], true, null, array(), array(), $pa_options);
+			$this->indexRow($vn_table_num, $vn_id, $va_field_data[$vn_id], false, null, array($vs_table_pk => true), array(), $pa_options);
 			
 		}
 		return true;

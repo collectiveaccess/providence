@@ -421,6 +421,11 @@ a.inspectorOnLoan {
     font-size: 10px;
 }
 
+.inspectorFlag {
+    color: #FF0000;
+    font-weight: bold;
+}
+
 #leftNav h4 div {  text-transform: none; font-weight: normal; padding-top: 5px; }
 #leftNav h3 div {  text-transform: none; font-weight: normal; padding-top: 5px; }
 

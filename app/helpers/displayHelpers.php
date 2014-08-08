@@ -697,6 +697,24 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 					}
 				}
 				
+				//
+				// Display flags; expressions for these are defined in app.conf in the <table_name>_inspector_display_flags directive
+				//
+				if (is_array($va_display_flags = $po_view->request->config->getAssoc("{$vs_table_name}_inspector_display_flags"))) {
+					$va_display_flag_buf = array();
+					foreach($va_display_flags as $vs_exp => $vs_display_flag) {
+						$va_exp_vars = array();
+						foreach(ExpressionParser::getVariableList($vs_exp) as $vs_var_name) {
+							$va_exp_vars[$vs_var_name] = $t_item->get($vs_var_name, array('returnIdno' => true));
+						}
+						
+						if (ExpressionParser::evaluate($vs_exp, $va_exp_vars)) {
+							$va_display_flag_buf[] = $t_item->getWithTemplate("{$vs_display_flag}");
+						}
+					}
+					if (sizeof($va_display_flag_buf) > 0) { $vs_buf .= join("; ", $va_display_flag_buf); }
+				}
+				
 				$vs_label = '';
 				$vb_dont_use_labels_for_ca_objects = (bool)$t_item->getAppConfig()->get('ca_objects_dont_use_labels');
 				if(!(($vs_table_name === 'ca_objects') && $vb_dont_use_labels_for_ca_objects)){
@@ -2183,9 +2201,9 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 					$vn_count = 0;
 					foreach($va_if_codes as $vs_if_code) {
 						if($t_table = $o_dm->getInstanceByTableName($vs_if_code, true)) {
-							$va_count_vals = $qr_res->get($vs_if_code.".".$t_table->primaryKey(), array('restrictToTypes' => $va_ifcount['restrictToTypes'], 'restrictToRelationshipTypes' => $va_ifcount['restrictToRelationshipTypes'], 'returnAsArray' => true));
+							$va_count_vals = $qr_res->get($vs_if_code.".".$t_table->primaryKey(), array('restrictToTypes' => $va_ifcount['restrictToTypes'], 'restrictToRelationshipTypes' => $va_ifcount['restrictToRelationshipTypes'], 'returnAsArray' => true, 'checkAccess' => $pa_check_access));
 						} else {
-							$va_count_vals = $qr_res->get($vs_if_code, array('returnAsArray' => true, 'restrictToTypes' => $va_ifcount['restrictToTypes'], 'restrictToRelationshipTypes' => $va_ifcount['restrictToRelationshipTypes']));
+							$va_count_vals = $qr_res->get($vs_if_code, array('returnAsArray' => true, 'restrictToTypes' => $va_ifcount['restrictToTypes'], 'restrictToRelationshipTypes' => $va_ifcount['restrictToRelationshipTypes'], 'checkAccess' => $pa_check_access));
 						}	
 						if (is_array($va_count_vals)) {
 							$va_bits = explode(".", $vs_if_code);
@@ -3953,4 +3971,3 @@ $ca_relationship_lookup_parse_cache = array();
 		return $vs_template;
 	}
 	# ------------------------------------------------------------------
-?>

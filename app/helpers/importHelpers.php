@@ -319,18 +319,19 @@
 		return $va_attr_vals;
 	}
 	# ---------------------------------------
-	/**
-	 * 
-	 *
-	 * @param array $pa_attributes 
-	 * @param array $pa_source_data
-	 * @param array $pa_item
-	 * @param int $pn_c
-	 * @param KLogger $o_log
-	 * 
-	 * @return array
-	 */
-	function caProcessRefineryRelated($ps_refinery_name, $ps_related_table, $pa_related_option_list, $pa_source_data, $pa_item, $pn_c, $pa_options=null) {
+/**
+ * Process relationships on the refinery
+ *
+ * @param $ps_related_table
+ * @param $pa_related_option_list
+ * @param array $pa_source_data
+ * @param array $pa_item
+ * @param int $pn_c
+ * @param null $pa_options
+ *
+ * @return array
+ */
+	function caProcessRefineryRelated($ps_related_table, $pa_related_option_list, $pa_source_data, $pa_item, $pn_c, $pa_options = null) {
 		$o_reader = caGetOption('reader', $pa_options, null);
 		$o_log = caGetOption('log', $pa_options, null);
 		$o_trans = caGetOption('transaction', $pa_options, null);
@@ -354,7 +355,7 @@
 			$vn_parent_id = BaseRefinery::parsePlaceholder($pa_related_options['parent_id'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 		
 			if (!$vs_name) { $vs_name = $vs_idno; }
-		
+
 		
 			if ($ps_related_table == 'ca_entities') {
 				$t_entity = new ca_entities();
@@ -512,6 +513,8 @@
 		} elseif (is_array($va_match_on = $pa_item['settings']["{$ps_refinery_name}_matchOn"])) {
 			$pa_options['matchOn'] = $va_match_on;
 		}
+		
+		$pb_dont_create = caGetOption('dontCreate', $pa_options, (bool)$pa_item['settings']["{$ps_refinery_name}_matchOn"]);
 		
 		$va_vals = array();
 		$vn_c = 0;
@@ -730,7 +733,7 @@
 							$va_vals[][$vs_terminal] = $vn_item_id;
 							continue;
 						} else {
-							if ($o_log) { $o_log->logError(_t("[{$ps_refinery_name}Refinery] Could not add %2 %1", $vs_item, $ps_item_prefix)); }
+							if ($o_log && !$pb_dont_create) { $o_log->logError(_t("[{$ps_refinery_name}Refinery] Could not add %2 %1", $vs_item, $ps_item_prefix)); }
 						}
 					} elseif ((sizeof($va_group_dest) == 1) && ($vs_terminal == $ps_table)) {
 						// Set relationship type
@@ -745,7 +748,7 @@
 							&& 
 							($vs_rel_type_opt = $pa_item['settings']["{$ps_refinery_name}_relationshipTypeDefault"])	
 						) {
-							if (!($va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $vs_delimiter, 'returnDelimitedValueAt' => $vn_x)))) {
+							if (!($va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnDelimitedValueAt' => $vn_x)))) {
 								$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader));
 							}
 						}
@@ -829,6 +832,7 @@
 						if ($o_log) { $o_log->logError(_t("[{$ps_refinery_name}Refinery] Could not add %2 %1: cannot map %3 using %1", $vs_item, $ps_item_prefix, join(".", $va_group_dest))); }
 					}
 					$va_val['_matchOn'] = $va_match_on;
+					if ($pb_dont_create) { $va_val['_dontCreate'] = 1; }
 					$va_vals[] = $va_val;
 					$vn_c++;
 				}
@@ -866,7 +870,7 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	if (is_array($va_relationships = $pa_item['settings'][$vs_relationship_settings_key])) {
 		foreach ($va_relationships as $va_relationship_settings) {
 			if ($vs_table_name = caGetOption('relatedTable', $va_relationship_settings)) {
-				if (is_array($va_attr_vals = caProcessRefineryRelated($po_refinery_instance->getName(), $vs_table_name, $va_relationship_settings, $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader)))) {
+				if (is_array($va_attr_vals = caProcessRefineryRelated($vs_table_name, array($va_relationship_settings), $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader)))) {
 					$va_val = array_merge($va_val, $va_attr_vals);
 				}
 			}

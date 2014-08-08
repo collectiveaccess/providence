@@ -556,6 +556,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 				}
 				
 				$t_object_x_rep = new ca_objects_x_object_representations();
+				$t_object_x_rep->setTransaction($o_t);
 				foreach($va_reps as $vn_representation_id => $va_rep) {
 					$t_object_x_rep->setMode(ACCESS_WRITE);
 					$va_rep['object_id'] = $t_dupe->getPrimaryKey();

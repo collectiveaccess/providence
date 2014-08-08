@@ -137,7 +137,7 @@ class ObjectBrowseResult extends BaseSearchResult {
 				return null;
 			}
 		}
-		return parent::getMediaTag($ps_field, $ps_version, isset($pa_options['index']) ? $pa_options['index'] : 0, $pa_options);
+		return parent::getMediaTag($ps_field, $ps_version, $pa_options);
 	}
 	# -------------------------------------
 	/**
