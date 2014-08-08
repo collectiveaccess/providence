@@ -1634,7 +1634,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					# -------------------------------
 					case 'settings':
 						if ($vb_batch) { return null; } // not supported in batch mode
-						$vs_element .= $this->getHTMLSettingFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
+						$vs_element .= $this->getHTMLSettingFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $this->tableNum(), $pa_options);
 						break;
 					# -------------------------------
 					// This bundle is only available when editing objects of type ca_object_representations
@@ -3550,8 +3550,9 @@ if (!$vb_batch) {
 						require_once(__CA_MODELS_DIR__.'/ca_sets.php');
 						require_once(__CA_MODELS_DIR__.'/ca_set_items.php');
 						
-						$va_row_ids = explode(';', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}setRowIDList", pString));
-						$this->reorderItems($va_row_ids, array('user_id' => $po_request->getUserID()));
+						$va_rids = explode(';', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}setRowIDList", pString));
+						
+						$this->reorderItems($va_rids, array('user_id' => $po_request->getUserID(), 'treatRowIDsAsRIDs' => true));
 						break;
 					# -------------------------------------
 					// This bundle is only available for ca_search_forms 
@@ -3710,7 +3711,7 @@ if (!$vb_batch) {
 					# -------------------------------------
 					case 'settings':
 						if ($vb_batch) { break; } // not supported in batch mode
-						$this->setSettingsFromHTMLForm($po_request, array('id' => $vs_form_prefix, 'placement_code' => $vs_placement_code));
+						$this->setSettingsFromHTMLForm($po_request, array('id' => $vs_form_prefix.'_', 'placement_code' => $vs_placement_code));
 						break;
 					# -------------------------------
 					// This bundle is only available when editing objects of type ca_object_representations

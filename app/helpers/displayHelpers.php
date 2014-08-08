@@ -2031,7 +2031,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		if(!isset($pa_options['requireLinkTags'])) { $pa_options['requireLinkTags'] = true; }
 		
 		$va_primary_ids = caGetOption("primaryIDs", $pa_options, null);
-
+		
 		$o_dm = Datamodel::load();
 		$ps_tablename = is_numeric($pm_tablename_or_num) ? $o_dm->getTableName($pm_tablename_or_num) : $pm_tablename_or_num;
 		
@@ -2057,7 +2057,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		$ps_template = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_doc->html()));	// replace template with parsed version; this allows us to do text find/replace later
 		
 		// Parse units from template
-		$o_units = $o_doc('unit:not(unit > unit)');	// only process non-nested <unit> tags
+		$o_units = $o_doc('unit');	// only process non-nested <unit> tags
 		$va_units = array();
 		$vn_unit_id = 1;
 		foreach($o_units as $o_unit) {
@@ -2065,6 +2065,11 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			
 			$vs_html = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_unit->html()));
 			$vs_content = $o_unit->getInnerText();
+			
+			// is this nested in another unit? We skip these
+			foreach($va_units as $va_tmp) {
+				if (strpos($va_tmp['directive'], $vs_html) !== false) { continue(2); }
+			}
 			
 			$va_units[] = $va_unit = array(
 				'tag' => $vs_unit_tag = "[[#{$vn_unit_id}]]",
@@ -2079,7 +2084,6 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			$ps_template = str_ireplace($va_unit['directive'], $vs_unit_tag, $ps_template);
 			$vn_unit_id++;
 		}
-		
 		
 		$o_doc = str_get_dom($ps_template);		// parse template again with units replaced by unit tags in the format [[#X]]
 		$ps_template = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_doc->html()));	// replace template with parsed version; this allows us to do text find/replace later
@@ -2228,7 +2232,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 					}
 				}
 			}
-		
+			
 			foreach($va_units as $va_unit) {
 				if (!$va_unit['content']) { continue; }
 				$va_relative_to_tmp = $va_unit['relativeTo'] ? explode(".", $va_unit['relativeTo']) : array($ps_tablename);
@@ -2268,6 +2272,12 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 							$va_relative_ids = $pa_row_ids;
 							break;
 					}
+					
+				
+					$va_tmpl_val = caProcessTemplateForIDs($va_unit['content'], $va_relative_to_tmp[0], $va_relative_ids, array_merge($pa_options, array('returnAsArray' => true, 'delimiter' => $vs_unit_delimiter, 'resolveLinksUsing' => null)));
+					foreach($va_tmpl_val as $vn_tmpl_i => $vs_tmpl_v) {
+						$va_proc_templates[$vn_tmpl_i] = str_ireplace($va_unit['tag'], $vs_tmpl_v, $va_proc_templates[$vn_tmpl_i]);
+					}
 				} else { 
 					switch(strtolower($va_relative_to_tmp[1])) {
 						case 'hierarchy':
@@ -2306,7 +2316,10 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			if(!sizeof($va_tags)) { $vn_i++; continue; } 	// if there are no tags in the template then we don't need to process further
 		
 			if ($ps_resolve_links_using != $ps_tablename) {
-				$va_resolve_links_using_row_ids[] = $qr_res->get("{$ps_resolve_links_using}.{$vs_resolve_links_using_pk}", array('checkAccess' => $pa_check_access));
+				$va_resolve_links_using_row_ids += $qr_res->get("{$ps_resolve_links_using}.{$vs_resolve_links_using_pk}", array('returnAsArray' => true, 'checkAccess' => $pa_check_access));
+				
+				// we need to remove "primary_ids" from the list, since for self-relations these will be the side(s) of the relations we're viewing *from*
+				if (is_array($va_primary_ids[$ps_resolve_links_using]) && sizeof($va_primary_ids[$ps_resolve_links_using])) { $va_resolve_links_using_row_ids = array_values(array_diff($va_resolve_links_using_row_ids, $va_primary_ids[$ps_resolve_links_using])); }
 			}
 			
 			$va_tag_val_list[$vn_i] = array();
@@ -3107,26 +3120,17 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 	 *						from which the interstitial was launched.
 	 * @return mixed 
 	 */
-global $ca_relationship_lookup_parse_cache;
 $ca_relationship_lookup_parse_cache = array();
 	function caProcessRelationshipLookupLabel($qr_rel_items, $pt_rel, $pa_options=null) {
-		global $ca_relationship_lookup_parse_cache;
-		
 		$va_initial_values = array();
 		
-		$vb_is_hierarchical 			= $pt_rel->isHierarchical();
-		$vs_hier_parent_id_fld 			= $pt_rel->getProperty('HIERARCHY_PARENT_ID_FLD');
 		$vs_hier_fld 					= $pt_rel->getProperty('HIERARCHY_ID_FLD');
 		$vs_idno_fld 					= $pt_rel->getProperty('ID_NUMBERING_ID_FIELD');
 		$vs_idno_sort_fld 				= $pt_rel->getProperty('ID_NUMBERING_SORT_FIELD');
 		$vs_rel_pk            			= caGetOption('primaryKey', $pa_options, $pt_rel->primaryKey());
  		$vs_rel_table         			= caGetOption('table', $pa_options, $pt_rel->tableName());
 		
-		if (!isset($pa_options['config']) || !is_object($pa_options['config'])) {
-			$o_config = Configuration::load();
-		} else {
-			$o_config = $pa_options['config'];
-		}
+		$o_config = (!isset($pa_options['config']) || !is_object($pa_options['config'])) ? Configuration::load() : $pa_options['config'];
 		
 		$pn_limit = 								caGetOption('limit', $pa_options, null);
 		$ps_inline_create_message = 				caGetOption('inlineCreateMessage', $pa_options, null);
@@ -3138,54 +3142,13 @@ $ca_relationship_lookup_parse_cache = array();
 		$ps_empty_result_query = 					caGetOption('emptyResultQuery', $pa_options, null);
 		
 		$vs_template =								caGetOption('template', $pa_options, null);
-		$vs_cache_key = 							md5($vs_template);
 		
 		$va_exclude = 								caGetOption('exclude', $pa_options, array(), array('castTo' => 'array'));
 		
-		//
-		// Originally the lookup display setting was a string with embedded tokens prefixed with carets. We still have to support this
-		// in case someone is using an old config file, but the preferred configuration format is now to pass an array of bundles (still prefixed
-		// with a caret because the bundles may have HTML formatting around them) and a separate delimiter. We then join all non-blank values together
-		//
-		$vb_use_new_display_format = false;
-		$va_bundles = array();
-		$vs_display_delimiter = '';
-		if (isset($ca_relationship_lookup_parse_cache[$vs_rel_table][$vs_cache_key])) {
-			$va_bundles = $ca_relationship_lookup_parse_cache[$vs_rel_table][$vs_cache_key]['bundles'];
-			$va_display_format = $ca_relationship_lookup_parse_cache[$vs_rel_table][$vs_cache_key]['display_format'];
-			$vs_display_delimiter = $ca_relationship_lookup_parse_cache[$vs_rel_table][$vs_cache_key]['delimiter'];
-			$vb_use_new_display_format = true;
-		} else {
-			if (($vs_display_format = $o_config->get("{$vs_rel_table}_lookup_settings")) && !is_array($vs_display_format)) {				
-				if ($vs_display_format && is_string($vs_display_format) && !preg_match_all('!\^{1}([A-Za-z0-9\._]+)!', $vs_display_format, $va_matches)) {
-					$vs_display_format = '^'.$vs_rel_table.'.preferred_labels';
-					$va_bundles = array($vs_rel_table.'.preferred_labels');
-				} else {
-					$va_bundles = $va_matches[1];
-				}
-			} else {
-				if (is_array($va_display_format = $o_config->getList("{$vs_rel_table}_lookup_settings"))) {
-					$vb_use_new_display_format = true;
-				
-					if(!($vs_display_delimiter = $o_config->get("{$vs_rel_table}_lookup_delimiter"))) {
-						$vs_display_delimiter = ' ';
-					} else {
-						$vs_display_delimiter = " {$vs_display_delimiter} ";
-					}
-				
-					foreach($va_display_format as $vs_display_element) {
-						if (preg_match_all('!\^{1}([A-Za-z0-9\._]+)!', $vs_display_element, $va_matches)) {
-							$va_bundles = array_merge($va_bundles, $va_matches[1]);
-						}
-					}
-				}
-			}
-			$ca_relationship_lookup_parse_cache[$vs_rel_table][$vs_cache_key] = array(
-				'bundles' => $va_bundles,
-				'display_format' => $va_display_format,
-				'delimiter' => $vs_display_delimiter
-			);
-		}
+	
+		$va_display_format = $o_config->getList("{$vs_rel_table}_lookup_settings");
+		$vs_display_delimiter = $o_config->get("{$vs_rel_table}_lookup_delimiter");
+		if (!$vs_template) { $vs_template = join($vs_display_delimiter, $va_display_format); }
 		
 		$va_related_item_info = $va_parent_ids = $va_hierarchy_ids = array();
 		$va_items = array();
@@ -3212,6 +3175,7 @@ $ca_relationship_lookup_parse_cache = array();
 				$vs_pk = 		$qr_rel_items->primaryKey();
 				
 				$va_primary_ids = (method_exists($pt_rel, "isSelfRelationship") && ($vb_is_self_rel = $pt_rel->isSelfRelationship())) ? caGetOption("primaryIDs", $pa_options, null) : null;
+				
 				while($qr_rel_items->nextHit()) {
 					$vn_id = $qr_rel_items->get("{$vs_rel_table}.{$vs_rel_pk}");
 					if(in_array($vn_id, $va_exclude)) { continue; }
@@ -3225,62 +3189,8 @@ $ca_relationship_lookup_parse_cache = array();
 						$va_item['type_id'] = $qr_rel_items->get("{$vs_rel_table}.{$vs_type_id_fld}");
 					}
 					
-					if ($vb_use_new_display_format) { 
-						$va_display_value = $va_display_format;
-					} else {
-						$vs_display_value = $vs_display_format;
-					}
-					
-					foreach($va_bundles as $vs_bundle_name) {
-						if (in_array($vs_bundle_name, array('_parent', '_hierarchy'))) { continue;}
-						if (!($vs_value = trim($qr_rel_items->get($vs_bundle_name, array('delimiter' => $vs_display_delimiter, 'convertCodesToDisplayText' => true))))) { 
-							if ((!isset($pa_options['stripTags']) || !$pa_options['stripTags']) &&  (sizeof($va_tmp = explode('.', $vs_bundle_name)) == 3)) {		// is tag media?
-								$vs_value = trim($qr_rel_items->getMediaTag($va_tmp[0].'.'.$va_tmp[1], $va_tmp[2]));
-							}
-						}
-						if ($vb_use_new_display_format) {
-							foreach($va_display_value as $vn_x => $vs_display_element) {
-								$va_display_value[$vn_x] = str_replace("^{$vs_bundle_name}", $vs_value, $vs_display_element);
-							}
-						} else {
-							if ($vs_display_format) {
-								$vs_display_value = str_replace("^{$vs_bundle_name}", htmlspecialchars($vs_value), $vs_display_value);
-							} else {
-								$vs_display_value .= $vs_value.' ';
-							}
-						}
-					}
-					
-					if ($t_rel->isHierarchical()) {
-						if ($vn_parent_id = $qr_rel_items->get("{$vs_rel_table}.{$vs_hier_parent_id_fld}")) {
-							$va_parent_ids[$vn_id] = $vn_parent_id;
-						} else {
-							if ($pt_rel->getHierarchyType() != __CA_HIER_TYPE_ADHOC_MONO__) {		// don't show root for hierarchies unless it's adhoc (where the root is a valid record)
-								continue;
-							}
-						}
-						
-						if ($vs_hier_fld) {
-							$va_hierarchy_ids[$vn_id] = $qr_rel_items->get("{$vs_rel_table}.{$vs_hier_fld}");
-						}
-					}
-					
-					if ($vs_rel_table == 'ca_users') {
-						$va_item['fname'] = $qr_rel_items->get('ca_users.fname');
-						$va_item['lname'] = $qr_rel_items->get('ca_users.lname');
-						$va_item['email'] = $qr_rel_items->get('ca_users.email');
-					}
-					
-					if ($vb_use_new_display_format) {
-						$va_related_item_info[$vn_id] = $va_display_value;
-					} else {
-						$va_related_item_info[$vn_id] = $vs_display_value;
-					}
-					
-					if ($vs_template) {
-						$va_item['_display'] = caProcessTemplateForIDs($vs_template, $vs_table, array($qr_rel_items->get("{$vs_table}.{$vs_pk}")), array('returnAsArray' => false, 'returnAsLink' => true, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table, 'primaryIDs' => $va_primary_ids));
-					}
-					$va_item['_l'] = mb_strtolower($qr_rel_items->get("{$vs_table}.preferred_labels"));
+					$va_item['_display'] = caProcessTemplateForIDs($vs_template, $vs_table, array($qr_rel_items->get("{$vs_table}.{$vs_pk}")), array('returnAsArray' => false, 'returnAsLink' => false, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table, 'primaryIDs' => $va_primary_ids));
+					$va_item['label'] = mb_strtolower($qr_rel_items->get("{$vs_table}.preferred_labels"));
 					
 					$va_items[$vn_id] = $va_item;
 					
@@ -3291,26 +3201,6 @@ $ca_relationship_lookup_parse_cache = array();
 				}
 			}
 		}
-		
-		$va_hierarchies = (method_exists($t_rel, "getHierarchyList")) ? $t_rel->getHierarchyList() : array();
-		
-		// Get root entries for hierarchies and remove from labels (we don't want to show the root labels – they are not meant for display)
-		if (is_array($va_hierarchies)) {
-			foreach($va_hierarchies as $vn_root_id => $va_hier_info) {
-				foreach($va_parent_ids as $vn_item_id => $vn_parent_id) {
-					if ($vn_parent_id == $va_hier_info[$vs_rel_pk]) {
-						unset($va_parent_ids[$vn_item_id]);
-					}
-				}
-			}
-		}
-		
-		if (method_exists($t_rel, "getPreferredDisplayLabelsForIDs")) {
-			$va_parent_labels = $t_rel->getPreferredDisplayLabelsForIDs($va_parent_ids);
-		} else {
-			$va_parent_labels = array();
-		}
-		
 			
 		if (isset($pa_options['relatedItems']) && is_array($pa_options['relatedItems']) && sizeof($pa_options['relatedItems'])) {
 			$va_tmp = array();
@@ -3335,7 +3225,7 @@ $ca_relationship_lookup_parse_cache = array();
 				}
 				
                 if ($vs_template) {
-                    $va_items[$va_relation[$vs_rel_pk]]['_display'] = caProcessTemplateForIDs($vs_template, $vs_rel_table, array($va_relation[$vs_rel_pk]), array('returnAsArray' => false, 'returnAsLink' => true, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table));
+                    $va_items[$va_relation[$vs_rel_pk]]['_display'] = caProcessTemplateForIDs($vs_template, $pt_rel->tableName(), array($va_relation['relation_id']), array('returnAsArray' => false, 'returnAsLink' => false, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table, 'primaryIDs' => $va_primary_ids));
                 } else {
                     $va_items[$va_relation[$vs_rel_pk]]['_display'] = $va_items[$va_relation[$vs_rel_pk]]['label'];
                 }
@@ -3350,35 +3240,16 @@ $ca_relationship_lookup_parse_cache = array();
 			$vn_id = $va_item[$vs_rel_pk];
 			if(in_array($vn_id, $va_exclude)) { continue; }
 			
-			$va_tmp = $va_related_item_info;
-			if ($vb_use_new_display_format) {
-				$vs_parent = $va_parent_labels[$va_parent_ids[$vn_id]];
-				$vs_hier = $va_hierarchies[$va_hierarchy_ids[$vn_id]]['name_plural'] ? $va_hierarchies[$va_hierarchy_ids[$vn_id]]['name_plural'] : $va_hierarchies[$va_hierarchy_ids[$vn_id]]['name'];
-				if (is_array($va_related_item_info[$vn_id])) {
-					foreach($va_related_item_info[$vn_id] as $vn_x => $vs_display_value) {
-						$vs_display_value = str_replace("^_parent", $vs_parent, $vs_display_value);
-						$va_tmp[$vn_id][$vn_x] = str_replace("^_hierarchy", $vs_hier, $vs_display_value);
-					
-						if (!strlen(trim($va_tmp[$vn_id][$vn_x]))) { unset($va_tmp[$vn_id][$vn_x]); }
-					}
-				}
-				if (is_array($va_tmp[$vn_id])) {
-					$va_tmp[$vn_id] = join($vs_display_delimiter, $va_tmp[$vn_id]);
-				}
-			} else {
-				$va_tmp[$vn_id] = str_replace('^_parent',  $va_parent_labels[$va_parent_ids[$vn_id]], $va_tmp[$vn_id]);
-				$va_tmp[$vn_id] = str_replace('^_hierarchy',  $va_hierarchies[$va_hierarchy_ids[$vn_id]]['name_plural'] ? $va_hierarchies[$va_hierarchy_ids[$vn_id]]['name_plural'] : $va_hierarchies[$va_hierarchy_ids[$vn_id]]['name'], $va_tmp[$vn_id]);
-			}
 			
-			$vs_display = trim(preg_replace("![\n\r]+!", " ", $va_tmp[$vn_id]));
+			$vs_display = $va_item['_display'];
 			if (isset($pa_options['stripTags']) && $pa_options['stripTags']) {
 				if (preg_match('!(<[A-Za-z0-9]+[ ]+[A-Za-z0-9 ,;\&\-_]*>)!', $vs_display, $va_matches)) {	// convert text in <> to non-tags if the text has only letters, numbers and spaces in it
 					array_shift($va_matches);
 					foreach($va_matches as $vs_match) {
-						$vs_display = str_replace($vs_match, htmlspecialchars($vs_match), $vs_display);
+						$vs_display = 'xxx'.str_replace($vs_match, htmlspecialchars($vs_match), $vs_display);
 					}
 				}
-				$vs_display = trim(strip_tags($vs_display));
+				$vs_display = 'yyy'.trim(strip_tags($vs_display));
 				
 				$vs_label = $va_item['label'];
 				if (preg_match('!(<[A-Za-z0-9]+[ ]+[A-Za-z0-9 ,;\&\-_]*>)!', $vs_label, $va_matches)) {	// convert text in <> to non-tags if the text has only letters, numbers and spaces in it
@@ -3387,16 +3258,14 @@ $ca_relationship_lookup_parse_cache = array();
 						$vs_label = str_replace($vs_match, htmlspecialchars($vs_match), $vs_label);
 					}
 				}
-				$va_item['label'] = trim(strip_tags($vs_label));
+				$va_item['label'] = 'xxx'.trim(strip_tags($vs_label));
 				
 			}
 			
 			$vs_display_lc = mb_strtolower($vs_display);
-			if (($vs_display_lc == $ps_inline_create_query_lc) || (isset($va_item['_l']) && ($va_item['_l'] == $ps_inline_create_query_lc))) {
+			if (($vs_display_lc == $ps_inline_create_query_lc) || (isset($va_item['label']) && ($va_item['label'] == $ps_inline_create_query_lc))) {
 				$vb_include_inline_add_message = false;
 			}
-			
-			unset($va_item['_l']);
 
 			$po_request = caGetOption('request',$pa_options);
 			if($po_request && ca_editor_uis::loadDefaultUI($pt_rel->tableName(),$po_request,$va_item['rel_type_id'])) {

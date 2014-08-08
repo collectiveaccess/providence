@@ -721,10 +721,14 @@ class BaseModel extends BaseObject {
 								$vs_version = array_shift($va_tmp);
 							}
 							
-							if (isset($pa_options['returnURL']) && $pa_options['returnURL']) {
-								return $this->getMediaUrl($va_tmp[1], $vs_version, $pa_options);
+							if (isset($va_tmp[3])) {
+								return $this->getMediaInfo($va_tmp[1], $vs_version, 'width');
 							} else {
-								return $this->getMediaTag($va_tmp[1], $vs_version, $pa_options);
+								if (isset($pa_options['returnURL']) && $pa_options['returnURL']) {
+									return $this->getMediaUrl($va_tmp[1], $vs_version);
+								} else {
+									return $this->getMediaTag($va_tmp[1], $vs_version);
+								}
 							}
 						}
 						
@@ -3586,7 +3590,10 @@ class BaseModel extends BaseObject {
 			if (!$ps_property) {
 				return $va_media_info[$ps_version];
 			} else {
-				return $va_media_info[$ps_version][$ps_property];
+				// Try key as passed, then all UPPER and all lowercase
+				if($vs_v = $va_media_info[$ps_version][$ps_property]) { return $vs_v; }
+				if($vs_v = $va_media_info[$ps_version][strtoupper($ps_property)]) { return $vs_v; }
+				if($vs_v = $va_media_info[$ps_version][strtolower($ps_property)]) { return $vs_v; }
 			}
 		} else {
 			return $va_media_info;
@@ -6047,6 +6054,7 @@ class BaseModel extends BaseObject {
 		if ($va_tmp[0] != $this->tableName()) { return null; }
 		
 		if ($this->hasField($va_tmp[1])) {
+			if (caGetOption('asArrayElement', $pa_options, false)) { $ps_field .= "[]"; } 
 			return $this->htmlFormElement($va_tmp[1], '^ELEMENT', array_merge($pa_options, array(
 					'name' => $ps_field,
 					'id' => str_replace(".", "_", $ps_field),
@@ -8462,7 +8470,7 @@ $pa_options["display_form_field_tips"] = true;
 			}
 		}
 		
-		if ((!isset($pa_options['allowDuplicates']) || !$pa_options['allowDuplicates']) && $this->relationshipExists($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_direction)) {
+		if ((!isset($pa_options['allowDuplicates']) || !$pa_options['allowDuplicates']) && !$this->getAppConfig()->get('allow_duplicate_relationships') && $this->relationshipExists($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_direction)) {
 			if (isset($pa_options['setErrorOnDuplicate']) && $pa_options['setErrorOnDuplicate']) {
 				$this->postError(1100, _t('Relationship already exists'), 'BaseModel->addRelationship');
 			}
@@ -8577,8 +8585,8 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param string $ps_source_info Text field for storing information about source of relationship. Not currently used.
 	 * @param string $ps_direction Optional direction specification for self-relationships (relationships linking two rows in the same table). Valid values are 'ltor' (left-to-right) and  'rtol' (right-to-left); the direction determines which "side" of the relationship the currently loaded row is on: 'ltor' puts the current row on the left side. For many self-relations the direction determines the nature and display text for the relationship.
 	 * @param array $pa_options Array of additional options:
-	 *		allowDuplicates = if set to true, attempts to edit a relationship to match one that already exists will succeed. Default is false ��� duplicate relationships will not be created.
-	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to create a duplicate relationship. Default is false ��� don't set error. editRelationship() will always return false when editing of a relationship fails, no matter how the setErrorOnDuplicate option is set.
+	 *		allowDuplicates = if set to true, attempts to edit a relationship to match one that already exists will succeed. Default is false - duplicate relationships will not be created.
+	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to create a duplicate relationship. Default is false - don't set error. editRelationship() will always return false when editing of a relationship fails, no matter how the setErrorOnDuplicate option is set.
 	 * @return BaseRelationshipModel Loaded relationship model instance on success, false on error.
 	 */
 	public function editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $pa_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
@@ -8605,7 +8613,7 @@ $pa_options["display_form_field_tips"] = true;
 			}
 		}
 		
-		if ((!isset($pa_options['allowDuplicates']) || !$pa_options['allowDuplicates']) && $this->relationshipExists($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_direction, array('relation_id' => $pn_relation_id))) {
+		if ((!isset($pa_options['allowDuplicates']) || !$pa_options['allowDuplicates']) && !$this->getAppConfig()->get('allow_duplicate_relationships') && $this->relationshipExists($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_direction, array('relation_id' => $pn_relation_id))) {
 			if (isset($pa_options['setErrorOnDuplicate']) && $pa_options['setErrorOnDuplicate']) {
 				$this->postError(1100, _t('Relationship already exists'), 'BaseModel->addRelationship');
 			}
