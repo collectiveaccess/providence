@@ -164,6 +164,26 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				'LIST_CODE' => 'object_deaccession_types',
 				'LABEL' => _t('Deaccession type'), 'DESCRIPTION' => _t('Indicates type of deaccession.')
 		),
+		'current_loc_type' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DONT_ALLOW_IN_UI' => true,
+				'BOUNDS_CHOICE_LIST' => array(
+					_t('occurrences') => 67,
+					_t('storage locations') => 89,
+					_t('loans') => 133,
+					_t('movements') => 137
+				),
+				'LABEL' => _t('Current location type'), 'DESCRIPTION' => _t('Type of last location for objects (eg. storage location, occurrence, loan, movement)')
+		),
+		'current_loc_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DONT_ALLOW_IN_UI' => true,
+				'LABEL' => _t('Current location'), 'DESCRIPTION' => _t('Reference to record recording details of current object location.')
+		),
 		'item_status_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
