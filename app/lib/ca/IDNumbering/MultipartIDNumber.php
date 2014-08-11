@@ -222,7 +222,7 @@ class MultipartIDNumber extends IDNumber {
 		}
 		return null;
 	}
-
+	# -------------------------------------------------------
 	protected function explodeValue($ps_value) {
 		$vs_separator = $this->getSeparator();
 		if ($vs_separator) {
@@ -235,17 +235,31 @@ class MultipartIDNumber extends IDNumber {
 			foreach ($this->getElements() as $va_element_info) {
 				if (isset($va_element_info['width'])) {
 					// The element has an explicit, fixed width, so read the given number of characters
-					$va_element_vals[] = substr($ps_value, $vn_strpos, intval($va_element_info['width']));
-					$vn_strpos += $va_element_info['width'];
-				} elseif ($va_element_info['type'] === 'CONSTANT') {
-					// The element has an implicit width because it is a constant, so read the width of the constant
-					$va_element_vals[] = substr($ps_value, $vn_strpos, strlen($va_element_info['value']));
-					$vn_strpos += strlen($va_element_info['value']);
+					$vn_width = intval($va_element_info['width']);
 				} else {
-					// Treat the remainder of the value as a single element, and stop processing
-					$va_element_vals[] = substr($ps_value, $vn_strpos);
-					break;
+					switch ($va_element_info['type']) {
+						case 'CONSTANT':
+							// The element has an implicit width because it is a constant, so read the width of the constant
+							$vn_width = strlen($va_element_info['value']);
+							break;
+						case 'LIST':
+							// The element has an implicit width depending on the selected value in a list
+							$vs_matching_value = null;
+							foreach ($va_element_info['values'] as $vs_value) {
+								if (substr($ps_value, $vn_strpos, strlen($vs_value)) === $vs_value && (is_null($vs_matching_value) || strlen($vs_matching_value) < strlen($vs_value))) {
+									// We have a match, and it is either the first match or the longest match so far
+									$vs_matching_value = $vs_value;
+								}
+							}
+							$vn_width = !is_null($vs_matching_value) ? strlen($vs_matching_value) : null;
+							break;
+						default:
+							$vn_width = null;
+					}
 				}
+				// Take the calculated width from the input value as the element value
+				$va_element_vals[] = substr($ps_value, $vn_strpos, $vn_width);
+				$vn_strpos = is_null($vn_width) ? strlen($ps_value) : $vn_strpos + $vn_width;
 			}
 		}
 		return $va_element_vals;
