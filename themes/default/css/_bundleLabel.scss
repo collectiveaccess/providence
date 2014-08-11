@@ -2,12 +2,18 @@
 
 .bundleLabel {
 	font-size: inherit;
+	font-family: inherit;
+	color: inherit;
 
-	// /margin: 0;
+	background-color: white;
+  border: 1px solid $grey-light;
 
+  border-radius: 3px;
 
-	.formLabelText {
-		@include wam-font-heading();
-	}
 }
 
+
+
+.bundleContainer {
+	background: inherit;
+}
