@@ -33,24 +33,24 @@
 require_once(__CA_LIB_DIR__ . "/ca/IDNumbering/MultipartIDNumber.php");
 
 class WAMMultipartIDNumber extends MultipartIDNumber {
-  /**
-   * Calls the parent method, and then for every value, adds the value again with the separators stripped.  If the
-   * separator is empty, this method does nothing different to the parent method.
-   *
-   * @param string|null $ps_value
-   *
-   * @return array
-   */
-  public function getIndexValues($ps_value = null){
-    $pa_index_values = parent::getIndexValues($ps_value);
-    $vs_separator = $this->getSeparator();
-    if ($vs_separator) {
-      foreach ($pa_index_values as $vs_index_value) {
-        if (strpos($vs_index_value, $vs_separator)) {
-          $pa_index_values[] = str_replace($vs_separator, '', $vs_index_value);
-        }
-      }
-    }
-    return array_unique($pa_index_values);
-  }
+	/**
+	 * Calls the parent method, and then for every value, adds the value again with the separators stripped.  If the
+	 * separator is empty, this method does nothing different to the parent method.
+	 *
+	 * @param string|null $ps_value
+	 *
+	 * @return array
+	 */
+	public function getIndexValues($ps_value = null){
+		$pa_index_values = parent::getIndexValues($ps_value);
+		$vs_separator = $this->getSeparator();
+		if ($vs_separator) {
+			foreach ($pa_index_values as $vs_index_value) {
+				if (strpos($vs_index_value, $vs_separator)) {
+					$pa_index_values[] = str_replace($vs_separator, '', $vs_index_value);
+				}
+			}
+		}
+		return array_unique($pa_index_values);
+	}
 }
