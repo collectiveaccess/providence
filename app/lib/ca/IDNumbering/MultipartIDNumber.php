@@ -238,16 +238,16 @@ class MultipartIDNumber extends IDNumber {
 						// The element has an implicit width depending on the selected value in a list
 						$vs_matching_value = null;
 						foreach ($va_element_info['values'] as $vs_value) {
-							if (substr($ps_value, $vn_strpos, strlen($vs_value)) === $vs_value && (is_null($vs_matching_value) || strlen($vs_matching_value) < strlen($vs_value))) {
+							if (substr($ps_value, $vn_strpos, mb_strlen($vs_value)) === $vs_value && (is_null($vs_matching_value) || mb_strlen($vs_matching_value) < mb_strlen($vs_value))) {
 								// We have a match, and it is either the first match or the longest match so far
 								$vs_matching_value = $vs_value;
 							}
 						}
-						$vn_width = !is_null($vs_matching_value) ? strlen($vs_matching_value) : null;
+						$vn_width = !is_null($vs_matching_value) ? mb_strlen($vs_matching_value) : null;
 						break;
 					case 'CONSTANT':
 						// The element has an implicit width because it is a constant, so read the width of the constant
-						$vn_width = strlen($va_element_info['value']);
+						$vn_width = mb_strlen($va_element_info['value']);
 						break;
 					case 'SERIAL':
 					case 'YEAR':
@@ -255,11 +255,11 @@ class MultipartIDNumber extends IDNumber {
 					case 'DAY':
 					case 'NUMERIC':
 						// Match a sequence of numeric digits
-						$vn_width = strlen(preg_replace('/^(\d+).*$/', '$1', substr($ps_value, $vn_strpos)));
+						$vn_width = mb_strlen(preg_replace('/^(\d+).*$/', '$1', substr($ps_value, $vn_strpos)));
 						break;
 					case 'ALPHANUMERIC':
 						// Match a sequence of alphanumeric characters
-						$vn_width = strlen(preg_replace('/^([A-Za-z0-9]+).*$/', '$1', substr($ps_value, $vn_strpos)));
+						$vn_width = mb_strlen(preg_replace('/^([A-Za-z0-9]+).*$/', '$1', substr($ps_value, $vn_strpos)));
 						break;
 					case 'FREE':
 					default:
@@ -273,7 +273,7 @@ class MultipartIDNumber extends IDNumber {
 				// Take the calculated width from the input value as the element value; if $vn_width is null, use the remainder
 				// of the input string
 				$va_element_vals[] = substr($ps_value, $vn_strpos, $vn_width);
-				$vn_strpos = is_null($vn_width) ? strlen($ps_value) : $vn_strpos + $vn_width;
+				$vn_strpos = is_null($vn_width) ? mb_strlen($ps_value) : $vn_strpos + $vn_width;
 			}
 		}
 		return $va_element_vals;
@@ -979,16 +979,16 @@ class MultipartIDNumber extends IDNumber {
 					if (!$vs_element_value && !$pb_generate_for_search_form) { $vs_element_value = $va_element_info['default']; }
 					$vs_element = '<select name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'">';
 					if ($pb_generate_for_search_form) {
-						$vs_element .= "<option value='' SELECTED='SELECTED'>-</option>";
+						$vs_element .= "<option value='' selected='selected'>-</option>";
 					}
 					foreach($va_element_info['values'] as $ps_value) {
-						if ($ps_value == $vs_element_value) { $SELECTED = 'SELECTED="SELECTED"'; } else { $SELECTED = ''; }
-						$vs_element .= '<option '.$SELECTED.'>'.$ps_value.'</option>';
+						if ($ps_value == $vs_element_value) { $vs_selected = ' selected="selected"'; } else { $vs_selected = ''; }
+						$vs_element .= '<option value="'.$ps_value.'"'.$vs_selected.'>'.$ps_value.'</option>';
 					}
 
 					if (!$pb_generate_for_search_form) {
 						if (!in_array($vs_element_value, $va_element_info['values'])) {
-							$vs_element .= '<option SELECTED="SELECTED">'.$vs_element_value.'</option>';
+							$vs_element .= '<option selected="selected">'.$vs_element_value.'</option>';
 						}
 					}
 
