@@ -988,7 +988,7 @@ class MultipartIDNumber extends IDNumber {
 
 					if (!$pb_generate_for_search_form) {
 						if (!in_array($vs_element_value, $va_element_info['values'])) {
-							$vs_element .= '<option SELECTED="1">'.$vs_element_value.'</option>';
+							$vs_element .= '<option SELECTED="SELECTED">'.$vs_element_value.'</option>';
 						}
 					}
 
