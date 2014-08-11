@@ -1,127 +1,121 @@
-.bundleLabel select,
-.bundleLabel option {
-	max-width: 300px;
-}
-.bundleLabel textarea,
-.bundleLabel input[type="text"] {
-	max-width: 94.5%;
-	display: inline-block;
-}
+@import url(http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700|Oswald);
+#topNavContainer {
+  height: auto; }
+
+#topNav {
+  position: relative; }
+
+.roundedNav {
+  max-width: 100%; }
+
+#main {
+  background: #f0f0f0 url(http://museum.wa.gov.au/sites/all/themes/wamuseumv3/style/build/images/backgrounds/escheresque.png) 0 0 repeat;
+  background-attachment: fixed; }
+
+#leftNav {
+  background: #282828; }
+
+#leftNav {
+  width: 100%;
+  padding: 0;
+  position: relative;
+  width: 30%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0; }
+  @media only screen and (min-width: 60em) {
+    #leftNav {
+      width: 25%; } }
+  @media only screen and (min-width: 70em) {
+    #leftNav {
+      width: 20%; } }
+  @media only screen and (min-width: 80em) {
+    #leftNav {
+      width: 20%; } }
+
+#leftNav #leftNavSidebar {
+  width: 100%;
+  height: auto; }
+
+#leftNav h3.nextPrevious a.next {
+  width: 50px;
+  text-align: center; }
+
+#mainContent {
+  background-color: transparent;
+  padding: 1em 0;
+  border-right: 0;
+  min-height: 1000px;
+  position: relative;
+  margin: 0 3% 0 33%;
+  width: 64%; }
+  @media only screen and (min-width: 50em) {
+    #mainContent {
+      margin: 0 3% 0 33%;
+      width: 64%; } }
+  @media only screen and (min-width: 60em) {
+    #mainContent {
+      margin: 0 3% 0 28%;
+      width: 69%; } }
+  @media only screen and (min-width: 70em) {
+    #mainContent {
+      margin: 0 5% 0 25%;
+      width: 70%; } }
+  @media only screen and (min-width: 80em) {
+    #mainContent {
+      margin: 0 10% 0 30%;
+      width: 60%; } }
+
+.sectionBox {
+  background-color: white;
+  border-radius: 3px;
+  box-shadow: 0 0 2px 2px rgba(60, 60, 60, 0.1);
+  padding: 1em; }
+
+div.editorBottomPadding {
+  padding-bottom: 5em; }
+
 .bundleLabel {
-	float: left;
-	min-width: 45%;
-	padding: 1%;
-	max-width: 94.5%;
-	margin: 1%;
-	/*overflow: auto;*/
-	border-radius: 1em;
-}
+  font-size: inherit; }
+  .bundleLabel .formLabelText {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 400;
+    text-transform: uppercase; }
 
-.bundleLabel.fullWidth {
-	width: 94.5%;
-}
+#footerContainer {
+  position: relative; }
 
-.bundleLabel .formLabelText {
-	width: 80%;
-	white-space: nowrap;
-	overflow: visible;
-}
+#footer {
+  width: 100%;
+  font-size: 0.8em;
+  background: #0a0905;
+  padding-bottom: 0.7em;
+  color: #c8c8c8; }
+  #footer a {
+    color: inherit; }
+  #footer div {
+    width: auto;
+    text-align: center;
+    font-family: inherit; }
 
-.bundleLabel>span {
-	display: inline-block;
-	clear: none;
-}
+*, *:before, *:after {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box; }
 
-.required {
-	color: #bb0000;
-	font-size: 10px;
-	font-weight: normal;
-	float: left;
-}
+html,
+body {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 1em;
+  line-height: 1.5;
+  min-height: 100%;
+  min-width: 37.9em; }
 
-#intrinsic_idno input[type="text"],
-#intrinsic_idno select,
-#intrinsic_idno .formLabel
- {
-	font-size: 18px;
-	font-family: monospace;
-	max-width: 75%;
-}
-/**Don't overflow the container */
-.caRelatedItem>div,
-.caItemList .listRel,
-.olMap,
-.cke,
-div.hierarchyBrowseTab {
-	max-width: 95%;
-}
-/*So that the user interface editor doesn't appear cramped*/
-div.bundleDisplayEditorPlacementList {
-	width: 100%;
-}
-div.bundleDisplayEditorPlacementList div.bundleDisplayEditorPlacement {
-	width: 90%;
-}
-/* And the source and target columns are equal width */
-.bundleDisplayPlacementEditor td {
-	width: 50%;
-}
-.cke_reset.cke_maximized {
-	z-index: 30001 !important;
-}
+.width {
+  width: 100%; }
 
-
-div.notification-info-box,
-div.notification-error-box,
-div.notification-warning-box {
-	width: 100%;
-}
-
-#tooltip h3, #tooltip div { margin: 0; }
-
-#tooltip.tooltipFormat {
-	font-family: Arial;
-	border: none;
-	width: 210px;
-	padding:15px;
-	/*height: 135px;
-	opacity: 0.8;
-	background: url('../graphics/backgrounds/tooltip_box.png');*/
-	-moz-border-radius: 10px;
-	-webkit-border-top: 10px;
-	border-radius: 10px;
-	-moz-box-shadow: 2px 2px 5px #adadad;
-	-webkit-box-shadow: 2px 2px 5px #adadad;
-	box-shadow: 2px 2px 5px #adadad;
-	background-color:#FFFFFF;
-	color:#000000;
-	font-size:11px;
-	border:1px solid #adadad;
-}
-#tooltip.tooltipFormat h3 {
-	margin-bottom: 0.25em;
-	font-size: 10pt;
-	width: 220px;
-	text-align: center;
-}
-#tooltip.tooltipFormat div {
-	/*width: 205px;
-	height: 130px;
-	text-align: left;
-	overflow: hidden;*/
-	margin: 0px;
-}
-
-#tooltip.resizeableTooltip {
-	font-family: Arial;
-	border: none;
-	padding:3px;
-	opacity: 1.0;
-}
-
-#tooltip.resizeableTooltip h3 {
-	margin-bottom: 0.25em;
-	font-size: 10pt;
-	text-align: center;
-	opacity: 1.0;
-}
+.title--alt {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 400;
+  text-transform: uppercase; }

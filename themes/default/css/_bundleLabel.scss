@@ -1,0 +1,13 @@
+
+
+.bundleLabel {
+	font-size: inherit;
+
+	// /margin: 0;
+
+
+	.formLabelText {
+		@include wam-font-heading();
+	}
+}
+

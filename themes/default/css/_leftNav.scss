@@ -1,0 +1,43 @@
+#leftNav {
+	background: $grey-dark;
+}
+
+
+#leftNav {
+	width: 100%;
+	padding: 0;
+	position: relative;
+	
+	width: 30%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+
+
+
+	@include breakpoint(baby-bear) {
+		
+	}
+	@include breakpoint(mama-bear) {
+		width: 25%;
+	}
+	@include breakpoint(papa-bear) {
+		width: 20%
+	}
+	@include breakpoint(supa-bear) {
+		width: 20%
+	}
+
+
+}
+
+
+
+
+
+
+#leftNav #leftNavSidebar {
+	width: 100%;
+	height: auto;
+}
