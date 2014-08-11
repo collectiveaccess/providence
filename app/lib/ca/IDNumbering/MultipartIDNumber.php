@@ -233,31 +233,45 @@ class MultipartIDNumber extends IDNumber {
 			$va_element_vals = array();
 			$vn_strpos = 0;
 			foreach ($this->getElements() as $va_element_info) {
-				if (isset($va_element_info['width'])) {
-					// The element has an explicit, fixed width, so read the given number of characters
-					$vn_width = intval($va_element_info['width']);
-				} else {
-					switch ($va_element_info['type']) {
-						case 'CONSTANT':
-							// The element has an implicit width because it is a constant, so read the width of the constant
-							$vn_width = strlen($va_element_info['value']);
-							break;
-						case 'LIST':
-							// The element has an implicit width depending on the selected value in a list
-							$vs_matching_value = null;
-							foreach ($va_element_info['values'] as $vs_value) {
-								if (substr($ps_value, $vn_strpos, strlen($vs_value)) === $vs_value && (is_null($vs_matching_value) || strlen($vs_matching_value) < strlen($vs_value))) {
-									// We have a match, and it is either the first match or the longest match so far
-									$vs_matching_value = $vs_value;
-								}
+				switch ($va_element_info['type']) {
+					case 'LIST':
+						// The element has an implicit width depending on the selected value in a list
+						$vs_matching_value = null;
+						foreach ($va_element_info['values'] as $vs_value) {
+							if (substr($ps_value, $vn_strpos, strlen($vs_value)) === $vs_value && (is_null($vs_matching_value) || strlen($vs_matching_value) < strlen($vs_value))) {
+								// We have a match, and it is either the first match or the longest match so far
+								$vs_matching_value = $vs_value;
 							}
-							$vn_width = !is_null($vs_matching_value) ? strlen($vs_matching_value) : null;
-							break;
-						default:
-							$vn_width = null;
-					}
+						}
+						$vn_width = !is_null($vs_matching_value) ? strlen($vs_matching_value) : null;
+						break;
+					case 'CONSTANT':
+						// The element has an implicit width because it is a constant, so read the width of the constant
+						$vn_width = strlen($va_element_info['value']);
+						break;
+					case 'SERIAL':
+					case 'YEAR':
+					case 'MONTH':
+					case 'DAY':
+					case 'NUMERIC':
+						// Match a sequence of numeric digits
+						$vn_width = strlen(preg_replace('/^(\d+).*$/', '$1', substr($ps_value, $vn_strpos)));
+						break;
+					case 'ALPHANUMERIC':
+						// Match a sequence of alphanumeric characters
+						$vn_width = strlen(preg_replace('/^([A-Za-z0-9]+).*$/', '$1', substr($ps_value, $vn_strpos)));
+						break;
+					case 'FREE':
+					default:
+						// Match free text
+						$vn_width = null;
 				}
-				// Take the calculated width from the input value as the element value
+				if (isset($va_element_info['width'])) {
+					// Use the configured width as either a fallback or a maximum
+					$vn_width = is_null($vn_width) ? intval($va_element_info['width']) : min($vn_width, intval($va_element_info['width']));
+				}
+				// Take the calculated width from the input value as the element value; if $vn_width is null, use the remainder
+				// of the input string
 				$va_element_vals[] = substr($ps_value, $vn_strpos, $vn_width);
 				$vn_strpos = is_null($vn_width) ? strlen($ps_value) : $vn_strpos + $vn_width;
 			}
