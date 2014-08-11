@@ -981,13 +981,13 @@ class MultipartIDNumber extends IDNumber {
 					if ($pb_generate_for_search_form) {
 						$vs_element .= "<option value='' selected='selected'>-</option>";
 					}
-					foreach($va_element_info['values'] as $ps_value) {
-						if ($ps_value == $vs_element_value) { $vs_selected = ' selected="selected"'; } else { $vs_selected = ''; }
+					foreach ($va_element_info['values'] as $ps_value) {
+						if (trim($ps_value) === trim($vs_element_value)) { $vs_selected = ' selected="selected"'; } else { $vs_selected = ''; }
 						$vs_element .= '<option value="'.$ps_value.'"'.$vs_selected.'>'.$ps_value.'</option>';
 					}
 
 					if (!$pb_generate_for_search_form) {
-						if (!in_array($vs_element_value, $va_element_info['values'])) {
+						if (!in_array($vs_element_value, $va_element_info['values']) && strlen($vs_element_value) > 0) {
 							$vs_element .= '<option value="'.$vs_element_value.'" selected="selected">'.$vs_element_value.'</option>';
 						}
 					}
