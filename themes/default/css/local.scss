@@ -12,13 +12,14 @@
 		@import "control-box";
 		@import "bundleLabel";
 		@import "hierarchyBrowser";
-
+		@import "simple-search-box";
 		@import "_listtable";
 
 
 	@import "leftNav";
 		@import "nextPrevious";
 		@import "caColorbox";
+		@import "toolIcons";
 
 
 	
@@ -27,6 +28,7 @@
 	@import "footerContainer";
 
 
+@import "icons";
 @import "form";
 @import "misc";
 

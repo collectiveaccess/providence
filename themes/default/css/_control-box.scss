@@ -16,9 +16,35 @@ div.control-box {
 	}
 
 
+	a.form-button {
+		padding-bottom: 0;
+		height: auto;
+	}
+
+	a.form-button span, 
+	span.form-button button, 
+	span.form-button input, 
+	del.form-button span {
+		padding: 6px 12px 6px 12px;
+
+	}
+
+
 	input[type="text"], input[type="textarea"], textarea, input[type="password"] {
 		width: auto;
 	}
+
+
+	.form-button img {
+		padding: 3px;
+		border-radius: 3px;
+		background: white;
+		margin-right: 10px;
+
+		display: none;
+	}
+
+
 }
 
 div.control-box-right-content {
@@ -30,6 +56,7 @@ a.form-button:hover, span.form-button:hover, a.form-button:focus, a.dom-button-f
 	color: inherit;
 	font-size: inherit;
 	font-family: inherit;
+	height: auto;
 }
 
 
@@ -38,3 +65,13 @@ div.form-header-button {
 	background-color: transparent;
 }
 
+a.button {
+	font-family: inherit;
+	font-size: inherit;
+}
+
+
+
+div.control-box-middle-content {
+	font-size: inherit;
+}
