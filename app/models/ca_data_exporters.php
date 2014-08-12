@@ -1464,6 +1464,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$va_get_options['convertCodesToDisplayText'] = true;
 		}
 
+		if($t_exporter_item->getSetting('returnIdno')){
+			$va_get_options['returnIdno'] = true;
+		}
+
 		if($vs_delimiter = $t_exporter_item->getSetting("delimiter")){
 			$va_get_options['delimiter'] = $vs_delimiter;
 		}
