@@ -62,12 +62,37 @@
 	h3.movements, 
 	h3.loans, 
 	h3.entities, 
-	h3.collections {
+	h3.collections,
+	.creatingNew {
 		margin: 0 0 0.3em;
 		padding-top: 1em;
 
 		@include wam-font-heading();
-		font-size: 2em;
+		font-size: 1.2em;
+		@include breakpoint(baby-bear) {
+			font-size: 1.3em;
+		}
+		@include breakpoint(mama-bear) {
+			font-size: 1.7em;
+		}
+		@include breakpoint(supa-bear) {
+			font-size: 2em;
+		}
+	}
+
+	.setStats div, 
+	.groupList div, 
+	.yourDisplays div, 
+	.searchForms div, 
+	.comments div, 
+	.tags div, 
+	.export div, 
+	h3.metalist div, 
+	h3.relTypes div, 
+	.importers div, 
+	.savedSearches div, 
+	.searchTours div {
+		font-size: 70%;
 	}
 
 	h2 {
@@ -87,6 +112,33 @@
 			background: $black;
 		}
 	}
+
+	ul.arrow {
+		border-top: 0;
+		border-bottom: dotted 1px $grey;
+		font-size: inherit;
+
+		li {
+
+
+			a {
+				background: transparent url('../graphics/icons/arrow_gray.gif') no-repeat 20px 50%;
+				
+
+				&:hover {
+					background-color: $grey-dark;
+				}
+			}
+		}
+	}
+
+
+	.sf-menu-selected, 
+	.sf-menu li li a.sf-menu-selected, 
+	.sf-menu li li li a.sf-menu-selected {
+		background: $black;
+	}
+
 
 	h3 {
 		font-size: inherit;

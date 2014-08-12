@@ -25,6 +25,11 @@
   top: 47px;
   /* match top ul list item height */ }
 
+ul.sf-menu li li:hover ul,
+ul.sf-menu li li.sfHover ul {
+  left: 13.4em;
+  /* match ul width */ }
+
 .sf-menu a.sf-with-ul {
   font-family: inherit; }
 
@@ -57,6 +62,7 @@
       margin: 0 10% 0 35%;
       width: 55%; } }
 
+#browse,
 #summary,
 .sectionBox {
   background-color: white;
@@ -83,15 +89,20 @@ div.control-box {
   div.control-box span.form-button button,
   div.control-box span.form-button input,
   div.control-box del.form-button span {
-    padding: 6px 12px 6px 12px; }
+    padding: 6px 12px 6px 12px;
+    line-height: 1.5; }
   div.control-box input[type="text"], div.control-box input[type="textarea"], div.control-box textarea, div.control-box input[type="password"] {
     width: auto; }
+  div.control-box .form-header-button img,
   div.control-box .form-button img {
-    padding: 3px;
-    border-radius: 3px;
-    background: white;
-    margin-right: 10px;
     display: none; }
+  div.control-box a.form-header-button,
+  div.control-box a.button {
+    padding: 6px 12px 6px 12px;
+    border-radius: 3px; }
+    div.control-box a.form-header-button:hover,
+    div.control-box a.button:hover {
+      background: #3c3c3c; }
 
 div.control-box-right-content {
   font-family: inherit; }
@@ -180,6 +191,67 @@ table.listtable thead tr th,
 .table.listtable {
   font-size: 0.9em; }
 
+#caSetList.listtable thead tr th,
+#caGroupList.listtable thead tr th,
+#caWatchedItemsList.listtable thead tr th,
+#caBundleList.listtable thead tr th,
+#caCommentsList.listtable thead tr th,
+#caExporterListContainer .listtable thead tr th,
+#caUserList.listtable thead tr th,
+#caEventList.listtable thead tr th,
+#caSearchList.listtable thead tr th,
+#caLocaleList.listtable thead tr th,
+#caSearchConfigSettingList.listtable thead tr th,
+#caMediaConfigPluginList.listtable thead tr th,
+#caElementList.listtable thead tr th,
+#caUIList.listtable thead tr th,
+#caSavedSearchesList.listtable thead tr th {
+  font-family: inherit;
+  font-weight: 600; }
+
+.olMapSearchBox {
+  float: none;
+  position: relative;
+  background: none;
+  width: 100%;
+  height: auto;
+  margin: 0;
+  padding: 0; }
+  .olMapSearchBox input {
+    outline-style: none;
+    border: 1px solid #ddd; }
+
+.olMapSearchText {
+  height: inherit;
+  float: none;
+  margin: 0; }
+
+.mapholder {
+  height: auto !important;
+  width: 100% !important; }
+
+.olMap {
+  width: 100% !important; }
+
+div.notification-info-box {
+  box-shadow: 0 0 2px 2px rgba(60, 60, 60, 0.1);
+  padding: 1em;
+  background: #f0f0f0 url("../graphics/icons/info.gif") no-repeat 13px 0.9em;
+  background-size: 32px 32px;
+  border: 2px solid #9ec54d;
+  border-radius: 3px !important; }
+
+li.notification-info-box {
+  font-weight: 600;
+  color: #3c3c3c;
+  font-size: inherit;
+  font-family: inherit;
+  text-indent: 10px;
+  padding-top: 2px; }
+
+ul.notification-info-box {
+  margin: 0; }
+
 #leftNav {
   background: #282828; }
 
@@ -230,13 +302,105 @@ table.listtable thead tr th,
   #leftNav h3.movements,
   #leftNav h3.loans,
   #leftNav h3.entities,
-  #leftNav h3.collections {
+  #leftNav h3.collections,
+  #leftNav .creatingNew {
     margin: 0 0 0.3em;
     padding-top: 1em;
     font-family: 'Oswald', sans-serif;
     font-weight: 400;
     text-transform: uppercase;
-    font-size: 2em; }
+    font-size: 1.2em; }
+    @media only screen and (min-width: 50em) {
+      #leftNav #widgets .searchType,
+      #leftNav #widgets .setStats,
+      #leftNav #widgets .groupList,
+      #leftNav #widgets .watchedItems,
+      #leftNav #widgets .yourDisplays,
+      #leftNav #widgets .searchForms,
+      #leftNav #widgets .comments,
+      #leftNav #widgets .tags,
+      #leftNav h3.export,
+      #leftNav h3.metalist,
+      #leftNav h3.relTypes,
+      #leftNav h3.importers,
+      #leftNav h3.savedSearches,
+      #leftNav h3.searchTours,
+      #leftNav h3.storage,
+      #leftNav h3.places,
+      #leftNav h3.occurrences,
+      #leftNav h3.objrep,
+      #leftNav h3.lots,
+      #leftNav h3.movements,
+      #leftNav h3.loans,
+      #leftNav h3.entities,
+      #leftNav h3.collections,
+      #leftNav .creatingNew {
+        font-size: 1.3em; } }
+    @media only screen and (min-width: 60em) {
+      #leftNav #widgets .searchType,
+      #leftNav #widgets .setStats,
+      #leftNav #widgets .groupList,
+      #leftNav #widgets .watchedItems,
+      #leftNav #widgets .yourDisplays,
+      #leftNav #widgets .searchForms,
+      #leftNav #widgets .comments,
+      #leftNav #widgets .tags,
+      #leftNav h3.export,
+      #leftNav h3.metalist,
+      #leftNav h3.relTypes,
+      #leftNav h3.importers,
+      #leftNav h3.savedSearches,
+      #leftNav h3.searchTours,
+      #leftNav h3.storage,
+      #leftNav h3.places,
+      #leftNav h3.occurrences,
+      #leftNav h3.objrep,
+      #leftNav h3.lots,
+      #leftNav h3.movements,
+      #leftNav h3.loans,
+      #leftNav h3.entities,
+      #leftNav h3.collections,
+      #leftNav .creatingNew {
+        font-size: 1.7em; } }
+    @media only screen and (min-width: 80em) {
+      #leftNav #widgets .searchType,
+      #leftNav #widgets .setStats,
+      #leftNav #widgets .groupList,
+      #leftNav #widgets .watchedItems,
+      #leftNav #widgets .yourDisplays,
+      #leftNav #widgets .searchForms,
+      #leftNav #widgets .comments,
+      #leftNav #widgets .tags,
+      #leftNav h3.export,
+      #leftNav h3.metalist,
+      #leftNav h3.relTypes,
+      #leftNav h3.importers,
+      #leftNav h3.savedSearches,
+      #leftNav h3.searchTours,
+      #leftNav h3.storage,
+      #leftNav h3.places,
+      #leftNav h3.occurrences,
+      #leftNav h3.objrep,
+      #leftNav h3.lots,
+      #leftNav h3.movements,
+      #leftNav h3.loans,
+      #leftNav h3.entities,
+      #leftNav h3.collections,
+      #leftNav .creatingNew {
+        font-size: 2em; } }
+  #leftNav .setStats div,
+  #leftNav .groupList div,
+  #leftNav .yourDisplays div,
+  #leftNav .searchForms div,
+  #leftNav .comments div,
+  #leftNav .tags div,
+  #leftNav .export div,
+  #leftNav h3.metalist div,
+  #leftNav h3.relTypes div,
+  #leftNav .importers div,
+  #leftNav .savedSearches div,
+  #leftNav .searchTours div {
+    font-size: 70%; }
   #leftNav h2 {
     background-color: transparent;
     color: inherit;
@@ -250,6 +414,18 @@ table.listtable thead tr th,
     #leftNav h2 a.sf-menu-selected {
       height: auto;
       background: #0a0905; }
+  #leftNav ul.arrow {
+    border-top: 0;
+    border-bottom: dotted 1px #3c3c3c;
+    font-size: inherit; }
+    #leftNav ul.arrow li a {
+      background: transparent url("../graphics/icons/arrow_gray.gif") no-repeat 20px 50%; }
+      #leftNav ul.arrow li a:hover {
+        background-color: #282828; }
+  #leftNav .sf-menu-selected,
+  #leftNav .sf-menu li li a.sf-menu-selected,
+  #leftNav .sf-menu li li li a.sf-menu-selected {
+    background: #0a0905; }
   #leftNav h3 {
     font-size: inherit; }
   #leftNav h4 {
@@ -966,7 +1142,8 @@ input[type="password"] {
   input[type="textarea"], .formLabel
   textarea, .formLabel
   input[type="password"] {
-    width: 100% !important; }
+    width: 100% !important;
+    height: auto !important; }
 
 .labelInfo {
   background-color: transparent;
@@ -991,6 +1168,9 @@ del.form-button span {
   font-size: inherit !important;
   font-family: inherit;
   font-weight: 600; }
+
+a.form-button:hover span {
+  background: #3c3c3c; }
 
 .ui-autocomplete-input {
   height: 2em !important; }
@@ -1040,6 +1220,12 @@ table.attributeListItem {
 .attributeListItem > .formLabel > div {
   width: 100% !important; }
 
+.caListItem {
+  width: 100%; }
+
+#P284OccurrenceEditorFormItem_new_0 {
+  overflow: auto; }
+
 *, *:before, *:after {
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
@@ -1078,3 +1264,14 @@ h2 {
   text-transform: uppercase;
   font-size: 1.4em;
   color: #646464; }
+
+.hierarchyPanelHeader {
+  font-size: inherit; }
+  .hierarchyPanelHeader a {
+    font-size: inherit; }
+
+#summary .heading {
+  font-size: inherit;
+  font-weight: 600;
+  font-family: inherit;
+  color: inherit; }

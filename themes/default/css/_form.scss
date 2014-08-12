@@ -10,6 +10,7 @@ input[type="password"] {
 
 	.formLabel & {
 		width: 100% !important;
+		height: auto !important;
 	}	
 }
 
@@ -52,7 +53,9 @@ del.form-button span {
 }
 
 
-
+a.form-button:hover span {
+	background: $grey;
+}
 
 
 
@@ -119,11 +122,20 @@ table.attributeListItem {
 	padding: 0;
 }
 
+// td.attributeListItem {
+// 	width: 33%;
+// 	padding: 3px;
+// }
+
 .attributeListItem > .formLabel > div {
 	width: 100% !important;
 }
 
 
+.caListItem {
+	width: 100%;
+}
 
-
-
+#P284OccurrenceEditorFormItem_new_0 {
+	overflow: auto;
+}

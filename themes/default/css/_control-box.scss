@@ -27,6 +27,8 @@ div.control-box {
 	del.form-button span {
 		padding: 6px 12px 6px 12px;
 
+	line-height: 1.5
+
 	}
 
 
@@ -34,17 +36,20 @@ div.control-box {
 		width: auto;
 	}
 
-
+	.form-header-button img,
 	.form-button img {
-		padding: 3px;
-		border-radius: 3px;
-		background: white;
-		margin-right: 10px;
-
 		display: none;
 	}
 
+	a.form-header-button,
+	a.button {
+		padding: 6px 12px 6px 12px;
+		border-radius: 3px;
 
+		&:hover {
+			background: $grey;
+		}
+	}
 }
 
 div.control-box-right-content {

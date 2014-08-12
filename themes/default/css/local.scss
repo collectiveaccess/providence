@@ -13,8 +13,10 @@
 		@import "bundleLabel";
 		@import "hierarchyBrowser";
 		@import "simple-search-box";
-		@import "_listtable";
+		@import "listtable";
+		@import "olMapSearchBox";
 
+	@import "notification-info-box";
 
 	@import "leftNav";
 		@import "nextPrevious";
