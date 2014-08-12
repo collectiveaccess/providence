@@ -278,7 +278,7 @@ class ca_users extends BaseModel {
 	protected $FIELDS;
 	
 	/**
-	 * authentication configuration
+	 * @var Configuration authentication configuration
 	 */
 	protected $opo_auth_config = null;
 	
@@ -2524,11 +2524,11 @@ class ca_users extends BaseModel {
 	 * keys and values that can contain such information
 	 */
 	public function authenticate(&$ps_username, $ps_password="", $pa_options=null) {
-		if($this->opo_auth_config->get("use_ldap")){
+		if ($this->opo_auth_config->get("use_ldap") && !$this->isExplicitLocalUser($ps_username)) {
 			return $this->authenticateLDAP($ps_username,$ps_password);
 		}
 		
-		if($this->opo_auth_config->get("use_extdb")){
+		if ($this->opo_auth_config->get("use_extdb") && !$this->isExplicitLocalUser($ps_username)) {
 			if($vn_rc = $this->authenticateExtDB($ps_username,$ps_password)) {
 				return $vn_rc;
 			}
@@ -2550,6 +2550,15 @@ class ca_users extends BaseModel {
 			}
 		}
 		return false;
+	}
+	# ----------------------------------------
+	/**
+	 * Determine whether the given username is listed as a local user, which bypasses LDAP or ExtDB (if configured).
+	 * @param string $ps_username
+	 * @return boolean
+	 */
+	protected function isExplicitLocalUser($ps_username) {
+		return in_array($ps_username, $this->opo_auth_config->getList("local_users"));
 	}
 	# ----------------------------------------
 	/**
