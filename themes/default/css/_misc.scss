@@ -2,6 +2,7 @@
 
 *, *:before, *:after {
   -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
+
 }
 
 
@@ -25,3 +26,24 @@ body {
   font-weight: 400;
   text-transform: uppercase;
 }
+
+a {
+	color: $perth;
+
+	&:hover {
+		color: darken($perth, 20%);
+	}
+
+}
+
+
+h1 {
+	@include wam-font-heading();
+}
+
+h2 {
+	@include wam-font-heading();
+	font-size: 1.4em;	
+	color: $grey-mid;
+}
+

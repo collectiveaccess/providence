@@ -1,7 +1,19 @@
-input[type="text"], input[type="textarea"], textarea, input[type="password"] {
+input[type="text"], 
+input[type="textarea"], 
+textarea, 
+input[type="password"] {
 	width: 100%;
-	
+
+	font-family: inherit;
+	font-size: inherit;
+
+
+	.formLabel & {
+		width: 100% !important;
+	}	
 }
+
+
 
 
 .labelInfo {
@@ -24,6 +36,31 @@ input[type="text"], input[type="textarea"], textarea, input[type="password"] {
 }
 
 
+a.form-button, 
+span.form-button, 
+del.form-button {
+	font-size: inherit;
+}
+
+a.form-button span, 
+span.form-button button, 
+span.form-button input, 
+del.form-button span {
+	font-size: inherit !important;
+	font-family: inherit;
+	font-weight: 600;
+}
+
+
+
+
+
+
+.ui-autocomplete-input {
+	height: 2em !important;
+
+}
+
 .caDeleteItemButton,
 .caDeleteLabelButton {
 	position: absolute;
@@ -36,6 +73,7 @@ input[type="text"], input[type="textarea"], textarea, input[type="password"] {
 	font-family: inherit;
 	font-weight: 600;
 	font-size: inherit;
+	color: inherit;
 }
 
 
@@ -44,3 +82,48 @@ input[type="text"], input[type="textarea"], textarea, input[type="password"] {
 	color: $grey-dark;
 	font-size: 1.2em;
 }
+
+
+div.button {
+	font-size: inherit;
+
+
+	img {
+		vertical-align: initial;
+	}
+
+	a{
+		font-size: 0.9em;
+		font-family: inherit;
+		font-weight: 600;
+		color: inherit;
+		border: 1px solid $grey-light;
+		padding: 2px 6px;
+		margin-bottom: 3px;
+		border-radius: 1em;
+		display: inline-block;
+
+		&:hover {
+			color: inherit;
+			text-decoration: underline;
+		}
+	}
+}
+
+table.attributeListItem {
+	width: 100%;
+
+}
+
+.attributeListItem td {
+	padding: 0;
+}
+
+.attributeListItem > .formLabel > div {
+	width: 100% !important;
+}
+
+
+
+
+

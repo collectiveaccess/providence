@@ -13,28 +13,28 @@
 
 	// margin: 1em 3% 0 3%;
 	// width: 94%;
-	margin: 0 3% 0 33%;
-	width: 64%;
+	margin: 0 3% 0 36%;
+	width: 59%;
 
 	@include breakpoint(baby-bear) {
+		margin: 0 3% 0 38%;
+		width: 59%;
+	}
+	@include breakpoint(mama-bear) {
 		margin: 0 3% 0 33%;
 		width: 64%;
 	}
-	@include breakpoint(mama-bear) {
-		margin: 0 3% 0 28%;
-		width: 69%;
-	}
 	@include breakpoint(papa-bear) {
-		margin: 0 5% 0 25%;
-		width: 70%
+		margin: 0 5% 0 30%;
+		width: 65%
 	}
 	@include breakpoint(supa-bear) {
-		margin: 0 10% 0 30%;
-		width: 60%
+		margin: 0 10% 0 35%;
+		width: 55%
 	}
 }
 
-
+#summary,
 .sectionBox {
 	background-color: white;
 	border-radius: 3px;

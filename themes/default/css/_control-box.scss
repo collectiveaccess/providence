@@ -1,0 +1,40 @@
+
+
+div.control-box {
+	width: 100%;
+	background-color: $black;
+	color: white;
+
+
+	a {
+		color: white;
+		font-weight: 600;
+
+		&:hover {
+			color: white;
+		}
+	}
+
+
+	input[type="text"], input[type="textarea"], textarea, input[type="password"] {
+		width: auto;
+	}
+}
+
+div.control-box-right-content {
+	font-family: inherit;
+}
+
+a.form-button span, span.form-button button, span.form-button input, del.form-button span,
+a.form-button:hover, span.form-button:hover, a.form-button:focus, a.dom-button-focus, span.form-button-behavior-hover {
+	color: inherit;
+	font-size: inherit;
+	font-family: inherit;
+}
+
+
+
+div.form-header-button {
+	background-color: transparent;
+}
+

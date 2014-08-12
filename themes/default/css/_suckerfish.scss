@@ -6,9 +6,10 @@
 //     padding-right:	0;
 //     list-style:		none;
 // }
-// .sf-menu {
-//     line-height:	1.0;
-// }
+.sf-menu {
+    // line-height:	1.0;
+  padding-top: 3px;
+}
 // .sf-menu ul {
 //     position:		absolute;
 //     top:			-999em;
@@ -37,12 +38,12 @@
     	text-decoration: underline;
     }
 }
-// .sf-menu li:hover ul,
-// .sf-menu li.sfHover ul {
-//     left:			0;
-//     top: 44px;	 /* match top ul list item height */
-//     z-index:		999;
-// }
+.sf-menu li:hover ul,
+.sf-menu li.sfHover ul {
+    //left:			0;
+    top: 47px;	 /* match top ul list item height */
+    //z-index:		999;
+}
 // ul.sf-menu li:hover li ul,
 // ul.sf-menu li.sfHover li ul {
 //     top:			-999em;
