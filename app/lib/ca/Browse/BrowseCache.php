@@ -116,6 +116,15 @@
 		/**
 		 *
 		 */
+		 public function refresh() {
+		 	if (!$this->opo_cache) { return false; }
+		 	$this->ops_cache_key = $this->getCurrentCacheKey();
+			return $this->load($this->ops_cache_key);
+		 }
+		 # ------------------------------------------------------
+		/**
+		 *
+		 */
 		 public function remove() {
 		 	if (!$this->opo_cache) { return false; }
 		 	$this->opa_browse = array();
