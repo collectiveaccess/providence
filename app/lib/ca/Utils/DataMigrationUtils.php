@@ -1839,11 +1839,14 @@
 		 *                importEventSource = if importEvent is passed, then the value set for importEventSource is used in the import event log as the data source. If omitted a default value of "?" is used
 		 *                nonPreferredLabels = an optional array of nonpreferred labels to add to any newly created representations. Each label in the array is an array with required representation label values.
 		 *                log = if KLogger instance is passed then actions will be logged
-		 * @return bool|\ca_object_representations|mixed|null
+		 *				  matchMediaFilesWithoutExtension = if media path is invalid, attempt to find media in referenced directory and sub-directories that has a matching name, regardless of file extension. [default=false] 
+		 * @return bool|ca_object_representations|mixed|null
 		 */
 		static function getObjectRepresentationID($ps_representation_name, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = false; }
+
+			$vb_match_media_without_extension = caGetOption('matchMediaFilesWithoutExtension', $pa_options, false);
 
 			$pa_match_on = caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
 			/** @var ca_data_import_events $o_event */
@@ -1944,7 +1947,28 @@
 				$t_rep->set('source_id', isset($pa_values['source_id']) ? $pa_values['source_id'] : null);
 				$t_rep->set('access', isset($pa_values['access']) ? $pa_values['access'] : 0);
 				$t_rep->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
-				if(isset($pa_values['media']) && $pa_values['media']) { $t_rep->set('media', $pa_values['media']); }
+				
+				if(isset($pa_values['media']) && $pa_values['media']) {
+					if (($vb_match_media_without_extension) && !isURL($pa_values['media']) && !file_exists($pa_values['media'])) {
+						$vs_dirname = pathinfo($pa_values['media'], PATHINFO_DIRNAME);
+						$vs_filename = preg_replace('!\.[A-Za-z0-9]{1,4}$!', '', pathinfo($pa_values['media'], PATHINFO_BASENAME));
+						
+						$vs_original_path = $pa_values['media'];
+						
+						$pa_values['media'] = null;
+						
+						$va_files_in_dir = caGetDirectoryContentsAsList($vs_dirname, true, false, false, false);	
+						foreach($va_files_in_dir as $vs_filepath) {
+							if ($o_log) { $o_log->logDebug(_t("Trying media %1 in place of %2/%3", $vs_filepath, $vs_original_path, $vs_filename)); }
+							if (pathinfo($vs_filepath, PATHINFO_FILENAME) == $vs_filename) {
+								if ($o_log) { $o_log->logNotice(_t("Found media %1 for %2/%3", $vs_filepath, $vs_original_path, $vs_filename)); }
+								$pa_values['media'] = $vs_filepath;
+								break;
+							}
+						}
+					}
+					$t_rep->set('media', $pa_values['media']);
+				}
 
 				$t_rep->set('idno', $vs_idno);
 

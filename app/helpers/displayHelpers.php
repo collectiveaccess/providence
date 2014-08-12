@@ -1053,44 +1053,46 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 				require_once(__CA_MODELS_DIR__.'/ca_object_lots.php');
 				
 				$t_lot = new ca_object_lots($vn_lot_id);
-				if(!($vs_lot_displayname = $t_lot->get('idno_stub'))) {
-					if((!$vs_lot_displayname = $t_lot->getLabelForDisplay())){
-						$vs_lot_displayname = "Lot {$vn_lot_id}";		
-					}
-				}
-				if ($vs_lot_displayname) {
-					if(!($vs_part_of_lot_msg = $po_view->request->config->get("ca_objects_inspector_part_of_lot_msg"))){
-						$vs_part_of_lot_msg = _t('Part of lot');
-					}
-					if(!($vs_will_be_part_of_lot_msg = $po_view->request->config->get("ca_objects_inspector_will_be_part_of_lot_msg"))){
-						$vs_will_be_part_of_lot_msg = _t('Will be part of lot');
-					}
-					$vs_buf .= "<strong>".($vb_is_currently_part_of_lot ? $vs_part_of_lot_msg : $vs_will_be_part_of_lot_msg)."</strong>: " . caNavLink($po_view->request, $vs_lot_displayname, '', 'editor/object_lots', 'ObjectLotEditor', 'Edit', array('lot_id' => $vn_lot_id));
-				}
-				
-				$va_object_container_types = $po_view->request->config->getList('ca_objects_container_types');
-				$va_object_component_types = $po_view->request->config->getList('ca_objects_component_types');
-				$vb_can_add_component = (($vs_table_name === 'ca_objects') && $t_item->getPrimaryKey() && ($po_view->request->user->canDoAction('can_create_ca_objects')) && $t_item->canTakeComponents());
-		
-				if (method_exists($t_item, 'getComponentCount')) {
-					if ($vn_component_count = $t_item->getComponentCount()) {
-						if ($t_ui && ($vs_component_list_screen = $t_ui->getScreenWithBundle("ca_objects_components_list", $po_view->request)) && ($vs_component_list_screen !== $po_view->request->getActionExtra())) { 
-							$vs_component_count_link = caNavLink($po_view->request, (($vn_component_count == 1) ? _t('%1 component', $vn_component_count) : _t('%1 components', $vn_component_count)), '', '*', '*', $po_view->request->getAction().'/'.$vs_component_list_screen, array($t_item->primaryKey() => $t_item->getPrimaryKey()));
-						} else {
-							$vs_component_count_link = (($vn_component_count == 1) ? _t('%1 component', $vn_component_count) : _t('%1 components', $vn_component_count));
+				if ($t_lot->get('deleted') == 0) {
+					if(!($vs_lot_displayname = $t_lot->get('idno_stub'))) {
+						if((!$vs_lot_displayname = $t_lot->getLabelForDisplay())){
+							$vs_lot_displayname = "Lot {$vn_lot_id}";		
 						}
-						$vs_buf .= "<br/><strong>"._t('Has').":</strong> {$vs_component_count_link}";
+					}
+					if ($vs_lot_displayname) {
+						if(!($vs_part_of_lot_msg = $po_view->request->config->get("ca_objects_inspector_part_of_lot_msg"))){
+							$vs_part_of_lot_msg = _t('Part of lot');
+						}
+						if(!($vs_will_be_part_of_lot_msg = $po_view->request->config->get("ca_objects_inspector_will_be_part_of_lot_msg"))){
+							$vs_will_be_part_of_lot_msg = _t('Will be part of lot');
+						}
+						$vs_buf .= "<strong>".($vb_is_currently_part_of_lot ? $vs_part_of_lot_msg : $vs_will_be_part_of_lot_msg)."</strong>: " . caNavLink($po_view->request, $vs_lot_displayname, '', 'editor/object_lots', 'ObjectLotEditor', 'Edit', array('lot_id' => $vn_lot_id));
 					}
 				}
-									
-				if ($vb_can_add_component) {
-					$vs_buf .= ' <a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($po_view->request, '*', 'ObjectComponent', 'Form', array('parent_id' => $t_item->getPrimaryKey())).'"); return false;\')>'.caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__).'</a>';
+			}
+			
+			$va_object_container_types = $po_view->request->config->getList('ca_objects_container_types');
+			$va_object_component_types = $po_view->request->config->getList('ca_objects_component_types');
+			$vb_can_add_component = (($vs_table_name === 'ca_objects') && $t_item->getPrimaryKey() && ($po_view->request->user->canDoAction('can_create_ca_objects')) && $t_item->canTakeComponents());
 	
-					$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
-					$vo_change_type_view->setVar('t_item', $t_item);
-	
-					FooterManager::add($vo_change_type_view->render("create_component_html.php"));
+			if (method_exists($t_item, 'getComponentCount')) {
+				if ($vn_component_count = $t_item->getComponentCount()) {
+					if ($t_ui && ($vs_component_list_screen = $t_ui->getScreenWithBundle("ca_objects_components_list", $po_view->request)) && ($vs_component_list_screen !== $po_view->request->getActionExtra())) { 
+						$vs_component_count_link = caNavLink($po_view->request, (($vn_component_count == 1) ? _t('%1 component', $vn_component_count) : _t('%1 components', $vn_component_count)), '', '*', '*', $po_view->request->getAction().'/'.$vs_component_list_screen, array($t_item->primaryKey() => $t_item->getPrimaryKey()));
+					} else {
+						$vs_component_count_link = (($vn_component_count == 1) ? _t('%1 component', $vn_component_count) : _t('%1 components', $vn_component_count));
+					}
+					$vs_buf .= "<br/><strong>"._t('Has').":</strong> {$vs_component_count_link}";
 				}
+			}
+								
+			if ($vb_can_add_component) {
+				$vs_buf .= ' <a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($po_view->request, '*', 'ObjectComponent', 'Form', array('parent_id' => $t_item->getPrimaryKey())).'"); return false;\')>'.caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__).'</a>';
+
+				$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
+				$vo_change_type_view->setVar('t_item', $t_item);
+
+				FooterManager::add($vo_change_type_view->render("create_component_html.php"));
 			}
 			
 			//
@@ -3246,10 +3248,10 @@ $ca_relationship_lookup_parse_cache = array();
 				if (preg_match('!(<[A-Za-z0-9]+[ ]+[A-Za-z0-9 ,;\&\-_]*>)!', $vs_display, $va_matches)) {	// convert text in <> to non-tags if the text has only letters, numbers and spaces in it
 					array_shift($va_matches);
 					foreach($va_matches as $vs_match) {
-						$vs_display = 'xxx'.str_replace($vs_match, htmlspecialchars($vs_match), $vs_display);
+						$vs_display = str_replace($vs_match, htmlspecialchars($vs_match), $vs_display);
 					}
 				}
-				$vs_display = 'yyy'.trim(strip_tags($vs_display));
+				$vs_display = trim(strip_tags($vs_display));
 				
 				$vs_label = $va_item['label'];
 				if (preg_match('!(<[A-Za-z0-9]+[ ]+[A-Za-z0-9 ,;\&\-_]*>)!', $vs_label, $va_matches)) {	// convert text in <> to non-tags if the text has only letters, numbers and spaces in it
