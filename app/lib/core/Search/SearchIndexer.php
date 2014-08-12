@@ -435,6 +435,9 @@ class SearchIndexer extends SearchBase {
 				$va_hier_values = array_slice($va_hier_values, 0, $pn_max_levels);
 			}
 			
+			if (sizeof(SearchIndexer::$s_hier_path_cache)> 100) {
+				SearchIndexer::$s_hier_path_cache = array();
+			}
 			return SearchIndexer::$s_hier_path_cache[$vs_key] = array('values' => $va_hier_values, 'path' => join($ps_delimiter, $va_hier_values));
 		}
 		return SearchIndexer::$s_hier_path_cache[$vs_key] = null;
