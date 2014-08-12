@@ -3246,10 +3246,10 @@ $ca_relationship_lookup_parse_cache = array();
 				if (preg_match('!(<[A-Za-z0-9]+[ ]+[A-Za-z0-9 ,;\&\-_]*>)!', $vs_display, $va_matches)) {	// convert text in <> to non-tags if the text has only letters, numbers and spaces in it
 					array_shift($va_matches);
 					foreach($va_matches as $vs_match) {
-						$vs_display = 'xxx'.str_replace($vs_match, htmlspecialchars($vs_match), $vs_display);
+						$vs_display = str_replace($vs_match, htmlspecialchars($vs_match), $vs_display);
 					}
 				}
-				$vs_display = 'yyy'.trim(strip_tags($vs_display));
+				$vs_display = trim(strip_tags($vs_display));
 				
 				$vs_label = $va_item['label'];
 				if (preg_match('!(<[A-Za-z0-9]+[ ]+[A-Za-z0-9 ,;\&\-_]*>)!', $vs_label, $va_matches)) {	// convert text in <> to non-tags if the text has only letters, numbers and spaces in it
