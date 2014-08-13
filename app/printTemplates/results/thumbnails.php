@@ -59,25 +59,31 @@
 		
 		$vn_lines_on_page = 0;
 		$vn_items_in_line = 0;
+		
+		$vn_left = $vn_top = 0;
 		while($vo_result->nextHit()) {
 			$vn_object_id = $vo_result->get('ca_objects.object_id');		
 ?>
-			<div class="thumbnail">
-				<?php print "<div class='imgThumb'>".$vo_result->get('ca_object_representations.media.preview')."</div>"; ?>
+			<div class="thumbnail" style="left: <?php print $vn_left; ?>px; top: <?php print $vn_top; ?>px;">
+				<?php print "<div class='imgThumb'><img src='".$vo_result->getMediaPath('ca_object_representations.media', 'preview')."'/></div>"; ?>
 				<br/>
 				<?php print "<div class='caption'>".$vo_result->getWithTemplate('^ca_objects.preferred_labels.name (^ca_objects.idno)')."</div>"; ?>
 			</div>
 <?php
 
 			$vn_items_in_line++;
+			$vn_left += 220;
 			if ($vn_items_in_line >= 3) {
 				$vn_items_in_line = 0;
+				$vn_left = 0;
+				$vn_top += 240;
 				$vn_lines_on_page++;
 				print "<br class=\"clear\"/>\n";
 			}
 			
 			if ($vn_lines_on_page >= 2) { 
 				$vn_lines_on_page = 0;
+				$vn_left = $vn_top = 0;
 				print "<div class=\"pageBreak\">&nbsp;</div>\n";
 			}
 		}
