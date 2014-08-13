@@ -63,7 +63,7 @@
 			$vn_object_id = $vo_result->get('ca_objects.object_id');		
 ?>
 			<div class="thumbnail">
-				<?php print "<div class='imgThumb'>".$vo_result->get('ca_object_representations.media.preview')."</div>"; ?>
+				<?php print "<div class='imgThumb'><img src='".$vo_result->getMediaPath('ca_object_representations.media', 'preview')."'/></div>"; ?>
 				<br/>
 				<?php print "<div class='caption'>".$vo_result->getWithTemplate('^ca_objects.preferred_labels.name (^ca_objects.idno)')."</div>"; ?>
 			</div>
