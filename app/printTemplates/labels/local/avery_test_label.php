@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/printTemplates/labels/avery_8164.php
+ * app/printTemplates/labels/local/avery_test_label.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -31,14 +31,14 @@
  * @pageSize A4
  * @pageOrientation portrait
  * @tables ca_objects,ca_occurrences,ca_entities
- * @marginLeft 0.125in
- * @marginRight 0.125in
- * @marginTop 0.25in
- * @marginBottom 0.25in
+ * @marginLeft 10mm
+ * @marginRight 10mm
+ * @marginTop 10mm
+ * @marginBottom 10mm
  * @horizontalGutter 0in
  * @verticalGutter 0.25in
- * @labelWidth 1.181in
- * @labelHeight 0.591in
+ * @labelWidth 35mm
+ * @labelHeight 12mm
  * 
  * ----------------------------------------------------------------------
  */
@@ -47,7 +47,7 @@
  ?>
 
 
- <div class="titleText" style="position: absolute; left: 0.125in; top: 0.125in; ">
+ <div class="titleText" style="position: absolute; left: 3mm; top: 3mm; ">
  	WESTERN AUSTRALIAN MUSEUM<br />
  	{{{<ifdef code="ca_objects.scientificNameAuthorship">(^ca_objects.scientificNameAuthorship)<br /></ifdef>}}}
  	<strong>WAM</strong> {{{<ifdef code="ca_objects.idno">(^ca_objects.idno)<br /></ifdef>}}}	

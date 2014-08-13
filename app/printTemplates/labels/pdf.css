@@ -7,7 +7,7 @@
 .imageTiny { width: 72px; height: 72px; float: left; margin: 0 5px 0 0; border-radius: 5px;}
 .imageTinyPlaceholder { width: 72px; height: 72px; background-color: #eee; float: left; margin: 0 5px 0 0; border-radius: 5px;}
 
-.titleText { font: "arial, helvetica, sans-serif"; font-weight: bold; font-size: 14px; }
+.titleText { font: "arial, helvetica, sans-serif"; font-weight: bold; font-size: 5px; }
 .bodyText { font: "arial, helvetica, sans-serif"; font-size: 11px; }
 .smallText { font: "arial, helvetica, sans-serif"; font-size: 9px; }
 
