@@ -7,7 +7,7 @@
 #header .pagingText:after { content: counter(page, decimal); }
 #body { z-index: 30000; position: relative; }
 
-img.headerImg {width:125px;height:21px;}
+img.headerImg {width:90px;height:21px;}
 .headerText { font: "DIN-Regular"; font-size: 11px; margin: 0px 0px 10px 25px; }
 .pagingText { position: absolute; top: 0px; right: 10px; font: "DIN-Regular"; font-size: 11px; text-align: right;  margin: 0px 0px 10px 25px; }
 .footerText { font: "DIN-Regular"; font-size: 11px;  margin: -5px 0px 0px 45px;  }  
