@@ -617,7 +617,7 @@
 				return $vn_rc;
 			}
 			
-			if ($o_trans) { $o_trans->rollback(); }
+			if ($o_trans) { $vn_rc ? $o_trans->commit() : $o_trans->rollback(); }
 			if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 			return $vn_rc;
 		}
@@ -1244,6 +1244,10 @@
 			if(!$pa_options) { $pa_options = array(); }
 			$va_tmp = explode('.', $ps_field);
 			
+			if ($va_tmp[1] == $this->getTypeFieldName()) {
+				return $this->getTypeListAsHTMLFormElement(null, null, array_merge($pa_options, array('nullOption' => '-')));
+			}
+			
 			if (!in_array($va_tmp[0], array('created', 'modified'))) {		// let change log searches filter down to BaseModel
 				if ($va_tmp[0] != $this->tableName()) { return null; }
 				if (!$this->hasField($va_tmp[1])) {
@@ -1503,11 +1507,11 @@
 			}
 			$pa_options['format'] = $vs_format;
 			
-			if ((sizeof($va_element_set) > 1) && isset($pa_options['width']) && ($pa_options['width'] > 0)) {
-				if (($pa_options['width'] = ceil($pa_options['width']/sizeof($va_element_set))) < 20) { 
-					$pa_options['width'] = 20;
-				}
-			}
+			//if ((sizeof($va_element_set) > 1) && isset($pa_options['width']) && ($pa_options['width'] > 0)) {
+			//	if (($pa_options['width'] = ceil($pa_options['width']/sizeof($va_element_set))) < 20) { 
+			//		$pa_options['width'] = 20;
+			//	}
+			//}
 			
 			foreach($va_element_set as $va_element) {
 				$va_override_options = array();
@@ -1545,13 +1549,16 @@
 				$vs_form_element = str_replace('{{'.$va_element['element_id'].'}}', $vs_value, $vs_form_element);
 				
 				// ... replace name of form element
-				$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_{n}', str_replace('.', '_', $vs_subelement_code), $vs_form_element);
+				$vs_fld_name = $vs_subelement_code; //str_replace('.', '_', $vs_subelement_code);
+				if (caGetOption('asArrayElement', $pa_options, false)) { $vs_fld_name .= "[]"; } 
+				$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_{n}', $vs_fld_name, $vs_form_element);
 				
 				$vs_form_element = str_replace('{n}', '', $vs_form_element);
 				$vs_form_element = str_replace('{'. $va_element['element_id'].'}', '', $vs_form_element);
 				
 				$va_elements_by_container[$va_element['parent_id'] ? $va_element['parent_id'] : $va_element['element_id']][] = $vs_form_element;
-				//if the elements datatype returns true from renderDataType, then force render the element
+				
+				// If the elements datatype returns true from renderDataType, then force render the element
 				if(Attribute::renderDataType($va_element)) {
 					return array_pop($va_elements_by_container[$va_element['element_id']]);
 				}
@@ -1745,11 +1752,13 @@
 		 *				indexByRowID = if true first index of returned array is $pn_row_id, otherwise it is the element_id of the retrieved metadata element	
 		 *				convertCodesToDisplayText =
 		 *				filter =
+		 *				ignoreLocale = if set all values are returned regardless of locale, but in the flattened structure returned when returnAllLocales is false
 		 * @return array
 		 */
 		public function getAttributeDisplayValues($pm_element_code_or_id, $pn_row_id, $pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			$ps_filter_expression = caGetOption('filter', $pa_options, null);
+			$pb_ignore_locale = caGetOption('ignoreLocale', $pa_options, null);
 			
 			$va_attribute_list = $this->getAttributesByElement($pm_element_code_or_id, array('row_id' => $pn_row_id));
 			if (!is_array($va_attribute_list)) { return array(); }
@@ -1768,7 +1777,7 @@
 					
 					if (get_class($o_value) == 'ListAttributeValue') {
 						$t_element = $this->_getElementInstance($o_value->getElementID());
-						$vn_list_id = (!isset($pa_options['convertCodesToDisplayText']) || !$pa_options['convertCodesToDisplayText']) ? null : $t_element->get('list_id');
+						$vn_list_id = (!isset($pa_options['convertCodesToDisplayText']) || !(bool)$pa_options['convertCodesToDisplayText']) ? null : $t_element->get('list_id');
 					} else {
 						$vn_list_id = null;
 					}
@@ -1793,16 +1802,23 @@
 				} else {
 					$vs_index = $o_attribute->getElementID();
 				}
-				$va_attributes[$vs_index][(int)$o_attribute->getLocaleID()][$o_attribute->getAttributeID()] = $va_display_values;
+				
+				if ($pb_ignore_locale) {
+					$va_attributes[$vs_index][$o_attribute->getAttributeID()] = $va_display_values;
+				} else {
+					$va_attributes[$vs_index][(int)$o_attribute->getLocaleID()][$o_attribute->getAttributeID()] = $va_display_values;
+				}
 			}
 				
-			if (!isset($pa_options['returnAllLocales']) || !$pa_options['returnAllLocales']) {
-				// if desired try to return values in a preferred language/locale
-				$va_preferred_locales = null;
-				if (isset($pa_options['locale']) && $pa_options['locale']) {
-					$va_preferred_locales = array($pa_options['locale']);
+			if (!$pb_ignore_locale) { 
+				if (!isset($pa_options['returnAllLocales']) || !$pa_options['returnAllLocales']) {
+					// if desired try to return values in a preferred language/locale
+					$va_preferred_locales = null;
+					if (isset($pa_options['locale']) && $pa_options['locale']) {
+						$va_preferred_locales = array($pa_options['locale']);
+					}
+					return caExtractValuesByUserLocale($va_attributes, null, $va_preferred_locales, array());
 				}
-				return caExtractValuesByUserLocale($va_attributes, null, $va_preferred_locales, array());
 			}
 			return $va_attributes;
 		}
@@ -1928,8 +1944,8 @@
 		 * @return bool True on success, false if an error occurred
 		 *
 		 * Supported options
-		 *	restrictToAttributesByCodes = array of attributes codes to restrict the duplication
-		 *	restrictToAttributesByIds = array of attributes ids to restrict the duplication
+		 *	restrictToAttributesByCodes = array of element codes to restrict the duplication to
+		 *	restrictToAttributesByIds = array of element ids to restrict the duplication to
 		 *
 		 */
 		public function copyAttributesTo($pn_row_id, $pa_options=null) {
@@ -1941,8 +1957,8 @@
 				$vb_we_set_transaction = true;
 			}
 
-			$va_restrictToAttributesByCodes = caGetOption('restrictToAttributesByCodes', $pa_options, null);
-			$va_restrictToAttributesByIds = caGetOption('restrictToAttributesByIds', $pa_options, null);
+			$va_restrictToAttributesByCodes = caGetOption('restrictToAttributesByCodes', $pa_options, array());
+			$va_restrictToAttributesByIds = caGetOption('restrictToAttributesByIds', $pa_options, array());
 
 			if (!($t_dupe = $this->_DATAMODEL->getInstanceByTableNum($this->tableNum()))) { return null; }
 			$t_dupe->purify($this->purify());

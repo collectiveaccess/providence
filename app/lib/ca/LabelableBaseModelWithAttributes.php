@@ -74,15 +74,27 @@
 		}
 		# ------------------------------------------------------------------
 		/**
-			Adds a label to the currently loaded row; the $pa_label_values array an associative array where keys are field names 
-			and values are the field values; some label are defined by more than a single field (people's names for instance) which is why
-			the label value is an array rather than a simple scalar value
-			
-			TODO: do checking when inserting preferred label values that a preferred value is not already defined for the locale.
+		 *	Adds a label to the currently loaded row; the $pa_label_values array an associative array where keys are field names 
+		 *	and values are the field values; some label are defined by more than a single field (people's names for instance) which is why
+		 *	the label value is an array rather than a simple scalar value
+		 *	
+		 *	TODO: do checking when inserting preferred label values that a preferred value is not already defined for the locale.
+		 *
+		 * @param array $pa_label_values
+		 * @param int $pn_locale_id
+		 * @param int $pn_type_id
+		 * @param bool $pb_is_preferred
+		 * @param array $pa_options Options include:
+		 *		truncateLongLabels = truncate label values that exceed the maximum storable length. [Default=false]
+		 * @return int id for newly created label, false on error or null if no row is loaded
 		 */ 
-		public function addLabel($pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false) {
+		public function addLabel($pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false, $pa_options=null) {
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
-		
+			
+			$vb_truncate_long_labels = caGetOption('truncateLongLabels', $pa_options, false);
+			
+			$vs_table_name = $this->tableName();
+			
 			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName()))) { return null; }
 			if ($this->inTransaction()) {
 				$o_trans = $this->getTransaction();
@@ -92,6 +104,12 @@
 			$t_label->purify($this->purify());
 			foreach($pa_label_values as $vs_field => $vs_value) {
 				if ($t_label->hasField($vs_field)) { 
+					if ($vb_truncate_long_labels) {
+						$va_field_len = $t_label->getFieldInfo($vs_field, 'BOUNDS_LENGTH');
+						if (isset($va_field_len[1]) && ($va_field_len[1] > 0) && (mb_strlen($vs_value) > $va_field_len[1])) {
+							$vs_value = mb_substr($vs_value, 0, $va_field_len[1]);
+						}
+					}
 					$t_label->set($vs_field, $vs_value); 
 					if ($t_label->numErrors()) { 
 						$this->errors = $t_label->errors; //array_merge($this->errors, $t_label->errors);
@@ -99,6 +117,9 @@
 					}
 				}
 			}
+			
+			$t_label->setLabelTypeList($this->getAppConfig()->get($pb_is_preferred ? "{$vs_table_name}_preferred_label_type_list" : "{$vs_table_name}_nonpreferred_label_type_list"));
+			
 			$t_label->set('locale_id', $pn_locale_id);
 			if ($t_label->hasField('type_id')) { $t_label->set('type_id', $pn_type_id); }
 			if ($t_label->hasField('is_preferred')) { $t_label->set('is_preferred', $pb_is_preferred ? 1 : 0); }
@@ -122,9 +143,22 @@
 		# ------------------------------------------------------------------
 		/**
 		 * Edit existing label
+		 *
+		 * @param int $pn_label_id
+		 * @param array $pa_label_values
+		 * @param int $pn_locale_id
+		 * @param int $pn_type_id
+		 * @param bool $pb_is_preferred
+		 * @param array $pa_options Options include:
+		 *		truncateLongLabels = truncate label values that exceed the maximum storable length. [Default=false]
+		 * @return int id for the edited label, false on error or null if no row is loaded
 		 */
-		public function editLabel($pn_label_id, $pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false) {
+		public function editLabel($pn_label_id, $pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false, $pa_options=null) {
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
+			
+			$vb_truncate_long_labels = caGetOption('truncateLongLabels', $pa_options, false);
+			
+			$vs_table_name = $this->tableName();
 			
 			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName()))) { return null; }
 			if ($this->inTransaction()) {
@@ -136,9 +170,18 @@
 			
 			if (!($t_label->load($pn_label_id))) { return null; }
 		
+			$t_label->setLabelTypeList($this->getAppConfig()->get($pb_is_preferred ? "{$vs_table_name}_preferred_label_type_list" : "{$vs_table_name}_nonpreferred_label_type_list"));
+			
 			$vb_has_changed = false;
 			foreach($pa_label_values as $vs_field => $vs_value) {
 				if ($t_label->hasField($vs_field)) { 
+					if ($vb_truncate_long_labels) {
+						// truncate label at maximum length of field
+						$va_field_len = $t_label->getFieldInfo($vs_field, 'BOUNDS_LENGTH');
+						if (isset($va_field_len[1]) && ($va_field_len[1] > 0) && (mb_strlen($vs_value) > $va_field_len[1])) {
+							$vs_value = mb_substr($vs_value, 0, $va_field_len[1]);
+						}
+					}
 					$t_label->set($vs_field, $vs_value); 
 					if ($t_label->numErrors()) { 
 						$this->errors = $t_label->errors;
@@ -171,7 +214,6 @@
 			
 			$this->opo_app_plugin_manager->hookAfterLabelUpdate(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 		
-			
 			if ($t_label->numErrors()) { 
 				$this->errors = $t_label->errors;
 				return false;
@@ -322,9 +364,10 @@
 		 * "boolean" option as "AND" and $pa_values set to array("idno" => "2012.001", "access" => 1).
 		 * You could find all rows with either the idno or the access values by setting "boolean" to "OR"
 		 *
-		 * Keys in the $pa_values parameters must be valid fields in the table which the model sub-class represents, or valid attributes. For example:
+		 * Keys in the $pa_values parameters must be valid fields in the table which the model sub-class represents. You may also search on preferred and
+		 * non-preferred labels by specified keys and values for label table fields in "preferred_labels" and "nonpreferred_labels" sub-arrays. For example:
 		 *
-		 array("idno" => 2012.001", "access" => 1, "preferred_labels" => array("name" => "Luna Park at Night"))
+		 * array("idno" => 2012.001", "access" => 1, "preferred_labels" => array("name" => "Luna Park at Night"))
 		 *
 		 * will find rows with the idno, access and preferred label values.
 		 *

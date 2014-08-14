@@ -254,7 +254,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 	public function load($pm_id=null, $pb_use_cache = true) {
-		if ($vn_rc = parent::load($pm_id)) {
+		if ($vn_rc = parent::load($pm_id, $pb_use_cache)) {
 			if (!isset(ca_metadata_elements::$s_settings_cache[$this->getPrimaryKey()])) {
 				ca_metadata_elements::$s_settings_cache[$this->getPrimaryKey()] = $this->get('settings');
 			}
@@ -542,7 +542,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 	/**
-	 * Returns list of "root" metadata elements ��� elements that are either freestanding or at the top of an element hierarchy (Eg. have sub-elements but are not sub-elements themselves).
+	 * Returns list of "root" metadata elements – elements that are either freestanding or at the top of an element hierarchy (Eg. have sub-elements but are not sub-elements themselves).
 	 * Root elements are used to reference the element as a whole (including sub-elements), so it is useful to be able to obtain
 	 * a list of these elements with sub-elements filtered out.
 	 *

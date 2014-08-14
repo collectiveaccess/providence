@@ -76,6 +76,7 @@
 				'rep_type_id' => $va_rep['type_id'],
 				'rep_type' => $t_item->getTypeName($va_rep['type_id']), 
 				'rep_label' => $va_rep['label'],
+				'idno' => $va_rep['idno'],
 				'is_primary' => (int)$va_rep['is_primary'],
 				'is_primary_display' => ($va_rep['is_primary'] == 1) ? _t('PRIMARY') : '', 
 				'locale_id' => $va_rep['locale_id'], 
@@ -178,6 +179,7 @@
 							</div>
 											
 							<div class='caObjectRepresentationListInfoSubDisplay'>
+								<em>{idno}</em><br/>
 								<h3><?php print _t('File name'); ?></h3> <span class="caObjectRepresentationListInfoSubDisplayFilename" id="{fieldNamePrefix}filename_display_{n}">{filename}</span>
 <?php
 	TooltipManager::add("#{$vs_id_prefix}_filename_display_{n}", _t('File name: %1', "{{filename}}"), 'bundle_ca_object_representations');
@@ -278,7 +280,6 @@
 			
 				<br class="clear"/>
 				
-			
 				<div id="{fieldNamePrefix}media_replication_container_{n}" style="display: none;">
 					<div class="caRepresentationMediaReplicationButton">
 						<a href="#" id="{fieldNamePrefix}caRepresentationMediaReplicationButton_{n}" onclick="caToggleDisplayMediaReplication('{fieldNamePrefix}media_replication{n}', '{fieldNamePrefix}caRepresentationMediaReplicationButton_{n}', '{n}'); return false;" class="caRepresentationMediaReplicationButton"><?php print "<div style='margin-top:5px; width:11px; float:left;'><img src='".$this->request->getThemeUrlPath()."/graphics/icons/downarrow.jpg' border='0' height='11px' width='11px'/></div>"?><?php print _t('Replication'); ?></a>
@@ -483,7 +484,7 @@
 	jQuery(document).ready(function() {
 		caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-			templateValues: ['status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'media', 'locale_id', 'icon', 'type', 'dimensions', 'filename', 'num_multifiles', 'metadata', 'rep_type_id', 'type_id', 'typename', 'fetched', 'label', 'rep_label', 'id', 'fetched_from','mimetype', 'center_x', 'center_y'],
+			templateValues: ['status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'media', 'locale_id', 'icon', 'type', 'dimensions', 'filename', 'num_multifiles', 'metadata', 'rep_type_id', 'type_id', 'typename', 'fetched', 'label', 'rep_label', 'id', 'fetched_from','mimetype', 'center_x', 'center_y', 'idno'],
 			initialValues: <?php print json_encode($va_inital_values); ?>,
 			initialValueOrder: <?php print json_encode(array_keys($va_inital_values)); ?>,
 			errors: <?php print json_encode($va_errors); ?>,

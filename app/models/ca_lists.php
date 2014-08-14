@@ -105,6 +105,13 @@ BaseModel::$s_ca_models_definitions['ca_lists'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Use as vocabulary'), 'DESCRIPTION' => _t('Set this if the list is to be used as a controlled vocabulary for cataloguing.'),
 				'BOUNDS_VALUE' => array(0,1)
+		),
+		'deleted' => array(
+ 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
+ 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+ 				'IS_NULL' => false, 
+ 				'DEFAULT' => 0,
+ 				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if list item is deleted or not.')
 		)
  	)
 );
@@ -316,7 +323,6 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$vn_item_id = $t_item->insert();
 		
 		if ($t_item->numErrors()) { 
-			print_R($t_item->getErrors());
 			$this->errors = array_merge($this->errors, $t_item->errors);
 			return false;
 		}
@@ -1676,7 +1682,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 * Converts a list of relationship type_id's to a list of type_code strings. The conversion is literal without hierarchical expansion.
+	 * Converts a list of item_id's to a list of idno strings. The conversion is literal without hierarchical expansion.
 	 *
 	 * @param array $pa_list A list of relationship numeric type_ids
 	 * @param array $pa_options Options include:
