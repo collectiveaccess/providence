@@ -608,11 +608,15 @@
 		
 					$vs_mimetype = $qr_reps->getMediaInfo('media', 'original', 'MIMETYPE');
 					if(sizeof($va_mimetypes)) {
+						$vb_mimetype_match = false;
 						foreach($va_mimetypes as $vs_mimetype_pattern) {
-							if(!preg_match("!^{$vs_mimetype_pattern}!", $vs_mimetype)) {
-								continue(2);
+							if(!preg_match("!^".preg_quote($vs_mimetype_pattern)."!", $vs_mimetype)) {
+								continue;
 							}
+							$vb_mimetype_match = true;
+							break;
 						}
+						if (!$vb_mimetype_match) { continue; }
 					}
 				
 					$t_rep->load($qr_reps->get('representation_id'));
@@ -631,7 +635,7 @@
 				print CLIProgressBar::finish();
 			}
 			
-			if (in_array('all', $va_kinds)  || in_array('ca_attributes', $va_kinds)) { 
+			if ((in_array('all', $va_kinds)  || in_array('ca_attributes', $va_kinds)) && (!$vn_start && !$vn_end)) { 
 				// get all Media elements
 				$va_elements = ca_metadata_elements::getElementsAsList(false, null, null, true, false, true, array(16)); // 16=media
 				
@@ -740,7 +744,7 @@
 			}
 			$va_kinds = array_map('strtolower', $va_kinds);
 			
-			if (in_array('all', $va_kinds) || in_array('ca_object_representations', $va_kinds)) { 
+			if ((in_array('all', $va_kinds) || in_array('ca_object_representations', $va_kinds)) && (!$vn_start && !$vn_end)) { 
 				if (!($vn_start = (int)$po_opts->getOption('start_id'))) { $vn_start = null; }
 				if (!($vn_end = (int)$po_opts->getOption('end_id'))) { $vn_end = null; }
 			

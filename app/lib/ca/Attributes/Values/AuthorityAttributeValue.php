@@ -73,10 +73,14 @@
  		 *			template = 
  		 *			includeID = 
  		 *			idsOnly = 
+ 		 *			forDuplication = 
  		 * @return string The value
  		 */
 		public function getDisplayValue($pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
+			if (caGetOption('forDuplication', $pa_options, false)) {
+				return $this->opn_id;
+			}
 			
 			$o_config = Configuration::load();
 			if(is_array($va_lookup_template = $o_config->getList($this->ops_table_name.'_lookup_settings'))) {
@@ -119,7 +123,7 @@
 				);
  			} 
  			if (strlen($ps_value) && !is_numeric($ps_value)) { 
- 				$this->postError(1970, _t('%1 id %2 is not valid for element %3', $this->ops_name_singular, $pa_element_info["element_code"], $ps_value), $this->ops_name_plural.'AttributeValue->parseValue()');
+ 				$this->postError(1970, _t('%1 id %2 is not valid for element %3', $this->ops_name_singular, $ps_value, $pa_element_info["element_code"]), $this->ops_name_plural.'AttributeValue->parseValue()');
 				return false;
 			}
 			$o_dm = Datamodel::load();

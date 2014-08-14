@@ -52,6 +52,14 @@
  			}
  		}
  		# -------------------------------------------------------
+ 		public function Delete($pa_options=null) {
+ 			parent::Delete($pa_options);
+ 			
+ 			# unset default item because it's from the now-deleted list
+ 			$this->request->session->setVar('ca_list_items_browse_last_id', null);
+ 			$this->request->session->setVar('ca_lists_browse_last_id', null);
+ 		}
+ 		# -------------------------------------------------------
  		# Sidebar info handler
  		# -------------------------------------------------------
  		public function info($pa_parameters) {

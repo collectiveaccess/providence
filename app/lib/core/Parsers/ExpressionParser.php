@@ -76,7 +76,9 @@ class ExpressionParser {
             'min'           => 'min',
             'rand'          => 'rand',
             'round'         => 'round',
-            'random'		=> 'rand'
+            'random'		=> 'rand',
+            'current'		=> 'caIsCurrentDate',
+            'future'		=> 'caDateEndsInFuture'
     );
     
     private $opa_tokens;
