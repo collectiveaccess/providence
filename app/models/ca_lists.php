@@ -927,11 +927,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function getItemIDFromListByLabel($pm_list_name_or_id, $ps_label_name) {
 		if ($vn_list_id = $this->_getListID($pm_list_name_or_id)) {
-			$t_item = new ca_list_items();
-			$va_list_items = $t_item->getListItemIDsByName($vn_list_id, $ps_label_name);
-			
-			if (is_array($va_list_items) && (sizeof($va_list_items))) {
-				return array_shift($va_list_items);
+			if ($vn_id = ca_list_items::find(array('list_id' => $vn_list_id, 'preferred_labels' => array('name_plural' => $ps_label_name)), array('returnAs' => 'firstId'))) {
+				return $vn_id;
+			} elseif ($vn_id = ca_list_items::find(array('list_id' => $vn_list_id, 'preferred_labels' => array('name_singular' => $ps_label_name)), array('returnAs' => 'firstId'))) {
+				return $vn_id;
 			}
 		}
 		return null;
@@ -1490,6 +1489,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					)
 				);
 				return $vs_buf;
+				break;
+			case 'text':
+				return caHTMLTextInput($ps_name, $pa_attributes, $pa_options);
 				break;
 			case 'options':
 				return $va_options;
