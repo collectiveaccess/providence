@@ -2463,12 +2463,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$t_rel = $this->getAppDatamodel()->getInstanceByTableName($ps_related_table, true);
 			$vs_rel_pk = $t_rel->primaryKey();
 			
-			$va_opts = array('relatedItems' => $va_items, 'stripTags' => true);
+			$va_opts = array('stripTags' => true);
 			if ($vb_is_many_many) {
 				$va_ids = caExtractArrayValuesFromArrayOfArrays($va_items, 'relation_id');
 				$qr_rel_items = $t_item->makeSearchResult($t_item_rel->tableNum(), $va_ids);
 				$va_opts['table'] = $t_rel->tableName();
 				$va_opts['primaryKey'] = $t_rel->primaryKey();
+				$va_opts['relatedItems'] = $va_items;
 			} else {
 				$va_ids = caExtractArrayValuesFromArrayOfArrays($va_items, $vs_rel_pk);
 				$qr_rel_items = $t_item->makeSearchResult($t_rel->tableNum(), $va_ids);	
