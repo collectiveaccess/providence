@@ -725,9 +725,9 @@ class BaseModel extends BaseObject {
 								return $this->getMediaInfo($va_tmp[1], $vs_version, 'width');
 							} else {
 								if (isset($pa_options['returnURL']) && $pa_options['returnURL']) {
-									return $this->getMediaUrl($va_tmp[1], $vs_version);
+									return $this->getMediaUrl($va_tmp[1], $vs_version, $pa_options);
 								} else {
-									return $this->getMediaTag($va_tmp[1], $vs_version);
+									return $this->getMediaTag($va_tmp[1], $vs_version, $pa_options);
 								}
 							}
 						}
