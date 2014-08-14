@@ -134,6 +134,7 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
+					case 'labels':
 						if ($pb_match_on_displayname && (strlen(trim($pa_entity_name['displayname'])) > 0)) {
 							$vn_id = ca_entities::find(array('preferred_labels' => array('displayname' => $pa_entity_name['displayname']),'type_id' => $pn_type_id, 'parent_id' => $vn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
 						} else {
@@ -352,6 +353,7 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
+					case 'labels':
 						if (trim($ps_place_name)) {
 							if ($vn_id = (ca_places::find(array('preferred_labels' => array('name' => $ps_place_name), 'type_id' => $pn_type_id, 'parent_id' => $pn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 								break(2);
@@ -575,6 +577,7 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
+					case 'labels':
 						if (trim($ps_occ_name)) {
 							if ($vn_id = ca_occurrences::find(array('preferred_labels' => array('name' => $ps_occ_name), 'parent_id' => $pn_parent_id, 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))) {
 								break(2);
@@ -825,6 +828,7 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
+					case 'labels':
 						if (trim($vs_singular_label) || trim($vs_plural_label)) {
 							if ($vn_item_id = (ca_list_items::find(array('preferred_labels' => array('name_singular' => $vs_singular_label), 'parent_id' => $vn_parent_id, 'list_id' => $vn_list_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 								if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using singular label %3", $ps_item_idno, $pm_list_code_or_id, $vs_singular_label)); }
@@ -1008,6 +1012,7 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
+					case 'labels':
 						if (trim($ps_collection_name)) {
 							if ($vn_id = (ca_collections::find(array('preferred_labels' => array('name' => $ps_collection_name), 'parent_id' => caGetOption('parent_id', $pa_values, null), 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 								break(2);
@@ -1227,6 +1232,7 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
+					case 'labels':
 						if (trim($ps_location_name)) {
 							if ($vn_id = (ca_storage_locations::find(array('preferred_labels' => array('name' => $ps_location_name), 'parent_id' => $pn_parent_id, 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 								break(2);
@@ -1442,6 +1448,7 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
+					case 'labels':
 						if (trim($ps_object_name)) {
 							if ($vn_id = (ca_objects::find(array('preferred_labels' => array('name' => $ps_object_name), 'parent_id' => $pn_parent_id, 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 								break(2);
@@ -1659,6 +1666,7 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
+					case 'labels':
 						if (trim($ps_lot_name)) {
 							if ($vn_id = (ca_object_lots::find(array('preferred_labels' => array('name' => $ps_lot_name), 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 								break(2);
@@ -1880,6 +1888,7 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
+					case 'labels':
 						if (trim($ps_representation_name)) {
 							if ($vn_id = (ca_object_representations::find(array('preferred_labels' => array('name' => $ps_representation_name), 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 								break(2);
@@ -2135,6 +2144,7 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
+					case 'labels':
 						if (trim($ps_loan_name)) {
 							if ($vn_id = (ca_loans::find(array('preferred_labels' => array('name' => $ps_loan_name), 'type_id' => $pn_type_id, 'parent_id' => caGetOption('parent_id', $pa_values, null)), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 								break(2);
@@ -2349,6 +2359,7 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
+					case 'labels':
 						if (trim($ps_movement_name)) {
 							if ($vn_id = (ca_movements::find(array('preferred_labels' => array('name' => $ps_movement_name), 'type_id' => $pn_type_id, 'parent_id' => caGetOption('parent_id', $pa_options, null)), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 								break(2);
