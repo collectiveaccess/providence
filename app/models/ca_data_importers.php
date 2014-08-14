@@ -1918,6 +1918,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							$vm_val = mb_substr($vm_val, 0, $vn_max_length);
 						}
 						
+						
+						if (in_array('preferred_labels', $va_item_dest) || in_array('nonpreferred_labels', $va_item_dest)) {	
+							if (isset($va_item['settings']['truncateLongLabels']) && $va_item['settings']['truncateLongLabels']) {
+								$va_group_buf[$vn_c]['_truncateLongLabels'] = true;
+							}
+						}
+							
 						switch($vs_item_terminal) {
 							case 'preferred_labels':
 							case 'nonpreferred_labels':
@@ -2112,10 +2119,14 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				if ($vs_table_name == $vs_subject_table) {		
 					foreach($va_content as $vn_i => $va_element_data) {
 						foreach($va_element_data as $vs_element => $va_element_content) {	
-								if (is_array($va_element_content)) { 
+								if (is_array($va_element_content)) { 														
+									$vb_truncate_long_labels = caGetOption('_truncateLongLabels', $va_element_content, false);
+									unset($va_element_content['_truncateLongLabels']);
+									
 									$vs_item_error_policy = $va_element_content['_errorPolicy'];
 									unset($va_element_content['_errorPolicy']); 
 								} else {
+									$vb_truncate_long_labels = false;
 									$vs_item_error_policy = null;
 								}
 								
@@ -2123,8 +2134,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								$t_subject->setMode(ACCESS_WRITE);
 								switch($vs_element) {
 									case 'preferred_labels':
+										
 										$t_subject->addLabel(
-											$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, true
+											$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, true, array('truncateLongLabels' => $vb_truncate_long_labels)
 										);
 										if ($t_subject->numErrors() == 0) {
 											$vb_output_subject_preferred_label = true;
@@ -2153,8 +2165,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										}
 										break;
 									case 'nonpreferred_labels':
+										
 										$t_subject->addLabel(
-											$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, false
+											$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, false, array('truncateLongLabels' => $vb_truncate_long_labels)
 										);
 										
 										if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add non-preferred label to %2:", $vs_idno, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
