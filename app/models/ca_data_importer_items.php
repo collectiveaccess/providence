@@ -427,6 +427,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Use as single value'),
 			'description' => _t('Force repeating values to be imported as a single value concatenated with the specified delimiter.')
 		);
+		$va_settings['truncateLongLabels'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Truncate long labels?'),
+			'description' => _t('Truncate preferred and non-preferred labels that exceed the maximum length to fit.')
+		);
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
 	# ------------------------------------------------------
