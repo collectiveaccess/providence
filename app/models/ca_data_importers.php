@@ -1840,6 +1840,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						if (isset($va_item['settings']['relationshipType']) && strlen($vs_rel_type = $va_item['settings']['relationshipType']) && ($vs_target_table != $vs_subject_table)) {
 							$va_group_buf[$vn_c]['_relationship_type'] = $vs_rel_type;
 						}
+						
+						if (isset($va_item['settings']['matchOn'])) {
+							$va_group_buf[$vn_c]['_matchOn'] = $va_item['settings']['matchOn'];
+						}
+						
 					
 						// Is it a constant value?
 						if (preg_match("!^_CONSTANT_:[\d]+:(.*)!", $va_item['source'], $va_matches)) {
@@ -2204,7 +2209,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											$t_subject->removeAttributes($vs_element, array('force' => true));
 										} 
 										$va_elements_set_for_this_record[$vs_element] = true;
-										$t_subject->addAttribute($va_element_content, $vs_element, null, array('showRepeatCountErrors' => true, 'alwaysTreatValueAsIdno' => true));
+										
+										$va_opts = array('showRepeatCountErrors' => true, 'alwaysTreatValueAsIdno' => true);
+										if ($va_match_on = caGetOption('_matchOn', $va_element_content, null)) {
+											$va_opts['matchOn'] = $va_match_on;
+										}
+										$t_subject->addAttribute($va_element_content, $vs_element, null, $va_opts);
 										
 										if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Failed to add value for %2; values were %3: ", $vs_idno, $vs_element, ca_data_importers::formatValuesForLog($va_element_content)), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
