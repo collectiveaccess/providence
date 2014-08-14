@@ -2095,7 +2095,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			$va_tags = $va_matches[1];
 		}
 		
-		$qr_res = $t_instance->makeSearchResult($ps_tablename, $pa_row_ids);
+		$qr_res = caMakeSearchResult($ps_tablename, $pa_row_ids);
 		if(!$qr_res) { return ''; }
 		$va_proc_templates = array();
 		$vn_i = 0;
