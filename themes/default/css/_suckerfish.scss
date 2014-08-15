@@ -112,9 +112,12 @@ ul.sf-menu li li.sfHover ul {
 //     color: #333;
 // }
 
-// li.sfHover > a:link, li.sfHover > a:visited {
-//     color: #333 !important;
-// }
+li.sfHover > a:link, li.sfHover > a:visited {
+    color: #333 !important;
+}
+li.sfHover > a.sf-menu-selected:link, li.sfHover > a.sf-menu-selected:visited {
+    color: white !important;
+}
 
 // .sf-menu li li:hover, .sf-menu li li li:hover{
 //     background:		#eee;

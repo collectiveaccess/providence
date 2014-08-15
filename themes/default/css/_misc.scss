@@ -27,15 +27,6 @@ body {
   text-transform: uppercase;
 }
 
-a {
-	color: $perth;
-
-	&:hover {
-		color: darken($perth, 20%);
-	}
-
-}
-
 
 h1 {
 	@include wam-font-heading();

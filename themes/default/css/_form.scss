@@ -3,6 +3,7 @@ input[type="textarea"],
 textarea, 
 input[type="password"] {
 	width: 100%;
+	height: 1.8em;
 
 	font-family: inherit;
 	font-size: inherit;
@@ -50,11 +51,13 @@ del.form-button span {
 	font-size: inherit !important;
 	font-family: inherit;
 	font-weight: 600;
+	padding: 0.5em 1em;
 }
 
 
 a.form-button:hover span {
 	background: $grey;
+	color: $white;
 }
 
 
@@ -70,11 +73,28 @@ a.form-button:hover span {
 	right: 4px;
 }
 
+a.caNodecLabelButton {
+	text-decoration: none;
+}
 
+// .labelInfo {
+// 	.caDeleteItemButton,
+// 	.caDeleteLabelButton {
+// 		position: relative;
+// 		right: auto;
+// 	}	
+// }
 
 .formLabel {
 	font-family: inherit;
 	font-weight: 600;
+	font-size: inherit;
+	color: inherit;
+}
+
+.labelDisplay {
+	font-family: inherit;
+	//font-weight: 600;
 	font-size: inherit;
 	color: inherit;
 }
@@ -119,7 +139,7 @@ table.attributeListItem {
 }
 
 .attributeListItem td {
-	padding: 0;
+	padding: 3px;
 }
 
 // td.attributeListItem {
@@ -139,3 +159,8 @@ table.attributeListItem {
 #P284OccurrenceEditorFormItem_new_0 {
 	overflow: auto;
 }
+
+.formSettings {
+	border: 1px solid $white-dark;
+}
+
