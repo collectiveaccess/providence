@@ -131,15 +131,19 @@
 				
 			$t_table = $this->opo_datamodel->getInstanceByTableName($ps_table, true);
 			$vs_table_pk = $t_table->primaryKey();
+			$vn_table_num = $t_table->tableNum();
+			
+			$va_sort_tmp = explode('/', $ps_field);
+			$ps_field = $va_sort_tmp[0];
+			$vs_rel_type = (sizeof($va_sort_tmp) > 1) ? $va_sort_tmp[1] : null;
 			
 			$va_fields = explode(';', $ps_field);
 			$va_sorted_hits = array();
 			
-			
 			$va_joins = array();
 			$vs_locale_where = $vs_is_preferred_sql = '';
 			
-			$vs_primary_sort_field = array_pop($va_fields);
+			$vs_primary_sort_field = array_shift($va_fields);
 			$va_primary_sort_field = explode('.', $vs_primary_sort_field);
 			
 			$va_additional_sort_fields = array();
@@ -181,6 +185,19 @@
 									(attr_vals.element_id = ?) AND (attr.table_num = ?) AND (lil.{$vs_sort_field} IS NOT NULL)
 								ORDER BY lil.{$vs_sort_field} {$ps_direction}
 							";
+						} elseif ((int)$t_element->get('datatype') == __CA_ATTRIBUTE_VALUE_DATERANGE__) {
+							$vs_sortable_value_fld = 'attr_vals.'.$vs_sortable_value_fld;
+							$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
+							
+							$vs_sql = "
+								SELECT attr.row_id, attr.locale_id, {$vs_sortable_value_fld}
+								FROM ca_attributes attr
+								INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
+								INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = attr.row_id
+								WHERE
+									(attr_vals.element_id = ?) AND (attr.table_num = ?) AND (attr_vals.{$vs_sort_field} IS NOT NULL)
+								ORDER BY attr_vals.{$vs_sort_field} {$ps_direction}
+							";
 						} else {
 							$vs_sortable_value_fld = 'attr_vals.'.$vs_sortable_value_fld;
 							$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
@@ -195,16 +212,14 @@
 								ORDER BY attr_vals.{$vs_sort_field} {$ps_direction}
 							";
 						}
-						$qr_sort = $this->opo_db->query($vs_sql, (int)$vn_element_id, (int)$this->opn_browse_table_num);
-						
+						$qr_sort = $this->opo_db->query($vs_sql, (int)$vn_element_id, (int)$vn_table_num);
 						$va_sorted_hits = $qr_sort->getAllFieldValues('row_id');
 			
 						// Add on hits that aren't sorted because they don't have an attribute associated
-						foreach($pa_hits as $vn_id) {
-							$va_sorted_hits[] = $vn_id; 
-						}
+						$va_missing_items = array_diff($pa_hits, $va_sorted_hits);
+						$va_sorted_hits = array_merge($va_sorted_hits, $va_missing_items);
 					}
-					continue;
+					return $va_sorted_hits;
 				} else {	
 					$va_field_info = $t_table->getFieldInfo($va_primary_sort_field[1]);
 					if ($va_field_info['START'] && $va_field_info['END']) {
@@ -224,15 +239,22 @@
 					// generate related joins
 					foreach($va_path as $vs_table => $va_info) {
 						$t_table = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
+						
+						$vs_rel_type_sql = null;
+						if($t_table->isRelationship() && $vs_rel_type) {
+							if(is_array($va_rel_types = caMakeRelationshipTypeIDList($vs_table, array($vs_rel_type))) && sizeof($va_rel_types)) {
+								$vs_rel_type_sql = " AND {$vs_table}.type_id IN (".join(",", $va_rel_types).")";
+							}
+						}
 						if ($vs_last_table) {
 							$va_rels = $this->opo_datamodel->getOneToManyRelations($vs_last_table, $vs_table);
 							if (!sizeof($va_rels)) {
 								$va_rels = $this->opo_datamodel->getOneToManyRelations($vs_table, $vs_last_table);
 							}
 							if ($vs_table == $va_rels['one_table']) {
-								$va_joins[$vs_table] = "INNER JOIN ".$va_rels['one_table']." ON ".$va_rels['one_table'].".".$va_rels['one_table_field']." = ".$va_rels['many_table'].".".$va_rels['many_table_field'];
+								$va_joins[$vs_table] = "INNER JOIN ".$va_rels['one_table']." ON ".$va_rels['one_table'].".".$va_rels['one_table_field']." = ".$va_rels['many_table'].".".$va_rels['many_table_field'].$vs_rel_type_sql;
 							} else {
-								$va_joins[$vs_table] = "INNER JOIN ".$va_rels['many_table']." ON ".$va_rels['many_table'].".".$va_rels['many_table_field']." = ".$va_rels['one_table'].".".$va_rels['one_table_field'];
+								$va_joins[$vs_table] = "INNER JOIN ".$va_rels['many_table']." ON ".$va_rels['many_table'].".".$va_rels['many_table_field']." = ".$va_rels['one_table'].".".$va_rels['one_table_field'].$vs_rel_type_sql;
 							}
 						}
 						$t_last_table = $t_table;
@@ -261,12 +283,11 @@
 			//
 			//Debug::msg("sort pre query ".$t->getTime(4));
 			$va_primary_sort_field = explode('.', $vs_sortable_value_fld);
-			$vs_sort_field = array_pop($va_primary_sort_field);
 			$vs_join_sql = join("\n", $va_joins);
 			
-			$va_sort_fields = array($vs_sortable_value_fld);
+			$va_sort_fields = array("{$vs_sortable_value_fld} {$ps_direction}");
 			foreach($va_additional_sort_fields as $va_additional_sort_field) {
-				$va_sort_fields[] = $va_additional_sort_field[1];
+				$va_sort_fields[] = "{$va_additional_sort_field[0]}.{$va_additional_sort_field[1]} {$ps_direction}";
 			}
 			
 			$vs_sql = "
@@ -276,15 +297,12 @@
 				INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = {$ps_table}.{$vs_table_pk}
 				".($vs_is_preferred_sql ? 'WHERE' : '')."
 					{$vs_is_preferred_sql}
-				ORDER BY ".join(',', $va_sort_fields)." {$ps_direction}
+				ORDER BY ".join(',', $va_sort_fields)."
 			";
 			
 			$qr_sort = $this->opo_db->query($vs_sql);
 			
-			//Debug::msg("sort query ".$t->getTime(4));
-			
 			$va_sorted_hits = $qr_sort->getAllFieldValues($vs_table_pk);
-			//Debug::msg("sort getall ".$t->getTime(4));
 			
 			return $va_sorted_hits;
 		}

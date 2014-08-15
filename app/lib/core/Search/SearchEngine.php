@@ -259,7 +259,7 @@ class SearchEngine extends SearchBase {
 			}
 			
 			if (isset($pa_options['sort']) && $pa_options['sort'] && ($pa_options['sort'] != '_natural')) {
-				$va_hits = $this->sortHits($va_hits, $pa_options['sort'], (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
+				$va_hits = $this->sortHits($va_hits, $t_table->tableName(), $pa_options['sort'], $vs_cache_key, (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
 			} else {
 				if (($pa_options['sort'] == '_natural') && ($pa_options['sort_direction'] == 'desc')) {
 					$va_hits = array_reverse($va_hits);
