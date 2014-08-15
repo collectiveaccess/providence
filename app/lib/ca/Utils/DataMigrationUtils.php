@@ -142,6 +142,18 @@
 						}
 						if ($vn_id) { break(2); }
 						break;
+					case 'surname':
+						$vn_id = ca_entities::find(array('preferred_labels' => array('surname' => $pa_entity_name['surname']), 'type_id' => $pn_type_id, 'parent_id' => $vn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
+						if ($vn_id) { break(2); }
+						break;
+					case 'forename':
+						$vn_id = ca_entities::find(array('preferred_labels' => array('forename' => $pa_entity_name['forename']), 'type_id' => $pn_type_id, 'parent_id' => $vn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
+						if ($vn_id) { break(2); }
+						break;
+					case 'displayname':
+						$vn_id = ca_entities::find(array('preferred_labels' => array('displayname' => $pa_entity_name['displayname']), 'type_id' => $pn_type_id, 'parent_id' => $vn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
+						if ($vn_id) { break(2); }
+						break;
 					case 'idno':
 						if ($vs_idno == '%') { break; }	// don't try to match on an unreplaced idno placeholder
 						if (($vs_idno || trim($pa_entity_name['_originalText'])) && ($vn_id = (ca_entities::find(array('idno' => $vs_idno ? $vs_idno : $pa_entity_name['_originalText']), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))) {

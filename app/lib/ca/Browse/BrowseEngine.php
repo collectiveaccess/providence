@@ -543,6 +543,19 @@
 					return urldecode($pn_row_id);
 					break;
 				# -----------------------------------------------------
+				case 'location':
+					$va_tmp = explode(":", urldecode($pn_row_id));
+					if (($qr_res = caMakeSearchResult($vs_loc_table_name = $this->opo_datamodel->getTableName($va_tmp[0]), array($va_tmp[1]))) && $qr_res->nextHit()) {
+						$va_map = $this->opo_config->getAssoc('current_location_criteria');
+						
+						$vs_template = isset($va_map[$vs_loc_table_name]['_template']) ? $va_map[$vs_loc_table_name]['_template'] : "^".$qr_res->tableName().".preferred_labels";
+						
+						return caTruncateStringWithEllipsis($qr_res->getWithTemplate($vs_template), 30);
+					} else {
+						return '???';
+					}
+					break;
+				# -----------------------------------------------------
 				case 'normalizedDates':
 					return urldecode($pn_row_id);
 					break;
@@ -1269,7 +1282,6 @@
 												$qr_res = $this->opo_db->query($vs_sql, intval($vs_target_browse_table_num), $vn_element_id, $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end']);
 											} else {
 											
-												$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_tmp");
 												$vs_sql = "
 													SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
 													FROM ".$this->ops_browse_table_name."
@@ -1314,7 +1326,6 @@
 												$qr_res = $this->opo_db->query($vs_sql, $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end'], $va_dates['start'], $va_dates['end']);
 											} else {
 											
-												$qr_res = $this->opo_db->query("TRUNCATE TABLE ca_browses_tmp");
 												$vs_sql = "
 													SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
 													FROM ".$this->ops_browse_table_name."
@@ -1449,6 +1460,34 @@
 									
 								break;
 							# -----------------------------------------------------
+								case 'location':
+									foreach($va_row_ids as $vn_row_id) {
+										$vn_row_id = urldecode($vn_row_id);
+										$va_row_tmp = explode(":", $vn_row_id);
+										if ($vn_i == 0) {
+											$vs_sql = "
+												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+												FROM ".$this->ops_browse_table_name."
+												WHERE
+													({$this->ops_browse_table_name}.current_loc_type = ?) AND ({$this->ops_browse_table_name}.current_loc_id = ?)";
+													
+											$qr_res = $this->opo_db->query($vs_sql, $va_row_tmp);
+										} else {
+											$vs_sql = "
+												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+												FROM ".$this->ops_browse_table_name."
+												WHERE
+													({$this->ops_browse_table_name}.current_loc_type = ?) AND ({$this->ops_browse_table_name}.current_loc_id = ?)";
+													
+											$qr_res = $this->opo_db->query($vs_sql, $va_row_tmp);
+											
+										} 
+										$va_acc[$vn_i] = $qr_res->getAllFieldValues($this->ops_browse_table_name.'.'.$t_item->primaryKey());
+										
+										$vn_i++;
+									}
+									break;
+							# -----------------------------------------------------
 								case 'fieldList':
 									$vs_field_name = $va_facet_info['field'];
 									$vs_table_name = $this->ops_browse_table_name;
@@ -1540,7 +1579,7 @@
 						foreach($va_acc[$vn_smallest_list_index] as $vn_row_id => $vb_dummy) {
 							foreach($va_acc_indices as $vn_i) {
 								if ($vn_i == $vn_smallest_list_index) { continue; }
-								if (!$va_acc[$vn_i][$vn_row_id]) { continue(2); }
+								if (!isset($va_acc[$vn_i][$vn_row_id])) { continue(2); }
 							}
 							$va_res[$vn_row_id] = true;
 						}
@@ -1621,6 +1660,8 @@
 					}
 				}
 			} else {
+				// TODO fix!
+				$pa_options['showAllForNoCriteriaBrowse'] = true;
 				// no criteria - don't try to find anything unless configured to do so
 				$va_settings = $this->opo_ca_browse_config->getAssoc($this->ops_browse_table_name);
 				if (
@@ -2683,6 +2724,125 @@
 					}
 					break;
 				# -----------------------------------------------------
+				case 'location':
+					$t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true);
+					
+					$vs_sort_field = null;
+					if (($t_item->getProperty('ID_NUMBERING_ID_FIELD') == $vs_field_name)) {
+						$vs_sort_field = $t_item->getProperty('ID_NUMBERING_SORT_FIELD');
+					}
+					
+					$va_joins = array();
+					$va_wheres = array();
+					$vs_where_sql = '';
+					
+					$va_wheres[] = "({$vs_browse_table_name}.current_loc_type IS NOT NULL)";
+					if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
+					}
+					
+					if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_item->hasField('access')) {
+						$va_wheres[] = "(".$vs_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
+					}
+					
+					if ($vs_browse_type_limit_sql) {
+						$va_wheres[] = $vs_browse_type_limit_sql;
+					}
+										
+					if ($t_item->hasField('deleted')) {
+						$va_wheres[] = "(".$vs_browse_table_name.".deleted = 0)";
+					}
+					
+					if ($this->opo_config->get('perform_item_level_access_checking')) {
+						if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
+							// Join to limit what browse table items are used to generate facet
+							$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
+							$va_wheres[] = "(
+								((
+									(ca_acl.user_id = ".(int)$vn_user_id.")
+									".((sizeof($va_group_ids) > 0) ? "OR
+									(ca_acl.group_id IN (".join(",", $va_group_ids)."))" : "")."
+									OR
+									(ca_acl.user_id IS NULL and ca_acl.group_id IS NULL)
+								) AND ca_acl.access >= ".__CA_ACL_READONLY_ACCESS__.")
+								".(($vb_show_if_no_acl) ? "OR ca_acl.acl_id IS NULL" : "")."
+							)";
+						}
+					}
+					
+					$vs_join_sql = join("\n", $va_joins);
+					
+					if (is_array($va_wheres) && sizeof($va_wheres) && ($vs_where_sql = join(' AND ', $va_wheres))) {
+						$vs_where_sql = '('.$vs_where_sql.')';
+					}
+					
+					if ($vb_check_availability_only) {
+						$vs_sql = "
+							SELECT 1
+							FROM {$vs_browse_table_name}
+							{$vs_join_sql}
+							WHERE
+								{$vs_where_sql}
+							LIMIT 2";
+						$qr_res = $this->opo_db->query($vs_sql);
+					
+						if ($qr_res->nextRow()) {
+							return ((int)$qr_res->numRows() > 0) ? true : false;
+						}
+						return false;
+					} else {
+						
+						$vs_pk = $t_item->primaryKey();
+						$vs_sql = "
+							SELECT DISTINCT {$vs_browse_table_name}.current_loc_type, {$vs_browse_table_name}.current_loc_id
+							FROM {$vs_browse_table_name}
+							{$vs_join_sql}
+							WHERE
+								{$vs_where_sql}";
+						if($vs_sort_field) {
+							$vs_sql .= " ORDER BY {$vs_sort_field}";
+						}
+						$qr_res = $this->opo_db->query($vs_sql);
+						
+						$va_values = $va_values_by_table = array();
+						while($qr_res->nextRow()) {
+							if (!($vs_loc_type = trim($qr_res->get('current_loc_type')))) { continue; }
+							if (!($vs_loc_id = trim($qr_res->get('current_loc_id')))) { continue; }
+							$vs_val = "{$vs_loc_type}:{$vs_loc_id}";
+							if ($va_criteria[$vs_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
+						
+							$va_values_by_table[$vs_loc_type][$vs_loc_id] = true;
+						}
+						
+						$va_map = $this->opo_config->getAssoc('current_location_criteria');
+						
+						foreach($va_values_by_table as $vs_loc_type => $va_loc_ids) {
+							if(sizeof($va_tmp = array_keys($va_loc_ids))) {
+								$qr_res = caMakeSearchResult($vs_loc_table_name = $this->opo_datamodel->getTableName($vs_loc_type), $va_tmp);
+								
+								while($qr_res->nextHit()) {
+									$vn_id = $qr_res->getPrimaryKey();
+										
+									$vs_template = isset($va_map[$vs_loc_table_name]['_template']) ? $va_map[$vs_loc_table_name]['_template'] : "^".$qr_res->tableName().".preferred_labels";
+								
+									$va_values[$vs_id = "{$vs_loc_type}:{$vn_id}"] = array(
+										'id' => $vs_id,
+										'label' => $qr_res->getWithTemplate($vs_template)
+									);
+								}
+							}
+						}
+						
+						if (!is_null($vs_single_value) && !$vb_single_value_is_present) {
+							return array();
+						}
+						return $va_values;
+					}
+					
+				
+					return array();
+					break;
+				# -----------------------------------------------------
 				case 'fieldList':
 					$t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true);
 					$vs_field_name = $va_facet_info['field'];
@@ -3730,7 +3890,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 									'id' => $vn_ancestor_id,
 									'type_id' => array(),
 									'parent_id' => $vb_rel_is_hierarchical ? $qr_ancestors->get("{$vs_hier_parent_id_fld}") : null,
-									'hierarchy_id' => $vb_rel_is_hierarchical ? $qr_ancestors->get("{$vs_hier_id_fld}") : null,
+									'hierarchy_id' => ($vb_rel_is_hierarchical && $vs_hier_id_fld) ? $qr_ancestors->get($vs_hier_id_fld) : null,
 									'rel_type_id' => array(),
 									'child_count' => 0
 								);

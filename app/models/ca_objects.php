@@ -917,7 +917,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 				if (!$va_date_elements) { continue; }
 				$va_date_elements_by_type[$vn_type_id] = $va_date_elements;
 			}
-			
+		
 			while($qr_loans->nextHit()) {
 				$vn_loan_id = $qr_loans->get('loan_id');
 				if ((string)$qr_loans->get('ca_loans.deleted') !== '0') { continue; }	// filter out deleted
@@ -1586,5 +1586,145 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		return in_array($this->getTypeCode(), $va_container_types);
 	}
  	# ------------------------------------------------------
+ 	/**
+ 	 *
+ 	 */
+ 	public function addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
+ 		if ($vn_rc = parent::addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options)) {
+ 			
+ 			if ($this->relationshipChangeMayAffectCurrentLocation($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id)) {
+ 				$this->deriveCurrentLocationForBrowse();
+ 			}
+ 		}
+ 		
+ 		return $vn_rc;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 *
+ 	 */
+ 	public function editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $pa_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
+ 		if ($vn_rc = parent::editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id, $ps_effective_date, $pa_source_info, $ps_direction, $pn_rank, $pa_options)) {
+ 			
+ 		//	if ($this->relationshipChangeMayAffectCurrentLocation($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id)) {
+ 		//		$this->deriveCurrentLocationForBrowse();
+ 		//	}
+ 		}
+ 		
+ 		return $vn_rc;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 *
+ 	 */
+ 	public function removeRelationship($pm_rel_table_name_or_num, $pn_relation_id) {
+ 		if ($vn_rc = parent::removeRelationship($pm_rel_table_name_or_num, $pn_relation_id)) {
+ 			
+ 			if ($this->relationshipChangeMayAffectCurrentLocation($pm_rel_table_name_or_num, null, null)) {
+ 				$this->deriveCurrentLocationForBrowse();
+ 			}
+ 		}
+ 		
+ 		return $vn_rc;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 *
+ 	 */
+ 	public function removeRelationships($pm_rel_table_name_or_num, $pm_type_id=null) {
+ 		if ($vn_rc = parent::removeRelationships($pm_rel_table_name_or_num, $pm_type_id)) {
+ 			
+ 			if ($this->relationshipChangeMayAffectCurrentLocation($pm_rel_table_name_or_num, null, $pm_type_id)) {
+ 				$this->deriveCurrentLocationForBrowse();
+ 			}
+ 		}
+ 		
+ 		return $vn_rc;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * 
+ 	 */
+ 	private function relationshipChangeMayAffectCurrentLocation($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $pa_options=null) {
+ 		$va_map = $this->getAppConfig()->getAssoc('current_location_criteria');
+ 		$vs_table_name = $this->getAppDatamodel()->getTableName($pm_rel_table_name_or_num);
+ 		$t_instance = $this->getAppDatamodel()->getInstanceByTableName($vs_table_name, true);
+ 		
+ 		if (isset($va_map[$vs_table_name])) {
+ 			$vs_type = null;
+ 			if ($pm_type_id) { 
+ 				switch($vs_table_name) {
+ 					case 'ca_storage_locations':
+ 						$va_types = ca_relationship_types::relationshipTypeIDsToTypeCodes(array($pm_type_id));
+ 						$vs_type = array_shift($va_types);
+ 						break;
+ 					default:
+ 						if(!$pn_rel_id) { return true; }	// null record means we are batch deleting so go ahead and recalculate
+ 						// TODO: make this more efficient
+ 						$t_instance->load($pn_rel_id);
+ 						$vs_type = $t_instance->getTypeCode();
+ 						break;
+ 				}
+ 			} else {
+ 				return true;
+ 			}
+ 			if (isset($va_map[$vs_table_name]['*']) || isset($va_map[$vs_table_name][$vs_type])) {
+ 				return true;
+ 			}
+ 		}
+ 		return false;
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * 
+ 	 */
+ 	public function deriveCurrentLocationForBrowse($pa_options=null) {
+ 		$va_bundle_settings = array();
+ 		$t_rel_type = new ca_relationship_types();
+ 		$va_map = $this->getAppConfig()->getAssoc('current_location_criteria');
+ 		
+ 		foreach($va_map as $vs_table => $va_types) {
+ 			$va_bundle_settings["{$vs_table}_showTypes"] = array();
+ 			foreach($va_types as $vs_type => $va_config) {
+ 				switch($vs_table) {
+ 					case 'ca_storage_locations':
+ 						$va_bundle_settings["{$vs_table}_showRelationshipTypes"][] = $t_rel_type->getRelationshipTypeID('ca_objects_x_storage_locations', $vs_type);
+ 						break;
+ 					default:
+ 						$va_bundle_settings["{$vs_table}_showTypes"][] = array_shift(caMakeTypeIDList($vs_table, array($vs_type)));
+ 						$va_bundle_settings["{$vs_table}_{$vs_type}_dateElement"] = $va_config['date'];
+ 						break;
+ 				}
+ 			}
+ 		}
+ 		
+		if (is_array($va_history = $this->getObjectHistory($va_bundle_settings, array('displayLabelOnly' => true, 'limit' => 1, 'currentOnly' => false, 'noCache' => true))) && (sizeof($va_history) > 0)) {
+			$va_current_location = array_shift(array_shift($va_history));
+			return $this->setCurrentLocationForBrowse($va_current_location['type'], $va_current_location['id'], array('dontCheckID' => true));
+		}
+		
+		return $this->setCurrentLocationForBrowse(null, null, array('dontCheckID' => true));
+ 	}
+ 	# ------------------------------------------------------
+ 	/**
+ 	 * 
+ 	 */
+ 	private function setCurrentLocationForBrowse($pm_current_table, $pn_current_loc_id, $pa_options=null) {
+ 		if (!$this->getPrimaryKey()) { return null; }
+ 		if ($vn_table_num = $this->getAppDatamodel()->getTableNum($pm_current_table)) {
+ 			if (!caGetOption('dontCheckID', $pa_options, false)) {
+ 				$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($vn_table_num, true);
+ 				if (!$t_instance->load(array($t_instance->primaryKey() => $pn_current_loc_id, 'deleted' => 0))) {
+ 					return false;
+ 				}
+ 			}
+ 			$this->setMode(ACCESS_WRITE);
+ 			$this->set('current_loc_type', $vn_table_num);
+ 			$this->set('current_loc_id', $pn_current_loc_id);
+ 			$this->update();
+ 			return true;
+ 		}
+ 		return false;
+ 	}
+ 	# ------------------------------------------------------
 }
-?>
