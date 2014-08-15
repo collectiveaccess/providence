@@ -1144,7 +1144,7 @@ input[type="password"] {
   textarea, .formLabel
   input[type="password"] {
     width: 100% !important;
-    height: auto !important; }
+    height: 1.8em !important; }
 
 .labelInfo {
   background-color: transparent;
