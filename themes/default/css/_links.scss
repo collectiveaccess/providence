@@ -13,6 +13,9 @@ a {
 	&:hover {
 		color: darken($link, 20%);
 	}
+	&:focus {
+		border: 1px dotted $link;
+	}
 
 }
 

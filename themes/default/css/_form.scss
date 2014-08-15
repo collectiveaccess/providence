@@ -161,3 +161,17 @@ table.attributeListItem {
 	border: 1px solid $white-dark;
 }
 
+#idno_prefix {
+	height: 1.8em;
+	font-size: 1em;
+	width: 60px
+}
+#idno_object_number {
+	width: 180px !important;
+	margin-left: 6px;
+	margin-right: 3px
+}
+#idno_suffix {
+	width: 80px !important;
+	margin-left: 3px;
+}

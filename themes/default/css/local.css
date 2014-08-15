@@ -1284,6 +1284,20 @@ table.attributeListItem {
 .formSettings {
   border: 1px solid #e6e6e6; }
 
+#idno_prefix {
+  height: 1.8em;
+  font-size: 1em;
+  width: 60px; }
+
+#idno_object_number {
+  width: 180px !important;
+  margin-left: 6px;
+  margin-right: 3px; }
+
+#idno_suffix {
+  width: 80px !important;
+  margin-left: 3px; }
+
 div.roundedRel a,
 .hierNav a,
 a {
@@ -1298,6 +1312,10 @@ a {
   .hierNav a:hover,
   a:hover {
     color: #6b0b47; }
+  div.roundedRel a:focus,
+  .hierNav a:focus,
+  a:focus {
+    border: 1px dotted mediumvioletred; }
 
 #P667ObjectEditorFormItem_new_0 {
   background: #fcdff1 !important; }
