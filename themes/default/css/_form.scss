@@ -75,15 +75,12 @@ a.form-button:hover span {
 
 a.caNodecLabelButton {
 	text-decoration: none;
-}
 
-// .labelInfo {
-// 	.caDeleteItemButton,
-// 	.caDeleteLabelButton {
-// 		position: relative;
-// 		right: auto;
-// 	}	
-// }
+	img {
+		width:14px;
+		margin-right:3px;
+	}
+}
 
 .formLabel {
 	font-family: inherit;

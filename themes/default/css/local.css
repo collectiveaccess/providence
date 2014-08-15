@@ -1226,6 +1226,9 @@ a.form-button:hover span {
 
 a.caNodecLabelButton {
   text-decoration: none; }
+  a.caNodecLabelButton img {
+    width: 14px;
+    margin-right: 3px; }
 
 .formLabel {
   font-family: inherit;
