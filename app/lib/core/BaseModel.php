@@ -1834,13 +1834,13 @@ class BaseModel extends BaseObject {
 			return true;
 		} else {
 			if (!is_array($pm_id)) {
-				$this->postError(750,_t("Invalid %1 '%2'", $this->primaryKey(), $pm_id), "BaseModel->load()");
+				//$this->postError(750,_t("Invalid %1 '%2'", $this->primaryKey(), $pm_id), "BaseModel->load()");
 			} else {
 				$va_field_list = array();
 				foreach ($pm_id as $vs_field => $vm_value) {
 					$va_field_list[] = "$vs_field => $vm_value";
 				}
-				$this->postError(750,_t("No record with %1", join(", ", $va_field_list)), "BaseModel->load()");
+				//$this->postError(750,_t("No record with %1", join(", ", $va_field_list)), "BaseModel->load()");
 			}
 			return false;
 		}
@@ -6045,6 +6045,7 @@ class BaseModel extends BaseObject {
 		if (in_array($va_tmp[0], array('created', 'modified'))) {
 			return caHTMLTextInput($ps_field, array(
 				'id' => str_replace(".", "_", $ps_field),
+				'class' => (isset($pa_options['class']) ? $pa_options['class'] : ''),
 				'width' => (isset($pa_options['width']) && ($pa_options['width'] > 0)) ? $pa_options['width'] : 30, 
 				'height' => (isset($pa_options['height']) && ($pa_options['height'] > 0)) ? $pa_options['height'] : 1, 
 				'value' => (isset($pa_options['values'][$ps_field]) ? $pa_options['values'][$ps_field] : ''))
@@ -6059,6 +6060,7 @@ class BaseModel extends BaseObject {
 					'name' => $ps_field,
 					'id' => str_replace(".", "_", $ps_field),
 					'nullOption' => '-',
+					'classname' => (isset($pa_options['class']) ? $pa_options['class'] : ''),
 					'value' => (isset($pa_options['values'][$ps_field]) ? $pa_options['values'][$ps_field] : ''),
 					'width' => (isset($pa_options['width']) && ($pa_options['width'] > 0)) ? $pa_options['width'] : 30, 
 					'height' => (isset($pa_options['height']) && ($pa_options['height'] > 0)) ? $pa_options['height'] : 1, 
@@ -7372,8 +7374,96 @@ class BaseModel extends BaseObject {
 		return $va_hierarchy_data;
 	}
 	# --------------------------------------------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @param array $pa_row_ids 
+	 * @param array $pa_options
+	 * @return mixed
+	 */
+	static public function getHierarchyAncestorsForIDs($pa_row_ids, $pa_options=null) {
+		if(!is_array($pa_row_ids) || (sizeof($pa_row_ids) == 0)) { return null; }
+		
+		$ps_return_as = caGetOption('returnAs', $pa_options, 'ids', array('forceLowercase' => true, 'validValues' => array('searchResult', 'ids', 'modelInstances', 'firstId', 'firstModelInstance', 'count')));
+		$o_trans = caGetOption('transaction', $pa_options, null);
+		$vs_table = get_called_class();
+		$t_instance = new $vs_table;
+		
+	 	if (!($vs_parent_id_fld = $t_instance->getProperty('HIERARCHY_PARENT_ID_FLD'))) { return null; }
+		if ($o_trans) { $t_instance->setTransaction($o_trans); }
+		
+		$vs_table_name = $t_instance->tableName();
+		$vs_table_pk = $t_instance->primaryKey();
+		
+		$o_db = $t_instance->getDb();
+		
+		$va_ancestor_row_ids = array();
+		$va_level_row_ids = $pa_row_ids;
+		do {
+			$qr_level = $o_db->query("
+				SELECT {$vs_parent_id_fld}
+				FROM {$vs_table_name}
+				WHERE
+					{$vs_table_pk} IN (?)
+			", array($va_level_row_ids));
+			$va_level_row_ids = $qr_level->getAllFieldValues($vs_parent_id_fld);
+			$va_ancestor_row_ids = array_merge($va_ancestor_row_ids, $va_level_row_ids);
+		} while(($qr_level->numRows() > 0) && (sizeof($va_level_row_ids))) ;
+		
+		$va_ancestor_row_ids = array_unique($va_ancestor_row_ids);
+		if (!sizeof($va_ancestor_row_ids)) { return null; }
+		
+		$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
+		
+		
+		switch($ps_return_as) {
+			case 'firstmodelinstance':
+				$vn_ancestor_id = array_shift($va_ancestor_row_ids);
+				if ($t_instance->load((int)$vn_ancestor_id)) {
+					return $t_instance;
+				}
+				return null;
+				break;
+			case 'modelinstances':
+				$va_instances = array();
+				foreach($va_ancestor_row_ids as $vn_ancestor_id) {
+					$t_instance = new $vs_table;
+					if ($o_trans) { $t_instance->setTransaction($o_trans); }
+					if ($t_instance->load((int)$vn_ancestor_id)) {
+						$va_instances[] = $t_instance;
+						$vn_c++;
+						if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
+					}
+				}
+				return $va_instances;
+				break;
+			case 'firstid':
+				return array_shift($va_ancestor_row_ids);
+				break;
+			case 'count':
+				return sizeof($va_ancestor_row_ids);
+				break;
+			default:
+			case 'ids':
+			case 'searchresult':
+				if ($vn_limit && (sizeof($va_ancestor_row_ids) >= $vn_limit)) { 
+					$va_ancestor_row_ids = array_slice($va_ancestor_row_ids, 0, $vn_limit);
+				}
+				if ($ps_return_as == 'searchresult') {
+					return $t_instance->makeSearchResult($t_instance->tableName(), $va_ancestor_row_ids);
+				} else {
+					return $va_ancestor_row_ids;
+				}
+				break;
+		}
+		return null;
+	}
+	# --------------------------------------------------------------------------------------------
 	# Hierarchical indices
 	# --------------------------------------------------------------------------------------------
+	/**
+	 * Rebuild all hierarchical indexing for all rows in this table
+	 */
 	public function rebuildAllHierarchicalIndexes() {
 		$vs_hier_left_fld 		= $this->getProperty("HIERARCHY_LEFT_INDEX_FLD");
 		$vs_hier_right_fld 		= $this->getProperty("HIERARCHY_RIGHT_INDEX_FLD");
@@ -7394,6 +7484,9 @@ class BaseModel extends BaseObject {
 		return true;
 	}
 	# --------------------------------------------------------------------------------------------
+	/**
+	 * Rebuild hierarchical indexing for the specified hierarchy in this table
+	 */
 	public function rebuildHierarchicalIndex($pn_hierarchy_id=null) {
 		if ($this->isHierarchical()) {
 			$vb_we_set_transaction = false;
@@ -7414,6 +7507,9 @@ class BaseModel extends BaseObject {
 		}
 	}
 	# --------------------------------------------------------------------------------------------
+	/**
+	 * Private method that actually performed reindexing tasks
+	 */
 	private function _rebuildHierarchicalIndex($pn_parent_id, $pn_hier_left) {
 		$vs_hier_parent_id_fld 		= $this->getProperty("HIERARCHY_PARENT_ID_FLD");
 		$vs_hier_left_fld 			= $this->getProperty("HIERARCHY_LEFT_INDEX_FLD");
