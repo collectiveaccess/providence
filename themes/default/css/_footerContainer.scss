@@ -1,0 +1,25 @@
+
+
+
+#footerContainer {
+	position: relative;
+
+
+}
+#footer {
+	width: 100%;
+	font-size: 0.8em;
+	background: $black;
+	padding-bottom: 0.7em;
+	color: $grey-light;
+
+	a {
+		color: inherit;
+	}
+
+	div {
+		width: auto;
+		text-align: center;
+		font-family: inherit;
+	}
+}

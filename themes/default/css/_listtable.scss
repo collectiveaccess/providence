@@ -1,0 +1,32 @@
+//_listtable.scss
+
+
+
+table.listtable {
+	font-size: inherit;
+}
+
+table.listtable thead tr th,
+.table.listtable {
+	font-size: 0.9em;
+}
+
+
+#caSetList.listtable thead tr th, 
+#caGroupList.listtable thead tr th, 
+#caWatchedItemsList.listtable thead tr th, 
+#caBundleList.listtable thead tr th, 
+#caCommentsList.listtable thead tr th, 
+#caExporterListContainer .listtable thead tr th, 
+#caUserList.listtable thead tr th, 
+#caEventList.listtable thead tr th, 
+#caSearchList.listtable thead tr th, 
+#caLocaleList.listtable thead tr th, 
+#caSearchConfigSettingList.listtable thead tr th, 
+#caMediaConfigPluginList.listtable thead tr th, 
+#caElementList.listtable thead tr th, 
+#caUIList.listtable thead tr th, 
+#caSavedSearchesList.listtable thead tr th {
+	font-family: inherit;
+	font-weight: 600;
+}

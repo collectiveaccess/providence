@@ -1,0 +1,61 @@
+
+
+
+#widgets {
+	background: $white;
+
+	padding-bottom: 1em;
+}
+
+#leftNav h3.nextPrevious {
+	font-family: inherit;
+	font-size: inherit;
+	height: auto;
+	font-weight: 600;
+	width: initial;
+	margin: 0 55px;
+	padding-top: 5px;
+	min-height: 45px;
+	line-height: 1.2;
+	background: transparent;
+}
+
+
+#leftNav .resultCount, 
+#leftNav .resultLink {
+	width: auto;
+	display: initial;	
+}
+
+#leftNav h3.nextPrevious a {
+	color: inherit;
+}
+
+
+#leftNav h3.nextPrevious a.next,
+#leftNav h3.nextPrevious span.next,
+#leftNav h3.nextPrevious a.prev,
+#leftNav h3.nextPrevious span.prev {
+	width: 50px;
+	height: 50px;
+	text-align: center;
+	line-height: 1;
+	font-size: 0.9em;
+	position: absolute;
+	background: $white-off;
+	border: 1px solid $white-dark;
+	//color: white;
+	padding: 7px 5px;
+}
+
+#leftNav h3.nextPrevious a.prev,
+#leftNav h3.nextPrevious span.prev {	
+	top: 0;
+	left: 0;
+}
+
+#leftNav h3.nextPrevious a.next,
+#leftNav h3.nextPrevious span.next {
+	top: 0;
+	right: 0;
+}
