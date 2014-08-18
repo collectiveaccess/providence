@@ -554,7 +554,7 @@ class BaseModel extends BaseObject {
 	public function getFieldValuesArray() {
 		return $this->_FIELD_VALUES;
 	}
-
+	# --------------------------------------------------------------------------------
 	/**
 	 * Set alls field values of the current row that is represented by this BaseModel object
 	 * by passing an associative array as follows: field name => field value
@@ -565,7 +565,7 @@ class BaseModel extends BaseObject {
 	public function setFieldValuesArray($pa_values) {
 		$this->_FIELD_VALUES = $pa_values;
 	}
-
+	# --------------------------------------------------------------------------------
 	/**
 	 * Get an associative array of the field values that changed since instantiation of
 	 * this BaseModel object.
@@ -583,7 +583,7 @@ class BaseModel extends BaseObject {
 		}
 		return $va_changed_field_values_array;
 	}
-
+	# --------------------------------------------------------------------------------
 	/**
 	 * What was the original value of a field?
 	 *
@@ -593,7 +593,7 @@ class BaseModel extends BaseObject {
 	public function getOriginalValue($ps_field) {
 		return $this->_FIELD_VALUES_OLD[$ps_field];
 	}
-
+	# --------------------------------------------------------------------------------
 	/**
 	 * Check if the content of a field has changed.
 	 *
@@ -603,7 +603,7 @@ class BaseModel extends BaseObject {
 	public function changed($ps_field) {
 		return isset($this->_FIELD_VALUE_CHANGED[$ps_field]) ? $this->_FIELD_VALUE_CHANGED[$ps_field] : null;
 	}
-	
+	# --------------------------------------------------------------------------------
 	/**
 	 * Force field to be considered changed
 	 *
@@ -614,7 +614,7 @@ class BaseModel extends BaseObject {
 		$this->_FIELD_VALUE_CHANGED[$ps_field] = true;
 		return true;
 	}
-
+	# --------------------------------------------------------------------------------
 	/**
 	 * Returns value of primary key
 	 *
@@ -630,7 +630,7 @@ class BaseModel extends BaseObject {
 
 		return $vm_pk;
 	}
-
+	# --------------------------------------------------------------------------------
 	/**
 	 * Get a field value of the table row that is represented by this object.
 	 *
@@ -1046,7 +1046,7 @@ class BaseModel extends BaseObject {
 			return $vs_prop;
 		}
 	}
-	
+	# --------------------------------------------------------------------------------
 	/**
 	 * Fetches intrinsic field values from specified fields and rows. If field list is omitted
 	 * an array with all intrinsic fields is returned. Note that this method returns only those
@@ -1125,7 +1125,7 @@ class BaseModel extends BaseObject {
 		}
 		return BaseModel::$s_field_value_arrays_for_IDs_cache[$vn_table_num][$vs_cache_key] = $va_vals;
 	}
-
+	# --------------------------------------------------------------------------------
 	/**
 	 * Set field value(s) for the table row represented by this object
 	 *
@@ -1531,6 +1531,7 @@ class BaseModel extends BaseObject {
 	public function getFields() {
 		return array_keys($this->FIELDS);
 	}
+	# --------------------------------------------------------------------------------
 	/**
 	 * Returns an array containing the field names of the table as keys and their info as values.
 	 *
@@ -1539,6 +1540,7 @@ class BaseModel extends BaseObject {
 	public function getFieldsArray() {
 		return $this->FIELDS;
 	}
+	# --------------------------------------------------------------------------------
 	/**
 	 * Returns name of primary key
 	 *
@@ -1547,7 +1549,7 @@ class BaseModel extends BaseObject {
 	public function primaryKey() {
 		return $this->PRIMARY_KEY;
 	}
-
+	# --------------------------------------------------------------------------------
 	/**
 	 * Returns name of the table
 	 *
@@ -1556,7 +1558,7 @@ class BaseModel extends BaseObject {
 	public function tableName() {
 		return $this->TABLE;
 	}
-
+	# --------------------------------------------------------------------------------
 	/**
 	 * Returns number of the table as defined in datamodel.conf configuration file
 	 *
@@ -1565,7 +1567,7 @@ class BaseModel extends BaseObject {
 	public function tableNum() {
 		return $this->_DATAMODEL->getTableNum($this->TABLE);
 	}
-
+	# --------------------------------------------------------------------------------
 	/**
 	 * Returns number of the given field. Field numbering is defined implicitly by the order.
 	 *
@@ -1575,7 +1577,7 @@ class BaseModel extends BaseObject {
 	public function fieldNum($ps_field) {
 		return $this->_DATAMODEL->getFieldNum($this->TABLE, $ps_field);
 	}
-	
+	# --------------------------------------------------------------------------------
 	/**
 	 * Returns name of the given field number. 
 	 *
@@ -1586,7 +1588,7 @@ class BaseModel extends BaseObject {
 		$va_fields = $this->getFields();
 		return isset($va_fields[$pn_num]) ? $va_fields[$pn_num] : null;
 	}
-
+	# --------------------------------------------------------------------------------
 	/**
 	 * Returns name field used for arbitrary ordering of records (returns "" if none defined)
 	 *
@@ -1595,7 +1597,7 @@ class BaseModel extends BaseObject {
 	public function rankField() {
 		return $this->RANK;
 	}
-
+	# --------------------------------------------------------------------------------
 	/**
 	 * Returns table property
 	 *
@@ -1605,7 +1607,7 @@ class BaseModel extends BaseObject {
 		if (isset($this->{$property})) { return $this->{$property}; }
 		return null;
 	}
-
+	# --------------------------------------------------------------------------------
 	/**
 	 * Returns a string with the values taken from fields which are defined in global property LIST_FIELDS
 	 * taking into account the global property LIST_DELIMITER. Each extension of BaseModel can define those properties.
@@ -1948,6 +1950,34 @@ class BaseModel extends BaseObject {
 		
 		$va_child_ids = array_merge($pa_ids, $va_child_ids);
 		return array_unique($va_child_ids, SORT_STRING);
+	 }
+	 
+	 /** 
+	  * Clear cached instance values for this model/table. When optional $pb_all_tables parameter is set all cache entries
+	  * from all models are cleared.
+	  *
+	  * @param bool $pb_all_tables Clear cache entries for all models/tables. [Default=false]
+	  * @return bool True on success 
+	  */
+	 public function clearInstanceCache($pb_all_tables=false) {
+	 	if ($pb_all_tables) {
+	 		BaseModel::$s_instance_cache = array();
+	 	} else {
+	 		BaseModel::$s_instance_cache[$this->tableName()] = array();
+	 	}
+	 	return true;
+	 }
+	 
+	  /** 
+	  * Clear cached instance values for a specific row in this table.
+	  *
+	  * @param int $pn_id The primary key value of the row to discard cache entries for
+	  * @return bool True on success, false if there was no cache for the specified id.
+	  */
+	 public function clearInstanceCacheForID($pn_id) {
+	 	if(!isset(BaseModel::$s_instance_cache[$this->tableName()][(int)$pn_id])) { return false; }
+	 	unset(BaseModel::$s_instance_cache[$this->tableName()][(int)$pn_id]);
+	 	return true;
 	 }
 	 
 	/**
@@ -2364,7 +2394,7 @@ class BaseModel extends BaseObject {
 					
 					$this->_FIELD_VALUE_CHANGED = array();					
 						
-					if (sizeof(BaseModel::$s_instance_cache[$vs_table_name]) > 100) { 	// Limit cache to 100 instances per table
+					if (sizeof(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) > 100) { 	// Limit cache to 100 instances per table
 						BaseModel::$s_instance_cache[$vs_table_name] = array_slice(BaseModel::$s_instance_cache[$vs_table_name], 0, 50, true);
 					}
 					
@@ -2946,7 +2976,7 @@ class BaseModel extends BaseObject {
 				$this->_FIELD_VALUE_CHANGED = array();
 				
 				// Update instance cache
-				if (sizeof(BaseModel::$s_instance_cache[$vs_table_name]) > 100) { 	// Limit cache to 100 instances per table
+				if (sizeof(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) > 100) { 	// Limit cache to 100 instances per table
 					BaseModel::$s_instance_cache[$vs_table_name] = array_slice(BaseModel::$s_instance_cache[$vs_table_name], 0, 50, true);
 				}
 				BaseModel::$s_instance_cache[$vs_table_name][(int)$this->getPrimaryKey()] = $this->_FIELD_VALUES;
