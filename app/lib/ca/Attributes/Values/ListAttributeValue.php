@@ -231,8 +231,8 @@
  			
  			$va_match_on = caGetOption('matchOn', $pa_options, null);
  			if ($va_match_on && !is_array($va_match_on)){ $va_match_on = array($va_match_on); }
- 			if (!is_array($va_match_on) && $vb_treat_value_as_idno) { $va_match_on = array('idno'); }
- 			if ((!is_array($va_match_on) || !sizeof($va_match_on)) && preg_match('![^\d]+!', $ps_value)) { $va_match_on = array('idno'); }
+ 			if (!is_array($va_match_on) && $vb_treat_value_as_idno) { $va_match_on = array('idno', 'item_id'); }
+ 			if ((!is_array($va_match_on) || !sizeof($va_match_on)) && preg_match('![^\d]+!', $ps_value)) { $va_match_on = array('idno', 'item_id'); }
  			if (($vb_treat_value_as_idno) && (!in_array('idno', $va_match_on))) { array_push($va_match_on, 'idno'); }
  			if (!is_array($va_match_on) || !sizeof($va_match_on)) { $va_match_on = array('item_id'); }
  			
@@ -266,8 +266,8 @@
 					default:
 						if ($vn_id = ca_list_items::find(array('item_id' => (int)$ps_value, 'list_id' => $pa_element_info['list_id']), array('returnAs' => 'firstId'))) {
 							break(2);
-						} else {
-							$this->postError(1970, _t('Value with item_id %1 does not exist in list %2', $ps_value, $pa_element_info['list_id']), 'ListAttributeValue->parseValue()');
+						//} else {
+							//$this->postError(1970, _t('Value with item_id %1 does not exist in list %2', $ps_value, $pa_element_info['list_id']), 'ListAttributeValue->parseValue()');
 						}
 						break;
 				}
@@ -277,8 +277,11 @@
 					'value_longtext1' => null,
 					'item_id' => null
 				);
+ 			} elseif ($vb_require_value && !$vn_id && !strlen($ps_value)) {
+ 				$this->postError(1970, _t('Value for %1 [%2] cannot be blank', $pa_element_info['displayLabel'], $pa_element_info['element_code']), 'ListAttributeValue->parseValue()');
+ 				return false;
  			} elseif ($vb_require_value && !$vn_id) {
- 				$this->postError(1970, _t('Value %1 [%2] cannot be blank', $pa_element_info['displayLabel'], $pa_element_info['element_code']), 'ListAttributeValue->parseValue()');
+ 				$this->postError(1970, _t('Value %3 for %1 [%2] is invalid', $pa_element_info['displayLabel'], $pa_element_info['element_code'], $ps_value), 'ListAttributeValue->parseValue()');
  				return false;
  			} 
  			
