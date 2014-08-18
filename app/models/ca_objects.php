@@ -1752,8 +1752,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 			$va_current_location = array_shift(array_shift($va_history));
 			
 			if ($va_current_location['type'] == 'ca_storage_locations') {
-				// store the relationship relation_id so we can know the relationship type_id later
-				return $this->setCurrentLocationForBrowse('ca_objects_x_storage_locations', $va_current_location['rel_type_id'], $va_current_location['relation_id'], array('dontCheckID' => true));
+				return $this->setCurrentLocationForBrowse('ca_objects_x_storage_locations', $va_current_location['rel_type_id'], $va_current_location['id'], array('dontCheckID' => true));
 			} else {
 				return $this->setCurrentLocationForBrowse($va_current_location['type'], $va_current_location['type_id'], $va_current_location['id'], array('dontCheckID' => true));
 			}
@@ -1780,15 +1779,27 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
  	private function setCurrentLocationForBrowse($pm_current_loc_class, $pm_current_loc_subclass, $pn_current_loc_id, $pa_options=null) {
  		if (!$this->getPrimaryKey()) { return null; }
  		if ($vn_table_num = $this->getAppDatamodel()->getTableNum($pm_current_loc_class)) {
+ 			$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($vn_table_num, true);
  			if (!caGetOption('dontCheckID', $pa_options, false)) {
- 				$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($pm_current_loc_class, true);
  				if (!$t_instance->load(array($t_instance->primaryKey() => $pn_current_loc_id, 'deleted' => 0))) {
  					return false;
  				}
  			}
+ 			
+ 			if(!is_numeric($vn_type_id = $pm_current_loc_subclass)) {
+				switch($vs_table_name) {
+					case 'ca_storage_locations':
+						$t_rel_type = new ca_relationship_types();
+						$vn_type_id = $t_rel_type->getRelationshipTypeID('ca_objects_x_storage_locations', $pm_current_loc_subclass);
+						break;
+					default:
+						$vn_type_id = $t_instance->getTypeIDForCode($pm_current_loc_subclass);
+						break;
+				}
+			}
  			$this->setMode(ACCESS_WRITE);
- 			$this->set('current_loc_class', $pm_current_loc_class);
- 			$this->set('current_loc_subclass', $pm_current_loc_subclass);
+ 			$this->set('current_loc_class', $vn_table_num);
+ 			$this->set('current_loc_subclass', $vn_type_id);
  			$this->set('current_loc_id', $pn_current_loc_id);
  			$this->update();
  			
@@ -1809,18 +1820,20 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
  	 * 
  	 * @return array
  	 */
- 	public static function getConfigurationForCurrentLocationType($pm_current_loc_class, $pm_current_loc_subclass=null) {
- 		if (isset(ca_objects::$s_current_location_type_configuration_cache[$pm_current_loc_class.'/'.$pm_current_loc_subclass])) { return ca_objects::$s_current_location_type_configuration_cache[$pm_current_loc_class.'/'.$pm_current_loc_subclass]; }
+ 	public static function getConfigurationForCurrentLocationType($pm_current_loc_class, $pm_current_loc_subclass=null, $pa_options=null) {
+ 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, "{$pm_current_loc_class}/{$pm_current_loc_subclass}");
+ 		
+ 		if (isset(ca_objects::$s_current_location_type_configuration_cache[$vs_cache_key])) { return ca_objects::$s_current_location_type_configuration_cache[$vs_cache_key]; }
  		$o_config = Configuration::load();
  		$o_dm = Datamodel::load();
  		
  		$va_map = $o_config->getAssoc('current_location_criteria');
  		
- 		if (!($t_instance = $o_dm->getInstance($pm_current_loc_class, true))) { return ca_objects::$s_current_location_type_configuration_cache[$pm_current_loc_class.'/'.$pm_current_loc_subclass] = null; }
+ 		if (!($t_instance = $o_dm->getInstance($pm_current_loc_class, true))) { return ca_objects::$s_current_location_type_configuration_cache[$vs_cache_key] = null; }
  		$vs_table_name = $t_instance->tableName();
  		
  		if (isset($va_map[$vs_table_name])) {
- 			if ((!$pm_current_loc_subclass) && isset($va_map[$vs_table_name]['*'])) { return ca_objects::$s_current_location_type_configuration_cache[$vs_table_name.'/'.$pm_type_id] = ca_objects::$s_current_location_type_configuration_cache[$pm_current_loc_class.'/'.$pm_current_loc_subclass] = $va_map[$vs_table_name]['*']; }	// return default config if no type is specified
+ 			if ((!$pm_current_loc_subclass) && isset($va_map[$vs_table_name]['*'])) { return ca_objects::$s_current_location_type_configuration_cache[caMakeCacheKeyFromOptions($pa_options, "{$vs_table_name}/{$pm_type_id}")] = ca_objects::$s_current_location_type_configuration_cache[$vs_cache_key] = $va_map[$vs_table_name]['*']; }	// return default config if no type is specified
  			
  			if ($pm_current_loc_subclass) { 
  				switch($vs_table_name) {
@@ -1833,15 +1846,22 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
  						break;
  				}
  				
- 				if ($vs_type && isset($va_map[$vs_table_name][$vs_type])) { 
-					return ca_objects::$s_current_location_type_configuration_cache[$vs_table_name.'/'.$pm_current_loc_subclass] = ca_objects::$s_current_location_type_configuration_cache[$pm_current_loc_class.'/'.$pm_current_loc_subclass] = $va_map[$vs_table_name][$vs_type];
+ 				$va_facet_display_config = caGetOption('facet', $pa_options, null); 
+ 				if ($vs_type && isset($va_map[$vs_table_name][$vs_type])) {
+ 					if (is_array($va_facet_display_config) && isset($va_facet_display_config[$vs_table_name][$vs_type])) {
+ 						$va_map[$vs_table_name][$vs_type] = array_merge($va_map[$vs_table_name][$vs_type], $va_facet_display_config[$vs_table_name][$vs_type]);
+ 					}
+					return ca_objects::$s_current_location_type_configuration_cache[caMakeCacheKeyFromOptions($pa_options, "{$vs_table_name}/{$pm_current_loc_subclass}")] = ca_objects::$s_current_location_type_configuration_cache[$vs_cache_key] = $va_map[$vs_table_name][$vs_type];
 				} elseif (isset($va_map[$vs_table_name]['*'])) {
-					return ca_objects::$s_current_location_type_configuration_cache[$vs_table_name.'/'.$pm_current_loc_subclass] = ca_objects::$s_current_location_type_configuration_cache[$pm_current_loc_class.'/'.$pm_current_loc_subclass] = $va_map[$vs_table_name]['*'];
+					if (is_array($va_facet_display_config) && isset($va_facet_display_config[$vs_table_name]['*'])) {
+ 						$va_map[$vs_table_name][$vs_type] = array_merge($va_map[$vs_table_name]['*'], $va_facet_display_config[$vs_table_name]['*']);
+ 					}
+					return ca_objects::$s_current_location_type_configuration_cache[caMakeCacheKeyFromOptions($pa_options, "{$vs_table_name}/{$pm_current_loc_subclass}")] = ca_objects::$s_current_location_type_configuration_cache[$vs_cache_key] = $va_map[$vs_table_name]['*'];
 				}
  			} 
  			
  		}
- 		return ca_objects::$s_current_location_type_configuration_cache[$vs_table_name.'/'.$pm_current_loc_subclass] = ca_objects::$s_current_location_type_configuration_cache[$pm_current_loc_class.'/'.$pm_current_loc_subclass] = null;
+ 		return ca_objects::$s_current_location_type_configuration_cache[caMakeCacheKeyFromOptions($pa_options, "{$vs_table_name}/{$pm_current_loc_subclass}")] = ca_objects::$s_current_location_type_configuration_cache[$vs_cache_key] = null;
  	}
  	# ------------------------------------------------------
 }
