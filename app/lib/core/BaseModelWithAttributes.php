@@ -1055,10 +1055,20 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Fetch the type_id for the currently loaded row or, optionally, the row specified by $pn_id
 		 *
+		 * @param $pn_id Option primary key to fetch type_id for. If omitted the type_id for currently loaded row is returned. [Default=null]
+		 * @return int 
 		 */
-		public function getTypeID() {
+		public function getTypeID($pn_id=null) {
 			if (!isset($this->ATTRIBUTE_TYPE_ID_FLD) || !$this->ATTRIBUTE_TYPE_ID_FLD) { return null; }
+			if ($pn_id) {
+				$qr_res = $this->getDb()->query("SELECT {$this->ATTRIBUTE_TYPE_ID_FLD} FROM ".$this->tableName()." WHERE ".$this->primaryKey()." = ?", array((int)$pn_id));
+				if($qr_res->nextRow()) {
+					return $qr_res->get($this->ATTRIBUTE_TYPE_ID_FLD);
+				}
+				return null;
+			}
 			return $this->get($this->ATTRIBUTE_TYPE_ID_FLD);
 		}
 		# ------------------------------------------------------------------

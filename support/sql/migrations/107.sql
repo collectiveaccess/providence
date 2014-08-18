@@ -4,8 +4,8 @@
 	Description: add current location fields to ca_objects
 */
 
-#drop index i_name on ca_representation_annotation_labels;
-#drop index i_name_sort on ca_representation_annotation_labels;
+drop index i_name on ca_representation_annotation_labels;
+drop index i_name_sort on ca_representation_annotation_labels;
 drop index u_all on ca_representation_annotation_labels;
 alter table ca_representation_annotation_labels modify column name varchar(2048) not null default '';
 alter table ca_representation_annotation_labels modify column name_sort varchar(2048) not null default '';

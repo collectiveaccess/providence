@@ -1553,7 +1553,8 @@ create table ca_objects
    is_deaccessioned               tinyint                        not null default 0,
    deaccession_notes              text                           not null,
    deaccession_type_id            int unsigned                   null,
-   current_loc_type               tinyint unsigned               null,
+   current_loc_class              tinyint unsigned               null,
+   current_loc_subclass           int unsigned                   null,
    current_loc_id                 int unsigned                   null,
    
    primary key (object_id),
@@ -1610,7 +1611,8 @@ create index i_deaccession_sdatetime on ca_objects(deaccession_sdatetime);
 create index i_deaccession_edatetime on ca_objects(deaccession_edatetime);
 create index i_deaccession_type_id on ca_objects(deaccession_type_id);
 create index i_is_deaccessioned on ca_objects(is_deaccessioned);
-create index i_current_loc_type on ca_objects(current_loc_type);
+create index i_current_loc_class on ca_objects(current_loc_class);
+create index i_current_loc_subclass on ca_objects(current_loc_subclass);
 create index i_current_loc_id on ca_objects(current_loc_id);
 
 
