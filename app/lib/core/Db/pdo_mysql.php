@@ -423,6 +423,33 @@ class Db_pdo_mysql extends DbDriverBase {
 		}
 		return true;
 	}
+	
+	/**
+	 * @see DbResult::getAllFieldValues()
+	 * @param mixed $po_caller object representation of the calling class, usually Db
+	 * @param mixed $pr_res mysql resource
+	 * @param mixed $pm_field the field or an array of fields
+	 * @return array an array of field values (if $pm_field is a single field name) or an array if field names each of which is an array of values (if $pm_field is an array of field names)
+	 */
+	function getAllFieldValues($po_caller, $pr_res, $pm_field) {
+		$va_vals = array();
+		$va_row = $pr_res->fetch(PDO::FETCH_ASSOC);
+		if (!isset($va_row[$ps_field])) { return array(); }
+		$this->seek($po_caller, $pr_res, 0);
+		
+		if (is_array($pa_fields)) {
+			while(is_array($va_row = $pr_res->fetch(PDO::FETCH_ASSOC))) {
+				foreach($pa_fields as $vs_field) {
+					$va_vals[$vs_field][] = $va_row[$vs_field];
+				}
+			}
+		} else {
+			while(is_array($va_row = $pr_res->fetch(PDO::FETCH_ASSOC))) {
+				$va_vals[] = $va_row[$ps_field];
+			}
+		}
+		return $va_vals;
+	}
 
 	/**
 	 * @see DbResult::nextRow()

@@ -585,6 +585,7 @@
 				$this->request->user->setVar($t_subject->tableName().'_summary_display_id', $vn_display_id);
 				$vs_format = $this->request->config->get("summary_print_format");
 			} else {
+				$vn_display_id = $t_display = null;
 				$this->view->setVar('display_id', null);
 				$this->view->setVar('placements', array());
 			}
@@ -592,10 +593,12 @@
 			//
 			// PDF output
 			//
-			if(!is_array($va_template_info = caGetPrintTemplateDetails('summary', "{$this->ops_table_name}_summary"))) {
-				if(!is_array($va_template_info = caGetPrintTemplateDetails('summary', "summary"))) {
-					$this->postError(3110, _t("Could not find view for PDF"),"BaseEditorController->PrintSummary()");
-					return;
+			if(!$vn_display_id || !$t_display || !is_array($va_template_info = caGetPrintTemplateDetails('summary', "{$this->ops_table_name}_".$t_display->get('display_code')."_summary"))) {
+				if(!is_array($va_template_info = caGetPrintTemplateDetails('summary', "{$this->ops_table_name}_summary"))) {
+					if(!is_array($va_template_info = caGetPrintTemplateDetails('summary', "summary"))) {
+						$this->postError(3110, _t("Could not find view for PDF"),"BaseEditorController->PrintSummary()");
+						return;
+					}
 				}
 			}
 			
@@ -606,7 +609,6 @@
 				$this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
 				
 				$va_barcode_files_to_delete += caDoPrintViewTagSubstitution($this->view, $t_subject, $va_template_info['path'], array('checkAccess' => $this->opa_access_values));
-				
 				$vs_content = $this->render($va_template_info['path']);
 				$o_dompdf = new DOMPDF();
 				$o_dompdf->load_html($vs_content);
