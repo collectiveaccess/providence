@@ -549,18 +549,19 @@
 					$va_collapse_map = $this->getCollapseMapForLocationFacet($va_facet_info);
 					
 					$t_instance = $this->opo_datamodel->getInstanceByTableName($vs_loc_table_name, true);
-				
-					if (isset($va_collapse_map[$vs_loc_table_name][$va_tmp[1]])) {
+					
+					if (($vs_table_name = $vs_loc_table_name) == 'ca_objects_x_storage_locations') {
+						$vs_table_name = 'ca_storage_locations';
+					}
+					if (isset($va_collapse_map[$vs_table_name][$va_tmp[1]])) {
 						// Class/subclass is collapsable
-						return $va_collapse_map[$vs_loc_table_name][$va_tmp[1]];
-					} elseif(isset($va_collapse_map[$vs_loc_table_name]['*'])) {
+						return $va_collapse_map[$vs_table_name][$va_tmp[1]];
+					} elseif(isset($va_collapse_map[$vs_table_name]['*'])) {
 						// Class is collapsable
-						return $va_collapse_map[$vs_loc_table_name]['*'];
-					} elseif($va_tmp[2] && ($qr_res = caMakeSearchResult($vs_loc_table_name, array($va_tmp[2]))) && $qr_res->nextHit()) {
+						return $va_collapse_map[$vs_table_name]['*'];
+					} elseif($va_tmp[2] && ($qr_res = caMakeSearchResult($vs_table_name, array($va_tmp[2]))) && $qr_res->nextHit()) {
 						// Return label for id
-						if (($vs_table_name = $vs_loc_table_name) == 'ca_objects_x_storage_locations') {
-							$vs_table_name = 'ca_storage_locations';
-						}
+						
 						$va_config = ca_objects::getConfigurationForCurrentLocationType($vs_table_name, $va_tmp[1]);
 						$vs_template = isset($va_config['template']) ? $va_config['template'] : "^{$vs_table_name}.preferred_labels";
 						
@@ -2840,35 +2841,37 @@
 						foreach($va_values_by_table as $vs_loc_class => $va_loc_id_by_subclass) {
 							foreach($va_loc_id_by_subclass as $vs_loc_subclass => $va_loc_ids) {
 								if(sizeof($va_tmp = array_keys($va_loc_ids))) {
-									$qr_res = caMakeSearchResult($vs_loc_table_name = $this->opo_datamodel->getTableName($vs_loc_class), $va_tmp);
-								
+									$vs_loc_table_name = $this->opo_datamodel->getTableName($vs_loc_class);
 									if (($vs_table_name = $vs_loc_table_name) == 'ca_objects_x_storage_locations') {
 										$vs_table_name = 'ca_storage_locations';
 									}
+									
+									$qr_res = caMakeSearchResult($vs_table_name, $va_tmp);
 								
-									if (isset($va_collapse_map[$vs_loc_table_name]) && isset($va_collapse_map[$vs_loc_table_name]['*']) && $va_collapse_map[$vs_loc_table_name]['*']) {
+								
+									if (isset($va_collapse_map[$vs_table_name]) && isset($va_collapse_map[$vs_table_name]['*']) && $va_collapse_map[$vs_table_name]['*']) {
 										$va_values[$vs_id = "{$vs_loc_class}"] = array(
 											'id' => $vs_id,
-											'label' => $va_collapse_map[$vs_loc_table_name]['*']
+											'label' => $va_collapse_map[$vs_table_name]['*']
 										);
 										continue;
 									}
 								
 									while($qr_res->nextHit()) {
 										$vn_id = $qr_res->getPrimaryKey();
-										$vn_type_id = $qr_res->get("{$vs_loc_table_name}.type_id");
 									
-										$va_config = ca_objects::getConfigurationForCurrentLocationType($vs_table_name, $vn_type_id);	
+										$va_config = ca_objects::getConfigurationForCurrentLocationType($vs_table_name, $vs_loc_subclass, array('facet' => isset($va_facet_info['display']) ? $va_facet_info['display'] : null));	
+										
 										$vs_template = isset($va_config['template']) ? $va_config['template'] : "^{$vs_table_name}.preferred_labels";
 								
-										if (isset($va_collapse_map[$vs_table_name]) && isset($va_collapse_map[$vs_table_name][$vn_type_id]) && $va_collapse_map[$vs_table_name][$vn_type_id]) {
-											$va_values[$vs_id = "{$vs_loc_class}:{$vn_type_id}"] = array(
+										if (isset($va_collapse_map[$vs_table_name]) && isset($va_collapse_map[$vs_table_name][$vs_loc_subclass]) && $va_collapse_map[$vs_table_name][$vs_loc_subclass]) {
+											$va_values[$vs_id = "{$vs_loc_class}:{$vs_loc_subclass}"] = array(
 												'id' => $vs_id,
-												'label' => $va_collapse_map[$vs_table_name][$vn_type_id]
+												'label' => $va_collapse_map[$vs_table_name][$vs_loc_subclass]
 											);
 											continue;
 										}
-										$va_values[$vs_id = "{$vs_loc_class}:{$vn_type_id}:{$vn_id}"] = array(
+										$va_values[$vs_id = "{$vs_loc_class}:{$vs_loc_subclass}:{$vn_id}"] = array(
 											'id' => $vs_id,
 											'label' => $qr_res->getWithTemplate($vs_template)
 										);
@@ -2880,10 +2883,9 @@
 						if (!is_null($vs_single_value) && !$vb_single_value_is_present) {
 							return array();
 						}
-						return $va_values;
+						return caSortArrayByKeyInValue($va_values, array('label'));
 					}
 					
-				
 					return array();
 					break;
 				# -----------------------------------------------------
