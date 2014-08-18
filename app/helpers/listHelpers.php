@@ -124,7 +124,7 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		if(isset($g_list_item_idno_cache[$pn_item_id])) { return $g_list_item_idno_cache[$pn_item_id]; }
 		$t_item = new ca_list_items();
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_item->setTransaction($o_trans); }
-		$t_item-load($pn_item_id);
+		$t_item->load($pn_item_id);
 		
 		return $g_list_item_idno_cache[$pn_item_id] = $t_item->get('idno');
 	}
