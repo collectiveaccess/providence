@@ -112,7 +112,7 @@
 					$vs_stacktrace .= " [{$va_source['file']}:{$va_source['line']}]";
 				}
 				
-				if (defined('__CA_ENABLE_DEBUG_OUTPUT__')) {
+				if (defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) {
 					$o_notification = new NotificationManager($o_request);
 					$o_notification->addNotification("[{$pn_num}] {$ps_message} ({$ps_context}".($ps_source ? "; {$ps_source}" : '').$vs_stacktrace);
 				}
