@@ -2035,7 +2035,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				}
 				
 				$t_subject->insert();
-				if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not insert new record"), array('dontOutputLevel' => true, 'dontPrint' => true))) {
+				if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not insert new record for %1: ", $t_subject->getProperty('NAME_SINGULAR')), array('dontOutputLevel' => true, 'dontPrint' => true))) {
 					ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 					if ($vs_import_error_policy == 'stop') {
 						$o_log->logAlert(_t('Import stopped due to import error policy'));
