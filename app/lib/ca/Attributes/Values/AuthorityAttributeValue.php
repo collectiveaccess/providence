@@ -108,6 +108,13 @@
  		 *
  		 */
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
+ 			if (!strlen($ps_value)) {
+ 				// record truly empty values as null for now
+ 				return array(
+					'value_longtext1' => null,
+					'value_integer1' => null
+				);
+ 			}
  			$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? true : (bool)$pa_element_info['settings']['requireValue'];
  		
  			$o_trans = caGetOption('transaction', $pa_options, null);
