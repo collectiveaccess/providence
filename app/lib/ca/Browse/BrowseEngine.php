@@ -1743,6 +1743,8 @@
 						FROM ".$t_item->tableName()."
 						{$vs_filter_join_sql}
 						{$vs_filter_where_sql}
+						ORDER BY
+							{$vs_pk}
 					");
 					$va_results = $qr_res->getAllFieldValues($vs_pk);
 					
