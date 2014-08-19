@@ -206,7 +206,6 @@
 			
  			$this->view->setVar('criteria', $va_criteria = $this->opo_browse->getCriteriaWithLabels());
  			$this->view->setVar('available_facets', $this->opo_browse->getInfoForAvailableFacets());
- 			$this->view->setVar('available_facets_as_html_select', $this->opo_browse->getAvailableFacetListAsHTMLSelect('facet', array('id' => 'browseFacetSelect'), array('use_singular' => true, 'select_message' => (sizeof($va_criteria) > 0) ? _t('Refine Results By...') : _t('Start Browsing By...'))));
  			
  			$this->view->setVar('facets_with_content', $this->opo_browse->getInfoForFacetsWithContent());
  			$this->view->setVar('facet_info', $va_facet_info = $this->opo_browse->getInfoForFacets());

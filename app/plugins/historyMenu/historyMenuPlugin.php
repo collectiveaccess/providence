@@ -152,7 +152,7 @@
 								foreach($va_sorted_by_type_id[$vn_type_id] as $vn_id => $va_info) {
 									$va_activity_menu_list[$vs_table_name.'_'.$vn_type_id.'_'.$vn_id] = array(
 										'default' => $va_editor_url_info,
-										'displayName' => htmlspecialchars($va_labels[$vn_id], ENT_QUOTES, 'UTF-8').((trim($va_info['idno'])) ? ' ['.$va_info['idno'].']' : ''),
+										'displayName' => $va_labels[$vn_id].((trim($va_info['idno'])) ? ' ['.$va_info['idno'].']' : ''),
 										'is_enabled' => 1,
 										'requires' => array(
 											'action:'.$vs_priv_name => 'OR'
@@ -197,7 +197,7 @@
 							$va_editor_url_info = caEditorUrl($o_req, $vs_table_name, null, true);
 							$va_activity_menu_list[$vs_table_name.'_'.$vn_id] = array(
 								'default' => $va_editor_url_info,
-								'displayName' => htmlspecialchars($va_labels[$vn_id], ENT_QUOTES, 'UTF-8').((trim($va_info['idno'])) ? ' ['.$va_info['idno'].']' : ''),
+								'displayName' => $va_labels[$vn_id].((trim($va_info['idno'])) ? ' ['.$va_info['idno'].']' : ''),
 								'is_enabled' => 1,
 								'requires' => array(
 									'action:'.$vs_priv_name => 'OR'
