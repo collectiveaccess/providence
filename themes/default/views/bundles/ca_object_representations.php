@@ -53,12 +53,21 @@
 	$va_rep_type_list = $t_item->getTypeList();
 	$va_errors = array();
 	
+	
+	// Paging
+	$vn_start = 0;
+	$vn_num_per_page = 5;
+	
+	
 	$vn_primary_id = 0;
 	if (sizeof($va_reps)) {
 		$o_type_config = Configuration::load($t_item->getAppConfig()->get('annotation_type_config'));
  		$va_annotation_type_mappings = $o_type_config->getAssoc('mappings');
  		
+ 		$vn_i = 0;
 		foreach ($va_reps as $va_rep) {
+			if ($vn_i < $vn_start) { $vn_i++; continue; }
+			if (($vn_i - $vn_start) >= $vn_num_per_page) { break; }
 			$vn_num_multifiles = $va_rep['num_multifiles'];
 			if ($vs_extracted_metadata = caFormatMediaMetadata(caSanitizeArray(caUnserializeForDatabase($va_rep['media_metadata'])))) {
 				$vs_extracted_metadata = "<h3>"._t('Extracted metadata').":</h3>\n{$vs_extracted_metadata}\n";
@@ -99,6 +108,8 @@
 					$va_errors[$va_rep['representation_id']][] = array('errorDescription' => $o_error->getErrorDescription(), 'errorCode' => $o_error->getErrorNumber());
 				}
 			}
+			
+			$vn_i++;
 		}
 	}
 	
@@ -421,6 +432,7 @@
 		<div class="caItemList">
 		
 		</div>
+		<a href='#' onclick='caLoadNextBundles(); return false;'>More</a>
 <?php 
 	if (!$vb_read_only) {
 ?>
@@ -436,9 +448,23 @@
 	// order element
 	
 	TooltipManager::add('.updateIcon', _t("Update Media"));
-
 ?>		
 <script type="text/javascript">
+	var c = 5; s = c;
+	var b;
+	function caLoadNextBundles() {
+		jQuery.getJSON('<?php print caNavUrl($this->request, '*', '*', 'loadBundles', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $va_settings['placement_id'], 'bundle' => 'ca_object_representations')); ?>', { start: s, count: c }, function(data) {
+			console.log(data);
+			s += c;
+			//console.log(s, c, b);
+			
+			b.appendToInitialValues(data);
+			//jQuery.each(data, function(k, v) {
+			//	b.addToBundle(k, v);
+			//});
+		});
+	}
+	
 	function caToggleDisplayObjectRepresentationMetadata(media_metadata_id, media_metadata_button_id) {
 		var m = jQuery('#' + media_metadata_id).is(':hidden');
 		jQuery('#' + media_metadata_id).slideToggle(300);
@@ -480,8 +506,9 @@
 	
 	var caAnnoEditor<?php print $vs_id_prefix; ?>;
 	var caImageCenterEditor<?php print $vs_id_prefix; ?>;
+	
 	jQuery(document).ready(function() {
-		caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
+		b=caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 			templateValues: ['status', 'access', 'access_display', 'is_primary', 'is_primary_display', 'media', 'locale_id', 'icon', 'type', 'dimensions', 'filename', 'num_multifiles', 'metadata', 'rep_type_id', 'type_id', 'typename', 'fetched', 'label', 'rep_label', 'id', 'fetched_from','mimetype', 'center_x', 'center_y'],
 			initialValues: <?php print json_encode($va_inital_values); ?>,
