@@ -1484,6 +1484,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				);
 				return $vs_buf;
 				break;
+			case 'text':
+				return caHTMLTextInput($ps_name, $pa_attributes, $pa_options);
+				break;
 			case 'options':
 				return $va_options;
 				break;
