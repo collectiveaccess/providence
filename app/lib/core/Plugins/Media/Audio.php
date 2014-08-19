@@ -771,7 +771,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 					</div>	
 					<script type="text/javascript">
 						jQuery(document).ready(function() {
-							jQuery('#<?php print $vs_id; ?>').mediaelementplayer({showTimecodeFrameCount: true, framesPerSecond: 100, audioWidth: <?php print (int)$vn_width; ?>, audioHeight: <?php print (int)$vn_height; ?>  });
+							jQuery('#<?php print $vs_id; ?>').mediaelementplayer({showTimecodeFrameCount: true, framesPerSecond: 100, audioWidth: '<?php print $vn_width; ?>', audioHeight: '<?php print $vn_height; ?>'  });
 						});
 					</script>
 <?php
