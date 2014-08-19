@@ -195,7 +195,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		),
 		"RELATED_TABLES" => array(
-			"ca_data_importer_items", "ca_data_importer_labels"
+		
 		)
 	);	
 	
@@ -2036,6 +2036,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				
 				$t_subject->insert();
 				if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not insert new record for %1: ", $t_subject->getProperty('NAME_SINGULAR')), array('dontOutputLevel' => true, 'dontPrint' => true))) {
+					
 					ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 					if ($vs_import_error_policy == 'stop') {
 						$o_log->logAlert(_t('Import stopped due to import error policy'));
@@ -2193,6 +2194,19 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										if ($t_subject->hasField($vs_element)) {
 											$t_subject->set($vs_element, $va_element_content[$vs_element], array('assumeIdnoStubForLotID' => true));
 											$t_subject->update();
+											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add intrinsic %2 to %3:", $vs_idno, $vs_elenent, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+												ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
+												if ($vs_item_error_policy == 'stop') {
+													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
+													if($vb_use_ncurses) { ncurses_end(); }
+												
+													$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
+												
+													if ($o_trans) { $o_trans->rollback(); }
+													return false;
+												}
+												continue(5);
+											}
 											break;
 										}
 										

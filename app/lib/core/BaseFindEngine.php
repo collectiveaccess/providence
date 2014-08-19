@@ -196,7 +196,7 @@
 								INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = attr.row_id
 								WHERE
 									(attr_vals.element_id = ?) AND (attr.table_num = ?) AND (attr_vals.{$vs_sort_field} IS NOT NULL)
-								ORDER BY attr_vals.{$vs_sort_field} {$ps_direction}
+								ORDER BY attr_vals.{$vs_sort_field} {$ps_direction}, attr.row_id
 							";
 						} else {
 							$vs_sortable_value_fld = 'attr_vals.'.$vs_sortable_value_fld;
@@ -209,7 +209,7 @@
 								INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = attr.row_id
 								WHERE
 									(attr_vals.element_id = ?) AND (attr.table_num = ?) AND (attr_vals.{$vs_sort_field} IS NOT NULL)
-								ORDER BY attr_vals.{$vs_sort_field} {$ps_direction}
+								ORDER BY attr_vals.{$vs_sort_field} {$ps_direction}, attr.row_id
 							";
 						}
 						$qr_sort = $this->opo_db->query($vs_sql, (int)$vn_element_id, (int)$vn_table_num);
@@ -297,7 +297,7 @@
 				INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = {$ps_table}.{$vs_table_pk}
 				".($vs_is_preferred_sql ? 'WHERE' : '')."
 					{$vs_is_preferred_sql}
-				ORDER BY ".join(',', $va_sort_fields)."
+				ORDER BY ".join(',', $va_sort_fields).", {$ps_table}.{$vs_table_pk}
 			";
 			
 			$qr_sort = $this->opo_db->query($vs_sql);
