@@ -1201,6 +1201,175 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  	}
 	# ------------------------------------------------------
 	/**
+	 *
+	 */
+	public function getBundleFormValues($ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options=null) {
+		global $g_ui_locale;
+		
+		// Check if user has access to this bundle
+		if ($pa_options['request']->user->getBundleAccessLevel($this->tableName(), $ps_bundle_name) == __CA_BUNDLE_ACCESS_NONE__) {
+			return;
+		}
+		
+		// Check if user has access to this type
+		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
+			$vn_type_access = $pa_options['request']->user->getTypeAccessLevel($this->tableName(), $this->getTypeID());
+			if ($vn_type_access == __CA_BUNDLE_ACCESS_NONE__) {
+				return;
+			}
+			if ($vn_type_access == __CA_BUNDLE_ACCESS_READONLY__) {
+				$pa_bundle_settings['readonly'] = true;
+			}
+		}
+		
+		// Check if user has access to this source
+		if ((bool)$this->getAppConfig()->get('perform_source_access_checking')) {
+			$vn_source_access = $pa_options['request']->user->getSourceAccessLevel($this->tableName(), $this->getSourceID());
+			if ($vn_source_access == __CA_BUNDLE_ACCESS_NONE__) {
+				return;
+			}
+			if ($vn_source_access == __CA_BUNDLE_ACCESS_READONLY__) {
+				$pa_bundle_settings['readonly'] = true;
+			}
+		}
+		
+		if ((bool)$this->getAppConfig()->get('perform_item_level_access_checking') && $this->getPrimaryKey()) {
+			$vn_item_access = $this->checkACLAccessForUser($pa_options['request']->user);
+			if ($vn_item_access == __CA_ACL_NO_ACCESS__) {
+				return; 
+			}
+			if ($vn_item_access == __CA_ACL_READONLY_ACCESS__) {
+				$pa_bundle_settings['readonly'] = true;
+			}
+		}
+		
+		
+		
+		$va_info = $this->getBundleInfo($ps_bundle_name);
+		if (!($vs_type = $va_info['type'])) { return null; }
+		
+		
+		if (isset($pa_options['config']) && is_object($pa_options['config'])) {
+			$o_config = $pa_options['config'];
+		} else {
+			$o_config = $this->getAppConfig();
+		}
+		
+		
+		// start and count
+		$pn_start = caGetOption('start', $pa_options, 0);
+		$pn_count = caGetOption('count', $pa_options, null);
+		
+		$vs_element = '';
+		switch($vs_type) {
+			# -------------------------------------------------
+			case 'preferred_label':
+			case 'nonpreferred_label':
+				
+				break;
+			# -------------------------------------------------
+			case 'intrinsic':
+				
+				break;
+			# -------------------------------------------------
+			case 'attribute':
+				
+				break;
+			# -------------------------------------------------
+			case 'related_table':
+				switch($ps_bundle_name) {
+					# -------------------------------
+					case 'ca_object_representations':
+						$va_reps = $this->getRepresentations(array('thumbnail', 'original'));
+						$t_item = new ca_object_representations();
+						$va_rep_type_list = $t_item->getTypeList();
+						$va_errors = array();
+
+
+						// Paging
+
+
+						$vn_primary_id = 0;
+						if (sizeof($va_reps)) {
+							$o_type_config = Configuration::load($t_item->getAppConfig()->get('annotation_type_config'));
+							$va_annotation_type_mappings = $o_type_config->getAssoc('mappings');
+	
+							$vn_i = 0;
+							foreach ($va_reps as $va_rep) {
+								if ($vn_i < $pn_start) { $vn_i++; continue; }
+								if (!is_null($pn_count) && (($vn_i - $pn_start) >= $pn_count)) { break; }
+								$vn_num_multifiles = $va_rep['num_multifiles'];
+								if ($vs_extracted_metadata = caFormatMediaMetadata(caSanitizeArray(caUnserializeForDatabase($va_rep['media_metadata'])))) {
+									$vs_extracted_metadata = "<h3>"._t('Extracted metadata').":</h3>\n{$vs_extracted_metadata}\n";
+								}
+								$vs_md5 = isset($va_rep['info']['original']['MD5']) ? "<h3>"._t('MD5 signature').':</h3>'.$va_rep['info']['original']['MD5'] : '';
+
+								if ($va_rep['is_primary']) {
+									$vn_primary_id = $va_rep['representation_id'];
+								}
+								$va_inital_values[$va_rep['representation_id']] = array(
+									'status' => $va_rep['status'], 
+									'status_display' => $t_item->getChoiceListValue('status', $va_rep['status']), 
+									'access' => $va_rep['access'],
+									'access_display' => $t_item->getChoiceListValue('access', $va_rep['access']), 
+									'rep_type_id' => $va_rep['type_id'],
+									'rep_type' => $t_item->getTypeName($va_rep['type_id']), 
+									'rep_label' => $va_rep['label'],
+									'is_primary' => (int)$va_rep['is_primary'],
+									'is_primary_display' => ($va_rep['is_primary'] == 1) ? _t('PRIMARY') : '', 
+									'locale_id' => $va_rep['locale_id'], 
+									'icon' => $va_rep['tags']['thumbnail'], 
+									'mimetype' => $va_rep['info']['original']['PROPERTIES']['mimetype'], 
+									'annotation_type' => isset($va_annotation_type_mappings[$va_rep['info']['original']['PROPERTIES']['mimetype']]) ? $va_annotation_type_mappings[$va_rep['info']['original']['PROPERTIES']['mimetype']] : null,
+									'type' => $va_rep['info']['original']['PROPERTIES']['typename'], 
+									'dimensions' => $va_rep['dimensions']['original'], 
+									'filename' => $va_rep['info']['original_filename'] ? $va_rep['info']['original_filename'] : _t('Unknown'),
+									'num_multifiles' => ($vn_num_multifiles ? (($vn_num_multifiles == 1) ? _t('+ 1 additional preview') : _t('+ %1 additional previews', $vn_num_multifiles)) : ''),
+									'metadata' => $vs_extracted_metadata,
+									'md5' => $vs_md5 ? "{$vs_md5}" : "",
+									'typename' => $va_rep_type_list[$va_rep['type_id']]['name_singular'],
+									'fetched_from' => $va_rep['fetched_from'],
+									'fetched_on' => date('c', $va_rep['fetched_on']),
+									'fetched' => $va_rep['fetched_from'] ? _t("<h3>Fetched from:</h3> URL %1 on %2", '<a href="'.$va_rep['fetched_from'].'" target="_ext" title="'.$va_rep['fetched_from'].'">'.$va_rep['fetched_from'].'</a>', date('c', $va_rep['fetched_on'])) : ""
+								);
+		
+								$vn_i++;
+							}
+							return $va_inital_values;
+						}
+						break;
+					case 'ca_entities':
+					case 'ca_places':
+					case 'ca_occurrences':
+					case 'ca_objects':
+					case 'ca_collections':
+					case 'ca_list_items':
+					case 'ca_storage_locations':
+					case 'ca_loans':
+					case 'ca_movements':
+					case 'ca_tour_stops':
+						return $this->getRelatedBundleFormValues($pa_options['request'], $pa_options['formName'], $ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options);
+						break;
+					# -------------------------------
+					case 'ca_object_lots':
+						
+						break;
+					# -------------------------------
+					case 'ca_representation_annotations':
+						
+						break;
+					# -------------------------------
+					default:
+						$vs_element = "'{$ps_bundle_name}' is not a valid related-table bundle name";
+						break;
+					# -------------------------------
+				}
+				
+				break;
+			}
+	}
+	# ------------------------------------------------------
+	/**
 	 * @param string $ps_bundle_name
 	 * @param string $ps_placement_code
 	 * @param array $pa_bundle_settings
@@ -2380,6 +2549,72 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		return $o_view;
 	}
+	# ------------------------------------------------------
+ 	/**
+ 	 *
+ 	 */
+	public function getRelatedBundleFormValues($po_request, $ps_form_name, $ps_related_table, $ps_placement_code=null, $pa_bundle_settings=null, $pa_options=null) {
+		if(!is_array($pa_bundle_settings)) { $pa_bundle_settings = array(); }
+		if(!is_array($pa_options)) { $pa_options = array(); }
+		
+		$t_item = $this->getAppDatamodel()->getTableInstance($ps_related_table);
+		$vb_is_many_many = false;
+		
+		$va_path = array_keys($this->getAppDatamodel()->getPath($this->tableName(), $ps_related_table));
+		if ($this->tableName() == $ps_related_table) {
+			// self relationship
+			$t_item_rel = $this->getAppDatamodel()->getTableInstance($va_path[1]);
+			$vb_is_many_many = true;
+		} else {
+			switch(sizeof($va_path)) {
+				case 3:
+					// many-many relationship
+					$t_item_rel = $this->getAppDatamodel()->getTableInstance($va_path[1]);
+					$vb_is_many_many = true;
+					break;
+				case 2:
+					// many-one relationship
+					$t_item_rel = $this->getAppDatamodel()->getTableInstance($va_path[1]);
+					break;
+				default:
+					$t_item_rel = null;
+					break;
+			}
+		}
+		
+		$va_initial_values = array();
+		$va_get_related_opts = array_merge($pa_options, $pa_bundle_settings);
+		if (isset($pa_bundle_settings['restrictToTermsRelatedToCollection']) && $pa_bundle_settings['restrictToTermsRelatedToCollection']) {
+			$va_get_related_opts['restrict_to_relationship_types'] = $pa_bundle_settings['restrictToTermsOnCollectionUseRelationshipType'];
+		}
+		
+		if ($pa_bundle_settings['sort']) {
+			$va_get_related_opts['sort'] = $pa_bundle_settings['sort'];
+			$va_get_related_opts['sortDirection'] = $pa_bundle_settings['sortDirection'];
+		}
+		if (sizeof($va_items = $this->getRelatedItems($ps_related_table, $va_get_related_opts))) {
+			$t_rel = $this->getAppDatamodel()->getInstanceByTableName($ps_related_table, true);
+			$vs_rel_pk = $t_rel->primaryKey();
+			
+			$va_opts = array('relatedItems' => $va_items, 'stripTags' => true);
+			if ($vb_is_many_many) {
+				$va_ids = caExtractArrayValuesFromArrayOfArrays($va_items, 'relation_id');
+				$qr_rel_items = $t_item->makeSearchResult($t_item_rel->tableNum(), $va_ids);
+				$va_opts['table'] = $t_rel->tableName();
+				$va_opts['primaryKey'] = $t_rel->primaryKey();
+			} else {
+				$va_ids = caExtractArrayValuesFromArrayOfArrays($va_items, $vs_rel_pk);
+				$qr_rel_items = $t_item->makeSearchResult($t_rel->tableNum(), $va_ids);	
+			}
+				
+			$va_opts['template'] = caGetBundleDisplayTemplate($this, $ps_related_table, $pa_bundle_settings);
+			$va_opts['primaryIDs'] = array($this->tableName() => array($this->getPrimaryKey()));
+			$va_opts['request'] = $po_request;
+			return $va_initial_values = caProcessRelationshipLookupLabel($qr_rel_items, $t_item_rel, $va_opts);
+		}
+		
+		return array();
+	}
  	# ------------------------------------------------------
  	/**
  	 *
@@ -2396,7 +2631,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 		
 		$t_item = $this->getAppDatamodel()->getTableInstance($ps_related_table);
-		
 		$vb_is_many_many = false;
 		
 		$va_path = array_keys($this->getAppDatamodel()->getPath($this->tableName(), $ps_related_table));
@@ -2449,36 +2683,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$o_view->setVar('t_subject', $this);
 		
 		
-		$va_initial_values = array();
-		$va_get_related_opts = array_merge($pa_options, $pa_bundle_settings);
-		if (isset($pa_bundle_settings['restrictToTermsRelatedToCollection']) && $pa_bundle_settings['restrictToTermsRelatedToCollection']) {
-			$va_get_related_opts['restrict_to_relationship_types'] = $pa_bundle_settings['restrictToTermsOnCollectionUseRelationshipType'];
-		}
+		$va_initial_values = $this->getRelatedBundleFormValues($po_request, $ps_form_name, $ps_related_table, $ps_placement_code, $pa_bundle_settings, $pa_options);
 		
-		if ($pa_bundle_settings['sort']) {
-			$va_get_related_opts['sort'] = $pa_bundle_settings['sort'];
-			$va_get_related_opts['sortDirection'] = $pa_bundle_settings['sortDirection'];
-		}
-		if (sizeof($va_items = $this->getRelatedItems($ps_related_table, $va_get_related_opts))) {
-			$t_rel = $this->getAppDatamodel()->getInstanceByTableName($ps_related_table, true);
-			$vs_rel_pk = $t_rel->primaryKey();
-			
-			$va_opts = array('relatedItems' => $va_items, 'stripTags' => true);
-			if ($vb_is_many_many) {
-				$va_ids = caExtractArrayValuesFromArrayOfArrays($va_items, 'relation_id');
-				$qr_rel_items = $t_item->makeSearchResult($t_item_rel->tableNum(), $va_ids);
-				$va_opts['table'] = $t_rel->tableName();
-				$va_opts['primaryKey'] = $t_rel->primaryKey();
-			} else {
-				$va_ids = caExtractArrayValuesFromArrayOfArrays($va_items, $vs_rel_pk);
-				$qr_rel_items = $t_item->makeSearchResult($t_rel->tableNum(), $va_ids);	
-			}
-				
-			$va_opts['template'] = caGetBundleDisplayTemplate($this, $ps_related_table, $pa_bundle_settings);
-			$va_opts['primaryIDs'] = array($this->tableName() => array($this->getPrimaryKey()));
-			$va_opts['request'] = $po_request;
-			$va_initial_values = caProcessRelationshipLookupLabel($qr_rel_items, $t_item_rel, $va_opts);
-		}
 
 		$va_force_new_values = array();
 		if (isset($pa_options['force']) && is_array($pa_options['force'])) {
