@@ -1210,7 +1210,7 @@ class SearchEngine extends SearchBase {
 				case 'Zend_Search_Lucene_Search_Query_Phrase':
 					$va_phrase_items = $o_term->getTerms();
 					foreach($va_phrase_items as $o_term) {
-						$va_fields[] = $o_term->getTerm()->field;
+						$va_fields[] = $o_term->field;
 					}
 					break;
 				case 'Zend_Search_Lucene_Search_Query_MultiTerm':
