@@ -169,13 +169,15 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				'maxWordCacheSize' => 4096,								// maximum number of words to cache while indexing before purging
 				'cacheCleanFactor' => 0.50,									// percentage of words retained when cleaning the cache
 				
-				'omitPrivateIndexing' => false								//
+				'omitPrivateIndexing' => false,								//
+				'restrictSearchToFields' => null
 		);
 		
 		// Defines specific capabilities of this engine and plug-in
 		// The indexer and engine can use this information to optimize how they call the plug-in
 		$this->opa_capabilities = array(
-			'incremental_reindexing' => true		// can update indexing using only changed fields, rather than having to reindex the entire row (and related stuff) every time
+			'incremental_reindexing' => true,		// can update indexing using only changed fields, rather than having to reindex the entire row (and related stuff) every time
+			'restrict_to_fields' => true
 		);
 		
 		if (defined('__CA_SEARCH_IS_FOR_PUBLIC_DISPLAY__')) {
@@ -237,6 +239,13 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			die("Invalid subject table");
 		}
 		
+		$va_restrict_to_fields = array();
+		if(is_array($this->getOption('restrictSearchToFields'))) {
+			foreach($this->getOption('restrictSearchToFields') as $vs_f) {
+				$va_restrict_to_fields[] = $this->_getElementIDForAccessPoint($pn_subject_tablenum, $vs_f);
+			}
+		}
+		
 		$this->opo_db->query('SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED');
 		if (trim($ps_search_expression) === '((*))') {	
 			$vs_table_name = $t_instance->tableName();
@@ -292,11 +301,13 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				FROM {$vs_table_name}
 				{$vs_join_sql}
 				{$vs_where_sql}
+				ORDER BY
+					row_id
 			";
 			$qr_res = $this->opo_db->query($vs_sql);
 		} else {
 			$this->_createTempTable('ca_sql_search_search_final');
-			$this->_doQueriesForSqlSearch($po_rewritten_query, $pn_subject_tablenum, 'ca_sql_search_search_final', 0);
+			$this->_doQueriesForSqlSearch($po_rewritten_query, $pn_subject_tablenum, 'ca_sql_search_search_final', 0, array('restrictSearchToFields' => $va_restrict_to_fields));
 			Debug::msg("doqueries for {$ps_search_expression} took ".$t->getTime(4));
 				
 			// do we need to filter?
@@ -355,7 +366,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				{$vs_join_sql}
 				{$vs_where_sql}
 				ORDER BY
-					boost DESC
+					boost DESC, row_id
 			";
 			$qr_res = $this->opo_db->query($vs_sql);
 			
@@ -427,7 +438,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		return null;
 	}
 	# -------------------------------------------------------
-	private function _doQueriesForSqlSearch($po_rewritten_query, $pn_subject_tablenum, $ps_dest_table, $pn_level=0) {		// query is always of type Zend_Search_Lucene_Search_Query_Boolean
+	private function _doQueriesForSqlSearch($po_rewritten_query, $pn_subject_tablenum, $ps_dest_table, $pn_level=0, $pa_options=null) {		// query is always of type Zend_Search_Lucene_Search_Query_Boolean
 		$vn_i = 0;
 		$va_old_signs = $po_rewritten_query->getSigns();
 		foreach($po_rewritten_query->getSubqueries() as $o_lucene_query_element) {
@@ -1136,6 +1147,13 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					$vs_rel_type_id_sql = null;
 					if((is_array($va_access_point_info['relationship_type_ids']) && sizeof($va_access_point_info['relationship_type_ids']))) {
 						$vs_rel_type_id_sql = " AND (swi.rel_type_id IN (".join(",", $va_access_point_info['relationship_type_ids'])."))";
+					}
+					if (!$vs_fld_num && is_array($va_restrict_to_fields = caGetOption('restrictSearchToFields', $pa_options, null)) && sizeof($va_restrict_to_fields)) {
+						$va_field_restrict_sql = array();
+						foreach($va_restrict_to_fields as $va_restrict) {
+							$va_field_restrict_sql[] = "((swi.field_table_num = ".intval($va_restrict['table_num']).") AND (swi.field_num = '".$va_restrict['field_num']."'))";
+						}
+						$vs_sql_where .= " AND (".join(" OR ", $va_field_restrict_sql).")";
 					}
 					
 					if ($vn_i == 0) {
