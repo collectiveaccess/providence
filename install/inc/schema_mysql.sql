@@ -92,6 +92,7 @@ create table ca_lists
    is_hierarchical                tinyint unsigned               not null default 0,
    use_as_vocabulary              tinyint unsigned               not null default 0,
    default_sort                   tinyint unsigned               not null default 0,
+   deleted                        tinyint unsigned               not null default 0,
    primary key (list_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -6507,5 +6508,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 104 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (104, unix_timestamp());
+/* CURRENT MIGRATION: 105 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (105, unix_timestamp());
