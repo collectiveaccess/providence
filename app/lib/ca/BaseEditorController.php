@@ -1329,6 +1329,24 @@
  					break;
  			}
  		}
+ 		# ------------------------------------------------------------------
+ 		/**
+ 		 * 
+ 		 */
+ 		public function loadBundles() {
+ 			list($vn_subject_id, $t_subject) = $this->_initView();
+ 			
+ 			if (!$this->_checkAccess($t_subject)) { return false; }
+ 			
+ 			$ps_bundle_name = $this->request->getParameter("bundle", pString);
+ 			$pn_placement_id = $this->request->getParameter("placement_id", pInteger);
+ 			$pn_start = (int)$this->request->getParameter("start", pInteger);
+ 			if (!($pn_count = $this->request->getParameter("count", pInteger))) { $pn_count = null; }
+ 			
+ 			$t_placement = new ca_editor_ui_bundle_placements($pn_placement_id);
+ 			
+ 			$this->response->addContent(json_encode($t_subject->getBundleFormValues($ps_bundle_name, "{$pn_placement_id}", $t_placement->get('settings'), array('start' => $pn_start, 'count' => $pn_count, 'request' => $this->request, 'contentOnly' => true))));
+ 		}
 		# ------------------------------------------------------------------
  		# Sidebar info handler
  		# ------------------------------------------------------------------
