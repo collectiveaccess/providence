@@ -246,34 +246,37 @@ class View extends BaseObject {
 	 */
 	public function render($ps_filename, $pb_dont_do_var_replacement=false, $pa_options=null) {
 		global $g_ui_locale;
-		
-		if (!($vb_dont_try_to_force_update_cache = caGetOption('dontTryToForceUpdateCache', $pa_options, false))) {
-			$this->ops_last_render = null;
-		}
+		$this->ops_last_render = null;
 		
 		$vb_output = false;
 		$vs_buf = null;
-		foreach(array_reverse($this->opa_view_paths) as $vs_path) {
-			if (file_exists($vs_path.'/'.$ps_filename.".".$g_ui_locale)) {
-				// if a l10ed view is at same path than normal but having the locale as last extension, display it (eg. splash_intro_text_html.php.fr_FR)
-				$vs_buf = $this->_render($vs_path.'/'.$ps_filename.".".$g_ui_locale);
-				$vb_output = true;
-				break;
+		if ($ps_filename[0] == '/') { 	// absolute path
+			$vs_buf = $this->_render($ps_filename);
+			$vb_output = true;
+		} else {
+			foreach(array_reverse($this->opa_view_paths) as $vs_path) {
+				if (file_exists($vs_path.'/'.$ps_filename.".".$g_ui_locale)) {
+					// if a l10ed view is at same path than normal but having the locale as last extension, display it (eg. splash_intro_text_html.php.fr_FR)
+					$vs_buf = $this->_render($vs_path.'/'.$ps_filename.".".$g_ui_locale);
+					$vb_output = true;
+					break;
+				}
+				elseif (file_exists($vs_path.'/'.$ps_filename)) {
+					// if no l10ed version of the view, render the default one which has no locale as last extension (eg. splash_intro_text_html.php)
+					$vs_buf = $this->_render($vs_path.'/'.$ps_filename);
+					$vb_output = true;
+					break;
+				}
 			}
-			elseif (file_exists($vs_path.'/'.$ps_filename)) {
-				// if no l10ed version of the view, render the default one which has no locale as last extension (eg. splash_intro_text_html.php)
-				$vs_buf = $this->_render($vs_path.'/'.$ps_filename);
-				$vb_output = true;
-				break;
+			if (!$vb_output) {
+				$this->postError(2400, _t("View %1 was not found", $ps_filename), "View->render()");
 			}
 		}
-		if (!$vb_output) {
-			$this->postError(2400, _t("View %1 was not found", $ps_filename), "View->render()");
-		}
-		
-		if (!$pb_dont_do_var_replacement) {
+		if (!$pb_dont_do_var_replacement && $vb_output) {
 			$va_compile = $this->compile($vs_path.'/'.$ps_filename);
+			
 			$va_vars = $this->getAllVars();
+			
 			foreach($va_compile as $vs_var) {
 				$vm_val = isset($va_vars[$vs_var]) ? $va_vars[$vs_var] : '';
 				$vn_count = 0;
