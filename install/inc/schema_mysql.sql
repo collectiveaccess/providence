@@ -4661,6 +4661,7 @@ create table ca_bundle_displays (
 	table_num		tinyint unsigned not null,
 	
 	is_system		tinyint unsigned not null,
+	access          tinyint unsigned not null default 0,
 	
 	settings		text not null,
 	
@@ -6514,5 +6515,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 107 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (107, unix_timestamp());
+/* CURRENT MIGRATION: 108 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (108, unix_timestamp());
