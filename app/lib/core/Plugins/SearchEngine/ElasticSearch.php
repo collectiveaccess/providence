@@ -54,6 +54,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	private $opn_indexing_subject_row_id;
 	
 	private $opo_tep;
+
+	private $ops_elasticsearch_base_url;
+	private $ops_elasticsearch_index_name;
 	
 	static $s_doc_content_buffer = array();			// content buffer used when indexing
 	static $s_element_code_cache = array();
@@ -65,6 +68,20 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		$this->opo_tep = new TimeExpressionParser();	
 		
 		$this->opo_geocode_parser = new GeocodeAttributeValue();
+
+		// allow overriding settings from search.conf via constant (usually defined in bootstrap file)
+		// this is useful for multi-instance setups which have the same set of config files for multiple instances
+		if(defined('__CA_ELASTICSEARCH_BASE_URL__') && (strlen(__CA_ELASTICSEARCH_BASE_URL__)>0)) {
+			$this->ops_elasticsearch_base_url = __CA_ELASTICSEARCH_BASE_URL__;
+		} else {
+			$this->ops_elasticsearch_base_url = $this->opo_search_config->get('search_elasticsearch_base_url');
+		}
+
+		if(defined('__CA_ELASTICSEARCH_INDEX_NAME__') && (strlen(__CA_ELASTICSEARCH_INDEX_NAME__)>0)) {
+			$this->ops_elasticsearch_index_name = __CA_ELASTICSEARCH_INDEX_NAME__;
+		} else {
+			$this->ops_elasticsearch_index_name = $this->opo_search_config->get('search_elasticsearch_index_name');
+		}
 	}
 	# -------------------------------------------------------
 	public function init(){
@@ -74,7 +91,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		
 		$this->opa_options = array(
 			'start' => 0,
-			'limit' => 100000,												// maximum number of hits to return [default=10000],
+			'limit' => 100000,												// maximum number of hits to return [default=100000],
 			'maxIndexingBufferSize' => $vn_max_indexing_buffer_size			// maximum number of indexed content items to accumulate before writing to the index
 		);
 
@@ -89,8 +106,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	public function truncateIndex() {
 		$vo_http_client = new Zend_Http_Client();
 		$vo_http_client->setUri(
-			$this->opo_search_config->get('search_elasticsearch_base_url')."/".
-			$this->opo_search_config->get('search_elasticsearch_index_name')."/".
+			$this->ops_elasticsearch_base_url."/".
+			$this->ops_elasticsearch_index_name."/".
 			"_query?q=*"
 		);
 
@@ -308,8 +325,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		
 		$vo_http_client = new Zend_Http_Client();
 		$vo_http_client->setUri(
-			$this->opo_search_config->get('search_elasticsearch_base_url')."/".
-			$this->opo_search_config->get('search_elasticsearch_index_name')."/".
+			$this->ops_elasticsearch_base_url."/".
+			$this->ops_elasticsearch_index_name."/".
 			$this->opo_datamodel->getTableName($pn_subject_tablenum)."/". /* ElasticSearch type name (i.e. table name) */
 			"_search"
 		);
@@ -598,8 +615,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	public function removeRowIndexing($pn_subject_tablenum, $pn_subject_row_id){
 		$vo_http_client = new Zend_Http_Client();
 		$vo_http_client->setUri(
-			$this->opo_search_config->get('search_elasticsearch_base_url')."/".
-			$this->opo_search_config->get('search_elasticsearch_index_name')."/".
+			$this->ops_elasticsearch_base_url."/".
+			$this->ops_elasticsearch_index_name."/".
 			$this->opo_datamodel->getTableName($pn_subject_tablenum)."/".$pn_subject_row_id
 		);
 
@@ -656,8 +673,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			
 			$vo_http_client = new Zend_Http_Client();
 			$vo_http_client->setUri(
-				$this->opo_search_config->get('search_elasticsearch_base_url')."/".
-				$this->opo_search_config->get('search_elasticsearch_index_name')."/".
+				$this->ops_elasticsearch_base_url."/".
+				$this->ops_elasticsearch_index_name."/".
 				$va_key[0]."/".$va_key[2]
 			);
 
