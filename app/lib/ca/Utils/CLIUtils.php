@@ -608,11 +608,15 @@
 		
 					$vs_mimetype = $qr_reps->getMediaInfo('media', 'original', 'MIMETYPE');
 					if(sizeof($va_mimetypes)) {
+						$vb_mimetype_match = false;
 						foreach($va_mimetypes as $vs_mimetype_pattern) {
-							if(!preg_match("!^{$vs_mimetype_pattern}!", $vs_mimetype)) {
-								continue(2);
+							if(!preg_match("!^".preg_quote($vs_mimetype_pattern)."!", $vs_mimetype)) {
+								continue;
 							}
+							$vb_mimetype_match = true;
+							break;
 						}
+						if (!$vb_mimetype_match) { continue; }
 					}
 				
 					$t_rep->load($qr_reps->get('representation_id'));
@@ -631,7 +635,7 @@
 				print CLIProgressBar::finish();
 			}
 			
-			if (in_array('all', $va_kinds)  || in_array('ca_attributes', $va_kinds)) { 
+			if ((in_array('all', $va_kinds)  || in_array('ca_attributes', $va_kinds)) && (!$vn_start && !$vn_end)) { 
 				// get all Media elements
 				$va_elements = ca_metadata_elements::getElementsAsList(false, null, null, true, false, true, array(16)); // 16=media
 				
@@ -740,7 +744,7 @@
 			}
 			$va_kinds = array_map('strtolower', $va_kinds);
 			
-			if (in_array('all', $va_kinds) || in_array('ca_object_representations', $va_kinds)) { 
+			if ((in_array('all', $va_kinds) || in_array('ca_object_representations', $va_kinds)) && (!$vn_start && !$vn_end)) { 
 				if (!($vn_start = (int)$po_opts->getOption('start_id'))) { $vn_start = null; }
 				if (!($vn_end = (int)$po_opts->getOption('end_id'))) { $vn_end = null; }
 			
@@ -2404,7 +2408,7 @@
 				print CLIProgressBar::next();
 				$vn_word_id = $qr_res->get('word_id');
 				$vs_word = $qr_res->get('word');
-				print CLIProgressBar::next(_t('Processing %1', $vs_word));
+				print CLIProgressBar::next(1, _t('Processing %1', $vs_word));
 				
 				if (!$pb_clear) {
 					$qr_chk = $o_db->query("SELECT word_id FROM ca_sql_search_ngrams WHERE word_id = ?", array($vn_word_id));
@@ -2465,6 +2469,67 @@
 		 */
 		public static function create_ngramsHelp() {
 			return _t('Ngrams.');
+		}
+		# -------------------------------------------------------
+		/**
+		 * 
+		 */
+		public static function reload_object_current_locations($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/core/Db.php");
+			require_once(__CA_MODELS_DIR__."/ca_objects.php");	
+					
+			$o_db = new Db();
+			$t_object = new ca_objects();
+			
+			$qr_res = $o_db->query("SELECT * FROM ca_objects");
+			
+			print CLIProgressBar::start($qr_res->numRows(), _t('Starting...'));
+			
+			$vn_c = 0;
+			while($qr_res->nextRow()) {
+				$vn_object_id = $qr_res->get('object_id');
+				if($t_object->load($vn_object_id)) {
+					print CLIProgressBar::next(1, _t('Processing %1', $t_object->getWithTemplate("^ca_objects.preferred_labels.name (^ca_objects.idno)")));
+					$t_object->deriveCurrentLocationForBrowse();
+				} else {
+					print CLIProgressBar::next(1, _t('Cannot load object %1', $vn_object_id));
+				}
+				$vn_c++;
+			}
+			print CLIProgressBar::finish();
+			CLIUtils::addMessage(_t('Processed %1 objects', $vn_c));
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_object_current_locationsParamList() {
+			return array(
+			
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_object_current_locationsUtilityClass() {
+			return _t('Maintenance');
+		}
+		
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_object_current_locationsShortHelp() {
+			return _t('Reloads current location values for all object records.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_object_current_locationsHelp() {
+			return _t('CollectiveAccess supports browse on current locations of collection objects using values cached in the object records. From time to time these values may become out of date. Use this command to regenerate the cached values based upon the current state of the database.');
 		}
 		# -------------------------------------------------------
 	}

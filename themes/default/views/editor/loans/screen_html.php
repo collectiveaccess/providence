@@ -32,10 +32,11 @@
 	$vb_can_edit	 	= $t_loan->isSaveable($this->request);
 	$vb_can_delete		= $t_loan->isDeletable($this->request);
 	
-	if ($vb_can_edit) { 
+	if ($vb_can_edit) {
+		$va_cancel_parameters = ($vn_loan_id ? array('loan_id' => $vn_loan_id) : array('type_id' => $t_loan->getTypeID()));
 		print $vs_control_box = caFormControlBox(
 			caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'LoanEditorForm').' '.
-			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'editor/loans', 'LoanEditor', 'Edit/'.$this->request->getActionExtra(), array('loan_id' => $vn_loan_id)),
+			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'editor/loans', 'LoanEditor', 'Edit/'.$this->request->getActionExtra(), $va_cancel_parameters),
 			'', 
 			((intval($vn_loan_id) > 0) && $vb_can_delete) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'editor/loans', 'LoanEditor', 'Delete/'.$this->request->getActionExtra(), array('loan_id' => $vn_loan_id)) : ''
 		);

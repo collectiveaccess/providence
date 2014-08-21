@@ -44,13 +44,16 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 * Fetch item_id for item with specified idno in list
 	 *
 	 * @param string $ps_list List code or list label
+	 * @param array $pa_options Options include:
+	 *		transaction = transaction to execute queries within. [Default=null]
 	 * @return int list_id of list or null if no matching list was found
 	 */
 	$g_list_id_cache = array();
-	function caGetListID($ps_list) {
+	function caGetListID($ps_list, $pa_options=null) {
 		global $g_list_id_cache;
 		if(isset($g_list_id_cache[$ps_list])) { return $g_list_id_cache[$ps_list]; }
 		$t_list = new ca_lists();
+		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
 		
 		if (is_numeric($ps_list)) {
 			if ($t_list->load((int)$ps_list)) {
@@ -74,13 +77,16 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 *
 	 * @param string $ps_list_code List code
 	 * @param string $ps_idno idno of item to get item_id for
+	 * @param array $pa_options Options include:
+	 *		transaction = transaction to execute queries within. [Default=null]
 	 * @return int item_id of list item or null if no matching item was found
 	 */
 	$g_list_item_id_cache = array();
-	function caGetListItemID($ps_list_code, $ps_idno) {
+	function caGetListItemID($ps_list_code, $ps_idno, $pa_options=null) {
 		global $g_list_item_id_cache;
 		if(isset($g_list_item_id_cache[$ps_list_code.'/'.$ps_idno])) { return $g_list_item_id_cache[$ps_list_code.'/'.$ps_idno]; }
 		$t_list = new ca_lists();
+		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
 		
 		return $g_list_item_id_cache[$ps_list_code.'/'.$ps_idno] = $t_list->getItemIDFromList($ps_list_code, $ps_idno);
 	}
@@ -89,13 +95,17 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 * Fetch list_code for list with specified list_id
 	 *
 	 * @param int $pn_list_id List ID
+	 * @param array $pa_options Options include:
+	 *		transaction = transaction to execute queries within. [Default=null]
 	 * @return string The list code for the list, or null if the list_id is not valid
 	 */
 	$g_ca_get_list_code_cache = array();
-	function caGetListCode($pn_list_id) {
+	function caGetListCode($pn_list_id, $pa_options=null) {
 		global $g_ca_get_list_code_cache;
 		if(isset($g_ca_get_list_code_cache[$pn_list_id])) { return $g_ca_get_list_code_cache[$pn_list_id]; }
-		$t_list = new ca_lists($pn_list_id);
+		$t_list = new ca_lists();
+		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
+		$t_list->load($pn_list_id);
 		
 		return $g_ca_get_list_code_cache[$pn_list_id] = $t_list->get('list_code');
 	}
@@ -104,13 +114,18 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 * Fetch idno for item with specified item_id in list
 	 *
 	 * @param int $pn_item_id item_id to get idno for
+	 * @param array $pa_options Options include:
+	 *		transaction = transaction to execute queries within. [Default=null]
 	 * @return string idno of list item or null if no matching item was found
 	 */
 	$g_list_item_idno_cache = array();
-	function caGetListItemIdno($pn_item_id) {
+	function caGetListItemIdno($pn_item_id, $pa_options=null) {
 		global $g_list_item_idno_cache;
 		if(isset($g_list_item_idno_cache[$pn_item_id])) { return $g_list_item_idno_cache[$pn_item_id]; }
-		$t_item = new ca_list_items($pn_item_id);
+		$t_item = new ca_list_items();
+		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_item->setTransaction($o_trans); }
+		$t_item->load($pn_item_id);
+		
 		return $g_list_item_idno_cache[$pn_item_id] = $t_item->get('idno');
 	}
 	# ---------------------------------------
@@ -120,13 +135,16 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 * @param string $ps_list_code List code
 	 * @param string $ps_idno idno of item to get label for
 	 * @param bool $pb_return_plural If true, return plural version of label. Default is to return singular version of label.
+	 * @param array $pa_options Options include:
+	 *		transaction = transaction to execute queries within. [Default=null]
 	 * @return string The label of the list item, or null if no matching item was found
 	 */
 	$g_list_item_label_cache = array();
-	function caGetListItemForDisplay($ps_list_code, $ps_idno, $pb_return_plural=false) {
+	function caGetListItemForDisplay($ps_list_code, $ps_idno, $pb_return_plural=false, $pa_options=null) {
 		global $g_list_item_label_cache;
 		if(isset($g_list_item_label_cache[$ps_list_code.'/'.$ps_idno.'/'.(int)$pb_return_plural])) { return $g_list_item_label_cache[$ps_list_code.'/'.$ps_idno.'/'.(int)$pb_return_plural]; }
 		$t_list = new ca_lists();
+		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
 		
 		return $g_list_item_label_cache[$ps_list_code.'/'.$ps_idno.'/'.(int)$pb_return_plural] = $t_list->getItemFromListForDisplay($ps_list_code, $ps_idno, $pb_return_plural);
 	}
@@ -136,13 +154,16 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 *
 	 * @param string $ps_list_code List code
 	 * @param string $ps_label The label value to search for
+	 * @param array $pa_options Options include:
+	 *		transaction = transaction to execute queries within. [Default=null]
 	 * @return int item_id of list item or null if no matching item was found
 	 */
 	$g_list_item_id_for_label_cache = array();
-	function caGetListItemIDForLabel($ps_list_code, $ps_label) {
+	function caGetListItemIDForLabel($ps_list_code, $ps_label, $pa_options=null) {
 		global $g_list_item_id_for_label_cache;
 		if(isset($g_list_item_id_for_label_cache[$ps_list_code.'/'.$ps_label])) { return $g_list_item_id_for_label_cache[$ps_list_code.'/'.$ps_label]; }
 		$t_list = new ca_lists();
+		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
 		
 		return $g_list_item_id_for_label_cache[$ps_list_code.'/'.$ps_label] = $t_list->getItemIDFromListByLabel($ps_list_code, $ps_label);
 	}
@@ -151,13 +172,16 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 * Fetch item_id for default item in list
 	 *
 	 * @param string $ps_list_code List code
+	 * @param array $pa_options Options include:
+	 *		transaction = transaction to execute queries within. [Default=null]
 	 * @return int item_id of list item or null if no default item was found
 	 */
 	$g_default_list_item_id_cache = array();
-	function caGetDefaultItemID($ps_list_code) {
+	function caGetDefaultItemID($ps_list_code, $pa_options=null) {
 		global $g_default_list_item_id_cache;
 		if(isset($g_default_list_item_id_cache[$ps_list_code])) { return $g_default_list_item_id_cache[$ps_list_code]; }
 		$t_list = new ca_lists();
+		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
 		
 		return $g_default_list_item_id_cache[$ps_list_code] = $t_list->getDefaultItemID($ps_list_code);
 	}
@@ -167,14 +191,15 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 *
 	 * @param mixed $pm_list List code or list_id
 	 * @param array $pa_list_items List of item idnos and/or item_ids 
-	 * @param array $pa_options Array of options:
-	 *			None yet
+	 * @param array $pa_options Options include:
+	 *		transaction = transaction to execute queries within. [Default=null]
 	 *
 	 * @return array List of numeric item_ids
 	 */
 	function caMakeListItemIDList($pm_list, $pa_list_items, $pa_options=null) {
 		if (!($vn_list_id = caGetListID($pm_list))) return array();
 		$t_item = new ca_list_items();
+		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_item->setTransaction($o_trans); }
 		
 		$va_ids = array();
 		
@@ -195,11 +220,14 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 * Fetch the list of defined types for a table 
 	 *
 	 * @param mixed $pm_table_name_or_num 
+	 * @param array $pa_options Options include:
+	 *		transaction = transaction to execute queries within. [Default=null]
 	 * @return array Returns an array keys by type_id with type information, or null if the table is invalid.
 	 */
 	function caGetTypeList($pm_table_name_or_num, $pa_options=null) {
 		$o_dm = Datamodel::load();
 		if (($t_instance = $o_dm->getInstance($pm_table_name_or_num)) && (method_exists($t_instance, "getTypeList"))) {
+			if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_instance->setTransaction($o_trans); }
 			return $t_instance->getTypeList($pa_options);
 		}
 
@@ -210,10 +238,13 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 * Fetch the id of the root item in list
 	 *
 	 * @param string $ps_list_code List code
+	 * @param array $pa_options Options include:
+	 *		transaction = transaction to execute queries within. [Default=null]
 	 * @return int item_id of the root list item or null if no default item was found
 	 */
-	function caGetListRootID($ps_list_code) {
+	function caGetListRootID($ps_list_code, $pa_options=null) {
 		$t_list = new ca_lists();
+		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
 
 		return $t_list->getRootListItemID($ps_list_code);
 	}

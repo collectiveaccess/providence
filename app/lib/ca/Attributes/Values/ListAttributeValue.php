@@ -222,60 +222,72 @@
  		 * @param array $pa_element_info
  		 * @param array $pa_options Options are:
  		 *		alwaysTreatValueAsIdno = Always try to convert $ps_value to a list idno value, even if it is numeric
+ 		 *		matchOn = 
  		 *
  		 * @return array
  		 */
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			$vb_treat_value_as_idno = caGetOption('alwaysTreatValueAsIdno', $pa_options, false);
  			
+ 			$va_match_on = caGetOption('matchOn', $pa_options, null);
+ 			if ($va_match_on && !is_array($va_match_on)){ $va_match_on = array($va_match_on); }
+ 			if (!is_array($va_match_on) && $vb_treat_value_as_idno) { $va_match_on = array('idno', 'item_id'); }
+ 			if ((!is_array($va_match_on) || !sizeof($va_match_on)) && preg_match('![^\d]+!', $ps_value)) { $va_match_on = array('idno', 'item_id'); }
+ 			if (($vb_treat_value_as_idno) && (!in_array('idno', $va_match_on))) { array_push($va_match_on, 'idno'); }
+ 			if (!is_array($va_match_on) || !sizeof($va_match_on)) { $va_match_on = array('item_id'); }
+ 			
+ 			$o_trans = caGetOption('transaction', $pa_options, null);
+ 			
  			$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? false : (bool)$pa_element_info['settings']['requireValue'];
 
 			$ps_orig_value = $ps_value;
- 			if ($vb_treat_value_as_idno || preg_match('![^\d]+!', $ps_value)) {
- 				// try to convert idno to item_id
- 				if ($vn_id = ca_lists::getItemID($pa_element_info['list_id'], $ps_value, $pa_options)) {
- 					$ps_value = $vn_id;
- 				}
- 			}
- 			if (!$vb_require_value && !(int)$ps_value) {
+			
+ 			$vn_id = null;
+ 			
+			$t_item = new ca_list_items();
+			if($o_trans) { $t_item->setTransaction($o_trans); }
+			
+ 			foreach($va_match_on as $vs_match_on) {
+ 				switch($vs_match_on) {
+ 					case 'idno':
+						// try to convert idno to item_id
+						if ($vn_id = caGetListItemID($pa_element_info['list_id'], $ps_value, $pa_options)) {
+							break(2);
+						}
+						break;
+					case 'label':
+					case 'labels':
+						// try to convert label to item_id
+						if ($vn_id = caGetListItemIDForLabel($pa_element_info['list_id'], $ps_value, $pa_options)) {
+							break(2);
+						}
+						break;
+					case 'item_id':
+					default:
+						if ($vn_id = ca_list_items::find(array('item_id' => (int)$ps_value, 'list_id' => $pa_element_info['list_id']), array('returnAs' => 'firstId'))) {
+							break(2);
+						//} else {
+							//$this->postError(1970, _t('Value with item_id %1 does not exist in list %2', $ps_value, $pa_element_info['list_id']), 'ListAttributeValue->parseValue()');
+						}
+						break;
+				}
+			}
+ 			if (!$vb_require_value && !$vn_id) {
  				return array(
 					'value_longtext1' => null,
 					'item_id' => null
 				);
- 			} elseif ($vb_require_value && !(int)$ps_value) {
- 				$this->postError(1970, _t('Value %1 [%2] cannot be blank', $pa_element_info['displayLabel'], $pa_element_info['element_code']), 'ListAttributeValue->parseValue()');
+ 			} elseif ($vb_require_value && !$vn_id && !strlen($ps_value)) {
+ 				$this->postError(1970, _t('Value for %1 [%2] cannot be blank', $pa_element_info['displayLabel'], $pa_element_info['element_code']), 'ListAttributeValue->parseValue()');
  				return false;
- 			}
+ 			} elseif ($vb_require_value && !$vn_id) {
+ 				$this->postError(1970, _t('Value %3 for %1 [%2] is invalid', $pa_element_info['displayLabel'], $pa_element_info['element_code'], $ps_value), 'ListAttributeValue->parseValue()');
+ 				return false;
+ 			} 
  			
- 			if (strlen($ps_value) && !is_numeric($ps_value)) { 
- 				$this->postError(1970, _t('Item_id %2 is not valid for element %1',$pa_element_info["element_code"], $ps_value), 'ListAttributeValue->parseValue()');
-				return false;
-			}
- 			$t_item = new ca_list_items();
- 			
- 			if($o_trans = caGetOption('transaction', $pa_options, null)) {
- 				$t_item->setTransaction($o_trans);
- 			}
- 			
- 			if (!$t_item->load((int)$ps_value)) {
- 				if ($ps_value) {
- 					$this->postError(1970, _t('%1 is not a valid list item_id for %2 [%3]', $ps_value, $pa_element_info['displayLabel'], $pa_element_info['element_code']), 'ListAttributeValue->parseValue()');
- 				} else {
- 					if ($vb_require_value) {
- 						$this->postError(1970, _t('Value %1 [%2] cannot be blank', $pa_element_info['displayLabel'], $pa_element_info['element_code']), 'ListAttributeValue->parseValue()');
- 						return false;
- 					}
- 					return null;
- 				}
-				return false;
- 			}
- 			if ((int)$t_item->get('list_id') != (int)$pa_element_info['list_id']) {
- 				$this->postError(1970, _t('Item is not in the correct list for element %1. List id is %2 but should be %3. Value was %4', $pa_element_info["element_code"], $t_item->get('list_id'), $pa_element_info['list_id'], "{$ps_orig_value}/{$ps_value}"), 'ListAttributeValue->parseValue()');
-				return false;
- 			}
  			return array(
- 				'value_longtext1' => $ps_value,
- 				'item_id' => (int)$ps_value
+ 				'value_longtext1' => (int)$vn_id,
+ 				'item_id' => (int)$vn_id
  			);
  		}
  		# ------------------------------------------------------------------
