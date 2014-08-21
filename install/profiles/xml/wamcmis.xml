@@ -32,6 +32,162 @@
               <name_plural>Taxon Names</name_plural>
             </label>
           </labels>
+					<items>
+						<item idno="kingdom" enabled="1" default="0">
+							<labels>
+								<label locale="en_AU" preferred="1">
+									<name_singular>Kingdom</name_singular>
+									<name_plural>Kingdoms</name_plural>
+								</label>
+							</labels>
+							<items>
+								<item idno="phylum" enabled="1" default="0">
+									<labels>
+										<label locale="en_AU" preferred="1">
+											<name_singular>phylum</name_singular>
+											<name_plural>phylum</name_plural>
+										</label>
+									</labels>
+									<items>
+										<item idno="subphylum" enabled="1" default="0">
+											<labels>
+												<label locale="en_AU" preferred="1">
+													<name_singular>Subphylum</name_singular>
+													<name_plural>Subphylum</name_plural>
+												</label>
+											</labels>
+											<items>
+												<item idno="class" enabled="1" default="0">
+													<labels>
+														<label locale="en_AU" preferred="1">
+															<name_singular>Class</name_singular>
+															<name_plural>Class</name_plural>
+														</label>
+													</labels>
+													<items>
+														<item idno="subclass" enabled="1" default="0">
+															<labels>
+																<label locale="en_AU" preferred="1">
+																	<name_singular>Subclass</name_singular>
+																	<name_plural>Subclasses</name_plural>
+																</label>
+															</labels>
+															<items>
+																<item idno="cohort" enabled="1" default="0">
+																	<labels>
+																		<label locale="en_AU" preferred="1">
+																			<name_singular>Cohort</name_singular>
+																			<name_plural>Cohorts</name_plural>
+																		</label>
+																	</labels>
+																	<items>
+																		<item idno="superorder" enabled="1" default="0">
+																			<labels>
+																				<label locale="en_AU" preferred="1">
+																					<name_singular>Superorder</name_singular>
+																					<name_plural>Superorders</name_plural>
+																				</label>
+																			</labels>
+																			<items>
+																				<item idno="order" enabled="1" default="0">
+																					<labels>
+																						<label locale="en_AU" preferred="1">
+																							<name_singular>Order</name_singular>
+																							<name_plural>Orders</name_plural>
+																						</label>
+																					</labels>
+																					<items>
+																						<item idno="infraorder" enabled="1" default="0">
+																							<labels>
+																								<label locale="en_AU" preferred="1">
+																									<name_singular>Infraorder</name_singular>
+																									<name_plural>Infraorders</name_plural>
+																								</label>
+																							</labels>
+																							<items>
+																								<item idno="suborder" enabled="1" default="0">
+																									<labels>
+																										<label locale="en_AU" preferred="1">
+																											<name_singular>Suborder</name_singular>
+																											<name_plural>Suborders</name_plural>
+																										</label>
+																									</labels>
+																									<items>
+																										<item idno="superfamily" enabled="1" default="0">
+																											<labels>
+																												<label locale="en_AU" preferred="1">
+																													<name_singular>Superfamily</name_singular>
+																													<name_plural>Superfamily</name_plural>
+																												</label>
+																											</labels>
+																											<items>
+																												<item idno="family" enabled="1" default="0">
+																													<labels>
+																														<label locale="en_AU" preferred="1">
+																															<name_singular>Family</name_singular>
+																															<name_plural>Families</name_plural>
+																														</label>
+																													</labels>
+																													<items>
+																														<item idno="subfamily" enabled="1" default="0">
+																															<labels>
+																																<label locale="en_AU" preferred="1">
+																																	<name_singular>Subfamily</name_singular>
+																																	<name_plural>Subfamilies</name_plural>
+																																</label>
+																															</labels>
+																															<items>
+																																<item idno="subfamily" enabled="1" default="0">
+																																	<labels>
+																																		<label locale="en_AU" preferred="1">
+																																			<name_singular>Subfamily</name_singular>
+																																			<name_plural>Subfamilies</name_plural>
+																																		</label>
+																																	</labels>
+																																	<items>
+																																		<item idno="subfamily" enabled="1" default="0">
+																																			<labels>
+																																				<label locale="en_AU" preferred="1">
+																																					<name_singular>Subfamily</name_singular>
+																																					<name_plural>Subfamilies</name_plural>
+																																				</label>
+																																			</labels>
+																																		</item>
+																																	</items>
+																																</item>
+																															</items>
+																														</item>
+																													</items>
+																												</item>
+																											</items>
+																										</item>
+																									</items>
+																								</item>
+																							</items>
+																						</item>
+																					</items>
+																				</item>
+																			</items>
+																		</item>
+
+																	</items>
+																</item>
+															</items>
+														</item>
+
+													</items>
+												</item>
+
+											</items>
+										</item>
+
+									</items>
+								</item>
+
+							</items>
+						</item>
+
+					</items>
         </item>
         <item idno="mineral" enabled="1" default="0">
           <labels>
@@ -1505,7 +1661,7 @@
         </item>
       </items>
     </list>
-    <list code="taxonomy" hierarchical="1" system="0" vocabulary="1"><labels><label locale="en_AU"><name>Taxon</name></label></labels><items><item idno="Animalia" enabled="1" default="0"><labels><label locale="en_AU" preferred="1"><name_singular>Animal</name_singular><name_plural>Animals</name_plural></label></labels></item></items></list>
+    <list code="taxonomy" hierarchical="1" system="0" vocabulary="1"><labels><label locale="en_AU"><name>Taxon</name></label></labels><items><item idno="Animalia" enabled="1" type="scientific_name" default="0"><labels><label locale="en_AU" preferred="1"><name_singular>Animal</name_singular><name_plural>Animals</name_plural></label></labels></item></items></list>
     <list code="place_hierarchies" hierarchical="1" system="0" vocabulary="0">
       <labels>
         <label locale="en_AU">
