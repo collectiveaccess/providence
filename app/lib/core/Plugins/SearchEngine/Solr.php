@@ -52,6 +52,9 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 	private $opn_indexing_subject_tablenum;
 	private $ops_indexing_subject_tablename;
 	private $opn_indexing_subject_row_id;
+
+	private $ops_search_solr_url;
+	private $ops_search_solr_home_dir;
 	
 	static $s_doc_content_buffer = array();			// content buffer used when indexing
 	static $s_element_code_cache = array();
@@ -65,6 +68,20 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		$this->opo_tep = new TimeExpressionParser();	
 		
 		$this->opo_geocode_parser = new GeocodeAttributeValue();
+
+		// allow overriding settings from search.conf via constant (usually defined in bootstrap file)
+		// this is useful for multi-instance setups which have the same set of config files for multiple instances
+		if(defined('__CA_SOLR_URL__') && (strlen(__CA_SOLR_URL__)>0)) {
+			$this->ops_search_solr_url = __CA_SOLR_URL__;
+		} else {
+			$this->ops_search_solr_url = $this->opo_search_config->get('search_solr_url');
+		}
+
+		if(defined('__CA_SOLR_HOME_DIR__') && (strlen(__CA_SOLR_HOME_DIR__)>0)) {
+			$this->ops_search_solr_home_dir = __CA_SOLR_HOME_DIR__;
+		} else {
+			$this->ops_search_solr_home_dir = $this->opo_search_config->get('search_solr_home_dir');
+		}
 	}
 	# -------------------------------------------------------
 	public function init(){
@@ -317,7 +334,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		
 		$vo_http_client = new Zend_Http_Client();
 		$vo_http_client->setUri(
-			$this->opo_search_config->get('search_solr_url')."/". /* general url */
+			$this->ops_search_solr_url."/". /* general url */
 			$this->opo_datamodel->getTableName($pn_subject_tablenum). /* core name (i.e. table name) */
 			"/select"//. /* standard request handler */
 		);
@@ -575,7 +592,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		$vs_post_xml = '<delete><id>'.$pn_subject_row_id.'</id></delete>';
 		$vo_http_client = new Zend_Http_Client();
 		$vo_http_client->setUri(
-			$this->opo_search_config->get('search_solr_url')."/". /* general url */
+			$this->ops_search_solr_url."/". /* general url */
 			$this->opo_datamodel->getTableName($pn_subject_tablenum). /* core name (i.e. table name */
 			"/update" /* updater */
 		);
@@ -677,7 +694,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 			//caDebug($vs_post_xml,$vs_core);
 
 			$vo_http_client->setUri(
-				$this->opo_search_config->get('search_solr_url')."/". /* general url */
+				$this->ops_search_solr_url."/". /* general url */
 				$vs_core. /* core name (i.e. table name) */
 				"/update" /* updater */
 			);
@@ -731,7 +748,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		$vs_post_xml = '<optimize />';
 		$vo_http_client = new Zend_Http_Client();
 		$vo_http_client->setUri(
-			$this->opo_search_config->get('search_solr_url')."/". /* general url */
+			$this->ops_search_solr_url."/". /* general url */
 			$this->opo_datamodel->getTableName($pn_tablenum). /* core name (i.e. table name */
 			"/update" /* updater */
 		);
@@ -751,7 +768,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 			/* reload all cores */
 			$vo_http_client = new Zend_Http_Client();
 			$vo_http_client->setUri(
-				$this->opo_search_config->get('search_solr_url')."/". /* general url */
+				$this->ops_search_solr_url."/". /* general url */
 				"/admin/cores" /* CoreAdminHandler */
 			);
 
@@ -774,9 +791,9 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		}
 
 		$va_searchconfig_stat = stat($this->opo_search_config->get('search_indexing_config'));
-		if(file_exists($this->opo_search_config->get('search_solr_home_dir')."/".$this->ops_indexing_subject_tablename.'/conf/schema.xml')){
+		if(file_exists($this->ops_search_solr_home_dir."/".$this->ops_indexing_subject_tablename.'/conf/schema.xml')){
 			$va_solrconfig_stat = stat(
-				$this->opo_search_config->get('search_solr_home_dir')."/".
+				$this->ops_search_solr_home_dir."/".
 				$this->ops_indexing_subject_tablename.
 				'/conf/schema.xml'
 			);
