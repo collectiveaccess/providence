@@ -6918,7 +6918,8 @@ class BaseModel extends BaseObject {
 	 * @return array id list
 	 */
 	public function getHierarchyIDs($pn_id=null, $pa_options=null) {
-		return $this->getHierarchyAsList($pn_id, array_merge($pa_options ?: array(), array('idsOnly' => true)));
+		if(!is_array($pa_options)) { $pa_options = array(); }
+		return $this->getHierarchyAsList($pn_id, array_merge($pa_options, array('idsOnly' => true)));
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
@@ -10862,7 +10863,7 @@ $pa_options["display_form_field_tips"] = true;
 			} else {
 				if (is_array($vm_value) && sizeof($vm_value)) {
 					foreach($vm_value as $vn_i => $vm_ivalue) {
-						$vm_value[$vn_i] = $t_instance->quote($vs_field, $vm_ivalue);
+						$vm_value[$vn_i] = $this->quote($vs_field, $vm_ivalue);
 					}
 				} else {
 					$vm_value = $t_instance->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
