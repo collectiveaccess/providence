@@ -2221,7 +2221,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 										return caHTMLTextInput($ps_field.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
 									case 2:
 									case 3:
-										return $t_instance->htmlFormElementForSearch($po_request, $ps_field.($vb_as_array_element ? "[]" : ""), $pa_options);
+										return $t_instance->htmlFormElementForSearch($po_request, $ps_field, $pa_options);
 										break;
 								}
 							}
