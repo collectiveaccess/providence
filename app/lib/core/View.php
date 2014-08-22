@@ -244,6 +244,17 @@ class View extends BaseObject {
 	/**
 	 *
 	 */
+	public function clearViewTagsVars($ps_filename) {
+		$va_tags = $this->getTagList($ps_filename);
+		
+		foreach($va_tags as $vs_tag) {
+			unset($this->opa_view_vars[$vs_tag]);
+		}
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function render($ps_filename, $pb_dont_do_var_replacement=false, $pa_options=null) {
 		global $g_ui_locale;
 		$this->ops_last_render = null;
@@ -317,4 +328,3 @@ class View extends BaseObject {
 	}
 	# -------------------------------------------------------
 }
-?>

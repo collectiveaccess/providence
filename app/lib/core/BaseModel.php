@@ -6918,6 +6918,7 @@ class BaseModel extends BaseObject {
 	 * @return array id list
 	 */
 	public function getHierarchyIDs($pn_id=null, $pa_options=null) {
+		if(!is_array($pa_options)) { $pa_options = array(); }
 		return $this->getHierarchyAsList($pn_id, array_merge($pa_options, array('idsOnly' => true)));
 	}
 	# --------------------------------------------------------------------------------------------
