@@ -1932,7 +1932,7 @@
 					return null; 
 				}
 			}
-			if (!($t_element = $this->_getElementInstance($pm_element_code_or_id))) { return null; }
+			if (!$pm_element_code_or_id || !($t_element = $this->_getElementInstance($pm_element_code_or_id))) { return null; }
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if (!isset($pa_options['convertCodesToDisplayText'])) { $pa_options['convertCodesToDisplayText'] = true; }
 			
