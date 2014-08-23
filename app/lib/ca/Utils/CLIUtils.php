@@ -2367,7 +2367,7 @@
 		 *
 		 */
 		public static function check_media_fixityHelp() {
-			return _t('Verifies that media files on disk are consistent with file signatures recordded in the database at time of upload.');
+			return _t('Verifies that media files on disk are consistent with file signatures recorded in the database at time of upload.');
 		}
 		# -------------------------------------------------------
 		/**
