@@ -1033,7 +1033,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										}
 									}
 								}
-								if (($vn_intrinsic_type = $t_table->getFieldInfo($vs_intrinsic_field_name = $t_table->fieldName($vn_fld_num), 'FIELD_TYPE')) == FT_BIT) {
+								if (($vs_intrinsic_field_name = $t_table->fieldName($vn_fld_num)) && (($vn_intrinsic_type = $t_table->getFieldInfo($vs_intrinsic_field_name, 'FIELD_TYPE')) == FT_BIT)) {
 									$vb_ft_bit_optimization = true;
 								} elseif($vn_intrinsic_type == FT_HISTORIC_DATERANGE) {
 									$vb_all_numbers = true;
