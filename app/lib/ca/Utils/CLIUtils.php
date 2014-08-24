@@ -1616,12 +1616,26 @@
 			$vo_search_indexing_conf = Configuration::load($vo_search_conf->get("search_indexing_config"));
 			$o_db = new Db();
 			$o_datamodel = Datamodel::load();
+
+			// allow overriding settings from search.conf via constant (usually defined in bootstrap file)
+			// this is useful for multi-instance setups which have the same set of config files for multiple instances
+			if(defined('__CA_ELASTICSEARCH_BASE_URL__') && (strlen(__CA_ELASTICSEARCH_BASE_URL__)>0)) {
+				$vs_elasticsearch_base_url = __CA_ELASTICSEARCH_BASE_URL__;
+			} else {
+				$vs_elasticsearch_base_url = $vo_search_indexing_conf->get('search_elasticsearch_base_url');
+			}
+
+			if(defined('__CA_ELASTICSEARCH_INDEX_NAME__') && (strlen(__CA_ELASTICSEARCH_INDEX_NAME__)>0)) {
+				$vs_elasticsearch_index_name = __CA_ELASTICSEARCH_INDEX_NAME__;
+			} else {
+				$vs_elasticsearch_index_name = $vo_search_indexing_conf->get('search_elasticsearch_index_name');
+			}
 	
 			// delete and create index
 			$vo_http_client = new Zend_Http_Client();
 			$vo_http_client->setUri(
-				$vo_search_conf->get('search_elasticsearch_base_url')."/".
-				$vo_search_conf->get('search_elasticsearch_index_name')
+				$vs_elasticsearch_base_url."/".
+				$vs_elasticsearch_index_name
 			);
 			try {
 				$vo_http_client->request('DELETE');
@@ -1777,8 +1791,8 @@
 				
 						$vo_http_client = new Zend_Http_Client();
 						$vo_http_client->setUri(
-							$vo_search_conf->get('search_elasticsearch_base_url')."/".
-							$vo_search_conf->get('search_elasticsearch_index_name')."/".
+							$vs_elasticsearch_base_url."/".
+							$vs_elasticsearch_index_name."/".
 							$vs_table."/". /* ElasticSearch type name (i.e. table name) */
 							"_mapping"
 						);
@@ -1791,7 +1805,7 @@
 						try {
 							$vo_http_response = $vo_http_client->request();
 							$va_response = json_decode($vo_http_response->getBody(),true);
-							if(!$va_response["ok"]){
+							if(!$va_response["ok"] && !$va_response['acknowledged']){
 								CLIUtils::addError(_t("Something went wrong at %1 with message: %2", "{$vs_table}.{$vs_field_name}", $va_response["error"]));
 								CLIUtils::addError(_t("Mapping sent to ElasticSearch was: %1", json_encode($va_mapping)));
 								return;
@@ -1820,8 +1834,8 @@
 				
 						$vo_http_client = new Zend_Http_Client();
 						$vo_http_client->setUri(
-							$vo_search_conf->get('search_elasticsearch_base_url')."/".
-							$vo_search_conf->get('search_elasticsearch_index_name')."/".
+							$vs_elasticsearch_base_url."/".
+							$vs_elasticsearch_index_name."/".
 							$vs_table."/". /* ElasticSearch type name (i.e. table name) */
 							"_mapping"
 						);
@@ -1833,7 +1847,7 @@
 						try {
 							$vo_http_response = $vo_http_client->request();
 							$va_response = json_decode($vo_http_response->getBody(),true);
-							if(!$va_response["ok"]){
+							if(!$va_response["ok"] && !$va_response['acknowledged']){
 								CLIUtils::addError(_t("Something went wrong at %1 with message: %2", "{$vs_table}/{$vs_related_table}.{$vs_related_table_field}", $va_response["error"]));
 								CLIUtils::addError(_t("Mapping sent to ElasticSearch was: %1", json_encode($va_mapping)));
 								return;
@@ -1867,8 +1881,8 @@
 		
 				$vo_http_client = new Zend_Http_Client();
 				$vo_http_client->setUri(
-					$vo_search_conf->get('search_elasticsearch_base_url')."/".
-					$vo_search_conf->get('search_elasticsearch_index_name')."/".
+					$vs_elasticsearch_base_url."/".
+					$vs_elasticsearch_index_name."/".
 					$vs_table."/". /* ElasticSearch type name (i.e. table name) */
 					"_mapping"
 				);
@@ -1878,7 +1892,7 @@
 				try {
 					$vo_http_response = $vo_http_client->request();
 					$va_response = json_decode($vo_http_response->getBody(), true);
-					if(!$va_response["ok"]){
+					if(!$va_response["ok"] && !$va_response['acknowledged']){
 						CLIUtils::addError(_t("Something went wrong at %1 with message: %2", "{$vs_table}.created/modified", $va_response["error"]));
 						CLIUtils::addError(_t("Mapping sent to ElasticSearch was: %1", json_encode($va_mapping)));
 						return;
