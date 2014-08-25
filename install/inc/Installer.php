@@ -326,7 +326,7 @@ class Installer {
 		foreach($va_schema_statements as $vs_statement) {
 			if (!trim($vs_statement)) { continue; }
 
-			if ($f_callback && preg_match('!create[ ]+table[ ]+([A-Za-z0-9_]+)!i', $vs_statement, $va_matches)) {
+			if (is_callable($f_callback) && preg_match('!create[ ]+table[ ]+([A-Za-z0-9_]+)!i', $vs_statement, $va_matches)) {
 				$vn_i++;
 				if (file_exists(__CA_MODELS_DIR__.'/'.$va_matches[1].'.php')) {
 					include_once(__CA_MODELS_DIR__.'/'.$va_matches[1].'.php');
@@ -418,7 +418,7 @@ class Installer {
 			$vb_voc = self::getAttribute($vo_list, "vocabulary");
 			$vn_def_sort = self::getAttribute($vo_list, "defaultSort");
 			
-			if ($f_callback) {
+			if (is_callable($f_callback)) {
 				$vn_i++;
 				
 				$f_callback($vs_list_code, $vn_i, $vn_num_lists);
@@ -1275,7 +1275,6 @@ class Installer {
 	# --------------------------------------------------
 	private function processSearchFormPlacements($t_form, $po_placements){
 		$va_available_bundles = $t_form->getAvailableBundles();
-		$vs_bundle = (string)$vo_placement->bundle;
 		
 		$vn_i = 0;
 		foreach($po_placements->children() as $vo_placement){

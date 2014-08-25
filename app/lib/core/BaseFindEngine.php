@@ -47,7 +47,7 @@
 		 * on an instance for which a temporary table has already been loaded the previously created table will be discarded
 		 * before the new one is created.
 		 *
-		 * @param array $pa_hits Array with *keys* set to row_id values
+		 * @param array $pa_hits Array of row_id values
 		 * @param string $ps_key Unique alphanumeric identifier for the temporary table. Should only contain letters, numbers and underscores.
 		 * @return string The name of the temporary table created
 		 */
@@ -90,14 +90,14 @@
 			if ($g_mysql_has_file_priv === true) {
 				// Benchmarking has show that using "LOAD DATA INFILE" with an on-disk tmp file performs best
 				// The downside is that it requires the MySQL global FILE priv, which often is not granted, especially in shared environments
-				file_put_contents($this->ops_tmp_file_path, join("\n", array_keys($pa_hits)));
+				file_put_contents($this->ops_tmp_file_path, join("\n", $pa_hits));
 				chmod($this->ops_tmp_file_path, 0755);
 				
 				$this->opo_db->query("LOAD DATA INFILE '{$this->ops_tmp_file_path}' INTO TABLE {$this->ops_tmp_table_name} (row_id)");
 			} else {
 				// Fallback when database login does not have FILE priv
 				$vs_sql = "INSERT IGNORE INTO {$this->ops_tmp_table_name} (row_id) VALUES ";
-				foreach(array_keys($pa_hits) as $vn_row_id) {
+				foreach($pa_hits as $vn_row_id) {
 					$vs_sql .= "(".(int)$vn_row_id."),";
 				}
 				$this->opo_db->query(substr($vs_sql, 0, strlen($vs_sql)-1));
@@ -117,6 +117,194 @@
 			$this->ops_tmp_table_name = null;
 			
 			return true;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 *
+		 */
+		public function sortHits(&$pa_hits, $ps_table, $ps_field, $ps_key, $ps_direction='asc', $pa_options=null) {
+			//$t= new Timer();
+			$vs_browse_tmp_table = $this->loadListIntoTemporaryResultTable($pa_hits, $ps_key);
+			
+			if (!in_array(strtolower($ps_direction), array('asc', 'desc'))) { $ps_direction = 'asc'; }
+			if (!is_array($pa_hits) || !sizeof($pa_hits)) { return $pa_hits; }
+				
+			$t_table = $this->opo_datamodel->getInstanceByTableName($ps_table, true);
+			$vs_table_pk = $t_table->primaryKey();
+			$vn_table_num = $t_table->tableNum();
+			
+			$va_sort_tmp = explode('/', $ps_field);
+			$ps_field = $va_sort_tmp[0];
+			$vs_rel_type = (sizeof($va_sort_tmp) > 1) ? $va_sort_tmp[1] : null;
+			
+			$va_fields = explode(';', $ps_field);
+			$va_sorted_hits = array();
+			
+			$va_joins = array();
+			$vs_locale_where = $vs_is_preferred_sql = '';
+			
+			$vs_primary_sort_field = array_shift($va_fields);
+			$va_primary_sort_field = explode('.', $vs_primary_sort_field);
+			
+			$va_additional_sort_fields = array();
+			foreach($va_fields as $vs_additional_sort_field) {
+				$va_tmp = explode('.', $vs_additional_sort_field);
+				if ($va_tmp[0] == $va_primary_sort_field[0]) {
+					$va_additional_sort_fields[] = $va_tmp;
+				}
+			}
+			
+			if ($va_primary_sort_field[0] == $ps_table) {
+				//
+				// sort field is in search table
+				//
+				if (!$t_table->hasField($va_primary_sort_field[1])) { 
+					//
+					// is it an attribute?
+					//
+					$t_element = new ca_metadata_elements();
+					$vs_sort_element_code = array_pop($va_primary_sort_field);
+					if ($t_element->load(array('element_code' => $vs_sort_element_code))) {
+						$vn_element_id = $t_element->getPrimaryKey();
+						if (!($vs_sortable_value_fld = Attribute::getSortFieldForDatatype($t_element->get('datatype')))) {
+							return $pa_hits;
+						}
+						
+						if ((int)$t_element->get('datatype') == __CA_ATTRIBUTE_VALUE_LIST__) {
+							$vs_sortable_value_fld = 'lil.name_plural';
+							
+							$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
+				
+							$vs_sql = "
+								SELECT attr.row_id, lil.locale_id, lower({$vs_sortable_value_fld}) {$vs_sort_field}
+								FROM ca_attributes attr
+								INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
+								INNER JOIN ca_list_item_labels AS lil ON lil.item_id = attr_vals.item_id
+								INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = attr.row_id
+								WHERE
+									(attr_vals.element_id = ?) AND (attr.table_num = ?) AND (lil.{$vs_sort_field} IS NOT NULL)
+								ORDER BY lil.{$vs_sort_field} {$ps_direction}
+							";
+						} elseif ((int)$t_element->get('datatype') == __CA_ATTRIBUTE_VALUE_DATERANGE__) {
+							$vs_sortable_value_fld = 'attr_vals.'.$vs_sortable_value_fld;
+							$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
+							
+							$vs_sql = "
+								SELECT attr.row_id, attr.locale_id, {$vs_sortable_value_fld}
+								FROM ca_attributes attr
+								INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
+								INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = attr.row_id
+								WHERE
+									(attr_vals.element_id = ?) AND (attr.table_num = ?) AND (attr_vals.{$vs_sort_field} IS NOT NULL)
+								ORDER BY attr_vals.{$vs_sort_field} {$ps_direction}, attr.row_id
+							";
+						} else {
+							$vs_sortable_value_fld = 'attr_vals.'.$vs_sortable_value_fld;
+							$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
+							
+							$vs_sql = "
+								SELECT attr.row_id, attr.locale_id, lower({$vs_sortable_value_fld}) {$vs_sort_field}
+								FROM ca_attributes attr
+								INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
+								INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = attr.row_id
+								WHERE
+									(attr_vals.element_id = ?) AND (attr.table_num = ?) AND (attr_vals.{$vs_sort_field} IS NOT NULL)
+								ORDER BY attr_vals.{$vs_sort_field} {$ps_direction}, attr.row_id
+							";
+						}
+						$qr_sort = $this->opo_db->query($vs_sql, (int)$vn_element_id, (int)$vn_table_num);
+						$va_sorted_hits = $qr_sort->getAllFieldValues('row_id');
+			
+						// Add on hits that aren't sorted because they don't have an attribute associated
+						$va_missing_items = array_diff($pa_hits, $va_sorted_hits);
+						$va_sorted_hits = array_merge($va_sorted_hits, $va_missing_items);
+					}
+					return $va_sorted_hits;
+				} else {	
+					$va_field_info = $t_table->getFieldInfo($va_primary_sort_field[1]);
+					if ($va_field_info['START'] && $va_field_info['END']) {
+						$vs_sortable_value_fld = $vs_primary_sort_field;
+						$va_additional_sort_fields[] = $va_field_info['END'];
+					} else {
+						$vs_sortable_value_fld = $vs_primary_sort_field;
+					}
+				}
+			} else {
+				// sort field is in related table 
+				$va_path = $this->opo_datamodel->getPath($ps_table, $va_primary_sort_field[0]);
+				
+				if (sizeof($va_path) > 2) {
+					// many-many
+					$vs_last_table = null;
+					// generate related joins
+					foreach($va_path as $vs_table => $va_info) {
+						$t_table = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
+						
+						$vs_rel_type_sql = null;
+						if($t_table->isRelationship() && $vs_rel_type) {
+							if(is_array($va_rel_types = caMakeRelationshipTypeIDList($vs_table, array($vs_rel_type))) && sizeof($va_rel_types)) {
+								$vs_rel_type_sql = " AND {$vs_table}.type_id IN (".join(",", $va_rel_types).")";
+							}
+						}
+						if ($vs_last_table) {
+							$va_rels = $this->opo_datamodel->getOneToManyRelations($vs_last_table, $vs_table);
+							if (!sizeof($va_rels)) {
+								$va_rels = $this->opo_datamodel->getOneToManyRelations($vs_table, $vs_last_table);
+							}
+							if ($vs_table == $va_rels['one_table']) {
+								$va_joins[$vs_table] = "INNER JOIN ".$va_rels['one_table']." ON ".$va_rels['one_table'].".".$va_rels['one_table_field']." = ".$va_rels['many_table'].".".$va_rels['many_table_field'].$vs_rel_type_sql;
+							} else {
+								$va_joins[$vs_table] = "INNER JOIN ".$va_rels['many_table']." ON ".$va_rels['many_table'].".".$va_rels['many_table_field']." = ".$va_rels['one_table'].".".$va_rels['one_table_field'].$vs_rel_type_sql;
+							}
+						}
+						$t_last_table = $t_table;
+						$vs_last_table = $vs_table;
+					}
+					
+					$vs_sortable_value_fld = $vs_primary_sort_field;
+				} else {
+					$va_rels = $this->opo_datamodel->getRelationships($ps_table, $va_primary_sort_field[0]);
+					if (!$va_rels) { return $pa_hits; }							// return hits unsorted if field is not valid
+					$t_rel = $this->opo_datamodel->getInstanceByTableName($va_primary_sort_field[0], true);
+					if (!$t_rel->hasField($va_primary_sort_field[1])) { return $pa_hits; }
+					$va_joins[$va_primary_sort_field[0]] = 'LEFT JOIN '.$va_primary_sort_field[0].' ON '.$ps_table.'.'.$va_rels[$ps_table][$va_primary_sort_field[0]][0][0].' = '.$va_primary_sort_field[0].'.'.$va_rels[$ps_table][$va_primary_sort_field[0]][0][1]."\n";
+					
+					// if the related supports preferred values (eg. *_labels tables) then only consider those in the sort
+					if ($t_rel->hasField('is_preferred')) {
+						$vs_is_preferred_sql = " ".$va_primary_sort_field[0].".is_preferred = 1";
+					}
+					
+					$vs_sortable_value_fld = $vs_primary_sort_field;
+				}
+			}	
+				
+			//
+			// Grab values and index for sorting later
+			//
+			//Debug::msg("sort pre query ".$t->getTime(4));
+			$va_primary_sort_field = explode('.', $vs_sortable_value_fld);
+			$vs_join_sql = join("\n", $va_joins);
+			
+			$va_sort_fields = array("{$vs_sortable_value_fld} {$ps_direction}");
+			foreach($va_additional_sort_fields as $va_additional_sort_field) {
+				$va_sort_fields[] = "{$va_additional_sort_field[0]}.{$va_additional_sort_field[1]} {$ps_direction}";
+			}
+			
+			$vs_sql = "
+				SELECT {$ps_table}.{$vs_table_pk}
+				FROM {$ps_table}
+				{$vs_join_sql}
+				INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = {$ps_table}.{$vs_table_pk}
+				".($vs_is_preferred_sql ? 'WHERE' : '')."
+					{$vs_is_preferred_sql}
+				ORDER BY ".join(',', $va_sort_fields).", {$ps_table}.{$vs_table_pk}
+			";
+			
+			$qr_sort = $this->opo_db->query($vs_sql);
+			
+			$va_sorted_hits = $qr_sort->getAllFieldValues($vs_table_pk);
+			
+			return $va_sorted_hits;
 		}
 		# ------------------------------------------------------------------
 		/**

@@ -105,6 +105,13 @@ BaseModel::$s_ca_models_definitions['ca_lists'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Use as vocabulary'), 'DESCRIPTION' => _t('Set this if the list is to be used as a controlled vocabulary for cataloguing.'),
 				'BOUNDS_VALUE' => array(0,1)
+		),
+		'deleted' => array(
+ 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
+ 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+ 				'IS_NULL' => false, 
+ 				'DEFAULT' => 0,
+ 				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if list item is deleted or not.')
 		)
  	)
 );
@@ -920,11 +927,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function getItemIDFromListByLabel($pm_list_name_or_id, $ps_label_name) {
 		if ($vn_list_id = $this->_getListID($pm_list_name_or_id)) {
-			$t_item = new ca_list_items();
-			$va_list_items = $t_item->getListItemIDsByName($vn_list_id, $ps_label_name);
-			
-			if (is_array($va_list_items) && (sizeof($va_list_items))) {
-				return array_shift($va_list_items);
+			if ($vn_id = ca_list_items::find(array('list_id' => $vn_list_id, 'preferred_labels' => array('name_plural' => $ps_label_name)), array('returnAs' => 'firstId'))) {
+				return $vn_id;
+			} elseif ($vn_id = ca_list_items::find(array('list_id' => $vn_list_id, 'preferred_labels' => array('name_singular' => $ps_label_name)), array('returnAs' => 'firstId'))) {
+				return $vn_id;
 			}
 		}
 		return null;
@@ -1483,6 +1489,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					)
 				);
 				return $vs_buf;
+				break;
+			case 'text':
+				return caHTMLTextInput($ps_name, $pa_attributes, $pa_options);
 				break;
 			case 'options':
 				return $va_options;

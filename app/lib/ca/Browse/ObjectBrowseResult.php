@@ -118,6 +118,13 @@ class ObjectBrowseResult extends BaseSearchResult {
 	}
 	# -------------------------------------
 	/**
+	 *
+	 */
+	public function getTagForPrimaryRepresentation($ps_version, $pa_options=null) {
+		return $this->getMediaTag('ca_object_representations.media', $ps_version, $pa_options);
+	}
+	# -------------------------------------
+	/**
 	 * Returns an HTML tag for a media version in a media field. 
 	 *
 	 * @param string $ps_field The field to fetch media from
@@ -137,7 +144,7 @@ class ObjectBrowseResult extends BaseSearchResult {
 				return null;
 			}
 		}
-		return parent::getMediaTag($ps_field, $ps_version, isset($pa_options['index']) ? $pa_options['index'] : 0, $pa_options);
+		return parent::getMediaTag($ps_field, $ps_version, $pa_options);
 	}
 	# -------------------------------------
 	/**

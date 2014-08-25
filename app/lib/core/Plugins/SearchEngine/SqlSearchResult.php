@@ -92,23 +92,13 @@ class WLPlugSearchEngineSqlSearchResult extends WLPlug implements IWLPlugSearchE
 	public function get($ps_field, $pa_options=null) {
 		// primary key
 		if (($ps_field === $this->ops_subject_primary_key) || ($ps_field === ($this->ops_subject_table_name.'.'.$this->ops_subject_primary_key))) {
-			return $this->opa_hits[$this->opn_current_row]['subject_row_id'];
+			return $this->opa_hits[$this->opn_current_row];
 		}
 		return false;	// false=SqlSearch can't get value; signals to SearchResult::get() that it should try to load the field if it can
 	}
 	# -------------------------------------------------------
 	public function getPrimaryKeyValues($vn_limit=null) {
-		if(!$vn_limit) {$vn_limit = null; }
-		// primary key
-		$va_ids = array();
-		
-		$vn_c = 0;
-		foreach($this->opa_hits as $vn_i => $va_row) {
-			$va_ids[] = $va_row['subject_row_id'];
-			$vn_c++;
-			if (!is_null($vn_limit) && ($vn_c >= $vn_limit)) { break; }
-		}
-		return $va_ids;
+		return ($vn_limit > 0) ? array_slice($this->opa_hits, 0, $vn_limit) : $this->opa_hits;
 	}
 	# -------------------------------------------------------
 	public function __destruct() {
@@ -117,4 +107,3 @@ class WLPlugSearchEngineSqlSearchResult extends WLPlug implements IWLPlugSearchE
 	}
 	# -------------------------------------------------------
 }
-?>
