@@ -177,8 +177,8 @@
                                                             </label>
                                                             </labels>
                                                             </item>
-                                                            </items>
-                                                            </item>
+          </items>
+        </item>
                                                             </items>
                                                             </item>
                                                             </items>
@@ -1686,7 +1686,7 @@
         </item>
       </items>
     </list>
-    <list code="taxonomy" hierarchical="1" system="0" vocabulary="1"><labels><label locale="en_AU"><name>Taxon</name></label></labels><items><item idno="Animalia" enabled="1" type="scientific_name" default="0"><labels><label locale="en_AU" preferred="1"><name_singular>Animal</name_singular><name_plural>Animals</name_plural></label></labels></item></items></list>
+    <list code="taxonomy" hierarchical="1" system="0" vocabulary="1"><labels><label locale="en_AU"><name>Taxon</name></label></labels><items><item idno="Animalia" enabled="1" type="kingdom" default="0"><labels><label locale="en_AU" preferred="1"><name_singular>Animal</name_singular><name_plural>Animals</name_plural></label></labels></item></items></list>
     <list code="place_hierarchies" hierarchical="1" system="0" vocabulary="0">
       <labels>
         <label locale="en_AU">
