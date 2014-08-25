@@ -3405,7 +3405,8 @@ $ca_relationship_lookup_parse_cache = array();
 		
 		foreach($pa_text as $vn_i => $vs_text) {
 			$vs_text = preg_replace("!([A-Za-z0-9]+)='([^']*)'!", "$1=\"$2\"", $vs_text);		// DomDcoument converts single quotes around attributes to double quotes so we do the same to the template
-			$vs_text = preg_replace("![ ]+/>!", "/>", $vs_text);								// DomDocument removes spaces before the end of self-closing tags so we do the same here to the template
+			$vs_text = preg_replace("![ ]+/>!", "/>", $vs_text);
+			$vs_text = preg_replace("![\r\n]+!", "", $vs_text);							// DomDocument removes newlines so we do the same here to the template
 			
 		
 			$o_dom->loadHTML('<?xml encoding="utf-8">'.$vs_text);		// Needs XML declaration to force it to consider the text as UTF-8. Please don't ask why. No one knows.
