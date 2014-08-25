@@ -91,19 +91,35 @@ class wamTitleGeneratorPlugin extends BaseApplicationPlugin {
 		if (isset($va_formatters[$vs_table_name])) {
 			foreach ($va_formatters[$vs_table_name] as $va_formatters_for_table) {
 				if (in_array($vo_instance->getTypeCode(), $va_formatters_for_table['types'])) {
+					$va_new_labels = array();
 					foreach ($va_formatters_for_table['templates'] as $vs_label_field => $ps_template) {
 						// Determine whether to edit an existing label or create a new label
 						$vs_new_label_value = caProcessTemplateForIDs($ps_template, $vs_table_name, array( $vn_id ));
-						if ($vo_instance->getPreferredLabelCount() > 0) {
-							$vs_existing_labels = $vo_instance->getPreferredLabels(array( $vn_locale_id ));
-							if (empty($vs_existing_labels) || $vs_new_label_value !== $vs_existing_labels[$vn_id][$vn_locale_id][0][$vs_label_field]) {
-								$vo_instance->editLabel($vo_instance->getPreferredLabelID($vn_locale_id), array( $vs_label_field => $vs_new_label_value ), $vn_locale_id, null, true);
-								$vb_modified_any = true;
-							}
+						$va_bounds = $vo_instance->getLabelTableInstance()->getFieldInfo($vs_label_field, 'BOUNDS_LENGTH');
+						if(isset($va_bounds[1]) && $va_bounds[1]){
+							$vs_new_label_value = mb_substr($vs_new_label_value, 0, $va_bounds[1]);
+						}
+						$va_new_labels[$vs_label_field] = $vs_new_label_value;
+					}
+					if ($vo_instance->getPreferredLabelCount() > 0 && $va_new_labels) {
+						$va_existing_labels = $vo_instance->getPreferredLabels(array( $vn_locale_id ));
+						$vb_edit_label = false;
+						if (empty($va_existing_labels)){
+							$vb_edit_label = true;
 						} else {
-							$vo_instance->addLabel(array( $vs_label_field => $vs_new_label_value ), $vn_locale_id, null, true);
+							foreach($va_new_labels as $vs_label_field => $vs_new_label_value){
+								if($vs_new_label_value !== $va_existing_labels[$vn_id][$vn_locale_id][0][$vs_label_field]){
+									$vb_edit_label = true;
+								}
+							}
+						}
+						if ($vb_edit_label){
+							$vo_instance->editLabel($vo_instance->getPreferredLabelID($vn_locale_id), $va_new_labels, $vn_locale_id, null, true);
 							$vb_modified_any = true;
 						}
+					} else {
+						$vo_instance->addLabel($va_new_labels, $vn_locale_id, null, true);
+						$vb_modified_any = true;
 					}
 				}
 			}
