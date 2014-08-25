@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -69,6 +69,7 @@ var caUI = caUI || {};
 			loadSize: 5,
 			partialLoadMessage: "Load next %",
 			partialLoadIndicator: null,
+			onPartialLoad: null,	// called after partial data load is completed
 			
 			placementID: null,
 			interstitialPrimaryTable: null,	/* table and id for record from which interstitial was launched */
@@ -107,7 +108,7 @@ var caUI = caUI || {};
 			}
 		}
 		
-		that.appendToInitialValues = function(initialValues, dontUpdateBundleFormState) {
+		that.appendToInitialValues = function(initialValues) {
 			jQuery.each(initialValues, function(i, v) {
 				that.initialValues[i] = v;
 				that.addToBundle(i, v, true);
@@ -116,19 +117,23 @@ var caUI = caUI || {};
 			that.updateBundleFormState();
 		}
 		
-		that.loadNextValues = function(callback) {
+		that.loadNextValues = function() {
 			if (!that.partialLoadUrl) { return false; }
 			
-			var f = callback;
 			jQuery.getJSON(that.partialLoadUrl, { start: that.loadFrom, limit: that.loadSize }, function(data) {
 				jQuery(that.container + " ." + that.itemListClassName + ' #' + that.fieldNamePrefix + '__busy').remove();
 				jQuery(that.container + " ." + that.itemListClassName + ' #' + that.fieldNamePrefix + '__next').remove();
 				that.loadFrom += that.loadSize;
 				that.appendToInitialValues(data);
 				
+				jQuery(that.container + " ." + that.itemListClassName).scrollTo('+=' + jQuery(that.container + " ." + that.itemListClassName + ' div:first').height() + 'px', 250);
+				
+				if (that.onPartialLoad) { 
+					that.onPartialLoad.call(data);
+				}
+				
 				if (that.partialLoadUrl && (that.totalValueCount > that.loadFrom)) {
 					that.addNextValuesLink();
-					f.call(this, that.container + " ." + that.itemListClassName);
 				}
 		
 				that._updateSortOrderListIDFormElement();

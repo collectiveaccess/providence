@@ -483,7 +483,12 @@
 			partialLoadUrl: '<?php print caNavUrl($this->request, '*', '*', 'loadBundles', array($t_subject->primaryKey() => $t_subject->getPrimaryKey(), 'placement_id' => $va_settings['placement_id'], 'bundle' => 'ca_object_representations')); ?>',
 			loadSize: <?php print $vn_num_per_page; ?>,
 			partialLoadMessage: '<?php print addslashes(_t('Load next %')); ?>',
-			partialLoadIndicator: '<?php print addslashes(caBusyIndicatorIcon($this->request)); ?>'
+			partialLoadIndicator: '<?php print addslashes(caBusyIndicatorIcon($this->request)); ?>',
+			onPartialLoad: function(d) {				
+				// Hide annotation editor links for non-timebased media
+				jQuery(".caAnnoEditorLaunchButton").hide();
+				jQuery(".annotationTypeClipTimeBasedVideo, .annotationTypeClipTimeBasedAudio").show();
+			}
 		
 		});
 		if (caUI.initPanel) {
