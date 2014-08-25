@@ -1301,9 +1301,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							$vn_i = 0;
 							foreach ($va_reps as $va_rep) {
 								$vn_num_multifiles = $va_rep['num_multifiles'];
-								//if ($vs_extracted_metadata = caFormatMediaMetadata(caSanitizeArray(caUnserializeForDatabase($va_rep['media_metadata'])))) {
-								//	$vs_extracted_metadata = "<h3>"._t('Extracted metadata').":</h3>\n{$vs_extracted_metadata}\n";
-								//}
+								if ($vs_extracted_metadata = caFormatMediaMetadata(caSanitizeArray(caUnserializeForDatabase($va_rep['media_metadata'])))) {
+									$vs_extracted_metadata = "<h3>"._t('Extracted metadata').":</h3>\n{$vs_extracted_metadata}\n";
+								}
 								$vs_md5 = isset($va_rep['info']['original']['MD5']) ? "<h3>"._t('MD5 signature').':</h3>'.$va_rep['info']['original']['MD5'] : '';
 
 								if ($va_rep['is_primary']) {
@@ -1327,7 +1327,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 									'dimensions' => $va_rep['dimensions']['original'], 
 									'filename' => $va_rep['info']['original_filename'] ? $va_rep['info']['original_filename'] : _t('Unknown'),
 									'num_multifiles' => ($vn_num_multifiles ? (($vn_num_multifiles == 1) ? _t('+ 1 additional preview') : _t('+ %1 additional previews', $vn_num_multifiles)) : ''),
-									//'metadata' => $vs_extracted_metadata,
+									'metadata' => $vs_extracted_metadata,
 									'md5' => $vs_md5 ? "{$vs_md5}" : "",
 									'typename' => $va_rep_type_list[$va_rep['type_id']]['name_singular'],
 									'fetched_from' => $va_rep['fetched_from'],
@@ -1337,8 +1337,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 								$vn_i++;
 							}
-							return $va_initial_values;
 						}
+						return $va_initial_values;
 						break;
 					case 'ca_entities':
 					case 'ca_places':

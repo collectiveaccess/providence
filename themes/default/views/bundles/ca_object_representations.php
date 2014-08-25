@@ -257,7 +257,7 @@
 					</div>
 				</div>
 			
-				<!--<div id="{fieldNamePrefix}media_metadata_container_{n}">	
+				<div id="{fieldNamePrefix}media_metadata_container_{n}">	
 					<div class="caObjectRepresentationMetadataButton">
 						<a href="#" id="{fieldNamePrefix}caObjectRepresentationMetadataButton_{n}" onclick="caToggleDisplayObjectRepresentationMetadata('{fieldNamePrefix}media_metadata_{n}', '{fieldNamePrefix}caObjectRepresentationMetadataButton_{n}'); return false;" class="caObjectRepresentationMetadataButton"><?php print "<img src='".$this->request->getThemeUrlPath()."/graphics/icons/downarrow.jpg' border='0' height='11px' width='11px'/>"; ?><?php print _t('Media metadata'); ?></a>
 					</div>
@@ -268,7 +268,7 @@
 							<div class='caObjectRepresentationMetadataDisplay'>{metadata}</div>
 						</div>
 					</div>
-				</div>-->
+				</div>
 	
 				<br class="clear"/>
 			</div>
