@@ -1428,7 +1428,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				$t_root_item = new ca_list_items();
 				$t_root_item->load(array('list_id' => $vn_list_id, 'parent_id' => null));
 				
-				JavascriptLoadManager::register("hierBrowser");
+				AssetLoadManager::register("hierBrowser");
 				
 				$vs_buf = "<div style='width: {$vn_width}; height: {$vn_height};'><div id='{$ps_name}_hierarchyBrowser{n}' style='width: 100%; height: 100%;' class='".(($vs_render_as == 'vert_hierbrowser') ? 'hierarchyBrowserVertical' : 'hierarchyBrowser')."'>
 					<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->

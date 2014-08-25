@@ -44,7 +44,7 @@
  		# Sidebar info handler
  		# -------------------------------------------------------
  		public function info($pa_parameters) {
- 			JavascriptLoadManager::register('panel');
+ 			AssetLoadManager::register('panel');
  			parent::info($pa_parameters);
  			
  			$vn_annotation_id = (isset($pa_parameters['annotation_id'])) ? $pa_parameters['annotation_id'] : null;

@@ -44,7 +44,7 @@ class ElementsController extends BaseEditorController {
 	}
 	# -------------------------------------------------------
 	public function Index() {
-		JavascriptLoadManager::register('tableList');
+		AssetLoadManager::register('tableList');
 	
 		$vo_dm = Datamodel::load();
 		$va_elements = ca_metadata_elements::getRootElementsAsList(null, null, true, true);
@@ -60,7 +60,7 @@ class ElementsController extends BaseEditorController {
 	}
 	# -------------------------------------------------------
 	public function Edit($pa_values=null, $pa_options=null){
-		JavascriptLoadManager::register('bundleableEditor');
+		AssetLoadManager::register('bundleableEditor');
 		
 		
 		$t_element = $this->getElementObject();

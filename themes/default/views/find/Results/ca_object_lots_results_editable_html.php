@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
-	JavascriptLoadManager::register('tableview');
+	AssetLoadManager::register('tableview');
 	
 	$t_display				= $this->getVar('t_display');
 	$va_display_list 		= $this->getVar('display_list');

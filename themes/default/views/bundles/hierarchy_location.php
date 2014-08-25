@@ -26,8 +26,8 @@
  * ----------------------------------------------------------------------
  */
  
-	JavascriptLoadManager::register('hierBrowser');
-	JavascriptLoadManager::register('tabUI');
+	AssetLoadManager::register('hierBrowser');
+	AssetLoadManager::register('tabUI');
 	
 	$t_subject 			= $this->getVar('t_subject');
 	$vs_subject_label	= $t_subject->getLabelForDisplay();

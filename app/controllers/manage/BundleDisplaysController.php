@@ -32,7 +32,7 @@
  	class BundleDisplaysController extends ActionController {
  		# -------------------------------------------------------
  		public function ListDisplays() {
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
 			
  			$t_display = new ca_bundle_displays();
  			$this->view->setVar('t_display', $t_display);

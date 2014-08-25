@@ -739,7 +739,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 				switch($pa_options["player"]) {
 					case 'small':
-						JavascriptLoadManager::register("swfobject");
+						AssetLoadManager::register("swfobject");
 						ob_start();
 						$vn_width = ($pa_options["viewer_width"] > 0) ? $pa_options["viewer_width"] : 165;
 						$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 38;
@@ -760,7 +760,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 						return "<a href='$ps_url'>".(($pa_options["text_only"]) ? $pa_options["text_only"] : "Listen to MP3")."</a>";
 						break;
 					default:
-						JavascriptLoadManager::register("mediaelement");
+						AssetLoadManager::register("mediaelement");
 						
 						$vn_width = ($pa_options["viewer_width"] > 0) ? $pa_options["viewer_width"] : 400;
 						$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;

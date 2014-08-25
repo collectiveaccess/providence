@@ -133,7 +133,7 @@
 			}
 			
 			if ($vs_url = $this->opo_media_info_coder->getMediaUrl($this->opa_media_data, 'original')) {
-				JavascriptLoadManager::register('panel');
+				AssetLoadManager::register('panel');
 				
 				$va_info =  $this->opo_media_info_coder->getMediaInfo($this->opa_media_data);
 				

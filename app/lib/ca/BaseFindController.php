@@ -61,8 +61,8 @@
 		 *
 		 */
 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
-			JavascriptLoadManager::register("timelineJS");
- 			JavascriptLoadManager::register('panel');
+			AssetLoadManager::register("timelineJS");
+ 			AssetLoadManager::register('panel');
  			
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			$this->opo_datamodel = Datamodel::load();
@@ -135,7 +135,7 @@
 							'inlineEditingListValues' => $va_display_item['inlineEditingListValues']
 						));
 						
-						JavascriptLoadManager::register('panel');
+						AssetLoadManager::register('panel');
 					}
 				}
 			}
@@ -169,7 +169,7 @@
 					);
 				}
 				if ($vs_view == 'editable') {
-					JavascriptLoadManager::register('panel');
+					AssetLoadManager::register('panel');
 				}
 			}
 			

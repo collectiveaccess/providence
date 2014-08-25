@@ -62,6 +62,14 @@ var caUI = caUI || {};
 			defaultValues: {},
 			readonly: 0,
 			
+			// ajax loading of content
+			totalValueCount: null,
+			partialLoadUrl: null,
+			loadFrom: 0,
+			loadSize: 5,
+			partialLoadMessage: "Load next %",
+			partialLoadIndicator: null,
+			
 			placementID: null,
 			interstitialPrimaryTable: null,	/* table and id for record from which interstitial was launched */
 			interstitialPrimaryID: null,
@@ -97,6 +105,48 @@ var caUI = caUI || {};
 					caUI.utils.showUnsavedChangesWarning(b);
 				}
 			}
+		}
+		
+		that.appendToInitialValues = function(initialValues, dontUpdateBundleFormState) {
+			jQuery.each(initialValues, function(i, v) {
+				that.initialValues[i] = v;
+				that.addToBundle(i, v, true);
+				return true;
+			});
+			that.updateBundleFormState();
+		}
+		
+		that.loadNextValues = function(callback) {
+			if (!that.partialLoadUrl) { return false; }
+			
+			var f = callback;
+			jQuery.getJSON(that.partialLoadUrl, { start: that.loadFrom, limit: that.loadSize }, function(data) {
+				jQuery(that.container + " ." + that.itemListClassName + ' #' + that.fieldNamePrefix + '__busy').remove();
+				jQuery(that.container + " ." + that.itemListClassName + ' #' + that.fieldNamePrefix + '__next').remove();
+				that.loadFrom += that.loadSize;
+				that.appendToInitialValues(data);
+				
+				if (that.partialLoadUrl && (that.totalValueCount > that.loadFrom)) {
+					that.addNextValuesLink();
+					f.call(this, that.container + " ." + that.itemListClassName);
+				}
+		
+				that._updateSortOrderListIDFormElement();
+			});
+		}
+		
+		that.addNextValuesLink = function() {
+			var end = (that.loadFrom + that.loadSize)
+			if (end > that.totalValueCount) { end = that.totalValueCount % that.loadSize; } else { end = that.loadSize; }
+			
+			var msg = that.partialLoadMessage.replace("%", end + "/" + that.totalValueCount);
+			jQuery(that.container + " ." + that.itemListClassName).append("<div class='caItemLoadNextBundles'><a href='#' id='" + that.fieldNamePrefix + "__next' class='caItemLoadNextBundles'>" + msg + "</a><span id='" + that.fieldNamePrefix + "__busy' class='caItemLoadNextBundlesLoadIndicator'>" + that.partialLoadIndicator + "</span></div>");
+			jQuery(that.container + " ." + that.itemListClassName + ' #' + that.fieldNamePrefix + '__next').on('click', function(e) {
+				jQuery(that.container + " ." + that.itemListClassName + ' #' + that.fieldNamePrefix + '__busy').show();
+				that.loadNextValues();
+				e.preventDefault();
+				return false;
+			});
 		}
 		
 		that.addToBundle = function(id, initialValues, dontUpdateBundleFormState) {
@@ -177,6 +227,10 @@ var caUI = caUI || {};
 			} else {
 				jQuery(this.container + " ." + this.itemListClassName).append(jElement);
 			}
+			
+			if (!dontUpdateBundleFormState && $.fn['scrollTo']) {	// scroll to newly added bundle
+				jQuery(this.container + " ." + this.itemListClassName).scrollTo("999999px", 250);
+			}
 
 			if (this.onInitializeItem && (initialValues && !initialValues['_handleAsNew'])) {
 				this.onInitializeItem(id, initialValues, this, isNew);
@@ -196,6 +250,9 @@ var caUI = caUI || {};
 				
 				var info = element_id.match(fieldRegex);
 				if (info && info[2] && (parseInt(info[2]) == id)) {
+					if (!this.initialValues[id]) {
+						console.log("err", this.initialValues, this.initialValues[id], id, info, info[1]);
+					}
 					if (typeof(this.initialValues[id][info[1]]) == 'boolean') {
 						this.initialValues[id][info[1]] = (this.initialValues[id][info[1]]) ? '1' : '0';
 					}
@@ -434,6 +491,8 @@ var caUI = caUI || {};
 			initalizedCount++;
 		});
 		
+		that.loadFrom = initalizedCount;
+		
 		// add 'forced' new values (typically used to pre-add new items to the bundle when, for example,
 		// in a previous action the add failed)
 		if (!that.forceNewValues) { that.forceNewValues = []; }
@@ -485,6 +544,10 @@ var caUI = caUI || {};
 		}
 		
 		that.updateBundleFormState();
+		
+		if (that.partialLoadUrl && (that.totalValueCount > that.loadFrom)) {
+			that.addNextValuesLink();
+		}
 		
 		return that;
 	};

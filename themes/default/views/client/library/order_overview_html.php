@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
  			
 	$t_order = $this->getVar('t_order');
 	$t_order->set('order_type', 'L');
