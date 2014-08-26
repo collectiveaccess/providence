@@ -274,8 +274,9 @@
 	 */
 	function caDoPrintViewTagSubstitution($po_view, $po_result, $ps_template_path, $pa_options=null) {
 	
-		$va_defined_vars = array_keys($po_view->getAllVars());						// get list defined vars (we don't want to copy over them)
 		$va_tag_list = $po_view->getTagList($ps_template_path);				// get list of tags in view
+		$po_view->clearViewTagsVars($ps_template_path);
+		$va_defined_vars = array_keys($po_view->getAllVars());				// get list defined vars (we don't want to copy over them)
 		
 		$va_barcode_files_to_delete = array();
 		//
@@ -304,4 +305,3 @@
 		return $va_barcode_files_to_delete;
 	}
 	# ---------------------------------------
-?>

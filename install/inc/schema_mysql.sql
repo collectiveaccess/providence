@@ -1289,8 +1289,8 @@ create table ca_representation_annotation_labels
    annotation_id                  int unsigned                   not null,
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
-   name                           varchar(255)                   not null,
-   name_sort                      varchar(255)                   not null,
+   name                           varchar(2048)                  not null,
+   name_sort                      varchar(2048)                  not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
    primary key (label_id),
@@ -1306,7 +1306,7 @@ create index i_annotation_id on ca_representation_annotation_labels(annotation_i
 create index i_name on ca_representation_annotation_labels(name(128));
 create unique index u_all on ca_representation_annotation_labels
 (
-   name,
+   name(128),
    locale_id,
    type_id,
    annotation_id
@@ -1553,6 +1553,9 @@ create table ca_objects
    is_deaccessioned               tinyint                        not null default 0,
    deaccession_notes              text                           not null,
    deaccession_type_id            int unsigned                   null,
+   current_loc_class              tinyint unsigned               null,
+   current_loc_subclass           int unsigned                   null,
+   current_loc_id                 int unsigned                   null,
    
    primary key (object_id),
    constraint fk_ca_objects_source_id foreign key (source_id)
@@ -1608,6 +1611,9 @@ create index i_deaccession_sdatetime on ca_objects(deaccession_sdatetime);
 create index i_deaccession_edatetime on ca_objects(deaccession_edatetime);
 create index i_deaccession_type_id on ca_objects(deaccession_type_id);
 create index i_is_deaccessioned on ca_objects(is_deaccessioned);
+create index i_current_loc_class on ca_objects(current_loc_class);
+create index i_current_loc_subclass on ca_objects(current_loc_subclass);
+create index i_current_loc_id on ca_objects(current_loc_id);
 
 
 /*==========================================================================*/
@@ -4655,6 +4661,7 @@ create table ca_bundle_displays (
 	table_num		tinyint unsigned not null,
 	
 	is_system		tinyint unsigned not null,
+	access          tinyint unsigned not null default 0,
 	
 	settings		text not null,
 	
@@ -6508,5 +6515,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 105 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (105, unix_timestamp());
+/* CURRENT MIGRATION: 108 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (108, unix_timestamp());

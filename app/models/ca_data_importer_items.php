@@ -427,6 +427,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Use as single value'),
 			'description' => _t('Force repeating values to be imported as a single value concatenated with the specified delimiter.')
 		);
+		$va_settings['matchOn'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Match on'),
+			'description' => _t('List indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails.')
+		);
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
 	# ------------------------------------------------------

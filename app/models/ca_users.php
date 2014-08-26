@@ -1371,7 +1371,7 @@ class ca_users extends BaseModel {
 			}
 			return $this->getPreferenceDefault($ps_pref);
 		} else {
-			$this->postError(920, _t("%1 is not a valid user preference", $ps_pref),"User->getPreference()");
+			//$this->postError(920, _t("%1 is not a valid user preference", $ps_pref),"User->getPreference()");
 			return null;
 		}
 	}
@@ -2456,8 +2456,10 @@ class ca_users extends BaseModel {
 	 *
 	 */
 	public function close() {
-		$this->setMode(ACCESS_WRITE);
-		$this->update();
+		if($this->getPrimaryKey()) {
+			$this->setMode(ACCESS_WRITE);
+			$this->update();
+		}
 	}
 	# ----------------------------------------
 	/**

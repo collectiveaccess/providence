@@ -1527,13 +1527,18 @@ function caFileIsIncludable($ps_file) {
 	 * Truncates text to a maximum length, including an ellipsis ("...")
 	 *
 	 * @param string $ps_text Text to (possibly) truncate
-	 * @param int $pn_max_length Maximum number of characters to return; if omitted defaults to 30 charactes
+	 * @param int $pn_max_length Maximum number of characters to return; if omitted defaults to 30 characters
+	 * @param string $ps_orientation Side of string to based truncation from. "start" will truncate $pn_max_length characters from the beginning; "end" $pn_max_length characters from the end. [Default="start"]
 	 * @return string The truncated text
 	 */
-	function caTruncateStringWithEllipsis($ps_text, $pn_max_length=30) {
+	function caTruncateStringWithEllipsis($ps_text, $pn_max_length=30, $ps_side="start") {
 		if ($pn_max_length < 1) { $pn_max_length = 30; }
 		if (mb_strlen($ps_text) > $pn_max_length) {
-			$ps_text = mb_substr($ps_text, 0, ($pn_max_length - 3))."...";
+			if (strtolower($ps_side == 'end')) {
+				$ps_text = "...".mb_substr($ps_text, mb_strlen($ps_text) - $pn_max_length + 3);
+			} else {
+				$ps_text = mb_substr($ps_text, 0, ($pn_max_length - 3))."...";
+			}
 		}
 		return $ps_text;
 	}
@@ -1847,7 +1852,7 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caMakeSearchResult($ps_table, $pa_ids) {
 		$o_dm = Datamodel::load();
-		if ($t_instance = $o_dm->getInstanceByTableName($ps_table, true)) {
+		if ($t_instance = $o_dm->getInstanceByTableName('ca_objects', true)) {	// get an instance of a model inherits from BundlableLabelableBaseModelWithAttributes; doesn't matter which one
 			return $t_instance->makeSearchResult($ps_table, $pa_ids);
 		}
 		return null;

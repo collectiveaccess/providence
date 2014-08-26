@@ -445,7 +445,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 			}
 		}
-		if ($this->getPrimaryKey() && isset($pa_fields[$this->getTypeFieldName()]) && !(isset($pa_options['allowSettingOfTypeID']) && $pa_options['allowSettingOfTypeID'])) {
+		if ($this->getPrimaryKey() && !$this->isRelationship() && isset($pa_fields[$this->getTypeFieldName()]) && !(isset($pa_options['allowSettingOfTypeID']) && $pa_options['allowSettingOfTypeID'])) {
 			$this->postError(2520, _t("Type id cannot be set after insert"), "BundlableLabelableBaseModelWithAttributes->set()");
 			return false;
 		}
@@ -1961,28 +1961,44 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				if (!isset($pa_options['values']['_fulltext'])) { $pa_options['values'][$ps_field] = ''; }
 				return caHTMLTextInput("_fulltext".($vb_as_array_element ? "[]" : ""), array(
 								'value' => $pa_options['values']['_fulltext'],
-								'size' => $pa_options['width']
+								'size' => $pa_options['width'], 'class' => $pa_options['class']
 							), $pa_options);
 				break;
 			case '_fieldlist':
 				if (!isset($pa_options['width'])) { $pa_options['width'] = 30; }
 				if (!isset($pa_options['height'])) { $pa_options['height'] = 30; }
 				if (!isset($pa_options['values'])) { $pa_options['values'] = array(); }
-				if (!isset($pa_options['values']['_fulltext'])) { $pa_options['values'][$ps_field] = ''; }
 				
 				
-				$va_filter = $va_alt_names = null;
+				$va_filter = $va_alt_names = $va_relationship_restricted_searches = null;
 				if(is_array($va_fields = preg_split("![;,]+!", caGetOption('fields', $pa_options, null))) && sizeof($va_fields)) {
-					$va_filter = $va_alt_names = array();
-					$va_alt_names = array();
+					$va_filter = $va_alt_names = $va_relationship_restricted_searches = array();
+					
 					foreach($va_fields as $vs_field_raw) {
-						$va_tmp = explode(":", $vs_field_raw);
-						$va_filter[] = $va_tmp[0];
+						$va_tmp = explode(':', $vs_field_raw);
+						$va_tmp2 = explode('/', $va_tmp[0]);
+						
+						// If there's a "/" separator then this is a relationship type-restricted search (Eg. ca_entities.preferred_labels.displayname/artist:"Isamu Noguchi")
+						if (sizeof($va_tmp2) > 1) { 
+							$va_relationship_restricted_searches[$va_tmp2[0]][] = $va_tmp[0]; 
+						} else {
+							$va_filter[] = $va_tmp2[0];
+						}
+						
 						if (isset($va_tmp[1]) && $va_tmp[1]) { $va_alt_names[$va_tmp[0]] = $va_tmp[1]; }
 					}
 				}
 				
 				$va_options = caGetBundlesAvailableForSearch($this->tableName(), array('forSelect' => true, 'filter' => $va_filter));
+				
+				// We need to add any relationship-restricted searh qualifiers here since they're not free-standing bundles but
+				// rather variants on an unqualified relationship bundle
+				foreach($va_relationship_restricted_searches as $vs_without_rel_restriction => $va_with_rel_restrictions) {
+					foreach($va_with_rel_restrictions as $vs_with_rel_restriction) {
+						$vs_label = (isset($va_alt_names[$vs_with_rel_restriction])) ? $va_alt_names[$vs_with_rel_restriction] : $vs_with_rel_restriction;
+						$va_options[$vs_label] = $vs_with_rel_restriction;
+					}
+				}
 				
 				if (is_array($va_alt_names)) {
 					foreach($va_options as $vs_l => $vs_fld) {
@@ -1995,12 +2011,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				ksort($va_options);
 				
 				return caHTMLSelect("_fieldlist_field".($vb_as_array_element ? "[]" : ""), $va_options, array(
-								'value' => $pa_options['values']['_fieldlist'],
-								'size' => $pa_options['fieldListWidth']
-							), $pa_options).
+								'size' => $pa_options['fieldListWidth'], 'class' => $pa_options['class']
+							), array_merge($pa_options, array('value' => $pa_options['values']['_fieldlist_field'][0]))).
 						caHTMLTextInput("_fieldlist_value".($vb_as_array_element ? "[]" : ""), array(
-								'value' => $pa_options['values']['_fulltext'],
-								'size' => $pa_options['width']
+								'value' => $pa_options['values']['_fieldlist_value'],
+								'size' => $pa_options['width'], 'class' => $pa_options['class']
 							), $pa_options);
 				break;
 		}
@@ -2015,7 +2030,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						if (!isset($pa_options['values'])) { $pa_options['values'] = array(); }
 						if (!isset($pa_options['values'][$ps_field])) { $pa_options['values'][$ps_field] = ''; }
 					
-						return caHTMLTextInput($ps_field.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'size' => $pa_options['width'], 'id' => str_replace('.', '_', $ps_field)));
+						return caHTMLTextInput($ps_field.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
 					}
 					break;
 				# -------------------------------------
@@ -2027,17 +2042,17 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						# --------------------
 						case 'preferred_labels':		
 						case 'nonpreferred_labels':
-							return caHTMLTextInput($ps_field.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'size' => $pa_options['width'], 'id' => str_replace('.', '_', $ps_field)));
+							return caHTMLTextInput($ps_field.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
 							break;
 						# --------------------
 						default:
 							if ($va_tmp[0] != $this->tableName()) {
 								switch(sizeof($va_tmp)) {
 									case 1:
-										return caHTMLTextInput($ps_field.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'size' => $pa_options['width'], 'id' => str_replace('.', '_', $ps_field)));
+										return caHTMLTextInput($ps_field.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
 									case 2:
 									case 3:
-										return $t_instance->htmlFormElementForSearch($po_request, $ps_field.($vb_as_array_element ? "[]" : ""), $pa_options);
+										return $t_instance->htmlFormElementForSearch($po_request, $ps_field, $pa_options);
 										break;
 								}
 							}
@@ -5451,6 +5466,7 @@ $pa_options["display_form_field_tips"] = true;
 	/**
 	 * Change type of record, removing any metadata that is invalid for the new type
 	 *
+     * @param mixed $pm_type The type_id or code to change the current type to
 	 * @return bool True if change succeeded, false if error
 	 */
 	public function changeType($pm_type) {
