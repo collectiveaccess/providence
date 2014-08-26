@@ -145,14 +145,14 @@
                                                             </label>
                                                             </labels>
                                                             <items>
-                                                                    <item idno="genus" enabled="1" default="0">
-                                                                      <labels>
-                                                                        <label locale="en_AU" preferred="1">
-                                                                          <name_singular>Genus</name_singular>
-                                                                          <name_plural>Genera</name_plural>
-                                                                        </label>
-                                                                      </labels>
-                                                                      <items>
+                                                            <item idno="genus" enabled="1" default="0">
+                                                            <labels>
+                                                            <label locale="en_AU" preferred="1">
+                                                            <name_singular>Genus</name_singular>
+                                                            <name_plural>Genera</name_plural>
+                                                            </label>
+                                                            </labels>
+                                                            <items>
                                                             <item idno="subgenus" enabled="1" default="0">
                                                             <labels>
                                                             <label locale="en_AU" preferred="1">
@@ -177,8 +177,10 @@
                                                             </label>
                                                             </labels>
                                                             </item>
-          </items>
-        </item>
+                                                            </items>
+                                                            </item>
+                                                            </items>
+                                                            </item>
                                                             </items>
                                                             </item>
                                                             </items>
@@ -209,9 +211,6 @@
                 </item>
               </items>
             </item>
-          </items>
-        </item>
-
           </items>
         </item>
         <item idno="mineral" enabled="1" default="0">
@@ -1686,7 +1685,7 @@
         </item>
       </items>
     </list>
-    <list code="taxonomy" hierarchical="1" system="0" vocabulary="1"><labels><label locale="en_AU"><name>Taxon</name></label></labels><items><item idno="Animalia" enabled="1" type="kingdom" default="0"><labels><label locale="en_AU" preferred="1"><name_singular>Animal</name_singular><name_plural>Animals</name_plural></label></labels></item></items></list>
+    <list code="taxonomy" hierarchical="1" system="0" vocabulary="1"><labels><label locale="en_AU"><name>Taxon</name></label></labels><items><item idno="Animalia" enabled="1" default="0" type="kingdom"><labels><label locale="en_AU" preferred="1"><name_singular>Animal</name_singular><name_plural>Animals</name_plural></label></labels></item></items></list>
     <list code="place_hierarchies" hierarchical="1" system="0" vocabulary="0">
       <labels>
         <label locale="en_AU">
@@ -10777,7 +10776,7 @@
         </item>
       </items>
     </list>
-    <list code="eps_taxonomy" hierarchical="1" system="0" vocabulary="1"><labels><label locale="en_AU"><name>EPS Taxonomy</name></label></labels><items><item idno="eps_animalia" enabled="1" default="0"><labels><label locale="en_AU" preferred="1"><name_singular>Animal</name_singular><name_plural>Animals</name_plural></label></labels></item></items></list>
+    <list code="eps_taxonomy" hierarchical="1" system="0" vocabulary="1"><labels><label locale="en_AU"><name>EPS Taxonomy</name></label></labels><items><item idno="eps_animalia" enabled="1" default="0" type="scientific_name"><labels><label locale="en_AU" preferred="1"><name_singular>Animal</name_singular><name_plural>Animals</name_plural></label></labels></item></items></list>
     <list code="loan_status_types" hierarchical="0" system="0" vocabulary="0" defaultSort="1">
       <labels>
         <label locale="en_AU">
@@ -22016,16 +22015,15 @@ Lent to: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <restriction type="cohort"/>
         <restriction type="family"/>
         <restriction type="infraorder"/>
-				<restriction type="suborder"/>
         <restriction type="kingdom"/>
         <restriction type="order"/>
         <restriction type="phylum"/>
         <restriction type="species"/>
         <restriction type="subclass"/>
         <restriction type="subfamily"/>
-				<restriction type="genus"/>
+        <restriction type="genus"/>
         <restriction type="subgenus"/>
-        <restriction type="infraorder"/>
+        <restriction type="suborder"/>
         <restriction type="subphylum"/>
         <restriction type="subspecies"/>
         <restriction type="superfamily"/>
@@ -23086,6 +23084,9 @@ Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
             </placement>
             <placement code="ca_sets8">
               <bundle>ca_sets</bundle>
+              <settings>
+                <setting name="readonly"/>
+              </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -25208,15 +25209,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
           </labels>
           <subTypeRight>anthropology_register</subTypeRight>
         </type>
-          <type code="dcCreator" default="0">
-            <labels>
-              <label locale="en_AU">
-                <typename>created</typename>
-                <typename_reverse>created by</typename_reverse>
-              </label>
-            </labels>
-            <subTypeRight>resource</subTypeRight>
-          </type>
         <type code="individual_request_cons" default="0">
           <labels>
             <label locale="en_AU">
@@ -25256,6 +25248,15 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
           </labels>
           <subTypeLeft>org</subTypeLeft>
           <subTypeRight>conservation_analysis</subTypeRight>
+        </type>
+        <type code="dcCreator" default="0">
+          <labels>
+            <label locale="en_AU">
+              <typename>created</typename>
+              <typename_reverse>created by</typename_reverse>
+            </label>
+          </labels>
+          <subTypeRight>resource</subTypeRight>
         </type>
         <type code="entity_resource" default="0">
           <labels>
@@ -28727,8 +28728,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
             <setting name="hierarchy_order">ASC</setting>
             <setting name="hierarchy_limit">0</setting>
             <setting name="hierarchical_delimiter"> ➔ </setting>
-            <setting name="restrict_to_relationship_types"/>
-            <setting name="restrict_to_types"/>
             <setting name="show_hierarchy">0</setting>
           </settings>
         </placement>
@@ -28914,24 +28913,25 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
             <setting name="label" locale="en_AU">Determined Scientific Name</setting>
             <setting name="format"/>
             <setting name="restrict_to_relationship_types">identification</setting>
-            <setting name="restrict_to_types">228</setting>
-            <setting name="restrict_to_types">82119</setting>
-            <setting name="restrict_to_types">82120</setting>
-            <setting name="restrict_to_types">82121</setting>
-            <setting name="restrict_to_types">82122</setting>
-            <setting name="restrict_to_types">82123</setting>
-            <setting name="restrict_to_types">82124</setting>
-            <setting name="restrict_to_types">82125</setting>
-            <setting name="restrict_to_types">82126</setting>
-            <setting name="restrict_to_types">82127</setting>
-            <setting name="restrict_to_types">82128</setting>
-            <setting name="restrict_to_types">82129</setting>
-            <setting name="restrict_to_types">82130</setting>
-            <setting name="restrict_to_types">82131</setting>
-            <setting name="restrict_to_types">82132</setting>
-            <setting name="restrict_to_types">82133</setting>
-            <setting name="restrict_to_types">82134</setting>
-            <setting name="restrict_to_types">82135</setting>
+            <setting name="restrict_to_types">scientific_name</setting>
+            <setting name="restrict_to_types">kingdom</setting>
+            <setting name="restrict_to_types">phylum</setting>
+            <setting name="restrict_to_types">subphylum</setting>
+            <setting name="restrict_to_types">class</setting>
+            <setting name="restrict_to_types">subclass</setting>
+            <setting name="restrict_to_types">cohort</setting>
+            <setting name="restrict_to_types">superorder</setting>
+            <setting name="restrict_to_types">order</setting>
+            <setting name="restrict_to_types">infraorder</setting>
+            <setting name="restrict_to_types">suborder</setting>
+            <setting name="restrict_to_types">superfamily</setting>
+            <setting name="restrict_to_types">family</setting>
+            <setting name="restrict_to_types">subfamily</setting>
+            <setting name="restrict_to_types">tribe</setting>
+            <setting name="restrict_to_types">genus</setting>
+            <setting name="restrict_to_types">subgenus</setting>
+            <setting name="restrict_to_types">species</setting>
+            <setting name="restrict_to_types">subspecies</setting>
             <setting name="delimiter"/>
             <setting name="show_hierarchy">1</setting>
             <setting name="remove_first_items">2</setting>
@@ -28958,8 +28958,7 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
             <setting name="hierarchy_limit">0</setting>
             <setting name="hierarchical_delimiter"> ➔ </setting>
             <setting name="makeEditorLink">0</setting>
-            <setting name="restrict_to_relationship_types"/>
-            <setting name="restrict_to_types">107</setting>
+            <setting name="restrict_to_types">internal</setting>
             <setting name="show_hierarchy">0</setting>
           </settings>
         </placement>
@@ -28973,8 +28972,8 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
 
 
 </setting>
-            <setting name="restrict_to_relationship_types">181</setting>
-            <setting name="restrict_to_types">241</setting>
+            <setting name="restrict_to_relationship_types">object_collecting_event</setting>
+            <setting name="restrict_to_types">collectingEvent</setting>
             <setting name="delimiter"/>
             <setting name="remove_first_items">0</setting>
             <setting name="hierarchy_order">ASC</setting>
@@ -29001,8 +29000,8 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
             <setting name="hierarchy_limit">0</setting>
             <setting name="hierarchical_delimiter"> ➔ </setting>
             <setting name="makeEditorLink">0</setting>
-            <setting name="restrict_to_relationship_types">182</setting>
-            <setting name="restrict_to_types">243</setting>
+            <setting name="restrict_to_relationship_types">object_identification</setting>
+            <setting name="restrict_to_types">identification</setting>
             <setting name="show_hierarchy">0</setting>
           </settings>
         </placement>
@@ -29033,8 +29032,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
             <setting name="hierarchy_order">ASC</setting>
             <setting name="hierarchy_limit">0</setting>
             <setting name="hierarchical_delimiter"> ➔ </setting>
-            <setting name="restrict_to_relationship_types"/>
-            <setting name="restrict_to_types"/>
           </settings>
         </placement>
         <placement code="ca_objects_acquisition_type_id">
