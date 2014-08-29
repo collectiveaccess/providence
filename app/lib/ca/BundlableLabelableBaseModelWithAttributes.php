@@ -497,10 +497,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$vs_return_as_link_text =		caGetOption('returnAsLinkText', $pa_options, '');
 		$vs_return_as_link_target =		caGetOption('returnAsLinkTarget', $pa_options, '');
 		$va_return_as_link_attributes =	caGetOption('returnAsLinkAttributes', $pa_options, array(), array('castTo' => 'array'));
-		
+		$vs_return_as_link_class = 		caGetOption('returnAsLinkClass', $pa_options,'');
+
 		$vb_return_all_locales =		caGetOption('returnAllLocales', $pa_options, false, array('castTo' => 'bool'));
 		$vs_delimiter =					caGetOption('delimiter', $pa_options, '');
 		$va_restrict_to_rel_types =		caGetOption('restrictToRelationshipTypes', $pa_options, null);
+
+		$va_restrict_hierarchy_to_types = caGetOption('restrictHierarchyToTypes', $pa_options, null);
 		
 		$va_filters = 					caGetOption('filters', $pa_options, array(), array('castTo' => 'array'));
 		
