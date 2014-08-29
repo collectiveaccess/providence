@@ -173,7 +173,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		
 		),
 		"RELATED_TABLES" => array(
-			"ca_data_exporter_items", "ca_data_exporter_labels"
+			
 		)
 	);	
 	

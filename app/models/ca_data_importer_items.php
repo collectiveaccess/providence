@@ -436,6 +436,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Match on'),
 			'description' => _t('List indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails.')
 		);
+		$va_settings['truncateLongLabels'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Truncate long labels?'),
+			'description' => _t('Truncate preferred and non-preferred labels that exceed the maximum length to fit.')
+		);
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
 	# ------------------------------------------------------

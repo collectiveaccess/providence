@@ -550,8 +550,11 @@ class SearchResult extends BaseObject {
 		if ($vb_return_all_locales && !$vb_return_as_array) { $vb_return_as_array = true; }
 		
 		if(isset($pa_options['sort']) && !is_array($pa_options['sort'])) { $pa_options['sort'] = array($pa_options['sort']); }
-		$va_sort_fields = (isset($pa_options['sort']) && is_array($pa_options['sort'])) ? $pa_options['sort'] : null;
-		
+		if (is_array($va_sort_fields = (isset($pa_options['sort']) && is_array($pa_options['sort'])) ? $pa_options['sort'] : null)) {
+			foreach($va_sort_fields as $vn_i => $vs_sort_fld) {
+				if(!trim($vs_sort_fld)) { unset($va_sort_fields[$vn_i]); }
+			}
+		}
 		$vn_row_id = $this->opo_engine_result->get($this->ops_table_pk);	
 		
 		
@@ -814,9 +817,9 @@ class SearchResult extends BaseObject {
 						}
 					}
 					
-					if (is_array($va_sort_fields) && sizeof($va_sort_fields)) {
-						$va_vals = caSortArrayByKeyInValue($va_vals, $va_sort_fields);
-					}
+					//if (is_array($va_sort_fields) && sizeof($va_sort_fields)) {
+					//	$va_vals = caSortArrayByKeyInValue($va_vals, $va_sort_fields);
+					//}
 					
 					if ($vb_return_as_link) {
 						if (!$vb_return_all_locales) {
