@@ -876,6 +876,7 @@ class BaseModel extends BaseObject {
 				if (isset($pa_options["FILTER_HTML_SPECIAL_CHARS"]) && ($pa_options["FILTER_HTML_SPECIAL_CHARS"])) {
 					$vs_prop = htmlentities(html_entity_decode($vs_prop));
 				}
+				
 				//
 				// Convert foreign keys and choice list values to display text is needed
 				//
@@ -1184,6 +1185,9 @@ class BaseModel extends BaseObject {
 								if (($vs_list_code = $this->getFieldInfo($vs_field, "LIST_CODE")) && (!is_numeric($vm_value))) {	// translate ca_list_item idno's into item_ids if necessary
 									if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) {
 										$vm_value = $vn_id;
+									} else {
+										$this->postError(1103, _t('Value %1 is not in list %2', $vm_value, $vs_list_code), 'BaseModel->set()');
+										return false;
 									}
 								} else {
 									$vm_orig_value = $vm_value;

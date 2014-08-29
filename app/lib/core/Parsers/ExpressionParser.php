@@ -142,7 +142,7 @@ class ExpressionParser {
 						$vs_buf = '';
 						break;
 					} else {
-						if ($vs_s !== '/') { 
+						if ($vs_c !== '/') {
 							$vs_buf .= $vs_c;
 							break;
 						}
