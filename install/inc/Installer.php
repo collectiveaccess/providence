@@ -807,28 +807,12 @@ class Installer {
 			}
 		}
 
-		$ca_db = new Db('',null, false);
-                $lists_result = $ca_db->query(" SELECT * FROM ca_lists");
-
-		$list_names = array();
-                $va_list_item_ids = array();
-                while($lists_result->nextRow()) {
-                        $list_names[$lists_result->get('list_id')] = $lists_result->get('list_code');
-                }
-
-                // get list items
-                $list_items_result = $ca_db->query(" SELECT * FROM ca_list_items cli INNER JOIN ca_list_item_labels AS clil ON clil.item_id = cli.item_id ");
-                while($list_items_result->nextRow()) {
-                        $list_type_code = $list_names[$list_items_result->get('list_id')];
-                        $va_list_item_ids[$list_type_code][$list_items_result->get('item_value')] = $list_items_result->get('item_id');
-                }
-
 		$vo_dm = Datamodel::load();
-		
-		$t_rel_type = new ca_relationship_types();
-		$t_rel_type->setMode(ACCESS_WRITE);
 
 		foreach($va_rel_tables as $vs_table => $vo_rel_table) {
+			$t_rel_type = new ca_relationship_types();
+			$t_rel_type->setMode(ACCESS_WRITE);
+
 			$vn_table_num = $vo_dm->getTableNum($vs_table);
 
 			$t_rel_table = $vo_dm->getTableInstance($vs_table);
@@ -855,56 +839,54 @@ class Installer {
 				return false;
 			}
 
-			$vn_parent_id = $t_rel_type->getPrimaryKey();
-
-			$this->processRelationshipTypesForTable($vo_rel_table->types, $vn_table_num, $vs_left_table, $vs_right_table, $vn_parent_id, $va_list_item_ids);
+			$this->processRelationshipTypesForTable($vo_rel_table->types, $vn_table_num, $vs_left_table, $vs_right_table, $t_rel_type->getPrimaryKey());
 		}
 		return true;
 	}
 	# --------------------------------------------------
-	private function processRelationshipTypesForTable($po_relationship_types, $pn_table_num, $ps_left_table, $ps_right_table, $pn_parent_id, $pa_list_item_ids){
+	private function processRelationshipTypesForTable($po_relationship_types, $pn_table_num, $ps_left_table, $ps_right_table, $pn_parent_id){
 		$o_dm = Datamodel::load();
 
-		$t_rel_type = new ca_relationship_types();
-		$t_rel_type->setMode(ACCESS_WRITE);
-
-
+		// loading an existing record in the same hierarchy forces ca_relationship_types to load the bounds lists for sub_type_left|right
+		// if we don't do this and the first relationship type from the profile XML has a type restriction (either left or right) the
+		// type restriction is ignored without error and the type is inserted without restriction.
+		$t_rel_type = new ca_relationship_types($pn_parent_id); 
 		$vn_rank_default = (int)$t_rel_type->getFieldInfo('rank', 'DEFAULT');
+
 		foreach($po_relationship_types->children() as $vo_type) {
-			$vs_type_code = self::getAttribute($vo_type, "code");
-			$vn_default = self::getAttribute($vo_type, "default");
-			$vn_rank = (int)self::getAttribute($vo_type, "rank");
+			$t_rel_type = new ca_relationship_types();
+			$t_rel_type->setMode(ACCESS_WRITE);
+
+			$vs_type_code = self::getAttribute($vo_type, 'code');
+			$vn_default = self::getAttribute($vo_type, 'default');
+			$vn_rank = (int)self::getAttribute($vo_type, 'rank');
 
 			$t_rel_type->set('table_num', $pn_table_num);
 			$t_rel_type->set('type_code', $vs_type_code);
-			$t_rel_type->set("parent_id", $pn_parent_id);
+			$t_rel_type->set('parent_id', $pn_parent_id);
 			
 			if ($vn_rank > 0) {
-				$t_rel_type->set("rank", $vn_rank);
+				$t_rel_type->set('rank', $vn_rank);
 			} else {
-				$t_rel_type->set("rank", $vn_rank_default);
+				$t_rel_type->set('rank', $vn_rank_default);
 			}
 
-			$t_rel_type->set('sub_type_left_id', null);
-			$t_rel_type->set('sub_type_right_id', null);
-
-			if (trim($vs_left_subtype_code = (string) $vo_type->subTypeLeft)) {
+			if ($vs_left_subtype_code = trim((string) $vo_type->subTypeLeft)) {
 				$t_obj = $o_dm->getTableInstance($ps_left_table);
-				$vs_list_code = $t_obj->getFieldListCode($t_obj->getTypeFieldName());
 
-				if (isset($pa_list_item_ids[$vs_list_code][$vs_left_subtype_code])) {
-					$t_rel_type->set('sub_type_left_id', $pa_list_item_ids[$vs_list_code][$vs_left_subtype_code]);
+				if($vn_id = $t_obj->getTypeIDForCode(trim($vs_left_subtype_code))){
+					$t_rel_type->set('sub_type_left_id', $vn_id);
 				}
 			}
-			if (trim($vs_right_subtype_code = (string) $vo_type->subTypeRight)) {
+			if ($vs_right_subtype_code = trim((string) $vo_type->subTypeRight)) {
 				$t_obj = $o_dm->getTableInstance($ps_right_table);
-				$vs_list_code = $t_obj->getFieldListCode($t_obj->getTypeFieldName());
-				if (isset($pa_list_item_ids[$vs_list_code][$vs_right_subtype_code])) {
-					$t_rel_type->set('sub_type_right_id', $pa_list_item_ids[$vs_list_code][$vs_right_subtype_code]);
+
+				if($vn_id = $t_obj->getTypeIDForCode(trim($vs_right_subtype_code))){
+					$t_rel_type->set('sub_type_right_id', intval($vn_id));
 				}
 			}
 
-			$t_rel_type->set('is_default', $vn_default ? 1 : 0);
+			$t_rel_type->set('is_default', 0);
 			$t_rel_type->insert();
 
 			if ($t_rel_type->numErrors()) {
@@ -916,7 +898,7 @@ class Installer {
 			self::addLabelsFromXMLElement($t_rel_type, $vo_type->labels, $this->opa_locales);
 
 			if ($vo_type->types) {
-				$this->processRelationshipTypesForTable($vo_type->types, $pn_table_num, $ps_left_table, $ps_right_table, $t_rel_type->getPrimaryKey(), $pa_list_item_ids);
+				$this->processRelationshipTypesForTable($vo_type->types, $pn_table_num, $ps_left_table, $ps_right_table, $t_rel_type->getPrimaryKey());
 			}
 		}
 	}
