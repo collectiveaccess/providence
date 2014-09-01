@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -430,7 +430,7 @@ class ca_attribute_values extends BaseModel {
  		
  		$t_multifile = new ca_attribute_value_multifiles();
  		if (!$pb_allow_duplicates) {
- 			if ($t_multifile->load(array('resource_path' => $ps_resource_path, 'representation_id' => $this->getPrimaryKey()))) {
+ 			if ($t_multifile->load(array('resource_path' => $ps_resource_path, 'value_id' => $this->getPrimaryKey()))) {
  				return null;
  			}
  		}
@@ -509,7 +509,7 @@ class ca_attribute_values extends BaseModel {
  	 * @return array A list of files attached to the attribute value. If no files are associated an empty array is returned.
  	 */
  	public function getFileList($pn_value_id=null, $pn_start=null, $pn_num_files=null, $pa_versions=null) {
- 		if(!($vn_value_id = $ca_attribute_value_multifiles)) { 
+ 		if(!($vn_value_id = $pn_value_id)) { 
  			if (!($vn_value_id = $this->getPrimaryKey())) {
  				return null; 
  			}
@@ -533,7 +533,7 @@ class ca_attribute_values extends BaseModel {
  			WHERE
  				value_id = ?
  			{$vs_limit_sql}
- 		", (int)$vn_representation_id);
+ 		", (int)$vn_value_id);
  		
  		$va_files = array();
  		while($qr_res->nextRow()) {
@@ -574,7 +574,7 @@ class ca_attribute_values extends BaseModel {
  	 */
  	public function numFiles($pn_value_id=null) { 		
  		if(!($vn_value_id = $pn_value_id)) { 
- 			if (!($vn_representation_id = $this->getPrimaryKey())) {
+ 			if (!($vn_value_id = $this->getPrimaryKey())) {
  				return null; 
  			}
  		}
@@ -594,4 +594,3 @@ class ca_attribute_values extends BaseModel {
  	}
 	# ------------------------------------------------------
 }
-?>

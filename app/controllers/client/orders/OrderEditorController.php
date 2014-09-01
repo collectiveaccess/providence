@@ -704,9 +704,9 @@
  			$t_object = new ca_objects($pn_object_id);
  			$t_rep = new ca_object_representations($t_object->getPrimaryRepresentationID());
  			
- 			$va_opts = array('use_book_viewer' => true, 'display' => 'media_overlay', 'object_id' => $pn_object_id, 'order_item_id' => $pn_item_id, 'containerID' => 'caMediaPanelContentArea', 'access' => caGetUserAccessValues($this->request));
+ 			$va_opts = array('use_book_viewer' => true, 'display' => 'media_overlay', 't_subject' => $t_object, 't_representation' => $t_rep, 'order_item_id' => $pn_item_id, 'containerID' => 'caMediaPanelContentArea', 'access' => caGetUserAccessValues($this->request));
 
- 			$this->response->addContent($t_rep->getRepresentationViewerHTMLBundle($this->request, $va_opts, array('sectionsAreSelectable' => true, 'use_book_viewer_when_number_of_representations_exceeds' => 0)));
+ 			$this->response->addContent(caGetMediaViewerHTMLBundle($this->request, $va_opts, array('sectionsAreSelectable' => true, 'use_book_viewer_when_number_of_representations_exceeds' => 0)));
  		}
  		# -------------------------------------------------------
  		public function RecordRepresentationSelection() {
