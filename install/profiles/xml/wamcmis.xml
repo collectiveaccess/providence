@@ -1252,14 +1252,6 @@
             </label>
           </labels>
         </item>
-        <item idno="identification" enabled="1" default="0">
-          <labels>
-            <label locale="en_AU" preferred="1">
-              <name_singular>Identification</name_singular>
-              <name_plural>Identifications</name_plural>
-            </label>
-          </labels>
-        </item>
         <item idno="anthropology_register" enabled="1" default="0">
           <labels>
             <label locale="en_AU" preferred="1">
@@ -10387,14 +10379,6 @@
                 </label>
               </labels>
             </item>
-            <item idno="crop_gut" enabled="1" default="0">
-              <labels>
-                <label locale="en_AU" preferred="1">
-                  <name_singular>crop;gut</name_singular>
-                  <name_plural>crop;gut</name_plural>
-                </label>
-              </labels>
-            </item>
             <item idno="spleen" enabled="1" default="0">
               <labels>
                 <label locale="en_AU" preferred="1">
@@ -10408,14 +10392,6 @@
                 <label locale="en_AU" preferred="1">
                   <name_singular>heart</name_singular>
                   <name_plural>heart</name_plural>
-                </label>
-              </labels>
-            </item>
-            <item idno="liver_heart" enabled="1" default="0">
-              <labels>
-                <label locale="en_AU" preferred="1">
-                  <name_singular>liver;heart</name_singular>
-                  <name_plural>liver;heart</name_plural>
                 </label>
               </labels>
             </item>
@@ -10491,14 +10467,6 @@
                 </label>
               </labels>
             </item>
-            <item idno="right_kidney_" enabled="1" default="0">
-              <labels>
-                <label locale="en_AU" preferred="1">
-                  <name_singular>right kidney;</name_singular>
-                  <name_plural>right kidney;</name_plural>
-                </label>
-              </labels>
-            </item>
             <item idno="right_adrenal" enabled="1" default="0">
               <labels>
                 <label locale="en_AU" preferred="1">
@@ -10568,14 +10536,6 @@
                 <label locale="en_AU" preferred="1">
                   <name_singular>prostate</name_singular>
                   <name_plural>prostate</name_plural>
-                </label>
-              </labels>
-            </item>
-            <item idno="_0" enabled="1" default="0" value=".0">
-              <labels>
-                <label locale="en_AU" preferred="1">
-                  <name_singular>.0</name_singular>
-                  <name_plural>.0</name_plural>
                 </label>
               </labels>
             </item>
@@ -14305,9 +14265,10 @@
             <setting name="canBeUsedInDisplay">1</setting>
             <setting name="listWidth">40</setting>
             <setting name="listHeight">200px</setting>
-            <setting name="requireValue">1</setting>
+            <setting name="requireValue">0</setting>
             <setting name="render">select</setting>
             <setting name="maxColumns">3</setting>
+            <setting name="nullOptionText">Not set</setting>
           </settings>
         </metadataElement>
         <metadataElement code="preparationCount" datatype="Numeric">
@@ -15347,15 +15308,6 @@ Examples: "1 m", "3 ft"</description>
       </settings>
       <typeRestrictions>
         <restriction>
-          <table>ca_occurrences</table>
-          <type>identification</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction>
           <table>ca_objects_x_vocabulary_terms</table>
           <type/>
           <includeSubtypes>1</includeSubtypes>
@@ -15378,15 +15330,6 @@ Examples: "1 m", "3 ft"</description>
         <setting name="fieldWidth">70</setting>
       </settings>
       <typeRestrictions>
-        <restriction>
-          <table>ca_occurrences</table>
-          <type>identification</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
         <restriction>
           <table>ca_objects_x_vocabulary_terms</table>
           <type/>
@@ -15414,15 +15357,6 @@ http://palaeontology.palass-pubs.org/pdf/Vol%2031/Pages%20223-227.pdf2011.</desc
         <setting name="maxColumns">6</setting>
       </settings>
       <typeRestrictions>
-        <restriction>
-          <table>ca_occurrences</table>
-          <type>identification</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">6</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
         <restriction>
           <table>ca_objects_x_vocabulary_terms</table>
           <type/>
@@ -15472,16 +15406,6 @@ http://palaeontology.palass-pubs.org/pdf/Vol%2031/Pages%20223-227.pdf2011.</desc
         </metadataElement>
       </elements>
       <typeRestrictions>
-        <restriction>
-          <table>ca_occurrences</table>
-          <type>identification</type>
-          <includeSubtypes>1</includeSubtypes>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
         <restriction>
           <table>ca_objects_x_vocabulary_terms</table>
           <type/>
@@ -15652,31 +15576,6 @@ http://palaeontology.palass-pubs.org/pdf/Vol%2031/Pages%20223-227.pdf2011.</desc
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="scientificName" datatype="List" list="taxonomy">
-      <labels>
-        <label locale="en_AU">
-          <name>Scientific Name</name>
-          <description>The full scientific name, with authorship and date information if known. When forming part of an Identification, this should be the name in lowest level taxonomic rank that can be determined. This term should not contain identification qualifications, which should instead be supplied in the IdentificationQualifier term.</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="doesNotTakeLocale">0</setting>
-        <setting name="displayTemplate">Scientific Name: &lt;em&gt;scientificName&lt;/em&gt;</setting>
-        <setting name="requireValue">1</setting>
-        <setting name="render">horiz_hierbrowser_with_search</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction>
-          <table>ca_occurrences</table>
-          <type>identification</type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
     <metadataElement code="idVerificationStatus" datatype="List" list="identificationVerificationStatus">
       <labels>
         <label locale="en_AU">
@@ -15689,15 +15588,6 @@ http://palaeontology.palass-pubs.org/pdf/Vol%2031/Pages%20223-227.pdf2011.</desc
         <setting name="displayTemplate">Identification Verification Status: ^idVerificationStatus</setting>
       </settings>
       <typeRestrictions>
-        <restriction>
-          <table>ca_occurrences</table>
-          <type>identification</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
         <restriction>
           <table>ca_objects_x_vocabulary_terms</table>
           <type/>
@@ -15722,15 +15612,6 @@ http://palaeontology.palass-pubs.org/pdf/Vol%2031/Pages%20223-227.pdf2011.</desc
         <setting name="render">yes_no_checkboxes</setting>
       </settings>
       <typeRestrictions>
-        <restriction>
-          <table>ca_occurrences</table>
-          <type>identification</type>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
         <restriction>
           <table>ca_objects_x_vocabulary_terms</table>
           <type/>
@@ -18765,7 +18646,6 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
         </label>
       </labels>
       <settings>
-        <setting name="requireValue">1</setting>
         <setting name="render">yes_no_checkboxes</setting>
       </settings>
       <typeRestrictions>
@@ -19875,6 +19755,10 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
           <name>List item editor</name>
         </label>
       </labels>
+      <typeRestrictions>
+        <restriction type="concept"/>
+        <restriction type="mineral"/>
+      </typeRestrictions>
       <screens>
         <screen idno="basic" default="1">
           <labels>
@@ -19999,7 +19883,11 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
               <name>Related Objects</name>
             </label>
           </labels>
-          <bundlePlacements/>
+          <bundlePlacements>
+            <placement code="ca_objects1">
+              <bundle>ca_objects</bundle>
+            </placement>
+          </bundlePlacements>
         </screen>
       </screens>
     </userInterface>
@@ -20413,8 +20301,6 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
       </labels>
       <typeRestrictions>
         <restriction type="DarwinCore"/>
-        <restriction type="arachnid_myriapod"/>
-        <restriction type="tz"/>
       </typeRestrictions>
       <screens>
         <screen idno="record_level" default="1">
@@ -22011,24 +21897,6 @@ Lent to: &lt;unit relativeTo="ca_loans"&gt;&#13;
       </labels>
       <typeRestrictions>
         <restriction type="scientific_name"/>
-        <restriction type="class"/>
-        <restriction type="cohort"/>
-        <restriction type="family"/>
-        <restriction type="infraorder"/>
-        <restriction type="kingdom"/>
-        <restriction type="order"/>
-        <restriction type="phylum"/>
-        <restriction type="species"/>
-        <restriction type="subclass"/>
-        <restriction type="subfamily"/>
-        <restriction type="genus"/>
-        <restriction type="subgenus"/>
-        <restriction type="suborder"/>
-        <restriction type="subphylum"/>
-        <restriction type="subspecies"/>
-        <restriction type="superfamily"/>
-        <restriction type="superorder"/>
-        <restriction type="tribe"/>
       </typeRestrictions>
       <userAccess>
         <permission user="administrator" access="edit"/>
@@ -22136,6 +22004,21 @@ e.g. "Malacostraca", "Canis lupus".</setting>
               <settings>
                 <setting name="readonly"/>
               </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="related_objects" default="0">
+          <labels>
+            <label locale="en_AU">
+              <name>Related Objects</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction type="scientific_name"/>
+          </typeRestrictions>
+          <bundlePlacements>
+            <placement code="ca_objects1">
+              <bundle>ca_objects</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -23010,6 +22893,9 @@ Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
               <name>Media</name>
             </label>
           </labels>
+          <typeRestrictions>
+            <restriction type="anthropology"/>
+          </typeRestrictions>
           <bundlePlacements>
             <placement code="ca_object_representations1">
               <bundle>ca_object_representations</bundle>
@@ -23017,12 +22903,18 @@ Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
                 <setting name="list_format">bubbles</setting>
                 <setting name="sortDirection">ASC</setting>
                 <setting name="display_template">^ca_object_representations.preferred_labels</setting>
+                <setting name="readonly"/>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
               </settings>
             </placement>
             <placement code="ca_attribute_external_link2">
               <bundle>ca_attribute_external_link</bundle>
               <settings>
                 <setting name="sortDirection">ASC</setting>
+                <setting name="readonly"/>
               </settings>
             </placement>
           </bundlePlacements>
@@ -23035,8 +22927,12 @@ Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
           </labels>
           <typeRestrictions>
             <restriction type="anthropology"/>
-            <restriction type="DublinCore"/>
-            <restriction type="DarwinCore"/>
+            <restriction type=""/>
+            <restriction type=""/>
+            <restriction type=""/>
+            <restriction type=""/>
+            <restriction type=""/>
+            <restriction type=""/>
           </typeRestrictions>
           <bundlePlacements>
             <placement code="item_status_id1">
@@ -23992,7 +23888,7 @@ Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
                 <setting name="restrict_to_types">family</setting>
                 <setting name="restrict_to_types">subfamily</setting>
                 <setting name="restrict_to_types">tribe</setting>
-								<setting name="restrict_to_types">genus</setting>
+                <setting name="restrict_to_types">genus</setting>
                 <setting name="restrict_to_types">subgenus</setting>
                 <setting name="restrict_to_types">species</setting>
                 <setting name="restrict_to_types">subspecies</setting>
@@ -24960,7 +24856,7 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
               <typename_reverse>is identification of</typename_reverse>
             </label>
           </labels>
-          <subTypeRight>identification</subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="object_resource" default="0">
           <labels>
@@ -25198,7 +25094,7 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
               <typename_reverse>was identified by</typename_reverse>
             </label>
           </labels>
-          <subTypeRight>identification</subTypeRight>
+          <subTypeRight/>
         </type>
         <type code="entity_register" default="0">
           <labels>
@@ -25416,7 +25312,7 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
             </label>
           </labels>
           <subTypeLeft/>
-          <subTypeRight>identification</subTypeRight>
+          <subTypeRight/>
         </type>
       </types>
     </relationshipTable>
@@ -26045,14 +25941,7 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_occurrences" bundle="ca_attribute_locationRemarks" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_pointRadiusSpatialFit" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_earliestEonOrLowestEonothem" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_dateIdentified" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_identificationRemarks" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_identificationQualifier" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_typeStatus" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_georeference" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_scientificName" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_idVerificationStatus" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_etAl" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_distanceFromLocality" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_measurementOrFact" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_minimumDepthInMeters" access="edit"/>
@@ -26328,7 +26217,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_occurrences" type="conservation" access="edit"/>
         <permission table="ca_occurrences" type="conservation_job" access="edit"/>
         <permission table="ca_occurrences" type="exhibition" access="edit"/>
-        <permission table="ca_occurrences" type="identification" access="edit"/>
         <permission table="ca_occurrences" type="anthropology_register" access="edit"/>
         <permission table="ca_occurrences" type="resource" access="edit"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
@@ -26705,14 +26593,7 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_occurrences" bundle="ca_attribute_locationRemarks" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_pointRadiusSpatialFit" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_earliestEonOrLowestEonothem" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_dateIdentified" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_identificationRemarks" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_identificationQualifier" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_typeStatus" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_georeference" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_scientificName" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_idVerificationStatus" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_etAl" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_distanceFromLocality" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_measurementOrFact" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_minimumDepthInMeters" access="edit"/>
@@ -26991,7 +26872,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_occurrences" type="conservation" access="read"/>
         <permission table="ca_occurrences" type="conservation_job" access="read"/>
         <permission table="ca_occurrences" type="exhibition" access="read"/>
-        <permission table="ca_occurrences" type="identification" access="none"/>
         <permission table="ca_occurrences" type="anthropology_register" access="read"/>
         <permission table="ca_occurrences" type="resource" access="edit"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
@@ -27412,14 +27292,7 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_occurrences" bundle="ca_attribute_locationRemarks" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_pointRadiusSpatialFit" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_earliestEonOrLowestEonothem" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_dateIdentified" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_identificationRemarks" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_identificationQualifier" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_typeStatus" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_georeference" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_scientificName" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_idVerificationStatus" access="edit"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_etAl" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_distanceFromLocality" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_measurementOrFact" access="edit"/>
         <permission table="ca_occurrences" bundle="ca_attribute_minimumDepthInMeters" access="edit"/>
@@ -27698,7 +27571,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_occurrences" type="conservation" access="read"/>
         <permission table="ca_occurrences" type="conservation_job" access="read"/>
         <permission table="ca_occurrences" type="exhibition" access="read"/>
-        <permission table="ca_occurrences" type="identification" access="none"/>
         <permission table="ca_occurrences" type="anthropology_register" access="read"/>
         <permission table="ca_occurrences" type="resource" access="edit"/>
         <permission table="ca_occurrences" type="Root node for occurrence_types" access="none"/>
@@ -28119,7 +27991,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_occurrences" bundle="ca_attribute_conservation_request" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_country" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_dataGeneralizations" access="none"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_dateIdentified" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_dcBibCitation" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_dcLanguage" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_dcModified" access="none"/>
@@ -28132,7 +28003,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_occurrences" bundle="ca_attribute_dynamicProperties" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_earliestEonOrLowestEonothem" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_establishmentMeans" access="none"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_etAl" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_eventDate" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_eventRemarks" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_eventTime" access="none"/>
@@ -28141,9 +28011,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_occurrences" bundle="ca_attribute_habitat" access="none"/>
         <permission table="ca_occurrences" bundle="hierarchy_location" access="none"/>
         <permission table="ca_occurrences" bundle="hierarchy_navigation" access="none"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_idVerificationStatus" access="none"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_identificationQualifier" access="none"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_identificationRemarks" access="none"/>
         <permission table="ca_occurrences" bundle="idno" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_informationWithheld" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_institutionCode" access="none"/>
@@ -28180,11 +28047,9 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_occurrences" bundle="ca_attribute_rft_volume" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_samplingEffort" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_samplingProtocol" access="none"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_scientificName" access="none"/>
         <permission table="ca_occurrences" bundle="source_id" access="none"/>
         <permission table="ca_occurrences" bundle="status" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_substrate" access="none"/>
-        <permission table="ca_occurrences" bundle="ca_attribute_typeStatus" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_verbatimDepth" access="none"/>
         <permission table="ca_occurrences" bundle="ca_attribute_verbatimElevation" access="none"/>
         <permission table="ca_collections" bundle="access" access="read"/>
@@ -28521,7 +28386,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_occurrences" type="conservation" access="edit"/>
         <permission table="ca_occurrences" type="conservation_job" access="none"/>
         <permission table="ca_occurrences" type="exhibition" access="edit"/>
-        <permission table="ca_occurrences" type="identification" access="none"/>
         <permission table="ca_occurrences" type="map" access="edit"/>
         <permission table="ca_occurrences" type="anthropology_register" access="edit"/>
         <permission table="ca_occurrences" type="resource" access="edit"/>
@@ -28713,8 +28577,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
             <setting name="hierarchy_order">ASC</setting>
             <setting name="hierarchy_limit">0</setting>
             <setting name="hierarchical_delimiter"> ➔ </setting>
-            <setting name="restrict_to_relationship_types"/>
-            <setting name="restrict_to_types"/>
             <setting name="show_hierarchy">0</setting>
           </settings>
         </placement>
