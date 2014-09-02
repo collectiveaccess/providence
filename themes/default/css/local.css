@@ -125,3 +125,16 @@ div.notification-warning-box {
 	text-align: center;
 	opacity: 1.0;
 }
+
+table.table-bordered{
+	border-spacing: 0;
+}
+table.table-bordered th,
+table.table-bordered td{
+	border: 1px solid #3f3d40;
+
+	padding: 0.5em;
+}
+div.field-label{
+	font-weight: bold;
+}
