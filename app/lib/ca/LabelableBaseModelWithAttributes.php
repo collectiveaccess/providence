@@ -102,6 +102,8 @@
 			}
 			
 			$t_label->purify($this->purify());
+			$t_label->setLabelTypeList($this->getAppConfig()->get($pb_is_preferred ? "{$vs_table_name}_preferred_label_type_list" : "{$vs_table_name}_nonpreferred_label_type_list"));
+			
 			foreach($pa_label_values as $vs_field => $vs_value) {
 				if ($t_label->hasField($vs_field)) { 
 					if ($vb_truncate_long_labels) {
@@ -118,7 +120,6 @@
 				}
 			}
 			
-			$t_label->setLabelTypeList($this->getAppConfig()->get($pb_is_preferred ? "{$vs_table_name}_preferred_label_type_list" : "{$vs_table_name}_nonpreferred_label_type_list"));
 			
 			$t_label->set('locale_id', $pn_locale_id);
 			if ($t_label->hasField('type_id')) { $t_label->set('type_id', $pn_type_id); }
