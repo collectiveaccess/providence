@@ -1,0 +1,2153 @@
+<?xml version="1.0"?>
+<profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				 xsi:noNamespaceSchemaLocation="../../../install/profiles/xml/profile.xsd" useForConfiguration="1"
+				 infoUrl="http://wamwpcmis.da.wa.gov.au">
+	<profileName>Western Australian Museum CMIS</profileName>
+	<profileDescription>Western Australian Museum Collection Managment Information System</profileDescription>
+	<locales>
+		<locale lang="en" country="AU">English (Australian)</locale>
+	</locales>
+	<lists/>
+	<elementSets>
+		<metadataElement code="set_description" datatype="Text">
+			<labels>
+				<label locale="en_AU">
+					<name>Introduction</name>
+					<description>Narrative description for set. This is the primary text used when publicly presenting the set.
+					</description>
+				</label>
+			</labels>
+			<settings>
+				<setting name="fieldWidth">70</setting>
+				<setting name="fieldHeight">6</setting>
+			</settings>
+			<typeRestrictions>
+				<restriction>
+					<table>ca_sets</table>
+					<settings>
+						<setting name="minAttributesPerRow">1</setting>
+						<setting name="maxAttributesPerRow">3</setting>
+						<setting name="minimumAttributeBundlesToDisplay">1</setting>
+					</settings>
+				</restriction>
+			</typeRestrictions>
+		</metadataElement>
+	</elementSets>
+	<userInterfaces>
+		<userInterface code="anthropology" type="ca_objects">
+			<labels>
+				<label locale="en_AU">
+					<name>Anthropology Editor</name>
+				</label>
+			</labels>
+			<typeRestrictions>
+				<restriction type="anthropology"/>
+			</typeRestrictions>
+			<groupAccess>
+				<permission group="anthropology" access="read"/>
+			</groupAccess>
+			<screens>
+				<screen idno="anthropology_general" default="0">
+					<labels>
+						<label locale="en_AU">
+							<name>General</name>
+						</label>
+					</labels>
+					<typeRestrictions>
+						<restriction type="anthropology"/>
+					</typeRestrictions>
+					<bundlePlacements>
+						<placement code="idno1">
+							<bundle>idno</bundle>
+							<settings>
+								<setting name="label" locale="en_AU">Registration Number</setting>
+								<setting name="width">20</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="preferred_labels2">
+							<bundle>preferred_labels</bundle>
+							<settings>
+								<setting name="label" locale="en_AU">Register Entry</setting>
+								<setting name="description" locale="en_AU">Enter the name of the object in the register</setting>
+								<setting name="width">44</setting>
+								<setting name="height">2</setting>
+								<setting name="usewysiwygeditor"/>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_objectClassificat">
+							<bundle>ca_attribute_objectClassification</bundle>
+							<settings>
+								<setting name="width">650</setting>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_accessionDate6">
+							<bundle>ca_attribute_accessionDate</bundle>
+							<settings>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_eventDate5">
+							<bundle>ca_attribute_eventDate</bundle>
+							<settings>
+								<setting name="label" locale="en_AU">Date Collected</setting>
+								<setting name="description" locale="en_AU">Please enter the date on which this object was collected.&#13;
+									DC.Coverage - designates a temporal element to the object''s history';
+								</setting>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="ca_collections6">
+							<bundle>ca_collections</bundle>
+							<settings>
+								<setting name="label" locale="en_AU">Related Collections</setting>
+								<setting name="add_label" locale="en_AU">add collection</setting>
+								<setting name="restrict_to_types">internal</setting>
+								<setting name="list_format">bubbles</setting>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="display_template">^ca_collections.hierarchy.preferred_labels</setting>
+								<setting name="minRelationshipsPerRow"/>
+								<setting name="maxRelationshipsPerRow"/>
+								<setting name="readonly"/>
+								<setting name="dont_include_subtypes_in_type_restriction">0</setting>
+								<setting name="dontShowDeleteButton">1</setting>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_donation_date6">
+							<bundle>ca_attribute_donation_date</bundle>
+							<settings>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="ca_entities4">
+							<bundle>ca_entities</bundle>
+							<settings>
+								<setting name="label" locale="en_AU">Donor</setting>
+								<setting name="list_format">bubbles</setting>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="display_template">^ca_entities.preferred_labels</setting>
+								<setting name="readonly">1</setting>
+								<setting name="restrict_to_relationship_types">donated</setting>
+								<setting name="dont_include_subtypes_in_type_restriction">0</setting>
+								<setting name="dontShowDeleteButton">0</setting>
+								<setting name="minRelationshipsPerRow"/>
+								<setting name="maxRelationshipsPerRow"/>
+							</settings>
+						</placement>
+						<placement code="ca_places5">
+							<bundle>ca_places</bundle>
+							<settings>
+								<setting name="list_format">bubbles</setting>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="display_template">&lt;l&gt;^ca_places.preferred_labels&lt;/l&gt;&lt;br /&gt;&#13;
+									^ca_places.hierarchy.preferred_labels%delimiter=_➔_&#13;
+									^ca_places.georeference &#13;
+									^ca_places.georeference.coordinates&#13;
+									^ca_places.description
+								</setting>
+								<setting name="useHierarchicalBrowser">1</setting>
+								<setting name="hierarchicalBrowserHeight">200px</setting>
+								<setting name="readonly">1</setting>
+								<setting name="restrict_to_relationship_types">located</setting>
+								<setting name="restrict_to_types">location</setting>
+								<setting name="dont_include_subtypes_in_type_restriction">0</setting>
+								<setting name="dontShowDeleteButton">1</setting>
+								<setting name="minRelationshipsPerRow"/>
+								<setting name="maxRelationshipsPerRow">1</setting>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_SizeOrDuration7">
+							<bundle>ca_attribute_SizeOrDuration</bundle>
+							<settings>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_description8">
+							<bundle>ca_attribute_description</bundle>
+							<settings>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_technique9">
+							<bundle>ca_attribute_technique</bundle>
+							<settings>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_anthropologyMater">
+							<bundle>ca_attribute_anthropologyMaterialTypes</bundle>
+							<settings>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_colour10">
+							<bundle>ca_attribute_colour</bundle>
+							<settings>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_audit13">
+							<bundle>ca_attribute_audit</bundle>
+							<settings>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+					</bundlePlacements>
+				</screen>
+				<screen idno="anthropology_donor_collector" default="0">
+					<labels>
+						<label locale="en_AU">
+							<name>Donor/Collector</name>
+						</label>
+					</labels>
+					<typeRestrictions>
+						<restriction type="anthropology"/>
+						<restriction type="DublinCore"/>
+					</typeRestrictions>
+					<bundlePlacements>
+						<placement code="ca_entities1">
+							<bundle>ca_entities</bundle>
+							<settings>
+								<setting name="label" locale="en_AU">Donor</setting>
+								<setting name="add_label" locale="en_AU">add donor</setting>
+								<setting name="description" locale="en_AU">Enter the details of the Person or Institution from which the
+									object was sourced.
+								</setting>
+								<setting name="restrict_to_relationship_types">donated</setting>
+								<setting name="list_format">bubbles</setting>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="display_template">^ca_entities.preferred_labels&#13;
+									^ca_entities.address&#13;
+									^ca_entities.biography
+								</setting>
+								<setting name="minRelationshipsPerRow"/>
+								<setting name="maxRelationshipsPerRow"/>
+								<setting name="readonly"/>
+								<setting name="dont_include_subtypes_in_type_restriction">0</setting>
+								<setting name="dontShowDeleteButton">0</setting>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_donation_date2">
+							<bundle>ca_attribute_donation_date</bundle>
+							<settings>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="ca_entities2">
+							<bundle>ca_entities</bundle>
+							<settings>
+								<setting name="label" locale="en_AU">Collector</setting>
+								<setting name="add_label" locale="en_AU">add collector</setting>
+								<setting name="description" locale="en_AU">Enter the details of the person who collected the object if
+									they are different from the donor.
+								</setting>
+								<setting name="restrict_to_relationship_types">discover</setting>
+								<setting name="list_format">bubbles</setting>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="display_template">^ca_entities.preferred_labels&#13;
+									^ca_entities.address&#13;
+									^ca_entities.biography
+								</setting>
+								<setting name="readonly"/>
+								<setting name="dont_include_subtypes_in_type_restriction">0</setting>
+								<setting name="dontShowDeleteButton">0</setting>
+								<setting name="minRelationshipsPerRow"/>
+								<setting name="maxRelationshipsPerRow">10</setting>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_eventDate4">
+							<bundle>ca_attribute_eventDate</bundle>
+							<settings>
+								<setting name="label" locale="en_AU">Date Collected</setting>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_eventRemarks3">
+							<bundle>ca_attribute_eventRemarks</bundle>
+							<settings>
+								<setting name="label" locale="en_AU">Collecting Details</setting>
+								<setting name="description" locale="en_AU">Enter the details of the collecting event</setting>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="usewysiwygeditor">1</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+					</bundlePlacements>
+				</screen>
+				<screen idno="placeDetails" default="0">
+					<labels>
+						<label locale="en_AU">
+							<name>Place</name>
+						</label>
+					</labels>
+					<bundlePlacements>
+						<placement code="ca_places1">
+							<bundle>ca_places</bundle>
+							<settings>
+								<setting name="label" locale="en_AU">Locality</setting>
+								<setting name="description" locale="en_AU">DC.Coverage - designates the spatial element</setting>
+								<setting name="list_format">bubbles</setting>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="display_template">&lt;l&gt;^ca_places.preferred_labels&lt;/l&gt;&lt;br /&gt;&#13;
+									^ca_places.hierarchy.preferred_labels%delimiter=_➔_&#13;
+									^ca_places.georeference &#13;
+									^ca_places.georeference.coordinates&#13;
+									^ca_places.description
+								</setting>
+								<setting name="minRelationshipsPerRow"/>
+								<setting name="maxRelationshipsPerRow">1</setting>
+								<setting name="useHierarchicalBrowser">1</setting>
+								<setting name="hierarchicalBrowserHeight">200px</setting>
+								<setting name="readonly"/>
+								<setting name="restrict_to_relationship_types">located</setting>
+								<setting name="restrict_to_types">location</setting>
+								<setting name="dont_include_subtypes_in_type_restriction">0</setting>
+								<setting name="dontShowDeleteButton">0</setting>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_siteDetails2">
+							<bundle>ca_attribute_siteDetails</bundle>
+							<settings>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+					</bundlePlacements>
+				</screen>
+				<screen idno="storageLocationAnthropology" default="0">
+					<labels>
+						<label locale="en_AU">
+							<name>Location / Storage</name>
+						</label>
+					</labels>
+					<typeRestrictions>
+						<restriction type="anthropology"/>
+						<restriction type="DublinCore"/>
+					</typeRestrictions>
+					<bundlePlacements>
+						<placement code="ca_objects_history5">
+							<bundle>ca_objects_history</bundle>
+							<settings>
+								<setting name="width">100%</setting>
+								<setting name="readonly"/>
+								<setting name="ca_object_lots_bequest_dateElement">dcModified</setting>
+								<setting name="ca_object_lots_bequest_color">#EEEEEE</setting>
+								<setting name="ca_object_lots_gift_dateElement">dcModified</setting>
+								<setting name="ca_object_lots_gift_color">#EEEEEE</setting>
+								<setting name="ca_object_lots_loan_dateElement">dcModified</setting>
+								<setting name="ca_object_lots_loan_color">ffffff</setting>
+								<setting name="ca_object_lots_long_term_loan_dateElement">dcModified</setting>
+								<setting name="ca_object_lots_long_term_loan_color">ffffff</setting>
+								<setting name="ca_object_lots_purchase_dateElement">dcModified</setting>
+								<setting name="ca_object_lots_purchase_color">#EEEEEE</setting>
+								<setting name="ca_object_lots_restricted_gift_dateElement">dcModified</setting>
+								<setting name="ca_object_lots_restricted_gift_color">#EEEEEE</setting>
+								<setting name="ca_occurrences_conservation_analysis_dateElement">dcModified</setting>
+								<setting name="ca_occurrences_conservation_analysis_color">#EEEEEE</setting>
+								<setting name="ca_occurrences_conservation_assignment_dateElement">dcModified</setting>
+								<setting name="ca_occurrences_conservation_assignment_color">#EEEEEE</setting>
+								<setting name="ca_occurrences_collectingEvent_dateElement">dcModified</setting>
+								<setting name="ca_occurrences_collectingEvent_color">#EEEEEE</setting>
+								<setting name="ca_occurrences_conservation_dateElement">dcModified</setting>
+								<setting name="ca_occurrences_conservation_color">#EEEEEE</setting>
+								<setting name="ca_occurrences_conservation_job_dateElement">dcModified</setting>
+								<setting name="ca_occurrences_conservation_job_color">#EEEEEE</setting>
+								<setting name="ca_occurrences_exhibition_dateElement">dcModified</setting>
+								<setting name="ca_occurrences_exhibition_color">#EEEEEE</setting>
+								<setting name="ca_occurrences_identification_dateElement">dcModified</setting>
+								<setting name="ca_occurrences_identification_color">#EEEEEE</setting>
+								<setting name="ca_occurrences_map_dateElement">dcModified</setting>
+								<setting name="ca_occurrences_map_color">#EEEEEE</setting>
+								<setting name="ca_occurrences_anthropology_register_dateElement">dcModified</setting>
+								<setting name="ca_occurrences_anthropology_register_color">#EEEEEE</setting>
+								<setting name="ca_occurrences_resource_dateElement">dcModified</setting>
+								<setting name="ca_occurrences_resource_color">#EEEEEE</setting>
+								<setting name="ca_movements_showTypes">73</setting>
+								<setting name="ca_movements_movement_dateElement">removal_date</setting>
+								<setting name="ca_movements_movement_color">75bad6</setting>
+								<setting name="ca_movements_movement_displayTemplate">
+									&lt;l&gt;^ca_movements.preferred_labels&lt;/l&gt;</setting>
+								<setting name="ca_loans_showTypes">7813</setting>
+								<setting name="ca_loans_showTypes">70</setting>
+								<setting name="ca_loans_showTypes">71</setting>
+								<setting name="ca_loans_custodial_dateElement">loan_in_date</setting>
+								<setting name="ca_loans_custodial_color">f09393</setting>
+								<setting name="ca_loans_custodial_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;&lt;br&gt;&#13;
+									Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
+									&lt;unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="borrower"&gt;^ca_entities.preferred_labels&lt;/unit&gt;&lt;/unit&gt;</setting>
+								<setting name="ca_loans_in_dateElement">loan_in_date</setting>
+								<setting name="ca_loans_in_color">ffc2ff</setting>
+								<setting name="ca_loans_in_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;&lt;br&gt;&#13;
+									Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
+									&lt;unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="borrower"&gt;^ca_entities.preferred_labels&lt;/unit&gt;&lt;/unit&gt;</setting>
+								<setting name="ca_loans_out_dateElement">loan_out_date</setting>
+								<setting name="ca_loans_out_color">f0e090</setting>
+								<setting name="ca_loans_out_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;&lt;br&gt;&#13;
+									Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
+									&lt;unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="borrower"&gt;^ca_entities.preferred_labels&lt;/unit&gt;&lt;/unit&gt;</setting>
+								<setting name="ca_storage_locations_showRelationshipTypes">19</setting>
+								<setting name="ca_storage_locations_showRelationshipTypes">197</setting>
+								<setting name="ca_storage_locations_showRelationshipTypes">198</setting>
+								<setting name="ca_storage_locations_color">80ff59</setting>
+								<setting name="ca_storage_locations_displayTemplate">&lt;l&gt;^ca_storage_locations.hierarchy.preferred_labels%delimiter=_➔_&lt;/l&gt;</setting>
+								<setting name="showDeaccessionInformation"/>
+								<setting name="deaccession_color">#EEEEEE</setting>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_francisStStore2">
+							<bundle>ca_attribute_francisStStore</bundle>
+							<settings>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="ca_entities2">
+							<bundle>ca_entities</bundle>
+							<settings>
+								<setting name="label" locale="en_AU">Presented To</setting>
+								<setting name="list_format">list</setting>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="display_template">&lt;table&gt;&#13;
+									&lt;tr&gt;&#13;
+									&lt;th&gt;Exchanged?&lt;/th&gt;&#13;
+									&lt;th&gt;Presented to&lt;/th&gt;&#13;
+									&lt;th&gt;Date&lt;/th&gt;&#13;
+									&lt;th&gt;Notes&lt;/th&gt;&#13;
+									&lt;/tr&gt;&#13;
+									&lt;tr&gt;&#13;
+									&lt;td&gt;^ca_objects_x_entities.exchangeInformation.exchangeFlag&lt;/td&gt;&#13;
+									&lt;td&gt;^ca_entities.preferred_labels&lt;/td&gt;&#13;
+									&lt;td&gt;^ca_objects_x_entities.exchangeInformation.exchangeDate&lt;/td&gt;&#13;
+									&lt;td&gt;^ca_objects_x_entities.exchangeInformation.exchangeNote&lt;/td&gt;&#13;
+									&lt;/tr&gt;&#13;
+									&lt;/table&gt;</setting>
+								<setting name="minRelationshipsPerRow"/>
+								<setting name="maxRelationshipsPerRow">1</setting>
+								<setting name="readonly"/>
+								<setting name="restrict_to_relationship_types">object_x_presented_x_entity</setting>
+								<setting name="dont_include_subtypes_in_type_restriction">0</setting>
+								<setting name="dontShowDeleteButton">0</setting>
+							</settings>
+						</placement>
+						<placement code="ca_movements3">
+							<bundle>ca_movements</bundle>
+							<settings>
+								<setting name="list_format">list</setting>
+								<setting name="sort">ca_movements.removal_date</setting>
+								<setting name="sortDirection">DESC</setting>
+								<setting name="display_template">&lt;table&gt;&#13;
+									&lt;tr&gt;&#13;
+									&lt;th&gt;Name&lt;/th&gt;&#13;
+									&lt;th&gt;Planned Date&lt;/th&gt;&#13;
+									&lt;th&gt;Date&lt;/th&gt;&#13;
+									&lt;th&gt;Reason&lt;/th&gt;&#13;
+									&lt;th&gt;Method&lt;/th&gt;&#13;
+									&lt;th&gt;Note&lt;/th&gt;&#13;
+									&lt;/tr&gt;&#13;
+									&lt;tr&gt;&#13;
+									&lt;td&gt;^ca_movements.preferred_labels&lt;/td&gt;&#13;
+									&lt;td&gt;^ca_movements.removal_date&lt;/td&gt;&#13;
+									&lt;td&gt;^ca_movements.planned_removal_date&lt;/td&gt;&#13;
+									&lt;td&gt;^ca_movements.movement_reason&lt;/td&gt;&#13;
+									&lt;td&gt;^ca_movements.movement_method&lt;/td&gt;&#13;
+									&lt;td&gt;^ca_movements.movement_note&lt;/td&gt;&#13;
+									&lt;/tr&gt;&#13;
+									&lt;/table&gt;</setting>
+								<setting name="minRelationshipsPerRow"/>
+								<setting name="maxRelationshipsPerRow"/>
+								<setting name="readonly"/>
+								<setting name="dont_include_subtypes_in_type_restriction">0</setting>
+								<setting name="dontShowDeleteButton">0</setting>
+								<setting name="showCurrentOnly">1</setting>
+							</settings>
+						</placement>
+					</bundlePlacements>
+				</screen>
+				<screen idno="object_details" default="0">
+					<labels>
+						<label locale="en_AU">
+							<name>Object Details</name>
+						</label>
+					</labels>
+					<typeRestrictions>
+						<restriction type="anthropology"/>
+					</typeRestrictions>
+					<bundlePlacements>
+						<placement code="ca_attribute_sightedDetails1">
+							<bundle>ca_attribute_sightedDetails</bundle>
+							<settings>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="preferred_labels3">
+							<bundle>preferred_labels</bundle>
+							<settings>
+								<setting name="label" locale="en_AU">Register Entry</setting>
+								<setting name="width">40</setting>
+								<setting name="usewysiwygeditor"/>
+								<setting name="readonly">1</setting>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_languageName2">
+							<bundle>ca_attribute_languageName</bundle>
+							<settings>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_objectAffiliation">
+							<bundle>ca_attribute_objectAffiliation</bundle>
+							<settings>
+								<setting name="label" locale="en_AU">Initial place affiliation</setting>
+								<setting name="description" locale="en_AU">Used when the affiliation for the object is different to the
+									language affiliation for the place or artist.
+								</setting>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="nonpreferred_labels5">
+							<bundle>nonpreferred_labels</bundle>
+							<settings>
+								<setting name="label" locale="en_AU">Title</setting>
+								<setting name="description" locale="en_AU">Enter a title for the object.</setting>
+								<setting name="height">1</setting>
+								<setting name="usewysiwygeditor"/>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_tradition6">
+							<bundle>ca_attribute_tradition</bundle>
+							<settings>
+								<setting name="width">44</setting>
+								<setting name="height">2</setting>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_dctermscreated6">
+							<bundle>ca_attribute_dctermscreated</bundle>
+							<settings>
+								<setting name="label" locale="en_AU">Date of Production</setting>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_supportingDocumen">
+							<bundle>ca_attribute_supportingDocumentation</bundle>
+							<settings>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_objectDetails9">
+							<bundle>ca_attribute_objectDetails</bundle>
+							<settings>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_objectPublished10">
+							<bundle>ca_attribute_objectPublished</bundle>
+							<settings>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="ca_occurrences11">
+							<bundle>ca_occurrences</bundle>
+							<settings>
+								<setting name="label" locale="en_AU">Publication / Reference</setting>
+								<setting name="add_label" locale="en_AU">add new resource</setting>
+								<setting name="description" locale="en_AU">Choose / create a publication related to the object details
+								</setting>
+								<setting name="restrict_to_types">resource</setting>
+								<setting name="list_format">bubbles</setting>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="display_template">^ca_occurrences.preferred_labels</setting>
+								<setting name="minRelationshipsPerRow"/>
+								<setting name="maxRelationshipsPerRow"/>
+								<setting name="readonly"/>
+								<setting name="restrict_to_relationship_types">object_resource</setting>
+								<setting name="dont_include_subtypes_in_type_restriction">0</setting>
+								<setting name="dontShowDeleteButton">0</setting>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_documentation12">
+							<bundle>ca_attribute_documentation</bundle>
+							<settings>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+					</bundlePlacements>
+				</screen>
+				<screen idno="artistDetails" default="0">
+					<labels>
+						<label locale="en_AU">
+							<name>Artist Details</name>
+						</label>
+					</labels>
+					<bundlePlacements>
+						<placement code="ca_entities1">
+							<bundle>ca_entities</bundle>
+							<settings>
+								<setting name="label" locale="en_AU">Related artist</setting>
+								<setting name="add_label" locale="en_AU">add artist relation</setting>
+								<setting name="restrict_to_types">ind</setting>
+								<setting name="list_format">bubbles</setting>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="display_template">^ca_entities.preferred_labels&#13;
+									^ca_entities.biography&#13;
+									^ca_entities.languageAffiliation
+								</setting>
+								<setting name="minRelationshipsPerRow"/>
+								<setting name="maxRelationshipsPerRow"/>
+								<setting name="readonly"/>
+								<setting name="restrict_to_relationship_types">creator</setting>
+								<setting name="dont_include_subtypes_in_type_restriction">0</setting>
+								<setting name="dontShowDeleteButton">0</setting>
+							</settings>
+						</placement>
+					</bundlePlacements>
+				</screen>
+				<screen idno="screen_31_6" default="0">
+					<labels>
+						<label locale="en_AU">
+							<name>Description</name>
+						</label>
+					</labels>
+					<bundlePlacements/>
+				</screen>
+				<screen idno="screen_31_7" default="0">
+					<labels>
+						<label locale="en_AU">
+							<name>Exhibition</name>
+						</label>
+					</labels>
+					<bundlePlacements/>
+				</screen>
+				<screen idno="conservation" default="0">
+					<labels>
+						<label locale="en_AU">
+							<name>Conservation</name>
+						</label>
+					</labels>
+					<bundlePlacements>
+						<placement code="ca_occurrences1">
+							<bundle>ca_occurrences</bundle>
+							<settings>
+								<setting name="label" locale="en_AU">Conservation Events</setting>
+								<setting name="add_label" locale="en_AU">add conservation event</setting>
+								<setting name="description" locale="en_AU">Add or link conservation events to the object.</setting>
+								<setting name="restrict_to_relationship_types">object_collecting_event</setting>
+								<setting name="restrict_to_types">conservation</setting>
+								<setting name="list_format">bubbles</setting>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="dontShowDeleteButton">1</setting>
+								<setting name="display_template">^ca_occurrences.preferred_labels</setting>
+								<setting name="minRelationshipsPerRow"/>
+								<setting name="maxRelationshipsPerRow"/>
+							</settings>
+						</placement>
+					</bundlePlacements>
+				</screen>
+				<screen idno="athropology_media" default="0">
+					<labels>
+						<label locale="en_AU">
+							<name>Media</name>
+						</label>
+					</labels>
+					<typeRestrictions>
+						<restriction type="anthropology"/>
+					</typeRestrictions>
+					<bundlePlacements>
+						<placement code="ca_object_representations1">
+							<bundle>ca_object_representations</bundle>
+							<settings>
+								<setting name="list_format">bubbles</setting>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="display_template">^ca_object_representations.preferred_labels</setting>
+								<setting name="readonly"/>
+								<setting name="dont_include_subtypes_in_type_restriction">0</setting>
+								<setting name="dontShowDeleteButton">0</setting>
+								<setting name="minRelationshipsPerRow"/>
+								<setting name="maxRelationshipsPerRow"/>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_external_link2">
+							<bundle>ca_attribute_external_link</bundle>
+							<settings>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+					</bundlePlacements>
+				</screen>
+				<screen idno="admin" default="0">
+					<labels>
+						<label locale="en_AU">
+							<name>Administration</name>
+						</label>
+					</labels>
+					<typeRestrictions>
+						<restriction type="anthropology"/>
+					</typeRestrictions>
+					<bundlePlacements>
+						<placement code="item_status_id1">
+							<bundle>item_status_id</bundle>
+							<settings>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="idno2">
+							<bundle>idno</bundle>
+							<settings>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_otherCatalogNumbe">
+							<bundle>ca_attribute_otherCatalogNumbers</bundle>
+							<settings>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="access3">
+							<bundle>access</bundle>
+							<settings>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="acl_inherit_from_ca_collection">
+							<bundle>acl_inherit_from_ca_collections</bundle>
+							<settings>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="acl_inherit_from_parent5">
+							<bundle>acl_inherit_from_parent</bundle>
+							<settings>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="status6">
+							<bundle>status</bundle>
+							<settings>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="ca_sets8">
+							<bundle>ca_sets</bundle>
+							<settings>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+					</bundlePlacements>
+				</screen>
+			</screens>
+		</userInterface>
+	</userInterfaces>
+	<relationshipTypes>
+		<relationshipTable name="ca_loans_x_entities">
+			<types>
+				<type code="lender" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>is borrowed from</typename>
+							<typename_reverse>is lender of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="borrower" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>is lent to</typename>
+							<typename_reverse>is borrower of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="authorizer" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is authorized by</typename>
+							<typename_reverse>is authorizer</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_loans_x_movements">
+			<types>
+				<type code="location" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is located at</typename>
+							<typename_reverse>is location of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_loans_x_objects">
+			<types>
+				<type code="loan" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>has as part of</typename>
+							<typename_reverse>is part of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_movements_x_entities">
+			<types>
+				<type code="authorizer" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>was authorized by</typename>
+							<typename_reverse>was authorizer</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="mover" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>was moved by</typename>
+							<typename_reverse>was mover</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_movements_x_object_lots">
+			<types>
+				<type code="part" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>has as part of</typename>
+							<typename_reverse>is part of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_movements_x_objects">
+			<types>
+				<type code="part" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>has as part of</typename>
+							<typename_reverse>is part of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_list_items_x_list_items">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_objects_x_storage_locations">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is located at</typename>
+							<typename_reverse>is location of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="permanent" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>permanently located at</typename>
+							<typename_reverse>is permanent location of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="current" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>currently located at</typename>
+							<typename_reverse>has current location</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_object_lots_x_storage_locations">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is located at</typename>
+							<typename_reverse>is location of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_object_representations_x_entities">
+			<types>
+				<type code="creator" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>was created by</typename>
+							<typename_reverse>is creator</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="rights_holder" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>rights held by</typename>
+							<typename_reverse>is rights holder</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_object_representations_x_places">
+			<types>
+				<type code="depicts" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>depicts</typename>
+							<typename_reverse>depicts</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_object_representations_x_occurrences">
+			<types>
+				<type code="depicts" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>depicts</typename>
+							<typename_reverse>depicts</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_object_representations_x_vocabulary_terms">
+			<types>
+				<type code="subject" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>has subject</typename>
+							<typename_reverse>is subject</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_object_representations_x_collections">
+			<types>
+				<type code="depicts" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>part of</typename>
+							<typename_reverse>part of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_object_representations_x_storage_locations">
+			<types>
+				<type code="depicts" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>current location</typename>
+							<typename_reverse>current location</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_object_representations_x_object_representations">
+			<types>
+				<type code="depicts" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>related</typename>
+							<typename_reverse>related</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_tour_stops_x_objects">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_tour_stops_x_entities">
+			<types>
+				<type code="subject" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>has subject</typename>
+							<typename_reverse>is subject</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_tour_stops_x_places">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is located at</typename>
+							<typename_reverse>is location of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_tour_stops_x_vocabulary_terms">
+			<types>
+				<type code="subject" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>has subject</typename>
+							<typename_reverse>is subject</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_tour_stops_x_occurrences">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_tour_stops_x_collections">
+			<types>
+				<type code="part" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>has as part of</typename>
+							<typename_reverse>is part of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_tour_stops_x_tour_stops">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_storage_locations_x_storage_locations">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_occurrences_x_storage_locations">
+			<types>
+				<type code="related" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+					<subTypeLeft>exhibition</subTypeLeft>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_places_x_storage_locations">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_storage_locations_x_vocabulary_terms">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_loans_x_places">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_loans_x_occurrences">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_loans_x_collections">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_loans_x_storage_locations">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_loans_x_vocabulary_terms">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_loans_x_object_lots">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_loans_x_loans">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_movements_x_places">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_movements_x_occurrences">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_movements_x_collections">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_movements_x_storage_locations">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_loans_x_object_representations">
+			<types>
+				<type code="lender" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is lent from</typename>
+							<typename_reverse>is lender of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_movements_x_object_representations">
+			<types>
+				<type code="part" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>has as part of</typename>
+							<typename_reverse>is part of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_object_lots_x_object_representations">
+			<types>
+				<type code="part" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>has as part of</typename>
+							<typename_reverse>is part of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_movements_x_vocabulary_terms">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_movements_x_movements">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_objects_x_entities">
+			<types>
+				<type code="creator" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>was created by</typename>
+							<typename_reverse>created</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="described" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>was described by</typename>
+							<typename_reverse>described</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="determined" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>was determined by</typename>
+							<typename_reverse>determined</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="donated" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>was donated by</typename>
+							<typename_reverse>donated</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="owned" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>was owned by</typename>
+							<typename_reverse>owned</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="publisher" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>was published by</typename>
+							<typename_reverse>published</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="discover" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>was discovered / collected by</typename>
+							<typename_reverse>discovered / collected</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="object_sighted_by_entity" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>was sighted by</typename>
+							<typename_reverse>sighted</typename_reverse>
+						</label>
+					</labels>
+					<subTypeLeft>anthropology</subTypeLeft>
+					<subTypeRight>ind</subTypeRight>
+				</type>
+				<type code="object_x_presented_x_entity" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>was presented to</typename>
+							<typename_reverse>was recipient of</typename_reverse>
+						</label>
+					</labels>
+					<subTypeLeft>anthropology</subTypeLeft>
+				</type>
+				<type code="registered" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>registered by</typename>
+							<typename_reverse>registered</typename_reverse>
+						</label>
+					</labels>
+					<subTypeRight>ind</subTypeRight>
+				</type>
+				<type code="source" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>has source</typename>
+							<typename_reverse>source of</typename_reverse>
+						</label>
+					</labels>
+					<subTypeLeft>DarwinCore</subTypeLeft>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_objects_x_collections">
+			<types>
+				<type code="part" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is part of</typename>
+							<typename_reverse>contains</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_objects_x_places">
+			<types>
+				<type code="created" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>was created at</typename>
+							<typename_reverse>was creation location of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="located" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>was located at</typename>
+							<typename_reverse>was location of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="depicts" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>depicts</typename>
+							<typename_reverse>is depicted by</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="describes" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>describes</typename>
+							<typename_reverse>is described by</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_objects_x_occurrences">
+			<types>
+				<type code="depicts" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>depicts</typename>
+							<typename_reverse>is depicted by</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="used" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>was used in</typename>
+							<typename_reverse>used</typename_reverse>
+						</label>
+					</labels>
+					<subTypeRight/>
+				</type>
+				<type code="describes" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>describes</typename>
+							<typename_reverse>is described by</typename_reverse>
+						</label>
+					</labels>
+					<subTypeRight/>
+				</type>
+				<type code="object_collecting_event" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>is part of</typename>
+							<typename_reverse>contains</typename_reverse>
+						</label>
+					</labels>
+					<subTypeRight>collectingEvent</subTypeRight>
+				</type>
+				<type code="object_identification" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>has identification</typename>
+							<typename_reverse>is identification of</typename_reverse>
+						</label>
+					</labels>
+					<subTypeRight/>
+				</type>
+				<type code="object_resource" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+					<subTypeRight>resource</subTypeRight>
+				</type>
+				<type code="object_exhibition" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>is exhibited in</typename>
+							<typename_reverse>is exhibition of</typename_reverse>
+						</label>
+					</labels>
+					<subTypeRight>exhibition</subTypeRight>
+				</type>
+				<type code="object_x_conservation_job" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>has conservation</typename>
+							<typename_reverse>has artefacts</typename_reverse>
+						</label>
+					</labels>
+					<subTypeRight>conservation_job</subTypeRight>
+				</type>
+				<type code="object_map" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>related to</typename>
+							<typename_reverse>related to</typename_reverse>
+						</label>
+					</labels>
+					<subTypeRight>map</subTypeRight>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_objects_x_objects">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="similar" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>is similar to</typename>
+							<typename_reverse>is similar to</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="duplicate" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>is duplicate of</typename>
+							<typename_reverse>is duplicate of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="part_of" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>is part of</typename>
+							<typename_reverse>contains</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_objects_x_vocabulary_terms">
+			<types>
+				<type code="described" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>is described by</typename>
+							<typename_reverse>describes</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="depicts" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>depicts</typename>
+							<typename_reverse>is depicted by</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="identification" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>has determination</typename>
+							<typename_reverse>is determined name for</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="associated" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>associated with</typename>
+							<typename_reverse>associated with</typename_reverse>
+						</label>
+					</labels>
+					<subTypeLeft>DarwinCore</subTypeLeft>
+					<subTypeRight>scientific_name</subTypeRight>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_entities_x_entities">
+			<types>
+				<type code="colleague" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>is colleague of</typename>
+							<typename_reverse>is colleague of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="related" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="spouse" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>is spouse of</typename>
+							<typename_reverse>is spouse of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="student" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>is student of</typename>
+							<typename_reverse>is student of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="professor" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is professor of</typename>
+							<typename_reverse>is professor of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_entities_x_places">
+			<types>
+				<type code="birthplace" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>was born at</typename>
+							<typename_reverse>was birthplace of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="residence" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>resided at</typename>
+							<typename_reverse>was residence of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="workplace" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>worked at</typename>
+							<typename_reverse>was workplace of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="ownership" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>owned</typename>
+							<typename_reverse>was owned by</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="built_by" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>built</typename>
+							<typename_reverse>was built by</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_entities_x_occurrences">
+			<types>
+				<type code="attended" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>attended</typename>
+							<typename_reverse>was attended by</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="managed" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>managed</typename>
+							<typename_reverse>was managed by</typename_reverse>
+						</label>
+					</labels>
+					<subTypeLeft>ind</subTypeLeft>
+					<subTypeRight>exhibition</subTypeRight>
+				</type>
+				<type code="recordedBy" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>collected</typename>
+							<typename_reverse>was collected by</typename_reverse>
+						</label>
+					</labels>
+					<subTypeRight>collectingEvent</subTypeRight>
+				</type>
+				<type code="identifiedBy" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>identified</typename>
+							<typename_reverse>was identified by</typename_reverse>
+						</label>
+					</labels>
+					<subTypeRight/>
+				</type>
+				<type code="entity_register" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>is registered in</typename>
+							<typename_reverse>contains registration of</typename_reverse>
+						</label>
+					</labels>
+					<subTypeRight>anthropology_register</subTypeRight>
+				</type>
+				<type code="individual_request_cons" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>requested</typename>
+							<typename_reverse>was requested by</typename_reverse>
+						</label>
+					</labels>
+					<subTypeLeft>ind</subTypeLeft>
+					<subTypeRight>conservation_job</subTypeRight>
+				</type>
+				<type code="individual_conserved_cons" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>conserved</typename>
+							<typename_reverse>was conserved by</typename_reverse>
+						</label>
+					</labels>
+					<subTypeLeft>ind</subTypeLeft>
+					<subTypeRight>conservation</subTypeRight>
+				</type>
+				<type code="client_x_conservation" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>conservation client</typename>
+							<typename_reverse>conservation client</typename_reverse>
+						</label>
+					</labels>
+					<subTypeLeft>org</subTypeLeft>
+					<subTypeRight>conservation_job</subTypeRight>
+				</type>
+				<type code="organisation_x_analysis" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>analyzed</typename>
+							<typename_reverse>analyzed by</typename_reverse>
+						</label>
+					</labels>
+					<subTypeLeft>org</subTypeLeft>
+					<subTypeRight>conservation_analysis</subTypeRight>
+				</type>
+				<type code="dcCreator" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>created</typename>
+							<typename_reverse>created by</typename_reverse>
+						</label>
+					</labels>
+					<subTypeRight>resource</subTypeRight>
+				</type>
+				<type code="entity_resource" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>related</typename>
+							<typename_reverse>related</typename_reverse>
+						</label>
+					</labels>
+					<subTypeRight>resource</subTypeRight>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_object_lots_x_entities">
+			<types>
+				<type code="donor" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>was donated by</typename>
+							<typename_reverse>is donor of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="provider" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>was provided by</typename>
+							<typename_reverse>is provider of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="collector" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>was collected by</typename>
+							<typename_reverse>collected</typename_reverse>
+						</label>
+					</labels>
+					<subTypeLeft/>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_object_lots_x_places">
+			<types>
+				<type code="originates" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>originates from</typename>
+							<typename_reverse>is origination location of</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="collectedAt" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>was collected at</typename>
+							<typename_reverse>was the site of</typename_reverse>
+						</label>
+					</labels>
+					<subTypeLeft/>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_object_lots_x_collections">
+			<types>
+				<type code="part_of" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is part of</typename>
+							<typename_reverse>contains</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_entities_x_collections">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="curator" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>Curates</typename>
+							<typename_reverse>Curated By</typename_reverse>
+						</label>
+					</labels>
+					<subTypeLeft>ind</subTypeLeft>
+					<subTypeRight>internal</subTypeRight>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_entities_x_vocabulary_terms">
+			<types>
+				<type code="described" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is described by</typename>
+							<typename_reverse>describes</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="scientific_name_author" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>author</typename>
+							<typename_reverse>authored by</typename_reverse>
+						</label>
+					</labels>
+					<subTypeLeft>ind</subTypeLeft>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_places_x_places">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_places_x_vocabulary_terms">
+			<types>
+				<type code="describes" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is described by</typename>
+							<typename_reverse>describes</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_occurrences_x_occurrences">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="scientificNameIdentification" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>scientificName</typename>
+							<typename_reverse>identifies</typename_reverse>
+						</label>
+					</labels>
+					<subTypeLeft/>
+					<subTypeRight/>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_occurrences_x_vocabulary_terms">
+			<types>
+				<type code="describes" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is described by</typename>
+							<typename_reverse>describes</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_places_x_occurrences">
+			<types>
+				<type code="site" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>was site of</typename>
+							<typename_reverse>occurred at</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="collecting_locality" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>was collecting location of</typename>
+							<typename_reverse>was collected at</typename_reverse>
+						</label>
+					</labels>
+					<subTypeRight>collectingEvent</subTypeRight>
+				</type>
+				<type code="place_x_resource" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>has source reference</typename>
+							<typename_reverse>is reference for</typename_reverse>
+						</label>
+					</labels>
+					<subTypeRight>resource</subTypeRight>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_collections_x_collections">
+			<types>
+				<type code="related" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is related to</typename>
+							<typename_reverse>is related to</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_collections_x_vocabulary_terms">
+			<types>
+				<type code="described" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is described by</typename>
+							<typename_reverse>describes</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_places_x_collections">
+			<types>
+				<type code="location" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is location of</typename>
+							<typename_reverse>is located in</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_representation_annotations_x_objects">
+			<types>
+				<type code="depicts" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>depicts</typename>
+							<typename_reverse>is depicted by</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="illustrated" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is illustrated by</typename>
+							<typename_reverse>illustrates</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_representation_annotations_x_entities">
+			<types>
+				<type code="depicts" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>depicts</typename>
+							<typename_reverse>is depicted by</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="describes" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>describes</typename>
+							<typename_reverse>is described by</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_representation_annotations_x_places">
+			<types>
+				<type code="depicts" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>depicts</typename>
+							<typename_reverse>is depicted by</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="describes" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>describes</typename>
+							<typename_reverse>is described by</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_representation_annotations_x_occurrences">
+			<types>
+				<type code="depicts" default="0">
+					<labels>
+						<label locale="en_AU">
+							<typename>depicts</typename>
+							<typename_reverse>is depicted by</typename_reverse>
+						</label>
+					</labels>
+				</type>
+				<type code="describes" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>describes</typename>
+							<typename_reverse>is described by</typename_reverse>
+						</label>
+					</labels>
+					<subTypeRight/>
+				</type>
+			</types>
+		</relationshipTable>
+		<relationshipTable name="ca_representation_annotations_x_vocabulary_terms">
+			<types>
+				<type code="describes" default="1">
+					<labels>
+						<label locale="en_AU">
+							<typename>is described by</typename>
+							<typename_reverse>describes</typename_reverse>
+						</label>
+					</labels>
+				</type>
+			</types>
+		</relationshipTable>
+	</relationshipTypes>
+</profile>
