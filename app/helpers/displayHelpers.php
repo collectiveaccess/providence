@@ -3227,7 +3227,7 @@ $ca_relationship_lookup_parse_cache = array();
 				}
 				
                 if ($vs_template) {
-                    $va_items[$va_relation[$vs_rel_pk]]['_display'] = caProcessTemplateForIDs($vs_template, $pt_rel->tableName(), array($va_relation['relation_id']), array('returnAsArray' => false, 'returnAsLink' => false, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table, 'primaryIDs' => $va_primary_ids));
+                    $va_items[$va_relation[$vs_rel_pk]]['_display'] = caProcessTemplateForIDs($vs_template, $pt_rel->tableName(), array($va_relation['relation_id'] ? $va_relation['relation_id'] : $va_relation[$vs_pk]), array('returnAsArray' => false, 'returnAsLink' => false, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table, 'primaryIDs' => $va_primary_ids));
                 } else {
                     $va_items[$va_relation[$vs_rel_pk]]['_display'] = $va_items[$va_relation[$vs_rel_pk]]['label'];
                 }
@@ -3426,6 +3426,7 @@ $ca_relationship_lookup_parse_cache = array();
 			
 			if (sizeof($va_l_tags)) {
 				$vs_content = html_entity_decode($vs_text);
+				$vs_content = preg_replace_callback("/(&#[0-9]+;)/", function($m) { return mb_convert_encoding($m[1], "UTF-8", "HTML-ENTITIES"); }, $vs_content); 
 				foreach($va_l_tags as $va_l) {
 					if ($vb_can_handle_target) {
 						$va_params = array('request' => $g_request, 'content' => $va_l['content'], 'table' => $ps_table_name, 'id' => $pa_row_ids[$vn_i], 'classname' => $ps_class, 'target' => $ps_target, 'additionalParameters' => null, 'options' => null);
