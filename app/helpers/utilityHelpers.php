@@ -1231,6 +1231,29 @@ function caFileIsIncludable($ps_file) {
 		return $result.$newLine;
 	}
 	# ---------------------------------------
+	function caFormatXML($ps_xml){  
+		require_once(__CA_LIB_DIR__.'/core/Parsers/XMLFormatter.php');
+
+		$va_options = array(
+			"paddingString" => " ",
+			"paddingMultiplier" => 2,
+			"wordwrapCData" => false,
+		);
+
+		$vr_input = fopen('data://text/plain,'.$ps_xml, 'r');
+		$vr_output = fopen('php://temp', 'w+');
+
+		$vo_formatter = new XML_Formatter($vr_input, $vr_output, $va_options);
+
+		try {
+			$vo_formatter->format();
+			rewind($vr_output);
+			return stream_get_contents($vr_output)."\n";
+		} catch (EXception $e) {
+			return false;
+		}
+	}
+	# ---------------------------------------
 	/**
 	  * Parses natural language date and returns pair of Unix timestamps defining date/time range
 	  *
@@ -1527,13 +1550,26 @@ function caFileIsIncludable($ps_file) {
 	 * Truncates text to a maximum length, including an ellipsis ("...")
 	 *
 	 * @param string $ps_text Text to (possibly) truncate
-	 * @param int $pn_max_length Maximum number of characters to return; if omitted defaults to 30 charactes
+	 * @param int $pn_max_length Maximum number of characters to return; if omitted defaults to 30 characters
+	 * @param string $ps_orientation Side of string to based truncation from. "start" will truncate $pn_max_length characters from the beginning; "end" $pn_max_length characters from the end. [Default="start"]
 	 * @return string The truncated text
 	 */
-	function caTruncateStringWithEllipsis($ps_text, $pn_max_length=30) {
+	function caTruncateStringWithEllipsis($ps_text, $pn_max_length=30, $ps_side="start") {
 		if ($pn_max_length < 1) { $pn_max_length = 30; }
 		if (mb_strlen($ps_text) > $pn_max_length) {
-			$ps_text = mb_substr($ps_text, 0, ($pn_max_length - 3))."...";
+			if (strtolower($ps_side == 'end')) {
+				$vs_txt = mb_substr($ps_text, mb_strlen($ps_text) - $pn_max_length + 3);
+				if (preg_match("!<[^>]*$!", $vs_txt, $va_matches)) {
+					$vs_txt = preg_replace("!{$va_matches[0]}$!", '', $vs_txt);
+				}
+				$ps_text = "...{$vs_txt}";
+			} else {
+				$vs_txt = mb_substr($ps_text, 0, ($pn_max_length - 3));
+				if (preg_match("!(<[^>]*)$!", $vs_txt, $va_matches)) {
+					$vs_txt = preg_replace("!{$va_matches[0]}$!", '', $vs_txt);
+				}
+				$ps_text = "{$vs_txt}...";
+			}
 		}
 		return $ps_text;
 	}
@@ -1847,7 +1883,7 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caMakeSearchResult($ps_table, $pa_ids) {
 		$o_dm = Datamodel::load();
-		if ($t_instance = $o_dm->getInstanceByTableName($ps_table, true)) {
+		if ($t_instance = $o_dm->getInstanceByTableName('ca_objects', true)) {	// get an instance of a model inherits from BundlableLabelableBaseModelWithAttributes; doesn't matter which one
 			return $t_instance->makeSearchResult($ps_table, $pa_ids);
 		}
 		return null;

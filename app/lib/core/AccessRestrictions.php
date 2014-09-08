@@ -279,7 +279,7 @@ class AccessRestrictions {
 				$vs_class = "ca_object_representations";
 				break;
 			case "ObjectEditor":
-				if($ps_action == "GetRepresentationInfo"){
+				if($ps_action == "GetMediaOverlay"){
 					$vs_class = "ca_object_representations";
 				} else {
 					$vs_class = "ca_objects";

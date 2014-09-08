@@ -108,41 +108,67 @@
  		 *
  		 */
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
+ 			if (!strlen($ps_value)) {
+ 				// record truly empty values as null for now
+ 				return array(
+					'value_longtext1' => null,
+					'value_integer1' => null
+				);
+ 			}
  			$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? true : (bool)$pa_element_info['settings']['requireValue'];
  		
- 			if (preg_match('![^\d]+!', $ps_value)) {
- 				// try to convert idno to id
- 				if ($vn_id = call_user_func($this->ops_table_name.'::find', array(array('idno' => $ps_value), array('returnAs' => 'firstId')))) { 
- 					$ps_value = $vn_id;
- 				}
- 			}
- 			if (!$vb_require_value && !(int)$ps_value) {
+ 			$o_trans = caGetOption('transaction', $pa_options, null);
+ 			
+ 			$va_match_on = caGetOption('matchOn', $pa_options, null);
+ 			if ($va_match_on && !is_array($va_match_on)){ $va_match_on = array($va_match_on); }
+ 			if (!is_array($va_match_on) && $vb_treat_value_as_idno) { $va_match_on = array('idno'); }
+ 			if ((!is_array($va_match_on) || !sizeof($va_match_on)) && preg_match('![^\d]+!', $ps_value)) { $va_match_on = array('idno'); }
+ 			if (($vb_treat_value_as_idno) && (!in_array('idno', $va_match_on))) { array_push($va_match_on, 'idno'); }
+ 			if (!is_array($va_match_on) || !sizeof($va_match_on)) { $va_match_on = array('row_id'); }
+ 			
+ 			$vn_id = null;
+ 			
+			$o_dm = Datamodel::load();
+			$t_item = $o_dm->getInstanceByTableName($this->ops_table_name, true);
+			
+ 			foreach($va_match_on as $vs_match_on) {
+ 				switch($vs_match_on) {
+ 					case 'idno':
+						// try to convert idno to row_id
+						if ($vn_id = call_user_func($this->ops_table_name.'::find', array($t_item->getProperty('ID_NUMBERING_ID_FIELD') => $ps_value), array('transaction' => $o_trans, 'returnAs' => 'firstId'))) { 
+							break(2);
+						}
+						break;
+					case 'label':
+					case 'labels':
+						// try to convert label to row_id		
+						if ($vn_id = call_user_func($this->ops_table_name.'::find', array('preferred_labels' => array($t_item->getLabelDisplayField() => $ps_value)), array('transaction' => $o_trans, 'returnAs' => 'firstId'))) { 
+							break(2);
+						}
+						break;
+					case 'row_id':
+					default:
+						if ($vn_id = call_user_func($this->ops_table_name.'::find', array($t_item->primaryKey() => $ps_value), array('transaction' => $o_trans, 'returnAs' => 'firstId'))) { 
+							break(2);
+						}
+						break;
+				}
+			}
+			
+ 			if (!$vb_require_value && !$vn_id) {
  				return array(
 					'value_longtext1' => null,
 					'value_integer1' => null
 				);
  			} 
- 			if (strlen($ps_value) && !is_numeric($ps_value)) { 
+ 			if (!$vn_id) { 
  				$this->postError(1970, _t('%1 id %2 is not valid for element %3', $this->ops_name_singular, $ps_value, $pa_element_info["element_code"]), $this->ops_name_plural.'AttributeValue->parseValue()');
 				return false;
 			}
-			$o_dm = Datamodel::load();
- 			$t_item = $o_dm->getInstanceByTableName($this->ops_table_name, true);
- 			if($o_trans = caGetOption('transaction', $pa_options, null)) {
- 				$t_item->setTransaction($o_trans);
- 			}
- 			if (!$t_item->load(array($t_item->primaryKey() => (int)$ps_value, 'deleted' => 0))) {
- 				if ($ps_value) {
- 					$this->postError(1970, _t('%1 id %2 is not a valid id for %3 [%4]', $this->ops_name_singular, $ps_value, $pa_element_info['displayLabel'], $pa_element_info['element_code']), $this->ops_name_plural.'AttributeValue->parseValue()');
- 				} else {
- 					return null;
- 				}
-				return false;
- 			}
  			
  			return array(
- 				'value_longtext1' => $ps_value,
- 				'value_integer1' => (int)$ps_value
+ 				'value_longtext1' => (int)$vn_id,
+ 				'value_integer1' => (int)$vn_id
  			);
  		}
  		# ------------------------------------------------------------------

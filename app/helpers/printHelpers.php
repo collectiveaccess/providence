@@ -255,14 +255,17 @@
 			
 			// got a barcode
 			$va_bits = explode(":", $ps_tag);
-			if (is_numeric($va_bits[2])) { 
-				$vn_size = (int)$va_bits[2]; 
-				$vs_template = $va_bits[3];
+			array_shift($va_bits); // remove "barcode" identifier
+			$vs_type = array_shift($va_bits);
+			if (is_numeric($va_bits[0])) { 
+				$vn_size = (int)array_shift($va_bits); 
+				$vs_template = join(":", $va_bits);
 			} else { 
 				$vn_size = 16;
-				$vs_template = $va_bits[2];
+				$vs_template = join(":", $va_bits);
 			}
-			$vs_tmp = caGenerateBarcode($po_result->getWithTemplate($vs_template, $pa_options), array('type' => $va_bits[1], 'height' => $vn_size));
+			
+			$vs_tmp = caGenerateBarcode($po_result->getWithTemplate($vs_template, $pa_options), array('type' => $vs_type, 'height' => $vn_size));
 		
 			$po_view->setVar($ps_tag, "<img src='{$vs_tmp}.png'/>");
 		}
@@ -274,8 +277,9 @@
 	 */
 	function caDoPrintViewTagSubstitution($po_view, $po_result, $ps_template_path, $pa_options=null) {
 	
-		$va_defined_vars = array_keys($po_view->getAllVars());						// get list defined vars (we don't want to copy over them)
 		$va_tag_list = $po_view->getTagList($ps_template_path);				// get list of tags in view
+		$po_view->clearViewTagsVars($ps_template_path);
+		$va_defined_vars = array_keys($po_view->getAllVars());				// get list defined vars (we don't want to copy over them)
 		
 		$va_barcode_files_to_delete = array();
 		//
@@ -304,4 +308,3 @@
 		return $va_barcode_files_to_delete;
 	}
 	# ---------------------------------------
-?>

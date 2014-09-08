@@ -134,11 +134,24 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
+					case 'labels':
 						if ($pb_match_on_displayname && (strlen(trim($pa_entity_name['displayname'])) > 0)) {
 							$vn_id = ca_entities::find(array('preferred_labels' => array('displayname' => $pa_entity_name['displayname']),'type_id' => $pn_type_id, 'parent_id' => $vn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
 						} else {
 							$vn_id = ca_entities::find(array('preferred_labels' => array('forename' => $pa_entity_name['forename'], 'surname' => $pa_entity_name['surname']), 'type_id' => $pn_type_id, 'parent_id' => $vn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
 						}
+						if ($vn_id) { break(2); }
+						break;
+					case 'surname':
+						$vn_id = ca_entities::find(array('preferred_labels' => array('surname' => $pa_entity_name['surname']), 'type_id' => $pn_type_id, 'parent_id' => $vn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
+						if ($vn_id) { break(2); }
+						break;
+					case 'forename':
+						$vn_id = ca_entities::find(array('preferred_labels' => array('forename' => $pa_entity_name['forename']), 'type_id' => $pn_type_id, 'parent_id' => $vn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
+						if ($vn_id) { break(2); }
+						break;
+					case 'displayname':
+						$vn_id = ca_entities::find(array('preferred_labels' => array('displayname' => $pa_entity_name['displayname']), 'type_id' => $pn_type_id, 'parent_id' => $vn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
 						if ($vn_id) { break(2); }
 						break;
 					case 'idno':
@@ -352,6 +365,7 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
+					case 'labels':
 						if (trim($ps_place_name)) {
 							if ($vn_id = (ca_places::find(array('preferred_labels' => array('name' => $ps_place_name), 'type_id' => $pn_type_id, 'parent_id' => $pn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 								break(2);
@@ -575,6 +589,7 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
+					case 'labels':
 						if (trim($ps_occ_name)) {
 							if ($vn_id = ca_occurrences::find(array('preferred_labels' => array('name' => $ps_occ_name), 'parent_id' => $pn_parent_id, 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))) {
 								break(2);
@@ -779,7 +794,8 @@
 
 			if(!isset($pa_options['cache'])) { $pa_options['cache'] = true; }
 			// Create a cache key and compress it to save memory
-			$vs_cache_key = crc32($pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id.'/'.$vs_singular_label.'/'.$vs_plural_label . '/' . json_encode($pa_match_on));
+			$vs_cache_key = md5($pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id.'/'.$vs_singular_label.'/'.$vs_plural_label . '/' . json_encode($pa_match_on));
+			
 			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			/** @var KLogger $o_log */
@@ -825,6 +841,7 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
+					case 'labels':
 						if (trim($vs_singular_label) || trim($vs_plural_label)) {
 							if ($vn_item_id = (ca_list_items::find(array('preferred_labels' => array('name_singular' => $vs_singular_label), 'parent_id' => $vn_parent_id, 'list_id' => $vn_list_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 								if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using singular label %3", $ps_item_idno, $pm_list_code_or_id, $vs_singular_label)); }
@@ -1008,6 +1025,7 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
+					case 'labels':
 						if (trim($ps_collection_name)) {
 							if ($vn_id = (ca_collections::find(array('preferred_labels' => array('name' => $ps_collection_name), 'parent_id' => caGetOption('parent_id', $pa_values, null), 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 								break(2);
@@ -1227,6 +1245,7 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
+					case 'labels':
 						if (trim($ps_location_name)) {
 							if ($vn_id = (ca_storage_locations::find(array('preferred_labels' => array('name' => $ps_location_name), 'parent_id' => $pn_parent_id, 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 								break(2);
@@ -1442,6 +1461,7 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
+					case 'labels':
 						if (trim($ps_object_name)) {
 							if ($vn_id = (ca_objects::find(array('preferred_labels' => array('name' => $ps_object_name), 'parent_id' => $pn_parent_id, 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 								break(2);
@@ -1659,6 +1679,7 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
+					case 'labels':
 						if (trim($ps_lot_name)) {
 							if ($vn_id = (ca_object_lots::find(array('preferred_labels' => array('name' => $ps_lot_name), 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 								break(2);
@@ -1839,11 +1860,14 @@
 		 *                importEventSource = if importEvent is passed, then the value set for importEventSource is used in the import event log as the data source. If omitted a default value of "?" is used
 		 *                nonPreferredLabels = an optional array of nonpreferred labels to add to any newly created representations. Each label in the array is an array with required representation label values.
 		 *                log = if KLogger instance is passed then actions will be logged
-		 * @return bool|\ca_object_representations|mixed|null
+		 *				  matchMediaFilesWithoutExtension = if media path is invalid, attempt to find media in referenced directory and sub-directories that has a matching name, regardless of file extension. [default=false] 
+		 * @return bool|ca_object_representations|mixed|null
 		 */
 		static function getObjectRepresentationID($ps_representation_name, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = false; }
+
+			$vb_match_media_without_extension = caGetOption('matchMediaFilesWithoutExtension', $pa_options, false);
 
 			$pa_match_on = caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
 			/** @var ca_data_import_events $o_event */
@@ -1880,6 +1904,7 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
+					case 'labels':
 						if (trim($ps_representation_name)) {
 							if ($vn_id = (ca_object_representations::find(array('preferred_labels' => array('name' => $ps_representation_name), 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 								break(2);
@@ -1944,7 +1969,28 @@
 				$t_rep->set('source_id', isset($pa_values['source_id']) ? $pa_values['source_id'] : null);
 				$t_rep->set('access', isset($pa_values['access']) ? $pa_values['access'] : 0);
 				$t_rep->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
-				if(isset($pa_values['media']) && $pa_values['media']) { $t_rep->set('media', $pa_values['media']); }
+				
+				if(isset($pa_values['media']) && $pa_values['media']) {
+					if (($vb_match_media_without_extension) && !isURL($pa_values['media']) && !file_exists($pa_values['media'])) {
+						$vs_dirname = pathinfo($pa_values['media'], PATHINFO_DIRNAME);
+						$vs_filename = preg_replace('!\.[A-Za-z0-9]{1,4}$!', '', pathinfo($pa_values['media'], PATHINFO_BASENAME));
+						
+						$vs_original_path = $pa_values['media'];
+						
+						$pa_values['media'] = null;
+						
+						$va_files_in_dir = caGetDirectoryContentsAsList($vs_dirname, true, false, false, false);	
+						foreach($va_files_in_dir as $vs_filepath) {
+							if ($o_log) { $o_log->logDebug(_t("Trying media %1 in place of %2/%3", $vs_filepath, $vs_original_path, $vs_filename)); }
+							if (pathinfo($vs_filepath, PATHINFO_FILENAME) == $vs_filename) {
+								if ($o_log) { $o_log->logNotice(_t("Found media %1 for %2/%3", $vs_filepath, $vs_original_path, $vs_filename)); }
+								$pa_values['media'] = $vs_filepath;
+								break;
+							}
+						}
+					}
+					$t_rep->set('media', $pa_values['media']);
+				}
 
 				$t_rep->set('idno', $vs_idno);
 
@@ -2135,6 +2181,7 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
+					case 'labels':
 						if (trim($ps_loan_name)) {
 							if ($vn_id = (ca_loans::find(array('preferred_labels' => array('name' => $ps_loan_name), 'type_id' => $pn_type_id, 'parent_id' => caGetOption('parent_id', $pa_values, null)), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 								break(2);
@@ -2349,6 +2396,7 @@
 			foreach($pa_match_on as $vs_match_on) {
 				switch(strtolower($vs_match_on)) {
 					case 'label':
+					case 'labels':
 						if (trim($ps_movement_name)) {
 							if ($vn_id = (ca_movements::find(array('preferred_labels' => array('name' => $ps_movement_name), 'type_id' => $pn_type_id, 'parent_id' => caGetOption('parent_id', $pa_options, null)), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
 								break(2);

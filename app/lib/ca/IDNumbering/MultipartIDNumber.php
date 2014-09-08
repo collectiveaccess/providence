@@ -335,7 +335,7 @@
 								if(($vs_value < 0) || ($vs_value > 99)){
 									$va_element_errors[$vs_element_name] = _t("%1 must be a valid two-digit year", $va_element_info['description']);
 								}
-							} elseif ((($vs_value < 1800) || ($vs_value > ($va_tmp['year'] + 10))) || ($vs_value != intval($vs_value))) { 
+							} elseif ((($vs_value < 1000) || ($vs_value > ($va_tmp['year'] + 10))) || ($vs_value != intval($vs_value))) { 
 								$va_element_errors[$vs_element_name] = _t("%1 must be a valid year", $va_element_info['description']);
 							}
 						}
