@@ -427,6 +427,16 @@ class ca_data_exporter_items extends BaseModel {
 			'label' => _t('Check access'),
 			'description' => _t('Restricts the context of the mapping to only records with one of the designated access values. Only valid when context is set.')
 		);
+
+		$va_settings['sort'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Sort'),
+			'description' => _t('Sorts the values returned for a context switch on these fields. Only valid when context is set.')
+		);
 		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}

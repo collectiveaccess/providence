@@ -1353,6 +1353,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$va_restrict_to_types = $t_exporter_item->getSetting('restrictToTypes');
 			$va_restrict_to_rel_types = $t_exporter_item->getSetting('restrictToRelationshipTypes');
 			$va_check_access = $t_exporter_item->getSetting('checkAccess');
+			$va_sort = $t_exporter_item->getSetting('sort');
 
 			$vn_new_table_num = $this->getAppDatamodel()->getTableNum($vs_context);
 			$vb_context_is_related_table = false;
@@ -1401,14 +1402,17 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					break;
 				default: // plain old related table
 					if($vn_new_table_num) {
-						$va_related = $t_instance->getRelatedItems(
-							$vs_context,
-							array(
-								'restrictToTypes' => $va_restrict_to_types,
-								'restrictToRelationshipTypes' => $va_restrict_to_rel_types,
-								'checkAccess' => $va_check_access,
-							)
+
+						$va_options = array(
+							'restrictToTypes' => $va_restrict_to_types,
+							'restrictToRelationshipTypes' => $va_restrict_to_rel_types,
+							'checkAccess' => $va_check_access,
+							'sort' => $va_sort,
 						);
+
+						$o_log->logDebug(_t("Calling getRelatedItems with options: %1.", print_r($va_options,true)));
+
+						$va_related = $t_instance->getRelatedItems($vs_context, $va_options);
 						$vb_context_is_related_table = true;
 					} else {
 						return array();
