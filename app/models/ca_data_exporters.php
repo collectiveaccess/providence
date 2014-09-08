@@ -1461,6 +1461,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 
+		// if omitIfNotEmpty is set and get() returns a value, we ignore this exporter item and all children
+		if($vs_omit_if_not_empty = $t_exporter_item->getSetting('omitIfNotEmpty')){
+			if(strlen($t_instance->get($vs_omit_if_not_empty))>0){
+				return array();
+			}
+		}
+
 		// always return URL for export, not an HTML tag
 		$va_get_options = array('returnURL' => true);
 

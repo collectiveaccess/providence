@@ -385,7 +385,17 @@ class ca_data_exporter_items extends BaseModel {
 			'takesLocale' => false,
 			'default' => '',
 			'label' => _t('Omit if empty'),
-			'description' => _t('Omit this item and all its children if this CollectiveAccess bundle specifier returns an empty result.')
+			'description' => _t('Omit this item and all its children unless this CollectiveAccess bundle specifier returns a result.')
+		);
+
+		$va_settings['omitIfNotEmpty'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Omit if not empty'),
+			'description' => _t('Omit this item and all its children if this CollectiveAccess bundle specifier returns a non-empty result.')
 		);
 
 		$va_settings['context'] = array(
