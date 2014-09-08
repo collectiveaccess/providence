@@ -1331,7 +1331,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 *		ignoreContext = don't switch context even though context may be set for current item
 	 *		relationship_type_id, relationship_type_code, relationship_typename =
 	 *			if this export is a sub-export (context-switch), we have no way of knowing the relationship
-	 *			to the 'parent' element in the export, so there has to be a means to pass it down to make it accessable
+	 *			to the 'parent' element in the export, so there has to be a means to pass it down to make it accessible
+	 * 		attribute_id = signals that this is an export relative to a specific attribute instance
+	 * 			this triggers special behavior that allows getting container values in a kind of sub-export
+	 *			it's really only useful for Containers but in theory can be any attribute
 	 *		logger = KLogger instance to use for logging. This option is mandatory!
 	 * @return array Item info
 	 */
@@ -1340,6 +1343,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$o_log = caGetOption('logger',$pa_options); // always set by exportRecord()
 
 		$vb_ignore_context = caGetOption('ignoreContext',$pa_options);
+		$vn_attribute_id = caGetOption('attribute_id',$pa_options);
 
 		$o_log->logInfo(_t("Export mapping processor called with parameters [exporter_item_id:%1 table_num:%2 record_id:%3]", $pn_item_id, $pn_table_num, $pn_record_id));
 
@@ -1357,12 +1361,12 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 			$vn_new_table_num = $this->getAppDatamodel()->getTableNum($vs_context);
 			$vb_context_is_related_table = false;
+			$va_related = null;
 
 			if($vn_new_table_num){ // switch to new table
 				$vs_key = $this->getAppDatamodel()->getTablePrimaryKeyName($vs_context);
 			} else { // this table, i.e. hierarchy context switch
 				$vs_key = $t_instance->primaryKey();
-				$vn_new_table_num = $pn_table_num;
 			}
 
 			$o_log->logInfo(_t("Initiating context switch to '%1' for mapping ID %2 and record ID %3. The processor now tries to find matching records for the switch and calls himself for each of those items.", $vs_context, $pn_item_id, $pn_record_id));
@@ -1400,7 +1404,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						$va_related[] = array($vs_key => intval($vn_pk));
 					}
 					break;
-				default: // plain old related table
+				default:
 					if($vn_new_table_num) {
 
 						$va_options = array(
@@ -1414,8 +1418,31 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 						$va_related = $t_instance->getRelatedItems($vs_context, $va_options);
 						$vb_context_is_related_table = true;
-					} else {
-						return array();
+					} else { // container or invalid context
+						$va_context_tmp = explode('.', $vs_context);
+						if(sizeof($va_context_tmp) != 2) {
+							$o_log->logError(_t("Invalid context %1. Ignoring this mapping.", $vs_context));
+							return array();
+						}
+
+						$va_attrs = $t_instance->getAttributesByElement($va_context_tmp[1]);
+
+						$va_info = array();
+
+						if(is_array($va_attrs) && sizeof($va_attrs)>0) {
+
+							$o_log->logInfo(_t("Switching context for element code: %1.", $va_context_tmp[1]));
+							$o_log->logDebug(_t("Raw attribute value array is as follows. The mapping will now be repeated for each (outer) attribute. %1", print_r($va_attrs,true)));
+
+							foreach($va_attrs as $vo_attr) {
+								$va_attribute_export = $this->processExporterItem($pn_item_id,$pn_table_num,$pn_record_id,array_merge(array('ignoreContext' => true, 'attribute_id' => $vo_attr->getAttributeID()),$pa_options));
+								$va_info = array_merge($va_info,$va_attribute_export);
+							}
+						} else {
+							$o_log->logInfo(_t("Switching context for element code %1 failed. Either there is no attribute with that code attached to the current row or the code is invalid. Mapping is ignored for current row.", $va_context_tmp[1]));
+						}
+						return $va_info;
+
 					}
 					break;
 			}
@@ -1498,7 +1525,28 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$va_get_options['locale'] = $vs_locale;
 		}
 
-		if($vs_source) {
+		if($vn_attribute_id) {
+
+			$o_log->logInfo(_t("Processing mapping in attribute mode for attribute_id = %1.", $vn_attribute_id));
+
+			$t_attr = new ca_attributes($vn_attribute_id);
+			$va_values = $t_attr->getAttributeValues();
+
+			$o_log->logDebug(_t("Trying to find code %1 in value array for the current attribute.", $vs_source));
+			$o_log->logDebug(_t("Value array is %1.", $va_values));
+
+			foreach($va_values as $vo_val) {
+				if($vo_val->getElementCode() == $vs_source) {
+
+					$o_log->logDebug(_t("Found value %1.", $vo_val->getDisplayValue()));
+
+					$va_item_info[] = array(
+						'text' => $vo_val->getDisplayValue(),
+						'element' => $vs_element,
+					);
+				}
+			}
+		} else if($vs_source) {
 			$o_log->logDebug(_t("Source for current mapping is %1", $vs_source));
 			$va_matches = array();
 			// CONSTANT value
