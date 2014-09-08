@@ -447,6 +447,44 @@ class ca_data_exporter_items extends BaseModel {
 			'label' => _t('Sort'),
 			'description' => _t('Sorts the values returned for a context switch on these fields. Only valid when context is set.')
 		);
+
+		$va_settings['start_as_iso8601'] = array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Start as ISO8601'),
+			'description' => _t('If set, only the end of a date range is exported for the current mapping. Format is ISO8601. Only applies to exports of DateRange attributes.')
+		);
+
+		$va_settings['end_as_iso8601'] = array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('End as ISO8601'),
+			'description' => _t('If set, only the beginning of a date range is exported for the current mapping. Format is ISO8601. Only applies to exports of DateRange attributes.'),
+		);
+
+		$va_settings['dateFormat'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Date format'),
+			'description' => _t('Formatting option for DateRange attributes.')
+		);
 		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}

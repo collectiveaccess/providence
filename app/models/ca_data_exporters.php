@@ -1498,14 +1498,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		// always return URL for export, not an HTML tag
 		$va_get_options = array('returnURL' => true);
 
-		if($t_exporter_item->getSetting('convertCodesToDisplayText')){
-			$va_get_options['convertCodesToDisplayText'] = true;
-		}
-
-		if($t_exporter_item->getSetting('returnIdno')){
-			$va_get_options['returnIdno'] = true;
-		}
-
 		if($vs_delimiter = $t_exporter_item->getSetting("delimiter")){
 			$va_get_options['delimiter'] = $vs_delimiter;
 		}
@@ -1523,6 +1515,27 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$g_ui_locale = null;
 
 			$va_get_options['locale'] = $vs_locale;
+		}
+
+		// AttributeValue settings that are simply passed through by the exporter
+		if($t_exporter_item->getSetting('convertCodesToDisplayText')){
+			$va_get_options['convertCodesToDisplayText'] = true;
+		}
+
+		if($t_exporter_item->getSetting('returnIdno')){
+			$va_get_options['returnIdno'] = true;
+		}
+
+		if($t_exporter_item->getSetting('start_as_iso8601')){
+			$va_get_options['start_as_iso8601'] = true;
+		}
+
+		if($t_exporter_item->getSetting('end_as_iso8601')){
+			$va_get_options['end_as_iso8601'] = true;
+		}
+
+		if($vs_date_format = $t_exporter_item->getSetting('dateFormat')){
+			$va_get_options['dateFormat'] = $vs_date_format;
 		}
 
 		if($vn_attribute_id) {
