@@ -1596,13 +1596,13 @@
 			if(defined('__CA_ELASTICSEARCH_BASE_URL__') && (strlen(__CA_ELASTICSEARCH_BASE_URL__)>0)) {
 				$vs_elasticsearch_base_url = __CA_ELASTICSEARCH_BASE_URL__;
 			} else {
-				$vs_elasticsearch_base_url = $vo_search_indexing_conf->get('search_elasticsearch_base_url');
+				$vs_elasticsearch_base_url = $vo_search_conf->get('search_elasticsearch_base_url');
 			}
 
 			if(defined('__CA_ELASTICSEARCH_INDEX_NAME__') && (strlen(__CA_ELASTICSEARCH_INDEX_NAME__)>0)) {
 				$vs_elasticsearch_index_name = __CA_ELASTICSEARCH_INDEX_NAME__;
 			} else {
-				$vs_elasticsearch_index_name = $vo_search_indexing_conf->get('search_elasticsearch_index_name');
+				$vs_elasticsearch_index_name = $vo_search_conf->get('search_elasticsearch_index_name');
 			}
 	
 			// delete and create index
