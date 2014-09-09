@@ -1310,11 +1310,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		// if someone wants to mangle the whole tree ... well, go right ahead
 		$o_manager = new ApplicationPluginManager();
 
-		if(is_null($va_plugin_export = $o_manager->hookExportRecord(array('exporter_instance' => $t_exporter, 'record_id' => $pn_record_id, 'export' => $va_export)))){
-			return; // skip this record if plugin returns null
-		} else {
-			$va_export = $va_plugin_export['export'];
-		}
+		$o_manager->hookExportRecord(array('exporter_instance' => $t_exporter, 'record_id' => $pn_record_id, 'export' => &$va_export));
 		
 		$pa_options['settings'] = $t_exporter->getSettings();
 
@@ -1651,12 +1647,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$va_replacements = ca_data_exporter_items::getReplacementArray($vs_original_values,$vs_replacement_values);
 		
 		foreach($va_item_info as $vn_key => &$va_item){
-			// if returned value from plugin is null then we skip the item
-			if(is_null($va_plugin_item = $this->opo_app_plugin_manager->hookExportItemBeforeSettings(array('instance' => $t_instance, 'exporter_item_instance' => $t_exporter_item, 'export_item' => $va_item)))){
-				continue;
-			} else {
-				$va_item = $va_plugin_item['export_item'];
-			}
+			$this->opo_app_plugin_manager->hookExportItemBeforeSettings(array('instance' => $t_instance, 'exporter_item_instance' => $t_exporter_item, 'export_item' => &$va_item));
 
 			// handle skipIfExpression setting
 			if($vs_skip_if_expr){
@@ -1699,11 +1690,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			}
 
 			// if returned value is null then we skip the item
-			if(is_null($va_plugin_item = $this->opo_app_plugin_manager->hookExportItem(array('instance' => $t_instance, 'exporter_item_instance' => $t_exporter_item, 'export_item' => $va_item)))){
-				continue;
-			} else {
-				$va_item = $va_plugin_item['export_item'];
-			}
+			$this->opo_app_plugin_manager->hookExportItem(array('instance' => $t_instance, 'exporter_item_instance' => $t_exporter_item, 'export_item' => &$va_item));
 		}
 
 		$o_log->logInfo(_t("Extracted data for this mapping is as follows:"));
