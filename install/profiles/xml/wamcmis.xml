@@ -703,6 +703,22 @@
             </label>
           </labels>
         </item>
+        <item idno="in_collection" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>found in collection</name_singular>
+              <name_plural>found in collection</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="unknown" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>unknown</name_singular>
+              <name_plural>unknown</name_plural>
+            </label>
+          </labels>
+        </item>
       </items>
     </list>
     <list code="object_label_types" hierarchical="0" system="0" vocabulary="0">
@@ -12753,6 +12769,55 @@
         </item>
       </items>
     </list>
+    <list code="CR_recommendations" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_AU">
+          <name>Conservation Report Recommendations</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="very_sensitive_recommendations" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Very Sensitive</name_singular>
+              <name_plural>Very Sensitve</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="sensitive_recommendations" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Sensitive</name_singular>
+              <name_plural>Sensitive</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="non_sensitive_recommendations" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Non-Sensitive</name_singular>
+              <name_plural>Non-Sensitive</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="synthetics_recommendations" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Synthetics</name_singular>
+              <name_plural>Synthetics</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="special_recommendations" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Special Recommendations</name_singular>
+              <name_plural>Special Recommendations</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
   </lists>
   <elementSets>
     <metadataElement code="set_description" datatype="Text">
@@ -17034,6 +17099,15 @@ Examples: "mm", "C", "km", "ha".</description>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+        <restriction>
+          <table>ca_occurrences</table>
+          <type>conservation_report</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="technique" datatype="Text">
@@ -20551,7 +20625,7 @@ Documentation: &lt;l&gt;^classification_doc&lt;/l&gt;</setting>
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="cr_materials" datatype="List" list="associated_specimen_types">
+    <metadataElement code="cr_materials" datatype="List" list="CR_materials">
       <labels>
         <label locale="en_AU">
           <name>Conservation Report Materials</name>
@@ -20600,7 +20674,7 @@ Documentation: &lt;l&gt;^classification_doc&lt;/l&gt;</setting>
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="cr_condition_rating" datatype="List" list="associated_specimen_types">
+    <metadataElement code="cr_condition_rating" datatype="List" list="CR_conditions_rating">
       <labels>
         <label locale="en_AU">
           <name>Conservation Report Condition Rating</name>
@@ -20618,6 +20692,195 @@ All of 3, plus more obvious damage. 5. Poor: Incomplete, non-functional, damaged
           <type>conservation_report</type>
           <settings>
             <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="cr_condition" datatype="List" list="CR_conditions">
+      <labels>
+        <label locale="en_AU">
+          <name>Conservation Report Condition</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">select</setting>
+      </settings>
+      <elements>
+        <metadataElement code="condition_details" datatype="Text">
+          <labels>
+            <label locale="en_AU">
+              <name>Details of condition</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+            <setting name="regex"/>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="usewysiwygeditor">0</setting>
+            <setting name="doesNotTakeLocale">0</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="suggestExistingValues">0</setting>
+            <setting name="suggestExistingValueSort">value</setting>
+            <setting name="default_text"/>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+            <setting name="displayTemplate"/>
+            <setting name="displayDelimiter">,</setting>
+            <setting name="isDependentValue">0</setting>
+          </settings>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_occurrences</table>
+          <type>conservation_report</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">256</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="detailsCondition" datatype="Text">
+      <labels>
+        <label locale="en_AU">
+          <name>Details of condition</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldHeight">10</setting>
+        <setting name="usewysiwygeditor">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_occurrences</table>
+          <type>conservation_report</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">0</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="cr_treatment" datatype="List" list="CR_treatment">
+      <labels>
+        <label locale="en_AU">
+          <name>Condition Report Treatment</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">select</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_occurrences</table>
+          <type>conservation_report</type>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">256</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="cr_treatment_details" datatype="Text">
+      <labels>
+        <label locale="en_AU">
+          <name>Details of treatment</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldHeight">10</setting>
+        <setting name="usewysiwygeditor">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_occurrences</table>
+          <type>conservation_report</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="cr_recommendations" datatype="Text">
+      <labels>
+        <label locale="en_AU">
+          <name>Display or Storage Recommendation Details</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldHeight">15</setting>
+        <setting name="default_text">= IF VERY SENSITIVE =&#13;
+Display in stable environment &#13;
+Temperature 20°C ± 5°C seasonally, ± 2°C daily &#13;
+Relative humidity 50% ± 5% seasonally and daily&#13;
+Max light level 50 lux, UV less than 30 µW/lumen  =  1500 µW/m²  (or 1.5 mW/ m²) energy &#13;
+Display period 3 mths per 12 mths &#13;
+Store in stable environment as display, eliminate light &#13;
+Handle with gloves&#13;
+= IF SENSITIVE =&#13;
+Display in stable environment &#13;
+Temperature 20°C ± 5°C seasonally, ± 2°C daily&#13;
+Relative humidity 50% ± 10% seasonally, ± 5% daily&#13;
+Max light level 200 lux, max UV 75 µW/lumen = 15000 µW/m² (or 15.0 mW/ m²) energy &#13;
+Display period 6 mths per 12 mths &#13;
+Store in stable environment as display, eliminate light &#13;
+Handle with gloves&#13;
+= IF NON-SENSITIVE =&#13;
+Display in stable environment &#13;
+Temperature 20°C ± 5°C seasonally, ± 2°C daily&#13;
+Relative humidity 45% ± 15% seasonally, ± 5% daily&#13;
+Max light level 300 lux, max UV 150 µW/lumen = 45000 µW/m² (or 45.0 mW/ m²) energy &#13;
+Display period unrestricted &#13;
+Store in stable environment as display, eliminate light &#13;
+Handle with gloves&#13;
+= IF SYNTHETICS =&#13;
+Display in stable environment &#13;
+Temperature 20°C ± 5°C seasonally, ± 2°C daily&#13;
+Relative humidity less than 50%, ± 5% daily &#13;
+Max light level 50 lux, UV less than 30 µW/lumen = 1500 µW/m² (or 1.5 mW/ m²) energy &#13;
+Display period 3 mths per 12 mths &#13;
+Store most plastics in stable reduced oxygen environment with temperature 3-5°C, less than 50% RH, &#13;
+Eliminate light &#13;
+= IF CUSTOM RECOMMENDATIONS =&#13;
+Display in stable environment  Temperature ??°C ± ?°C seasonally, ± ?°C daily  Relative humidity ??% ± ?% seasonally and daily Max light level ?? lux, UV less than ?? µW/lumen  =  ???? µW/m²  (or ??? mW/ m²) energy  Display period ? mths per ?? mths  Store in stable environment as display, eliminate light  Handle with gloves </setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_occurrences</table>
+          <type>conservation_report</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="cr_recommendations_types" datatype="List" list="CR_recommendations">
+      <labels>
+        <label locale="en_AU">
+          <name>Condition Recommendation Types</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">radio_buttons</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_occurrences</table>
+          <type>conservation_report</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">10</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
@@ -25346,6 +25609,193 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
               <bundle>ca_objects_deaccession</bundle>
               <settings>
                 <setting name="readonly"/>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+    <userInterface code="conservation_report" type="ca_occurrences">
+      <labels>
+        <label locale="en_AU">
+          <name>Conservation Report Editor</name>
+        </label>
+      </labels>
+      <typeRestrictions>
+        <restriction type="conservation_report"/>
+      </typeRestrictions>
+      <userAccess>
+        <permission user="administrator" access="edit"/>
+      </userAccess>
+      <groupAccess>
+        <permission group="admin" access="edit"/>
+      </groupAccess>
+      <screens>
+        <screen idno="conservation_report" default="0">
+          <labels>
+            <label locale="en_AU">
+              <name>Conservation Report</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction type="conservation_report"/>
+          </typeRestrictions>
+          <bundlePlacements>
+            <placement code="preferred_labels1">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_AU">Report Title</setting>
+                <setting name="readonly"/>
+                <setting name="usewysiwygeditor"/>
+              </settings>
+            </placement>
+            <placement code="idno2">
+              <bundle>idno</bundle>
+              <settings>
+                <setting name="readonly"/>
+              </settings>
+            </placement>
+            <placement code="ca_occurrences1">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="label" locale="en_AU">WAM CTRMS Job No.</setting>
+                <setting name="readonly"/>
+                <setting name="restrict_to_relationship_types">related</setting>
+                <setting name="restrict_to_types">conservation_job</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="display_template">^ca_occurrences.preferred_labels</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+              </settings>
+            </placement>
+            <placement code="ca_objects2">
+              <bundle>ca_objects</bundle>
+              <settings>
+                <setting name="label" locale="en_AU">Related Objects and items</setting>
+                <setting name="readonly"/>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="display_template">^ca_objects.preferred_labels</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+              </settings>
+            </placement>
+            <placement code="ca_entities3">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_AU">Owners and Conservators</setting>
+                <setting name="readonly"/>
+                <setting name="restrict_to_relationship_types">cr_conserved</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="display_template">^ca_entities.preferred_labels</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_SizeOrDuration4">
+              <bundle>ca_attribute_SizeOrDuration</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_media4">
+              <bundle>ca_attribute_media</bundle>
+              <settings>
+                <setting name="label" locale="en_AU">Images</setting>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_cr_materials5">
+              <bundle>ca_attribute_cr_materials</bundle>
+              <settings>
+                <setting name="label" locale="en_AU">Materials (present in order of sensitivity):</setting>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_occurrenceRemarks">
+              <bundle>ca_attribute_occurrenceRemarks</bundle>
+              <settings>
+                <setting name="label" locale="en_AU">Details of object description</setting>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_cr_condition_rati">
+              <bundle>ca_attribute_cr_condition_rating</bundle>
+              <settings>
+                <setting name="label" locale="en_AU">Overall condition rating</setting>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_cr_condition8">
+              <bundle>ca_attribute_cr_condition</bundle>
+              <settings>
+                <setting name="label" locale="en_AU">Condition Report</setting>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_detailsCondition9">
+              <bundle>ca_attribute_detailsCondition</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_cr_treatment10">
+              <bundle>ca_attribute_cr_treatment</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_cr_treatment_deta">
+              <bundle>ca_attribute_cr_treatment_details</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_cr_recommendation">
+              <bundle>ca_attribute_cr_recommendations_types</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_cr_recommendation">
+              <bundle>ca_attribute_cr_recommendations</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_storage_locations10">
+              <bundle>ca_storage_locations</bundle>
+              <settings>
+                <setting name="label" locale="en_AU">Location of treatment</setting>
+                <setting name="readonly"/>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="display_template">^ca_storage_locations.preferred_labels</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+                <setting name="useHierarchicalBrowser">1</setting>
+                <setting name="hierarchicalBrowserHeight">200px</setting>
               </settings>
             </placement>
           </bundlePlacements>
