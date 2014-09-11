@@ -987,10 +987,10 @@
 										
 										
 											$va_wheres = array();
-											if ((sizeof($va_restrict_to_relationship_types) > 0) && is_object($t_item_rel)) {
+											if ((sizeof($va_restrict_to_relationship_types) > 0) && is_object($t_item_rel) && (bool)$vn_state) {
 												$va_wheres[] = "(".$t_item_rel->tableName().".type_id IN (".join(',', $va_restrict_to_relationship_types)."))";
 											}
-											if ((sizeof($va_exclude_relationship_types) > 0) && is_object($t_item_rel)) {
+											if ((sizeof($va_exclude_relationship_types) > 0) && is_object($t_item_rel) && (bool)$vn_state) {
 												$va_wheres[] = "(".$t_item_rel->tableName().".type_id NOT IN (".join(',', $va_exclude_relationship_types)."))";
 											}
 										
