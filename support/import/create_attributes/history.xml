@@ -151,7 +151,7 @@
 						<name>Measurement (distance)</name>
 					</label></labels>
 					<settings>
-						<setting name="fieldWidth">30</setting>
+						<setting name="fieldWidth">25</setting>
 					</settings>
 				</metadataElement>
 				<metadataElement code="history_measurement_weight" datatype="Weight">
@@ -159,21 +159,25 @@
 						<name>Weight</name>
 					</label></labels>
 				<settings>
-					<setting name="fieldWidth">30</setting>
+					<setting name="fieldWidth">25</setting>
 				</settings>
 			</metadataElement>
 				<metadataElement code="history_measurement_text" datatype="Text">
 				<labels><label locale="en_AU">
-						<name>Weight</name>
+						<name>Text Measurement</name>
 					</label></labels>
 				<settings>
-					<setting name="fieldWidth">30</setting>
+					<setting name="fieldWidth">25</setting>
 				</settings>
 			</metadataElement>
 				<metadataElement code="measure_notes" datatype="Text">
 					<labels><label locale="en_AU">
 						<name>Notes</name>
 					</label></labels>
+					<settings>
+						<setting name="fieldWidth">150</setting>
+						<setting name="fieldHeight">4</setting>
+					</settings>
 				</metadataElement>
 
 			</elements>
