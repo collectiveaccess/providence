@@ -3,30 +3,237 @@
 				 xsi:noNamespaceSchemaLocation="../../../install/profiles/xml/profile.xsd" useForConfiguration="1"
 				 infoUrl="http://wamwpcmis.da.wa.gov.au">
 	<profileName>Western Australian Museum CMIS</profileName>
-	<profileDescription>Western Australian Museum Collection Managment Information System</profileDescription>
+	<profileDescription>Western Australian Museum Collection Management Information System</profileDescription>
 	<locales>
 		<locale lang="en" country="AU">English (Australian)</locale>
 	</locales>
-	<lists/>
-	<elementSets>
-		<metadataElement code="set_description" datatype="Text">
+	<lists>
+		<list code="history_material_types" hierarchical="1" system="1" vocabulary="1">
 			<labels>
 				<label locale="en_AU">
-					<name>Introduction</name>
-					<description>Narrative description for set. This is the primary text used when publicly presenting the set.
-					</description>
+					<name>History Material Types</name>
+				</label>
+			</labels>
+		</list>
+		<list code="history_measurement_precision_types" hierarchical="0" system="1" vocabulary="0">
+			<labels>
+				<label locale="en_AU">
+					<name>History Measurement Precision Types</name>
+				</label>
+			</labels>
+			<items>
+				<item idno="precise" enabled="1" default="1" type="concept">
+					<labels>
+						<label locale="en_AU" preferred="1">
+							<name_singular>Precise</name_singular>
+							<name_plural>Precise</name_plural>
+						</label>
+					</labels>
+				</item>
+				<item idno="minimum" enabled="1" default="0" type="concept">
+					<labels>
+						<label locale="en_AU" preferred="1">
+							<name_singular>Minimum</name_singular>
+							<name_plural>Minima</name_plural>
+						</label>
+					</labels>
+				</item>
+				<item idno="maximum" enabled="1" default="0" type="concept">
+					<labels>
+						<label locale="en_AU" preferred="1">
+							<name_singular>Maximum</name_singular>
+							<name_plural>Maxima</name_plural>
+						</label>
+					</labels>
+				</item>
+
+				<item idno="approximate" enabled="1" default="0" type="concept">
+					<labels>
+						<label locale="en_AU" preferred="1">
+							<name_singular>Approximate</name_singular>
+							<name_plural>Approximate</name_plural>
+						</label>
+					</labels>
+				</item>
+			</items>
+		</list>
+		<list code="history_measurement_types" hierarchical="0" system="1" vocabulary="0">
+			<labels>
+				<label locale="en_AU">
+					<name>History Measurement Types</name>
+				</label>
+			</labels>
+			<items>
+				<item idno="length" enabled="1" default="1" type="concept">
+					<labels>
+						<label locale="en_AU" preferred="1">
+							<name_singular>Length</name_singular>
+							<name_plural>Lengths</name_plural>
+						</label>
+					</labels>
+				</item>
+				<item idno="width" enabled="1" default="0" type="concept">
+					<labels>
+						<label locale="en_AU" preferred="1">
+							<name_singular>Width</name_singular>
+							<name_plural>Widths</name_plural>
+						</label>
+					</labels>
+				</item>
+				<item idno="height" enabled="1" default="0" type="concept">
+					<labels>
+						<label locale="en_AU" preferred="1">
+							<name_singular>Height</name_singular>
+							<name_plural>Heights</name_plural>
+						</label>
+					</labels>
+				</item>
+				<item idno="diameter" enabled="1" default="0" type="concept">
+					<labels>
+						<label locale="en_AU" preferred="1">
+							<name_singular>Diameter</name_singular>
+							<name_plural>Diameters</name_plural>
+						</label>
+					</labels>
+				</item>
+				<item idno="weight" enabled="1" default="0" type="concept">
+					<labels>
+						<label locale="en_AU" preferred="1">
+							<name_singular>Weight</name_singular>
+							<name_plural>Weights</name_plural>
+						</label>
+					</labels>
+				</item>
+			</items>
+		</list>
+	</lists>
+	<elementSets>
+		<metadataElement code="historyMeasurementContainer" datatype="Container">
+			<labels><label locale="en_AU">
+				<name>Measurements(Including Type)</name>
+			</label>
+			</labels>
+			<settings>
+				<setting name="lineBreakAfterNumberOfElements">3</setting>
+			</settings>
+			<elements>
+				<metadataElement code="history_measurement_type" list="history_measurement_types" datatype="List">
+					<labels>
+						<label locale="en_AU">
+							<name>Measurement Type</name>
+						</label>
+					</labels>
+					<settings>
+						<setting name="doesNotTakeLocale">0</setting>
+						<setting name="render">select</setting>
+					</settings>
+				</metadataElement>
+				<metadataElement code="history_measurement_precision" datatype="List" list="history_measurement_precision_types">
+					<labels><label locale="en_AU">
+						<name>Precision</name>
+					</label></labels>
+					<settings>
+						<setting name="doesNotTakeLocale">0</setting>
+						<setting name="render">select</setting>
+					</settings>
+				</metadataElement>
+				<metadataElement code="measure_display_flag" datatype="List" list="yesNo">
+					<labels><label locale="en_AU">
+						<name>Display Flag</name>
+					</label></labels>
+					<settings>
+						<setting name="doesNotTakeLocale">0</setting>
+						<setting name="render">select</setting>
+					</settings>
+				</metadataElement>
+				<metadataElement code="history_measurement_length" datatype="Length">
+					<labels><label locale="en_AU">
+						<name>Measurement (distance)</name>
+					</label></labels>
+					<settings>
+						<setting name="fieldWidth">30</setting>
+					</settings>
+				</metadataElement>
+				<metadataElement code="history_measurement_weight" datatype="Weight">
+				<labels><label locale="en_AU">
+						<name>Weight</name>
+					</label></labels>
+				<settings>
+					<setting name="fieldWidth">30</setting>
+				</settings>
+			</metadataElement>
+				<metadataElement code="history_measurement_text" datatype="Text">
+				<labels><label locale="en_AU">
+						<name>Weight</name>
+					</label></labels>
+				<settings>
+					<setting name="fieldWidth">30</setting>
+				</settings>
+			</metadataElement>
+				<metadataElement code="measure_notes" datatype="Text">
+					<labels><label locale="en_AU">
+						<name>Notes</name>
+					</label></labels>
+				</metadataElement>
+
+			</elements>
+			<typeRestrictions>
+				<restriction>
+					<table>ca_objects</table>
+					<type>history</type>
+					<includeSubtypes>1</includeSubtypes>
+					<settings>
+						<setting name="minAttributesPerRow">1</setting>
+						<setting name="maxAttributesPerRow">255</setting>
+						<setting name="minimumAttributeBundlesToDisplay">1</setting>
+					</settings>
+				</restriction>
+			</typeRestrictions>
+		</metadataElement>
+		<metadataElement code="history_material" list="history_material_types" datatype="List">
+			<labels>
+				<label locale="en_AU">
+					<name>Materials (History)</name>
 				</label>
 			</labels>
 			<settings>
-				<setting name="fieldWidth">70</setting>
-				<setting name="fieldHeight">6</setting>
+				<setting name="doesNotTakeLocale">0</setting>
+				<setting name="render">horiz_hierbrowser_with_search</setting>
 			</settings>
 			<typeRestrictions>
 				<restriction>
-					<table>ca_sets</table>
+					<table>ca_objects</table>
+					<type>history</type>
+					<includeSubtypes>1</includeSubtypes>
 					<settings>
 						<setting name="minAttributesPerRow">1</setting>
-						<setting name="maxAttributesPerRow">3</setting>
+						<setting name="maxAttributesPerRow">255</setting>
+						<setting name="minimumAttributeBundlesToDisplay">1</setting>
+					</settings>
+				</restriction>
+			</typeRestrictions>
+		</metadataElement>
+		<metadataElement code="department" datatype="Entities">
+			<labels>
+				<label locale="en_AU">
+					<name>Department</name>
+				</label>
+			</labels>
+			<settings>
+				<setting name="requireValue">0</setting>
+				<setting name="doesNotTakeLocale">0</setting>
+				<setting name="canBeUsedInSort">0</setting>
+				<setting name="canBeUsedInSearchForm">1</setting>
+				<setting name="canBeUsedInDisplay">1</setting>
+			</settings>
+			<typeRestrictions>
+				<restriction>
+					<table>ca_objects</table>
+					<type>history</type>
+					<includeSubtypes>1</includeSubtypes>
+					<settings>
+						<setting name="minAttributesPerRow">1</setting>
+						<setting name="maxAttributesPerRow">1</setting>
 						<setting name="minimumAttributeBundlesToDisplay">1</setting>
 					</settings>
 				</restriction>
@@ -34,7 +241,57 @@
 		</metadataElement>
 	</elementSets>
 	<userInterfaces>
-		<userInterface code="anthropology" type="ca_objects">
+		<userInterface code="history" type="ca_objects">
+			<labels>
+				<label locale="en_AU">
+					<name>History Editor</name>
+				</label>
+			</labels>
+			<typeRestrictions>
+				<restriction type="history"/>
+				<restriction type="early_childhood"/>
+			</typeRestrictions>
+			<groupAccess>
+				<permission group="Administrators" access="edit"/>
+			</groupAccess>
+			<screens>
+				<screen idno="history_basic" default="1">
+					<labels>
+						<label locale="en_AU">
+							<name>Basic Information</name>
+						</label>
+					</labels>
+					<typeRestrictions>
+						<restriction type="history"/>
+						<restriction type="early_childhood"/>
+					</typeRestrictions>
+					<bundlePlacements>
+						<placement code="ca_attribute_history_material">
+							<bundle>ca_attribute_history_material</bundle>
+							<settings>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_HistoryMeasurement">
+							<bundle>ca_attribute_historyMeasurementContainer</bundle>
+							<settings>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_department">
+							<bundle>ca_attribute_department</bundle>
+							<settings>
+								<setting name="sortDirection">ASC</setting>
+								<setting name="readonly"/>
+							</settings>
+						</placement>
+					</bundlePlacements>
+				</screen>
+			</screens>
+		</userInterface>
+		<!--<userInterface code="anthropology" type="ca_objects">
 			<labels>
 				<label locale="en_AU">
 					<name>Anthropology Editor</name>
@@ -761,1393 +1018,23 @@
 					</bundlePlacements>
 				</screen>
 			</screens>
-		</userInterface>
+		</userInterface>-->
 	</userInterfaces>
 	<relationshipTypes>
-		<relationshipTable name="ca_loans_x_entities">
-			<types>
-				<type code="lender" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>is borrowed from</typename>
-							<typename_reverse>is lender of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="borrower" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>is lent to</typename>
-							<typename_reverse>is borrower of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="authorizer" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is authorized by</typename>
-							<typename_reverse>is authorizer</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_loans_x_movements">
-			<types>
-				<type code="location" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is located at</typename>
-							<typename_reverse>is location of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_loans_x_objects">
-			<types>
-				<type code="loan" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>has as part of</typename>
-							<typename_reverse>is part of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_movements_x_entities">
-			<types>
-				<type code="authorizer" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>was authorized by</typename>
-							<typename_reverse>was authorizer</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="mover" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>was moved by</typename>
-							<typename_reverse>was mover</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_movements_x_object_lots">
-			<types>
-				<type code="part" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>has as part of</typename>
-							<typename_reverse>is part of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_movements_x_objects">
-			<types>
-				<type code="part" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>has as part of</typename>
-							<typename_reverse>is part of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_list_items_x_list_items">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_objects_x_storage_locations">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is located at</typename>
-							<typename_reverse>is location of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="permanent" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>permanently located at</typename>
-							<typename_reverse>is permanent location of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="current" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>currently located at</typename>
-							<typename_reverse>has current location</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_object_lots_x_storage_locations">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is located at</typename>
-							<typename_reverse>is location of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_object_representations_x_entities">
-			<types>
-				<type code="creator" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>was created by</typename>
-							<typename_reverse>is creator</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="rights_holder" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>rights held by</typename>
-							<typename_reverse>is rights holder</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_object_representations_x_places">
-			<types>
-				<type code="depicts" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>depicts</typename>
-							<typename_reverse>depicts</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_object_representations_x_occurrences">
-			<types>
-				<type code="depicts" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>depicts</typename>
-							<typename_reverse>depicts</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_object_representations_x_vocabulary_terms">
-			<types>
-				<type code="subject" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>has subject</typename>
-							<typename_reverse>is subject</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_object_representations_x_collections">
-			<types>
-				<type code="depicts" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>part of</typename>
-							<typename_reverse>part of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_object_representations_x_storage_locations">
-			<types>
-				<type code="depicts" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>current location</typename>
-							<typename_reverse>current location</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_object_representations_x_object_representations">
-			<types>
-				<type code="depicts" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>related</typename>
-							<typename_reverse>related</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_tour_stops_x_objects">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_tour_stops_x_entities">
-			<types>
-				<type code="subject" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>has subject</typename>
-							<typename_reverse>is subject</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_tour_stops_x_places">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is located at</typename>
-							<typename_reverse>is location of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_tour_stops_x_vocabulary_terms">
-			<types>
-				<type code="subject" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>has subject</typename>
-							<typename_reverse>is subject</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_tour_stops_x_occurrences">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_tour_stops_x_collections">
-			<types>
-				<type code="part" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>has as part of</typename>
-							<typename_reverse>is part of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_tour_stops_x_tour_stops">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_storage_locations_x_storage_locations">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_occurrences_x_storage_locations">
-			<types>
-				<type code="related" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-					<subTypeLeft>exhibition</subTypeLeft>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_places_x_storage_locations">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_storage_locations_x_vocabulary_terms">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_loans_x_places">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_loans_x_occurrences">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_loans_x_collections">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_loans_x_storage_locations">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_loans_x_vocabulary_terms">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_loans_x_object_lots">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_loans_x_loans">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_movements_x_places">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_movements_x_occurrences">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_movements_x_collections">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_movements_x_storage_locations">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_loans_x_object_representations">
-			<types>
-				<type code="lender" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is lent from</typename>
-							<typename_reverse>is lender of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_movements_x_object_representations">
-			<types>
-				<type code="part" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>has as part of</typename>
-							<typename_reverse>is part of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_object_lots_x_object_representations">
-			<types>
-				<type code="part" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>has as part of</typename>
-							<typename_reverse>is part of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_movements_x_vocabulary_terms">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_movements_x_movements">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
 		<relationshipTable name="ca_objects_x_entities">
 			<types>
-				<type code="creator" default="0">
+				<type code="department" default="0">
 					<labels>
 						<label locale="en_AU">
-							<typename>was created by</typename>
-							<typename_reverse>created</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="described" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>was described by</typename>
-							<typename_reverse>described</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="determined" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>was determined by</typename>
-							<typename_reverse>determined</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="donated" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>was donated by</typename>
-							<typename_reverse>donated</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="owned" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>was owned by</typename>
-							<typename_reverse>owned</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="publisher" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>was published by</typename>
-							<typename_reverse>published</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="discover" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>was discovered / collected by</typename>
-							<typename_reverse>discovered / collected</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="object_sighted_by_entity" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>was sighted by</typename>
-							<typename_reverse>sighted</typename_reverse>
-						</label>
-					</labels>
-					<subTypeLeft>anthropology</subTypeLeft>
-					<subTypeRight>ind</subTypeRight>
-				</type>
-				<type code="object_x_presented_x_entity" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>was presented to</typename>
-							<typename_reverse>was recipient of</typename_reverse>
-						</label>
-					</labels>
-					<subTypeLeft>anthropology</subTypeLeft>
-				</type>
-				<type code="registered" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>registered by</typename>
-							<typename_reverse>registered</typename_reverse>
-						</label>
-					</labels>
-					<subTypeRight>ind</subTypeRight>
-				</type>
-				<type code="source" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>has source</typename>
-							<typename_reverse>source of</typename_reverse>
-						</label>
-					</labels>
-					<subTypeLeft>DarwinCore</subTypeLeft>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_objects_x_collections">
-			<types>
-				<type code="part" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is part of</typename>
-							<typename_reverse>contains</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_objects_x_places">
-			<types>
-				<type code="created" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>was created at</typename>
-							<typename_reverse>was creation location of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="located" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>was located at</typename>
-							<typename_reverse>was location of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="depicts" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>depicts</typename>
-							<typename_reverse>is depicted by</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="describes" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>describes</typename>
-							<typename_reverse>is described by</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_objects_x_occurrences">
-			<types>
-				<type code="depicts" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>depicts</typename>
-							<typename_reverse>is depicted by</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="used" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>was used in</typename>
-							<typename_reverse>used</typename_reverse>
-						</label>
-					</labels>
-					<subTypeRight/>
-				</type>
-				<type code="describes" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>describes</typename>
-							<typename_reverse>is described by</typename_reverse>
-						</label>
-					</labels>
-					<subTypeRight/>
-				</type>
-				<type code="object_collecting_event" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>is part of</typename>
-							<typename_reverse>contains</typename_reverse>
-						</label>
-					</labels>
-					<subTypeRight>collectingEvent</subTypeRight>
-				</type>
-				<type code="object_identification" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>has identification</typename>
-							<typename_reverse>is identification of</typename_reverse>
-						</label>
-					</labels>
-					<subTypeRight/>
-				</type>
-				<type code="object_resource" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-					<subTypeRight>resource</subTypeRight>
-				</type>
-				<type code="object_exhibition" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>is exhibited in</typename>
-							<typename_reverse>is exhibition of</typename_reverse>
-						</label>
-					</labels>
-					<subTypeRight>exhibition</subTypeRight>
-				</type>
-				<type code="object_x_conservation_job" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>has conservation</typename>
-							<typename_reverse>has artefacts</typename_reverse>
-						</label>
-					</labels>
-					<subTypeRight>conservation_job</subTypeRight>
-				</type>
-				<type code="object_map" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>related to</typename>
-							<typename_reverse>related to</typename_reverse>
-						</label>
-					</labels>
-					<subTypeRight>map</subTypeRight>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_objects_x_objects">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="similar" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>is similar to</typename>
-							<typename_reverse>is similar to</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="duplicate" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>is duplicate of</typename>
-							<typename_reverse>is duplicate of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="part_of" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>is part of</typename>
-							<typename_reverse>contains</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_objects_x_vocabulary_terms">
-			<types>
-				<type code="described" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>is described by</typename>
-							<typename_reverse>describes</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="depicts" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>depicts</typename>
-							<typename_reverse>is depicted by</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="identification" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>has determination</typename>
-							<typename_reverse>is determined name for</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="associated" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>associated with</typename>
-							<typename_reverse>associated with</typename_reverse>
-						</label>
-					</labels>
-					<subTypeLeft>DarwinCore</subTypeLeft>
-					<subTypeRight>scientific_name</subTypeRight>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_entities_x_entities">
-			<types>
-				<type code="colleague" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>is colleague of</typename>
-							<typename_reverse>is colleague of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="related" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="spouse" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>is spouse of</typename>
-							<typename_reverse>is spouse of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="student" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>is student of</typename>
-							<typename_reverse>is student of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="professor" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is professor of</typename>
-							<typename_reverse>is professor of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_entities_x_places">
-			<types>
-				<type code="birthplace" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>was born at</typename>
-							<typename_reverse>was birthplace of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="residence" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>resided at</typename>
-							<typename_reverse>was residence of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="workplace" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>worked at</typename>
-							<typename_reverse>was workplace of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="ownership" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>owned</typename>
-							<typename_reverse>was owned by</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="built_by" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>built</typename>
-							<typename_reverse>was built by</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_entities_x_occurrences">
-			<types>
-				<type code="attended" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>attended</typename>
-							<typename_reverse>was attended by</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="managed" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>managed</typename>
-							<typename_reverse>was managed by</typename_reverse>
-						</label>
-					</labels>
-					<subTypeLeft>ind</subTypeLeft>
-					<subTypeRight>exhibition</subTypeRight>
-				</type>
-				<type code="recordedBy" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>collected</typename>
-							<typename_reverse>was collected by</typename_reverse>
-						</label>
-					</labels>
-					<subTypeRight>collectingEvent</subTypeRight>
-				</type>
-				<type code="identifiedBy" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>identified</typename>
-							<typename_reverse>was identified by</typename_reverse>
-						</label>
-					</labels>
-					<subTypeRight/>
-				</type>
-				<type code="entity_register" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>is registered in</typename>
-							<typename_reverse>contains registration of</typename_reverse>
-						</label>
-					</labels>
-					<subTypeRight>anthropology_register</subTypeRight>
-				</type>
-				<type code="individual_request_cons" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>requested</typename>
-							<typename_reverse>was requested by</typename_reverse>
-						</label>
-					</labels>
-					<subTypeLeft>ind</subTypeLeft>
-					<subTypeRight>conservation_job</subTypeRight>
-				</type>
-				<type code="individual_conserved_cons" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>conserved</typename>
-							<typename_reverse>was conserved by</typename_reverse>
-						</label>
-					</labels>
-					<subTypeLeft>ind</subTypeLeft>
-					<subTypeRight>conservation</subTypeRight>
-				</type>
-				<type code="client_x_conservation" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>conservation client</typename>
-							<typename_reverse>conservation client</typename_reverse>
-						</label>
-					</labels>
-					<subTypeLeft>org</subTypeLeft>
-					<subTypeRight>conservation_job</subTypeRight>
-				</type>
-				<type code="organisation_x_analysis" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>analyzed</typename>
-							<typename_reverse>analyzed by</typename_reverse>
-						</label>
-					</labels>
-					<subTypeLeft>org</subTypeLeft>
-					<subTypeRight>conservation_analysis</subTypeRight>
-				</type>
-				<type code="dcCreator" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>created</typename>
-							<typename_reverse>created by</typename_reverse>
-						</label>
-					</labels>
-					<subTypeRight>resource</subTypeRight>
-				</type>
-				<type code="entity_resource" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>related</typename>
-							<typename_reverse>related</typename_reverse>
-						</label>
-					</labels>
-					<subTypeRight>resource</subTypeRight>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_object_lots_x_entities">
-			<types>
-				<type code="donor" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>was donated by</typename>
-							<typename_reverse>is donor of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="provider" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>was provided by</typename>
-							<typename_reverse>is provider of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="collector" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>was collected by</typename>
-							<typename_reverse>collected</typename_reverse>
-						</label>
-					</labels>
-					<subTypeLeft/>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_object_lots_x_places">
-			<types>
-				<type code="originates" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>originates from</typename>
-							<typename_reverse>is origination location of</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="collectedAt" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>was collected at</typename>
-							<typename_reverse>was the site of</typename_reverse>
-						</label>
-					</labels>
-					<subTypeLeft/>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_object_lots_x_collections">
-			<types>
-				<type code="part_of" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is part of</typename>
-							<typename_reverse>contains</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_entities_x_collections">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="curator" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>Curates</typename>
-							<typename_reverse>Curated By</typename_reverse>
-						</label>
-					</labels>
-					<subTypeLeft>ind</subTypeLeft>
-					<subTypeRight>internal</subTypeRight>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_entities_x_vocabulary_terms">
-			<types>
-				<type code="described" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is described by</typename>
-							<typename_reverse>describes</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="scientific_name_author" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>author</typename>
-							<typename_reverse>authored by</typename_reverse>
-						</label>
-					</labels>
-					<subTypeLeft>ind</subTypeLeft>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_places_x_places">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_places_x_vocabulary_terms">
-			<types>
-				<type code="describes" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is described by</typename>
-							<typename_reverse>describes</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_occurrences_x_occurrences">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="scientificNameIdentification" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>scientificName</typename>
-							<typename_reverse>identifies</typename_reverse>
-						</label>
-					</labels>
-					<subTypeLeft/>
-					<subTypeRight/>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_occurrences_x_vocabulary_terms">
-			<types>
-				<type code="describes" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is described by</typename>
-							<typename_reverse>describes</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_places_x_occurrences">
-			<types>
-				<type code="site" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>was site of</typename>
-							<typename_reverse>occurred at</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="collecting_locality" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>was collecting location of</typename>
-							<typename_reverse>was collected at</typename_reverse>
-						</label>
-					</labels>
-					<subTypeRight>collectingEvent</subTypeRight>
-				</type>
-				<type code="place_x_resource" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>has source reference</typename>
-							<typename_reverse>is reference for</typename_reverse>
-						</label>
-					</labels>
-					<subTypeRight>resource</subTypeRight>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_collections_x_collections">
-			<types>
-				<type code="related" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is related to</typename>
-							<typename_reverse>is related to</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_collections_x_vocabulary_terms">
-			<types>
-				<type code="described" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is described by</typename>
-							<typename_reverse>describes</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_places_x_collections">
-			<types>
-				<type code="location" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is location of</typename>
-							<typename_reverse>is located in</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_representation_annotations_x_objects">
-			<types>
-				<type code="depicts" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>depicts</typename>
-							<typename_reverse>is depicted by</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="illustrated" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is illustrated by</typename>
-							<typename_reverse>illustrates</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_representation_annotations_x_entities">
-			<types>
-				<type code="depicts" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>depicts</typename>
-							<typename_reverse>is depicted by</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="describes" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>describes</typename>
-							<typename_reverse>is described by</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_representation_annotations_x_places">
-			<types>
-				<type code="depicts" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>depicts</typename>
-							<typename_reverse>is depicted by</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="describes" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>describes</typename>
-							<typename_reverse>is described by</typename_reverse>
-						</label>
-					</labels>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_representation_annotations_x_occurrences">
-			<types>
-				<type code="depicts" default="0">
-					<labels>
-						<label locale="en_AU">
-							<typename>depicts</typename>
-							<typename_reverse>is depicted by</typename_reverse>
-						</label>
-					</labels>
-				</type>
-				<type code="describes" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>describes</typename>
-							<typename_reverse>is described by</typename_reverse>
-						</label>
-					</labels>
-					<subTypeRight/>
-				</type>
-			</types>
-		</relationshipTable>
-		<relationshipTable name="ca_representation_annotations_x_vocabulary_terms">
-			<types>
-				<type code="describes" default="1">
-					<labels>
-						<label locale="en_AU">
-							<typename>is described by</typename>
-							<typename_reverse>describes</typename_reverse>
+							<typename>in department</typename>
+							<typename_reverse>is department for</typename_reverse>
 						</label>
 					</labels>
 				</type>
 			</types>
 		</relationshipTable>
 	</relationshipTypes>
+	<roles/>
+	<groups/>
+	<searchForms></searchForms>
 </profile>
