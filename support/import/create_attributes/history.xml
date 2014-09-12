@@ -8,6 +8,42 @@
 		<locale lang="en" country="AU">English (Australian)</locale>
 	</locales>
 	<lists>
+		<list code="object_types" hierarchical="0" system="0" vocabulary="1">
+			<labels>
+				<label locale="en_AU">
+					<name>Object Types</name>
+				</label>
+			</labels>
+			<items>
+				<item idno="DublinCore" enabled="1" default="0">
+					<labels>
+						<label locale="en_AU" preferred="1">
+							<name_singular>Cultural Heritage Record</name_singular>
+							<name_plural>Cultural Heritage Records</name_plural>
+						</label>
+					</labels>
+					<items>
+						<item idno="history" enabled="1" default="0">
+							<labels>
+								<label locale="en_AU" preferred="1">
+									<name_singular>History</name_singular>
+									<name_plural>History</name_plural>
+								</label>
+							</labels>
+						<items><item idno="history_part" enabled="1" default="0">
+							<labels>
+								<label locale="en_AU" preferred="1">
+									<name_singular>History Part</name_singular>
+									<name_plural>History Part</name_plural>
+								</label>
+							</labels>
+							</item>
+						</items>
+						</item>
+					</items>
+				</item>
+			</items>
+		</list>
 		<list code="history_material_types" hierarchical="1" system="1" vocabulary="1">
 			<labels>
 				<label locale="en_AU">
@@ -52,6 +88,23 @@
 						<label locale="en_AU" preferred="1">
 							<name_singular>Approximate</name_singular>
 							<name_plural>Approximate</name_plural>
+						</label>
+					</labels>
+				</item>
+			</items>
+		</list>
+		<list code="history_classification" hierarchical="1" system="1" vocabulary="1">
+			<labels>
+				<label locale="en_AU">
+					<name>History Classification</name>
+				</label>
+			</labels>
+			<items>
+				<item idno="unclassified" enabled="0" default="1">
+					<labels>
+						<label locale="en_AU" preferred="1">
+							<name_singular>Unclassified</name_singular>
+							<name_plural>Unclassified</name_plural>
 						</label>
 					</labels>
 				</item>
@@ -148,7 +201,7 @@
 				</metadataElement>
 				<metadataElement code="history_measurement_length" datatype="Length">
 					<labels><label locale="en_AU">
-						<name>Measurement (distance)</name>
+						<name>Dimension</name>
 					</label></labels>
 					<settings>
 						<setting name="fieldWidth">25</setting>
@@ -253,10 +306,12 @@
 			</labels>
 			<typeRestrictions>
 				<restriction type="history"/>
+				<restriction type="history_part"/>
 				<restriction type="early_childhood"/>
+
 			</typeRestrictions>
 			<groupAccess>
-				<permission group="Administrators" access="edit"/>
+				<permission group="admin" access="edit"/>
 			</groupAccess>
 			<screens>
 				<screen idno="history_basic" default="1">
@@ -293,736 +348,41 @@
 						</placement>
 					</bundlePlacements>
 				</screen>
-			</screens>
-		</userInterface>
-		<!--<userInterface code="anthropology" type="ca_objects">
-			<labels>
-				<label locale="en_AU">
-					<name>Anthropology Editor</name>
-				</label>
-			</labels>
-			<typeRestrictions>
-				<restriction type="anthropology"/>
-			</typeRestrictions>
-			<groupAccess>
-				<permission group="anthropology" access="read"/>
-			</groupAccess>
-			<screens>
-				<screen idno="anthropology_general" default="0">
+				<screen idno="history_part" default="1">
 					<labels>
 						<label locale="en_AU">
-							<name>General</name>
+							<name>Part Information</name>
 						</label>
 					</labels>
 					<typeRestrictions>
-						<restriction type="anthropology"/>
+						<restriction type="history_part"/>
 					</typeRestrictions>
 					<bundlePlacements>
-						<placement code="idno1">
-							<bundle>idno</bundle>
-							<settings>
-								<setting name="label" locale="en_AU">Registration Number</setting>
-								<setting name="width">20</setting>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="preferred_labels2">
-							<bundle>preferred_labels</bundle>
-							<settings>
-								<setting name="label" locale="en_AU">Register Entry</setting>
-								<setting name="description" locale="en_AU">Enter the name of the object in the register</setting>
-								<setting name="width">44</setting>
-								<setting name="height">2</setting>
-								<setting name="usewysiwygeditor"/>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="ca_attribute_objectClassificat">
-							<bundle>ca_attribute_objectClassification</bundle>
-							<settings>
-								<setting name="width">650</setting>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="ca_attribute_accessionDate6">
-							<bundle>ca_attribute_accessionDate</bundle>
-							<settings>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="ca_attribute_eventDate5">
-							<bundle>ca_attribute_eventDate</bundle>
-							<settings>
-								<setting name="label" locale="en_AU">Date Collected</setting>
-								<setting name="description" locale="en_AU">Please enter the date on which this object was collected.&#13;
-									DC.Coverage - designates a temporal element to the object''s history';
-								</setting>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="ca_collections6">
-							<bundle>ca_collections</bundle>
-							<settings>
-								<setting name="label" locale="en_AU">Related Collections</setting>
-								<setting name="add_label" locale="en_AU">add collection</setting>
-								<setting name="restrict_to_types">internal</setting>
-								<setting name="list_format">bubbles</setting>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="display_template">^ca_collections.hierarchy.preferred_labels</setting>
-								<setting name="minRelationshipsPerRow"/>
-								<setting name="maxRelationshipsPerRow"/>
-								<setting name="readonly"/>
-								<setting name="dont_include_subtypes_in_type_restriction">0</setting>
-								<setting name="dontShowDeleteButton">1</setting>
-							</settings>
-						</placement>
-						<placement code="ca_attribute_donation_date6">
-							<bundle>ca_attribute_donation_date</bundle>
-							<settings>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="ca_entities4">
-							<bundle>ca_entities</bundle>
-							<settings>
-								<setting name="label" locale="en_AU">Donor</setting>
-								<setting name="list_format">bubbles</setting>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="display_template">^ca_entities.preferred_labels</setting>
-								<setting name="readonly">1</setting>
-								<setting name="restrict_to_relationship_types">donated</setting>
-								<setting name="dont_include_subtypes_in_type_restriction">0</setting>
-								<setting name="dontShowDeleteButton">0</setting>
-								<setting name="minRelationshipsPerRow"/>
-								<setting name="maxRelationshipsPerRow"/>
-							</settings>
-						</placement>
-						<placement code="ca_places5">
-							<bundle>ca_places</bundle>
-							<settings>
-								<setting name="list_format">bubbles</setting>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="display_template">&lt;l&gt;^ca_places.preferred_labels&lt;/l&gt;&lt;br /&gt;&#13;
-									^ca_places.hierarchy.preferred_labels%delimiter=_➔_&#13;
-									^ca_places.georeference &#13;
-									^ca_places.georeference.coordinates&#13;
-									^ca_places.description
-								</setting>
-								<setting name="useHierarchicalBrowser">1</setting>
-								<setting name="hierarchicalBrowserHeight">200px</setting>
-								<setting name="readonly">1</setting>
-								<setting name="restrict_to_relationship_types">located</setting>
-								<setting name="restrict_to_types">location</setting>
-								<setting name="dont_include_subtypes_in_type_restriction">0</setting>
-								<setting name="dontShowDeleteButton">1</setting>
-								<setting name="minRelationshipsPerRow"/>
-								<setting name="maxRelationshipsPerRow">1</setting>
-							</settings>
-						</placement>
-						<placement code="ca_attribute_SizeOrDuration7">
-							<bundle>ca_attribute_SizeOrDuration</bundle>
-							<settings>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="ca_attribute_description8">
-							<bundle>ca_attribute_description</bundle>
-							<settings>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="ca_attribute_technique9">
-							<bundle>ca_attribute_technique</bundle>
-							<settings>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="ca_attribute_anthropologyMater">
-							<bundle>ca_attribute_anthropologyMaterialTypes</bundle>
-							<settings>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="ca_attribute_colour10">
-							<bundle>ca_attribute_colour</bundle>
-							<settings>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="ca_attribute_audit13">
-							<bundle>ca_attribute_audit</bundle>
-							<settings>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-					</bundlePlacements>
-				</screen>
-				<screen idno="anthropology_donor_collector" default="0">
-					<labels>
-						<label locale="en_AU">
-							<name>Donor/Collector</name>
-						</label>
-					</labels>
-					<typeRestrictions>
-						<restriction type="anthropology"/>
-						<restriction type="DublinCore"/>
-					</typeRestrictions>
-					<bundlePlacements>
-						<placement code="ca_entities1">
-							<bundle>ca_entities</bundle>
-							<settings>
-								<setting name="label" locale="en_AU">Donor</setting>
-								<setting name="add_label" locale="en_AU">add donor</setting>
-								<setting name="description" locale="en_AU">Enter the details of the Person or Institution from which the
-									object was sourced.
-								</setting>
-								<setting name="restrict_to_relationship_types">donated</setting>
-								<setting name="list_format">bubbles</setting>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="display_template">^ca_entities.preferred_labels&#13;
-									^ca_entities.address&#13;
-									^ca_entities.biography
-								</setting>
-								<setting name="minRelationshipsPerRow"/>
-								<setting name="maxRelationshipsPerRow"/>
-								<setting name="readonly"/>
-								<setting name="dont_include_subtypes_in_type_restriction">0</setting>
-								<setting name="dontShowDeleteButton">0</setting>
-							</settings>
-						</placement>
-						<placement code="ca_attribute_donation_date2">
-							<bundle>ca_attribute_donation_date</bundle>
-							<settings>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="ca_entities2">
-							<bundle>ca_entities</bundle>
-							<settings>
-								<setting name="label" locale="en_AU">Collector</setting>
-								<setting name="add_label" locale="en_AU">add collector</setting>
-								<setting name="description" locale="en_AU">Enter the details of the person who collected the object if
-									they are different from the donor.
-								</setting>
-								<setting name="restrict_to_relationship_types">discover</setting>
-								<setting name="list_format">bubbles</setting>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="display_template">^ca_entities.preferred_labels&#13;
-									^ca_entities.address&#13;
-									^ca_entities.biography
-								</setting>
-								<setting name="readonly"/>
-								<setting name="dont_include_subtypes_in_type_restriction">0</setting>
-								<setting name="dontShowDeleteButton">0</setting>
-								<setting name="minRelationshipsPerRow"/>
-								<setting name="maxRelationshipsPerRow">10</setting>
-							</settings>
-						</placement>
-						<placement code="ca_attribute_eventDate4">
-							<bundle>ca_attribute_eventDate</bundle>
-							<settings>
-								<setting name="label" locale="en_AU">Date Collected</setting>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="ca_attribute_eventRemarks3">
-							<bundle>ca_attribute_eventRemarks</bundle>
-							<settings>
-								<setting name="label" locale="en_AU">Collecting Details</setting>
-								<setting name="description" locale="en_AU">Enter the details of the collecting event</setting>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="usewysiwygeditor">1</setting>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-					</bundlePlacements>
-				</screen>
-				<screen idno="placeDetails" default="0">
-					<labels>
-						<label locale="en_AU">
-							<name>Place</name>
-						</label>
-					</labels>
-					<bundlePlacements>
-						<placement code="ca_places1">
-							<bundle>ca_places</bundle>
-							<settings>
-								<setting name="label" locale="en_AU">Locality</setting>
-								<setting name="description" locale="en_AU">DC.Coverage - designates the spatial element</setting>
-								<setting name="list_format">bubbles</setting>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="display_template">&lt;l&gt;^ca_places.preferred_labels&lt;/l&gt;&lt;br /&gt;&#13;
-									^ca_places.hierarchy.preferred_labels%delimiter=_➔_&#13;
-									^ca_places.georeference &#13;
-									^ca_places.georeference.coordinates&#13;
-									^ca_places.description
-								</setting>
-								<setting name="minRelationshipsPerRow"/>
-								<setting name="maxRelationshipsPerRow">1</setting>
-								<setting name="useHierarchicalBrowser">1</setting>
-								<setting name="hierarchicalBrowserHeight">200px</setting>
-								<setting name="readonly"/>
-								<setting name="restrict_to_relationship_types">located</setting>
-								<setting name="restrict_to_types">location</setting>
-								<setting name="dont_include_subtypes_in_type_restriction">0</setting>
-								<setting name="dontShowDeleteButton">0</setting>
-							</settings>
-						</placement>
-						<placement code="ca_attribute_siteDetails2">
-							<bundle>ca_attribute_siteDetails</bundle>
-							<settings>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-					</bundlePlacements>
-				</screen>
-				<screen idno="storageLocationAnthropology" default="0">
-					<labels>
-						<label locale="en_AU">
-							<name>Location / Storage</name>
-						</label>
-					</labels>
-					<typeRestrictions>
-						<restriction type="anthropology"/>
-						<restriction type="DublinCore"/>
-					</typeRestrictions>
-					<bundlePlacements>
-						<placement code="ca_objects_history5">
-							<bundle>ca_objects_history</bundle>
-							<settings>
-								<setting name="width">100%</setting>
-								<setting name="readonly"/>
-								<setting name="ca_object_lots_bequest_dateElement">dcModified</setting>
-								<setting name="ca_object_lots_bequest_color">#EEEEEE</setting>
-								<setting name="ca_object_lots_gift_dateElement">dcModified</setting>
-								<setting name="ca_object_lots_gift_color">#EEEEEE</setting>
-								<setting name="ca_object_lots_loan_dateElement">dcModified</setting>
-								<setting name="ca_object_lots_loan_color">ffffff</setting>
-								<setting name="ca_object_lots_long_term_loan_dateElement">dcModified</setting>
-								<setting name="ca_object_lots_long_term_loan_color">ffffff</setting>
-								<setting name="ca_object_lots_purchase_dateElement">dcModified</setting>
-								<setting name="ca_object_lots_purchase_color">#EEEEEE</setting>
-								<setting name="ca_object_lots_restricted_gift_dateElement">dcModified</setting>
-								<setting name="ca_object_lots_restricted_gift_color">#EEEEEE</setting>
-								<setting name="ca_occurrences_conservation_analysis_dateElement">dcModified</setting>
-								<setting name="ca_occurrences_conservation_analysis_color">#EEEEEE</setting>
-								<setting name="ca_occurrences_conservation_assignment_dateElement">dcModified</setting>
-								<setting name="ca_occurrences_conservation_assignment_color">#EEEEEE</setting>
-								<setting name="ca_occurrences_collectingEvent_dateElement">dcModified</setting>
-								<setting name="ca_occurrences_collectingEvent_color">#EEEEEE</setting>
-								<setting name="ca_occurrences_conservation_dateElement">dcModified</setting>
-								<setting name="ca_occurrences_conservation_color">#EEEEEE</setting>
-								<setting name="ca_occurrences_conservation_job_dateElement">dcModified</setting>
-								<setting name="ca_occurrences_conservation_job_color">#EEEEEE</setting>
-								<setting name="ca_occurrences_exhibition_dateElement">dcModified</setting>
-								<setting name="ca_occurrences_exhibition_color">#EEEEEE</setting>
-								<setting name="ca_occurrences_identification_dateElement">dcModified</setting>
-								<setting name="ca_occurrences_identification_color">#EEEEEE</setting>
-								<setting name="ca_occurrences_map_dateElement">dcModified</setting>
-								<setting name="ca_occurrences_map_color">#EEEEEE</setting>
-								<setting name="ca_occurrences_anthropology_register_dateElement">dcModified</setting>
-								<setting name="ca_occurrences_anthropology_register_color">#EEEEEE</setting>
-								<setting name="ca_occurrences_resource_dateElement">dcModified</setting>
-								<setting name="ca_occurrences_resource_color">#EEEEEE</setting>
-								<setting name="ca_movements_showTypes">73</setting>
-								<setting name="ca_movements_movement_dateElement">removal_date</setting>
-								<setting name="ca_movements_movement_color">75bad6</setting>
-								<setting name="ca_movements_movement_displayTemplate">
-									&lt;l&gt;^ca_movements.preferred_labels&lt;/l&gt;</setting>
-								<setting name="ca_loans_showTypes">7813</setting>
-								<setting name="ca_loans_showTypes">70</setting>
-								<setting name="ca_loans_showTypes">71</setting>
-								<setting name="ca_loans_custodial_dateElement">loan_in_date</setting>
-								<setting name="ca_loans_custodial_color">f09393</setting>
-								<setting name="ca_loans_custodial_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;&lt;br&gt;&#13;
-									Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
-									&lt;unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="borrower"&gt;^ca_entities.preferred_labels&lt;/unit&gt;&lt;/unit&gt;</setting>
-								<setting name="ca_loans_in_dateElement">loan_in_date</setting>
-								<setting name="ca_loans_in_color">ffc2ff</setting>
-								<setting name="ca_loans_in_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;&lt;br&gt;&#13;
-									Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
-									&lt;unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="borrower"&gt;^ca_entities.preferred_labels&lt;/unit&gt;&lt;/unit&gt;</setting>
-								<setting name="ca_loans_out_dateElement">loan_out_date</setting>
-								<setting name="ca_loans_out_color">f0e090</setting>
-								<setting name="ca_loans_out_displayTemplate">&lt;l&gt;^ca_loans.preferred_labels&lt;/l&gt;&lt;br&gt;&#13;
-									Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
-									&lt;unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="borrower"&gt;^ca_entities.preferred_labels&lt;/unit&gt;&lt;/unit&gt;</setting>
-								<setting name="ca_storage_locations_showRelationshipTypes">19</setting>
-								<setting name="ca_storage_locations_showRelationshipTypes">197</setting>
-								<setting name="ca_storage_locations_showRelationshipTypes">198</setting>
-								<setting name="ca_storage_locations_color">80ff59</setting>
-								<setting name="ca_storage_locations_displayTemplate">&lt;l&gt;^ca_storage_locations.hierarchy.preferred_labels%delimiter=_➔_&lt;/l&gt;</setting>
-								<setting name="showDeaccessionInformation"/>
-								<setting name="deaccession_color">#EEEEEE</setting>
-							</settings>
-						</placement>
-						<placement code="ca_attribute_francisStStore2">
-							<bundle>ca_attribute_francisStStore</bundle>
-							<settings>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="ca_entities2">
-							<bundle>ca_entities</bundle>
-							<settings>
-								<setting name="label" locale="en_AU">Presented To</setting>
-								<setting name="list_format">list</setting>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="display_template">&lt;table&gt;&#13;
-									&lt;tr&gt;&#13;
-									&lt;th&gt;Exchanged?&lt;/th&gt;&#13;
-									&lt;th&gt;Presented to&lt;/th&gt;&#13;
-									&lt;th&gt;Date&lt;/th&gt;&#13;
-									&lt;th&gt;Notes&lt;/th&gt;&#13;
-									&lt;/tr&gt;&#13;
-									&lt;tr&gt;&#13;
-									&lt;td&gt;^ca_objects_x_entities.exchangeInformation.exchangeFlag&lt;/td&gt;&#13;
-									&lt;td&gt;^ca_entities.preferred_labels&lt;/td&gt;&#13;
-									&lt;td&gt;^ca_objects_x_entities.exchangeInformation.exchangeDate&lt;/td&gt;&#13;
-									&lt;td&gt;^ca_objects_x_entities.exchangeInformation.exchangeNote&lt;/td&gt;&#13;
-									&lt;/tr&gt;&#13;
-									&lt;/table&gt;</setting>
-								<setting name="minRelationshipsPerRow"/>
-								<setting name="maxRelationshipsPerRow">1</setting>
-								<setting name="readonly"/>
-								<setting name="restrict_to_relationship_types">object_x_presented_x_entity</setting>
-								<setting name="dont_include_subtypes_in_type_restriction">0</setting>
-								<setting name="dontShowDeleteButton">0</setting>
-							</settings>
-						</placement>
-						<placement code="ca_movements3">
-							<bundle>ca_movements</bundle>
-							<settings>
-								<setting name="list_format">list</setting>
-								<setting name="sort">ca_movements.removal_date</setting>
-								<setting name="sortDirection">DESC</setting>
-								<setting name="display_template">&lt;table&gt;&#13;
-									&lt;tr&gt;&#13;
-									&lt;th&gt;Name&lt;/th&gt;&#13;
-									&lt;th&gt;Planned Date&lt;/th&gt;&#13;
-									&lt;th&gt;Date&lt;/th&gt;&#13;
-									&lt;th&gt;Reason&lt;/th&gt;&#13;
-									&lt;th&gt;Method&lt;/th&gt;&#13;
-									&lt;th&gt;Note&lt;/th&gt;&#13;
-									&lt;/tr&gt;&#13;
-									&lt;tr&gt;&#13;
-									&lt;td&gt;^ca_movements.preferred_labels&lt;/td&gt;&#13;
-									&lt;td&gt;^ca_movements.removal_date&lt;/td&gt;&#13;
-									&lt;td&gt;^ca_movements.planned_removal_date&lt;/td&gt;&#13;
-									&lt;td&gt;^ca_movements.movement_reason&lt;/td&gt;&#13;
-									&lt;td&gt;^ca_movements.movement_method&lt;/td&gt;&#13;
-									&lt;td&gt;^ca_movements.movement_note&lt;/td&gt;&#13;
-									&lt;/tr&gt;&#13;
-									&lt;/table&gt;</setting>
-								<setting name="minRelationshipsPerRow"/>
-								<setting name="maxRelationshipsPerRow"/>
-								<setting name="readonly"/>
-								<setting name="dont_include_subtypes_in_type_restriction">0</setting>
-								<setting name="dontShowDeleteButton">0</setting>
-								<setting name="showCurrentOnly">1</setting>
-							</settings>
-						</placement>
-					</bundlePlacements>
-				</screen>
-				<screen idno="object_details" default="0">
-					<labels>
-						<label locale="en_AU">
-							<name>Object Details</name>
-						</label>
-					</labels>
-					<typeRestrictions>
-						<restriction type="anthropology"/>
-					</typeRestrictions>
-					<bundlePlacements>
-						<placement code="ca_attribute_sightedDetails1">
-							<bundle>ca_attribute_sightedDetails</bundle>
-							<settings>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="preferred_labels3">
-							<bundle>preferred_labels</bundle>
-							<settings>
-								<setting name="label" locale="en_AU">Register Entry</setting>
-								<setting name="width">40</setting>
-								<setting name="usewysiwygeditor"/>
-								<setting name="readonly">1</setting>
-							</settings>
-						</placement>
-						<placement code="ca_attribute_languageName2">
-							<bundle>ca_attribute_languageName</bundle>
-							<settings>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="ca_attribute_objectAffiliation">
-							<bundle>ca_attribute_objectAffiliation</bundle>
-							<settings>
-								<setting name="label" locale="en_AU">Initial place affiliation</setting>
-								<setting name="description" locale="en_AU">Used when the affiliation for the object is different to the
-									language affiliation for the place or artist.
-								</setting>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="nonpreferred_labels5">
-							<bundle>nonpreferred_labels</bundle>
-							<settings>
-								<setting name="label" locale="en_AU">Title</setting>
-								<setting name="description" locale="en_AU">Enter a title for the object.</setting>
-								<setting name="height">1</setting>
-								<setting name="usewysiwygeditor"/>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="ca_attribute_tradition6">
-							<bundle>ca_attribute_tradition</bundle>
-							<settings>
-								<setting name="width">44</setting>
-								<setting name="height">2</setting>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="ca_attribute_dctermscreated6">
-							<bundle>ca_attribute_dctermscreated</bundle>
-							<settings>
-								<setting name="label" locale="en_AU">Date of Production</setting>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="ca_attribute_supportingDocumen">
-							<bundle>ca_attribute_supportingDocumentation</bundle>
-							<settings>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="ca_attribute_objectDetails9">
-							<bundle>ca_attribute_objectDetails</bundle>
-							<settings>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="ca_attribute_objectPublished10">
-							<bundle>ca_attribute_objectPublished</bundle>
-							<settings>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="ca_occurrences11">
-							<bundle>ca_occurrences</bundle>
-							<settings>
-								<setting name="label" locale="en_AU">Publication / Reference</setting>
-								<setting name="add_label" locale="en_AU">add new resource</setting>
-								<setting name="description" locale="en_AU">Choose / create a publication related to the object details
-								</setting>
-								<setting name="restrict_to_types">resource</setting>
-								<setting name="list_format">bubbles</setting>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="display_template">^ca_occurrences.preferred_labels</setting>
-								<setting name="minRelationshipsPerRow"/>
-								<setting name="maxRelationshipsPerRow"/>
-								<setting name="readonly"/>
-								<setting name="restrict_to_relationship_types">object_resource</setting>
-								<setting name="dont_include_subtypes_in_type_restriction">0</setting>
-								<setting name="dontShowDeleteButton">0</setting>
-							</settings>
-						</placement>
-						<placement code="ca_attribute_documentation12">
-							<bundle>ca_attribute_documentation</bundle>
-							<settings>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-					</bundlePlacements>
-				</screen>
-				<screen idno="artistDetails" default="0">
-					<labels>
-						<label locale="en_AU">
-							<name>Artist Details</name>
-						</label>
-					</labels>
-					<bundlePlacements>
-						<placement code="ca_entities1">
-							<bundle>ca_entities</bundle>
-							<settings>
-								<setting name="label" locale="en_AU">Related artist</setting>
-								<setting name="add_label" locale="en_AU">add artist relation</setting>
-								<setting name="restrict_to_types">ind</setting>
-								<setting name="list_format">bubbles</setting>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="display_template">^ca_entities.preferred_labels&#13;
-									^ca_entities.biography&#13;
-									^ca_entities.languageAffiliation
-								</setting>
-								<setting name="minRelationshipsPerRow"/>
-								<setting name="maxRelationshipsPerRow"/>
-								<setting name="readonly"/>
-								<setting name="restrict_to_relationship_types">creator</setting>
-								<setting name="dont_include_subtypes_in_type_restriction">0</setting>
-								<setting name="dontShowDeleteButton">0</setting>
-							</settings>
-						</placement>
-					</bundlePlacements>
-				</screen>
-				<screen idno="screen_31_6" default="0">
-					<labels>
-						<label locale="en_AU">
-							<name>Description</name>
-						</label>
-					</labels>
-					<bundlePlacements/>
-				</screen>
-				<screen idno="screen_31_7" default="0">
-					<labels>
-						<label locale="en_AU">
-							<name>Exhibition</name>
-						</label>
-					</labels>
-					<bundlePlacements/>
-				</screen>
-				<screen idno="conservation" default="0">
-					<labels>
-						<label locale="en_AU">
-							<name>Conservation</name>
-						</label>
-					</labels>
-					<bundlePlacements>
-						<placement code="ca_occurrences1">
-							<bundle>ca_occurrences</bundle>
-							<settings>
-								<setting name="label" locale="en_AU">Conservation Events</setting>
-								<setting name="add_label" locale="en_AU">add conservation event</setting>
-								<setting name="description" locale="en_AU">Add or link conservation events to the object.</setting>
-								<setting name="restrict_to_relationship_types">object_collecting_event</setting>
-								<setting name="restrict_to_types">conservation</setting>
-								<setting name="list_format">bubbles</setting>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="dontShowDeleteButton">1</setting>
-								<setting name="display_template">^ca_occurrences.preferred_labels</setting>
-								<setting name="minRelationshipsPerRow"/>
-								<setting name="maxRelationshipsPerRow"/>
-							</settings>
-						</placement>
-					</bundlePlacements>
-				</screen>
-				<screen idno="athropology_media" default="0">
-					<labels>
-						<label locale="en_AU">
-							<name>Media</name>
-						</label>
-					</labels>
-					<typeRestrictions>
-						<restriction type="anthropology"/>
-					</typeRestrictions>
-					<bundlePlacements>
-						<placement code="ca_object_representations1">
-							<bundle>ca_object_representations</bundle>
-							<settings>
-								<setting name="list_format">bubbles</setting>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="display_template">^ca_object_representations.preferred_labels</setting>
-								<setting name="readonly"/>
-								<setting name="dont_include_subtypes_in_type_restriction">0</setting>
-								<setting name="dontShowDeleteButton">0</setting>
-								<setting name="minRelationshipsPerRow"/>
-								<setting name="maxRelationshipsPerRow"/>
-							</settings>
-						</placement>
-						<placement code="ca_attribute_external_link2">
-							<bundle>ca_attribute_external_link</bundle>
-							<settings>
-								<setting name="sortDirection">ASC</setting>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-					</bundlePlacements>
-				</screen>
-				<screen idno="admin" default="0">
-					<labels>
-						<label locale="en_AU">
-							<name>Administration</name>
-						</label>
-					</labels>
-					<typeRestrictions>
-						<restriction type="anthropology"/>
-					</typeRestrictions>
-					<bundlePlacements>
-						<placement code="item_status_id1">
-							<bundle>item_status_id</bundle>
-							<settings>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
 						<placement code="idno2">
 							<bundle>idno</bundle>
 							<settings>
 								<setting name="readonly"/>
 							</settings>
 						</placement>
-						<placement code="ca_attribute_otherCatalogNumbe">
-							<bundle>ca_attribute_otherCatalogNumbers</bundle>
+						<placement code="preferred_labels1">
+							<bundle>preferred_labels</bundle>
+							<settings>
+								<setting name="label" locale="en_AU">Part Name</setting>
+								<setting name="readonly"/>
+								<setting name="usewysiwygeditor"/>
+							</settings>
+						</placement>
+						<placement code="ca_attribute_HistoryMeasurement">
+							<bundle>ca_attribute_historyMeasurementContainer</bundle>
 							<settings>
 								<setting name="sortDirection">ASC</setting>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="access3">
-							<bundle>access</bundle>
-							<settings>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="acl_inherit_from_ca_collection">
-							<bundle>acl_inherit_from_ca_collections</bundle>
-							<settings>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="acl_inherit_from_parent5">
-							<bundle>acl_inherit_from_parent</bundle>
-							<settings>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="status6">
-							<bundle>status</bundle>
-							<settings>
-								<setting name="readonly"/>
-							</settings>
-						</placement>
-						<placement code="ca_sets8">
-							<bundle>ca_sets</bundle>
-							<settings>
 								<setting name="readonly"/>
 							</settings>
 						</placement>
 					</bundlePlacements>
 				</screen>
 			</screens>
-		</userInterface>-->
+		</userInterface>
 	</userInterfaces>
 	<relationshipTypes>
 		<relationshipTable name="ca_objects_x_entities">
