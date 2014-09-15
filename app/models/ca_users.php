@@ -40,6 +40,7 @@ include_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__.'/models/ca_user_groups.php');
 require_once(__CA_APP_DIR__.'/models/ca_locales.php');
 require_once(__CA_LIB_DIR__.'/core/Zend/Currency.php');
+require_once(__CA_LIB_DIR__ . '/core/Auth/AuthenticationManager.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_users'] = array(
@@ -2526,20 +2527,10 @@ class ca_users extends BaseModel {
 	 * keys and values that can contain such information
 	 */
 	public function authenticate(&$ps_username, $ps_password="", $pa_options=null) {
-		if($this->opo_auth_config->get("use_ldap")){
-			return $this->authenticateLDAP($ps_username,$ps_password);
-		}
-		
-		if($this->opo_auth_config->get("use_extdb")){
-			if($vn_rc = $this->authenticateExtDB($ps_username,$ps_password)) {
-				return $vn_rc;
-			}
-		}
-		
-		if ((strlen($ps_username) > 0) && $this->load(array("user_name" => $ps_username))) {
-			if ($this->verify($ps_password) && $this->isActive()) {
-				return true;
-			}
+
+		if(AuthenticationManager::authenticate($ps_username, $ps_password, $pa_options)) {
+			$this->load($ps_username);
+			return true;
 		}
 		
 		// check ips
