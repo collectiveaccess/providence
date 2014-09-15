@@ -367,7 +367,7 @@ class ca_users extends BaseModel {
 		# is that you create a new user record with the 'active' field set to false. You then
 		# send the confirmation key to the new user (usually via e-mail) and ask them to respond
 		# with the key. If they do, you know that the e-mail address is valid.
-		$vs_confirmation_key = md5(tempnam(caGetTempDirPath(),"meow").time().rand(1000, 999999999));
+		$vs_confirmation_key = md5(mcrypt_create_iv(24, MCRYPT_DEV_URANDOM));
 		$this->set("confirmation_key", $vs_confirmation_key);
 
 		$vs_backend_password = AuthenticationManager::createUser($this->get('user_name'), $this->get('password'));
