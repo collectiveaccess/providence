@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Auth/AuthManager.php :
+ * app/lib/core/Auth/AuthenticationManager.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -58,12 +58,10 @@ class AuthenticationManager {
 
 				if(class_exists($vs_auth_adapter.'AuthAdapter')) {
 					self::$g_authentication_adapter = $vs_auth_adapter.'AuthAdapter';
-				} else {
-					throw new AuthClassDoesNotExistException();
 				}
-			} else {
-				print 'nope';
 			}
+
+			throw new AuthClassDoesNotExistException();
 		}
 	}
 
