@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Auth/IAuthAdapter.php : interface for authentication adapters
+ * app/lib/core/Auth/Adapters/Legacy.php : legacy authentication backend
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@ require_once(__CA_LIB_DIR__.'/core/Auth/BaseAuthAdapter.php');
 require_once(__CA_MODELS_DIR__.'/ca_users.php');
 
 class LegacyAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
-
+	# --------------------------------------------------------------------------------
 	public static function authenticate($ps_username, $ps_password = '', $pa_options=null) {
 
 		$t_user = new ca_users();
@@ -47,4 +47,10 @@ class LegacyAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 			return false;
 		}
 	}
+	# --------------------------------------------------------------------------------
+	public static function createUser($ps_username, $ps_password) {
+		// ca_users takes care of creating the backend record for us. There's nothing else to do here
+		return md5($ps_password);
+	}
+	# --------------------------------------------------------------------------------
 }

@@ -1,8 +1,57 @@
 <?php
+/** ---------------------------------------------------------------------
+ * app/lib/core/Auth/Adapters/CaUsers.php : default authentication backend
+ * ----------------------------------------------------------------------
+ * CollectiveAccess
+ * Open-source collections management software
+ * ----------------------------------------------------------------------
+ *
+ * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
+ * Copyright 2014 Whirl-i-Gig
+ *
+ * For more information visit http://www.CollectiveAccess.org
+ *
+ * This program is free software; you may redistribute it and/or modify it under
+ * the terms of the provided license as published by Whirl-i-Gig
+ *
+ * CollectiveAccess is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * This source code is free and modifiable under the terms of
+ * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
+ * the "license.txt" file for details, or visit the CollectiveAccess web site at
+ * http://www.CollectiveAccess.org
+ *
+ * @package CollectiveAccess
+ * @subpackage Auth
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ *
+ * ----------------------------------------------------------------------
+ */
 
-class CaUsers extends BaseAuthAdapter implements IAuthAdapter {
+require_once(__CA_LIB_DIR__.'/core/Auth/BaseAuthAdapter.php');
+require_once(__CA_LIB_DIR__.'/core/Auth/PasswordHash.php');
+require_once(__CA_MODELS_DIR__.'/ca_users.php');
 
+class CaUsersAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
+	# --------------------------------------------------------------------------------
 	public static function authenticate($ps_username, $ps_password = '', $pa_options=null) {
 
+		$t_user = new ca_users();
+
+		$t_user->load($ps_username);
+
+		if($t_user->getPrimaryKey() > 0) {
+			return validate_password($ps_password, $t_user->get('password'));
+		} else {
+			return false;
+		}
 	}
+	# --------------------------------------------------------------------------------
+	public static function createUser($ps_username, $ps_password) {
+		// ca_users takes care of creating the backend record for us. There's nothing else to do here
+		return create_hash($ps_password);
+	}
+	# --------------------------------------------------------------------------------
 }

@@ -32,14 +32,46 @@
 
 interface IAuthAdapter {
 
+	/**
+	 * Authenticates user
+	 *
+	 * @param string $ps_username user name
+	 * @param string $ps_password cleartext password
+	 * @param null $pa_options Associative array of options
+	 * @return boolean
+	 */
 	public static function authenticate($ps_username, $ps_password="", $pa_options=null);
 
+	/**
+	 * Creates new user. Should throw AuthClassFeatureException if not implemented.
+	 *
+	 * @param string $ps_username user name
+	 * @param string $ps_password cleartext password
+	 * @return string|null The password to store in the ca_users table. Can be left empty for
+	 * back-ends where it doesn't make any sense to store a password locally (e.g. LDAP or OAuth).
+	 */
 	public static function createUser($ps_username, $ps_password);
 
+	/**
+	 * Deletes user. Should throw AuthClassFeatureException if not implemented.
+	 *
+	 * @param string $ps_username user name
+	 * @return bool delete successful or not?
+	 */
 	public static function deleteUser($ps_username);
 
+	/**
+	 * Updates password for existing user. Should throw AuthClassFeatureException if not implemented.
+	 *
+	 * @param string $ps_username user name
+	 * @param string $ps_password cleartext password
+	 * @return string|null The password to store in the ca_users table. Can be left empty for
+	 * back-ends where it doesn't make any sense to store a password locally (e.g. LDAP or OAuth).
+	 */
 	public static function updatePassword($ps_username, $ps_password);
 
 	/* @todo need means for password retrieval */
 
 }
+
+class AuthClassFeatureException extends Exception {}

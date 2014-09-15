@@ -36,11 +36,12 @@ abstract class BaseAuthAdapter implements IAuthAdapter {
 
 	/**
 	 * Fallback if authentication adapter doesn't implement createUser(), which may be the
-	 * case for many external authentication methods like OpenLDAP/Slapd or ADS
+	 * case for some external authentication methods like OpenLDAP/slapd or ADS
 	 *
 	 * @param $ps_username
 	 * @param $ps_password
 	 * @throws AuthClassFeatureException
+	 * @return string
 	 */
 	public static function createUser($ps_username, $ps_password) {
 		throw new AuthClassFeatureException(_t("Authentication back-end doesn't support creating new users programmatically."));
@@ -48,10 +49,11 @@ abstract class BaseAuthAdapter implements IAuthAdapter {
 
 	/**
 	 * Fallback if authentication adapter doesn't implement deleteUser(), which may be the
-	 * case for many external authentication methods like OpenLDAP/Slapd or ADS
+	 * case for some external authentication methods like OpenLDAP/slapd or ADS
 	 *
 	 * @param $ps_username
 	 * @throws AuthClassFeatureException
+	 * @return bool
 	 */
 	public static function deleteUser($ps_username) {
 		throw new AuthClassFeatureException(_t("Authentication back-end doesn't support deleting users programmatically."));
@@ -59,15 +61,14 @@ abstract class BaseAuthAdapter implements IAuthAdapter {
 
 	/**
 	 * Fallback if authentication adapter doesn't implement updatePassword(), which may be the
-	 * case for many external authentication methods like OpenLDAP/Slapd or ADS
+	 * case for some external authentication methods like OpenLDAP/slapd or ADS
 	 *
 	 * @param $ps_username
 	 * @param $ps_password
 	 * @throws AuthClassFeatureException
+	 * @return string
 	 */
 	public static function updatePassword($ps_username, $ps_password) {
 		throw new AuthClassFeatureException(_t("Authentication back-end doesn't updating existing users programmatically."));
 	}
 }
-
-class AuthClassFeatureException extends Exception {}

@@ -369,6 +369,9 @@ class ca_users extends BaseModel {
 		# with the key. If they do, you know that the e-mail address is valid.
 		$vs_confirmation_key = md5(tempnam(caGetTempDirPath(),"meow").time().rand(1000, 999999999));
 		$this->set("confirmation_key", $vs_confirmation_key);
+
+		$vs_backend_password = AuthenticationManager::createUser($this->get('user_name'), $this->get('password'));
+		$this->set('password', $vs_backend_password);
 		
 		# set user vars (the set() method automatically serializes the vars array)
 		$this->set("vars",$this->opa_user_vars);

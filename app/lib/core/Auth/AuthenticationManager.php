@@ -84,7 +84,7 @@ class AuthenticationManager {
 	/**
 	 * Do authentication using authentication adapter from authentication.conf
 	 *
-	 * @param $ps_username User name (must be unique across all users)
+	 * @param string $ps_username User name (must be unique across all users)
 	 * @param string $ps_password Password
 	 * @param null $pa_options Associative array of options
 	 * @return bool auth successful or not?
@@ -93,6 +93,20 @@ class AuthenticationManager {
 		self::init();
 
 		return call_user_func(self::$g_authentication_adapter.'::authenticate', $ps_username, $ps_password, $pa_options);
+	}
+
+	/**
+	 * Create user using authentication adapter from authentication.conf
+	 *
+	 * @param string $ps_username user name (must be unique across all users)
+	 * @param string $ps_password Clear-text password
+	 * @return string|null The password to store in the ca_users table. Can be left empty for
+	 * back-ends where it doesn't make any sense to store a password locally (e.g. LDAP or OAuth).
+	 */
+	public static function createUser($ps_username, $ps_password) {
+		self::init();
+
+		return call_user_func(self::$g_authentication_adapter.'::createUser', $ps_username, $ps_password);
 	}
 }
 
