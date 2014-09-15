@@ -42,7 +42,7 @@ class LegacyAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		$t_user->load($ps_username);
 
 		if($t_user->getPrimaryKey() > 0) {
-			return $t_user->verify($ps_password);
+			return (md5($ps_password) == $t_user->get('password')) ? true : false;
 		} else {
 			return false;
 		}

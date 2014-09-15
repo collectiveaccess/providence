@@ -75,7 +75,7 @@ BaseModel::$s_ca_models_definitions['ca_users'] = array(
 				)
 		),
 		'password' => array(
-				'FIELD_TYPE' => FT_PASSWORD, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_PASSWORD, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 60, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
@@ -429,24 +429,6 @@ class ca_users extends BaseModel {
 		}
 		
 		return caProcessTemplate(join($this->getAppConfig()->getList('ca_users_lookup_delimiter'), $this->getAppConfig()->getList('ca_users_lookup_settings')), $va_values, array());
-	}
-	# ----------------------------------------
-	# --- Authentication
-	# ----------------------------------------
-	/**
-	 * Returns true if the provided clear-text password ($ps_password) is valid for the currently loaded record.
-	 *
-	 * Note: If "user_old_style_passwords" configuration directive is set to a non-blank, non-zero 
-	 * value in the application configuration file, passwords are encrypted using the PHP crypt() function. Otherwise
-	 * the md5 hash of the clear-text password is used.
-	 *
-	 * @access public
-	 * @param string $ps_password Clear-text password
-	 * @return bool Returns true if password is valid, false if not
-	 */	
-	# Returns true if password (clear text) is correct for the current user
-	public function verify($ps_password) {
-		return (md5($ps_password) == $this->get("password")) ? true : false;
 	}
 	# ----------------------------------------
 	# --- User variables
