@@ -91,4 +91,13 @@ class Updater extends Installer{
 
 		return true;
 	}
+
+	/**
+	 * Override the parent class' createAdminAccount() as we don't want to overwrite admin accounts on existing installs
+	 * @return bool|string
+	 */
+	public function createAdminAccount(){
+		$this->addError("Did not create an admin account as you are updating an existing install.");
+		return false;
+	}
 } 
