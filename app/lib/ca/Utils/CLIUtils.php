@@ -64,7 +64,6 @@
 			$t_total = new Timer();
 			// If we are installing, then use Installer, otherwise use Updater
 			$vo_installer = null;
-			$vo_installer;
 			if($pb_installing){
 				$vo_installer = new Installer(
 					$vs_profile_directory,
@@ -77,8 +76,8 @@
 				$vo_installer = new Updater(
 					$vs_profile_directory,
 					$po_opts->getOption('profile-name'),
-					$po_opts->getOption('admin-email'),
-					$po_opts->getOption('overwrite'),
+					null, // If you are updating you don't want to generate an admin user
+					false, // If you are updating you never want to overwrite
 					$po_opts->getOption('debug')
 				);
 				$vo_installer->loadLocales();
@@ -157,19 +156,23 @@
 				));
 				return false;
 			}
-			CLIUtils::addMessage(_t(
-				"%2 was successful!\n\nYou can now login with the following logins: %1\nMake a note of these passwords!",
-				"\n * " . join(
-					"\n * ",
-					array_map(
-						function ($username, $password) {
-							return _t("username %1 and password %2", $username, $password);
-						},
-						array_keys($va_login_info),
-						array_values($va_login_info)
+			if($pb_installing){
+				CLIUtils::addMessage(_t(
+					"Installation was successful!\n\nYou can now login with the following logins: %1\nMake a note of these passwords!",
+					"\n * " . join(
+						"\n * ",
+						array_map(
+							function ($username, $password) {
+								return _t("username %1 and password %2", $username, $password);
+							},
+							array_keys($va_login_info),
+							array_values($va_login_info)
+						)
 					)
-				)
-			), $pb_installing ? _t('Installation') : t('Update'));
+				));
+			} else {
+				CLIUtils::addMessage(_t("Update of installation profile successful"));
+			}
 
 			CLIUtils::addMessage($vs_time);
 			return true;
@@ -181,7 +184,7 @@
 		public static function installParamList() {
 			return array(
 				"profile-name|n=s" => _t('Name of the profile to install (filename in profiles directory, minus the .xml extension).'),
-				"profile-directory|p=s" => _t('Directory to get new profile. Default is %1.', __CA_BASE_DIR__ . '/install/profiles/xml'),
+				"profile-directory|p=s" => _t('Directory to get profile. Default is: "%1". This directory must contain the profile.xsd schema so that the installer can validate the installation profile.', __CA_BASE_DIR__ . '/install/profiles/xml'),
 				"admin-email|e=s" => _t('Email address of the system administrator (user@domain.tld).'),
 				"overwrite" => _t('Flag must be set in order to overwrite an existing installation.  Also, the __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ global must be set to a true value.'),
 				"debug|d" => _t('Debug flag for installer.'),
@@ -195,23 +198,6 @@
 		 */
 		public static function installUtilityClass() {
 			return _t('Configuration');
-		}
-
-		/**
-		 *
-		 */
-		public static function update_installation_profileUtilityClass() {
-			return _t('Configuration');
-		}
-		public static function update_installation_profileParamList() {
-			$va_params = self::installParamList();
-			unset($va_params['overwrite']);
-			return $va_params;
-		}
-		public static function update_installation_profile($po_opts=null) {
-			require_once(__CA_BASE_DIR__ . '/install/inc/Updater.php');
-			self::install($po_opts, false);
-			return true;
 		}
 		# -------------------------------------------------------
 		/**
@@ -230,6 +216,43 @@
 		 */
 		public static function installShortHelp() {
 			return _t("Performs a fresh installation of CollectiveAccess using the configured values in setup.php.");
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function update_installation_profileUtilityClass() {
+			return _t('Configuration - Experimental');
+		}
+		# -------------------------------------------------------
+		public static function update_installation_profileParamList() {
+			$va_params = self::installParamList();
+			unset($va_params['overwrite']);
+			unset($va_params['admin-email|e=s']);
+			return $va_params;
+		}
+		# -------------------------------------------------------
+		public static function update_installation_profile($po_opts=null) {
+			require_once(__CA_BASE_DIR__ . '/install/inc/Updater.php');
+			self::install($po_opts, false);
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function update_installation_profileHelp() {
+			return _t("EXPERIMENTAL - Updates the installation profile to match a supplied profile name.") ."\n".
+			"\t" . _t("This function only creates new values and is useful if you want to append changes from one profile onto another.")."\n".
+			"\t" . _t("Your new profile must exist in a directory that contains the profile.xsd schema and must validate against that schema in order for the update to apply successfully.");
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function update_installation_profileShortHelp() {
+			return _t("EXPERIMENTAL - Updates the installation profile to match a supplied profile name.");
 		}
 
 		# -------------------------------------------------------
