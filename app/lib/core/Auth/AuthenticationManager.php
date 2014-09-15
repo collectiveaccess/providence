@@ -58,6 +58,7 @@ class AuthenticationManager {
 
 				if(class_exists($vs_auth_adapter.'AuthAdapter')) {
 					self::$g_authentication_adapter = $vs_auth_adapter.'AuthAdapter';
+					return;
 				}
 			}
 
@@ -105,6 +106,29 @@ class AuthenticationManager {
 		self::init();
 
 		return call_user_func(self::$g_authentication_adapter.'::createUser', $ps_username, $ps_password);
+	}
+
+	/**
+	 * Delete existing user using authentication adapter from authentication.conf
+	 *
+	 * @param string $ps_username user name (must be unique across all users)
+	 * @return bool
+	 */
+	public static function deleteUser($ps_username) {
+		self::init();
+
+		return call_user_func(self::$g_authentication_adapter.'::deleteUser', $ps_username);
+	}
+
+	/**
+	 * Determines whether the current authentication adapter supports updating passwords.
+	 *
+	 * @return bool
+	 */
+	public static function supportsPasswordUpdate() {
+		self::init();
+
+		return call_user_func(self::$g_authentication_adapter.'::supportsPasswordUpdate');
 	}
 }
 

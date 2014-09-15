@@ -603,7 +603,6 @@ class RequestHTTP extends Request {
 			$pa_options["dont_redirect_to_welcome"] = true;
 		}
 		
-		
 		$vb_login_successful = false;
 		if (!$pa_options["user_name"]) {		// no incoming login
 			//

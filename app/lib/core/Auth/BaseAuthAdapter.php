@@ -71,4 +71,14 @@ abstract class BaseAuthAdapter implements IAuthAdapter {
 	public static function updatePassword($ps_username, $ps_password) {
 		throw new AuthClassFeatureException(_t("Authentication back-end doesn't updating existing users programmatically."));
 	}
+
+	/**
+	 * Fallback if authentication adapter doesn't implement supportsPasswordUpdate()
+	 *
+	 * @return bool
+	 */
+	public static function supportsPasswordUpdate() {
+		return false;
+	}
+
 }

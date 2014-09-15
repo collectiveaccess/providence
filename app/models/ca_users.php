@@ -2505,6 +2505,11 @@ class ca_users extends BaseModel {
 		return $this->getVar($this->getAppConfig()->get("app_name")."_previous_to_last_logout");
 	}
 	# ----------------------------------------
+	public function requestPasswordReset() {
+		if(!($this->getPrimaryKey() > 0)) { return false; }
+		// @todo: implement
+	}
+	# ----------------------------------------
 	/**
 	 * This is a option-less authentication. Either your login works or it doesn't.
 	 * Other apps implementing this interface may need to know what you're trying to do 

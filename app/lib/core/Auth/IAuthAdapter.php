@@ -70,7 +70,14 @@ interface IAuthAdapter {
 	 */
 	public static function updatePassword($ps_username, $ps_password);
 
-	/* @todo need means for password retrieval */
+
+	/**
+	 * Indicates whether this Adapter supports updating passwords programmatically. If it doesn't,
+	 * CollectiveAccess' own password reset mechanism will be disabled for this Adapter
+	 *
+	 * @return bool
+	 */
+	public static function supportsPasswordUpdate();
 
 }
 

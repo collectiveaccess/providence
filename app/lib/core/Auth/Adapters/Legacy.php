@@ -53,4 +53,8 @@ class LegacyAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		return md5($ps_password);
 	}
 	# --------------------------------------------------------------------------------
+	public static function supportsPasswordUpdate() {
+		return true;
+	}
+	# --------------------------------------------------------------------------------
 }
