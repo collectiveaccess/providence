@@ -363,6 +363,11 @@ class ca_users extends BaseModel {
 	 * @return bool Returns true if no error, false if error occurred
 	 */	
 	public function insert($pa_options=null) {
+		if(!caCheckEmailAddress($this->get('email'))) {
+			$this->postError(922, _t("Invalid email address"), 'ca_users->insert()');
+			return false;
+		}
+
 		# Confirmation key is an md5 hash than can be used as a confirmation token. The idea
 		# is that you create a new user record with the 'active' field set to false. You then
 		# send the confirmation key to the new user (usually via e-mail) and ask them to respond
@@ -392,6 +397,13 @@ class ca_users extends BaseModel {
 	 */	
 	public function update($pa_options=null) {
 		$this->clearErrors();
+
+		if($this->changed('email')) {
+			if(!caCheckEmailAddress($this->get('email'))) {
+				$this->postError(922, _t("Invalid email address"), 'ca_users->insert()');
+				return false;
+			}
+		}
 		
 		# set user vars (the set() method automatically serializes the vars array)
 		if ($this->opa_user_vars_have_changed) {
@@ -2507,7 +2519,105 @@ class ca_users extends BaseModel {
 	# ----------------------------------------
 	public function requestPasswordReset() {
 		if(!($this->getPrimaryKey() > 0)) { return false; }
-		// @todo: implement
+		$vs_app_name = $this->getAppConfig()->get("app_name");
+
+
+		$vn_mail_count = $this->getVar("{$vs_app_name}_password_reset_mails_sent");
+		if(!$vn_mail_count) { $vn_mail_count = 0; }
+
+		$vs_old_token = $this->getVar("{$vs_app_name}_password_reset_token");
+		$vn_old_timestamp = $this->getVar("{$vs_app_name}_password_reset_expiration");
+
+		if((strlen($vs_old_token) > 0) && $vn_old_timestamp && ($vn_old_timestamp < time())) { // old request is not expired, just resend the email with the same data
+			$vn_token_expiration_timestamp = $vn_old_timestamp;
+			$vs_password_reset_token = $vs_old_token;
+		} else {
+			// We rely on the system clock here. That might not be the smartest thing to do but it'll work for now.
+			// Might move this to a webservice or some other more reliable method at some point ..
+			$vn_token_expiration_timestamp = time() + 15 * 60; // now plus 15 minutes
+			$vs_password_reset_token = md5(mcrypt_create_iv(24, MCRYPT_DEV_URANDOM));
+		}
+
+		$this->setVar("{$vs_app_name}_password_reset_token", $vs_password_reset_token);
+		$this->setVar("{$vs_app_name}_password_reset_expiration", $vn_token_expiration_timestamp);
+
+		if($this->sendPasswordResetMail($vs_password_reset_token)) {
+			$this->setVar("{$vs_app_name}_password_reset_mails_sent", $vn_mail_count + 1);
+		}
+	}
+	# ----------------------------------------
+	private function sendPasswordResetMail($ps_password_reset_token) {
+		if(!($this->getPrimaryKey() > 0)) { return false; }
+
+		global $g_request;
+		$vs_user_email = $this->get('email');
+		$vs_app_name = $this->getAppConfig()->get("app_name");
+
+		return caSendMessageUsingView($g_request,
+			$vs_user_email,
+			__CA_ADMIN_EMAIL__,
+			"[{$vs_app_name}] "._t("Information regarding your CollectiveAccess password"),
+			'forgot_password.tpl',
+			array('password_reset_token' => $ps_password_reset_token)
+		);
+	}
+	# ----------------------------------------
+	private function hasPendingPasswordReset() {
+		if(!($this->getPrimaryKey() > 0)) { return false; }
+
+		$vs_app_name = $this->getAppConfig()->get("app_name");
+		$vs_token = $this->getVar("{$vs_app_name}_password_reset_token");
+		$vn_timestamp = $this->getVar("{$vs_app_name}_password_reset_expiration");
+
+		return ((strlen($vs_token) > 0) && $vn_timestamp && ($vn_timestamp > 0));
+	}
+	# ----------------------------------------
+	private function pendingPasswordResetIsExpired() {
+		if(!($this->getPrimaryKey() > 0)) { return true; }
+
+		if($this->hasPendingPasswordReset()) {
+			$vn_timestamp = $this->getVar("{$vs_app_name}_password_reset_expiration");
+			if($vn_timestamp && ($vn_timestamp > 0)) {
+				return ($vn_timestamp >= time());
+			}
+		}
+
+		// no pending reset or something else is weird -> counts as expired
+		return true;
+	}
+	# ----------------------------------------
+	private function pendingPasswordResetTestAndSetMailLimit() {
+		if(!($this->getPrimaryKey() > 0)) { return false; }
+
+		if($this->hasPendingPasswordReset()) {
+			$vn_mails_sent = $this->getVar("{$vs_app_name}_password_reset_mails_sent");
+
+			$this->setVar("{$vs_app_name}_password_reset_mails_sent", ++$vn_mails_sent);
+
+			return ($vn_mails_sent <= 10);
+		}
+	}
+	# ----------------------------------------
+	private function removePendingPasswordReset($pb_success=false) {
+		if(!($this->getPrimaryKey() > 0)) { return; }
+
+		$this->setVar("{$vs_app_name}_password_reset_token", '');
+		$this->setVar("{$vs_app_name}_password_reset_expiration", 0);
+		$this->setVar("{$vs_app_name}_password_reset_mails_sent", 0);
+
+		if(!$pb_success) {
+
+			$vn_failed_pw_resets = $this->getVar("{$vs_app_name}_password_resets_failed");
+			if(!$vn_failed_pw_resets) {
+				$vn_failed_pw_resets = 1;
+			} else {
+				$vn_failed_pw_resets++;
+			}
+
+			$this->setVar("{$vs_app_name}_password_resets_failed", $vn_failed_pw_resets);
+		} else {
+			$this->setVar("{$vs_app_name}_password_resets_failed", 0);
+		}
 	}
 	# ----------------------------------------
 	/**

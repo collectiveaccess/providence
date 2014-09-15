@@ -95,10 +95,10 @@
 			$t_user = new ca_users();
 
 			if($t_user->load($vs_username)) {
-
+				$t_user->requestPasswordReset();
 			}
 
-			// render the same view no matter if something was actually done.
+			// render the same static view no matter if something was actually done.
 			// otherwise you could figure out which user names exist and which don't
 
 			$this->render('password_reset_instructions_html.php');
