@@ -50,8 +50,6 @@ var caUI = caUI || {};
 			settingsIcon: null
 		}, options);
 		
-		var i;
-		
 		// ------------------------------------------------------------------------------------
 		that.initDisplayList = function() {
 			if (!that.initialDisplayList) { return; }
@@ -72,10 +70,6 @@ var caUI = caUI || {};
 				displayListText += that._formatForDisplay(v);
 			});
 			jQuery('#' + that.availableListID).html(displayListText);
-			
-			jQuery.each(that.availableDisplayList, function(k, v) {
-				that._getTooltipForDisplay(v);
-			});
 			
 			that._makeDisplayListsSortable();
 			that._updateBundleListFormElement();
@@ -107,6 +101,7 @@ var caUI = caUI || {};
 			var bundle = placement_info.bundle;
 			var placementID = placement_info.placement_id;
 			var settingsForm = '';
+            var output;
 			
 			var id = bundle;
 			if (placementID) { 
@@ -116,7 +111,7 @@ var caUI = caUI || {};
 				settingsForm =  that.availableDisplayList[bundle] ?  that.availableDisplayList[bundle].settingsForm : '';
 				id = id + '_0'; 
 			}
-			
+
 			output =  "<div id='displayElement_" + id +"' class='" + that.displayItemClass + "'>";
 			output += " <div class='bundleDisplayElementSettingsControl'><a href='#' onclick='jQuery(\".elementSettingsUI\").fadeOut(250); jQuery(\"#displayElementSettings_" +  id.replace(/\./g, "\\\\.") +"\").fadeIn(250); return false; '>" + that.settingsIcon + "</a></div>";
 			output += "<div style='width:75%'>" + label + " </div>";
@@ -125,13 +120,6 @@ var caUI = caUI || {};
 
 			
 			return output;
-		}
-		// ------------------------------------------------------------------------------------
-		that._getTooltipForDisplay = function(placement_info) {
-			var label = placement_info.display;
-			var description = placement_info.description;
-			var bundle;
-			if (placement_info.bundle) { bundle = placement_info.bundle.replace(/\./g, "\\."); }
 		}
 		// ------------------------------------------------------------------------------------
 		that._updateBundleListFormElement = function() {
