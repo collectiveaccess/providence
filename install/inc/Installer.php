@@ -938,6 +938,10 @@ class Installer {
 			$vn_default = self::getAttribute($vo_type, "default");
 			$vn_rank = (int)self::getAttribute($vo_type, "rank");
 
+			$t_rel_type = ca_relationship_types::find(array('type_code' => $vs_type_code, 'table_num' => $pn_table_num, 'parent_id' => $pn_parent_id),array('returnAs' => 'firstModelInstance'));
+			$t_rel_type = $t_rel_type ? $t_rel_type : new ca_relationship_types();
+			$t_rel_type->setMode(ACCESS_WRITE);
+
 			$t_rel_type->set('table_num', $pn_table_num);
 			$t_rel_type->set('type_code', $vs_type_code);
 			$t_rel_type->set("parent_id", $pn_parent_id);
@@ -968,7 +972,11 @@ class Installer {
 			}
 
 			$t_rel_type->set('is_default', $vn_default ? 1 : 0);
-			$t_rel_type->g;
+			if($t_rel_type->getPrimaryKey()){
+				$t_rel_type->update();
+			} else {
+				$t_rel_type->insert();
+			}
 
 			if ($t_rel_type->numErrors()) {
 				$this->addError("Errors inserting relationship {$vs_type_code}: ".join("; ",$t_rel_type->getErrors()));
