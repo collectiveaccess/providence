@@ -30,15 +30,15 @@
 									<name_plural>History</name_plural>
 								</label>
 							</labels>
-						<items><item idno="history_part" enabled="1" default="0">
-							<labels>
-								<label locale="en_AU" preferred="1">
-									<name_singular>History Part</name_singular>
-									<name_plural>History Part</name_plural>
-								</label>
-							</labels>
+							<items><item idno="history_part" enabled="1" default="0">
+								<labels>
+									<label locale="en_AU" preferred="1">
+										<name_singular>History Part</name_singular>
+										<name_plural>History Part</name_plural>
+									</label>
+								</labels>
 							</item>
-						</items>
+							</items>
 						</item>
 					</items>
 				</item>
@@ -58,7 +58,7 @@
 				</label>
 			</labels>
 			<items>
-				<item idno="precise" enabled="1" default="1" type="concept">
+				<item idno="Precise" enabled="1" default="1" type="concept">
 					<labels>
 						<label locale="en_AU" preferred="1">
 							<name_singular>Precise</name_singular>
@@ -66,7 +66,7 @@
 						</label>
 					</labels>
 				</item>
-				<item idno="minimum" enabled="1" default="0" type="concept">
+				<item idno="Minimum" enabled="1" default="0" type="concept">
 					<labels>
 						<label locale="en_AU" preferred="1">
 							<name_singular>Minimum</name_singular>
@@ -74,7 +74,7 @@
 						</label>
 					</labels>
 				</item>
-				<item idno="maximum" enabled="1" default="0" type="concept">
+				<item idno="Maximum" enabled="1" default="0" type="concept">
 					<labels>
 						<label locale="en_AU" preferred="1">
 							<name_singular>Maximum</name_singular>
@@ -83,7 +83,7 @@
 					</labels>
 				</item>
 
-				<item idno="approximate" enabled="1" default="0" type="concept">
+				<item idno="Approximate" enabled="1" default="0" type="concept">
 					<labels>
 						<label locale="en_AU" preferred="1">
 							<name_singular>Approximate</name_singular>
@@ -208,21 +208,21 @@
 					</settings>
 				</metadataElement>
 				<metadataElement code="history_measurement_weight" datatype="Weight">
-				<labels><label locale="en_AU">
+					<labels><label locale="en_AU">
 						<name>Weight</name>
 					</label></labels>
-				<settings>
-					<setting name="fieldWidth">25</setting>
-				</settings>
-			</metadataElement>
+					<settings>
+						<setting name="fieldWidth">25</setting>
+					</settings>
+				</metadataElement>
 				<metadataElement code="history_measurement_text" datatype="Text">
-				<labels><label locale="en_AU">
+					<labels><label locale="en_AU">
 						<name>Text Measurement</name>
 					</label></labels>
-				<settings>
-					<setting name="fieldWidth">25</setting>
-				</settings>
-			</metadataElement>
+					<settings>
+						<setting name="fieldWidth">25</setting>
+					</settings>
+				</metadataElement>
 				<metadataElement code="measure_notes" datatype="Text">
 					<labels><label locale="en_AU">
 						<name>Notes</name>
@@ -268,6 +268,33 @@
 						<setting name="minimumAttributeBundlesToDisplay">1</setting>
 					</settings>
 				</restriction>
+			</typeRestrictions>
+		</metadataElement>
+		<metadataElement code="dcModified" datatype="DateRange">
+			<labels>
+				<label locale="en_AU">
+					<name>Date Modified</name>
+					<description>The most recent date-time on which the resource was changed. For Darwin Core, recommended best practice is to use an encoding scheme, such as ISO 8601:2004(E).</description>
+				</label>
+			</labels>
+			<settings>
+				<setting name="fieldWidth">70</setting>
+			</settings>
+			<elements>
+				<metadataElement code="modifiedBy" datatype="Entities">
+					<labels>
+						<label locale="en_AU">
+							<name>Modified By</name>
+							<description>The name of the entity that the record was last modified by.</description>
+						</label>
+					</labels>
+					<settings>
+						<setting name="restrictToTypes">ind</setting>
+						<setting name="readonly">1</setting>
+					</settings>
+				</metadataElement>
+			</elements>
+			<typeRestrictions>
 			</typeRestrictions>
 		</metadataElement>
 		<metadataElement code="department" datatype="Entities">
