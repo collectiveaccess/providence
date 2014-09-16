@@ -408,6 +408,7 @@ class ca_users extends BaseModel {
 		if($this->changed('password')) {
 			$vs_backend_password = AuthenticationManager::updatePassword($this->get('user_name'), $this->get('password'));
 			$this->set('password', $vs_backend_password);
+			$this->removePendingPasswordReset(true);
 		}
 		
 		# set user vars (the set() method automatically serializes the vars array)
@@ -2585,15 +2586,22 @@ class ca_users extends BaseModel {
 
 		$vs_app_name = $this->getAppConfig()->get("app_name");
 
+		$vb_return = false;
 		if($this->hasPendingPasswordReset()) {
 			if(!$this->pendingPasswordResetIsExpired()) {
 				$vs_actual_token = $this->getVar("{$vs_app_name}_password_reset_token");
-				return ($vs_actual_token === $ps_token);
+				$vb_return = ($vs_actual_token === $ps_token);
 			}
 		}
 
-		return false;
+		if(!$vb_return) {
+			// invalid token checks count as completely botched password reset attempt. you can only have so many of those
+			$this->removePendingPasswordReset(false);
+			$this->setMode(ACCESS_WRITE);
+			$this->update();
+		}
 
+		return $vb_return;
 	}
 	# ----------------------------------------
 	# Password change utilities
@@ -2631,7 +2639,7 @@ class ca_users extends BaseModel {
 	}
 	# ----------------------------------------
 	private function hasPendingPasswordReset() {
-		if(!($this->getPrimaryKey() > 0)) { print 'fale'; return false; }
+		if(!($this->getPrimaryKey() > 0)) { return false; }
 
 		$vs_app_name = $this->getAppConfig()->get("app_name");
 

@@ -96,6 +96,8 @@
 
 			if($t_user->load($vs_username)) {
 				$t_user->requestPasswordReset();
+			} else {
+				sleep(2);
 			}
 
 			// render the same static view no matter if something was actually done.
@@ -148,6 +150,9 @@
 						$t_user->set('password', $vs_pw);
 						$t_user->setMode(ACCESS_WRITE);
 						$t_user->update();
+
+						$this->notification->addNotification(_t("Password was successfully changed. You can now log in with your new password."), __NOTIFICATION_TYPE_INFO__);
+						$this->view->setVar('notifications', $this->notification->getNotifications());
 
 						$this->Login();
 					}

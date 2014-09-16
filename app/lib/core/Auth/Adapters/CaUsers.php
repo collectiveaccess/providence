@@ -54,4 +54,13 @@ class CaUsersAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		return create_hash($ps_password);
 	}
 	# --------------------------------------------------------------------------------
+	public static function supportsPasswordUpdate() {
+		return true;
+	}
+	# --------------------------------------------------------------------------------
+	public static function updatePassword($ps_username, $ps_password) {
+		// ca_users takes care of creating the backend record for us. There's nothing else to do here
+		return create_hash($ps_password);
+	}
+	# --------------------------------------------------------------------------------
 }
