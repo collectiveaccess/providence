@@ -130,6 +130,19 @@ class AuthenticationManager {
 
 		return call_user_func(self::$g_authentication_adapter.'::supportsPasswordUpdate');
 	}
+
+	/**
+	 * Update password for existing user
+	 *
+	 * @param string $ps_username
+	 * @param string $ps_password
+	 * @return bool
+	 */
+	public static function updatePassword($ps_username, $ps_password) {
+		self::init();
+
+		return call_user_func(self::$g_authentication_adapter.'::updatePassword', $ps_username, $ps_password);
+	}
 }
 
 class AuthClassDoesNotExistException extends Exception {}

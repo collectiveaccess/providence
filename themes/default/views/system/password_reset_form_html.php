@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/views/system/password_reset_instructions_html.php :
+ * app/views/system/password_reset_form_html.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -26,6 +26,9 @@
  * ----------------------------------------------------------------------
  */
 AppController::getInstance()->removeAllPlugins();
+$vb_render = $this->getVar('renderForm');
+$vs_token = $this->getVar('token');
+$vs_username = $this->getVar('username');
 ?>
 <html>
 <head>
@@ -50,10 +53,42 @@ AppController::getInstance()->removeAllPlugins();
 		</div>
 		<div id="systemTitle">
 
-			<p class="content">Something about checking your email</p>
+			<p class="content">
+<?php
+				if($vb_render) {
+					print _t("Please enter a new password");
+				} else {
+					print _t("Invalid user or token");
+				}
+?>
+			</p>
+
+			<?php
+			if ($va_notifications = $this->getVar('notifications')) {
+				?>
+				<p class="content"><?php foreach($va_notifications as $va_notification) { print $va_notification['message']."<br/>\n"; }; ?></p>
+			<?php
+			}
+			?>
 
 		</div><!-- end  systemTitle -->
 		<div id="loginForm">
+<?php if($vb_render) { ?>
+			<?php print caFormTag($this->request, 'DoReset', 'reset'); ?>
+			<div class="loginFormElement"><?php print _t("Password"); ?>:<br/>
+				<input type="password" name="password" size="25"/>
+			</div>
+			<div class="loginFormElement"><?php print _t("Re-type password"); ?>:<br/>
+				<input type="password" name="password2" size="25"/>
+			</div>
+<?php 	if(strlen($vs_token)>0){ ?>
+			<input type="hidden" name="token" value="<?php print $vs_token; ?>"/>
+			<input type="hidden" name="username" value="<?php print $vs_username; ?>"/>
+<?php 	} ?>
+
+			<div class="loginSubmitButton"><?php print caFormSubmitButton($this->request, __CA_NAV_BUTTON_LOGIN__, _t("Submit"),"reset", array('icon_position' => __CA_NAV_BUTTON_ICON_POS_RIGHT__)); ?></div>
+			</form>
+<?php } ?>
 			<?php print caNavLink($this->request, _t("Back to login"), 'loginLink', 'system/auth', 'login', ''); ?>
 		</div><!-- end loginForm -->
 	</div><!-- end loginBox -->

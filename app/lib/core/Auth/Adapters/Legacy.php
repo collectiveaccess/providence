@@ -57,4 +57,9 @@ class LegacyAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		return true;
 	}
 	# --------------------------------------------------------------------------------
+	public static function updatePassword($ps_username, $ps_password) {
+		// ca_users takes care of updating the backend record for us. There's nothing else to do here
+		return md5($ps_password);
+	}
+	# --------------------------------------------------------------------------------
 }

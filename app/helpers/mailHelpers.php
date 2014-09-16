@@ -240,8 +240,9 @@
 	 */
 	function caSendMessageUsingView($po_request, $pa_to, $pa_from, $ps_subject, $ps_view, $pa_values, $pa_cc=null, $pa_bcc=null) {
 		$vs_view_path = (is_object($po_request)) ? $po_request->getViewsDirectoryPath() : __CA_BASE_DIR__.'/themes/default/views';
+		if(!is_object($po_request)) { $po_request = null; }
 		
-		$o_view = new View(null, $vs_view_path."/mailTemplates", 'UTF8', array('includeDefaultThemePath' => false));
+		$o_view = new View($po_request, $vs_view_path."/mailTemplates", 'UTF8', array('includeDefaultThemePath' => false));
 		foreach($pa_values as $vs_key => $vm_val) {
 			$o_view->setVar($vs_key, $vm_val);
 		}
