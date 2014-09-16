@@ -35,8 +35,7 @@ require_once(__CA_LIB_DIR__.'/core/Auth/IAuthAdapter.php');
 abstract class BaseAuthAdapter implements IAuthAdapter {
 
 	/**
-	 * Fallback if authentication adapter doesn't implement createUser(), which may be the
-	 * case for some external authentication methods like OpenLDAP/slapd or ADS
+	 * Fallback if authentication adapter doesn't implement createUser().
 	 *
 	 * @param $ps_username
 	 * @param $ps_password

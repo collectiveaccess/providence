@@ -26,6 +26,7 @@
  * ----------------------------------------------------------------------
  */
  	require_once(__CA_LIB_DIR__.'/ca/WidgetManager.php');
+	require_once(__CA_LIB_DIR__.'/core/Auth/AuthenticationManager.php');
  
  	class AuthController extends ActionController {
  		# -------------------------------------------------------
@@ -87,10 +88,14 @@
   		}
  		# -------------------------------------------------------
 		public function Forgot() {
+			if(!AuthenticationManager::supportsPasswordUpdate()) { $this->Login(); return; }
+
 			$this->render('forgot_password_html.php');
 		}
 		# -------------------------------------------------------
 		public function RequestPassword() {
+			if(!AuthenticationManager::supportsPasswordUpdate()) { $this->Login(); return; }
+
 			$vs_username = $this->getRequest()->getParameter('username',pString);
 			$t_user = new ca_users();
 
@@ -107,6 +112,8 @@
 		}
 		# -------------------------------------------------------
 		public function InitReset() {
+			if(!AuthenticationManager::supportsPasswordUpdate()) { $this->Login(); return; }
+
 			$vs_token = $this->getRequest()->getParameter('token',pString);
 			$vs_username = $this->getRequest()->getParameter('username',pString);
 			$t_user = new ca_users();
@@ -126,6 +133,8 @@
 		}
 		# -------------------------------------------------------
 		public function DoReset() {
+			if(!AuthenticationManager::supportsPasswordUpdate()) { $this->Login(); return; }
+
 			$vs_token = $this->getRequest()->getParameter('token',pString);
 			$vs_username = $this->getRequest()->getParameter('username',pString);
 			$t_user = new ca_users();
@@ -162,4 +171,3 @@
 		}
 		# -------------------------------------------------------
  	}
-?>

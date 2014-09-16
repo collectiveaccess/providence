@@ -282,6 +282,8 @@ class ca_users extends BaseModel {
 	 * authentication configuration
 	 */
 	protected $opo_auth_config = null;
+
+	private $opo_log = null;
 	
 	
 	/**
@@ -321,6 +323,7 @@ class ca_users extends BaseModel {
 		parent::__construct($pn_id, $pb_use_cache);	# call superclass constructor	
 		
 		$this->opo_auth_config = Configuration::load($this->getAppConfig()->get("authentication_config"));
+		$this->opo_log = new Eventlog();
 	}
 	# ----------------------------------------
 	/**
@@ -375,8 +378,21 @@ class ca_users extends BaseModel {
 		$vs_confirmation_key = md5(mcrypt_create_iv(24, MCRYPT_DEV_URANDOM));
 		$this->set("confirmation_key", $vs_confirmation_key);
 
-		$vs_backend_password = AuthenticationManager::createUser($this->get('user_name'), $this->get('password'));
-		$this->set('password', $vs_backend_password);
+		try {
+			$vs_backend_password = AuthenticationManager::createUser($this->get('user_name'), $this->get('password'));
+			$this->set('password', $vs_backend_password);
+		} catch(AuthClassFeatureException $e) { // auth class does not implement creating users at all
+			$this->postError(925, _t("Current authentication adapter does not support creating new users."), 'ca_users->insert()');
+			return false;
+		} catch(Exception $e) { // some other error in auth class, e.g. user couldn't be found in directory
+			$this->postError(925, $e->getMessage(), 'ca_users->insert()');
+
+			$this->opo_log->log(array(
+				'CODE' => 'SYS', 'SOURCE' => 'ca_users/insert',
+				'MESSAGE' => _t('Authentication adapter could not create user. Message was: %1', $e->getMessage())
+			));
+			return false;
+		}
 		
 		# set user vars (the set() method automatically serializes the vars array)
 		$this->set("vars",$this->opa_user_vars);
@@ -400,15 +416,20 @@ class ca_users extends BaseModel {
 
 		if($this->changed('email')) {
 			if(!caCheckEmailAddress($this->get('email'))) {
-				$this->postError(922, _t("Invalid email address"), 'ca_users->insert()');
+				$this->postError(922, _t("Invalid email address"), 'ca_users->update()');
 				return false;
 			}
 		}
 
 		if($this->changed('password')) {
-			$vs_backend_password = AuthenticationManager::updatePassword($this->get('user_name'), $this->get('password'));
-			$this->set('password', $vs_backend_password);
-			$this->removePendingPasswordReset(true);
+			try {
+				$vs_backend_password = AuthenticationManager::updatePassword($this->get('user_name'), $this->get('password'));
+				$this->set('password', $vs_backend_password);
+				$this->removePendingPasswordReset(true);
+			} catch(AuthClassFeatureException $e) {
+				$this->postError(922, $e->getMessage(), 'ca_users->update()');
+				return false; // maybe don't barf here?
+			}
 		}
 		
 		# set user vars (the set() method automatically serializes the vars array)
@@ -433,7 +454,36 @@ class ca_users extends BaseModel {
 	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 		$this->clearErrors();
 		$this->set('userclass', 255);
+
+		if($this->getPrimaryKey()>0) {
+			try {
+				AuthenticationManager::deleteUser($this->get('user_name'));
+			} catch (Exception $e) {
+				$this->opo_log->log(array(
+					'CODE' => 'SYS', 'SOURCE' => 'ca_users/delete',
+					'MESSAGE' => _t('Authentication adapter could not delete user. Message was: %1', $e->getMessage())
+				));
+			}
+		}
+
 		return $this->update();
+	}
+	# ----------------------------------------
+	public function set($pa_fields, $pm_value="", $pa_options=null) {
+		if (!is_array($pa_fields)) {
+			$pa_fields = array($pa_fields => $pm_value);
+		}
+
+		// don't allow setting passwords of existing users if authentication backend doesn't support it. this way
+		// all other set() calls can still go through and update() doesn't necessarily have to barf because of a changed password
+		if($this->getPrimaryKey() > 0){
+			if(isset($pa_fields['password']) && !AuthenticationManager::supportsPasswordUpdate()) {
+				$this->postError(922, _t("Authentication back-end doesn't updating existing users."), 'ca_users->update()');
+				return false;
+			}
+		}
+
+		return parent::set($pa_fields,$pm_value,$pa_options);
 	}
 	# ----------------------------------------
 	# --- Utility
@@ -2569,9 +2619,13 @@ class ca_users extends BaseModel {
 			}
 		} else {
 			// user has reached the maximum allowed password resets -> lock the account
-			// @todo: log this
 			$this->removePendingPasswordReset(false);
 			$this->set('active', 0);
+
+			$this->opo_log->log(array(
+				'CODE' => 'SYS', 'SOURCE' => 'ca_users/requestPasswordReset',
+				'MESSAGE' => _t('User %1 was permanently deactivated because the maximum number of consecutive unsuccessful password reset attemps was reached.', $this->get('user_name'))
+			));
 		}
 
 		$this->setMode(ACCESS_WRITE);

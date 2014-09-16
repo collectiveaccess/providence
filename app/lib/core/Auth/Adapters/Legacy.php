@@ -62,4 +62,9 @@ class LegacyAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		return md5($ps_password);
 	}
 	# --------------------------------------------------------------------------------
+	public static function deleteUser($ps_username) {
+		// ca_users takes care of deleting the db row for us. Nothing else to do here.
+		return true;
+	}
+	# --------------------------------------------------------------------------------
 }

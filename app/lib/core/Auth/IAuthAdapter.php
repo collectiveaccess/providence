@@ -43,7 +43,11 @@ interface IAuthAdapter {
 	public static function authenticate($ps_username, $ps_password="", $pa_options=null);
 
 	/**
-	 * Creates new user. Should throw AuthClassFeatureException if not implemented.
+	 * Creates new user. Should throw AuthClassFeatureException if not implemented. Note that while this is called when a new
+	 * user is created in CollectiveAccess, it can be used to verify that the given credentials already exist in
+	 * the backend in question. You could, for instance, use this to check group membership or other access restrictions. If
+	 * you want the CollectiveAccess insert() process to fail, throw an exception other than AuthClassFeatureException. Otherwise
+	 * the corresponding table record in ca_users will be created.
 	 *
 	 * @param string $ps_username user name
 	 * @param string $ps_password cleartext password

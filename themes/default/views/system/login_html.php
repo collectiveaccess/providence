@@ -81,7 +81,9 @@
 							});
 						</script>
 					</form>
+<?php if(AuthenticationManager::supportsPasswordUpdate()) { ?>
 					<div id="forgotLink"><?php print caNavLink($this->request, _t("Forgot your password?"), 'forgotLink', 'system/auth', 'forgot', ''); ?></div>
+<?php } ?>
 				</div><!-- end loginForm -->
 			</div><!-- end loginBox -->
 		</div><!-- end center -->
