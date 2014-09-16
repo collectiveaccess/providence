@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * views/mailTemplates/forgot_password.tpl
+ * views/mailTemplates/account_deactivated.tpl
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,13 +30,6 @@
  * ----------------------------------------------------------------------
  */
 
-	$vs_token = $this->getVar('password_reset_token');
-	$vs_username = $this->getVar('user_name');
-	$vs_site_host = $this->getVar('site_host');
-
-	$vs_nav_url = $vs_site_host.caNavUrl($this->request, 'system', 'auth', 'initreset', array('username' => $vs_username, 'token' => $vs_token ));
-
 ?>
-<p>Something Something click here</p>
-<p><?php print $vs_nav_url; ?></p>
-
+<p>Something Something account was deactivated.</p>
+<p>Message <?php print __CA_ADMIN_EMAIL__; ?> for assistance.</p>

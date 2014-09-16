@@ -2619,13 +2619,7 @@ class ca_users extends BaseModel {
 			}
 		} else {
 			// user has reached the maximum allowed password resets -> lock the account
-			$this->removePendingPasswordReset(false);
-			$this->set('active', 0);
-
-			$this->opo_log->log(array(
-				'CODE' => 'SYS', 'SOURCE' => 'ca_users/requestPasswordReset',
-				'MESSAGE' => _t('User %1 was permanently deactivated because the maximum number of consecutive unsuccessful password reset attemps was reached.', $this->get('user_name'))
-			));
+			$this->passwordResetDeactivateAccount();
 		}
 
 		$this->setMode(ACCESS_WRITE);
@@ -2638,9 +2632,15 @@ class ca_users extends BaseModel {
 
 		if(!AuthenticationManager::supportsPasswordUpdate()) { return false; }
 
-		$vs_app_name = $this->getAppConfig()->get("app_name");
+		if($this->hasReachedMaxPasswordResets()) {
+			// user has reached the maximum allowed password resets -> lock the account regardless what the token is
+			$this->passwordResetDeactivateAccount();
+			return false;
+		}
 
+		$vs_app_name = $this->getAppConfig()->get("app_name");
 		$vb_return = false;
+
 		if($this->hasPendingPasswordReset()) {
 			if(!$this->pendingPasswordResetIsExpired()) {
 				$vs_actual_token = $this->getVar("{$vs_app_name}_password_reset_token");
@@ -2659,6 +2659,31 @@ class ca_users extends BaseModel {
 	}
 	# ----------------------------------------
 	# Password change utilities
+	# ----------------------------------------
+	private function passwordResetDeactivateAccount() {
+		if(!($this->getPrimaryKey() > 0)) { return; }
+		if(!AuthenticationManager::supportsPasswordUpdate()) { return; }
+
+		$vs_app_name = $this->getAppConfig()->get("app_name");
+		$this->removePendingPasswordReset(false);
+		$this->set('active', 0);
+		$this->setMode(ACCESS_WRITE);
+		$this->update();
+
+		$this->opo_log->log(array(
+			'CODE' => 'SYS', 'SOURCE' => 'ca_users/passwordResetDeactivateAccount',
+			'MESSAGE' => _t('User %1 was permanently deactivated because the maximum number of consecutive unsuccessful password reset attemps was reached.', $this->get('user_name'))
+		));
+
+		global $g_request;
+		caSendMessageUsingView($g_request,
+			$this->get('email'),
+			__CA_ADMIN_EMAIL__,
+			"[{$vs_app_name}] "._t("Information regarding your CollectiveAccess account"),
+			'account_deactivated.tpl',
+			array()
+		);
+	}
 	# ----------------------------------------
 	private function hasReachedMaxPasswordResets() {
 		if(!($this->getPrimaryKey() > 0)) { return true; }
