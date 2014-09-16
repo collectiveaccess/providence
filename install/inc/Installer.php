@@ -1367,13 +1367,18 @@ class Installer {
 	# --------------------------------------------------
 	public function processGroups(){
 
-		// Create root group		
-		$t_user_group = new ca_user_groups();
+		// Create root group
+		$t_user_group = ca_user_groups::find(array('code' => 'Root', 'parent_id' => null), array('returnAs' => 'firstModelInstance'));
+		$t_user_group = $t_user_group ? $t_user_group : new ca_user_groups();
 		$t_user_group->setMode(ACCESS_WRITE);
 		$t_user_group->set('name', 'Root');
 		$t_user_group->set('code', 'Root');
 		$t_user_group->set('parent_id', null);
-		$t_user_group->insert();
+		if($t_user_group->getPrimaryKey()){
+			$t_user_group->update();
+		} else {
+			$t_user_group->insert();
+		}
 		
 		if ($t_user_group->numErrors()) {
 			$this->addError("Errors creating root user group 'Root': ".join("; ",$t_user_group->getErrors()));
@@ -1399,15 +1404,20 @@ class Installer {
 			}
 		}
 
-		$t_group = new ca_user_groups();
-		$t_group->setMode(ACCESS_WRITE);
 		if (is_array($va_groups)) {
 			foreach($va_groups as $vs_group_code => $vo_group) {
+				$t_group = ca_user_groups::find(array('code' => $vs_group_code, 'parent_id' => null), array('returnAs' => 'firstModelInstance'));
+				$t_group = $t_group ? $t_group : new ca_user_groups();
+				$t_group->setMode(ACCESS_WRITE);
 				$t_group->set('name', trim((string) $vo_group->name));
 				$t_group->set('description', trim((string) $vo_group->description));
 				$t_group->set('code', $vs_group_code);
 				$t_group->set('parent_id', null);
-				$t_group->insert();
+				if($t_group->getPrimaryKey()){
+					$t_group->update();
+				} else {
+					$t_group->insert();
+				}
 	
 				$va_roles = array();
 	
