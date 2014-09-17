@@ -32,7 +32,7 @@
  	class SetController extends ActionController {
  		# -------------------------------------------------------
  		public function ListSets() {
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
  			$o_result_context = new ResultContext($this->request, 'ca_sets', 'basic_search');
  			
  			$t_set = new ca_sets();

@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 	JavascriptLoadManager::register("jcarousel");
+ 	AssetLoadManager::register("jcarousel");
  
  	$t_rep 						= $this->getVar('t_subject');
 	$vn_representation_id 		= $this->getVar('subject_id');

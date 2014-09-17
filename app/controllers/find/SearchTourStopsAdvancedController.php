@@ -84,8 +84,8 @@
  		 */ 
  		public function Index($pa_options=null) {
  			$pa_options['search'] = $this->opo_browse;
- 			JavascriptLoadManager::register('imageScroller');
- 			JavascriptLoadManager::register('tabUI');
+ 			AssetLoadManager::register('imageScroller');
+ 			AssetLoadManager::register('tabUI');
  			return parent::Index($pa_options);
  		}
  		# -------------------------------------------------------

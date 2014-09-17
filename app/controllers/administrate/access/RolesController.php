@@ -131,7 +131,7 @@
  		}
  		# -------------------------------------------------------
  		public function Save() {
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
  			
 			$o_dm = Datamodel::load();
 			$t_list = new ca_lists();
@@ -262,7 +262,7 @@
  		}
  		# -------------------------------------------------------
  		public function ListRoles() {
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
  			
  			$t_role = $this->getRoleObject();
  			$vs_sort_field = $this->request->getParameter('sort', pString);

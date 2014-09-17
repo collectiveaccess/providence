@@ -72,6 +72,13 @@ class ExportCSV extends BaseExportFormat {
 		$vs_delimiter = (isset($pa_options['settings']['CSV_delimiter']) ? $pa_options['settings']['CSV_delimiter'] : ',');
 		$vs_enclosure = (isset($pa_options['settings']['CSV_enclosure']) ? $pa_options['settings']['CSV_enclosure'] : '"');
 
+		if ($vs_enclosure == '"') {
+			// Escape quotes
+			foreach($va_csv as $vn_i => $vs_csv) {
+				$va_csv[$vn_i] = str_replace('"', '""', $vs_csv);
+			}
+		}
+
 		return $vs_enclosure . join($vs_enclosure.$vs_delimiter.$vs_enclosure,$va_csv) . $vs_enclosure;
 	}
 	# ------------------------------------------------------
@@ -118,5 +125,14 @@ BaseExportFormat::$s_format_settings['CSV'] = array(
 		'default' => '"',
 		'label' => _t('Enclosure'),
 		'description' => _t('Character used to enclose the text content in the export. Typical values are single or double quotes.')
+	),
+	'CSV_print_field_names' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'width' => 40, 'height' => 1,
+		'takesLocale' => false,
+		'default' => '"',
+		'label' => _t('Print field names'),
+		'description' => _t('Print names of output fields in first row of output.')
 	),
 );

@@ -90,8 +90,8 @@
  			$pb_dont_render_view = (isset($pa_options['dontRenderView']) && (bool)$pa_options['dontRenderView']) ? true : false;
  			
  			parent::Index($pa_options);
- 			JavascriptLoadManager::register('browsable');
-			JavascriptLoadManager::register('hierBrowser');
+ 			AssetLoadManager::register('browsable');
+			AssetLoadManager::register('hierBrowser');
  			
  			$va_access_values = caGetUserAccessValues($this->request);
  			

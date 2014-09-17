@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  
-JavascriptLoadManager::register("maps");
+AssetLoadManager::register("maps");
 
 $vo_result 				= $this->getVar('result');
 $vn_num_hits 			= $this->getVar('num_hits');

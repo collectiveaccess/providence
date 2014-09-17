@@ -146,6 +146,13 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Returns a combination of all properties for text display
+		 */
+		public function getPropertiesForDisplay() {
+			return '';
+		}
+		# ------------------------------------------------------------------
+		/**
 		 *
 		 */
 		public function useInEditor() {

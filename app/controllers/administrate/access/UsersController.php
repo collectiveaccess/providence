@@ -43,7 +43,7 @@
  		}
  		# -------------------------------------------------------
  		public function Edit() {
- 			JavascriptLoadManager::register("bundleableEditor");
+ 			AssetLoadManager::register("bundleableEditor");
  			$t_user = $this->getUserObject();
 			
 			$va_profile_prefs = $t_user->getValidPreferences('profile');
@@ -61,7 +61,7 @@
  		}
  		# -------------------------------------------------------
  		public function Save() {
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
  			
  			$t_user = $this->getUserObject();
  			
@@ -191,7 +191,7 @@
  		}
  		# -------------------------------------------------------
  		public function ListUsers() {
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
  			if (($vn_userclass = $this->request->getParameter('userclass', pInteger)) == '') {
  				$vn_userclass = $this->request->user->getVar('ca_users_default_userclass');
  			} else {

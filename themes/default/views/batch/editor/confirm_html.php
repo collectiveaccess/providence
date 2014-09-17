@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  
-	JavascriptLoadManager::register("panel");
+	AssetLoadManager::register("panel");
 	
 	$t_subject 			= $this->getVar('t_subject');
 	$t_set	 			= $this->getVar('t_set');

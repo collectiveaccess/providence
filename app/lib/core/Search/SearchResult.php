@@ -1294,9 +1294,9 @@ class SearchResult extends BaseObject {
 								foreach($va_values_by_locale as $vn_locale_id => $va_values) {
 									foreach($va_values as $vn_i => $va_value) {
 										$va_ids[] = $va_value[$vs_pk];
-										
-										if (caGetOption('GET_DIRECT_DATE', $pa_options, false) || caGetOption('getDirectDate', $pa_options, false)) {
-											if (caGetOption('sortable', $pa_options, false)) { 
+					
+										if(caGetOption('getDirectDate', $pa_options, false)) {
+											if(caGetOption('sortable', $pa_options, false)) {
 												$vs_prop = $va_value[$va_field_info['START']].'/'.$va_value[$va_field_info['END']];
 											} else {
 												$vs_prop = $va_value[$va_field_info['START']];
@@ -1310,7 +1310,6 @@ class SearchResult extends BaseObject {
 											}
 											$vs_prop = $this->opo_tep->getText($pa_options);
 										}
-										
 										if ($vb_return_all_locales) {
 											$va_return_values[$vn_row_id][$vn_locale_id][] = $vs_prop;
 										} else {
@@ -1533,8 +1532,8 @@ class SearchResult extends BaseObject {
 								}
 								break;
 							case FT_DATERANGE:
-								if (caGetOption('GET_DIRECT_DATE', $pa_options, false) || caGetOption('getDirectDate', $pa_options, false)) {
-									if ((isset($pa_options['sortable']) && $pa_options['sortable'])) {
+								if(caGetOption('getDirectDate', $pa_options, false)) {
+									if(caGetOption('sortable', $pa_options, false)) {
 										$va_value[$va_path_components['field_name']] = $va_value[$va_field_info['START']].'/'.$va_value[$va_field_info['END']];
 									} else {
 										$va_value[$va_path_components['field_name']] = $va_value[$va_field_info['START']];
@@ -1546,8 +1545,8 @@ class SearchResult extends BaseObject {
 								}
 								break;
 							case FT_HISTORIC_DATERANGE:
-								if (caGetOption('GET_DIRECT_DATE', $pa_options, false) || caGetOption('getDirectDate', $pa_options, false)) {
-									if (caGetOption('sortable', $pa_options, false)) { 
+								if(caGetOption('getDirectDate', $pa_options, false)) {
+									if(caGetOption('sortable', $pa_options, false)) {
 										$va_value[$va_path_components['field_name']] = $va_value[$va_field_info['START']].'/'.$va_value[$va_field_info['END']];
 									} else {
 										$va_value[$va_path_components['field_name']] = $va_value[$va_field_info['START']];
@@ -1559,6 +1558,7 @@ class SearchResult extends BaseObject {
 								}
 								break;
 							case FT_MEDIA:
+							
 								if(!$vs_version = $va_path_components['subfield_name']) {
 									$vs_version = "largeicon";
 								}

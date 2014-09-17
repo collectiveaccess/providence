@@ -308,7 +308,7 @@ class TimeExpressionParser {
 								if ($va_peek['type'] == TEP_TOKEN_INTEGER) {
 									$vn_start_year = $va_peek['value'];
 								} else {
-									$va_today = getdate();
+									$va_today = $this->gmgetdate();
 									$vn_start_year = $va_today['year'];
 								}
 								$this->skipToken();
@@ -982,7 +982,7 @@ class TimeExpressionParser {
 								break;
 							# ----------------------
 							case TEP_TOKEN_NOW:
-								$va_now = getdate();
+								$va_now = $this->gmgetdate();
 								$va_date = array(
 									'month' => $va_now['mon'], 'day' => $va_now['mday'], 'year' => $va_now['year'],
 									'hours' => $va_now['hours'], 'minutes' => $va_now['minutes'], 'seconds' => $va_now['seconds'],
@@ -994,7 +994,7 @@ class TimeExpressionParser {
 								break;
 							# ----------------------
 							case TEP_TOKEN_YESTERDAY:
-								$va_yesterday = getdate(time() - (24 * 60 * 60));
+								$va_yesterday = $this->gmgetdate(time() - (24 * 60 * 60));
 								$va_date = array(
 									'month' => $va_yesterday['mon'], 'day' => $va_yesterday['mday'], 'year' => $va_yesterday['year'],
 									'hours' => 0, 'minutes' => 0, 'seconds' => 0,
@@ -1006,7 +1006,7 @@ class TimeExpressionParser {
 								break;
 							# ----------------------
 							case TEP_TOKEN_TODAY:
-								$va_today = getdate();
+								$va_today = $this->gmgetdate();
 								$va_date = array(
 									'month' => $va_today['mon'], 'day' => $va_today['mday'], 'year' => $va_today['year'],
 									'hours' => 0, 'minutes' => 0, 'seconds' => 0,
@@ -1018,7 +1018,7 @@ class TimeExpressionParser {
 								break;
 							# ----------------------
 							case TEP_TOKEN_TOMORROW:
-								$va_tomorrow = getdate(time() + (24 * 60 * 60));
+								$va_tomorrow = $this->gmgetdate(time() + (24 * 60 * 60));
 								$va_date = array(
 									'month' => $va_tomorrow['mon'], 'day' => $va_tomorrow['mday'], 'year' => $va_tomorrow['year'],
 									'hours' => 0, 'minutes' => 0, 'seconds' => 0,
@@ -1818,7 +1818,7 @@ class TimeExpressionParser {
 				&&
 				(!$pa_dates['start']['era'] && ($pa_dates['start']['year'] > 0) && ($pa_dates['start']['year'] <= 99))
 			) {
-				$va_tmp = getDate();
+				$va_tmp = $this->gmgetdate();
 				$vn_current_year = intval(substr($va_tmp['year'], 2, 2));		// get last two digits of current year
 				$vn_current_century = intval(substr($va_tmp['year'], 0, 2)) * 100;
 				
@@ -1830,7 +1830,7 @@ class TimeExpressionParser {
 			}
 			
 			if ((!isset($pa_dates['end']['era']) && ($pa_dates['end']['year'] > 0) && ($pa_dates['end']['year'] <= 99))) {
-				$va_tmp = getDate();
+				$va_tmp = $this->gmgetdate();
 				$vn_current_year = intval(substr($va_tmp['year'], 2, 2));		// get last two digits of current year
 				$vn_current_century = intval(substr($va_tmp['year'], 0, 2)) * 100;
 				if ($pa_dates['end']['year'] <= $vn_current_year) {
@@ -1850,7 +1850,7 @@ class TimeExpressionParser {
 				if (!is_null($pa_dates['end']['year'])) {
 					$pa_dates['end']['year'] = 0;
 				} else {
-					$va_current_date = getDate();
+					$va_current_date = $this->gmgetdate();
 					$pa_dates['end']['year'] = $va_current_date['year'];
 					if (($pa_dates['end']['month'] === null) && ($pa_dates['start']['year'] != TEP_START_OF_UNIVERSE)) { 
 						$pa_dates['end']['month'] = $pa_dates['start']['month']; 
@@ -2821,7 +2821,7 @@ class TimeExpressionParser {
 	# -------------------------------------------------------------------
 	public function daysInMonth($pn_month, $pn_year=null) {
 		if (!$pn_year) {
-			$va_tmp = getdate();
+			$va_tmp = $this->gmgetdate();
 			$pn_year = $va_tmp['year'];
 		} else {
 			if (preg_match('!^[\?]+$!', $pn_year)) { $pn_year = 0; }
@@ -2886,7 +2886,7 @@ class TimeExpressionParser {
 	}
 	# -------------------------------------------------------------------
 	public function unixToHistoricTimestamp($pn_unix_timestamp) {
-		$va_date_info = getdate($pn_unix_timestamp);
+		$va_date_info = $this->gmgetdate($pn_unix_timestamp);
 		return $va_date_info['year'].".".sprintf('%02d',$va_date_info['mon']).sprintf('%02d',$va_date_info['mday']).sprintf('%02d',$va_date_info['hours']).sprintf('%02d',$va_date_info['minutes']).sprintf('%02d',$va_date_info['seconds']).'00'; 
 	}
 	# -------------------------------------------------------------------
@@ -3088,6 +3088,15 @@ class TimeExpressionParser {
 		
 		return $va_values;
 	}
+	# -------------------------------------------------------------------
+	/**
+	 * Timezone-less version of getDate()
+	 */
+	function gmgetdate($ts = null){ 
+        $k = array('seconds','minutes','hours','mday', 
+                'wday','mon','year','yday','weekday','month',0); 
+        return(array_combine($k,split(":", 
+                gmdate('s:i:G:j:w:n:Y:z:l:F:U',is_null($ts)?time():$ts)))); 
+    } 
  	# -------------------------------------------------------------------
 }
-?>
