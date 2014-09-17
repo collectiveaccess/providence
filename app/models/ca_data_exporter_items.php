@@ -486,6 +486,16 @@ class ca_data_exporter_items extends BaseModel {
 			'description' => _t('Formatting option for DateRange attributes.')
 		);
 		
+		$va_settings['_id'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('ID'),
+			'description' => _t('ID of item as set in mapping.')
+		);
+		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
 	# ------------------------------------------------------

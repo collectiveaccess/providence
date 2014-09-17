@@ -41,7 +41,7 @@
  		}
  		# -------------------------------------------------------
  		public function Save() {
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
  			
  			$t_locale = $this->getLocaleObject();
  			$t_locale->setMode(ACCESS_WRITE);
@@ -84,7 +84,7 @@
  		}
  		# -------------------------------------------------------
  		public function ListLocales() {
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
  			
  			$t_locale = $this->getLocaleObject();
  			$vs_sort_field = $this->request->getParameter('sort', pString);

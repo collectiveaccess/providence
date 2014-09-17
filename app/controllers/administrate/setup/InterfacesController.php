@@ -43,7 +43,7 @@ class InterfacesController extends BaseEditorController {
 	 *
 	 */
 	public function ListUIs(){
-		JavascriptLoadManager::register('tableList');
+		AssetLoadManager::register('tableList');
 		
 		$this->checkConfiguration();
 		

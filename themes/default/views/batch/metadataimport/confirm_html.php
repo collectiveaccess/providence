@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  
-	JavascriptLoadManager::register("panel");
+	AssetLoadManager::register("panel");
 	
  	$va_last_settings = $this->getVar('batch_metadataimport_last_settings');
 ?>

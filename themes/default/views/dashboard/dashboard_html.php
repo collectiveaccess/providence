@@ -27,8 +27,8 @@
  */
  	require_once(__CA_LIB_DIR__.'/ca/DashboardManager.php');
  
-	JavascriptLoadManager::register('draggableUI');		// adds jQuery UI draggable 
-	JavascriptLoadManager::register('dashboard');			// adds caUI dashboard library
+	AssetLoadManager::register('draggableUI');		// adds jQuery UI draggable 
+	AssetLoadManager::register('dashboard');			// adds caUI dashboard library
 ?>
 
 <!-- Empty DIV uses for the "popup" widget chooser panel -->

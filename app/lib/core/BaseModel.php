@@ -1813,7 +1813,9 @@ class BaseModel extends BaseObject {
 					case FT_FILE:
 					case FT_MEDIA:
 						if (!$vs_cur_value) {
+							$t = new Timer();
 							$this->_FIELD_VALUES[$vs_field] = caUnserializeForDatabase($va_row[$vs_field]);
+							Debug::msg($vs_field.'; '.strlen($va_row[$vs_field]).'/'.$t->getTime(4).caPrintStackTrace());
 						}
 						break;
 					default:
@@ -8163,8 +8165,8 @@ $pa_options["display_form_field_tips"] = true;
 								color: jQuery('#".$pa_options["name"]."').val()
 							})}); </script>\n";
 							
-							if (method_exists('JavascriptLoadManager', 'register')) {
-								JavascriptLoadManager::register('jquery', 'colorpicker');
+							if (method_exists('AssetLoadManager', 'register')) {
+								AssetLoadManager::register('jquery', 'colorpicker');
 							}
 						} else {
 							# normal controls: all non-DT_SELECT display types are returned as DT_FIELD's. We could generate
@@ -8201,7 +8203,7 @@ $pa_options["display_form_field_tips"] = true;
 							} else {
 								if (isset($va_attr['LOOKUP']) && ($va_attr['LOOKUP'])) {
 									if ((class_exists("AppController")) && ($app = AppController::getInstance()) && ($req = $app->getRequest())) {
-										JavascriptLoadManager::register('jquery', 'autocomplete');
+										AssetLoadManager::register('jquery', 'autocomplete');
 										$vs_element .= "<script type='text/javascript'>
 	jQuery('#".$pa_options["id"]."').autocomplete({ source: '".caNavUrl($req, 'lookup', 'Intrinsic', 'Get', array('bundle' => $this->tableName().".{$ps_field}", "max" => 500))."', minLength: 3, delay: 800});
 </script>";
@@ -8210,7 +8212,7 @@ $pa_options["display_form_field_tips"] = true;
 							}
 							
 							if (isset($pa_options['usewysiwygeditor']) && $pa_options['usewysiwygeditor']) {
-								JavascriptLoadManager::register("ckeditor");
+								AssetLoadManager::register("ckeditor");
 								$vs_width = $vn_display_width;
 								$vs_height = $vn_display_height;
 								if (!preg_match("!^[\d\.]+px$!i", $vs_width)) {

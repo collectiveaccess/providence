@@ -1237,7 +1237,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			// Output extra useful info for set items
 			//
 			if ($vs_table_name === 'ca_set_items') {
-				JavascriptLoadManager::register("panel");
+				AssetLoadManager::register("panel");
 				$t_set = new ca_sets();
 				if ($t_set->load($vn_set_id = $t_item->get('set_id'))) {
 					$vs_buf .= "<div><strong>"._t("Part of set")."</strong>: ".caEditorLink($po_view->request, $t_set->getLabelForDisplay(), '', 'ca_sets', $vn_set_id)."<br/>\n";

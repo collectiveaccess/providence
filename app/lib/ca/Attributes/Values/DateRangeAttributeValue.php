@@ -329,7 +329,7 @@
 
  				// nothing terrible happens if this fails. If no package is registered for the current 
  				// locale, the LoadManager simply ignores it and the default settings (en_US) apply
- 				JavascriptLoadManager::register("datepicker_i18n_{$g_ui_locale}"); 
+ 				AssetLoadManager::register("datepicker_i18n_{$g_ui_locale}"); 
 
  				$vs_element .= "<script type='text/javascript'>
  					jQuery(document).ready(function() {

@@ -66,7 +66,7 @@
 				'ca_item_comments.user_id' => _t('user')
 			);
 			 
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
  		}
  		# -------------------------------------------------------
  		/**

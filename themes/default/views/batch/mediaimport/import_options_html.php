@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  
-	JavascriptLoadManager::register("fileupload");
+	AssetLoadManager::register("fileupload");
 	
  	$t_object = $this->getVar('t_object');
  	$o_config = $t_object->getAppConfig();
