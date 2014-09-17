@@ -160,6 +160,19 @@ class AuthenticationManager {
 
 		return call_user_func(self::$g_authentication_adapter.'::updatePassword', $ps_username, $ps_password);
 	}
+
+	/**
+	 * Get user info from back-end
+	 *
+	 * @param string $ps_username
+	 * @param string $ps_password
+	 * @return array
+	 */
+	public static function getUserInfo($ps_username, $ps_password) {
+		self::init();
+
+		return call_user_func(self::$g_authentication_adapter.'::getUserInfo', $ps_username, $ps_password);
+	}
 }
 
 class AuthClassDoesNotExistException extends Exception {}

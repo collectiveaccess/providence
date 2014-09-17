@@ -50,10 +50,11 @@ abstract class BaseAuthAdapter implements IAuthAdapter {
 	 * Fallback for getUserInfo()
 	 *
 	 * @param $ps_username
-	 * @return array|void
+	 * @param $ps_password
+	 * @return array
 	 * @throws AuthClassFeatureException
 	 */
-	public static function getUserInfo($ps_username) {
+	public static function getUserInfo($ps_username, $ps_password) {
 		throw new AuthClassFeatureException();
 	}
 
@@ -83,7 +84,7 @@ abstract class BaseAuthAdapter implements IAuthAdapter {
 	}
 
 	/**
-	 * Fallback if authentication adapter doesn't implement supports()
+	 * Fallback if authentication adapter doesn't implement supports(). For more info @see IAuthAdapter::supports()
 	 *
 	 * @param int $pn_feature
 	 * @return bool

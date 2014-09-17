@@ -2787,6 +2787,39 @@ class ca_users extends BaseModel {
 	 */
 	public function authenticate(&$ps_username, $ps_password="", $pa_options=null) {
 
+		// if user doesn't exist, try creating it through the authentication backend, if the backend supports it
+		if (!$this->load($ps_username)) {
+			if(AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_AUTOCREATE_USERS__)) {
+				$va_values = AuthenticationManager::getUserInfo($ps_username, $ps_password);
+				if(!is_array($va_values) || sizeof($va_values) < 1) { return false; }
+
+				// @todo: check sanity on values from plugins before inserting them?
+				foreach($va_values as $vs_k => $vs_v) {
+					if(in_array($vs_k, array('roles', 'groups'))) { continue; }
+					$this->set($vs_k, $vs_v);
+				}
+
+				$vn_mode = $this->getMode();
+				$this->setMode(ACCESS_WRITE);
+				$this->insert();
+
+				if (!$this->getPrimaryKey()) {
+					$this->setMode($vn_mode);
+					return false;
+				}
+
+				if(is_array($va_values['groups']) && sizeof($va_values['groups'])>0) {
+					$this->addToGroups($va_values['groups']);
+				}
+
+				if(is_array($va_values['roles']) && sizeof($va_values['roles'])>0) {
+					$this->addRoles($va_values['roles']);
+				}
+
+				$this->setMode($vn_mode);
+			}
+		}
+
 		if(AuthenticationManager::authenticate($ps_username, $ps_password, $pa_options)) {
 			$this->load($ps_username);
 			return true;

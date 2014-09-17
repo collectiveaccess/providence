@@ -65,9 +65,10 @@ interface IAuthAdapter {
 	 * Get array containing field_name/value pairs for newly created records in the ca_users table, e.g. email, fname, lname.
 	 *
 	 * @param $ps_username
+	 * @param $ps_password
 	 * @return array
 	 */
-	public static function getUserInfo($ps_username);
+	public static function getUserInfo($ps_username, $ps_password);
 
 	/**
 	 * Deletes user. Should throw AuthClassFeatureException if not implemented.
