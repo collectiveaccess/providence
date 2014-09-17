@@ -80,4 +80,12 @@ abstract class BaseAuthAdapter implements IAuthAdapter {
 		return false;
 	}
 
+	/**
+	 * Fallback for accountManagementLink()
+	 *
+	 * @return false|string
+	 */
+	public static function getAccountManagementLink() {
+		return false;
+	}
 }

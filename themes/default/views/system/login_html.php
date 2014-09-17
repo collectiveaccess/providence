@@ -83,6 +83,8 @@
 					</form>
 <?php if(AuthenticationManager::supportsPasswordUpdate()) { ?>
 					<div id="forgotLink"><?php print caNavLink($this->request, _t("Forgot your password?"), 'forgotLink', 'system/auth', 'forgot', ''); ?></div>
+<?php } else if($vs_adapter_account_link = AuthenticationManager::getAccountManagementLink()) { ?>
+	<div id="forgotLink"><a href="<?php print $vs_adapter_account_link; ?>" target="_blank"><?php print _t("Manage your account"); ?></a></div>
 <?php } ?>
 				</div><!-- end loginForm -->
 			</div><!-- end loginBox -->

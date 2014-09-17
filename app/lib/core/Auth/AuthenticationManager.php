@@ -132,6 +132,17 @@ class AuthenticationManager {
 	}
 
 	/**
+	 * Get account management link from authentication adapter
+	 *
+	 * @return bool|string
+	 */
+	public static function getAccountManagementLink() {
+		self::init();
+
+		return call_user_func(self::$g_authentication_adapter.'::getAccountManagementLink');
+	}
+
+	/**
 	 * Update password for existing user
 	 *
 	 * @param string $ps_username

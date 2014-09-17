@@ -83,6 +83,17 @@ interface IAuthAdapter {
 	 */
 	public static function supportsPasswordUpdate();
 
+	/**
+	 * Gives implementations an option to place an account management link on the CollectiveAccess
+	 * login page. This could for instance be a link to the account management web UI of your organization.
+	 * Should return false if no link is to be displayed. Should be mutually exclusive with
+	 * supportsPasswordUpdate(), meaning your authentication adapter should either support one or the other
+	 * (or none of them) but not both.
+	 *
+	 * @return false|string
+	 */
+	public static function getAccountManagementLink();
+
 }
 
 class AuthClassFeatureException extends Exception {}
