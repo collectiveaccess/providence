@@ -82,9 +82,9 @@
  		}
  		# -------------------------------------------------------
  		public function Index($pa_options=null) {
- 			JavascriptLoadManager::register('imageScroller');
- 			JavascriptLoadManager::register('tabUI');
- 			JavascriptLoadManager::register('panel');
+ 			AssetLoadManager::register('imageScroller');
+ 			AssetLoadManager::register('tabUI');
+ 			AssetLoadManager::register('panel');
  			
  			parent::Index($pa_options);
  		}

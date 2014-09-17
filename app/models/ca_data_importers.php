@@ -1305,6 +1305,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$o_log->logDebug(_t('Finished reading input source at %1 seconds', $t->getTime(4)));
 		
 		$vn_num_items = $o_reader->numRows();
+		$o_log->logDebug(_t('Found %1 rows in input source', $vn_num_items));
 
 		$o_progress->setTotal($vn_num_items);
 		$o_progress->start(_t('Importing from %1', $ps_source), array('window' => $r_progress));
@@ -1317,6 +1318,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$vn_table_num = $t_mapping->get('table_num');
 		if (!($t_subject = $o_dm->getInstanceByTableNum($vn_table_num))) {
 			// invalid table
+			$o_log->logError(_t('Mapping uses invalid table %1 as target', $vn_table_num));
 			if($vb_use_ncurses) { ncurses_end(); }
 			if ($o_trans) { $o_trans->rollback(); }
 			return false;
@@ -1453,6 +1455,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			
 		
 			if ($vn_row < $vn_num_initial_rows_to_skip) {	// skip over initial header rows
+				$o_log->logDebug(_t('Skipped initial row %1 of %2', $vn_row, $vn_num_initial_rows_to_skip));
 				$vn_row++;
 				continue;
 			}

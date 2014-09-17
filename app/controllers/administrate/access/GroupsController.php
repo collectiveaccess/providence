@@ -41,7 +41,7 @@
  		}
  		# -------------------------------------------------------
  		public function Save() {
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
  			
  			$t_group = $this->getGroupObject();
  			$t_group->setMode(ACCESS_WRITE);
@@ -114,7 +114,7 @@
  		}
  		# -------------------------------------------------------
  		public function ListGroups() {
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
  			
  			$t_group = $this->getGroupObject();
  			$vs_sort_field = $this->request->getParameter('sort', pString);

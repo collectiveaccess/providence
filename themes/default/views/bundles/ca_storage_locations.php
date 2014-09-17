@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  
-	JavascriptLoadManager::register('hierBrowser');
+	AssetLoadManager::register('hierBrowser');
  
 	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$t_instance 		= $this->getVar('t_instance');

@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
-	JavascriptLoadManager::register("sortableUI");
+	AssetLoadManager::register("sortableUI");
 	
 	$t_importer = $this->getVar('t_importer');
 	$t_subject = $this->getVar('t_subject');

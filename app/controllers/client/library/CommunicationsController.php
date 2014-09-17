@@ -37,7 +37,7 @@
  		#
  		# -------------------------------------------------------
  		public function Index() {
- 			JavascriptLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('bundleableEditor');
  			$t_comm = new ca_commerce_communications();
  			$t_user = new ca_users();
  			$o_result_context = new ResultContext($this->request, 'ca_commerce_communications', 'basic_search_library');

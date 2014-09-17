@@ -45,8 +45,8 @@
  		}
  		# -------------------------------------------------------
  		protected function _initView($pa_options=null) {
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register('sortableUI');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('sortableUI');
  			$va_init = parent::_initView($pa_options);
  			if (!$va_init[1]->getPrimaryKey()) {
  				$va_init[1]->set('user_id', $this->request->getUserID());

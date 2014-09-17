@@ -382,7 +382,7 @@
 								color: jQuery('#".$pa_options["name"]."').val()
 							})}); </script>\n";
 							
-							JavascriptLoadManager::register('jquery', 'colorpicker');
+							AssetLoadManager::register('jquery', 'colorpicker');
 							
 					break;
 				# --------------------------------------------

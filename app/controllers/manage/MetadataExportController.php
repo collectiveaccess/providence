@@ -53,8 +53,8 @@
  		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register('panel');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('panel');
  			
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
@@ -70,8 +70,8 @@
  		 *
  		 */
  		public function Index($pa_values=null, $pa_options=null) {
-			JavascriptLoadManager::register('tableList');
-			JavascriptLoadManager::register('fileupload');
+			AssetLoadManager::register('tableList');
+			AssetLoadManager::register('fileupload');
 		
  			$va_exporters = ca_data_exporters::getExporters();
  			$this->view->setVar('exporter_list', $va_exporters);
