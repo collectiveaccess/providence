@@ -46,6 +46,20 @@ a:hover{
 	font-size:22px;
 	font-family: 'DIN-Regular';
 }
+
+.smallContent {
+    font-size: 14px;
+    margin-right: 68px;
+    text-align: justify;
+}
+
+.notificationContent {
+    font-size: 18px;
+    margin-right: 68px;
+    font-weight: bold;
+    color: darkred;
+}
+
 .loginFormElement{
 	font-size:14px;
 	line-height:2.3em;

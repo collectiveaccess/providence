@@ -34,9 +34,9 @@
 	$vs_username = $this->getVar('user_name');
 	$vs_site_host = $this->getVar('site_host');
 
+	// this *should* work for all setups, right?
 	$vs_nav_url = $vs_site_host.caNavUrl($this->request, 'system', 'auth', 'initreset', array('username' => $vs_username, 'token' => $vs_token ));
-
 ?>
-<p>Something Something click here</p>
-<p><?php print $vs_nav_url; ?></p>
-
+<p><?php print _t("We've received a request to reset the password for user name %1.", $vs_username); ?></p>
+<p><?php print _t("Please click here or copy the link to the address bar of your web browser to set a new password: "); print $vs_nav_url; ?></p>
+<p><?php print _t("If you did not attempt this action, please change your password immediately and/or contact your CollectiveAccess system administrator at %1", __CA_ADMIN_EMAIL__); ?></p>

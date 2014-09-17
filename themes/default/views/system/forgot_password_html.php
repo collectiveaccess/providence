@@ -53,7 +53,9 @@ AppController::getInstance()->removeAllPlugins();
 		</div>
 		<div id="systemTitle">
 			<?php print $this->request->config->get("app_display_name"); ?>
-			<p class="content">Some instructions here.</p>
+			<p class="smallContent">
+				<?php print _t("Enter your CollectiveAccess user name below to request a new password. We will send you an email with further instructions."); ?>
+			</p>
 		</div><!-- end  systemTitle -->
 		<div id="loginForm">
 			<?php print caFormTag($this->request, 'RequestPassword', 'forgot'); ?>

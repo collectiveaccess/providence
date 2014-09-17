@@ -147,7 +147,7 @@
 					// no password match
 					if($vs_pw !== $vs_pw_check) {
 
-						$this->notification->addNotification(_t("Passwords did not match"), __NOTIFICATION_TYPE_ERROR__);
+						$this->notification->addNotification(_t("Passwords did not match. Please try again."), __NOTIFICATION_TYPE_ERROR__);
 						$this->view->setVar('notifications', $this->notification->getNotifications());
 
 						$this->view->setVar('renderForm', true);

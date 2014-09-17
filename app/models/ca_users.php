@@ -2679,7 +2679,7 @@ class ca_users extends BaseModel {
 		caSendMessageUsingView($g_request,
 			$this->get('email'),
 			__CA_ADMIN_EMAIL__,
-			"[{$vs_app_name}] "._t("Information regarding your CollectiveAccess account"),
+			"[{$vs_app_name}] "._t("Information regarding your account"),
 			'account_deactivated.tpl',
 			array()
 		);
@@ -2707,7 +2707,7 @@ class ca_users extends BaseModel {
 		return caSendMessageUsingView($g_request,
 			$vs_user_email,
 			__CA_ADMIN_EMAIL__,
-			"[{$vs_app_name}] "._t("Information regarding your CollectiveAccess password"),
+			"[{$vs_app_name}] "._t("Information regarding your password"),
 			'forgot_password.tpl',
 			array(
 				'password_reset_token' => $ps_password_reset_token,

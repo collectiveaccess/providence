@@ -50,7 +50,9 @@ AppController::getInstance()->removeAllPlugins();
 		</div>
 		<div id="systemTitle">
 
-			<p class="content">Something about checking your email</p>
+			<p class="smallContent">
+				<?php print _t("Thank you for your request. We will send you an email with further instructions. If you don't receive the message after submitting the form, please wait a couple of minutes and also make sure to check your spam and junk folders. If you don't receive an email within 15 minutes after submitting the form, you may have misspelled your user name. Either resubmit the previous form or contact your CollectiveAccess administrator."); ?>
+			</p>
 
 		</div><!-- end  systemTitle -->
 		<div id="loginForm">

@@ -56,7 +56,7 @@
 <?php 
 			if ($va_notifications = $this->getVar('notifications')) {  
 ?>
-				<p class="content"><?php foreach($va_notifications as $va_notification) { print $va_notification['message']."<br/>\n"; }; ?></p>
+				<p class="notificationContent"><?php foreach($va_notifications as $va_notification) { print $va_notification['message']."<br/>\n"; }; ?></p>
 <?php
 			}
 ?>
