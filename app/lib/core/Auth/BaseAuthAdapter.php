@@ -35,15 +35,26 @@ require_once(__CA_LIB_DIR__.'/core/Auth/IAuthAdapter.php');
 abstract class BaseAuthAdapter implements IAuthAdapter {
 
 	/**
-	 * Fallback if authentication adapter doesn't implement createUser().
+	 * Fallback if authentication adapter doesn't implement createUserAndGetPassword().
 	 *
 	 * @param $ps_username
 	 * @param $ps_password
 	 * @throws AuthClassFeatureException
 	 * @return string
 	 */
-	public static function createUser($ps_username, $ps_password) {
+	public static function createUserAndGetPassword($ps_username, $ps_password) {
 		throw new AuthClassFeatureException(_t("Authentication back-end doesn't support creating new users programmatically."));
+	}
+
+	/**
+	 * Fallback for getUserInfo()
+	 *
+	 * @param $ps_username
+	 * @return array|void
+	 * @throws AuthClassFeatureException
+	 */
+	public static function getUserInfo($ps_username) {
+		throw new AuthClassFeatureException();
 	}
 
 	/**
@@ -72,11 +83,12 @@ abstract class BaseAuthAdapter implements IAuthAdapter {
 	}
 
 	/**
-	 * Fallback if authentication adapter doesn't implement supportsPasswordUpdate()
+	 * Fallback if authentication adapter doesn't implement supports()
 	 *
+	 * @param int $pn_feature
 	 * @return bool
 	 */
-	public static function supportsPasswordUpdate() {
+	public static function supports($pn_feature) {
 		return false;
 	}
 

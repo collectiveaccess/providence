@@ -49,13 +49,19 @@ class CaUsersAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		}
 	}
 	# --------------------------------------------------------------------------------
-	public static function createUser($ps_username, $ps_password) {
+	public static function createUserAndGetPassword($ps_username, $ps_password) {
 		// ca_users takes care of creating the backend record for us. There's nothing else to do here
 		return create_hash($ps_password);
 	}
 	# --------------------------------------------------------------------------------
-	public static function supportsPasswordUpdate() {
-		return true;
+	public static function supports($pn_feature) {
+		switch($pn_feature){
+			case __CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__:
+				return true;
+			case __CA_AUTH_ADAPTER_FEATURE_AUTOCREATE_USERS__:
+			default:
+				return false;
+		}
 	}
 	# --------------------------------------------------------------------------------
 	public static function updatePassword($ps_username, $ps_password) {

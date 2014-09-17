@@ -102,10 +102,10 @@ class AuthenticationManager {
 	 * @return string|null The password to store in the ca_users table. Can be left empty for
 	 * back-ends where it doesn't make any sense to store a password locally (e.g. LDAP or OAuth).
 	 */
-	public static function createUser($ps_username, $ps_password) {
+	public static function createUserAndGetPassword($ps_username, $ps_password) {
 		self::init();
 
-		return call_user_func(self::$g_authentication_adapter.'::createUser', $ps_username, $ps_password);
+		return call_user_func(self::$g_authentication_adapter.'::createUserAndGetPassword', $ps_username, $ps_password);
 	}
 
 	/**
@@ -121,14 +121,20 @@ class AuthenticationManager {
 	}
 
 	/**
-	 * Determines whether the current authentication adapter supports updating passwords.
+	 * Indicates whether this Adapter supports a given feature. Adapter implementations should use these constants:
 	 *
+	 * __CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__ = reset passwords programmatically. No support means CollectiveAccess'
+	 * 		own reset password feature will be disabled
+	 * __CA_AUTH_ADAPTER_FEATURE_AUTOCREATE_USERS__ = ability to automatically create CollectiveAccess users on first login
+	 * 		(e.g. by authenticating against and getting the user information from an external source like a directory service)
+	 *
+	 * @param int $pn_feature The feature to check for
 	 * @return bool
 	 */
-	public static function supportsPasswordUpdate() {
+	public static function supports($pn_feature) {
 		self::init();
 
-		return call_user_func(self::$g_authentication_adapter.'::supportsPasswordUpdate');
+		return call_user_func(self::$g_authentication_adapter.'::supports', $pn_feature);
 	}
 
 	/**

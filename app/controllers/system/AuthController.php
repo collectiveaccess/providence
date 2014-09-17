@@ -88,13 +88,13 @@
   		}
  		# -------------------------------------------------------
 		public function Forgot() {
-			if(!AuthenticationManager::supportsPasswordUpdate()) { $this->Login(); return; }
+			if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { $this->Login(); return; }
 
 			$this->render('forgot_password_html.php');
 		}
 		# -------------------------------------------------------
 		public function RequestPassword() {
-			if(!AuthenticationManager::supportsPasswordUpdate()) { $this->Login(); return; }
+			if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { $this->Login(); return; }
 
 			$vs_username = $this->getRequest()->getParameter('username',pString);
 			$t_user = new ca_users();
@@ -112,7 +112,7 @@
 		}
 		# -------------------------------------------------------
 		public function InitReset() {
-			if(!AuthenticationManager::supportsPasswordUpdate()) { $this->Login(); return; }
+			if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { $this->Login(); return; }
 
 			$vs_token = $this->getRequest()->getParameter('token',pString);
 			$vs_username = $this->getRequest()->getParameter('username',pString);
@@ -133,7 +133,7 @@
 		}
 		# -------------------------------------------------------
 		public function DoReset() {
-			if(!AuthenticationManager::supportsPasswordUpdate()) { $this->Login(); return; }
+			if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { $this->Login(); return; }
 
 			$vs_token = $this->getRequest()->getParameter('token',pString);
 			$vs_username = $this->getRequest()->getParameter('username',pString);

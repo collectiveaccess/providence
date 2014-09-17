@@ -379,7 +379,7 @@ class ca_users extends BaseModel {
 		$this->set("confirmation_key", $vs_confirmation_key);
 
 		try {
-			$vs_backend_password = AuthenticationManager::createUser($this->get('user_name'), $this->get('password'));
+			$vs_backend_password = AuthenticationManager::createUserAndGetPassword($this->get('user_name'), $this->get('password'));
 			$this->set('password', $vs_backend_password);
 		} catch(AuthClassFeatureException $e) { // auth class does not implement creating users at all
 			$this->postError(925, _t("Current authentication adapter does not support creating new users."), 'ca_users->insert()');
@@ -477,8 +477,8 @@ class ca_users extends BaseModel {
 		// don't allow setting passwords of existing users if authentication backend doesn't support it. this way
 		// all other set() calls can still go through and update() doesn't necessarily have to barf because of a changed password
 		if($this->getPrimaryKey() > 0){
-			if(isset($pa_fields['password']) && !AuthenticationManager::supportsPasswordUpdate()) {
-				$this->postError(922, _t("Authentication back-end doesn't updating existing users."), 'ca_users->update()');
+			if(isset($pa_fields['password']) && !AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) {
+				$this->postError(922, _t("Authentication back-end doesn't updating passwords of existing users."), 'ca_users->update()');
 				return false;
 			}
 		}
@@ -2577,7 +2577,7 @@ class ca_users extends BaseModel {
 		if(!($this->getPrimaryKey() > 0)) { return false; }
 		if(!($this->isActive())) { return false; } // no password resets for locked users
 
-		if(!AuthenticationManager::supportsPasswordUpdate()) { return false; }
+		if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { return false; }
 
 		$vs_app_name = $this->getAppConfig()->get("app_name");
 
@@ -2630,7 +2630,7 @@ class ca_users extends BaseModel {
 		if(!($this->getPrimaryKey() > 0)) { return false; }
 		if(!($this->isActive())) { return false; } // no password resets for locked users
 
-		if(!AuthenticationManager::supportsPasswordUpdate()) { return false; }
+		if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { return false; }
 
 		if($this->hasReachedMaxPasswordResets()) {
 			// user has reached the maximum allowed password resets -> lock the account regardless what the token is
@@ -2662,7 +2662,7 @@ class ca_users extends BaseModel {
 	# ----------------------------------------
 	private function passwordResetDeactivateAccount() {
 		if(!($this->getPrimaryKey() > 0)) { return; }
-		if(!AuthenticationManager::supportsPasswordUpdate()) { return; }
+		if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { return; }
 
 		$vs_app_name = $this->getAppConfig()->get("app_name");
 		$this->removePendingPasswordReset(false);

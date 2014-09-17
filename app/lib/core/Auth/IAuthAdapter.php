@@ -30,6 +30,10 @@
  * ----------------------------------------------------------------------
  */
 
+define('__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__', 1);
+define('__CA_AUTH_ADAPTER_FEATURE_AUTOCREATE_USERS__', 2);
+
+
 interface IAuthAdapter {
 
 	/**
@@ -43,18 +47,27 @@ interface IAuthAdapter {
 	public static function authenticate($ps_username, $ps_password="", $pa_options=null);
 
 	/**
-	 * Creates new user. Should throw AuthClassFeatureException if not implemented. Note that while this is called when a new
-	 * user is created in CollectiveAccess, it can be used to verify that the given credentials already exist in
-	 * the backend in question. You could, for instance, use this to check group membership or other access restrictions. If
-	 * you want the CollectiveAccess insert() process to fail, throw an exception other than AuthClassFeatureException. Otherwise
-	 * the corresponding table record in ca_users will be created.
+	 * Creates new user in back-end. Should throw AuthClassFeatureException if not implemented. Note that while this is
+	 * called when a new user is created in CollectiveAccess, it can be used to verify that the given credentials already exist in
+	 * the back-end in question. You could, for instance, use this to check group membership or other access restrictions. If
+	 * you want the CollectiveAccess user record insert() process to fail, throw an exception other than AuthClassFeatureException.
+	 * Otherwise the corresponding table record in ca_users will be created.
 	 *
 	 * @param string $ps_username user name
 	 * @param string $ps_password cleartext password
-	 * @return string|null The password to store in the ca_users table. Can be left empty for
-	 * back-ends where it doesn't make any sense to store a password locally (e.g. LDAP or OAuth).
+	 * @return string|null The (preferrably hashed/encoded) password to store in the ca_users table. Can be left empty for
+	 * back-ends where it doesn't make any sense to store a password locally (e.g. LDAP or OAuth). Can also be used to store
+	 * authentication tokens. The password you store here will be passed to authenticate() as-is.
 	 */
-	public static function createUser($ps_username, $ps_password);
+	public static function createUserAndGetPassword($ps_username, $ps_password);
+
+	/**
+	 * Get array containing field_name/value pairs for newly created records in the ca_users table, e.g. email, fname, lname.
+	 *
+	 * @param $ps_username
+	 * @return array
+	 */
+	public static function getUserInfo($ps_username);
 
 	/**
 	 * Deletes user. Should throw AuthClassFeatureException if not implemented.
@@ -65,7 +78,7 @@ interface IAuthAdapter {
 	public static function deleteUser($ps_username);
 
 	/**
-	 * Updates password for existing user. Should throw AuthClassFeatureException if not implemented.
+	 * Updates password for existing user and returns it. Should throw AuthClassFeatureException if not implemented.
 	 *
 	 * @param string $ps_username user name
 	 * @param string $ps_password cleartext password
@@ -76,19 +89,24 @@ interface IAuthAdapter {
 
 
 	/**
-	 * Indicates whether this Adapter supports updating passwords programmatically. If it doesn't,
-	 * CollectiveAccess' own password reset mechanism will be disabled for this Adapter
+	 * Indicates whether this Adapter supports a given feature. Adapter implementations should use these constants:
 	 *
-	 * @return bool
+	 * __CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__ = reset passwords programmatically. No support means CollectiveAccess'
+	 * 		own reset password feature will be disabled
+	 * __CA_AUTH_ADAPTER_FEATURE_AUTOCREATE_USERS__ = ability to automatically create CollectiveAccess users on first login
+	 * 		(e.g. by authenticating against and getting the user information from an external source like a directory service)
+	 *
+	 * @param int $pn_feature The feature to check for
+	 * @return bool Is it implemented or not?
 	 */
-	public static function supportsPasswordUpdate();
+	public static function supports($pn_feature);
 
 	/**
 	 * Gives implementations an option to place an account management link on the CollectiveAccess
 	 * login page. This could for instance be a link to the account management web UI of your organization.
 	 * Should return false if no link is to be displayed. Should be mutually exclusive with
-	 * supportsPasswordUpdate(), meaning your authentication adapter should either support one or the other
-	 * (or none of them) but not both.
+	 * supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__), meaning your authentication adapter should
+	 * either support one or the other (or none of them) but not both.
 	 *
 	 * @return false|string
 	 */
