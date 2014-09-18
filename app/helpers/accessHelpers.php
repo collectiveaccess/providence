@@ -582,7 +582,8 @@
 	 *
 	 * @return If $pm_id is an integer return true if user has read access, otherwise false if the user does not have access; if $pm_id is an array of ids, returns an array with all ids the are readable; returns null if one or more parameters are invalid
 	 */
-	function caCanRead($pn_user_id, $pm_table, $pm_id, $ps_bundle_name=null) {
+	function caCanRead($pn_user_id, $pm_table, $pm_id, $ps_bundle_name=null, $pa_options=null) {
+		$pb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
 		$t_user = new ca_users($pn_user_id, true);
 		if (!$t_user->getPrimaryKey()) { return null; }
 		
@@ -593,7 +594,7 @@
 		
 		if ($ps_bundle_name) {
 			if ($t_user->getBundleAccessLevel($ps_table_name, $ps_bundle_name) < __CA_BUNDLE_ACCESS_READONLY__) { 
-				return (sizeof($pm_id) == 1) ? false : array();
+				return ((sizeof($pm_id) == 1) && !$pb_return_as_array) ? false : array();
 			}
 		}
 		
@@ -629,7 +630,7 @@
 			$va_return_values[] = $vn_id;
 		}
 		
-		if (sizeof($pm_id) == 1) { return (sizeof($va_return_values) > 0) ? true : false; }
+		if ((sizeof($pm_id) == 1) && !$pb_return_as_array) { return (sizeof($va_return_values) > 0) ? true : false; }
 		return $va_return_values;
 	}
 	# ---------------------------------------------------------------------------------------------

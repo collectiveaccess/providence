@@ -114,7 +114,7 @@
 			$t_rep = new ca_object_representations();
 			
 			if($AUTH_CURRENT_USER_ID) {
-				$va_can_read = caCanRead($AUTH_CURRENT_USER_ID, 'ca_object_representations', $qr_reps->getAllFieldValues('representation_id'));
+				$va_can_read = caCanRead($AUTH_CURRENT_USER_ID, 'ca_object_representations', $qr_reps->getAllFieldValues('representation_id'), null, array('returnAsArray' => true));
 			} else {
 				$va_can_read = $qr_reps->getAllFieldValues('representation_id');
 			}
@@ -122,7 +122,7 @@
 			$qr_reps->seek(0);
 			while($qr_reps->nextRow()) {
 				$vn_rep_id = $qr_reps->get('representation_id');
-
+				
 				if (!in_array($vn_rep_id, $va_can_read)) { continue; }
 			
 				$va_tmp = $qr_reps->getRow();
