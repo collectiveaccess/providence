@@ -90,8 +90,8 @@
 	<title>CollectiveAccess: Installer</title>
 	<link href="css/site.css" rel="stylesheet" type="text/css" />
 	
-	<script src='../js/jquery/jquery.js' type='text/javascript'></script>
-	<script src='../js/jquery/jquery-ui/jquery-ui.min.js' type='text/javascript'></script></head>
+	<script src='../assets/jquery/jquery.js' type='text/javascript'></script>
+	<script src='../assets/jquery/jquery-ui/jquery-ui.min.js' type='text/javascript'></script></head>
 
 <body>
 	<div class='content'>
