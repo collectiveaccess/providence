@@ -58,9 +58,6 @@
 			
 			if(isset($va_item['text']) && (strlen($va_item['text'])>0)) {
 				$va_item['text'] = str_replace("&", "&amp;", $va_item['text']);
-				$va_item['text'] = str_replace('"', "&quot;", $va_item['text']);
-				$va_item['text'] = str_replace("&", "&amp;", $va_item['text']);
-				$va_item['text'] = str_replace("'", "&apos;", $va_item['text']);
 			}
 
 			return;
