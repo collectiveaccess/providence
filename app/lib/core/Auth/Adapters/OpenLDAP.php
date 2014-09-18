@@ -58,10 +58,15 @@ class OpenLDAPAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		}
 
 		// log in
-
 		$vo_bind = @ldap_bind($vo_ldap, $vs_bind_rdn, $ps_password);
 
 		if(!$vo_bind) { // wrong credentials
+			ldap_unbind($vo_ldap);
+			return false;
+		}
+
+		// check group membership
+		if(!self::isMemberinAtLeastOneGroup($ps_username, $vo_ldap)) {
 			ldap_unbind($vo_ldap);
 			return false;
 		}
@@ -112,6 +117,12 @@ class OpenLDAPAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 			throw new OpenLDAPException(_t("User could not be authenticated with LDAP server."));
 		}
 
+		// check group membership
+		if(!self::isMemberinAtLeastOneGroup($ps_username, $vo_ldap)) {
+			ldap_unbind($vo_ldap);
+			throw new OpenLDAPException(_t("User is not member of at least one of the required groups."));
+		}
+
 		/* query directory service for additional info on user */
 		$vo_results = @ldap_search($vo_ldap, $vs_search_dn, $vs_search_filter);
 		if (!$vo_results) {
@@ -144,14 +155,40 @@ class OpenLDAPAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		return $va_return;
 	}
 	# --------------------------------------------------------------------------------
-	private static function postProcessLDAPConfigValue($key, $ps_username, $ps_user_ou, $ps_base_dn) {
-		$po_auth_config = Configuration::load(Configuration::load()->get('authentication_config'));
+	private static function postProcessLDAPConfigValue($key, $ps_user_group_name, $ps_user_ou, $ps_base_dn) {
+		$o_auth_config = Configuration::load(Configuration::load()->get('authentication_config'));
 
-		$result = $po_auth_config->get($key);
-		$result = str_replace('{username}', $ps_username, $result);
+		$result = $o_auth_config->get($key);
+		$result = str_replace('{username}', $ps_user_group_name, $result);
+		$result = str_replace('{groupname}', $ps_user_group_name, $result);
 		$result = str_replace('{user_ou}', $ps_user_ou, $result);
 		$result = str_replace('{base_dn}', $ps_base_dn, $result);
 		return $result;
+	}
+	# --------------------------------------------------------------------------------
+	private static function isMemberinAtLeastOneGroup($ps_user, $po_ldap){
+		$o_auth_config = Configuration::load(Configuration::load()->get('authentication_config'));
+		$vs_base_dn = $o_auth_config->get("ldap_base_dn");
+
+		$vs_group_search_dn = self::postProcessLDAPConfigValue("ldap_group_search_dn_format", '', '', $vs_base_dn);
+		$va_group_cns = $o_auth_config->getList('ldap_group_cn_list');
+
+		if(is_array($va_group_cns) && sizeof($va_group_cns)>0){
+			foreach($va_group_cns as $vs_group_cn) {
+				$vs_search_filter = self::postProcessLDAPConfigValue("ldap_group_search_filter_format", $vs_group_cn, '', $vs_base_dn);
+				$vo_result = ldap_search($po_ldap, $vs_group_search_dn, $vs_search_filter, array("memberuid"));
+				$va_entries = ldap_get_entries($po_ldap, $vo_result);
+				if($va_members = $va_entries[0]["memberuid"]){
+					if(in_array($ps_user, $va_members)){ // found group
+						return true;
+					}
+				}
+			}
+		} else { // if no list is configured, all is good
+			return true;
+		}
+
+		return false;
 	}
 	# --------------------------------------------------------------------------------
 	public static function supports($pn_feature) {
