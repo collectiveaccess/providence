@@ -2788,7 +2788,7 @@ class ca_users extends BaseModel {
 	public function authenticate(&$ps_username, $ps_password="", $pa_options=null) {
 
 		// if user doesn't exist, try creating it through the authentication backend, if the backend supports it
-		if (!$this->load($ps_username)) {
+		if (strlen($ps_username) > 0 && !$this->load($ps_username)) {
 			if(AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_AUTOCREATE_USERS__)) {
 				$va_values = AuthenticationManager::getUserInfo($ps_username, $ps_password);
 				if(!is_array($va_values) || sizeof($va_values) < 1) { return false; }
@@ -2805,6 +2805,10 @@ class ca_users extends BaseModel {
 
 				if (!$this->getPrimaryKey()) {
 					$this->setMode($vn_mode);
+					$this->opo_log->log(array(
+						'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
+						'MESSAGE' => _t('User could not be created after getting info from authentication adapter. API message was: %1', join(" ", $this->getErrors()))
+					));
 					return false;
 				}
 

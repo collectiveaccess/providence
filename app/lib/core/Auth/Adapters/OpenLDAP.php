@@ -47,12 +47,11 @@ class OpenLDAPAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		$vs_ldapport = $po_auth_config->get("ldap_port");
 		$vs_base_dn = $po_auth_config->get("ldap_base_dn");
 		$vs_user_ou = $po_auth_config->get("ldap_user_ou");
+		$vs_bind_rdn = self::postProcessLDAPConfigValue("ldap_bind_rdn_format", $ps_username, $vs_user_ou, $vs_base_dn);
 
 
 		$vo_ldap = ldap_connect($vs_ldaphost,$vs_ldapport);
 		ldap_set_option($vo_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-
-		$vs_dn = "uid={$ps_username},{$vs_user_ou},{$vs_base_dn}";
 
 		if (!$vo_ldap) {
 			return false;
@@ -60,10 +59,9 @@ class OpenLDAPAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 
 		// log in
 
-		$vo_bind = @ldap_bind($vo_ldap, $vs_dn, $ps_password);
+		$vo_bind = @ldap_bind($vo_ldap, $vs_bind_rdn, $ps_password);
 
 		if(!$vo_bind) { // wrong credentials
-			//print ldap_error($vo_ldap);
 			ldap_unbind($vo_ldap);
 			return false;
 		}
@@ -98,8 +96,8 @@ class OpenLDAPAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		$vs_attribute_fname = $po_auth_config->get("ldap_attribute_fname");
 		$vs_attribute_lname = $po_auth_config->get("ldap_attribute_lname");
 		$vs_bind_rdn = self::postProcessLDAPConfigValue("ldap_bind_rdn_format", $ps_username, $vs_user_ou, $vs_base_dn);
-		$vs_search_dn = self::postProcessLDAPConfigValue("ldap_search_dn_format", $ps_username, $vs_user_ou, $vs_base_dn);
-		$vs_search_filter = self::postProcessLDAPConfigValue("ldap_search_filter_format", $ps_username, $vs_user_ou, $vs_base_dn);
+		$vs_search_dn = self::postProcessLDAPConfigValue("ldap_user_search_dn_format", $ps_username, $vs_user_ou, $vs_base_dn);
+		$vs_search_filter = self::postProcessLDAPConfigValue("ldap_user_search_filter_format", $ps_username, $vs_user_ou, $vs_base_dn);
 
 		$vo_ldap = ldap_connect($vs_ldaphost,$vs_ldapport);
 		if (!$vo_ldap) {
