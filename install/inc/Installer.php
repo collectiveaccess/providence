@@ -851,8 +851,8 @@ class Installer {
 	public function processRelationshipTypes() {
 		require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
 
+		$va_rel_tables = array();
 		if($this->ops_base_name){ // "merge" profile and its base
-			$va_rel_tables = array();
 			foreach($this->opo_base->relationshipTypes->children() as $vo_rel_table){
 				$va_rel_tables[self::getAttribute($vo_rel_table, "name")] = $vo_rel_table;
 			}
