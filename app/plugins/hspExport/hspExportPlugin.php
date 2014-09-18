@@ -53,11 +53,11 @@
 			if(isset($pa_params['export_item']) && is_array($pa_params['export_item'])) {
 				$va_item = &$pa_params['export_item'];
 			} else {
-				return $pa_params;
+				return;
 			}
 			
 			if(isset($va_item['text']) && (strlen($va_item['text'])>0)) {
-				 $va_item['text'] = str_replace("&", "&amp;", $va_item['text']);
+				$va_item['text'] = str_replace("&", "&amp;", $va_item['text']);
 			}
 
 			return;
