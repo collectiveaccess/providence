@@ -2067,6 +2067,7 @@ class TimeExpressionParser {
 	#   useRomanNumeralsForCenturies (true|false) [default is false; if true century only dates (eg 18th century) will be output in roman numerals like "XVIIIth century"
 	#	start_as_iso8601 (true|false) [if true only the start date of the range is returned, in ISO8601 format]
 	#	end_as_iso8601 (true|false) [if true only the end date of the range is returned, in ISO8601 format]
+	#	dontReturnValueIfOnSameDayAsStart (true|false) [Only valid in conjunction with end_as_iso8601]
 	#	startHistoricTimestamp
 	#	endHistoricTimestamp 
 	public function getText($pa_options=null) {
@@ -2178,6 +2179,16 @@ class TimeExpressionParser {
 				return $this->getISODateTime($va_start_pieces, 'FULL', $pa_options);
 			}
 			if ($pa_options['end_as_iso8601']) {
+
+				if(caGetOption('dontReturnValueIfOnSameDayAsStart', $pa_options, false)) {
+					if(
+						$va_start_pieces['year'] == $va_end_pieces['year'] &&
+						$va_start_pieces['month'] == $va_end_pieces['month'] &&
+						$va_start_pieces['day'] == $va_end_pieces['day']
+					) {
+						return null;
+					}
+				}
 				return $this->getISODateTime($va_end_pieces, 'FULL', $pa_options);
 			}
 			

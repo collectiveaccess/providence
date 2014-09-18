@@ -1552,6 +1552,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$va_get_options['end_as_iso8601'] = true;
 		}
 
+		if($t_exporter_item->getSetting('dontReturnValueIfOnSameDayAsStart')){
+			$va_get_options['dontReturnValueIfOnSameDayAsStart'] = true;
+		}
+
 		if($vs_date_format = $t_exporter_item->getSetting('dateFormat')){
 			$va_get_options['dateFormat'] = $vs_date_format;
 		}
