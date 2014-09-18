@@ -113,11 +113,12 @@ class OpenLDAPAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		}
 
 		/* query directory service for additional info on user */
-		$vo_results = ldap_search($vo_ldap, $vs_search_dn, $vs_search_filter);
+		$vo_results = @ldap_search($vo_ldap, $vs_search_dn, $vs_search_filter);
 		if (!$vo_results) {
 			// search error
+			$vs_message = _t("LDAP search error: %1", ldap_error($vo_ldap));
 			ldap_unbind($vo_ldap);
-			throw new OpenLDAPException(_t("LDAP search error."));
+			throw new OpenLDAPException($vs_message);
 		}
 
 		$vo_entry = ldap_first_entry($vo_ldap, $vo_results);
@@ -166,6 +167,16 @@ class OpenLDAPAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	public static function deleteUser($ps_username) {
 		// do something?
 		return true;
+	}
+	# --------------------------------------------------------------------------------
+	public static function getAccountManagementLink() {
+		$po_auth_config = Configuration::load(Configuration::load()->get('authentication_config'));
+
+		if($vs_link = $po_auth_config->get('ldap_manage_account_url')) {
+			return $vs_link;
+		}
+
+		return false;
 	}
 	# --------------------------------------------------------------------------------
 }

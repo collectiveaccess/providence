@@ -2790,7 +2790,16 @@ class ca_users extends BaseModel {
 		// if user doesn't exist, try creating it through the authentication backend, if the backend supports it
 		if (strlen($ps_username) > 0 && !$this->load($ps_username)) {
 			if(AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_AUTOCREATE_USERS__)) {
-				$va_values = AuthenticationManager::getUserInfo($ps_username, $ps_password);
+				try{
+					$va_values = AuthenticationManager::getUserInfo($ps_username, $ps_password);
+				} catch (Exception $e) {
+					$this->opo_log->log(array(
+						'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
+						'MESSAGE' => _t('There was an error while trying to fetch information for a new user from the current authentication backend. The message was %1 : %2', get_class($e), $e->getMessage())
+					));
+					return false;
+				}
+
 				if(!is_array($va_values) || sizeof($va_values) < 1) { return false; }
 
 				// @todo: check sanity on values from plugins before inserting them?
