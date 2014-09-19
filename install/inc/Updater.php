@@ -8,6 +8,11 @@
 require_once(__DIR__. '/Installer.php');
 class Updater extends Installer{
 
+	/**
+	 * @var bool We are updating the installation profile
+	 */
+	protected $opb_updating = true;
+
 	public function loadLocales(){
 		require_once(__CA_MODELS_DIR__."/ca_locales.php");
 

@@ -44,8 +44,13 @@ class Installer {
 	protected $ops_profile_dir;
 	protected $ops_profile_name;
 
-	protected  $ops_admin_email;
+	protected $ops_admin_email;
 	protected $opb_overwrite;
+
+	/**
+	 * @var bool We are installing
+	 */
+	protected $opb_updating = false;
 	# --------------------------------------------------
 	/** @var  SimpleXMLElement */
 	protected $opo_profile;
@@ -440,7 +445,7 @@ class Installer {
 		$vn_num_lists = sizeof($va_lists);
 		foreach($va_lists as $vo_list){
 			$vs_list_code = self::getAttribute($vo_list, "code");
-			$t_list = ca_lists::find(array('list_code' => $vs_list_code), array('returnAs' => 'firstModelInstance'));
+			$t_list = $this->opb_updating ? ca_lists::find(array('list_code' => $vs_list_code), array('returnAs' => 'firstModelInstance')) : $this->opb_updating;
 			// if it doesn't exist create a new one
 			$t_list = $t_list ? $t_list: new ca_lists();
 			$t_list->setMode(ACCESS_WRITE);
@@ -588,7 +593,8 @@ class Installer {
 					}
 
 					// add restriction
-					$t_restriction = new ca_metadata_type_restrictions();
+					$t_restriction = $this->opb_updating ? ca_metadata_type_restrictions::find(array('table_num' => $vn_table_num, 'type_id' => $vn_type_id, 'element_id' => $vn_element_id), array('returnAs' => 'firstModelInstance')) : false;
+					$t_restriction = $t_restriction ? $t_restriction : new ca_metadata_type_restrictions();
 					$t_restriction->setMode(ACCESS_WRITE);
 					$t_restriction->set('table_num', $vn_table_num);
 					$t_restriction->set('include_subtypes', (bool)$vo_restriction->includeSubtypes ? 1 : 0);
@@ -596,8 +602,12 @@ class Installer {
 					$t_restriction->set('element_id', $vn_element_id);
 					
 					$this->_processSettings($t_restriction, $vo_restriction->settings);
-					$t_restriction->insert();
-					
+					if($t_restriction->getPrimaryKey()){
+						$t_restriction->update();
+					}else{
+						$t_restriction->insert();
+					}
+
 					if ($t_restriction->numErrors()) {
 						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} for metadata element {$vs_element_code}: ".join("; ",$t_restriction->getErrors()));
 					}
@@ -699,7 +709,7 @@ class Installer {
 			
 			// create ui row
 
-			$t_ui = ca_editor_uis::find(array('editor_code' => $vs_ui_code, 'editor_type' =>  $vn_type),array('returnAs' => 'firstModelInstance'));
+			$t_ui = ca_editor_uis::find(array('editor_code' => $vs_ui_code, 'editor_type' =>  $vn_type), array('returnAs' => 'firstModelInstance'));
 			$t_ui = $t_ui ? $t_ui : new ca_editor_uis();
 			$t_ui->setMode(ACCESS_WRITE);
 			$t_ui->set('user_id', null);
@@ -896,7 +906,7 @@ class Installer {
 			$vs_right_table = $t_rel_table->getRightTableName();
 
 			$vs_root_type_code = 'root_for_'.$vn_table_num;
-			$t_rel_type = ca_relationship_types::find(array('type_code' => $vs_root_type_code, 'table_num' => $vn_table_num, 'parent_id' => null),array('returnAs' => 'firstModelInstance'));
+			$t_rel_type = $this->opb_updating ? ca_relationship_types::find(array('type_code' => $vs_root_type_code, 'table_num' => $vn_table_num, 'parent_id' => null),array('returnAs' => 'firstModelInstance')) : false;
 			$t_rel_type = $t_rel_type ? $t_rel_type : new ca_relationship_types();
 			$t_rel_type->setMode(ACCESS_WRITE);
 			// create relationship type root
@@ -938,7 +948,7 @@ class Installer {
 			$vn_default = self::getAttribute($vo_type, "default");
 			$vn_rank = (int)self::getAttribute($vo_type, "rank");
 
-			$t_rel_type = ca_relationship_types::find(array('type_code' => $vs_type_code, 'table_num' => $pn_table_num, 'parent_id' => $pn_parent_id),array('returnAs' => 'firstModelInstance'));
+			$t_rel_type = $this->opb_updating ? ca_relationship_types::find(array('type_code' => $vs_type_code, 'table_num' => $pn_table_num, 'parent_id' => $pn_parent_id),array('returnAs' => 'firstModelInstance')) : false;
 			$t_rel_type = $t_rel_type ? $t_rel_type : new ca_relationship_types();
 			$t_rel_type->setMode(ACCESS_WRITE);
 
@@ -1016,7 +1026,8 @@ class Installer {
 		}
 
 		foreach($va_roles as $vs_role_code => $vo_role) {
-			$t_role = new ca_user_roles();
+			$t_role = $this->opb_updating ? ca_user_roles::find(array('code' => $vs_role_code ), array('returnAs' => 'firstModelInstance')) : false;
+			$t_role = $t_role ? $t_role :  new ca_user_roles();
 			$t_role->setMode(ACCESS_WRITE);
 
 			$t_role->set('name', trim((string) $vo_role->name));
@@ -1031,7 +1042,11 @@ class Installer {
 				}
 			}
 			$t_role->setRoleActions($va_actions);
-			$t_role->insert();
+			if($t_role->getPrimaryKey()){
+				$t_role->update();
+			} else {
+				$t_role->insert();
+			}
 
 			if ($t_role->numErrors()) {
 				$this->addError("Errors inserting access role {$vs_role_code}: ".join("; ",$t_role->getErrors()));
@@ -1122,8 +1137,10 @@ class Installer {
 			$vs_table = self::getAttribute($vo_display, "type");
 			
 			if ($o_config->get($vs_table.'_disable')) { continue; }
-			
-			$t_display = new ca_bundle_displays();
+
+			$t_display = $this->opb_updating ? ca_bundle_displays::find(array('code' => $vs_display_code, 'type' => $vs_table), array('returnAs' => 'firstModelInstance')) : false;
+			$t_display = $t_display ? $t_display : new ca_bundle_displays();
+
 			$t_display->setMode(ACCESS_WRITE);
 
 			$t_display->set("display_code", $vs_display_code);
@@ -1133,7 +1150,11 @@ class Installer {
 			
 			$this->_processSettings($t_display, $vo_display->settings);
 
-			$t_display->insert();
+			if($t_display->getPrimaryKey()){
+				$t_display->update();
+			} else {
+				$t_display->insert();
+			}
 
 			if ($t_display->numErrors()) {
 				$this->addError("There was an error while inserting display {$vs_display_code}: ".join(" ",$t_display->getErrors()));
@@ -1160,15 +1181,21 @@ class Installer {
 						$t_list->load(array('list_code' => $vs_type_list_name));
 						$t_list_item->load(array('list_id' => $t_list->getPrimaryKey(), 'idno' => $vs_type));
 					}
-					$t_restriction = new ca_bundle_display_type_restrictions();
+					$vn_type_id = ($vs_type) ? $t_list_item->getPrimaryKey() : null;
+					$t_restriction  = $this->opb_updating ? ca_bundle_display_type_restrictions::find(array('table_num' => $vn_table_num, 'type_id' => $vn_type_id), array('returnAs' => 'firstModelInstance')) : false;
+					$t_restriction = $t_restriction ? $t_restriction : new ca_bundle_display_type_restrictions();
 					$t_restriction->setMode(ACCESS_WRITE);
 					$t_restriction->set('table_num', $vn_table_num);
 					$t_restriction->set('include_subtypes', (bool)$vo_restriction->includeSubtypes ? 1 : 0);
-					$t_restriction->set('type_id', ($vs_type) ? $t_list_item->getPrimaryKey(): null);
+					$t_restriction->set('type_id', $vn_type_id);
 					$t_restriction->set('display_id', $t_display->getPrimaryKey());
 				
 					$this->_processSettings($t_restriction, $vo_restriction->settings);
-					$t_restriction->insert();
+					if($t_restriction->getPrimaryKey()){
+						$t_restriction->update();
+					} else {
+						$t_restriction->insert();
+					}
 
 					if ($t_restriction->numErrors()) {
 						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} in display {$vs_display_code}: ".join("; ",$t_restriction->getErrors()));
@@ -1277,17 +1304,23 @@ class Installer {
 			if (!($t_instance = $vo_dm->getInstanceByTableName($vs_table, true))) { continue; }
 			if (method_exists($t_instance, 'getTypeList') && !sizeof($t_instance->getTypeList())) { continue; } // no types configured
 			if ($o_config->get($vs_table.'_disable')) { continue; }
-			
-			$t_form = new ca_search_forms();
+			$vn_table_num = (int)$vo_dm->getTableNum($vs_table);
+
+			$t_form = $this->opb_updating ? ca_search_forms::find(array('form_code' => (string)$vs_form_code, 'table_num' => $vn_table_num), array('returnAs' => 'firstModelInstance')) : false;
+			$t_form = $t_form ? $t_form : new ca_search_forms();
 			$t_form->setMode(ACCESS_WRITE);
 			$t_form->set("form_code", (string)$vs_form_code);
 			$t_form->set("is_system", (int)$vb_system);
-			$t_form->set("table_num", (int)$vo_dm->getTableNum($vs_table));
-			$t_form->set("user_id", 1);		// let administrative user own these
-			
+			$t_form->set("table_num", $vn_table_num);
+
 			$va_settings = $this->_processSettings($t_form, $vo_form->settings);
 
-			$t_form->insert();
+			if($t_form->getPrimaryKey()){
+				$t_form->update();
+			} else {
+				$t_form->set("user_id", 1);		// let administrative user own these
+				$t_form->insert();
+			}
 
 			if ($t_form->numErrors()) {
 				$this->addError("There was an error while inserting search form {$vs_form_code}: ".join(" ",$t_form->getErrors()));
@@ -1368,15 +1401,15 @@ class Installer {
 	public function processGroups(){
 
 		// Create root group
-		$t_user_group = ca_user_groups::find(array('code' => 'Root', 'parent_id' => null), array('returnAs' => 'firstModelInstance'));
+		$t_user_group = $this->opb_updating ? ca_user_groups::find(array('code' => 'Root', 'parent_id' => null), array('returnAs' => 'firstModelInstance')) : false;
 		$t_user_group = $t_user_group ? $t_user_group : new ca_user_groups();
 		$t_user_group->setMode(ACCESS_WRITE);
 		$t_user_group->set('name', 'Root');
-		$t_user_group->set('code', 'Root');
-		$t_user_group->set('parent_id', null);
 		if($t_user_group->getPrimaryKey()){
 			$t_user_group->update();
 		} else {
+			$t_user_group->set('code', 'Root');
+			$t_user_group->set('parent_id', null);
 			$t_user_group->insert();
 		}
 		
@@ -1406,16 +1439,16 @@ class Installer {
 
 		if (is_array($va_groups)) {
 			foreach($va_groups as $vs_group_code => $vo_group) {
-				$t_group = ca_user_groups::find(array('code' => $vs_group_code, 'parent_id' => null), array('returnAs' => 'firstModelInstance'));
+				$t_group = $this->opb_updating ? ca_user_groups::find(array('code' => $vs_group_code, 'parent_id' => null), array('returnAs' => 'firstModelInstance')) : false;
 				$t_group = $t_group ? $t_group : new ca_user_groups();
 				$t_group->setMode(ACCESS_WRITE);
 				$t_group->set('name', trim((string) $vo_group->name));
 				$t_group->set('description', trim((string) $vo_group->description));
-				$t_group->set('code', $vs_group_code);
-				$t_group->set('parent_id', null);
 				if($t_group->getPrimaryKey()){
 					$t_group->update();
 				} else {
+					$t_group->set('code', $vs_group_code);
+					$t_group->set('parent_id', null);
 					$t_group->insert();
 				}
 	
