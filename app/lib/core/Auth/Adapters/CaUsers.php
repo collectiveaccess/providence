@@ -43,6 +43,10 @@ class CaUsersAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		$t_user->load($ps_username);
 
 		if($t_user->getPrimaryKey() > 0) {
+			if(preg_match('/^[a-f0-9]{32}$/', $t_user->get('password'))) {
+				// old-style md5 passwords
+				throw new CaUsersException(_t('The stored password for this user seems to be in legacy format. Please either update the user account by resetting the password or use the Legacy authentication adapter instead.'));
+			}
 			return validate_password($ps_password, $t_user->get('password'));
 		} else {
 			return false;
@@ -75,3 +79,5 @@ class CaUsersAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	}
 	# --------------------------------------------------------------------------------
 }
+
+class CaUsersException extends Exception {}

@@ -31,6 +31,7 @@
  */
 
 require_once(__CA_LIB_DIR__.'/core/Auth/BaseAuthAdapter.php');
+require_once(__CA_LIB_DIR__.'/core/Auth/PasswordHash.php');
 require_once(__CA_MODELS_DIR__.'/ca_users.php');
 
 class LegacyAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
@@ -42,10 +43,20 @@ class LegacyAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		$t_user->load($ps_username);
 
 		if($t_user->getPrimaryKey() > 0) {
-			return (md5($ps_password) == $t_user->get('password')) ? true : false;
-		} else {
-			return false;
+
+			if (md5($ps_password) == $t_user->get('password')) {
+				// if the md5 hash matches, authenticate successfully and move the user over to pbkdf2
+				$t_user->setMode(ACCESS_WRITE);
+				$t_user->set('password', create_hash($ps_password));
+				$t_user->update();
+				return true;
+			} else if(validate_password($ps_password, $t_user->get('password'))) {
+				// user has already been moved over
+				return true;
+			}
 		}
+
+		return false;
 	}
 	# --------------------------------------------------------------------------------
 	public static function createUserAndGetPassword($ps_username, $ps_password) {
