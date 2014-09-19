@@ -134,6 +134,13 @@ class AuthenticationManager {
 	public static function supports($pn_feature) {
 		self::init();
 
+		if($pn_feature == __CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__) {
+			$po_auth_config = Configuration::load(Configuration::load()->get('authentication_config'));
+			if(!$po_auth_config->get('auth_allow_password_reset')) {
+				return false;
+			}
+		}
+
 		return call_user_func(self::$g_authentication_adapter.'::supports', $pn_feature);
 	}
 
