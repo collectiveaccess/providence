@@ -31,4 +31,4 @@
  */
 
 ?>
-<p><?php _t("Your account was deactivated because the maximum number of consecutive unsuccessful password reset attemps was reached. Please contact your CollectiveAccess administrator at %1 for assistance.", __CA_ADMIN_EMAIL__); ?></p>
+<p><?php print _t("Your account was deactivated because the maximum number of consecutive unsuccessful password reset attemps was reached. Please contact your CollectiveAccess administrator at %1 for assistance.", __CA_ADMIN_EMAIL__); ?></p>
