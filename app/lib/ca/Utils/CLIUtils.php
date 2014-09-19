@@ -80,7 +80,6 @@
 					false, // If you are updating you never want to overwrite
 					$po_opts->getOption('debug')
 				);
-				$vo_installer->loadLocales();
 			}
 
 			$vb_quiet = $po_opts->getOption('quiet');

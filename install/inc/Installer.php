@@ -414,16 +414,6 @@ class Installer {
 		}
 		return true;
 	}
-	public function loadLocales(){
-		require_once(__CA_MODELS_DIR__."/ca_locales.php");
-		$t_locale = new ca_locales();
-		$va_locales = $t_locale->getLocaleList();
-		if(!$va_locales){
-			return false;
-			$this->opa_locales[$vs_language."_".$vs_country] = $t_locale->getPrimaryKey();
-		}
-		return true;
-	}
 	# --------------------------------------------------
 	public function processLists($f_callback=null){
 		require_once(__CA_MODELS_DIR__."/ca_lists.php");
