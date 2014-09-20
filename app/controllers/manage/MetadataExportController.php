@@ -149,6 +149,13 @@
 
 	 			$this->view->setVar("t_subject", $t_subject);
 	 			$vn_id = $this->request->getParameter('item_id', pInteger);
+
+				// Can user read this particular item?
+				if(!caCanRead($this->request->getUserID(), $t_exporter->get('table_num'), $vn_id)) {
+					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
+					return;
+				}
+
 	 			$this->view->setVar('item_id',$vn_id);
 
 	 			$vs_export = ca_data_exporters::exportRecord($t_exporter->get('exporter_code'), $vn_id, array('singleRecord' => true));
