@@ -100,24 +100,23 @@
  			$this->render('export/file_upload_response_json.php');
  		}
  		# -------------------------------------------------------
- 		public function Run() {
- 			$t_exporter = $this->getExporterInstance();
- 			
- 			$this->view->setVar('t_exporter', $t_exporter);
- 			
-			$this->render('export/exporter_run_html.php');
- 		}
- 		# -------------------------------------------------------
  		public function ExportData() {
  			// Can user batch export?
  			if (!$this->request->user->canDoAction('can_batch_export_metadata')) {
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3440?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
 
  			$t_exporter = $this->getExporterInstance();
- 			
- 			$this->view->setVar("t_subject", $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true));
+			$t_subject = $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true);
+
+			// Can user export records of this type?
+			if (!$this->request->user->canDoAction('can_export_'.$t_subject->tableName())) {
+				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3430?r='.urlencode($this->request->getFullUrlPath()));
+				return;
+			}
+
+ 			$this->view->setVar("t_subject", $t_subject);
  			
 			// run now
 			$app = AppController::getInstance();
@@ -138,7 +137,7 @@
 
  			// Can user export records of this type?
  			if (!$this->request->user->canDoAction('can_export_'.$t_subject->tableName())) {
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3430?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
 
@@ -183,9 +182,6 @@
 		}
 		# -------------------------------------------------------
 		public function DownloadExport(){
-			// this has to be bullet-proof, otherwise someone could use it to download
-			// files from our tmp dir (and potentially elsewhere)
-
 			$ps_file = trim($this->request->getParameter('file',pString));
 			$va_matches = array();
 			if($ps_file && preg_match("/^([0-9]+)\_[0-9a-f]{32,32}$/", $ps_file, $va_matches)){

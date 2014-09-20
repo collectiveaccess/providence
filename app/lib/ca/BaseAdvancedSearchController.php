@@ -224,7 +224,11 @@
  				case 'EXPORT':
  					$this->_genExport($vo_result, $this->request->getParameter("export_format", pString), $vs_search, $vs_search);
  					break;
- 				# ------------------------------------
+				# ------------------------------------
+				case 'EXPORTWITHMAPPING':
+					$this->_genExportWithMapping($vo_result, $this->request->getParameter("exporter_id", pInteger));
+					break;
+				# ------------------------------------
  				case 'HTML': 
 				default:
 					// generate type menu and type value list

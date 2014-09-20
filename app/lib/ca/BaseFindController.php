@@ -42,6 +42,7 @@
 	require_once(__CA_LIB_DIR__."/core/AccessRestrictions.php");
  	require_once(__CA_LIB_DIR__.'/ca/Visualizer.php');
  	require_once(__CA_LIB_DIR__.'/core/Parsers/dompdf/dompdf_config.inc.php');
+	require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
  	
 	class BaseFindController extends ActionController {
 		# ------------------------------------------------------------------
@@ -272,6 +273,12 @@
 			
 			$this->view->setVar('export_formats', $va_export_options);
 			$this->view->setVar('current_export_format', $this->opo_result_context->getParameter('last_export_type'));
+
+			// export mapping list
+			if($this->request->user->canDoAction('can_batch_export_metadata') && $this->request->user->canDoAction('can_export_'.$this->ops_tablename)) {
+				$this->view->setVar('exporter_list', ca_data_exporters::getExporters($vn_table_num));
+				$this->view->setVar('find_type', $this->ops_find_type);
+			}
 			
  			//
  			// Available sets
@@ -668,6 +675,45 @@
 		}
 		# -------------------------------------------------------
 		/**
+		 * Action to trigger export of current find result set
+		 */
+		public function exportWithMapping() {
+			set_time_limit(7200);
+			return $this->Index(array('output_format' => 'EXPORTWITHMAPPING'));
+		}
+		# -------------------------------------------------------
+		protected function _genExportWithMapping($po_result, $pn_exporter_id) {
+			// Can user batch export?
+			if (!$this->request->user->canDoAction('can_batch_export_metadata')) {
+				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3440?r='.urlencode($this->request->getFullUrlPath()));
+				return;
+			}
+
+			// Can user export records of this type?
+			if (!$this->request->user->canDoAction('can_export_'.$this->ops_tablename)) {
+				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3430?r='.urlencode($this->request->getFullUrlPath()));
+				return;
+			}
+
+			$t_exporter = new ca_data_exporters($pn_exporter_id);
+
+			if(!($t_exporter->getPrimaryKey()>0)) {
+				$this->postError(3420, _t("Could not load export mapping"), "BaseFindController->_genExportWithMapping()");
+				return;
+			}
+
+			$vs_tmp_file = tempnam(caGetTempDirPath(), 'export');
+			ca_data_exporters::exportRecordsFromSearchResult($t_exporter->get('exporter_code'), $po_result, $vs_tmp_file);
+
+			header('Content-Type: '.$t_exporter->getContentType().'; charset=UTF-8');
+			header('Content-Disposition: attachment; filename="batch_export.'.$t_exporter->getFileExtension().'"');
+			header('Content-Transfer-Encoding: binary');
+			readfile($vs_tmp_file);
+			@unlink($vs_tmp_file);
+			exit();
+		}
+		# -------------------------------------------------------
+		/**
 		 * Generate  export file of current result
 		 */
 		protected function _genExport($po_result, $ps_output_type, $ps_output_filename, $ps_title=null) {
@@ -696,7 +742,6 @@
 						$vs_file_extension = 'txt';
 						$vs_mimetype = "text/plain";
 					default:
-						// TODO add exporter code here
 						break;
 				}
 
@@ -756,10 +801,7 @@
 					$o_dompdf->set_base_path(caGetPrintTemplateDirectoryPath('results'));
 					$o_dompdf->render();
 					$o_dompdf->stream(caGetOption('filename', $va_template_info, 'export_results.pdf'));
-		
-					$vb_printed_properly = true;
 				} catch (Exception $e) {
-					$vb_printed_properly = false;
 					$this->postError(3100, _t("Could not generate PDF"),"BaseFindController->PrintSummary()");
 				}
 				return;			

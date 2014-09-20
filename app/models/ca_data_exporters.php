@@ -521,10 +521,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * Returns list of available data exporters as HTML form element
 	 */
 	static public function getExporterListAsHTMLFormElement($ps_name, $pn_table_num=null, $pa_attributes=null, $pa_options=null) {
-		$va_importers = ca_data_exporters::getExporters($pn_table_num, $pa_options);
+		$va_exporters = ca_data_exporters::getExporters($pn_table_num, $pa_options);
 		
 		$va_opts = array();
-		foreach($va_importers as $vn_importer_id => $va_importer_info) {
+		foreach($va_exporters as $va_importer_info) {
 			$va_opts[$va_importer_info['label']." (".$va_importer_info['exporter_code'].")"] = $va_importer_info['exporter_id'];
 		}
 		ksort($va_opts);
