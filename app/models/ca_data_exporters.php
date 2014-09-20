@@ -1111,7 +1111,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		ca_data_exporters::$s_exporter_item_cache = array();
 
 		$vb_show_cli_progress_bar = (isset($pa_options['showCLIProgressBar']) && ($pa_options['showCLIProgressBar']));
-		$po_request = isset($pa_options['request']) ? $pa_options['request'] : null;
+		$po_request = caGetOption('request', $pa_options, null);
 
 		if(!$t_mapping = ca_data_exporters::loadExporterByCode($ps_exporter_code)){
 			return false;
@@ -1174,7 +1174,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			file_put_contents($ps_filename, join(",", $va_header)."\n", FILE_APPEND);
 		}
 
-		while($po_result->nextHit()){
+		while($po_result->nextHit()) {
+
+			if($po_request instanceof RequestHTTP) {
+				if(!caCanRead($po_request->getUserID(), $t_instance->tableNum(), $po_result->get($t_instance->primaryKey()))){
+					continue;
+				}
+			}
+
 			$vs_item_export = ca_data_exporters::exportRecord($ps_exporter_code, $po_result->get($t_instance->primaryKey()), array('logger' => $o_log));
 			file_put_contents($ps_filename, $vs_item_export."\n", FILE_APPEND);
 
