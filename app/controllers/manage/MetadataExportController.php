@@ -128,6 +128,12 @@
  		# -------------------------------------------------------
  		public function ExportSingleData() { 	
  			$t_exporter = $this->getExporterInstance();
+
+			if(!$t_exporter->getPrimaryKey()) {
+				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3420?r='.urlencode($this->request->getFullUrlPath()));
+				return;
+			}
+
  			$t_subject = $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true);
 
  			// Can user export records of this type?

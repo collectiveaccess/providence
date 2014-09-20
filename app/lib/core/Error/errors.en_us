@@ -242,6 +242,7 @@
 # --- Import/export errors
 3400 = Import of metadata is not allowed
 3410 = Import of media is not allowed
+3420 = Invalid exporter
 
 # --- Generic application plugin errors
 3500 = Access denied
