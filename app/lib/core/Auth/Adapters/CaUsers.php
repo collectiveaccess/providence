@@ -49,10 +49,10 @@ class CaUsersAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 
 				//throw new CaUsersException(_t('The stored password for this user seems to be in legacy format. Please update the user account by resetting the password.'));
 
-				if (md5($ps_password) == $vs_hash) {
-					// if the md5 hash matches, authenticate successfully and move the user over to pbkdf2 key
+				if (md5($ps_password) == $vs_hash) { // if the md5 hash matches, authenticate successfully and move the user over to pbkdf2 key
 					$t_user->setMode(ACCESS_WRITE);
-					$t_user->set('password', create_hash($ps_password));
+					// ca_users::update takes care of the hashing by calling AuthenticationManager::updatePassword()
+					$t_user->set('password', $ps_password);
 					$t_user->update();
 					return true;
 				} else {
@@ -60,7 +60,7 @@ class CaUsersAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 				}
 			}
 
-			return validate_password($ps_password, $t_user->get('password'));
+			return validate_password($ps_password, $vs_hash);
 		} else {
 			return false;
 		}
