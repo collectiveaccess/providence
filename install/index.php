@@ -9,7 +9,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,10 +37,53 @@
 		die("You don't have a setup.php file present in the web root directory of your CollectiveAccess set up. Please copy setup.php-dist to setup.php, customize it and <a href='index.php'>re-run the installer</a>.");
 	}
 	require_once('../setup.php');
+	require_once('../app/helpers/configurationHelpers.php');
+	require_once('../app/helpers/htmlFormHelpers.php');
+	require_once("inc/Installer.php");
 	
 	$ps_instance = 	$_REQUEST['instance'];
 	$ps_action = 	$_REQUEST['action'];
 	$pn_page = 		$_REQUEST['page'];
+
+if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__) {
+	if ($ps_action == 'profileUpload') {
+		$va_response = array('STATUS' => 'OK');
+		
+		$vs_profile_dir = pathinfo(__FILE__, PATHINFO_DIRNAME).'/profiles/xml';
+		if (is_array($_FILES['files']['tmp_name'])) { 
+			foreach($_FILES['files']['tmp_name'] as $vn_i => $vs_tmp_name) {
+				if ($_FILES['files']['size'][$vn_i] <= 0) { 
+					$va_response['skippedMessage'][] = _t('%1 is empty', $_FILES['files']['name'][$vn_i]);
+					continue; 
+				}
+				// check if file looks like a profile
+				$vs_tmp_dir = pathinfo($vs_tmp_name, PATHINFO_DIRNAME);
+			
+				$vo_profile = new DOMDocument();
+				$vo_profile->load($vs_tmp_name);
+			
+				if(!(@$vo_profile->schemaValidate($vs_profile_dir."/profile.xsd"))) { 
+					$va_response['skippedMessage'][] = _t('%1 is not a valid profile', $_FILES['files']['name'][$vn_i]);
+					continue; 
+				}
+			
+				$vb_exists = file_exists($vs_profile_dir.'/'.$_FILES['files']['name'][$vn_i]);
+			
+				// attempt to write to profile dir
+				if (@copy($vs_tmp_name, $vs_profile_dir.'/'.$_FILES['files']['name'][$vn_i])) {
+					$va_response['added'][] = $_FILES['files']['name'][$vn_i];
+					$va_response['uploadMessage'][] = $vb_exists ? _t('Updated %1', $_FILES['files']['name'][$vn_i]) : _t('Added %1', $_FILES['files']['name'][$vn_i]);
+				}
+				
+			}
+		}
+		// return list of profiles
+		$va_response['profiles'] = caGetAvailableXMLProfiles();
+		
+		print json_encode($va_response);
+		return;
+	}
+}
 	
 	$ps_email = isset($_REQUEST['email']) ? $_REQUEST['email'] : '';
 	$ps_profile = isset($_REQUEST['profile']) ? $_REQUEST['profile'] : '';
@@ -52,11 +95,6 @@
 	$va_tmp = explode("/", str_replace("\\", "/", $_SERVER['SCRIPT_NAME']));
 	array_pop($va_tmp);
 	$vs_url_path = join("/", $va_tmp);
-	
-	
-	require_once('../app/helpers/htmlFormHelpers.php');
-	require_once('../app/helpers/configurationHelpers.php');
-	require_once("inc/Installer.php");
 	
 	// get current locale
 	$locale = 'en_US';
@@ -92,7 +130,15 @@
 	
 	<script src='../assets/jquery/jquery.js' type='text/javascript'></script>
 	<script src='../assets/jquery/jquery-ui/jquery-ui.min.js' type='text/javascript'></script></head>
-
+<?php
+if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__) {
+?>
+	<script src='../assets/jquery/jquery.iframe-transport.js' type='text/javascript'></script></head>
+	<script src='../assets/jquery/jquery.ui.widget.js' type='text/javascript'></script></head>
+	<script src='../assets/jquery/jquery.fileupload.js' type='text/javascript'></script></head>
+<?php
+}
+?>
 <body>
 	<div class='content'>
 <?php 

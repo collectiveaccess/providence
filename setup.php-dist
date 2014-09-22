@@ -356,6 +356,14 @@ if (!defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__')) {
 	define('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__', false);
 }
 
+# If you set this to true the installer will allow drag-and-drop upload of profiles, allowing 
+# you to avoid having to FTP new profiles or changes to existing ones. Note that this can
+# be a security risk as it allows anyone to upload files to your server. You should leave it set to
+# false unless you really need it.
+if (!defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__')) {
+	define('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__', false);
+}
+
 # If you set this to true the configuration settings are loaded from the plain text
 # files in __CA_CONF_DIR__ on each page refresh. That's why performance will suffer.
 # However, there are certain scenarios where want to prevent caching, e.g.
