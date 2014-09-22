@@ -68,7 +68,7 @@
 			<div class='formItem'><?php _p("Installation profile"); ?>:<br/>
 				<div id="profileChooser">
 <?php
-					print caHTMLSelect('profile', caGetAvailableXMLProfiles(), array(), array('value' => $ps_profile));
+					print caHTMLSelect('profile', caGetAvailableXMLProfiles(), array('id' => 'profileSelect'), array('value' => $ps_profile));
 
 			if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__) {
 ?>
@@ -148,7 +148,15 @@ if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_AL
 							jQuery("#profileUpload").show(150);
 						}, 3000);
 				}
-				// reload and select profile in profile drop-down here.
+				// reload and select profile in profile drop-down here
+				jQuery("#profileSelect").empty();
+				jQuery.each(data.result.profiles, function(k, v) {
+					if (typeof v !== 'string') { return; }
+				  var s = (data.result.added && data.result.added.indexOf(v) >= 0) ? 'SELECTED="1"' : '';
+				  jQuery("#profileSelect").append(jQuery("<option " + s + "></option>")
+					 .attr("value", v).text(k));
+				});
+				
 			},
 			progressall: function (e, data) {
 				jQuery("#profileUpload").hide(150);
@@ -167,4 +175,3 @@ if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_AL
 </script>
 <?php
 }
-?>

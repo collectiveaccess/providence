@@ -60,7 +60,7 @@ if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_AL
 				$vs_tmp_dir = pathinfo($vs_tmp_name, PATHINFO_DIRNAME);
 			
 				$vo_profile = new DOMDocument();
-				$vo_profile->load($vs_tmp_name);
+				@$vo_profile->load($vs_tmp_name);
 			
 				if(!(@$vo_profile->schemaValidate($vs_profile_dir."/profile.xsd"))) { 
 					$va_response['skippedMessage'][] = _t('%1 is not a valid profile', $_FILES['files']['name'][$vn_i]);
@@ -71,7 +71,7 @@ if (defined('__CA_ALLOW_DRAG_AND_DROP_PROFILE_UPLOAD_IN_INSTALLER__') && __CA_AL
 			
 				// attempt to write to profile dir
 				if (@copy($vs_tmp_name, $vs_profile_dir.'/'.$_FILES['files']['name'][$vn_i])) {
-					$va_response['added'][] = $_FILES['files']['name'][$vn_i];
+					$va_response['added'][] = pathinfo($_FILES['files']['name'][$vn_i], PATHINFO_FILENAME);
 					$va_response['uploadMessage'][] = $vb_exists ? _t('Updated %1', $_FILES['files']['name'][$vn_i]) : _t('Added %1', $_FILES['files']['name'][$vn_i]);
 				}
 				
