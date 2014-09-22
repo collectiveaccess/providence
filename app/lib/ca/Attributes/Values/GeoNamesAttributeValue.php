@@ -301,7 +301,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 
 		if(!$va_settings["disableMap"]){
 
-			JavascriptLoadManager::register('maps');
+			AssetLoadManager::register('maps');
 
 			$vs_element .= "
 				<div id='map_".$pa_element_info['element_id']."{n}' style='width:700px; height:160px;'>

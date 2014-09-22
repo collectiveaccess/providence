@@ -521,10 +521,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * Returns list of available data exporters as HTML form element
 	 */
 	static public function getExporterListAsHTMLFormElement($ps_name, $pn_table_num=null, $pa_attributes=null, $pa_options=null) {
-		$va_importers = ca_data_exporters::getExporters($pn_table_num, $pa_options);
+		$va_exporters = ca_data_exporters::getExporters($pn_table_num, $pa_options);
 		
 		$va_opts = array();
-		foreach($va_importers as $vn_importer_id => $va_importer_info) {
+		foreach($va_exporters as $va_importer_info) {
 			$va_opts[$va_importer_info['label']." (".$va_importer_info['exporter_code'].")"] = $va_importer_info['exporter_id'];
 		}
 		ksort($va_opts);
@@ -688,6 +688,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 							$pa_errors[] = _t("Warning: options for element %1 are not in proper JSON",$vs_element);
 						}
 					}
+					
+					$va_options['_id'] = (string)$o_id->getValue();	// stash ID for future reference
 
 					$vs_key = (strlen($vs_id)>0 ? $vs_id : md5($vn_row));
 
@@ -1058,6 +1060,42 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	static public function exportRecordsFromSearchExpression($ps_exporter_code, $ps_expression, $ps_filename, $pa_options=array()){
 
+		ca_data_exporters::$s_exporter_cache = array();
+		ca_data_exporters::$s_exporter_item_cache = array();
+
+		if(!$t_mapping = ca_data_exporters::loadExporterByCode($ps_exporter_code)){ return false; }
+
+		$o_search = caGetSearchInstance($t_mapping->get('table_num'));
+		$o_result = $o_search->search($ps_expression);
+
+		return self::exportRecordsFromSearchResult($ps_exporter_code, $o_result, $ps_filename, $pa_options);
+	}
+
+	# ------------------------------------------------------
+	/**
+	 * Export a record set as defined by the given search expression and the table_num for this exporter.
+	 * This function wraps the record-level exports using the settings 'wrap_before' and 'wrap_after' if they are set.
+	 * @param string $ps_exporter_code defines the exporter to use
+	 * @param SearchResult $po_result An existing SearchResult object
+	 * @param string $ps_filename Destination filename (we can't keep everything in memory here)
+	 * @param array $pa_options
+	 * 		progressCallback = callback function for asynchronous UI status reporting
+	 *		showCLIProgressBar = Show command-line progress bar. Default is false.
+	 *		logDirectory = path to directory where logs should be written
+	 *		logLevel = KLogger constant for minimum log level to record. Default is KLogger::INFO. Constants are, in descending order of shrillness:
+	 *			KLogger::EMERG = Emergency messages (system is unusable)
+	 *			KLogger::ALERT = Alert messages (action must be taken immediately)
+	 *			KLogger::CRIT = Critical conditions
+	 *			KLogger::ERR = Error conditions
+	 *			KLogger::WARN = Warnings
+	 *			KLogger::NOTICE = Notices (normal but significant conditions)
+	 *			KLogger::INFO = Informational messages
+	 *			KLogger::DEBUG = Debugging messages
+	 * @return boolean success state
+	 */
+	static public function exportRecordsFromSearchResult($ps_exporter_code, $po_result, $ps_filename, $pa_options=array()){
+		if(!($po_result instanceof SearchResult)) { return false; }
+
 		$vs_log_dir = caGetOption('logDirectory',$pa_options);
 		if(!file_exists($vs_log_dir) || !is_writable($vs_log_dir)) {
 			$vs_log_dir = caGetTempDirPath();
@@ -1073,7 +1111,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		ca_data_exporters::$s_exporter_item_cache = array();
 
 		$vb_show_cli_progress_bar = (isset($pa_options['showCLIProgressBar']) && ($pa_options['showCLIProgressBar']));
-		$po_request = isset($pa_options['request']) ? $pa_options['request'] : null;
+		$po_request = caGetOption('request', $pa_options, null);
 
 		if(!$t_mapping = ca_data_exporters::loadExporterByCode($ps_exporter_code)){
 			return false;
@@ -1087,7 +1125,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			return false;
 		}
 
-		$o_log->logInfo(_t("Starting multi-record export for mapping %1 and search expression '%2'", $ps_exporter_code, $ps_expression));
+		$o_log->logInfo(_t("Starting SearchResult-based multi-record export for mapping %1.", $ps_exporter_code));
 
 		$vn_start_time = time();
 
@@ -1095,11 +1133,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vs_wrap_after = $t_mapping->getSetting('wrap_after');
 
 		$t_instance = $t_mapping->getAppDatamodel()->getInstanceByTableNum($t_mapping->get('table_num'));
-		$o_search = caGetSearchInstance($t_mapping->get('table_num'));
-		$o_result = $o_search->search($ps_expression);
-		$vn_num_items = $o_result->numHits();
+		$vn_num_items = $po_result->numHits();
 
-		$o_log->logInfo(_t("Search for '%1' found %2 results. Now calling single-item export for each record.", $ps_expression, $vn_num_items));
+		$o_log->logInfo(_t("SearchResult contains %1 results. Now calling single-item export for each record.", $vn_num_items));
 
 		if($vs_wrap_before){
 			file_put_contents($ps_filename, $vs_wrap_before."\n", FILE_APPEND);
@@ -1111,14 +1147,42 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
 			if($vn_num_items>0) {
-				$ps_callback($po_request, 0, $vn_num_items, _t("Exporting result for search expression '%1'", $ps_expression), (time() - $vn_start_time), memory_get_usage(true), 0);
+				$ps_callback($po_request, 0, $vn_num_items, _t("Exporting result"), (time() - $vn_start_time), memory_get_usage(true), 0);
 			} else {
 				$ps_callback($po_request, 0, -1, _t('Found no records to export'), (time() - $vn_start_time), memory_get_usage(true), 0);
 			}
 		}
 		$vn_num_processed = 0;
-		while($o_result->nextHit()){
-			$vs_item_export = ca_data_exporters::exportRecord($ps_exporter_code, $o_result->get($t_instance->primaryKey()), array('logger' => $o_log));
+
+
+		if ($t_mapping->getSetting('CSV_print_field_names')) {
+			$va_header = $va_header_sources = array();
+			$va_mapping_items = $t_mapping->getItems();
+			foreach($va_mapping_items as $vn_i => $va_mapping_item) {
+				$va_settings = caUnserializeForDatabase($va_mapping_item['settings']);
+				$va_header_sources[(int)$va_mapping_item['element']] = $va_settings['_id'] ? $va_settings['_id'] : $va_mapping_item['source'];
+			}
+			ksort($va_header_sources);
+			foreach($va_header_sources as $vn_element => $vs_source) {
+				$va_tmp = explode(".", $vs_source);
+				if ($t_table = $t_mapping->getAppDatamodel()->getInstanceByTableName($va_tmp[0], true)) {
+					$va_header[] = $t_table->getDisplayLabel($vs_source);
+				} else {
+					$va_header[] = $vs_source;
+				}
+			}
+			file_put_contents($ps_filename, join(",", $va_header)."\n", FILE_APPEND);
+		}
+
+		while($po_result->nextHit()) {
+
+			if($po_request instanceof RequestHTTP) {
+				if(!caCanRead($po_request->getUserID(), $t_instance->tableNum(), $po_result->get($t_instance->primaryKey()))){
+					continue;
+				}
+			}
+
+			$vs_item_export = ca_data_exporters::exportRecord($ps_exporter_code, $po_result->get($t_instance->primaryKey()), array('logger' => $o_log));
 			file_put_contents($ps_filename, $vs_item_export."\n", FILE_APPEND);
 
 			if ($vb_show_cli_progress_bar) {
@@ -1128,7 +1192,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$vn_num_processed++;
 
 			if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
-				$ps_callback($po_request, $vn_num_processed, $vn_num_items, _t("Exporting ... [%1/%2]", $vn_num_processed, $vn_num_items), (time() - $vn_start_time), memory_get_usage(true), $vn_num_processed); 
+				$ps_callback($po_request, $vn_num_processed, $vn_num_items, _t("Exporting ... [%1/%2]", $vn_num_processed, $vn_num_items), (time() - $vn_start_time), memory_get_usage(true), $vn_num_processed);
 			}
 		}
 
@@ -1145,6 +1209,36 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 
 		return true;
+	}
+
+	# ------------------------------------------------------
+	/**
+	 * Export set items
+	 *
+	 * @param string $ps_exporter_code defines the exporter to use
+	 * @param int $pn_set_id primary key of set to export
+	 * @param string $ps_filename Destination filename (we can't keep everything in memory here)
+	 * @param array $pa_options
+	 * 		progressCallback = callback function for asynchronous UI status reporting
+	 *		showCLIProgressBar = Show command-line progress bar. Default is false.
+	 *		logDirectory = path to directory where logs should be written
+	 *		logLevel = KLogger constant for minimum log level to record. Default is KLogger::INFO.
+	 * @return boolean success state
+	 */
+	static public function exportRecordsFromSet($ps_exporter_code, $pn_set_id, $ps_filename, $pa_options=null){
+		ca_data_exporters::$s_exporter_cache = array();
+		ca_data_exporters::$s_exporter_item_cache = array();
+
+		if(!($t_mapping = ca_data_exporters::loadExporterByCode($ps_exporter_code))){ return false; }
+		if(sizeof(ca_data_exporters::checkMapping($ps_exporter_code))>0){ return false; }
+
+		$t_set = new ca_sets();
+
+		if(!$t_set->load($pn_set_id)) { return false; }
+
+		$va_row_ids = array_keys($t_set->getItems(array('returnRowIdsOnly' => true)));
+		$o_result = $t_set->makeSearchResult($t_set->get('table_num'), $va_row_ids);
+		return self::exportRecordsFromSearchResult($ps_exporter_code, $o_result, $ps_filename, $pa_options);
 	}
 	# ------------------------------------------------------
 	/**
@@ -1528,6 +1622,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		if($t_exporter_item->getSetting('end_as_iso8601')){
 			$va_get_options['end_as_iso8601'] = true;
+		}
+
+		if($t_exporter_item->getSetting('dontReturnValueIfOnSameDayAsStart')){
+			$va_get_options['dontReturnValueIfOnSameDayAsStart'] = true;
 		}
 
 		if($vs_date_format = $t_exporter_item->getSetting('dateFormat')){

@@ -67,7 +67,7 @@
 				'ca_items_x_tags.user_id' => _t('user')
 			);
 			 
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
  		}
  		# -------------------------------------------------------
  		/**

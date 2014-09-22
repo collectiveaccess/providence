@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
-	JavascriptLoadManager::register("sortableUI");
+	AssetLoadManager::register("sortableUI");
 ?>
 <h1><?php print _t('Batch processing status'); ?></h1>
 

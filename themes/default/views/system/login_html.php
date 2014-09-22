@@ -36,7 +36,7 @@
 		
 		<link href="<?php print $this->request->getThemeUrlPath(); ?>/css/login.css" rel="stylesheet" type="text/css" />
 <?php
-	print JavascriptLoadManager::getLoadHTML($this->request->getBaseUrlPath());
+	print AssetLoadManager::getLoadHTML($this->request);
 ?>
 
 		<script type="text/javascript">

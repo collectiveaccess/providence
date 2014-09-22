@@ -1207,7 +1207,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			
 			TooltipManager::add(
 				"#uiEditorBundle_{$vs_table}_{$vs_bundle_proc}",
-				"<h2>{$vs_label}</h2>{$vs_description}"
+				"<h2>{$vs_label}</h2>".
+				_t("Bundle name").": {$vs_bundle_proc}<br />".
+				((strlen($vs_description) > 0) ? _t("Description").": {$vs_description}<br />" : "")
 			);
 		}
 		
@@ -1453,7 +1455,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			$vs_description = $t_instance->getDisplayDescription($t_instance->tableName().'.'.$vs_bundle_proc);
 			TooltipManager::add(
 				"#uiEditor_{$vn_placement_id}",
-				"<h2>{$vs_label}</h2>{$vs_description}"
+				"<h2>{$vs_label}</h2>".
+				_t("Bundle name").": {$vs_bundle_proc}<br />".
+				((strlen($vs_description) > 0) ? _t("Description").": {$vs_description}<br />" : "")
 			);
 		}
 		

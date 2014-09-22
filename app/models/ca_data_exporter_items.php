@@ -473,7 +473,21 @@ class ca_data_exporter_items extends BaseModel {
 				_t('no') => 0
 			),
 			'label' => _t('End as ISO8601'),
-			'description' => _t('If set, only the beginning of a date range is exported for the current mapping. Format is ISO8601. Only applies to exports of DateRange attributes.'),
+			'description' => _t('If set, only the beginning of a date range is exported for the current mapping. Format is ISO8601. Only applies to exports of DateRange attributes.')
+		);
+
+		$va_settings['dontReturnValueIfOnSameDayAsStart'] = array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Do not return value if on the same day as start'),
+			'description' => _t('If set, the exporter will not insert a value for this mapping if the end day of the DateRange in question is on the same day as the start. Only applias to exports of DateRange attributes and only in conjunction with end_as_iso8601.'),
 		);
 
 		$va_settings['dateFormat'] = array(
@@ -484,6 +498,16 @@ class ca_data_exporter_items extends BaseModel {
 			'default' => '',
 			'label' => _t('Date format'),
 			'description' => _t('Formatting option for DateRange attributes.')
+		);
+		
+		$va_settings['_id'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('ID'),
+			'description' => _t('ID of item as set in mapping.')
 		);
 		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);

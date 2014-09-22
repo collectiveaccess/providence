@@ -354,7 +354,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	public function htmlTag($ps_url, $pa_properties, $pa_options=null, $pa_volume_info=null) {
-		JavascriptLoadManager::register('3dmodels');
+		AssetLoadManager::register('3dmodels');
 
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
