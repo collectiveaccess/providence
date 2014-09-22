@@ -140,7 +140,7 @@ abstract class AbstractPluginIntegrationTest extends PHPUnit_Framework_TestCase 
 	 * @param $ps_idno_base string
 	 * @return string
 	 */
-	protected static function _getIdno($ps_idno_base) {
+	public static function _getIdno($ps_idno_base) {
 		return sprintf('%s_%s_%s', self::$s_timestamp, self::$s_random_number, $ps_idno_base);
 	}
 
