@@ -2665,7 +2665,10 @@ class ca_users extends BaseModel {
 		if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { return; }
 
 		$vs_app_name = $this->getAppConfig()->get("app_name");
-		$this->removePendingPasswordReset(false);
+		// Technically the reset was not successful but since we lock the user out, we want to reset
+		// the password_resets_failed count as well so that if an admin reactivates the user, he can
+		// use the reset password feature again. Otherwise he would immediately be locked out again.
+		$this->removePendingPasswordReset(true);
 		$this->set('active', 0);
 		$this->setMode(ACCESS_WRITE);
 		$this->update();
