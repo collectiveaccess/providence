@@ -86,6 +86,9 @@
 901 = User already exists
 920 = Invalid preference
 921 = Invalid preference value
+922 = Invalid email address
+923 = Couldn't update user
+925 = Authentication adapter error
 930 = Couldn't add user role
 931 = Couldn't remove user role
 935 = Couldn't add user to group

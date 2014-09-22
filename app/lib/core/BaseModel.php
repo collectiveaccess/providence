@@ -1439,18 +1439,12 @@ class BaseModel extends BaseObject {
 						}
 						break;
 					case (FT_PASSWORD):
-						if (!$vm_value) {		// store blank passwords as blank, not MD5 of blank
-							$this->_FIELD_VALUES[$vs_field] = $vs_crypt_pw = "";
-						} else {
-							if ($this->_CONFIG->get("use_old_style_passwords")) {
-								$vs_crypt_pw = crypt($vm_value,substr($vm_value,0,2));
-							} else {
-								$vs_crypt_pw = md5($vm_value);
-							}
-							if (($vs_cur_value != $vm_value) && ($vs_cur_value != $vs_crypt_pw)) {
-								$this->_FIELD_VALUES[$vs_field] = $vs_crypt_pw;
-							}
-							if ($vs_cur_value != $vs_crypt_pw) {
+						if (!$vm_value) { // store blank passwords as blank,
+							$this->_FIELD_VALUES[$vs_field] = "";
+							$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
+						} else { // leave the treatment of the password to the AuthAdapter, i.e. don't do hashing here
+							if ($vs_cur_value != $vm_value) {
+								$this->_FIELD_VALUES[$vs_field] = $vm_value;
 								$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
 							}
 						}
@@ -10240,7 +10234,7 @@ $pa_options["display_form_field_tips"] = true;
 	public function registerItemView($pn_user_id=null) {
 		global $g_ui_locale_id;
 		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
-		if (!$pn_locale_id) { $pn_locale_id = $g_ui_locale_id; }
+		$pn_locale_id = $g_ui_locale_id;
 		
 		$vn_table_num = $this->tableNum();
 		
