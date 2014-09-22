@@ -114,12 +114,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				if (!($vn_ret = $t_list->itemIsEnabled($this->getTypeListCode(), $vn_type_id))) {
 					$va_type_list = $this->getTypeList(array('directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'item_id' => null));
 					if (!isset($va_type_list[$vn_type_id])) {
-						$this->postError(2510, _t("Type must be specified"), "BundlableLabelableBaseModelWithAttributes->insert()");
+						$this->postError(2510, _t("Type must be specified"), "BundlableLabelableBaseModelWithAttributes->insert()", $this->tableName().'.'.$this->getTypeFieldName());
 					} else {
 						if(is_null($vn_ret)) {
-							$this->postError(2510, _t("<em>%1</em> is invalid", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
+							$this->postError(2510, _t("<em>%1</em> is invalid", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()", $this->tableName().'.'.$this->getTypeFieldName());
 						} else {
-							$this->postError(2510, _t("<em>%1</em> is not enabled", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
+							$this->postError(2510, _t("<em>%1</em> is not enabled", $va_type_list[$vn_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()", $this->tableName().'.'.$this->getTypeFieldName());
 						}
 					}
 					$vb_error = true;
@@ -138,12 +138,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							if (!isset($va_type_list[$this->getTypeID()])) {
 								$va_type_list = $this->getTypeList(array('directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'item_id' => null));
 
-								$this->postError(2510, _t("<em>%1</em> is not a valid type for a child record of type <em>%2</em>", $va_type_list[$this->getTypeID()]['name_singular'], $va_type_list[$vn_parent_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
+								$this->postError(2510, _t("<em>%1</em> is not a valid type for a child record of type <em>%2</em>", $va_type_list[$this->getTypeID()]['name_singular'], $va_type_list[$vn_parent_type_id]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()", $this->tableName().'.'.$this->getTypeFieldName());
 								$vb_error = true;
 							}
 						} else {
 							// error - no parent?
-							$this->postError(2510, _t("No parent was found when verifying type of new child"), "BundlableLabelableBaseModelWithAttributes->insert()");
+							$this->postError(2510, _t("No parent was found when verifying type of new child"), "BundlableLabelableBaseModelWithAttributes->insert()", $this->tableName().'.'.$this->getTypeFieldName());
 							$vb_error = true;
 						}
 					} else {
@@ -152,7 +152,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						if (!isset($va_type_list[$this->getTypeID()])) {
 							$va_type_list = $this->getTypeList(array('directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'item_id' => null));
 						
-							$this->postError(2510, _t("<em>%1</em> is not a valid type for a top-level record", $va_type_list[$this->getTypeID()]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()");
+							$this->postError(2510, _t("<em>%1</em> is not a valid type for a top-level record", $va_type_list[$this->getTypeID()]['name_singular']), "BundlableLabelableBaseModelWithAttributes->insert()", $this->tableName().'.'.$this->getTypeFieldName());
 							$vb_error = true;
 						}
 					}
@@ -446,7 +446,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		if ($this->getPrimaryKey() && !$this->isRelationship() && isset($pa_fields[$this->getTypeFieldName()]) && !(isset($pa_options['allowSettingOfTypeID']) && $pa_options['allowSettingOfTypeID'])) {
-			$this->postError(2520, _t("Type id cannot be set after insert"), "BundlableLabelableBaseModelWithAttributes->set()");
+			$this->postError(2520, _t("Type id cannot be set after insert"), "BundlableLabelableBaseModelWithAttributes->set()", $this->tableName().'.'.$this->getTypeFieldName());
 			return false;
 		}
 		
@@ -829,7 +829,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			if (sizeof($va_idno_errors) > 0) {
 				if ($pb_post_errors) {
 					foreach($va_idno_errors as $vs_e) {
-						$this->postError(1100, $vs_e, "BundlableLabelableBaseModelWithAttributes->insert()");
+						$this->postError(1100, $vs_e, "BundlableLabelableBaseModelWithAttributes->insert()", $this->tableName().'.'.$vs_idno_field);
 					}
 				}
 				return false;
@@ -2241,6 +2241,78 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		return parent::htmlFormElementForSearch($po_request, $ps_field, $pa_options);
 	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	  * Returns HTML form input widget for bundle specified by standard "get" bundle code (eg. <table_name>.<bundle_name> format) suitable
+	  * for use in a simple data entry form, such as the front-end "contribute" user-provided content submission form
+	  *
+	  * This method handles generation of search form widgets for (1) related tables (eg. ca_places),  preferred and non-preferred labels for both the 
+	  * primary and related tables, and all other types of elements for related tables. If this method can't handle the bundle it will pass the request to the 
+	  * superclass implementation of htmlFormElementForSearch()
+	  *
+	  * @param $po_request HTTPRequest
+	  * @param $ps_field string
+	  * @param $pa_options array
+	  * @return string HTML text of form element. Will return null (from superclass) if it is not possible to generate an HTML form widget for the bundle.
+	  * 
+	  */
+	public function htmlFormElementForSimpleForm($po_request, $ps_field, $pa_options=null) {
+		$vb_as_array_element = (bool)caGetOption('asArrayElement', $pa_options, false);
+		$va_tmp = explode('.', $ps_field);
+		
+		$vs_buf = '';
+		if($vs_rel_type = caGetOption('relationshipType', $pa_options, null)) {
+			$vs_buf .= caHTMLHiddenInput($ps_field.'_relationship_type'.($vb_as_array_element ? "[]" : ""), array('value' => $vs_rel_type));
+		}
+		if($vs_type = caGetOption('type', $pa_options, null)) {
+			$vs_buf .= caHTMLHiddenInput($ps_field.'_type'.($vb_as_array_element ? "[]" : ""), array('value' => $vs_type));
+		}
+		
+		switch(sizeof($va_tmp)) {
+			# -------------------------------------
+			case 1:		// table_name
+				if ($va_tmp[0] != $this->tableName()) {
+					if (!is_array($pa_options)) { $pa_options = array(); }
+					if (!isset($pa_options['width'])) { $pa_options['width'] = 30; }
+					if (!isset($pa_options['values'])) { $pa_options['values'] = array(); }
+					if (!isset($pa_options['values'][$ps_field])) { $pa_options['values'][$ps_field] = ''; }
+					
+					return $vs_buf.caHTMLTextInput($ps_field.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
+				}
+				break;
+			# -------------------------------------
+			case 2:		// table_name.field_name
+			case 3:		// table_name.field_name.sub_element	
+				if (!($t_instance = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true))) { return null; }
+				
+				switch($va_tmp[1]) {
+					# --------------------
+					case 'preferred_labels':		
+					case 'nonpreferred_labels':
+						return $vs_buf.caHTMLTextInput($ps_field.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
+						break;
+					# --------------------
+					default:
+						if ($va_tmp[0] != $this->tableName()) {
+							switch(sizeof($va_tmp)) {
+								case 1:
+									return $vs_buf.caHTMLTextInput($ps_field.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
+								case 2:
+								case 3:
+									return $vs_buf.$t_instance->htmlFormElementForSearch($po_request, $ps_field, $pa_options);
+									break;
+							}
+						}
+						break;
+					# --------------------
+				}	
+					
+				break;
+			# -------------------------------------
+		}
+		
+		return parent::htmlFormElementForSimpleForm($po_request, $ps_field, $pa_options);
+	}
  	# ------------------------------------------------------
  	/**
  	 * Returns a list of HTML fragments implementing all bundles in an HTML form for the specified screen
@@ -3309,7 +3381,7 @@ if (!$vb_batch) {
 								if(is_array($va_label_values = $this->getLabelUIValuesFromRequest($po_request, $vs_placement_code.$vs_form_prefix, $va_label['label_id'], true))) {
 									
 									if ($vb_check_for_dupe_labels && $this->checkForDupeLabel($vn_label_locale_id, $va_label_values)) {
-										$this->postError(1125, _t('Value <em>%1</em> is already used and duplicates are not allowed', join("/", $va_label_values)), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");
+										$this->postError(1125, _t('Value <em>%1</em> is already used and duplicates are not allowed', join("/", $va_label_values)), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", $this->tableName().'.preferred_labels');
 										$po_request->addActionErrors($this->errors(), 'preferred_labels');
 										continue;
 									}
@@ -3384,7 +3456,7 @@ if (!$vb_batch) {
 								// if there are non-[BLANK] labels for this locale, don't add this new one
 								$va_labels_for_this_locale = $this->getPreferredLabels(array($vn_new_label_locale_id),true,array('forDisplay' => true));
 								if(is_array($va_labels_for_this_locale) && (sizeof($va_labels_for_this_locale)>0)){
-									$this->postError(1125, _t('A preferred label for this locale already exists. Only one preferred label per locale is allowed.'), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");
+									$this->postError(1125, _t('A preferred label for this locale already exists. Only one preferred label per locale is allowed.'), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", $this->tableName().'.preferred_labels');
 									$po_request->addActionErrors($this->errors(), $vs_f);
 									$vb_error_inserting_pref_label = true;
 									continue;
@@ -3392,7 +3464,7 @@ if (!$vb_batch) {
 							}
 							
 							if ($vb_check_for_dupe_labels && $this->checkForDupeLabel($vn_new_label_locale_id, $va_label_values)) {
-								$this->postError(1125, _t('Value <em>%1</em> is already used and duplicates are not allowed', join("/", $va_label_values)), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()");
+								$this->postError(1125, _t('Value <em>%1</em> is already used and duplicates are not allowed', join("/", $va_label_values)), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", $this->tableName().'.preferred_labels');
 								$po_request->addActionErrors($this->errors(), 'preferred_labels');
 								$vb_error_inserting_pref_label = true;
 								continue;
@@ -4955,6 +5027,9 @@ if (!$vb_batch) {
 			if(!isset($pa_options[$vs_key])) { $pa_options[$vs_key] = null; }
 		}
 		
+		if (!$this->opo_idno_plugin_instance) {
+			$this->loadIDNoPlugInInstance($pa_options);
+		}
 		if (
 			($ps_field == $this->getProperty('ID_NUMBERING_ID_FIELD')) 
 			&& 
@@ -5055,6 +5130,14 @@ $pa_options["display_form_field_tips"] = true;
 		if (!$this->opo_idno_plugin_instance) { return null; }
 		$this->opo_idno_plugin_instance->setDb($this->getDb());	// Make sure returned instance is using current transaction database handle
 		return $this->opo_idno_plugin_instance;
+	}
+	# ----------------------------------------
+	/**
+	 * 
+	 */
+	public function loadIDNoPlugInInstance($pa_options=null) {
+		if ($this->opo_idno_plugin_instance) { return $this->opo_idno_plugin_instance; }
+		return $this->opo_idno_plugin_instance = IDNumbering::newIDNumberer($this->tableName(), $this->getTypeCode(), null, $this->getDb(), caGetOption('IDNumberingConfig', $pa_options, null));
 	}
 	# ----------------------------------------
 	/**
@@ -5727,6 +5810,9 @@ $pa_options["display_form_field_tips"] = true;
 	 * @return mixed The processed template value set as the idno, or false if the model doesn't support id numbering
 	 */
 	public function setIdnoWithTemplate($ps_template_value=null, $pa_options=null) {
+		if (!$this->opo_idno_plugin_instance) {
+			$this->loadIDNoPlugInInstance($pa_options);
+		}
 		if (($vs_idno_field = $this->getProperty('ID_NUMBERING_ID_FIELD')) && $this->opo_idno_plugin_instance) {
 			$pb_dont_set_value = (bool)(isset($pa_options['dontSetValue']) && $pa_options['dontSetValue']);
 		
