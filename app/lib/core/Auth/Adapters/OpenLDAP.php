@@ -96,7 +96,6 @@ class OpenLDAPAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		$vs_ldapport = $po_auth_config->get("ldap_port");
 		$vs_base_dn = $po_auth_config->get("ldap_base_dn");
 		$vs_user_ou = $po_auth_config->get("ldap_user_ou");
-		//$va_group_cn = $po_auth_config->getList("ldap_group_cn");
 		$vs_attribute_email = $po_auth_config->get("ldap_attribute_email");
 		$vs_attribute_fname = $po_auth_config->get("ldap_attribute_fname");
 		$vs_attribute_lname = $po_auth_config->get("ldap_attribute_lname");
@@ -149,8 +148,10 @@ class OpenLDAPAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		$va_return['user_name'] = $ps_username;
 		$va_return['active'] = $po_auth_config->get("ldap_users_auto_active");
 
-		$va_return['roles'] = $po_auth_config->get("ldap_users_default_roles");
-		$va_return['groups'] = $po_auth_config->get("ldap_users_default_groups");
+		$va_return['roles'] = array_merge($po_auth_config->get("ldap_users_default_roles"), self::getRolesToAddFromDirectory($ps_username, $vo_ldap));
+		$va_return['groups'] = array_merge($po_auth_config->get("ldap_users_default_groups"), self::getGroupsToAddFromDirectory($ps_username, $vo_ldap));
+
+		ldap_unbind($vo_ldap);
 
 		return $va_return;
 	}
@@ -171,12 +172,20 @@ class OpenLDAPAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		$vs_base_dn = $o_auth_config->get("ldap_base_dn");
 
 		$vs_group_search_dn = self::postProcessLDAPConfigValue("ldap_group_search_dn_format", '', '', $vs_base_dn);
-		$va_group_cns = $o_auth_config->getList('ldap_group_cn_list');
+		$va_group_cns = $o_auth_config->get('ldap_group_cn_list');
 
 		if(is_array($va_group_cns) && sizeof($va_group_cns)>0){
 			foreach($va_group_cns as $vs_group_cn) {
 				$vs_search_filter = self::postProcessLDAPConfigValue("ldap_group_search_filter_format", $vs_group_cn, '', $vs_base_dn);
-				$vo_result = ldap_search($po_ldap, $vs_group_search_dn, $vs_search_filter, array("memberuid"));
+				$vo_result = @ldap_search($po_ldap, $vs_group_search_dn, $vs_search_filter, array("memberuid"));
+
+				if (!$vo_result) {
+					// search error
+					$vs_message = _t("LDAP search error: %1", ldap_error($po_ldap));
+					ldap_unbind($po_ldap);
+					throw new OpenLDAPException($vs_message);
+				}
+
 				$va_entries = ldap_get_entries($po_ldap, $vo_result);
 				if($va_members = $va_entries[0]["memberuid"]){
 					if(in_array($ps_user, $va_members)){ // found group
@@ -189,6 +198,78 @@ class OpenLDAPAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		}
 
 		return false;
+	}
+	# --------------------------------------------------------------------------------
+	private static function getRolesToAddFromDirectory($ps_user, $po_ldap) {
+		$va_return = array();
+
+		$o_auth_config = Configuration::load(Configuration::load()->get('authentication_config'));
+		$vs_base_dn = $o_auth_config->get("ldap_base_dn");
+
+		$vs_group_search_dn = self::postProcessLDAPConfigValue("ldap_group_search_dn_format", '', '', $vs_base_dn);
+		$va_roles_map = $o_auth_config->get('ldap_roles_group_map');
+
+		if(is_array($va_roles_map) && sizeof($va_roles_map)>0) {
+			foreach ($va_roles_map as $vs_ldap_group => $va_ca_roles) {
+				if(is_array($va_ca_roles) && sizeof($va_ca_roles)>0) {
+
+					$vs_search_filter = self::postProcessLDAPConfigValue("ldap_group_search_filter_format", $vs_ldap_group, '', $vs_base_dn);
+					$vo_result = @ldap_search($po_ldap, $vs_group_search_dn, $vs_search_filter, array("memberuid"));
+
+					if (!$vo_result) {
+						// search error
+						$vs_message = _t("LDAP search error: %1", ldap_error($po_ldap));
+						ldap_unbind($po_ldap);
+						throw new OpenLDAPException($vs_message);
+					}
+
+					$va_entries = ldap_get_entries($po_ldap, $vo_result);
+					if($va_members = $va_entries[0]["memberuid"]){
+						if(in_array($ps_user, $va_members)){ // found group
+							$va_return = array_merge($va_return, $va_ca_roles);
+						}
+					}
+				}
+			}
+		}
+
+		return $va_return;
+	}
+	# --------------------------------------------------------------------------------
+	private static function getGroupsToAddFromDirectory($ps_user, $po_ldap) {
+		$va_return = array();
+
+		$o_auth_config = Configuration::load(Configuration::load()->get('authentication_config'));
+		$vs_base_dn = $o_auth_config->get("ldap_base_dn");
+
+		$vs_group_search_dn = self::postProcessLDAPConfigValue("ldap_group_search_dn_format", '', '', $vs_base_dn);
+		$va_groups_map = $o_auth_config->get('ldap_groups_group_map');
+
+		if(is_array($va_groups_map) && sizeof($va_groups_map)>0) {
+			foreach ($va_groups_map as $vs_ldap_group => $va_ca_groups) {
+				if(is_array($va_ca_groups) && sizeof($va_ca_groups)>0) {
+
+					$vs_search_filter = self::postProcessLDAPConfigValue("ldap_group_search_filter_format", $vs_ldap_group, '', $vs_base_dn);
+					$vo_result = @ldap_search($po_ldap, $vs_group_search_dn, $vs_search_filter, array("memberuid"));
+
+					if (!$vo_result) {
+						// search error
+						$vs_message = _t("LDAP search error: %1", ldap_error($po_ldap));
+						ldap_unbind($po_ldap);
+						throw new OpenLDAPException($vs_message);
+					}
+
+					$va_entries = ldap_get_entries($po_ldap, $vo_result);
+					if($va_members = $va_entries[0]["memberuid"]){
+						if(in_array($ps_user, $va_members)){ // found group
+							$va_return = array_merge($va_return, $va_ca_groups);
+						}
+					}
+				}
+			}
+		}
+
+		return $va_return;
 	}
 	# --------------------------------------------------------------------------------
 	public static function supports($pn_feature) {
