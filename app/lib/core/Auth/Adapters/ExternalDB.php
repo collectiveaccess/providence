@@ -242,6 +242,7 @@ class ExternalDBAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 			case __CA_AUTH_ADAPTER_FEATURE_AUTOCREATE_USERS__:
 				return true;
 			case __CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__:
+			case __CA_AUTH_ADAPTER_FEATURE_UPDATE_PASSWORDS__:
 			default:
 				return false;
 		}

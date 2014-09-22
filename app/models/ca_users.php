@@ -477,7 +477,7 @@ class ca_users extends BaseModel {
 		// don't allow setting passwords of existing users if authentication backend doesn't support it. this way
 		// all other set() calls can still go through and update() doesn't necessarily have to barf because of a changed password
 		if($this->getPrimaryKey() > 0){
-			if(isset($pa_fields['password']) && !AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) {
+			if(isset($pa_fields['password']) && !AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_UPDATE_PASSWORDS__)) {
 				$this->postError(922, _t("Authentication back-end doesn't updating passwords of existing users."), 'ca_users->update()');
 				return false;
 			}
