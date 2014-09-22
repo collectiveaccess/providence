@@ -48,6 +48,10 @@ class OpenLDAPAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		$vs_base_dn = $po_auth_config->get("ldap_base_dn");
 		$vs_user_ou = $po_auth_config->get("ldap_user_ou");
 		$vs_bind_rdn = self::postProcessLDAPConfigValue("ldap_bind_rdn_format", $ps_username, $vs_user_ou, $vs_base_dn);
+		$va_default_roles = $po_auth_config->get("ldap_users_default_roles");
+		if(!is_array($va_default_roles)) { $va_default_roles = array(); }
+		$va_default_groups = $po_auth_config->get("ldap_users_default_groups");
+		if(!is_array($va_default_groups)) { $va_default_groups = array(); }
 
 
 		$vo_ldap = ldap_connect($vs_ldaphost,$vs_ldapport);
@@ -69,6 +73,44 @@ class OpenLDAPAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		if(!self::isMemberinAtLeastOneGroup($ps_username, $vo_ldap)) {
 			ldap_unbind($vo_ldap);
 			return false;
+		}
+
+		// user role and group membership syncing with directory
+		$t_user = new ca_users();
+		if($t_user->load($ps_username)) { // don't try to sync roles for non-existing users (the first auth call is before the user is actually created)
+
+			if($po_auth_config->get('ldap_sync_user_roles')) {
+				$va_expected_roles = array_merge($va_default_roles, self::getRolesToAddFromDirectory($ps_username, $vo_ldap));
+
+				foreach($va_expected_roles as $vs_role) {
+					if(!$t_user->hasUserRole($vs_role)) {
+						$t_user->addRoles($vs_role);
+					}
+				}
+
+				foreach($t_user->getUserRoles() as $vn_id => $va_role_info) {
+					if(!in_array($va_role_info['code'], $va_expected_roles)) {
+						$t_user->removeRoles($vn_id);
+					}
+				}
+			}
+
+			if($po_auth_config->get('ldap_sync_user_groups')) {
+				$va_expected_groups = array_merge($va_default_groups, self::getGroupsToAddFromDirectory($ps_username, $vo_ldap));
+
+				foreach($va_expected_groups as $vs_group) {
+					if(!$t_user->inGroup($vs_group)) {
+						$t_user->addToGroups($vs_group);
+					}
+				}
+
+				foreach($t_user->getUserGroups() as $vn_id => $va_group_info) {
+					if(!in_array($va_group_info['code'], $va_expected_groups)) {
+						$t_user->removeFromGroups($vn_id);
+					}
+				}
+			}
+
 		}
 
 		ldap_unbind($vo_ldap);
@@ -102,6 +144,10 @@ class OpenLDAPAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		$vs_bind_rdn = self::postProcessLDAPConfigValue("ldap_bind_rdn_format", $ps_username, $vs_user_ou, $vs_base_dn);
 		$vs_search_dn = self::postProcessLDAPConfigValue("ldap_user_search_dn_format", $ps_username, $vs_user_ou, $vs_base_dn);
 		$vs_search_filter = self::postProcessLDAPConfigValue("ldap_user_search_filter_format", $ps_username, $vs_user_ou, $vs_base_dn);
+		$va_default_roles = $po_auth_config->get("ldap_users_default_roles");
+		if(!is_array($va_default_roles)) { $va_default_roles = array(); }
+		$va_default_groups = $po_auth_config->get("ldap_users_default_groups");
+		if(!is_array($va_default_groups)) { $va_default_groups = array(); }
 
 		$vo_ldap = ldap_connect($vs_ldaphost,$vs_ldapport);
 		if (!$vo_ldap) {
@@ -148,8 +194,8 @@ class OpenLDAPAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		$va_return['user_name'] = $ps_username;
 		$va_return['active'] = $po_auth_config->get("ldap_users_auto_active");
 
-		$va_return['roles'] = array_merge($po_auth_config->get("ldap_users_default_roles"), self::getRolesToAddFromDirectory($ps_username, $vo_ldap));
-		$va_return['groups'] = array_merge($po_auth_config->get("ldap_users_default_groups"), self::getGroupsToAddFromDirectory($ps_username, $vo_ldap));
+		$va_return['roles'] = array_merge($va_default_roles, self::getRolesToAddFromDirectory($ps_username, $vo_ldap));
+		$va_return['groups'] = array_merge($va_default_groups, self::getGroupsToAddFromDirectory($ps_username, $vo_ldap));
 
 		ldap_unbind($vo_ldap);
 
