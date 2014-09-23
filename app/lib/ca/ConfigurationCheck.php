@@ -357,6 +357,9 @@ final class ConfigurationCheck {
 		if (!class_exists("DOMDocument")){
 			self::addError(_t("PHP Document Object Model (DOM) module is required for CollectiveAccess to run. Please install it."));
 		}
+		if (!function_exists('mcrypt_create_iv') && !function_exists('openssl_random_pseudo_bytes')){
+			self::addError(_t("Either the mcrypt or openssl module are required for CollectiveAccess to run. Please install one of them (or both)."));
+		}
 		
 		if (@preg_match('/\p{L}/u', 'a') != 1) {
 			self::addError(_t("Your version of the PHP PCRE module lacks unicode features. Please install a module version with UTF-8 support."));
