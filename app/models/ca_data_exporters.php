@@ -1408,7 +1408,24 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		
 		$pa_options['settings'] = $t_exporter->getSettings();
 
-		return $o_export->processExport($va_export,$pa_options);
+		$vs_wrap_before = $t_exporter->getSetting('wrap_before');
+		$vs_wrap_after = $t_exporter->getSetting('wrap_after');
+
+		if($vs_wrap_before || $vs_wrap_after) {
+			$pa_options['singleRecord'] = false;
+		}
+
+		$vs_export = $o_export->processExport($va_export,$pa_options);
+
+		if(strlen($vs_wrap_before)>0) {
+			$vs_export = $vs_wrap_before."\n".$vs_export;
+		}
+
+		if(strlen($vs_wrap_after)>0) {
+			$vs_export = $vs_export."\n".$vs_wrap_after;
+		}
+
+		return $vs_export;
 	}
 	# ------------------------------------------------------
 	/**
