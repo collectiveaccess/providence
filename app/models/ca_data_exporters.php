@@ -262,6 +262,26 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			'description' => _t('If this exporter is used for an item set export (as opposed to a single item), the text set here will be inserted after the last item. This can for instance be used to wrap a repeating set of XML elements in a single global element. The text has to be valid for the current exporter format.')
 		);
 
+		$va_settings['wrap_before_record'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 70, 'height' => 6,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Wrapping text before record export'),
+			'description' => _t('The text set here will be inserted before earch record-level export.')
+		);
+
+		$va_settings['wrap_after_record'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 70, 'height' => 6,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Wrapping text after record export'),
+			'description' => _t('The text set here will be inserted after earch record-level export.')
+		);
+
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 
 		// if exporter_format is set, pull in format-specific settings
@@ -1408,8 +1428,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		
 		$pa_options['settings'] = $t_exporter->getSettings();
 
-		$vs_wrap_before = $t_exporter->getSetting('wrap_before');
-		$vs_wrap_after = $t_exporter->getSetting('wrap_after');
+		$vs_wrap_before = $t_exporter->getSetting('wrap_before_record');
+		$vs_wrap_after = $t_exporter->getSetting('wrap_after_record');
 
 		if($vs_wrap_before || $vs_wrap_after) {
 			$pa_options['singleRecord'] = false;
