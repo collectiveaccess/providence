@@ -46,8 +46,6 @@ function create_hash($password)
 		$salt = base64_encode(mcrypt_create_iv(PBKDF2_SALT_BYTE_SIZE, MCRYPT_DEV_URANDOM));
 	} else if(function_exists('openssl_random_pseudo_bytes')) {
 		$salt = base64_encode(openssl_random_pseudo_bytes(PBKDF2_SALT_BYTE_SIZE));
-	} else { // not particularly unpredictable, use openssl or mcrypt!
-		$salt = base64_encode(uniqid(mt_rand(), true));
 	}
 
 	// format: algorithm:iterations:salt:hash
