@@ -4435,8 +4435,12 @@ if (!$vb_batch) {
 		$vn_start = (isset($pa_options['start']) && ((int)$pa_options['start'] > 0)) ? (int)$pa_options['start'] : 0;
               
 		if (is_numeric($pm_rel_table_name_or_num)) {
-			$vs_related_table_name = $this->getAppDataModel()->getTableName($pm_rel_table_name_or_num);
+			if(!($vs_related_table_name = $this->getAppDataModel()->getTableName($pm_rel_table_name_or_num))) { return null; }
 		} else {
+			if (sizeof($va_tmp = explode(".", $pm_rel_table_name_or_num)) > 1) {
+				$pm_rel_table_name_or_num = array_shift($va_tmp);
+			}
+			if (!($o_instance = $this->getAppDataModel()->getInstanceByTableName($pm_rel_table_name_or_num, true))) { return null; }
 			$vs_related_table_name = $pm_rel_table_name_or_num;
 		}
 		
