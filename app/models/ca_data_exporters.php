@@ -1457,7 +1457,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				$vs_key = $this->getAppDatamodel()->getTablePrimaryKeyName($vs_context);
 			} else { // this table, i.e. hierarchy context switch
 				$vs_key = $t_instance->primaryKey();
-				$vn_new_table_num = $pn_table_num;
 			}
 
 			$o_log->logInfo(_t("Initiating context switch to '%1' for mapping ID %2 and record ID %3. The processor now tries to find matching records for the switch and calls itself for each of those items.", $vs_context, $pn_item_id, $pn_record_id));
@@ -1557,6 +1556,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 			if(is_array($va_related)){
 				$o_log->logDebug(_t("The current mapping will now be repreated for these items: %1", print_r($va_related,true)));
+				if(!$vn_new_table_num) { $vn_new_table_num = $pn_table_num; }
 
 				foreach($va_related as $va_rel){
 					// if we're dealing with a related table, pass on some info the relationship type to the context-switched invocation of processExporterItem(),
