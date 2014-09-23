@@ -41,8 +41,16 @@ define("HASH_PBKDF2_INDEX", 3);
 
 function create_hash($password)
 {
-    // format: algorithm:iterations:salt:hash
-    $salt = base64_encode(mcrypt_create_iv(PBKDF2_SALT_BYTE_SIZE, MCRYPT_DEV_URANDOM));
+
+    if(function_exists('mcrypt_create_iv')) {
+		$salt = base64_encode(mcrypt_create_iv(PBKDF2_SALT_BYTE_SIZE, MCRYPT_DEV_URANDOM));
+	} else if(function_exists('openssl_random_pseudo_bytes')) {
+		$salt = base64_encode(openssl_random_pseudo_bytes(PBKDF2_SALT_BYTE_SIZE));
+	} else { // not particularly unpredictable, use openssl or mcrypt!
+		$salt = base64_encode(uniqid(mt_rand(), true));
+	}
+
+	// format: algorithm:iterations:salt:hash
     return PBKDF2_HASH_ALGORITHM . ":" . PBKDF2_ITERATIONS . ":" .  $salt . ":" . 
         base64_encode(pbkdf2(
             PBKDF2_HASH_ALGORITHM,

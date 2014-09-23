@@ -375,7 +375,12 @@ class ca_users extends BaseModel {
 		# is that you create a new user record with the 'active' field set to false. You then
 		# send the confirmation key to the new user (usually via e-mail) and ask them to respond
 		# with the key. If they do, you know that the e-mail address is valid.
-		$vs_confirmation_key = md5(mcrypt_create_iv(24, MCRYPT_DEV_URANDOM));
+		if(function_exists('mcrypt_create_iv')) {
+			$vs_confirmation_key = md5(mcrypt_create_iv(24, MCRYPT_DEV_URANDOM));
+		} else {
+			$vs_confirmation_key = md5(uniqid(mt_rand(), true));
+		}
+
 		$this->set("confirmation_key", $vs_confirmation_key);
 
 		try {
