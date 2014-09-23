@@ -1457,9 +1457,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				$vs_key = $this->getAppDatamodel()->getTablePrimaryKeyName($vs_context);
 			} else { // this table, i.e. hierarchy context switch
 				$vs_key = $t_instance->primaryKey();
+				$vn_new_table_num = $pn_table_num;
 			}
 
-			$o_log->logInfo(_t("Initiating context switch to '%1' for mapping ID %2 and record ID %3. The processor now tries to find matching records for the switch and calls himself for each of those items.", $vs_context, $pn_item_id, $pn_record_id));
+			$o_log->logInfo(_t("Initiating context switch to '%1' for mapping ID %2 and record ID %3. The processor now tries to find matching records for the switch and calls itself for each of those items.", $vs_context, $pn_item_id, $pn_record_id));
 
 			switch($vs_context){
 				case 'children':
@@ -1492,6 +1493,21 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					$va_related = array();
 					foreach(array_unique($va_set_ids) as $vn_pk){
 						$va_related[] = array($vs_key => intval($vn_pk));
+					}
+					break;
+				case 'ca_list_items.firstLevel':
+					if($t_instance->tableName() == 'ca_lists') {
+						$o_dm = Datamodel::load();
+						$va_related = array();
+						$va_items_legacy_format = $t_instance->getListItemsAsHierarchy(null,array('maxLevels' => 1, 'dontIncludeRoot' => true));
+						$vn_new_table_num = $o_dm->getTableNum('ca_list_items');
+						$vs_key = 'item_id';
+						foreach($va_items_legacy_format as $va_item_legacy_format) {
+							$va_related[$va_item_legacy_format['NODE']['item_id']] = $va_item_legacy_format['NODE'];
+						}
+						break;
+					} else {
+						return array();
 					}
 					break;
 				default:
