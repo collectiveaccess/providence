@@ -160,17 +160,23 @@ table.attributeListItem {
 .formSettings {
 	border: 1px solid $white-dark;
 }
-
-#idno_prefix {
-	height: 1.8em;
+#idno_year,
+#idno_job_number,
+#idno_assignment_number,
+#idno_analysis_number{
 	font-size: 1em;
-	width: 60px
+	width: 40px !important;
 }
-#idno_object_number {
+#idno_prefix{
+	font-size: 1em;
+	width: 60px !important;
+}
+#idno_object_number{
 	width: 180px !important;
 	margin-left: 6px;
-	margin-right: 3px
+	margin-right: 3px;
 }
+#idno_serial_number,
 #idno_suffix {
 	width: 80px !important;
 	margin-left: 3px;
