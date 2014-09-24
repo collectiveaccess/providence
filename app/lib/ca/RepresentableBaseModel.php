@@ -85,7 +85,7 @@
 
 			$o_db = $this->getDb();
 			
-			if (!($vs_linking_table = $this->_getRepresentationRelationshipTableName())) { return null; }
+			if (!($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($this->tableName()))) { return null; }
 			$vs_pk = $this->primaryKey();
 			$vs_limit_sql = '';
 			if ($pn_limit > 0) {
@@ -114,7 +114,7 @@
 			$t_rep = new ca_object_representations();
 			
 			if($AUTH_CURRENT_USER_ID) {
-				$va_can_read = caCanRead($AUTH_CURRENT_USER_ID, 'ca_object_representations', $qr_reps->getAllFieldValues('representation_id'));
+				$va_can_read = caCanRead($AUTH_CURRENT_USER_ID, 'ca_object_representations', $qr_reps->getAllFieldValues('representation_id'), null, array('returnAsArray' => true));
 			} else {
 				$va_can_read = $qr_reps->getAllFieldValues('representation_id');
 			}
@@ -122,7 +122,7 @@
 			$qr_reps->seek(0);
 			while($qr_reps->nextRow()) {
 				$vn_rep_id = $qr_reps->get('representation_id');
-
+				
 				if (!in_array($vn_rep_id, $va_can_read)) { continue; }
 			
 				$va_tmp = $qr_reps->getRow();
@@ -265,7 +265,7 @@
 				$vs_access_sql = '';
 			}
 			
-			if (!($vs_linking_table = $this->_getRepresentationRelationshipTableName())) { return null; }
+			if (!($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($this->tableName()))) { return null; }
 			$vs_pk = $this->primaryKey();
 		
 			$o_db = $this->getDb();
@@ -321,7 +321,7 @@
 				$vs_access_sql = '';
 			}
 			
-			if (!($vs_linking_table = $this->_getRepresentationRelationshipTableName())) { return null; }
+			if (!($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($this->tableName()))) { return null; }
 			$vs_pk = $this->primaryKey();
 		
 			$o_db = $this->getDb();
@@ -967,7 +967,7 @@
 			$o_db = $this->getDb();
 			
 			
-			if (!($vs_linking_table = $this->_getRepresentationRelationshipTableName())) { return null; }
+			if (!($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($this->tableName()))) { return null; }
 			$vs_pk = $this->primaryKey();
 		
 			$qr_res = $o_db->query("
@@ -1014,7 +1014,7 @@
 			}
 			$o_db = $this->getDb();
 			
-			if (!($vs_linking_table = $this->_getRepresentationRelationshipTableName())) { return null; }
+			if (!($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($this->tableName()))) { return null; }
 			$vs_pk = $this->primaryKey();
 		
 			$qr_res = $o_db->query("
@@ -1036,9 +1036,9 @@
 		/**
 		 *
 		 */
-		private function _getRepresentationRelationshipTableName() {
+		static public function getRepresentationRelationshipTableName($ps_table_name) {
 			$o_dm = Datamodel::load();
-			$va_path = $o_dm->getPath($this->tableName(), 'ca_object_representations');
+			$va_path = $o_dm->getPath($ps_table_name, 'ca_object_representations');
 			if (!is_array($va_path) || (sizeof($va_path) != 3)) { return null; }
 			$va_path = array_keys($va_path);
 			return $va_path[1];
@@ -1056,4 +1056,3 @@
 		}
 		# ------------------------------------------------------
 	}
-?>

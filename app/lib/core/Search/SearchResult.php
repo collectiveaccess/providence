@@ -135,6 +135,10 @@ class SearchResult extends BaseObject {
 		$this->errors = array();
 	}
 	# ------------------------------------------------------------------
+	public function getDb() {
+		return $this->opo_db;
+	}
+	# ------------------------------------------------------------------
 	public function tableNum() {
 		return $this->opn_table_num;
 	}
@@ -298,7 +302,7 @@ class SearchResult extends BaseObject {
 		if(isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_instance->hasField('access')) {
 			$vs_criteria_sql .= " AND ({$ps_tablename}.access IN (".join(",", $pa_options['checkAccess']) ."))";	
 		}
-		if(isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_instance->hasField('access')) {
+		if(isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $this->opo_subject_instance->hasField('access')) {
 			$vs_criteria_sql .= " AND ({$this->ops_table_name}.access IN (".join(",", $pa_options['checkAccess']) ."))";	
 		}
 	
@@ -853,10 +857,10 @@ class SearchResult extends BaseObject {
 								foreach($va_ids as $vn_id) {
 									// TODO: This is too slow
 									if($t_instance->load($vn_id)) {
-										$va_vals = $t_instance->get($vs_field_spec.".preferred_labels", array_merge($pa_options, array('returnAsArray' => true)));
-									
+										$va_vals = $t_instance->get($vs_field_spec, array_merge($pa_options, array('returnAsArray' => true)));
+										if (is_array($va_vals)) { $va_vals = array_reverse($va_vals); }
 										// Add/replace hierarchy name
-										if (in_array($t_instance->getProperty('HIERARCHY_TYPE'), array(__CA_HIER_TYPE_MULTI_MONO__, __CA_HIER_TYPE_ADHOC_MONO__)) &&  $t_instance->getHierarchyName()) {
+										if (($t_instance->getProperty('HIERARCHY_TYPE') == __CA_HIER_TYPE_MULTI_MONO__) &&  $t_instance->getHierarchyName()) {
 											$vn_first_key = array_shift(array_keys($va_vals));
 											if ($vb_return_all_locales) {
 												$va_vals[$vn_first_key] = array(0 => array($t_instance->getHierarchyName()));
@@ -923,7 +927,7 @@ class SearchResult extends BaseObject {
 // Return attribute values for primary table 
 //
 			
-			if ($t_element = $t_instance->_getElementInstance($va_path_components['field_name'])) {
+			if ($va_path_components['field_name'] && ($t_element = $t_instance->_getElementInstance($va_path_components['field_name']))) {
 				$vn_element_id = $t_element->getPrimaryKey();
 			} else {
 				$vn_element_id = null;

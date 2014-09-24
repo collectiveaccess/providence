@@ -1217,6 +1217,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 				if ($t_item->getPrimaryKey()) {
 					
 					$vn_set_table_num = $t_item->get('table_num');
+					$vs_set_table_name = $o_dm->getTableName($vn_set_table_num);
 					$vs_buf .= "<strong>"._t("Type of content")."</strong>: ".caGetTableDisplayName($vn_set_table_num)."<br/>\n";
 					
 					$vs_buf .= "</div>\n";
@@ -1230,6 +1231,29 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 				$t_user = new ca_users(($vn_user_id = $t_item->get('user_id')) ? $vn_user_id : $po_view->request->getUserID());
 				if ($t_user->getPrimaryKey()) {
 					$vs_buf .= "<div><strong>"._t('Owner')."</strong>: ".$t_user->get('fname').' '.$t_user->get('lname')."</div>\n";
+				}
+
+				if($po_view->request->user->canDoAction('can_export_'.$vs_set_table_name) && $t_item->getPrimaryKey() && (sizeof(ca_data_exporters::getExporters($vn_set_table_num))>0)) {
+					$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" id="caExportItemButton">';
+
+					$vs_buf .= _t('Export this set of records')."&nbsp; ";
+					$vs_buf .= "<a class='button' onclick='jQuery(\"#exporterFormList\").show();' style='text-align:right;' href='#'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__)."</a>";
+
+					$vs_buf .= caFormTag($po_view->request, 'ExportData', 'caExportForm', 'manage/MetadataExport', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+					$vs_buf .= "<div id='exporterFormList'>";
+					$vs_buf .= ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $vn_set_table_num, array('id' => 'caExporterList'),array('width' => '135px'));
+					$vs_buf .= caHTMLHiddenInput('set_id', array('value' => $t_item->getPrimaryKey()));
+					$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExportForm");
+					$vs_buf .= "</div>\n";
+					$vs_buf .= "</form>";
+
+					$vs_buf .= "</div>";
+
+					$vs_buf .= "<script type='text/javascript'>";
+					$vs_buf .= "jQuery(document).ready(function() {";
+					$vs_buf .= "jQuery(\"#exporterFormList\").hide();";
+					$vs_buf .= "});";
+					$vs_buf .= "</script>";
 				}
 			}
 			
