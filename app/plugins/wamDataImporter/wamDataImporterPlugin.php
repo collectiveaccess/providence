@@ -267,9 +267,6 @@ class wamDataImporterPlugin extends BaseApplicationPlugin {
 						}
 					}
 					break;
-				case 'conservationAssignments':
-					caDebug($pa_table_content_tree, 'table_content', TRUE);
-					break;
 				default;
 					//noop
 			}
