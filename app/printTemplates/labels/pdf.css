@@ -7,9 +7,12 @@
 .imageTiny { width: 72px; height: 72px; float: left; margin: 0 5px 0 0; border-radius: 5px;}
 .imageTinyPlaceholder { width: 72px; height: 72px; background-color: #eee; float: left; margin: 0 5px 0 0; border-radius: 5px;}
 
-.titleText { font: "arial, helvetica, sans-serif"; font-weight: bold; font-size: 14px; }
+.titleText { font: "arial, helvetica, sans-serif"; font-weight: bold; font-size: 5px;}
 .bodyText { font: "arial, helvetica, sans-serif"; font-size: 11px; }
 .smallText { font: "arial, helvetica, sans-serif"; font-size: 9px; }
+
+
+.labelBody { font: "arial, helvetica, sans-serif"; font-weight: bold; font-size: 5px;}
 
 
 .code128 { font: "code128"; font-size: 14px; }
@@ -17,3 +20,83 @@
 
 .pageBreak { page-break-before: always; }
 .clear { clear: both; line-height: 5px; }
+
+.labelContainer 				{ 
+	overflow: hidden;
+	display: block;
+	}
+/*Now specify the various label sizes*/
+.labelAZlarge					{	
+	width: 70mm;
+	height: 40mm;
+	}
+.labelArachnids					{	
+	width: 50mm;
+	height: 20mm;
+	}
+.labelAntropLarge				{	
+	width: 110mm;
+	height: 65mm;
+	}	
+/*Now specify the elements within the main container*/
+.labelContainer p, ul 			{ 
+	margin: 0; 
+	padding: 0; 
+	text-align: left; 
+	font-family: "arial, helvetica, sans-serif"; 
+	line-height: 1em; 
+	}
+.labelContainer .labelHeading 	{}
+.labelContainer .labelHeading p 	{ 
+	font-size: 9px; 
+	text-align: center; 
+	}
+.labelContainer .labelRegNo		{}
+.labelContainer .labelRegNo p	{ 
+	font-size: 8px; 
+	}
+.labelContainer .labelRegNo	.regNo{
+	font-weight: bold;
+	font-size:14pt;
+	line-height: 14pt;
+	} 
+.labelContainer .labelDetails	{}
+.labelContainer .labelDetails ul 	{}
+.labelContainer .labelDetails li		{ 
+	font-size: 7px; 
+	display:block; 
+	}
+.labelContainer .labelDetails li.right 	{ 
+	float:right; 
+	text-align: right; 
+	}
+.labelContainer .labelDetails li.center { 
+	font-style: italic; 
+	text-align: center; 
+	}
+/*Anthroplogy is a bit different so make the specific styles here*/
+.labelAntropLarge .labelAnthropImage {
+	width:50%;
+	max-height: 75%;
+	overflow: hidden;
+	float:left;
+	}
+.labelAntropLarge .labelAnthropDetails ul		{ 
+	margin: 0; 
+	padding: 0; 
+	text-align: left; 
+	font-family: "arial, helvetica, sans-serif"; 
+	line-height: 1em; 
+	}
+.labelAntropLarge .labelAnthropDetails li		{ 
+	font-size: 10px; 
+	display:block; 
+	}
+.labelAntropLarge .labelAnthropDetails li.right 	{ 
+	float:right; 
+	text-align: right; 
+	}
+.labelAntropLarge .labelAnthropDetails li.left 	{ 
+	float:left; 
+	text-align: left; 
+	}
