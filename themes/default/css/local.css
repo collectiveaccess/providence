@@ -40,7 +40,7 @@ li.sfHover > a.sf-menu-selected:link, li.sfHover > a.sf-menu-selected:visited {
   font-family: inherit; }
 
 #main {
-  background: #f0f0f0 url(http://museum.wa.gov.au/sites/all/themes/wamuseumv3/style/build/images/backgrounds/escheresque.png) 0 0 repeat;
+  background: #f0f0f0 url(images/escheresque.png) 0 0 repeat;
   background-attachment: fixed; }
 
 #mainContent {
@@ -559,8 +559,8 @@ div#caColorbox {
 
 @font-face {
   font-family: 'Glyphicons Halflings';
-  src: url("http://museum.wa.gov.au/sites/all/themes/wamuseumv3/style/build/fonts/glyphicons-halflings-regular.eot");
-  src: url("http://museum.wa.gov.au/sites/all/themes/wamuseumv3/style/build/fonts/glyphicons-halflings-regular.eot?#iefix") format("embedded-opentype"), url("http://museum.wa.gov.au/sites/all/themes/wamuseumv3/style/build/fonts/glyphicons-halflings-regular.woff") format("woff"), url("http://museum.wa.gov.au/sites/all/themes/wamuseumv3/style/build/fonts/glyphicons-halflings-regular.ttf") format("truetype"), url("http://museum.wa.gov.au/sites/all/themes/wamuseumv3/style/fonts/glyphicons-halflings-regular.svg#glyphicons-halflingsregular") format("svg"); }
+  src: url("fonts/glyphicons-halflings-regular.eot");
+  src: url("fonts/glyphicons-halflings-regular.eot?#iefix") format("embedded-opentype"), url("fonts/glyphicons-halflings-regular.woff") format("woff"), url("fonts/glyphicons-halflings-regular.ttf") format("truetype"), url("fonts/glyphicons-halflings-regular.svg#glyphicons-halflingsregular") format("svg"); }
 .glyphicon {
   position: relative;
   top: 1px;
@@ -1283,16 +1283,23 @@ table.attributeListItem {
 .formSettings {
   border: 1px solid #e6e6e6; }
 
-#idno_prefix {
-  height: 1.8em;
+#idno_year,
+#idno_job_number,
+#idno_assignment_number,
+#idno_analysis_number {
   font-size: 1em;
-  width: 60px; }
+  width: 40px !important; }
+
+#idno_prefix {
+  font-size: 1em;
+  width: 60px !important; }
 
 #idno_object_number {
   width: 180px !important;
   margin-left: 6px;
   margin-right: 3px; }
 
+#idno_serial_number,
 #idno_suffix {
   width: 80px !important;
   margin-left: 3px; }
