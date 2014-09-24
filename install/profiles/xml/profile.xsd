@@ -38,6 +38,27 @@
 		</xs:restriction>
 	</xs:simpleType>
 
+	<xs:simpleType name="listItemCodeType">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[\p{L}0-9_]+"/>
+			<xs:minLength value="1"/>
+			<xs:maxLength value="255"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="nillableListItemCodeType">
+		<xs:union>
+			<xs:simpleType>
+				<xs:restriction base='xs:string'>
+					<xs:length value="0"/>
+					<xs:whiteSpace value="collapse"/>
+				</xs:restriction>
+			</xs:simpleType>
+			<xs:simpleType>
+				<xs:restriction base='listItemCodeType'>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:union>
+	</xs:simpleType>
 	<xs:simpleType name="elementCodeType">
 		<xs:restriction base="xs:string">
 			<xs:pattern value="[\p{L}0-9_]+"/>
@@ -126,6 +147,7 @@
 					<xs:sequence>
 						<xs:element name="name_singular" type="stringRequired" minOccurs="1"	maxOccurs="1"/>
 						<xs:element name="name_plural" type="stringRequired" minOccurs="1" maxOccurs="1"/>
+						<xs:element name="description" type="xs:string" minOccurs="0" maxOccurs="1"/>
 					</xs:sequence>
 					<xs:attribute name="locale" type="localeType" use="required"/>
 					<xs:attribute name="preferred" type="booleanType" use="required"/>
@@ -245,14 +267,14 @@
 			</xs:element>
 			<xs:element name="items" type="listItems" minOccurs="0" maxOccurs="1"/>
 		</xs:sequence>
-		<xs:attribute name="idno" type="codeType" use="required"/>
+		<xs:attribute name="idno" type="listItemCodeType" use="required"/>
 		<xs:attribute name="status" type="xs:integer" use="optional"/>
 		<xs:attribute name="access" type="xs:integer" use="optional"/>
 		<xs:attribute name="rank" type="xs:integer" use="optional"/>
 		<xs:attribute name="enabled" type="booleanType" use="required"/>
 		<xs:attribute name="default" type="booleanType" use="required"/>
 		<xs:attribute name="value" type="xs:string" use="optional"/>
-		<xs:attribute name="type" type="codeType" use="optional"/>
+		<xs:attribute name="type" type="listItemCodeType" use="optional"/>
 	</xs:complexType>
 
 	<xs:complexType name="metadataElement">
@@ -286,7 +308,7 @@
 		</xs:sequence>
 		<xs:attribute name="code" type="elementCodeType" use="required"/>
 		<xs:attribute name="datatype" type="datatypeList" use="required"/>
-		<xs:attribute name="list" type="xs:string" use="optional"/>
+		<xs:attribute name="list" type="codeType" use="optional"/>
 	</xs:complexType>
 
 	<xs:complexType name="metadataSubElement">
@@ -320,7 +342,7 @@
 		</xs:sequence>
 		<xs:attribute name="code" type="elementCodeType" use="required"/>
 		<xs:attribute name="datatype" type="datatypeList" use="required"/>
-		<xs:attribute name="list" type="xs:string" use="optional"/>
+		<xs:attribute name="list" type="codeType" use="optional"/>
 	</xs:complexType>
 
 	<xs:complexType name="typeRestrictions">
@@ -330,7 +352,7 @@
 					<xs:sequence>
 						<xs:element name="table" type="xs:string" minOccurs="1"
 							maxOccurs="unbounded"/>
-						<xs:element name="type" type="xs:string" minOccurs="0" maxOccurs="1"/>
+						<xs:element name="type" minOccurs="0" type="nillableListItemCodeType" maxOccurs="1" nillable="true"/>
 						<xs:element name="includeSubtypes" type="xs:string" minOccurs="0" maxOccurs="1"/>
 						<xs:element name="settings" minOccurs="0" maxOccurs="1">
 							<xs:complexType>
@@ -369,7 +391,7 @@
 											<xs:simpleContent>
 												<xs:extension base="xs:string">
 												<xs:attribute name="code" type="xs:string" use="optional"/>
-												<xs:attribute name="type" type="xs:string" use="required"/>
+												<xs:attribute name="type" type="listItemCodeType" use="required"/>
 												</xs:extension>
 											</xs:simpleContent>
 										</xs:complexType>
@@ -380,7 +402,7 @@
 						<xs:element name="bundlePlacements" type="bundlePlacements" minOccurs="1"
 							maxOccurs="1"/>
 					</xs:sequence>
-					<xs:attribute name="idno" type="codeType" use="required"/>
+					<xs:attribute name="idno" type="listItemCodeType" use="required"/>
 					<xs:attribute name="default" type="booleanType" use="required"/>
 				</xs:complexType>
 			</xs:element>
@@ -460,8 +482,8 @@
 					<xs:sequence>
 						<xs:element name="labels" type="relationshipTypeLabels" minOccurs="1"
 							maxOccurs="1"/>
-						<xs:element name="subTypeLeft" type="xs:string" minOccurs="0" maxOccurs="1"/>
-						<xs:element name="subTypeRight" type="xs:string" minOccurs="0" maxOccurs="1"/>
+						<xs:element name="subTypeLeft" type="nillableListItemCodeType" minOccurs="0" maxOccurs="1" nillable="true"/>
+						<xs:element name="subTypeRight" type="nillableListItemCodeType" minOccurs="0" maxOccurs="1" nillable="true"/>
 						<xs:element name="types" type="relationshipTypes" minOccurs="0"
 							maxOccurs="1"/>
 					</xs:sequence>
@@ -559,8 +581,8 @@
 									          <xs:complexType>
 									            <xs:simpleContent>
 									              <xs:extension base="xs:string">
-									                <xs:attribute name="code" type="xs:string" use="optional"/>
-									                <xs:attribute name="type" type="xs:string" use="required"/>
+									                <xs:attribute name="code" type="codeType" use="optional"/>
+									                <xs:attribute name="type" type="listItemCodeType" use="required"/>
 									              </xs:extension>
 									            </xs:simpleContent>
 									          </xs:complexType>
@@ -601,7 +623,7 @@
 											minOccurs="1" maxOccurs="1"/>
 									</xs:sequence>
 									<xs:attribute name="code" type="codeType" use="required"/>
-									<xs:attribute name="type" type="xs:string" use="required"/>
+									<xs:attribute name="type" type="listItemCodeType" use="required"/>
 								</xs:complexType>
 							</xs:element>
 						</xs:sequence>
@@ -671,7 +693,7 @@
 													<xs:element name="permission" minOccurs="1" maxOccurs="unbounded">
 														<xs:complexType>
 															<xs:attribute name="table" type="xs:string" use="required"/>
-															<xs:attribute name="type" type="xs:string" use="required"/>
+															<xs:attribute name="type" type="listItemCodeType" use="required"/>
 															<xs:attribute name="access" type="acPermissionList" use="required"/>
 														</xs:complexType>
 													</xs:element>
@@ -768,7 +790,7 @@
 														<xs:simpleContent>
 															<xs:extension base="xs:string">
 															<xs:attribute name="code" type="xs:string" use="optional"/>
-															<xs:attribute name="type" type="xs:string" use="required"/>
+															<xs:attribute name="type" type="listItemCodeType" use="required"/>
 															</xs:extension>
 														</xs:simpleContent>
 													</xs:complexType>
@@ -810,7 +832,7 @@
 
 									</xs:sequence>
 									<xs:attribute name="code" type="codeType" use="required"/>
-									<xs:attribute name="type" type="xs:string" use="required"/>
+									<xs:attribute name="type" type="listItemCodeType" use="required"/>
 									<xs:attribute name="system" type="booleanType" use="required"/>
 
 								</xs:complexType>
@@ -881,7 +903,7 @@
 
 									</xs:sequence>
 									<xs:attribute name="code" type="codeType" use="required"/>
-									<xs:attribute name="type" type="xs:string" use="required"/>
+									<xs:attribute name="type" type="listItemCodeType" use="required"/>
 									<xs:attribute name="system" type="booleanType" use="required"/>
 
 								</xs:complexType>
