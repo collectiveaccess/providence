@@ -693,7 +693,7 @@
 													<xs:element name="permission" minOccurs="1" maxOccurs="unbounded">
 														<xs:complexType>
 															<xs:attribute name="table" type="xs:string" use="required"/>
-															<xs:attribute name="type" type="listItemCodeType" use="required"/>
+															<xs:attribute name="type" type="xs:string" use="required"/>
 															<xs:attribute name="access" type="acPermissionList" use="required"/>
 														</xs:complexType>
 													</xs:element>
