@@ -984,7 +984,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * Add a list of row_ids to the currently loaded set with minimal overhead.
 	 * Note: this method doesn't check access rights for the set
 	 *
-	 * @param int $pa_row_ids
+	 * @param array $pa_row_ids
 	 * @return int Returns item_id of newly created set item entry. The item_id is a unique identifier for the row_id in the city at the specified position (rank). It is *not* the same as the row_id.
 	 */
 	public function addItems($pa_row_ids) {
@@ -999,13 +999,13 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$va_item_values = array();
 		$va_row_ids = array_unique($pa_row_ids);
 		foreach($va_row_ids as $vn_row_id) {
-			$va_item_values[] = "(".(int)$vn_set_id.",".(int)$vn_table_num.",".(int)$vn_row_id.",".(int)$vn_type_id.")";
+			$va_item_values[] = "(".(int)$vn_set_id.",".(int)$vn_table_num.",".(int)$vn_row_id.",".(int)$vn_type_id.", '')";
 		}
 		
 		if(sizeof($va_item_values)) {
 			// Quickly create set item links
 			// Peforming this with a single direct scales much much better than repeatedly populating a model and calling insert()
-			$this->getDb()->query("INSERT INTO ca_set_items (set_id, table_num, row_id, type_id) VALUES ".join(",", $va_item_values));
+			$this->getDb()->query("INSERT INTO ca_set_items (set_id, table_num, row_id, type_id, vars) VALUES ".join(",", $va_item_values));
 			if ($this->getDb()->numErrors()) {
 				$this->errors = $this->getDb()->errors;
 				return false;

@@ -891,6 +891,10 @@
 				
 				$this->view->setVar('set_id', $t_set->getPrimaryKey());
 				$this->view->setVar('t_set', $t_set);
+
+				if ($t_set->numErrors()) {
+					$this->view->setVar('error', join("; ", $t_set->getErrors()));
+				}
 			}
  		
 			$this->view->setVar('set_name', $vs_set_name);
