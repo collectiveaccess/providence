@@ -69,7 +69,10 @@ class WamDataImporterPluginIntegrationTest extends AbstractPluginIntegrationTest
 	}
 
 	public static function tearDownAfterClass() {
-		self::_cleanup();
+        self::_cleanup();
+        // re-enable plugins that were disabled by this plugin
+        ApplicationPluginManager::$s_application_plugin_manager_did_do_plugin_init = false;
+        ApplicationPluginManager::initPlugins();
 	}
 
 	public function testIdentificationOfExistingListItemBySingleExistingEntity() {
