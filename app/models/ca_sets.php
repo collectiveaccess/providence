@@ -1372,12 +1372,29 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_table->hasField('access')) {
 			$vs_access_sql = ' AND rel.access IN ('.join(',', $pa_options['checkAccess']).')';
 		}
+
+		// list items happen to have the same primary key name as set items, which leads to weird side-effects
+		// in the code below. so instead of getting rel.* we explicitly list the fields for ca_list_items and
+		// rename cli.item_id to list_item_id so that any get('item_id') calls below refer to the set item id
+		if (($t_rel_table->tableName() === 'ca_list_items')) {
+			$va_rel_field_list = array();
+			foreach($t_rel_table->getFields() as $vs_rel_field) {
+				if($vs_rel_field == $t_rel_table->primaryKey()) {
+					$va_rel_field_list[] = "rel.{$vs_rel_field} as list_{$vs_rel_field}";
+				} else {
+					$va_rel_field_list[] = "rel.{$vs_rel_field}";
+				}
+			}
+			$vs_rel_field_list_sql = join(', ', $va_rel_field_list);
+		} else {
+			$vs_rel_field_list_sql = 'rel.*';
+		}
 		
 		$qr_res = $o_db->query("
 			SELECT 
 				casi.set_id, casi.item_id, casi.row_id, casi.rank, casi.vars,
 				casil.label_id, casil.caption, casil.locale_id set_item_label_locale_id,
-				rel.*, rel_label.".$t_rel_label_table->getDisplayField()." set_item_label, rel_label.locale_id rel_locale_id
+				{$vs_rel_field_list_sql}, rel_label.".$t_rel_label_table->getDisplayField()." set_item_label, rel_label.locale_id rel_locale_id
 				{$vs_rep_select}
 			FROM ca_set_items casi
 			LEFT JOIN ca_set_item_labels AS casil ON casi.item_id = casil.item_id
@@ -1444,8 +1461,8 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 				}
 				
 				$va_row['representation_count'] = (int)$va_representation_counts[$qr_res->get('row_id')];
-			}	
-			
+			}
+
 			$va_row = array_merge($va_row, $va_labels[$qr_res->get('item_id')]);
 
 			if (isset($pa_options['returnItemAttributes']) && is_array($pa_options['returnItemAttributes']) && sizeof($pa_options['returnItemAttributes'])) {
