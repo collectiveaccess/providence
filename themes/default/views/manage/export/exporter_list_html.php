@@ -76,7 +76,7 @@ if (!$this->request->isAjax()) {
 				<th>
 					<?php _p('Last modified'); ?>
 				</th>
-				<th class="{sorter: false} list-header-nosort" style="width: 75px">&nbsp;</th>
+				<th class="{sorter: false} list-header-nosort" style="width: 20px">&nbsp;</th>
 			</tr>
 			</thead>
 			<tbody>
@@ -97,9 +97,8 @@ if (!$this->request->isAjax()) {
 					<?php print caGetLocalizedDate($va_exporter['last_modified_on'], array('dateFormat' => 'delimited')); ?>
 				</td>
 				<td>
-					<!--<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), '', 'manage', 'MetadataExport', 'Edit', array('exporter_id' => $va_exporter['exporter_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>-->
 					<?php print caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'manage', 'MetadataExport', 'Delete', array('exporter_id' => $va_exporter['exporter_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-					<?php print caNavButton($this->request, __CA_NAV_BUTTON_GO__, _t("Export data"), '', 'manage', 'MetadataExport', 'Run', array('exporter_id' => $va_exporter['exporter_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?php /*print caNavButton($this->request, __CA_NAV_BUTTON_GO__, _t("Export data"), '', 'manage', 'MetadataExport', 'Run', array('exporter_id' => $va_exporter['exporter_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true));*/ ?>
 				</td>
 			</tr>
 <?php

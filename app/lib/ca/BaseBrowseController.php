@@ -90,8 +90,8 @@
  			$pb_dont_render_view = (isset($pa_options['dontRenderView']) && (bool)$pa_options['dontRenderView']) ? true : false;
  			
  			parent::Index($pa_options);
- 			JavascriptLoadManager::register('browsable');
-			JavascriptLoadManager::register('hierBrowser');
+ 			AssetLoadManager::register('browsable');
+			AssetLoadManager::register('hierBrowser');
  			
  			$va_access_values = caGetUserAccessValues($this->request);
  			
@@ -340,7 +340,11 @@
  				case 'EXPORT':
  					$this->_genExport($vo_result, $this->request->getParameter("export_format", pString), _t('Browse'), _t('Browse'));
  					break;
- 				# ------------------------------------
+				# ------------------------------------
+				case 'EXPORTWITHMAPPING':
+					$this->_genExportWithMapping($vo_result, $this->request->getParameter("exporter_id", pInteger));
+					break;
+				# ------------------------------------
  				case 'HTML': 
 				default:
 					// generate type menu and type value list

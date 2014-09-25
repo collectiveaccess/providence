@@ -1231,6 +1231,29 @@ function caFileIsIncludable($ps_file) {
 		return $result.$newLine;
 	}
 	# ---------------------------------------
+	function caFormatXML($ps_xml){  
+		require_once(__CA_LIB_DIR__.'/core/Parsers/XMLFormatter.php');
+
+		$va_options = array(
+			"paddingString" => " ",
+			"paddingMultiplier" => 2,
+			"wordwrapCData" => false,
+		);
+
+		$vr_input = fopen('data://text/plain,'.$ps_xml, 'r');
+		$vr_output = fopen('php://temp', 'w+');
+
+		$vo_formatter = new XML_Formatter($vr_input, $vr_output, $va_options);
+
+		try {
+			$vo_formatter->format();
+			rewind($vr_output);
+			return stream_get_contents($vr_output)."\n";
+		} catch (EXception $e) {
+			return false;
+		}
+	}
+	# ---------------------------------------
 	/**
 	  * Parses natural language date and returns pair of Unix timestamps defining date/time range
 	  *
@@ -1535,9 +1558,17 @@ function caFileIsIncludable($ps_file) {
 		if ($pn_max_length < 1) { $pn_max_length = 30; }
 		if (mb_strlen($ps_text) > $pn_max_length) {
 			if (strtolower($ps_side == 'end')) {
-				$ps_text = "...".mb_substr($ps_text, mb_strlen($ps_text) - $pn_max_length + 3);
+				$vs_txt = mb_substr($ps_text, mb_strlen($ps_text) - $pn_max_length + 3);
+				if (preg_match("!<[^>]*$!", $vs_txt, $va_matches)) {
+					$vs_txt = preg_replace("!{$va_matches[0]}$!", '', $vs_txt);
+				}
+				$ps_text = "...{$vs_txt}";
 			} else {
-				$ps_text = mb_substr($ps_text, 0, ($pn_max_length - 3))."...";
+				$vs_txt = mb_substr($ps_text, 0, ($pn_max_length - 3));
+				if (preg_match("!(<[^>]*)$!", $vs_txt, $va_matches)) {
+					$vs_txt = preg_replace("!{$va_matches[0]}$!", '', $vs_txt);
+				}
+				$ps_text = "{$vs_txt}...";
 			}
 		}
 		return $ps_text;
@@ -1670,7 +1701,7 @@ function caFileIsIncludable($ps_file) {
 
 		foreach($pa_array as $vn_k => $vm_v) {
 			if (is_array($vm_v)) {
-				$pa_array[$vn_k] = caSanitizeArray($vm_v);
+				$pa_array[$vn_k] = caSanitizeArray($vm_v, $pa_options);
 			} else {
 				if($vb_allow_stdclass && is_object($vm_v) && (get_class($vm_v) == 'stdClass')){
 					continue;

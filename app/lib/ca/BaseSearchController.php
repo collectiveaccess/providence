@@ -94,8 +94,8 @@
  			}
  			parent::Index($pa_options);
  			
- 			JavascriptLoadManager::register('hierBrowser');
- 			JavascriptLoadManager::register('browsable');	// need this to support browse panel when filtering/refining search results
+ 			AssetLoadManager::register('hierBrowser');
+ 			AssetLoadManager::register('browsable');	// need this to support browse panel when filtering/refining search results
  			$t_model = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
  			$va_access_values = caGetUserAccessValues($this->request);
  			
@@ -322,6 +322,10 @@
  				case 'EXPORT':
  					$this->_genExport($vo_result, $this->request->getParameter("export_format", pString), $vs_search, $vs_search);
  					break;
+				# ------------------------------------
+				case 'EXPORTWITHMAPPING':
+					$this->_genExportWithMapping($vo_result, $this->request->getParameter("exporter_id", pInteger));
+					break;
  				# ------------------------------------
  				case 'HTML': 
 				default:
@@ -331,7 +335,7 @@
 					}
 					if ($this->opb_uses_hierarchy_browser) {
 						//if (sizeof($t_model->getHierarchyList()) > 0) {
-							JavascriptLoadManager::register('hierBrowser');
+							AssetLoadManager::register('hierBrowser');
 							
 							// only for interfaces that use the hierarchy browser
 							$t_list = new ca_lists();

@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  
- 	JavascriptLoadManager::register('setEditorUI');
+ 	AssetLoadManager::register('setEditorUI');
  
 	$vs_id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$va_items 				= $this->getVar('items');

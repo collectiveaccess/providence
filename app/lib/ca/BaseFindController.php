@@ -42,6 +42,7 @@
 	require_once(__CA_LIB_DIR__."/core/AccessRestrictions.php");
  	require_once(__CA_LIB_DIR__.'/ca/Visualizer.php');
  	require_once(__CA_LIB_DIR__.'/core/Parsers/dompdf/dompdf_config.inc.php');
+	require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
  	
 	class BaseFindController extends ActionController {
 		# ------------------------------------------------------------------
@@ -61,8 +62,8 @@
 		 *
 		 */
 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
-			JavascriptLoadManager::register("timelineJS");
- 			JavascriptLoadManager::register('panel');
+			AssetLoadManager::register("timelineJS");
+ 			AssetLoadManager::register('panel');
  			
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			$this->opo_datamodel = Datamodel::load();
@@ -81,7 +82,6 @@
 		 * Set up basic "find" action
 		 */
  		public function Index($pa_options=null) {
-            
  			$po_search = isset($pa_options['search']) ? $pa_options['search'] : null;
  			
  			$t_model 				= $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
@@ -135,7 +135,7 @@
 							'inlineEditingListValues' => $va_display_item['inlineEditingListValues']
 						));
 						
-						JavascriptLoadManager::register('panel');
+						AssetLoadManager::register('panel');
 					}
 				}
 			}
@@ -169,7 +169,7 @@
 					);
 				}
 				if ($vs_view == 'editable') {
-					JavascriptLoadManager::register('panel');
+					AssetLoadManager::register('panel');
 				}
 			}
 			
@@ -226,9 +226,17 @@
 			}
  			$this->view->setVar('display_list', $va_display_list);
  			
- 			// Get current display list
+ 			// Default display is always there
  			$va_displays = array('0' => _t('Default'));
- 			foreach(caExtractValuesByUserLocale($t_display->getBundleDisplays(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__))) as $va_display) {
+
+			// Set display options
+			$va_display_options = array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__);
+			if($vn_type_id = $this->opo_result_context->getTypeRestriction($vb_type)) { // occurrence searches are inherently type-restricted
+				$va_display_options['restrictToTypes'] = array($vn_type_id);
+			}
+
+			// Get current display list
+ 			foreach(caExtractValuesByUserLocale($t_display->getBundleDisplays($va_display_options)) as $va_display) {
  				$va_displays[$va_display['display_id']] = $va_display['name'];
  			}
  			
@@ -265,6 +273,12 @@
 			
 			$this->view->setVar('export_formats', $va_export_options);
 			$this->view->setVar('current_export_format', $this->opo_result_context->getParameter('last_export_type'));
+
+			// export mapping list
+			if($this->request->user->canDoAction('can_batch_export_metadata') && $this->request->user->canDoAction('can_export_'.$this->ops_tablename)) {
+				$this->view->setVar('exporter_list', ca_data_exporters::getExporters($vn_table_num));
+				$this->view->setVar('find_type', $this->ops_find_type);
+			}
 			
  			//
  			// Available sets
@@ -661,6 +675,45 @@
 		}
 		# -------------------------------------------------------
 		/**
+		 * Action to trigger export of current find result set
+		 */
+		public function exportWithMapping() {
+			set_time_limit(7200);
+			return $this->Index(array('output_format' => 'EXPORTWITHMAPPING'));
+		}
+		# -------------------------------------------------------
+		protected function _genExportWithMapping($po_result, $pn_exporter_id) {
+			// Can user batch export?
+			if (!$this->request->user->canDoAction('can_batch_export_metadata')) {
+				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3440?r='.urlencode($this->request->getFullUrlPath()));
+				return;
+			}
+
+			// Can user export records of this type?
+			if (!$this->request->user->canDoAction('can_export_'.$this->ops_tablename)) {
+				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3430?r='.urlencode($this->request->getFullUrlPath()));
+				return;
+			}
+
+			$t_exporter = new ca_data_exporters($pn_exporter_id);
+
+			if(!($t_exporter->getPrimaryKey()>0)) {
+				$this->postError(3420, _t("Could not load export mapping"), "BaseFindController->_genExportWithMapping()");
+				return;
+			}
+
+			$vs_tmp_file = tempnam(caGetTempDirPath(), 'export');
+			ca_data_exporters::exportRecordsFromSearchResult($t_exporter->get('exporter_code'), $po_result, $vs_tmp_file);
+
+			header('Content-Type: '.$t_exporter->getContentType().'; charset=UTF-8');
+			header('Content-Disposition: attachment; filename="batch_export.'.$t_exporter->getFileExtension().'"');
+			header('Content-Transfer-Encoding: binary');
+			readfile($vs_tmp_file);
+			@unlink($vs_tmp_file);
+			exit();
+		}
+		# -------------------------------------------------------
+		/**
 		 * Generate  export file of current result
 		 */
 		protected function _genExport($po_result, $ps_output_type, $ps_output_filename, $ps_title=null) {
@@ -689,7 +742,6 @@
 						$vs_file_extension = 'txt';
 						$vs_mimetype = "text/plain";
 					default:
-						// TODO add exporter code here
 						break;
 				}
 
@@ -749,10 +801,7 @@
 					$o_dompdf->set_base_path(caGetPrintTemplateDirectoryPath('results'));
 					$o_dompdf->render();
 					$o_dompdf->stream(caGetOption('filename', $va_template_info, 'export_results.pdf'));
-		
-					$vb_printed_properly = true;
 				} catch (Exception $e) {
-					$vb_printed_properly = false;
 					$this->postError(3100, _t("Could not generate PDF"),"BaseFindController->PrintSummary()");
 				}
 				return;			
@@ -842,6 +891,10 @@
 				
 				$this->view->setVar('set_id', $t_set->getPrimaryKey());
 				$this->view->setVar('t_set', $t_set);
+
+				if ($t_set->numErrors()) {
+					$this->view->setVar('error', join("; ", $t_set->getErrors()));
+				}
 			}
  		
 			$this->view->setVar('set_name', $vs_set_name);

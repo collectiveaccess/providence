@@ -987,10 +987,10 @@
 										
 										
 											$va_wheres = array();
-											if ((sizeof($va_restrict_to_relationship_types) > 0) && is_object($t_item_rel)) {
+											if ((sizeof($va_restrict_to_relationship_types) > 0) && is_object($t_item_rel) && (bool)$vn_state) {
 												$va_wheres[] = "(".$t_item_rel->tableName().".type_id IN (".join(',', $va_restrict_to_relationship_types)."))";
 											}
-											if ((sizeof($va_exclude_relationship_types) > 0) && is_object($t_item_rel)) {
+											if ((sizeof($va_exclude_relationship_types) > 0) && is_object($t_item_rel) && (bool)$vn_state) {
 												$va_wheres[] = "(".$t_item_rel->tableName().".type_id NOT IN (".join(',', $va_exclude_relationship_types)."))";
 											}
 										
@@ -1678,8 +1678,6 @@
 					}
 				}
 			} else {
-				// TODO fix!
-				$pa_options['showAllForNoCriteriaBrowse'] = true;
 				// no criteria - don't try to find anything unless configured to do so
 				$va_settings = $this->opo_ca_browse_config->getAssoc($this->ops_browse_table_name);
 				if (
@@ -1780,7 +1778,7 @@
 			$o_results = $this->getResults();
 			$va_criteria = $this->getCriteria();
 			
-			if ($o_results->numHits() > 1) {
+			if (($o_results->numHits() > 1) || !sizeof($va_criteria)) {
 				$va_facets = $this->getFacetList();
 				$va_parent_browse_params = $this->opo_ca_browse_cache->getParameters();
 				

@@ -58,7 +58,7 @@
  		}
  		# -------------------------------------------------------
  		public function Save() {
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
  			
  			if (!($t_group = $this->getGroupObject())) {
  				$this->notification->addNotification(_t("You cannot edit this group"), __NOTIFICATION_TYPE_ERROR__);	
@@ -136,7 +136,7 @@
  		}
  		# -------------------------------------------------------
  		public function ListGroups() {
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
  			$t_group = new ca_user_groups();
  			$vs_sort_field = $this->request->getParameter('sort', pString);
  			$this->view->setVar('group_list', $t_group->getGroupList('name', 'asc', $this->request->user->getUserID()));

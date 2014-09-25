@@ -1,12 +1,13 @@
 #
 # Translators:
 # manders <martin.anders@muenchen.de>, 2013-2014
+# Stefan K <stefan@whirl-i-gig.com>, 2014
 msgid ""
 msgstr ""
 "Project-Id-Version: CollectiveAccess Providence\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-08-19 07:58-0800\n"
-"PO-Revision-Date: 2014-03-20 10:28+0100\n"
+"PO-Revision-Date: 2014-08-24 21:50+0100\n"
 "Last-Translator: Stefan <stefan@whirl-i-gig.com>\n"
 "Language-Team: German (Germany) (http://www.transifex.com/projects/p/"
 "collectiveaccess-providence/language/de_DE/)\n"
@@ -1374,17 +1375,17 @@ msgstr "Allgemein"
 #: c:\providence/app/conf/navigation.conf:1948
 #: c:\providence/app/conf/user_pref_defs.conf:14
 msgid "Editing"
-msgstr ""
+msgstr "Bearbeitungsmodus"
 
 #: c:\providence/app/conf/navigation.conf:1956
 #: c:\providence/app/conf/user_pref_defs.conf:46
 msgid "Batch editing"
-msgstr ""
+msgstr "Stapelverarbeitung"
 
 #: c:\providence/app/conf/navigation.conf:1964
 #: c:\providence/app/conf/user_pref_defs.conf:63
 msgid "Quick add"
-msgstr ""
+msgstr "Schnelles Hinzufügen"
 
 #: c:\providence/app/conf/navigation.conf:1972
 #: c:\providence/app/conf/navigation.conf:3151
@@ -1402,7 +1403,7 @@ msgstr "Maßeinheiten"
 
 #: c:\providence/app/conf/navigation.conf:1988
 msgid "Duplication"
-msgstr ""
+msgstr "Duplizierung"
 
 #: c:\providence/app/conf/navigation.conf:1996
 #: c:\providence/app/conf/user_pref_defs.conf:102
@@ -1767,7 +1768,7 @@ msgstr ""
 
 #: c:\providence/app/conf/user_actions.conf:11
 msgid "Is administrator"
-msgstr "Verwalter"
+msgstr "Ist Administrator"
 
 #: c:\providence/app/conf/user_actions.conf:12
 msgid ""
@@ -1780,7 +1781,7 @@ msgstr ""
 
 #: c:\providence/app/conf/user_actions.conf:15
 msgid "Set access control"
-msgstr "Setzugangskontrolle"
+msgstr "Zugangskontrolle administrieren"
 
 #: c:\providence/app/conf/user_actions.conf:16
 msgid "Allow user to create, edit and delete user logins, roles and groups."
@@ -1790,7 +1791,7 @@ msgstr ""
 
 #: c:\providence/app/conf/user_actions.conf:19
 msgid "View logs"
-msgstr "Protokollansicht"
+msgstr "Logs einsehen"
 
 #: c:\providence/app/conf/user_actions.conf:20
 msgid "Allow user to view system logs"
@@ -2045,7 +2046,7 @@ msgstr ""
 
 #: c:\providence/app/conf/user_actions.conf:153
 msgid "Duplicate displays"
-msgstr ""
+msgstr "Displays duplizieren"
 
 #: c:\providence/app/conf/user_actions.conf:154
 msgid "Allow user to use duplicate custom data display formats"
@@ -2123,11 +2124,11 @@ msgstr ""
 
 #: c:\providence/app/conf/user_actions.conf:188
 msgid "Duplicate sets"
-msgstr ""
+msgstr "Sets duplizieren"
 
 #: c:\providence/app/conf/user_actions.conf:189
 msgid "Allow user to duplicate sets"
-msgstr ""
+msgstr "Dem Benutzer gestatten, Sets zu duplizieren"
 
 #: c:\providence/app/conf/user_actions.conf:196
 msgid "Actions allowing moderation of user generated content."
@@ -2214,11 +2215,11 @@ msgstr ""
 
 #: c:\providence/app/conf/user_actions.conf:238
 msgid "Duplicate objects"
-msgstr ""
+msgstr "Objekte duplizieren"
 
 #: c:\providence/app/conf/user_actions.conf:239
 msgid "Allow user to duplicate objects"
-msgstr ""
+msgstr "Dem Benutzer gestatten, Objekte zu duplizieren"
 
 #: c:\providence/app/conf/user_actions.conf:242
 msgid "Export objects"
@@ -2325,11 +2326,11 @@ msgstr ""
 
 #: c:\providence/app/conf/user_actions.conf:285
 msgid "Duplicate object representations"
-msgstr ""
+msgstr "Objektrepräsentationen duplizieren"
 
 #: c:\providence/app/conf/user_actions.conf:286
 msgid "Allow user to duplicate object representations"
-msgstr ""
+msgstr "Dem Benutzer gestatten, Objektrepräsentation zu duplizieren"
 
 #: c:\providence/app/conf/user_actions.conf:289
 msgid "Export object representations"
@@ -2468,7 +2469,7 @@ msgstr ""
 
 #: c:\providence/app/conf/user_actions.conf:367
 msgid "Duplicate object lots"
-msgstr ""
+msgstr "Konvolute duplizieren"
 
 #: c:\providence/app/conf/user_actions.conf:368
 msgid "Allow user to duplicate object lots"
@@ -2484,7 +2485,7 @@ msgstr ""
 
 #: c:\providence/app/conf/user_actions.conf:375
 msgid "Quick add object lots"
-msgstr ""
+msgstr "Schnelles Hinzufügen von Konvoluten"
 
 #: c:\providence/app/conf/user_actions.conf:376
 msgid ""
@@ -2575,7 +2576,7 @@ msgstr ""
 
 #: c:\providence/app/conf/user_actions.conf:426
 msgid "Quick add entities"
-msgstr ""
+msgstr "Schnelles Hinzufügen von Personen/Institutionen"
 
 #: c:\providence/app/conf/user_actions.conf:427
 msgid ""
@@ -2665,7 +2666,7 @@ msgstr ""
 
 #: c:\providence/app/conf/user_actions.conf:477
 msgid "Quick add places"
-msgstr ""
+msgstr "Schnelles Hinzufügen von Orten"
 
 #: c:\providence/app/conf/user_actions.conf:478
 msgid ""
@@ -2758,7 +2759,7 @@ msgstr ""
 
 #: c:\providence/app/conf/user_actions.conf:528
 msgid "Quick add occurrences"
-msgstr ""
+msgstr "Schnelles Hinzufügen von Vorkommnissen"
 
 #: c:\providence/app/conf/user_actions.conf:529
 msgid ""
@@ -2849,7 +2850,7 @@ msgstr ""
 
 #: c:\providence/app/conf/user_actions.conf:579
 msgid "Quick add collections"
-msgstr ""
+msgstr "Schnelles Hinzufügen von Sammlungen"
 
 #: c:\providence/app/conf/user_actions.conf:580
 msgid ""
@@ -2940,7 +2941,7 @@ msgstr ""
 
 #: c:\providence/app/conf/user_actions.conf:630
 msgid "Quick add storage locations"
-msgstr ""
+msgstr "Schnelles Hinzufügen von Standorten"
 
 #: c:\providence/app/conf/user_actions.conf:631
 msgid ""
@@ -3030,7 +3031,7 @@ msgstr ""
 
 #: c:\providence/app/conf/user_actions.conf:681
 msgid "Quick add loans"
-msgstr ""
+msgstr "Schnelles Hinzufügen von Leihen"
 
 #: c:\providence/app/conf/user_actions.conf:682
 msgid ""
@@ -3119,7 +3120,7 @@ msgstr ""
 
 #: c:\providence/app/conf/user_actions.conf:732
 msgid "Quick add movements"
-msgstr ""
+msgstr "Schnelles Hinzufügen von "
 
 #: c:\providence/app/conf/user_actions.conf:733
 msgid ""
@@ -3251,7 +3252,7 @@ msgstr ""
 
 #: c:\providence/app/conf/user_actions.conf:810
 msgid "Create lists and list items"
-msgstr "Listen und Listenaufzeichnungen erstellen"
+msgstr "Listen und Listenelemente erstellen"
 
 #: c:\providence/app/conf/user_actions.conf:811
 msgid "Allow user to create new lists"
@@ -3469,7 +3470,7 @@ msgstr ""
 
 #: c:\providence/app/conf/user_pref_defs.conf:87
 msgid "Duplication tools"
-msgstr ""
+msgstr "Duplizierungswerkzeuge"
 
 #: c:\providence/app/conf/user_pref_defs.conf:125
 msgid "User interface locale"
@@ -3595,7 +3596,7 @@ msgstr ""
 
 #: c:\providence/app/conf/user_pref_defs.conf:201
 msgid "Preferred PDF viewer"
-msgstr ""
+msgstr "Bevorzugtes PDF Anzeigeprogramm"
 
 #: c:\providence/app/conf/user_pref_defs.conf:202
 msgid "Determines technique used to display PDF files."
@@ -3603,23 +3604,25 @@ msgstr ""
 
 #: c:\providence/app/conf/user_pref_defs.conf:207
 msgid "Use system default"
-msgstr ""
+msgstr "Verwende die Standardsystemeinstellung"
 
 #: c:\providence/app/conf/user_pref_defs.conf:208
 msgid "Use document viewer interface (JPEG page previews)"
-msgstr ""
+msgstr "Verwende die Dokumentenanzeigemaske (JPEG Seitenvorschau)"
 
 #: c:\providence/app/conf/user_pref_defs.conf:209
 msgid "Use PDFJS viewer (no plugin required)"
-msgstr ""
+msgstr "Verwende das PDFJS-Anzeigeprogramm (kein Plugin nötig)"
 
 #: c:\providence/app/conf/user_pref_defs.conf:210
 msgid "Use browser PDF plugin with fallback to PDFJS"
-msgstr ""
+msgstr "Verwende das Browser-PDF-Plugin (PDFJS als Ersatzfunktion)"
 
 #: c:\providence/app/conf/user_pref_defs.conf:211
 msgid "Use browser PDF plugin with fallback to document viewer"
 msgstr ""
+"Verwende das Browser-PDF-Plugin (Dokumentenanzeigeprogramm als "
+"Ersatzfunktion)"
 
 #: c:\providence/app/conf/user_pref_defs.conf:219
 msgid "Default cataloguing locale"
@@ -3927,7 +3930,7 @@ msgstr "Nicht-metrische Maßeinheiten"
 #: c:\providence/app/conf/user_pref_defs.conf:988
 #: c:\providence/app/conf/user_pref_defs.conf:1026
 msgid "Duplicate non-preferred labels?"
-msgstr ""
+msgstr "Nicht-bevorzugte Bezeichnungen duplizieren?"
 
 #: c:\providence/app/conf/user_pref_defs.conf:542
 msgid "If checked alternate names for the object will be duplicated."
@@ -3948,7 +3951,7 @@ msgstr ""
 #: c:\providence/app/conf/user_pref_defs.conf:999
 #: c:\providence/app/conf/user_pref_defs.conf:1037
 msgid "Duplicate metadata?"
-msgstr ""
+msgstr "Metadaten duplizieren?"
 
 #: c:\providence/app/conf/user_pref_defs.conf:553
 msgid "If checked all fields in the object will be duplicated."
@@ -3966,7 +3969,7 @@ msgstr ""
 #: c:\providence/app/conf/user_pref_defs.conf:950
 #: c:\providence/app/conf/user_pref_defs.conf:1010
 msgid "Duplicate relationships?"
-msgstr ""
+msgstr "Beziehungen duplizieren?"
 
 #: c:\providence/app/conf/user_pref_defs.conf:564
 #: c:\providence/app/conf/user_pref_defs.conf:616
@@ -3980,7 +3983,7 @@ msgstr ""
 #: c:\providence/app/conf/user_pref_defs.conf:951
 #: c:\providence/app/conf/user_pref_defs.conf:1011
 msgid "Checked relationships will be duplicated."
-msgstr ""
+msgstr "Ausgewählte Beziehungen werden dupliziert."
 
 #: c:\providence/app/conf/user_pref_defs.conf:578
 #: c:\providence/app/conf/user_pref_defs.conf:628
@@ -3995,7 +3998,7 @@ msgstr ""
 
 #: c:\providence/app/conf/user_pref_defs.conf:582
 msgid "Duplicate media?"
-msgstr ""
+msgstr "Medien duplizieren?"
 
 #: c:\providence/app/conf/user_pref_defs.conf:583
 msgid "If checked all media associated with the object will be duplicated."
@@ -4133,7 +4136,7 @@ msgstr ""
 
 #: c:\providence/app/conf/user_pref_defs.conf:1048
 msgid "Duplicate items?"
-msgstr ""
+msgstr "Elemente duplizieren?"
 
 #: c:\providence/app/conf/user_pref_defs.conf:1049
 msgid "If checked all items in the set will be included in the duplicated set."
@@ -4593,7 +4596,7 @@ msgstr ""
 
 #: c:\providence/app/controllers/batch/EditorController.php:216
 msgid "Batch editing %1 %2 with set %3"
-msgstr ""
+msgstr "Stapelverarbeitung von %1 %2 mit dem Set %3"
 
 #: c:\providence/app/controllers/batch/MediaImportController.php:105
 msgid "Import all media, matching with existing records where possible"
@@ -5675,7 +5678,7 @@ msgstr ""
 
 #: c:\providence/app/helpers/displayHelpers.php:788
 msgid "Lot contains %1 object"
-msgstr "Das Lot enthält &1 Objekt"
+msgstr "Das Lot enthält %1 Objekt"
 
 #: c:\providence/app/helpers/displayHelpers.php:788
 msgid "Lot contains %1 objects"
@@ -5733,7 +5736,7 @@ msgstr ""
 #: c:\providence/app/helpers/displayHelpers.php:1088
 #: c:\providence/app/helpers/displayHelpers.php:1100
 msgid "Type of content"
-msgstr ""
+msgstr "Inhaltstyp"
 
 #: c:\providence/app/helpers/displayHelpers.php:905
 #: c:\providence/app/helpers/displayHelpers.php:1040
@@ -5742,7 +5745,7 @@ msgstr ""
 #: c:\providence/themes/default/views/manage/search_form_list_html.php:70
 #: c:\providence/themes/default/views/manage/set_list_html.php:76
 msgid "Owner"
-msgstr ""
+msgstr "Eigentümer"
 
 #: c:\providence/app/helpers/displayHelpers.php:916
 msgid "Part of set"
@@ -5792,7 +5795,7 @@ msgstr ""
 #: c:\providence/app/helpers/displayHelpers.php:1022
 #: c:\providence/app/helpers/displayHelpers.php:1048
 msgid "Number of placements"
-msgstr ""
+msgstr "Ausgewählte Elemente"
 
 #: c:\providence/app/helpers/displayHelpers.php:1053
 #: c:\providence/app/helpers/displayHelpers.php:1057
@@ -5954,7 +5957,7 @@ msgstr ""
 
 #: c:\providence/app/helpers/displayHelpers.php:1488
 msgid "Batch editing %1 %2 in set"
-msgstr ""
+msgstr "Stapelverarbeitung von %1 %2 im Set"
 
 #: c:\providence/app/helpers/displayHelpers.php:1507
 msgid "Set contains <em>%1</em>"
@@ -7569,7 +7572,7 @@ msgstr ""
 #: c:\providence/app/models/ca_bundle_displays.php:700
 #: c:\providence/app/models/ca_search_forms.php:639
 msgid "Default"
-msgstr ""
+msgstr "Standard"
 
 #: c:\providence/app/lib/ca/BaseFindController.php:227
 #: c:\providence/themes/default/views/administrate/access/user_tools_html.php:36
@@ -7662,7 +7665,7 @@ msgstr ""
 
 #: c:\providence/app/lib/ca/BaseQuickAddController.php:210
 msgid "You are not allowed to quickadd %1"
-msgstr ""
+msgstr "Sie sind nicht für das Schnelle Hinzufügen von %1 berechtigt"
 
 #: c:\providence/app/lib/ca/BaseRepresentationRelationship.php:62
 #: c:\providence/app/lib/ca/BaseRepresentationRelationship.php:118
@@ -7871,7 +7874,7 @@ msgstr ""
 
 #: c:\providence/app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:388
 msgid "Duplicate"
-msgstr ""
+msgstr "Duplizieren"
 
 #: c:\providence/app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:447
 msgid "Type id cannot be set after insert"
@@ -11334,7 +11337,7 @@ msgstr ""
 
 #: c:\providence/app/lib/core/ModelSettings.php:436
 msgid "Preferred label"
-msgstr ""
+msgstr "Bevorzugte Bezeichnung"
 
 #: c:\providence/app/lib/core/ModelSettings.php:440
 #: c:\providence/app/lib/core/ModelSettings.php:458
@@ -11582,7 +11585,7 @@ msgstr "KML- oder KMZ-Datei auswählen"
 #: c:\providence/app/lib/core/Plugins/GeographicMap/GoogleMaps.php:286
 #: c:\providence/app/lib/core/Plugins/GeographicMap/OpenLayers.php:404
 msgid "Use map"
-msgstr ""
+msgstr "Landkarte verwenden"
 
 #: c:\providence/app/lib/core/Plugins/GeographicMap/OpenLayers.php:50
 msgid "Generates maps using the OpenLayers API"
@@ -13060,7 +13063,7 @@ msgstr ""
 
 #: c:\providence/app/models/ca_bundle_displays.php:331
 msgid "Display list contents"
-msgstr ""
+msgstr "Display Listen Inhalte"
 
 #: c:\providence/app/models/ca_bundle_displays.php:865
 #: c:\providence/app/models/ca_bundle_displays.php:927
@@ -17602,7 +17605,7 @@ msgstr ""
 #: c:\providence/themes/default/views/batch/mediaimport/import_options_html.php:222
 #: c:\providence/themes/default/views/editor/occurrences/print_summary_html.php:60
 msgid "Identifier"
-msgstr ""
+msgstr "ID"
 
 #: c:\providence/app/models/ca_list_items.php:83
 msgid "Unique identifier for this list item"
@@ -19147,7 +19150,7 @@ msgstr ""
 
 #: c:\providence/app/models/ca_representation_annotations.php:108
 msgid "Preview media"
-msgstr ""
+msgstr "Vorschaubild"
 
 #: c:\providence/app/models/ca_representation_annotations.php:108
 msgid ""
@@ -19535,7 +19538,7 @@ msgstr ""
 
 #: c:\providence/app/models/ca_storage_locations.php:74
 msgid "Location identifier"
-msgstr ""
+msgstr "Standort-ID"
 
 #: c:\providence/app/models/ca_storage_locations.php:74
 msgid "A unique alphanumeric identifier for this location."
@@ -20259,7 +20262,7 @@ msgstr ""
 
 #: c:\providence/app/plugins/duplicateMenu/duplicateMenuPlugin.php:210
 msgid "Duplicate from..."
-msgstr ""
+msgstr "Dupliziere von..."
 
 #: c:\providence/app/plugins/historyMenu/historyMenuPlugin.php:32
 msgid "Adds a \"history\" menu listing all recently edited items"
@@ -21764,7 +21767,7 @@ msgstr ""
 
 #: c:\providence/app/widgets/recentChanges/recentChangesWidget.php:43
 msgid "Recent changes"
-msgstr ""
+msgstr "Letzte Änderungen"
 
 #: c:\providence/app/widgets/recentChanges/recentChangesWidget.php:44
 msgid "Lists recent changes to objects or authority items"
@@ -21772,7 +21775,7 @@ msgstr ""
 
 #: c:\providence/app/widgets/recentChanges/recentChangesWidget.php:93
 msgid "Recent changes widget"
-msgstr ""
+msgstr "Letzte Änderungen Widget"
 
 #: c:\providence/app/widgets/recentChanges/recentChangesWidget.php:94
 msgid "Actions for recent changes widget"
@@ -22586,7 +22589,7 @@ msgstr ""
 
 #: c:\providence/themes/default/views/administrate/access/role_edit_html.php:66
 msgid "Types"
-msgstr "Erwerbungsart"
+msgstr "Typen"
 
 #: c:\providence/themes/default/views/administrate/access/role_edit_html.php:120
 msgid "Element"
@@ -23781,14 +23784,16 @@ msgid ""
 "Drag your selection from column to column to edit the contents of the "
 "display."
 msgstr ""
+"Ziehen Sie Ihre Auswahl von der einen Spalte in die andere um die Inhalte "
+"des Displays anzupassen."
 
 #: c:\providence/themes/default/views/bundles/ca_bundle_display_placements.php:48
 msgid "Available information"
-msgstr ""
+msgstr "Verfügbare Informationen"
 
 #: c:\providence/themes/default/views/bundles/ca_bundle_display_placements.php:53
 msgid "Information to display"
-msgstr ""
+msgstr "Dargestellte Informationen"
 
 #: c:\providence/themes/default/views/bundles/ca_collections.php:111
 #: c:\providence/themes/default/views/bundles/ca_entities.php:142
@@ -23839,7 +23844,7 @@ msgstr "Beziehung hinzufügen"
 #: c:\providence/themes/default/views/bundles/ca_places.php:255
 #: c:\providence/themes/default/views/bundles/ca_storage_locations.php:243
 msgid "Quick Add"
-msgstr ""
+msgstr "Schnelles Hinzufügen"
 
 #: c:\providence/themes/default/views/bundles/ca_collections.php:147
 #: c:\providence/themes/default/views/bundles/ca_entities.php:179
@@ -25211,7 +25216,7 @@ msgstr "Cockpit leeren"
 
 #: c:\providence/themes/default/views/dashboard/dashboard_html.php:72
 msgid "Edit dashboard"
-msgstr ""
+msgstr "Cockpit einstellen"
 
 #: c:\providence/themes/default/views/dashboard/dashboard_html.php:73
 msgid "Add widget"
@@ -25228,6 +25233,11 @@ msgid ""
 "system activity.  You'll see your dashboard whenever you login or  click the "
 "CollectiveAccess logo above."
 msgstr ""
+"Sie befinden sich im CollectiveAccess Cockpit. Klicken Sie oben auf "
+"\"Cockpit einstellen\" um Widgets zu Ihrem Cockpit hinzuzufügen, mit denen "
+"Sie bestimmte Aktivitäten des Systems überwachen können. Das Cockpit wird "
+"Ihnen immer angezeigt, wenn Sie sich am System anmelden oder auf das "
+"CollectiveAccess Logo oben klicken."
 
 #: c:\providence/themes/default/views/dashboard/dashboard_html.php:78
 msgid ""
@@ -25271,7 +25281,7 @@ msgstr ""
 #: c:\providence/themes/default/views/editor/places/quickadd_html.php:45
 #: c:\providence/themes/default/views/editor/storage_locations/quickadd_html.php:45
 msgid "Quick Add %1"
-msgstr ""
+msgstr "Schnelles Hinzufügen von %1"
 
 #: c:\providence/themes/default/views/editor/collections/quickadd_html.php:99
 #: c:\providence/themes/default/views/editor/loans/quickadd_html.php:99
@@ -25290,7 +25300,7 @@ msgstr ""
 #: c:\providence/themes/default/views/editor/places/quickadd_html.php:154
 #: c:\providence/themes/default/views/editor/storage_locations/quickadd_html.php:154
 msgid "Quick add %1"
-msgstr ""
+msgstr "Schnelles Hinzufügen von %1"
 
 #: c:\providence/themes/default/views/editor/entities/quickadd_html.php:100
 msgid "Created entity "
@@ -26153,16 +26163,16 @@ msgstr ""
 
 #: c:\providence/themes/default/views/system/preferences_batch_html.php:59
 msgid "Batch user interface for %1"
-msgstr ""
+msgstr "Stapelverarbeitungsmaske für %1"
 
 #: c:\providence/themes/default/views/system/preferences_cataloguing_html.php:1
 #: c:\providence/themes/default/views/system/preferences_quickadd_html.php:1
 msgid "User interfaces for %1"
-msgstr ""
+msgstr "Benutzerschnittstellen für %1"
 
 #: c:\providence/themes/default/views/system/preferences_duplication_html.php:1
 msgid "Settings for %1"
-msgstr ""
+msgstr "Einstellungen für %1"
 
 #: c:\providence/themes/default/views/mailTemplates/batch_media_import_completed.tpl:36
 msgid ""
