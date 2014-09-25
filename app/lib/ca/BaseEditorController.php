@@ -57,10 +57,10 @@
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
- 			JavascriptLoadManager::register('bundleListEditorUI');
- 			JavascriptLoadManager::register('panel');
- 			JavascriptLoadManager::register('maps');
- 			JavascriptLoadManager::register('openlayers');
+ 			AssetLoadManager::register('bundleListEditorUI');
+ 			AssetLoadManager::register('panel');
+ 			AssetLoadManager::register('maps');
+ 			AssetLoadManager::register('openlayers');
  			
  			$this->opo_datamodel = Datamodel::load();
  			$this->opo_app_plugin_manager = new ApplicationPluginManager();
@@ -75,7 +75,7 @@
  		 *
  		 */
  		public function Edit($pa_values=null, $pa_options=null) {
- 			JavascriptLoadManager::register('panel');
+ 			AssetLoadManager::register('panel');
  			
  			list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView($pa_options);
  			$vs_mode = $this->request->getParameter('mode', pString);
@@ -481,7 +481,7 @@
  		 * @param array $pa_options Array of options passed through to _initView 
  		 */
  		public function Summary($pa_options=null) {
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
  			list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
  			
  			
@@ -542,7 +542,7 @@
  		 * @param array $pa_options Array of options passed through to _initView 
  		 */
 		public function PrintSummary($pa_options=null) {
-			JavascriptLoadManager::register('tableList');
+			AssetLoadManager::register('tableList');
  			list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
  			
  			
@@ -638,7 +638,7 @@
  		 * @param array $pa_options Array of options passed through to _initView 
  		 */
  		public function Log($pa_options=null) {
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
  			list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
  			
  			
@@ -654,7 +654,7 @@
  		 * @param array $pa_options Array of options passed through to _initView 
  		 */
  		public function Access($pa_options=null) {
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
  			list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
  			
  			
@@ -801,9 +801,9 @@
  		 */
  		protected function _initView($pa_options=null) {
  			// load required javascript
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register('imageScroller');
- 			JavascriptLoadManager::register('datePickerUI');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('imageScroller');
+ 			AssetLoadManager::register('datePickerUI');
  			
  			$t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
  			$vn_subject_id = $this->request->getParameter($t_subject->primaryKey(), pInteger);
@@ -1155,6 +1155,24 @@
  					$this->response->addContent($t_subject->getBundleFormHTML($ps_bundle, $pn_placement_id, $t_placement->get('settings'), array('request' => $this->request, 'contentOnly' => true), $vs_label));
  					break;
  			}
+ 		}
+ 		# ------------------------------------------------------------------
+ 		/**
+ 		 * 
+ 		 */
+ 		public function loadBundles() {
+ 			list($vn_subject_id, $t_subject) = $this->_initView();
+ 			
+ 			if (!$this->_checkAccess($t_subject)) { return false; }
+ 			
+ 			$ps_bundle_name = $this->request->getParameter("bundle", pString);
+ 			$pn_placement_id = $this->request->getParameter("placement_id", pInteger);
+ 			$pn_start = (int)$this->request->getParameter("start", pInteger);
+ 			if (!($pn_limit = $this->request->getParameter("limit", pInteger))) { $pn_limit = null; }
+ 			
+ 			$t_placement = new ca_editor_ui_bundle_placements($pn_placement_id);
+ 			
+ 			$this->response->addContent(json_encode($t_subject->getBundleFormValues($ps_bundle_name, "{$pn_placement_id}", $t_placement->get('settings'), array('start' => $pn_start, 'limit' => $pn_limit, 'request' => $this->request, 'contentOnly' => true))));
  		}
 		# ------------------------------------------------------------------
  		# Sidebar info handler

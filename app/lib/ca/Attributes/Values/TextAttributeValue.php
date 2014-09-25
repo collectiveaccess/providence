@@ -266,7 +266,7 @@
  			if ($va_settings['usewysiwygeditor']) {
  				$o_config = Configuration::load();
  				if (!is_array($va_toolbar_config = $o_config->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = array(); }
- 				JavascriptLoadManager::register("ckeditor");
+ 				AssetLoadManager::register("ckeditor");
  				
  				$vs_element = "<script type='text/javascript'>jQuery(document).ready(function() {
 						var ckEditor = CKEDITOR.replace( '{fieldNamePrefix}".$pa_element_info['element_id']."_{n}',
@@ -297,7 +297,7 @@
  			);
  			
  			if ($va_settings['isDependentValue']) {
- 				JavascriptLoadManager::register('displayTemplateParser');
+ 				AssetLoadManager::register('displayTemplateParser');
  				
  				$t_element = new ca_metadata_elements($pa_element_info['element_id']);
  				$va_elements = $t_element->getElementsInSet($t_element->getHierarchyRootID());

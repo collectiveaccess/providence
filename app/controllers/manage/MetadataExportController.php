@@ -53,8 +53,8 @@
  		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register('panel');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('panel');
  			
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
@@ -70,8 +70,8 @@
  		 *
  		 */
  		public function Index($pa_values=null, $pa_options=null) {
-			JavascriptLoadManager::register('tableList');
-			JavascriptLoadManager::register('fileupload');
+			AssetLoadManager::register('tableList');
+			AssetLoadManager::register('fileupload');
 		
  			$va_exporters = ca_data_exporters::getExporters();
  			$this->view->setVar('exporter_list', $va_exporters);
@@ -100,24 +100,23 @@
  			$this->render('export/file_upload_response_json.php');
  		}
  		# -------------------------------------------------------
- 		public function Run() {
- 			$t_exporter = $this->getExporterInstance();
- 			
- 			$this->view->setVar('t_exporter', $t_exporter);
- 			
-			$this->render('export/exporter_run_html.php');
- 		}
- 		# -------------------------------------------------------
  		public function ExportData() {
  			// Can user batch export?
  			if (!$this->request->user->canDoAction('can_batch_export_metadata')) {
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3440?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
 
  			$t_exporter = $this->getExporterInstance();
- 			
- 			$this->view->setVar("t_subject", $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true));
+			$t_subject = $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true);
+
+			// Can user export records of this type?
+			if (!$this->request->user->canDoAction('can_export_'.$t_subject->tableName())) {
+				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3430?r='.urlencode($this->request->getFullUrlPath()));
+				return;
+			}
+
+ 			$this->view->setVar("t_subject", $t_subject);
  			
 			// run now
 			$app = AppController::getInstance();
@@ -128,11 +127,17 @@
  		# -------------------------------------------------------
  		public function ExportSingleData() { 	
  			$t_exporter = $this->getExporterInstance();
+
+			if(!$t_exporter->getPrimaryKey()) {
+				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3420?r='.urlencode($this->request->getFullUrlPath()));
+				return;
+			}
+
  			$t_subject = $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true);
 
  			// Can user export records of this type?
  			if (!$this->request->user->canDoAction('can_export_'.$t_subject->tableName())) {
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3430?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
 
@@ -144,6 +149,13 @@
 
 	 			$this->view->setVar("t_subject", $t_subject);
 	 			$vn_id = $this->request->getParameter('item_id', pInteger);
+
+				// Can user read this particular item?
+				if(!caCanRead($this->request->getUserID(), $t_exporter->get('table_num'), $vn_id)) {
+					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
+					return;
+				}
+
 	 			$this->view->setVar('item_id',$vn_id);
 
 	 			$vs_export = ca_data_exporters::exportRecord($t_exporter->get('exporter_code'), $vn_id, array('singleRecord' => true));
@@ -177,9 +189,6 @@
 		}
 		# -------------------------------------------------------
 		public function DownloadExport(){
-			// this has to be bullet-proof, otherwise someone could use it to download
-			// files from our tmp dir (and potentially elsewhere)
-
 			$ps_file = trim($this->request->getParameter('file',pString));
 			$va_matches = array();
 			if($ps_file && preg_match("/^([0-9]+)\_[0-9a-f]{32,32}$/", $ps_file, $va_matches)){

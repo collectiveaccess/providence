@@ -49,7 +49,7 @@ class WLPlugGeographicMapGoogleMaps Extends BaseGeographicMapPlugIn Implements I
 		
 		$this->description = _t('Generates maps using the GoogleMaps API');
 		
-		JavascriptLoadManager::register("maps");
+		AssetLoadManager::register("maps");
 	}
 	# ------------------------------------------------
 	/**
@@ -318,7 +318,7 @@ $vs_buf .= "
 	 *
 	 */
 	public function getAttributeBundleHTML($pa_element_info, $pa_options=null) {
- 		JavascriptLoadManager::register('maps');
+ 		AssetLoadManager::register('maps');
  		
 		$o_config = Configuration::load();
 		
