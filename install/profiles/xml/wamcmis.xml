@@ -21862,12 +21862,6 @@ Display in stable environment  Temperature ??°C ± ?°C seasonally, ± ?°C d
       </labels>
       <typeRestrictions>
         <restriction type="DarwinCore"/>
-        <restriction type=""/>
-        <restriction type=""/>
-        <restriction type=""/>
-        <restriction type=""/>
-        <restriction type=""/>
-        <restriction type=""/>
       </typeRestrictions>
       <screens>
         <screen idno="record_level" default="1">
@@ -24530,12 +24524,6 @@ Loaned to: &lt;unit relativeTo="ca_loans"&gt;&#13;
           </labels>
           <typeRestrictions>
             <restriction type="anthropology"/>
-            <restriction type=""/>
-            <restriction type=""/>
-            <restriction type=""/>
-            <restriction type=""/>
-            <restriction type=""/>
-            <restriction type=""/>
           </typeRestrictions>
           <bundlePlacements>
             <placement code="item_status_id1">
