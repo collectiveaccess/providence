@@ -43,27 +43,45 @@
 		/**
 		 * Create a fresh installation of CollectiveAccess based on contents of setup.php.  This is essentially a CLI
 		 * command wrapper for the installation process, as /install/inc/page2.php is a web wrapper.
+		 * @param Zend_Console_Getopt $po_opts
+		 * @param bool $pb_installing
+		 * @return bool
 		 */
-		public static function install($po_opts=null) {
+		public static function install($po_opts=null, $pb_installing = true) {
 			require_once(__CA_BASE_DIR__ . '/install/inc/Installer.php');
+			require_once(__CA_BASE_DIR__ . '/install/inc/Updater.php');
 
-			if (!$po_opts->getOption('profile-name')) {
+			if ($pb_installing && !$po_opts->getOption('profile-name')) {
 				CLIUtils::addError(_t("Missing required parameter: profile-name"));
 				return false;
 			}
-			if (!$po_opts->getOption('admin-email')) {
+			if ($pb_installing && !$po_opts->getOption('admin-email')) {
 				CLIUtils::addError(_t("Missing required parameter: admin-email"));
 				return false;
 			}
-
+			$vs_profile_directory = $po_opts->getOption('profile-directory');
+			$vs_profile_directory = $vs_profile_directory ? $vs_profile_directory : __CA_BASE_DIR__ . '/install/profiles/xml';
 			$t_total = new Timer();
-			$vo_installer = new Installer(
-				__CA_BASE_DIR__ . '/install/profiles/xml',
-				$po_opts->getOption('profile-name'),
-				$po_opts->getOption('admin-email'),
-				$po_opts->getOption('overwrite'),
-				$po_opts->getOption('debug')
-			);
+			// If we are installing, then use Installer, otherwise use Updater
+			$vo_installer = null;
+			if($pb_installing){
+				$vo_installer = new Installer(
+					$vs_profile_directory,
+					$po_opts->getOption('profile-name'),
+					$po_opts->getOption('admin-email'),
+					$po_opts->getOption('overwrite'),
+					$po_opts->getOption('debug')
+				);
+			} else {
+				$vo_installer = new Updater(
+					$vs_profile_directory,
+					$po_opts->getOption('profile-name'),
+					null, // If you are updating you don't want to generate an admin user
+					false, // If you are updating you never want to overwrite
+					$po_opts->getOption('debug')
+				);
+			}
+
 			$vb_quiet = $po_opts->getOption('quiet');
 
 			// if profile validation against XSD failed, we already have an error here
@@ -74,19 +92,20 @@
 				));
 				return false;
 			}
+			if($pb_installing){
+				if (!$vb_quiet) { CLIUtils::addMessage(_t("Performing preinstall tasks")); }
+				$vo_installer->performPreInstallTasks();
 
-			if (!$vb_quiet) { CLIUtils::addMessage(_t("Performing preinstall tasks")); }
-			$vo_installer->performPreInstallTasks();
-			
-			if (!$vb_quiet) { CLIUtils::addMessage(_t("Loading schema")); }
-			$vo_installer->loadSchema();
-			
-			if($vo_installer->numErrors()){
-				CLIUtils::addError(_t(
-					"There were errors loading the database schema: %1",
-					"\n * " . join("\n * ", $vo_installer->getErrors())
-				));
-				return false;
+				if (!$vb_quiet) { CLIUtils::addMessage(_t("Loading schema")); }
+				$vo_installer->loadSchema();
+
+				if($vo_installer->numErrors()){
+					CLIUtils::addError(_t(
+						"There were errors loading the database schema: %1",
+						"\n * " . join("\n * ", $vo_installer->getErrors())
+					));
+					return false;
+				}
 			}
 
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing locales")); }
@@ -101,8 +120,10 @@
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing metadata elements")); }
 			$vo_installer->processMetadataElements();
 
-			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing access roles")); }
-			$vo_installer->processRoles();
+			if(!$po_opts->getOption('skip-roles')){
+				if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing access roles")); }
+				$vo_installer->processRoles();
+			}
 
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing user groups")); }
 			$vo_installer->processGroups();
@@ -134,20 +155,23 @@
 				));
 				return false;
 			}
-
-			CLIUtils::addMessage(_t(
-				"Installation was successful!\n\nYou can now login with the following logins: %1\nMake a note of these passwords!",
-				"\n * " . join(
-					"\n * ",
-					array_map(
-						function ($username, $password) {
-							return _t("username %1 and password %2", $username, $password);
-						},
-						array_keys($va_login_info),
-						array_values($va_login_info)
+			if($pb_installing){
+				CLIUtils::addMessage(_t(
+					"Installation was successful!\n\nYou can now login with the following logins: %1\nMake a note of these passwords!",
+					"\n * " . join(
+						"\n * ",
+						array_map(
+							function ($username, $password) {
+								return _t("username %1 and password %2", $username, $password);
+							},
+							array_keys($va_login_info),
+							array_values($va_login_info)
+						)
 					)
-				)
-			));
+				));
+			} else {
+				CLIUtils::addMessage(_t("Update of installation profile successful"));
+			}
 
 			CLIUtils::addMessage($vs_time);
 			return true;
@@ -159,10 +183,12 @@
 		public static function installParamList() {
 			return array(
 				"profile-name|n=s" => _t('Name of the profile to install (filename in profiles directory, minus the .xml extension).'),
+				"profile-directory|p=s" => _t('Directory to get profile. Default is: "%1". This directory must contain the profile.xsd schema so that the installer can validate the installation profile.', __CA_BASE_DIR__ . '/install/profiles/xml'),
 				"admin-email|e=s" => _t('Email address of the system administrator (user@domain.tld).'),
 				"overwrite" => _t('Flag must be set in order to overwrite an existing installation.  Also, the __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ global must be set to a true value.'),
 				"debug|d" => _t('Debug flag for installer.'),
-				"quiet|q" => _t('Suppress progress messages.')
+				"quiet|q" => _t('Suppress progress messages.'),
+				"skip-roles|s" => _t('Skip Roles. Default is false, but if you have many roles and access control enabled then install may take some time')
 			);
 		}
 		# -------------------------------------------------------
@@ -189,6 +215,43 @@
 		 */
 		public static function installShortHelp() {
 			return _t("Performs a fresh installation of CollectiveAccess using the configured values in setup.php.");
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function update_installation_profileUtilityClass() {
+			return _t('Configuration - Experimental');
+		}
+		# -------------------------------------------------------
+		public static function update_installation_profileParamList() {
+			$va_params = self::installParamList();
+			unset($va_params['overwrite']);
+			unset($va_params['admin-email|e=s']);
+			return $va_params;
+		}
+		# -------------------------------------------------------
+		public static function update_installation_profile($po_opts=null) {
+			require_once(__CA_BASE_DIR__ . '/install/inc/Updater.php');
+			self::install($po_opts, false);
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function update_installation_profileHelp() {
+			return _t("EXPERIMENTAL - Updates the installation profile to match a supplied profile name.") ."\n".
+			"\t" . _t("This function only creates new values and is useful if you want to append changes from one profile onto another.")."\n".
+			"\t" . _t("Your new profile must exist in a directory that contains the profile.xsd schema and must validate against that schema in order for the update to apply successfully.");
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function update_installation_profileShortHelp() {
+			return _t("EXPERIMENTAL - Updates the installation profile to match a supplied profile name.");
 		}
 
 		# -------------------------------------------------------
@@ -608,11 +671,15 @@
 		
 					$vs_mimetype = $qr_reps->getMediaInfo('media', 'original', 'MIMETYPE');
 					if(sizeof($va_mimetypes)) {
+						$vb_mimetype_match = false;
 						foreach($va_mimetypes as $vs_mimetype_pattern) {
-							if(!preg_match("!^{$vs_mimetype_pattern}!", $vs_mimetype)) {
-								continue(2);
+							if(!preg_match("!^".preg_quote($vs_mimetype_pattern)."!", $vs_mimetype)) {
+								continue;
 							}
+							$vb_mimetype_match = true;
+							break;
 						}
+						if (!$vb_mimetype_match) { continue; }
 					}
 				
 					$t_rep->load($qr_reps->get('representation_id'));
@@ -631,7 +698,7 @@
 				print CLIProgressBar::finish();
 			}
 			
-			if (in_array('all', $va_kinds)  || in_array('ca_attributes', $va_kinds)) { 
+			if ((in_array('all', $va_kinds)  || in_array('ca_attributes', $va_kinds)) && (!$vn_start && !$vn_end)) { 
 				// get all Media elements
 				$va_elements = ca_metadata_elements::getElementsAsList(false, null, null, true, false, true, array(16)); // 16=media
 				
@@ -740,7 +807,7 @@
 			}
 			$va_kinds = array_map('strtolower', $va_kinds);
 			
-			if (in_array('all', $va_kinds) || in_array('ca_object_representations', $va_kinds)) { 
+			if ((in_array('all', $va_kinds) || in_array('ca_object_representations', $va_kinds)) && (!$vn_start && !$vn_end)) { 
 				if (!($vn_start = (int)$po_opts->getOption('start_id'))) { $vn_start = null; }
 				if (!($vn_end = (int)$po_opts->getOption('end_id'))) { $vn_end = null; }
 			
@@ -1586,12 +1653,26 @@
 			$vo_search_indexing_conf = Configuration::load($vo_search_conf->get("search_indexing_config"));
 			$o_db = new Db();
 			$o_datamodel = Datamodel::load();
+
+			// allow overriding settings from search.conf via constant (usually defined in bootstrap file)
+			// this is useful for multi-instance setups which have the same set of config files for multiple instances
+			if(defined('__CA_ELASTICSEARCH_BASE_URL__') && (strlen(__CA_ELASTICSEARCH_BASE_URL__)>0)) {
+				$vs_elasticsearch_base_url = __CA_ELASTICSEARCH_BASE_URL__;
+			} else {
+				$vs_elasticsearch_base_url = $vo_search_conf->get('search_elasticsearch_base_url');
+			}
+
+			if(defined('__CA_ELASTICSEARCH_INDEX_NAME__') && (strlen(__CA_ELASTICSEARCH_INDEX_NAME__)>0)) {
+				$vs_elasticsearch_index_name = __CA_ELASTICSEARCH_INDEX_NAME__;
+			} else {
+				$vs_elasticsearch_index_name = $vo_search_conf->get('search_elasticsearch_index_name');
+			}
 	
 			// delete and create index
 			$vo_http_client = new Zend_Http_Client();
 			$vo_http_client->setUri(
-				$vo_search_conf->get('search_elasticsearch_base_url')."/".
-				$vo_search_conf->get('search_elasticsearch_index_name')
+				$vs_elasticsearch_base_url."/".
+				$vs_elasticsearch_index_name
 			);
 			try {
 				$vo_http_client->request('DELETE');
@@ -1747,8 +1828,8 @@
 				
 						$vo_http_client = new Zend_Http_Client();
 						$vo_http_client->setUri(
-							$vo_search_conf->get('search_elasticsearch_base_url')."/".
-							$vo_search_conf->get('search_elasticsearch_index_name')."/".
+							$vs_elasticsearch_base_url."/".
+							$vs_elasticsearch_index_name."/".
 							$vs_table."/". /* ElasticSearch type name (i.e. table name) */
 							"_mapping"
 						);
@@ -1761,7 +1842,7 @@
 						try {
 							$vo_http_response = $vo_http_client->request();
 							$va_response = json_decode($vo_http_response->getBody(),true);
-							if(!$va_response["ok"]){
+							if(!$va_response["ok"] && !$va_response['acknowledged']){
 								CLIUtils::addError(_t("Something went wrong at %1 with message: %2", "{$vs_table}.{$vs_field_name}", $va_response["error"]));
 								CLIUtils::addError(_t("Mapping sent to ElasticSearch was: %1", json_encode($va_mapping)));
 								return;
@@ -1790,8 +1871,8 @@
 				
 						$vo_http_client = new Zend_Http_Client();
 						$vo_http_client->setUri(
-							$vo_search_conf->get('search_elasticsearch_base_url')."/".
-							$vo_search_conf->get('search_elasticsearch_index_name')."/".
+							$vs_elasticsearch_base_url."/".
+							$vs_elasticsearch_index_name."/".
 							$vs_table."/". /* ElasticSearch type name (i.e. table name) */
 							"_mapping"
 						);
@@ -1803,7 +1884,7 @@
 						try {
 							$vo_http_response = $vo_http_client->request();
 							$va_response = json_decode($vo_http_response->getBody(),true);
-							if(!$va_response["ok"]){
+							if(!$va_response["ok"] && !$va_response['acknowledged']){
 								CLIUtils::addError(_t("Something went wrong at %1 with message: %2", "{$vs_table}/{$vs_related_table}.{$vs_related_table_field}", $va_response["error"]));
 								CLIUtils::addError(_t("Mapping sent to ElasticSearch was: %1", json_encode($va_mapping)));
 								return;
@@ -1837,8 +1918,8 @@
 		
 				$vo_http_client = new Zend_Http_Client();
 				$vo_http_client->setUri(
-					$vo_search_conf->get('search_elasticsearch_base_url')."/".
-					$vo_search_conf->get('search_elasticsearch_index_name')."/".
+					$vs_elasticsearch_base_url."/".
+					$vs_elasticsearch_index_name."/".
 					$vs_table."/". /* ElasticSearch type name (i.e. table name) */
 					"_mapping"
 				);
@@ -1848,7 +1929,7 @@
 				try {
 					$vo_http_response = $vo_http_client->request();
 					$va_response = json_decode($vo_http_response->getBody(), true);
-					if(!$va_response["ok"]){
+					if(!$va_response["ok"] && !$va_response['acknowledged']){
 						CLIUtils::addError(_t("Something went wrong at %1 with message: %2", "{$vs_table}.created/modified", $va_response["error"]));
 						CLIUtils::addError(_t("Mapping sent to ElasticSearch was: %1", json_encode($va_mapping)));
 						return;
@@ -2363,7 +2444,7 @@
 		 *
 		 */
 		public static function check_media_fixityHelp() {
-			return _t('Verifies that media files on disk are consistent with file signatures recordded in the database at time of upload.');
+			return _t('Verifies that media files on disk are consistent with file signatures recorded in the database at time of upload.');
 		}
 		# -------------------------------------------------------
 		/**
@@ -2404,7 +2485,7 @@
 				print CLIProgressBar::next();
 				$vn_word_id = $qr_res->get('word_id');
 				$vs_word = $qr_res->get('word');
-				print CLIProgressBar::next(_t('Processing %1', $vs_word));
+				print CLIProgressBar::next(1, _t('Processing %1', $vs_word));
 				
 				if (!$pb_clear) {
 					$qr_chk = $o_db->query("SELECT word_id FROM ca_sql_search_ngrams WHERE word_id = ?", array($vn_word_id));
@@ -2465,6 +2546,67 @@
 		 */
 		public static function create_ngramsHelp() {
 			return _t('Ngrams.');
+		}
+		# -------------------------------------------------------
+		/**
+		 * 
+		 */
+		public static function reload_object_current_locations($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/core/Db.php");
+			require_once(__CA_MODELS_DIR__."/ca_objects.php");	
+					
+			$o_db = new Db();
+			$t_object = new ca_objects();
+			
+			$qr_res = $o_db->query("SELECT * FROM ca_objects");
+			
+			print CLIProgressBar::start($qr_res->numRows(), _t('Starting...'));
+			
+			$vn_c = 0;
+			while($qr_res->nextRow()) {
+				$vn_object_id = $qr_res->get('object_id');
+				if($t_object->load($vn_object_id)) {
+					print CLIProgressBar::next(1, _t('Processing %1', $t_object->getWithTemplate("^ca_objects.preferred_labels.name (^ca_objects.idno)")));
+					$t_object->deriveCurrentLocationForBrowse();
+				} else {
+					print CLIProgressBar::next(1, _t('Cannot load object %1', $vn_object_id));
+				}
+				$vn_c++;
+			}
+			print CLIProgressBar::finish();
+			CLIUtils::addMessage(_t('Processed %1 objects', $vn_c));
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_object_current_locationsParamList() {
+			return array(
+			
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_object_current_locationsUtilityClass() {
+			return _t('Maintenance');
+		}
+		
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_object_current_locationsShortHelp() {
+			return _t('Reloads current location values for all object records.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_object_current_locationsHelp() {
+			return _t('CollectiveAccess supports browse on current locations of collection objects using values cached in the object records. From time to time these values may become out of date. Use this command to regenerate the cached values based upon the current state of the database.');
 		}
 		# -------------------------------------------------------
 	}

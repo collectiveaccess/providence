@@ -314,6 +314,30 @@ class ca_data_exporter_items extends BaseModel {
 			'description' => _t('If set, id values refering to foreign keys are returned as preferred label text in the current locale.')
 		);
 
+		$va_settings['returnIdno'] = array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Return id numbers for List attribute values'),
+			'description' => _t('If set, idnos are returned for List attribute values instead of primary key values. Do not combine this with convertCodesToDisplayText!')
+		);
+
+		$va_settings['skipIfExpression'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Skip if expression'),
+			'description' => _t('The current mapping is skipped if the given expression evaluates to true.')
+		);
+
 		$va_settings['filterByRegExp'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,

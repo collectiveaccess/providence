@@ -65,7 +65,17 @@ class wamDataImporterPlugin extends BaseApplicationPlugin {
 	 * @return array
 	 */
 	public function hookDataImportContentTree(&$pa_params){
+		$va_disable_plugins = array('wamTitleGenerator', 'relationshipGenerator');
+		foreach($va_disable_plugins as $vs_plugin_name){
+			unset(ApplicationPluginManager::$s_application_plugin_instances[$vs_plugin_name]);
+			unset(ApplicationPluginManager::$s_application_plugin_hooks[$vs_plugin_name]);
+		}
 		foreach ($pa_params['content_tree'] as $vs_table_name => $va_table_content_tree) {
+			switch($vs_table_name){
+				case 'ca_occurrences':
+					$this->_processConservationFields($pa_params, $va_table_content_tree, $vs_table_name);
+				break;
+			}
 			foreach ($va_table_content_tree as $vs_table_content_index => $va_table_content) {
 				$this->_processBundles($pa_params, $va_table_content, $vs_table_name, $vs_table_content_index);
 				if(isset($va_table_content['_interstitial'])){
@@ -218,5 +228,48 @@ class wamDataImporterPlugin extends BaseApplicationPlugin {
 		);
 
 		$pa_table_content[$vs_name][$value_index] = DataMigrationUtils::getListItemID($vs_list_code, $vs_item_idno, $ps_type, ca_locales::getDefaultCataloguingLocaleID(), $va_attr_vals_with_parent, $pa_options);
+	}
+
+	/**
+	 *
+	 * @param $pa_params array params passed to the data importer
+	 * @param $pa_table_content_tree array the content tree
+	 * @param $ps_table_name string the name of the table
+	 */
+	protected function _processConservationFields(&$pa_params, $pa_table_content_tree, $ps_table_name){
+		/**
+		 * @var $vo_mapping ca_data_importers
+		 */
+		$vo_mapping = caGetOption('mapping', $pa_params);
+		if($vo_mapping = $pa_params['mapping']){
+
+			switch ($vo_mapping->get('importer_code')){
+				case 'conservationJobs':
+					// We are processing conservation jobs
+					foreach($pa_table_content_tree as $vn_c => $va_current_data){
+						if($va_artefact_list = $va_current_data['ArtefactList']){
+							$va_new_values = array();
+							$vs_error_policy = caGetOption('_errorPolicy', $va_artefact_list);
+							unset($va_artefact_list['_errorPolicy']);
+							foreach($va_artefact_list as $vs_attribute => $vs_values){
+								foreach(explode("|", $vs_values) as $vn_i => $vs_value){
+									$va_new_values[$vn_i]['ArtefactList'][$vs_attribute] = $vs_value;
+									if($vs_error_policy && !isset($va_new_values[$vn_i]['ArtefactList']['_errorPolicy'])){
+										// set the value for the new row
+										$va_new_values[$vn_i]['ArtefactList']['_errorPolicy'] = $vs_error_policy;
+									}
+								}
+							}
+							//Remove the old values;
+							unset($pa_params['content_tree'][$ps_table_name][$vn_c]);
+							//Append the new values
+							$pa_params['content_tree'][$ps_table_name] += $va_new_values;
+						}
+					}
+					break;
+				default;
+					//noop
+			}
+		}
 	}
 }

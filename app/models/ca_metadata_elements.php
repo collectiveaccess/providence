@@ -254,7 +254,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 	public function load($pm_id=null, $pb_use_cache = true) {
-		if ($vn_rc = parent::load($pm_id)) {
+		if ($vn_rc = parent::load($pm_id, $pb_use_cache)) {
 			if (!isset(ca_metadata_elements::$s_settings_cache[$this->getPrimaryKey()])) {
 				ca_metadata_elements::$s_settings_cache[$this->getPrimaryKey()] = $this->get('settings');
 			}

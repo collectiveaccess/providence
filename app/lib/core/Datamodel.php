@@ -60,7 +60,7 @@ class Datamodel {
 	static $s_datamodel_model_table_num_cache = null;
 	# --------------------------------------------------------------------------------------------
 	/**
-	 *
+	 * @return Datamodel
 	 */
 	static public function load() {
 		if (!DataModel::$s_datamodel_instance_cache) {
@@ -331,11 +331,10 @@ class Datamodel {
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
-	 *
+	 * @DEPRECATED
 	 */
-	# Alias for $this->getInstanceByTableName()
 	public function getTableInstance($ps_table, $pb_use_cache=false) {
-		return $this->getInstanceByTableName($ps_table, $pb_use_cache);
+		return $this->getInstanceByTableNum($ps_table, $pb_use_cache);
 	}
 	# --------------------------------------------------------------------------------------------
 	/**

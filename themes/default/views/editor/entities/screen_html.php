@@ -33,9 +33,10 @@
 	$vb_can_delete		= $t_entity->isDeletable($this->request);
 	
 	if ($vb_can_edit) {
+		$va_cancel_parameters = ($vn_entity_id ? array('entity_id' => $vn_entity_id) : array('type_id' => $t_entity->getTypeID()));
 		print $vs_control_box = caFormControlBox(
 			caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'EntityEditorForm').' '.
-			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'editor/entities', 'EntityEditor', 'Edit/'.$this->request->getActionExtra(), array('entity_id' => $vn_entity_id)),
+			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'editor/entities', 'EntityEditor', 'Edit/'.$this->request->getActionExtra(), $va_cancel_parameters),
 			'', 
 			((intval($vn_entity_id) > 0) && $vb_can_delete) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'editor/entities', 'EntityEditor', 'Delete/'.$this->request->getActionExtra(), array('entity_id' => $vn_entity_id)) : ''
 		);

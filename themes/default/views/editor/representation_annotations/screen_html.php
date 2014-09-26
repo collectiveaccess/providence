@@ -32,9 +32,10 @@
 	$vb_can_delete		= $t_representation_annotation->isDeletable($this->request);
 	
 	if ($vb_can_edit) {
+		$va_cancel_parameters = ($vn_annotation_id ? array('annotation_id' => $vn_annotation_id) : array('type_id' => $t_representation_annotation->getTypeID()));
 		print $vs_control_box = caFormControlBox(
 			caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'RepresentationAnnotationEditorForm').' '.
-			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'editor/representation_annotations', 'RepresentationAnnotationEditor', 'Edit/'.$this->request->getActionExtra(), array('annotation_id' => $vn_annotation_id)),
+			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'editor/representation_annotations', 'RepresentationAnnotationEditor', 'Edit/'.$this->request->getActionExtra(), $va_cancel_parameters),
 			'', 
 			((intval($vn_annotation_id) > 0) && $vb_can_delete) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'editor/representation_annotations', 'RepresentationAnnotationEditor', 'Delete/'.$this->request->getActionExtra(), array('annotation_id' => $vn_annotation_id)) : ''
 		);

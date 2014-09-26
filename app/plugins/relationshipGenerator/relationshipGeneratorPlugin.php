@@ -283,7 +283,8 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 						array( 'idno' => $pm_related_record ) :
 						array( 'id' => $pm_related_record ))
 		));
-		$va_keys = array_keys($va_items);
+
+		$va_keys = is_array($va_items) ? array_keys($va_items) : null;
 		return sizeof($va_keys) > 0 ? $va_keys[0] : null;
 	}
 

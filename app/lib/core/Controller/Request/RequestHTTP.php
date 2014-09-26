@@ -677,7 +677,7 @@ class RequestHTTP extends Request {
 				if (!$vb_login_successful) {																	// throw user to login screen
 					if (!$pa_options["dont_redirect_to_login"]) {
 						$o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login with redirect for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
-						$vs_redirect = $this->getRequestUrl();
+						$vs_redirect = $this->getRequestUrl(true);
 						if(strpos($vs_redirect, $this->config->get("auth_login_path") !== -1)){
 							$vs_redirect = '';
 						} else {

@@ -250,7 +250,7 @@
 						} else {
 							$va_criteria['type_code'] = $vs_type_code;
 						}
-						if ($t_rel_type->load(array($va_criteria))) {
+						if ($t_rel_type->load($va_criteria)) {
 							$va_restrict_to_type_list[] = "(crt.hier_left >= ".$t_rel_type->get('hier_left')." AND crt.hier_right <= ".$t_rel_type->get('hier_right').")";
 						}
 					}
@@ -666,7 +666,7 @@
 		 * 
 		 */
 		public function getTypeID() {
-			return BaseModel::get('type_id');
+			return (BaseModel::hasField('type_id')) ? BaseModel::get('type_id') : null;
 		}
 		# ------------------------------------------------------
 		/**
@@ -740,4 +740,3 @@
 		}
 		# ------------------------------------------------------
 	}
-?>

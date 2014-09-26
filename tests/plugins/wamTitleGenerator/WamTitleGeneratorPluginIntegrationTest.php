@@ -56,6 +56,9 @@ class WamTitleGeneratorPluginIntegrationTest extends AbstractPluginIntegrationTe
 		self::_createListItem('test_object_type3', BaseModel::$s_ca_models_definitions['ca_objects']['FIELDS']['type_id']['LIST_CODE']);
 		self::_createListItem('test_object_type4', BaseModel::$s_ca_models_definitions['ca_objects']['FIELDS']['type_id']['LIST_CODE']);
 
+		$vo_list = self::_createList('test_list_items');
+		$vo_item = self::_createListItem('test_list_item_type', BaseModel::$s_ca_models_definitions['ca_list_items']['FIELDS']['type_id']['LIST_CODE']);
+
 		self::_createCollection('collection1');
 		self::_createCollection('collection2');
 		self::_createCollection('collection3');
@@ -157,6 +160,15 @@ class WamTitleGeneratorPluginIntegrationTest extends AbstractPluginIntegrationTe
 		$this->assertEmpty(self::_getLabel($vo_object, 'name'), 'Matching record with single related collection generates correct title value');
 	}
 
+	public function testMatchingListItemGeneratesCorrectTitle(){
+		$vo_list_item  = self::_createListItem('matchingListItemWithIdno', self::_getIdno('test_list_items'), 'test_list_item_type');
+		$vs_expected_singular = 'generated: ' . self::_getIdno('matchingListItemWithIdno');
+		$vs_expected_plural = 'generatedplural: ' . self::_getIdno('matchingListItemWithIdno');
+		$this->assertEquals($vs_expected_singular, self::_getLabel($vo_list_item, 'name_singular'), 'Matching list item with idno generates correct singular label');
+		$this->assertEquals($vs_expected_plural, self::_getLabel($vo_list_item, 'name_plural'), 'Matching list item with idno generates correct singular label');
+
+	}
+
 	private static function _createObject($ps_idno_base, $ps_type_idno_base, $pa_relationships = array()) {
 		$vo_object = new ca_objects();
 		$vo_object->setMode(ACCESS_WRITE);
@@ -177,12 +189,12 @@ class WamTitleGeneratorPluginIntegrationTest extends AbstractPluginIntegrationTe
 	}
 
 	/**
-	 * @param $po_object ca_objects
+	 * @param $po_bundleable_labelable_basemodel_with_attributes BundlableLabelableBaseModelWithAttributes
 	 * @param $ps_label_field string
 	 */
-	private static function _getLabel($po_object, $ps_label_field) {
+	private static function _getLabel($po_bundleable_labelable_basemodel_with_attributes, $ps_label_field) {
 		$vn_locale_id = ca_locales::getDefaultCataloguingLocaleID();
-		$va_labels = $po_object->getPreferredLabels(array( $vn_locale_id ));
-		return $va_labels[$po_object->getPrimaryKey()][$vn_locale_id][0][$ps_label_field];
+		$va_labels = $po_bundleable_labelable_basemodel_with_attributes->getPreferredLabels(array( $vn_locale_id ));
+		return $va_labels[$po_bundleable_labelable_basemodel_with_attributes->getPrimaryKey()][$vn_locale_id][0][$ps_label_field];
 	}
 }

@@ -441,7 +441,6 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 					# load image properties
 					$this->properties["width"] = $this->handle['width'];
 					$this->properties["height"] = $this->handle['height'];
-					$this->properties["quality"] = "";
 					$this->properties["mimetype"] = $this->handle['mimetype'];
 					$this->properties["typename"] = $this->handle['magick'];
 					$this->properties["filesize"] = filesize($filepath);
