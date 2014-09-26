@@ -702,11 +702,17 @@
 				return;
 			}
 
+			$t_subject = $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true);
+
+			if(!($vs_export_filename = $t_subject->getAppConfig()->get($t_subject->tableName()."_batch_export_filename"))) {
+				$vs_export_filename = 'batch_export';
+			}
+
 			$vs_tmp_file = tempnam(caGetTempDirPath(), 'export');
 			ca_data_exporters::exportRecordsFromSearchResult($t_exporter->get('exporter_code'), $po_result, $vs_tmp_file);
 
 			header('Content-Type: '.$t_exporter->getContentType().'; charset=UTF-8');
-			header('Content-Disposition: attachment; filename="batch_export.'.$t_exporter->getFileExtension().'"');
+			header('Content-Disposition: attachment; filename="'.$vs_export_filename.'.'.$t_exporter->getFileExtension().'"');
 			header('Content-Transfer-Encoding: binary');
 			readfile($vs_tmp_file);
 			@unlink($vs_tmp_file);
@@ -891,6 +897,10 @@
 				
 				$this->view->setVar('set_id', $t_set->getPrimaryKey());
 				$this->view->setVar('t_set', $t_set);
+
+				if ($t_set->numErrors()) {
+					$this->view->setVar('error', join("; ", $t_set->getErrors()));
+				}
 			}
  		
 			$this->view->setVar('set_name', $vs_set_name);

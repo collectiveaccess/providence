@@ -1924,7 +1924,7 @@
 											break;
 									}
 								} else {
-									$va_groups[] = mb_substr($va_item[$va_label_order_by_fields[0]], 0, 1);	
+									if (is_array($va_item)) { $va_groups[] = mb_substr($va_item[$va_label_order_by_fields[0]], 0, 1);}
 								}
 								break;
 						}

@@ -1613,6 +1613,7 @@ table.listtable {
     font-size: 8pt;
     width: 100%;
     text-align: left;
+    clear:both;
 }   
 #caWatchedItemsList.listtable {
 	font-size:12px;

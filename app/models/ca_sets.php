@@ -984,7 +984,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * Add a list of row_ids to the currently loaded set with minimal overhead.
 	 * Note: this method doesn't check access rights for the set
 	 *
-	 * @param int $pa_row_ids
+	 * @param array $pa_row_ids
 	 * @return int Returns item_id of newly created set item entry. The item_id is a unique identifier for the row_id in the city at the specified position (rank). It is *not* the same as the row_id.
 	 */
 	public function addItems($pa_row_ids) {
@@ -999,13 +999,13 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$va_item_values = array();
 		$va_row_ids = array_unique($pa_row_ids);
 		foreach($va_row_ids as $vn_row_id) {
-			$va_item_values[] = "(".(int)$vn_set_id.",".(int)$vn_table_num.",".(int)$vn_row_id.",".(int)$vn_type_id.")";
+			$va_item_values[] = "(".(int)$vn_set_id.",".(int)$vn_table_num.",".(int)$vn_row_id.",".(int)$vn_type_id.", '')";
 		}
 		
 		if(sizeof($va_item_values)) {
 			// Quickly create set item links
 			// Peforming this with a single direct scales much much better than repeatedly populating a model and calling insert()
-			$this->getDb()->query("INSERT INTO ca_set_items (set_id, table_num, row_id, type_id) VALUES ".join(",", $va_item_values));
+			$this->getDb()->query("INSERT INTO ca_set_items (set_id, table_num, row_id, type_id, vars) VALUES ".join(",", $va_item_values));
 			if ($this->getDb()->numErrors()) {
 				$this->errors = $this->getDb()->errors;
 				return false;
@@ -1372,12 +1372,29 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_table->hasField('access')) {
 			$vs_access_sql = ' AND rel.access IN ('.join(',', $pa_options['checkAccess']).')';
 		}
+
+		// list items happen to have the same primary key name as set items, which leads to weird side-effects
+		// in the code below. so instead of getting rel.* we explicitly list the fields for ca_list_items and
+		// rename cli.item_id to list_item_id so that any get('item_id') calls below refer to the set item id
+		if (($t_rel_table->tableName() === 'ca_list_items')) {
+			$va_rel_field_list = array();
+			foreach($t_rel_table->getFields() as $vs_rel_field) {
+				if($vs_rel_field == $t_rel_table->primaryKey()) {
+					$va_rel_field_list[] = "rel.{$vs_rel_field} as list_{$vs_rel_field}";
+				} else {
+					$va_rel_field_list[] = "rel.{$vs_rel_field}";
+				}
+			}
+			$vs_rel_field_list_sql = join(', ', $va_rel_field_list);
+		} else {
+			$vs_rel_field_list_sql = 'rel.*';
+		}
 		
 		$qr_res = $o_db->query("
 			SELECT 
 				casi.set_id, casi.item_id, casi.row_id, casi.rank, casi.vars,
 				casil.label_id, casil.caption, casil.locale_id set_item_label_locale_id,
-				rel.*, rel_label.".$t_rel_label_table->getDisplayField()." set_item_label, rel_label.locale_id rel_locale_id
+				{$vs_rel_field_list_sql}, rel_label.".$t_rel_label_table->getDisplayField()." set_item_label, rel_label.locale_id rel_locale_id
 				{$vs_rep_select}
 			FROM ca_set_items casi
 			LEFT JOIN ca_set_item_labels AS casil ON casi.item_id = casil.item_id
@@ -1444,8 +1461,8 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 				}
 				
 				$va_row['representation_count'] = (int)$va_representation_counts[$qr_res->get('row_id')];
-			}	
-			
+			}
+
 			$va_row = array_merge($va_row, $va_labels[$qr_res->get('item_id')]);
 
 			if (isset($pa_options['returnItemAttributes']) && is_array($pa_options['returnItemAttributes']) && sizeof($pa_options['returnItemAttributes'])) {
