@@ -1,0 +1,53 @@
+//_notification-info-box.scss
+
+
+div.notification-info-box {
+	box-shadow: 0 0 2px 2px rgba($grey, 0.1);	
+	padding: 1em;
+	background:	$white-off url('../graphics/icons/info.gif') no-repeat 13px 0.9em;
+	background-size:32px 32px;
+	border: 2px solid $perth;
+	border-radius: 3px !important;
+}
+
+
+li.notification-info-box {
+	font-weight: 600;
+	color: $green;
+	font-size: inherit;
+	font-family: inherit;
+	text-indent: 10px;
+	padding-top: 2px;
+}
+
+ul.notification-info-box {
+	margin: 0;
+
+}
+
+div.notification-error-box {
+	box-shadow: 0 0 2px 2px rgba($grey, 0.1);	
+	padding: 1em;
+	background:	$white-off url('../graphics/icons/info.gif') no-repeat 13px 0.9em;
+	background-size:32px 32px;
+	border: 2px solid $red;
+	border-radius: 3px !important;
+}
+
+
+li.notification-error-box {
+	font-weight: 600;
+	color: $grey;
+	font-size: inherit;
+	font-family: inherit;
+	text-indent: 10px;
+	padding-top: 2px;
+}
+
+ul.notification-error-box {
+	margin: 0;
+
+}
+
+
+//notification-error-box

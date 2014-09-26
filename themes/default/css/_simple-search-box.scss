@@ -1,0 +1,56 @@
+//_simple-search-box.scss
+
+#advancedSearchFormContainer {
+	div.simple-search-box {
+		background: white;
+		float: none;
+		padding: 3px; 
+		border-radius: 3px; 
+		margin-top: 0;
+
+
+		input[type="text"], 
+		input[type="textarea"], 
+		textarea, 
+		input[type="password"],
+		select,
+		select#ca_objects_languageAffiliation {
+			width: 100% !important;
+		}
+
+
+	}
+}
+
+.searchFormGroupElementModeElement {
+	width: 33%;
+}
+
+div.searchFormLineModeElementLabel {
+	font-family: inherit;
+	font-size: inherit;
+	font-weight: 600;
+}
+
+
+#advancedSearchFormContainer {
+	.saveAs {
+		font-size: 0.9em;
+		font-family: inherit;
+		color: inherit;
+
+
+		a {
+			font-family: inherit;
+			font-size: 0.9em;
+			font-weight: 600;
+			padding: 0.4em 0.5em;
+			border-radius: 3px;
+			background: $grey;
+		}
+	}
+}
+
+
+
+

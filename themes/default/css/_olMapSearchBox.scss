@@ -1,0 +1,32 @@
+//_olMapSearchBox.scss
+
+
+.olMapSearchBox {
+	float: none;
+	position: relative;
+	background:	none;
+	width: 100%;
+	height: auto;
+	margin: 0;
+	padding: 0;
+
+	input {
+		outline-style:none;
+		border: 1px solid #ddd;
+	}
+}
+
+.olMapSearchText {
+	height: inherit;
+	float: none;
+	margin: 0;
+}
+
+.mapholder {
+	height: auto !important;
+	width: 100% !important;
+}
+
+.olMap {
+	width: 100% !important;
+}

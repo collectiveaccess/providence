@@ -1,0 +1,29 @@
+//_links.scss
+
+div.roundedRel a,
+.hierNav a,
+a {
+	color: $link;
+
+	&:visited,
+	&:link {
+		color: $link;
+	}
+
+	&:hover {
+		color: darken($link, 20%);
+	}
+	&:focus {
+		border: 1px dotted $link;
+	}
+
+}
+
+
+
+
+
+
+#P667ObjectEditorFormItem_new_0 {
+	background: lighten($link, 50%) !important;
+}
