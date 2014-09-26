@@ -7480,10 +7480,23 @@ class BaseModel extends BaseObject {
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
-	 * 
+	 * Return all ancestors for a list of row_ids. The list is an aggregation of ancestors for all of the row_ids. It will not possible
+	 * to determine which row_ids have which ancestors from the returned value.
 	 * 
 	 * @param array $pa_row_ids 
-	 * @param array $pa_options
+	 * @param array $pa_options Options include:
+	 *		transaction = optional Transaction instance. If set then all database access is done within the context of the transaction
+	 *		returnAs = what to return; possible values are:
+	 *			searchResult			= a search result instance (aka. a subclass of BaseSearchResult), when the calling subclass is searchable (ie. <classname>Search and <classname>SearchResult classes are defined) 
+	 *			ids						= an array of ids (aka. primary keys)
+	 *			modelInstances			= an array of instances, one for each ancestor. Each instance is the same class as the caller, a subclass of BaseModel 
+	 *			firstId					= the id (primary key) of the first ancestor. This is the same as the first item in the array returned by 'ids'
+	 *			firstModelInstance		= the instance of the first ancestor. This is the same as the first instance in the array returned by 'modelInstances'
+	 *			count					= the number of ancestors
+	 *			[Default is ids]
+	 *	
+	 *		limit = if searchResult, ids or modelInstances is set, limits number of returned ancestoes. [Default is no limit]
+	 *		
 	 * @return mixed
 	 */
 	static public function getHierarchyAncestorsForIDs($pa_row_ids, $pa_options=null) {
@@ -7512,10 +7525,11 @@ class BaseModel extends BaseObject {
 					{$vs_table_pk} IN (?)
 			", array($va_level_row_ids));
 			$va_level_row_ids = $qr_level->getAllFieldValues($vs_parent_id_fld);
+			
 			$va_ancestor_row_ids = array_merge($va_ancestor_row_ids, $va_level_row_ids);
 		} while(($qr_level->numRows() > 0) && (sizeof($va_level_row_ids))) ;
-		
-		$va_ancestor_row_ids = array_unique($va_ancestor_row_ids);
+	
+		$va_ancestor_row_ids = array_values(array_unique($va_ancestor_row_ids));
 		if (!sizeof($va_ancestor_row_ids)) { return null; }
 		
 		$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
@@ -7558,6 +7572,104 @@ class BaseModel extends BaseObject {
 					return $t_instance->makeSearchResult($t_instance->tableName(), $va_ancestor_row_ids);
 				} else {
 					return $va_ancestor_row_ids;
+				}
+				break;
+		}
+		return null;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Return all children for a list of row_ids. The list is an aggregation of children for all of the row_ids. It will not possible
+	 * to determine which row_ids have which children from the returned value.
+	 * 
+	 * @param array $pa_row_ids 
+	 * @param array $pa_options Options include:
+	 *		transaction = optional Transaction instance. If set then all database access is done within the context of the transaction
+	 *		returnAs = what to return; possible values are:
+	 *			searchResult			= a search result instance (aka. a subclass of BaseSearchResult), when the calling subclass is searchable (ie. <classname>Search and <classname>SearchResult classes are defined) 
+	 *			ids						= an array of ids (aka. primary keys)
+	 *			modelInstances			= an array of instances, one for each children. Each instance is the same class as the caller, a subclass of BaseModel 
+	 *			firstId					= the id (primary key) of the first children. This is the same as the first item in the array returned by 'ids'
+	 *			firstModelInstance		= the instance of the first children. This is the same as the first instance in the array returned by 'modelInstances'
+	 *			count					= the number of children
+	 *			[Default is ids]
+	 *	
+	 *		limit = if searchResult, ids or modelInstances is set, limits number of returned children. [Default is no limit]
+	 *		
+	 * @return mixed
+	 */
+	static public function getHierarchyChildrenForIDs($pa_row_ids, $pa_options=null) {
+		if(!is_array($pa_row_ids) || (sizeof($pa_row_ids) == 0)) { return null; }
+		
+		$ps_return_as = caGetOption('returnAs', $pa_options, 'ids', array('forceLowercase' => true, 'validValues' => array('searchResult', 'ids', 'modelInstances', 'firstId', 'firstModelInstance', 'count')));
+		$o_trans = caGetOption('transaction', $pa_options, null);
+		$vs_table = get_called_class();
+		$t_instance = new $vs_table;
+		
+	 	if (!($vs_parent_id_fld = $t_instance->getProperty('HIERARCHY_PARENT_ID_FLD'))) { return null; }
+		if ($o_trans) { $t_instance->setTransaction($o_trans); }
+		
+		$vs_table_name = $t_instance->tableName();
+		$vs_table_pk = $t_instance->primaryKey();
+		
+		$o_db = $t_instance->getDb();
+		
+		$va_child_row_ids = array();
+		$va_level_row_ids = $pa_row_ids;
+		do {
+			$qr_level = $o_db->query("
+				SELECT {$vs_table_pk}
+				FROM {$vs_table_name}
+				WHERE
+					{$vs_parent_id_fld} IN (?)
+			", array($va_level_row_ids));
+			$va_level_row_ids = $qr_level->getAllFieldValues($vs_table_pk);
+			$va_child_row_ids = array_merge($va_child_row_ids, $va_level_row_ids);
+		} while(($qr_level->numRows() > 0) && (sizeof($va_level_row_ids))) ;
+		
+		$va_child_row_ids = array_values(array_unique($va_child_row_ids));
+		if (!sizeof($va_child_row_ids)) { return null; }
+		
+		$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
+		
+		
+		switch($ps_return_as) {
+			case 'firstmodelinstance':
+				$vn_child_id = array_shift($va_child_row_ids);
+				if ($t_instance->load((int)$vn_child_id)) {
+					return $t_instance;
+				}
+				return null;
+				break;
+			case 'modelinstances':
+				$va_instances = array();
+				foreach($va_child_row_ids as $vn_child_id) {
+					$t_instance = new $vs_table;
+					if ($o_trans) { $t_instance->setTransaction($o_trans); }
+					if ($t_instance->load((int)$vn_child_id)) {
+						$va_instances[] = $t_instance;
+						$vn_c++;
+						if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
+					}
+				}
+				return $va_instances;
+				break;
+			case 'firstid':
+				return array_shift($va_child_row_ids);
+				break;
+			case 'count':
+				return sizeof($va_child_row_ids);
+				break;
+			default:
+			case 'ids':
+			case 'searchresult':
+				if ($vn_limit && (sizeof($va_child_row_ids) >= $vn_limit)) { 
+					$va_child_row_ids = array_slice($va_child_row_ids, 0, $vn_limit);
+				}
+				if ($ps_return_as == 'searchresult') {
+					return $t_instance->makeSearchResult($t_instance->tableName(), $va_child_row_ids);
+				} else {
+					return $va_child_row_ids;
 				}
 				break;
 		}
