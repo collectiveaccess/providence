@@ -7956,7 +7956,7 @@ $pa_options["display_form_field_tips"] = true;
 									# Hierarchical <select>
 									#
 									$va_hier = $o_one_table->getHierarchyAsList(0, $vs_display_use_count, $va_display_use_count_filters, $vb_display_omit_items__with_zero_count);
-	
+									if (!is_array($va_hier)) { return ''; }
 									$va_display_fields = $va_attr["DISPLAY_FIELD"];
 									if (!in_array($vs_one_table_primary_key, $va_display_fields)) {
 										$va_display_fields[] = $o_one_table->tableName().".".$vs_one_table_primary_key;
