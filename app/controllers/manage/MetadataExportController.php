@@ -147,8 +147,14 @@
  			} else {
  				set_time_limit(3600);
 
-	 			$this->view->setVar("t_subject", $t_subject);
 	 			$vn_id = $this->request->getParameter('item_id', pInteger);
+				$this->view->setVar("t_subject", $t_subject);
+
+				if($vs_export_filename_template = $t_subject->getAppConfig()->get($t_subject->tableName()."_single_item_export_filename")) {
+					if($vs_filename = caProcessTemplateForIDs($vs_export_filename_template, $t_subject->tableNum(), array($vn_id))){
+						$this->view->setVar('file_name', $vs_filename);
+					}
+				}
 
 				// Can user read this particular item?
 				if(!caCanRead($this->request->getUserID(), $t_exporter->get('table_num'), $vn_id)) {
@@ -196,9 +202,15 @@
 					if($va_matches[1]){
 						$t_exporter = new ca_data_exporters($va_matches[1]);
 						if($t_exporter->getPrimaryKey()){
+							$t_subject = $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true);
+
 							$this->view->setVar('file',__CA_APP_DIR__.'/tmp/'.$ps_file);
 							$this->view->setVar('extension',$t_exporter->getFileExtension());
 							$this->view->setVar('content_type',$t_exporter->getContentType());
+
+							if($vs_export_filename = $t_subject->getAppConfig()->get($t_subject->tableName()."_batch_export_filename")) {
+								$this->view->setVar('file_name', $vs_export_filename);
+							}
 						}
 					}
 				}
