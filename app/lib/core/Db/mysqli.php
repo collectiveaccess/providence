@@ -472,7 +472,7 @@ class Db_mysqli extends DbDriverBase {
 		if (is_array($pa_fields)) {
 			$va_row = @mysqli_fetch_assoc($pr_res);
 			foreach($pa_fields as $vs_field) {
-				if (!isset($va_row[$vs_field])) { return array(); }
+				if (!is_array($va_row) || !array_key_exists($vs_field, $va_row)) { return array(); }
 			}
 			$this->seek($po_caller, $pr_res, 0);
 			while(is_array($va_row = @mysqli_fetch_assoc($pr_res))) {
@@ -482,7 +482,7 @@ class Db_mysqli extends DbDriverBase {
 			}
 		} else {
 			$va_row = @mysqli_fetch_assoc($pr_res);
-			if (!isset($va_row[$pa_fields])) { return array(); }
+			if (!is_array($va_row) || !array_key_exists($pa_fields, $va_row)) { return array(); }
 			$this->seek($po_caller, $pr_res, 0);
 			while(is_array($va_row = @mysqli_fetch_assoc($pr_res))) {
 				$va_vals[] = $va_row[$pa_fields];

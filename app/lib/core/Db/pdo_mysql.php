@@ -437,7 +437,7 @@ class Db_pdo_mysql extends DbDriverBase {
 		if (is_array($pa_fields)) {
 			$va_row = $pr_res->fetch(PDO::FETCH_ASSOC);
 			foreach($pa_fields as $vs_field) {
-				if (!isset($va_row[$vs_field])) { return array(); }
+				if (!is_array($va_row) || !array_key_exists($vs_field, $va_row)) { return array(); }
 			}
 			$this->seek($po_caller, $pr_res, 0);
 			while(is_array($va_row = $pr_res->fetch(PDO::FETCH_ASSOC))) {
@@ -447,7 +447,7 @@ class Db_pdo_mysql extends DbDriverBase {
 			}
 		} else {
 			$va_row = $pr_res->fetch(PDO::FETCH_ASSOC);
-			if (!isset($va_row[$pa_fields])) { return array(); }
+			if (!is_array($va_row) || !array_key_exists($pa_fields, $va_row)) { return array(); }
 			$this->seek($po_caller, $pr_res, 0);
 			while(is_array($va_row = $pr_res->fetch(PDO::FETCH_ASSOC))) {
 				$va_vals[] = $va_row[$pa_fields];

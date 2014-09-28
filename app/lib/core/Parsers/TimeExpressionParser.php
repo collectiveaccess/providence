@@ -2231,6 +2231,32 @@ class TimeExpressionParser {
 				}
 			}
 
+			// special treatment for HSP
+			if (caGetOption('dateFormat', $pa_options) == 'onlyDatesWithHyphens') {
+				// full year -> just return the year
+				if (
+					$va_start_pieces['year'] == $va_end_pieces['year']  &&
+					$va_start_pieces['day'] == 1 && $va_start_pieces['month'] == 1 &&
+					$va_start_pieces['hours'] == 0 && $va_start_pieces['minutes'] == 0 && $va_start_pieces['seconds'] == 0 &&
+					$va_end_pieces['day'] == 31 && $va_end_pieces['month'] == 12 &&
+					$va_end_pieces['hours'] == 23 && $va_end_pieces['minutes'] == 59 && $va_end_pieces['seconds'] == 59
+				) {
+					return ''.$va_start_pieces['year'];
+				}
+
+				$vs_date = $va_start_pieces['year'].'-'.sprintf('%02d', $va_start_pieces['month']).'-'.sprintf('%02d', $va_start_pieces['day']);
+
+				if(!(
+					$va_start_pieces['year'] == $va_end_pieces['year'] &&
+					$va_start_pieces['month'] == $va_end_pieces['month'] &&
+					$va_start_pieces['day'] == $va_end_pieces['day']
+				)) {
+					$vs_date .= '/'.$va_end_pieces['year'].'-'.sprintf('%02d', $va_end_pieces['month']).'-'.sprintf('%02d', $va_end_pieces['day']);
+				}
+
+				return $vs_date;
+			}
+
 			if ($pa_options['start_as_na_date']) {
 				$vs_date = $va_start_pieces['month'].'-'.$va_start_pieces['day'].'-'.$va_start_pieces['year'];
 				

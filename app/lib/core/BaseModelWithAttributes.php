@@ -1261,7 +1261,7 @@
 			$va_tmp = explode('.', $ps_field);
 			
 			if ($va_tmp[1] == $this->getTypeFieldName()) {
-				return $this->getTypeListAsHTMLFormElement(null, null, array_merge($pa_options, array('nullOption' => '-')));
+				return $this->getTypeListAsHTMLFormElement($ps_field, null, array_merge($pa_options, array('nullOption' => '-')));
 			}
 			
 			if (!in_array($va_tmp[0], array('created', 'modified'))) {		// let change log searches filter down to BaseModel
