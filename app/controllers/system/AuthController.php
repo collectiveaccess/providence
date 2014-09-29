@@ -26,6 +26,7 @@
  * ----------------------------------------------------------------------
  */
  	require_once(__CA_LIB_DIR__.'/ca/WidgetManager.php');
+	require_once(__CA_LIB_DIR__.'/core/Auth/AuthenticationManager.php');
  
  	class AuthController extends ActionController {
  		# -------------------------------------------------------
@@ -86,5 +87,87 @@
  			$this->render('logged_out_html.php');
   		}
  		# -------------------------------------------------------
+		public function Forgot() {
+			if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { $this->Login(); return; }
+
+			$this->render('forgot_password_html.php');
+		}
+		# -------------------------------------------------------
+		public function RequestPassword() {
+			if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { $this->Login(); return; }
+
+			$vs_username = $this->getRequest()->getParameter('username',pString);
+			$t_user = new ca_users();
+
+			if($t_user->load($vs_username)) {
+				$t_user->requestPasswordReset();
+			} else {
+				sleep(2);
+			}
+
+			// render the same static view no matter if something was actually done.
+			// otherwise you could figure out which user names exist and which don't
+
+			$this->render('password_reset_instructions_html.php');
+		}
+		# -------------------------------------------------------
+		public function InitReset() {
+			if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { $this->Login(); return; }
+
+			$vs_token = $this->getRequest()->getParameter('token',pString);
+			$vs_username = $this->getRequest()->getParameter('username',pString);
+			$t_user = new ca_users();
+
+			$vb_render_form = false;
+			if($t_user->load($vs_username)) {
+				if($t_user->isValidToken($vs_token)) {
+					$vb_render_form = true;
+				}
+			}
+
+			$this->view->setVar('renderForm', $vb_render_form);
+			$this->view->setVar('token', $vs_token);
+			$this->view->setVar('username', $vs_username);
+
+			$this->render('password_reset_form_html.php');
+		}
+		# -------------------------------------------------------
+		public function DoReset() {
+			if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { $this->Login(); return; }
+
+			$vs_token = $this->getRequest()->getParameter('token',pString);
+			$vs_username = $this->getRequest()->getParameter('username',pString);
+			$t_user = new ca_users();
+
+			$vs_pw = $this->getRequest()->getParameter('password',pString);
+			$vs_pw_check = $this->getRequest()->getParameter('password2',pString);
+
+			if($t_user->load($vs_username)) {
+				if($t_user->isValidToken($vs_token)) {
+					// no password match
+					if($vs_pw !== $vs_pw_check) {
+
+						$this->notification->addNotification(_t("Passwords did not match. Please try again."), __NOTIFICATION_TYPE_ERROR__);
+						$this->view->setVar('notifications', $this->notification->getNotifications());
+
+						$this->view->setVar('renderForm', true);
+						$this->view->setVar('token', $vs_token);
+						$this->view->setVar('username', $vs_username);
+
+						$this->render('password_reset_form_html.php');
+					} else {
+						$t_user->set('password', $vs_pw);
+						$t_user->setMode(ACCESS_WRITE);
+						$t_user->update();
+
+						$this->notification->addNotification(_t("Password was successfully changed. You can now log in with your new password."), __NOTIFICATION_TYPE_INFO__);
+						$this->view->setVar('notifications', $this->notification->getNotifications());
+
+						$this->Login();
+					}
+				}
+			}
+
+		}
+		# -------------------------------------------------------
  	}
- ?>

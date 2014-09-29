@@ -49,14 +49,6 @@
 			'label' => _t('Width of data entry field in user interface'),
 			'description' => _t('Width, in characters, of the field when displayed in a user interface.')
 		),
-		'fieldHeight' => array(
-			'formatType' => FT_NUMBER,
-			'displayType' => DT_FIELD,
-			'default' => '',
-			'width' => 5, 'height' => 1,
-			'label' => _t('Height of data entry field in user interface'),
-			'description' => _t('Height, in characters, of the field when displayed in a user interface.')
-		),
 		'doesNotTakeLocale' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_CHECKBOXES,
@@ -120,8 +112,7 @@
 	class TimeCodeAttributeValue extends AttributeValue implements IAttributeValue {
  		# ------------------------------------------------------------------
  		private $ops_text_value;
- 		private $opn_start_date;
- 		private $opn_end_date;
+ 		private $opn_duration;
  		# ------------------------------------------------------------------
  		public function __construct($pa_value_array=null) {
  			parent::__construct($pa_value_array);
@@ -188,14 +179,22 @@
  		}
  		# ------------------------------------------------------------------
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
- 			$vn_width = (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : 30;
- 			$vn_max_length = 255;
+			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth'));
+
+			$vs_width = trim((isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth']);
+
+			if(!$vs_width) { $vs_width = 30; }
+
+			if (!preg_match("!^[\d\.]+px$!i", $vs_width)) {
+				$vs_width = ((int)$vs_width * 6)."px";
+			}
+
  			return caHTMLTextInput(
 				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
 				array('id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
-					'size' => $vn_width,
+					'size' => $vs_width,
 					'value' => '{{'.$pa_element_info['element_id'].'}}',
-					'maxlength' => $vn_max_length,
+					'maxlength' => 255,
 					'class' => 'timecodeBg'
 				)
 			);
@@ -226,4 +225,3 @@
 		}
  		# ------------------------------------------------------------------
 	}
- ?>

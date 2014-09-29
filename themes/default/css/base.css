@@ -1613,6 +1613,7 @@ table.listtable {
     font-size: 8pt;
     width: 100%;
     text-align: left;
+    clear:both;
 }   
 #caWatchedItemsList.listtable {
 	font-size:12px;
@@ -5196,6 +5197,8 @@ div.listRel {
 
 .caItemList {
     /* margin-top: 10px; */
+    max-height: 500px;
+    overflow-y: auto;
 }
 
 .caItemListSortControlTrigger {
@@ -5237,6 +5240,21 @@ div.listRel {
 
 .caItemListSortControls ul li a {
 	text-decoration: none;
+}
+
+div.caItemLoadNextBundles {
+	padding: 10px;
+}
+
+a.caItemLoadNextBundles {
+	text-decoration: none;
+	font-weight: bold;
+	font-size: 12px;
+}
+
+.caItemLoadNextBundlesLoadIndicator {
+	display: none;
+	margin-left: 12px;
 }
 
 .roundedRel .caDeleteItemButton, .roundedRel .caInterstitialEditButton {

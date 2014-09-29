@@ -103,11 +103,17 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	/**
 	 * Completely clear index (usually in preparation for a full reindex)
 	 */
-	public function truncateIndex() {
+	public function truncateIndex($pn_table_num = null) {
+		$vs_table_name = '';
+		if($pn_table_num){
+			$o_dm = new Datamodel();
+			$vs_table_name = $o_dm->getTableName($pn_table_num) . '/';
+		}
 		$vo_http_client = new Zend_Http_Client();
 		$vo_http_client->setUri(
 			$this->ops_elasticsearch_base_url."/".
 			$this->ops_elasticsearch_index_name."/".
+			$vs_table_name.
 			"_query?q=*"
 		);
 

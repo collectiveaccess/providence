@@ -67,7 +67,13 @@
 				$t_exporter = new ca_data_exporters($vn_id);
 
 				$vs_file = tempnam(caGetTempDirPath(), 'export');
-				ca_data_exporters::exportRecordsFromSearchExpression($t_exporter->get('exporter_code'), $vs_search, $vs_file, array('request' => $req, 'progressCallback' => 'caIncrementBatchMetadataExportProgress'));
+
+				if($vn_set_id = $req->getParameter('set_id',pInteger)) {
+					ca_data_exporters::exportRecordsFromSet($t_exporter->get('exporter_code'), $vn_set_id, $vs_file, array('request' => $req, 'progressCallback' => 'caIncrementBatchMetadataExportProgress'));
+				} else {
+					ca_data_exporters::exportRecordsFromSearchExpression($t_exporter->get('exporter_code'), $vs_search, $vs_file, array('request' => $req, 'progressCallback' => 'caIncrementBatchMetadataExportProgress'));
+				}
+
 			}
 
 			// export done, move file to application tmp dir and create download link (separate action in the export controller)
@@ -80,4 +86,3 @@
 		}
 		# -------------------------------------------------------
 	}
-?>

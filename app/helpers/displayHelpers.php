@@ -826,7 +826,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 					
 					$va_imgs[] = "{url:'".$va_rep['urls']['preview170']."', width: ".$va_rep['info']['preview170']['WIDTH'].", height: ".
 					$va_rep['info']['preview170']['HEIGHT'].", link: '#', onclick:  'caMediaPanel.showPanel(\'".
-					caNavUrl($po_view->request, 'editor/objects', 'ObjectEditor', 'GetRepresentationInfo', array('object_id' => ($vs_table_name == 'ca_objects') ? $vn_item_id : 0, 'representation_id' => $va_rep['representation_id']))."\')'}";
+					caNavUrl($po_view->request, '*', '*', 'GetMediaOverlay', array($t_item->primaryKey() => $vn_item_id, 'representation_id' => $va_rep['representation_id']))."\')'}";
 					
 					$vn_r++;
 				}
@@ -1217,6 +1217,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 				if ($t_item->getPrimaryKey()) {
 					
 					$vn_set_table_num = $t_item->get('table_num');
+					$vs_set_table_name = $o_dm->getTableName($vn_set_table_num);
 					$vs_buf .= "<strong>"._t("Type of content")."</strong>: ".caGetTableDisplayName($vn_set_table_num)."<br/>\n";
 					
 					$vs_buf .= "</div>\n";
@@ -1231,13 +1232,36 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 				if ($t_user->getPrimaryKey()) {
 					$vs_buf .= "<div><strong>"._t('Owner')."</strong>: ".$t_user->get('fname').' '.$t_user->get('lname')."</div>\n";
 				}
+
+				if($po_view->request->user->canDoAction('can_export_'.$vs_set_table_name) && $t_item->getPrimaryKey() && (sizeof(ca_data_exporters::getExporters($vn_set_table_num))>0)) {
+					$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" id="caExportItemButton">';
+
+					$vs_buf .= _t('Export this set of records')."&nbsp; ";
+					$vs_buf .= "<a class='button' onclick='jQuery(\"#exporterFormList\").show();' style='text-align:right;' href='#'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__)."</a>";
+
+					$vs_buf .= caFormTag($po_view->request, 'ExportData', 'caExportForm', 'manage/MetadataExport', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+					$vs_buf .= "<div id='exporterFormList'>";
+					$vs_buf .= ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $vn_set_table_num, array('id' => 'caExporterList'),array('width' => '135px'));
+					$vs_buf .= caHTMLHiddenInput('set_id', array('value' => $t_item->getPrimaryKey()));
+					$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExportForm");
+					$vs_buf .= "</div>\n";
+					$vs_buf .= "</form>";
+
+					$vs_buf .= "</div>";
+
+					$vs_buf .= "<script type='text/javascript'>";
+					$vs_buf .= "jQuery(document).ready(function() {";
+					$vs_buf .= "jQuery(\"#exporterFormList\").hide();";
+					$vs_buf .= "});";
+					$vs_buf .= "</script>";
+				}
 			}
 			
 			//
 			// Output extra useful info for set items
 			//
 			if ($vs_table_name === 'ca_set_items') {
-				JavascriptLoadManager::register("panel");
+				AssetLoadManager::register("panel");
 				$t_set = new ca_sets();
 				if ($t_set->load($vn_set_id = $t_item->get('set_id'))) {
 					$vs_buf .= "<div><strong>"._t("Part of set")."</strong>: ".caEditorLink($po_view->request, $t_set->getLabelForDisplay(), '', 'ca_sets', $vn_set_id)."<br/>\n";
@@ -3227,7 +3251,7 @@ $ca_relationship_lookup_parse_cache = array();
 				}
 				
                 if ($vs_template) {
-                    $va_items[$va_relation[$vs_rel_pk]]['_display'] = caProcessTemplateForIDs($vs_template, $pt_rel->tableName(), array($va_relation['relation_id']), array('returnAsArray' => false, 'returnAsLink' => false, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table, 'primaryIDs' => $va_primary_ids));
+                    $va_items[$va_relation[$vs_rel_pk]]['_display'] = caProcessTemplateForIDs($vs_template, $pt_rel->tableName(), array($va_relation['relation_id'] ? $va_relation['relation_id'] : $va_relation[$vs_pk]), array('returnAsArray' => false, 'returnAsLink' => false, 'delimiter' => caGetOption('delimiter', $pa_options, $vs_display_delimiter), 'resolveLinksUsing' => $vs_rel_table, 'primaryIDs' => $va_primary_ids));
                 } else {
                     $va_items[$va_relation[$vs_rel_pk]]['_display'] = $va_items[$va_relation[$vs_rel_pk]]['label'];
                 }
@@ -3405,7 +3429,8 @@ $ca_relationship_lookup_parse_cache = array();
 		
 		foreach($pa_text as $vn_i => $vs_text) {
 			$vs_text = preg_replace("!([A-Za-z0-9]+)='([^']*)'!", "$1=\"$2\"", $vs_text);		// DomDcoument converts single quotes around attributes to double quotes so we do the same to the template
-			$vs_text = preg_replace("![ ]+/>!", "/>", $vs_text);								// DomDocument removes spaces before the end of self-closing tags so we do the same here to the template
+			$vs_text = preg_replace("![ ]+/>!", "/>", $vs_text);
+			$vs_text = preg_replace("![\r\n]+!", "", $vs_text);							// DomDocument removes newlines so we do the same here to the template
 			
 		
 			$o_dom->loadHTML('<?xml encoding="utf-8">'.$vs_text);		// Needs XML declaration to force it to consider the text as UTF-8. Please don't ask why. No one knows.
@@ -3425,6 +3450,7 @@ $ca_relationship_lookup_parse_cache = array();
 			
 			if (sizeof($va_l_tags)) {
 				$vs_content = html_entity_decode($vs_text);
+				$vs_content = preg_replace_callback("/(&#[0-9]+;)/", function($m) { return mb_convert_encoding($m[1], "UTF-8", "HTML-ENTITIES"); }, $vs_content); 
 				foreach($va_l_tags as $va_l) {
 					if ($vb_can_handle_target) {
 						$va_params = array('request' => $g_request, 'content' => $va_l['content'], 'table' => $ps_table_name, 'id' => $pa_row_ids[$vn_i], 'classname' => $ps_class, 'target' => $ps_target, 'additionalParameters' => null, 'options' => null);
@@ -3831,4 +3857,141 @@ $ca_relationship_lookup_parse_cache = array();
 		
 		return $vs_template;
 	}
+	# ------------------------------------------------------
+ 	/**
+ 	 * Return rendered HTML for media viewer for both re
+ 	 *
+ 	 * @param RequestHTTP $po_request
+ 	 * @param array $pa_options
+ 	 * @param array $pa_additional_display_options
+ 	 * @return string HTML output
+ 	 */
+ 	function caGetMediaViewerHTMLBundle($po_request, $pa_options=null, $pa_additional_display_options=null) {
+ 		$va_access_values = (isset($pa_options['access']) && is_array($pa_options['access'])) ? $pa_options['access'] : array();	
+ 		$vs_display_type = (isset($pa_options['display']) && $pa_options['display']) ? $pa_options['display'] : 'media_overlay';	
+ 		$vs_container_dom_id = (isset($pa_options['containerID']) && $pa_options['containerID']) ? $pa_options['containerID'] : null;	
+ 		
+ 		$t_subject = (isset($pa_options['t_subject']) && $pa_options['t_subject']) ? $pa_options['t_subject'] : null;
+ 		
+ 		$t_rep = (isset($pa_options['t_representation']) && $pa_options['t_representation']) ? $pa_options['t_representation'] : null;
+ 		$vn_representation_id = $t_rep ? $t_rep->getPrimaryKey() : null;
+ 		$t_attr_val = (isset($pa_options['t_attribute_value']) && $pa_options['t_attribute_value']) ? $pa_options['t_attribute_value'] : null;
+ 		$vn_value_id = $t_attr_val ? $t_attr_val->getPrimaryKey() : null;
+ 		
+ 		$vn_item_id = (isset($pa_options['item_id']) && $pa_options['item_id']) ? $pa_options['item_id'] : null;
+ 		$vn_order_item_id = (isset($pa_options['order_item_id']) && $pa_options['order_item_id']) ? $pa_options['order_item_id'] : null;
+ 		
+ 		$vb_media_editor = (isset($pa_options['mediaEditor']) && $pa_options['mediaEditor']) ? true : false;
+ 		$vb_no_controls = (isset($pa_options['noControls']) && $pa_options['noControls']) ? true : false;
+ 		
+ 		$vn_item_id = (isset($pa_options['item_id']) && $pa_options['item_id']) ? $pa_options['item_id'] : null;
+ 		
+ 		$vn_subject_id = $t_subject ? $t_subject->getPrimaryKey() : null;
+ 		
+ 		if(!$vn_value_id && !$vn_representation_id) {
+ 			$t_rep->load($t_subject->getPrimaryRepresentationID(array('checkAccess' => $va_access_values)));
+ 		}
+ 		
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+		
+		$t_set_item = new ca_set_items();
+		if ($vn_item_id) { $t_set_item->load($vn_item_id); }
+		
+		$t_order_item = new ca_commerce_order_items();
+		if ($vn_order_item_id) { $t_order_item->load($vn_order_item_id); }
+		
+		$o_view->setVar('containerID', $vs_container_dom_id);
+		
+ 		$o_view->setVar('t_subject', $t_subject);
+		$o_view->setVar('t_representation', $t_rep);
+ 		if ($vn_representation_id && ((!sizeof($va_access_values) || in_array($t_rep->get('access'), $va_access_values)))) { 		// check rep access
+			$va_rep_display_info = caGetMediaDisplayInfo($vs_display_type, $t_rep->getMediaInfo('media', 'INPUT', 'MIMETYPE'));
+			$va_rep_display_info['poster_frame_url'] = $t_rep->getMediaUrl('media', $va_rep_display_info['poster_frame_version']);
+			
+			$o_view->setVar('num_multifiles', $t_rep->numFiles());
+				
+ 			if (isset($pa_options['use_book_viewer'])) {
+ 				$va_rep_display_info['use_book_viewer'] = (bool)$pa_options['use_book_viewer'];
+ 			}		
+			$o_view->setVar('display_type', $vs_display_type);
+			
+			if (is_array($pa_additional_display_options)) { $va_rep_display_info = array_merge($va_rep_display_info, $pa_additional_display_options); }
+			$o_view->setVar('display_options', $va_rep_display_info);
+			$o_view->setVar('representation_id', $vn_representation_id);
+			$o_view->setVar('versions', $va_versions = $t_rep->getMediaVersions('media'));
+			
+			$t_media = new Media();
+			$o_view->setVar('version_type', $t_media->getMimetypeTypename($t_rep->getMediaInfo('media', 'original', 'MIMETYPE')));
+		
+			if ($vn_subject_id) { 
+				$o_view->setVar('reps', $va_reps = $t_subject->getRepresentations(array('icon'), null, array("return_with_access" => $va_access_values)));
+				
+				$vn_next_rep = $vn_prev_rep = null;
+				
+				$va_rep_list = array_values($va_reps);
+				foreach($va_rep_list as $vn_i => $va_rep) {
+					if ($va_rep['representation_id'] == $vn_representation_id) {
+						if (isset($va_rep_list[$vn_i - 1])) {
+							$vn_prev_rep = $va_rep_list[$vn_i - 1]['representation_id'];
+						}
+						if (isset($va_rep_list[$vn_i + 1])) {
+							$vn_next_rep = $va_rep_list[$vn_i + 1]['representation_id'];
+						}
+						$o_view->setVar('representation_index', $vn_i + 1);
+					}
+				}
+				$o_view->setVar('previous_representation_id', $vn_prev_rep);
+				$o_view->setVar('next_representation_id', $vn_next_rep);
+			}	
+			$ps_version 	= $po_request->getParameter('version', pString);
+			if (!in_array($ps_version, $va_versions)) { 
+				if (!($ps_version = $va_rep_display_info['display_version'])) { $ps_version = null; }
+			}
+			$o_view->setVar('version', $ps_version);
+			$o_view->setVar('version_info', $t_rep->getMediaInfo('media', $ps_version));
+			
+ 			$o_view->setVar('t_set_item', $t_set_item);
+ 			$o_view->setVar('t_order_item', $t_order_item);
+ 			$o_view->setVar('use_media_editor', $vb_media_editor);
+ 			$o_view->setVar('noControls', $vb_no_controls);
+		} else {
+			//$t_attr = new ca_attributes($t_attr_val->get('attribute_id'));
+			$t_attr_val->useBlobAsMediaField(true);
+			
+			$va_rep_display_info = caGetMediaDisplayInfo($vs_display_type, $t_attr_val->getMediaInfo('value_blob', 'INPUT', 'MIMETYPE'));
+			$va_rep_display_info['poster_frame_url'] = $t_attr_val->getMediaUrl('value_blob', $va_rep_display_info['poster_frame_version']);
+			
+			$o_view->setVar('num_multifiles', $t_attr_val->numFiles());
+				
+ 			if (isset($pa_options['use_book_viewer'])) {
+ 				$va_rep_display_info['use_book_viewer'] = (bool)$pa_options['use_book_viewer'];
+ 			}		
+			$o_view->setVar('display_type', $vs_display_type);
+			
+			if (is_array($pa_additional_display_options)) { $va_rep_display_info = array_merge($va_rep_display_info, $pa_additional_display_options); }
+			$o_view->setVar('display_options', $va_rep_display_info);
+			$o_view->setVar('representation_id', $vn_representation_id);
+			$o_view->setVar('t_attribute_value', $t_attr_val);
+			$o_view->setVar('versions', $va_versions = $t_attr_val->getMediaVersions('value_blob'));
+			
+			$t_media = new Media();
+			$o_view->setVar('version_type', $t_media->getMimetypeTypename($t_attr_val->getMediaInfo('value_blob', 'original', 'MIMETYPE')));
+			
+			$o_view->setVar('reps', array());
+				
+			$ps_version 	= $po_request->getParameter('version', pString);
+			if (!in_array($ps_version, $va_versions)) { 
+				if (!($ps_version = $va_rep_display_info['display_version'])) { $ps_version = null; }
+			}
+			$o_view->setVar('version', $ps_version);
+			$o_view->setVar('version_info', $t_attr_val->getMediaInfo('value_blob', $ps_version));
+			
+ 			$o_view->setVar('t_subject', $t_subject);
+ 			$o_view->setVar('t_set_item', $t_set_item);
+ 			$o_view->setVar('t_order_item', $t_order_item);
+ 			$o_view->setVar('use_media_editor', $vb_media_editor);
+ 			$o_view->setVar('noControls', $vb_no_controls);
+		}
+		return $o_view->render('representation_viewer_html.php');
+ 	}
 	# ------------------------------------------------------------------

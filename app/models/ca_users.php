@@ -40,6 +40,7 @@ include_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__.'/models/ca_user_groups.php');
 require_once(__CA_APP_DIR__.'/models/ca_locales.php');
 require_once(__CA_LIB_DIR__.'/core/Zend/Currency.php');
+require_once(__CA_LIB_DIR__ . '/core/Auth/AuthenticationManager.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_users'] = array(
@@ -74,7 +75,7 @@ BaseModel::$s_ca_models_definitions['ca_users'] = array(
 				)
 		),
 		'password' => array(
-				'FIELD_TYPE' => FT_PASSWORD, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_PASSWORD, 'DISPLAY_TYPE' => DT_FIELD,
 				'DISPLAY_WIDTH' => 60, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
@@ -281,6 +282,8 @@ class ca_users extends BaseModel {
 	 * authentication configuration
 	 */
 	protected $opo_auth_config = null;
+
+	private $opo_log = null;
 	
 	
 	/**
@@ -320,6 +323,7 @@ class ca_users extends BaseModel {
 		parent::__construct($pn_id, $pb_use_cache);	# call superclass constructor	
 		
 		$this->opo_auth_config = Configuration::load($this->getAppConfig()->get("authentication_config"));
+		$this->opo_log = new Eventlog();
 	}
 	# ----------------------------------------
 	/**
@@ -362,12 +366,38 @@ class ca_users extends BaseModel {
 	 * @return bool Returns true if no error, false if error occurred
 	 */	
 	public function insert($pa_options=null) {
+		if(!caCheckEmailAddress($this->get('email'))) {
+			$this->postError(922, _t("Invalid email address"), 'ca_users->insert()');
+			return false;
+		}
+
 		# Confirmation key is an md5 hash than can be used as a confirmation token. The idea
 		# is that you create a new user record with the 'active' field set to false. You then
 		# send the confirmation key to the new user (usually via e-mail) and ask them to respond
 		# with the key. If they do, you know that the e-mail address is valid.
-		$vs_confirmation_key = md5(tempnam(caGetTempDirPath(),"meow").time().rand(1000, 999999999));
+		if(function_exists('mcrypt_create_iv')) {
+			$vs_confirmation_key = md5(mcrypt_create_iv(24, MCRYPT_DEV_URANDOM));
+		} else {
+			$vs_confirmation_key = md5(uniqid(mt_rand(), true));
+		}
+
 		$this->set("confirmation_key", $vs_confirmation_key);
+
+		try {
+			$vs_backend_password = AuthenticationManager::createUserAndGetPassword($this->get('user_name'), $this->get('password'));
+			$this->set('password', $vs_backend_password);
+		} catch(AuthClassFeatureException $e) { // auth class does not implement creating users at all
+			$this->postError(925, _t("Current authentication adapter does not support creating new users."), 'ca_users->insert()');
+			return false;
+		} catch(Exception $e) { // some other error in auth class, e.g. user couldn't be found in directory
+			$this->postError(925, $e->getMessage(), 'ca_users->insert()');
+
+			$this->opo_log->log(array(
+				'CODE' => 'SYS', 'SOURCE' => 'ca_users/insert',
+				'MESSAGE' => _t('Authentication adapter could not create user. Message was: %1', $e->getMessage())
+			));
+			return false;
+		}
 		
 		# set user vars (the set() method automatically serializes the vars array)
 		$this->set("vars",$this->opa_user_vars);
@@ -388,6 +418,24 @@ class ca_users extends BaseModel {
 	 */	
 	public function update($pa_options=null) {
 		$this->clearErrors();
+
+		if($this->changed('email')) {
+			if(!caCheckEmailAddress($this->get('email'))) {
+				$this->postError(922, _t("Invalid email address"), 'ca_users->update()');
+				return false;
+			}
+		}
+
+		if($this->changed('password')) {
+			try {
+				$vs_backend_password = AuthenticationManager::updatePassword($this->get('user_name'), $this->get('password'));
+				$this->set('password', $vs_backend_password);
+				$this->removePendingPasswordReset(true);
+			} catch(AuthClassFeatureException $e) {
+				$this->postError(922, $e->getMessage(), 'ca_users->update()');
+				return false; // maybe don't barf here?
+			}
+		}
 		
 		# set user vars (the set() method automatically serializes the vars array)
 		if ($this->opa_user_vars_have_changed) {
@@ -411,7 +459,36 @@ class ca_users extends BaseModel {
 	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 		$this->clearErrors();
 		$this->set('userclass', 255);
+
+		if($this->getPrimaryKey()>0) {
+			try {
+				AuthenticationManager::deleteUser($this->get('user_name'));
+			} catch (Exception $e) {
+				$this->opo_log->log(array(
+					'CODE' => 'SYS', 'SOURCE' => 'ca_users/delete',
+					'MESSAGE' => _t('Authentication adapter could not delete user. Message was: %1', $e->getMessage())
+				));
+			}
+		}
+
 		return $this->update();
+	}
+	# ----------------------------------------
+	public function set($pa_fields, $pm_value="", $pa_options=null) {
+		if (!is_array($pa_fields)) {
+			$pa_fields = array($pa_fields => $pm_value);
+		}
+
+		// don't allow setting passwords of existing users if authentication backend doesn't support it. this way
+		// all other set() calls can still go through and update() doesn't necessarily have to barf because of a changed password
+		if($this->getPrimaryKey() > 0){
+			if(isset($pa_fields['password']) && !AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_UPDATE_PASSWORDS__)) {
+				$this->postError(922, _t("Authentication back-end doesn't updating passwords of existing users."), 'ca_users->update()');
+				return false;
+			}
+		}
+
+		return parent::set($pa_fields,$pm_value,$pa_options);
 	}
 	# ----------------------------------------
 	# --- Utility
@@ -428,24 +505,6 @@ class ca_users extends BaseModel {
 		}
 		
 		return caProcessTemplate(join($this->getAppConfig()->getList('ca_users_lookup_delimiter'), $this->getAppConfig()->getList('ca_users_lookup_settings')), $va_values, array());
-	}
-	# ----------------------------------------
-	# --- Authentication
-	# ----------------------------------------
-	/**
-	 * Returns true if the provided clear-text password ($ps_password) is valid for the currently loaded record.
-	 *
-	 * Note: If "user_old_style_passwords" configuration directive is set to a non-blank, non-zero 
-	 * value in the application configuration file, passwords are encrypted using the PHP crypt() function. Otherwise
-	 * the md5 hash of the clear-text password is used.
-	 *
-	 * @access public
-	 * @param string $ps_password Clear-text password
-	 * @return bool Returns true if password is valid, false if not
-	 */	
-	# Returns true if password (clear text) is correct for the current user
-	public function verify($ps_password) {
-		return (md5($ps_password) == $this->get("password")) ? true : false;
 	}
 	# ----------------------------------------
 	# --- User variables
@@ -2519,6 +2578,215 @@ class ca_users extends BaseModel {
 		return $this->getVar($this->getAppConfig()->get("app_name")."_previous_to_last_logout");
 	}
 	# ----------------------------------------
+	public function requestPasswordReset() {
+		if(!($this->getPrimaryKey() > 0)) { return false; }
+		if(!($this->isActive())) { return false; } // no password resets for locked users
+
+		if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { return false; }
+
+		$vs_app_name = $this->getAppConfig()->get("app_name");
+
+		if($this->hasPendingPasswordReset()) {
+			// if the maximum number of allowed emails was reached, remove the reset and count is as unsuccessful
+			if(!$this->pendingPasswordResetTestAndSetMailLimit()) {
+				$this->removePendingPasswordReset(false);
+			}
+
+			// if the password reset is expired, remove the reset and count as unsuccessful
+			if($this->pendingPasswordResetIsExpired()) {
+				$this->removePendingPasswordReset(false);
+			}
+		}
+
+		// if the user is still alowed to receive additional resets, either generate a new one or re-send the existing one
+		if(!$this->hasReachedMaxPasswordResets()) {
+
+			if($this->hasPendingPasswordReset()) {
+				$vs_old_token = $this->getVar("{$vs_app_name}_password_reset_token");
+				$vn_mail_count = $this->getVar("{$vs_app_name}_password_reset_mails_sent");
+
+				if($this->sendPasswordResetMail($vs_old_token)) {
+					$this->setVar("{$vs_app_name}_password_reset_mails_sent", $vn_mail_count + 1);
+				}
+			} else {
+				// We rely on the system clock here. That might not be the smartest thing to do but it'll work for now.
+				$vn_token_expiration_timestamp = time() + 15 * 60; // now plus 15 minutes
+				$vs_password_reset_token = hash('sha256', mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+
+				$this->setVar("{$vs_app_name}_password_reset_token", $vs_password_reset_token);
+				$this->setVar("{$vs_app_name}_password_reset_expiration", $vn_token_expiration_timestamp);
+
+				if($this->sendPasswordResetMail($vs_password_reset_token)) {
+					$this->setVar("{$vs_app_name}_password_reset_mails_sent", 1);
+				} else {
+					$this->setVar("{$vs_app_name}_password_reset_mails_sent", 0);
+				}
+			}
+		} else {
+			// user has reached the maximum allowed password resets -> lock the account
+			$this->passwordResetDeactivateAccount();
+		}
+
+		$this->setMode(ACCESS_WRITE);
+		$this->update();
+	}
+	# ----------------------------------------
+	public function isValidToken($ps_token) {
+		if(!($this->getPrimaryKey() > 0)) { return false; }
+		if(!($this->isActive())) { return false; } // no password resets for locked users
+
+		if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { return false; }
+
+		if($this->hasReachedMaxPasswordResets()) {
+			// user has reached the maximum allowed password resets -> lock the account regardless what the token is
+			$this->passwordResetDeactivateAccount();
+			return false;
+		}
+
+		$vs_app_name = $this->getAppConfig()->get("app_name");
+		$vb_return = false;
+
+		if($this->hasPendingPasswordReset()) {
+			if(!$this->pendingPasswordResetIsExpired()) {
+				$vs_actual_token = $this->getVar("{$vs_app_name}_password_reset_token");
+				$vb_return = ($vs_actual_token === $ps_token);
+			}
+		}
+
+		if(!$vb_return) {
+			// invalid token checks count as completely botched password reset attempt. you can only have so many of those
+			$this->removePendingPasswordReset(false);
+			$this->setMode(ACCESS_WRITE);
+			$this->update();
+		}
+
+		return $vb_return;
+	}
+	# ----------------------------------------
+	# Password change utilities
+	# ----------------------------------------
+	private function passwordResetDeactivateAccount() {
+		if(!($this->getPrimaryKey() > 0)) { return; }
+		if(!AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { return; }
+
+		$vs_app_name = $this->getAppConfig()->get("app_name");
+		// Technically the reset was not successful but since we lock the user out, we want to reset
+		// the password_resets_failed count as well so that if an admin reactivates the user, he can
+		// use the reset password feature again. Otherwise he would immediately be locked out again.
+		$this->removePendingPasswordReset(true);
+		$this->set('active', 0);
+		$this->setMode(ACCESS_WRITE);
+		$this->update();
+
+		$this->opo_log->log(array(
+			'CODE' => 'SYS', 'SOURCE' => 'ca_users/passwordResetDeactivateAccount',
+			'MESSAGE' => _t('User %1 was permanently deactivated because the maximum number of consecutive unsuccessful password reset attemps was reached.', $this->get('user_name'))
+		));
+
+		global $g_request;
+		caSendMessageUsingView($g_request,
+			$this->get('email'),
+			__CA_ADMIN_EMAIL__,
+			"[{$vs_app_name}] "._t("Information regarding your account"),
+			'account_deactivated.tpl',
+			array()
+		);
+	}
+	# ----------------------------------------
+	private function hasReachedMaxPasswordResets() {
+		if(!($this->getPrimaryKey() > 0)) { return true; }
+
+		$vs_app_name = $this->getAppConfig()->get("app_name");
+		$vn_failed_pw_resets = $this->getVar("{$vs_app_name}_password_resets_failed");
+		if(!$vn_failed_pw_resets) {
+			$vn_failed_pw_resets = 0;
+		}
+
+		return ($vn_failed_pw_resets > 5);
+	}
+	# ----------------------------------------
+	private function sendPasswordResetMail($ps_password_reset_token) {
+		if(!($this->getPrimaryKey() > 0)) { return false; }
+
+		global $g_request;
+		$vs_user_email = $this->get('email');
+		$vs_app_name = $this->getAppConfig()->get("app_name");
+
+		return caSendMessageUsingView($g_request,
+			$vs_user_email,
+			__CA_ADMIN_EMAIL__,
+			"[{$vs_app_name}] "._t("Information regarding your password"),
+			'forgot_password.tpl',
+			array(
+				'password_reset_token' => $ps_password_reset_token,
+				'user_name' => $this->get('user_name'),
+				'site_host' => $this->getAppConfig()->get('site_host'),
+			)
+		);
+	}
+	# ----------------------------------------
+	private function hasPendingPasswordReset() {
+		if(!($this->getPrimaryKey() > 0)) { return false; }
+
+		$vs_app_name = $this->getAppConfig()->get("app_name");
+
+		$vs_token = $this->getVar("{$vs_app_name}_password_reset_token");
+		$vn_timestamp = $this->getVar("{$vs_app_name}_password_reset_expiration");
+
+		return ((strlen($vs_token) > 0) && $vn_timestamp && ($vn_timestamp > 0));
+	}
+	# ----------------------------------------
+	private function pendingPasswordResetIsExpired() {
+		if(!($this->getPrimaryKey() > 0)) { return true; }
+
+		if($this->hasPendingPasswordReset()) {
+			$vs_app_name = $this->getAppConfig()->get("app_name");
+			$vn_timestamp = $this->getVar("{$vs_app_name}_password_reset_expiration");
+			if($vn_timestamp && ($vn_timestamp > 0)) {
+				return ($vn_timestamp < time());
+			}
+		}
+
+		// no pending reset or something else is weird -> counts as expired
+		return true;
+	}
+	# ----------------------------------------
+	private function pendingPasswordResetTestAndSetMailLimit() {
+		if(!($this->getPrimaryKey() > 0)) { return false; }
+
+		if($this->hasPendingPasswordReset()) {
+			$vs_app_name = $this->getAppConfig()->get("app_name");
+			$vn_mails_sent = $this->getVar("{$vs_app_name}_password_reset_mails_sent");
+
+			$this->setVar("{$vs_app_name}_password_reset_mails_sent", ++$vn_mails_sent);
+
+			return ($vn_mails_sent <= 10);
+		}
+	}
+	# ----------------------------------------
+	private function removePendingPasswordReset($pb_success=false) {
+		if(!($this->getPrimaryKey() > 0)) { return; }
+
+		$vs_app_name = $this->getAppConfig()->get("app_name");
+		$this->setVar("{$vs_app_name}_password_reset_token", '');
+		$this->setVar("{$vs_app_name}_password_reset_expiration", 0);
+		$this->setVar("{$vs_app_name}_password_reset_mails_sent", 0);
+
+		if(!$pb_success) {
+
+			$vn_failed_pw_resets = $this->getVar("{$vs_app_name}_password_resets_failed");
+			if(!$vn_failed_pw_resets) {
+				$vn_failed_pw_resets = 1;
+			} else {
+				$vn_failed_pw_resets++;
+			}
+
+			$this->setVar("{$vs_app_name}_password_resets_failed", $vn_failed_pw_resets);
+		} else {
+			$this->setVar("{$vs_app_name}_password_resets_failed", 0);
+		}
+	}
+	# ----------------------------------------
 	/**
 	 * This is a option-less authentication. Either your login works or it doesn't.
 	 * Other apps implementing this interface may need to know what you're trying to do 
@@ -2526,20 +2794,65 @@ class ca_users extends BaseModel {
 	 * keys and values that can contain such information
 	 */
 	public function authenticate(&$ps_username, $ps_password="", $pa_options=null) {
-		if($this->opo_auth_config->get("use_ldap")){
-			return $this->authenticateLDAP($ps_username,$ps_password);
-		}
-		
-		if($this->opo_auth_config->get("use_extdb")){
-			if($vn_rc = $this->authenticateExtDB($ps_username,$ps_password)) {
-				return $vn_rc;
+
+		// if user doesn't exist, try creating it through the authentication backend, if the backend supports it
+		if (strlen($ps_username) > 0 && !$this->load($ps_username)) {
+			if(AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_AUTOCREATE_USERS__)) {
+				try{
+					$va_values = AuthenticationManager::getUserInfo($ps_username, $ps_password);
+				} catch (Exception $e) {
+					$this->opo_log->log(array(
+						'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
+						'MESSAGE' => _t('There was an error while trying to fetch information for a new user from the current authentication backend. The message was %1 : %2', get_class($e), $e->getMessage())
+					));
+					return false;
+				}
+
+				if(!is_array($va_values) || sizeof($va_values) < 1) { return false; }
+
+				// @todo: check sanity on values from plugins before inserting them?
+				foreach($va_values as $vs_k => $vs_v) {
+					if(in_array($vs_k, array('roles', 'groups'))) { continue; }
+					$this->set($vs_k, $vs_v);
+				}
+
+				$vn_mode = $this->getMode();
+				$this->setMode(ACCESS_WRITE);
+				$this->insert();
+
+				if (!$this->getPrimaryKey()) {
+					$this->setMode($vn_mode);
+					$this->opo_log->log(array(
+						'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
+						'MESSAGE' => _t('User could not be created after getting info from authentication adapter. API message was: %1', join(" ", $this->getErrors()))
+					));
+					return false;
+				}
+
+				if(is_array($va_values['groups']) && sizeof($va_values['groups'])>0) {
+					$this->addToGroups($va_values['groups']);
+				}
+
+				if(is_array($va_values['roles']) && sizeof($va_values['roles'])>0) {
+					$this->addRoles($va_values['roles']);
+				}
+
+				if(is_array($va_values['preferences']) && sizeof($va_values['preferences'])>0) {
+					foreach($va_values['preferences'] as $vs_pref => $vs_pref_val) {
+						$this->setPreference($vs_pref, $vs_pref_val);
+					}
+				}
+
+				$this->update();
+
+				// restore mode
+				$this->setMode($vn_mode);
 			}
 		}
-		
-		if ((strlen($ps_username) > 0) && $this->load(array("user_name" => $ps_username))) {
-			if ($this->verify($ps_password) && $this->isActive()) {
-				return true;
-			}
+
+		if(AuthenticationManager::authenticate($ps_username, $ps_password, $pa_options)) {
+			$this->load($ps_username);
+			return true;
 		}
 		
 		// check ips
@@ -2552,290 +2865,6 @@ class ca_users extends BaseModel {
 			}
 		}
 		return false;
-	}
-	# ----------------------------------------
-	/**
-	 * Do LDAP authentification (creates user based on directory 
-	 * information and config preferences in authentication.conf)
-	 * @param string $ps_username username
-	 * @param string $ps_password password
-	 */
-	private function authenticateLDAP($ps_username="",$ps_password=""){
-		if(!function_exists("ldap_connect")){
-			die("PHP's LDAP module is required for LDAP authentication!");
-		}
-		
-		// ldap config
-		$vs_ldaphost = $this->opo_auth_config->get("ldap_host");
-		$vs_ldapport = $this->opo_auth_config->get("ldap_port");
-		$vs_base_dn = $this->opo_auth_config->get("ldap_base_dn");
-		$va_group_cn = $this->opo_auth_config->getList("ldap_group_cn");
-		$vs_user_ou = $this->opo_auth_config->get("ldap_user_ou");
-		
-		
-		$vo_ldap = ldap_connect($vs_ldaphost,$vs_ldapport) or die("could not connect to LDAP server");
-		ldap_set_option($vo_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-
-		$vs_dn = "uid={$ps_username},{$vs_user_ou},{$vs_base_dn}";
-			
-		if($vo_ldap){
-			
-			// log in
-			
-			$vo_bind = @ldap_bind($vo_ldap, $vs_dn, $ps_password);
-			if(!$vo_bind) { // wrong credentials
-				//print ldap_error($vo_ldap);
-				ldap_unbind($vo_ldap);
-				return false;
-			}
-		
-			if(is_array($va_group_cn) && sizeof($va_group_cn)>0){
-				if(!$this->_LDAPmemberInOneGroup($ps_username, $va_group_cn, $vo_ldap, $vs_base_dn)){
-					ldap_unbind($vo_ldap);
-					return false;
-				}
-			}
-			
-			if(!$this->load(array("user_name" => $ps_username))){ // first user login, authentication via LDAP successful
-				
-				/* query directory service for additional info on user */
-				$vo_results = ldap_search($vo_ldap, $vs_dn, "uid={$ps_username}");
-				if($vo_results){
-					// default user config
-					$va_roles = $this->opo_auth_config->get("ldap_users_default_roles");
-					$va_groups = $this->opo_auth_config->get("ldap_users_default_groups");
-					$vn_active = $this->opo_auth_config->get("ldap_users_auto_active");
-					
-					$vo_entry = ldap_first_entry($vo_ldap, $vo_results);
-					if(!$vo_entry) return false;
-					
-					$va_attrs = ldap_get_attributes($vo_ldap, $vo_entry);
-					$vs_email = $va_attrs["mail"][0];
-					$vs_fname = $va_attrs["givenName"][0];
-					$vs_lname = $va_attrs["sn"][0];
-					
-					$this->set("user_name",$ps_username);
-					$this->set("email",$vs_email);
-					$this->set("password",$ps_password);
-					$this->set("fname",$vs_fname);
-					$this->set("lname",$vs_lname);
-					$this->set("active",$vn_active);
-
-					$vn_mode = $this->getMode();
-					$this->setMode(ACCESS_WRITE);
-
-					$this->insert();
-					if(!$this->getPrimaryKey()){
-						// log record creation failed
-						return false;
-					} 
-
-					$this->addRoles($va_roles);
-					$this->addToGroups($va_groups);
-
-					$this->setMode($vn_mode);
-				} else {
-					// user not found, probably some sort of search restriction
-					return false;
-				}				
-			}
-			
-			ldap_unbind($vo_ldap);
-			return true;
-		} else {
-			// log couldn't connect to server
-			return false;
-		}
-	}
-	# ----------------------------------------
-	/**
-	 * LDAP helper
-	 * Checks if user is member in at least one of the groups in the given group list
-	 */
-	private function _LDAPmemberInOneGroup($ps_user,$pa_groups,$po_ldap,$ps_base_dn){
-		$vb_return = false;
-		if(is_array($pa_groups)){
-			foreach($pa_groups as $vs_group_cn){
-				$vs_filter = "(cn=$vs_group_cn)";
-				$vo_result = ldap_search($po_ldap, $ps_base_dn, $vs_filter,array("memberuid"));
-				$va_entries = ldap_get_entries($po_ldap, $vo_result);
-				if($va_members = $va_entries[0]["memberuid"]){
-					if(in_array($ps_user, $va_members)){
-						$vb_return = true;
-					}
-				}
-			}
-		}
-		return $vb_return;
-	}
-	# ----------------------------------------
-	/**
-	 * Do authentification against an external database (creates user based on directory 
-	 * information and config preferences in authentication.conf)
-	 * @param string $ps_username username
-	 * @param string $ps_password password
-	 */
-	private function authenticateExtDB($ps_username="",$ps_password=""){
-		$o_log = new Eventlog();
-		
-		// external database config
-		$vs_extdb_host = $this->opo_auth_config->get("extdb_host");
-		$vs_extdb_username = $this->opo_auth_config->get("extdb_username");
-		$vs_extdb_password = $this->opo_auth_config->get("extdb_password");
-		$vs_extdb_database = $this->opo_auth_config->get("extdb_database");
-		$vs_extdb_db_type = $this->opo_auth_config->get("extdb_db_type");
-		
-		
-		$o_ext_db = new Db(null, array(
-			'host' 		=> $vs_extdb_host,
-			'username' 	=> $vs_extdb_username,
-			'password' 	=> $vs_extdb_password,
-			'database' 	=> $vs_extdb_database,
-			'type' 		=> $vs_extdb_db_type,
-			'persistent_connections' => true
-		), false);
-		if($o_ext_db->connected()){
-			$vs_extdb_table = $this->opo_auth_config->get("extdb_table");
-			$vs_extdb_username_field = $this->opo_auth_config->get("extdb_username_field");
-			$vs_extdb_password_field = $this->opo_auth_config->get("extdb_password_field");
-			
-			switch(strtolower($this->opo_auth_config->get("extdb_password_hash_type"))) {
-				case 'md5':
-					$ps_password_proc = md5($ps_password);
-					break;
-				case 'sha1':
-					$ps_password_proc = sha1($ps_password);
-					break;
-				default:
-					$ps_password_proc = $ps_password;
-					break;
-			}
-		
-			// Authenticate user against extdb
-			$qr_auth = $o_ext_db->query("
-				SELECT * FROM {$vs_extdb_table} WHERE {$vs_extdb_username_field} = ? AND {$vs_extdb_password_field} = ?
-			", array($ps_username, $ps_password_proc));
-			
-			if($qr_auth && $qr_auth->nextRow()) {
-				if(!$this->load(array("user_name" => $ps_username))){ // first user login, authentication via extdb successful
-				
-				// Set username/password
-					$this->set("user_name",$ps_username);
-					$this->set("password",$ps_password);
-					
-				
-				// Determine value for ca_users.active
-					$vn_active = (int)$this->opo_auth_config->get('extdb_default_active');
-					
-					$va_extdb_active_field_map = $this->opo_auth_config->getAssoc('extdb_active_field_map');
-					if (($vs_extdb_active_field = $this->opo_auth_config->get('extdb_active_field')) && is_array($va_extdb_active_field_map)) {
-						
-						if (isset($va_extdb_active_field_map[$vs_active_val = $qr_auth->get($vs_extdb_active_field)])) {
-							$vn_active = (int)$va_extdb_active_field_map[$vs_active_val];
-						}
-					}
-					$this->set("active",$vn_active);
-					
-					
-				// Determine value for ca_users.user_class
-					$vs_extdb_access_value = strtolower($this->opo_auth_config->get('extdb_default_access'));
-					
-					$va_extdb_access_field_map = $this->opo_auth_config->getAssoc('extdb_access_field_map');
-					if (($vs_extdb_access_field = $this->opo_auth_config->get('extdb_access_field')) && is_array($va_extdb_access_field_map)) {
-						
-						if (isset($va_extdb_access_field_map[$vs_access_val = $qr_auth->get($vs_extdb_access_field)])) {
-							$vs_extdb_access_value = strtolower($va_extdb_access_field_map[$vs_access_val]);
-						}
-					}
-					
-					switch($vs_extdb_access_value) {
-						case 'public':
-							$vn_user_class = 1;
-							break;
-						case 'full':
-							$vn_user_class = 0;
-							break;
-						default:
-							// Can't log in - no access
-							$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 after authentication from external database because user class was not set.', $ps_username)));
-							return false;
-							break;
-					}
-					$this->set('userclass', $vn_user_class);
-					
-				// map fields
-					if (is_array($va_extdb_user_field_map = $this->opo_auth_config->getAssoc('extdb_user_field_map'))) {
-						foreach($va_extdb_user_field_map as $vs_extdb_field => $vs_ca_field) {
-							$this->set($vs_ca_field, $qr_auth->get($vs_extdb_field));
-						}
-					}
-
-					$vn_mode = $this->getMode();
-					$this->setMode(ACCESS_WRITE);
-
-					$this->insert();
-					if(!$this->getPrimaryKey()){
-						// log record creation failed
-						$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 after authentication from external database because creation of user record failed: %2 [%3]', $ps_username, join("; ", $this->getErrors()), $_SERVER['REMOTE_ADDR'])));
-						return false;
-					} 
-					
-				// map preferences
-					if (is_array($va_extdb_user_pref_map = $this->opo_auth_config->getAssoc('extdb_user_pref_map'))) {
-						foreach($va_extdb_user_pref_map as $vs_extdb_field => $vs_ca_pref) {
-							$this->setPreference($vs_ca_pref, $qr_auth->get($vs_extdb_field));
-						}
-					}
-					$this->update();
-					
-
-				// set user roles
-					$va_extdb_user_roles = $this->opo_auth_config->getAssoc('extdb_default_roles');
-					
-					$va_extdb_roles_field_map = $this->opo_auth_config->getAssoc('extdb_roles_field_map');
-					if (($vs_extdb_roles_field = $this->opo_auth_config->get('extdb_roles_field')) && is_array($va_extdb_roles_field_map)) {
-						
-						if (isset($va_extdb_roles_field_map[$vs_roles_val = $qr_auth->get($vs_extdb_roles_field)])) {
-							$va_extdb_user_roles = $va_extdb_roles_field_map[$vs_roles_val];
-						}
-					}
-					if(!is_array($va_extdb_user_roles)) { $va_extdb_user_roles = array(); }
-					if(sizeof($va_extdb_user_roles)) { $this->addRoles($va_extdb_user_roles); }
-
-				// set user groups
-					$va_extdb_user_groups = $this->opo_auth_config->getAssoc('extdb_default_groups');
-					
-					$va_extdb_groups_field_map = $this->opo_auth_config->getAssoc('extdb_groups_field_map');
-					if (($vs_extdb_groups_field = $this->opo_auth_config->get('extdb_groups_field')) && is_array($va_extdb_groups_field_map)) {
-						
-						if (isset($va_extdb_groups_field_map[$vs_groups_val = $qr_auth->get($vs_extdb_groups_field)])) {
-							$va_extdb_user_groups = $va_extdb_groups_field_map[$vs_groups_val];
-						}
-					}
-					if(!is_array($va_extdb_user_groups)) { $va_extdb_user_groups = array(); }
-					if(sizeof($va_extdb_user_groups)) { $this->addToGroups($va_extdb_user_groups); }
-
-				// restore mode
-					$this->setMode($vn_mode);
-					
-					// TODO: log user creation
-					$o_log->log(array('CODE' => 'LOGN', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Created new login for user %1 after authentication from external database [%2]', $ps_username, $_SERVER['REMOTE_ADDR'])));
-						
-				}		
-			
-				return true;
-			} else {
-				// authentication failed
-				//$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 using external database because external authentication failed [%2]', $ps_username, $_SERVER['REMOTE_ADDR'])));
-						
-				return false;
-			}
-		} else {
-			// couldn't connect to external database
-			$o_log->log(array('CODE' => 'LOGF', 'SOURCE' => 'ca_users/extdb', 'MESSAGE' => _t('Could not login user %1 using external database because login to external database failed [%2]', $ps_username, $_SERVER['REMOTE_ADDR'])));
-						
-			return false;
-		}
 	}
 	# ----------------------------------------
 	/**

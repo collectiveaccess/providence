@@ -118,6 +118,13 @@ class ObjectBrowseResult extends BaseSearchResult {
 	}
 	# -------------------------------------
 	/**
+	 *
+	 */
+	public function getTagForPrimaryRepresentation($ps_version, $pa_options=null) {
+		return $this->getMediaTag('ca_object_representations.media', $ps_version, $pa_options);
+	}
+	# -------------------------------------
+	/**
 	 * Returns an HTML tag for a media version in a media field. 
 	 *
 	 * @param string $ps_field The field to fetch media from

@@ -29,11 +29,14 @@
 $vs_file = $this->getVar('file');
 $vs_ext = $this->getVar('extension');
 $vs_content_type = $this->getVar('content_type');
+
+$vs_filename = ($this->getVar('file_name') ? $this->getVar('file_name') : 'batch_export');
+
 if(!$vs_file){
 	print _t('Invalid parameters');
 } else {
 	header('Content-Type: '.$vs_content_type.'; charset=UTF-8');
-	header('Content-Disposition: attachment; filename="batch_export.'.$vs_ext.'"');
+	header('Content-Disposition: attachment; filename="'.$vs_filename.'.'.$vs_ext.'"');
 	header('Content-Transfer-Encoding: binary');
 	readfile($vs_file);
 	@unlink($vs_file);

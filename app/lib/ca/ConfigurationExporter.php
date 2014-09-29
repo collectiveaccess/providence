@@ -1062,13 +1062,33 @@ final class ConfigurationExporter {
 					foreach($va_settings as $vs_setting => $vm_value) {
 						switch($vs_setting) {
 							case 'label':
-								//restrict_to_relationship_types
 								if(is_array($vm_value)) {
 									foreach($vm_value as $vn_locale_id => $vm_locale_specific_value) {
 										$vs_buf .= "<setting name='label' locale='".$this->opt_locale->localeIDToCode($vn_locale_id)."'>".caEscapeForXML($vm_locale_specific_value)."</setting>\n";
 									}
 								}
-							
+								break;
+							case 'restrict_to_relationship_types':
+								if(is_array($vm_value)){
+									foreach($vm_value as $vn_val){
+										$t_rel_type = new ca_relationship_types($vn_val);
+										if ($t_rel_type->getPrimaryKey()) {
+											$vs_value = $t_rel_type->get('type_code');
+											$vs_buf .= "\t\t\t\t<setting name='{$vs_setting}'><![CDATA[".$vs_value."]]></setting>\n";
+										}
+									}
+								}
+								break;
+							case 'restrict_to_types':
+								if(is_array($vm_value)){
+									foreach($vm_value as $vn_val){
+										$t_item = new ca_list_items($vn_val);
+										if ($t_item->getPrimaryKey()) {
+											$vs_value = $t_item->get('idno');
+											$vs_buf .= "\t\t\t\t<setting name='{$vs_setting}'><![CDATA[".$vs_value."]]></setting>\n";
+										}
+									}
+								}
 								break;
 							default:
 								if (is_array($vm_value)) {

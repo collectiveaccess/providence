@@ -133,7 +133,7 @@
 			}
 			
 			if ($vs_url = $this->opo_media_info_coder->getMediaUrl($this->opa_media_data, 'original')) {
-				JavascriptLoadManager::register('panel');
+				AssetLoadManager::register('panel');
 				
 				$va_info =  $this->opo_media_info_coder->getMediaInfo($this->opa_media_data);
 				
@@ -196,10 +196,9 @@
 				$vs_tag = $this->opo_media_info_coder->getMediaTag($this->opa_media_data, $vs_version, $pa_options);
 				
 				if (is_object($pa_options['request'])) {
-					$vs_view_url = urldecode(caNavUrl($pa_options['request'], $pa_options['request']->getModulePath(), $pa_options['request']->getController(), 'GetMediaInfo', array('value_id' => $this->opn_value_id)));
+					$vs_view_url = urldecode(caNavUrl($pa_options['request'], $pa_options['request']->getModulePath(), $pa_options['request']->getController(), 'GetMediaOverlay', array('value_id' => $this->opn_value_id)));
 					$vs_val = "<div id='caMediaAttribute".$this->opn_value_id."' class='attributeMediaInfoContainer'>";
-					
-					
+
 					$vs_val .= "<div class='attributeMediaThumbnail'>";
 					$vs_val .= "<div style='float: left;'>".urlDecode(caNavLink($pa_options['request'], caNavIcon($pa_options['request'], __CA_NAV_BUTTON_DOWNLOAD__, array('align' => 'middle')), '', $pa_options['request']->getModulePath(), $pa_options['request']->getController(), 'DownloadAttributeMedia', array('download' => 1, 'value_id' => $this->opn_value_id), array('class' => 'attributeDownloadButton')))."</div>";
 					$vs_val .= "<a href='#' onclick='caMediaPanel.showPanel(\"{$vs_view_url}\"); return false;'>{$vs_tag}</a>";

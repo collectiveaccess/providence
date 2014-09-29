@@ -58,7 +58,7 @@
 	require_once(__CA_LIB_DIR__."/core/Controller/AppController.php");
 	
 	require_once(__CA_LIB_DIR__."/ca/MetaTagManager.php");
-	require_once(__CA_LIB_DIR__."/ca/JavascriptLoadManager.php");
+	require_once(__CA_LIB_DIR__."/ca/AssetLoadManager.php");
 	require_once(__CA_LIB_DIR__."/ca/TooltipManager.php");
 	require_once(__CA_LIB_DIR__."/ca/FooterManager.php");
 
@@ -70,4 +70,3 @@
 	
 	// initialize Tooltip manager
 	TooltipManager::init();
-?>
