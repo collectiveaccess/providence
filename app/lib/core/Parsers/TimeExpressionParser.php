@@ -812,7 +812,10 @@ class TimeExpressionParser {
 		
 		// support year ranges in the form yyyy/yyyy
 		$ps_expression = preg_replace("!^([\d]{4})/([\d]{4})$!", "$1 - $2", trim($ps_expression));
-		
+
+		// support date entry in the form yyyy-mm-dd/yyy-mm-dd (HSP)
+		$ps_expression = preg_replace("/([\d]{4}#[\d]{2}#[\d]{2})\/([\d]{4}#[\d]{2}#[\d]{2})/", "$1 - $2", $ps_expression);
+
 		return trim($ps_expression);
 	}
 	# -------------------------------------------------------------------

@@ -168,7 +168,12 @@
 				array()
 			);
  			if (!$this->request->getActionExtra() || !isset($va_nav['fragment'][str_replace("Screen", "screen_", $this->request->getActionExtra())])) {
- 				$this->request->setActionExtra($va_nav['defaultScreen']);
+ 				if (($vs_bundle = $this->request->getParameter('bundle', pString)) && ($vs_bundle_screen = $t_ui->getScreenWithBundle($vs_bundle))) {
+ 					// jump to screen containing url-specified bundle
+ 					$this->request->setActionExtra($vs_bundle_screen);
+ 				} else {
+ 					$this->request->setActionExtra($va_nav['defaultScreen']);
+ 				}
  			}
 			$this->view->setVar('t_ui', $t_ui);
 			
