@@ -702,11 +702,8 @@
 				return;
 			}
 
-			$t_subject = $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true);
-
-			if(!($vs_export_filename = $t_subject->getAppConfig()->get($t_subject->tableName()."_batch_export_filename"))) {
-				$vs_export_filename = 'batch_export';
-			}
+			$vs_export_filename = preg_replace("/[^\p{L}\p{N}\-]/", '_', $this->opo_result_context->getSearchExpression());
+			$vs_export_filename = preg_replace("/[\_]+/", '_', $vs_export_filename);
 
 			$vs_tmp_file = tempnam(caGetTempDirPath(), 'export');
 			ca_data_exporters::exportRecordsFromSearchResult($t_exporter->get('exporter_code'), $po_result, $vs_tmp_file);
