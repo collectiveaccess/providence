@@ -148,7 +148,7 @@
 		/**
 		 * Returns a combination of all properties for text display
 		 */
-		public function getPropertiesForDisplay() {
+		public function getPropertiesForDisplay($pa_options=null) {
 			return '';
 		}
 		# ------------------------------------------------------------------
