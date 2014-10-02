@@ -70,7 +70,7 @@
  			
  			if ($this->ops_tablename) {
 				$this->opo_result_context = new ResultContext($po_request, $this->ops_tablename, $this->ops_find_type);
-				
+
 				if ($this->opn_type_restriction_id = $this->opo_result_context->getTypeRestriction($pb_type_restriction_has_changed)) {
 					$_GET['type_id'] = $this->opn_type_restriction_id;								// push type_id into globals so breadcrumb trail can pick it up
 					$this->opb_type_restriction_has_changed =  $pb_type_restriction_has_changed;	// get change status
