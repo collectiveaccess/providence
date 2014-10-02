@@ -1800,6 +1800,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		foreach($va_item_info as $vn_key => &$va_item){
 			$this->opo_app_plugin_manager->hookExportItemBeforeSettings(array('instance' => $t_instance, 'exporter_item_instance' => $t_exporter_item, 'export_item' => &$va_item));
 
+			// handle dontReturnValueIfOnSameDayAsStart
+			if(caGetOption('dontReturnValueIfOnSameDayAsStart', $va_get_options, false)) {
+				if(strlen($va_item['text']) < 1) {
+					unset($va_item_info[$vn_key]);
+				}
+			}
+
 			// handle skipIfExpression setting
 			if($vs_skip_if_expr){
 				// Add current value as variable "value", accessible in expressions as ^value
