@@ -403,9 +403,17 @@ class ca_attributes extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Return values for currently loaded attribute.
 	 *
+	 * @param array $pa_options Options include:
+	 *		returnAs = what to return; possible values are:
+	 *			values					= an array of attribute values [Default]
+	 *			attributeInstance		= an instance of the Attribute class loaded with the attribute value(s)
+	 *			count					= the number of values in the attribute
+	 *
+	 * @return mixed An array, instance of class Attribute or an integer value count depending upon setting of returnAs option. Returns null if no attribute is loaded.
 	 */
-	public function getAttributeValues() {
+	public function getAttributeValues($pa_options=null) {
 		if (!$this->getPrimaryKey()) { return null; }
 		$o_db = $this->getDb();
 		$qr_attrs = $o_db->query("
@@ -422,7 +430,18 @@ class ca_attributes extends BaseModel {
 			$o_attr->addValueFromRow($va_raw_row);
 		}
 		
-		return $o_attr->getValues();
+		switch($vs_return_as = caGetOption('returnAs', $pa_options, null)) {
+			case 'attributeInstance':
+				return $o_attr;
+				break;
+			case 'count':
+				return sizeof($o_attr->getValues());
+				break;
+			case 'values':
+			default:
+				return $o_attr->getValues();	
+				break;
+		}
 	}
 	# ------------------------------------------------------
 	# Static methods
