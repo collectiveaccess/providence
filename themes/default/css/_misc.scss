@@ -59,3 +59,99 @@ h2 {
 	font-family: inherit;
 	color: inherit;
 }
+
+#mainContentFull {
+	margin-top: 0;
+}
+
+.dashboardColumn {
+	width: 49%;
+}
+
+.dashboardLanding {
+	background: rgba(255,255,255,0.3);
+	color: $grey-dark;
+}
+
+div.browseSelectPanelListGroupHeading {
+	background: $link;
+}
+a.browseSelectPanelListGroupHeading, 
+a.browseSelectPanelListGroupHeading:hover {
+	color: white;
+}
+
+.blueDivide {
+	background: $link;
+}
+
+#browseCriteria {
+	color: $grey-dark;
+}
+
+#browseCriteria a.startOver:hover {
+	color: $link;
+}
+
+
+.searchNav a.button {
+	color: $link;
+}
+a.button:hover {
+	color: darken($link, 20%);
+}
+
+
+.required {
+	color: $red;
+}
+
+#refineBrowse a.facetLink,
+.facetHeadingLink a {
+	font-size: 0.8em;
+	font-weight: normal;
+	color: $link;
+}
+
+a.browseSelectPanelLink {
+	font-size: 0.9em;
+}
+
+.facetHeadingLink.active {
+	background: $grey-mid;
+
+	a {
+		color: white;
+	}
+}
+
+div.listRel {
+	font-size: 0.9em;
+}
+div.roundedRel {
+	background: lighten($link, 52%)!important;
+}
+
+
+.table-bordered {
+	width: 100%;
+	border-collapse: collapse;
+	border-spacing: 0;
+	margin-bottom: 3px;
+
+	th,
+	td {
+		border: 1px solid $grey-light;
+		padding: 0.25em 0.5em;
+	}
+}
+
+div.caObjectRepresentationDetailEditorElement {
+	font-size: inherit;
+}
+
+a.caDeleteItemButton {
+	float: right;
+}
+
+
