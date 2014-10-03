@@ -670,9 +670,9 @@
 					$this->postError(2320, _t("Element is not part of current item"),"BaseEditorController->PrintBundle()");
 					return;
 				}
-				$this->view->setVar('values', $va_values = array($o_attr));
+				$this->view->setVar('valuesAsAttributeInstances', $va_values = array($o_attr));
 			} else {
-				$this->view->setVar('values', $va_values = $t_subject->getAttributesByElement($vs_element));
+				$this->view->setVar('valuesAsAttributeInstances', $va_values = $t_subject->getAttributesByElement($vs_element));
 			}
 			
 			// Extract values into array for easier view processing
@@ -681,7 +681,7 @@
 			foreach($va_values as $o_value) {
 				$va_extracted_values[] = $o_value->getDisplayValues();
 			}
-			$this->view->setVar('valuesByElementCode', $va_extracted_values);
+			$this->view->setVar('valuesAsElementCodeArrays', $va_extracted_values);
 			
 			$va_barcode_files_to_delete = array();
 			
