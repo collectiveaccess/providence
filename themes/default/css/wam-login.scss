@@ -1,0 +1,39 @@
+
+
+body {
+
+	background: #f0f0f0 url(images/escheresque.png) 0 0 repeat;
+  background-attachment: fixed;
+  padding-top: 100px;
+} 
+
+#loginBox {
+min-width: 300px;
+width: 40%;
+background-color: #FFFFFF;
+text-align:left;
+margin: 0;
+padding-top: 25px;
+
+
+ img {
+ 	max-width: 80%;
+ }
+}
+
+
+#systemTitle {
+	padding:30px 10% 10px 10%;
+}
+
+#loginForm {
+	padding: 0 10% 60px 10%;
+}
+
+#loginForm form input[type="text"], 
+#loginForm form input[type="password"] {
+	width: 100%;
+}
+
+
+

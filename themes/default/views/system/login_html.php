@@ -35,8 +35,27 @@
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		
 		<link href="<?php print $this->request->getThemeUrlPath(); ?>/css/login.css" rel="stylesheet" type="text/css" />
+
 <?php
 	print JavascriptLoadManager::getLoadHTML($this->request->getBaseUrlPath());
+?>
+<?php
+	//print JavascriptLoadManager::getLoadHTML($this->request->getBaseUrlPath());
+	print MetaTagManager::getHTML();
+	
+	if (file_exists($this->request->getThemeDirectoryPath().'/css/wam-login.css')) {
+		print '<link rel="stylesheet" href="'.$this->request->getThemeUrlPath().'/css/wam-login.css" type="text/css" media="screen" />
+';
+	}
+	
+	//
+	// Pull in JS and CSS for debug bar
+	// 
+	if(Debug::isEnabled()) {
+		$o_debugbar_renderer = Debug::$bar->getJavascriptRenderer();
+		$o_debugbar_renderer->setBaseUrl(__CA_URL_ROOT__.$o_debugbar_renderer->getBaseUrl());
+		print $o_debugbar_renderer->renderHead();
+	}
 ?>
 
 		<script type="text/javascript">

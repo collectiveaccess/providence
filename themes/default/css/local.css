@@ -39,6 +39,7 @@ li.sfHover > a.sf-menu-selected:link, li.sfHover > a.sf-menu-selected:visited {
 .sf-menu a.sf-with-ul {
   font-family: inherit; }
 
+#mainContentFull,
 #main {
   background: #f0f0f0 url(images/escheresque.png) 0 0 repeat;
   background-attachment: fixed; }
@@ -561,6 +562,7 @@ div#caColorbox {
   font-family: 'Glyphicons Halflings';
   src: url("fonts/glyphicons-halflings-regular.eot");
   src: url("fonts/glyphicons-halflings-regular.eot?#iefix") format("embedded-opentype"), url("fonts/glyphicons-halflings-regular.woff") format("woff"), url("fonts/glyphicons-halflings-regular.ttf") format("truetype"), url("fonts/glyphicons-halflings-regular.svg#glyphicons-halflingsregular") format("svg"); }
+
 .glyphicon {
   position: relative;
   top: 1px;
@@ -1371,4 +1373,73 @@ h2 {
   font-family: inherit;
   color: inherit; }
 
-/*# sourceMappingURL=local.css.map */
+#mainContentFull {
+  margin-top: 0; }
+
+.dashboardColumn {
+  width: 49%; }
+
+.dashboardLanding {
+  background: rgba(255, 255, 255, 0.3);
+  color: #282828; }
+
+div.browseSelectPanelListGroupHeading {
+  background: mediumvioletred; }
+
+a.browseSelectPanelListGroupHeading,
+a.browseSelectPanelListGroupHeading:hover {
+  color: white; }
+
+.blueDivide {
+  background: mediumvioletred; }
+
+#browseCriteria {
+  color: #282828; }
+
+#browseCriteria a.startOver:hover {
+  color: mediumvioletred; }
+
+.searchNav a.button {
+  color: mediumvioletred; }
+
+a.button:hover {
+  color: #6b0b47; }
+
+.required {
+  color: #9b0000; }
+
+#refineBrowse a.facetLink,
+.facetHeadingLink a {
+  font-size: 0.8em;
+  font-weight: normal;
+  color: mediumvioletred; }
+
+a.browseSelectPanelLink {
+  font-size: 0.9em; }
+
+.facetHeadingLink.active {
+  background: #646464; }
+  .facetHeadingLink.active a {
+    color: white; }
+
+div.listRel {
+  font-size: 0.9em; }
+
+div.roundedRel {
+  background: #fde9f5 !important; }
+
+.table-bordered {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  margin-bottom: 3px; }
+  .table-bordered th,
+  .table-bordered td {
+    border: 1px solid #c8c8c8;
+    padding: 0.25em 0.5em; }
+
+div.caObjectRepresentationDetailEditorElement {
+  font-size: inherit; }
+
+a.caDeleteItemButton {
+  float: right; }
