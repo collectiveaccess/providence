@@ -2232,13 +2232,14 @@
 		 */
 		static function splitEntityName($ps_text, $pa_options=null) {
 			global $g_ui_locale;
-			$ps_text = trim(preg_replace("![ ]+!", " ", $ps_text));
+			$ps_text = $ps_original_text = trim(preg_replace("![ ]+!", " ", $ps_text));
 			
 			if (isset($pa_options['locale']) && $pa_options['locale']) {
 				$vs_locale = $pa_options['locale'];
 			} else {
 				$vs_locale = $g_ui_locale;
 			}
+			if (!$vs_locale && defined('__CA_DEFAULT_LOCALE__')) { $vs_locale = __CA_DEFAULT_LOCALE__; }
 		
 			if (file_exists($vs_lang_filepath = __CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils/'.$vs_locale.'.lang')) {
 				$o_config = Configuration::load($vs_lang_filepath);
@@ -2251,7 +2252,39 @@
 			}
 			
 			$va_name = array();
-			if (strpos($ps_text, ',') !== false) {
+		
+			// check for titles
+			//$ps_text = preg_replace('/[^\p{L}\p{N} \-]+/u', ' ', $ps_text);
+			
+			$vs_prefix_for_name = null;
+			foreach($va_titles as $vs_title) {
+				if (preg_match("!^({$vs_title})!i", $ps_text, $va_matches)) {
+					$vs_prefix_for_name = $va_matches[1];
+					$ps_text = str_replace($va_matches[1], '', $ps_text);
+				}
+			}
+			
+			// check for suffixes
+			$vs_suffix_for_name = null;
+			foreach($va_corp_suffixes as $vs_suffix) {
+				if (preg_match("!({$vs_suffix})$!i", $ps_text, $va_matches)) {
+					$vs_suffix_for_name = $va_matches[1];
+					$ps_text = str_replace($va_matches[1], '', $ps_text);
+				}
+			}
+			
+			if ($vs_suffix_for_name) {
+				// is corporation
+				$va_tmp = preg_split('![, ]+!', trim($ps_text));
+				if (strpos($va_tmp[0], '.') !== false) {
+					$va_name['forename'] = array_shift($va_tmp);
+					$va_name['surname'] = join(' ', $va_tmp);
+				} else {
+					$va_name['surname'] = $ps_text;
+				}
+				$va_name['prefix'] = $vs_prefix_for_name;
+				$va_name['suffix'] = $vs_suffix_for_name;
+			} elseif (strpos($ps_text, ',') !== false) {
 				// is comma delimited
 				$va_tmp = explode(',', $ps_text);
 				$va_name['surname'] = $va_tmp[0];
@@ -2259,57 +2292,54 @@
 				if(sizeof($va_tmp) > 1) {
 					$va_name['forename'] = $va_tmp[1];
 				}
+				$va_name['prefix'] = $vs_prefix_for_name;
+				$va_name['suffix'] = $vs_suffix_for_name;
 			} else {
-				// check for titles
-				$ps_text = preg_replace('/[^\p{L}\p{N} \-]+/u', ' ', $ps_text);
-				foreach($va_titles as $vs_title) {
-					if (preg_match("!^({$vs_title})!", $ps_text, $va_matches)) {
-						$va_name['prefix'] = $va_matches[1];
-						$ps_text = str_replace($va_matches[1], '', $ps_text);
-					}
-				}
-				
-				// check for suffixes
-				foreach($va_corp_suffixes as $vs_suffix) {
-					if (preg_match("!({$vs_suffix})$!", $ps_text, $va_matches)) {
-						$va_name['suffix'] = $va_matches[1];
-						$ps_text = str_replace($va_matches[1], '', $ps_text);
-					}
-				}
+				$va_name = array(
+					'surname' => '', 'forename' => '', 'middlename' => '', 'displayname' => '', 'prefix' => $vs_prefix_for_name, 'suffix' => $vs_suffix_for_name
+				);
 				
 				$va_tmp = preg_split('![ ]+!', trim($ps_text));
+				if (($vn_i = array_search("&", $va_tmp)) !== false) {
+					if ((sizeof($va_tmp) - ($vn_i + 1)) > 1) {
+						$va_name['surname'] = array_pop($va_tmp);
+						$va_name['forename'] = join(' ', array_slice($va_tmp, 0, $vn_i));
+						$va_name['middlename'] = join(' ', array_slice($va_tmp, $vn_i));
+					} else {
+						$va_name['surname'] = array_pop($va_tmp);
+						$va_name['forename'] = join(' ', $va_tmp);
+					}
+				} else {
 				
-				$va_name = array(
-					'surname' => '', 'forename' => '', 'middlename' => '', 'displayname' => ''
-				);
-				switch(sizeof($va_tmp)) {
-					case 1:
-						$va_name['surname'] = $ps_text;
-						break;
-					case 2:
-						$va_name['forename'] = $va_tmp[0];
-						$va_name['surname'] = $va_tmp[1];
-						break;
-					case 3:
-						$va_name['forename'] = $va_tmp[0];
-						$va_name['middlename'] = $va_tmp[1];
-						$va_name['surname'] = $va_tmp[2];
-						break;
-					case 4:
-					default:
-						if (strpos($ps_text, ' '._t('and').' ') !== false) {
-							$va_name['surname'] = array_pop($va_tmp);
-							$va_name['forename'] = join(' ', $va_tmp);
-						} else {
-							$va_name['forename'] = array_shift($va_tmp);
-							$va_name['middlename'] = array_shift($va_tmp);
-							$va_name['surname'] = join(' ', $va_tmp);
-						}
-						break;
+					switch(sizeof($va_tmp)) {
+						case 1:
+							$va_name['surname'] = $ps_text;
+							break;
+						case 2:
+							$va_name['forename'] = $va_tmp[0];
+							$va_name['surname'] = $va_tmp[1];
+							break;
+						case 3:
+							$va_name['forename'] = $va_tmp[0];
+							$va_name['middlename'] = $va_tmp[1];
+							$va_name['surname'] = $va_tmp[2];
+							break;
+						case 4:
+						default:
+							if (strpos($ps_text, ' '._t('and').' ') !== false) {
+								$va_name['surname'] = array_pop($va_tmp);
+								$va_name['forename'] = join(' ', $va_tmp);
+							} else {
+								$va_name['forename'] = array_shift($va_tmp);
+								$va_name['middlename'] = array_shift($va_tmp);
+								$va_name['surname'] = join(' ', $va_tmp);
+							}
+							break;
+					}
 				}
 			}
 			
-			$va_name['displayname'] = $ps_text;
+			$va_name['displayname'] = $ps_original_text;
 			foreach($va_name as $vs_k => $vs_v) {
 				$va_name[$vs_k] = trim($vs_v);
 			}
