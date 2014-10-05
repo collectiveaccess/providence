@@ -27,7 +27,7 @@
  */
  
  	$va_facets 			= $this->getVar('available_facets');
-	$va_facet_info 		= $this->getVar('facet_info');
+	$va_info_for_facets = $this->getVar('facet_info');
 	$va_criteria 		= is_array($this->getVar('criteria')) ? $this->getVar('criteria') : array();
 	$va_results 		= $this->getVar('result');
 	$vs_controller 		= $this->getVar('controller');
@@ -90,10 +90,11 @@
 				print "<div class='blueDivide'></div>";
 				print "<div id='browseCriteria'><span class='criteriaHeading'>"._t("You browsed for: ")."</span>";
 				foreach($va_criteria as $vs_facet_name => $va_row_ids) {
+					$vs_facet_label = caGetOption('label_singular', $va_info_for_facets[$vs_facet_name], "???");
 					$vn_x++;
 					$vn_row_c = 0;
 					foreach($va_row_ids as $vn_row_id => $vs_label) {
-						print "<div class='criteriaLink'>{$vs_label}".caNavLink($this->request, 'x', 'close', $this->request->getModulePath(), $this->request->getController(), 'removeCriteria', array('facet' => $vs_facet_name, 'id' => urlencode($vn_row_id)))."</div>\n";
+						print "<div class='criteriaLink'>{$vs_facet_label}: {$vs_label}".caNavLink($this->request, 'x', 'close', $this->request->getModulePath(), $this->request->getController(), 'removeCriteria', array('facet' => $vs_facet_name, 'id' => urlencode($vn_row_id)))."</div>\n";
 						$vn_row_c++;
 					}
 					

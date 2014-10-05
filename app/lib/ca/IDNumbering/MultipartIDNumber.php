@@ -331,7 +331,11 @@
 					case 'YEAR':
 						$va_tmp = getdate();
 						if ($vs_value != '') {
-							if ((($vs_value < 1800) || ($vs_value > ($va_tmp['year'] + 10))) || ($vs_value != intval($vs_value))) { 
+							if ($va_element_info['width'] == 2) {
+								if(($vs_value < 0) || ($vs_value > 99)){
+									$va_element_errors[$vs_element_name] = _t("%1 must be a valid two-digit year", $va_element_info['description']);
+								}
+							} elseif ((($vs_value < 1000) || ($vs_value > ($va_tmp['year'] + 10))) || ($vs_value != intval($vs_value))) { 
 								$va_element_errors[$vs_element_name] = _t("%1 must be a valid year", $va_element_info['description']);
 							}
 						}
@@ -389,7 +393,12 @@
 						case 'MONTH':
 						case 'DAY':
 							$va_date = getDate();
-							if ($va_element_info['type'] == 'YEAR') { $va_element_vals[] = $va_date['year']; }
+							if ($va_element_info['type'] == 'YEAR') { 
+								if ($va_element_info['width'] == 2) {
+									$va_date['year'] = substr($va_date['year'], 2, 2);
+								}
+								$va_element_vals[] = $va_date['year']; 
+							}
 							if ($va_element_info['type'] == 'MONTH') { $va_element_vals[]  = $va_date['mon']; }
 							if ($va_element_info['type'] == 'DAY') { $va_element_vals[]  = $va_date['mday']; }
 							break;
@@ -565,7 +574,7 @@
 						}
 						break;
 					case 'YEAR':
-						$vn_p = 4 - mb_strlen($va_element_vals[$vn_i]);
+						$vn_p = (($va_element_info['width'] == 2) ? 2 : 4) - mb_strlen($va_element_vals[$vn_i]);
 						if ($vn_p < 0) { $vn_p = 0; }
 						$va_output[] = str_repeat(' ', $vn_p).$va_element_vals[$vn_i];
 						break;
@@ -1021,7 +1030,7 @@
 					if ($vs_element_value == '') {
 						$vn_value = '';
 						if (!$pb_generate_for_search_form) {
-							if ($va_element_info['type'] == 'YEAR') { $vn_value = $va_date['year']; }
+							if ($va_element_info['type'] == 'YEAR') { $vn_value = ($va_element_info['width'] == 2) ? substr($va_date['year'], 2, 2) : $va_date['year']; }
 							if ($va_element_info['type'] == 'MONTH') { $vn_value = $va_date['mon']; }
 							if ($va_element_info['type'] == 'DAY') { $vn_value = $va_date['mday']; }
 						}

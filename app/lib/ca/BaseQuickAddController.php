@@ -134,7 +134,6 @@
  					}
  					if (!$vn_type_id) {
  						$vn_type_id = $t_subject->getDefaultTypeID();
- 						$t_subject->set('type_id', $vn_type_id);
  					}
  				}
  			}
@@ -151,7 +150,10 @@
  			$t_subject->set('type_id', $vn_type_id);
  			
  			$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, $vn_type_id, array('editorPref' => 'quickadd'));
- 			
+ 			if (!$t_ui) {
+ 				$this->postError(1100, _t('No interface defined for %1', $this->ops_table_name), 'BaseQuickAddController->Form');
+ 				return;
+ 			}
  			// Get default screen (this is all we show in quickadd, even if the UI has multiple screens)
  			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 				array(),
@@ -376,9 +378,20 @@
  			
  			$vn_id = $t_subject->getPrimaryKey();
  			
+ 			$vn_relation_id = null;
  			if ($vn_id) {
  				$va_tmp = caProcessRelationshipLookupLabel($t_subject->makeSearchResult($t_subject->tableName(), array($vn_id)), $t_subject);
  				$va_name = array_pop($va_tmp);
+ 				 			
+				// Add relationship to added item here?
+				$pn_related_id = $this->request->getParameter('relatedID', pInteger);
+				$ps_related_table = $this->request->getParameter('relatedTable', pString);
+				$ps_relationship_type = $this->request->getParameter('relationshipType', pString);
+				if ($pn_related_id && $ps_related_table && $ps_relationship_type) {
+					if ($t_rel = $t_subject->addRelationship($ps_related_table, $pn_related_id, $ps_relationship_type)) {
+						$vn_relation_id = $t_rel->getPrimaryKey();
+					}
+				}
  			} else {
  				$va_name = array();
  			}
@@ -387,6 +400,7 @@
  				'id' => $vn_id,
  				'table' => $t_subject->tableName(),
 				'type_id' => method_exists($t_subject, "getTypeID") ? $t_subject->getTypeID() : null,
+				'relation_id' => $vn_relation_id,
  				'display' => $va_name['label'],
  				'errors' => $va_error_list
  			);
@@ -404,9 +418,9 @@
  		 */
  		protected function _initView($pa_options=null) {
  			// load required javascript
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register('imageScroller');
- 			JavascriptLoadManager::register('ckeditor');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('imageScroller');
+ 			AssetLoadManager::register('ckeditor');
  			
  			$t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
  			

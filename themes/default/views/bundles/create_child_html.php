@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * bundles/change_type_html.php : 
+ * bundles/create_child_html.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,9 +26,8 @@
  * ----------------------------------------------------------------------
  */
  
-	JavascriptLoadManager::register("panel");
+	AssetLoadManager::register("panel");
 	$t_item = $this->getVar('t_item');
-	//if (sizeof($t_item->getTypeList()) <= 1) { return ''; }
 	
 	$vs_table_name = $t_item->tableName();
 ?>

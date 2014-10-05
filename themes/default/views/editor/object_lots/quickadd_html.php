@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -67,6 +67,7 @@
 			
 			$va_form_elements = $t_subject->getBundleFormHTMLForScreen($this->getVar('screen'), array(
 					'request' => $this->request, 
+					'restrictToTypes' => array($t_subject->get('type_id')),
 					'formName' => $vs_form_name.$vs_field_name_prefix.$vs_n,
 					'forceLabelForNew' => $va_force_new_label							// force query text to be default in label fields
 			));
@@ -111,7 +112,6 @@
 						content += '</ul></div>';
 						
 						jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").html(content).slideDown(200);
-						jQuery('.rounded').corner('round 8px');
 						
 						var quickAddClearErrorInterval = setInterval(function() {
 							jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").slideUp(500);

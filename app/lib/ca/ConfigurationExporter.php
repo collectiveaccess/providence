@@ -45,6 +45,7 @@ require_once(__CA_MODELS_DIR__."/ca_user_roles.php");
 require_once(__CA_MODELS_DIR__."/ca_user_groups.php");
 require_once(__CA_MODELS_DIR__."/ca_search_forms.php");
 require_once(__CA_MODELS_DIR__."/ca_search_form_placements.php");
+require_once(__CA_MODELS_DIR__."/ca_editor_ui_screens.php");
 
 
 
@@ -329,8 +330,11 @@ final class ConfigurationExporter {
 
 			foreach($t_element->getTypeRestrictions() as $va_restriction){
 				$t_restriction = new ca_metadata_type_restrictions($va_restriction["restriction_id"]);
+				
+				$vs_table_name = $this->opo_dm->getTableName($t_restriction->get("table_num"));
+				if(!(strlen($vs_table_name)>0)) { continue; } // there could be lingering restrictions for tables that have since been removed. don't export those.
 				$vo_restriction = $this->opo_dom->createElement("restriction");
-				$vo_table = $this->opo_dom->createElement("table",$this->opo_dm->getTableName($t_restriction->get("table_num")));
+				$vo_table = $this->opo_dom->createElement("table",$vs_table_name);
 				$vo_restriction->appendChild($vo_table);
 
 				if($t_restriction->get("type_id")){
@@ -444,6 +448,7 @@ final class ConfigurationExporter {
 		
 		while($qr_uis->nextRow()){
 			$vo_ui = $this->opo_dom->createElement("userInterface");
+			$t_ui = new ca_editor_uis($qr_uis->get("ui_id"));
 			
 			$vs_type = $this->opo_dm->getTableName($qr_uis->get("editor_type"));
 			
@@ -455,6 +460,7 @@ final class ConfigurationExporter {
 			
 			$vo_ui->setAttribute("type", $vs_type);
 			
+			// labels
 			$vo_labels = $this->opo_dom->createElement("labels");
 			$qr_ui_labels = $this->opo_db->query("SELECT * FROM ca_editor_ui_labels WHERE ui_id=?",$qr_uis->get("ui_id"));
 			if($qr_ui_labels->numRows() > 0){
@@ -474,7 +480,54 @@ final class ConfigurationExporter {
 			}
 
 			$vo_ui->appendChild($vo_labels);
-			
+
+			// type restrictions
+			$va_ui_type_restrictions = $t_ui->getTypeRestrictions();
+			if(sizeof($va_ui_type_restrictions)>0){
+				$vo_ui_type_restrictions = $this->opo_dom->createElement("typeRestrictions");
+				$vo_ui->appendChild($vo_ui_type_restrictions);
+
+				foreach($va_ui_type_restrictions as $va_restriction){
+					$vo_restriction = $this->opo_dom->createElement("restriction");
+					$vo_ui_type_restrictions->appendChild($vo_restriction);
+					
+					$t_instance = $this->opo_dm->getInstanceByTableNum($va_restriction["table_num"]);
+					$vs_type_code = $t_instance->getTypeListCode();
+					$va_item = $t_list->getItemFromListByItemID($vs_type_code, $va_restriction["type_id"]);
+					$vo_restriction->setAttribute("type", $va_item["idno"]);
+				}
+			}
+
+			// User and group access
+			$va_users = $t_ui->getUsers();
+			if(sizeof($va_users)>0){
+				$vo_user_access = $this->opo_dom->createElement("userAccess");
+				$vo_ui->appendChild($vo_user_access);
+
+				foreach($va_users as $va_user_info){
+					$vo_permission = $this->opo_dom->createElement("permission");
+					$vo_user_access->appendChild($vo_permission);
+
+					$vo_permission->setAttribute("user", $va_user_info["user_name"]);
+					$vo_permission->setAttribute("access", $this->_convertUserGroupAccessToString(intval($va_user_info['access'])));
+				}
+			}
+
+			$va_groups = $t_ui->getUserGroups();
+			if(sizeof($va_groups)>0){
+				$vo_group_access = $this->opo_dom->createElement("groupAccess");
+				$vo_ui->appendChild($vo_group_access);
+
+				foreach($va_groups as $va_group_info){
+					$vo_permission = $this->opo_dom->createElement("permission");
+					$vo_group_access->appendChild($vo_permission);
+
+					$vo_permission->setAttribute("group", $va_group_info["code"]);
+					$vo_permission->setAttribute("access", $this->_convertUserGroupAccessToString(intval($va_group_info['access'])));
+				}
+			}
+
+			// screens
 			$vo_screens = $this->opo_dom->createElement("screens");
 			$qr_screens = $this->opo_db->query("SELECT * FROM ca_editor_ui_screens WHERE parent_id IS NOT NULL AND ui_id=? ORDER BY screen_id",$qr_uis->get("ui_id"));
 			
@@ -712,6 +765,7 @@ final class ConfigurationExporter {
 	public function getRolesAsDOM(){
 		$t_role = new ca_user_roles();
 		$t_list = new ca_lists();
+		$t_ui_screens = new ca_editor_ui_screens();
 		
 		$vo_roles = $this->opo_dom->createElement("roles");
 		
@@ -743,13 +797,16 @@ final class ConfigurationExporter {
 					$va_tmp = explode('.', $vs_bundle);
 					$vs_table_name = $va_tmp[0];
 					$vs_bundle_name = $va_tmp[1];
-					$vs_access = $this->_convertACLConstantToString(intval($vn_val));
 
-					$vo_permission = $this->opo_dom->createElement("permission");
-					$vo_bundle_lvl_ac->appendChild($vo_permission);
-					$vo_permission->setAttribute('table',$vs_table_name);
-					$vo_permission->setAttribute('bundle',$vs_bundle_name);
-					$vo_permission->setAttribute('access',$vs_access);
+					if($t_ui_screens->isAvailableBundle($vs_table_name,$vs_bundle_name)){ // only add this entry to the export if it's actually a valid bundle
+						$vs_access = $this->_convertACLConstantToString(intval($vn_val));
+
+						$vo_permission = $this->opo_dom->createElement("permission");
+						$vo_bundle_lvl_ac->appendChild($vo_permission);
+						$vo_permission->setAttribute('table',$vs_table_name);
+						$vo_permission->setAttribute('bundle',$vs_bundle_name);
+						$vo_permission->setAttribute('access',$vs_access);
+					}
 				}
 				$vo_role->appendChild($vo_bundle_lvl_ac);
 			}
@@ -860,6 +917,35 @@ final class ConfigurationExporter {
 
 				$vo_form->appendChild($vo_settings);
 			}
+
+			// User and group access
+			$va_users = $t_form->getUsers();
+			if(sizeof($va_users)>0){
+				$vo_user_access = $this->opo_dom->createElement("userAccess");
+				$vo_form->appendChild($vo_user_access);
+
+				foreach($va_users as $va_user_info){
+					$vo_permission = $this->opo_dom->createElement("permission");
+					$vo_user_access->appendChild($vo_permission);
+
+					$vo_permission->setAttribute("user", $va_user_info["user_name"]);
+					$vo_permission->setAttribute("access", $this->_convertUserGroupAccessToString(intval($va_user_info['access'])));
+				}
+			}
+
+			$va_groups = $t_form->getUserGroups();
+			if(sizeof($va_groups)>0){
+				$vo_group_access = $this->opo_dom->createElement("groupAccess");
+				$vo_form->appendChild($vo_group_access);
+
+				foreach($va_groups as $va_group_info){
+					$vo_permission = $this->opo_dom->createElement("permission");
+					$vo_group_access->appendChild($vo_permission);
+
+					$vo_permission->setAttribute("group", $va_group_info["code"]);
+					$vo_permission->setAttribute("access", $this->_convertUserGroupAccessToString(intval($va_group_info['access'])));
+				}
+			}
 			
 			$vo_placements = $this->opo_dom->createElement("bundlePlacements");
 			$qr_placements = $this->opo_db->query("SELECT * FROM ca_search_form_placements WHERE form_id=? ORDER BY placement_id",$qr_forms->get("form_id"));
@@ -881,6 +967,7 @@ final class ConfigurationExporter {
 								$vo_setting = $this->opo_dom->createElement("setting",$vs_value);
 								$vo_setting->setAttribute("name", $vs_setting);
 								if($vs_setting=="label" || $vs_setting=="add_label"){
+									if(is_numeric($vs_key)) { $vs_key = $this->opt_locale->localeIDToCode($vs_key); }
 									$vo_setting->setAttribute("locale", $vs_key);
 								}
 								$vo_settings->appendChild($vo_setting);
@@ -942,6 +1029,27 @@ final class ConfigurationExporter {
 				}
 				$vs_buf .= "\t\t</settings>\n";
 			}
+
+			// User and group access
+			$va_users = $t_display->getUsers();
+			if(sizeof($va_users)>0){
+				$vs_buf .= "\t\t<userAccess>\n";
+				foreach($va_users as $va_user_info){
+					$vs_buf .= "\t\t\t<permission user='".$va_user_info["user_name"]."' access='".$this->_convertUserGroupAccessToString(intval($va_user_info['access']))."'/>\n";
+				}
+
+				$vs_buf .= "\t\t</userAccess>\n";
+			}
+
+			$va_groups = $t_display->getUserGroups();
+			if(sizeof($va_groups)>0){
+				$vs_buf .= "\t\t<groupAccess>\n";
+				foreach($va_groups as $va_group_info){
+					$vs_buf .= "\t\t\t<permission group='".$va_group_info["code"]."' access='".$this->_convertUserGroupAccessToString(intval($va_group_info['access']))."'/>\n";
+				}
+
+				$vs_buf .= "\t\t</groupAccess>\n";
+			}
 			
 			$va_placements = $t_display->getPlacements();
 			
@@ -954,13 +1062,33 @@ final class ConfigurationExporter {
 					foreach($va_settings as $vs_setting => $vm_value) {
 						switch($vs_setting) {
 							case 'label':
-								//restrict_to_relationship_types
 								if(is_array($vm_value)) {
 									foreach($vm_value as $vn_locale_id => $vm_locale_specific_value) {
 										$vs_buf .= "<setting name='label' locale='".$this->opt_locale->localeIDToCode($vn_locale_id)."'>".caEscapeForXML($vm_locale_specific_value)."</setting>\n";
 									}
 								}
-							
+								break;
+							case 'restrict_to_relationship_types':
+								if(is_array($vm_value)){
+									foreach($vm_value as $vn_val){
+										$t_rel_type = new ca_relationship_types($vn_val);
+										if ($t_rel_type->getPrimaryKey()) {
+											$vs_value = $t_rel_type->get('type_code');
+											$vs_buf .= "\t\t\t\t<setting name='{$vs_setting}'><![CDATA[".$vs_value."]]></setting>\n";
+										}
+									}
+								}
+								break;
+							case 'restrict_to_types':
+								if(is_array($vm_value)){
+									foreach($vm_value as $vn_val){
+										$t_item = new ca_list_items($vn_val);
+										if ($t_item->getPrimaryKey()) {
+											$vs_value = $t_item->get('idno');
+											$vs_buf .= "\t\t\t\t<setting name='{$vs_setting}'><![CDATA[".$vs_value."]]></setting>\n";
+										}
+									}
+								}
 								break;
 							default:
 								if (is_array($vm_value)) {
@@ -1004,6 +1132,17 @@ final class ConfigurationExporter {
 				return 'read';
 			default:
 				return 'none';
+		}
+	}
+	# --------------------------------------------------
+	private function _convertUserGroupAccessToString($pn_val){
+		switch(intval($pn_val)) {
+			case 1:
+				return 'read';
+			case 2:
+				return 'edit';
+			default:
+				return false;
 		}
 	}
 	# --------------------------------------------------

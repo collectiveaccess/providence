@@ -422,7 +422,6 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 				# load image properties
 				$this->properties["width"] = $va_info[0];
 				$this->properties["height"] = $va_info[1];
-				$this->properties["quality"] = "";
 				$this->properties["mimetype"] = $vs_mimetype;
 				$this->properties["typename"] = $vs_typename;
 				$this->properties["filesize"] = @filesize($filepath);
@@ -613,6 +612,9 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# ----------------------------------------------------------
 	public function write($filepath, $mimetype) {
 		if (!$this->handle) { return false; }
+
+		// 75 is about the default value of imagejpeg() so it seems like a reasonable default for us as well
+		$vn_jpeg_quality = (isset($this->properties["quality"]) && $this->properties["quality"]) ? intval($this->properties["quality"]) : 75;
 		
 		if ($mimetype == "image/tilepic") {
 			if ($this->properties["mimetype"] == "image/tilepic") {
@@ -625,7 +627,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 						"tile_width" => $this->properties["tile_width"],
 						"tile_height" => $this->properties["tile_height"],
 						"layer_ratio" => $this->properties["layer_ratio"],
-						"quality" => $this->properties["quality"],
+						"quality" => $vn_jpeg_quality,
 						"antialiasing" => $this->properties["antialiasing"],
 						"output_mimetype" => $this->properties["tile_mimetype"],
 						"layers" => $this->properties["layers"],
@@ -665,7 +667,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$vs_typename = "GIF";
 					break;
 				case 'image/jpeg':
-					$vn_res = imagejpeg($this->handle, $filepath.".".$ext, $this->properties["quality"] ? $this->properties["quality"] : null);
+					$vn_res = imagejpeg($this->handle, $filepath.".".$ext, $vn_jpeg_quality);
 					$vs_typename = "JPEG";
 					break;
 				case 'image/png':

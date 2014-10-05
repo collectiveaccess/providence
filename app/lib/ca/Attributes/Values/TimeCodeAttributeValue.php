@@ -33,6 +33,7 @@
  /**
   *
   */
+  	define("__CA_ATTRIBUTE_VALUE_TIMECODE__", 10);
  	
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AttributeValue.php');
@@ -47,14 +48,6 @@
 			'width' => 5, 'height' => 1,
 			'label' => _t('Width of data entry field in user interface'),
 			'description' => _t('Width, in characters, of the field when displayed in a user interface.')
-		),
-		'fieldHeight' => array(
-			'formatType' => FT_NUMBER,
-			'displayType' => DT_FIELD,
-			'default' => '',
-			'width' => 5, 'height' => 1,
-			'label' => _t('Height of data entry field in user interface'),
-			'description' => _t('Height, in characters, of the field when displayed in a user interface.')
 		),
 		'doesNotTakeLocale' => array(
 			'formatType' => FT_NUMBER,
@@ -96,6 +89,22 @@
 			'label' => _t('Can be used in display'),
 			'description' => _t('Check this option if this attribute value can be used for display in search results. (The default is to be.)')
 		),
+		'canMakePDF' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output?'),
+			'description' => _t('Check this option if this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
+		'canMakePDFForValue' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output for individual values?'),
+			'description' => _t('Check this option if individual values for this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
 		'displayTemplate' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -119,8 +128,7 @@
 	class TimeCodeAttributeValue extends AttributeValue implements IAttributeValue {
  		# ------------------------------------------------------------------
  		private $ops_text_value;
- 		private $opn_start_date;
- 		private $opn_end_date;
+ 		private $opn_duration;
  		# ------------------------------------------------------------------
  		public function __construct($pa_value_array=null) {
  			parent::__construct($pa_value_array);
@@ -187,14 +195,22 @@
  		}
  		# ------------------------------------------------------------------
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
- 			$vn_width = (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : 30;
- 			$vn_max_length = 255;
+			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth'));
+
+			$vs_width = trim((isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth']);
+
+			if(!$vs_width) { $vs_width = 30; }
+
+			if (!preg_match("!^[\d\.]+px$!i", $vs_width)) {
+				$vs_width = ((int)$vs_width * 6)."px";
+			}
+
  			return caHTMLTextInput(
 				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
 				array('id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
-					'size' => $vn_width,
+					'size' => $vs_width,
 					'value' => '{{'.$pa_element_info['element_id'].'}}',
-					'maxlength' => $vn_max_length,
+					'maxlength' => 255,
 					'class' => 'timecodeBg'
 				)
 			);
@@ -215,5 +231,13 @@
 			return 'value_decimal1';
 		}
  		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for timecode attribute value
+		 * 
+		 * @return int Attribute value type code
+		 */
+		public function getType() {
+			return __CA_ATTRIBUTE_VALUE_TIMECODE__;
+		}
+ 		# ------------------------------------------------------------------
 	}
- ?>

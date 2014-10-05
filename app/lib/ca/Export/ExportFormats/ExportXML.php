@@ -43,6 +43,8 @@ class ExportXML extends BaseExportFormat {
 		$this->ops_element_description = _t('Values prefixed with @ reference XML attributes. All other values define XML elements. The usual restrictions and naming conventions for XML elements and attributes apply.');
 
 		$this->opo_dom = new DOMDocument('1.0','utf-8'); // are those settings?
+		$this->opo_dom->formatOutput = true;
+		$this->opo_dom->preserveWhiteSpace = false;
 
 		parent::__construct();
 	}
@@ -56,36 +58,43 @@ class ExportXML extends BaseExportFormat {
 	}
 	# ------------------------------------------------------
 	public function processExport($pa_data,$pa_options=array()){
-		$pb_single_record = (isset($pa_options['singleRecord']) && $pa_options['singleRecord']);
+		$pb_single_record = caGetOption('singleRecord', $pa_options);
+		//$pb_rdf_mode = caGetOption('rdfMode', $pa_options);
+		$pb_strip_cdata = (bool) caGetOption('stripCDATA', $pa_options['settings'], false);
 
 		//caDebug($pa_data,"Data to build XML from");
+		
+		$this->log("XML export formatter: Now processing export tree ...");
 
 		// XML exports should usually have only one top-level element (i.e. one root).
 		if(sizeof($pa_data)!=1){ return false; }
 
 		$this->processItem(array_pop($pa_data),$this->opo_dom);
-		
-		// format, then reload as DOMDocument
-		// unfortunately DOMDocument is still unable to format
-		// arbitrary documents so we have to pre-format them
-		$vs_xml = caFormatXML($this->opo_dom->saveXML());
-		$vo_doc = new DOMDocument();
-		$vo_doc->formatOutput = true;
-		$vo_doc->preserveWhiteSpace = false;
-		$vo_doc->loadXML($vs_xml);
 
-		// when dealing with a record set export, we don't want <?xml tags in front so
-		// that we can simply dump each record in a file and have valid XML as result
-		return ($pb_single_record ? $vo_doc->saveXML() : $vo_doc->saveXML($vo_doc->firstChild));
+		$this->log(_t("XML export formatter: Done processing export tree ..."));
+
+		// when dealing with a record set export, we don't want <?xml tags in front of each record
+		// that way we can simply dump a sequence of records in a file and have well-formed XML as result
+		$vs_return = ($pb_single_record ? $this->opo_dom->saveXML() : $this->opo_dom->saveXML($this->opo_dom->firstChild));
+
+		if($pb_strip_cdata) {
+			$vs_return = str_replace('<![CDATA[', '', $vs_return);
+			$vs_return = str_replace(']]>','',$vs_return);
+		}
+
+		return $vs_return;
 	}
 	# ------------------------------------------------------
-	private function processItem($pa_item,$po_parent){
+	private function processItem($pa_item, $po_parent){
 		if(!($po_parent instanceof DOMNode)) return false;
 
 		//caDebug($pa_item,"Data passed to XML item processor");
 
 		$vs_element = $pa_item['element'];
 		$vs_text = (isset($pa_item['text']) ? $pa_item['text'] : null);
+
+		$this->log(_t("XML export formatter: Processing element or attribute '%1' with text '%2' and parent element '%3' ...", $vs_element, $vs_text, $po_parent->nodeName));
+
 		$vs_first = substr($vs_element,0,1);
 
 		if($vs_first == "@"){ // attribute
@@ -94,10 +103,19 @@ class ExportXML extends BaseExportFormat {
 
 			$vs_rest = substr($vs_element,1);
 			$po_parent->setAttribute($vs_rest, $vs_text);
+			$vo_new_element = $po_parent; // attributes shouldn't have children, but still ...
 		} else { // element
-			$vs_text = trim(caEscapeForXML($vs_text));
+			$vs_escaped_text = trim(caEscapeForXML($vs_text));
+
 			if(strlen($vs_text)>0){
-				$vo_new_element = $this->opo_dom->createElement($vs_element,$vs_text);
+
+				if($vs_escaped_text != $vs_text) { // sth was escaped by caEscapeForXML -> wrap in CDATA
+					$vo_new_element = $this->opo_dom->createElement($vs_element);
+					$vo_new_element->appendChild(new DOMCdataSection($vs_text));
+				}  else { // add text as-is using DOMDocument
+					$vo_new_element = $this->opo_dom->createElement($vs_element,$vs_text);
+				}
+				
 			} else {
 				$vo_new_element = $this->opo_dom->createElement($vs_element);
 			}
@@ -116,7 +134,7 @@ class ExportXML extends BaseExportFormat {
 	public function getMappingErrors($t_mapping){
 		$va_errors = array();
 
-		$va_top = $t_mapping->getTopLevelItems();
+		$va_top = $t_mapping->getTopLevelItems(array('dontIncludeVariables' => true));
 		if(sizeof($va_top)!==1){
 			$va_errors[] = _t("XML documents must have exactly one root element");
 		}
@@ -162,5 +180,13 @@ class ExportXML extends BaseExportFormat {
 	# ------------------------------------------------------
 }
 
-BaseExportFormat::$s_format_settings['XML'] = array();
-
+BaseExportFormat::$s_format_settings['XML'] = array(
+	'stripCDATA' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t("Strip CDATA"),
+		'description' => _t("By default the exporter wraps field content that contains invalid XML in CDATA sections to make sure the XML is valid regardless of the field content. If this option is set, the exporter explicitly strips the CDATA tags before returning the XML text. Use only if you know what you're doing!")
+	),
+);

@@ -75,6 +75,7 @@
  			foreach($va_importer_list as $vn_importer_id => $va_importer_info) {
  				$va_importer_options[$va_importer_info['label'].' (creates '.($va_importer_info['type_for_display'] ? $va_importer_info['type_for_display'].' ' : '').$va_importer_info['importer_type'].')'] = $vn_importer_id;
  			}
+ 			$this->view->setVar('importer_list', $va_importer_options);
  			$this->view->setVar('importer_list_select', caHTMLSelect('importer_id', $va_importer_options, array()));
  			$this->view->setVar('log_level', $this->request->user->getVar('worldcat_log_level'));
  		

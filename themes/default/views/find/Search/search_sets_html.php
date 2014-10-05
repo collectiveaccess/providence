@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,11 +26,11 @@
  * ----------------------------------------------------------------------
  */
  
- 	$t_subject = $this->getVar('t_subject');
- 	$o_result_context = $this->getVar('result_context');
+ 	$t_subject 			= $this->getVar('t_subject');
+ 	$o_result_context 	= $this->getVar('result_context');
 ?>
 <div class='setTools'>
-	<a href="#" id='searchSetToolsShow' onclick="$('.setTools').hide(); return caShowSearchSetTools();"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_SETS__); ?>Set Tools</a>
+	<a href="#" id='searchSetToolsShow' onclick="$('.setTools').hide(); return caShowSearchSetTools();"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_SETS__); print _t("Set Tools"); ?></a>
 </div><!-- end setTools -->
 
 <div id="searchSetTools">
@@ -48,12 +48,14 @@
 			$va_options[$va_set_info['name']] = $vn_set_id;
 		}
 		
-		print caHTMLSelect('set_id', $va_options, array('id' => 'caAddToSetID', 'class' => 'searchSetsSelect'), array('value' => null, 'width' => '170px'))."\n";
+		print caHTMLSelect('set_id', $va_options, array('id' => 'caAddToSetID', 'class' => 'searchSetsSelect'), array('value' => null, 'width' => '140px'));
+		print caBusyIndicatorIcon($this->request, array('id' => 'caAddToSetIDIndicator'))."\n";
 ?>
-			<a href='#' onclick="caAddItemsToSet();" class="button"><?php print _t('Add'); ?> &rsaquo;</a>
-			<div class="searchSetsToggle"><a href="#" onclick="caToggleAddToSet()" class="searchSetsToggle"><?php print _t("Toggle checked"); ?></a></div>
+			<a href='#' onclick="return caAddItemsToSet();" class="button"><?php print _t('Add'); ?> &rsaquo;</a>
+			<div class="searchSetsToggle"><a href="#" onclick="return caToggleAddToSet();" class="searchSetsToggle"><?php print _t("Toggle checked"); ?></a></div>
 		</form>
 	</div>
+	<br class="clear"/>
 <?php
 	}
 ?>
@@ -71,8 +73,9 @@
 					'from checked' => _t('from_checked')
 				), 
 				array('id' => 'caCreateSetFromResultsMode', 'class' => 'searchSetsSelect'),
-				array('value' => null, 'width' => '170px')
+				array('value' => null, 'width' => '140px')
 			);
+			print caBusyIndicatorIcon($this->request, array('id' => 'caCreateSetFromResultsIndicator'))."\n";
 ?>
 			<a href='#' onclick="caCreateSetFromResults(); return false;" class="button"><?php print _t('Create'); ?> &rsaquo;</a>
 <?php		
@@ -124,9 +127,11 @@
 		jQuery('#caFindResultsForm .addItemToSetControl').each(function(i, j) {
 			jQuery(j).prop('checked', !jQuery(j).prop('checked'));
 		});
+		return false;
 	}
 	
 	function caAddItemsToSet() {
+		jQuery("#caAddToSetIDIndicator").show();
 		jQuery.post(
 			'<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'addToSet'); ?>', 
 			{ 
@@ -134,6 +139,7 @@
 				item_ids: caGetSelectedItemIDsToAddToSet().join(';')
 			}, 
 			function(res) {
+				jQuery("#caAddToSetIDIndicator").hide();
 				if (res['status'] === 'ok') { 
 					var item_type_name;
 					if (res['num_items_added'] == 1) {
@@ -159,9 +165,11 @@
 			},
 			'json'
 		);
+		return false;
 	}
 	
 	function caCreateSetFromResults() {
+		jQuery("#caCreateSetFromResultsIndicator").show();
 		jQuery.post(
 			'<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'createSetFromResult'); ?>', 
 			{ 
@@ -170,6 +178,7 @@
 				item_ids: caGetSelectedItemIDsToAddToSet().join(';')
 			}, 
 			function(res) {
+				jQuery("#caCreateSetFromResultsIndicator").hide();
 				if (res['status'] === 'ok') { 
 					var item_type_name;
 					if (res['num_items_added'] == 1) {
@@ -192,7 +201,6 @@
 							text: res['set_name'],
 							selected: 1
 						}));
-						console.log(res);
 						// add new set to search by set drop-down
 						jQuery("select.searchSetSelect").append($("<option/>", {
 							value: 'set:"' + res['set_code'] + '"',

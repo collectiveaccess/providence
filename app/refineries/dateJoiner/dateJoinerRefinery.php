@@ -85,6 +85,10 @@
 					$va_date = array();
 					if ($vs_date_start = BaseRefinery::parsePlaceholder($vs_date_start, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '))) { $va_date[] = $vs_date_start; }
 					if ($vs_date_end = BaseRefinery::parsePlaceholder($vs_date_end, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '))) { $va_date[] = $vs_date_end; }
+					
+					foreach($va_date as $vn_i => $vs_date) {
+						$va_date[$vn_i] = preg_replace("![^\d]+$!", "", $vs_date);
+					}
 					$vs_date_expression = join(" - ", $va_date);
 					if ($vs_date_expression && ($vs_exp = BaseRefinery::parsePlaceholder($vs_date_expression, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' ')))) {
 						if ($o_tep->parse($vs_exp)) {

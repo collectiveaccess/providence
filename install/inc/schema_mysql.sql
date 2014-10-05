@@ -92,6 +92,7 @@ create table ca_lists
    is_hierarchical                tinyint unsigned               not null default 0,
    use_as_vocabulary              tinyint unsigned               not null default 0,
    default_sort                   tinyint unsigned               not null default 0,
+   deleted                        tinyint unsigned               not null default 0,
    primary key (list_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -1288,8 +1289,8 @@ create table ca_representation_annotation_labels
    annotation_id                  int unsigned                   not null,
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
-   name                           varchar(255)                   not null,
-   name_sort                      varchar(255)                   not null,
+   name                           text		                     not null,
+   name_sort                      text                  		 not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
    primary key (label_id),
@@ -1305,7 +1306,7 @@ create index i_annotation_id on ca_representation_annotation_labels(annotation_i
 create index i_name on ca_representation_annotation_labels(name(128));
 create unique index u_all on ca_representation_annotation_labels
 (
-   name,
+   name(128),
    locale_id,
    type_id,
    annotation_id
@@ -1544,6 +1545,17 @@ create table ca_objects
    rank                           int unsigned                   not null default 0,
    acl_inherit_from_ca_collections tinyint unsigned              not null default 0,
    acl_inherit_from_parent         tinyint unsigned              not null default 0,
+   home_location_id               int unsigned,
+   accession_sdatetime            decimal(30,20),
+   accession_edatetime            decimal(30,20),
+   deaccession_sdatetime          decimal(30,20),
+   deaccession_edatetime          decimal(30,20),
+   is_deaccessioned               tinyint                        not null default 0,
+   deaccession_notes              text                           not null,
+   deaccession_type_id            int unsigned                   null,
+   current_loc_class              tinyint unsigned               null,
+   current_loc_subclass           int unsigned                   null,
+   current_loc_id                 int unsigned                   null,
    
    primary key (object_id),
    constraint fk_ca_objects_source_id foreign key (source_id)
@@ -1565,7 +1577,13 @@ create table ca_objects
       references ca_object_lots (lot_id) on delete restrict on update restrict,
       
    constraint fk_ca_objects_parent_id foreign key (parent_id)
-      references ca_objects (object_id) on delete restrict on update restrict
+      references ca_objects (object_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_objects_deaccession_type_id foreign key (deaccession_type_id)
+      references ca_list_items (item_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_objects_home_location_id foreign key (home_location_id)
+      references ca_storage_locations (location_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_parent_id on ca_objects(parent_id);
@@ -1586,6 +1604,16 @@ create index i_source_id on ca_objects(source_id);
 create index i_item_status_id on ca_objects(item_status_id);
 create index i_acl_inherit_from_parent on ca_objects(acl_inherit_from_parent);
 create index i_acl_inherit_from_ca_collections on ca_objects(acl_inherit_from_ca_collections);
+create index i_home_location_id on ca_objects(home_location_id);
+create index i_accession_sdatetime on ca_objects(accession_sdatetime);
+create index i_accession_edatetime on ca_objects(accession_edatetime);
+create index i_deaccession_sdatetime on ca_objects(deaccession_sdatetime);
+create index i_deaccession_edatetime on ca_objects(deaccession_edatetime);
+create index i_deaccession_type_id on ca_objects(deaccession_type_id);
+create index i_is_deaccessioned on ca_objects(is_deaccessioned);
+create index i_current_loc_class on ca_objects(current_loc_class);
+create index i_current_loc_subclass on ca_objects(current_loc_subclass);
+create index i_current_loc_id on ca_objects(current_loc_id);
 
 
 /*==========================================================================*/
@@ -3955,6 +3983,23 @@ create index i_value_longtext2 on ca_attribute_values
 (
    value_longtext2(128)
 );
+create index i_source_info on ca_attribute_values(source_info(255));
+
+
+/*==========================================================================*/
+create table ca_attribute_value_multifiles (
+	multifile_id		int unsigned not null auto_increment,
+	value_id	        int unsigned not null references ca_attribute_values(value_id),
+	resource_path		text not null,
+	media				longblob not null,
+	media_metadata		longblob not null,
+	media_content		longtext not null,
+	rank				int unsigned not null default 0,	
+	primary key (multifile_id)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+create index i_resource_path on ca_attribute_value_multifiles(resource_path(255));
+create index i_value_id on ca_attribute_value_multifiles(value_id);
 
 
 /*==========================================================================*/
@@ -4616,6 +4661,7 @@ create table ca_bundle_displays (
 	table_num		tinyint unsigned not null,
 	
 	is_system		tinyint unsigned not null,
+	access          tinyint unsigned not null default 0,
 	
 	settings		text not null,
 	
@@ -5911,7 +5957,7 @@ create table ca_object_lots_x_object_representations
    label_left_id                  int unsigned                   null,
    label_right_id                 int unsigned                   null,
    rank                           int unsigned                   not null default 0,
-   is_primary                     tinyint                        not null,
+   is_primary                     tinyint                        not null default 0,
    primary key (relation_id),
    constraint fk_ca_object_lots_x_object_representations_representation_id foreign key (representation_id)
       references ca_object_representations (representation_id) on delete restrict on update restrict,
@@ -6062,34 +6108,6 @@ create table ca_mysql_fulltext_search (
 	INDEX				i_field_row_id		(field_row_id),
 	INDEX				i_rel_type_id		(rel_type_id)	
 ) engine=myisam character set utf8 collate utf8_general_ci;
-
-
-/*==========================================================================*/
-create table ca_did_you_mean_phrases (
-	phrase_id			int unsigned		not null auto_increment,
-	
-	table_num			tinyint unsigned 	not null,
-	
-	phrase				varchar(255) 		not null,
-	num_words			tinyint unsigned	not null,
-	
-	PRIMARY KEY								(phrase_id),
-	INDEX				i_table_num			(table_num),
-	INDEX				i_num_words			(num_words),
-	UNIQUE INDEX		u_all				(table_num, phrase)
-	
-) engine=innodb character set utf8 collate utf8_general_ci;
-
-
-/*==========================================================================*/
-create table ca_did_you_mean_ngrams (
-	phrase_id			int unsigned		not null references ca_did_you_mean_phrases(phrase_id),
-	ngram				varchar(255)		not null,
-	endpoint			tinyint unsigned	not null,
-	
-	INDEX				i_phrase_id			(phrase_id),
-	INDEX				i_ngram				(ngram)
-) engine=innodb character set utf8 collate utf8_general_ci;
 
 
 /*==========================================================================*/
@@ -6433,6 +6451,8 @@ create index i_row_id on ca_sql_search_word_index(row_id, table_num);
 create index i_word_id on ca_sql_search_word_index(word_id, access);
 create index i_field_row_id on ca_sql_search_word_index(field_row_id, field_table_num);
 create index i_rel_type_id on ca_sql_search_word_index(rel_type_id);
+create index i_field_table_num on ca_sql_search_word_index(field_table_num);
+create index i_field_num on ca_sql_search_word_index(field_num);
 
 
 /*==========================================================================*/
@@ -6441,10 +6461,9 @@ create table ca_sql_search_ngrams (
   ngram char(4) not null,
   seq tinyint(3) unsigned not null,
   
-  primary key (word_id,seq)
+  index i_ngram (ngram),
+  index i_word_id (word_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_ngram on ca_sql_search_ngrams(ngram);
 
 
 /*==========================================================================*/
@@ -6461,6 +6480,29 @@ create table ca_media_replication_status_check (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
+/*==========================================================================*/
+create table ca_metadata_dictionary_entries (
+   entry_id                 int unsigned					not null AUTO_INCREMENT,
+   bundle_name              varchar(255) not null,
+   settings                 longtext not null,
+   primary key (entry_id)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
+create table ca_metadata_dictionary_rules (
+   rule_id                  int unsigned					not null AUTO_INCREMENT,
+   entry_id                 int unsigned not null,
+   rule_name                varchar(255) not null,
+   settings                 longtext not null,
+   primary key (rule_id),
+   index i_entry_id (entry_id),
+   index i_rule_name (rule_name),
+   
+   constraint fk_ca_metadata_dictionary_rules_entry_id foreign key (entry_id)
+      references ca_metadata_dictionary_entries (entry_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
 
 /*==========================================================================*/
 /* Schema update tracking                                                   */
@@ -6473,5 +6515,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 99 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (99, unix_timestamp());
+/* CURRENT MIGRATION: 110 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (110, unix_timestamp());

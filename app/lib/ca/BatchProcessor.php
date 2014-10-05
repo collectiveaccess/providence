@@ -563,10 +563,14 @@
  			$vn_object_type_id 					= $pa_options['ca_objects_type_id'];
  			$vn_rep_type_id 					= $pa_options['ca_object_representations_type_id'];
  			
+ 			$va_object_limit_matching_to_type_ids = $pa_options['ca_objects_limit_matching_to_type_ids'];
  			$vn_object_access					= $pa_options['ca_objects_access'];
  			$vn_object_representation_access 	= $pa_options['ca_object_representations_access'];
  			$vn_object_status 					= $pa_options['ca_objects_status'];
  			$vn_object_representation_status 	= $pa_options['ca_object_representations_status'];
+ 			
+ 			$vn_object_mapping_id				= $pa_options['ca_objects_mapping_id'];
+ 			$vn_object_representation_mapping_id= $pa_options['ca_object_representations_mapping_id'];
  			
  			$vs_idno_mode 						= $pa_options['idnoMode'];
  			$vs_idno 							= $pa_options['idno'];
@@ -662,8 +666,10 @@
  			$vn_num_items = sizeof($va_files_to_process);
  			
  			// Get list of regex packages that user can use to extract object idno's from filenames
-			$va_regex_list = $po_request->config->getAssoc('mediaFilenameToObjectIdnoRegexes');
- 			if (!is_array($va_regex_list)) { $va_regex_list = array(); }
+ 			$va_regex_list = caBatchGetMediaFilenameToIdnoRegexList(array('log' => $o_log));
+ 			
+			// Get list of replacements that user can use to transform file names to match object idnos
+			$va_replacements_list = caBatchGetMediaFilenameReplacementRegexList(array('log' => $o_log));
  			
  			// Get list of files (or file name patterns) to skip
  			$va_skip_list = preg_split("![\r\n]+!", $vs_skip_file_list);
@@ -710,6 +716,9 @@
 				$va_extracted_idnos_from_filename = array();
 				if (in_array($vs_import_mode, array('TRY_TO_MATCH', 'ALWAYS_MATCH')) || (is_array($va_create_relationship_for) && sizeof($va_create_relationship_for))) {
 					foreach($va_regex_list as $vs_regex_name => $va_regex_info) {
+
+						$o_log->logDebug(_t("Processing mediaFilenameToObjectIdnoRegexes entry %1",$vs_regex_name));
+
 						foreach($va_regex_info['regexes'] as $vs_regex) {
 							$va_names_to_match = array();
 							switch($vs_match_mode) {
@@ -724,12 +733,47 @@
 								default:
 								case 'FILE_NAME':
 									$va_names_to_match = array($f);
-									$o_log->logDebug(_t("Trying to match on file name '%1'", $d, $f));
+									$o_log->logDebug(_t("Trying to match on file name '%1'", $f));
 									break;
 							}
+
+							// are there any replacements? if so, try to match each element in $va_names_to_match AND all results of the replacements
+							if(is_array($va_replacements_list) && (sizeof($va_replacements_list)>0)) {
+								$va_names_to_match_copy = $va_names_to_match;
+								foreach($va_names_to_match_copy as $vs_name) {
+									foreach($va_replacements_list as $vs_replacement_code => $va_replacement) {
+										if(isset($va_replacement['search']) && is_array($va_replacement['search'])) {
+											$va_replace = caGetOption('replace',$va_replacement);
+											$va_search = array();
+
+											foreach($va_replacement['search'] as $vs_search){
+												$va_search[] = '!'.$vs_search.'!';
+											}
+
+											$vs_replacement_result = @preg_replace($va_search, $va_replace, $vs_name);
+
+											if(is_null($vs_replacement_result)) {
+												$o_log->logError(_t("There was an error in preg_replace while processing replacement %1.", $vs_replacement_code));
+											}
+
+											if($vs_replacement_result && strlen($vs_replacement_result)>0){
+												$o_log->logDebug(_t("The result for replacement with code %1 applied to value '%2' is '%3' and was added to the list of file names used for matching.", $vs_replacement_code, $vs_name, $vs_replacement_result));
+												$va_names_to_match[] = $vs_replacement_result;
+											}
+										} else {
+											$o_log->logDebug(_t("Skipped replacement %1 because no search expression was defined.", $vs_replacement_code));
+										}
+									}
+								}
+							}
+
+							$o_log->logDebug("Names to match: ".print_r($va_names_to_match, true));
 							
 							foreach($va_names_to_match as $vs_match_name) {
 								if (preg_match('!'.$vs_regex.'!', $vs_match_name, $va_matches)) {
+
+									$o_log->logDebug(_t("Matched name %1 on regex %2",$vs_match_name,$vs_regex));
+
 									if (!$vs_idno || (strlen($va_matches[1]) < strlen($vs_idno))) {
 										$vs_idno = $va_matches[1];
 									}
@@ -742,6 +786,8 @@
 										if(!is_array($va_fields_to_match_on = $po_request->config->getList('batch_media_import_match_on')) || !sizeof($va_fields_to_match_on)) {
 											$batch_media_import_match_on = array('idno');
 										}
+										
+										$vs_bool = 'OR';
 										$va_values = array();
 										foreach($va_fields_to_match_on as $vs_fld) {
 											if (in_array($vs_fld, array('preferred_labels', 'nonpreferred_labels'))) {
@@ -751,12 +797,19 @@
 											}
 										}
 										
-										if ($vn_object_id = ca_objects::find($va_values, array('returnAs' => 'firstId', 'boolean' => 'OR'))) {
+										if (is_array($va_object_limit_matching_to_type_ids) && sizeof($va_object_limit_matching_to_type_ids) > 0) {
+											$va_values['type_id'] = $va_object_limit_matching_to_type_ids;
+											$vs_bool = 'AND';
+										}
+										
+										$o_log->logDebug("Trying to find objects using boolean {$vs_bool} and values ".print_r($va_values,true));
+										
+										if ($vn_object_id = ca_objects::find($va_values, array('returnAs' => 'firstId', 'boolean' => $vs_bool))) {
 											if ($t_object->load($vn_object_id)) {
 												$va_notices[$vs_relative_directory.'/'.$vs_match_name.'_match'] = array(
 													'idno' => $t_object->get($t_object->getProperty('ID_NUMBERING_ID_FIELD')),
 													'label' => $t_object->getLabelForDisplay(),
-													'message' => $vs_msg = _t('Matched media %1 from %2 to object using %2', $f, $vs_relative_directory, $vs_regex_name),
+													'message' => $vs_msg = _t('Matched media %1 from %2 to object using %3', $f, $vs_relative_directory, $vs_regex_name),
 													'status' => 'MATCHED'
 												);
 												$o_log->logInfo($vs_msg);
@@ -764,6 +817,8 @@
 											break(3);
 										}
 									}
+								} else {
+									$o_log->logDebug(_t("Couldn't match name %1 on regex %2",$vs_match_name,$vs_regex));
 								}
 							}
 						}
@@ -911,6 +966,14 @@
 				}
 				
 				if ($t_object->getPrimaryKey()) {
+					// Perform import of embedded metadata (if required)
+					if ($vn_object_mapping_id) {
+						ca_data_importers::importDataFromSource($vs_directory.'/'.$f, $vn_object_mapping_id, array('logLevel' => $vs_log_level, 'format' => 'exif', 'forceImportForPrimaryKeys' => array($t_object->getPrimaryKey(), 'transaction' => $o_trans)));
+					}	
+					if ($vn_object_representation_mapping_id) {
+						ca_data_importers::importDataFromSource($vs_directory.'/'.$f, $vn_object_representation_mapping_id, array('logLevel' => $vs_log_level, 'format' => 'exif', 'forceImportForPrimaryKeys' => array($t_new_rep->getPrimaryKey()), 'transaction' => $o_trans));
+					}					
+					
 					$va_notices[$t_object->getPrimaryKey()] = array(
 						'idno' => $t_object->get($t_object->getProperty('ID_NUMBERING_ID_FIELD')),
 						'label' => $t_object->getLabelForDisplay(),
@@ -1026,12 +1089,17 @@
 		}
 		# ----------------------------------------
 		/**
+		 * Import metadata using a mapping
+		 * 
+		 * @param RequestHTTP $po_request The current request
+		 * @param string $ps_source A path to a file or directory of files to import
+		 * @param string $ps_importer The code of the importer (mapping) to use
+		 * @param string $ps_input_format The format of the source data
 		 * @param array $pa_options
 		 *		progressCallback =
 		 *		reportCallback = 
 		 *		sendMail = 
 		 *		dryRun = 
-		 *		debug = output tons of debugging info during import
 		 *		log = log directory path
 		 *		logLevel = KLogger constant for minimum log level to record. Default is KLogger::INFO. Constants are, in descending order of shrillness:
 		 *			KLogger::EMERG = Emergency messages (system is unusable)
@@ -1063,26 +1131,35 @@
 			$vs_log_level = caGetOption('logLevel', $pa_options, "INFO"); 
 			
 			$vb_dry_run = caGetOption('dryRun', $pa_options, false); 
-			$vb_debug = caGetOption('debug', $pa_options, false); 
 			
 			$vn_log_level = BatchProcessor::_logLevelStringToNumber($vs_log_level);
 
-			if (!ca_data_importers::importDataFromSource($ps_source, $ps_importer, array('logDirectory' => $o_config->get('batch_metadata_import_log_directory'), 'request' => $po_request,'format' => $ps_input_format, 'showCLIProgressBar' => false, 'useNcurses' => false, 'progressCallback' => isset($pa_options['progressCallback']) ? $pa_options['progressCallback'] : null, 'reportCallback' => isset($pa_options['reportCallback']) ? $pa_options['reportCallback'] : null,  'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'dryRun' => $vb_dry_run, 'debug' => $vb_debug))) {
-				$va_errors['general'] = array(
-					'idno' => "*",
-					'label' => "*",
-					'errors' => array(_t("Could not import source %1", $ps_source)),
-					'status' => 'ERROR'
-				);
-				return false;
+			if (is_dir($ps_source)) {
+				$va_sources = caGetDirectoryContentsAsList($ps_source, true, false, false, false);
 			} else {
-				$va_notices['general'] = array(
-					'idno' => "*",
-					'label' => "*",
-					'errors' => array(_t("Imported data from source %1", $ps_source)),
-					'status' => 'SUCCESS'
-				);
-				//return true;
+				$va_sources = array($ps_source);
+			}
+			
+			$vn_file_num = 0;
+			foreach($va_sources as $vs_source) {
+				$vn_file_num++;
+				if (!ca_data_importers::importDataFromSource($vs_source, $ps_importer, array('fileNumber' => $vn_file_num, 'numberOfFiles' => sizeof($va_sources), 'logDirectory' => $o_config->get('batch_metadata_import_log_directory'), 'request' => $po_request,'format' => $ps_input_format, 'showCLIProgressBar' => false, 'useNcurses' => false, 'progressCallback' => isset($pa_options['progressCallback']) ? $pa_options['progressCallback'] : null, 'reportCallback' => isset($pa_options['reportCallback']) ? $pa_options['reportCallback'] : null,  'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'dryRun' => $vb_dry_run))) {
+					$va_errors['general'][] = array(
+						'idno' => "*",
+						'label' => "*",
+						'errors' => array(_t("Could not import source %1", $ps_source)),
+						'status' => 'ERROR'
+					);
+					return false;
+				} else {
+					$va_notices['general'][] = array(
+						'idno' => "*",
+						'label' => "*",
+						'errors' => array(_t("Imported data from source %1", $ps_source)),
+						'status' => 'SUCCESS'
+					);
+					//return true;
+				}
 			}
 			
 			$vn_elapsed_time = time() - $vn_start_time;

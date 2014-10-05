@@ -1,11 +1,10 @@
 <?php
 /**
  * @package dompdf
- * @link    http://www.dompdf.com/
+ * @link    http://dompdf.github.com/
  * @author  Benj Carson <benjcarson@digitaljunkies.ca>
- * @author  Fabien Ménager <fabien.menager@gmail.com>
+ * @author  Fabien MÃ©nager <fabien.menager@gmail.com>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
- * @version $Id: gd_adapter.cls.php 448 2011-11-13 13:00:03Z fabien.menager $
  */
 
 /**
@@ -17,9 +16,13 @@
  * @package dompdf
  */
 class GD_Adapter implements Canvas {
+  /**
+   * @var DOMPDF
+   */
+  private $_dompdf;
 
   /**
-   * Resoure handle for the image
+   * Resource handle for the image
    *
    * @var resource
    */
@@ -73,32 +76,38 @@ class GD_Adapter implements Canvas {
    * @var int
    */
   private $_bg_color;
-  
+
   /**
    * Class constructor
    *
    * @param mixed  $size         The size of image to create: array(x1,y1,x2,y2) or "letter", "legal", etc.
    * @param string $orientation  The orientation of the document (either 'landscape' or 'portrait')
+   * @param DOMPDF $dompdf
    * @param float  $aa_factor    Anti-aliasing factor, 1 for no AA
    * @param array  $bg_color     Image background color: array(r,g,b,a), 0 <= r,g,b,a <= 1
    */
-  function __construct($size, $orientation = "portrait", $aa_factor = 1, $bg_color = array(1,1,1,0) ) {
+  function __construct($size, $orientation = "portrait", DOMPDF $dompdf, $aa_factor = 1.0, $bg_color = array(1,1,1,0) ) {
 
     if ( !is_array($size) ) {
       $size = strtolower($size);
       
-      if ( isset(CPDF_Adapter::$PAPER_SIZES[$size]) ) 
+      if ( isset(CPDF_Adapter::$PAPER_SIZES[$size]) ) {
         $size = CPDF_Adapter::$PAPER_SIZES[$size];
-      else
+      }
+      else {
         $size = CPDF_Adapter::$PAPER_SIZES["letter"];
+      }
     }
 
     if ( strtolower($orientation) === "landscape" ) {
       list($size[2],$size[3]) = array($size[3],$size[2]);
     }
 
-    if ( $aa_factor < 1 )
+    $this->_dompdf = $dompdf;
+
+    if ( $aa_factor < 1 ) {
       $aa_factor = 1;
+    }
 
     $this->_aa_factor = $aa_factor;
     
@@ -120,6 +129,10 @@ class GD_Adapter implements Canvas {
     imagesavealpha($this->_img, true);
     imagefill($this->_img, 0, 0, $this->_bg_color);
     
+  }
+
+  function get_dompdf(){
+    return $this->_dompdf;
   }
 
   /**
@@ -297,6 +310,10 @@ class GD_Adapter implements Canvas {
     
   }
 
+  function arc($x1, $y1, $r1, $r2, $astart, $aend, $color, $width, $style = array()) {
+    // @todo
+  }
+
   /**
    * Draws a rectangle at x1,y1 with width w and height h
    *
@@ -374,8 +391,12 @@ class GD_Adapter implements Canvas {
    * @param float $y1
    * @param float $w
    * @param float $h
-   */   
+   */
   function clipping_rectangle($x1, $y1, $w, $h) {
+    // @todo
+  }
+  
+  function clipping_roundrectangle($x1, $y1, $w, $h, $rTL, $rTR, $rBR, $rBL) {
     // @todo
   }
   
@@ -518,16 +539,18 @@ class GD_Adapter implements Canvas {
 
   /**
    * Add an image to the pdf.
-   *
    * The image is placed at the specified x and y coordinates with the
    * given width and height.
    *
    * @param string $img_url the path to the image
-   * @param string $img_type the type (e.g. extension) of the image
-   * @param float $x x position
-   * @param float $y y position
-   * @param int $w width (in pixels)
-   * @param int $h height (in pixels)
+   * @param float  $x       x position
+   * @param float  $y       y position
+   * @param int    $w       width (in pixels)
+   * @param int    $h       height (in pixels)
+   * @param string $resolution
+   *
+   * @return void
+   * @internal param string $img_type the type (e.g. extension) of the image
    */
   function image($img_url, $x, $y, $w, $h, $resolution = "normal") {
     $img_type = Image_Cache::detect_type($img_url);
@@ -560,19 +583,21 @@ class GD_Adapter implements Canvas {
 
   /**
    * Writes text at the specified x and y coordinates
-   *
    * See {@link Style::munge_color()} for the format of the color array.
    *
-   * @param float $x
-   * @param float $y
-   * @param string $text the text to write
-   * @param string $font the font file to use
-   * @param float $size the font size, in points
-   * @param array $color
-   * @param float $adjust word spacing adjustment
-   * @param float $angle Text angle
+   * @param float  $x
+   * @param float  $y
+   * @param string $text  the text to write
+   * @param string $font  the font file to use
+   * @param float  $size  the font size, in points
+   * @param array  $color
+   * @param float  $word_spacing word spacing adjustment
+   * @param float  $char_spacing
+   * @param float  $angle Text angle
+   *
+   * @return void
    */
-  function text($x, $y, $text, $font, $size, $color = array(0,0,0), $word_spacing = 0, $char_spacing = 0, $angle = 0) {
+  function text($x, $y, $text, $font, $size, $color = array(0,0,0), $word_spacing = 0.0, $char_spacing = 0.0, $angle = 0.0) {
 
     // Scale by the AA factor
     $x *= $this->_aa_factor;
@@ -607,11 +632,11 @@ class GD_Adapter implements Canvas {
   /**
    * Add a link to the pdf
    *
-   * @param string $url The url to link to
-   * @param float  $x   The x position of the link
-   * @param float  $y   The y position of the link
-   * @param float  $width   The width of the link
-   * @param float  $height   The height of the link
+   * @param string $url    The url to link to
+   * @param float  $x      The x position of the link
+   * @param float  $y      The y position of the link
+   * @param float  $width  The width of the link
+   * @param float  $height The height of the link
    */
   function add_link($url, $x, $y, $width, $height) {
     // Not implemented
@@ -630,17 +655,19 @@ class GD_Adapter implements Canvas {
   function set_default_view($view, $options = array()) {
     // N/A
   }
-  
+
   /**
    * Calculates text size, in points
    *
    * @param string $text the text to be sized
    * @param string $font the desired font
    * @param float  $size the desired font size
-   * @param float  $spacing word spacing, if any
+   * @param float  $word_spacing word spacing, if any
+   * @param float  $char_spacing char spacing, if any
+   *
    * @return float
    */
-  function get_text_width($text, $font, $size, $word_spacing = 0, $char_spacing = 0) {
+  function get_text_width($text, $font, $size, $word_spacing = 0.0, $char_spacing = 0.0) {
     $font = $this->get_ttf_file($font);
       
     $text = mb_encode_numericentity($text, array(0x0080, 0xffff, 0, 0xffff), 'UTF-8');
@@ -672,14 +699,16 @@ class GD_Adapter implements Canvas {
    */
   function get_font_height($font, $size) {
     $font = $this->get_ttf_file($font);
-      
+    $ratio = $this->_dompdf->get_option("font_height_ratio");
+
     // FIXME: word spacing
     list(,$y2,,,,$y1) = imagettfbbox($size, 0, $font, "MXjpqytfhl");  // Test string with ascenders, descenders and caps
-    return ($y2 - $y1) * DOMPDF_FONT_HEIGHT_RATIO;
+    return ($y2 - $y1) * $ratio;
   }
   
   function get_font_baseline($font, $size) {
-    return $this->get_font_height($font, $size) / DOMPDF_FONT_HEIGHT_RATIO;
+    $ratio = $this->_dompdf->get_option("font_height_ratio");
+    return $this->get_font_height($font, $size) / $ratio;
   }
   
   /**

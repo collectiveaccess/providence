@@ -29,31 +29,31 @@
 		$htmlResult .= "<table style=\"width:100%;text-align:center;\" cellpadding=\"".$cellpadding."px\" cellspacing=\"".$cellspacing."px\">\n";
 		// Table head of columns    
 		$htmlResult .= "<thead><tr style=\"height:".$cellheight."em\">";
-		foreach ($va_columns as $va_column => $va_colum_label) {
-			$htmlResult .= "<th style=\"background:lightgreen;height:".$cellheight."em;-moz-border-radius: ".$borderradius."em;border-radius: ".$borderradius."em;font-size:".$fontheight."em;\">$va_colum_label</th>";
+		foreach ($va_columns as $va_column => $va_column_label) {
+			$htmlResult .= "<th style=\"background:lightgreen;height:".$cellheight."em;-moz-border-radius: ".$borderradius."em;border-radius: ".$borderradius."em;font-size:".$fontheight."em;\">$va_column_label</th>";
 		}
 		$htmlResult .= "</tr></thead>\n";
 		// Table contents  
 		$htmlResult .= "<tbody>";
 		while($qr_result->nextRow()) {
 			$htmlResult .= "<tr>";
-			foreach ($va_columns as $va_column => $va_colum_label) {
+			foreach ($va_columns as $va_column => $va_column_label) {
 			    /* temp disabled : used to emphasis line retained in the graphics
-			    if (in_array($va_colum_label, $va_charting_rows)) 
-			    	print "<th scope=\"row\" style=\"background:#eeeeee;border:lightgray 1px solid;font-size:".$fontheight."em;\">".$qr_result->get($va_colum_label)."</th>";
+			    if (in_array($va_column_label, $va_charting_rows))
+			    	print "<th scope=\"row\" style=\"background:#eeeeee;border:lightgray 1px solid;font-size:".$fontheight."em;\">".$qr_result->get($va_column_label)."</th>";
 			    else
 			    */ 
-			    $htmlResult .= "<td style=\"background:lightgray;height:".$cellheight."em;-moz-border-radius: ".$borderradius."em;border-radius: ".$borderradius."em;font-size:".$fontheight."em;\">"._t($qr_result->get($va_colum_label))."</td>";
-			    if (in_array($va_colum_label, $va_total_columns)) $va_total_value["$va_colum_label"] = $va_total_value["$va_colum_label"] + $qr_result->get($va_colum_label);
+			    $htmlResult .= "<td style=\"background:lightgray;height:".$cellheight."em;-moz-border-radius: ".$borderradius."em;border-radius: ".$borderradius."em;font-size:".$fontheight."em;\">"._t($qr_result->get($va_column_label))."</td>";
+			    if (in_array($va_column_label, $va_total_columns)) $va_total_value["$va_column_label"] = $va_total_value["$va_column_label"] + $qr_result->get($va_column_label);
 			}
 			$htmlResult .= "</tr>\n";
 		 }		
 		$htmlResult .= "</tbody>";
 		// Total line with subtotal when needed
 			$htmlResult .= "<tfoot>";
-			foreach ($va_columns as $va_column => $va_colum_label) {
-				if (in_array($va_colum_label, $va_total_columns)) {
-					$htmlResult .= "<td style=\"background:lightblue;height:".$cellheight."em;-moz-border-radius: ".$borderradius."em;border-radius: ".$borderradius."em;font-size:".$fontheight."em;\">".$va_total_value["$va_colum_label"]."</td>";
+			foreach ($va_columns as $va_column => $va_column_label) {
+				if (in_array($va_column_label, $va_total_columns)) {
+					$htmlResult .= "<td style=\"background:lightblue;height:".$cellheight."em;-moz-border-radius: ".$borderradius."em;border-radius: ".$borderradius."em;font-size:".$fontheight."em;\">".$va_total_value["$va_column_label"]."</td>";
 				} else {
 					$htmlResult .= "<td></td>";
 				}
@@ -70,7 +70,7 @@
 	 * Render the drop-down options
 	 *
 	 */	
-	function renderOptions($va_views_images_path,$va_positions="",$va_selectedPosition,$va_chart_types="",$va_selectedChartingType="line") {		
+	function renderOptions($va_views_images_path, $id, $va_positions="", $va_selectedPosition, $va_chart_types="", $va_selectedChartingType="line") {
 		// Initializing the result variable
 		$htmlResult ="";
 		// Preparing HTML for charting type selection via radio button
@@ -94,8 +94,8 @@
 
 		// OK, what's next is a very stupid way of coding
 		$htmlResult .= "
-		<a href='#' id='showExports' onclick='jQuery(\"#layoutOptionsBox\").hide();  jQuery(\"#showLayoutOptions\").slideDown(1); jQuery(\"#exportsBox\").slideDown(250); jQuery(\"#showExports\").hide();  return false;'>Exports <img src=\"/providence/themes/default/graphics/arrows/arrow_right_gray.gif\" width=\"6\" height=\"7\" border=\"0\"></a>
-		<a href='#' id='showLayoutOptions' onclick='jQuery(\"#exportsBox\").hide();  jQuery(\"#showExports\").slideDown(1); jQuery(\"#layoutOptionsBox\").slideDown(250); jQuery(\"#showLayoutOptions\").hide();  return false;'>" . _('Display Options') . "<img src=\"/providence/themes/default/graphics/arrows/arrow_right_gray.gif\" width=\"6\" height=\"7\" border=\"0\"></a>
+		<a href='#' id='showExports' onclick='jQuery(\"#layoutOptionsBox\").hide();  jQuery(\"#showLayoutOptions\").slideDown(1); jQuery(\"#exportsBox\").slideDown(250); jQuery(\"#showExports\").hide();  return false;'>Exports <img src='".$va_views_images_path."/arrow_right_gray.gif' width=\"6\" height=\"7\" border=\"0\"></a>
+		<a href='#' id='showLayoutOptions' onclick='jQuery(\"#exportsBox\").hide();  jQuery(\"#showExports\").slideDown(1); jQuery(\"#layoutOptionsBox\").slideDown(250); jQuery(\"#showLayoutOptions\").hide();  return false;'>" . _('Display Options') . "<img src='".$va_views_images_path."/arrow_right_gray.gif' width=\"6\" height=\"7\" border=\"0\"></a>
  		<div id=\"layoutOptionsBox\" onLoad='jQuery(\"#layoutOptionsBox\").hide()'>
 		<form action='".$_SERVER['REQUEST_URI']."' method='post' id='caSearchOptionsForm' target='_top' enctype='multipart/form-data'>
 		<div class=\"bg\">
@@ -103,8 +103,8 @@
 		".
 		$position_options.
 		$charting_options."
-		<div class=\"control-box-middle-content\"><a href='#' id='saveOptions' onclick='jQuery(\"#caSearchOptionsForm\").submit();'>Apply <img src=\"".$va_views_images_path."/arrow_right_gray.gif\" width=\"9\" height=\"10\" border=\"0\"></a></div>
-				<a href='#' id='hideLayoutOptions' onclick='jQuery(\"#layoutOptionsBox\").slideUp(250); jQuery(\"#showLayoutOptions\").slideDown(1); return false;'><img src=\"".$va_views_images_path."/collapse.gif\" width=\"11\" height=\"11\" border=\"0\"></a>
+		<div class=\"control-box-middle-content\"><a href='#' id='saveOptions' onclick='jQuery(\"#caSearchOptionsForm\").submit();'>Apply <img src='".$va_views_images_path."/arrow_right_gray.gif' width=\"9\" height=\"10\" border=\"0\"></a></div>
+				<a href='#' id='hideLayoutOptions' onclick='jQuery(\"#layoutOptionsBox\").slideUp(250); jQuery(\"#showLayoutOptions\").slideDown(1); return false;'><img src='".$va_views_images_path."/collapse.gif' width=\"11\" height=\"11\" border=\"0\"></a>
 		
 				<div style='clear:both;height:1px;'>&nbsp;</div>
 			</div><!-- end bg --></form>
@@ -112,7 +112,7 @@
 		
 		<div id=\"exportsBox\" onLoad='jQuery(\"#layoutOptionsBox\").hide()'>
 		<div class=\"bg\">
-		 	<div class=\"control-box-middle-content\"><a href='/providence/index.php/statisticsViewer/Statistics/ShowCSV/stat/objects/id/1' id='saveOptions' >CSV <img src=\"".$va_views_images_path."/arrow_right_gray.gif\" width=\"9\" height=\"10\" border=\"0\"></a></div></form>
+		 	<div class=\"control-box-middle-content\"><a href='".__CA_URL_ROOT__."/index.php/statisticsViewer/Statistics/ShowCSV/stat/objects/id/".$id."' id='saveOptions' >CSV <img src='".$va_views_images_path."/arrow_right_gray.gif' width=\"9\" height=\"10\" border=\"0\"></a></div></form>
 				<a href='#' id='hideExports' onclick='jQuery(\"#exportsBox\").slideUp(250); jQuery(\"#showExports\").slideDown(1); return false;'><img src=\"".$va_views_images_path."/collapse.gif\" width=\"11\" height=\"11\" border=\"0\"></a>
 				<div style='clear:both;height:1px;'>&nbsp;</div>
 		</div><!-- end bg -->

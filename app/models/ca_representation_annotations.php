@@ -399,6 +399,52 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 	}
 	# ------------------------------------------------------
 	/**
+	 * Override BundlableLabelableBaseModelWithAttributes::get() to allow getting 
+	 * annotation properties in simple get()-style notations like
+	 *   ca_representations_annotations.props.w
+	 */
+	public function get($ps_field, $pa_options=null) {
+		$va_tmp = explode('.', $ps_field);
+
+		// remove table name if needed
+		if(isset($va_tmp[0]) && ($va_tmp[0] == $this->tableName())) {
+			array_shift($va_tmp);
+		}
+
+		if((sizeof($va_tmp)==2) && isset($va_tmp[0]) && ($va_tmp[0] == 'props')) {
+
+			if($va_tmp[1] == 'display') {
+				return $this->getPropertiesForDisplay($pa_options);
+			}
+
+			$vm_val = $this->getPropertyValue($va_tmp[1]);
+			
+			// this should be moved into the property implementation but for now, points is the only occurrence 
+			// of this kind of thing and getProperty() doesn't support any options so this is a reasonable quick&dirty way. 
+			if(is_array($vm_val) && !caGetOption('returnAsArray',$pa_options)) {
+				switch($va_tmp[1]) {
+					case 'points' :
+						$va_return = array();
+						foreach($vm_val as $va_point) {
+							// round values for display
+							$va_return[] = round($va_point['x'],2).','.round($va_point['y'],2);
+						}
+						if(!($vs_delimiter = caGetOption('delimiter',$pa_options))){
+							$vs_delimiter = '; ';
+						}
+						return join($vs_delimiter, $va_return);
+						break;
+					default:
+						return $vm_val;
+				}
+			}
+			return $vm_val;
+		}
+
+		return parent::get($ps_field, $pa_options);
+	}
+	# ------------------------------------------------------
+	/**
 	 * Returns true if currently set property values are valid and can be inserted into database, 
 	 * false if they violate some annotation-type-specific constraint
 	 */
@@ -413,15 +459,19 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
  		return is_object($this->opo_annotations_properties) ? $this->opo_annotations_properties->getPropertyList() : array();
  	}
  	# ------------------------------------------------------
- 	public function getPropertyHTMLFormElement($ps_property, $pa_attributes=null) {
+ 	public function getPropertyHTMLFormElement($ps_property, $pa_attributes=null, $pa_options=null) {
  		return $this->opo_annotations_properties->htmlFormElement($ps_property, $pa_attributes);
  	}
  	# ------------------------------------------------------
- 	public function getPropertyHTMLFormBundle($po_request, $ps_property, $pa_attributes=null) {
+ 	public function getPropertyHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $ps_property, $pa_attributes=null, $pa_options=null) {
  		$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 		$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 		
 		$o_view->setVar('property', $ps_property);
+		$o_view->setVar('id_prefix', $ps_form_name);
+		$o_view->setVar('placement_code', $ps_placement_code);
+		
+		$pa_attributes['name'] = $pa_attributes['id'] = "{$ps_placement_code}{$ps_form_name}{$ps_property}";
  		$o_view->setVar('form_element', $this->getPropertyHTMLFormElement($ps_property, $pa_attributes));
  		
 		return $o_view->render('ca_representation_annotation_properties.php');
@@ -433,6 +483,14 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
  	# ------------------------------------------------------
  	public function getPropertyValues() {
  		return $this->opo_annotations_properties->getPropertyValues();
+ 	}
+ 	# ------------------------------------------------------
+ 	public function getPropertiesForDisplay($pa_options=null) {
+ 		if($this->opo_annotations_properties instanceof IRepresentationAnnotationPropertyCoder) {
+ 			return $this->opo_annotations_properties->getPropertiesForDisplay($pa_options);	
+ 		} else {
+ 			return '';
+ 		}
  	}
  	# ------------------------------------------------------
  	public function setPropertyValue($ps_property, $pm_value) {

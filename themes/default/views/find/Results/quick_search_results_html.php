@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,11 +26,16 @@
  * ----------------------------------------------------------------------
  */
  
+ $o_search_config = caGetSearchConfig();
+ 
  $ps_search = $this->getVar('search');
+ 
+ $o_dm = Datamodel::load();
  
  $vs_sort_form = caFormTag($this->request, 'Index', 'QuickSearchSortForm');
  $vs_sort_form .= _t('Sort by ').caHTMLSelect('sort', array(_t('name') => 'name', _t('idno') => 'idno'), array('onchange' => 'jQuery("#QuickSearchSortForm").submit();'), array('value' => $this->getVar('sort')));
  $vs_sort_form .= "</form>";
+ 
  print $vs_control_box = caFormControlBox(
 		'<div class="quickSearchHeader">'._t("Top %1 results for <em>%2</em>", $this->getVar('maxNumberResults'), $this->getVar('search')).'</div>', 
 		'',
@@ -50,20 +55,29 @@
 	$vs_visibility = (sizeof($va_searches) == 1) ? 'block' : 'none';
 	foreach($va_searches as $vs_table => $va_info) {
 		if ($vs_table == 'ca_occurrences') {
+			$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
+						
 			if($vn_num_occurrence_types > 0) {
 				$va_occurrences_by_type = array();
 				
 				$o_res = $this->getVar('ca_occurrences_results');
 				while($o_res->nextHit()) {
+					$vs_type = $t_instance->getTypeCode((int)$o_res->get($vs_table.'.type_id'));
+					if (!($vs_template = $o_search_config->get($vs_table.'_'.$vs_type.'_quicksearch_result_display_template'))) {
+						$vs_template = $o_search_config->get($vs_table.'_quicksearch_result_display_template');
+					}
+					
 					$va_occurrences_by_type[$o_res->get('ca_occurrences.type_id')][] = array(
-						'name' => $o_res->get('ca_occurrences.preferred_labels'),
+						'name' => $vs_name = $o_res->get('ca_occurrences.preferred_labels'),
 						'occurrence_id' => $o_res->get('ca_occurrences.occurrence_id'),
-						'idno' => $o_res->get('ca_occurrences.idno')
+						'idno' => $o_res->get('ca_occurrences.idno'),
+						'template' => ($vs_template) ? $o_res->getWithTemplate($vs_template) : $vs_name
 					);
 				}
 			
 				$vn_i = 0;
 				foreach($va_occurrence_types as $vn_type_id => $va_type_info) {
+					
 					if ((!isset($va_occurrences_by_type[$vn_type_id])) || (!$va_occurrences_by_type[$vn_type_id])) {
 						print "<div class='quickSearchNoResults rounded'>".unicode_ucfirst($va_type_info['name_plural'])." (0)"."</div>";
 					}else{
@@ -82,11 +96,18 @@
 							<ul class='quickSearchList'>
 <?php
 								foreach($va_occurrences as $vn_i => $va_occurrence) {
-									$vs_idno_display = '';
-									if ($va_occurrence['idno']) {
-										$vs_idno_display = ' ['.$va_occurrence['idno'].']';
+									
+									if ($vs_template) {
+										print '<li class="quickSearchList">'.$va_occurrence['template']."</li>\n";
+									} else {
+										$vs_idno_display = '';
+										if ($va_occurrence['idno']) {
+											$vs_idno_display = ' ['.$va_occurrence['idno'].']';
+										}
+										
+										print '<li class="quickSearchList">'.caNavLink($this->request, $va_occurrence['name'], null, $va_info['module'], $va_info['controller'], $this->request->user->canAccess($va_info["module"],$va_info["controller"],$va_info["action"],array($va_info["primary_key"] => $o_res->get($va_info["primary_key"]))) ? $va_info['action'] : "Summary", array('occurrence_id' => $va_occurrence['occurrence_id']))." ".$vs_idno_display."</li>\n";
+										
 									}
-									print '<li class="quickSearchList">'.caNavLink($this->request, $va_occurrence['name'], null, $va_info['module'], $va_info['controller'], $va_info['action'], array('occurrence_id' => $va_occurrence['occurrence_id']))." ".$vs_idno_display."</li>\n";
 								}
 ?>
 							</ul>
@@ -111,21 +132,34 @@
 				<div class="quickSearchHalfWidthResults" id='<?php print $vs_table; ?>_results' style="display:none;">
 					<ul class='quickSearchList'>
 <?php
-						$o_dm = Datamodel::load();
 						$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
 						$va_type_list = $t_instance->getTypeList();
+						
+						$vb_show_labels = !(($vs_table === 'ca_objects') && ($t_instance->getAppConfig()->get('ca_objects_dont_use_labels')));
+						
 						while($o_res->nextHit()) {
-							if ($vs_idno_display = trim($o_res->get($va_info['displayidno']))) {
-								$vs_idno_display = ' ('.$vs_idno_display.')';
+							$vs_type = $t_instance->getTypeCode((int)$o_res->get($vs_table.'.type_id'));
+							if (!($vs_template = $o_search_config->get($vs_table.'_'.$vs_type.'_quicksearch_result_display_template'))) {
+								$vs_template = $o_search_config->get($vs_table.'_quicksearch_result_display_template');
 							}
-							$vs_type_display = '';
-							if (($vn_type_id = trim($o_res->get($vs_table.'.type_id'))) && $va_type_list[$vn_type_id]) {
-								$vs_type_display = ' ['.$va_type_list[$vn_type_id]['name_singular'].']';
-							}
-							if($this->request->user->canAccess($va_info["module"],$va_info["controller"],$va_info["action"],array($va_info["primary_key"] => $o_res->get($va_info["primary_key"])))){
-								print '<li class="quickSearchList">'.caNavLink($this->request, $o_res->get($vs_table.'.preferred_labels'), null, $va_info['module'], $va_info['controller'], $va_info['action'], array($va_info['primary_key'] => $o_res->get($va_info['primary_key'])))." ".$vs_idno_display." {$vs_type_display}</li>\n";
+							
+							if ($vs_template) {
+								print '<li class="quickSearchList">'.$o_res->getWithTemplate($vs_template)."</li>\n";
 							} else {
-								print '<li class="quickSearchList">'.caNavLink($this->request, $o_res->get($vs_table.'.preferred_labels'), null, $va_info['module'], $va_info['controller'], "Summary", array($va_info['primary_key'] => $o_res->get($va_info['primary_key'])))." ".$vs_idno_display." {$vs_type_display}</li>\n";
+								$vs_idno_display = trim($o_res->get($va_info['displayidno']));
+							
+								if ($vb_show_labels) {
+									$vs_label = $o_res->get($vs_table.'.preferred_labels');
+								} else {
+									$vs_label = $vs_idno_display;
+									$vs_idno_display = '';
+								}
+								$vs_type_display = '';
+								if (($vn_type_id = trim($o_res->get($vs_table.'.type_id'))) && $va_type_list[$vn_type_id]) {
+									$vs_type_display = ' ['.$va_type_list[$vn_type_id]['name_singular'].']';
+								}
+								
+								print '<li class="quickSearchList">'.caNavLink($this->request, $vs_label, null, $va_info['module'], $va_info['controller'], $this->request->user->canAccess($va_info["module"],$va_info["controller"],$va_info["action"],array($va_info["primary_key"] => $o_res->get($va_info["primary_key"]))) ? $va_info['action'] : 'Summary', array($va_info['primary_key'] => $o_res->get($va_info['primary_key'])))." ".($vs_idno_display ? "({$vs_idno_display})" : "")." {$vs_type_display}</li>\n";		
 							}
 						}
 	?>

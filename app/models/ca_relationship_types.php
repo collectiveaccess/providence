@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -251,6 +251,11 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 * @var cached relationship tables; used by getRelationshipTypeTable()
 	 */
 	static $s_relationship_type_table_cache = array();
+	
+	/**
+	 * @var cached type_id to type_code entries; used by relationshipTypeIDsToTypeCodes()
+	 */
+	static $s_relationship_type_id_to_code_cache = array();
 	
 	# ------------------------------------------------------
 	# --- Constructor
@@ -499,7 +504,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 * @param mixed $pm_table_name_or_num The name or number of the relationship table that the types are valid for (Eg. ca_objects_x_entities)
 	 * @param array $pa_list A list of relationship type_code string and/or numeric type_ids
-	 * @param array $pa_options Optional array of options. Support options are:
+	 * @param array $pa_options Options include:
 	 *			includeChildren = If set to true, ids of children of relationship types are included in the returned values
 	 * @return array A list of corresponding type_ids 
 	 */
@@ -528,7 +533,7 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 * @param mixed $pm_table_name_or_num The name or number of the relationship table that the types are valid for (Eg. ca_objects_x_entities)
 	 * @param array $pa_list A list of relationship type_code string and/or numeric type_ids
-	 * @param array $pa_options Optional array of options. Support options are:
+	 * @param array $pa_options Options include:
 	 *			includeChildren = If set to true, ids of children of relationship types are included in the returned values
 	 * @return array A list of corresponding type_codes 
 	 */
@@ -578,6 +583,47 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		return array_keys($va_rel_type_codes);
+	}
+	# ------------------------------------------------------
+	/**
+	 * Converts a list of relationship type_id's to a list of type_code strings. The conversion is literal without hierarchical expansion.
+	 *
+	 * @param array $pa_list A list of relationship numeric type_ids
+	 * @param array $pa_options Options include:
+	 *			NONE YET
+	 * @return array A list of corresponding type_codes 
+	 */
+	 static public function relationshipTypeIDsToTypeCodes($pa_ids, $pa_options=null) {
+	 	if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
+	 	
+	 	$vs_key = md5(print_r($pa_ids, true));
+	 	if (isset(ca_relationship_types::$s_relationship_type_id_to_code_cache[$vs_key])) {
+	 		return ca_relationship_types::$s_relationship_type_id_to_code_cache[$vs_key];
+	 	}
+	 	
+	 	$va_ids = $va_non_numerics = array();
+	 	foreach($pa_ids as $pn_id) {
+	 		if (!is_numeric($pn_id)) {
+	 			$va_non_numerics[] = $pn_id;
+	 		} else {
+	 			$va_ids = (int)$pn_id;
+	 		}
+	 	}
+	 	if (!sizeof($va_ids)) { return ca_relationship_types::$s_relationship_type_id_to_code_cache[$vs_key] = $pa_ids; }
+	 	
+	 	$o_db = new Db();
+	 	$qr_res = $o_db->query("
+	 		SELECT type_id, type_code 
+	 		FROM ca_relationship_types
+	 		WHERE
+	 			type_id IN (?)
+	 	", array($va_ids));
+	 	
+	 	$va_type_ids_to_codes = array();
+	 	while($qr_res->nextRow()) {
+	 		$va_type_ids_to_codes[$qr_res->get('type_id')] = $qr_res->get('type_code');
+	 	}
+	 	return ca_relationship_types::$s_relationship_type_id_to_code_cache[$vs_key] = $va_type_ids_to_codes + $va_non_numerics;
 	}
 	# ------------------------------------------------------
 	 public function getHierarchyList($pb_vocabularies=false) {
@@ -806,4 +852,3 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
  	}
 	# ------------------------------------------------------
 }
-?>

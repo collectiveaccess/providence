@@ -2,15 +2,13 @@
 <?php
 /**
  * @package dompdf
- * @link    http://www.dompdf.com/
+ * @link    http://dompdf.github.com/
  * @author  Benj Carson <benjcarson@digitaljunkies.ca>
- * @author  Fabien Ménager <fabien.menager@gmail.com>
+ * @author  Fabien MÃ©nager <fabien.menager@gmail.com>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
- * @version $Id: load_font.php 467 2012-02-04 13:25:17Z fabien.menager $
  */
 
 require_once "dompdf_config.inc.php";
-require_once "lib/php-font-lib/classes/font.cls.php";
 
 /**
  * Display command line usage
@@ -35,7 +33,7 @@ the directory containing normal font file (n_file) for additional files that
 it thinks might be the correct ones (e.g. that end in _Bold or b or B).  If
 it finds the files they will also be processed.  All files will be
 automatically copied to the DOMPDF font directory, and afm files will be
-generated using php-font-lib (http://code.google.com/p/php-font-lib/).
+generated using php-font-lib (https://github.com/PhenX/php-font-lib).
 
 Examples:
 
@@ -52,17 +50,18 @@ if ( $_SERVER["argc"] < 3 && @$_SERVER["argv"][1] != "system_fonts" ) {
 
 /**
  * Installs a new font family
- *
  * This function maps a font-family name to a font.  It tries to locate the
  * bold, italic, and bold italic versions of the font as well.  Once the
  * files are located, ttf versions of the font are copied to the fonts
  * directory.  Changes to the font lookup table are saved to the cache.
  *
- * @param string $fontname the font-family name
- * @param string $normal the filename of the normal face font subtype
- * @param string $bold   the filename of the bold face font subtype
- * @param string $italic the filename of the italic face font subtype
+ * @param string $fontname    the font-family name
+ * @param string $normal      the filename of the normal face font subtype
+ * @param string $bold        the filename of the bold face font subtype
+ * @param string $italic      the filename of the italic face font subtype
  * @param string $bold_italic the filename of the bold italic face font subtype
+ *
+ * @throws DOMPDF_Exception
  */
 function install_font_family($fontname, $normal, $bold = null, $italic = null, $bold_italic = null) {
   Font_Metrics::init();

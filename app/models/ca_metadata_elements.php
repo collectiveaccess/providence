@@ -227,6 +227,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	
 	static $s_element_list_cache;
 	static $s_element_set_cache;
+	static $s_element_set_id_cache;
 	
 	static $s_settings_cache = array();
 	static $s_setting_value_cache = array();
@@ -253,7 +254,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 	public function load($pm_id=null, $pb_use_cache = true) {
-		if ($vn_rc = parent::load($pm_id)) {
+		if ($vn_rc = parent::load($pm_id, $pb_use_cache)) {
 			if (!isset(ca_metadata_elements::$s_settings_cache[$this->getPrimaryKey()])) {
 				ca_metadata_elements::$s_settings_cache[$this->getPrimaryKey()] = $this->get('settings');
 			}
@@ -287,13 +288,19 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	/**
 		Returns array of elements in set of currently loaded row
 	 */
-	public function getElementsInSet($pn_element_id=null, $pb_use_cache=true) {
+	public function getElementsInSet($pn_element_id=null, $pb_use_cache=true, $pa_options=null) {
 		if (!$pn_element_id) {
 			$pn_element_id = $this->getPrimaryKey();
 		}
 		if (!$pn_element_id) { return null; }
 		
-		if ($pb_use_cache && isset(ca_metadata_elements::$s_element_set_cache[$pn_element_id])) { return ca_metadata_elements::$s_element_set_cache[$pn_element_id]; }
+		if ($pb_use_cache && isset(ca_metadata_elements::$s_element_set_cache[$pn_element_id])) { 
+			if (caGetOption('idsOnly', $pa_options, false)) {
+				return ca_metadata_elements::$s_element_set_id_cache[$pn_element_id];
+			} else {
+				return ca_metadata_elements::$s_element_set_cache[$pn_element_id]; 
+			}
+		}
 		
 		$va_hier = $this->getHierarchyAsList($pn_element_id);
 		$va_element_set = array();
@@ -302,6 +309,9 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		foreach($va_hier as $va_element) {
 			$va_element_ids[] = $va_element['NODE']['element_id'];
 		}
+		ca_metadata_elements::$s_element_set_id_cache[$pn_element_id] = $va_element_ids;
+		
+		if (caGetOption('idsOnly', $pa_options, false)) { return $va_element_ids; }
 		
 		// Get labels
 		$va_labels = $this->getPreferredDisplayLabelsForIDs($va_element_ids);
@@ -424,6 +434,10 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			return false;
 		}
 		
+		if (((int)$this->get('parent_id') == 0) && isset($va_properties['validForNonRootOnly']) && $va_properties['validForNonRootOnly']) {
+			return false;
+		}
+		
 		$vs_input_name = "setting_$ps_setting";
 		
 		if(isset($pa_options['label_id'])) {
@@ -528,7 +542,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 	/**
-	 * Returns list of "root" metadata elements ��� elements that are either freestanding or at the top of an element hierarchy (Eg. have sub-elements but are not sub-elements themselves).
+	 * Returns list of "root" metadata elements – elements that are either freestanding or at the top of an element hierarchy (Eg. have sub-elements but are not sub-elements themselves).
 	 * Root elements are used to reference the element as a whole (including sub-elements), so it is useful to be able to obtain
 	 * a list of these elements with sub-elements filtered out.
 	 *
@@ -1125,7 +1139,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	public function getPresetsAsHTMLFormElement($pa_options=null) {
 		if (!($vn_element_id = $this->getPrimaryKey())) { return null; }		// element must be loaded
 	
-		$o_presets = Configuration::load(__CA_APP_DIR__."/conf/attributePresets.conf");
+		$o_presets = Configuration::load(__CA_APP_DIR__."/conf/attribute_presets.conf");
 		
 		if ($va_presets = $o_presets->getAssoc($this->get('element_code'))) {
 			$vs_form_element_name = caGetOption('name', $pa_options, "{fieldNamePrefix}_presets_{n}");
@@ -1154,7 +1168,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	public function getPresetsJavascript($ps_field_prefix, $pa_options=null) {
 		if (!($vn_element_id = $this->getPrimaryKey())) { return null; }		// element must be loaded
 	
-		$o_presets = Configuration::load(__CA_APP_DIR__."/conf/attributePresets.conf");
+		$o_presets = Configuration::load(__CA_APP_DIR__."/conf/attribute_presets.conf");
 		
 		if ($va_presets = $o_presets->getAssoc($this->get('element_code'))) {
 			$va_elements = $this->getElementsInSet();

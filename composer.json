@@ -1,0 +1,6 @@
+{
+	"require-dev": {
+		"phpunit/phpunit": "4.1.*",
+		"maximebf/debugbar": ">=1.0.0"
+	}
+}

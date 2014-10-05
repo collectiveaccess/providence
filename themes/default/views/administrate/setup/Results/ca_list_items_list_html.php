@@ -77,7 +77,7 @@ if (!$this->getVar('no_hierarchies_defined')) {
 ?>
 			<tr <?php print ($i ==1) ? "class='odd'" : ""; ?>>
 				<td style="width:10px">
-					<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_object_id; ?>' class="addItemToSetControl" />
+					<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_item_id; ?>' class="addItemToSetControl" />
 				</td>
 <?php
 				foreach($va_display_list as $vn_placement_id => $va_display_item) {

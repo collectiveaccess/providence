@@ -34,7 +34,7 @@ include_once(__CA_LIB_DIR__."/ca/ConfigurationCheck.php");
 class ConfigurationCheckController extends ActionController {
 	# ------------------------------------------------
 	public function DoCheck(){
-	
+		AssetLoadManager::register('tableList');
 		// Search engine
 		$vo_search_config_settings = SearchEngine::checkPluginConfiguration();
 		$this->view->setVar('search_config_settings',$vo_search_config_settings);

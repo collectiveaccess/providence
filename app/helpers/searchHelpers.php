@@ -307,4 +307,13 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 		return array_keys($va_aps);
 	}
 	# ---------------------------------------
+	/**
+	 * 
+	 *
+	 * @return Configuration 
+	 */
+	function caGetSearchConfig() {
+		return Configuration::load(__CA_APP_DIR__.'/conf/search.conf');
+	}
+	# ---------------------------------------
 ?>

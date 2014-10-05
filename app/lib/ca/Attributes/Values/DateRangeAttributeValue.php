@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,6 +33,7 @@
  /**
   *
   */
+  	define("__CA_ATTRIBUTE_VALUE_DATERANGE__", 2);
  	
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AttributeValue.php');
@@ -141,6 +142,22 @@
 			'label' => _t('Can be used in display'),
 			'description' => _t('Check this option if this attribute value can be used for display in search results. (The default is to be.)')
 		),
+		'canMakePDF' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output?'),
+			'description' => _t('Check this option if this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
+		'canMakePDFForValue' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output for individual values?'),
+			'description' => _t('Check this option if individual values for this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
 		'displayTemplate' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -187,13 +204,9 @@
 		public function getDisplayValue($pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if (isset($pa_options['rawDate']) && $pa_options['rawDate']) {
-				return array(0 => $this->opn_start_date, 1 =>$this->opn_end_date, 'start' => $this->opn_start_date, 'end' =>$this->opn_end_date);
+				return array(0 => $this->opn_start_date, 1 => $this->opn_end_date, 'start' => $this->opn_start_date, 'end' =>$this->opn_end_date);
 			}
-			if (	
-				(isset($pa_options['GET_DIRECT_DATE']) && $pa_options['GET_DIRECT_DATE'])
-				||
-				(isset($pa_options['getDirectDate']) && $pa_options['getDirectDate'])
-			) {
+			if (caGetOption('GET_DIRECT_DATE', $pa_options, false) || caGetOption('getDirectDate', $pa_options, false)) {
 				return $this->opn_start_date;
 			}
 			
@@ -225,6 +238,10 @@
 		}
  		# ------------------------------------------------------------------
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
+            $o_conf = Configuration::load();
+            $o_date_config = Configuration::load($o_conf->get('datetime_config'));
+            $show_Undated = $o_date_config->get('showUndated');
+ 
  			$ps_value = trim($ps_value);
  			$va_settings = $this->getSettingValuesFromElementArray(
  				$pa_element_info, 
@@ -323,7 +340,13 @@
  				</script>\n";
  			}
  			
- 			if ((bool)$va_settings['useDatePicker']) { 
+ 			if ((bool)$va_settings['useDatePicker']) {
+ 				global $g_ui_locale;
+
+ 				// nothing terrible happens if this fails. If no package is registered for the current 
+ 				// locale, the LoadManager simply ignores it and the default settings (en_US) apply
+ 				AssetLoadManager::register("datepicker_i18n_{$g_ui_locale}"); 
+
  				$vs_element .= "<script type='text/javascript'>
  					jQuery(document).ready(function() {
  						jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').datepicker({constrainInput: false});
@@ -350,6 +373,15 @@
 		 */
 		public function sortField() {
 			return 'value_decimal1';
+		}
+ 		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for date range attribute value
+		 * 
+		 * @return int Attribute value type code
+		 */
+		public function getType() {
+			return __CA_ATTRIBUTE_VALUE_DATERANGE__;
 		}
  		# ------------------------------------------------------------------
 	}

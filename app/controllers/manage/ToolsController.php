@@ -70,7 +70,7 @@
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3500?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
-			JavascriptLoadManager::register('tableList');
+			AssetLoadManager::register('tableList');
 		
  			$this->view->setVar('tool_list', $this->opo_tools_manager->getTools());
  			$this->render('tools/tools_list_html.php');

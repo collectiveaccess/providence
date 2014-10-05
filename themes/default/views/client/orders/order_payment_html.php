@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  	
- 	JavascriptLoadManager::register('datePickerUI');
+ 	AssetLoadManager::register('datePickerUI');
  	
 	$t_order = $this->getVar('t_order');
 	$o_client_services_config = $this->getVar('client_services_config');

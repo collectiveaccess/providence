@@ -1,10 +1,9 @@
 <?php
 /**
  * @package dompdf
- * @link    http://www.dompdf.com/
+ * @link    http://dompdf.github.com/
  * @author  Benj Carson <benjcarson@digitaljunkies.ca>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
- * @version $Id: table_cell_frame_decorator.cls.php 451 2012-01-14 14:54:23Z fabien.menager $
  */
 
 /**
@@ -80,7 +79,7 @@ class Table_Cell_Frame_Decorator extends Block_Frame_Decorator {
    
       if ( $y_offset ) {
         // Move our children
-        foreach ( $this->get_line_boxes() as $i => $line ) {
+        foreach ( $this->get_line_boxes() as $line ) {
           foreach ( $line->get_frames() as $frame )
             $frame->move( 0, $y_offset );
         }

@@ -71,21 +71,32 @@ class Session {
 		$this->domain = $o_config->get("session_domain");
 		$this->lifetime = $o_config->get("session_lifetime");
 		
-		ini_set("session.gc_maxlifetime", $this->lifetime); 
-		ini_set("session.cookie_lifetime", $this->lifetime); 
-		
 		if (!$pb_dont_create_new_session) {
-			session_save_path(__CA_APP_DIR__."/tmp");
-			session_name($this->name);
-			session_set_cookie_params($this->lifetime, '/', $this->domain);
-			session_start();
-			$_SESSION['last_activity'] = $this->start_time;
-			session_write_close();
-			
-			$this->sessionData = caGetCacheObject("ca_session_".md5(session_id()), ($this->lifetime > 0) ? $this->lifetime : 7 * 24 * 60 * 60);
+			if (!($vs_session_id = $this->getSessionID())) {
+				$vs_cookiepath = ((__CA_URL_ROOT__== '') ? '/' : __CA_URL_ROOT__);
+				if (!caIsRunFromCLI()) { setcookie($this->name, $_COOKIE[$this->name] = $vs_session_id = $this->generateGUIDV4(), time() + $this->lifetime, $vs_cookiepath); }
+		 	} 
+			$this->sessionData = caGetCacheObject("ca_session_".str_replace("-", "_", $vs_session_id), 0);
 		}
 	}
+	# ----------------------------------------
+	/**
+	 * Generate a GUID 
+	 */
+	private function generateGUIDV4(){
+		if (function_exists("openssl_random_pseudo_bytes")) {
+			$vs_data = openssl_random_pseudo_bytes(16);
+		} else {
+			$vs_data = '';
+			for($i=0; $i < 16; $i++) {
+				$vs_data .= chr(mt_rand(0, 255));
+			}
+		}
+		$vs_data[6] = chr(ord($vs_data[6]) & 0x0f | 0x40); // set version to 0100
+		$vs_data[8] = chr(ord($vs_data[8]) & 0x3f | 0x80); // set bits 6-7 to 10
 
+		return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($vs_data), 4));
+	}
 	# ----------------------------------------
 	# --- Methods
 	# ----------------------------------------
@@ -93,7 +104,7 @@ class Session {
 	 * Returns client's session_id. 
 	 */
 	public function getSessionID () {
-		return md5(session_id());
+		return isset($_COOKIE[$this->name]) ? $_COOKIE[$this->name] : null;
 	}
 	# ----------------------------------------
 	/**

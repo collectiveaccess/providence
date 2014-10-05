@@ -154,10 +154,10 @@ class HTML5_TreeBuilder {
         $this->dom->substituteEntities = true;
         $this->dom->strictErrorChecking = false;
     }
-		
-		public function getQuirksMode(){
-			return $this->quirks_mode;
-		}
+    
+    public function getQuirksMode(){
+      return $this->quirks_mode;
+    }
 
     // Process tag tokens
     public function emitToken($token, $mode = null) {
@@ -2632,7 +2632,7 @@ class HTML5_TreeBuilder {
             // parse error
 
         } elseif($token['type'] === HTML5_Tokenizer::STARTTAG && $token['name'] === 'html') {
-            $this->processWithRulesFor($token, self::INBODY);
+            $this->processWithRulesFor($token, self::IN_BODY);
 
         /* A start tag token whose tag name is "option" */
         } elseif($token['type'] === HTML5_Tokenizer::STARTTAG &&
@@ -3165,7 +3165,7 @@ class HTML5_TreeBuilder {
 
         if (!empty($token['attr'])) {
             foreach($token['attr'] as $attr) {
-                if(!$el->hasAttribute($attr['name'])) {
+                if(!$el->hasAttribute($attr['name']) && preg_match("/^[a-zA-Z_:]/", $attr['name'])) {
                     $el->setAttribute($attr['name'], $attr['value']);
                 }
             }

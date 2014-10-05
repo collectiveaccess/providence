@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2013 Whirl-i-Gig
+ * Copyright 2011-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,9 +27,9 @@
  */
  
  
-	JavascriptLoadManager::register('sortableUI');
+	AssetLoadManager::register('sortableUI');
 
-	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+	$vs_id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$t_tour 				= $this->getVar('t_tour');	
 	$t_stop					= $this->getVar('t_stop');
 	
@@ -37,9 +37,10 @@
 	$va_errors = array();
 	$va_failed_inserts = array();
  
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_tour->tableNum().'_rel');
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
  ?>
- <div id="<?php print $vs_id_prefix.$t_tour->tableNum().'_rel'; ?>">
+ <div id="<?php print $vs_id_prefix; ?>">
 <?php
 	//
 	// The bundle template - used to generate each bundle in the form
@@ -89,7 +90,7 @@
 ?>
 			
 <script type="text/javascript">
-	caUI.initBundle('#<?php print $vs_id_prefix.$t_tour->tableNum().'_rel'; ?>', {
+	caUI.initBundle('#<?php print $vs_id_prefix; ?>', {
 		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 		templateValues: ['name', 'locale_id', 'rank', 'stop_id', 'typename'],
 		initialValues: <?php print json_encode($va_initial_values); ?>,

@@ -1,4 +1,38 @@
 <?php 
+/* ----------------------------------------------------------------------
+ * views/pageFormat/pageFooter.php : 
+ * ----------------------------------------------------------------------
+ * CollectiveAccess
+ * Open-source collections management software
+ * ----------------------------------------------------------------------
+ *
+ * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
+ * Copyright 2008-2014 Whirl-i-Gig
+ *
+ * For more information visit http://www.CollectiveAccess.org
+ *
+ * This program is free software; you may redistribute it and/or modify it under
+ * the terms of the provided license as published by Whirl-i-Gig
+ *
+ * CollectiveAccess is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ *
+ * This source code is free and modifiable under the terms of 
+ * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
+ * the "license.txt" file for details, or visit the CollectiveAccess web site at
+ * http://www.CollectiveAccess.org
+ *
+ * ----------------------------------------------------------------------
+ */
+ 
+	//
+	// Output HTML for debug bar
+	//
+	if(Debug::isEnabled()) {
+		print Debug::$bar->getJavascriptRenderer()->render();
+	}
+
 	$vs_footer_color = $this->request->config->get('footer_color');
 ?>
 					<div style="clear:both;"><!-- EMPTY --></div>
@@ -21,11 +55,7 @@
 		</div><!-- end footerContainer -->
 		</div><!-- end center -->
 		
-		
-		<!-- Activate super-roundiness technology - anything with the classname rounded gets rounded corners here -->
 		<script type="text/javascript">
-			jQuery(document).ready(function() { jQuery('.rounded').corner('round 8px'); }); 
-		
 			// force content to fill window height
 			jQuery(document).ready(function() {
 				jQuery('#mainContent').css('min-height', (window.innerHeight - 40) + 'px');

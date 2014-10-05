@@ -1,17 +1,16 @@
 <?php
 /**
  * @package dompdf
- * @link    http://www.dompdf.com/
+ * @link    http://dompdf.github.com/
  * @author  Benj Carson <benjcarson@digitaljunkies.ca>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
- * @version $Id: frame_tree.cls.php 464 2012-01-30 20:44:53Z fabien.menager $
  */
 
 /**
  * Represents an entire document as a tree of frames
  *
  * The Frame_Tree consists of {@link Frame} objects each tied to specific
- * DomNode objects in a specific DomDocument.  The Frame_Tree has the same
+ * DOMNode objects in a specific DomDocument.  The Frame_Tree has the same
  * structure as the DomDocument, but adds additional capabalities for
  * styling and layout.
  *
@@ -51,7 +50,7 @@ class Frame_Tree {
   protected $_absolute_frames;
 
   /**
-   * A mapping of {@link Frame} objects to DomNode objects
+   * A mapping of {@link Frame} objects to DOMNode objects
    *
    * @var array
    */
@@ -76,16 +75,20 @@ class Frame_Tree {
   /**
    * Returns the DomDocument object representing the curent html document
    *
-   * @return DomDocument
+   * @return DOMDocument
    */
-  function get_dom() { return $this->_dom; }
+  function get_dom() {
+    return $this->_dom;
+  }
 
   /**
    * Returns the root frame of the tree
    * 
    * @return Page_Frame_Decorator
    */
-  function get_root() { return $this->_root; }
+  function get_root() {
+    return $this->_root;
+  }
 
   /**
    * Returns a specific frame given its id
@@ -93,30 +96,35 @@ class Frame_Tree {
    * @param string $id
    * @return Frame
    */
-  function get_frame($id) { return isset($this->_registry[$id]) ? $this->_registry[$id] : null; }
+  function get_frame($id) {
+    return isset($this->_registry[$id]) ? $this->_registry[$id] : null;
+  }
 
   /**
    * Returns a post-order iterator for all frames in the tree
    *
-   * @return FrameTreeList
+   * @return FrameTreeList|Frame[]
    */
-  function get_frames() { return new FrameTreeList($this->_root); }
+  function get_frames() {
+    return new FrameTreeList($this->_root);
+  }
       
   /**
    * Builds the tree
    */
   function build_tree() {
     $html = $this->_dom->getElementsByTagName("html")->item(0);
-    if ( is_null($html) )
+    if ( is_null($html) ) {
       $html = $this->_dom->firstChild;
+    }
 
-    if ( is_null($html) )
+    if ( is_null($html) ) {
       throw new DOMPDF_Exception("Requested HTML document contains no data.");
+    }
 
     $this->fix_tables();
     
     $this->_root = $this->_build_tree_r($html);
-
   }
   
   /**
@@ -149,17 +157,18 @@ class Frame_Tree {
    * tree may be adjusted (i.e. nodes and frames for generated content
    * and images may be created).
    *
-   * @param DomNode $node the current DomNode being considered
+   * @param DOMNode $node the current DOMNode being considered
    * @return Frame
    */
-  protected function _build_tree_r(DomNode $node) {
+  protected function _build_tree_r(DOMNode $node) {
     
     $frame = new Frame($node);
     $id = $frame->get_id();
     $this->_registry[ $id ] = $frame;
     
-    if ( !$node->hasChildNodes() )
+    if ( !$node->hasChildNodes() ) {
       return $frame;
+    }
 
     // Fixes 'cannot access undefined property for object with
     // overloaded access', fix by Stefan radulian
@@ -168,17 +177,19 @@ class Frame_Tree {
 
     // Store the children in an array so that the tree can be modified
     $children = array();
-    for ($i = 0; $i < $node->childNodes->length; $i++)
+    for ($i = 0; $i < $node->childNodes->length; $i++) {
       $children[] = $node->childNodes->item($i);
+    }
 
     foreach ($children as $child) {
       $node_name = mb_strtolower($child->nodeName);
       
       // Skip non-displaying nodes
       if ( in_array($node_name, self::$_HIDDEN_TAGS) )  {
-        if ( $node_name !== "head" &&
-             $node_name !== "style" ) 
+        if ( $node_name !== "head" && $node_name !== "style" ) {
           $child->parentNode->removeChild($child);
+        }
+        
         continue;
       }
 
@@ -201,10 +212,12 @@ class Frame_Tree {
   }
   
   public function insert_node(DOMNode $node, DOMNode $new_node, $pos) {
-    if ($pos === "after" || !$node->firstChild)
+    if ( $pos === "after" || !$node->firstChild ) {
       $node->appendChild($new_node);
-    else 
+    }
+    else {
       $node->insertBefore($new_node, $node->firstChild);
+    }
     
     $this->_build_tree_r($new_node);
     
@@ -214,11 +227,15 @@ class Frame_Tree {
     $parent_id = $node->getAttribute("frame_id");
     $parent = $this->get_frame($parent_id);
     
-    if ($pos === "before")
-      $parent->prepend_child($frame, false);
-    else 
-      $parent->append_child($frame, false);
-      
+    if ( $parent ) {
+      if ( $pos === "before" ) {
+        $parent->prepend_child($frame, false);
+      }
+      else {
+        $parent->append_child($frame, false);
+      }
+    }
+    
     return $frame_id;
   }
 }

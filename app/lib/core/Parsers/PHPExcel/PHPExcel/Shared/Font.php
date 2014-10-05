@@ -2,7 +2,7 @@
 /**
  * PHPExcel
  *
- * Copyright (c) 2006 - 2012 PHPExcel
+ * Copyright (c) 2006 - 2014 PHPExcel
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,9 +20,9 @@
  *
  * @category   PHPExcel
  * @package    PHPExcel_Shared
- * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
+ * @copyright  Copyright (c) 2006 - 2014 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version    ##VERSION##, ##DATE##
+ * @version    1.8.0, 2014-03-02
  */
 
 
@@ -31,7 +31,7 @@
  *
  * @category   PHPExcel
  * @package    PHPExcel_Shared
- * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
+ * @copyright  Copyright (c) 2006 - 2014 PHPExcel (http://www.codeplex.com/PHPExcel)
  */
 class PHPExcel_Shared_Font
 {
@@ -244,11 +244,11 @@ class PHPExcel_Shared_Font
 	/**
 	 * Calculate an (approximate) OpenXML column width, based on font size and text contained
 	 *
-	 * @param 	int		$fontSize			Font size (in pixels or points)
-	 * @param 	bool	$fontSizeInPixels	Is the font size specified in pixels (true) or in points (false) ?
-	 * @param 	string	$cellText			Text to calculate width
-	 * @param 	int		$rotation			Rotation angle
-	 * @return 	int		Column width
+	 * @param 	PHPExcel_Style_Font			$font			Font object
+	 * @param 	PHPExcel_RichText|string	$cellText		Text to calculate width
+	 * @param 	integer						$rotation		Rotation angle
+	 * @param 	PHPExcel_Style_Font|NULL	$defaultFont	Font object
+	 * @return 	integer		Column width
 	 */
 	public static function calculateColumnWidth(PHPExcel_Style_Font $font, $cellText = '', $rotation = 0, PHPExcel_Style_Font $defaultFont = null) {
 

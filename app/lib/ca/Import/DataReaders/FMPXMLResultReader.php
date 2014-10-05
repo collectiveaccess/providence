@@ -116,9 +116,12 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 	 * @return bool
 	 */
 	public function read($ps_source, $pa_options=null) {
-		$this->opo_xml = DOMDocument::load($ps_source);
-		$this->opo_xpath = new DOMXPath($this->opo_xml);
-		
+		try {
+			$this->opo_xml = DOMDocument::load($ps_source);
+			$this->opo_xpath = new DOMXPath($this->opo_xml);
+		} catch (Exception $e) {
+			return null;
+		}
 		$this->opo_xpath->registerNamespace($this->ops_xml_namespace_prefix, $this->ops_xml_namespace);
 		
 		// get metadata 

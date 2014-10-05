@@ -42,6 +42,7 @@
  		# ------------------------------------------------------------------
  		private $opn_element_id;
  		private $ops_element_code;
+ 		private $opn_datatype;
  		private $opn_value_id;
  		private $opa_source_info;
  		private $ops_sort_value;
@@ -57,6 +58,7 @@
  		public function loadValueFromRow($pa_value_array) {
  			$this->opn_element_id = isset($pa_value_array['element_id']) ? $pa_value_array['element_id'] : null;
  			$this->ops_element_code = isset($pa_value_array['element_code']) ? $pa_value_array['element_code'] : null;
+ 			$this->opn_datatype = isset($pa_value_array['datatype']) ? $pa_value_array['datatype'] : null;
  			$this->opn_value_id = isset($pa_value_array['value_id']) ? $pa_value_array['value_id'] : null;
  			$this->opa_source_info = isset($pa_value_array['source_info']) ? $pa_value_array['source_info'] : null;
  			
@@ -89,6 +91,10 @@
  		# ------------------------------------------------------------------
  		public function getElementID() {
  			return $this->opn_element_id;
+ 		}
+ 		# ------------------------------------------------------------------
+ 		public function getDatatype() {
+ 			return $this->opn_datatype;
  		}
  		# ------------------------------------------------------------------
  		public function getValueID() {
@@ -154,6 +160,17 @@
 			$ps_error = '';
 			return true;
 		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for attribute value
+		 * @todo There is a bug in PHP 5.3.x that prevents us from using this definition. The resulting error is: Can't inherit abstract function IAttributeValue::getType() (previously declared abstract in AttributeValue).
+		 *       There is an abstract function getType() here and the same thing is defined in the Interface. The AttributeValue implementations inherit from this class and implement the Interface,
+		 *       which makes PHP versions prior to 5.3.9 barf (even though it shouldn't). It's fixed in 5.3.9+. The widely used RHEL/CentOS 6.5 (latest version as of July 2014) still uses PHP 5.3.3 though.
+		 * 
+		 * @return int Attribute value type code
+		 */
+		/*abstract public function getType();*/
+
  		# ------------------------------------------------------------------
 	}
  ?>

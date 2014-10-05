@@ -35,7 +35,7 @@
    */
 
 require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
-require_once(__CA_LIB_DIR__."/ca/RepresentableBaseModel.php");
+require_once(__CA_LIB_DIR__."/ca/BaseObjectLocationModel.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_occurrences'] = array(
@@ -173,7 +173,7 @@ BaseModel::$s_ca_models_definitions['ca_occurrences'] = array(
  	)
 );
 
-class ca_occurrences extends RepresentableBaseModel implements IBundleProvider {
+class ca_occurrences extends BaseObjectLocationModel implements IBundleProvider {
 	# ------------------------------------------------------
 	# --- Object attribute properties
 	# ------------------------------------------------------

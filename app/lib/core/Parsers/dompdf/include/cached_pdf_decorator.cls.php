@@ -1,10 +1,9 @@
 <?php
 /**
  * @package dompdf
- * @link    http://www.dompdf.com/
+ * @link    http://dompdf.github.com/
  * @author  Benj Carson <benjcarson@digitaljunkies.ca>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
- * @version $Id: cached_pdf_decorator.cls.php 448 2011-11-13 13:00:03Z fabien.menager $
  */
 
 /**
@@ -21,16 +20,27 @@
  * @package dompdf
  */
 class Cached_PDF_Decorator extends CPDF_Adapter implements Canvas {
+  /**
+   * @var CPDF_Adapter
+   */
   protected $_pdf;
   protected $_cache_id;
   protected $_current_page_id;
   protected $_fonts;  // fonts used in this document
   
-  function __construct($cache_id, CPDF_Adapter $pdf) {
-    $this->_pdf = $pdf;
-    $this->_cache_id = $cache_id;
+  function __construct($paper = "letter", $orientation = "portrait", DOMPDF $dompdf) {
     $this->_fonts = array();
-    
+  }
+
+  /**
+   * Must be called after constructor
+   *
+   * @param int          $cache_id
+   * @param CPDF_Adapter $pdf
+   */
+  function init($cache_id, CPDF_Adapter $pdf) {
+    $this->_cache_id = $cache_id;
+    $this->_pdf = $pdf;
     $this->_current_page_id = $this->_pdf->open_object();
   }
 
@@ -39,7 +49,7 @@ class Cached_PDF_Decorator extends CPDF_Adapter implements Canvas {
   function get_cpdf() { return $this->_pdf->get_cpdf(); }
 
   function open_object() { $this->_pdf->open_object(); }
-  function reopen_object() { return $this->_pdf->reopen_object(); }
+  function reopen_object($object) { $this->_pdf->reopen_object($object); }
   
   function close_object() { $this->_pdf->close_object(); }
 
@@ -79,20 +89,20 @@ class Cached_PDF_Decorator extends CPDF_Adapter implements Canvas {
     $this->_pdf->circle($x, $y, $r1, $color, $width, $style, $fill);
   }
 
-  function image($img_url, $x, $y, $w = null, $h = null) {
-    $this->_pdf->image($img_url, $x, $y, $w, $h);
+  function image($img_url, $x, $y, $w, $h, $resolution = "normal") {
+    $this->_pdf->image($img_url, $x, $y, $w, $h, $resolution);
   }
   
-  function text($x, $y, $text, $font, $size, $color = array(0,0,0), $adjust = 0, $angle = 0) {
+  function text($x, $y, $text, $font, $size, $color = array(0,0,0), $word_space = 0.0, $char_space = 0.0, $angle = 0.0) {
     $this->_fonts[$font] = true;
-    $this->_pdf->text($x, $y, $text, $font, $size, $color, $adjust, $angle);
+    $this->_pdf->text($x, $y, $text, $font, $size, $color, $word_space, $char_space, $angle);
   }
 
-  function page_text($x, $y, $text, $font, $size, $color = array(0,0,0), $adjust = 0, $angle = 0) {
+  function page_text($x, $y, $text, $font, $size, $color = array(0,0,0), $word_space = 0.0, $char_space = 0.0, $angle = 0.0) {
     
     // We want to remove this from cached pages since it may not be correct
     $this->_pdf->close_object();
-    $this->_pdf->page_text($x, $y, $text, $font, $size, $color, $adjust, $angle);
+    $this->_pdf->page_text($x, $y, $text, $font, $size, $color, $word_space, $char_space, $angle);
     $this->_pdf->reopen_object($this->_current_page_id);
   }
   
@@ -119,7 +129,7 @@ class Cached_PDF_Decorator extends CPDF_Adapter implements Canvas {
     return $this->_current_page_id;
   }
   
-  function stream($filename) {
+  function stream($filename, $options = null) {
     // Store the last page in the page cache
     if ( !is_null($this->_current_page_id) ) {
       $this->_pdf->close_object();
@@ -135,7 +145,7 @@ class Cached_PDF_Decorator extends CPDF_Adapter implements Canvas {
     
   }
   
-  function &output() {
+  function output($options = null) {
     // Store the last page in the page cache
     if ( !is_null($this->_current_page_id) ) {
       $this->_pdf->close_object();

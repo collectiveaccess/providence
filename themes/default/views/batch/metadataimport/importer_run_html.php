@@ -68,11 +68,29 @@ print $vs_control_box = caFormControlBox(
 			<span class="formLabelText"><?php print _t('Data file'); ?></span> 
 			<div class="bundleContainer">
 				<div class="caLabelList" >
-					<p>
+					<div style='padding:10px 0px 10px 10px;'>
+						<table class="caFileSourceControls">
+							<tr class="caFileSourceControls">
+								<td class="caSourceFileControlRadio">
 <?php	
-		print "<input type='file' name='sourceFile' id='caSourceFile'/>";
+		$va_attr = array('value' => 'file',  'onclick' => 'caSetBatchMetadataImportFormState();', 'id' => 'caFileInputRadio');
+		if (caGetOption('fileInput', $va_last_settings, 'file') === 'file') { $va_attr['checked'] = 'checked'; }
+		print caHTMLRadioButtonInput("fileInput", $va_attr)."</td><td class='formLabel caFileSourceControls'>"._t('From a file')." <span id='caFileInputContainer'><input type='file' name='sourceFile' id='caSourceFile'/></span>";
+		
 ?>
-					</p>
+								</td>
+							</tr>
+							<tr class="caFileSourceControls">
+								<td class="caSourceFileControlRadio">
+<?php		
+		$va_attr = array('value' => 'import',  'onclick' => 'caSetBatchMetadataImportFormState();', 'id' => 'caFileBrowserRadio');
+		if (caGetOption('fileInput', $va_last_settings, 'file') === 'import') { $va_attr['checked'] = 'checked'; }	
+		print caHTMLRadioButtonInput("fileInput", $va_attr)."</td><td class='formLabel caFileSourceControls'>"._t('From the import directory')." <div id='caFileBrowserContainer'>".$this->getVar('file_browser')."</div>";
+?>
+								</td>
+							</tr>
+						</table>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -103,7 +121,7 @@ print $vs_control_box = caFormControlBox(
 		<div class='bundleLabel'>
 			<span class="formLabelText"><?php print _t('Log level'); ?></span> 
 			<div class="bundleContainer">
-				<div class="caLabelList" >
+				<div class="caLabelList">
 					<p>
 <?php
 		print caHTMLSelect('logLevel', caGetLogLevels(), array('id' => 'caLogLevel'), array('value' => $va_last_settings['logLevel']));
@@ -116,22 +134,12 @@ print $vs_control_box = caFormControlBox(
 			<span class="formLabelText"><?php print _t('Testing options'); ?></span> 
 			<div class="bundleContainer">
 				<div class="caLabelList" >
-					<p>
-						<div style="float: left;" class="formLabelPlain">
+					<p class="formLabelPlain">
 <?php	
 		$va_attr = array('id' => 'caDryRun', 'value' => 1);
 		if ($va_last_settings['dryRun'] == 1) { $va_attr['checked'] = 1; }
 		print caHTMLCheckboxInput('dryRun', $va_attr)." "._t('Dry run');
 ?>
-						</div>
-						<div style="float: left; margin-left: 15px;" class="formLabelPlain">
-<?php	
-		$va_attr = array('id' => 'caDebug', 'value' => 1);
-		if ($va_last_settings['debug'] == 1) { $va_attr['checked'] = 1; }
-		print caHTMLCheckboxInput('debug', $va_attr)." "._t('Debugging output');
-?>					
-						</div>
-						<br class="clear"/>
 					</p>
 					
 				</div>
@@ -223,6 +231,14 @@ print $vs_control_box = caFormControlBox(
 					jQuery('#caSourceText').prop('disabled', false);
 					break;
 			}
+		}
+			
+		if (jQuery("#caFileInputRadio").is(":checked")) {
+			jQuery("#caFileInputContainer").show(dontAnimate ? 0 : 150);
+			jQuery("#caFileBrowserContainer").hide(dontAnimate ? 0 : 150);
+		} else {
+			jQuery("#caFileInputContainer").hide(dontAnimate ? 0 : 150);
+			jQuery("#caFileBrowserContainer").show(dontAnimate ? 0 : 150);
 		}
 	}
 	

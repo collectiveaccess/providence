@@ -56,6 +56,14 @@
 				CLITools::addError(_t("File '%1' does not exist", $vs_filepath));
 				return false;
 			}
+			
+			if ($vs_output_path = (string)$po_opts->getOption('out')) {
+				if (!is_writeable(pathinfo($vs_output_path, PATHINFO_DIRNAME))) { 
+					CLITools::addError(_t("Cannot write to %1", $vs_output_path));
+					return false;
+				}
+			}
+			
 			$vn_skip = (int)$po_opts->getOption('skip');
 			
 			$o_handle = PHPExcel_IOFactory::load($vs_filepath);
@@ -66,6 +74,7 @@
 			$vn_last_level = 0;
 			$va_list = array();
 			$va_stack = array(&$va_list);
+			
 			foreach ($o_sheet->getRowIterator() as $o_row) {
 				$vn_c++;
 				if ($vn_skip >= $vn_c) { continue; }
@@ -80,9 +89,11 @@
 						if ($vn_col > $vn_last_level) {
 							$va_stack[] = &$va_stack[sizeof($va_stack)-1][sizeof($va_stack[sizeof($va_stack)-1]) - 1]['subitems'];
 						} elseif ($vn_col < $vn_last_level) {
-							array_pop($va_stack);
+							while(sizeof($va_stack) && ($va_stack[sizeof($va_stack)-1][0]['level'] > $vn_col)) {
+								array_pop($va_stack);
+							}
 						}
-						$va_stack[sizeof($va_stack)-1][] = array('value' => $vs_val, 'subitems' => array());
+						$va_stack[sizeof($va_stack)-1][] = array('value' => $vs_val, 'subitems' => array(), 'level' => $vn_col);
 						$vn_last_level = $vn_col;
 						
 						$vn_col++;
@@ -93,9 +104,16 @@
 				}
 			}
 			
-			print "<list code=\"LIST_CODE_HERE\" hierarchical=\"0\" system=\"0\" vocabulary=\"0\">\n";
-			print CLITools::_makeList($va_list, 1);
-			print "</list>\n";
+			$vs_output = "<list code=\"LIST_CODE_HERE\" hierarchical=\"0\" system=\"0\" vocabulary=\"0\">\n";
+			$vs_output .= CLITools::_makeList($va_list, 1);
+			$vs_output .= "</list>\n";
+			
+			if ($vs_output_path) {
+				file_put_contents($vs_output_path, $vs_output);
+				CLITools::addMessage(_t("Wrote output to %1", $vs_output_path));
+			} else {
+				print $vs_output;
+			}
 			return true;
 		}
 		# -------------------------------------------------------
@@ -127,6 +145,7 @@
 		public static function make_list_from_excelParamList() {
 			return array(
 				"file|f-s" => _t('Excel file to convert to profile list.'),
+				"out|o-s" => _t('File to write output to.'),
 				"skip|s-s" => _t('Number of rows to skip before reading data.')
 			);
 		}

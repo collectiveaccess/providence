@@ -357,6 +357,15 @@ final class ConfigurationCheck {
 		if (!class_exists("DOMDocument")){
 			self::addError(_t("PHP Document Object Model (DOM) module is required for CollectiveAccess to run. Please install it."));
 		}
+		if (!function_exists('mcrypt_create_iv') && !function_exists('openssl_random_pseudo_bytes')){
+			self::addError(_t("Either the mcrypt or openssl module are required for CollectiveAccess to run. Please install one of them (or both)."));
+		}
+		if (!function_exists('hash_hmac')){
+			self::addError(_t("The PHP Message Digest (hash) engine is required for CollectiveAccess to run. Please install it."));
+		}
+		if (!in_array('sha256', hash_algos())){
+			self::addError(_t("Your PHP installation doesn't seem to have support for the sha256 hashing algorithm. Please install a newer version of either PHP or the hash module."));
+		}
 		
 		if (@preg_match('/\p{L}/u', 'a') != 1) {
 			self::addError(_t("Your version of the PHP PCRE module lacks unicode features. Please install a module version with UTF-8 support."));
@@ -442,7 +451,7 @@ final class ConfigurationCheck {
 			,ini_get("upload_max_filesize"),ini_get("post_max_size")));
 		}
 
-		if($vn_post_max_size < 5242880 || $vn_upload_max_filesize < 5242880){
+		if(($vn_post_max_size > 0 && $vn_post_max_size < 5242880) || ($vn_upload_max_filesize > 0 && $vn_upload_max_filesize < 5242880)){
 			self::addError(_t(
 				'It looks like at least one of the PHP configuration variables "post_max_size" and "upload_max_filesize" '.
 				'is set to a very low value. Note that the lowest of both values limits the size of the '.

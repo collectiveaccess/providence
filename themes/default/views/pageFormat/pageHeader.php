@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -47,24 +47,35 @@
 
 		<script type="text/javascript">window.caBasePath = '<?php print $this->request->getBaseUrlPath(); ?>';</script>
 		<!--[if (!IE)|(gte IE 8)]><!-->
-		<link href="<?php print $this->request->getBaseUrlPath(); ?>/js/DV/viewer-datauri.css" media="screen" rel="stylesheet" type="text/css" />
-		<link href="<?php print $this->request->getBaseUrlPath(); ?>/js/DV/plain-datauri.css" media="screen" rel="stylesheet" type="text/css" />
-		<link href="<?php print $this->request->getBaseUrlPath(); ?>/js/DV/plain.css" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<?php print $this->request->getBaseUrlPath(); ?>/assets/DV/viewer-datauri.css" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<?php print $this->request->getBaseUrlPath(); ?>/assets/DV/plain-datauri.css" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<?php print $this->request->getBaseUrlPath(); ?>/assets/DV/plain.css" media="screen" rel="stylesheet" type="text/css" />
 		<!--<![endif]-->
 		<!--[if lte IE 7]>
 		<link href="<?php print $this->request->getBaseUrlPath(); ?>/viewer.css" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<?php print $this->request->getBaseUrlPath(); ?>/plain.css" media="screen" rel="stylesheet" type="text/css" />
 		<![endif]-->
-		<link rel="stylesheet" href="<?php print $this->request->getBaseUrlPath(); ?>/js/jquery/jquery-tileviewer/jquery.tileviewer.css" type="text/css" media="screen" />
-		<link rel="stylesheet" href="<?php print $this->request->getBaseUrlPath(); ?>/js/jquery/fullcalendar/fullcalendar.css" type="text/css" media="screen" />
+		<link rel="stylesheet" href="<?php print $this->request->getBaseUrlPath(); ?>/assets/jquery/jquery-tileviewer/jquery.tileviewer.css" type="text/css" media="screen" />
+		<!-- disabling systematic call to fullcalendar.css as it is now called through AssetLoadManager:register('calendar') inside app/controllers/client/library/ListController.php (L52)
+        <link rel="stylesheet" href="<?php print $this->request->getBaseUrlPath(); ?>/assets/jquery/fullcalendar/fullcalendar.css" type="text/css" media="screen" />
+        -->
 
 <?php
-	print JavascriptLoadManager::getLoadHTML($this->request->getBaseUrlPath());
+	print AssetLoadManager::getLoadHTML($this->request);
 	print MetaTagManager::getHTML();
 	
 	if (file_exists($this->request->getThemeDirectoryPath().'/css/local.css')) {
 		print '<link rel="stylesheet" href="'.$this->request->getThemeUrlPath().'/css/local.css" type="text/css" media="screen" />
 ';
+	}
+	
+	//
+	// Pull in JS and CSS for debug bar
+	// 
+	if(Debug::isEnabled()) {
+		$o_debugbar_renderer = Debug::$bar->getJavascriptRenderer();
+		$o_debugbar_renderer->setBaseUrl(__CA_URL_ROOT__.$o_debugbar_renderer->getBaseUrl());
+		print $o_debugbar_renderer->renderHead();
 	}
 ?>
 		<script type="text/javascript">

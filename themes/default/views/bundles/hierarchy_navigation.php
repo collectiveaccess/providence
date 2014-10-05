@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,13 +26,13 @@
  * ----------------------------------------------------------------------
  */
  
-	JavascriptLoadManager::register('hierBrowser');
-	JavascriptLoadManager::register('tabUI');
+	AssetLoadManager::register('hierBrowser');
+	AssetLoadManager::register('tabUI');
 	
 	$t_subject 			= $this->getVar('t_subject');
 	$pa_ancestors 		= $this->getVar('ancestors');
 	$pn_id 				= $this->getVar('id');
-	$ps_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix').'HierNavigation';
+	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$va_lookup_urls 	= caJSONLookupServiceUrl($this->request, $t_subject->tableName(), array('noInline' => 1));
 	
 	$pa_bundle_settings = $this->getVar('settings');
@@ -54,14 +54,16 @@
 		$vn_init_id = $pn_id;
 	}
 	
-	print caEditorBundleShowHideControl($this->request, $ps_id_prefix.$t_subject->tableNum().'HierNavigation');
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 ?>	
-	<div class="bundleContainer" id="<?php print $ps_id_prefix.$t_subject->tableNum(); ?>HierNavigation">
-		<div class="hierNav">
+	<div id="<?php print $vs_id_prefix; ?>">
+		<div class="bundleContainer">
+			<div class="hierNav">
 <?php
 	if ($pn_id > 0) {
 ?>
-			<div class="buttonPosition" <?php print (isset($pa_bundle_settings['no_close_button']) && $pa_bundle_settings['no_close_button']) ? "style='display: none;'" : ""; ?>><a href="#" id="<?php print $ps_id_prefix; ?>browseToggle" class="form-button"><span class="form-button"><?php print _t('Show in browser'); ?></span></a></div>
+			<div class="buttonPosition" <?php print (isset($pa_bundle_settings['no_close_button']) && $pa_bundle_settings['no_close_button']) ? "style='display: none;'" : ""; ?>><a href="#" id="<?php print $vs_id_prefix; ?>browseToggle" class="form-button"><span class="form-button"><?php print _t('Show in browser'); ?></span></a></div>
 <?php
 	}
 	
@@ -82,8 +84,9 @@
 				if ($pn_id && $va_item[$t_subject->primaryKey()] && ($vs_item_id != $pn_id)) {
 					$va_path[] = '<a href="'.caEditorUrl($this->request, $t_subject->tableName(), $vn_id).'">'.$vs_label.'</a>';
 				} else {
-					$vn_item_id = array_pop(explode("-", $vs_item_id));
-					$va_path[] = "<a href='#' onclick='jQuery(\"#{$ps_id_prefix}HierarchyBrowserContainer\").slideDown(250); o{$ps_id_prefix}HierarchyBrowser.setUpHierarchy(\"{$vn_item_id}\"); return false;'>{$vs_label}</a>";
+					$va_tmp = explode("-", $vs_item_id);
+					$vn_item_id = array_pop($va_tmp);
+					$va_path[] = "<a href='#' onclick='jQuery(\"#{$vs_id_prefix}HierarchyBrowserContainer\").slideDown(250); o{$vs_id_prefix}HierarchyBrowser.setUpHierarchy(\"{$vn_item_id}\"); return false;'>{$vs_label}</a>";
 				}
 			}
 		}
@@ -95,27 +98,33 @@
 <?php
 	if ($pn_id > 0) {	
 ?>
-	<div id="<?php print $ps_id_prefix; ?>HierarchyBrowserContainer" class="editorHierarchyBrowserContainer">
-		<div  id="<?php print $ps_id_prefix; ?>HierarchyBrowserTabs">
-			<ul>
-					<li><a href="#<?php print $ps_id_prefix; ?>HierarchyBrowserTabs-explore" onclick='_init<?php print $ps_id_prefix; ?>ExploreHierarchyBrowser();'><span>Explore</span></a></li>
-			</ul>
-			
-			<div id="<?php print $ps_id_prefix; ?>HierarchyBrowserTabs-explore" class="<?php print (isset($pa_bundle_settings['hierarchy_browse_tab_class']) && $pa_bundle_settings['hierarchy_browse_tab_class']) ? $pa_bundle_settings['hierarchy_browse_tab_class'] : "hierarchyBrowseTab"; ?>">	
-				<div class="hierarchyBrowserMessageContainer">
-					<?php print _t('Use the browser to explore the hierarchy. You may edit other hierarchy items by clicking on the arrows.'); ?>
+		<div id="<?php print $vs_id_prefix; ?>HierarchyBrowserContainer" class="editorHierarchyBrowserContainer">
+			<div  id="<?php print $vs_id_prefix; ?>HierarchyBrowserTabs">
+				<ul>
+						<li><a href="#<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-explore" onclick='_init<?php print $vs_id_prefix; ?>ExploreHierarchyBrowser();'><span>Explore</span></a></li>
+				</ul>
+		
+				<div id="<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-explore" class="<?php print (isset($pa_bundle_settings['hierarchy_browse_tab_class']) && $pa_bundle_settings['hierarchy_browse_tab_class']) ? $pa_bundle_settings['hierarchy_browse_tab_class'] : "hierarchyBrowseTab"; ?>">	
+					<div class="hierarchyBrowserMessageContainer">
+						<?php print _t('Use the browser to explore the hierarchy. You may edit other hierarchy items by clicking on the arrows.'); ?>
+					</div>
+					<div id="<?php print $vs_id_prefix; ?>HierarchyBrowser" class="hierarchyBrowserSmall">
+						<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
+					</div><!-- end hierbrowser -->
 				</div>
-				<div id="<?php print $ps_id_prefix; ?>HierarchyBrowser" class="hierarchyBrowserSmall">
-					<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
-				</div><!-- end hierbrowser -->
 			</div>
 		</div>
+<?php
+	}
+?>
 	</div>
-
+<?php
+	if ($pn_id > 0) {	
+?>
 	<script type="text/javascript">
-		var o<?php print $ps_id_prefix; ?>HierarchyBrowser;
+		var o<?php print $vs_id_prefix; ?>HierarchyBrowser;
 		jQuery(document).ready(function() {		
-			o<?php print $ps_id_prefix; ?>HierarchyBrowser = caUI.initHierBrowser('<?php print $ps_id_prefix; ?>HierarchyBrowser', {
+			o<?php print $vs_id_prefix; ?>HierarchyBrowser = caUI.initHierBrowser('<?php print $vs_id_prefix; ?>HierarchyBrowser', {
 				levelDataUrl: '<?php print $va_lookup_urls['levelList']; ?>',
 				initDataUrl: '<?php print $va_lookup_urls['ancestorList']; ?>',
 				readOnly: false,
@@ -130,22 +139,22 @@
 				currentSelectionDisplayID: 'browseCurrentSelection'
 			});
 			
-			jQuery("#<?php print $ps_id_prefix; ?>browseToggle").click(function(e, opts) {
+			jQuery("#<?php print $vs_id_prefix; ?>browseToggle").click(function(e, opts) {
 				var delay = (opts && opts.delay && (parseInt(opts.delay) >= 0)) ? opts.delay :  250;
-				jQuery("#<?php print $ps_id_prefix; ?>HierarchyBrowserContainer").slideToggle(delay, function() { 
-					jQuery("#<?php print $ps_id_prefix; ?>browseToggle").html((this.style.display == 'block') ? '<?php print '<span class="form-button">'._t('Close browser').'</span>';?>' : '<?php print '<span class="form-button">'._t('Show in browser').'</span>';?>');
+				jQuery("#<?php print $vs_id_prefix; ?>HierarchyBrowserContainer").slideToggle(delay, function() { 
+					jQuery("#<?php print $vs_id_prefix; ?>browseToggle").html((this.style.display == 'block') ? '<?php print '<span class="form-button">'._t('Close browser').'</span>';?>' : '<?php print '<span class="form-button">'._t('Show in browser').'</span>';?>');
 				}); 
 				return false;
 			});
 			
-			jQuery('#<?php print $ps_id_prefix; ?>HierarchyBrowserContainer').hide(0);
+			jQuery('#<?php print $vs_id_prefix; ?>HierarchyBrowserContainer').hide(0);
 			
-			jQuery("#<?php print $ps_id_prefix; ?>HierarchyBrowserTabs").tabs({ selected: 0 });					// Activate tabs
+			jQuery("#<?php print $vs_id_prefix; ?>HierarchyBrowserTabs").tabs({ selected: 0 });					// Activate tabs
 		});
 <?php
 	if (isset($pa_bundle_settings['open_hierarchy']) && (bool)$pa_bundle_settings['open_hierarchy']) {
 ?>
-		jQuery("#<?php print $ps_id_prefix; ?>browseToggle").trigger("click", { "delay": 0 });
+		jQuery("#<?php print $vs_id_prefix; ?>browseToggle").trigger("click", { "delay": 0 });
 <?php
 	}
 ?>

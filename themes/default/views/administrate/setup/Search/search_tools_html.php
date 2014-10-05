@@ -31,6 +31,20 @@
 <div id="searchToolsBox">
 	<div class="bg">
 <?php
+	if(is_array($va_export_mappings = $this->getVar('exporter_list')) && sizeof($va_export_mappings)>0) {
+?>
+		<div class="col">
+			<?php
+			print _t("Export results with mapping") . ":<br/>";
+			print caFormTag($this->request, 'exportWithMapping', 'caExportWithMappingForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+
+			print ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_subject->tableNum(), array('id' => 'caExporterList'),array('width' => '150px'));
+			print caFormSubmitLink($this->request, _t('Export'), 'button', 'caExportWithMappingForm') . " &rsaquo;";
+			?>
+			</form>
+		</div>
+<?php
+	}
 	if (is_array($va_forms = $this->getVar('print_forms')) && sizeof($va_forms)) {
 ?>
 		<div class="col">

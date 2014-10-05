@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2011 Whirl-i-Gig
+ * Copyright 2010-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,8 +28,8 @@
 	$va_errors = $this->getVar('errors');
 	
 	if (sizeof($va_errors)) {
-		print json_encode(array('status' => 'error', 'errors' => $va_errors, 'set_id' => $this->getVar('set_id'), 'item_id' => $this->getVar('item_id')));
+		print json_encode(array('status' => 'error', 'errors' => $va_errors, 'set_id' => $this->getVar('set_id'), 'row_id' => $this->getVar('row_id')));
 	} else {
-		print json_encode(array('status' => 'ok', 'set_id' => $this->getVar('set_id'), 'item_id' => $this->getVar('item_id'), 'idno' => $this->getVar('idno'),  'idno_sort' => $this->getVar('idno_sort'), 'representation_tag' => $this->getVar('representation_tag'), 'representation_url' => $this->getVar('representation_url'),  'representation_width' => $this->getVar('representation_width'),  'representation_height' => $this->getVar('representation_height'), 'set_item_label' => $this->getVar('set_item_label')));
+		print json_encode(array('status' => 'ok', 'set_id' => $this->getVar('set_id'), 'row_id' => $this->getVar('row_id'), 'idno' => $this->getVar('idno'),  'idno_sort' => $this->getVar('idno_sort'), 'representation_tag' => $this->getVar('representation_tag'), 'representation_url' => $this->getVar('representation_url'),  'representation_width' => $this->getVar('representation_width'),  'representation_height' => $this->getVar('representation_height'), 'set_item_label' => $this->getVar('set_item_label')));
 	}
 ?>

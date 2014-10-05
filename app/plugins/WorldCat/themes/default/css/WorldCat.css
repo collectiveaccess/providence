@@ -1,7 +1,9 @@
 #caWorldCatResults {
-	padding: 10px;
-	margin: 20px 0 0 0;
+	padding: 8px;
+	margin: 5px 0 0 0;
 	min-height: 400px;
+	background-color: #f7f7f7;
+	border-radius: 6px;
 }
 
 .caWorldCatResultsMessage {

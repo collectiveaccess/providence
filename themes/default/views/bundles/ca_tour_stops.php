@@ -53,6 +53,11 @@
 	} else {
 		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel');
 	}
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings);
+	
+	if(sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort) {
+		print caEditorBundleSortControls($this->request, $vs_id_prefix, $pa_settings);
+	}
 	
 	$va_errors = array();
 	foreach($va_action_errors = $this->request->getActionErrors($vs_placement_code) as $o_error) {
@@ -114,23 +119,6 @@
 	</textarea>
 	
 	<div class="bundleContainer">
-<?php
-	if(sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort) {
-?>
-		<div class="caItemListSortControlTrigger" id="<?php print $vs_id_prefix; ?>caItemListSortControlTrigger">
-			<?php print _t('Sort by'); ?>
-			<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/bg.gif" alt='Sort'/>
-		</div>
-		<div class="caItemListSortControls" id="<?php print $vs_id_prefix; ?>caItemListSortControls">
-			<a href='#' onclick="caRelationBundle<?php print $vs_id_prefix; ?>.sort('name'); return false;" class='caItemListSortControl'><?php print _t('name'); ?></a><br/>
-			<a href='#' onclick="caRelationBundle<?php print $vs_id_prefix; ?>.sort('idno'); return false;" class='caItemListSortControl'><?php print _t('idno'); ?></a><br/>
-			<a href='#' onclick="caRelationBundle<?php print $vs_id_prefix; ?>.sort('type'); return false;" class='caItemListSortControl'><?php print _t('type'); ?></a><br/>
-			<a href='#' onclick="caRelationBundle<?php print $vs_id_prefix; ?>.sort('entry'); return false;" class='caItemListSortControl'><?php print _t('entry'); ?></a><br/>
-		</div>
-<?php
-	}
-?>
-
 		<div class="caItemList">
 <?php
 	if (sizeof($va_errors)) {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -42,37 +42,6 @@
  		}
  		# -------------------------------------------------------
  		# AJAX handlers
- 		# -------------------------------------------------------
- 		/**
- 		 * Returns content for overlay containing details for object representation
- 		 */ 
- 		public function GetRepresentationInfo() {
- 			list($pn_representation_id, $t_rep) = $this->_initView();
-			
- 			$ps_version = $this->request->getParameter('version', pString);
- 			
- 			$this->view->setVar('representation_id', $pn_representation_id);
- 			$this->view->setVar('t_object_representation', $t_rep);
- 			
- 			$this->view->setVar('versions', $va_versions = $t_rep->getMediaVersions('media'));
- 			
- 			$va_info = $t_rep->getMediaInfo('media');
- 			if (!in_array($ps_version, $va_versions)) { 
- 				$o_settings = new MediaProcessingSettings($t_rep, 'media');
- 				if (!($ps_version = $o_settings->getMediaDefaultViewingVersion($va_info['INPUT']['MIMETYPE']))) {
- 					$ps_version = $va_versions[0]; 
- 				}
- 			}
- 			$this->view->setVar('version', $ps_version);
- 			
- 			$va_rep_info = $t_rep->getMediaInfo('media', $ps_version);
- 			$this->view->setVar('version_info', $va_rep_info);
- 			
- 			$t_media = new Media();
- 			$this->view->setVar('version_type', $t_media->getMimetypeTypename($va_rep_info['MIMETYPE']));
- 			
- 			return $this->render('ajax_object_representation_info_html.php');
- 		}
  		# -------------------------------------------------------
  		/**
  		 * Return representation annotation editor
@@ -145,54 +114,9 @@
  			return $this->render('ajax_representation_annotation_list_json.php');
  		}
  		# -------------------------------------------------------
- 		public function DownloadRepresentation() {
- 			list($pn_representation_id, $t_rep) = $this->_initView();
- 			
- 			$ps_version = $this->request->getParameter('version', pString);
- 			
- 			$this->view->setVar('representation_id', $pn_representation_id);
- 			$this->view->setVar('t_object_representation', $t_rep);
- 			
- 			$va_versions = $t_rep->getMediaVersions('media');
- 			
- 			if (!in_array($ps_version, $va_versions)) { $ps_version = $va_versions[0]; }
- 			$this->view->setVar('version', $ps_version);
- 			
- 			$va_rep_info = $t_rep->getMediaInfo('media', $ps_version);
- 			$this->view->setVar('version_info', $va_rep_info);
- 			$this->view->setVar('version_path', $t_rep->getMediaPath('media', $ps_version));
- 			
- 			if ($va_object_ids = $t_rep->get('ca_objects.object_id', array('returnAsArray' => true)) && sizeof($va_object_ids)) {
- 				$t_object = new ca_objects($va_object_ids[0]);
- 				$vs_idno = (str_replace(' ', '_', $t_object->get('idno')));
- 			} else {
- 				$vs_idno = $pn_representation_id;	
- 			}
- 			
- 			$va_info = $t_rep->getMediaInfo('media');
- 			switch($this->request->user->getPreference('downloaded_file_naming')) {
- 				case 'idno':
- 					$this->view->setVar('version_download_name', $vs_idno.'.'.$va_rep_info['EXTENSION']);
- 					break;
- 				case 'idno_and_version':
- 					$this->view->setVar('version_download_name', $vs_idno.'_'.$ps_version.'.'.$va_rep_info['EXTENSION']);
- 					break;
- 				case 'idno_and_rep_id_and_version':
- 					$this->view->setVar('version_download_name', $vs_idno.'_representation_'.$pn_representation_id.'_'.$ps_version.'.'.$va_rep_info['EXTENSION']);
- 					break;
- 				case 'original_name':
- 				default:
- 					if ($va_info['ORIGINAL_FILENAME']) {
- 						$this->view->setVar('version_download_name', $va_info['ORIGINAL_FILENAME'].'.'.$va_rep_info['EXTENSION']);
- 					} else {
- 						$this->view->setVar('version_download_name', (str_replace(' ', '_', $t_object->get('idno'))).'_representation_'.$pn_representation_id.'_'.$ps_version.'.'.$va_rep_info['EXTENSION']);
- 					}
- 					break;
- 			} 
- 			
- 			return $this->render('object_representation_download_binary.php');
- 		}
- 		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
  		public function DownloadCaptionFile() {
  			list($pn_representation_id, $t_rep) = $this->_initView();
  			
@@ -239,7 +163,7 @@
  		# Sidebar info handler
  		# -------------------------------------------------------
  		public function info($pa_parameters) {
- 			JavascriptLoadManager::register('panel');
+ 			AssetLoadManager::register('panel');
  			parent::info($pa_parameters);
  			$vn_representation_id = (isset($pa_parameters['representation_id'])) ? $pa_parameters['representation_id'] : null;
  		
@@ -253,4 +177,3 @@
  		}
  		# -------------------------------------------------------
  	}
- ?>

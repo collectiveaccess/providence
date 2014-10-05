@@ -38,6 +38,7 @@
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_search_forms', 'preferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'Labels');	
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'Labels', $va_settings);
 ?>
 <div id="<?php print $vs_id_prefix; ?>Labels">
 <?php

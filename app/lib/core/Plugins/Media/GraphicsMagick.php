@@ -441,7 +441,6 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 					# load image properties
 					$this->properties["width"] = $this->handle['width'];
 					$this->properties["height"] = $this->handle['height'];
-					$this->properties["quality"] = "";
 					$this->properties["mimetype"] = $this->handle['mimetype'];
 					$this->properties["typename"] = $this->handle['magick'];
 					$this->properties["filesize"] = filesize($filepath);
@@ -1006,6 +1005,7 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 	private function _graphicsMagickGetMetadata($ps_filepath) {
 		$va_metadata = array();
 			
+		/* EXIF metadata */
 		if(function_exists('exif_read_data')) {
 			if (is_array($va_exif = caSanitizeArray(@exif_read_data($ps_filepath, 'EXIF', true, false)))) { $va_metadata['EXIF'] = $va_exif; }
 		}
@@ -1013,12 +1013,67 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 		$o_xmp = new XMPParser();
 		if ($o_xmp->parse($ps_filepath)) {
 			if (is_array($va_xmp_metadata = $o_xmp->getMetadata()) && sizeof($va_xmp_metadata)) {
-				$va_metadata['XMP'] = $va_xmp_metadata;
+				$va_metadata['XMP'] = array();
+				foreach($va_xmp_metadata as $vs_xmp_tag => $va_xmp_values) {
+					 $va_metadata['XMP'][$vs_xmp_tag] = join('; ',$va_xmp_values);
+				}
+				
 			}
 		}
-			
-		// GM doesn't seem to support DPX or IPTC metadata extraction :-(
-			
+		
+		/* IPTC metadata */
+		$vs_iptc_file = tempnam(caGetTempDirPath(), 'gmiptc');
+		@rename($vs_iptc_file, $vs_iptc_file.'.iptc'); // GM uses the file extension to figure out what we want
+		$vs_iptc_file .= '.iptc';
+		exec($this->ops_graphicsmagick_path." convert ".caEscapeShellArg($ps_filepath)." ".caEscapeShellArg($vs_iptc_file), $va_output, $vn_return);
+
+		$vs_iptc_data = file_get_contents($vs_iptc_file);
+		@unlink($vs_iptc_file);
+
+		$va_iptc_raw = iptcparse($vs_iptc_data);
+
+		$va_iptc_tags = array(
+			'2#004'=>'Genre',
+			'2#005'=>'DocumentTitle',
+			'2#010'=>'Urgency',
+			'2#015'=>'Category',
+			'2#020'=>'Subcategories',
+			'2#025'=>'Keywords',
+			'2#040'=>'SpecialInstructions',
+			'2#055'=>'CreationDate',
+			'2#060'=>'TimeCreated',
+			'2#080'=>'AuthorByline',
+			'2#085'=>'AuthorTitle',
+			'2#090'=>'City',
+			'2#095'=>'State',
+			'2#100'=>'CountryCode',
+			'2#101'=>'Country',
+			'2#103'=>'OTR',
+			'2#105'=>'Headline',
+			'2#110'=>'Credit',
+			'2#115'=>'PhotoSource',
+			'2#116'=>'Copyright',
+			'2#120'=>'Caption',
+			'2#122'=>'CaptionWriter'
+		);
+
+		$va_iptc = array();
+		if (is_array($va_iptc_raw)) {
+			foreach($va_iptc_raw as $vs_iptc_tag => $va_iptc_tag_data){
+				if(isset($va_iptc_tags[$vs_iptc_tag])) {
+					$va_iptc[$va_iptc_tags[$vs_iptc_tag]] = join('; ',$va_iptc_tag_data);
+				}
+			}
+		}
+
+		if (sizeof($va_iptc)) {
+			$va_metadata['IPTC'] = $va_iptc;
+		}
+
+		/* DPX metadata */
+		exec($this->ops_graphicsmagick_path." identify -format '%[DPX:*]' ".caEscapeShellArg($ps_filepath), $va_output, $vn_return);
+		if ($va_output[0]) { $va_metadata['DPX'] = $va_output; }
+
 		return $va_metadata;
 	}
 	# ------------------------------------------------

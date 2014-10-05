@@ -2,7 +2,7 @@
 /**
  * PHPExcel
  *
- * Copyright (c) 2006 - 2012 PHPExcel
+ * Copyright (c) 2006 - 2014 PHPExcel
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,9 +20,9 @@
  *
  * @category   PHPExcel
  * @package    PHPExcel_Cell
- * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
+ * @copyright  Copyright (c) 2006 - 2014 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt    LGPL
- * @version    ##VERSION##, ##DATE##
+ * @version    1.8.0, 2014-03-02
  */
 
 
@@ -41,7 +41,7 @@ if (!defined('PHPEXCEL_ROOT')) {
  *
  * @category   PHPExcel
  * @package    PHPExcel_Cell
- * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
+ * @copyright  Copyright (c) 2006 - 2014 PHPExcel (http://www.codeplex.com/PHPExcel)
  */
 class PHPExcel_Cell_AdvancedValueBinder extends PHPExcel_Cell_DefaultValueBinder implements PHPExcel_Cell_IValueBinder
 {
@@ -80,13 +80,13 @@ class PHPExcel_Cell_AdvancedValueBinder extends PHPExcel_Cell_DefaultValueBinder
             }
 
             // Check for fraction
-            if (preg_match('/^([+-]?) *([0-9]*)\s?\/\s*([0-9]*)$/', $value, $matches)) {
+            if (preg_match('/^([+-]?)\s*([0-9]+)\s?\/\s*([0-9]+)$/', $value, $matches)) {
                 // Convert value to number
                 $value = $matches[2] / $matches[3];
                 if ($matches[1] == '-') $value = 0 - $value;
                 $cell->setValueExplicit( (float) $value, PHPExcel_Cell_DataType::TYPE_NUMERIC);
                 // Set style
-                $cell->getParent()->getStyle( $cell->getCoordinate() )
+                $cell->getWorksheet()->getStyle( $cell->getCoordinate() )
                     ->getNumberFormat()->setFormatCode( '??/??' );
                 return true;
             } elseif (preg_match('/^([+-]?)([0-9]*) +([0-9]*)\s?\/\s*([0-9]*)$/', $value, $matches)) {
@@ -95,7 +95,7 @@ class PHPExcel_Cell_AdvancedValueBinder extends PHPExcel_Cell_DefaultValueBinder
                 if ($matches[1] == '-') $value = 0 - $value;
                 $cell->setValueExplicit( (float) $value, PHPExcel_Cell_DataType::TYPE_NUMERIC);
                 // Set style
-                $cell->getParent()->getStyle( $cell->getCoordinate() )
+                $cell->getWorksheet()->getStyle( $cell->getCoordinate() )
                     ->getNumberFormat()->setFormatCode( '# ??/??' );
                 return true;
             }
@@ -106,7 +106,7 @@ class PHPExcel_Cell_AdvancedValueBinder extends PHPExcel_Cell_DefaultValueBinder
                 $value = (float) str_replace('%', '', $value) / 100;
                 $cell->setValueExplicit( $value, PHPExcel_Cell_DataType::TYPE_NUMERIC);
                 // Set style
-                $cell->getParent()->getStyle( $cell->getCoordinate() )
+                $cell->getWorksheet()->getStyle( $cell->getCoordinate() )
                     ->getNumberFormat()->setFormatCode( PHPExcel_Style_NumberFormat::FORMAT_PERCENTAGE_00 );
                 return true;
             }
@@ -120,7 +120,7 @@ class PHPExcel_Cell_AdvancedValueBinder extends PHPExcel_Cell_DefaultValueBinder
                 $value = (float) trim(str_replace(array($currencyCode, $thousandsSeparator, $decimalSeparator), array('', '', '.'), $value));
                 $cell->setValueExplicit( $value, PHPExcel_Cell_DataType::TYPE_NUMERIC);
                 // Set style
-                $cell->getParent()->getStyle( $cell->getCoordinate() )
+                $cell->getWorksheet()->getStyle( $cell->getCoordinate() )
                     ->getNumberFormat()->setFormatCode(
                         str_replace('$', $currencyCode, PHPExcel_Style_NumberFormat::FORMAT_CURRENCY_USD_SIMPLE )
                     );
@@ -130,7 +130,7 @@ class PHPExcel_Cell_AdvancedValueBinder extends PHPExcel_Cell_DefaultValueBinder
                 $value = (float) trim(str_replace(array('$',','), '', $value));
                 $cell->setValueExplicit( $value, PHPExcel_Cell_DataType::TYPE_NUMERIC);
                 // Set style
-                $cell->getParent()->getStyle( $cell->getCoordinate() )
+                $cell->getWorksheet()->getStyle( $cell->getCoordinate() )
                     ->getNumberFormat()->setFormatCode( PHPExcel_Style_NumberFormat::FORMAT_CURRENCY_USD_SIMPLE );
                 return true;
             }
@@ -142,7 +142,7 @@ class PHPExcel_Cell_AdvancedValueBinder extends PHPExcel_Cell_DefaultValueBinder
                 $days = $h / 24 + $m / 1440;
                 $cell->setValueExplicit($days, PHPExcel_Cell_DataType::TYPE_NUMERIC);
                 // Set style
-                $cell->getParent()->getStyle( $cell->getCoordinate() )
+                $cell->getWorksheet()->getStyle( $cell->getCoordinate() )
                     ->getNumberFormat()->setFormatCode( PHPExcel_Style_NumberFormat::FORMAT_DATE_TIME3 );
                 return true;
             }
@@ -155,7 +155,7 @@ class PHPExcel_Cell_AdvancedValueBinder extends PHPExcel_Cell_DefaultValueBinder
                 // Convert value to number
                 $cell->setValueExplicit($days, PHPExcel_Cell_DataType::TYPE_NUMERIC);
                 // Set style
-                $cell->getParent()->getStyle( $cell->getCoordinate() )
+                $cell->getWorksheet()->getStyle( $cell->getCoordinate() )
                     ->getNumberFormat()->setFormatCode( PHPExcel_Style_NumberFormat::FORMAT_DATE_TIME4 );
                 return true;
             }
@@ -170,7 +170,7 @@ class PHPExcel_Cell_AdvancedValueBinder extends PHPExcel_Cell_DefaultValueBinder
                 } else {
                     $formatCode = 'yyyy-mm-dd';
                 }
-                $cell->getParent()->getStyle( $cell->getCoordinate() )
+                $cell->getWorksheet()->getStyle( $cell->getCoordinate() )
                     ->getNumberFormat()->setFormatCode($formatCode);
                 return true;
             }
@@ -180,7 +180,7 @@ class PHPExcel_Cell_AdvancedValueBinder extends PHPExcel_Cell_DefaultValueBinder
                 $value = PHPExcel_Shared_String::SanitizeUTF8($value);
                 $cell->setValueExplicit($value, PHPExcel_Cell_DataType::TYPE_STRING);
                 // Set style
-                $cell->getParent()->getStyle( $cell->getCoordinate() )
+                $cell->getWorksheet()->getStyle( $cell->getCoordinate() )
                     ->getAlignment()->setWrapText(TRUE);
                 return true;
             }

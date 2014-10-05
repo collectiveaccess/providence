@@ -42,7 +42,7 @@
 	
 	print $vs_control_box = caFormControlBox(
 		caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Run"), "caRunTool{$vs_tool_identifier}", array('onclick' => 'caShowConfirmToolExecutionPanel(); return false;')).' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'manage', 'Tools', 'Settings', array('tool' => $vs_tool_identifier)),
+		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'manage', 'Tools', 'Settings', array('tool' => $vs_tool_identifier)),
 		'', 
 		''
 	);
