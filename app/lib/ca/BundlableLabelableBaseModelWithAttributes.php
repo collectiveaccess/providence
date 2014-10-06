@@ -1193,7 +1193,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
  		// Check actions
- 		if (!$this->getPrimaryKey() && !$po_request->user->canDoAction('can_delete_'.$this->tableName())) {
+ 		if (!$this->getPrimaryKey() || !$po_request->user->canDoAction('can_delete_'.$this->tableName())) {
  			return false;
  		}
  		

@@ -201,6 +201,8 @@ class ca_attributes extends BaseModel {
 	public function addAttribute($pn_table_num, $pn_row_id, $pm_element_code_or_id, $pa_values, $pa_options=null) {
 		require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');	// defer inclusion until runtime to ensure baseclasses are already loaded, otherwise you get circular dependencies
 		
+		global $g_ui_locale_id;
+		
 		unset(ca_attributes::$s_get_attributes_cache[$pn_table_num.'/'.$pn_row_id]);
 		$t_element = ca_attributes::getElementInstance($pm_element_code_or_id);
 		
@@ -215,7 +217,10 @@ class ca_attributes extends BaseModel {
 		
 		// create new attribute row
 		$this->set('element_id', $vn_attribute_id = $t_element->getPrimaryKey());
-		$this->set('locale_id', $pa_values['locale_id']);
+		
+		// Force default of locale-less attributes to current user locale if possible
+		if (!isset($pa_values['locale_id'])) { $pa_values['locale_id'] = $g_ui_locale_id; }
+		if (isset($pa_values['locale_id'])) { $this->set('locale_id', $pa_values['locale_id']); }
 		
 		// TODO: verify table_num/row_id combo
 		$this->set('table_num', $pn_table_num);
@@ -295,6 +300,8 @@ class ca_attributes extends BaseModel {
 	 *
 	 */
 	public function editAttribute($pa_values, $pa_options=null) {
+		global $g_ui_locale_id;
+		
 		if (!$this->getPrimaryKey()) { return null; }
 		
 		$vb_web_set_transaction = false;
@@ -309,8 +316,12 @@ class ca_attributes extends BaseModel {
 		unset(ca_attributes::$s_get_attributes_cache[$this->get('table_num').'/'.$this->get('row_id')]);
 		
 		$this->setMode(ACCESS_WRITE);
-		$this->set('locale_id', $pa_values['locale_id']);
+		
+		// Force default of locale-less attributes to current user locale if possible
+		if (!isset($pa_values['locale_id'])) { $pa_values['locale_id'] = $g_ui_locale_id; }
+		if (isset($pa_values['locale_id'])) { $this->set('locale_id', $pa_values['locale_id']); }
 		$this->update();
+		
 		if ($this->numErrors()) {
 			if ($vb_web_set_transaction) {
 				$o_trans->rollback();
