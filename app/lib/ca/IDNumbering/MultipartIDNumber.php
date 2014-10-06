@@ -30,10 +30,6 @@
  * ----------------------------------------------------------------------
  */
  
-  /**
-  *
-  */
-  
 	require_once(__CA_LIB_DIR__."/core/Configuration.php");
 	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
 	require_once(__CA_LIB_DIR__."/core/Db.php");
@@ -41,7 +37,7 @@
 	require_once(__CA_LIB_DIR__."/ca/IDNumbering/IIDNumbering.php");
 	require_once(__CA_APP_DIR__."/helpers/navigationHelpers.php");
 	
-	class MultipartIDNumber extends IDNumber implements IIDNumbering {
+class MultipartIDNumber extends IDNumber {
 		# -------------------------------------------------------
 		private $opo_idnumber_config;
 		private $opa_formats;
@@ -227,20 +223,69 @@
 			return null;
 		}
 		# -------------------------------------------------------
-		public function validateValue($ps_value) {
-			//if (!$ps_value) { return array(); }
+	protected function explodeValue($ps_value) {
 			$vs_separator = $this->getSeparator();
-			$va_elements = $this->getElements();
-			if (!is_array($va_elements)) { return array(); }
-			
 			if ($vs_separator) {
+			// Standard operation, use specified non-empty separator to split value
 				$va_element_vals = explode($vs_separator, $ps_value);
 			} else {
-				$va_element_vals = array($ps_value);
+			// Separator is explicitly set to empty string, so use element widths to split value
+			$va_element_vals = array();
+			$vn_strpos = 0;
+			foreach ($this->getElements() as $va_element_info) {
+				switch ($va_element_info['type']) {
+					case 'LIST':
+						// The element has an implicit width depending on the selected value in a list
+						$vs_matching_value = null;
+						foreach ($va_element_info['values'] as $vs_value) {
+							if (substr($ps_value, $vn_strpos, mb_strlen($vs_value)) === $vs_value && (is_null($vs_matching_value) || mb_strlen($vs_matching_value) < mb_strlen($vs_value))) {
+								// We have a match, and it is either the first match or the longest match so far
+								$vs_matching_value = $vs_value;
 			}
-			
+						}
+						$vn_width = !is_null($vs_matching_value) ? mb_strlen($vs_matching_value) : null;
+						break;
+					case 'CONSTANT':
+						// The element has an implicit width because it is a constant, so read the width of the constant
+						$vn_width = mb_strlen($va_element_info['value']);
+						break;
+					case 'SERIAL':
+					case 'YEAR':
+					case 'MONTH':
+					case 'DAY':
+					case 'NUMERIC':
+						// Match a sequence of numeric digits
+						$vn_width = mb_strlen(preg_replace('/^(\d+).*$/', '$1', substr($ps_value, $vn_strpos)));
+						break;
+					case 'ALPHANUMERIC':
+						// Match a sequence of alphanumeric characters
+						$vn_width = mb_strlen(preg_replace('/^([A-Za-z0-9]+).*$/', '$1', substr($ps_value, $vn_strpos)));
+						break;
+					case 'FREE':
+					default:
+						// Match free text
+						$vn_width = null;
+				}
+				if (isset($va_element_info['width'])) {
+					// Use the configured width as either a fallback or a maximum
+					$vn_width = is_null($vn_width) ? intval($va_element_info['width']) : min($vn_width, intval($va_element_info['width']));
+				}
+				// Take the calculated width from the input value as the element value; if $vn_width is null, use the remainder
+				// of the input string
+				$va_element_vals[] = substr($ps_value, $vn_strpos, $vn_width);
+				$vn_strpos = is_null($vn_width) ? mb_strlen($ps_value) : $vn_strpos + $vn_width;
+			}
+		}
+		return $va_element_vals;
+	}
+	# -------------------------------------------------------
+	public function validateValue($ps_value) {
+		//if (!$ps_value) { return array(); }
+		$va_elements = $this->getElements();
+		if (!is_array($va_elements)) { return array(); }
+
+		$va_element_vals = $this->explodeValue($ps_value);
 			$vn_i = 0;
-			
 			$va_element_errors = array();
 			foreach($va_elements as $vs_element_name => $va_element_info) {
 				$vs_value = $va_element_vals[$vn_i];
@@ -384,6 +429,7 @@
 			$va_elements = $this->getElements();
 			
 			if ($ps_value == null) {
+			$va_element_vals = array();
 				foreach($va_elements as $vs_element_name => $va_element_info) {
 					switch($va_element_info['type']) {
 						case 'CONSTANT':
@@ -417,7 +463,7 @@
 					}
 				}
 			} else {
-				$va_element_vals = $vs_separator ? explode($vs_separator, $ps_value) : array($ps_value);
+			$va_element_vals = $this->explodeValue($ps_value);
 			}
 			
 			$va_tmp = array();
@@ -429,7 +475,6 @@
 			}
 			
 			$vs_stub = trim(join($vs_separator, $va_tmp));
-			
 			
 			$this->opo_db->dieOnError(false);
 			
@@ -448,7 +493,7 @@
 				// Figure out what the sequence (last) number in the multipart number taken from the field is...
 				if ($qr_res->numRows()) {
 					while($qr_res->nextRow()) {
-						$va_tmp = $vs_separator ? explode($vs_separator, $qr_res->get($vs_field)) : array($qr_res->get($vs_field));
+					$va_tmp = $this->explodeValue($qr_res->get($vs_field));
 							
 						if(is_numeric($va_tmp[$vn_i])) {
 							$vn_num = intval($va_tmp[$vn_i]) + 1;
@@ -502,15 +547,10 @@
 			$va_element_names_normal_order = array_keys($va_elements_normal_order);
 			
 			if (!($va_elements = $this->getElementOrderForSort())) { $va_elements = $va_element_names_normal_order; }
-			if($vs_separator) {
-				$va_element_vals = explode($vs_separator, $ps_value ? $ps_value : $this->getValue());
-			} else {
-				$va_element_vals = array($ps_value ? $ps_value : $this->getValue());
-			}
+		$va_element_vals = $this->explodeValue($ps_value ?: $this->getValue());
 			$va_output = array();
 		
-			$vn_i = 0;
-			foreach($va_elements as $vn_x => $vs_element) {
+		foreach ($va_elements as $vs_element) {
 				$va_element_info = $va_elements_normal_order[$vs_element];
 				$vn_i = array_search($vs_element, $va_element_names_normal_order);
 				$vn_padding = 20;
@@ -528,10 +568,6 @@
 						break;
 					case 'FREE':
 					case 'ALPHANUMERIC':
-						if ($vn_padding < $va_element_info['width']) { $vn_padding = $va_element_info['width']; }
-						//$vn_pad_len = $vn_padding - mb_strlen($va_element_vals[$vn_i]);
-						//if ($vn_pad_len < 0) { $vn_pad_len = 0; }
-						///$va_output[] = str_repeat(' ', $vn_pad_len).$va_element_vals[$vn_i];
 						$va_tmp = preg_split('![^A-Za-z0-9]+!',  $va_element_vals[$vn_i]);
 			
 						$va_zeroless_output = array();
@@ -606,20 +642,13 @@
 			$va_element_names_normal_order = array_keys($va_elements_normal_order);
 			
 			if (!($va_elements = $this->getElementOrderForSort())) { $va_elements = $va_element_names_normal_order; }
-			if($vs_separator) {
-				$va_element_vals = explode($vs_separator, $ps_value ? $ps_value : $this->getValue());
-			} else {
-				$va_element_vals = array($ps_value ? $ps_value : $this->getValue());
-			}
-			$va_output = array();
-		
+		$va_element_vals = $this->explodeValue($ps_value ?: $this->getValue());
 			$vn_i = 0;
-			
 			$va_output = array(join($vs_separator, $va_element_vals));
 			$vn_max_value_count = 0;
 			
 			// element-specific processing
-			foreach($va_elements as $vn_x => $vs_element) {
+		foreach($va_elements as $vs_element) {
 				$va_element_info = $va_elements_normal_order[$vs_element];
 				$vn_i = array_search($vs_element, $va_element_names_normal_order);
 				
@@ -664,7 +693,7 @@
 			for($vn_c=0; $vn_c < $vn_max_value_count; $vn_c++) {
 				$va_output_values_buf = array();
 				
-				foreach($va_elements as $vn_x => $vs_element) {
+			foreach($va_elements as $vs_element) {
 					if (!isset($va_output[$vn_i][0])) { continue; }
 					
 					$vn_i = array_search($vs_element, $va_element_names_normal_order);
@@ -682,7 +711,7 @@
 			if(preg_match_all("![^A-Za-z0-9]+!", $ps_value, $va_delimiters)) {
 				$va_element_values = preg_split("![^A-Za-z0-9]+!", $ps_value);
 				$va_acc = array();
-				foreach($va_element_values as $vn_x => $vs_element_value) {
+			foreach($va_element_values as $vs_element_value) {
 					$va_acc[] = $vs_element_value;
 					$va_output_values[] = join('', $va_acc);
 					if (is_numeric($vs_element_value)) {
@@ -724,11 +753,7 @@
 			
 			$vs_separator = $this->getSeparator();
 			
-			if ($vs_separator) {
-				$va_element_vals = explode($vs_separator, $this->getValue());
-			} else {
-				$va_element_vals = array($this->getValue());
-			}
+		$va_element_vals = $this->explodeValue($this->getValue());
 			
 			if (!is_array($va_elements = $this->getElements())) { $va_elements = array(); }
 			
@@ -756,7 +781,6 @@
 				$va_element_controls[] = $vs_tmp;
 				$vn_i++;
 			}
-			$va_element_error_display = array();
 			if (sizeof($va_elements) < sizeof($va_element_vals)) {
 				$vs_extra_vals = join($vs_separator, array_slice($va_element_vals, sizeof($va_elements)));
 				$va_element_controls[] = "<input type='text' name='".$ps_name."_extra' value='".htmlspecialchars($vs_extra_vals, ENT_QUOTES, 'UTF-8')."' size='10'".($pa_options['readonly'] ? ' readonly="readonly" ' : '').">";
@@ -821,17 +845,16 @@
 		 */
 		public function makeTemplateFromValue($ps_value, $pn_max_num_replacements=0, $pb_no_placeholders=false) {
 			$vs_separator = $this->getSeparator();
-			$va_values = $vs_separator ? explode($vs_separator, $ps_value) : array($ps_value);
-			
+			$va_values = $this->explodeValue($ps_value);
 			$va_elements = $this->getElements();
 			$vn_num_serial_elements = 0;
-			foreach($va_elements as $vs_element_name => $va_element_info) {
+			foreach ($va_elements as $va_element_info) {
 				if ($va_element_info['type'] == 'SERIAL') { $vn_num_serial_elements++; }
 			}
 			
 			$vn_i = 0;
 			$vn_num_serial_elements_seen = 0;
-			foreach($va_elements as $vs_element_name => $va_element_info) {
+			foreach ($va_elements as $va_element_info) {
 				if ($vn_i >= sizeof($va_values)) { break; }
 				
 				if ($va_element_info['type'] == 'SERIAL') {
@@ -864,11 +887,7 @@
 			$vs_separator = $this->getSeparator();
 			$va_element_values = array();
 			if ($ps_value) {
-				if ($vs_separator) {
-					$va_tmp = explode($vs_separator, $ps_value);
-				} else {
-					$va_tmp = array($ps_value);
-				}
+				$va_tmp = $this->explodeValue($ps_value);
 				foreach($va_element_names as $vs_element_name) {
 					if (!sizeof($va_tmp)) { break; }
 					$va_element_values[$ps_name.'_'.$vs_element_name] = array_shift($va_tmp);
@@ -898,7 +917,7 @@
 						$vb_isset = $vb_is_not_empty = true;
 						continue;
 					} else {
-						if (!$pb_dont_mark_serial_value_as_used && (intval($va_element_values[$ps_name.'_'.$vs_element_name]) > $this->getSequenceMaxValue($ps_name, $vs_element_name, ps_element_name))) {
+					if (!$pb_dont_mark_serial_value_as_used && (intval($va_element_values[$ps_name.'_'.$vs_element_name]) > $this->getSequenceMaxValue($ps_name, $vs_element_name, ''))) {
 							$this->setSequenceMaxValue($this->getFormat(), $vs_element_name, join($vs_separator, $va_tmp), $va_element_values[$ps_name.'_'.$vs_element_name]);
 						}
 					}
@@ -960,16 +979,16 @@
 						if (!$vs_element_value && !$pb_generate_for_search_form) { $vs_element_value = $va_element_info['default']; }
 						$vs_element = '<select name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'">';
 						if ($pb_generate_for_search_form) {
-							$vs_element .= "<option value='' SELECTED='1'>-</option>";
+						$vs_element .= "<option value='' selected='selected'>-</option>";
 						}
 						foreach($va_element_info['values'] as $ps_value) {
-							if ($ps_value == $vs_element_value) { $SELECTED = 'SELECTED="1"'; } else { $SELECTED = ''; }
-							$vs_element .= '<option '.$SELECTED.'>'.$ps_value.'</option>';
+						if (trim($ps_value) === trim($vs_element_value)) { $vs_selected = ' selected="selected"'; } else { $vs_selected = ''; }
+						$vs_element .= '<option value="'.$ps_value.'"'.$vs_selected.'>'.$ps_value.'</option>';
 						}
 						
 						if (!$pb_generate_for_search_form) {
-							if (!in_array($vs_element_value, $va_element_info['values'])) {
-								$vs_element .= '<option SELECTED="1">'.$vs_element_value.'</option>';
+						if (!in_array($vs_element_value, $va_element_info['values']) && strlen($vs_element_value) > 0) {
+							$vs_element .= '<option value="'.$vs_element_value.'" selected="selected">'.$vs_element_value.'</option>';
 							}
 						}
 						
