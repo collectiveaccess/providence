@@ -78,7 +78,7 @@ BaseModel::$s_ca_models_definitions['ca_representation_annotation_labels'] = arr
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Title'), 'DESCRIPTION' => _t('Title for annotation. This is usually a short description of the annotation content.'),
-				'BOUNDS_LENGTH' => array(1,2048)
+				'BOUNDS_LENGTH' => array(1,65535)
 		),
 		'name_sort' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -86,7 +86,7 @@ BaseModel::$s_ca_models_definitions['ca_representation_annotation_labels'] = arr
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Sortable version of name value'),
-				'BOUNDS_LENGTH' => array(0,2048)
+				'BOUNDS_LENGTH' => array(0,65535)
 		),
 		'source_info' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 

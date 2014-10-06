@@ -262,6 +262,26 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			'description' => _t('If this exporter is used for an item set export (as opposed to a single item), the text set here will be inserted after the last item. This can for instance be used to wrap a repeating set of XML elements in a single global element. The text has to be valid for the current exporter format.')
 		);
 
+		$va_settings['wrap_before_record'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 70, 'height' => 6,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Wrapping text before record export'),
+			'description' => _t('The text set here will be inserted before earch record-level export.')
+		);
+
+		$va_settings['wrap_after_record'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 70, 'height' => 6,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Wrapping text after record export'),
+			'description' => _t('The text set here will be inserted after earch record-level export.')
+		);
+
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 
 		// if exporter_format is set, pull in format-specific settings
@@ -1408,7 +1428,24 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		
 		$pa_options['settings'] = $t_exporter->getSettings();
 
-		return $o_export->processExport($va_export,$pa_options);
+		$vs_wrap_before = $t_exporter->getSetting('wrap_before_record');
+		$vs_wrap_after = $t_exporter->getSetting('wrap_after_record');
+
+		if($vs_wrap_before || $vs_wrap_after) {
+			$pa_options['singleRecord'] = false;
+		}
+
+		$vs_export = $o_export->processExport($va_export,$pa_options);
+
+		if(strlen($vs_wrap_before)>0) {
+			$vs_export = $vs_wrap_before."\n".$vs_export;
+		}
+
+		if(strlen($vs_wrap_after)>0) {
+			$vs_export = $vs_export."\n".$vs_wrap_after;
+		}
+
+		return $vs_export;
 	}
 	# ------------------------------------------------------
 	/**
@@ -1459,7 +1496,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				$vs_key = $t_instance->primaryKey();
 			}
 
-			$o_log->logInfo(_t("Initiating context switch to '%1' for mapping ID %2 and record ID %3. The processor now tries to find matching records for the switch and calls himself for each of those items.", $vs_context, $pn_item_id, $pn_record_id));
+			$o_log->logInfo(_t("Initiating context switch to '%1' for mapping ID %2 and record ID %3. The processor now tries to find matching records for the switch and calls itself for each of those items.", $vs_context, $pn_item_id, $pn_record_id));
 
 			switch($vs_context){
 				case 'children':
@@ -1492,6 +1529,21 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					$va_related = array();
 					foreach(array_unique($va_set_ids) as $vn_pk){
 						$va_related[] = array($vs_key => intval($vn_pk));
+					}
+					break;
+				case 'ca_list_items.firstLevel':
+					if($t_instance->tableName() == 'ca_lists') {
+						$o_dm = Datamodel::load();
+						$va_related = array();
+						$va_items_legacy_format = $t_instance->getListItemsAsHierarchy(null,array('maxLevels' => 1, 'dontIncludeRoot' => true));
+						$vn_new_table_num = $o_dm->getTableNum('ca_list_items');
+						$vs_key = 'item_id';
+						foreach($va_items_legacy_format as $va_item_legacy_format) {
+							$va_related[$va_item_legacy_format['NODE']['item_id']] = $va_item_legacy_format['NODE'];
+						}
+						break;
+					} else {
+						return array();
 					}
 					break;
 				default:
@@ -1541,6 +1593,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 			if(is_array($va_related)){
 				$o_log->logDebug(_t("The current mapping will now be repreated for these items: %1", print_r($va_related,true)));
+				if(!$vn_new_table_num) { $vn_new_table_num = $pn_table_num; }
 
 				foreach($va_related as $va_rel){
 					// if we're dealing with a related table, pass on some info the relationship type to the context-switched invocation of processExporterItem(),
@@ -1746,6 +1799,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		
 		foreach($va_item_info as $vn_key => &$va_item){
 			$this->opo_app_plugin_manager->hookExportItemBeforeSettings(array('instance' => $t_instance, 'exporter_item_instance' => $t_exporter_item, 'export_item' => &$va_item));
+
+			// handle dontReturnValueIfOnSameDayAsStart
+			if(caGetOption('dontReturnValueIfOnSameDayAsStart', $va_get_options, false)) {
+				if(strlen($va_item['text']) < 1) {
+					unset($va_item_info[$vn_key]);
+				}
+			}
 
 			// handle skipIfExpression setting
 			if($vs_skip_if_expr){

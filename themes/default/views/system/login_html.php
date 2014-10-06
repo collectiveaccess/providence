@@ -56,7 +56,7 @@
 <?php 
 			if ($va_notifications = $this->getVar('notifications')) {  
 ?>
-				<p class="content"><?php foreach($va_notifications as $va_notification) { print $va_notification['message']."<br/>\n"; }; ?></p>
+				<p class="notificationContent"><?php foreach($va_notifications as $va_notification) { print $va_notification['message']."<br/>\n"; }; ?></p>
 <?php
 			}
 ?>
@@ -69,6 +69,7 @@
 						<div class="loginFormElement"><?php print _t("Password"); ?>:<br/>
 							<input type="password" name="password" size="25"/>
 						</div>
+						<input name="redirect" type="hidden" value="<?php echo $this->getVar('redirect'); ?>" />
 						<div class="loginSubmitButton"><?php print caFormSubmitButton($this->request, __CA_NAV_BUTTON_LOGIN__, _t("Login"),"login", array('icon_position' => __CA_NAV_BUTTON_ICON_POS_RIGHT__)); ?></div>
 						<script type="text/javascript">
 							jQuery(document).ready(function() {
@@ -81,6 +82,11 @@
 							});
 						</script>
 					</form>
+<?php if(AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__)) { ?>
+					<div id="forgotLink"><?php print caNavLink($this->request, _t("Forgot your password?"), 'forgotLink', 'system/auth', 'forgot', ''); ?></div>
+<?php } else if($vs_adapter_account_link = AuthenticationManager::getAccountManagementLink()) { ?>
+	<div id="forgotLink"><a href="<?php print $vs_adapter_account_link; ?>" target="_blank"><?php print _t("Manage your account"); ?></a></div>
+<?php } ?>
 				</div><!-- end loginForm -->
 			</div><!-- end loginBox -->
 		</div><!-- end center -->

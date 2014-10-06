@@ -1701,7 +1701,7 @@ function caFileIsIncludable($ps_file) {
 
 		foreach($pa_array as $vn_k => $vm_v) {
 			if (is_array($vm_v)) {
-				$pa_array[$vn_k] = caSanitizeArray($vm_v);
+				$pa_array[$vn_k] = caSanitizeArray($vm_v, $pa_options);
 			} else {
 				if($vb_allow_stdclass && is_object($vm_v) && (get_class($vm_v) == 'stdClass')){
 					continue;
