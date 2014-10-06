@@ -70,6 +70,9 @@ class MySQLDataReader extends BaseDataReader {
 	 */
 	public function read($ps_source, $pa_options=null) {
 		# mysql://username:password@localhost/database?table=tablename
+		# or limit the query using
+		# mysql://username:password@localhost/database?table=tablename&limit=100&offset=10
+
 		$va_url = parse_url($ps_source);
 		
 		try {
@@ -88,8 +91,12 @@ class MySQLDataReader extends BaseDataReader {
 			if (!$this->ops_table) { 
 				return false;
 			}
-			
-			$this->opo_rows = $this->opo_handle->query("SELECT * FROM {$this->ops_table}");
+
+			$vn_limit = caGetOption('limit', $va_path, 0, array('castTo' => 'int'));
+			$vn_offset = caGetOption('offset', $va_path, 0, array('castTo' => 'int'));
+			$vs_limit = $vn_limit ? (" LIMIT " . ($vn_offset ? "$vn_offset, $vn_limit" : $vn_limit)) : "";
+
+			$this->opo_rows = $this->opo_handle->query("SELECT * FROM {$this->ops_table}$vs_limit");
 		} catch (Exception $e) {
 			return false;
 		}
