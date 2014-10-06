@@ -23,7 +23,7 @@ install:
   # Create setup.php
   - ln -s .travis.setup.php setup.php
   # Install the WAM CMIS profile
-  - support/bin/caUtils install --hostname=localhost --setup="$(pwd)/tests/setup-tests.php" --profile-name=$PROFILE --admin-email=dev@gaiaresources.com.au >install.log
+  - support/bin/caUtils install --hostname=localhost --setup="$(pwd)/tests/setup-tests.php" --skip-roles --profile-name=$PROFILE --admin-email=dev@gaiaresources.com.au >install.log
 
 before_script:
   # Go into the tests directory to run the tests
