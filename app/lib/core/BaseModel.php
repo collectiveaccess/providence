@@ -1819,9 +1819,7 @@ class BaseModel extends BaseObject {
 					case FT_FILE:
 					case FT_MEDIA:
 						if (!$vs_cur_value) {
-							$t = new Timer();
 							$this->_FIELD_VALUES[$vs_field] = caUnserializeForDatabase($va_row[$vs_field]);
-							Debug::msg($vs_field.'; '.strlen($va_row[$vs_field]).'/'.$t->getTime(4).caPrintStackTrace());
 						}
 						break;
 					default:
