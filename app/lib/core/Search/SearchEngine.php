@@ -248,7 +248,7 @@ class SearchEngine extends SearchBase {
 			// cache the results
 			$va_hits = $o_res->getPrimaryKeyValues($vn_limit);
 			$o_res->seek(0);
-				
+
 			if (isset($pa_options['sets']) && $pa_options['sets']) {
 				$va_hits = $this->filterHitsBySets($va_hits, $pa_options['sets'], array('search' => $vs_search));
 			}
@@ -283,7 +283,7 @@ class SearchEngine extends SearchBase {
 				'user_id' => $vn_user_id, 
 				'table_num' => $this->opn_tablenum, 
 				'search_expression' => $ps_search, 
-				'num_hits' => sizeof($va_hit_values), 
+				'num_hits' => sizeof($va_hits),
 				'form_id' => $vn_search_form_id, 
 				'ip_addr' => $_SERVER['REMOTE_ADDR'] ?  $_SERVER['REMOTE_ADDR'] : null,
 				'details' => $vs_log_details,
@@ -373,7 +373,7 @@ class SearchEngine extends SearchBase {
 						(ca_acl.access >= ?)
 				", $va_params);
 				
-				$va_hits = $qr_sort->getAllFieldValues('row_id');
+				$va_hits = array_unique($qr_sort->getAllFieldValues('row_id'));
 				
 				// Find records with default ACL
 				$qr_sort = $this->opo_db->query("
@@ -383,7 +383,7 @@ class SearchEngine extends SearchBase {
 					WHERE
 						ca_acl.row_id IS NULL;
 				", array((int)$this->opn_tablenum));
-				
+
 				$va_hits = array_merge($va_hits, $qr_sort->getAllFieldValues('row_id'));
 		} else {
 			// Default access is more restrictive than requested access (so *don't* return items with default ACL)
@@ -406,7 +406,7 @@ class SearchEngine extends SearchBase {
 					(ca_acl.access >= ?)
 			", $va_params);
 			
-			$va_hits = array_merge($va_hits, $qr_sort->getAllFieldValues('row_id'));
+			$va_hits = $qr_sort->getAllFieldValues('row_id');
 		}
 		
 		$this->cleanupTemporaryResultTable();
