@@ -61,6 +61,15 @@ class OpenLDAPAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 			return false;
 		}
 
+        $vs_bind_rdn_filter = self::postProcessLDAPConfigValue("ldap_bind_rdn_filter", $ps_username, $vs_user_ou, $vs_base_dn);
+        if(strlen($vs_bind_rdn_filter)>0) {
+            $vo_dn_search_results = ldap_search($vo_ldap, $vs_base_dn, $vs_bind_rdn_filter);
+            $va_dn_search_results = ldap_get_entries($vo_ldap, $vo_dn_search_results);
+            if(isset($va_dn_search_results[0]['dn'])) {
+                $vs_bind_rdn = $va_dn_search_results[0]['dn'];
+            }
+        }
+
 		// log in
 		$vo_bind = @ldap_bind($vo_ldap, $vs_bind_rdn, $ps_password);
 
