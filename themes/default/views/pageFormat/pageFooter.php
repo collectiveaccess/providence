@@ -57,8 +57,11 @@
 		
 		<script type="text/javascript">
 			// force content to fill window height
-			jQuery(document).ready(function() {
-				jQuery('#mainContent').css('min-height', (window.innerHeight - 40) + 'px');
+			$(function() {
+				var wamtop = $('#topNav').height();
+				var wamfoot = $('#footerContainer').height();
+				$('#mainContent').css('min-height', (window.innerHeight - (wamtop + wamfoot)) + 'px');
+				$('#mainContentFull').css('min-height', (window.innerHeight - (wamtop + wamfoot)) + 'px');
 			});
 		</script>
 <?php

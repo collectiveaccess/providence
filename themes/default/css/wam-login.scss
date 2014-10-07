@@ -1,7 +1,25 @@
+@import url(http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700|Oswald);
+@import "vars";
 
+*, 
+*:before, 
+*:after {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box; 
+}
+
+html,
+body {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 1em;
+  line-height: 1.5;
+  min-height: 100%;
+  min-width: 37.9em;
+  color: $black;
+}
 
 body {
-
 	background: #f0f0f0 url(images/escheresque.png) 0 0 repeat;
   background-attachment: fixed;
   padding-top: 100px;
@@ -24,6 +42,9 @@ padding-top: 25px;
 
 #systemTitle {
 	padding:30px 10% 10px 10%;
+	font-family: 'Source Sans Pro', sans-serif;
+  font-weight: 300;
+  font-size: 2em;
 }
 
 #loginForm {
@@ -36,4 +57,61 @@ padding-top: 25px;
 }
 
 
+.loginFormElement {
+  font-size: inherit;
+}
 
+a.form-button span, 
+span.form-button button, 
+span.form-button input, 
+del.form-button span {
+	height: auto;
+	padding: 0.8em;
+  font-family: 'Source Sans Pro', sans-serif;
+  text-transform: uppercase;
+  font-size: inherit !important;
+  font-weight: 600;
+
+  &:hover {
+  	background: $grey;
+  	color: white;
+  }
+  
+}
+
+a.form-button, 
+span.form-button, 
+del.form-button {
+  font-size: inherit;
+}
+
+a.form-button img {
+	margin-top: -3px;
+}
+
+.loginAgainLink {
+	font-size: inherit;
+	padding: 0.8em;
+	background: $white-off;
+	border-radius: 3px;
+	color: $black;
+}
+
+div.roundedRel a,
+.hierNav a,
+a {
+	color: $link;
+
+	&:visited,
+	&:link {
+		color: $link;
+	}
+
+	&:hover {
+		color: darken($link, 20%);
+	}
+	&:focus {
+		border: 1px dotted $link;
+	}
+
+}
