@@ -1443,3 +1443,6 @@ div.caObjectRepresentationDetailEditorElement {
 
 a.caDeleteItemButton {
   float: right; }
+
+table {
+  clear: both; }
