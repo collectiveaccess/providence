@@ -159,7 +159,7 @@ class Error {
 		$this->opb_halt_on_error = $pb_halt_on_error;
 		$this->opb_report_on_error = $pb_report_on_error;
 		if ($pn_error_number) {
-			$this->setError($pn_error_number, $ps_error_description, $ps_error_context);
+			$this->setError($pn_error_number, $ps_error_description, $ps_error_context, $ps_error_source);
 		}
 	}
 /**

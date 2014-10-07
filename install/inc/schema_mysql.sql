@@ -1289,8 +1289,8 @@ create table ca_representation_annotation_labels
    annotation_id                  int unsigned                   not null,
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
-   name                           varchar(2048)                  not null,
-   name_sort                      varchar(2048)                  not null,
+   name                           text		                     not null,
+   name_sort                      text                  		 not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
    primary key (label_id),
@@ -6515,5 +6515,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 108 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (108, unix_timestamp());
+/* CURRENT MIGRATION: 110 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (110, unix_timestamp());

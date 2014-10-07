@@ -1,5 +1,5 @@
 <?php
-	JavascriptLoadManager::register("directoryBrowser");
+	AssetLoadManager::register("directoryBrowser");
  					
 	$vs_id = $this->getVar('id');
 	$vs_default = $this->getVar('defaultPath');

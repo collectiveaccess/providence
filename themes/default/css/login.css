@@ -34,12 +34,32 @@ a:hover{
 	padding:0px 0px 40px 60px;
 	text-align:left;
 }
+
+#forgotLink {
+   float: right;
+   margin-right: 70px;
+}
+
 #systemTitle{
 	padding:30px 0px 10px 60px;
 	font-weight:normal;
 	font-size:22px;
 	font-family: 'DIN-Regular';
 }
+
+.smallContent {
+    font-size: 14px;
+    margin-right: 68px;
+    text-align: justify;
+}
+
+.notificationContent {
+    font-size: 18px;
+    margin-right: 68px;
+    font-weight: bold;
+    color: darkred;
+}
+
 .loginFormElement{
 	font-size:14px;
 	line-height:2.3em;

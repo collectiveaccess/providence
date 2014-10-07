@@ -67,9 +67,9 @@
 	$resp->addHeader("Expires", "Mon, 26 Jul 1997 05:00:00 GMT");
 	
 	//
-	// Don't try to authenticate when doing a login attempt (will be done in the action, of course)
+	// Don't try to authenticate when doing a login attempt or trying to access the 'forgot password' feature
 	//
-	if (!preg_match("/^\/system\/auth\/(dologin|login)/i", $req->getPathInfo())) {
+	if (!preg_match("/^\/system\/auth\/(dologin|login|forgot|requestpassword|initreset|doreset)/i", $req->getPathInfo())) {
 		$vb_auth_success = $req->doAuthentication(array('noPublicUsers' => true));
 
 		if(!$vb_auth_success) {

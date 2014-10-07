@@ -63,6 +63,7 @@
  	define('__CA_NAV_BUTTON_INTERSTITIAL_EDIT_BUNDLE__', 24);
  	define('__CA_NAV_BUTTON_MAKE_PRIMARY__', 25);
  	define('__CA_NAV_BUTTON_UPDATE__', 26);
+ 	define('__CA_NAV_BUTTON_PDF_SMALL__', 27);
  		
  	define('__CA_NAV_BUTTON_ICON_POS_LEFT__', 0);
  	define('__CA_NAV_BUTTON_ICON_POS_RIGHT__', 1);
@@ -312,9 +313,11 @@
 			$vs_buf .= caHTMLHiddenInput('form_timestamp', array('value' => time()));
 		}
 		if (!caGetOption('disableUnsavedChangesWarning', $pa_options, false)) { 
+			// tagging form elements with the CSS 'dontTriggerUnsavedChangeWarning' class lets us skip over selected form elements
+			// when applying unsaved change warning event handlers
 			$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(
 				function() {
-					jQuery('#{$ps_id} select, #{$ps_id} input, #{$ps_id} textarea').change(function() { caUI.utils.showUnsavedChangesWarning(true); });
+					jQuery('#{$ps_id} select, #{$ps_id} input, #{$ps_id} textarea').not('.dontTriggerUnsavedChangeWarning').change(function() { caUI.utils.showUnsavedChangesWarning(true); });
 					jQuery('#{$ps_id}').submit(function() { caUI.utils.disableUnsavedChangesWarning(true); });
 				}
 			);</script>";
@@ -664,6 +667,9 @@
 				break;	
 			case __CA_NAV_BUTTON_SET_CENTER__:
 				$vs_img_name = 'glyphicons_185_screenshot';
+				break;	
+			case __CA_NAV_BUTTON_PDF_SMALL__:
+				$vs_img_name = 'glyphicons_359_file_export_small';
 				break;																																							
 			default:
 				return null;

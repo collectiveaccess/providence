@@ -102,6 +102,8 @@
 			}
 			
 			$t_label->purify($this->purify());
+			$t_label->setLabelTypeList($this->getAppConfig()->get($pb_is_preferred ? "{$vs_table_name}_preferred_label_type_list" : "{$vs_table_name}_nonpreferred_label_type_list"));
+			
 			foreach($pa_label_values as $vs_field => $vs_value) {
 				if ($t_label->hasField($vs_field)) { 
 					if ($vb_truncate_long_labels) {
@@ -118,7 +120,6 @@
 				}
 			}
 			
-			$t_label->setLabelTypeList($this->getAppConfig()->get($pb_is_preferred ? "{$vs_table_name}_preferred_label_type_list" : "{$vs_table_name}_nonpreferred_label_type_list"));
 			
 			$t_label->set('locale_id', $pn_locale_id);
 			if ($t_label->hasField('type_id')) { $t_label->set('type_id', $pn_type_id); }
@@ -920,6 +921,10 @@
 							$va_tmp = array_reverse($va_tmp, true);
 						}
 						
+						if (caGetOption('returnAsLink', $pa_options, false)) {
+							$va_tmp = caCreateLinksFromText(array_values($va_tmp), $this->tableName(), array_keys($va_tmp));
+						}
+						
 						if ($vb_return_as_array) {
 							return $va_tmp;
 						} else {
@@ -1521,7 +1526,7 @@
 						true
 					);
 				} else {
-					$this->postError(1130, _t('Label must not be blank'), 'LabelableBaseModelWithAttributes->addDefaultLabel()');
+					$this->postError(1130, _t('Label must not be blank'), 'LabelableBaseModelWithAttributes->addDefaultLabel()', $this->tableName().'.preferred_labels');
 					return false;
 				}
 			}

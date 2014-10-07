@@ -44,7 +44,7 @@
 			$this->opo_config = Configuration::load($ps_widget_path.'/conf/trackProcessing.conf');
 			$this->opo_db = new Db();
 			
-			JavascriptLoadManager::register('prettyDate');
+			AssetLoadManager::register('prettyDate');
 		}
 		# -------------------------------------------------------
 		/**

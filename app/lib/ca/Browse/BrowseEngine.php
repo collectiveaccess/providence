@@ -987,10 +987,10 @@
 										
 										
 											$va_wheres = array();
-											if ((sizeof($va_restrict_to_relationship_types) > 0) && is_object($t_item_rel)) {
+											if ((sizeof($va_restrict_to_relationship_types) > 0) && is_object($t_item_rel) && (bool)$vn_state) {
 												$va_wheres[] = "(".$t_item_rel->tableName().".type_id IN (".join(',', $va_restrict_to_relationship_types)."))";
 											}
-											if ((sizeof($va_exclude_relationship_types) > 0) && is_object($t_item_rel)) {
+											if ((sizeof($va_exclude_relationship_types) > 0) && is_object($t_item_rel) && (bool)$vn_state) {
 												$va_wheres[] = "(".$t_item_rel->tableName().".type_id NOT IN (".join(',', $va_exclude_relationship_types)."))";
 											}
 										
@@ -1924,7 +1924,7 @@
 											break;
 									}
 								} else {
-									$va_groups[] = mb_substr($va_item[$va_label_order_by_fields[0]], 0, 1);	
+									if (is_array($va_item)) { $va_groups[] = mb_substr($va_item[$va_label_order_by_fields[0]], 0, 1);}
 								}
 								break;
 						}
@@ -3481,12 +3481,14 @@
 							//print $vs_sql;
 							$qr_res = $this->opo_db->query($vs_sql, $vn_element_id);
 					
+							$vn_current_year = (int)date("Y");
 							$va_values = array();
 							while($qr_res->nextRow()) {
 								$vn_start = $qr_res->get('value_decimal1');
 								$vn_end = $qr_res->get('value_decimal2');
 							
 								if (!($vn_start && $vn_end)) { continue; }
+								if ($vn_end > $vn_current_year + 50) { continue; } // bad years can make for large facets that cause timeouts so cut it off 50 years into the future
 								$va_normalized_values = $o_tep->normalizeDateRange($vn_start, $vn_end, $vs_normalization);
 								foreach($va_normalized_values as $vn_sort_value => $vs_normalized_value) {
 									if ($va_criteria[$vs_normalized_value]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
@@ -4162,8 +4164,8 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 							AND
 							(ca_acl.access >= ?)
 					", $va_params);
-					
-					$va_hits = $qr_sort->getAllFieldValues('row_id');
+
+                    $va_hits = array_unique($qr_sort->getAllFieldValues('row_id'));
 					
 					// Find records with default ACL
 					$qr_sort = $this->opo_db->query("

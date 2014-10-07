@@ -277,9 +277,9 @@
  		 */
  		protected function _initView($pa_options=null) {
  			// load required javascript
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register('imageScroller');
- 			JavascriptLoadManager::register('ckeditor');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('imageScroller');
+ 			AssetLoadManager::register('ckeditor');
 
  			if (!($t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name))) { return null; }
  			

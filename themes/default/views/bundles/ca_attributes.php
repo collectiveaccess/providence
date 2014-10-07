@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,6 +30,7 @@
 	$vs_error_source_code 		= 	$this->getVar('error_source_code');
 	$vs_render_mode 			=	$this->getVar('render_mode');
 	
+	$t_instance 				=	$this->getVar('t_instance');
 	$t_element					=	$this->getVar('t_element');
 	$va_elements 				=	$this->getVar('elements');
 	$va_element_ids 			= 	$this->getVar('element_ids');
@@ -131,6 +132,19 @@
 ?>
 <div id="<?php print $vs_id_prefix; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
+if (caGetOption('canMakePDF', $va_element_info[$t_element->getPrimaryKey()]['settings'], false)) {
+	$va_template_list = caGetAvailablePrintTemplates('bundles', array('table' => $t_instance->tableName(), 'elementCode' => $t_element->get('element_code'), 'forHTMLSelect' => true));
+	if (sizeof($va_template_list) > 0) {
+?>
+	<div class='editorBundlePrintControl'>
+<?php
+		print (sizeof($va_template_list) > 1) ? caHTMLSelect('template', $va_template_list, array('class' => 'dontTriggerUnsavedChangeWarning', 'id' => "{$vs_id_prefix}PrintTemplate")) : caHTMLHiddenInput('template', array('value' => array_pop($va_template_list), 'id' => "{$vs_id_prefix}PrintTemplate"));
+		print "<a href='#' onclick='{$vs_id_prefix}Print(); return false;'>".caNavIcon($this->request, __CA_NAV_BUTTON_PDF_SMALL__)."</a>";
+?>
+	</div>
+<?php
+	}
+}
 	//
 	// The bundle template - used to generate each bundle in the form
 	//
@@ -166,7 +180,20 @@
 				</table>
 <?php
 			}
-		
+
+if (caGetOption('canMakePDFForValue', $va_element_info[$t_element->getPrimaryKey()]['settings'], false)) {
+	$va_template_list = caGetAvailablePrintTemplates('bundles', array('table' => $t_instance->tableName(), 'elementCode' => $t_element->get('element_code'), 'forHTMLSelect' => true));
+	if (sizeof($va_template_list) > 0) {
+?>
+	<div class='editorBundleValuePrintControl' id='<?php print $vs_id_prefix; ?>_print_control_{n}'>
+<?php
+		print (sizeof($va_template_list) > 1) ? caHTMLSelect('template', $va_template_list, array('class' => 'dontTriggerUnsavedChangeWarning', 'id' => "{$vs_id_prefix}PrintTemplate{n}")) : caHTMLHiddenInput('template', array('value' => array_pop($va_template_list), 'id' => "{$vs_id_prefix}PrintTemplate{n}"));
+		print "<a href='#' onclick='{$vs_id_prefix}Print({n}); return false;'>".caNavIcon($this->request, __CA_NAV_BUTTON_PDF_SMALL__)."</a>";
+?>
+	</div>
+<?php
+	}
+}	
 
 			if (isset($va_elements['_locale_id'])) {
 				print ($va_elements['_locale_id']['hidden']) ? $va_elements['_locale_id']['element'] : '<div class="formLabel">'._t('Locale').' '.$va_elements['_locale_id']['element'].'</div>';
@@ -228,7 +255,7 @@
 		minRepeats: <?php print ($vn_n = $this->getVar('min_num_repeats')) ? $vn_n : 0 ; ?>,
 		maxRepeats: <?php print ($vn_n = $this->getVar('max_num_repeats')) ? $vn_n : 65535; ?>,
 		showEmptyFormsOnLoad: <?php print intval($this->getVar('min_num_to_display')); ?>,
-		hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_download_control_'],
+		hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_download_control_', '<?php print $vs_id_prefix; ?>_print_control_',],
 		showOnNewIDList: ['<?php print $vs_id_prefix; ?>_upload_control_'],
 		defaultValues: <?php print json_encode($va_element_value_defaults); ?>,
 		readonly: <?php print $vb_read_only ? "1" : "0"; ?>,
@@ -237,4 +264,10 @@
 	}
 ?>
 	});
+	
+	function <?php print $vs_id_prefix; ?>Print(attribute_id) {
+		if (!attribute_id) { attribute_id = ''; }
+		var template = jQuery('#<?php print $vs_id_prefix; ?>PrintTemplate' + attribute_id).val();
+		window.location = '<?php print caNavUrl($this->request, '*', '*', 'PrintBundle', array('element_code' => $t_element->get('element_code'), $t_instance->primaryKey() => $t_instance->getPrimaryKey())); ?>/template/' + template + '/attribute_id/' + attribute_id;
+	}
 </script>

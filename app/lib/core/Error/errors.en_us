@@ -86,6 +86,9 @@
 901 = User already exists
 920 = Invalid preference
 921 = Invalid preference value
+922 = Invalid email address
+923 = Couldn't update user
+925 = Authentication adapter error
 930 = Couldn't add user role
 931 = Couldn't remove user role
 935 = Couldn't add user to group
@@ -242,6 +245,9 @@
 # --- Import/export errors
 3400 = Import of metadata is not allowed
 3410 = Import of media is not allowed
+3420 = Invalid exporter
+3430 = Exporting this type is not allowed
+3440 = Batch exporting is not allowed
 
 # --- Generic application plugin errors
 3500 = Access denied

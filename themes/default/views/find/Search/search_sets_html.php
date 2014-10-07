@@ -30,7 +30,7 @@
  	$o_result_context 	= $this->getVar('result_context');
 ?>
 <div class='setTools'>
-	<a href="#" id='searchSetToolsShow' onclick="$('.setTools').hide(); return caShowSearchSetTools();"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_SETS__); ?>Set Tools</a>
+	<a href="#" id='searchSetToolsShow' onclick="$('.setTools').hide(); return caShowSearchSetTools();"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_SETS__); print _t("Set Tools"); ?></a>
 </div><!-- end setTools -->
 
 <div id="searchSetTools">

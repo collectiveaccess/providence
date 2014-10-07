@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  	
- 	JavascriptLoadManager::register('datePickerUI');
+ 	AssetLoadManager::register('datePickerUI');
  	
 	$t_order = $this->getVar('t_order');
 	$vn_order_id = (int)$t_order->getPrimaryKey();
