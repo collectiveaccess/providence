@@ -130,20 +130,9 @@ wam.initDatepickers = function () {
 			}
 	);
 };
-wam.init = function() {
-	wam.fixEditorWidth();
-	wam.userSort();
-	wam.initDatepickers();
-};
-
-
-$(function() {
-	wam.init();
-});
-
 // CONDITION RECOMMENDATION TYPES
 // ------------------------------
-$(function() {
+wam.initConditionRecommendationTypes = function() {
 	// checks if element exists
 	if ($('#P797OccurrenceEditorForm_attribute_413Item_new_0').length) {
 
@@ -180,4 +169,17 @@ $(function() {
 			}
 		});
 	}
+};
+wam.init = function() {
+	wam.fixEditorWidth();
+	wam.userSort();
+	wam.initDatepickers();
+	wam.initConditionRecommendationTypes();
+};
+
+
+
+$(function() {
+	wam.init();
 });
+
