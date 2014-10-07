@@ -255,14 +255,15 @@ table.listtable thead tr th,
 div.notification-info-box {
   box-shadow: 0 0 2px 2px rgba(60, 60, 60, 0.1);
   padding: 1em;
-  background: #f0f0f0 url("../graphics/icons/info.gif") no-repeat 13px 0.9em;
+  background: #009b00 url("../graphics/icons/info.gif") no-repeat 13px 0.9em;
   background-size: 32px 32px;
-  border: 2px solid #9ec54d;
-  border-radius: 3px !important; }
+  border: 2px solid #008200;
+  border-radius: 3px !important;
+  color: white; }
 
 li.notification-info-box {
   font-weight: 600;
-  color: #009b00;
+  color: white;
   font-size: inherit;
   font-family: inherit;
   text-indent: 10px;
@@ -274,14 +275,14 @@ ul.notification-info-box {
 div.notification-error-box {
   box-shadow: 0 0 2px 2px rgba(60, 60, 60, 0.1);
   padding: 1em;
-  background: #f0f0f0 url("../graphics/icons/info.gif") no-repeat 13px 0.9em;
+  background: #9b0000 url("../graphics/icons/info.gif") no-repeat 13px 0.9em;
   background-size: 32px 32px;
-  border: 2px solid #9b0000;
+  border: 2px solid #820000;
   border-radius: 3px !important; }
 
 li.notification-error-box {
   font-weight: 600;
-  color: #3c3c3c;
+  color: white;
   font-size: inherit;
   font-family: inherit;
   text-indent: 10px;
