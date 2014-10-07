@@ -399,22 +399,22 @@ class RequestHTTP extends Request {
 	public function getRequestUrl($pb_absolute=false) {
 		$va_url = array();
 		if ($vs_tmp = $this->getBaseUrlPath()) {
-			$va_url[] = $vs_tmp;
+			$va_url[] = trim($vs_tmp, '/');
 		}
 		if ($vs_tmp = $this->getScriptName()) {
-			$va_url[] = $vs_tmp;
+			$va_url[] = trim($vs_tmp, '/');
 		}
 		if ($vs_tmp = $this->getModulePath()) {
-			$va_url[] = $vs_tmp;
+			$va_url[] = trim($vs_tmp, '/');
 		}
 		if ($vs_tmp = $this->getController()) {
-			$va_url[] = $vs_tmp;
+			$va_url[] = trim($vs_tmp, '/');
 		}
 		if ($vs_tmp = $this->getAction()) {
-			$va_url[] = $vs_tmp;
+			$va_url[] = trim($vs_tmp, '/');
 		}
 		if ($vs_tmp = $this->getActionExtra()) {
-			$va_url[] = $vs_tmp;
+			$va_url[] = trim($vs_tmp, '/');
 		}
 		
 		//foreach($this->opa_params['PATH'] as $vs_param => $vs_value) {
@@ -678,6 +678,7 @@ class RequestHTTP extends Request {
 					if (!$pa_options["dont_redirect_to_login"]) {
 						$o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login with redirect for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
 						$vs_redirect = $this->getRequestUrl(true);
+						error_log($vs_redirect);
 						if(strpos($vs_redirect, $this->config->get("auth_login_path") !== -1)){
 							$vs_redirect = '';
 						} else {
