@@ -239,6 +239,10 @@ class SearchEngine extends SearchBase {
 				$this->addResultFilter($this->ops_tablename.'.source_id', 'IN', join(",",$va_source_ids));
 			}
 			
+			if (in_array($t_table->getHierarchyType(), array(__CA_HIER_TYPE_SIMPLE_MONO__, __CA_HIER_TYPE_MULTI_MONO__))) {
+				$this->addResultFilter($this->ops_tablename.'.parent_id', 'IS NOT', NULL);
+			}
+			
 			if (is_array($va_restrict_to_fields = caGetOption('restrictSearchToFields', $pa_options, null)) && $this->opo_engine->can('restrict_to_fields')) {
 				$this->opo_engine->setOption('restrictSearchToFields', $va_restrict_to_fields);
 			}
