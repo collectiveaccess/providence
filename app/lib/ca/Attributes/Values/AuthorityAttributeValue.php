@@ -359,7 +359,7 @@
 			switch($vs_table) {
 				case 'ca_list_items':
 					require_once(__CA_LIB_DIR__."/ca/Attributes/Values/ListAttributeValue.php");
-					return __CA_ATTRIBUTE_VALUE_LIST____;
+					return __CA_ATTRIBUTE_VALUE_LIST__;
 					break;
 				case 'ca_objects':
 					require_once(__CA_LIB_DIR__."/ca/Attributes/Values/ObjectsAttributeValue.php");

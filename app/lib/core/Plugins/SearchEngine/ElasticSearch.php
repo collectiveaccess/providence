@@ -684,16 +684,15 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				$va_key[0]."/".$va_key[2]
 			);
 
-			$vo_http_client->setRawData(json_encode($va_post_json))->setEncType('text/json')->request('POST');
 			try {
+				$vo_http_client->setRawData(json_encode($va_post_json))->setEncType('text/json')->request('POST');
 				$vo_http_response = $vo_http_client->request();
-				$va_response = json_decode($vo_http_response->getBody(),true);
-				
-				if(!isset($va_response["ok"]) || $va_response["ok"]!=1){
-					caLogEvent('ERR', _t('Indexing commit failed for %1; response was %2', $vs_key, $vo_http_response->getBody()), 'ElasticSearch->flushContentBuffer()');
+
+				if($vo_http_response->getStatus() != 200) {
+					caLogEvent('ERR', _t('Indexing commit failed for %1; response was %2; request was %3', $vs_key, $vo_http_response->getBody(), json_encode($va_post_json)), 'ElasticSearch->flushContentBuffer()');
 				}
 			} catch (Exception $e){
-				caLogEvent('ERR', _t('Indexing commit failed for %1: %2; response was %3', $vs_key, $e->getMessage(), $vo_http_response->getBody()), 'ElasticSearch->flushContentBuffer()');
+				caLogEvent('ERR', _t('Indexing commit failed for %1 with Exception: %2', $vs_key, $e->getMessage()), 'ElasticSearch->flushContentBuffer()');
 			}
 		}
 		
