@@ -610,6 +610,13 @@
 							}
 						}
 					}
+					
+					if($va_facet_info['table'] && ($t_browse_table = $this->opo_datamodel->getInstanceByTableName($vs_facet_table = $va_facet_info['table'], true))) {
+						if (!($app = AppController::getInstance())) { return '???'; }
+						if ($t_browse_table->load($pn_row_id) && $t_browse_table->isReadable($app->getRequest(), 'preferred_labels')) {
+							return $t_browse_table->get("{$vs_facet_table}.preferred_labels");
+						}
+					}
 					return '???';
 					break;
 				# -----------------------------------------------------
