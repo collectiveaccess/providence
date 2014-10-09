@@ -301,15 +301,19 @@
 </script>";
 			}
  			
- 			$vs_element .= caHTMLTextInput(
- 				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 
- 				array(
+ 			$va_opts = array(
  					'size' => $vs_width, 
  					'height' => $vs_height, 
  					'value' => '{{'.$pa_element_info['element_id'].'}}', 
  					'maxlength' => $va_settings['maxChars'],
  					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 'class' => "{$vs_class}".($va_settings['usewysiwygeditor'] ? " ckeditor" : '')
- 				)
+ 				);
+ 			if (caGetOption('readonly', $pa_options, false)) { 
+ 				$va_opts['disabled'] = 1;
+ 			}
+ 			$vs_element .= caHTMLTextInput(
+ 				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 
+ 				$va_opts
  			);
  			
  			if ($va_settings['isDependentValue']) {

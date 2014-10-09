@@ -387,22 +387,22 @@ class RequestHTTP extends Request {
 	public function getRequestUrl($pb_absolute=false) {
 		$va_url = array();
 		if ($vs_tmp = $this->getBaseUrlPath()) {
-			$va_url[] = $vs_tmp;
+			$va_url[] = trim($vs_tmp, '/');
 		}
 		if ($vs_tmp = $this->getScriptName()) {
-			$va_url[] = $vs_tmp;
+			$va_url[] = trim($vs_tmp, '/');
 		}
 		if ($vs_tmp = $this->getModulePath()) {
-			$va_url[] = $vs_tmp;
+			$va_url[] = trim($vs_tmp, '/');
 		}
 		if ($vs_tmp = $this->getController()) {
-			$va_url[] = $vs_tmp;
+			$va_url[] = trim($vs_tmp, '/');
 		}
 		if ($vs_tmp = $this->getAction()) {
-			$va_url[] = $vs_tmp;
+			$va_url[] = trim($vs_tmp, '/');
 		}
 		if ($vs_tmp = $this->getActionExtra()) {
-			$va_url[] = $vs_tmp;
+			$va_url[] = trim($vs_tmp, '/');
 		}
 		
 		//foreach($this->opa_params['PATH'] as $vs_param => $vs_value) {
