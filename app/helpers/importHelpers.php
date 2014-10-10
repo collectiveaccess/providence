@@ -905,7 +905,7 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 			if(is_array($pa_item_settings['applyRegularExpressions'])) {
 				if (is_array($pm_value)) {
 					foreach($pm_value as $vn_i => $vs_value) {
-						foreach($pa_item_settings['applyRegularExpressions'] as $vn_i => $va_regex) {
+						foreach($pa_item_settings['applyRegularExpressions'] as $vn_c => $va_regex) {
 							if (!strlen($va_regex['match'])) { continue; }
 							$vs_value = preg_replace("!".str_replace("!", "\\!", $va_regex['match'])."!".((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i'), $va_regex['replaceWith'], $vs_value);
 						}
