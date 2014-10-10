@@ -41,7 +41,7 @@
 	require_once(__CA_LIB_DIR__."/core/Parsers/ZipFile.php");
 	require_once(__CA_LIB_DIR__."/core/AccessRestrictions.php");
  	require_once(__CA_LIB_DIR__.'/ca/Visualizer.php');
- 	require_once(__CA_LIB_DIR__.'/core/Parsers/dompdf/dompdf_config.inc.php');
+ 	require_once(__CA_LIB_DIR__.'/core/Print/PDFRenderer.php');
 	require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
  	
 	class BaseFindController extends ActionController {
@@ -308,7 +308,7 @@
 		}
 		# -------------------------------------------------------
 		/**
-		 * Generates and outputs label-formatted PDF version of search results using DOMPDF
+		 * Generates and outputs label-formatted PDF version of search results 
 		 */
 		protected function _genLabels($po_result, $ps_label_code, $ps_output_filename, $ps_title=null) {
 			if((bool)$this->request->config->get('use_legacy_print_labels_generator')) { return $this->_genLabelsLegacy($po_result, $ps_label_code, $ps_output_filename, $ps_title); }
@@ -798,12 +798,11 @@
 					$this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
 					
 					$vs_content = $this->render($va_template_info['path']);
-					$o_dompdf = new DOMPDF();
-					$o_dompdf->load_html($vs_content);
-					$o_dompdf->set_paper(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'));
-					$o_dompdf->set_base_path(caGetPrintTemplateDirectoryPath('results'));
-					$o_dompdf->render();
-					$o_dompdf->stream(caGetOption('filename', $va_template_info, 'export_results.pdf'));
+					
+					$o_pdf = new PDFRenderer();
+					$o_pdf->setPaper(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'));
+					$o_pdf->setBasePath(caGetPrintTemplateDirectoryPath('results'));
+					$o_pdf->render($vs_content, array('stream'=> true, 'filename' => caGetOption('filename', $va_template_info, 'export_results.pdf')));
 				} catch (Exception $e) {
 					$this->postError(3100, _t("Could not generate PDF"),"BaseFindController->PrintSummary()");
 				}
