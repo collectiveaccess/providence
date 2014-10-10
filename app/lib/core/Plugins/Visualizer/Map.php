@@ -24,7 +24,7 @@
  * http://www.CollectiveAccess.org
  *
  * @package CollectiveAccess
- * @subpackage Geographic
+ * @subpackage Visualization
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
