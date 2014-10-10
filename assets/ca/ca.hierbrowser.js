@@ -92,7 +92,7 @@ var caUI = caUI || {};
 			_pageLoadsForLevel:[],				// log of which pages per-level have been loaded already
 			_queuedLoadsForLevel: [],			// parameters for pending loads per-level
 			
-			maxItemsPerHierarchyLevelPage: 300	// maximum number of items to load at one time into a level
+			maxItemsPerHierarchyLevelPage: 500	// maximum number of items to load at one time into a level
 		}, options);
 		
 		if (!that.levelDataUrl) { 
@@ -211,6 +211,31 @@ if (that.uiStyle == 'horizontal') {
 			jQuery('#' + newLevelDivID).data('parent_id', item_id);
 			jQuery('#' + newLevelDivID).append(newLevelList);
 			
+			var selected_item_id_cl = selected_item_id;
+			
+			jQuery('#' + newLevelDivID).scroll(function () { 
+				if((jQuery('#' + newLevelDivID).scrollTop() + jQuery('#' + newLevelDivID).height()) >= (jQuery('#' + newLevelDivID).prop('scrollHeight'))) {
+					var p = jQuery('#' + newLevelDivID).data("page");
+					
+					if ((p === undefined) || (p == 0)) { p = 0; }	// always start with page one
+					p++;
+					
+					// Are we at the end of the list?
+					if (jQuery('#' + newLevelDivID).data('itemCount') <= (p * that.maxItemsPerHierarchyLevelPage)) { 
+						return false;
+					}
+					
+					jQuery('#' + newLevelDivID).data("page", p);
+					var l = jQuery('#' + newLevelDivID).data('level');
+					
+					if (!that._pageLoadsForLevel[l] || !that._pageLoadsForLevel[l][p]) {		// is page loaded?
+						if (!that._pageLoadsForLevel[l]) { that._pageLoadsForLevel[l] = []; }
+						that._pageLoadsForLevel[l][p] = true;		
+						that.queueHierarchyLevelDataLoad(l, item_id, false, newLevelDivID, newLevelListID, selected_item_id_cl, p * that.maxItemsPerHierarchyLevelPage, true);
+					}
+				}
+			});
+			
 			that.showIndicator(newLevelDivID);
 } else {
 	if (that.uiStyle == 'vertical') {
@@ -274,6 +299,9 @@ if (that.uiStyle == 'horizontal') {
 		// Load "page" of hierarchy level via AJAX
 		//
 		that.loadHierarchyLevelData = function() {
+			if (that.isLoadingLevel) { return; }
+			that.isLoadingLevel = true;
+					
 			var id_list = [];
 			var itemIDsToLevelInfo = {};
 			var is_init = false;
@@ -314,7 +342,7 @@ if (that.uiStyle == 'horizontal') {
 				}
 			}
 			
-			if (!id_list.length) { return; }
+			if (!id_list.length) { that.isLoadingLevel = false; return; }
 			
 			var start = 0;
 			jQuery.getJSON(that.levelDataUrl, { id: id_list.join(';'), bundle: that.bundle, init: is_init ? 1 : '', root_item_id: that.selectedItemIDs[0] ? that.selectedItemIDs[0] : '', start: start * that.maxItemsPerHierarchyLevelPage, max: (that.uiStyle == 'vertical') ? 0 : that.maxItemsPerHierarchyLevelPage }, function(dataForLevels) {
@@ -333,7 +361,7 @@ if (that.uiStyle == 'horizontal') {
 					
 					var foundSelected = false;
 					jQuery('#' + newLevelDivID).data('itemCount', data['_itemCount']);
-					//jQuery.each(data, function(i, item) {
+					
 					for(var i in data['_sortOrder']) {
 						var item = data[data['_sortOrder'][i]];
 						if (!item) { continue; }
@@ -452,7 +480,7 @@ if (that.uiStyle == 'horizontal') {
 					if (!foundSelected && that.selectedItemIDs[level]) {
 						var p = jQuery('#' + newLevelDivID).data("page");
 						if (!p || (p < 0)) { p = 0; }
-						p++;
+						
 						jQuery('#' + newLevelDivID).data("page", p);
 						if (jQuery('#' + newLevelDivID).data('itemCount') > (p * that.maxItemsPerHierarchyLevelPage)) { 
 							if (!that._pageLoadsForLevel[level] || !that._pageLoadsForLevel[level][p]) {		// is page loaded?
@@ -512,33 +540,14 @@ if (that.uiStyle == 'horizontal') {
 					
 					// Handle loading of long hierarchy levels via ajax on scroll
 	if (that.uiStyle == 'horizontal') {
-					var selected_item_id_cl = selected_item_id;
-					jQuery('#' + newLevelDivID).scroll(function () { 
-						var curPage = jQuery('#' + newLevelDivID).data("page");
-						if (!curPage) { curPage = 0; }
-					   if (jQuery('#' + newLevelDivID).scrollTop() >= ((curPage * jQuery('#' + newLevelDivID).height()) - 10)) {
-						  // get page #
-						  var p = Math.ceil(jQuery('#' + newLevelDivID).scrollTop()/jQuery('#' + newLevelDivID).height());
-						  if (p < 0) { p = 0; }
-						  if (jQuery('#' + newLevelDivID).data('itemCount') <= (p * that.maxItemsPerHierarchyLevelPage)) { 
-							return;
-						  }
-						  jQuery('#' + newLevelDivID).data("page", p);
-						  var l = jQuery('#' + newLevelDivID).data('level');
-						  if (!that._pageLoadsForLevel[l] || !that._pageLoadsForLevel[l][p]) {		// is page loaded?
-							if (!that._pageLoadsForLevel[l]) { that._pageLoadsForLevel[l] = []; }
-							that._pageLoadsForLevel[l][p] = true;		
-								 	
-							that.queueHierarchyLevelDataLoad(l, item_id, false, newLevelDivID, newLevelListID, selected_item_id_cl, p * that.maxItemsPerHierarchyLevelPage, true);
-						  }
-					   }
-					});
+					
 	}
 					that.hideIndicator(newLevelDivID);
-					
-					// try to load any outstanding level pages
-					that.loadHierarchyLevelData();
 				});
+				that.isLoadingLevel = false; 
+					
+				// try to load any outstanding level pages
+				that.loadHierarchyLevelData();
 			});
 		}
 		// --------------------------------------------------------------------------------
