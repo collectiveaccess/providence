@@ -542,7 +542,6 @@ create table ca_media_content_locations
 
 create index i_row_id on ca_media_content_locations(row_id, table_num);
 create index i_content on ca_media_content_locations(content(255));
-create fulltext index f_content on ca_media_content_locations(content);
 
 
 /*==========================================================================*/
