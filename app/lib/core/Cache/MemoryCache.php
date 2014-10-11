@@ -68,37 +68,103 @@ class MemoryCache {
 	private static function getCacheObjectForNamespace($ps_namespace='default') {
 		return self::$opa_caches[(string)$ps_namespace];
 	}
-
+	# ------------------------------------------------
+	/**
+	 * Get a cache item
+	 * @param string $ps_key
+	 * @param string $ps_namespace
+	 * @return mixed
+	 */
 	public function getItem($ps_key, $ps_namespace='default') {
 		self::init($ps_namespace);
-	}
 
+		return self::getCacheObjectForNamespace($ps_namespace)->getItem($ps_key);
+	}
+	# ------------------------------------------------
+	/**
+	 * Get multiple cache items at once
+	 * @param array $pa_keys
+	 * @param string $ps_namespace
+	 * @return array
+	 */
 	public function getItems($pa_keys, $ps_namespace='default') {
 		self::init($ps_namespace);
-	}
 
+		return self::getCacheObjectForNamespace($ps_namespace)->getItems($pa_keys);
+	}
+	# ------------------------------------------------
+	/**
+	 * Set a cache item
+	 * @param string $ps_key
+	 * @param mixed $pm_data
+	 * @param string $ps_namespace
+	 * @return bool
+	 */
 	public function setItem($ps_key, $pm_data, $ps_namespace='default') {
 		self::init($ps_namespace);
-	}
 
+		return self::getCacheObjectForNamespace($ps_namespace)->setItem($ps_key, $pm_data);
+	}
+	# ------------------------------------------------
+	/**
+	 * Set multiple cache objects at once
+	 * @param array $pa_key_value_data key=>value map of cache keys and corresponding objects
+	 * @param string $ps_namespace
+	 * @return array
+	 */
 	public function setItems($pa_key_value_data, $ps_namespace='default') {
 		self::init($ps_namespace);
-	}
 
+		return self::getCacheObjectForNamespace($ps_namespace)->setItems($pa_key_value_data);
+	}
+	# ------------------------------------------------
+	/**
+	 * Replace an existing cache item
+	 * @param string $ps_key
+	 * @param mixed $pm_data
+	 * @param string $ps_namespace
+	 * @return bool
+	 */
 	public function replaceItem($ps_key, $pm_data, $ps_namespace='default') {
 		self::init($ps_namespace);
-	}
 
+		return self::getCacheObjectForNamespace($ps_namespace)->replaceItem($ps_key, $pm_data);
+	}
+	# ------------------------------------------------
+	/**
+	 * Replace list of cache items
+	 * @param array $pa_key_value_data
+	 * @param string $ps_namespace
+	 * @return array
+	 */
 	public function replaceItems($pa_key_value_data, $ps_namespace='default') {
 		self::init($ps_namespace);
-	}
 
+		return self::getCacheObjectForNamespace($ps_namespace)->replaceItems($pa_key_value_data);
+	}
+	# ------------------------------------------------
+	/**
+	 * Does a given cache key exist?
+	 * @param string $ps_key
+	 * @param string $ps_namespace
+	 * @return bool
+	 */
 	public function hasItem($ps_key, $ps_namespace='default') {
 		self::init($ps_namespace);
-	}
 
+		return self::getCacheObjectForNamespace($ps_namespace)->hasItem($ps_key);
+	}
+	# ------------------------------------------------
+	/**
+	 * Check existence for a list of keys
+	 * @param array $pa_keys
+	 * @param string $ps_namespace
+	 * @return array
+	 */
 	public function hasItems($pa_keys, $ps_namespace='default') {
 		self::init($ps_namespace);
-	}
 
+		return self::getCacheObjectForNamespace($ps_namespace)->hasItems($pa_keys);
+	}
+	# ------------------------------------------------
 }
