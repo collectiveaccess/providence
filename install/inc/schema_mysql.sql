@@ -537,11 +537,10 @@ create table ca_media_content_locations
    table_num                      tinyint unsigned            not null,
    row_id                         int unsigned                not null,
    content                        text                        not null,
-   page                           int unsigned                not null,
    loc                            longtext                    not null
-) engine=myisam CHARACTER SET utf8 COLLATE utf8_general_ci;
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-create index i_row_id on ca_media_content_locations(row_id, table_num, page);
+create index i_row_id on ca_media_content_locations(row_id, table_num);
 create index i_content on ca_media_content_locations(content(255));
 create fulltext index f_content on ca_media_content_locations(content);
 
@@ -6083,34 +6082,6 @@ create index i_label_right_id on ca_movements_x_object_representations(label_rig
 
 
 /*==========================================================================*/
-create table ca_mysql_fulltext_search (
-	index_id			int unsigned		not null auto_increment,
-	
-	table_num			tinyint unsigned 	not null,
-	row_id				int unsigned 		not null,
-	
-	field_table_num		tinyint unsigned	not null,
-	field_num			tinyint unsigned	not null,
-	field_row_id		int unsigned		not null,
-	rel_type_id		smallint unsigned not null default 0,
-	
-	fieldtext			longtext 			not null,
-	
-	boost				int 				not null default 1,
-	
-	PRIMARY KEY								(index_id),
-	FULLTEXT INDEX		f_fulltext			(fieldtext),
-	INDEX				i_table_num			(table_num),
-	INDEX				i_row_id			(row_id),
-	INDEX				i_field_table_num	(field_table_num),
-	INDEX				i_field_num			(field_num),
-	INDEX				i_boost				(boost),
-	INDEX				i_field_row_id		(field_row_id),
-	INDEX				i_rel_type_id		(rel_type_id)	
-) engine=myisam character set utf8 collate utf8_general_ci;
-
-
-/*==========================================================================*/
 create table ca_watch_list
 (
    watch_id                       int unsigned                   not null AUTO_INCREMENT,
@@ -6515,5 +6486,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 110 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (110, unix_timestamp());
+/* CURRENT MIGRATION: 111 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (111, unix_timestamp());
