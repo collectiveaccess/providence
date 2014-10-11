@@ -134,6 +134,11 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
     protected $testCase = false;
 
     /**
+     * @var array
+     */
+    protected $foundClasses = array();
+
+    /**
      * @var PHPUnit_Runner_Filter_Factory
      */
     private $iteratorFilter = null;
@@ -350,21 +355,40 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
             $this->addTest(
               new PHPUnit_Extensions_PhptTestCase($filename, $phptOptions)
             );
-
             return;
         }
 
+        // The given file may contain further stub classes in addition to the
+        // test class itself. Figure out the actual test class.
         $classes    = get_declared_classes();
         $filename   = PHPUnit_Util_Fileloader::checkAndLoad($filename);
-        $newClasses = array_values(array_diff(get_declared_classes(), $classes));
-        $baseName   = str_replace('.php', '', basename($filename));
+        $newClasses = array_diff(get_declared_classes(), $classes);
 
-        foreach ($newClasses as $className) {
-            if (substr($className, 0 - strlen($baseName)) == $baseName) {
+        // The diff is empty in case a parent class (with test methods) is added
+        // AFTER a child class that inherited from it. To account for that case,
+        // cumulate all discovered classes, so the parent class may be found in
+        // a later invocation.
+        if ($newClasses) {
+            // On the assumption that test classes are defined first in files,
+            // process discovered classes in approximate LIFO order, so as to
+            // avoid unnecessary reflection.
+            $this->foundClasses = array_merge($newClasses, $this->foundClasses);
+        }
+
+        // The test class's name must match the filename, either in full, or as
+        // a PEAR/PSR-0 prefixed shortname ('NameSpace_ShortName'), or as a
+        // PSR-1 local shortname ('NameSpace\ShortName'). The comparison must be
+        // anchored to prevent false-positive matches (e.g., 'OtherShortName').
+        $shortname = basename($filename, '.php');
+        $shortnameRegEx = '/(?:^|_|\\\\)' . preg_quote($shortname, '/') . '$/';
+
+        foreach ($this->foundClasses as $i => $className) {
+            if (preg_match($shortnameRegEx, $className)) {
                 $class = new ReflectionClass($className);
 
                 if ($class->getFileName() == $filename) {
                     $newClasses = array($className);
+                    unset($this->foundClasses[$i]);
                     break;
                 }
             }
