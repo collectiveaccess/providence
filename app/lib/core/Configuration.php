@@ -90,9 +90,7 @@ class Configuration {
 	 * @param bool $pb_dont_cache_instance
 	 * @return Configuration
 	 */
-	static function load($ps_file_path="", $pb_dont_cache=false, $pb_dont_cache_instance=false) {
-		if(!($ps_file_path)) { $ps_file_path = __CA_APP_CONFIG__; }
-
+	static function load($ps_file_path=__CA_APP_CONFIG__, $pb_dont_cache=false, $pb_dont_cache_instance=false) {
 		if(!MemoryCache::hasItem($ps_file_path, 'ConfigurationInstanceCache') || $pb_dont_cache || $pb_dont_cache_instance) {
 			MemoryCache::setItem($ps_file_path, new Configuration($ps_file_path, true, $pb_dont_cache), 'ConfigurationInstanceCache');
 		}
@@ -112,7 +110,7 @@ class Configuration {
 	 *
 	 *
 	 */
-	public function __construct($ps_file_path="", $pb_die_on_error=false, $pb_dont_cache=false) {
+	public function __construct($ps_file_path=__CA_APP_CONFIG__, $pb_die_on_error=false, $pb_dont_cache=false) {
 		global $g_ui_locale, $g_configuration_cache_suffix;
 		
 		$this->ops_config_file_path = $ps_file_path ? $ps_file_path : __CA_APP_CONFIG__;	# path to configuration file
