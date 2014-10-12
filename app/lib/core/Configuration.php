@@ -91,6 +91,7 @@ class Configuration {
 	 * @return Configuration
 	 */
 	static function load($ps_file_path="", $pb_dont_cache=false, $pb_dont_cache_instance=false) {
+		if(!($ps_file_path)) { $ps_file_path = __CA_APP_CONFIG__; }
 
 		if(!MemoryCache::hasItem($ps_file_path, 'ConfigurationInstanceCache') || $pb_dont_cache || $pb_dont_cache_instance) {
 			MemoryCache::setItem($ps_file_path, new Configuration($ps_file_path, true, $pb_dont_cache), 'ConfigurationInstanceCache');
