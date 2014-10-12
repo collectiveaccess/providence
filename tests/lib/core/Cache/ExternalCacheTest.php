@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/lib/core/Cache/MemoryCacheTest.php: Memory cache test cases
+ * tests/lib/core/Cache/ExternalCacheTest.php: External cache test cases
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -31,152 +31,152 @@
  */
 
 
-require_once(__CA_LIB_DIR__.'/core/Cache/MemoryCache.php');
+require_once(__CA_LIB_DIR__.'/core/Cache/ExternalCache.php');
 
-class MemoryCacheTest extends PHPUnit_Framework_TestCase {
+class ExternalCacheTest extends PHPUnit_Framework_TestCase {
 
 	public function setUp() {
-		MemoryCache::flush('default');
-		MemoryCache::flush('barNamespace');
+		ExternalCache::flush('default');
+		ExternalCache::flush('barNamespace');
 	}
 
 	public function testAccessNonExistingItem(){
 
-		$vm_ret = MemoryCache::fetch('foo', 'barNamespace');
+		$vm_ret = ExternalCache::fetch('foo', 'barNamespace');
 		$this->assertFalse($vm_ret, 'Should not be able to access non-existing cache item');
 
-		$vm_ret = MemoryCache::fetch('bar');
+		$vm_ret = ExternalCache::fetch('bar');
 		$this->assertFalse($vm_ret, 'Should not be able to access non-existing cache item');
 
-		$vm_ret = MemoryCache::contains('foo', 'barNamespace');
+		$vm_ret = ExternalCache::contains('foo', 'barNamespace');
 		$this->assertFalse($vm_ret, 'Checking for existence of a non-existing cache item should return false');
 
-		$vm_ret = MemoryCache::contains('bar');
+		$vm_ret = ExternalCache::contains('bar');
 		$this->assertFalse($vm_ret, 'Checking for existence of a non-existing cache item should return false');
 
 	}
 
 	public function testDeleteNonExistingItem(){
-		$vm_ret = MemoryCache::delete('foo');
+		$vm_ret = ExternalCache::delete('foo');
 		$this->assertFalse($vm_ret, 'Removing a non-existing item is not possible');
 	}
 
 	public function testAccessNonExistingItemWithExistingCache() {
 
-		$vm_ret = MemoryCache::save('foo', array('foo' => 'bar'), 'barNamespace');
+		$vm_ret = ExternalCache::save('foo', array('foo' => 'bar'), 'barNamespace');
 		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
 
-		$vm_ret = MemoryCache::fetch('bar', 'barNamespace');
+		$vm_ret = ExternalCache::fetch('bar', 'barNamespace');
 		$this->assertFalse($vm_ret, 'Should not be able to access non-existing cache item');
 
-		$vm_ret = MemoryCache::save('foo',  array('foo' => 'bar'));
+		$vm_ret = ExternalCache::save('foo',  array('foo' => 'bar'));
 		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
 
-		$vm_ret = MemoryCache::fetch('bar');
+		$vm_ret = ExternalCache::fetch('bar');
 		$this->assertFalse($vm_ret, 'Should not be able to access non-existing cache item');
 	}
 
 	public function testSetAndfetch() {
-		$vm_ret = MemoryCache::save('foo',  array('foo' => 'bar'));
+		$vm_ret = ExternalCache::save('foo',  array('foo' => 'bar'));
 		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
 
-		$vm_ret = MemoryCache::contains('foo');
+		$vm_ret = ExternalCache::contains('foo');
 		$this->assertTrue($vm_ret, 'Checking for existence of a key we just set should return true');
 
-		$vm_ret = MemoryCache::fetch('foo');
+		$vm_ret = ExternalCache::fetch('foo');
 		$this->assertArrayHasKey('foo', $vm_ret, 'Returned array should have key');
 		$this->assertEquals(array('foo' => 'bar'), $vm_ret, 'Cache item should not change');
 
-		$vm_ret = MemoryCache::save('foo',  array('bar' => 'foo'));
+		$vm_ret = ExternalCache::save('foo',  array('bar' => 'foo'));
 		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
 
-		$vm_ret = MemoryCache::fetch('foo');
+		$vm_ret = ExternalCache::fetch('foo');
 		$this->assertArrayHasKey('bar', $vm_ret, 'Returned array should have key we just set');
 		$this->assertArrayNotHasKey('foo', $vm_ret, 'Returned array should not have old key');
 		$this->assertEquals(array('bar' => 'foo'), $vm_ret, 'Cache item should reflect the overwrite');
 	}
 
 	public function testSetAndfetchWithNamespace() {
-		$vm_ret = MemoryCache::save('foo',  array('foo' => 'bar'), 'barNamespace');
+		$vm_ret = ExternalCache::save('foo',  array('foo' => 'bar'), 'barNamespace');
 		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
 
-		$vm_ret = MemoryCache::contains('foo', 'barNamespace');
+		$vm_ret = ExternalCache::contains('foo', 'barNamespace');
 		$this->assertTrue($vm_ret, 'Checking for existence of a key we just set should return true');
 
-		$vm_ret = MemoryCache::contains('foo');
+		$vm_ret = ExternalCache::contains('foo');
 		$this->assertFalse($vm_ret, 'The key should not exist in an unused namespace');
 
-		$vm_ret = MemoryCache::fetch('foo', 'barNamespace');
+		$vm_ret = ExternalCache::fetch('foo', 'barNamespace');
 		$this->assertArrayHasKey('foo', $vm_ret, 'Returned array should have key');
 		$this->assertEquals(array('foo' => 'bar'), $vm_ret, 'Cache item should not change');
 	}
 
 	public function testSetGetReplaceDeleteCycle() {
-		$vm_ret = MemoryCache::save('foo',  array('foo' => 'bar'));
+		$vm_ret = ExternalCache::save('foo',  array('foo' => 'bar'));
 		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
 
-		$vm_ret = MemoryCache::contains('foo');
+		$vm_ret = ExternalCache::contains('foo');
 		$this->assertTrue($vm_ret, 'Checking for existence of a key we just set should return true');
 
-		$vm_ret = MemoryCache::fetch('foo');
+		$vm_ret = ExternalCache::fetch('foo');
 		$this->assertArrayHasKey('foo', $vm_ret, 'Returned array should have key');
 		$this->assertEquals(array('foo' => 'bar'), $vm_ret, 'Cache item should not change');
 
-		$vm_ret = MemoryCache::save('foo', array('bar' => 'foo'));
+		$vm_ret = ExternalCache::save('foo', array('bar' => 'foo'));
 		$this->assertTrue($vm_ret, 'Replacing item in cache should return true');
 
-		$vm_ret = MemoryCache::fetch('foo');
+		$vm_ret = ExternalCache::fetch('foo');
 		$this->assertArrayHasKey('bar', $vm_ret, 'Returned array should have key');
 		$this->assertArrayNotHasKey('foo', $vm_ret, 'Returned array should not have replaced key');
 
-		$vm_ret = MemoryCache::delete('foo');
+		$vm_ret = ExternalCache::delete('foo');
 		$this->assertTrue($vm_ret, 'Removing an existing key should return true');
 
-		$vm_ret = MemoryCache::fetch('foo');
+		$vm_ret = ExternalCache::fetch('foo');
 		$this->assertFalse($vm_ret, 'Should not return anything after deleting');
 
-		$vm_ret = MemoryCache::contains('foo');
+		$vm_ret = ExternalCache::contains('foo');
 		$this->assertFalse($vm_ret, 'Should not return anything after deleting');
 	}
 
 	public function testFlush() {
-		$vm_ret = MemoryCache::save('foo',  array('foo' => 'bar'), 'barNamespace');
+		$vm_ret = ExternalCache::save('foo',  array('foo' => 'bar'), 'barNamespace');
 		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
 
-		MemoryCache::flush();
+		ExternalCache::flush();
 
-		$vm_ret = MemoryCache::contains('foo', 'barNamespace');
+		$vm_ret = ExternalCache::contains('foo', 'barNamespace');
 		$this->assertFalse($vm_ret, 'Should not return anything after deleting');
 	}
 
 	public function testFlushDifferentNS() {
-		$vm_ret = MemoryCache::save('foo', 'data1', 'barNamespace');
+		$vm_ret = ExternalCache::save('foo', 'data1', 'barNamespace');
 		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
 
-		$vm_ret = MemoryCache::save('bar', 'data2');
+		$vm_ret = ExternalCache::save('bar', 'data2');
 		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
 
-		MemoryCache::flush('default');
+		ExternalCache::flush('default');
 
-		$vm_ret = MemoryCache::contains('bar');
+		$vm_ret = ExternalCache::contains('bar');
 		$this->assertFalse($vm_ret, 'Item should be gone after flushing default namespace.');
 
-		$vm_ret = MemoryCache::contains('foo', 'barNamespace');
+		$vm_ret = ExternalCache::contains('foo', 'barNamespace');
 		$this->assertTrue($vm_ret, 'Item should still be there after flushing different namespace');
 	}
 
 	/**
-	 * @expectedException MemoryCacheInvalidParameterException
+	 * @expectedException ExternalCacheInvalidParameterException
 	 */
 	public function testInvalidNameSpace() {
-		MemoryCache::save('foo', 'data1', 'this is invalid');
+		ExternalCache::save('foo', 'data1', 'this is invalid');
 	}
 
 	/**
-	 * @expectedException MemoryCacheInvalidParameterException
+	 * @expectedException ExternalCacheInvalidParameterException
 	 */
 	public function testInvalidKey() {
-		MemoryCache::save('', 'data1', 'this is invalid');
+		ExternalCache::save('', 'data1', 'this is invalid');
 	}
 
 }

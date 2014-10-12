@@ -34,18 +34,26 @@ require_once(__CA_LIB_DIR__."/core/Cache/MemoryCache.php");
 
 class ExternalCache {
 	# ------------------------------------------------
+	/**
+	 * @var array Doctrine\Common\Cache\CacheProvider
+	 */
 	private static $opa_caches = array();
 	# ------------------------------------------------
 	/**
 	 * Initialize cache for given namespace if necessary
 	 * Namespace declaration is optional
 	 * @param string $ps_namespace Optional namespace
+	 * @throws ExternalCacheInvalidParameterException
 	 */
 	private static function init($ps_namespace='default') {
+		// catch invalid namespace definitions
+		if(!is_string($ps_namespace)) { throw new ExternalCacheInvalidParameterException('Namespace has to be a string'); }
+		if(!preg_match("/^[A-Za-z0-9_]+$/", $ps_namespace)) { throw new ExternalCacheInvalidParameterException('Caching namespace must only contain alphanumeric characters, dashes and underscores'); }
+
 		if(self::nameSpaceExists($ps_namespace)) {
 			return;
 		} else {
-			self::$opa_caches[(string)$ps_namespace] = self::getCacheObject($ps_namespace);
+			self::$opa_caches[$ps_namespace] = self::getCacheObject($ps_namespace);
 		}
 	}
 	# ------------------------------------------------
@@ -59,12 +67,16 @@ class ExternalCache {
 	}
 	# ------------------------------------------------
 	/**
-	 * Get Zend\Cache object for a given namespace
+	 * Get object for a given namespace
 	 * @param string $ps_namespace
-	 * @return Zend\Cache\Storage\StorageInterface
+	 * @return Doctrine\Common\Cache\CacheProvider
 	 */
 	private static function getCacheObjectForNamespace($ps_namespace='default') {
-		return self::$opa_caches[(string)$ps_namespace];
+		if(isset(self::$opa_caches[$ps_namespace])) {
+			return self::$opa_caches[$ps_namespace];
+		} else {
+			return null;
+		}
 	}
 	# ------------------------------------------------
 	/**
@@ -72,73 +84,30 @@ class ExternalCache {
 	 * @param string $ps_key
 	 * @param string $ps_namespace
 	 * @return mixed
+	 * @throws ExternalCacheInvalidParameterException
 	 */
-	public static function getItem($ps_key, $ps_namespace='default') {
+	public static function fetch($ps_key, $ps_namespace='default') {
 		self::init($ps_namespace);
+		if(!$ps_key) { throw new ExternalCacheInvalidParameterException('Key cannot be empty'); }
 
-		return unserialize(self::getCacheObjectForNamespace($ps_namespace)->getItem($ps_key));
+		return self::getCacheObjectForNamespace($ps_namespace)->fetch($ps_key);
 	}
 	# ------------------------------------------------
 	/**
-	 * Get multiple cache items at once
-	 * @param array $pa_keys
-	 * @param string $ps_namespace
-	 * @return array
-	 */
-	public static function getItems($pa_keys, $ps_namespace='default') {
-		self::init($ps_namespace);
-
-		return self::getCacheObjectForNamespace($ps_namespace)->getItems($pa_keys);
-	}
-	# ------------------------------------------------
-	/**
-	 * Set a cache item
+	 * Puts data into the cache. Overwrites existing items!
 	 * @param string $ps_key
 	 * @param mixed $pm_data
 	 * @param string $ps_namespace
 	 * @return bool
+	 * @throws ExternalCacheInvalidParameterException
 	 */
-	public static function setItem($ps_key, $pm_data, $ps_namespace='default') {
+	public static function save($ps_key, $pm_data, $ps_namespace='default') {
 		self::init($ps_namespace);
+		if(!$ps_key) { throw new ExternalCacheInvalidParameterException('Key cannot be empty'); }
 
-		return self::getCacheObjectForNamespace($ps_namespace)->setItem($ps_key, serialize($pm_data));
-	}
-	# ------------------------------------------------
-	/**
-	 * Set multiple cache objects at once
-	 * @param array $pa_key_value_data key=>value map of cache keys and corresponding objects
-	 * @param string $ps_namespace
-	 * @return array array of not stored keys
-	 */
-	public static function setItems($pa_key_value_data, $ps_namespace='default') {
-		self::init($ps_namespace);
-
-		return self::getCacheObjectForNamespace($ps_namespace)->setItems($pa_key_value_data);
-	}
-	# ------------------------------------------------
-	/**
-	 * Replace an existing cache item
-	 * @param string $ps_key
-	 * @param mixed $pm_data
-	 * @param string $ps_namespace
-	 * @return bool
-	 */
-	public static function replaceItem($ps_key, $pm_data, $ps_namespace='default') {
-		self::init($ps_namespace);
-
-		return self::getCacheObjectForNamespace($ps_namespace)->replaceItem($ps_key, serialize($pm_data));
-	}
-	# ------------------------------------------------
-	/**
-	 * Replace list of cache items
-	 * @param array $pa_key_value_data
-	 * @param string $ps_namespace
-	 * @return array Array of not stored keys
-	 */
-	public static function replaceItems($pa_key_value_data, $ps_namespace='default') {
-		self::init($ps_namespace);
-
-		return self::getCacheObjectForNamespace($ps_namespace)->replaceItems($pa_key_value_data);
+		// Cache::save() returns the lifetime of the item. We're not interested in that
+		self::getCacheObjectForNamespace($ps_namespace)->save($ps_key, $pm_data);
+		return true;
 	}
 	# ------------------------------------------------
 	/**
@@ -146,23 +115,13 @@ class ExternalCache {
 	 * @param string $ps_key
 	 * @param string $ps_namespace
 	 * @return bool
+	 * @throws ExternalCacheInvalidParameterException
 	 */
-	public static function hasItem($ps_key, $ps_namespace='default') {
+	public static function contains($ps_key, $ps_namespace='default') {
 		self::init($ps_namespace);
+		if(!$ps_key) { throw new ExternalCacheInvalidParameterException('Key cannot be empty'); }
 
-		return self::getCacheObjectForNamespace($ps_namespace)->hasItem($ps_key);
-	}
-	# ------------------------------------------------
-	/**
-	 * Check existence for a list of keys
-	 * @param array $pa_keys
-	 * @param string $ps_namespace
-	 * @return array list of found keys
-	 */
-	public static function hasItems($pa_keys, $ps_namespace='default') {
-		self::init($ps_namespace);
-
-		return self::getCacheObjectForNamespace($ps_namespace)->hasItems($pa_keys);
+		return self::getCacheObjectForNamespace($ps_namespace)->contains($ps_key);
 	}
 	# ------------------------------------------------
 	/**
@@ -170,48 +129,43 @@ class ExternalCache {
 	 * @param string $ps_key
 	 * @param string $ps_namespace
 	 * @return bool
+	 * @throws ExternalCacheInvalidParameterException
 	 */
-	public static function removeItem($ps_key, $ps_namespace='default') {
+	public static function delete($ps_key, $ps_namespace='default') {
 		self::init($ps_namespace);
+		if(!$ps_key) { throw new ExternalCacheInvalidParameterException('Key cannot be empty'); }
 
-		return self::getCacheObjectForNamespace($ps_namespace)->removeItem($ps_key);
+		return self::getCacheObjectForNamespace($ps_namespace)->delete($ps_key);
 	}
 	# ------------------------------------------------
 	/**
-	 * Remove a list of keys from cache
-	 * @param array $pa_keys
-	 * @param string $ps_namespace
-	 * @return array
+	 * Flush cache
+	 * @param string|null $ps_namespace Optional namespace definition. If given, only this namespace is wiped.
+	 * @throws MemoryCacheInvalidParameterException
 	 */
-	public static function removeItems($pa_keys, $ps_namespace='default') {
-		self::init($ps_namespace);
-
-		return self::getCacheObjectForNamespace($ps_namespace)->removeItems($pa_keys);
-	}
-	# ------------------------------------------------
-	/**
-	 * Flush the whole cache
-	 * @param string $ps_namespace
-	 * @return bool
-	 */
-	public static function flush($ps_namespace='default') {
-		self::init($ps_namespace);
-
-		return self::getCacheObjectForNamespace($ps_namespace)->flush();
+	public static function flush($ps_namespace=null) {
+		if(!$ps_namespace) {
+			foreach(self::$opa_caches as $o_cache) {
+				$o_cache->flushAll();
+			}
+		} else {
+			self::init($ps_namespace);
+			self::getCacheObjectForNamespace($ps_namespace)->flushAll();
+		}
 	}
 	# ------------------------------------------------
 	# Helpers
 	# ------------------------------------------------
 	private static function getCacheObject($ps_namespace) {
 
-		if(MemoryCache::hasItem('cache_backend') && MemoryCache::getItem('cache_configuration')) {
-			$vs_cache_backend = MemoryCache::getItem('cache_backend');
+		if(MemoryCache::contains('cache_backend') && MemoryCache::contains('cache_configuration')) {
+			$vs_cache_backend = MemoryCache::fetch('cache_backend');
 		} else {
 			$o_app_conf = Configuration::load();
 			$o_cache_conf = Configuration::load($o_app_conf->get('cache_config'));
 			$vs_cache_backend = $o_cache_conf->get('cache_backend');
-			MemoryCache::setItem('cache_backend', $vs_cache_backend);
-			MemoryCache::setItem('cache_configuration', $o_cache_conf);
+			MemoryCache::save('cache_backend', $vs_cache_backend);
+			MemoryCache::save('cache_configuration', $o_cache_conf);
 		}
 
 		switch($vs_cache_backend) {
@@ -223,27 +177,16 @@ class ExternalCache {
 	}
 	# ------------------------------------------------
 	private static function getFileCacheObject($ps_namespace){
-		$o_cache_conf = MemoryCache::getItem('cache_configuration');
+		$o_cache_conf = MemoryCache::fetch('cache_configuration');
 
-		$o_cache = \Zend\Cache\StorageFactory::factory(array(
-			'adapter' => array(
-				'name' => 'Filesystem',
-				'options' => array (
-					'ttl' => ($o_cache_conf->get('cache_ttl') ? (int) $o_cache_conf->get('cache_ttl') : 3600),
-					'cache_dir' => ($o_cache_conf->get('cache_file_path') ? $o_cache_conf->get('cache_file_path') : __CA_APP_DIR__.'/tmp'),
-					'dir_permission' => 0755,
-					'file_permission' => 0644,
-					'namespace' => $ps_namespace,
-				),
-			),
-			'plugins' => array (
-				'exception_handler' => array(
-					'throw_exceptions' => false,
-				)
-			)
-		));
+		$vs_cache_base_dir = ($o_cache_conf->get('cache_file_path') ? $o_cache_conf->get('cache_file_path') : __CA_APP_DIR__.DIRECTORY_SEPARATOR.'tmp');
+		$vs_cache_dir = $vs_cache_base_dir.DIRECTORY_SEPARATOR.__CA_APP_NAME__.'_'.$ps_namespace;
+
+		$o_cache = new \Doctrine\Common\Cache\FilesystemCache($vs_cache_dir);
 
 		return $o_cache;
 	}
 	# ------------------------------------------------
 }
+
+class ExternalCacheInvalidParameterException extends Exception {}

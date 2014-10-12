@@ -43,6 +43,7 @@ class MemoryCache {
 	private static function init($ps_namespace='default') {
 		// catch invalid namespace definitions
 		if(!is_string($ps_namespace)) { throw new MemoryCacheInvalidParameterException('Namespace has to be a string'); }
+		if(!preg_match("/^[A-Za-z0-9_]+$/", $ps_namespace)) { throw new MemoryCacheInvalidParameterException('Caching namespace must only contain alphanumeric characters, dashes and underscores'); }
 
 		if(self::nameSpaceExists($ps_namespace)) {
 			return;
@@ -64,7 +65,7 @@ class MemoryCache {
 	 * Fetches an entry from the cache.
 	 * @param string $ps_key
 	 * @param string $ps_namespace
-	 * @return mixed|null null if key does not exist
+	 * @return mixed The cached data or FALSE, if no cache entry exists for the given key.
 	 * @throws MemoryCacheInvalidParameterException
 	 */
 	public static function fetch($ps_key, $ps_namespace='default') {
@@ -75,7 +76,7 @@ class MemoryCache {
 		if(array_key_exists($ps_key, self::$opa_caches[$ps_namespace])) {
 			return self::$opa_caches[$ps_namespace][$ps_key];
 		} else {
-			return null;
+			return false;
 		}
 	}
 	# ------------------------------------------------
