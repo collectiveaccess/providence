@@ -61,13 +61,13 @@ class MemoryCache {
 	}
 	# ------------------------------------------------
 	/**
-	 * Get a cache item
+	 * Fetches an entry from the cache.
 	 * @param string $ps_key
 	 * @param string $ps_namespace
 	 * @return mixed|null null if key does not exist
 	 * @throws MemoryCacheInvalidParameterException
 	 */
-	public static function getItem($ps_key, $ps_namespace='default') {
+	public static function fetch($ps_key, $ps_namespace='default') {
 		self::init($ps_namespace);
 
 		if(!$ps_key) { throw new MemoryCacheInvalidParameterException('Key cannot be empty'); }
@@ -80,14 +80,14 @@ class MemoryCache {
 	}
 	# ------------------------------------------------
 	/**
-	 * Set a cache item. Overwrites existing items!
+	 * Puts data into the cache. Overwrites existing items!
 	 * @param string $ps_key
 	 * @param mixed $pm_data
 	 * @param string $ps_namespace
 	 * @return bool success state
 	 * @throws MemoryCacheInvalidParameterException
 	 */
-	public static function setItem($ps_key, $pm_data, $ps_namespace='default') {
+	public static function save($ps_key, $pm_data, $ps_namespace='default') {
 		self::init($ps_namespace);
 
 		if(!$ps_key) { throw new MemoryCacheInvalidParameterException('Key cannot be empty'); }
@@ -97,34 +97,13 @@ class MemoryCache {
 	}
 	# ------------------------------------------------
 	/**
-	 * Replace an existing cache item
-	 * @param string $ps_key
-	 * @param mixed $pm_data
-	 * @param string $ps_namespace
-	 * @return bool false if item couldn't be replaced
-	 * @throws MemoryCacheInvalidParameterException
-	 */
-	public static function replaceItem($ps_key, $pm_data, $ps_namespace='default') {
-		self::init($ps_namespace);
-
-		if(!$ps_key) { throw new MemoryCacheInvalidParameterException('Key cannot be empty'); }
-
-		if(array_key_exists($ps_key, self::$opa_caches[$ps_namespace])) {
-			self::$opa_caches[$ps_namespace][$ps_key] = $pm_data;
-			return true;
-		} else {
-			return false;
-		}
-	}
-	# ------------------------------------------------
-	/**
-	 * Does a given cache key exist?
+	 * Test if an entry exists in the cache.
 	 * @param string $ps_key
 	 * @param string $ps_namespace
 	 * @return bool
 	 * @throws MemoryCacheInvalidParameterException
 	 */
-	public static function hasItem($ps_key, $ps_namespace='default') {
+	public static function contains($ps_key, $ps_namespace='default') {
 		self::init($ps_namespace);
 
 		if(!$ps_key) { throw new MemoryCacheInvalidParameterException('Key cannot be empty'); }
@@ -139,7 +118,7 @@ class MemoryCache {
 	 * @return bool success state
 	 * @throws MemoryCacheInvalidParameterException
 	 */
-	public static function removeItem($ps_key, $ps_namespace='default') {
+	public static function delete($ps_key, $ps_namespace='default') {
 		self::init($ps_namespace);
 		if(!$ps_key) { throw new MemoryCacheInvalidParameterException('Key cannot be empty'); }
 

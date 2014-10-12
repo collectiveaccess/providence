@@ -42,126 +42,126 @@ class MemoryCacheTest extends PHPUnit_Framework_TestCase {
 
 	public function testAccessNonExistingItem(){
 
-		$vm_ret = MemoryCache::getItem('foo', 'barNamespace');
+		$vm_ret = MemoryCache::fetch('foo', 'barNamespace');
 		$this->assertNull($vm_ret, 'Should not be able to access non-existing cache item');
 
-		$vm_ret = MemoryCache::getItem('bar');
+		$vm_ret = MemoryCache::fetch('bar');
 		$this->assertNull($vm_ret, 'Should not be able to access non-existing cache item');
 
-		$vm_ret = MemoryCache::hasItem('foo', 'barNamespace');
+		$vm_ret = MemoryCache::contains('foo', 'barNamespace');
 		$this->assertFalse($vm_ret, 'Checking for existence of a non-existing cache item should return false');
 
-		$vm_ret = MemoryCache::hasItem('bar');
+		$vm_ret = MemoryCache::contains('bar');
 		$this->assertFalse($vm_ret, 'Checking for existence of a non-existing cache item should return false');
 
 	}
 
 	public function testDeleteNonExistingItem(){
-		$vm_ret = MemoryCache::removeItem('foo');
+		$vm_ret = MemoryCache::delete('foo');
 		$this->assertFalse($vm_ret, 'Removing a non-existing item is not possible');
 	}
 
 	public function testAccessNonExistingItemWithExistingCache() {
 
-		$vm_ret = MemoryCache::setItem('foo', array('foo' => 'bar'), 'barNamespace');
+		$vm_ret = MemoryCache::save('foo', array('foo' => 'bar'), 'barNamespace');
 		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
 
-		$vm_ret = MemoryCache::getItem('bar', 'barNamespace');
+		$vm_ret = MemoryCache::fetch('bar', 'barNamespace');
 		$this->assertNull($vm_ret, 'Should not be able to access non-existing cache item');
 
-		$vm_ret = MemoryCache::setItem('foo',  array('foo' => 'bar'));
+		$vm_ret = MemoryCache::save('foo',  array('foo' => 'bar'));
 		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
 
-		$vm_ret = MemoryCache::getItem('bar');
+		$vm_ret = MemoryCache::fetch('bar');
 		$this->assertNull($vm_ret, 'Should not be able to access non-existing cache item');
 	}
 
-	public function testSetAndGetItem() {
-		$vm_ret = MemoryCache::setItem('foo',  array('foo' => 'bar'));
+	public function testSetAndfetch() {
+		$vm_ret = MemoryCache::save('foo',  array('foo' => 'bar'));
 		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
 
-		$vm_ret = MemoryCache::hasItem('foo');
+		$vm_ret = MemoryCache::contains('foo');
 		$this->assertTrue($vm_ret, 'Checking for existence of a key we just set should return true');
 
-		$vm_ret = MemoryCache::getItem('foo');
+		$vm_ret = MemoryCache::fetch('foo');
 		$this->assertArrayHasKey('foo', $vm_ret, 'Returned array should have key');
 		$this->assertEquals(array('foo' => 'bar'), $vm_ret, 'Cache item should not change');
 
-		$vm_ret = MemoryCache::setItem('foo',  array('bar' => 'foo'));
+		$vm_ret = MemoryCache::save('foo',  array('bar' => 'foo'));
 		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
 
-		$vm_ret = MemoryCache::getItem('foo');
+		$vm_ret = MemoryCache::fetch('foo');
 		$this->assertArrayHasKey('bar', $vm_ret, 'Returned array should have key we just set');
 		$this->assertArrayNotHasKey('foo', $vm_ret, 'Returned array should not have old key');
 		$this->assertEquals(array('bar' => 'foo'), $vm_ret, 'Cache item should reflect the overwrite');
 	}
 
-	public function testSetAndGetItemWithNamespace() {
-		$vm_ret = MemoryCache::setItem('foo',  array('foo' => 'bar'), 'barNamespace');
+	public function testSetAndfetchWithNamespace() {
+		$vm_ret = MemoryCache::save('foo',  array('foo' => 'bar'), 'barNamespace');
 		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
 
-		$vm_ret = MemoryCache::hasItem('foo', 'barNamespace');
+		$vm_ret = MemoryCache::contains('foo', 'barNamespace');
 		$this->assertTrue($vm_ret, 'Checking for existence of a key we just set should return true');
 
-		$vm_ret = MemoryCache::hasItem('foo');
+		$vm_ret = MemoryCache::contains('foo');
 		$this->assertFalse($vm_ret, 'The key should not exist in an unused namespace');
 
-		$vm_ret = MemoryCache::getItem('foo', 'barNamespace');
+		$vm_ret = MemoryCache::fetch('foo', 'barNamespace');
 		$this->assertArrayHasKey('foo', $vm_ret, 'Returned array should have key');
 		$this->assertEquals(array('foo' => 'bar'), $vm_ret, 'Cache item should not change');
 	}
 
 	public function testSetGetReplaceDeleteCycle() {
-		$vm_ret = MemoryCache::setItem('foo',  array('foo' => 'bar'));
+		$vm_ret = MemoryCache::save('foo',  array('foo' => 'bar'));
 		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
 
-		$vm_ret = MemoryCache::hasItem('foo');
+		$vm_ret = MemoryCache::contains('foo');
 		$this->assertTrue($vm_ret, 'Checking for existence of a key we just set should return true');
 
-		$vm_ret = MemoryCache::getItem('foo');
+		$vm_ret = MemoryCache::fetch('foo');
 		$this->assertArrayHasKey('foo', $vm_ret, 'Returned array should have key');
 		$this->assertEquals(array('foo' => 'bar'), $vm_ret, 'Cache item should not change');
 
-		$vm_ret = MemoryCache::replaceItem('foo', array('bar' => 'foo'));
+		$vm_ret = MemoryCache::save('foo', array('bar' => 'foo'));
 		$this->assertTrue($vm_ret, 'Replacing item in cache should return true');
 
-		$vm_ret = MemoryCache::getItem('foo');
+		$vm_ret = MemoryCache::fetch('foo');
 		$this->assertArrayHasKey('bar', $vm_ret, 'Returned array should have key');
 		$this->assertArrayNotHasKey('foo', $vm_ret, 'Returned array should not have replaced key');
 
-		$vm_ret = MemoryCache::removeItem('foo');
+		$vm_ret = MemoryCache::delete('foo');
 		$this->assertTrue($vm_ret, 'Removing an existing key should return true');
 
-		$vm_ret = MemoryCache::getItem('foo');
+		$vm_ret = MemoryCache::fetch('foo');
 		$this->assertNull($vm_ret, 'Should not return anything after deleting');
 
-		$vm_ret = MemoryCache::hasItem('foo');
+		$vm_ret = MemoryCache::contains('foo');
 		$this->assertFalse($vm_ret, 'Should not return anything after deleting');
 	}
 
 	public function testFlush() {
-		$vm_ret = MemoryCache::setItem('foo',  array('foo' => 'bar'), 'barNamespace');
+		$vm_ret = MemoryCache::save('foo',  array('foo' => 'bar'), 'barNamespace');
 		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
 
 		MemoryCache::flush();
 
-		$vm_ret = MemoryCache::hasItem('foo', 'barNamespace');
+		$vm_ret = MemoryCache::contains('foo', 'barNamespace');
 		$this->assertFalse($vm_ret, 'Should not return anything after deleting');
 	}
 
 	public function testFlushDifferentNS() {
-		$vm_ret = MemoryCache::setItem('foo', 'data1', 'barNamespace');
+		$vm_ret = MemoryCache::save('foo', 'data1', 'barNamespace');
 		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
 
-		$vm_ret = MemoryCache::setItem('bar', 'data2');
+		$vm_ret = MemoryCache::save('bar', 'data2');
 		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
 
 		MemoryCache::flush('default');
 
-		$vm_ret = MemoryCache::hasItem('bar');
+		$vm_ret = MemoryCache::contains('bar');
 		$this->assertFalse($vm_ret, 'Item should be gone after flushing default namespace.');
 
-		$vm_ret = MemoryCache::hasItem('foo', 'barNamespace');
+		$vm_ret = MemoryCache::contains('foo', 'barNamespace');
 		$this->assertTrue($vm_ret, 'Item should still be there after flushing different namespace');
 	}
 

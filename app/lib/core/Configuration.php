@@ -91,11 +91,11 @@ class Configuration {
 	 * @return Configuration
 	 */
 	static function load($ps_file_path=__CA_APP_CONFIG__, $pb_dont_cache=false, $pb_dont_cache_instance=false) {
-		if(!MemoryCache::hasItem($ps_file_path, 'ConfigurationInstanceCache') || $pb_dont_cache || $pb_dont_cache_instance) {
-			MemoryCache::setItem($ps_file_path, new Configuration($ps_file_path, true, $pb_dont_cache), 'ConfigurationInstanceCache');
+		if(!MemoryCache::contains($ps_file_path, 'ConfigurationInstanceCache') || $pb_dont_cache || $pb_dont_cache_instance) {
+			MemoryCache::save($ps_file_path, new Configuration($ps_file_path, true, $pb_dont_cache), 'ConfigurationInstanceCache');
 		}
 
-		return MemoryCache::getItem($ps_file_path, 'ConfigurationInstanceCache');
+		return MemoryCache::fetch($ps_file_path, 'ConfigurationInstanceCache');
 	}
 	/* ---------------------------------------- */
 	/**
@@ -118,7 +118,7 @@ class Configuration {
 		#
 		# Is configuration file already cached?
 		#
-		if (!MemoryCache::hasItem($this->ops_config_file_path.$g_ui_locale, 'ConfigurationCache') || $pb_dont_cache) {
+		if (!MemoryCache::contains($this->ops_config_file_path.$g_ui_locale, 'ConfigurationCache') || $pb_dont_cache) {
 			$va_config_path_components = explode("/", $this->ops_config_file_path);
 			$vs_config_filename = array_pop($va_config_path_components);
 			
@@ -215,11 +215,11 @@ class Configuration {
 			$vs_global_path = join("/", $va_config_path_components)."/global.conf";
 
 
-			if (!MemoryCache::hasItem($vs_global_path.$g_ui_locale, 'ConfigurationCache')) {
+			if (!MemoryCache::contains($vs_global_path.$g_ui_locale, 'ConfigurationCache')) {
 				if (file_exists($vs_global_path)) { $this->loadFile($vs_global_path, false); }
-				MemoryCache::setItem('$vs_global_path.$g_ui_locale', $this->ops_config_settings, 'ConfigurationCache');
+				MemoryCache::save('$vs_global_path.$g_ui_locale', $this->ops_config_settings, 'ConfigurationCache');
 			} else {
-				$this->ops_config_settings = MemoryCache::getItem('$vs_global_path.$g_ui_locale', 'ConfigurationCache');
+				$this->ops_config_settings = MemoryCache::fetch('$vs_global_path.$g_ui_locale', 'ConfigurationCache');
 			}
 			
 			//
@@ -246,7 +246,7 @@ class Configuration {
 				
 			
 			//if ($vb_loaded_config) {
-				MemoryCache::setItem($this->ops_config_file_path.$g_ui_locale, $this->ops_config_settings, 'ConfigurationCache');
+				MemoryCache::save($this->ops_config_file_path.$g_ui_locale, $this->ops_config_settings, 'ConfigurationCache');
 				if (is_object($vo_cache)) {
 					// Save parsed config file to cache
 					$vo_cache->save($this->ops_config_settings, 'ca_config_file_'.$vs_path_as_md5, array('ca_config_cache'));
@@ -257,7 +257,7 @@ class Configuration {
 			#
 			# Return cached configuration file
 			#
-			$this->ops_config_settings = MemoryCache::getItem($this->ops_config_file_path.$g_ui_locale, 'ConfigurationCache');
+			$this->ops_config_settings = MemoryCache::fetch($this->ops_config_file_path.$g_ui_locale, 'ConfigurationCache');
 			return;
 		}
 	}
