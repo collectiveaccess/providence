@@ -6,11 +6,8 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    'Zend\\Stdlib\\' => array($vendorDir . '/zendframework/zend-stdlib'),
-    'Zend\\ServiceManager\\' => array($vendorDir . '/zendframework/zend-servicemanager'),
-    'Zend\\EventManager\\' => array($vendorDir . '/zendframework/zend-eventmanager'),
-    'Zend\\Cache\\' => array($vendorDir . '/zendframework/zend-cache'),
     'Symfony\\Component\\Yaml\\' => array($vendorDir . '/symfony/yaml'),
     'Psr\\Log\\' => array($vendorDir . '/psr/log'),
+    'Doctrine\\Common' => array($vendorDir . '/doctrine/common/lib'),
     'DebugBar' => array($vendorDir . '/maximebf/debugbar/src'),
 );
