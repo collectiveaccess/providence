@@ -93,11 +93,11 @@ class Configuration {
 	static function load($ps_file_path=__CA_APP_CONFIG__, $pb_dont_cache=false, $pb_dont_cache_instance=false) {
 		if(!$ps_file_path) { $ps_file_path = __CA_APP_CONFIG__; }
 
-		if(!MemoryCache::contains($ps_file_path, 'ConfigurationInstanceCache') || $pb_dont_cache || $pb_dont_cache_instance) {
-			MemoryCache::save($ps_file_path, new Configuration($ps_file_path, true, $pb_dont_cache), 'ConfigurationInstanceCache');
+		if(!MemoryCache::contains($ps_file_path, 'ConfigurationInstances') || $pb_dont_cache || $pb_dont_cache_instance) {
+			MemoryCache::save($ps_file_path, new Configuration($ps_file_path, true, $pb_dont_cache), 'ConfigurationInstances');
 		}
 
-		return MemoryCache::fetch($ps_file_path, 'ConfigurationInstanceCache');
+		return MemoryCache::fetch($ps_file_path, 'ConfigurationInstances');
 	}
 	/* ---------------------------------------- */
 	/**
@@ -122,108 +122,94 @@ class Configuration {
 		#
 		# Is configuration file already cached?
 		#
-		if (!MemoryCache::contains($this->ops_config_file_path.$g_ui_locale, 'Configuration') || $pb_dont_cache) {
-			$va_config_path_components = explode("/", $this->ops_config_file_path);
-			$vs_config_filename = array_pop($va_config_path_components);
-			
-			
-			$vs_local_conf_file_path = null;
-			if (defined('__CA_LOCAL_CONFIG_DIRECTORY__') && file_exists(__CA_LOCAL_CONFIG_DIRECTORY__.'/'.$vs_config_filename)) {
-				$vs_local_conf_file_path = __CA_LOCAL_CONFIG_DIRECTORY__.'/'.$vs_config_filename;	
-			} elseif (defined('__CA_DEFAULT_THEME_CONFIG_DIRECTORY__') && file_exists(__CA_DEFAULT_THEME_CONFIG_DIRECTORY__.'/'.$vs_config_filename)) {
-				$vs_local_conf_file_path = __CA_DEFAULT_THEME_CONFIG_DIRECTORY__.'/'.$vs_config_filename;	
+		$va_config_path_components = explode("/", $this->ops_config_file_path);
+		$vs_config_filename = array_pop($va_config_path_components);
+
+
+		$vs_local_conf_file_path = null;
+		if (defined('__CA_LOCAL_CONFIG_DIRECTORY__') && file_exists(__CA_LOCAL_CONFIG_DIRECTORY__.'/'.$vs_config_filename)) {
+			$vs_local_conf_file_path = __CA_LOCAL_CONFIG_DIRECTORY__.'/'.$vs_config_filename;
+		} elseif (defined('__CA_DEFAULT_THEME_CONFIG_DIRECTORY__') && file_exists(__CA_DEFAULT_THEME_CONFIG_DIRECTORY__.'/'.$vs_config_filename)) {
+			$vs_local_conf_file_path = __CA_DEFAULT_THEME_CONFIG_DIRECTORY__.'/'.$vs_config_filename;
+		}
+
+		if((!defined('__CA_DISABLE_CONFIG_CACHING__') || !__CA_DISABLE_CONFIG_CACHING__) && !$pb_dont_cache) {
+			// check that setup.php and global.conf haven't changed. If they have we're going to want to
+			// regenerate all config file caches so they reflect inherited changes
+			$va_global_config_stat = @stat(__CA_CONF_DIR__.'/global.conf');
+			$va_setup_stat = @stat(__CA_BASE_DIR__.'/setup.php');
+			if(
+				($va_global_config_stat['mtime'] != ExternalCache::fetch('ca_global_config_mtime', 'Configuration'))
+				||
+				($va_setup_stat['mtime'] != ExternalCache::fetch('ca_setup_mtime', 'Configuration'))
+			) {
+				// either global.conf or setup.php have changed so clear the cache
+				ExternalCache::flush('Configuration');
+
+				// save current times for global.conf and setup.php
+				ExternalCache::save('ca_global_config_mtime', $va_global_config_stat['mtime'], 'Configuration');
+				ExternalCache::save('ca_setup_mtime', $va_setup_stat['mtime'], 'Configuration');
 			}
-			
-			if((!defined('__CA_DISABLE_CONFIG_CACHING__') || !__CA_DISABLE_CONFIG_CACHING__) && !$pb_dont_cache) {
-				// check that setup.php and global.conf haven't changed. If they have we're going to want to
-				// regenerate all config file caches so they reflect inherited changes
-				$va_global_config_stat = @stat(__CA_CONF_DIR__.'/global.conf');
-				$va_setup_stat = @stat(__CA_BASE_DIR__.'/setup.php');
-				if(
-					($va_global_config_stat['mtime'] != ExternalCache::fetch('ca_global_config_mtime', 'Configuration'))
-					||
-					($va_setup_stat['mtime'] != ExternalCache::fetch('ca_global_config_mtime', 'Configuration'))
-				) {
-					// either global.conf or setup.php have changed so clear the cache
-					ExternalCache::flush('Configuration');
-					MemoryCache::flush('Configuration');
 
-					// save current times for global.conf and setup.php
-					ExternalCache::save('ca_global_config_mtime', $va_global_config_stat['mtime'], 'Configuration');
-					ExternalCache::save('ca_setup_mtime', $va_setup_stat['mtime'], 'Configuration');
-				}
+			$va_cache_data = ExternalCache::fetch($vs_path_as_md5, 'Configuration');
 
-				$va_cache_data = ExternalCache::fetch($vs_path_as_md5, 'Configuration');
-				#
-				# is cache outdated? (changes to config file have invalidated it)
-				#
-				$vb_cache_is_invalid = false;
+			#
+			# is cache outdated? (changes to config file have invalidated it)
+			#
+			$vb_cache_is_invalid = false;
 
-				$va_configfile_stat = @stat($this->ops_config_file_path);
-				if($va_configfile_stat['mtime'] != ExternalCache::fetch('ca_config_file_mtime_'.$vs_path_as_md5, 'Configuration')) { // config file has changed
-					ExternalCache::save('ca_config_file_mtime_'.$vs_path_as_md5, $va_configfile_stat['mtime'], 'Configuration');
+			$va_configfile_stat = @stat($this->ops_config_file_path);
+			if($va_configfile_stat['mtime'] != ExternalCache::fetch('ca_config_file_mtime_'.$vs_path_as_md5, 'Configuration')) { // config file has changed
+				ExternalCache::save('ca_config_file_mtime_'.$vs_path_as_md5, $va_configfile_stat['mtime'], 'Configuration');
+				$vb_cache_is_invalid = true;
+			}
+
+			if ($vs_local_conf_file_path) {
+				$va_local_configfile_stat = @stat($vs_local_conf_file_path);
+				if($va_local_configfile_stat['mtime'] != ExternalCache::fetch('ca_config_file_local_mtime_'.$vs_path_as_md5, 'Configuration')) { // local config file has changed
+					ExternalCache::save('ca_config_file_local_mtime_'.$vs_path_as_md5, $va_local_configfile_stat['mtime'], 'Configuration');
 					$vb_cache_is_invalid = true;
 				}
-
-				if ($vs_local_conf_file_path) {
-					$va_local_configfile_stat = @stat($vs_local_conf_file_path);
-					if($va_local_configfile_stat['mtime'] != ExternalCache::fetch('ca_config_file_local_mtime_'.$vs_path_as_md5, 'Configuration')) { // local config file has changed
-						ExternalCache::save('ca_config_file_local_mtime_'.$vs_path_as_md5, $va_local_configfile_stat['mtime'], 'Configuration');
-						$vb_cache_is_invalid = true;
-					}
-				}
-				if (!$vb_cache_is_invalid) {
-					// Get it out of the cache because cache is ok
-					$this->ops_config_settings = $va_cache_data;
-					$this->ops_md5_path = md5($this->ops_config_file_path);
-					return;
-				}
-
 			}
-			
-			# load hash
-			$this->ops_config_settings = array();
-
-			# try loading global.conf file
-			$vs_global_path = join("/", $va_config_path_components).'/global.conf';
-			if (!MemoryCache::contains($vs_global_path.$g_ui_locale, 'Configuration')) {
-				if (file_exists($vs_global_path)) { $this->loadFile($vs_global_path, false); }
-				MemoryCache::save($vs_global_path.$g_ui_locale, $this->ops_config_settings, 'Configuration');
-			} else {
-				$this->ops_config_settings = MemoryCache::fetch($vs_global_path.$g_ui_locale, 'Configuration');
-			}
-			
-			//
-			// Insert current user locale as constant into configuration.
-			//
-			$this->ops_config_settings['scalars']['LOCALE'] = $g_ui_locale;
-			
-			#
-			# load specified config file
-			#
-			if (file_exists($this->ops_config_file_path) && $this->loadFile($this->ops_config_file_path, false)) {
-				$this->ops_config_settings["ops_config_file_path"] = $this->ops_config_file_path;
-			}
-			
-			#
-			# try to load optional "local" config file (extra, optional, config file that can override values in the specified config file with "local" values)
-			#
-			if ($vs_local_conf_file_path) {
-				$this->loadFile($vs_local_conf_file_path, false, false);
+			if (!$vb_cache_is_invalid) {
+				// Get it out of the cache because cache is ok
+				$this->ops_config_settings = $va_cache_data;
+				$this->ops_md5_path = md5($this->ops_config_file_path);
+				return;
 			}
 
-			MemoryCache::save($this->ops_config_file_path.$g_ui_locale, $this->ops_config_settings, 'Configuration');
-			if($vs_path_as_md5 && !$pb_dont_cache) {
-				ExternalCache::save($vs_path_as_md5, $this->ops_config_settings, 'Configuration');
-			}
-
-		} else {
-			#
-			# Return cached configuration file from memory
-			#
-			$this->ops_config_settings = MemoryCache::fetch($this->ops_config_file_path.$g_ui_locale, 'Configuration');
-			return;
 		}
+
+		# load hash
+		$this->ops_config_settings = array();
+
+		# try loading global.conf file
+		$vs_global_path = join("/", $va_config_path_components).'/global.conf';
+		if (file_exists($vs_global_path)) { $this->loadFile($vs_global_path, false); }
+
+		//
+		// Insert current user locale as constant into configuration.
+		//
+		$this->ops_config_settings['scalars']['LOCALE'] = $g_ui_locale;
+
+		#
+		# load specified config file
+		#
+		if (file_exists($this->ops_config_file_path) && $this->loadFile($this->ops_config_file_path, false)) {
+			$this->ops_config_settings["ops_config_file_path"] = $this->ops_config_file_path;
+		}
+
+		#
+		# try to load optional "local" config file (extra, optional, config file that can override values in the specified config file with "local" values)
+		#
+		if ($vs_local_conf_file_path) {
+			$this->loadFile($vs_local_conf_file_path, false, false);
+		}
+
+		if($vs_path_as_md5 && !$pb_dont_cache) {
+			ExternalCache::save($vs_path_as_md5, $this->ops_config_settings, 'Configuration');
+		}
+
 	}
 	/* ---------------------------------------- */
 	/**
@@ -925,7 +911,7 @@ class Configuration {
 	 */
 	public static function clearCache() {
 		ExternalCache::flush('Configuration');
-		MemoryCache::flush('Configuration');
+		MemoryCache::flush('ConfigurationInstances');
 	}
 	/* ---------------------------------------- */
 	//public function __destruct() {
