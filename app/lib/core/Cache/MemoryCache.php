@@ -75,7 +75,7 @@ class MemoryCache {
 	 * @param string $ps_namespace
 	 * @return mixed
 	 */
-	public function getItem($ps_key, $ps_namespace='default') {
+	public static function getItem($ps_key, $ps_namespace='default') {
 		self::init($ps_namespace);
 
 		return self::getCacheObjectForNamespace($ps_namespace)->getItem($ps_key);
@@ -87,7 +87,7 @@ class MemoryCache {
 	 * @param string $ps_namespace
 	 * @return array
 	 */
-	public function getItems($pa_keys, $ps_namespace='default') {
+	public static function getItems($pa_keys, $ps_namespace='default') {
 		self::init($ps_namespace);
 
 		return self::getCacheObjectForNamespace($ps_namespace)->getItems($pa_keys);
@@ -100,7 +100,7 @@ class MemoryCache {
 	 * @param string $ps_namespace
 	 * @return bool
 	 */
-	public function setItem($ps_key, $pm_data, $ps_namespace='default') {
+	public static function setItem($ps_key, $pm_data, $ps_namespace='default') {
 		self::init($ps_namespace);
 
 		return self::getCacheObjectForNamespace($ps_namespace)->setItem($ps_key, $pm_data);
@@ -110,9 +110,9 @@ class MemoryCache {
 	 * Set multiple cache objects at once
 	 * @param array $pa_key_value_data key=>value map of cache keys and corresponding objects
 	 * @param string $ps_namespace
-	 * @return array
+	 * @return array array of not stored keys
 	 */
-	public function setItems($pa_key_value_data, $ps_namespace='default') {
+	public static function setItems($pa_key_value_data, $ps_namespace='default') {
 		self::init($ps_namespace);
 
 		return self::getCacheObjectForNamespace($ps_namespace)->setItems($pa_key_value_data);
@@ -125,7 +125,7 @@ class MemoryCache {
 	 * @param string $ps_namespace
 	 * @return bool
 	 */
-	public function replaceItem($ps_key, $pm_data, $ps_namespace='default') {
+	public static function replaceItem($ps_key, $pm_data, $ps_namespace='default') {
 		self::init($ps_namespace);
 
 		return self::getCacheObjectForNamespace($ps_namespace)->replaceItem($ps_key, $pm_data);
@@ -135,9 +135,9 @@ class MemoryCache {
 	 * Replace list of cache items
 	 * @param array $pa_key_value_data
 	 * @param string $ps_namespace
-	 * @return array
+	 * @return array Array of not stored keys
 	 */
-	public function replaceItems($pa_key_value_data, $ps_namespace='default') {
+	public static function replaceItems($pa_key_value_data, $ps_namespace='default') {
 		self::init($ps_namespace);
 
 		return self::getCacheObjectForNamespace($ps_namespace)->replaceItems($pa_key_value_data);
@@ -149,7 +149,7 @@ class MemoryCache {
 	 * @param string $ps_namespace
 	 * @return bool
 	 */
-	public function hasItem($ps_key, $ps_namespace='default') {
+	public static function hasItem($ps_key, $ps_namespace='default') {
 		self::init($ps_namespace);
 
 		return self::getCacheObjectForNamespace($ps_namespace)->hasItem($ps_key);
@@ -159,12 +159,36 @@ class MemoryCache {
 	 * Check existence for a list of keys
 	 * @param array $pa_keys
 	 * @param string $ps_namespace
-	 * @return array
+	 * @return array list of found keys
 	 */
-	public function hasItems($pa_keys, $ps_namespace='default') {
+	public static function hasItems($pa_keys, $ps_namespace='default') {
 		self::init($ps_namespace);
 
 		return self::getCacheObjectForNamespace($ps_namespace)->hasItems($pa_keys);
+	}
+	# ------------------------------------------------
+	/**
+	 * Remove a given key from cache
+	 * @param string $ps_key
+	 * @param string $ps_namespace
+	 * @return bool
+	 */
+	public static function removeItem($ps_key, $ps_namespace='default') {
+		self::init($ps_namespace);
+
+		return self::getCacheObjectForNamespace($ps_namespace)->removeItem($ps_key);
+	}
+	# ------------------------------------------------
+	/**
+	 * Remove a list of keys from cache
+	 * @param array $pa_keys
+	 * @param string $ps_namespace
+	 * @return array
+	 */
+	public static function removeItems($pa_keys, $ps_namespace='default') {
+		self::init($ps_namespace);
+
+		return self::getCacheObjectForNamespace($ps_namespace)->removeItems($pa_keys);
 	}
 	# ------------------------------------------------
 }
