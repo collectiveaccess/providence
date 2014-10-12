@@ -63,7 +63,7 @@ class ExternalCache {
 	 * @return bool
 	 */
 	private static function nameSpaceExists($ps_namespace='default') {
-		return isset(self::$opa_caches[(string)$ps_namespace]);
+		return isset(self::$opa_caches[$ps_namespace]);
 	}
 	# ------------------------------------------------
 	/**
@@ -105,8 +105,8 @@ class ExternalCache {
 		self::init($ps_namespace);
 		if(!$ps_key) { throw new ExternalCacheInvalidParameterException('Key cannot be empty'); }
 
-		// Cache::save() returns the lifetime of the item. We're not interested in that
-		self::getCacheObjectForNamespace($ps_namespace)->save($ps_key, $pm_data);
+		// Cache::save() returns the lifetime of the item
+		self::getCacheObjectForNamespace($ps_namespace)->save($ps_key, $pm_data, __CA_CACHE_TTL__);
 		return true;
 	}
 	# ------------------------------------------------
@@ -158,32 +158,18 @@ class ExternalCache {
 	# ------------------------------------------------
 	private static function getCacheObject($ps_namespace) {
 
-		if(MemoryCache::contains('cache_backend') && MemoryCache::contains('cache_configuration')) {
-			$vs_cache_backend = MemoryCache::fetch('cache_backend');
-		} else {
-			$o_app_conf = Configuration::load();
-			$o_cache_conf = Configuration::load($o_app_conf->get('cache_config'));
-			$vs_cache_backend = $o_cache_conf->get('cache_backend');
-			MemoryCache::save('cache_backend', $vs_cache_backend);
-			MemoryCache::save('cache_configuration', $o_cache_conf);
-		}
-
-		switch($vs_cache_backend) {
+		switch(__CA_CACHE_BACKEND__) {
 			case 'file':
-				return self::getFileCacheObject($ps_namespace);
 			default:
-
+				return self::getFileCacheObject($ps_namespace);
 		}
 	}
 	# ------------------------------------------------
 	private static function getFileCacheObject($ps_namespace){
-		$o_cache_conf = MemoryCache::fetch('cache_configuration');
-
-		$vs_cache_base_dir = ($o_cache_conf->get('cache_file_path') ? $o_cache_conf->get('cache_file_path') : __CA_APP_DIR__.DIRECTORY_SEPARATOR.'tmp');
+		$vs_cache_base_dir = (defined('__CA_CACHE_FILEPATH__') ? __CA_CACHE_FILEPATH__ : __CA_APP_DIR__.DIRECTORY_SEPARATOR.'tmp');
 		$vs_cache_dir = $vs_cache_base_dir.DIRECTORY_SEPARATOR.__CA_APP_NAME__.'_'.$ps_namespace;
 
 		$o_cache = new \Doctrine\Common\Cache\FilesystemCache($vs_cache_dir);
-
 		return $o_cache;
 	}
 	# ------------------------------------------------
