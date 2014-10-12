@@ -38,84 +38,62 @@ class MemoryCache {
 	 * Initialize cache for given namespace if necessary
 	 * Namespace declaration is optional
 	 * @param string $ps_namespace Optional namespace
+	 * @throws MemoryCacheInvalidParameterException
 	 */
 	private static function init($ps_namespace='default') {
+		// catch invalid namespace definitions
+		if(!is_string($ps_namespace)) { throw new MemoryCacheInvalidParameterException('Namespace has to be a string'); }
+
 		if(self::nameSpaceExists($ps_namespace)) {
 			return;
 		} else {
-			self::$opa_caches[(string)$ps_namespace] = new Zend\Cache\Storage\Adapter\Memory();
-
-			$o_plugin = new Zend\Cache\Storage\Plugin\ExceptionHandler();
-			$o_plugin->getOptions()->setThrowExceptions(false);
-			self::getCacheObjectForNamespace($ps_namespace)->addPlugin($o_plugin);
+			self::$opa_caches[$ps_namespace] = array();
 		}
 	}
 	# ------------------------------------------------
 	/**
-	 * Does a given namespace exist?
+	 * Is the given namespace initialized?
 	 * @param string $ps_namespace
 	 * @return bool
 	 */
 	private static function nameSpaceExists($ps_namespace='default') {
-		return isset(self::$opa_caches[(string)$ps_namespace]);
-	}
-	# ------------------------------------------------
-	/**
-	 * Get Zend\Cache object for a given namespace
-	 * @param string $ps_namespace
-	 * @return Zend\Cache\Storage\Adapter\Memory
-	 */
-	private static function getCacheObjectForNamespace($ps_namespace='default') {
-		return self::$opa_caches[(string)$ps_namespace];
+		return (isset(self::$opa_caches[$ps_namespace]) && is_array(self::$opa_caches[(string)$ps_namespace]));
 	}
 	# ------------------------------------------------
 	/**
 	 * Get a cache item
 	 * @param string $ps_key
 	 * @param string $ps_namespace
-	 * @return mixed
+	 * @return mixed|null null if key does not exist
+	 * @throws MemoryCacheInvalidParameterException
 	 */
 	public static function getItem($ps_key, $ps_namespace='default') {
 		self::init($ps_namespace);
 
-		return self::getCacheObjectForNamespace($ps_namespace)->getItem($ps_key);
-	}
-	# ------------------------------------------------
-	/**
-	 * Get multiple cache items at once
-	 * @param array $pa_keys
-	 * @param string $ps_namespace
-	 * @return array
-	 */
-	public static function getItems($pa_keys, $ps_namespace='default') {
-		self::init($ps_namespace);
+		if(!$ps_key) { throw new MemoryCacheInvalidParameterException('Key cannot be empty'); }
 
-		return self::getCacheObjectForNamespace($ps_namespace)->getItems($pa_keys);
+		if(array_key_exists($ps_key, self::$opa_caches[$ps_namespace])) {
+			return self::$opa_caches[$ps_namespace][$ps_key];
+		} else {
+			return null;
+		}
 	}
 	# ------------------------------------------------
 	/**
-	 * Set a cache item
+	 * Set a cache item. Overwrites existing items!
 	 * @param string $ps_key
 	 * @param mixed $pm_data
 	 * @param string $ps_namespace
-	 * @return bool
+	 * @return bool success state
+	 * @throws MemoryCacheInvalidParameterException
 	 */
 	public static function setItem($ps_key, $pm_data, $ps_namespace='default') {
 		self::init($ps_namespace);
 
-		return self::getCacheObjectForNamespace($ps_namespace)->setItem($ps_key, $pm_data);
-	}
-	# ------------------------------------------------
-	/**
-	 * Set multiple cache objects at once
-	 * @param array $pa_key_value_data key=>value map of cache keys and corresponding objects
-	 * @param string $ps_namespace
-	 * @return array array of not stored keys
-	 */
-	public static function setItems($pa_key_value_data, $ps_namespace='default') {
-		self::init($ps_namespace);
+		if(!$ps_key) { throw new MemoryCacheInvalidParameterException('Key cannot be empty'); }
 
-		return self::getCacheObjectForNamespace($ps_namespace)->setItems($pa_key_value_data);
+		self::$opa_caches[$ps_namespace][$ps_key] = $pm_data;
+		return true;
 	}
 	# ------------------------------------------------
 	/**
@@ -123,24 +101,20 @@ class MemoryCache {
 	 * @param string $ps_key
 	 * @param mixed $pm_data
 	 * @param string $ps_namespace
-	 * @return bool
+	 * @return bool false if item couldn't be replaced
+	 * @throws MemoryCacheInvalidParameterException
 	 */
 	public static function replaceItem($ps_key, $pm_data, $ps_namespace='default') {
 		self::init($ps_namespace);
 
-		return self::getCacheObjectForNamespace($ps_namespace)->replaceItem($ps_key, $pm_data);
-	}
-	# ------------------------------------------------
-	/**
-	 * Replace list of cache items
-	 * @param array $pa_key_value_data
-	 * @param string $ps_namespace
-	 * @return array Array of not stored keys
-	 */
-	public static function replaceItems($pa_key_value_data, $ps_namespace='default') {
-		self::init($ps_namespace);
+		if(!$ps_key) { throw new MemoryCacheInvalidParameterException('Key cannot be empty'); }
 
-		return self::getCacheObjectForNamespace($ps_namespace)->replaceItems($pa_key_value_data);
+		if(array_key_exists($ps_key, self::$opa_caches[$ps_namespace])) {
+			self::$opa_caches[$ps_namespace][$ps_key] = $pm_data;
+			return true;
+		} else {
+			return false;
+		}
 	}
 	# ------------------------------------------------
 	/**
@@ -148,47 +122,49 @@ class MemoryCache {
 	 * @param string $ps_key
 	 * @param string $ps_namespace
 	 * @return bool
+	 * @throws MemoryCacheInvalidParameterException
 	 */
 	public static function hasItem($ps_key, $ps_namespace='default') {
 		self::init($ps_namespace);
 
-		return self::getCacheObjectForNamespace($ps_namespace)->hasItem($ps_key);
-	}
-	# ------------------------------------------------
-	/**
-	 * Check existence for a list of keys
-	 * @param array $pa_keys
-	 * @param string $ps_namespace
-	 * @return array list of found keys
-	 */
-	public static function hasItems($pa_keys, $ps_namespace='default') {
-		self::init($ps_namespace);
+		if(!$ps_key) { throw new MemoryCacheInvalidParameterException('Key cannot be empty'); }
 
-		return self::getCacheObjectForNamespace($ps_namespace)->hasItems($pa_keys);
+		return array_key_exists($ps_key, self::$opa_caches[$ps_namespace]);
 	}
 	# ------------------------------------------------
 	/**
 	 * Remove a given key from cache
 	 * @param string $ps_key
 	 * @param string $ps_namespace
-	 * @return bool
+	 * @return bool success state
+	 * @throws MemoryCacheInvalidParameterException
 	 */
 	public static function removeItem($ps_key, $ps_namespace='default') {
 		self::init($ps_namespace);
+		if(!$ps_key) { throw new MemoryCacheInvalidParameterException('Key cannot be empty'); }
 
-		return self::getCacheObjectForNamespace($ps_namespace)->removeItem($ps_key);
+		if(array_key_exists($ps_key, self::$opa_caches[$ps_namespace])) {
+			unset(self::$opa_caches[$ps_namespace][$ps_key]);
+			return true;
+		} else {
+			return false;
+		}
 	}
 	# ------------------------------------------------
 	/**
-	 * Remove a list of keys from cache
-	 * @param array $pa_keys
-	 * @param string $ps_namespace
-	 * @return array
+	 * Flush cache
+	 * @param string|null $ps_namespace Optional namespace definition. If given, only this namespace is wiped.
+	 * @throws MemoryCacheInvalidParameterException
 	 */
-	public static function removeItems($pa_keys, $ps_namespace='default') {
-		self::init($ps_namespace);
-
-		return self::getCacheObjectForNamespace($ps_namespace)->removeItems($pa_keys);
+	public static function flush($ps_namespace=null) {
+		if(!$ps_namespace) {
+			self::$opa_caches = array();
+		} else {
+			if(!is_string($ps_namespace)) { throw new MemoryCacheInvalidParameterException('Namespace has to be a string'); }
+			self::$opa_caches[$ps_namespace] = array();
+		}
 	}
 	# ------------------------------------------------
 }
+
+class MemoryCacheInvalidParameterException extends Exception {}
