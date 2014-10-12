@@ -35,45 +35,56 @@ require_once(__CA_LIB_DIR__."/core/Cache/MemoryCache.php");
 class ExternalCache {
 	# ------------------------------------------------
 	/**
-	 * @var array Doctrine\Common\Cache\CacheProvider
+	 * @var Doctrine\Common\Cache\CacheProvider
 	 */
-	private static $opa_caches = array();
+	private static $opo_cache;
 	# ------------------------------------------------
 	/**
 	 * Initialize cache for given namespace if necessary
-	 * Namespace declaration is optional
-	 * @param string $ps_namespace Optional namespace
+	 * Namespace declaration is optionale
 	 * @throws ExternalCacheInvalidParameterException
 	 */
-	private static function init($ps_namespace='default') {
-		// catch invalid namespace definitions
-		if(!is_string($ps_namespace)) { throw new ExternalCacheInvalidParameterException('Namespace has to be a string'); }
-		if(!preg_match("/^[A-Za-z0-9_]+$/", $ps_namespace)) { throw new ExternalCacheInvalidParameterException('Caching namespace must only contain alphanumeric characters, dashes and underscores'); }
-
-		if(self::nameSpaceExists($ps_namespace)) {
-			return;
+	private static function init() {
+		if(self::cacheExists()) {
+			return true;
 		} else {
-			self::$opa_caches[$ps_namespace] = self::getCacheObject($ps_namespace);
+			if(self::$opo_cache = self::getCacheObject()) {
+				return true;
+			} else {
+				return false;
+			}
 		}
 	}
 	# ------------------------------------------------
 	/**
-	 * Does a given namespace exist?
-	 * @param string $ps_namespace
+	 * Does the cache object exist?
 	 * @return bool
 	 */
-	private static function nameSpaceExists($ps_namespace='default') {
-		return isset(self::$opa_caches[$ps_namespace]);
+	private static function cacheExists() {
+		return (isset(self::$opo_cache) && (self::$opo_cache instanceof Doctrine\Common\Cache\CacheProvider));
+	}
+	# ------------------------------------------------
+	private static function checkParameters($ps_namespace, $ps_key) {
+		if(!is_string($ps_namespace)) {
+			throw new ExternalCacheInvalidParameterException('Namespace has to be a string');
+		}
+
+		if(!preg_match("/^[A-Za-z0-9_]+$/", $ps_namespace)) {
+			throw new ExternalCacheInvalidParameterException('Caching namespace must only contain alphanumeric characters, dashes and underscores');
+		}
+
+		if(!$ps_key) {
+			throw new ExternalCacheInvalidParameterException('Key cannot be empty');
+		}
 	}
 	# ------------------------------------------------
 	/**
-	 * Get object for a given namespace
-	 * @param string $ps_namespace
+	 * Get cache object from static object property
 	 * @return Doctrine\Common\Cache\CacheProvider
 	 */
-	private static function getCacheObjectForNamespace($ps_namespace='default') {
-		if(isset(self::$opa_caches[$ps_namespace])) {
-			return self::$opa_caches[$ps_namespace];
+	private static function getCache() {
+		if(isset(self::$opo_cache)) {
+			return self::$opo_cache;
 		} else {
 			return null;
 		}
@@ -87,10 +98,10 @@ class ExternalCache {
 	 * @throws ExternalCacheInvalidParameterException
 	 */
 	public static function fetch($ps_key, $ps_namespace='default') {
-		self::init($ps_namespace);
-		if(!$ps_key) { throw new ExternalCacheInvalidParameterException('Key cannot be empty'); }
+		if(!self::init()) { return false; }
+		self::checkParameters($ps_namespace, $ps_key);
 
-		return self::getCacheObjectForNamespace($ps_namespace)->fetch($ps_key);
+		return self::getCache()->fetch($ps_namespace.':'.$ps_key);
 	}
 	# ------------------------------------------------
 	/**
@@ -102,11 +113,15 @@ class ExternalCache {
 	 * @throws ExternalCacheInvalidParameterException
 	 */
 	public static function save($ps_key, $pm_data, $ps_namespace='default') {
-		self::init($ps_namespace);
-		if(!$ps_key) { throw new ExternalCacheInvalidParameterException('Key cannot be empty'); }
+		if(!self::init()) { return false; }
+		self::checkParameters($ps_namespace, $ps_key);
+
+		if(!defined('__CA_CACHE_TTL__')) {
+			define('__CA_CACHE_TTL__', 3600);
+		}
 
 		// Cache::save() returns the lifetime of the item
-		self::getCacheObjectForNamespace($ps_namespace)->save($ps_key, $pm_data, __CA_CACHE_TTL__);
+		self::getCache()->save($ps_namespace.':'.$ps_key, $pm_data, __CA_CACHE_TTL__);
 		return true;
 	}
 	# ------------------------------------------------
@@ -118,10 +133,10 @@ class ExternalCache {
 	 * @throws ExternalCacheInvalidParameterException
 	 */
 	public static function contains($ps_key, $ps_namespace='default') {
-		self::init($ps_namespace);
-		if(!$ps_key) { throw new ExternalCacheInvalidParameterException('Key cannot be empty'); }
+		if(!self::init()) { return false; }
+		self::checkParameters($ps_namespace, $ps_key);
 
-		return self::getCacheObjectForNamespace($ps_namespace)->contains($ps_key);
+		return self::getCache()->contains($ps_namespace.':'.$ps_key);
 	}
 	# ------------------------------------------------
 	/**
@@ -132,52 +147,67 @@ class ExternalCache {
 	 * @throws ExternalCacheInvalidParameterException
 	 */
 	public static function delete($ps_key, $ps_namespace='default') {
-		self::init($ps_namespace);
-		if(!$ps_key) { throw new ExternalCacheInvalidParameterException('Key cannot be empty'); }
+		if(!self::init()) { return false; }
+		self::checkParameters($ps_namespace, $ps_key);
 
-		return self::getCacheObjectForNamespace($ps_namespace)->delete($ps_key);
+		return self::getCache()->delete($ps_namespace.':'.$ps_key);
 	}
 	# ------------------------------------------------
 	/**
 	 * Flush cache
-	 * @param string|null $ps_namespace Optional namespace definition. If given, only this namespace is wiped.
 	 * @throws MemoryCacheInvalidParameterException
 	 */
-	public static function flush($ps_namespace=null) {
+	public static function flush() {
 		try {
-			if(!$ps_namespace) {
-				foreach(self::$opa_caches as $o_cache) {
-					$o_cache->flushAll();
-				}
-			} else {
-				self::init($ps_namespace);
-				self::getCacheObjectForNamespace($ps_namespace)->flushAll();
-			}
+			if(!self::init()) { return false; }
+			self::getCache()->flushAll();
 		} catch(UnexpectedValueException $e) {
-			// happens during the installer pre tasks when we just purge everything in app/tmp without asking
-			// at that point we have existing objects in self::$opa_caches that can't deal with that
-			// we do nothing here because the directory is re-created automatically the next time someone
+			// happens during the installer pre tasks when we just purge everything in app/tmp without asking.
+			// At that point we have existing objects in self::$opo_cache that can't deal with that.
+			// We do nothing here because the directory is re-created automatically the next time someone
 			// tries to access the cache.
 		}
 	}
 	# ------------------------------------------------
 	# Helpers
 	# ------------------------------------------------
-	private static function getCacheObject($ps_namespace) {
-
+	private static function getCacheObject() {
 		switch(__CA_CACHE_BACKEND__) {
+			case 'memcached':
+				return self::getMemcachedObject();
+			case 'apc':
+				return self::getApcObject();
 			case 'file':
 			default:
-				return self::getFileCacheObject($ps_namespace);
+				return self::getFileCacheObject();
 		}
 	}
 	# ------------------------------------------------
-	private static function getFileCacheObject($ps_namespace){
+	private static function getFileCacheObject(){
 		$vs_cache_base_dir = (defined('__CA_CACHE_FILEPATH__') ? __CA_CACHE_FILEPATH__ : __CA_APP_DIR__.DIRECTORY_SEPARATOR.'tmp');
-		$vs_cache_dir = $vs_cache_base_dir.DIRECTORY_SEPARATOR.__CA_APP_NAME__.'_'.$ps_namespace;
+		$vs_cache_dir = $vs_cache_base_dir.DIRECTORY_SEPARATOR.__CA_APP_NAME__.'Cache';
 
-		$o_cache = new \Doctrine\Common\Cache\FilesystemCache($vs_cache_dir);
+		try {
+			$o_cache = new \Doctrine\Common\Cache\FilesystemCache($vs_cache_dir);
+			return $o_cache;
+		} catch (InvalidArgumentException $e) {
+			// carry on ... but no caching :(
+			return null;
+		}
+	}
+	# ------------------------------------------------
+	private static function getMemcachedObject(){
+		Debug::msg('Initiate memcached');
+		$memcached = new Memcached();
+		$memcached->addServer('localhost', 11211);
+
+		$o_cache = new \Doctrine\Common\Cache\MemcachedCache();
+		$o_cache->setMemcached($memcached);
 		return $o_cache;
+	}
+	# ------------------------------------------------
+	private static function getApcObject(){
+		return new \Doctrine\Common\Cache\ApcCache();
 	}
 	# ------------------------------------------------
 }

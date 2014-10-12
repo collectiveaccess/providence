@@ -149,22 +149,6 @@ class ExternalCacheTest extends PHPUnit_Framework_TestCase {
 		$this->assertFalse($vm_ret, 'Should not return anything after deleting');
 	}
 
-	public function testFlushDifferentNS() {
-		$vm_ret = ExternalCache::save('foo', 'data1', 'barNamespace');
-		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
-
-		$vm_ret = ExternalCache::save('bar', 'data2');
-		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
-
-		ExternalCache::flush('default');
-
-		$vm_ret = ExternalCache::contains('bar');
-		$this->assertFalse($vm_ret, 'Item should be gone after flushing default namespace.');
-
-		$vm_ret = ExternalCache::contains('foo', 'barNamespace');
-		$this->assertTrue($vm_ret, 'Item should still be there after flushing different namespace');
-	}
-
 	/**
 	 * @expectedException ExternalCacheInvalidParameterException
 	 */

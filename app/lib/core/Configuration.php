@@ -144,7 +144,7 @@ class Configuration {
 				($va_setup_stat['mtime'] != ExternalCache::fetch('ca_setup_mtime', 'Configuration'))
 			) {
 				// either global.conf or setup.php have changed so clear the cache
-				ExternalCache::flush('Configuration');
+				ExternalCache::flush();
 
 				// save current times for global.conf and setup.php
 				ExternalCache::save('ca_global_config_mtime', $va_global_config_stat['mtime'], 'Configuration');
@@ -910,8 +910,8 @@ class Configuration {
 	 * Removes all cached configuration
 	 */
 	public static function clearCache() {
-		ExternalCache::flush('Configuration');
-		MemoryCache::flush('ConfigurationInstances');
+		ExternalCache::flush();
+		MemoryCache::flush();
 	}
 	/* ---------------------------------------- */
 	//public function __destruct() {
