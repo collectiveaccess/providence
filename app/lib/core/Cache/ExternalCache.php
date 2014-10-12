@@ -144,13 +144,20 @@ class ExternalCache {
 	 * @throws MemoryCacheInvalidParameterException
 	 */
 	public static function flush($ps_namespace=null) {
-		if(!$ps_namespace) {
-			foreach(self::$opa_caches as $o_cache) {
-				$o_cache->flushAll();
+		try {
+			if(!$ps_namespace) {
+				foreach(self::$opa_caches as $o_cache) {
+					$o_cache->flushAll();
+				}
+			} else {
+				self::init($ps_namespace);
+				self::getCacheObjectForNamespace($ps_namespace)->flushAll();
 			}
-		} else {
-			self::init($ps_namespace);
-			self::getCacheObjectForNamespace($ps_namespace)->flushAll();
+		} catch(UnexpectedValueException $e) {
+			// happens during the installer pre tasks when we just purge everything in app/tmp without asking
+			// at that point we have existing objects in self::$opa_caches that can't deal with that
+			// we do nothing here because the directory is re-created automatically the next time someone
+			// tries to access the cache.
 		}
 	}
 	# ------------------------------------------------
