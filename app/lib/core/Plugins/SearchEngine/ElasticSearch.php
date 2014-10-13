@@ -106,7 +106,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	public function truncateIndex($pn_table_num = null) {
 		$vs_table_name = '';
 		if($pn_table_num){
-			$o_dm = new Datamodel();
+			$o_dm = Datamodel::load();
 			$vs_table_name = $o_dm->getTableName($pn_table_num) . '/';
 		}
 		$vo_http_client = new Zend_Http_Client();

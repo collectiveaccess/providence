@@ -62,16 +62,13 @@ class Datamodel {
 	 *
 	 */
 	public function __construct($pb_dont_cache=false) {
-		// is the graph already in memory?
-		if(!$pb_dont_cache && MemoryCache::contains('graph', 'Datamodel')) { return; }
-		
 		// is there an on-disk cache of the internal graph?
 		if(!$pb_dont_cache && ExternalCache::contains('ca_datamodel_graph')) {
 			if ($va_graph = ExternalCache::fetch('ca_datamodel_graph')) {
 				$this->opo_graph = new Graph($va_graph);
 				return;
 			}
-		} 
+		}
 		
 		$o_config = Configuration::load();
  			
@@ -132,7 +129,6 @@ class Datamodel {
 			}
 
 			$va_graph_data = $this->opo_graph->getInternalData();
-			MemoryCache::save('graph', $this->opo_graph->getInternalData(), 'Datamodel');
 			ExternalCache::save('ca_datamodel_graph', $va_graph_data);
 		}
 	}

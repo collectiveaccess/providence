@@ -36,7 +36,7 @@ require_once(__CA_LIB_DIR__.'/core/Cache/ExternalCache.php');
 class ExternalCacheTest extends PHPUnit_Framework_TestCase {
 
 	public function setUp() {
-		ExternalCache::flush('default');
+		ExternalCache::flush('default'); // might have side-effects on other tests?
 		ExternalCache::flush('barNamespace');
 	}
 

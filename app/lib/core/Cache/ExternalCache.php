@@ -169,6 +169,16 @@ class ExternalCache {
 		}
 	}
 	# ------------------------------------------------
+	/**
+	 * Get cache stats
+	 * @return array|bool
+	 */
+	public static function getStats() {
+		if(!self::init()) { return false; }
+
+		return self::getCache()->getStats();
+	}
+	# ------------------------------------------------
 	# Helpers
 	# ------------------------------------------------
 	private static function getCacheObject() {
