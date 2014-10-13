@@ -48,25 +48,18 @@ class Datamodel {
 	static $s_graph = null;
 	static $s_many_many_cache = array();
 	
-	static $s_datamodel_field_num_cache = array();
-	static $s_datamodel_field_name_cache = array();
-	static $s_datamodel_instance_cache = null;
-	static $s_datamodel_model_instance_cache = null;
-	
 	static $s_datamodel_many_to_one_rel_cache = array();
 	static $s_datamodel_one_to_many_rel_cache = array();
-	
-	static $s_datamodel_model_table_name_cache = null;
-	static $s_datamodel_model_table_num_cache = null;
 	# --------------------------------------------------------------------------------------------
 	/**
 	 * @return Datamodel
 	 */
 	static public function load() {
-		if (!DataModel::$s_datamodel_instance_cache) {
-			DataModel::$s_datamodel_instance_cache = new Datamodel();
+		if(!MemoryCache::contains('instance', 'Datamodel')) {
+			MemoryCache::save('instance', new Datamodel(), 'Datamodel');
 		}
-		return DataModel::$s_datamodel_instance_cache;
+
+		return MemoryCache::fetch('instance', 'Datamodel');
 	}
 	# --------------------------------------------------------------------------------------------
 	# --- Constructor
@@ -160,35 +153,54 @@ class Datamodel {
 	# 
 	# --------------------------------------------------------------------------------------------
 	/**
-	 *
+	 * Get table num for given table name or num
+	 * @param string $ps_table table name
+	 * @return mixed|null|string
 	 */
 	public function getTableNum($ps_table) {
+		if (!$ps_table) { return null; }
 		if (is_numeric($ps_table) ) { return $ps_table; }
-		if (isset(Datamodel::$s_datamodel_model_table_num_cache[$ps_table])) { return Datamodel::$s_datamodel_model_table_num_cache[$ps_table]; }
+
+		if(MemoryCache::contains($ps_table, 'DatamodelTableNum')) {
+			return MemoryCache::fetch($ps_table, 'DatamodelTableNum');
+		}
 		
 		if ($this->opo_graph->hasNode($ps_table)) {
-			return Datamodel::$s_datamodel_model_table_num_cache[$ps_table] = $this->opo_graph->getAttribute("num", $ps_table);
+			$vn_return = $this->opo_graph->getAttribute("num", $ps_table);
+			MemoryCache::save($ps_table, $vn_return, 'DatamodelTableNum');
+			return $vn_return;
 		} else {
-			return Datamodel::$s_datamodel_model_table_num_cache[$ps_table] = null;
+			MemoryCache::save($ps_table, null, 'DatamodelTableNum');
+			return null;
 		}
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
-	 *
+	 * Get table name for given table number
+	 * @param int $pn_tablenum table number
+	 * @return null|string
 	 */
 	public function getTableName($pn_tablenum) {
-		if (isset(Datamodel::$s_datamodel_model_table_name_cache[$pn_tablenum])) { return Datamodel::$s_datamodel_model_table_name_cache[$pn_tablenum]; }
+		if (!$pn_tablenum) { return null; }
 		if (!is_numeric($pn_tablenum) ) { return $pn_tablenum; }
+		if(MemoryCache::contains($pn_tablenum, 'DatamodelTableName')) {
+			return MemoryCache::fetch($pn_tablenum, 'DatamodelTableName');
+		}
+
 		$pn_tablenum = intval($pn_tablenum);
 		if ($this->opo_graph->hasNode("t#".$pn_tablenum)) {
-			return Datamodel::$s_datamodel_model_table_name_cache[$pn_tablenum] = $this->opo_graph->getAttribute("name", "t#".$pn_tablenum);
+			$vs_table = $this->opo_graph->getAttribute("name", "t#".$pn_tablenum);
+			MemoryCache::save($pn_tablenum, $vs_table, 'DatamodelTableName');
+			return $vs_table;
 		} else {
-			return Datamodel::$s_datamodel_model_table_name_cache[$pn_tablenum] = null;
+			MemoryCache::save($pn_tablenum, null, 'DatamodelTableName');
+			return null;
 		}
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
-	 *
+	 * Get list of all tables
+	 * @return array
 	 */
 	public function getTableNames() {
 		$va_table_names = array();
@@ -209,10 +221,17 @@ class Datamodel {
 	 * @return int The field number or null if the table or field are invalid
 	 */
 	public function getFieldNum($ps_table, $ps_field) {
-		if (isset(DataModel::$s_datamodel_field_num_cache[$ps_table.'/'.$ps_field])) { return DataModel::$s_datamodel_field_num_cache[$ps_table.'/'.$ps_field]; }
+		if(!$ps_table || !$ps_field) { return null; }
+
+		if(MemoryCache::contains($ps_table.'/'.$ps_field, 'DatamodelFieldNum')) {
+			return MemoryCache::fetch($ps_table.'/'.$ps_field, 'DatamodelFieldNum');
+		}
+
 		if ($t_table = $this->getInstanceByTableName($ps_table, true)) {
 			$va_fields = $t_table->getFieldsArray();
-			return DataModel::$s_datamodel_field_num_cache[$ps_table.'/'.$ps_field] = array_search($ps_field, array_keys($va_fields));
+			$vn_field_num = array_search($ps_field, array_keys($va_fields));
+			MemoryCache::save($ps_table.'/'.$ps_field, $vn_field_num, 'DatamodelFieldNum');
+			return $vn_field_num;
 		} else {
 			return null;
 		}
@@ -224,14 +243,21 @@ class Datamodel {
 	 * @param string $ps_table The table name
 	 * @param int $pn_field_num The field number
 	 *
-	 * @return int The field name or null if the table or field number are invalid
+	 * @return string The field name or null if the table or field number are invalid
 	 */
 	public function getFieldName($ps_table, $pn_field_num) {
-		if (isset(DataModel::$s_datamodel_field_name_cache[$ps_table.'/'.$pn_field_num])) { return DataModel::$s_datamodel_field_name_cache[$ps_table.'/'.$pn_field_num]; }
+		if(!$ps_table || !$pn_field_num) { return null; }
+
+		if(MemoryCache::contains($ps_table.'/'.$pn_field_num, 'DatamodelFieldName')) {
+			return MemoryCache::fetch($ps_table.'/'.$pn_field_num, 'DatamodelFieldName');
+		}
+
 		if ($t_table = $this->getInstanceByTableName($ps_table, true)) {
 			$va_fields = $t_table->getFieldsArray();
 			$va_field_list = array_keys($va_fields);
-			return DataModel::$s_datamodel_field_name_cache[$ps_table.'/'.$pn_field_num] = $va_field_list[(int)$pn_field_num];
+			$vs_field_name = $va_field_list[(int)$pn_field_num];
+			MemoryCache::save($ps_table.'/'.$pn_field_num, $vs_field_name, 'DatamodelFieldName');
+			return $vs_field_name;
 		} else {
 			return null;
 		}
@@ -241,8 +267,8 @@ class Datamodel {
 	 * Get information for field from model 
 	 *
 	 * @param string $ps_table The table name
-	 * @param int $ps_field_name The field name
-	 * @param string $ps_key A model info key
+	 * @param string $ps_field The field name
+	 * @param string $ps_key A model info key, optional
 	 *
 	 * @return mixed If $ps_key is set the specified value will be returned, which may be a string, number or array. If $ps_key is omitted the entire information array is returned.
 	 */
@@ -280,6 +306,7 @@ class Datamodel {
 	 *
 	 * @param mixed $pm_table_name_or_num
 	 * @param bool $pb_use_cache Use a cached instance. [Default is false]
+	 * @return null|BaseModel
 	 */
 	public function getInstance($pm_table_name_or_num, $pb_use_cache=false) {
 		if (is_numeric($pm_table_name_or_num)) {
@@ -289,42 +316,51 @@ class Datamodel {
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
-	 *
+	 * Returns an object representing table; object can be used to manipulate records or get information on various table attributes.
+	 * @param string $ps_table Table name
+	 * @param bool $pb_use_cache Use a cached instance. Default is false.
+	 * @return null|BaseModel
 	 */
-	# Returns an object representing table; object can be used to manipulate records or get information
-	# on various table attributes.
 	public function getInstanceByTableName($ps_table, $pb_use_cache=false) {
-		if ($pb_use_cache && isset(DataModel::$s_datamodel_model_instance_cache[$ps_table]) && DataModel::$s_datamodel_model_instance_cache[$ps_table]) { 
-			return DataModel::$s_datamodel_model_instance_cache[$ps_table];
+		if(!$ps_table) { return null; }
+
+		if($pb_use_cache && MemoryCache::contains($ps_table, 'DatamodelModelInstance')) {
+			return MemoryCache::fetch($ps_table, 'DatamodelModelInstance');
 		}
 		
-		if ($this->opo_graph->hasNode($ps_table)) {
-			if (!isset(DataModel::$s_datamodel_model_instance_cache[$ps_table]) || !DataModel::$s_datamodel_model_instance_cache[$ps_table]) { 
+		if($this->opo_graph->hasNode($ps_table)) {
+			if(!MemoryCache::contains($ps_table, 'DatamodelModelInstance')) {
 				if (!file_exists(__CA_MODELS_DIR__.'/'.$ps_table.'.php')) { return null; }
 				require_once(__CA_MODELS_DIR__.'/'.$ps_table.'.php'); # class file name has trailing '.php'
 			}
-			return DataModel::$s_datamodel_model_instance_cache[$ps_table] = new $ps_table;
+			$t_instance = new $ps_table;
+			MemoryCache::save($ps_table, $t_instance, 'DatamodelModelInstance');
+			return $t_instance;
 		} else {
+			MemoryCache::save($ps_table, null, 'DatamodelModelInstance');
 			return null;
 		}
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
-	 *
+	 * Returns an object representing table; object can be used to manipulate records or get information on various table attributes.
+	 * @param int $pn_tablenum Table number
+	 * @param bool $pb_use_cache Use a cached instance. Default is false.
+	 * @return null|BaseModel
 	 */
-	# Returns an object representing table; object can be used to manipulate records or get information
-	# on various table attributes.
 	public function getInstanceByTableNum($pn_tablenum, $pb_use_cache=false) {
-		if ($vs_class_name = $this->getTableName($pn_tablenum)) {
-			if ($pb_use_cache && isset(DataModel::$s_datamodel_model_instance_cache[$vs_class_name]) && DataModel::$s_datamodel_model_instance_cache[$vs_class_name]) { 
-				return DataModel::$s_datamodel_model_instance_cache[$vs_class_name];
+		if($vs_class_name = $this->getTableName($pn_tablenum)) {
+			if($pb_use_cache && MemoryCache::contains($vs_class_name, 'DatamodelModelInstance')) {
+				return MemoryCache::fetch($vs_class_name, 'DatamodelModelInstance');
 			}
-			
-			if (!isset(DataModel::$s_datamodel_model_instance_cache[$vs_class_name]) || !DataModel::$s_datamodel_model_instance_cache[$vs_class_name]) { 
+
+			if(!MemoryCache::contains($vs_class_name, 'DatamodelModelInstance')) {
 				if (!file_exists(__CA_MODELS_DIR__.'/'.$vs_class_name.'.php')) { return null; }
 				require_once(__CA_MODELS_DIR__.'/'.$vs_class_name.'.php'); # class file name has trailing '.php'
 			}
-			return DataModel::$s_datamodel_model_instance_cache[$vs_class_name] = new $vs_class_name;
+			$t_instance = new $vs_class_name;
+			MemoryCache::save($vs_class_name, $t_instance, 'DatamodelModelInstance');
+			return $t_instance;
 		} else {
 			return null;
 		}

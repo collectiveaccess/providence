@@ -139,6 +139,14 @@ class MemoryCacheTest extends PHPUnit_Framework_TestCase {
 		$this->assertFalse($vm_ret, 'Should not return anything after deleting');
 	}
 
+	public function testSetAndGetNull() {
+		$vm_ret = MemoryCache::save('foo',  null);
+		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
+
+		$vm_ret = MemoryCache::contains('foo');
+		$this->assertTrue($vm_ret, 'Checking for existence of a key we just set should return true');
+	}
+
 	public function testFlush() {
 		$vm_ret = MemoryCache::save('foo',  array('foo' => 'bar'), 'barNamespace');
 		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
