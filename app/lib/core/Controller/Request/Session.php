@@ -130,7 +130,7 @@ class Session {
 	public function setVar($ps_key, $pm_val, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
-		if ($ps_key) {
+		if ($ps_key && $this->getSessionID()) {
 			$va_vars = ExternalCache::fetch($this->getSessionID(), 'SessionVars');
 			if (isset($pa_options["ENTITY_ENCODE_INPUT"]) && $pa_options["ENTITY_ENCODE_INPUT"]) {
 				if (is_string($pm_val)) {
@@ -165,6 +165,8 @@ class Session {
 	 * Get value of session variable. Var may be number, string or array.
 	 */
 	public function getVar($ps_key) {
+		if(!$this->getSessionID()) { return null; }
+
 		if(ExternalCache::contains($this->getSessionID(), 'SessionVars')) {
 			$va_vars = ExternalCache::fetch($this->getSessionID(), 'SessionVars');
 			return isset($va_vars[$ps_key]) ? $va_vars[$ps_key] : null;

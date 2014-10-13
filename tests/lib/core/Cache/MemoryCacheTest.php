@@ -177,14 +177,14 @@ class MemoryCacheTest extends PHPUnit_Framework_TestCase {
 	 * @expectedException MemoryCacheInvalidParameterException
 	 */
 	public function testInvalidNameSpace() {
-		MemoryCache::save('foo', 'data1', 'this is invalid');
+		MemoryCache::save('foo', 'data1', null);
 	}
 
 	/**
 	 * @expectedException MemoryCacheInvalidParameterException
 	 */
 	public function testInvalidKey() {
-		MemoryCache::save('', 'data1', 'this is invalid');
+		MemoryCache::save('', 'data1', 'barNamespace');
 	}
 
 }
