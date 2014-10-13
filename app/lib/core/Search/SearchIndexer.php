@@ -347,51 +347,29 @@ class SearchIndexer extends SearchBase {
 	/**
 	 * Fetches list of dependencies for a given table
 	 */
-	public function getDependencies($ps_subject_table){
-		/* set up cache */
-		$va_frontend_options = array(
-			'lifetime' => null, 				/* cache lives forever (until manual destruction) */
-			'logging' => false,					/* do not use Zend_Log to log what happens */
-			'write_control' => true,			/* immediate read after write is enabled (we don't write often) */
-			'automatic_cleaning_factor' => 0, 	/* no automatic cache cleaning */
-			'automatic_serialization' => true	/* we store arrays, so we have to enable that */
-		);
-		$vs_cache_dir = __CA_APP_DIR__.'/tmp';//$this->opo_app_config->get('site_home_dir').'/tmp';
-		$va_backend_options = array(
-			'cache_dir' => $vs_cache_dir,		/* where to store cache data? */
-			'file_locking' => true,				/* cache corruption avoidance */
-			'read_control' => false,			/* no read control */
-			'file_name_prefix' => 'ca_cache',	/* prefix of cache files */
-			'cache_file_perm' => 0700			/* permissions of cache files */
-		);
-		
-		try {
-			$vo_cache = Zend_Cache::factory('Core', 'File', $va_frontend_options, $va_backend_options);
-		} catch (Exception $e) {
-			// return dependencies without caching
-			return $this->__getDependencies($ps_subject_table);
-		}
+	public function getDependencies($ps_subject_table) {
 		/* handle total cache miss (completely new cache has been generated) */
-		if (!(is_array($va_cache_data = $vo_cache->load('ca_table_dependency_array')))) {
-    		$va_cache_data = array();
+		if(ExternalCache::contains('ca_table_dependency_array')) {
+			$va_cache_data = ExternalCache::fetch('ca_table_dependency_array');
 		}
 
 		/* cache outdated? (i.e. changes to search_indexing.conf) */
 		$va_configfile_stat = stat($this->opo_search_config->get('search_indexing_config'));
-		if($va_configfile_stat['mtime'] != $vo_cache->load('ca_table_dependency_array_mtime')) {
-			$vo_cache->save($va_configfile_stat['mtime'],'ca_table_dependency_array_mtime');
+		if($va_configfile_stat['mtime'] != ExternalCache::fetch('ca_table_dependency_array_mtime')) {
+			ExternalCache::save('ca_table_dependency_array_mtime', $va_configfile_stat['mtime']);
 			$va_cache_data = array();
 		}
 
 		if(isset($va_cache_data[$ps_subject_table]) && is_array($va_cache_data[$ps_subject_table])) { /* cache hit */
 			/* return data from cache */
-			/* TODO: probably we should implement some checks for data consistency */
+			//Debug::msg("Got table dependency array for table {$ps_subject_table} from external cache");
 			return $va_cache_data[$ps_subject_table];
 		} else { /* cache miss */
+			//Debug::msg("Cache miss for {$ps_subject_table}");
 			/* build dependency graph, store it in cache and return it */
 			$va_deps = $this->__getDependencies($ps_subject_table);
 			$va_cache_data[$ps_subject_table] = $va_deps;
-			$vo_cache->save($va_cache_data,'ca_table_dependency_array');
+			ExternalCache::save('ca_table_dependency_array', $va_cache_data);
 			return $va_deps;
 		}
 	}
