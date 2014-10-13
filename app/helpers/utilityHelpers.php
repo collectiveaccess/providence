@@ -54,6 +54,7 @@ require_once(__CA_LIB_DIR__.'/core/Zend/Measure/Length.php');
 MemoryCache::flush('translation');
 
 function _t($ps_key) {
+	if(!$ps_key) { return ''; }
 	global $_;
 
 	if(!MemoryCache::contains($ps_key, 'translation')) {
@@ -90,6 +91,7 @@ function _t($ps_key) {
  * The same as _t(), but rather than returning the translated string, it prints it
  **/
 function _p($ps_key) {
+	if(!$ps_key) { return; }
 	global $_;
 	
 	if (!sizeof(func_get_args()) && MemoryCache::contains($ps_key, 'translation')) {

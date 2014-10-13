@@ -48,7 +48,6 @@ class Session {
 	private $name = "";		# application name
 
 	private $start_time = 0;	# microtime session object was created - used for page performance measurements
-	private $sessionData = null;
 	
 	# ----------------------------------------
 	# --- Constructor
@@ -75,8 +74,12 @@ class Session {
 			if (!($vs_session_id = $this->getSessionID())) {
 				$vs_cookiepath = ((__CA_URL_ROOT__== '') ? '/' : __CA_URL_ROOT__);
 				if (!caIsRunFromCLI()) { setcookie($this->name, $_COOKIE[$this->name] = $vs_session_id = $this->generateGUIDV4(), $this->lifetime ? time() + $this->lifetime : null, $vs_cookiepath); }
-		 	} 
-			$this->sessionData = caGetCacheObject("ca_session_".str_replace("-", "_", $vs_session_id), 0);
+		 	}
+
+			// initialize session var storage
+			if($this->getSessionID() && !ExternalCache::contains($this->getSessionID(), 'SessionVars')) {
+				ExternalCache::save($this->getSessionID(), array(), 'SessionVars');
+			}
 		}
 	}
 	# ----------------------------------------
@@ -116,7 +119,7 @@ class Session {
 			setcookie(session_name(), '', time()- (24 * 60 * 60),'/');
 		}
 		// Delete session data
-		$this->sessionData->remove(Zend_Cache::CLEANING_MODE_ALL);
+		ExternalCache::delete($this->getSessionID(), 'SessionVars');
 		session_destroy();
 	}
 	# ----------------------------------------
@@ -127,8 +130,8 @@ class Session {
 	public function setVar($ps_key, $pm_val, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
-		if ($ps_key && $this->sessionData) {
-			$va_vars = $this->sessionData->load('vars');
+		if ($ps_key) {
+			$va_vars = ExternalCache::fetch($this->getSessionID(), 'SessionVars');
 			if (isset($pa_options["ENTITY_ENCODE_INPUT"]) && $pa_options["ENTITY_ENCODE_INPUT"]) {
 				if (is_string($pm_val)) {
 					$vm_val = html_entity_decode($pm_val);
@@ -143,7 +146,7 @@ class Session {
 				}
 			}
 			$va_vars[$ps_key] = $vm_val;
-			$this->sessionData->save($va_vars, 'vars');
+			ExternalCache::save($this->getSessionID(), $va_vars, 'SessionVars');
 			return true;
 		}
 		return false;
@@ -153,27 +156,31 @@ class Session {
 	 * Delete session variable
 	 */
 	public function delete ($ps_key) {
-		$va_vars = $this->sessionData->load('vars');
+		$va_vars = ExternalCache::fetch($this->getSessionID(), 'SessionVars');
 		unset($va_vars[$ps_key]);
-		$this->sessionData->save($va_vars, 'vars');
+		ExternalCache::save($this->getSessionID(), $va_vars, 'SessionVars');
 	}
 	# ----------------------------------------
 	/**
 	 * Get value of session variable. Var may be number, string or array.
 	 */
 	public function getVar($ps_key) {
-		if (!$this->sessionData) { return null; }
-		$va_vars = $this->sessionData->load('vars');
-		return isset($va_vars[$ps_key]) ? $va_vars[$ps_key] : null;
+		if(ExternalCache::contains($this->getSessionID(), 'SessionVars')) {
+			$va_vars = ExternalCache::fetch($this->getSessionID(), 'SessionVars');
+			return isset($va_vars[$ps_key]) ? $va_vars[$ps_key] : null;
+		}
+		return null;
 	}
 	# ----------------------------------------
 	/**
 	 * Return names of all session vars
 	 */
 	public function getVarKeys() {
-		if (!$this->sessionData) { return null; }
-		$va_vars = $this->sessionData->load('vars');
-		return array_keys($va_vars);
+		if(ExternalCache::contains($this->getSessionID(), 'SessionVars')) {
+			$va_vars = ExternalCache::fetch($this->getSessionID(), 'SessionVars');
+			return array_keys($va_vars);
+		}
+		return array();
 	}
 	# ----------------------------------------
 	/**
@@ -194,4 +201,3 @@ class Session {
 	}
 	# ----------------------------------------
 }
-?>
