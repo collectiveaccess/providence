@@ -565,6 +565,14 @@
             </label>
           </labels>
         </item>
+        <item idno="History" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>History</name_singular>
+              <name_plural>History</name_plural>
+            </label>
+          </labels>
+        </item>
       </items>
     </list>
     <list code="object_statuses" hierarchical="0" system="0" vocabulary="0">
@@ -3864,6 +3872,382 @@
             <label locale="en_AU" preferred="1">
               <name_singular>dive</name_singular>
               <name_plural>dives</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Pitfall_trap" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Pitfall trap</name_singular>
+              <name_plural>Pitfall trap</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="default" enabled="1" default="0">
+          <labels>
+            <label preferred="1" locale="en_AU">
+              <name_singular>default</name_singular>
+              <name_plural>default</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Benthic_Dredge" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Benthic Dredge</name_singular>
+              <name_plural>Benthic Dredge</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="PIT_TRAP__CONE_" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>PIT TRAP (CONE)</name_singular>
+              <name_plural>PIT TRAP (CONE)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="rake_box_dredge" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>rake box dredge</name_singular>
+              <name_plural>rake box dredge</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="berlese_funnel" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>berlese funnel</name_singular>
+              <name_plural>berlese funnel</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="CAUGHT_IN_PIT_TRAP" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>CAUGHT IN PIT TRAP</name_singular>
+              <name_plural>CAUGHT IN PIT TRAP</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="fine_mesh_in_scoop_box_dredge" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>fine mesh in scoop box dredge</name_singular>
+              <name_plural>fine mesh in scoop box dredge</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="dung_trap" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>dung trap</name_singular>
+              <name_plural>dung trap</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="SHOT" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>SHOT</name_singular>
+              <name_plural>SHOT</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="RUN_OVER_ON_ROAD" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>RUN OVER ON ROAD</name_singular>
+              <name_plural>RUN OVER ON ROAD</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="hand" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>hand</name_singular>
+              <name_plural>hand</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="HEAD_TORCH" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>HEAD TORCH</name_singular>
+              <name_plural>HEAD TORCH</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="CAUGHT_BY_HAND" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>CAUGHT BY HAND</name_singular>
+              <name_plural>CAUGHT BY HAND</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="PIT_TRAP__CYLINDER_" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>PIT TRAP (CYLINDER)</name_singular>
+              <name_plural>PIT TRAP (CYLINDER)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="PIT_GALTS" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>PIT GALTS</name_singular>
+              <name_plural>PIT GALTS</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="pile_scraping" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>pile scraping</name_singular>
+              <name_plural>pile scraping</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="HEAD_TORCHING" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>HEAD TORCHING</name_singular>
+              <name_plural>HEAD TORCHING</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="HAND_CAUGHT" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>HAND CAUGHT</name_singular>
+              <name_plural>HAND CAUGHT</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="GLASS_PIT" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>GLASS PIT</name_singular>
+              <name_plural>GLASS PIT</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="box_trawl" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>box trawl</name_singular>
+              <name_plural>box trawl</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="SITTING_ON_DRIFT_FENCE" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>SITTING ON DRIFT FENCE</name_singular>
+              <name_plural>SITTING ON DRIFT FENCE</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Epibenthic_sled" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Epibenthic sled</name_singular>
+              <name_plural>Epibenthic sled</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="pitfall_trap_3_4" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>pitfall trap 3/4</name_singular>
+              <name_plural>pitfall trap 3/4</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="berlesate" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>berlesate</name_singular>
+              <name_plural>berlesate</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="by_hand" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>by hand</name_singular>
+              <name_plural>by hand</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="sieve_rotten_wood" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>sieve rotten wood</name_singular>
+              <name_plural>sieve rotten wood</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="wet_pitfall" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>wet pitfall</name_singular>
+              <name_plural>wet pitfall</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="dry_pitfall_trap" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>dry pitfall trap</name_singular>
+              <name_plural>dry pitfall trap</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="dug_from_burrow" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>dug from burrow</name_singular>
+              <name_plural>dug from burrow</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="opportunistic_collec" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>opportunistic collec</name_singular>
+              <name_plural>opportunistic collec</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="lifting_rocks" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>lifting rocks</name_singular>
+              <name_plural>lifting rocks</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Soil_sample" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Soil sample</name_singular>
+              <name_plural>Soil sample</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="wet_pitfall_trap" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>wet pitfall trap</name_singular>
+              <name_plural>wet pitfall trap</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Hand_collected" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Hand collected</name_singular>
+              <name_plural>Hand collected</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="beach_collection" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>beach collection</name_singular>
+              <name_plural>beach collection</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="pylon_scraping" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>pylon scraping</name_singular>
+              <name_plural>pylon scraping</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Day_forage" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Day forage</name_singular>
+              <name_plural>Day forage</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="pan_trap" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>pan trap</name_singular>
+              <name_plural>pan trap</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="wet_pit_trap" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>wet pit trap</name_singular>
+              <name_plural>wet pit trap</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Termite_trap" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Termite trap</name_singular>
+              <name_plural>Termite trap</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Opportunistic" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Opportunistic</name_singular>
+              <name_plural>Opportunistic</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="wet_pitfall_traps" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>wet pitfall traps</name_singular>
+              <name_plural>wet pitfall traps</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="sifting__beating" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>sifting, beating</name_singular>
+              <name_plural>sifting, beating</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="sweep_sample" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>sweep sample</name_singular>
+              <name_plural>sweep sample</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Tullgren_funnel" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Tullgren funnel</name_singular>
+              <name_plural>Tullgren funnel</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="water_traps" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>water traps</name_singular>
+              <name_plural>water traps</name_plural>
             </label>
           </labels>
         </item>
@@ -10393,6 +10777,22 @@
                 </label>
               </labels>
             </item>
+            <item idno="liver" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>liver</name_singular>
+                  <name_plural>liver</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="heart" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>heart</name_singular>
+                  <name_plural>heart</name_plural>
+                </label>
+              </labels>
+            </item>
           </items>
         </item>
         <item idno="Organs_Dissected" enabled="0" default="0">
@@ -10660,6 +11060,32 @@
               <name_plural>Fixing</name_plural>
             </label>
           </labels>
+          <items>
+            <item idno="not_fixed" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>not fixed</name_singular>
+                  <name_plural>not fixed</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="fixed" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>fixed</name_singular>
+                  <name_plural>fixed</name_plural>
+                </label>
+              </labels>
+            </item>
+            <item idno="10__formalin" enabled="1" default="0">
+              <labels>
+                <label locale="en_AU" preferred="1">
+                  <name_singular>10% formalin</name_singular>
+                  <name_plural>10% formalin</name_plural>
+                </label>
+              </labels>
+            </item>
+          </items>
         </item>
       </items>
     </list>
@@ -12862,6 +13288,259 @@
             <label locale="en_AU" preferred="1">
               <name_singular>Home</name_singular>
               <name_plural>Home</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="object_deaccession_types" hierarchical="0" system="1" vocabulary="0">
+      <labels>
+        <label locale="en_AU">
+          <name>Object deaccession types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="loan" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>loan</name_singular>
+              <name_plural>loan</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="disposed" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>disposed</name_singular>
+              <name_plural>disposed</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="history_material_types" hierarchical="1" system="1" vocabulary="1">
+      <labels>
+        <label locale="en_AU">
+          <name>History Material Types</name>
+        </label>
+      </labels>
+    </list>
+    <list code="history_measurement_precision_" hierarchical="0" system="1" vocabulary="0">
+      <labels>
+        <label locale="en_AU">
+          <name>History Measurement Precision Types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="Precise" enabled="1" default="1">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Precise</name_singular>
+              <name_plural>Precise</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Minimum" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Minimum</name_singular>
+              <name_plural>Minima</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Maximum" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Maximum</name_singular>
+              <name_plural>Maxima</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Approximate" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Approximate</name_singular>
+              <name_plural>Approximate</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="history_measurement_types" hierarchical="0" system="1" vocabulary="0">
+      <labels>
+        <label locale="en_AU">
+          <name>History Measurement Types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="length" enabled="1" default="1">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Length</name_singular>
+              <name_plural>Lengths</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="width" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Width</name_singular>
+              <name_plural>Widths</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="height" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Height</name_singular>
+              <name_plural>Heights</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="diameter" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Diameter</name_singular>
+              <name_plural>Diameters</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="weight" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Weight</name_singular>
+              <name_plural>Weights</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="depth" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>depth</name_singular>
+              <name_plural>depth</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="dimensions" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>dimensions</name_singular>
+              <name_plural>dimensions</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="circumference" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>circumference</name_singular>
+              <name_plural>circumference</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="depth_meters_" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>depth meters </name_singular>
+              <name_plural>depth meters </name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="ov" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>ov</name_singular>
+              <name_plural>ov</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="valuation_reason_types" hierarchical="0" system="1" vocabulary="0">
+      <labels>
+        <label locale="en_AU">
+          <name>Valuation Reason Types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="market_value" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Market Value</name_singular>
+              <name_plural>Market Values</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="inventory" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Inventory</name_singular>
+              <name_plural>Inventories</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="loan" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Loan</name_singular>
+              <name_plural>Loans</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="taxation_incentives_scheme" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Taxation Incentives Scheme</name_singular>
+              <name_plural>Taxation Incentives Schemes</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="valuation_types" hierarchical="0" system="1" vocabulary="0">
+      <labels>
+        <label locale="en_AU">
+          <name>Valuation Method Types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="internal" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Internal</name_singular>
+              <name_plural>Internal</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="insurance" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Insurance</name_singular>
+              <name_plural>Insurance</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="valuation_method_types" hierarchical="0" system="1" vocabulary="0">
+      <labels>
+        <label locale="en_AU">
+          <name>Valuation Method Types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="actual_value" enabled="1" default="1">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Actual Value</name_singular>
+              <name_plural>Actual Values</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="estimated_value" enabled="1" default="0">
+          <labels>
+            <label locale="en_AU" preferred="1">
+              <name_singular>Estimated Value</name_singular>
+              <name_plural>Estimated Value</name_plural>
             </label>
           </labels>
         </item>
@@ -16481,18 +17160,7 @@ http://palaeontology.palass-pubs.org/pdf/Vol%2031/Pages%20223-227.pdf2011.</desc
         <setting name="requireValue">1</setting>
         <setting name="render">select</setting>
       </settings>
-      <typeRestrictions>
-        <restriction>
-          <table>ca_list_items</table>
-          <type>scientific_name</type>
-          <includeSubtypes>1</includeSubtypes>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
+      <typeRestrictions/>
     </metadataElement>
     <metadataElement code="scientificNameAuthorship" datatype="Text">
       <labels>
@@ -20579,11 +21247,11 @@ Example: "Quercus alba". For discussion see http://code.google.com/p/darwincore/
         <setting name="lineBreakAfterNumberOfElements">1</setting>
         <setting name="canBeUsedInSearchForm">0</setting>
         <setting name="displayTemplate">Classification: ^historyClassification.hierarchy.name_plural&#13;
-Status: ^classification_status&#13;
-Date: ^classification_date&#13;
-Notes: ^classification_notes&#13;
-Person: ^classification_person&#13;
-Documentation: &lt;l&gt;^classification_doc&lt;/l&gt;</setting>
+					Status: ^classification_status&#13;
+					Date: ^classification_date&#13;
+					Notes: ^classification_notes&#13;
+					Person: ^classification_person&#13;
+					Documentation: &lt;l&gt;^classification_doc&lt;/l&gt;</setting>
       </settings>
       <elements>
         <metadataElement code="historyClassification" datatype="List" list="history_classification">
@@ -20597,7 +21265,7 @@ Documentation: &lt;l&gt;^classification_doc&lt;/l&gt;</setting>
             <setting name="listWidth">690px</setting>
             <setting name="listHeight">200px</setting>
             <setting name="doesNotTakeLocale">1</setting>
-            <setting name="requireValue">1</setting>
+            <setting name="requireValue">0</setting>
             <setting name="nullOptionText">Not set</setting>
             <setting name="canBeUsedInSort">1</setting>
             <setting name="render">horiz_hierbrowser_with_search</setting>
@@ -20918,40 +21586,61 @@ All of 3, plus more obvious damage. 5. Poor: Incomplete, non-functional, damaged
       </labels>
       <settings>
         <setting name="fieldHeight">15</setting>
-        <setting name="default_text">= IF VERY SENSITIVE =&#13;
-Display in stable environment &#13;
-Temperature 20°C ± 5°C seasonally, ± 2°C daily &#13;
-Relative humidity 50% ± 5% seasonally and daily&#13;
-Max light level 50 lux, UV less than 30 µW/lumen  =  1500 µW/m²  (or 1.5 mW/ m²) energy &#13;
-Display period 3 mths per 12 mths &#13;
-Store in stable environment as display, eliminate light &#13;
-Handle with gloves&#13;
-= IF SENSITIVE =&#13;
-Display in stable environment &#13;
-Temperature 20°C ± 5°C seasonally, ± 2°C daily&#13;
-Relative humidity 50% ± 10% seasonally, ± 5% daily&#13;
-Max light level 200 lux, max UV 75 µW/lumen = 15000 µW/m² (or 15.0 mW/ m²) energy &#13;
-Display period 6 mths per 12 mths &#13;
-Store in stable environment as display, eliminate light &#13;
-Handle with gloves&#13;
-= IF NON-SENSITIVE =&#13;
-Display in stable environment &#13;
-Temperature 20°C ± 5°C seasonally, ± 2°C daily&#13;
-Relative humidity 45% ± 15% seasonally, ± 5% daily&#13;
-Max light level 300 lux, max UV 150 µW/lumen = 45000 µW/m² (or 45.0 mW/ m²) energy &#13;
-Display period unrestricted &#13;
-Store in stable environment as display, eliminate light &#13;
-Handle with gloves&#13;
-= IF SYNTHETICS =&#13;
-Display in stable environment &#13;
-Temperature 20°C ± 5°C seasonally, ± 2°C daily&#13;
-Relative humidity less than 50%, ± 5% daily &#13;
-Max light level 50 lux, UV less than 30 µW/lumen = 1500 µW/m² (or 1.5 mW/ m²) energy &#13;
-Display period 3 mths per 12 mths &#13;
-Store most plastics in stable reduced oxygen environment with temperature 3-5°C, less than 50% RH, &#13;
-Eliminate light &#13;
-= IF CUSTOM RECOMMENDATIONS =&#13;
-Display in stable environment  Temperature ??°C ± ?°C seasonally, ± ?°C daily  Relative humidity ??% ± ?% seasonally and daily Max light level ?? lux, UV less than ?? µW/lumen  =  ???? µW/m²  (or ??? mW/ m²) energy  Display period ? mths per ?? mths  Store in stable environment as display, eliminate light  Handle with gloves </setting>
+        <setting name="usewysiwygeditor">1</setting>
+        <setting name="default_text">[[very_sensitive--start]]&lt;br&gt;&#13;
+Display in stable environment &lt;br&gt;&#13;
+Temperature 20°C ± 5°C seasonally, ± 2°C daily &lt;br&gt;&#13;
+Relative humidity 50% ± 5% seasonally and daily &lt;br&gt;&#13;
+Max light level 50 lux, UV less than 30 µW/lumen = 1500 µW/m² (or 1.5 mW/ m²) energy&lt;br&gt; &#13;
+Display period 3 mths per 12 mths &lt;br&gt;&#13;
+Store in stable environment as display, eliminate light Handle with gloves &lt;br&gt;&#13;
+[[very_sensitive--end]]&lt;br&gt;&#13;
+&lt;br&gt;&#13;
+&#13;
+&#13;
+[[sensitive--start]]&lt;br&gt;&#13;
+Display in stable environment &lt;br&gt;&#13;
+Temperature 20°C ± 5°C seasonally, ± 2°C daily &lt;br&gt;&#13;
+Relative humidity 50% ± 10% seasonally, ± 5% daily &lt;br&gt;&#13;
+Max light level 200 lux, max UV 75 µW/lumen = 15000 µW/m² (or 15.0 mW/ m²) energy &lt;br&gt;&#13;
+Display period 6 mths per 12 mths &lt;br&gt;&#13;
+Store in stable environment as display, eliminate light &lt;br&gt;&#13;
+Handle with gloves&lt;br&gt;&#13;
+[[sensitive--end]]&lt;br&gt;&#13;
+&lt;br&gt;&#13;
+&#13;
+[[non-sensitive--start]] &lt;br&gt;&#13;
+Display in stable environment &lt;br&gt;&#13;
+Temperature 20°C ± 5°C seasonally, ± 2°C daily &lt;br&gt;&#13;
+Relative humidity 45% ± 15% seasonally, ± 5% daily &lt;br&gt;&#13;
+Max light level 300 lux, max UV 150 µW/lumen = 45000 µW/m² (or 45.0 mW/ m²) energy &lt;br&gt;&#13;
+Display period unrestricted &lt;br&gt;&#13;
+Store in stable environment as display, eliminate light &lt;br&gt;&#13;
+Handle with gloves &lt;br&gt;&#13;
+[[non-sensitive--end]] &lt;br&gt;&#13;
+&#13;
+&lt;br&gt;&#13;
+&#13;
+[[synthetics--start]]&lt;br&gt;&#13;
+Display in stable environment &lt;br&gt;&#13;
+Temperature 20°C ± 5°C seasonally, ± 2°C daily &lt;br&gt;&#13;
+Relative humidity less than 50%, ± 5% daily &lt;br&gt;&#13;
+Max light level 50 lux, UV less than 30 µW/lumen = 1500 µW/m² (or 1.5 mW/ m²) energy&lt;br&gt; &#13;
+Display period 3 mths per 12 mths &lt;br&gt;&#13;
+Store most plastics in stable reduced oxygen environment with temperature 3-5°C, less than 50% RH, &lt;br&gt;&#13;
+Eliminate light &lt;br&gt;&#13;
+[[synthetics--end]]&lt;br&gt;&#13;
+&#13;
+&#13;
+&#13;
+[[special_recommendations--start]] &lt;br&gt;&#13;
+Display in stable environment &lt;br&gt;&#13;
+ Temperature ??°C ± ?°C seasonally, ± ?°C daily  Relative humidity ??% ± ?% seasonally and daily &lt;br&gt;&#13;
+ Max light level ?? lux, UV less than ?? µW/lumen = ???? µW/m² (or ??? mW/ m²) energy&lt;br&gt;  &#13;
+Display period ? mths per ?? mths &lt;br&gt;&#13;
+ Store in stable environment as display, eliminate light &lt;br&gt;&#13;
+ Handle with gloves &lt;br&gt;&#13;
+[[special_recommendations--end]] </setting>
       </settings>
       <typeRestrictions>
         <restriction>
@@ -20980,7 +21669,7 @@ Display in stable environment  Temperature ??°C ± ?°C seasonally, ± ?°C d
           <type>conservation_report</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -21003,6 +21692,300 @@ Display in stable environment  Temperature ??°C ± ?°C seasonally, ± ?°C d
             <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="historyMeasurementContainer" datatype="Container">
+      <labels>
+        <label locale="en_AU">
+          <name>Measurements (Including Type)</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="lineBreakAfterNumberOfElements">3</setting>
+      </settings>
+      <elements>
+        <metadataElement code="history_measurement_type" datatype="List" list="history_measurement_types">
+          <labels>
+            <label locale="en_AU">
+              <name>Measurement Type</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="doesNotTakeLocale">1</setting>
+            <setting name="render">select</setting>
+            <setting name="maxColumns">3</setting>
+            <setting name="nullOptionText">Not set</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="history_measurement_precision" datatype="List" list="history_measurement_precision_types">
+          <labels>
+            <label locale="en_AU">
+              <name>Precision</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="doesNotTakeLocale">1</setting>
+            <setting name="render">select</setting>
+            <setting name="requireValue">0</setting>
+            <setting name="maxColumns">3</setting>
+            <setting name="nullOptionText">Not set</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="measure_display_flag" datatype="List" list="yesNo">
+          <labels>
+            <label locale="en_AU">
+              <name>Display Flag</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="doesNotTakeLocale">1</setting>
+            <setting name="requireValue">0</setting>
+            <setting name="render">select</setting>
+            <setting name="maxColumns">3</setting>
+            <setting name="nullOptionText">Not set</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="history_measurement_length" datatype="Length">
+          <labels>
+            <label locale="en_AU">
+              <name>Dimension</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">25</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="history_measurement_weight" datatype="Weight">
+          <labels>
+            <label locale="en_AU">
+              <name>Weight</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">25</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="history_measurement_text" datatype="Text">
+          <labels>
+            <label locale="en_AU">
+              <name>Text Measurement</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">25</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="measure_notes" datatype="Text">
+          <labels>
+            <label locale="en_AU">
+              <name>Notes</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">120</setting>
+            <setting name="fieldHeight">4</setting>
+          </settings>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>history</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="valuationContainer" datatype="Container">
+      <labels>
+        <label locale="en_AU">
+          <name>Valuations</name>
+          <description>This contains details of any valuations of the object.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="lineBreakAfterNumberOfElements">7</setting>
+      </settings>
+      <elements>
+        <metadataElement code="valuation" datatype="Currency">
+          <labels>
+            <label locale="en_AU">
+              <name>Valuation</name>
+            </label>
+          </labels>
+          <settings/>
+        </metadataElement>
+        <metadataElement code="valuation_reason" datatype="List" list="valuation_reason_types">
+          <labels>
+            <label locale="en_AU">
+              <name>Reason</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="doesNotTakeLocale">1</setting>
+            <setting name="requireValue">0</setting>
+            <setting name="nullOptionText">Not set</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="render">select</setting>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="valuation_method" datatype="List" list="valuation_method_types">
+          <labels>
+            <label locale="en_AU">
+              <name>Method</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="doesNotTakeLocale">1</setting>
+            <setting name="requireValue">0</setting>
+            <setting name="nullOptionText">Not set</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="render">select</setting>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="valuation_type" datatype="List" list="valuation_types">
+          <labels>
+            <label locale="en_AU">
+              <name>Type</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="doesNotTakeLocale">1</setting>
+            <setting name="requireValue">0</setting>
+            <setting name="nullOptionText">Not set</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="render">select</setting>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="valuation_date" datatype="DateRange">
+          <labels>
+            <label locale="en_AU">
+              <name>Date</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="dateRangeBoundaries">1800 - tomorrow</setting>
+            <setting name="doesNotTakeLocale">1</setting>
+            <setting name="canBeUsedInSort">1</setting>
+            <setting name="useDatePicker">1</setting>
+            <setting name="mustNotBeBlank">0</setting>
+            <setting name="isLifespan">0</setting>
+            <setting name="default_text">today</setting>
+            <setting name="suggestExistingValues">0</setting>
+            <setting name="suggestExistingValueSort">value</setting>
+            <setting name="canBeUsedInSearchForm">1</setting>
+            <setting name="canBeUsedInDisplay">1</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="valuation_notes" datatype="Text">
+          <labels>
+            <label locale="en_AU">
+              <name>Notes</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="suggestExistingValues">1</setting>
+            <setting name="suggestExistingValueSort">value</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="valuation_person" datatype="Entities">
+          <labels>
+            <label locale="en_AU">
+              <name>Valuer</name>
+            </label>
+          </labels>
+          <settings/>
+        </metadataElement>
+        <metadataElement code="valuation_general_notes" datatype="Text">
+          <labels>
+            <label locale="en_AU">
+              <name>General Notes</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="minChars">0</setting>
+            <setting name="fieldWidth">120</setting>
+            <setting name="fieldHeight">5</setting>
+            <setting name="usewysiwygeditor">0</setting>
+            <setting name="doesNotTakeLocale">0</setting>
+            <setting name="canBeUsedInSort">0</setting>
+            <setting name="suggestExistingValues">0</setting>
+            <setting name="suggestExistingValueSort">value</setting>
+            <setting name="canBeUsedInSearchForm">0</setting>
+            <setting name="canBeUsedInDisplay">0</setting>
+            <setting name="displayDelimiter">,</setting>
+          </settings>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="history_material" datatype="List" list="history_material_types">
+      <labels>
+        <label locale="en_AU">
+          <name>Materials (History)</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="doesNotTakeLocale">0</setting>
+        <setting name="render">horiz_hierbrowser_with_search</setting>
+        <setting name="listWidth">690px</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>history</type>
+          <includeSubtypes>1</includeSubtypes>
+          <settings>
+            <setting name="minAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="modificationHistory" datatype="DateRange">
+      <labels>
+        <label locale="en_AU">
+          <name>Modification History (Legacy)</name>
+          <description>A record of the dates on which the record was modified. Note this is Legacy data</description>
+        </label>
+      </labels>
+      <elements>
+        <metadataElement code="modifiedBy" datatype="Entities">
+          <labels>
+            <label locale="en_AU">
+              <name>Modified By</name>
+              <description>The name of the entity that the record was last modified by.</description>
+            </label>
+          </labels>
+          <settings/>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>history</type>
+          <includeSubtypes>1</includeSubtypes>
         </restriction>
       </typeRestrictions>
     </metadataElement>
@@ -21713,33 +22696,49 @@ Display in stable environment  Temperature ??°C ± ?°C seasonally, ± ?°C d
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_AU">Tour title</setting>
-                <setting name="label" locale="en_CA">Tour title</setting>
-                <setting name="label" locale="fr_FR">Tour title</setting>
-                <setting name="label" locale="sv_SE">Tur titel</setting>
-                <setting name="add_label" locale="en_AU">Add title</setting>
-                <setting name="add_label" locale="en_CA">Add title</setting>
-                <setting name="add_label" locale="fr_FR">Add title</setting>
-                <setting name="add_label" locale="sv_SE">Lägg till titel</setting>
+                <setting name="readonly"/>
+                <setting name="usewysiwygeditor"/>
               </settings>
             </placement>
             <placement code="tour_code">
               <bundle>tour_code</bundle>
+              <settings>
+                <setting name="readonly"/>
+              </settings>
             </placement>
             <placement code="ca_attribute_tour_description">
               <bundle>ca_attribute_tour_description</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_tour_stops_list4">
+              <bundle>ca_tour_stops_list</bundle>
             </placement>
             <placement code="icon">
               <bundle>icon</bundle>
+              <settings>
+                <setting name="readonly"/>
+              </settings>
             </placement>
             <placement code="color">
               <bundle>color</bundle>
+              <settings>
+                <setting name="readonly"/>
+              </settings>
             </placement>
             <placement code="access">
               <bundle>access</bundle>
+              <settings>
+                <setting name="readonly"/>
+              </settings>
             </placement>
             <placement code="status">
               <bundle>status</bundle>
+              <settings>
+                <setting name="readonly"/>
+              </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -25822,6 +26821,79 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
                 <setting name="readonly"/>
               </settings>
             </placement>
+            <placement code="ca_attribute_history_material">
+              <bundle>ca_attribute_history_material</bundle>
+              <settings>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_collectionsHistory">
+              <bundle>ca_collections</bundle>
+              <settings>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_HistorySizeOrDura">
+              <bundle>ca_attribute_SizeOrDuration</bundle>
+              <settings>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_HistoryMeasuremen">
+              <bundle>ca_attribute_historyMeasurementContainer</bundle>
+              <settings>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_modificationHisto">
+              <bundle>ca_attribute_modificationHistory</bundle>
+              <settings>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="readonly">1</setting>
+              </settings>
+            </placement>
+            <placement code="storageLocationHistory">
+              <bundle>ca_storage_locations</bundle>
+              <settings>
+                <setting name="display_template">^ca_storage_locations.hierarchy</setting>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="history_part" default="0">
+          <labels>
+            <label locale="en_AU">
+              <name>Part Information</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="idno2">
+              <bundle>idno</bundle>
+            </placement>
+            <placement code="preferred_labels1">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_AU">Part Name</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_HistoryMeasuremen">
+              <bundle>ca_attribute_historyMeasurementContainer</bundle>
+              <settings>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="history_administration" default="0">
+          <labels>
+            <label locale="en_AU">
+              <name>Administration</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_attribute_historyValuation">
+              <bundle>ca_attribute_valuationContainer</bundle>
+            </placement>
           </bundlePlacements>
         </screen>
       </screens>
@@ -26145,7 +27217,15 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
           <labels>
             <label locale="en_AU">
               <typename>currently located at</typename>
-              <typename_reverse>has current location</typename_reverse>
+              <typename_reverse>is current location of</typename_reverse>
+            </label>
+          </labels>
+        </type>
+        <type code="permantent_exhibit" default="0">
+          <labels>
+            <label locale="en_AU">
+              <typename>permanently exhibited at</typename>
+              <typename_reverse>is permanent exhibition location of</typename_reverse>
             </label>
           </labels>
         </type>
@@ -28238,7 +29318,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -29004,7 +30083,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="none"/>
         <permission table="ca_list_items" bundle="source_id" access="none"/>
         <permission table="ca_list_items" bundle="status" access="none"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="none"/>
         <permission table="ca_tours" bundle="access" access="none"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="none"/>
         <permission table="ca_tours" bundle="color" access="none"/>
@@ -29897,7 +30975,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -30663,7 +31740,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -31431,7 +32507,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -32197,7 +33272,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -32963,7 +34037,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -33729,7 +34802,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -34495,7 +35567,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -35261,7 +36332,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -36027,7 +37097,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -36793,7 +37862,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="none"/>
         <permission table="ca_list_items" bundle="source_id" access="none"/>
         <permission table="ca_list_items" bundle="status" access="none"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="none"/>
         <permission table="ca_tours" bundle="access" access="none"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="none"/>
         <permission table="ca_tours" bundle="color" access="none"/>
@@ -37559,7 +38627,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -38325,7 +39392,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -39091,7 +40157,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -39857,7 +40922,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -40623,7 +41687,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -41389,7 +42452,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -42155,7 +43217,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -42921,7 +43982,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -43687,7 +44747,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -44453,7 +45512,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -45219,7 +46277,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -45985,7 +47042,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -46751,7 +47807,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -47517,7 +48572,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -48283,7 +49337,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -49049,7 +50102,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -49815,7 +50867,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -50581,7 +51632,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -51347,7 +52397,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -52113,7 +53162,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -52879,7 +53927,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -53762,7 +54809,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -54528,7 +55574,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -55294,7 +56339,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -56060,7 +57104,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -56826,7 +57869,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -57592,7 +58634,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -58358,7 +59399,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -59124,7 +60164,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -59890,7 +60929,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -60656,7 +61694,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -61422,7 +62459,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
@@ -62188,7 +63224,6 @@ Borrowed from: &lt;unit relativeTo="ca_loans"&gt;&#13;
         <permission table="ca_list_items" bundle="settings" access="edit"/>
         <permission table="ca_list_items" bundle="source_id" access="edit"/>
         <permission table="ca_list_items" bundle="status" access="edit"/>
-        <permission table="ca_list_items" bundle="ca_attribute_taxonRank" access="edit"/>
         <permission table="ca_tours" bundle="access" access="edit"/>
         <permission table="ca_tours" bundle="ca_tour_stops_list" access="edit"/>
         <permission table="ca_tours" bundle="color" access="edit"/>
