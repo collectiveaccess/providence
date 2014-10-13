@@ -83,7 +83,7 @@
 			
 			if ($vn_lines_on_page >= 2) { 
 				$vn_lines_on_page = 0;
-				$vn_left = $vn_top = 0;
+				$vn_left = 0; //$vn_top = 0;
 				print "<div class=\"pageBreak\">&nbsp;</div>\n";
 			}
 		}

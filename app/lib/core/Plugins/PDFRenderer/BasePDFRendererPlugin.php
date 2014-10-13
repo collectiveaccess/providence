@@ -49,18 +49,11 @@ abstract class BasePDFRendererPlugin Extends WLPlug {
 	// app config
 	protected $opo_config;
 	
-	// Width and height (in pixels) of map viewport
-	protected $opn_width = 0;
-	protected $opn_height = 0;
-	
-	// SearchResult to pull data from
-	protected $opo_data = array();
-
 	// plugin info
 	protected $info = array(
 		"NAME" => "?",
 		"PROPERTIES" => array(
-			'id' => 'W'
+			"CODE" => "W",
 		)
 	);
 	

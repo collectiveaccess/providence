@@ -44,7 +44,7 @@
  	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
  	require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
 	require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
- 	require_once(__CA_LIB_DIR__.'/core/Parsers/dompdf/dompdf_config.inc.php');
+ 	require_once(__CA_LIB_DIR__.'/core/Print/PDFRenderer.php');
  
  	class BaseEditorController extends ActionController {
  		# -------------------------------------------------------
@@ -614,14 +614,21 @@
 				$this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
 				
 				$va_barcode_files_to_delete += caDoPrintViewTagSubstitution($this->view, $t_subject, $va_template_info['path'], array('checkAccess' => $this->opa_access_values));
+				
+				$o_pdf = new PDFRenderer();
+					
+				$this->view->setVar('PDFRenderer', $o_pdf->getCurrentRendererCode());
+				
+				$va_page_size =	PDFRenderer::getPageSize(caGetOption('pageSize', $va_template_info, 'letter'), 'mm');
+				$vn_page_width = $va_page_size['width']; $vn_page_height = $va_page_size['height'];
+				$this->view->setVar('pageWidth', "{$vn_page_width}mm");
+				$this->view->setVar('pageHeight', "{$vn_page_height}mm");
+				
 				$vs_content = $this->render($va_template_info['path']);
-				$o_dompdf = new DOMPDF();
-				$o_dompdf->load_html($vs_content);
-				$o_dompdf->set_paper(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'));
-				$o_dompdf->set_base_path(caGetPrintTemplateDirectoryPath('summary'));
-				$o_dompdf->render();
-				$o_dompdf->stream(caGetOption('filename', $va_template_info, 'print_summary.pdf'));
-	
+				
+				$o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'), caGetOption('marginTop', $va_template_info, '0mm'), caGetOption('marginRight', $va_template_info, '0mm'), caGetOption('marginBottom', $va_template_info, '0mm'), caGetOption('marginLeft', $va_template_info, '0mm'));
+				$o_pdf->render($vs_content, array('stream'=> true, 'filename' => caGetOption('filename', $va_template_info, 'print_summary.pdf')));
+
 				$vb_printed_properly = true;
 				
 				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
@@ -630,6 +637,7 @@
 				$vb_printed_properly = false;
 				$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
 			}
+			return;
 		}
 		# -------------------------------------------------------
 		/**

@@ -43,6 +43,5 @@
 		# -------------------------------------------------------
 		public function render($ps_content, $pa_options=null);
 		public function renderFile($ps_file_path, $pa_options=null);
-		public function setBasePath($ps_directory_path);
-		public function setPaper($ps_size, $ps_orientation);
+		public function setPage($ps_size, $ps_orientation);
 	}

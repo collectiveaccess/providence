@@ -33,20 +33,67 @@
  */
  	
  	$t_item = $this->getVar('t_subject');
- 	
+	
 	if($this->request->config->get('summary_header_enabled')) {
+		switch($this->getVar('PDFRenderer')) {
+			case 'domPDF':
 ?>
 <div id='footer'>
 <?php
+	$vs_footer = '';
 	if($this->request->config->get('summary_show_identifier')) {
-		print "<span class='footerText'>".$t_item->getLabelForDisplay()." (".$t_item->get($t_item->getProperty('ID_NUMBERING_ID_FIELD')).")</span>";
+		$vs_footer .= "<span class='footerText'>".$t_item->getLabelForDisplay()." (".$t_item->get($t_item->getProperty('ID_NUMBERING_ID_FIELD')).")</span>";
 	}
 	
 	if($this->request->config->get('summary_show_timestamp')) {
-		print "<span class='footerText'>".caGetLocalizedDate(null, array('dateFormat' => 'delimited'))."</span>";
+		$vs_footer .= "<span class='footerText'>".caGetLocalizedDate(null, array('dateFormat' => 'delimited'))."</span>";
 	}
+	print $vs_footer;
 ?>
 </div>
 <?php
-	}
+				break;
+			
+			case 'PhantomJS':
 ?>
+			<script type="text/javascript">
+				// For PhantomJS
+				PhantomJSPrinting['footer'] = {
+					height: "100px",
+					contents: function(pageNum, numPages) { 
+						return '<div style="position: relative;width: 100%; height: 100px; text-align: center;"><?php print addslashes($vs_footer); ?></div>';	
+					}
+				};
+			</script>
+<?php
+				break;
+			case 'wkhtmltopdf':
+?>
+<!--BEGIN FOOTER-->
+<!DOCTYPE html>
+<html>
+<head>
+	<link type="text/css" href="<?php print $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
+</head>
+<body>
+	<table class="footerText"><tr>
+<?php
+	$vs_footer = '';
+	if($this->request->config->get('summary_show_identifier')) {
+		$vs_footer .= "<td class='footerText'>".$t_item->getLabelForDisplay()." (".$t_item->get($t_item->getProperty('ID_NUMBERING_ID_FIELD')).")</td>";
+	}
+	
+	if($this->request->config->get('summary_show_timestamp')) {
+		$vs_footer .= "<td class='footerText'>".caGetLocalizedDate(null, array('dateFormat' => 'delimited'))."</td>";
+	}
+	print $vs_footer;
+?>
+	</tr></table>
+</body>
+</html>
+<!--END FOOTER-->
+
+<?php
+			break;
+		}
+	}

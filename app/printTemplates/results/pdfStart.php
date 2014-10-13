@@ -31,10 +31,29 @@
  *
  * ----------------------------------------------------------------------
  */
-?>
+?><!DOCTYPE html>
 <html>
 	<head>
 		<title><?php print $this->getVar('criteria_summary_truncated'); ?></title>
-		<link type="text/css" href="pdf.css" rel="stylesheet" />
+		
+		<style type="text/css">
+			@font-face {
+			  font-family: 'Sans Light';
+			  font-weight: normal;
+              font-style: normal;
+			  src: url(<?php print $this->request->getThemeDirectoryPath(); ?>/css/fonts/SansLightPlain.ttf) format('truetype');
+			}
+			@font-face {
+			  font-family: 'Sans Light';
+			  font-weight: normal;
+              font-style: italic;
+			  src: url(<?php print $this->request->getThemeDirectoryPath(); ?>/css/fonts/SansLightItalic.ttf) format('truetype');
+			}
+		</style>
+		
+		<link type="text/css" href="<?php print $this->getVar('base_path'); ?>pdf.css" rel="stylesheet" />
+		<script type="text/javascript">
+			var PhantomJSPrinting = {};
+		</script>
 	</head>
-	<body>
+	<body style="width: <?php print $this->getVar('pageWidth'); ?>; height: <?php print $this->getVar('pageHeight'); ?>; margin: 0in; padding: 0in; position: relative;">

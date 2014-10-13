@@ -226,6 +226,34 @@
 	/**
 	 *
 	 */
+	function caConvertMeasurement($ps_value, $ps_units) {
+		$vn_in_points = caConvertMeasurementToPoints($ps_value);
+		
+		if (!preg_match("/^([\d\.]+)[ ]*([A-Za-z]*)$/", $ps_value, $va_matches)) {
+			return null;
+		}
+		
+		switch(strtolower($ps_units)) {
+			case 'in':
+				return $vn_in_points/72;
+				break;
+			case 'cm':
+				return $vn_in_points/28.346;
+				break;
+			case 'mm':
+				return $vn_in_points/2.8346;
+				break;
+			default:
+			case 'px':
+			case 'p':
+				return $vn_in_points;
+				break;
+		}
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
 	function caGenerateBarcode($ps_value, $pa_options=null) {
 		$ps_barcode_type = caGetOption('type', $pa_options, 'code128', array('forceLowercase' => true));
 		$pn_barcode_height = caConvertMeasurementToPoints(caGetOption('height', $pa_options, '9px'));
