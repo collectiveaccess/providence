@@ -350,6 +350,30 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Detects if wkhtmltopdf (http://www.wkhtmltopdf.org) is installed in the given path.
+	 * @param string $ps_wkhtmltopdf_path path to wkhtmltopdf executable
+	 * @return boolean 
+	 */
+	function caWkhtmltopdfInstalled($ps_wkhtmltopdf_path=null) {
+		if(!$ps_wkhtmltopdf_path) { $ps_wkhtmltopdf_path = caGetExternalApplicationPath('wkhtmltopdf'); }
+		
+		global $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO;
+		if (isset($_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_wkhtmltopdf_path])) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_wkhtmltopdf_path];
+		} else {
+			$_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO = array();
+		}
+		if (!trim($ps_wkhtmltopdf_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_wkhtmltopdf_path)) || !file_exists($ps_wkhtmltopdf_path)) { return false; }
+		
+		if (!file_exists($ps_wkhtmltopdf_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_wkhtmltopdf_path] = false; }
+		exec($ps_wkhtmltopdf_path." > /dev/null",$va_output,$vn_return);
+		if(($vn_return == 0) || ($vn_return == 1)) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_wkhtmltopdf_path] = true;
+		}
+		return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_wkhtmltopdf_path] = false;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	 * Detects if ExifTool (http://www.sno.phy.queensu.ca/~phil/exiftool/) is installed in the given path.
 	 *
 	 * @param string $ps_exiftool_path path to ExifTool
