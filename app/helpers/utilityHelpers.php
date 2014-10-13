@@ -50,13 +50,13 @@ require_once(__CA_LIB_DIR__.'/core/Zend/Measure/Length.php');
  * in the format %n (where n is a number). Each parameter passed after $ps_key corresponds to a 
  * placeholder (ex. the first parameter replaces %1, the second %2)
  */
- 
-global $ca_translation_cache;
-$ca_translation_cache = array();
+
+MemoryCache::flush('translation');
+
 function _t($ps_key) {
-	global $ca_translation_cache, $_;
-	
-	if (!isset($ca_translation_cache[$ps_key])) {
+	global $_;
+
+	if(!MemoryCache::contains($ps_key, 'translation')) {
 		if (is_array($_)) {
 			$vs_str = $ps_key;
 			foreach($_ as $o_locale) {
@@ -72,9 +72,9 @@ function _t($ps_key) {
 				$vs_str = $_->_($ps_key);
 			} 
 		}
-		$ca_translation_cache[$ps_key] = $vs_str;
+		MemoryCache::save($ps_key, $vs_str, 'translation');
 	} else {
-		$vs_str = $ca_translation_cache[$ps_key];
+		$vs_str = MemoryCache::fetch($ps_key, 'translation');
 	}
 	
 	if (sizeof($va_args = func_get_args()) > 1) {
@@ -90,9 +90,11 @@ function _t($ps_key) {
  * The same as _t(), but rather than returning the translated string, it prints it
  **/
 function _p($ps_key) {
-	global $ca_translation_cache, $_;
+	global $_;
 	
-	if (!sizeof(func_get_args()) && isset($ca_translation_cache[$ps_key])) { print $ca_translation_cache[$ps_key]; return; }
+	if (!sizeof(func_get_args()) && MemoryCache::contains($ps_key, 'translation')) {
+		print MemoryCache::fetch($ps_key, 'translation'); return;
+	}
 	
 	if (is_array($_)) {
 		$vs_str = $ps_key;
@@ -116,8 +118,9 @@ function _p($ps_key) {
 			$vs_str = str_replace("%{$vn_i}", $va_args[$vn_i], $vs_str);
 		}
 	}
-	
-	print $ca_translation_cache[$ps_key] = $vs_str;
+
+	MemoryCache::save($ps_key, $vs_str, 'translation');
+	print $vs_str;
 	return;
 }
 # ----------------------------------------------------------------------

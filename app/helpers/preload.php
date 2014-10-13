@@ -40,6 +40,7 @@ require_once(__CA_LIB_DIR__."/core/Utils/Debug.php");
 require_once(__CA_LIB_DIR__."/core/Zend/Translate.php");
 require_once(__CA_LIB_DIR__."/core/Zend/Cache.php");
 require_once(__CA_LIB_DIR__."/core/Zend/Registry.php");
+require_once(__CA_LIB_DIR__."/core/Cache/MemoryCache.php"); // is used in utilityHelpers
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/initializeLocale.php");
 
@@ -48,7 +49,6 @@ if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
 	initializeLocale($g_ui_locale);
 }
 
-require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/navigationHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/mailHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/clientServicesHelpers.php");
@@ -68,7 +68,6 @@ require_once(__CA_LIB_DIR__."/core/Controller/ActionController.php");
 
 require_once(__CA_MODELS_DIR__."/ca_acl.php");
 
-require_once(__CA_LIB_DIR__."/core/Cache/MemoryCache.php");
 require_once(__CA_LIB_DIR__."/core/Cache/ExternalCache.php");
 
 // initialize Tooltip manager
