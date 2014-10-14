@@ -723,9 +723,9 @@
 	
 				$vb_printed_properly = true;
 				
-				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
+				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
 			} catch (Exception $e) {
-				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
+				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
 				$vb_printed_properly = false;
 				$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintBundle()");
 			}

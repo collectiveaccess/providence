@@ -370,7 +370,7 @@
 				
 				$vn_page_count = 0;
 				while($po_result->nextHit()) {
-					$va_barcode_files_to_delete += caDoPrintViewTagSubstitution($this->view, $po_result, $va_template_info['path'], array('checkAccess' => $this->opa_access_values));
+					$va_barcode_files_to_delete = array_merge($va_barcode_files_to_delete, caDoPrintViewTagSubstitution($this->view, $po_result, $va_template_info['path'], array('checkAccess' => $this->opa_access_values)));
 					
 					$vs_content .= "<div style=\"{$vs_border} position: absolute; width: {$vn_width}mm; height: {$vn_height}mm; left: {$vn_left}mm; top: {$vn_top}mm; overflow: hidden; padding: 0; margin: 0;\">";
 					$vs_content .= $this->render($va_template_info['path']);
@@ -417,10 +417,10 @@
 
 				$vb_printed_properly = true;
 				
-				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
+				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
 				
 			} catch (Exception $e) {
-				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
+				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
 				
 				$vb_printed_properly = false;
 				$this->postError(3100, _t("Could not generate PDF"),"BaseFindController->PrintSummary()");
