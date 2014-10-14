@@ -203,8 +203,8 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 				include_once(__CA_LIB_DIR__."/core/Zend/Pdf.php");
 				$o_pdf = Zend_Pdf::load($ps_filepath);
 				if (sizeof($o_pdf->pages) == 0) { return ''; }
-			} catch(Exception $e){ 
-				return null;
+			} catch(Exception $e){
+				return '';
 			}
 			$o_page = $o_pdf->pages[0];
 			$vn_width = $o_page->getWidth();
@@ -381,8 +381,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		
 		
 		// Try to extract positions of text using PDFMiner (http://www.unixuser.org/~euske/python/pdfminer/index.html)
-		if (caPDFMinerInstalled($this->ops_pdfminer_path)) { 
-		
+		if (caPDFMinerInstalled($this->ops_pdfminer_path)) {
 			
 			// Try to extract text
 			$vs_tmp_filename = tempnam('/tmp', 'CA_PDF_TEXT');
