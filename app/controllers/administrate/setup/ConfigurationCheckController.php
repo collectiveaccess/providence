@@ -28,6 +28,7 @@
 
 include_once(__CA_LIB_DIR__."/core/Search/SearchEngine.php");
 include_once(__CA_LIB_DIR__."/core/Media.php");
+include_once(__CA_LIB_DIR__."/core/Print/PDFRenderer.php");
 include_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 include_once(__CA_LIB_DIR__."/ca/ConfigurationCheck.php");
 
@@ -51,6 +52,18 @@ class ConfigurationCheckController extends ActionController {
 		}
 		
 		$this->view->setVar('media_config_plugin_list',  $va_plugins);
+		
+		// PDF Rendering
+		$t_pdf_renderer = new PDFRenderer();
+		$va_plugin_names = PDFRenderer::getAvailablePDFRendererPlugins();
+		$va_plugins = array();
+		foreach($va_plugin_names as $vs_plugin_name) {
+			if ($va_plugin_status = $t_pdf_renderer->checkPluginStatus($vs_plugin_name)) {
+				$va_plugins[$vs_plugin_name] = $va_plugin_status;
+			}
+		}
+		
+		$this->view->setVar('pdf_renderer_config_plugin_list',  $va_plugins);
 		
 		// Application plugins
 		$va_plugin_names = ApplicationPluginManager::getPluginNames();
@@ -83,4 +96,3 @@ class ConfigurationCheckController extends ActionController {
 	}
 	# ------------------------------------------------
 }
-?>
