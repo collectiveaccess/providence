@@ -105,6 +105,22 @@ class MemoryCache {
 	}
 	# ------------------------------------------------
 	/**
+	 * Get number of items for a given namespace. Compared to other cache operations this is very slow so use with caution!
+	 * @param string $ps_namespace
+	 * @return int
+	 * @throws MemoryCacheInvalidParameterException
+	 */
+	public static function itemCountForNamespace($ps_namespace='default') {
+		if(!$ps_namespace) { throw new MemoryCacheInvalidParameterException('Namespace cannot be empty'); }
+
+		if(is_array(self::$opa_caches[$ps_namespace])) {
+			return sizeof(self::$opa_caches[$ps_namespace]);
+		} else {
+			return 0;
+		}
+	}
+	# ------------------------------------------------
+	/**
 	 * Flush cache
 	 * @param string|null $ps_namespace Optional namespace definition. If given, only this namespace is wiped.
 	 * @throws MemoryCacheInvalidParameterException
