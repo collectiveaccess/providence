@@ -345,7 +345,7 @@
 				$vn_horizontal_gutter = 	caConvertMeasurement(caGetOption('horizontalGutter', $va_template_info, null), 'mm');
 				$vn_vertical_gutter = 		caConvertMeasurement(caGetOption('verticalGutter', $va_template_info, null), 'mm');
 				
-				$va_page_size =				PDFRenderer::getPageSize(caGetOption('pageSize', $va_template_info, 'letter'), 'mm');
+				$va_page_size =				PDFRenderer::getPageSize(caGetOption('pageSize', $va_template_info, 'letter'), 'mm', caGetOption('pageOrientation', $va_template_info, 'portrait'));
 				$vn_page_width = $va_page_size['width']; $vn_page_height = $va_page_size['height'];
 				
 				$vn_label_count = 0;
@@ -354,7 +354,11 @@
 				$vn_top = $vn_top_margin;
 				
 				$this->view->setVar('pageWidth', "{$vn_page_width}mm");
-				$this->view->setVar('pageHeight', "{$vn_page_height}mm");
+				$this->view->setVar('pageHeight', "{$vn_page_height}mm");				
+				$this->view->setVar('marginTop', caGetOption('marginTop', $va_template_info, '0mm'));
+				$this->view->setVar('marginRight', caGetOption('marginRight', $va_template_info, '0mm'));
+				$this->view->setVar('marginBottom', caGetOption('marginBottom', $va_template_info, '0mm'));
+				$this->view->setVar('marginLeft', caGetOption('marginLeft', $va_template_info, '0mm'));
 				
 				$vs_content = $this->render("pdfStart.php");
 				
@@ -820,11 +824,15 @@
 					
 					$o_pdf = new PDFRenderer();
 					
-					$va_page_size =	PDFRenderer::getPageSize(caGetOption('pageSize', $va_template_info, 'letter'), 'mm');
+					$va_page_size =	PDFRenderer::getPageSize(caGetOption('pageSize', $va_template_info, 'letter'), 'mm', caGetOption('pageOrientation', $va_template_info, 'portrait'));
 					$vn_page_width = $va_page_size['width']; $vn_page_height = $va_page_size['height'];
 				
 					$this->view->setVar('pageWidth', "{$vn_page_width}mm");
 					$this->view->setVar('pageHeight', "{$vn_page_height}mm");
+					$this->view->setVar('marginTop', caGetOption('marginTop', $va_template_info, '0mm'));
+					$this->view->setVar('marginRight', caGetOption('marginRight', $va_template_info, '0mm'));
+					$this->view->setVar('marginBottom', caGetOption('marginBottom', $va_template_info, '0mm'));
+					$this->view->setVar('marginLeft', caGetOption('marginLeft', $va_template_info, '0mm'));
 					
 					$this->view->setVar('PDFRenderer', $o_pdf->getCurrentRendererCode());
 					$vs_content = $this->render($va_template_info['path']);

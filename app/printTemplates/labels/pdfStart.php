@@ -36,5 +36,8 @@
 	<head>
 		<title><?php print $this->getVar('title'); ?></title>
 		<link type="text/css" href="<?php print $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
+		<style type="text/css">
+			@page { margin: {{{marginTop}}} {{{marginRight}}} {{{marginBottom}}} {{{marginLeft}}}; }
+		</style>
 	</head>
-	<body style="width: <?php print $this->getVar('pageWidth'); ?>; height: <?php print $this->getVar('pageHeight'); ?>; margin: 0; padding: 0;">
+	<body>

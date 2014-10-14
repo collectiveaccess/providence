@@ -72,6 +72,7 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugIn Implements IWLPlugPD
 	 */
 	public function render($ps_content, $pa_options=null) {
 		$this->renderer->load_html($ps_content);
+		
 		$this->renderer->render();
 		
 		if (caGetOption('stream', $pa_options, false)) {
@@ -98,7 +99,7 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugIn Implements IWLPlugPD
 		$this->renderer->render();
 		
 		if (caGetOption('stream', $pa_options, false)) {
-			$this->renderer->stream(caGetOption('filename', $pa_options, 'export_results.pdf'));
+			$this->renderer->stream(caGetOption('filename', $pa_options, 'output.pdf'));
 		}
 		
 		return $this->renderer->output();
@@ -125,7 +126,19 @@ class WLPlugPDFRendererdomPDF Extends BasePDFRendererPlugIn Implements IWLPlugPD
 	 */
 	public function checkStatus() {
 		$va_status = parent::checkStatus();
-		$va_status['available'] = !caPhantomJSInstalled() && !caWkhtmltopdfInstalled();
+		
+		if (!($vb_phantom_js = caPhantomJSInstalled()) && !($vb_wkhtmltopdf = caWkhtmltopdfInstalled())) {
+			$va_status['available'] = true;
+		} else {
+			$va_status['available'] = false;
+			if ($vb_wkhtmltopdf) {
+				$va_status['unused'] = true;
+				$va_status['warnings'][] = _t("Didn't load because wkhtmltopdf is available and preferred");
+			} elseif($vb_phantom_js) {
+				$va_status['unused'] = true;
+				$va_status['warnings'][] = _t("Didn't load because PhantomJS is available and preferred");
+			}
+		}
 		
 		return $va_status;
 	}

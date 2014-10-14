@@ -104,13 +104,13 @@ class WLPlugPDFRendererPhantomJS Extends BasePDFRendererPlugIn Implements IWLPlu
 		file_put_contents($vs_content_path = caMakeGetFilePath("phantomjs", "html"), $ps_content); 
 		$vs_output_path = caMakeGetFilePath("phantomjs", "pdf");
 		
-		exec($this->ops_phantom_path." ".__CA_LIB_DIR__."/core/Print/phantomjs/rasterise.js ".caEscapeShellArg($vs_content_path)." ".caEscapeShellArg($vs_output_path)." ".caEscapeShellArg($this->ops_page_size)." ".caEscapeShellArg($this->ops_page_orientation), $va_output, $vn_return);	
-	
+		exec($x=$this->ops_phantom_path." ".__CA_LIB_DIR__."/core/Print/phantomjs/rasterise.js ".caEscapeShellArg($vs_content_path)." ".caEscapeShellArg($vs_output_path)." {$this->ops_page_size} {$this->ops_page_orientation}  {$this->ops_margin_right} {$this->ops_margin_bottom} {$this->ops_margin_left}", $va_output, $vn_return);	
+
 		$vs_pdf_content = file_get_contents($vs_output_path);
 		if (caGetOption('stream', $pa_options, false)) {
 			header("Cache-Control: private");
    			header("Content-type: application/pdf");
-			header("Content-Disposition: attachment; filename=".caGetOption('filename', $pa_options, 'export_results.pdf'));
+			header("Content-Disposition: attachment; filename=".caGetOption('filename', $pa_options, 'output.pdf'));
 			print $vs_pdf_content;
 		}
 		
@@ -152,6 +152,11 @@ class WLPlugPDFRendererPhantomJS Extends BasePDFRendererPlugIn Implements IWLPlu
 		$this->ops_page_size = $ps_size;
 		$this->ops_page_orientation = $ps_orientation;
 		
+		$this->ops_margin_top = caConvertMeasurement($ps_margin_top, 'mm').'mm';
+		$this->ops_margin_right = caConvertMeasurement($ps_margin_right, 'mm').'mm';
+		$this->ops_margin_bottom = caConvertMeasurement($ps_margin_bottom, 'mm').'mm';
+		$this->ops_margin_left = caConvertMeasurement($ps_margin_left, 'mm').'mm';
+		
 		return true;
 	}
 	# ------------------------------------------------
@@ -162,7 +167,15 @@ class WLPlugPDFRendererPhantomJS Extends BasePDFRendererPlugIn Implements IWLPlu
 	 */
 	public function checkStatus() {
 		$va_status = parent::checkStatus();
-		$va_status['available'] = caPhantomJSInstalled() && !caWkhtmltopdfInstalled();	// prefer use of wkhtmltopdf when available
+		if (caPhantomJSInstalled() && !($vb_wkhtmltopdf = caWkhtmltopdfInstalled())) {
+			$va_status['available'] = true;	// prefer use of wkhtmltopdf when available
+		} else {
+			$va_status['available'] = false;
+			if ($vb_wkhtmltopdf) {
+				$va_status['unused'] = true;
+				$va_status['warnings'][] = _t("Didn't load because wkhtmltopdf is available and preferred");
+			}
+		}
 		
 		return $va_status;
 	}

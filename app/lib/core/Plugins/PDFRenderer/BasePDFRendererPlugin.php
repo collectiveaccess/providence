@@ -41,15 +41,21 @@ include_once(__CA_LIB_DIR__."/core/Print/PDFRenderer.php");
 
 abstract class BasePDFRendererPlugin Extends WLPlug {
 	# ------------------------------------------------
-	// properties for this plugin instance
+	/**
+	 * properties for this plugin instance
+	 */
 	protected $properties = array(
 		
 	);
 	
-	// app config
+	/**
+	 * app config
+	 */
 	protected $opo_config;
 	
-	// plugin info
+	/**
+	 * plugin info
+	 */
 	protected $info = array(
 		"NAME" => "?",
 		"PROPERTIES" => array(
@@ -67,7 +73,7 @@ abstract class BasePDFRendererPlugin Extends WLPlug {
 	}
 	# ------------------------------------------------
 	/**
-	 *
+	 * Initialize plugin and create new instance
 	 */
 	public function register() {
 		$this->opo_config = Configuration::load();
@@ -107,7 +113,12 @@ abstract class BasePDFRendererPlugin Extends WLPlug {
 	}
 	# ----------------------------------------------------------
 	/**
+	 * Set plugin property
 	 *
+	 * @param string $property
+	 * @param mixed $value
+	 *
+	 * @return bool True on success, false on failure
 	 */
 	public function set($property, $value) {
 		if ($this->info["PROPERTIES"][$property]) {
@@ -124,23 +135,27 @@ abstract class BasePDFRendererPlugin Extends WLPlug {
 		} else {
 			# invalid property
 			$this->postError(1650, _t("Can't set property %1", $property), "BasePDFRendererPlugin->set()");
-			return '';
+			return false;
 		}
 		return true;
 	}
 	# ------------------------------------------------
 	/**
+	 * Initialize plugin values (stub)
 	 *
+	 * @return bool True on success, false on failure
 	 */
 	public function init() {
-		return;
+		return true;
 	}
 	# ------------------------------------------------
 	/**
+	 * Clean up on deallocation (stub)
 	 *
+	 * @return bool True on success, false on failure
 	 */
 	public function cleanup() {
-		return;
+		return true;
 	}
 	# ------------------------------------------------
 }
