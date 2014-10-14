@@ -1049,11 +1049,13 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 				$vn_lot_id = $po_view->request->getParameter('lot_id', pInteger);
 				$vb_is_currently_part_of_lot = false;
 			}
+			
 			if (($vs_table_name === 'ca_objects') && ($vn_lot_id)) {
 				require_once(__CA_MODELS_DIR__.'/ca_object_lots.php');
-				
+			
+				$va_lot_lots = caGetTypeListForUser('ca_object_lots', array('access' => __CA_BUNDLE_ACCESS_READONLY__));	
 				$t_lot = new ca_object_lots($vn_lot_id);
-				if ($t_lot->get('deleted') == 0) {
+				if (($t_lot->get('deleted') == 0) && (in_array($t_lot->get('type_id'), $va_lot_lots))) {
 					if(!($vs_lot_displayname = $t_lot->get('idno_stub'))) {
 						if((!$vs_lot_displayname = $t_lot->getLabelForDisplay())){
 							$vs_lot_displayname = "Lot {$vn_lot_id}";		

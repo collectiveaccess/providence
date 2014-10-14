@@ -56,12 +56,20 @@
 			case 'labels': 
 				return  __CA_APP_DIR__.'/printTemplates/labels';
 				break;
+			case 'bundles': 
+				return  __CA_APP_DIR__.'/printTemplates/bundles';
+				break;
 		}
 		return null;
 	}
 	# ---------------------------------------
 	/**
 	 * 
+	 * @param string $ps_type
+	 * @param array $pa_options Options include:
+	 *		table =
+	 *		type = 
+	 * 		elementCode = 
 	 *
 	 * @return array
 	 */
@@ -69,8 +77,10 @@
 		$vs_template_path = caGetPrintTemplateDirectoryPath($ps_type);
 		$vs_tablename = caGetOption('table', $pa_options, null);
 		$vs_type = caGetOption('type', $pa_options, 'page');
+		$vs_element_code = caGetOption('elementCode', $pa_options, null);
+		$vb_for_html_select = caGetOption('forHTMLSelect', $pa_options, false);
 		
-		if ($o_cache = caGetCacheObject('caPrintTemplatesList_'.$ps_type)) {
+		if (($o_cache = caGetCacheObject('caPrintTemplatesList_'.$ps_type))) {
 			$vs_cache_key = caMakeCacheKeyFromOptions($pa_options, $ps_type);
 			if (
 				($va_list = $o_cache->load($vs_cache_key))
@@ -78,7 +88,9 @@
 				(($vn_mtime = $o_cache->load("{$vs_cache_key}_mtime")) >= filemtime($vs_template_path))
 				&&
 				(($vn_mtime = $o_cache->load("{$vs_cache_key}_local_mtime")) >= filemtime("{$vs_template_path}/local"))
-			) { return $va_list; }
+			) { 
+				return $va_list; 
+			}
 		}
 
 		$va_templates = array();
@@ -92,21 +104,27 @@
 					if (is_array($va_template_info = caGetPrintTemplateDetails($ps_type, $vs_template_tag))) {
 						if (caGetOption('type', $va_template_info, null) !== $vs_type)  { continue; }
 						
+						if ($vs_element_code && (caGetOption('elementCode', $va_template_info, null) !== $vs_element_code)) { continue; }
+						
 						if ($vs_tablename && (!in_array($vs_tablename, $va_template_info['tables'])) && (!in_array('*', $va_template_info['tables']))) {
 							continue;
 						}
 			
 						if (!is_dir($vs_path.'/'.$vs_template) && preg_match("/^[A-Za-z_]+[A-Za-z0-9_]*$/", $vs_template_tag)) {
-							$va_templates[] = array(
-								'name' => $va_template_info['name'],
-								'code' => '_pdf_'.$vs_template_tag
-							);
+							if ($vb_for_html_select) {
+								$va_templates[$va_template_info['name']] = '_pdf_'.$vs_template_tag;
+							} else {
+								$va_templates[] = array(
+									'name' => $va_template_info['name'],
+									'code' => '_pdf_'.$vs_template_tag
+								);
+							}
 						}
 					}
 				}
 			}
 
-			sort($va_templates);
+			asort($va_templates);
 			
 			if ($o_cache) {
 				$o_cache->save($va_templates, $vs_cache_key);
@@ -150,7 +168,8 @@
 		foreach(array(
 			"@name", "@type", "@pageSize", "@pageOrientation", "@tables", 
 			"@marginLeft", "@marginRight", "@marginTop", "@marginBottom",
-			"@horizontalGutter", "@verticalGutter", "@labelWidth", "@labelHeight"
+			"@horizontalGutter", "@verticalGutter", "@labelWidth", "@labelHeight", 
+			"@elementCode"
 		) as $vs_tag) {
 			if (preg_match("!{$vs_tag}([^\n\n]+)!", $vs_template, $va_matches)) {
 				$va_info[str_replace("@", "", $vs_tag)] = trim($va_matches[1]);

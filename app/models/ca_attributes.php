@@ -201,6 +201,8 @@ class ca_attributes extends BaseModel {
 	public function addAttribute($pn_table_num, $pn_row_id, $pm_element_code_or_id, $pa_values, $pa_options=null) {
 		require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');	// defer inclusion until runtime to ensure baseclasses are already loaded, otherwise you get circular dependencies
 		
+		global $g_ui_locale_id;
+		
 		unset(ca_attributes::$s_get_attributes_cache[$pn_table_num.'/'.$pn_row_id]);
 		$t_element = ca_attributes::getElementInstance($pm_element_code_or_id);
 		
@@ -215,7 +217,10 @@ class ca_attributes extends BaseModel {
 		
 		// create new attribute row
 		$this->set('element_id', $vn_attribute_id = $t_element->getPrimaryKey());
-		$this->set('locale_id', $pa_values['locale_id']);
+		
+		// Force default of locale-less attributes to current user locale if possible
+		if (!isset($pa_values['locale_id'])) { $pa_values['locale_id'] = $g_ui_locale_id; }
+		if (isset($pa_values['locale_id'])) { $this->set('locale_id', $pa_values['locale_id']); }
 		
 		// TODO: verify table_num/row_id combo
 		$this->set('table_num', $pn_table_num);
@@ -295,6 +300,8 @@ class ca_attributes extends BaseModel {
 	 *
 	 */
 	public function editAttribute($pa_values, $pa_options=null) {
+		global $g_ui_locale_id;
+		
 		if (!$this->getPrimaryKey()) { return null; }
 		
 		$vb_web_set_transaction = false;
@@ -309,8 +316,12 @@ class ca_attributes extends BaseModel {
 		unset(ca_attributes::$s_get_attributes_cache[$this->get('table_num').'/'.$this->get('row_id')]);
 		
 		$this->setMode(ACCESS_WRITE);
-		$this->set('locale_id', $pa_values['locale_id']);
+		
+		// Force default of locale-less attributes to current user locale if possible
+		if (!isset($pa_values['locale_id'])) { $pa_values['locale_id'] = $g_ui_locale_id; }
+		if (isset($pa_values['locale_id'])) { $this->set('locale_id', $pa_values['locale_id']); }
 		$this->update();
+		
 		if ($this->numErrors()) {
 			if ($vb_web_set_transaction) {
 				$o_trans->rollback();
@@ -403,9 +414,17 @@ class ca_attributes extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Return values for currently loaded attribute.
 	 *
+	 * @param array $pa_options Options include:
+	 *		returnAs = what to return; possible values are:
+	 *			values					= an array of attribute values [Default]
+	 *			attributeInstance		= an instance of the Attribute class loaded with the attribute value(s)
+	 *			count					= the number of values in the attribute
+	 *
+	 * @return mixed An array, instance of class Attribute or an integer value count depending upon setting of returnAs option. Returns null if no attribute is loaded.
 	 */
-	public function getAttributeValues() {
+	public function getAttributeValues($pa_options=null) {
 		if (!$this->getPrimaryKey()) { return null; }
 		$o_db = $this->getDb();
 		$qr_attrs = $o_db->query("
@@ -422,7 +441,18 @@ class ca_attributes extends BaseModel {
 			$o_attr->addValueFromRow($va_raw_row);
 		}
 		
-		return $o_attr->getValues();
+		switch($vs_return_as = caGetOption('returnAs', $pa_options, null)) {
+			case 'attributeInstance':
+				return $o_attr;
+				break;
+			case 'count':
+				return sizeof($o_attr->getValues());
+				break;
+			case 'values':
+			default:
+				return $o_attr->getValues();	
+				break;
+		}
 	}
 	# ------------------------------------------------------
 	# Static methods

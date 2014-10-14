@@ -52,7 +52,7 @@
 		 */
 		public function __construct() {
 			parent::__construct();
-			$this->opo_config = Configuration::load();;
+			$this->opo_config = Configuration::load();
 			$this->opo_type_config = Configuration::load($this->opo_config->get('annotation_type_config'));
 			
 			$this->opa_type_info = $this->opo_type_config->getAssoc('types');
@@ -181,4 +181,3 @@
 		}
 		# ------------------------------------------------------------------
 	}
-?>

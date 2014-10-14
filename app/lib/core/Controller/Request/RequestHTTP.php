@@ -387,22 +387,22 @@ class RequestHTTP extends Request {
 	public function getRequestUrl($pb_absolute=false) {
 		$va_url = array();
 		if ($vs_tmp = $this->getBaseUrlPath()) {
-			$va_url[] = $vs_tmp;
+			$va_url[] = trim($vs_tmp, '/');
 		}
 		if ($vs_tmp = $this->getScriptName()) {
-			$va_url[] = $vs_tmp;
+			$va_url[] = trim($vs_tmp, '/');
 		}
 		if ($vs_tmp = $this->getModulePath()) {
-			$va_url[] = $vs_tmp;
+			$va_url[] = trim($vs_tmp, '/');
 		}
 		if ($vs_tmp = $this->getController()) {
-			$va_url[] = $vs_tmp;
+			$va_url[] = trim($vs_tmp, '/');
 		}
 		if ($vs_tmp = $this->getAction()) {
-			$va_url[] = $vs_tmp;
+			$va_url[] = trim($vs_tmp, '/');
 		}
 		if ($vs_tmp = $this->getActionExtra()) {
-			$va_url[] = $vs_tmp;
+			$va_url[] = trim($vs_tmp, '/');
 		}
 		
 		//foreach($this->opa_params['PATH'] as $vs_param => $vs_value) {
@@ -586,7 +586,7 @@ class RequestHTTP extends Request {
 		
 		foreach(array(
 			'no_headers', 'dont_redirect_to_login', 'dont_create_new_session', 'dont_redirect_to_welcome',
-			'user_name', 'password', 'options', 'noPublicUsers', 'dont_redirect', 'no_headers'
+			'user_name', 'password', 'options', 'noPublicUsers', 'dont_redirect', 'no_headers', 'redirect'
 		) as $vs_key) {
 			if (!isset($pa_options[$vs_key])) { $pa_options[$vs_key] = null; }
 		}
@@ -646,7 +646,14 @@ class RequestHTTP extends Request {
 				if (!$vb_login_successful) {																	// throw user to login screen
 					if (!$pa_options["dont_redirect_to_login"]) {
 						$o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login with redirect for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
-						$this->opo_response->addHeader("Location", $this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_path"));
+						$vs_redirect = $this->getRequestUrl(true);
+
+						if (strpos($vs_redirect, $this->config->get("auth_login_path") !== -1)) {
+							$vs_redirect = '';
+						} else {
+							$vs_redirect = '?redirect=' . urlencode($vs_redirect);
+						}
+						$this->opo_response->addHeader("Location", $this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_path") . $vs_redirect);
 					}
 					return false;
 				}
@@ -701,7 +708,9 @@ class RequestHTTP extends Request {
 			
 			//$this->user->close(); ** will be called externally **
 			$AUTH_CURRENT_USER_ID = $vn_user_id;
-			if (!$pa_options["dont_redirect_to_welcome"]) {
+			if ($pa_options['redirect']) {
+				$this->opo_response->addHeader("Location", $pa_options['redirect']);
+			} elseif (!$pa_options["dont_redirect_to_welcome"]) {
 				//header("Location: ".$this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_welcome_path"));				// redirect to "welcome" page
 				$this->opo_response->addHeader("Location", $this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_welcome_path"));
 				//exit;

@@ -186,10 +186,12 @@ print $vs_control_box = caFormControlBox(
 		var formatInfo = {};
 		for(var reader in caDataReaderInfo) {
 			for(var i in relevantFormats) {
-				if (jQuery.inArray(relevantFormats[i].toLowerCase(), caDataReaderInfo[reader]['formats']) > -1) {
-					formatInfo[relevantFormats[i].toLowerCase()] = caDataReaderInfo[reader];
-					opts.push("<option value='" + relevantFormats[i] + "'>" + caDataReaderInfo[reader]['displayName']+ "</option>");
-					break;
+				if(relevantFormats.hasOwnProperty(i)) {
+					if (jQuery.inArray(relevantFormats[i].toLowerCase(), caDataReaderInfo[reader]['formats']) > -1) {
+						formatInfo[relevantFormats[i].toLowerCase()] = caDataReaderInfo[reader];
+						opts.push("<option value='" + relevantFormats[i] + "'>" + caDataReaderInfo[reader]['displayName']+ "</option>");
+						break;
+					}
 				}
 			}
 		}
