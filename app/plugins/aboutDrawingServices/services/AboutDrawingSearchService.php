@@ -52,6 +52,32 @@ class AboutDrawingSearchService extends SearchJSONService {
 
 	protected function search($pa_bundles=null){
 		$va_return = parent::search($pa_bundles);
+		if(($this->getTableName() == 'ca_entities') && is_array($va_return['results']) && sizeof($va_return['results'])>0) {
+			foreach($va_return['results'] as &$va_result) {
+				$t_entity = new ca_entities($va_result['entity_id']);
+				$va_objects = $t_entity->getRelatedItems('ca_objects');
+
+				foreach($va_objects as $va_object) {
+					$t_object = new ca_objects($va_object['object_id']);
+					$va_reps = $t_object->getRepresentations(array('icon', 'preview170', 'medium', 'original'));
+					$va_representation_info = array();
+					foreach($va_reps as $va_rep) {
+						$va_representation_info[] = array(
+							'representation_id' => $va_rep['representation_id'],
+							'urls' => $va_rep['urls'],
+						);
+					}
+
+					$va_object_info = array();
+					$va_object_info['object_id'] = $va_object['object_id'];
+					$va_object_info['labels'] = $va_object['labels'];
+					$va_object_info['label'] = $va_object['label'];
+					$va_object_info['representations'] = $va_representation_info;
+
+					$va_result['ca_objects'][] = $va_object_info;
+				}
+			}
+		}
 		return $va_return;
 	}
 
