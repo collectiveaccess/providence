@@ -87,6 +87,43 @@ class MultipartIDNumber extends IDNumber {
 		return null;
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function formatHas($ps_element_type, $pn_index=null, $ps_format=null, $ps_type=null) {
+		if ($ps_format) {
+			if (!$this->isValidFormat($ps_format)) {
+				return false;
+			}
+			$vs_format = $ps_format;
+		} else {
+			if(!($vs_format = $this->getFormat())) {
+				return false;
+			}
+		}
+		if ($ps_type) {
+			if (!$this->isValidType($ps_type)) {
+				return false;
+			}
+			$vs_type = $ps_type;
+		} else {
+			if(!($vs_type = $this->getType())) {
+				return false;
+			}
+		}
+
+		$va_elements = $this->opa_formats[$vs_format][$vs_type]['elements'];
+		
+		if (!is_null($pn_index) && isset($va_elements[$pn_index])) { $va_elements = array($va_elements[$pn_index]); }
+		
+		foreach($va_elements as $va_element) {
+			if ($va_element['type'] == $ps_element_type) {
+				return true;
+			}
+		}
+		return false;
+	}
+	# -------------------------------------------------------
 	public function isSerialFormat($ps_format=null, $ps_type=null) {
 		if ($ps_format) {
 			if (!$this->isValidFormat($ps_format)) {

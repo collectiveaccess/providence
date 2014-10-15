@@ -919,7 +919,7 @@
  					$t_subject->set($vs_parent_id_fld, $vn_parent_id);
  					
  					$t_parent = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
- 					if ($t_parent->load($vn_parent_id)) {
+ 					if ($t_parent->load($vn_parent_id) && ($t_parent->get('parent_id') || ($t_parent->getHierarchyType() == __CA_HIER_TYPE_ADHOC_MONO__))) {
  						$t_subject->set('idno', $t_parent->get('idno'));
  					}
  				}
