@@ -198,3 +198,5 @@
 	}
 ?>
 </script>
+
+<div class="editorBottomPadding"><!-- empty --></div>
