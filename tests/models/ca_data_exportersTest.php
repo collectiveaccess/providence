@@ -37,9 +37,13 @@ class ca_data_exportersTest extends PHPUnit_Framework_TestCase {
 	 * @link http://clangers.collectiveaccess.org/jira/browse/PROV-1026
 	 */
 	public function testDataExporterCanLoadFromFile(){
+		$t_locale = new ca_locales();
+		$va_locales = $t_locale->getLocaleList();
+		$vn_locale_id = key($va_locales);
+
 		$t_exporter = new ca_data_exporters();
 		$va_errors = array();
-		ca_data_exporters::loadExporterFromFile(__DIR__ . '/data/list_item_export_mapping.xlsx', $va_errors);
+		ca_data_exporters::loadExporterFromFile(__DIR__ . '/data/list_item_export_mapping.xlsx', $va_errors, array('locale_id' => $vn_locale_id));
 
 		$vo_exporter = ca_data_exporters::loadExporterByCode('testmappingforunittests');
 
@@ -53,4 +57,3 @@ class ca_data_exportersTest extends PHPUnit_Framework_TestCase {
 		$this->assertFalse($vo_exporter, 'Should no longer have an exporter loaded');
 	}
 }
- 
