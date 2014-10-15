@@ -266,7 +266,7 @@
 			$this->view->setVar('browse', $po_search);
 			
 			$t_display = $this->view->getVar('t_display');
-			$va_display_list = $this->view->getVar('display_list');
+			if (!is_array($va_display_list = $this->view->getVar('display_list'))) { $va_display_list = array(); }
 			if ($vs_view == 'editable') {
 				
 				$va_initial_data = array();
@@ -310,6 +310,7 @@
 					$va_bottom_line[$vn_placement_id] = '';
 				}
 			}
+			
 			$this->view->setVar('bottom_line', $vb_bottom_line_is_set ? $va_bottom_line : null);
 			
 			
@@ -334,22 +335,17 @@
 						$this->view->setVar('type_list', $t_model->getTypeList());
 					}
 					if ($this->opb_uses_hierarchy_browser) {
-						//if (sizeof($t_model->getHierarchyList()) > 0) {
-							AssetLoadManager::register('hierBrowser');
-							
-							// only for interfaces that use the hierarchy browser
-							$t_list = new ca_lists();
-							if ($vs_type_list_code = $t_model->getTypeListCode()) {
-								$this->view->setVar('num_types', $t_list->numItemsInList($vs_type_list_code));
-								$this->view->setVar('type_menu',  $t_list->getListAsHTMLFormElement($vs_type_list_code, 'type_id', array('id' => 'hierTypeList')));
-							}
-							
-							// set last browse id for hierarchy browser
-							$this->view->setVar('browse_last_id', intval($this->request->session->getVar($this->ops_tablename.'_browse_last_id')));
-						//} else {
-						//	$this->view->setVar('no_hierarchies_defined', 1);
-						//	$this->notification->addNotification(_t("No hierarchies are configured for %1", $t_model->getProperty('NAME_PLURAL')), __NOTIFICATION_TYPE_ERROR__);
-						//}
+						AssetLoadManager::register('hierBrowser');
+						
+						// only for interfaces that use the hierarchy browser
+						$t_list = new ca_lists();
+						if ($vs_type_list_code = $t_model->getTypeListCode()) {
+							$this->view->setVar('num_types', $t_list->numItemsInList($vs_type_list_code));
+							$this->view->setVar('type_menu',  $t_list->getListAsHTMLFormElement($vs_type_list_code, 'type_id', array('id' => 'hierTypeList')));
+						}
+						
+						// set last browse id for hierarchy browser
+						$this->view->setVar('browse_last_id', intval($this->request->session->getVar($this->ops_tablename.'_browse_last_id')));
 					}
 					
 					$this->opo_result_context->setAsLastFind();
@@ -530,4 +526,3 @@
  		}
  		# -------------------------------------------------------
  	}
-?>
