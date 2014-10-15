@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Service/BaseServiceController.php : base controller for service interfaces
+ * app/plugins/aboutDrawingServices/services/AboutDrawingSearchService.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -15,10 +15,10 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
@@ -29,19 +29,30 @@
  *
  * ----------------------------------------------------------------------
  */
- 
+
  /**
   *
   */
- 	
- 	class BaseServiceController extends ActionController {
- 		# -------------------------------------------------------
- 	
- 		# -------------------------------------------------------
- 		#
- 		# -------------------------------------------------------
- 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		}
- 		# -------------------------------------------------------
- 	}
+  
+require_once(__CA_LIB_DIR__."/ca/Service/SearchJSONService.php");
+require_once(__CA_LIB_DIR__."/core/Datamodel.php");
+
+class AboutDrawingSearchService extends SearchJSONService {
+
+	public function __construct($po_request,$ps_table=""){
+
+		if(!$po_request->getUser()->canDoAction('can_use_about_drawing_search_service')) {
+			throw new Exception("You're not allowed to access this service.");
+		}
+
+		parent::__construct($po_request,$ps_table);
+	}
+	# -------------------------------------------------------
+
+
+	protected function search($pa_bundles=null){
+		$va_return = parent::search($pa_bundles);
+		return $va_return;
+	}
+
+}
