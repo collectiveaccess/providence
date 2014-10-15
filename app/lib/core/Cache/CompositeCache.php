@@ -30,6 +30,9 @@
  * ----------------------------------------------------------------------
  */
 
+require_once(__CA_LIB_DIR__.'/core/Cache/MemoryCache.php');
+require_once(__CA_LIB_DIR__.'/core/Cache/ExternalCache.php');
+
 class CompositeCache {
 	# ------------------------------------------------
 	/**
@@ -48,7 +51,10 @@ class CompositeCache {
 		}
 
 		if(ExternalCache::contains($ps_key, $ps_namespace)) {
-			return ExternalCache::fetch($ps_key, $ps_namespace);
+			// copy data into 'L1' cache so that subsequent fetch() and contain() calls are fast
+			$vm_data = ExternalCache::fetch($ps_key, $ps_namespace);
+			MemoryCache::save($ps_key, $vm_data, $ps_namespace);
+			return $vm_data;
 		}
 
 		return false;

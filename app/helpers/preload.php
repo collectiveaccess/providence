@@ -69,6 +69,7 @@ require_once(__CA_LIB_DIR__."/core/Controller/ActionController.php");
 require_once(__CA_MODELS_DIR__."/ca_acl.php");
 
 require_once(__CA_LIB_DIR__."/core/Cache/ExternalCache.php");
+require_once(__CA_LIB_DIR__."/core/Cache/CompositeCache.php");
 
 // initialize Tooltip manager
 TooltipManager::init();
