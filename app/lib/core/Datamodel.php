@@ -542,14 +542,9 @@ class Datamodel {
 		if (is_numeric($ps_left_table)) { $ps_left_table = $this->getTableName($ps_left_table); }
 		if (is_numeric($ps_right_table)) { $ps_right_table = $this->getTableName($ps_right_table); }
 
-		if(MemoryCache::contains("{$ps_left_table}/{$ps_right_table}", 'DatamodelPaths')) {
-			return MemoryCache::fetch("{$ps_left_table}/{$ps_right_table}", 'DatamodelPaths');
+		if(CompositeCache::contains("{$ps_left_table}/{$ps_right_table}", 'DatamodelPaths')) {
+			return CompositeCache::fetch("{$ps_left_table}/{$ps_right_table}", 'DatamodelPaths');
 		}
-
-		if(ExternalCache::contains("{$ps_left_table}/{$ps_right_table}", 'DatamodelPaths')) {
-			return ExternalCache::fetch("{$ps_left_table}/{$ps_right_table}", 'DatamodelPaths');
-		}
-
 		
 		# handle self relationships as a special case
        if($ps_left_table == $ps_right_table) {
@@ -562,8 +557,7 @@ class Datamodel {
         }
  		
  		$vs_path = $this->opo_graph->getPath($ps_left_table, $ps_right_table);
-		MemoryCache::save("{$ps_left_table}/{$ps_right_table}", $vs_path, 'DatamodelPaths');
-		ExternalCache::save("{$ps_left_table}/{$ps_right_table}", $vs_path, 'DatamodelPaths');
+		CompositeCache::save("{$ps_left_table}/{$ps_right_table}", $vs_path, 'DatamodelPaths');
  		return $vs_path;
 	}
 	# --------------------------------------------------------------------------------------------

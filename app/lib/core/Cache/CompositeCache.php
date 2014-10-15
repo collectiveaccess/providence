@@ -40,12 +40,8 @@ class CompositeCache {
 	 * @param string $ps_key
 	 * @param string $ps_namespace
 	 * @return mixed The cached data or FALSE, if no cache entry exists for the given key.
-	 * @throws CompositeCacheInvalidParameterException
 	 */
 	public static function fetch($ps_key, $ps_namespace='default') {
-		if(!$ps_namespace) { throw new CompositeCacheInvalidParameterException('Namespace cannot be empty'); }
-		if(!$ps_key) { throw new CompositeCacheInvalidParameterException('Key cannot be empty'); }
-
 		if(MemoryCache::contains($ps_key, $ps_namespace)) {
 			return MemoryCache::fetch($ps_key, $ps_namespace);
 		}
@@ -66,12 +62,8 @@ class CompositeCache {
 	 * @param mixed $pm_data
 	 * @param string $ps_namespace
 	 * @return bool success state
-	 * @throws CompositeCacheInvalidParameterException
 	 */
 	public static function save($ps_key, $pm_data, $ps_namespace='default') {
-		if(!$ps_namespace) { throw new CompositeCacheInvalidParameterException('Namespace cannot be empty'); }
-		if(!$ps_key) { throw new CompositeCacheInvalidParameterException('Key cannot be empty'); }
-
 		MemoryCache::save($ps_key, $pm_data, $ps_namespace);
 		ExternalCache::save($ps_key, $pm_data, $ps_namespace);
 
@@ -83,12 +75,8 @@ class CompositeCache {
 	 * @param string $ps_key
 	 * @param string $ps_namespace
 	 * @return bool
-	 * @throws CompositeCacheInvalidParameterException
 	 */
 	public static function contains($ps_key, $ps_namespace='default') {
-		if(!$ps_namespace) { throw new CompositeCacheInvalidParameterException('Namespace cannot be empty'); }
-		if(!$ps_key) { throw new CompositeCacheInvalidParameterException('Key cannot be empty'); }
-
 		if(MemoryCache::contains($ps_key, $ps_namespace)) {
 			return true;
 		}
@@ -105,12 +93,8 @@ class CompositeCache {
 	 * @param string $ps_key
 	 * @param string $ps_namespace
 	 * @return bool success state
-	 * @throws CompositeCacheInvalidParameterException
 	 */
 	public static function delete($ps_key, $ps_namespace='default') {
-		if(!$ps_namespace) { throw new CompositeCacheInvalidParameterException('Namespace cannot be empty'); }
-		if(!$ps_key) { throw new CompositeCacheInvalidParameterException('Key cannot be empty'); }
-
 		MemoryCache::delete($ps_key, $ps_namespace);
 		ExternalCache::delete($ps_key, $ps_namespace);
 
@@ -119,7 +103,6 @@ class CompositeCache {
 	# ------------------------------------------------
 	/**
 	 * Flush whole cache, both in-memory and on-disk. Use with caution!
-	 * @throws CompositeCacheInvalidParameterException
 	 */
 	public static function flush() {
 		MemoryCache::flush();
@@ -128,4 +111,3 @@ class CompositeCache {
 	# ------------------------------------------------
 }
 
-class CompositeCacheInvalidParameterException extends Exception {}
