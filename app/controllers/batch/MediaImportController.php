@@ -38,6 +38,7 @@
  	require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
  	require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
+ 	require_once(__CA_MODELS_DIR__."/ca_data_importers.php");
  	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
  	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
  	require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
@@ -63,8 +64,8 @@
  				return;
  			}
  			
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register('panel');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('panel');
  			
  			$this->opo_datamodel = Datamodel::load();
  			$this->opo_app_plugin_manager = new ApplicationPluginManager();
@@ -79,7 +80,7 @@
  		 *
  		 */
  		public function Index($pa_values=null, $pa_options=null) {
- 			JavascriptLoadManager::register("directoryBrowser");
+ 			AssetLoadManager::register("directoryBrowser");
  			list($t_ui) = $this->_initView($pa_options);
  			
  			$this->view->setVar('batch_mediaimport_last_settings', $va_last_settings = is_array($va_last_settings = $this->request->user->getVar('batch_mediaimport_last_settings')) ? $va_last_settings : array());
@@ -114,8 +115,24 @@
 			), array(), array('value' => $va_last_settings['matchMode'])));
  			
  			$this->view->setVar('ca_objects_type_list', $t_object->getTypeListAsHTMLFormElement('ca_objects_type_id', null, array('value' => $va_last_settings['ca_objects_type_id'])));
+ 			$this->view->setVar('ca_objects_limit_to_types_list', $t_object->getTypeListAsHTMLFormElement('ca_objects_limit_matching_to_type_ids[]', array('multiple' => 1), array('height' => '100px', 'values' => $va_last_settings['ca_objects_limit_matching_to_type_ids'])));
  			$this->view->setVar('ca_object_representations_type_list', $t_rep->getTypeListAsHTMLFormElement('ca_object_representations_type_id', null, array('value' => $va_last_settings['ca_object_representations_type_id'])));
  		
+ 		
+ 			$va_importer_list = ca_data_importers::getImporters(null, array('formats' => array('exif')));
+ 			$va_object_importer_options = $va_object_representation_importer_options = array("-" => '');
+ 			foreach($va_importer_list as $vn_importer_id => $va_importer_info) {
+ 				if ($va_importer_info['table_num'] == 57) { // ca_objects
+ 					$va_object_importer_options[$va_importer_info['label']] = $vn_importer_id;
+ 				} else {
+ 					$va_object_representation_importer_options[$va_importer_info['label']] = $vn_importer_id;
+ 				}
+ 			}
+ 			$this->view->setVar('ca_objects_mapping_list', caHTMLSelect('ca_objects_mapping_id', $va_object_importer_options, array(), array('value' => $va_last_settings['ca_objects_mapping_id'])));
+ 			$this->view->setVar('ca_objects_mapping_list_count', sizeof($va_object_importer_options));
+ 			$this->view->setVar('ca_object_representations_mapping_list', caHTMLSelect('ca_object_representations_mapping_id', $va_object_representation_importer_options, array(), array('value' => $va_last_settings['ca_object_representations_mapping_id'])));
+ 			$this->view->setVar('ca_object_representations_mapping_list_count', sizeof($va_object_representation_importer_options));
+ 			
  			//
  			// Available sets
  			//
@@ -169,12 +186,15 @@
  				'deleteMediaOnImport' => (bool)$this->request->getParameter('delete_media_on_import', pInteger),
  				'importMode' => $this->request->getParameter('import_mode', pString),
  				'matchMode' => $this->request->getParameter('match_mode', pString),
+ 				'ca_objects_limit_matching_to_type_ids' => $this->request->getParameter('ca_objects_limit_matching_to_type_ids', pArray),
  				'ca_objects_type_id' => $this->request->getParameter('ca_objects_type_id', pInteger),
  				'ca_object_representations_type_id' => $this->request->getParameter('ca_object_representations_type_id', pInteger),
  				'ca_objects_status' => $this->request->getParameter('ca_objects_status', pInteger),
  				'ca_object_representations_status' => $this->request->getParameter('ca_object_representations_status', pInteger),
  				'ca_objects_access' => $this->request->getParameter('ca_objects_access', pInteger),
  				'ca_object_representations_access' => $this->request->getParameter('ca_object_representations_access', pInteger),
+ 				'ca_objects_mapping_id' => $this->request->getParameter('ca_objects_mapping_id', pInteger),
+ 				'ca_object_representations_mapping_id' => $this->request->getParameter('ca_object_representations_mapping_id', pInteger),
  				'setMode' => $this->request->getParameter('set_mode', pString),
  				'setCreateName' => $this->request->getParameter('set_create_name', pString),
  				'set_id' => $this->request->getParameter('set_id', pInteger),
@@ -284,9 +304,9 @@
  		 */
  		protected function _initView($pa_options=null) {
  			// load required javascript
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register('imageScroller');
- 			JavascriptLoadManager::register('datePickerUI');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('imageScroller');
+ 			AssetLoadManager::register('datePickerUI');
  			
  			$t_ui = new ca_editor_uis();
  			if (!isset($pa_options['ui']) && !$pa_options['ui']) {

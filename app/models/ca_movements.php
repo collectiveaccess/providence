@@ -35,7 +35,7 @@
    */
 
 require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
-require_once(__CA_LIB_DIR__."/ca/RepresentableBaseModel.php");
+require_once(__CA_LIB_DIR__."/ca/BaseObjectLocationModel.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_movements'] = array(
@@ -137,7 +137,7 @@ BaseModel::$s_ca_models_definitions['ca_movements'] = array(
  	)
 );
 
-class ca_movements extends RepresentableBaseModel implements IBundleProvider {
+class ca_movements extends BaseObjectLocationModel implements IBundleProvider {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------

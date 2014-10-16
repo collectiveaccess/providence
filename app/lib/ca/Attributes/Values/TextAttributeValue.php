@@ -149,6 +149,22 @@
 			'label' => _t('Can be used in display'),
 			'description' => _t('Check this option if this attribute value can be used for display in search results. (The default is to be.)')
 		),
+		'canMakePDF' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output?'),
+			'description' => _t('Check this option if this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
+		'canMakePDFForValue' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output for individual values?'),
+			'description' => _t('Check this option if individual values for this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
 		'displayTemplate' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -237,6 +253,7 @@
  		 * @param array $pa_element_info
  		 * @param array $pa_options Array of options:
  		 *		usewysiwygeditor = if set, overrides element level setting for visual text editor
+ 		 *		forSearch = if set, settings and options regarding visual text editor are ignored and it's never used
  		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
  			
@@ -244,6 +261,10 @@
  			
  			if (isset($pa_options['usewysiwygeditor'])) {
  				$va_settings['usewysiwygeditor'] = $pa_options['usewysiwygeditor'];
+ 			}
+
+ 			if (isset($pa_options['forSearch']) && $pa_options['forSearch']) {
+ 				unset($va_settings['usewysiwygeditor']);
  			}
  			
  			$vs_width = trim((isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth']);
@@ -261,7 +282,7 @@
  			if ($va_settings['usewysiwygeditor']) {
  				$o_config = Configuration::load();
  				if (!is_array($va_toolbar_config = $o_config->getAssoc('wysiwyg_editor_toolbar'))) { $va_toolbar_config = array(); }
- 				JavascriptLoadManager::register("ckeditor");
+ 				AssetLoadManager::register("ckeditor");
  				
  				$vs_element = "<script type='text/javascript'>jQuery(document).ready(function() {
 						var ckEditor = CKEDITOR.replace( '{fieldNamePrefix}".$pa_element_info['element_id']."_{n}',
@@ -280,19 +301,23 @@
 </script>";
 			}
  			
- 			$vs_element .= caHTMLTextInput(
- 				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 
- 				array(
+ 			$va_opts = array(
  					'size' => $vs_width, 
  					'height' => $vs_height, 
  					'value' => '{{'.$pa_element_info['element_id'].'}}', 
  					'maxlength' => $va_settings['maxChars'],
  					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 'class' => "{$vs_class}".($va_settings['usewysiwygeditor'] ? " ckeditor" : '')
- 				)
+ 				);
+ 			if (caGetOption('readonly', $pa_options, false)) { 
+ 				$va_opts['disabled'] = 1;
+ 			}
+ 			$vs_element .= caHTMLTextInput(
+ 				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 
+ 				$va_opts
  			);
  			
  			if ($va_settings['isDependentValue']) {
- 				JavascriptLoadManager::register('displayTemplateParser');
+ 				AssetLoadManager::register('displayTemplateParser');
  				
  				$t_element = new ca_metadata_elements($pa_element_info['element_id']);
  				$va_elements = $t_element->getElementsInSet($t_element->getHierarchyRootID());
@@ -360,6 +385,15 @@
 		 */
 		public function sortField() {
 			return 'value_longtext1';
+		}
+ 		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for text attribute value
+		 * 
+		 * @return int Attribute value type code
+		 */
+		public function getType() {
+			return __CA_ATTRIBUTE_VALUE_TEXT__;
 		}
  		# ------------------------------------------------------------------
 	}

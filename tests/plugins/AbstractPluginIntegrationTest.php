@@ -140,7 +140,7 @@ abstract class AbstractPluginIntegrationTest extends PHPUnit_Framework_TestCase 
 	 * @param $ps_idno_base string
 	 * @return string
 	 */
-	protected static function _getIdno($ps_idno_base) {
+	public static function _getIdno($ps_idno_base) {
 		return sprintf('%s_%s_%s', self::$s_timestamp, self::$s_random_number, $ps_idno_base);
 	}
 
@@ -211,5 +211,133 @@ abstract class AbstractPluginIntegrationTest extends PHPUnit_Framework_TestCase 
 	 */
 	protected static function _retrieveCreatedInstance($ps_class, $ps_key) {
 		return isset(self::$s_created_instances[$ps_class]) && isset(self::$s_created_instances[$ps_class][$ps_key]) ? self::$s_created_instances[$ps_class][$ps_key] : null;
+	}
+
+	protected static function _createRelationshipType($ps_code_base, $ps_table_name) {
+		$vo_relationship_type = new ca_relationship_types();
+		$vo_relationship_type->setMode(ACCESS_WRITE);
+		$vo_relationship_type->set(array(
+				'type_code' => self::_getIdno($ps_code_base),
+				'table_num' => $vo_relationship_type->getAppDatamodel()->getTableNum($ps_table_name)
+		));
+		$vo_relationship_type->insert();
+		$vo_relationship_type->addLabel(
+				array(
+						'typename' => $ps_code_base,
+						'typename_reverse' => $ps_code_base . ' reverse'
+				),
+				ca_locales::getDefaultCataloguingLocaleID(),
+				null,
+				true
+		);
+		self::_recordCreatedInstance($vo_relationship_type, $ps_code_base);
+		return $vo_relationship_type;
+	}
+
+	protected static function _createList($ps_idno_base) {
+		$vo_list = new ca_lists();
+		$vo_list->setMode(ACCESS_WRITE);
+		$vo_list->set(array(
+			'list_code' => self::_getIdno($ps_idno_base)
+		));
+		$vo_list->insert();
+		self::_recordCreatedInstance($vo_list, $ps_idno_base);
+		return $vo_list;
+	}
+
+	protected static function _createListItem($ps_idno_base, $pn_list_id, $ps_type_code = null) {
+		$vo_list_item = new ca_list_items();
+		$vo_list_item->setMode(ACCESS_WRITE);
+		/** @var ca_list_items $vo_test_list_item_type_list_item */
+		$vo_test_list_item_type_list_item = null;
+		if (!is_null($ps_type_code)) {
+			$vo_test_list_item_type_list_item = self::_retrieveCreatedInstance('ca_list_items', $ps_type_code);
+			if (is_null($vo_test_list_item_type_list_item)) {
+				$vo_test_list_item_type_list_item = self::_createListItem($ps_type_code, BaseModel::$s_ca_models_definitions['ca_list_items']['FIELDS']['type_id']['LIST_CODE']);
+			}
+		}
+		$vo_list_item->set(array(
+			'idno' => self::_getIdno($ps_idno_base),
+			'list_id' => $pn_list_id,
+			'type_id' => !is_null($vo_test_list_item_type_list_item) ? $vo_test_list_item_type_list_item->get('idno') : null,
+			'is_enabled' => true
+		));
+		$vo_list_item->insert();
+		$vo_list_item->addLabel(
+				array(
+						'name_singular' => $ps_idno_base,
+						'name_plural' => $ps_idno_base
+				),
+				ca_locales::getDefaultCataloguingLocaleID(),
+				null,
+				true
+		);
+		self::_recordCreatedInstance($vo_list_item, $ps_idno_base);
+		return $vo_list_item;
+	}
+
+	protected static function _createMetadataElement($ps_code_base, $ps_datatype = __CA_ATTRIBUTE_VALUE_TEXT__) {
+		$vo_metadata_element = new ca_metadata_elements();
+		$vo_metadata_element->setMode(ACCESS_WRITE);
+		$vo_metadata_element->set(array(
+				'element_code' => self::_getIdno($ps_code_base),
+				'datatype' => $ps_datatype
+		));
+		$vo_metadata_element->insert();
+		self::_recordCreatedInstance($vo_metadata_element, $ps_code_base);
+		return $vo_metadata_element;
+	}
+
+	protected static function _createCollection($ps_idno_base) {
+		$vo_collection = new ca_collections();
+		$vo_collection->setMode(ACCESS_WRITE);
+		$vo_test_collection_type_list_item = self::_retrieveCreatedInstance('ca_list_items', 'test_collection_type');
+		if (is_null($vo_test_collection_type_list_item)) {
+			$vo_test_collection_type_list_item = self::_createListItem('test_collection_type', BaseModel::$s_ca_models_definitions['ca_collections']['FIELDS']['type_id']['LIST_CODE']);
+		}
+		$vo_collection->set(array(
+				'idno' => self::_getIdno($ps_idno_base),
+				'type_id' => $vo_test_collection_type_list_item->getPrimaryKey()
+		));
+		foreach (self::_retrieveCreatedInstancesByClass('ca_metadata_elements') as $vo_metadata_element) {
+			$vo_collection->addMetadataElementToType($vo_metadata_element->get('element_code'), $vo_test_collection_type_list_item->getPrimaryKey());
+		}
+		$vo_collection->insert();
+		$vo_collection->addLabel(
+				array(
+						'name' => $ps_idno_base
+				),
+				ca_locales::getDefaultCataloguingLocaleID(),
+				null,
+				true
+		);
+		self::_recordCreatedInstance($vo_collection, $ps_idno_base);
+		return $vo_collection;
+	}
+
+	protected static function _createEntity($ps_idno_base) {
+		$vo_entity = new ca_entities();
+		$vo_entity->setMode(ACCESS_WRITE);
+		$vo_test_entity_type_list_item = self::_retrieveCreatedInstance('ca_list_items', 'test_entity_type');
+		if (is_null($vo_test_entity_type_list_item)) {
+			$vo_test_entity_type_list_item = self::_createListItem('test_entity_type', BaseModel::$s_ca_models_definitions['ca_entities']['FIELDS']['type_id']['LIST_CODE']);
+		}
+		$vo_entity->set(array(
+			'idno' => self::_getIdno($ps_idno_base),
+			'type_id' => $vo_test_entity_type_list_item->getPrimaryKey()
+		));
+		$vo_entity->insert();
+		$vo_entity->addLabel(
+			array(
+				'forename' => $ps_idno_base,
+				'displayname' => $ps_idno_base,
+				'surname' => $ps_idno_base
+			),
+			ca_locales::getDefaultCataloguingLocaleID(),
+			null,
+			true
+		);
+		self::_recordCreatedInstance($vo_entity, $ps_idno_base);
+		return $vo_entity;
 	}
 }

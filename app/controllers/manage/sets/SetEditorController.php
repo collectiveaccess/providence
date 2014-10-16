@@ -45,8 +45,8 @@
  		}
  		# -------------------------------------------------------
  		protected function _initView($pa_options=null) {
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register('sortableUI');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('sortableUI');
  			$va_init = parent::_initView($pa_options);
  			if (!$va_init[1]->getPrimaryKey()) {
  				$va_init[1]->set('user_id', $this->request->getUserID());
@@ -122,7 +122,7 @@
  			
  			$this->view->setVar('errors', $va_errors);
  			$this->view->setVar('set_id', $pn_set_id);
- 			$this->view->setVar('item_id', $pn_row_id);
+ 			$this->view->setVar('row_id', $pn_row_id);
  			$this->view->setVar('idno', $t_row->get($t_row->getProperty('ID_NUMBERING_ID_FIELD')));
  			$this->view->setVar('idno_sort', $t_row->get($t_row->getProperty('ID_NUMBERING_SORT_FIELD')));
  			$this->view->setVar('set_item_label', $t_row->getLabelForDisplay(false));

@@ -46,7 +46,7 @@
 									'request' => $this->request, 
 									'formName' => 'caBatchEditorForm',
 									'batch' => true,
-									'restrictToTypes' => array_keys($t_set->getTypesForItems()),
+									'restrictToTypes' => array_keys($t_set->getTypesForItems(array('includeParents' => true))),
 									'ui_instance' => $this->getVar('t_ui')
 								), $va_bundle_list);
 								

@@ -38,6 +38,7 @@
 			$this->ops_description = _t('Builds an object hierarchy.');
 			
 			$this->opb_returns_multiple_values = true;
+			$this->opb_supports_relationships = true;
 			
 			parent::__construct();
 		}

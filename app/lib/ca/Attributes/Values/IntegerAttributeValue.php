@@ -122,6 +122,14 @@
 			'label' => _t('Must not be blank'),
 			'description' => _t('Check this option if this attribute value must be set to some value - it must not be blank in other words. (The default is not to be.)')
 		),
+		'mustBeUnique' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Must be unique'),
+			'description' => _t('Check this option to enforce uniqueness across all values for this attribute.')
+		),
 		'canBeUsedInSearchForm' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_CHECKBOXES,
@@ -137,6 +145,22 @@
 			'width' => 1, 'height' => 1,
 			'label' => _t('Can be used in display'),
 			'description' => _t('Check this option if this attribute value can be used for display in search results. (The default is to be.)')
+		),
+		'canMakePDF' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output?'),
+			'description' => _t('Check this option if this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
+		'canMakePDFForValue' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output for individual values?'),
+			'description' => _t('Check this option if individual values for this metadata element can be output as a printable PDF. (The default is not to be.)')
 		),
 		'displayTemplate' => array(
 			'formatType' => FT_TEXT,
@@ -155,7 +179,7 @@
 			'label' => _t('Value delimiter'),
 			'validForRootOnly' => 1,
 			'description' => _t('Delimiter to use between multiple values when used in a display.')
-		)
+		),
 	);
  
 	class IntegerAttributeValue extends AttributeValue implements IAttributeValue {
@@ -180,7 +204,7 @@
  			$ps_value = trim($ps_value);
  			$va_settings = $this->getSettingValuesFromElementArray(
  				$pa_element_info, 
- 				array('minChars', 'maxChars', 'minValue', 'maxValue', 'regex', 'mustNotBeBlank')
+ 				array('minChars', 'maxChars', 'minValue', 'maxValue', 'regex', 'mustNotBeBlank', 'mustBeUnique')
  			);
  			$vn_strlen = unicode_strlen($ps_value);
  			if ($va_settings['minChars'] && ($vn_strlen < $va_settings['minChars'])) {
@@ -238,6 +262,21 @@
 				$this->postError(1970, _t('%1 is not an integer value', $pa_element_info['displayLabel']), 'IntegerAttributeValue->parseValue()');
 				return false;
 			}
+
+			if(isset($va_settings['mustBeUnique']) && (bool)$va_settings['mustBeUnique']) {
+				if(isset($pa_options['transaction']) && ($o_trans = $pa_options['transaction'])) {
+					$o_db = $o_trans->getDb();
+				} else {
+					$o_db = new Db();	
+				}
+
+				$qr_values = $o_db->query('SELECT value_id FROM ca_attribute_values WHERE element_id=? AND value_integer1=?', $pa_element_info['element_id'], $pn_value);
+
+				if($qr_values->numRows()>0) {
+					$this->postError(1970, _t('%1 must be unique across all values. The value you entered already exists.', $pa_element_info['displayLabel']), 'IntegerAttributeValue->parseValue()');
+					return false;
+				}
+			}
 			
  			return array(
  				'value_longtext1' => $pn_value,
@@ -273,6 +312,15 @@
 		 */
 		public function sortField() {
 			return 'value_integer1';
+		}
+ 		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for integer attribute value
+		 * 
+		 * @return int Attribute value type code
+		 */
+		public function getType() {
+			return __CA_ATTRIBUTE_VALUE_INTEGER__;
 		}
  		# ------------------------------------------------------------------
 	}

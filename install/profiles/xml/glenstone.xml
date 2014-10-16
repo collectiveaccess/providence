@@ -519,6 +519,14 @@
             </label>
           </labels>
         </item>
+        <item idno="area" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>area</name_singular>
+              <name_plural>area</name_plural>
+            </label>
+          </labels>
+        </item>
         <item idno="floor" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -556,6 +564,14 @@
             <label locale="en_US" preferred="1">
               <name_singular>shelf</name_singular>
               <name_plural>shelves</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="sub_location" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>sub-location</name_singular>
+              <name_plural>sub-location</name_plural>
             </label>
           </labels>
         </item>
@@ -11673,8 +11689,16 @@
         <item idno="top_load" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Object Crate (Top Load or Side Load)</name_singular>
-              <name_plural>Object Crate (Top Load or Side Load)</name_plural>
+              <name_singular>Object Crate Top Load</name_singular>
+              <name_plural>Object Crate Top Load</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="side_load" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Object Crate Side Load</name_singular>
+              <name_plural>Object Crate Side Load</name_plural>
             </label>
           </labels>
         </item>
@@ -11689,8 +11713,16 @@
         <item idno="travel_frame" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Travel Frame (Oz Clips or Bumpers)</name_singular>
-              <name_plural>Travel Frame (Oz Clips or Bumpers)</name_plural>
+              <name_singular>Travel Frame (With Oz Clips)</name_singular>
+              <name_plural>Travel Frame (With Oz Clips)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="travel_frame_bumpers" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Travel Frame (With Bumpers)</name_singular>
+              <name_plural>Travel Frame (With Bumpers)</name_plural>
             </label>
           </labels>
         </item>
@@ -11734,11 +11766,19 @@
             </label>
           </labels>
         </item>
-        <item idno="Corrulite" enabled="1" default="0">
+        <item idno="Corrulite_with" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Corrulite Box (With or Without Battens)</name_singular>
-              <name_plural>Corrulite Box (With or Without Battens)</name_plural>
+              <name_singular>Corrulite Box With Battens</name_singular>
+              <name_plural>Corrulite Box With Battens</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Corrulite_without" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Corrulite Box Without Battens</name_singular>
+              <name_plural>Corrulite Box Without Battens</name_plural>
             </label>
           </labels>
         </item>
@@ -14243,8 +14283,8 @@
         <item idno="Stone_Haven" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Stone Haven</name_singular>
-              <name_plural>Stone Haven</name_plural>
+              <name_singular>Stonehavens</name_singular>
+              <name_plural>Stonehavens</name_plural>
             </label>
           </labels>
         </item>
@@ -14361,6 +14401,63 @@
             <label locale="en_US" preferred="1">
               <name_singular>Declined</name_singular>
               <name_plural>Declined</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="shipment_types" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Shipment Types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="shuttle" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Shuttle</name_singular>
+              <name_plural>Shuttle</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="exclusive_use" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Exclusive-use</name_singular>
+              <name_plural>Exclusive-use</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="first_on_off" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>First-on/first-off</name_singular>
+              <name_plural>First-on/first-off</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="by_hand" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>By hand</name_singular>
+              <name_plural>Ny hand</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="air" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Air</name_singular>
+              <name_plural>Air</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="ocean" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Ocean</name_singular>
+              <name_plural>Ocean</name_plural>
             </label>
           </labels>
         </item>
@@ -18127,6 +18224,60 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="on_loanSH" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>If SH</name>
+        </label>
+      </labels>
+      <elements>
+        <metadataElement code="on_loanSH_line1" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Other Inventory #s Line 1</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="on_loan_yn" datatype="List" list="yn">
+              <labels>
+                <label locale="en_US">
+                  <name>On loan to GF?</name>
+                  <description/>
+                </label>
+              </labels>
+              <settings>
+                <setting name="render">radio_buttons</setting>
+                <setting name="maxColumns">2</setting>
+              </settings>
+            </metadataElement>
+            <metadataElement code="on_loan_date" datatype="DateRange">
+              <labels>
+                <label locale="en_US">
+                  <name>Loan Date Range</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="useDatePicker">1</setting>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <type>artwork</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
     <metadataElement code="object_status" datatype="List" list="object_status">
       <labels>
         <label locale="en_US">
@@ -18390,7 +18541,7 @@
                 <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
-                <setting name="maxChars">255</setting>
+                <setting name="maxChars">5000</setting>
               </settings>
             </metadataElement>
           </elements>
@@ -19924,7 +20075,7 @@
           <type>artwork</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">5</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -19949,7 +20100,7 @@
           <type>artwork</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">5</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -19959,6 +20110,7 @@
       <labels>
         <label locale="en_US">
           <name>Exhibition History</name>
+          <description>Use the following format: Exhibition Title. Exhibition Venue, City, Dates. </description>
         </label>
       </labels>
       <elements>
@@ -21461,7 +21613,7 @@
           <table>ca_objects</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="maxAttributesPerRow">5000</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -21520,7 +21672,7 @@
           <table>ca_objects</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="maxAttributesPerRow">2000</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -21537,6 +21689,27 @@
           <labels>
             <label locale="en_US">
               <name>Legacy Conservation Materials Line 1</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="legacy_conservation_primary" datatype="List" list="yn">
+              <labels>
+                <label locale="en_US">
+                  <name>Primary?</name>
+                  <description/>
+                </label>
+              </labels>
+              <settings>
+                <setting name="render">yes_no_checkboxes</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="legacy_conservation_2" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Legacy Conservation Materials Line 2</name>
             </label>
           </labels>
           <settings/>
@@ -21558,7 +21731,7 @@
           <table>ca_objects</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="maxAttributesPerRow">5000</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -21623,21 +21796,62 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="installation_weight" datatype="Weight">
+    <metadataElement code="crate_weight" datatype="Container">
       <labels>
         <label locale="en_US">
           <name>Object Weight</name>
-          <description/>
         </label>
       </labels>
-      <documentationUrl/>
-      <settings>
-          <setting name="fieldWidth">40</setting>
-          <setting name="fieldHeight">1</setting>
-      </settings>
+      <elements>
+        <metadataElement code="crate_weight_line1" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Object Weight Line 1</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="crate_weight_display" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Display Weight</name>
+                  <description/>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">100</setting>
+                <setting name="fieldHeight">1</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="crate_weight_line2" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Object Weight Line 2</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="crate_weight_value" datatype="Weight">
+              <labels>
+                <label locale="en_US">
+                  <name>Weight</name>
+                  <description/>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">70</setting>
+                <setting name="fieldHeight">1</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+      </elements>
       <typeRestrictions>
         <restriction code="ca_objects">
           <table>ca_objects</table>
+          <type>artwork</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -21646,18 +21860,58 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="crate_weight" datatype="Weight">
+    <metadataElement code="installation_weight" datatype="Container">
       <labels>
         <label locale="en_US">
-          <name>With Crate Weight</name>
-          <description/>
+          <name>Object Weight</name>
         </label>
       </labels>
-      <documentationUrl/>
-      <settings>
-        <setting name="fieldWidth">40</setting>
-        <setting name="fieldHeight">1</setting>
-      </settings>
+      <elements>
+        <metadataElement code="installation_weight_line1" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Object Weight Line 1</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="installation_weight_display" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Display Weight</name>
+                  <description/>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">100</setting>
+                <setting name="fieldHeight">1</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="installation_weight_line2" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Object Weight Line 2</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="installation_weight_value" datatype="Weight">
+              <labels>
+                <label locale="en_US">
+                  <name>Weight</name>
+                  <description/>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">70</setting>
+                <setting name="fieldHeight">1</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+      </elements>
       <typeRestrictions>
         <restriction code="ca_objects">
           <table>ca_objects</table>
@@ -22956,7 +23210,7 @@
           <table>ca_object_representations</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">3</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -23299,7 +23553,7 @@
     <metadataElement code="headline" datatype="Text">
       <labels>
         <label locale="en_US">
-          <name>Headline</name>
+          <name>Headline/Caption</name>
         </label>
       </labels>
       <settings>
@@ -24091,6 +24345,30 @@
         <setting name="useDatePicker">1</setting>
         <setting name="fieldWidth">70</setting>
         <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_occurrences">
+          <table>ca_occurrences</table>
+          <type>exhibition</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="exh_location" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Exhibition Location</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">5</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
       </settings>
@@ -25414,7 +25692,7 @@
     <metadataElement code="number_sent" datatype="Container">
       <labels>
         <label locale="en_US">
-          <name>Accession # Sent to Finance Department</name>
+          <name>Accession # Sent from Registrar to Finance Department</name>
         </label>
       </labels>
       <elements>
@@ -25564,114 +25842,6 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="promissory_note" datatype="Container">
-      <labels>
-        <label locale="en_US">
-          <name>Internal Loan Agreement/Promissory Note</name>
-        </label>
-      </labels>
-      <elements>
-        <metadataElement code="promissory_note_line1" datatype="Container">
-          <labels>
-            <label locale="en_US">
-              <name>Internal Loan Agreement/Promissory Note Line 1</name>
-            </label>
-          </labels>
-          <settings/>
-          <elements>
-            <metadataElement code="promissory_note_primary" datatype="List" list="yn">
-              <labels>
-                <label locale="en_US">
-                  <name>Primary?</name>
-                  <description/>
-                </label>
-              </labels>
-              <settings>
-                <setting name="render">yes_no_checkboxes</setting>
-              </settings>
-            </metadataElement>
-          </elements>
-        </metadataElement>
-        <metadataElement code="promissory_note_2" datatype="Container">
-          <labels>
-            <label locale="en_US">
-              <name>Internal Loan Agreement/Promissory Note Line 2</name>
-            </label>
-          </labels>
-          <settings/>
-          <elements>
-            <metadataElement code="promissory_note_media" datatype="Media">
-              <labels>
-                <label locale="en_US">
-                  <name> </name>
-                  <description/>
-                </label>
-              </labels>
-              <settings/>
-            </metadataElement>
-          </elements>
-        </metadataElement>
-      </elements>
-      <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_object_lots</table>
-          <type>collection</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">100</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="condition_completed" datatype="Container">
-      <labels>
-        <label locale="en_US">
-          <name>Condition Report Completed</name>
-        </label>
-      </labels>
-      <elements>
-        <metadataElement code="condition_completed1" datatype="Container">
-          <labels>
-            <label locale="en_US">
-              <name>Condition Report Completed Line 1</name>
-            </label>
-          </labels>
-          <settings/>
-          <elements>
-            <metadataElement code="condition_completed_by" datatype="List" list="personnel">
-              <labels>
-                <label locale="en_US">
-                  <name>Completed By</name>
-                </label>
-              </labels>
-              <settings/>
-            </metadataElement>
-            <metadataElement code="condition_completed_date" datatype="DateRange">
-              <labels>
-                <label locale="en_US">
-                  <name>Date</name>
-                </label>
-              </labels>
-              <settings>
-                <setting name="useDatePicker">1</setting>
-              </settings>
-            </metadataElement>
-          </elements>
-        </metadataElement>
-      </elements>
-      <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_object_lots</table>
-          <type>collection</type>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
     <!-- Loan Elements -->
     <metadataElement code="gf_contact" datatype="List" list="personnel">
       <labels>
@@ -25704,6 +25874,61 @@
         <setting name="render">radio_buttons</setting>
         <setting name="maxColumns">3</setting>
       </settings>
+      <typeRestrictions>
+        <restriction code="loans">
+          <table>ca_loans</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="aggreement_received" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>Loan Agreement Received</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <elements>
+        <metadataElement code="aggreement_received1" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Approval Status line 1</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="aggreement_list" datatype="List" list="yn">
+              <labels>
+                <label locale="en_US">
+                  <name>Received?</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="render">radio_buttons</setting>
+                <setting name="maxColumns">2</setting>
+              </settings>
+            </metadataElement>
+            <metadataElement code="aggreement_date" datatype="DateRange">
+              <labels>
+                <label locale="en_US">
+                  <name>Date</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="useDatePicker">1</setting>
+                <setting name="fieldWidth">30</setting>
+                <setting name="fieldHeight">1</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+      </elements>
       <typeRestrictions>
         <restriction code="loans">
           <table>ca_loans</table>
@@ -25795,7 +26020,20 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">100</setting>
+                <setting name="fieldWidth">50</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">255</setting>
+              </settings>
+            </metadataElement>
+            <metadataElement code="contact_title" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Contact Title</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">50</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -26252,6 +26490,69 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="loan_insurance" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>Loan Insurance</name>
+          <description></description>
+        </label>
+      </labels>
+      <elements>
+        <metadataElement code="loan_insurance_line1" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Loan Insurance Line 1</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="loan_insurance_value" datatype="Currency">
+              <labels>
+                <label locale="en_US">
+                  <name>Insurance Value</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">50</setting>
+                <setting name="fieldHeight">1</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="loan_insurance_line2" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Loan Insurance Line 2</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="loan_insurance_notes" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Insurance Notes</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">100</setting>
+                <setting name="fieldHeight">3</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction code="ca_loans">
+          <table>ca_loans</table>
+          <type>artwork</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
     <metadataElement code="traveling_info" datatype="Container">
       <labels>
         <label locale="en_US">
@@ -26445,15 +26746,81 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="shipment_type" datatype="Text">
+    <metadataElement code="shipment_type" datatype="List" list="shipment_types">
       <labels>
         <label locale="en_US">
           <name>Shipment Type</name>
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">100</setting>
+        <setting name="render">radio_buttons</setting>
+        <setting name="maxColumns">4</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_movements">
+          <table>ca_movements</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="consignment_value" datatype="Currency">
+      <labels>
+        <label locale="en_US">
+          <name>Consignment Value</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">50</setting>
         <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_movements">
+          <table>ca_movements</table>
+          <type>administrative</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="consignment_date" datatype="DateRange">
+      <labels>
+        <label locale="en_US">
+          <name>Consignment Date</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="useDatePicker">1</setting>
+        <setting name="fieldWidth">50</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_movements">
+          <table>ca_movements</table>
+          <type>administrative</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="shipment_type" datatype="List" list="shipment_types">
+      <labels>
+        <label locale="en_US">
+          <name>Shipment Type</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">radio_buttons</setting>
+        <setting name="maxColumns">6</setting>
       </settings>
       <typeRestrictions>
         <restriction code="ca_movements">
@@ -27643,6 +28010,9 @@
             <placement code="ca_attribute_acquired">
               <bundle>ca_attribute_acquired</bundle>
             </placement>
+            <placement code="ca_attribute_on_loanSH">
+              <bundle>ca_attribute_on_loanSH</bundle>
+            </placement>
             <placement code="ca_attribute_gift_yn">
               <bundle>ca_attribute_gift_yn</bundle>
             </placement>
@@ -27834,9 +28204,6 @@
             </placement>
             <placement code="ca_attribute_price_notes">
               <bundle>ca_attribute_price_notes</bundle>
-            </placement>
-            <placement code="ca_attribute_appraisal">
-              <bundle>ca_attribute_appraisal</bundle>
             </placement>
             <placement code="ca_attribute_payment_details">
               <bundle>ca_attribute_payment_details</bundle>
@@ -28170,7 +28537,7 @@ Via: <unit relativeTo="ca_movements">
                  <setting name="deaccession_displayTemplate"><![CDATA[Deaccessioned <ifdef code="ca_objects.deaccession_date">on</ifdef> ^ca_objects.deaccession_date <ifdef code="ca_objects.deaccession_type_id">(</ifdef>^ca_objects.deaccession_type_id<ifdef code="ca_objects.deaccession_type_id">)</ifdef>]]></setting>
                </settings>
             </placement>
-            <placement code="ca_attribute_artwork_legacy_locations">
+            <placement code="ca_attribute_legacy_locations">
               <bundle>ca_attribute_legacy_locations</bundle>
               <settings>
                 <setting name="sort">legacy_location_date</setting>
@@ -28807,6 +29174,18 @@ Via: <unit relativeTo="ca_movements">
             </placement>
             <placement code="ca_attribute_exh_dates">
               <bundle>ca_attribute_exh_dates</bundle>
+            </placement>
+            <placement code="ca_attribute_exh_location">
+              <bundle>ca_attribute_exh_location</bundle>
+            </placement>
+            <placement code="ca_website">
+              <bundle>ca_objects</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Website Exhibition Representation</setting>
+                <setting name="add_label" locale="en_US">Add relationship</setting>
+                <setting name="restrict_to_relationship_types" locale="en_US">depicts</setting>
+                <setting name="display_template"><![CDATA[<l>^ca_objects.preferred_labels</l>]]></setting>
+              </settings>
             </placement>
             <placement code="access">
               <bundle>access</bundle>
@@ -29750,6 +30129,7 @@ Via: <unit relativeTo="ca_movements">
                 <setting name="display_template"><![CDATA[
                   <unit relativeTo="ca_objects">
                   <unit><l>^ca_objects.preferred_labels</l><br/><br/></unit>
+                  <b>Accession #:</b> ^ca_objects.idno<br><br>
                   <b>Artist:</b> <unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="artist">^ca_entities.preferred_labels</unit><br><br>
                   <b>Date:</b> ^ca_objects.creation_date<br><br>
                   <b>Medium:</b> ^ca_objects.medium <br><br>
@@ -29837,22 +30217,13 @@ Via: <unit relativeTo="ca_movements">
             <placement code="ca_attribute_notes_requested">
               <bundle>ca_attribute_notes_requested</bundle>
             </placement>
-            <placement code="ca_attribute_promissory_note">
-              <bundle>ca_attribute_promissory_note</bundle>
-               <settings>
-                <setting name="sortDirection">DESC</setting>
-              </settings>
-            </placement>
              <placement code="ca_movements">
               <bundle>ca_movements</bundle>
               <settings>
-                <setting name="label" locale="en_US">Shipped By (Related Artwork Movements)</setting>
+                <setting name="label" locale="en_US">Related Artwork Movements</setting>
                 <setting name="add_label" locale="en_US">Add movements</setting>
               </settings>
              </placement>
-            <placement code="ca_attribute_condition_completed">
-              <bundle>ca_attribute_condition_completed</bundle>
-            </placement>
             <placement code="status">
               <bundle>status</bundle>
               <settings>
@@ -30273,10 +30644,31 @@ Via: <unit relativeTo="ca_movements">
              <restriction code="collection" type="collection"/>
           </typeRestrictions>
           <bundlePlacements>
+            <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Loaned Artwork(s)</setting>
+                <setting name="add_label" locale="en_US">Add artworks</setting>
+                <setting name="restrict_to_types">artwork</setting>
+                <setting name="list_format">list</setting>
+                <setting name="display_template"><![CDATA[
+                  <unit relativeTo="ca_objects">
+<unit><l>^ca_objects.preferred_labels</l><br/><br/></unit>
+                  <b>Accession #:</b> ^ca_objects.idno<br><br>
+                  <b>Artist:</b> <unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="artist">^ca_entities.preferred_labels</unit><br><br>
+                  <b>Date:</b> ^ca_objects.creation_date<br><br>
+                  <b>Medium:</b> ^ca_objects.medium <br><br>
+                  <b>Dimensions:</b> <unit relativeTo="ca_objects.dimensions" delimiter="; ">^ca_objects.dimensions.display_dimensions <ifdef code="ca_objects.dimensions.Type">(</ifdef>^ca_objects.dimensions.Type<ifdef code="ca_objects.dimensions.Type">)</ifdef></unit><br><br>
+                  <b>Signature:</b> <unit relativeTo="ca_objects.signed" delimiter="; ">^ca_objects.signed.signature_details</unit><br><br>
+                  <b>Edition:</b> <unit relativeTo="ca_objects.edition" delimiter="; ">^ca_objects.edition.edition_number <ifdef code="ca_objects.edition.edition_total">/</ifdef>^ca_objects.edition.edition_total</unit>
+                  </unit><br/>
+                  ]]></setting>
+              </settings>
+            </placement>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
-                <setting name="label" locale="en_US">Title of Loan</setting>
+                <setting name="label" locale="en_US">Short Description of Loan</setting>
               </settings>
             </placement>
             <placement code="idno">
@@ -30301,6 +30693,12 @@ Via: <unit relativeTo="ca_movements">
             </placement>
             <placement code="ca_attribute_approval">
               <bundle>ca_attribute_approval</bundle>
+            </placement>
+            <placement code="ca_attribute_aggreement_received">
+              <bundle>ca_attribute_aggreement_received</bundle>
+            </placement>
+            <placement code="ca_attribute_loan_insurance">
+              <bundle>ca_attribute_loan_insurance</bundle>
             </placement>
             <placement code="ca_attribute_contact_address">
               <bundle>ca_attribute_contact_address</bundle>
@@ -30336,26 +30734,6 @@ Via: <unit relativeTo="ca_movements">
               <bundle>ca_attribute_loan_note</bundle>
               <settings>
                 <setting name="label" locale="en_US">Loan Note</setting>
-              </settings>
-            </placement>
-            <placement code="ca_objects">
-              <bundle>ca_objects</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Loaned Artwork(s)</setting>
-                <setting name="add_label" locale="en_US">Add artworks</setting>
-                <setting name="restrict_to_types">artwork</setting>
-                <setting name="list_format">list</setting>
-                <setting name="display_template"><![CDATA[
-                  <unit relativeTo="ca_objects">
-<unit><l>^ca_objects.preferred_labels</l><br/><br/></unit>
-                  <b>Artist:</b> <unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="artist">^ca_entities.preferred_labels</unit><br><br>
-                  <b>Date:</b> ^ca_objects.creation_date<br><br>
-                  <b>Medium:</b> ^ca_objects.medium <br><br>
-                  <b>Dimensions:</b> <unit relativeTo="ca_objects.dimensions" delimiter="; ">^ca_objects.dimensions.display_dimensions <ifdef code="ca_objects.dimensions.Type">(</ifdef>^ca_objects.dimensions.Type<ifdef code="ca_objects.dimensions.Type">)</ifdef></unit><br><br>
-                  <b>Signature:</b> <unit relativeTo="ca_objects.signed" delimiter="; ">^ca_objects.signed.signature_details</unit><br><br>
-                  <b>Edition:</b> <unit relativeTo="ca_objects.edition" delimiter="; ">^ca_objects.edition.edition_number <ifdef code="ca_objects.edition.edition_total">/</ifdef>^ca_objects.edition.edition_total</unit>
-                  </unit><br/>
-                  ]]></setting>
               </settings>
             </placement>
             <placement code="access">
@@ -30527,8 +30905,7 @@ Via: <unit relativeTo="ca_movements">
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
               <settings>
-                <setting name="label" locale="en_US">Mover</setting>
-                <setting name="add_label" locale="en_US">Add mover</setting>
+                <setting name="label" locale="en_US">Shipping Company</setting>
                 <setting name="restrict_to_relationship_types">mover</setting>
               </settings>
             </placement>
@@ -30542,6 +30919,12 @@ Via: <unit relativeTo="ca_movements">
             </placement>
             <placement code="ca_attribute_movement_purpose">
               <bundle>ca_attribute_movement_purpose</bundle>
+            </placement>
+            <placement code="ca_attribute_consignment_value">
+              <bundle>ca_attribute_consignment_value</bundle>
+            </placement>
+            <placement code="ca_attribute_consignment_date">
+              <bundle>ca_attribute_consignment_date</bundle>
             </placement>
             <placement code="ca_attribute_pickup_date">
               <bundle>ca_attribute_pickup_date</bundle>
@@ -30633,8 +31016,8 @@ Via: <unit relativeTo="ca_movements">
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
               <settings>
-                <setting name="label" locale="en_US">Vendor</setting>
-                <setting name="add_label" locale="en_US">Add vendor</setting>
+                <setting name="label" locale="en_US">Conservator</setting>
+                <setting name="add_label" locale="en_US">Add conservator</setting>
                 <setting name="restrict_to_relationship_types">conservator</setting>
                 <setting name="restrict_to_relationship_types">fabricator</setting>
               </settings>
@@ -30714,8 +31097,8 @@ Via: <unit relativeTo="ca_movements">
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
               <settings>
-                <setting name="label" locale="en_US">Vendor</setting>
-                <setting name="add_label" locale="en_US">Add vendor</setting>
+                <setting name="label" locale="en_US">Framer</setting>
+                <setting name="add_label" locale="en_US">Add framer</setting>
                 <setting name="restrict_to_relationship_types">framer</setting>
                 <setting name="restrict_to_relationship_types">fabricator</setting>
               </settings>
@@ -32548,6 +32931,315 @@ Via: <unit relativeTo="ca_movements">
         <permission table="ca_list_items" source="glenstone" access="edit" default="1"/>
       </sourceLevelAccessControl>
     </role>
+    <role code="rights">
+      <name>Rights and Reproductions</name>
+      <description>Access control actions defined for R &amp; R users</description>
+      <actions>
+        <action>can_set_access_control</action>
+        <action>can_view_logs</action>
+        <action>can_configure_user_interfaces</action>
+        <action>can_configure_metadata_elements</action>
+        <action>can_configure_relationship_types</action>
+        <action>can_configure_bundle_mappings</action>
+        <action>can_configure_locales</action>
+        <action>can_view_configuration_check</action>
+        <action>can_manage_system_search_forms</action>
+        <action>can_manage_system_bundle_displays</action>
+        <action>can_administrate_sets</action>
+        <action>can_do_search_reindex</action>
+        <action>can_manage_clients</action>
+        <action>can_quicksearch</action>
+        <action>can_batch_import_media</action>
+        <action>can_batch_import_metadata</action>
+        <action>can_batch_export_metadata</action>
+        <action>can_set_preferences</action>
+        <action>can_create_adv_search_forms</action>
+        <action>can_edit_adv_search_forms</action>
+        <action>can_delete_adv_search_forms</action>
+        <action>can_use_adv_search_forms</action>
+        <action>can_create_ca_bundle_displays</action>
+        <action>can_edit_ca_bundle_displays</action>
+        <action>can_delete_ca_bundle_displays</action>
+        <action>can_use_ca_bundle_displays</action>
+        <action>can_duplicate_ca_bundle_displays</action>
+        <action>can_create_user_groups</action>
+        <action>can_create_sets</action>
+        <action>can_edit_sets</action>
+        <action>can_delete_sets</action>
+        <action>can_delete_own_sets</action>
+        <action>can_view_sets</action>
+        <action>can_duplicate_ca_sets</action>
+        <action>can_manage_user_comments</action>
+        <action>can_manage_user_tags</action>
+        <!-- Begin table-specific -->
+        <action>can_create_ca_objects</action>
+        <action>can_edit_ca_objects</action>
+        <action>can_delete_ca_objects</action>
+        <action>can_search_ca_objects</action>
+        <action>can_browse_ca_objects</action>
+        <action>can_download_ca_object_representations</action>
+        <action>can_duplicate_ca_objects</action>
+        <action>can_quickadd_ca_objects</action>
+        <action>can_export_ca_objects</action>
+        <action>can_change_type_ca_objects</action>
+        <action>can_change_acl_ca_objects</action>
+        <action>can_batch_edit_ca_objects</action>
+        <action>can_batch_delete_ca_objects</action>
+        <action>can_create_ca_object_representations</action>
+        <action>can_edit_ca_object_representations</action>
+        <action>can_delete_ca_object_representations</action>
+        <action>can_search_ca_object_representations</action>
+        <action>can_browse_ca_object_representations</action>
+        <action>can_duplicate_ca_object_representations</action>
+        <action>can_export_ca_object_representations</action>
+        <action>can_change_type_ca_object_representations</action>
+        <action>can_change_acl_ca_object_representations</action>
+        <action>can_batch_edit_ca_object_representations</action>
+        <action>can_batch_delete_ca_object_representations</action>
+        <action>can_create_ca_representation_annotations</action>
+        <action>can_edit_ca_representation_annotations</action>
+        <action>can_delete_ca_representation_annotations</action>
+        <action>can_search_ca_representation_annotations</action>
+        <action>can_browse_ca_representation_annotations</action>
+        <action>can_duplicate_ca_representation_annotations</action>
+        <action>can_change_acl_ca_representation_annotations</action>
+        <action>can_create_ca_object_lots</action>
+        <action>can_edit_ca_object_lots</action>
+        <action>can_delete_ca_object_lots</action>
+        <action>can_search_ca_object_lots</action>
+        <action>can_browse_ca_object_lots</action>
+        <action>can_duplicate_ca_object_lots</action>
+        <action>can_export_ca_object_lots</action>
+        <action>can_quickadd_ca_object_lots</action>
+        <action>can_change_type_ca_object_lots</action>
+        <action>can_change_acl_ca_object_lots</action>
+        <action>can_batch_edit_ca_object_lots</action>
+        <action>can_batch_delete_ca_object_lots</action>
+        <action>can_create_ca_entities</action>
+        <action>can_edit_ca_entities</action>
+        <action>can_delete_ca_entities</action>
+        <action>can_search_ca_entities</action>
+        <action>can_browse_ca_entities</action>
+        <action>can_duplicate_ca_entities</action>
+        <action>can_export_ca_entities</action>
+        <action>can_quickadd_ca_entities</action>
+        <action>can_change_type_ca_entities</action>
+        <action>can_change_acl_ca_entities</action>
+        <action>can_batch_edit_ca_entities</action>
+        <action>can_batch_delete_ca_entities</action>
+        <action>can_create_ca_occurrences</action>
+        <action>can_edit_ca_occurrences</action>
+        <action>can_delete_ca_occurrences</action>
+        <action>can_search_ca_occurrences</action>
+        <action>can_browse_ca_occurrences</action>
+        <action>can_duplicate_ca_occurrences</action>
+        <action>can_export_ca_occurrences</action>
+        <action>can_quickadd_ca_occurrences</action>
+        <action>can_change_type_ca_occurrences</action>
+        <action>can_change_acl_ca_occurrences</action>
+        <action>can_batch_edit_ca_occurrences</action>
+        <action>can_batch_delete_ca_occurrences</action>
+        <action>can_create_ca_collections</action>
+        <action>can_edit_ca_collections</action>
+        <action>can_delete_ca_collections</action>
+        <action>can_search_ca_collections</action>
+        <action>can_browse_ca_collections</action>
+        <action>can_duplicate_ca_collections</action>
+        <action>can_export_ca_collections</action>
+        <action>can_quickadd_ca_collections</action>
+        <action>can_change_type_ca_collections</action>
+        <action>can_change_acl_ca_collections</action>
+        <action>can_batch_edit_ca_collections</action>
+        <action>can_batch_delete_ca_collections</action>
+        <action>can_create_ca_storage_locations</action>
+        <action>can_edit_ca_storage_locations</action>
+        <action>can_delete_ca_storage_locations</action>
+        <action>can_search_ca_storage_locations</action>
+        <action>can_browse_ca_storage_locations</action>
+        <action>can_duplicate_ca_storage_locations</action>
+        <action>can_export_ca_storage_locations</action>
+        <action>can_quickadd_ca_storage_locations</action>
+        <action>can_change_type_ca_storage_locations</action>
+        <action>can_change_acl_ca_storage_locations</action>
+        <action>can_batch_edit_ca_storage_locations</action>
+        <action>can_batch_delete_ca_storage_locations</action>
+        <action>can_create_ca_loans</action>
+        <action>can_edit_ca_loans</action>
+        <action>can_delete_ca_loans</action>
+        <action>can_search_ca_loans</action>
+        <action>can_browse_ca_loans</action>
+        <action>can_duplicate_ca_loans</action>
+        <action>can_export_ca_loans</action>
+        <action>can_quickadd_ca_loans</action>
+        <action>can_change_type_ca_loans</action>
+        <action>can_change_acl_ca_loans</action>
+        <action>can_batch_edit_ca_loans</action>
+        <action>can_batch_delete_ca_loans</action>
+        <action>can_create_ca_movements</action>
+        <action>can_edit_ca_movements</action>
+        <action>can_delete_ca_movements</action>
+        <action>can_search_ca_movements</action>
+        <action>can_browse_ca_movements</action>
+        <action>can_duplicate_ca_movements</action>
+        <action>can_export_ca_movements</action>
+        <action>can_quickadd_ca_movements</action>
+        <action>can_change_type_ca_movements</action>
+        <action>can_change_acl_ca_movements</action>
+        <action>can_batch_edit_ca_movements</action>
+        <action>can_batch_delete_ca_movements</action>
+        <action>can_create_ca_lists</action>
+        <action>can_edit_ca_lists</action>
+        <action>can_edit_system_lists</action>
+        <action>can_delete_ca_lists</action>
+        <action>can_delete_system_lists</action>
+        <action>can_duplicate_ca_lists</action>
+        <action>can_duplicate_ca_list_items</action>
+        <action>can_export_ca_list_items</action>
+        <action>can_change_type_ca_list_items</action>
+        <action>can_change_acl_ca_lists</action>
+        <action>can_change_acl_ca_list_items</action>
+        <action>can_batch_edit_ca_list_items</action>
+        <action>can_batch_delete_ca_list_items</action>
+        <action>can_download_media</action>
+        <action>can_share_via_email</action>
+        <action>can_share_via_facebook</action>
+        <action>can_replicate_media</action>
+      </actions>
+      <bundleLevelAccessControl>
+        <permission table="ca_objects" bundle="ca_attribute_object_cost" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_object_retail" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_purchase_date" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_current_insurance" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_insurance_valuation" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_price_notes" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_payment_details" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_deaccession_details" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_financial_uploads" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_general_condition" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_frame_condition" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_glazing_condition" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_mount_condition" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_surface_condition" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_support_condition" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_pedestal_condition" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_base_condition" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_vitrine_condition" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_maintenance" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_conservation_reports" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_legacy_conservation_materials" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_condition_images" access="none"/>
+        <permission table="ca_objects" bundle="ca_attribute_legacy_locations" access="none"/>
+        
+        <permission table="ca_objects" bundle="idno" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_altID" access="read"/>
+        <permission table="ca_objects" bundle="preferred_labels" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_acquired" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_on_loanSH" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_gift_yn" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_category" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_creation_date" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_object_dates" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_medium" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_materials" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_edition" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_artwork_description" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_dimensions" access="read"/>
+        <permission table="ca_objects" bundle="status" access="read"/>
+        <permission table="ca_objects" bundle="access" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_artwork_provenance" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_literature" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_exhibition_history" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_number_of_elements" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_element_notes" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_element_description" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_framed_yn" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_frame_dimensions" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_glazing_legacy" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_frame_legacy" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_frame_type" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_window_mat" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_mat_type" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_mounted_yn" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_mount" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_mount_material" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_hardware" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_backing" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_crate" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_signed" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_dated" access="read"/>    
+        <permission table="ca_objects" bundle="ca_attribute_inscription" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_legacy_description" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_legacy_comments" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_certificate_auth" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_artist_agreement" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_non_exclusive" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_transparency" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_sticker_label" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_photo_record" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_artwork_website" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_other_notes" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_artwork_documents" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_installation_weight" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_install_dimensions" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_installation_materials" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_installation_notes" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_general_condition_packing" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_crate_number" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_crate_weight" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_crate_dimensions" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_crate_description" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_crate_shell" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_crate_fasteners" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_crate_handles" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_crate_skids" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_crate_lining" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_crate_bracing" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_packing" access="read"/>       
+        <permission table="ca_objects" bundle="ca_attribute_crate_notes" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_packing_documents" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_packing_notes" access="read"/>
+        <permission table="ca_objects" bundle="ca_attribute_artwork_movement" access="read"/>
+      </bundleLevelAccessControl>
+      <typeLevelAccessControl>
+        <permission table="ca_objects" type="image" access="read"/>
+        <permission table="ca_objects" type="document" access="read"/>
+        <permission table="ca_objects" type="audio" access="read"/>
+        <permission table="ca_objects" type="moving_image" access="read"/>
+        <permission table="ca_objects" type="ephemera" access="read"/>
+        <permission table="ca_objects" type="artwork" access="edit"/>
+        <permission table="ca_objects" type="book" access="read"/>
+        <permission table="ca_objects" type="element" access="edit"/>
+        <permission table="ca_occurrences" type="exhibition" access="edit"/>
+        <permission table="ca_loans" type="archive" access="none"/>
+        <permission table="ca_loans" type="collection" access="none"/>
+        <permission table="ca_object_lots" type="archive" access="none"/>
+        <permission table="ca_object_lots" type="collection" access="none"/>
+        <permission table="ca_object_lots" type="library" access="none"/>
+        <permission table="ca_movements" type="collection" access="none"/>
+        <permission table="ca_collections" type="collection" access="read"/>
+        <permission table="ca_collections" type="series" access="read"/>
+        <permission table="ca_collections" type="sub_series" access="read"/>
+        <permission table="ca_collections" type="sub_sub_series" access="read"/>
+        <permission table="ca_collections" type="box" access="read"/>
+        <permission table="ca_collections" type="folder" access="read"/>
+      </typeLevelAccessControl>
+      <sourceLevelAccessControl>
+        <permission table="ca_entities" source="archive" access="read"/>
+        <permission table="ca_entities" source="collection" access="edit" default="1"/>
+        <permission table="ca_entities" source="library" access="read"/>
+        <permission table="ca_storage_locations" source="archive" access="read"/>
+        <permission table="ca_storage_locations" source="collection" access="edit" default="1"/>
+        <permission table="ca_storage_locations" source="library" access="read"/>
+        <permission table="ca_objects" source="glenstone" access="edit" default="1"/>
+        <permission table="ca_object_lots" source="glenstone" access="edit" default="1"/>
+        <permission table="ca_collections" source="glenstone" access="edit" default="1"/>
+        <permission table="ca_occurrences" source="glenstone" access="edit" default="1"/>
+        <permission table="ca_loans" source="glenstone" access="edit" default="1"/>
+        <permission table="ca_movements" source="glenstone" access="edit" default="1"/>
+        <permission table="ca_object_representations" source="glenstone" access="edit" default="1"/>
+        <permission table="ca_list_items" source="glenstone" access="edit" default="1"/>
+      </sourceLevelAccessControl>
+    </role>
     <role code="library">
       <name>Library</name>
       <description>Access control actions defined for Library users</description>
@@ -32829,6 +33521,13 @@ Via: <unit relativeTo="ca_movements">
         <role>collection</role>
       </roles>
     </group>
+    <group code="rights">
+      <name>Rights and Reproductions</name>
+      <description></description>
+      <roles>
+        <role>rights</role>
+      </roles>
+    </group>
   </groups>
   <displays>
     <display code="object_type" type="ca_objects" system="1">
@@ -32997,7 +33696,7 @@ Via: <unit relativeTo="ca_movements">
              <unit relativeTo="ca_objects.general_condition" delimiter="<br>">
              ^ca_objects.general_condition.general_condition_specific 
              <ifdef code="ca_objects.general_condition.general_condition_person">(</ifdef>^ca_objects.general_condition.general_condition_person<ifdef code="ca_objects.general_condition.general_condition_person">)</ifdef>
-             <ifdef code="ca_objects.general_condition.general_condition_comments">:</ifdef>
+             <ifdef code="ca_objects.general_condition.general_condition_specific">:</ifdef>
              ^ca_objects.general_condition.general_condition_value 
              ^ca_objects.general_condition.general_condition_comments
              ^ca_objects.general_condition.general_condition_date
@@ -33198,7 +33897,7 @@ Via: <unit relativeTo="ca_movements">
           <bundle>ca_objects.frame_dimensions</bundle>
           <settings>
             <setting name="label" locale="en_US">Frame Dimensions</setting>
-            <setting name="format"><![CDATA[<unit relativeTo="ca_objects.frame_dimensions" delimiter="; ">^ca_objects.frame_dimensions.frame_dim_height <ifdef code="ca_objects.frame_dimensions.frame_dim_width">x </ifdef>^ca_objects.frame_dimensions.frame_dim_width <ifdef code="ca_objects.frame_dimensions.frame_dim_depth">x </ifdef>^ca_objects.frame_dimensions.frame_dim_depth<ifdef code="ca_objects.frame_dimensions.frame_dim_notes"> (</ifdef>^ca_objects.frame_dimensions.frame_dim_notes<ifdef code="ca_objects.frame_dimensions.frame_dim_notes">)</ifdef></unit>]]></setting>
+            <setting name="format"><![CDATA[<unit relativeTo="ca_objects.frame_dimensions" delimiter="; ">^ca_objects.frame_dimensions.frame_display_dim</unit>]]></setting>
           </settings>
         </placement>
         <placement code="current_insurance">
@@ -33346,14 +34045,14 @@ Via: <unit relativeTo="ca_movements">
           <bundle>ca_objects.frame_dimensions</bundle>
           <settings>
             <setting name="label" locale="en_US">Frame Dimensions</setting>
-            <setting name="format"><![CDATA[<unit relativeTo="ca_objects.frame_dimensions" delimiter="; ">^ca_objects.frame_dimensions.frame_dim_height <ifdef code="ca_objects.frame_dimensions.frame_dim_width">x </ifdef>^ca_objects.frame_dimensions.frame_dim_width <ifdef code="ca_objects.frame_dimensions.frame_dim_depth">x </ifdef>^ca_objects.frame_dimensions.frame_dim_depth<ifdef code="ca_objects.frame_dimensions.frame_dim_notes"> (</ifdef>^ca_objects.frame_dimensions.frame_dim_notes<ifdef code="ca_objects.frame_dimensions.frame_dim_notes">)</ifdef></unit>]]></setting>
+            <setting name="format"><![CDATA[<unit relativeTo="ca_objects.frame_dimensions" delimiter="; ">^ca_objects.frame_dimensions.frame_display_dim</unit>]]></setting>
           </settings>
         </placement>
         <placement code="crate_dimensions">
           <bundle>ca_objects.crate_dimensions</bundle>
           <settings>
             <setting name="label" locale="en_US">Crate Dimensions</setting>
-            <setting name="format"><![CDATA[<unit relativeTo="ca_objects.crate_dimensions" delimiter="; ">^ca_objects.crate_dimensions.cratedimensions_height <ifdef code="ca_objects.crate_dimensions.cratedimensions_width">x </ifdef>^ca_objects.crate_dimensions.cratedimensions_width <ifdef code="ca_objects.crate_dimensions.cratedimensions_depth">x </ifdef>^ca_objects.crate_dimensions.cratedimensions_depth<ifdef code="ca_objects.crate_dimensions.cratedim_notes"> (</ifdef>^ca_objects.crate_dimensions.cratedim_notes<ifdef code="ca_objects.crate_dimensions.cratedim_notes">)</ifdef></unit>]]></setting>
+            <setting name="format"><![CDATA[<unit relativeTo="ca_objects.crate_dimensions" delimiter="; ">^ca_objects.crate_dimensions.cratedimensions_display</unit>]]></setting>
           </settings>
         </placement>
       </bundlePlacements>
@@ -33425,7 +34124,7 @@ Via: <unit relativeTo="ca_movements">
         <placement code="exhibition_history">
           <bundle>ca_objects.exhibition_history</bundle>
           <settings>
-            <setting name="format"><![CDATA[<unit relativeTo="ca_objects.exhibition_history" delimiter="; "><em>^ca_objects.exhibition_history.exhibition_name</em> <ifdef code="ca_objects.exhibition_history.exhibition_date">(</ifdef>^ca_objects.exhibition_history.exhibition_date<ifdef code="ca_objects.exhibition_history.exhibition_date">)</ifdef></unit>]]></setting>
+            <setting name="format"><![CDATA[<unit relativeTo="ca_objects.exhibition_history" delimiter="<br><br>">^ca_objects.exhibition_history.exhibition_name <ifdef code="ca_objects.exhibition_history.exhibition_date">(</ifdef>^ca_objects.exhibition_history.exhibition_date<ifdef code="ca_objects.exhibition_history.exhibition_date">)</ifdef></unit>]]></setting>
           </settings>
         </placement>
         <placement code="literature">
@@ -33497,7 +34196,7 @@ Via: <unit relativeTo="ca_movements">
         <placement code="exhibition_history">
           <bundle>ca_objects.exhibition_history</bundle>
           <settings>
-            <setting name="format"><![CDATA[<unit relativeTo="ca_objects.exhibition_history" delimiter="; "><em>^ca_objects.exhibition_history.exhibition_name</em> <ifdef code="ca_objects.exhibition_history.exhibition_date">(</ifdef>^ca_objects.exhibition_history.exhibition_date<ifdef code="ca_objects.exhibition_history.exhibition_date">)</ifdef></unit>]]></setting>
+            <setting name="format"><![CDATA[<unit relativeTo="ca_objects.exhibition_history" delimiter="<br><br>">^ca_objects.exhibition_history.exhibition_name <ifdef code="ca_objects.exhibition_history.exhibition_date">(</ifdef>^ca_objects.exhibition_history.exhibition_date<ifdef code="ca_objects.exhibition_history.exhibition_date">)</ifdef></unit>]]></setting>
           </settings>
         </placement>
       </bundlePlacements>
@@ -33754,7 +34453,7 @@ Via: <unit relativeTo="ca_movements">
           <bundle>ca_objects.crate_dimensions</bundle>
           <settings>
             <setting name="label" locale="en_US">Crate Dimensions</setting>
-            <setting name="format"><![CDATA[<unit relativeTo="ca_objects.crate_dimensions" delimiter="; ">^ca_objects.crate_dimensions.cratedimensions_height <ifdef code="ca_objects.crate_dimensions.cratedimensions_width">x </ifdef>^ca_objects.crate_dimensions.cratedimensions_width <ifdef code="ca_objects.crate_dimensions.cratedimensions_depth">x </ifdef>^ca_objects.crate_dimensions.cratedimensions_depth<ifdef code="ca_objects.crate_dimensions.cratedim_notes"> (</ifdef>^ca_objects.crate_dimensions.cratedim_notes<ifdef code="ca_objects.crate_dimensions.cratedim_notes">)</ifdef></unit>]]></setting>
+            <setting name="format"><![CDATA[<unit relativeTo="ca_objects.crate_dimensions" delimiter="; ">^ca_objects.crate_dimensions.cratedimensions_display</unit>]]></setting>
           </settings>
         </placement>
         <placement code="weight">
@@ -34651,6 +35350,11 @@ Is Gift?: ^ca_objects.price_copy.is_gift
       email="ray.barker@glenstone.org">
       <role code="archive"/>
       <group code="archive"/>
+    </login>
+    <login user_name="ali" password="changeme" fname="Ali" lname="Nemerov"
+      email="ali.nemerov@glenstone.org">
+      <role code="rights"/>
+      <group code="rights"/>
     </login>
   </logins>
 </profile>

@@ -74,7 +74,7 @@ class SearchJSONService extends BaseJSONService {
 	/**
 	 *
 	 */
-	private function search($pa_bundles=null){
+	protected function search($pa_bundles=null){
 		if (!($vo_search = caGetSearchInstance($this->getTableName()))) { 
 			$this->addError(_t("Invalid table"));
 			return false; 
@@ -113,7 +113,15 @@ class SearchJSONService extends BaseJSONService {
 					if($this->_isBadBundle($vs_bundle)){
 						continue;
 					}
-					$va_item[$vs_bundle] = $vo_result->get($vs_bundle,$va_options);
+
+					$vm_return = $vo_result->get($vs_bundle,$va_options);
+
+					// render 'empty' arrays as JSON objects, not as lists (which is the default behavior of json_encode)
+					if(is_array($vm_return) && sizeof($vm_return)==0) {
+						$va_item[$vs_bundle] = new stdClass;
+					} else {
+						$va_item[$vs_bundle] = $vm_return;
+					}
 				}
 			}
 

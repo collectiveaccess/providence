@@ -63,6 +63,7 @@
  	define('__CA_NAV_BUTTON_INTERSTITIAL_EDIT_BUNDLE__', 24);
  	define('__CA_NAV_BUTTON_MAKE_PRIMARY__', 25);
  	define('__CA_NAV_BUTTON_UPDATE__', 26);
+ 	define('__CA_NAV_BUTTON_PDF_SMALL__', 27);
  		
  	define('__CA_NAV_BUTTON_ICON_POS_LEFT__', 0);
  	define('__CA_NAV_BUTTON_ICON_POS_RIGHT__', 1);
@@ -72,7 +73,7 @@
 	/**
 	 *
 	 */
-	function caNavUrl($po_request, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null) {
+	function caNavUrl($po_request, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null, $pa_options=null) {
 
 		if(defined('__CA_USE_CLEAN_URLS__') && (__CA_USE_CLEAN_URLS__)) {
 			$vs_url = $po_request->getBaseUrlPath();
@@ -95,15 +96,19 @@
 		
 		if (is_array($pa_other_params) && sizeof($pa_other_params)) {
 			$vn_i = 0;
-			foreach($pa_other_params as $vs_name => $vs_value) {
-				if (in_array($vs_name, array('module', 'controller', 'action'))) { continue; }
-				if (is_array($vs_value)) { // is the value is array we need to serialize is... just treat it as a list of values which *should* be what it is.
-					$vs_value = join(";", $vs_value);
+			
+			if (caIsAssociativeArray($pa_other_params)) {
+				foreach($pa_other_params as $vs_name => $vs_value) {
+					if (in_array($vs_name, array('module', 'controller', 'action'))) { continue; }
+					if (is_array($vs_value)) { // is the value is array we need to serialize is... just treat it as a list of values which *should* be what it is.
+						$vs_value = join(";", $vs_value);
+					}
+					$vs_url .= '/'.$vs_name."/".(caGetOption('dontURLEncodeParameters', $pa_options, false) ? $vs_value : urlencode($vs_value));
+				
+					$vn_i++;
 				}
-				
-				$vs_url .= '/'.$vs_name."/".urlencode($vs_value);
-				
-				$vn_i++;
+			} else {
+				$vs_url .= "/".join("/", $pa_other_params);
 			}
 		}
 		return $vs_url;
@@ -112,8 +117,8 @@
 	/**
 	 *
 	 */
-	function caNavLink($po_request, $ps_content, $ps_classname, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null, $pa_attributes=null) {
-		if (!($vs_url = caNavUrl($po_request, $ps_module_path, $ps_controller, $ps_action, $pa_other_params))) {
+	function caNavLink($po_request, $ps_content, $ps_classname, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null, $pa_attributes=null, $pa_options=null) {
+		if (!($vs_url = caNavUrl($po_request, $ps_module_path, $ps_controller, $ps_action, $pa_other_params, $pa_options))) {
 			return "<strong>Error: no url for navigation</strong>";
 		}
 		
@@ -308,9 +313,11 @@
 			$vs_buf .= caHTMLHiddenInput('form_timestamp', array('value' => time()));
 		}
 		if (!caGetOption('disableUnsavedChangesWarning', $pa_options, false)) { 
+			// tagging form elements with the CSS 'dontTriggerUnsavedChangeWarning' class lets us skip over selected form elements
+			// when applying unsaved change warning event handlers
 			$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(
 				function() {
-					jQuery('#{$ps_id} select, #{$ps_id} input, #{$ps_id} textarea').change(function() { caUI.utils.showUnsavedChangesWarning(true); });
+					jQuery('#{$ps_id} select, #{$ps_id} input, #{$ps_id} textarea').not('.dontTriggerUnsavedChangeWarning').change(function() { caUI.utils.showUnsavedChangesWarning(true); });
 					jQuery('#{$ps_id}').submit(function() { caUI.utils.disableUnsavedChangesWarning(true); });
 				}
 			);</script>";
@@ -660,6 +667,9 @@
 				break;	
 			case __CA_NAV_BUTTON_SET_CENTER__:
 				$vs_img_name = 'glyphicons_185_screenshot';
+				break;	
+			case __CA_NAV_BUTTON_PDF_SMALL__:
+				$vs_img_name = 'glyphicons_359_file_export_small';
 				break;																																							
 			default:
 				return null;
@@ -916,8 +926,9 @@
 	 * @param boolean $pb_return_url_as_pieces If true an array is returned with the various components of the editor URL as separate keys. The keys will be 'module', 'controller', 'action' and '_pk' (the name of the primary key for the item); the primary key value itself is returned as both 'id' and whatever the primary key name is (eg. named whatever the value of _pk is). Default is false - return as a string rather than array.
 	 * @param array $pa_additional_parameters Optional array of parameters to return on the editor url
 	 * @param array $pa_options Optional array of options. Supported options are:
-	 * 		verifyLink - if true and $pn_id is set, then existence of record with specified id is verified before link is returned. If the id does not exist then null is returned. Default is false - no verification performed.
-	 *		action - if set, action of returned link will be set to the supplied value
+	 * 		verifyLink = if true and $pn_id is set, then existence of record with specified id is verified before link is returned. If the id does not exist then null is returned. Default is false - no verification performed.
+	 *		action = if set, action of returned link will be set to the supplied value
+	 *		type_id = type_id of item to get detail for
 	 */
 	function caDetailUrl($po_request, $ps_table, $pn_id=null, $pb_return_url_as_pieces=false, $pa_additional_parameters=null, $pa_options=null) {
 		$o_dm = Datamodel::load();
@@ -929,6 +940,7 @@
 		$vs_pk = $t_table->primaryKey();
 		$vs_table = $ps_table;
 		
+		$vb_id_exists = null;
 		
 		$vs_module = 'Detail';
 		$vs_action = 'Show';

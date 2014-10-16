@@ -54,6 +54,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	private $opn_indexing_subject_row_id;
 	
 	private $opo_tep;
+
+	private $ops_elasticsearch_base_url;
+	private $ops_elasticsearch_index_name;
 	
 	static $s_doc_content_buffer = array();			// content buffer used when indexing
 	static $s_element_code_cache = array();
@@ -65,6 +68,20 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		$this->opo_tep = new TimeExpressionParser();	
 		
 		$this->opo_geocode_parser = new GeocodeAttributeValue();
+
+		// allow overriding settings from search.conf via constant (usually defined in bootstrap file)
+		// this is useful for multi-instance setups which have the same set of config files for multiple instances
+		if(defined('__CA_ELASTICSEARCH_BASE_URL__') && (strlen(__CA_ELASTICSEARCH_BASE_URL__)>0)) {
+			$this->ops_elasticsearch_base_url = __CA_ELASTICSEARCH_BASE_URL__;
+		} else {
+			$this->ops_elasticsearch_base_url = $this->opo_search_config->get('search_elasticsearch_base_url');
+		}
+
+		if(defined('__CA_ELASTICSEARCH_INDEX_NAME__') && (strlen(__CA_ELASTICSEARCH_INDEX_NAME__)>0)) {
+			$this->ops_elasticsearch_index_name = __CA_ELASTICSEARCH_INDEX_NAME__;
+		} else {
+			$this->ops_elasticsearch_index_name = $this->opo_search_config->get('search_elasticsearch_index_name');
+		}
 	}
 	# -------------------------------------------------------
 	public function init(){
@@ -74,7 +91,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		
 		$this->opa_options = array(
 			'start' => 0,
-			'limit' => 100000,												// maximum number of hits to return [default=10000],
+			'limit' => 100000,												// maximum number of hits to return [default=100000],
 			'maxIndexingBufferSize' => $vn_max_indexing_buffer_size			// maximum number of indexed content items to accumulate before writing to the index
 		);
 
@@ -86,11 +103,17 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	/**
 	 * Completely clear index (usually in preparation for a full reindex)
 	 */
-	public function truncateIndex() {
+	public function truncateIndex($pn_table_num = null) {
+		$vs_table_name = '';
+		if($pn_table_num){
+			$o_dm = new Datamodel();
+			$vs_table_name = $o_dm->getTableName($pn_table_num) . '/';
+		}
 		$vo_http_client = new Zend_Http_Client();
 		$vo_http_client->setUri(
-			$this->opo_search_config->get('search_elasticsearch_base_url')."/".
-			$this->opo_search_config->get('search_elasticsearch_index_name')."/".
+			$this->ops_elasticsearch_base_url."/".
+			$this->ops_elasticsearch_index_name."/".
+			$vs_table_name.
 			"_query?q=*"
 		);
 
@@ -303,17 +326,44 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		$o_rewritten_query = new Zend_Search_Lucene_Search_Query_Boolean($va_terms, $va_signs);	
 		$ps_search_expression = $this->_queryToString($o_rewritten_query);
 		if ($vs_filter_query = $this->_filterValueToQueryValue($pa_filters)) {
-			$ps_search_expression .= ' AND ('.$vs_filter_query.')';
+			$ps_search_expression = "({$ps_search_expression}) AND ({$vs_filter_query})";
 		}
 		
 		$vo_http_client = new Zend_Http_Client();
 		$vo_http_client->setUri(
-			$this->opo_search_config->get('search_elasticsearch_base_url')."/".
-			$this->opo_search_config->get('search_elasticsearch_index_name')."/".
+			$this->ops_elasticsearch_base_url."/".
+			$this->ops_elasticsearch_index_name."/".
 			$this->opo_datamodel->getTableName($pn_subject_tablenum)."/". /* ElasticSearch type name (i.e. table name) */
 			"_search"
 		);
 		
+		
+		if (
+			preg_match_all("!([A-Za-z0-9_\-\.]+)[/]{1}([A-Za-z0-9_\-]+):(\"[^\"]*\")!", $ps_search_expression, $va_matches)
+			||
+			preg_match_all("!([A-Za-z0-9_\-\.]+)[/]{1}([A-Za-z0-9_\-]+):([^ ]*)!", $ps_search_expression, $va_matches)
+		) {
+			foreach($va_matches[0] as $vn_i => $vs_element) {
+				$vs_fld = $va_matches[1][$vn_i];
+				if (!($vs_rel_type = trim($va_matches[2][$vn_i]))) { continue; }
+				
+				$va_tmp = explode(".", $vs_fld);
+				
+				$vs_rel_table = caGetRelationshipTableName($pn_subject_tablenum, $va_tmp[0]);
+				$va_rel_type_ids = ($vs_rel_type && $vs_rel_table) ? caMakeRelationshipTypeIDList($vs_rel_table, array($vs_rel_type)) : null;
+				
+				$va_new_elements = array();
+				foreach($va_rel_type_ids as $vn_rel_type_id) {
+					$va_new_elements[] = "(".$va_matches[1][$vn_i]."/".$vn_rel_type_id.":".$va_matches[3][$vn_i].")";
+				}
+				
+				$ps_search_expression = str_replace($vs_element, "(".join(" OR ", $va_new_elements).")", $ps_search_expression);
+			}
+		}
+		
+		$ps_search_expression = str_replace("/", '\\/', $ps_search_expression); // escape forward slashes used to delimit relationship type qualifier
+		
+		Debug::msg("[ElasticSearch] Running query {$ps_search_expression}");
 		$vo_http_client->setParameterGet(array(
 			'size' => intval($this->opa_options["limit"]),
 			'q' => $ps_search_expression,
@@ -464,6 +514,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$pm_content = serialize($pm_content);
 		}
 	
+		$vn_rel_type_id = (isset($pa_options['relationship_type_id']) && ($pa_options['relationship_type_id'] > 0)) ? (int)$pa_options['relationship_type_id'] : null;
 		$ps_content_tablename = $this->opo_datamodel->getTableName($pn_content_tablenum);
 		if ($ps_content_fieldname[0] === 'A') {
 			// Metadata attribute
@@ -527,6 +578,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$ps_content_fieldname = $this->opo_datamodel->getFieldName($ps_content_tablename, $vn_field_num_proc);
 		}
 		$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname][] = $pm_content;
+		if ($vn_rel_type_id) { // add relationship type-specific indexing
+			$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname.'/'.$vn_rel_type_id][] = $pm_content;
+		}
 	}
 	# -------------------------------------------------------
 	/**
@@ -567,8 +621,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	public function removeRowIndexing($pn_subject_tablenum, $pn_subject_row_id){
 		$vo_http_client = new Zend_Http_Client();
 		$vo_http_client->setUri(
-			$this->opo_search_config->get('search_elasticsearch_base_url')."/".
-			$this->opo_search_config->get('search_elasticsearch_index_name')."/".
+			$this->ops_elasticsearch_base_url."/".
+			$this->ops_elasticsearch_index_name."/".
 			$this->opo_datamodel->getTableName($pn_subject_tablenum)."/".$pn_subject_row_id
 		);
 
@@ -625,21 +679,20 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			
 			$vo_http_client = new Zend_Http_Client();
 			$vo_http_client->setUri(
-				$this->opo_search_config->get('search_elasticsearch_base_url')."/".
-				$this->opo_search_config->get('search_elasticsearch_index_name')."/".
+				$this->ops_elasticsearch_base_url."/".
+				$this->ops_elasticsearch_index_name."/".
 				$va_key[0]."/".$va_key[2]
 			);
 
-			$vo_http_client->setRawData(json_encode($va_post_json))->setEncType('text/json')->request('POST');
 			try {
+				$vo_http_client->setRawData(json_encode($va_post_json))->setEncType('text/json')->request('POST');
 				$vo_http_response = $vo_http_client->request();
-				$va_response = json_decode($vo_http_response->getBody(),true);
-				
-				if(!isset($va_response["ok"]) || $va_response["ok"]!=1){
-					caLogEvent('ERR', _t('Indexing commit failed for %1; response was %2', $vs_key, $vo_http_response->getBody()), 'ElasticSearch->flushContentBuffer()');
+
+				if($vo_http_response->getStatus() != 200) {
+					caLogEvent('ERR', _t('Indexing commit failed for %1; response was %2; request was %3', $vs_key, $vo_http_response->getBody(), json_encode($va_post_json)), 'ElasticSearch->flushContentBuffer()');
 				}
 			} catch (Exception $e){
-				caLogEvent('ERR', _t('Indexing commit failed for %1: %2; response was %3', $vs_key, $e->getMessage(), $vo_http_response->getBody()), 'ElasticSearch->flushContentBuffer()');
+				caLogEvent('ERR', _t('Indexing commit failed for %1 with Exception: %2', $vs_key, $e->getMessage()), 'ElasticSearch->flushContentBuffer()');
 			}
 		}
 		

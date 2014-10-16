@@ -1,0 +1,69 @@
+StartFontMetrics 4.1
+Notice Converted by PHP-font-lib
+Comment https://github.com/PhenX/php-font-lib
+EncodingScheme FontSpecific
+Copyright Copyright © 1997 by Matthew Welch. All Rights Reserved.
+FontName Free 3 of 9
+FontSubfamily Regular
+UniqueID Free 3 of 9 Regular:Version 1.01
+FullName Free 3 of 9 Regular
+Version Version 1.01
+PostScriptName Free3of9
+Trademark Free 3 of 9 Trademark of Matthew Welch
+Weight Medium
+ItalicAngle 0
+IsFixedPitch false
+UnderlineThickness 0
+UnderlinePosition 0
+FontHeightOffset 0
+Ascender 752
+Descender 0
+FontBBox 0 0 357 752
+StartCharMetrics 47
+U 32 ; WX 383 ; N uni0020 ; G 42
+U 36 ; WX 383 ; N uni0024 ; G 43
+U 37 ; WX 383 ; N uni0025 ; G 46
+U 42 ; WX 383 ; N uni002a ; G 3
+U 43 ; WX 383 ; N uni002b ; G 45
+U 45 ; WX 383 ; N uni002d ; G 40
+U 46 ; WX 383 ; N uni002e ; G 41
+U 47 ; WX 383 ; N uni002f ; G 44
+U 48 ; WX 383 ; N uni0030 ; G 4
+U 49 ; WX 383 ; N uni0031 ; G 5
+U 50 ; WX 383 ; N uni0032 ; G 6
+U 51 ; WX 383 ; N uni0033 ; G 7
+U 52 ; WX 383 ; N uni0034 ; G 8
+U 53 ; WX 383 ; N uni0035 ; G 9
+U 54 ; WX 383 ; N uni0036 ; G 10
+U 55 ; WX 383 ; N uni0037 ; G 11
+U 56 ; WX 383 ; N uni0038 ; G 12
+U 57 ; WX 383 ; N uni0039 ; G 13
+U 65 ; WX 383 ; N uni0041 ; G 14
+U 66 ; WX 383 ; N uni0042 ; G 15
+U 67 ; WX 383 ; N uni0043 ; G 16
+U 68 ; WX 383 ; N uni0044 ; G 17
+U 69 ; WX 383 ; N uni0045 ; G 18
+U 70 ; WX 383 ; N uni0046 ; G 19
+U 71 ; WX 383 ; N uni0047 ; G 20
+U 72 ; WX 383 ; N uni0048 ; G 21
+U 73 ; WX 383 ; N uni0049 ; G 22
+U 74 ; WX 383 ; N uni004a ; G 23
+U 75 ; WX 383 ; N uni004b ; G 24
+U 76 ; WX 383 ; N uni004c ; G 25
+U 77 ; WX 383 ; N uni004d ; G 26
+U 78 ; WX 383 ; N uni004e ; G 27
+U 79 ; WX 383 ; N uni004f ; G 28
+U 80 ; WX 383 ; N uni0050 ; G 29
+U 81 ; WX 383 ; N uni0051 ; G 30
+U 82 ; WX 383 ; N uni0052 ; G 31
+U 83 ; WX 383 ; N uni0053 ; G 32
+U 84 ; WX 383 ; N uni0054 ; G 33
+U 85 ; WX 383 ; N uni0055 ; G 34
+U 86 ; WX 383 ; N uni0056 ; G 35
+U 87 ; WX 383 ; N uni0057 ; G 36
+U 88 ; WX 383 ; N uni0058 ; G 37
+U 89 ; WX 383 ; N uni0059 ; G 38
+U 90 ; WX 383 ; N uni005a ; G 39
+U 95 ; WX 383 ; N uni005f ; G 42
+EndCharMetrics
+EndFontMetrics

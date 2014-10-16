@@ -421,6 +421,11 @@ a.inspectorOnLoan {
     font-size: 10px;
 }
 
+.inspectorFlag {
+    color: #FF0000;
+    font-weight: bold;
+}
+
 #leftNav h4 div {  text-transform: none; font-weight: normal; padding-top: 5px; }
 #leftNav h3 div {  text-transform: none; font-weight: normal; padding-top: 5px; }
 
@@ -1608,6 +1613,7 @@ table.listtable {
     font-size: 8pt;
     width: 100%;
     text-align: left;
+    clear:both;
 }   
 #caWatchedItemsList.listtable {
 	font-size:12px;
@@ -1832,6 +1838,8 @@ div.search-hier-browser-box {
     margin-left: 0px;
     padding: 7px 5px 3px 5px;
     border-bottom: 1px solid #e9e9e9;
+    
+    position: relative;
 }
 
 .labelInfo #image{
@@ -2753,6 +2761,32 @@ a.editorFieldListLink {
     display: none;
 }
 
+div.editorBundlePrintControl {
+    position: absolute; 
+    top: 2px; 
+    right: 27px;
+}
+
+div.editorBundlePrintControl select {
+    font-size: 9px;
+    font-weight: normal;
+    height: 17px;
+    vertical-align: top;
+}
+
+div.editorBundleValuePrintControl {
+    position: absolute; 
+    bottom: 2px; 
+    right: 5px;
+}
+
+div.editorBundleValuePrintControl select {
+    font-size: 9px;
+    font-weight: normal;
+    height: 17px;
+    vertical-align: top;
+}
+
 #caHierarchyOverviewHeader {
     font-size: 13px;
     font-weight: bold;
@@ -3340,10 +3374,8 @@ span.hierarchyBrowserCurrentSelectionText {
 
 div.hierarchyBrowserSearchBar {
 	float: right;
-	padding: 0px;
-	margin-bottom: 5px;
-	margin-top: 5px;
-	padding-right: 27px;
+	padding: 0;
+	margin: 5px 0 5px 10px;
 }
 
 input.hierarchyBrowserSearchBar {
@@ -5193,6 +5225,8 @@ div.listRel {
 
 .caItemList {
     /* margin-top: 10px; */
+    max-height: 500px;
+    overflow-y: auto;
 }
 
 .caItemListSortControlTrigger {
@@ -5234,6 +5268,21 @@ div.listRel {
 
 .caItemListSortControls ul li a {
 	text-decoration: none;
+}
+
+div.caItemLoadNextBundles {
+	padding: 10px;
+}
+
+a.caItemLoadNextBundles {
+	text-decoration: none;
+	font-weight: bold;
+	font-size: 12px;
+}
+
+.caItemLoadNextBundlesLoadIndicator {
+	display: none;
+	margin-left: 12px;
 }
 
 .roundedRel .caDeleteItemButton, .roundedRel .caInterstitialEditButton {

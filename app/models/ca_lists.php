@@ -105,6 +105,13 @@ BaseModel::$s_ca_models_definitions['ca_lists'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Use as vocabulary'), 'DESCRIPTION' => _t('Set this if the list is to be used as a controlled vocabulary for cataloguing.'),
 				'BOUNDS_VALUE' => array(0,1)
+		),
+		'deleted' => array(
+ 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
+ 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+ 				'IS_NULL' => false, 
+ 				'DEFAULT' => 0,
+ 				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if list item is deleted or not.')
 		)
  	)
 );
@@ -316,7 +323,6 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$vn_item_id = $t_item->insert();
 		
 		if ($t_item->numErrors()) { 
-			print_R($t_item->getErrors());
 			$this->errors = array_merge($this->errors, $t_item->errors);
 			return false;
 		}
@@ -921,11 +927,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function getItemIDFromListByLabel($pm_list_name_or_id, $ps_label_name) {
 		if ($vn_list_id = $this->_getListID($pm_list_name_or_id)) {
-			$t_item = new ca_list_items();
-			$va_list_items = $t_item->getListItemIDsByName($vn_list_id, $ps_label_name);
-			
-			if (is_array($va_list_items) && (sizeof($va_list_items))) {
-				return array_shift($va_list_items);
+			if ($vn_id = ca_list_items::find(array('list_id' => $vn_list_id, 'preferred_labels' => array('name_plural' => $ps_label_name)), array('returnAs' => 'firstId'))) {
+				return $vn_id;
+			} elseif ($vn_id = ca_list_items::find(array('list_id' => $vn_list_id, 'preferred_labels' => array('name_singular' => $ps_label_name)), array('returnAs' => 'firstId'))) {
+				return $vn_id;
 			}
 		}
 		return null;
@@ -1423,7 +1428,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				$t_root_item = new ca_list_items();
 				$t_root_item->load(array('list_id' => $vn_list_id, 'parent_id' => null));
 				
-				JavascriptLoadManager::register("hierBrowser");
+				AssetLoadManager::register("hierBrowser");
 				
 				$vs_buf = "<div style='width: {$vn_width}; height: {$vn_height};'><div id='{$ps_name}_hierarchyBrowser{n}' style='width: 100%; height: 100%;' class='".(($vs_render_as == 'vert_hierbrowser') ? 'hierarchyBrowserVertical' : 'hierarchyBrowser')."'>
 					<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
@@ -1484,6 +1489,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					)
 				);
 				return $vs_buf;
+				break;
+			case 'text':
+				return caHTMLTextInput($ps_name, $pa_attributes, $pa_options);
 				break;
 			case 'options':
 				return $va_options;
@@ -1622,23 +1630,25 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			$t_item->setTransaction($o_trans);
 		}
 		
-		$va_item_ids = array();
+		$va_tmp = $va_item_ids = array();
 		foreach($pa_idnos as $vs_idno) {
 			$vn_item_id = null;
 			if (is_numeric($vs_idno)) { 
-				$vn_item_id = (int)$vs_idno; 
+				$va_tmp = array((int)$vs_idno); 
 			} else {
-				$vn_item_id = (int)$t_list->getItemIDFromList($pm_list_name_or_id, $vs_idno);
+				$va_tmp = ca_list_items::find(array('idno' => $vs_idno, 'deleted' => 0), array('returnAs' => 'ids', 'transaction' => $o_trans));
 			}
 			
-			if ($vn_item_id && !(isset($pa_options['noChildren']) || $pa_options['noChildren'])) {
-				if ($qr_children = $t_item->getHierarchy($vn_item_id, array())) {
-					while($qr_children->nextRow()) {
-						$va_item_ids[$qr_children->get('item_id')] = true;
+			if (sizeof($va_tmp) && !(isset($pa_options['noChildren']) || $pa_options['noChildren'])) {
+				foreach($va_tmp as $vn_item_id) {
+					if ($qr_children = $t_item->getHierarchy($vn_item_id, array())) {
+						while($qr_children->nextRow()) {
+							$va_item_ids[$qr_children->get('item_id')] = true;
+						}
 					}
 				}
 			} else {
-				if ($vn_item_id) {
+				foreach($va_tmp as $vn_item_id) {
 					$va_item_ids[$vn_item_id] = true;
 				}
 			}
@@ -1674,7 +1684,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 * Converts a list of relationship type_id's to a list of type_code strings. The conversion is literal without hierarchical expansion.
+	 * Converts a list of item_id's to a list of idno strings. The conversion is literal without hierarchical expansion.
 	 *
 	 * @param array $pa_list A list of relationship numeric type_ids
 	 * @param array $pa_options Options include:

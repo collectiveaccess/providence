@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,22 +25,24 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_item 						= $this->getVar('t_subject');
-	$vn_item_id 					= $this->getVar('subject_id');
+ 	$t_item 				= $this->getVar('t_subject');
+	$vn_item_id 			= $this->getVar('subject_id');
 	
 	$va_bundle_displays 	= $this->getVar('bundle_displays');
-	$t_display 					= $this->getVar('t_display');
+	$t_display 				= $this->getVar('t_display');
 	$va_placements 			= $this->getVar("placements");
 ?>
 	<div id="summary" style="clear: both;">
-			<div id="printButton">
-			<a href="<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), "PrintSummary", array($t_item->primaryKey() => $t_item->getPrimaryKey()))?>" target="_blank">
-	    		<?php print caNavIcon($this->request, __CA_NAV_BUTTON_PDF__); ?>
-			</a>
-			</div>
 <?php
 	if ($vs_display_select_html = $t_display->getBundleDisplaysAsHTMLSelect('display_id', array('onchange' => 'jQuery("#caSummaryDisplaySelectorForm").submit();',  'class' => 'searchFormSelector'), array('table' => $t_item->tableNum(), 'value' => $t_display->getPrimaryKey(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'user_id' => $this->request->getUserID()))) {
-			print caFormTag($this->request, 'Summary', 'caSummaryDisplaySelectorForm');
+?>
+		<div id="printButton">
+			<a href="<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), "PrintSummary", array($t_item->primaryKey() => $t_item->getPrimaryKey()))?>">
+				<?php print caNavIcon($this->request, __CA_NAV_BUTTON_PDF__); ?>
+			</a>
+		</div>
+<?php
+		print caFormTag($this->request, 'Summary', 'caSummaryDisplaySelectorForm');
 ?>
 			<div class='searchFormSelector' style='float: right; '>
 <?php
@@ -77,5 +79,3 @@
 <?php
 		TooltipManager::add('#printButton', _t("Download Summary as PDF"));
 		TooltipManager::add('a.downloadMediaContainer', _t("Download Media"));
-
-?>

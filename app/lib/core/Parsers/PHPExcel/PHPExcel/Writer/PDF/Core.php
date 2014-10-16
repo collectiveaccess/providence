@@ -2,7 +2,7 @@
 /**
  *  PHPExcel
  *
- *  Copyright (c) 2006 - 2012 PHPExcel
+ *  Copyright (c) 2006 - 2014 PHPExcel
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -20,9 +20,9 @@
  *
  *  @category    PHPExcel
  *  @package     PHPExcel_Writer_PDF
- *  @copyright   Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
+ *  @copyright   Copyright (c) 2006 - 2014 PHPExcel (http://www.codeplex.com/PHPExcel)
  *  @license     http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt    LGPL
- *  @version     ##VERSION##, ##DATE##
+ *  @version     1.8.0, 2014-03-02
  */
 
 
@@ -31,7 +31,7 @@
  *
  *  @category    PHPExcel
  *  @package     PHPExcel_Writer_PDF
- *  @copyright   Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
+ *  @copyright   Copyright (c) 2006 - 2014 PHPExcel (http://www.codeplex.com/PHPExcel)
  */
 abstract class PHPExcel_Writer_PDF_Core extends PHPExcel_Writer_HTML
 {
@@ -261,7 +261,7 @@ abstract class PHPExcel_Writer_PDF_Core extends PHPExcel_Writer_HTML
     /**
      *  Set Paper Size
      *
-     *  @param int $pValue
+     *  @param  string  $pValue Paper size
      *  @return PHPExcel_Writer_PDF
      */
     public function setPaperSize($pValue = PHPExcel_Worksheet_PageSetup::PAPERSIZE_LETTER)
@@ -283,7 +283,7 @@ abstract class PHPExcel_Writer_PDF_Core extends PHPExcel_Writer_HTML
     /**
      *  Set Orientation
      *
-     *  @param string $pValue
+     *  @param string $pValue  Page orientation
      *  @return PHPExcel_Writer_PDF
      */
     public function setOrientation($pValue = PHPExcel_Worksheet_PageSetup::ORIENTATION_DEFAULT)
@@ -322,7 +322,7 @@ abstract class PHPExcel_Writer_PDF_Core extends PHPExcel_Writer_HTML
     /**
      *  Save PHPExcel to PDF file, pre-save
      *
-     *  @param     string         $pFileName
+     *  @param     string     $pFilename   Name of the file to save as
      *  @throws    PHPExcel_Writer_Exception
      */
     protected function prepareForSave($pFilename = NULL)

@@ -89,6 +89,22 @@
 			'label' => _t('Can be used in display'),
 			'description' => _t('Check this option if this attribute value can be used for display in search results. (The default is to be.)')
 		),
+		'canMakePDF' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output?'),
+			'description' => _t('Check this option if this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
+		'canMakePDFForValue' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output for individual values?'),
+			'description' => _t('Check this option if individual values for this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
 		'displayTemplate' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -125,6 +141,15 @@
  		 * Display name, in plural sense, of table this attribute references. The name should be capitalized.
  		 */
  		protected $ops_name_plural = 'StorageLocations';
+ 		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for storage locations attribute value
+		 * 
+		 * @return int Attribute value type code
+		 */
+		public function getType() {
+			return __CA_ATTRIBUTE_VALUE_STORAGELOCATIONS__;
+		}
  		# ------------------------------------------------------------------
 	}
  ?>

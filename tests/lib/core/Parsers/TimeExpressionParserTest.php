@@ -38,7 +38,7 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		date_default_timezone_set('America/New_York');
 	}
 
-	public function testQuarterCentryDates() {
+	public function testQuarterCenturyDates() {
 		$o_tep = new TimeExpressionParser();
 		$o_tep->setLanguage('en_US');
 
@@ -221,6 +221,20 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($va_parse[0], "1945.050800000000");
 		$this->assertEquals($va_parse[1], "1945.050823595900");
 	}
+
+
+	public function testHistoricDayDateWithUmlautForGermanLocale() {
+ 		$o_tep = new TimeExpressionParser();
+ 		$o_tep->setLanguage('de_DE');
+ 		$vb_res = $o_tep->parse('11. März 1870');
+ 		$this->assertEquals($vb_res, true);
+ 		$va_parse = $o_tep->getHistoricTimestamps();
+ 		
+ 		$this->assertEquals($va_parse['start'], "1870.031100000000");
+ 		$this->assertEquals($va_parse['end'], "1870.031123595900");
+ 		$this->assertEquals($va_parse[0], "1870.031100000000");
+ 		$this->assertEquals($va_parse[1], "1870.031123595900");
+ 	}
 
 	public function testCenturyDatesForGermanLocale() {
 		$o_tep = new TimeExpressionParser();
@@ -533,6 +547,16 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($va_parse['end'], "2000.123123595900");
 		$this->assertEquals($va_parse[0], "2000.010100000000");
 		$this->assertEquals($va_parse[1], "2000.123123595900");
+		
+		// Negative year BCE format
+		$vb_res = $o_tep->parse('-2150');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+
+		$this->assertEquals($va_parse['start'], -"2150.010100000000");
+		$this->assertEquals($va_parse['end'], -"2150.123123595900");
+		$this->assertEquals($va_parse[0], -"2150.010100000000");
+		$this->assertEquals($va_parse[1], -"2150.123123595900");
 	}
 
 	public function testTimes() {
@@ -629,6 +653,18 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($va_parse['end'],   "2007.060517000000");
 		$this->assertEquals($va_parse[0], "2007.060509000000");
 		$this->assertEquals($va_parse[1], "2007.060517000000");
+		
+		// Midnight
+		$vb_res = $o_tep->parse('September 12 at 18:00 - September 13 2014 at 00:00');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+
+		$this->assertEquals($va_parse['start'], "2014.091218000000");
+		$this->assertEquals($va_parse['end'],   "2014.091300000000");
+		$this->assertEquals($va_parse[0], "2014.091218000000");
+		$this->assertEquals($va_parse[1], "2014.091300000000");
+		
+		$this->assertEquals($o_tep->getText(), 'September 12 at 18:00 - September 13 2014 at 0:00');
 	}
 
 	public function testDatesWithImplicitYear() {
@@ -688,6 +724,12 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 
 		$this->assertEquals($va_parse['start'], $va_date['year'].'.082000000000');
 		$this->assertEquals($va_parse['end'], $va_date['year'].'.082723595900');
+		
+		$vb_res = $o_tep->parse('March - June 1850');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+
+		$this->assertEquals($va_parse['start'], '1850.030100000000');
+		$this->assertEquals($va_parse['end'], '1850.063023595900');		
 	}
 }
-?>

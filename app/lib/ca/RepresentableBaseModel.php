@@ -48,6 +48,8 @@
 		 *		return_primary_only - If true then only the primary representation will be returned
 		 *		return_with_access - Set to an array of access values to filter representation through; only representations with an access value in the list will be returned
 		 *		checkAccess - synonym for return_with_access
+		 *		start = 
+		 *		limit = 
 		 *		.. and options supported by getMediaTag() .. [they are passed through]
 		 *	
 		 * @return array An array of information about the linked representations
@@ -56,6 +58,9 @@
 			global $AUTH_CURRENT_USER_ID;
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
 			if (!is_array($pa_options)) { $pa_options = array(); }
+			
+			$pn_start = caGetOption('start', $pa_options, 0);
+			$pn_limit = caGetOption('limit', $pa_options, null);
 		
 			if (caGetBundleAccessLevel($this->tableName(), 'ca_object_representations') == __CA_BUNDLE_ACCESS_NONE__) {
 				return null;
@@ -80,8 +85,16 @@
 
 			$o_db = $this->getDb();
 			
-			if (!($vs_linking_table = $this->_getRepresentationRelationshipTableName())) { return null; }
+			if (!($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($this->tableName()))) { return null; }
 			$vs_pk = $this->primaryKey();
+			$vs_limit_sql = '';
+			if ($pn_limit > 0) {
+				if ($pn_start > 0) {
+					$vs_limit_sql = "LIMIT {$pn_start}, {$pn_limit}";
+				} else {
+					$vs_limit_sql = "LIMIT {$pn_limit}";
+				}
+			}
 		
 			$qr_reps = $o_db->query("
 				SELECT caor.representation_id, caor.media, caoor.is_primary, caor.access, caor.status, l.name, caor.locale_id, caor.media_metadata, caor.type_id, caor.idno, caor.idno_sort, caor.md5, caor.mimetype, caor.original_filename, caoor.rank
@@ -94,16 +107,23 @@
 					{$vs_access_sql}
 				ORDER BY
 					caoor.rank, caoor.is_primary DESC
+				{$vs_limit_sql}
 			", (int)$vn_id);
 			
 			$va_reps = array();
 			$t_rep = new ca_object_representations();
+			
+			if($AUTH_CURRENT_USER_ID) {
+				$va_can_read = caCanRead($AUTH_CURRENT_USER_ID, 'ca_object_representations', $qr_reps->getAllFieldValues('representation_id'), null, array('returnAsArray' => true));
+			} else {
+				$va_can_read = $qr_reps->getAllFieldValues('representation_id');
+			}
+			
+			$qr_reps->seek(0);
 			while($qr_reps->nextRow()) {
 				$vn_rep_id = $qr_reps->get('representation_id');
-
-				if($AUTH_CURRENT_USER_ID) { // this might not be set if this method is accessed via CLI script
-					if(!caCanRead($AUTH_CURRENT_USER_ID, 'ca_object_representations', $vn_rep_id)){ continue; }	
-				}
+				
+				if (!in_array($vn_rep_id, $va_can_read)) { continue; }
 			
 				$va_tmp = $qr_reps->getRow();
 				$va_tmp['tags'] = array();
@@ -151,6 +171,7 @@
 			foreach($va_labels as $vn_rep_id => $vs_label) {
 				$va_reps[$vn_rep_id]['label'] = $vs_label;
 			}
+			
 			return $va_reps;
 		}
 		# ------------------------------------------------------
@@ -244,7 +265,7 @@
 				$vs_access_sql = '';
 			}
 			
-			if (!($vs_linking_table = $this->_getRepresentationRelationshipTableName())) { return null; }
+			if (!($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($this->tableName()))) { return null; }
 			$vs_pk = $this->primaryKey();
 		
 			$o_db = $this->getDb();
@@ -300,7 +321,7 @@
 				$vs_access_sql = '';
 			}
 			
-			if (!($vs_linking_table = $this->_getRepresentationRelationshipTableName())) { return null; }
+			if (!($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($this->tableName()))) { return null; }
 			$vs_pk = $this->primaryKey();
 		
 			$o_db = $this->getDb();
@@ -760,6 +781,9 @@
 				if(is_array($va_rels) && isset($va_rels['ca_object_representation_labels'])){ // labels don't count as relationships in this case
 					unset($va_rels['ca_object_representation_labels']);
 				}
+				if(is_array($va_rels) && isset($va_rels['ca_objects_x_object_representations']) && ($va_rels['ca_objects_x_object_representations'] <= 1)){
+					unset($va_rels['ca_objects_x_object_representations']);
+				}
 
 				if (!is_array($va_rels) || (sizeof($va_rels) == 0)) {
 					$t_rep->setMode(ACCESS_WRITE);
@@ -799,6 +823,43 @@
 				}
 			}
 			return false;
+		}
+		# ------------------------------------------------------
+		/** 
+		 * Link existing media represention to currently loaded item
+		 *
+		 * @param $pn_representation_id - 
+		 * @param $pb_is_primary - if set to true, representation is designated "primary." Primary representation are used in cases where only one representation is required (such as search results). If a primary representation is already attached to this item, then it will be changed to non-primary as only one representation can be primary at any given time. If no primary representations exist, then the new representation will always be marked primary no matter what the setting of this parameter (there must always be a primary representation, if representations are defined).
+		 * @param $pa_options - an array of options passed through to BaseModel::set() when creating the new representation. Currently supported options:
+		 *		rank - a numeric rank used to order the representations when listed
+		 *
+		 * @return mixed Returns primary key (link_id) of the relatipnship row linking the  representation to the item; boolean false is returned on error
+		 */
+		public function linkRepresentation($pn_representation_id, $pb_is_primary, $pa_options=null) {
+			if (!($vn_id = $this->getPrimaryKey())) { return null; }
+			if (!$pn_locale_id) { $pn_locale_id = ca_locales::getDefaultCataloguingLocaleID(); }
+		
+			if (!ca_object_representations::find(array('representation_id' => $pn_representation_id), array('transaction' => $this->getTransaction()))) { return null; }
+			if (!($t_oxor = $this->_getRepresentationRelationshipTableInstance())) { return null; }
+			$vs_pk = $this->primaryKey();
+			
+			if ($this->inTransaction()) {
+				$t_oxor->setTransaction($this->getTransaction());
+			}
+			$t_oxor->setMode(ACCESS_WRITE);
+			$t_oxor->set($vs_pk, $vn_id);
+			$t_oxor->set('representation_id', $pn_representation_id);
+			$t_oxor->set('is_primary', $pb_is_primary ? 1 : 0);
+			$t_oxor->set('rank', isset($pa_options['rank']) ? (int)$pa_options['rank'] : $pn_representation_id);
+			if ($t_oxor->hasField('type_id')) { $t_oxor->set('type_id', isset($pa_options['type_id']) ? (int)$pa_options['type_id'] : null); }
+			$t_oxor->insert();
+		
+		
+			if ($t_oxor->numErrors()) {
+				$this->errors = array_merge($this->errors, $t_oxor->errors());
+				return false;
+			}
+			return $t_oxor->getPrimaryKey();
 		}
 		# ------------------------------------------------------
 		/**
@@ -906,7 +967,7 @@
 			$o_db = $this->getDb();
 			
 			
-			if (!($vs_linking_table = $this->_getRepresentationRelationshipTableName())) { return null; }
+			if (!($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($this->tableName()))) { return null; }
 			$vs_pk = $this->primaryKey();
 		
 			$qr_res = $o_db->query("
@@ -953,7 +1014,7 @@
 			}
 			$o_db = $this->getDb();
 			
-			if (!($vs_linking_table = $this->_getRepresentationRelationshipTableName())) { return null; }
+			if (!($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($this->tableName()))) { return null; }
 			$vs_pk = $this->primaryKey();
 		
 			$qr_res = $o_db->query("
@@ -975,9 +1036,9 @@
 		/**
 		 *
 		 */
-		private function _getRepresentationRelationshipTableName() {
+		static public function getRepresentationRelationshipTableName($ps_table_name) {
 			$o_dm = Datamodel::load();
-			$va_path = $o_dm->getPath($this->tableName(), 'ca_object_representations');
+			$va_path = $o_dm->getPath($ps_table_name, 'ca_object_representations');
 			if (!is_array($va_path) || (sizeof($va_path) != 3)) { return null; }
 			$va_path = array_keys($va_path);
 			return $va_path[1];
@@ -995,4 +1056,3 @@
 		}
 		# ------------------------------------------------------
 	}
-?>

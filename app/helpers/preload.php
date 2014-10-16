@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,7 +33,10 @@
   /**
    *
    */
-   
+
+	require_once(__CA_BASE_DIR__.'/vendor/autoload.php');	// composer
+
+	require_once(__CA_LIB_DIR__."/core/Utils/Debug.php");
 	require_once(__CA_LIB_DIR__."/core/Zend/Translate.php");
 	require_once(__CA_LIB_DIR__."/core/Zend/Cache.php");
 	require_once(__CA_LIB_DIR__."/core/Zend/Registry.php");
@@ -55,7 +58,7 @@
 	require_once(__CA_LIB_DIR__."/core/Controller/AppController.php");
 	
 	require_once(__CA_LIB_DIR__."/ca/MetaTagManager.php");
-	require_once(__CA_LIB_DIR__."/ca/JavascriptLoadManager.php");
+	require_once(__CA_LIB_DIR__."/ca/AssetLoadManager.php");
 	require_once(__CA_LIB_DIR__."/ca/TooltipManager.php");
 	require_once(__CA_LIB_DIR__."/ca/FooterManager.php");
 
@@ -67,4 +70,3 @@
 	
 	// initialize Tooltip manager
 	TooltipManager::init();
-?>

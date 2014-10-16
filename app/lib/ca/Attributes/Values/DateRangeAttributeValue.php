@@ -142,6 +142,22 @@
 			'label' => _t('Can be used in display'),
 			'description' => _t('Check this option if this attribute value can be used for display in search results. (The default is to be.)')
 		),
+		'canMakePDF' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output?'),
+			'description' => _t('Check this option if this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
+		'canMakePDFForValue' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output for individual values?'),
+			'description' => _t('Check this option if individual values for this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
 		'displayTemplate' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -324,7 +340,13 @@
  				</script>\n";
  			}
  			
- 			if ((bool)$va_settings['useDatePicker']) { 
+ 			if ((bool)$va_settings['useDatePicker']) {
+ 				global $g_ui_locale;
+
+ 				// nothing terrible happens if this fails. If no package is registered for the current 
+ 				// locale, the LoadManager simply ignores it and the default settings (en_US) apply
+ 				AssetLoadManager::register("datepicker_i18n_{$g_ui_locale}"); 
+
  				$vs_element .= "<script type='text/javascript'>
  					jQuery(document).ready(function() {
  						jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').datepicker({constrainInput: false});
@@ -351,6 +373,15 @@
 		 */
 		public function sortField() {
 			return 'value_decimal1';
+		}
+ 		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for date range attribute value
+		 * 
+		 * @return int Attribute value type code
+		 */
+		public function getType() {
+			return __CA_ATTRIBUTE_VALUE_DATERANGE__;
 		}
  		# ------------------------------------------------------------------
 	}

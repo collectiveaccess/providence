@@ -98,6 +98,22 @@
 			'validForRootOnly' => 1,
 			'description' => _t('Layout for value when used in a display (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
 		),
+		'canMakePDF' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output?'),
+			'description' => _t('Check this option if this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
+		'canMakePDFForValue' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output for individual values?'),
+			'description' => _t('Check this option if individual values for this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
 		'displayDelimiter' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -125,6 +141,15 @@
  		 * Display name, in plural sense, of table this attribute references. The name should be capitalized.
  		 */
  		protected $ops_name_plural = 'Collections';
+ 		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for collection attribute value
+		 * 
+		 * @return int Attribute value type code
+		 */
+		public function getType() {
+			return __CA_ATTRIBUTE_VALUE_COLLECTIONS__;
+		}
  		# ------------------------------------------------------------------
 	}
  ?>

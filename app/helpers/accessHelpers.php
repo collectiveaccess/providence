@@ -416,6 +416,26 @@
 		$t_rel_type = new ca_relationship_types();
 		return $t_rel_type->relationshipTypeListToIDs($pm_table_name_or_num, $pa_types, $pa_options);
 	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	function caGetRelationshipTableName($pm_table_name_or_num_left, $pm_table_name_or_num_right, $pa_options=null) {
+		$o_dm = Datamodel::load();
+		
+		$va_path = $o_dm->getPath($pm_table_name_or_num_left, $pm_table_name_or_num_right);
+		if (!is_array($va_path)) { return null; }
+		
+		
+		foreach(array_keys($va_path) as $vs_table) {
+			if ($t_instance = $o_dm->getInstanceByTableName($vs_table, true)) {
+				if (method_exists($t_instance, "isRelationship") && $t_instance->isRelationship() && $t_instance->hasField('type_id')) {
+					return $vs_table;
+				}
+			}
+		}
+		return null;
+	}
 	# ---------------------------------------------------------------------------------------------
 	/**
 	 * Merges types specified with any specified "restrict_to_types"/"restrictToTypes" option, user access settings and types configured in app.conf
@@ -557,44 +577,61 @@
 	 *
 	 * @param int $pn_user_id
 	 * @param mixed $pm_table A table name or number
-	 * @param int $pn_id The primary key value of the row
+	 * @param mixed $pm_id A primary key value of the row, or an array of values to check. If a single integer value is provided then a boolean result will be returned; if an array of values is provided then an array will be returned with all ids that are readable
 	 * @param string $ps_bundle_name An optional bundle to check access for
 	 *
-	 * @return True if user has read access, otherwise false if the user does not have access or null if one or more parameters are invalid
+	 * @return If $pm_id is an integer return true if user has read access, otherwise false if the user does not have access; if $pm_id is an array of ids, returns an array with all ids the are readable; returns null if one or more parameters are invalid
 	 */
-	function caCanRead($pn_user_id, $pm_table, $pn_id, $ps_bundle_name=null) {
+	function caCanRead($pn_user_id, $pm_table, $pm_id, $ps_bundle_name=null, $pa_options=null) {
+		$pb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
+		$t_user = new ca_users($pn_user_id, true);
+		if (!$t_user->getPrimaryKey()) { return null; }
+		
 		$o_dm = Datamodel::load();
-		$ps_table_name = (is_numeric($pm_table)) ? $o_dm->getTableName($pm_table) : $pm_table;
+		$ps_table_name = (is_numeric($pm_table)) ? $o_dm->getTableName($pm_table) : $pm_table;		
+	
+		if (!is_array($pm_id)) { $pm_id = array($pm_id); }
+		
+		if ($ps_bundle_name) {
+			if ($t_user->getBundleAccessLevel($ps_table_name, $ps_bundle_name) < __CA_BUNDLE_ACCESS_READONLY__) { 
+				return ((sizeof($pm_id) == 1) && !$pb_return_as_array) ? false : array();
+			}
+		}
 		
 		if (!($t_instance = $o_dm->getInstanceByTableName($ps_table_name, true))) { return null; }
-		if (!$t_instance->load($pn_id)) { return null; }
-		
-		$t_user = new ca_users($pn_user_id);
-		if (!$t_user->getPrimaryKey()) { return null; }
+	
+		$vb_do_type_access_check = (bool)$t_instance->getAppConfig()->get('perform_type_access_checking');
+		$vb_do_item_access_check = (bool)$t_instance->getAppConfig()->get('perform_item_level_access_checking');
 		
 		list($ps_table_name, $ps_bundle_name) = caTranslateBundlesForAccessChecking($ps_table_name, $ps_bundle_name);
 		
-		// Check type restrictions
- 		if ((bool)$t_instance->getAppConfig()->get('perform_type_access_checking')) {
-			$vn_type_access = $t_user->getTypeAccessLevel($ps_table_name, $t_instance->getTypeID());
-			if ($vn_type_access < __CA_BUNDLE_ACCESS_READONLY__) {
-				return false;
+		if (!($qr_res = caMakeSearchResult($ps_table_name, $pm_id))) { return null; }
+		
+		$va_return_values = array();
+		while($qr_res->nextHit()) {
+			$vn_id = $qr_res->getPrimaryKey();
+		
+			// Check type restrictions
+			if ($vb_do_type_access_check) {
+				$vn_type_access = $t_user->getTypeAccessLevel($ps_table_name, $qr_res->get("{$ps_table_name}.type_id"));
+				if ($vn_type_access < __CA_BUNDLE_ACCESS_READONLY__) {
+					continue;
+				}
 			}
-		}
 		
-		// Check item level restrictions
-		if ((bool)$t_instance->getAppConfig()->get('perform_item_level_access_checking')) {
-			$vn_item_access = $t_instance->checkACLAccessForUser($t_user);
-			if ($vn_item_access < __CA_ACL_READONLY_ACCESS__) {
-				return false;
+			// Check item level restrictions
+			if ($vb_do_item_access_check) {
+				$vn_item_access = $t_instance->checkACLAccessForUser($t_user, $vn_id);
+				if ($vn_item_access < __CA_ACL_READONLY_ACCESS__) {
+					continue;
+				}
 			}
+		
+			$va_return_values[] = $vn_id;
 		}
 		
-		if ($ps_bundle_name) {
-			if ($t_user->getBundleAccessLevel($ps_table_name, $ps_bundle_name) < __CA_BUNDLE_ACCESS_READONLY__) { return false; }
-		}
-		
-		return true;
+		if ((sizeof($pm_id) == 1) && !$pb_return_as_array) { return (sizeof($va_return_values) > 0) ? true : false; }
+		return $va_return_values;
 	}
 	# ---------------------------------------------------------------------------------------------
 	/**
@@ -642,4 +679,3 @@
 		return array($ps_table_name, $ps_bundle_name); 
 	}
 	# ---------------------------------------------------------------------------------------------
- ?>

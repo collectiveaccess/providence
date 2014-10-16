@@ -44,7 +44,7 @@ class ElementsController extends BaseEditorController {
 	}
 	# -------------------------------------------------------
 	public function Index() {
-		JavascriptLoadManager::register('tableList');
+		AssetLoadManager::register('tableList');
 	
 		$vo_dm = Datamodel::load();
 		$va_elements = ca_metadata_elements::getRootElementsAsList(null, null, true, true);
@@ -60,7 +60,7 @@ class ElementsController extends BaseEditorController {
 	}
 	# -------------------------------------------------------
 	public function Edit($pa_values=null, $pa_options=null){
-		JavascriptLoadManager::register('bundleableEditor');
+		AssetLoadManager::register('bundleableEditor');
 		
 		
 		$t_element = $this->getElementObject();
@@ -119,7 +119,7 @@ class ElementsController extends BaseEditorController {
 	}
 	# -------------------------------------------------------
 	public function Save($pa_values=null) {
-		$t_element = $this->getElementObject();
+		$t_element = $this->getElementObject(false);
 		$t_element->setMode(ACCESS_WRITE);
 		$va_request = $_REQUEST; /* we don't want to modify $_REQUEST since this may cause ugly side-effects */
 		foreach($t_element->getFormFields() as $vs_f => $va_field_info) {
@@ -428,7 +428,8 @@ class ElementsController extends BaseEditorController {
 		if (!($vn_element_id = $this->request->getParameter('element_id', pInteger))) {
 			$vn_element_id = $pn_element_id;
 		}
-		$t_element = new ca_metadata_elements($vn_element_id);
+		$t_element = new ca_metadata_elements();
+		$t_element->load($vn_element_id, false);
  		if ($pb_set_view_vars){
  			$this->view->setVar('element_id', $vn_element_id);
  			$this->view->setVar('t_element', $t_element);

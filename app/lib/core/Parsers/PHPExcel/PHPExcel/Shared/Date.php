@@ -3,7 +3,7 @@
 /**
  * PHPExcel
  *
- * Copyright (c) 2006 - 2012 PHPExcel
+ * Copyright (c) 2006 - 2014 PHPExcel
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,9 +21,9 @@
  *
  * @category   PHPExcel
  * @package	PHPExcel_Shared
- * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
+ * @copyright  Copyright (c) 2006 - 2014 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license	http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version	##VERSION##, ##DATE##
+ * @version	1.8.0, 2014-03-02
  */
 
 
@@ -32,7 +32,7 @@
  *
  * @category   PHPExcel
  * @package	PHPExcel_Shared
- * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
+ * @copyright  Copyright (c) 2006 - 2014 PHPExcel (http://www.codeplex.com/PHPExcel)
  */
 class PHPExcel_Shared_Date
 {
@@ -253,7 +253,7 @@ class PHPExcel_Shared_Date
 	 */
 	public static function isDateTime(PHPExcel_Cell $pCell) {
 		return self::isDateTimeFormat(
-			$pCell->getParent()->getStyle(
+			$pCell->getWorksheet()->getStyle(
 				$pCell->getCoordinate()
 			)->getNumberFormat()
 		);
@@ -280,11 +280,14 @@ class PHPExcel_Shared_Date
 	 * @return	 boolean
 	 */
 	public static function isDateTimeFormatCode($pFormatCode = '') {
+		if (strtolower($pFormatCode) === strtolower(PHPExcel_Style_NumberFormat::FORMAT_GENERAL))
+            //	"General" contains an epoch letter 'e', so we trap for it explicitly here (case-insensitive check)
+			return FALSE;
+        if (preg_match('/[0#]E[+-]0/i', $pFormatCode))
+			//	Scientific format
+			return FALSE;
 		// Switch on formatcode
 		switch ($pFormatCode) {
-			//	General contains an epoch letter 'e', so we trap for it explicitly here
-			case PHPExcel_Style_NumberFormat::FORMAT_GENERAL:
-				return FALSE;
 			//	Explicitly defined date formats
 			case PHPExcel_Style_NumberFormat::FORMAT_DATE_YYYYMMDD:
 			case PHPExcel_Style_NumberFormat::FORMAT_DATE_YYYYMMDD2:

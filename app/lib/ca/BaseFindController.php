@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,14 +34,15 @@
   *
   */
   
+ 	require_once(__CA_APP_DIR__.'/helpers/printHelpers.php');
  	require_once(__CA_LIB_DIR__.'/ca/ResultContext.php');
  	require_once(__CA_MODELS_DIR__.'/ca_bundle_displays.php');
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
 	require_once(__CA_LIB_DIR__."/core/Parsers/ZipFile.php");
 	require_once(__CA_LIB_DIR__."/core/AccessRestrictions.php");
- 	require_once(__CA_LIB_DIR__.'/core/Print/PrintForms.php');
  	require_once(__CA_LIB_DIR__.'/ca/Visualizer.php');
  	require_once(__CA_LIB_DIR__.'/core/Parsers/dompdf/dompdf_config.inc.php');
+	require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
  	
 	class BaseFindController extends ActionController {
 		# ------------------------------------------------------------------
@@ -61,15 +62,15 @@
 		 *
 		 */
 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
-			JavascriptLoadManager::register("timelineJS");
- 			JavascriptLoadManager::register('panel');
+			AssetLoadManager::register("timelineJS");
+ 			AssetLoadManager::register('panel');
  			
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			$this->opo_datamodel = Datamodel::load();
  			
  			if ($this->ops_tablename) {
 				$this->opo_result_context = new ResultContext($po_request, $this->ops_tablename, $this->ops_find_type);
-				
+
 				if ($this->opn_type_restriction_id = $this->opo_result_context->getTypeRestriction($pb_type_restriction_has_changed)) {
 					$_GET['type_id'] = $this->opn_type_restriction_id;								// push type_id into globals so breadcrumb trail can pick it up
 					$this->opb_type_restriction_has_changed =  $pb_type_restriction_has_changed;	// get change status
@@ -81,7 +82,6 @@
 		 * Set up basic "find" action
 		 */
  		public function Index($pa_options=null) {
-            
  			$po_search = isset($pa_options['search']) ? $pa_options['search'] : null;
  			
  			$t_model 				= $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
@@ -94,6 +94,8 @@
  				$t_model->getTypeFieldName() 
  				&& 
  				(
+ 					(!$t_model->typeIDIsOptional())
+ 					&&
  					(!is_null($va_types = caGetTypeListForUser($this->ops_tablename, array('access' => __CA_BUNDLE_ACCESS_READONLY__))))
  					&& 
  					(is_array($va_types) && !sizeof($va_types))
@@ -135,7 +137,7 @@
 							'inlineEditingListValues' => $va_display_item['inlineEditingListValues']
 						));
 						
-						JavascriptLoadManager::register('panel');
+						AssetLoadManager::register('panel');
 					}
 				}
 			}
@@ -156,7 +158,7 @@
 					);
 				}
 				
-				if (method_exists($t_model, 'getLabelTableInstance')) {
+				if (method_exists($t_model, 'getLabelTableInstance') && !(($this->ops_tablename === 'ca_objects') && ($this->request->config->get('ca_objects_dont_use_labels')))) {
 					$t_label = $t_model->getLabelTableInstance();
 					$va_display_list[$this->ops_tablename.'.preferred_labels'] = array(
 						'placement_id' => $this->ops_tablename.'.preferred_labels',
@@ -169,7 +171,7 @@
 					);
 				}
 				if ($vs_view == 'editable') {
-					JavascriptLoadManager::register('panel');
+					AssetLoadManager::register('panel');
 				}
 			}
 			
@@ -226,21 +228,31 @@
 			}
  			$this->view->setVar('display_list', $va_display_list);
  			
- 			// Get current display list
+ 			// Default display is always there
  			$va_displays = array('0' => _t('Default'));
- 			foreach(caExtractValuesByUserLocale($t_display->getBundleDisplays(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__))) as $va_display) {
+
+			// Set display options
+			$va_display_options = array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__);
+			if($vn_type_id = $this->opo_result_context->getTypeRestriction($vb_type)) { // occurrence searches are inherently type-restricted
+				$va_display_options['restrictToTypes'] = array($vn_type_id);
+			}
+
+			// Get current display list
+ 			foreach(caExtractValuesByUserLocale($t_display->getBundleDisplays($va_display_options)) as $va_display) {
  				$va_displays[$va_display['display_id']] = $va_display['name'];
  			}
  			
  			$this->view->setVar('display_lists', $va_displays);	
  			
  			# --- print forms used for printing search results as labels - in tools show hide under page bar
- 			$this->view->setVar('print_forms', $this->getPrintForms());
+ 			if ((bool)$this->request->config->get('use_legacy_print_labels_generator')) {
+ 				$this->view->setVar('label_formats', $this->getLegacyPrintForms());
+ 			} else {
+ 				$this->view->setVar('label_formats', caGetAvailablePrintTemplates('labels', array('table' => $this->ops_tablename, 'type' => 'label')));
+ 			}
  			
  			# --- export options used to export search results - in tools show hide under page bar
  			$vn_table_num = $this->opo_datamodel->getTableNum($this->ops_tablename);
- 			//$t_mappings = new ca_bundle_mappings();
-			$va_mappings = array(); //$t_mappings->getAvailableMappings($vn_table_num, array('E', 'X'));
 
 			//default export formats, not configureable
 			$va_export_options = array(
@@ -257,18 +269,18 @@
 					'code' => '_xlsx'
 				),
 			);
-
-			//merge default formats with configureable ones
-			$va_export_options = array_merge($va_export_options, $this->getResultPrintForms());
-		
-			foreach($va_mappings as $vn_mapping_id => $va_mapping_info) {
-				$va_export_options[] = array(
-					'name' => $va_mapping_info['name'],
-					'code' => $va_mapping_info['mapping_id']
-				);
-			}
-		
+			
+			// merge default formats with drop-in print templates
+			$va_export_options = array_merge($va_export_options, caGetAvailablePrintTemplates('results', array('table' => $this->ops_tablename)));
+			
 			$this->view->setVar('export_formats', $va_export_options);
+			$this->view->setVar('current_export_format', $this->opo_result_context->getParameter('last_export_type'));
+
+			// export mapping list
+			if($this->request->user->canDoAction('can_batch_export_metadata') && $this->request->user->canDoAction('can_export_'.$this->ops_tablename)) {
+				$this->view->setVar('exporter_list', ca_data_exporters::getExporters($vn_table_num));
+				$this->view->setVar('find_type', $this->ops_find_type);
+			}
 			
  			//
  			// Available sets
@@ -285,7 +297,6 @@
 			}
 			
 			$this->view->setVar('result_context', $this->opo_result_context);
-			
 			$this->view->setVar('access_restrictions',AccessRestrictions::load());
  		}
 		# -------------------------------------------------------
@@ -295,72 +306,125 @@
 		  * Action to trigger generation of label-formatted PDF of current find result set
 		  */
  		public function printLabels() {
- 			return $this->Index(array('output_format' => 'PDF'));
+ 			return $this->Index(array('output_format' => 'LABELS'));
+		}
+		# -------------------------------------------------------
+		/**
+		 * Generates and outputs label-formatted PDF version of search results using DOMPDF
+		 */
+		protected function _genLabels($po_result, $ps_label_code, $ps_output_filename, $ps_title=null) {
+			if((bool)$this->request->config->get('use_legacy_print_labels_generator')) { return $this->_genLabelsLegacy($po_result, $ps_label_code, $ps_output_filename, $ps_title); }
+			
+			$vs_border = ((bool)$this->request->config->get('add_print_label_borders')) ? "border: 1px dotted #000000; " : "";
+			
+			//
+			// PDF output
+			//
+			$va_template_info = caGetPrintTemplateDetails('labels', substr($ps_label_code, 5));
+			if (!is_array($va_template_info)) {
+				$this->postError(3110, _t("Could not find view for PDF"),"BaseFindController->_genPDF()");
+				return;
+			}
+			
+			try {
+				$this->view->setVar('title', $ps_title);
+				$this->view->setVar('base_path', $vs_base_path = pathinfo($va_template_info['path'], PATHINFO_DIRNAME));
+				$this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
+			
+				$vs_content = $this->render("pdfStart.php");
+				
+				// render labels
+				$vn_width = 				caConvertMeasurementToPoints(caGetOption('labelWidth', $va_template_info, null));
+				$vn_height = 				caConvertMeasurementToPoints(caGetOption('labelHeight', $va_template_info, null));
+				
+				$vn_top_margin = 			caConvertMeasurementToPoints(caGetOption('marginTop', $va_template_info, null));
+				$vn_bottom_margin = 		caConvertMeasurementToPoints(caGetOption('marginBottom', $va_template_info, null));
+				$vn_left_margin = 			caConvertMeasurementToPoints(caGetOption('marginLeft', $va_template_info, null));
+				$vn_right_margin = 			caConvertMeasurementToPoints(caGetOption('marginRight', $va_template_info, null));
+				
+				$vn_horizontal_gutter = 	caConvertMeasurementToPoints(caGetOption('horizontalGutter', $va_template_info, null));
+				$vn_vertical_gutter = 		caConvertMeasurementToPoints(caGetOption('verticalGutter', $va_template_info, null));
+				
+				$va_page_size =				CPDF_Adapter::$PAPER_SIZES[caGetOption('pageSize', $va_template_info, null)];
+				$vn_page_width = 			$va_page_size[2] - $va_page_size[0];
+				$vn_page_height = 			$va_page_size[3] - $va_page_size[1];
+				
+				$vn_label_count = 0;
+				$vn_left = $vn_left_margin;
+				$vn_top = $vn_top_margin;
+				
+				$va_defined_vars = array_keys($this->view->getAllVars());		// get list defined vars (we don't want to copy over them)
+				$va_tag_list = $this->getTagListForView($va_template_info['path']);				// get list of tags in view
+				
+				$va_barcode_files_to_delete = array();
+				
+				while($po_result->nextHit()) {
+					$va_barcode_files_to_delete += caDoPrintViewTagSubstitution($this->view, $po_result, $va_template_info['path'], array('checkAccess' => $this->opa_access_values));
+					
+					$vs_content .= "<div style=\"{$vs_border} position: absolute; width: {$vn_width}px; height: {$vn_height}px; left: {$vn_left}px; top: {$vn_top}px; overflow: hidden;\">";
+					$vs_content .= $this->render($va_template_info['path']);
+					$vs_content .= "</div>\n";
+					
+					$vn_label_count++;
+					
+					$vn_left += $vn_vertical_gutter + $vn_width;
+					
+					if (($vn_left + $vn_width) > $vn_page_width) {
+						$vn_left = $vn_left_margin;
+						$vn_top += $vn_horizontal_gutter + $vn_height;
+					}
+					if (($vn_top + $vn_height) > $vn_page_height) {
+						// next page
+						if ($vn_label_count < $po_result->numHits()) { $vs_content .= "<div class=\"pageBreak\">&nbsp;</div>\n"; }
+						$vn_left = $vn_left_margin;
+						$vn_top = $vn_top_margin;
+					}
+					
+					
+				}
+				
+				$vs_content .= $this->render("pdfEnd.php");
+				
+				$o_dompdf = new DOMPDF();
+				$o_dompdf->load_html($vs_content);
+				$o_dompdf->set_paper(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'));
+				$o_dompdf->set_base_path(caGetPrintTemplateDirectoryPath('labels'));
+				$o_dompdf->render();
+				$o_dompdf->stream(caGetOption('filename', $va_template_info, 'labels.pdf'));
+
+				$vb_printed_properly = true;
+				
+				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
+				
+			} catch (Exception $e) {
+				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
+				
+				$vb_printed_properly = false;
+				$this->postError(3100, _t("Could not generate PDF"),"BaseFindController->PrintSummary()");
+			}
+			
 		}
 		# -------------------------------------------------------
  		/**
- 		 * Returns list of available label print formats
+ 		 * Returns list of available legacy label print formats
+		 * The legacy method of label generation is retained for backward compatibility and will be removed in an upcoming version
+ 		 *
+ 		 * @deprecated Deprecated since version 1.5
  		 */
- 		public function getPrintForms() {
+ 		public function getLegacyPrintForms() {
  			require_once(__CA_LIB_DIR__.'/core/Print/PrintForms.php');
 			return PrintForms::getAvailableForms($this->request->config->get($this->ops_tablename.'_print_forms'));
 		}
 		# -------------------------------------------------------
- 		/**
- 		 * Returns list of available result print formats
- 		 */
- 		public function getResultPrintForms() {
- 		
-			$o_print_tables = Configuration::load($this->request->config->get('find_results_download_config'));
-			$va_layout_settings = array();
-			$counter = 0;
-			
-			if (is_array($va_tables = $o_print_tables->getAssocKeys())) {
-				foreach($va_tables as $vs_table_id) {		
-					if($vs_table_id == $this->ops_tablename || $vs_table_id == 'all_tables') {
-						if(is_array($va_layouts = $o_print_tables->getAssoc($vs_table_id))) {
-							foreach($va_layouts as $va_layout_id => $vs_layout_values) {
-								$va_layout_settings[$counter]['code'] = $va_layout_id;
-								if(array_key_exists('name', $vs_layout_values)) {
-									$va_layout_settings[$counter]['name'] = $vs_layout_values['name'];
-								}
-								else {
-									$va_layout_settings[$counter]['name'] = $vs_layout_values['name'];
-								}
-								++$counter;
-							}
-						}
-					}
-				}
-			}
-			return $va_layout_settings;
-		}
-		# -------------------------------------------------------
- 		/**
- 		 * Returns the settings for the first print format with the specified id, returns null if no settings were found (e.g. default export formats)
- 		 */
- 		public function getResultPrintFormSetting($vs_layout_id) {
-			$o_print_tables = Configuration::load($this->request->config->get('find_results_download_config'));
-			
-			if (is_array($va_tables = $o_print_tables->getAssocKeys())) {
-				foreach($va_tables as $vs_table_id) {		
-					if($vs_table_id == $this->ops_tablename || $vs_table_id == 'all_tables') {
-						if(is_array($va_layouts = $o_print_tables->getAssoc($vs_table_id))) {
-							if(array_key_exists($vs_layout_id, $va_layouts)) {
-								return $va_layouts[$vs_layout_id];
-							}
-						}
-					}
-				}
-			}
-			return null;
-		}
-		# -------------------------------------------------------
 		/**
-		 * Generates and outputs label-formatted PDF version of search results
+		 * Generates and outputs label-formatted PDF version of search results using old "built-in" label generator
+		 * This method of label generation is retained for backward compatibility and will be removed in an upcoming version
+		 *
+		 * @deprecated Deprecated since version 1.5
+		 * @see BaseFindController::_genLabels
 		 */
-		protected function _genPDF($po_result, $ps_label_code, $ps_output_filename, $ps_title=null) {
-
+		protected function _genLabelsLegacy($po_result, $ps_label_code, $ps_output_filename, $ps_title=null) {
+ 			require_once(__CA_LIB_DIR__.'/core/Print/PrintForms.php');
 			$o_print_form = new PrintForms($this->request->config->get($this->ops_tablename.'_print_forms'));
 			
 			if (!$o_print_form->setForm($ps_label_code)) {
@@ -613,16 +677,58 @@
 		}
 		# -------------------------------------------------------
 		/**
+		 * Action to trigger export of current find result set
+		 */
+		public function exportWithMapping() {
+			set_time_limit(7200);
+			return $this->Index(array('output_format' => 'EXPORTWITHMAPPING'));
+		}
+		# -------------------------------------------------------
+		protected function _genExportWithMapping($po_result, $pn_exporter_id) {
+			// Can user batch export?
+			if (!$this->request->user->canDoAction('can_batch_export_metadata')) {
+				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3440?r='.urlencode($this->request->getFullUrlPath()));
+				return;
+			}
+
+			// Can user export records of this type?
+			if (!$this->request->user->canDoAction('can_export_'.$this->ops_tablename)) {
+				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3430?r='.urlencode($this->request->getFullUrlPath()));
+				return;
+			}
+
+			$t_exporter = new ca_data_exporters($pn_exporter_id);
+
+			if(!($t_exporter->getPrimaryKey()>0)) {
+				$this->postError(3420, _t("Could not load export mapping"), "BaseFindController->_genExportWithMapping()");
+				return;
+			}
+
+			$vs_export_filename = preg_replace("/[^\p{L}\p{N}\-]/", '_', $this->opo_result_context->getSearchExpression());
+			$vs_export_filename = preg_replace("/[\_]+/", '_', $vs_export_filename);
+
+			$vs_tmp_file = tempnam(caGetTempDirPath(), 'export');
+			ca_data_exporters::exportRecordsFromSearchResult($t_exporter->get('exporter_code'), $po_result, $vs_tmp_file);
+
+			header('Content-Type: '.$t_exporter->getContentType().'; charset=UTF-8');
+			header('Content-Disposition: attachment; filename="'.$vs_export_filename.'.'.$t_exporter->getFileExtension().'"');
+			header('Content-Transfer-Encoding: binary');
+			readfile($vs_tmp_file);
+			@unlink($vs_tmp_file);
+			exit();
+		}
+		# -------------------------------------------------------
+		/**
 		 * Generate  export file of current result
 		 */
 		protected function _genExport($po_result, $ps_output_type, $ps_output_filename, $ps_title=null) {
 			$this->view->setVar('criteria_summary', $vs_criteria_summary = $this->getCriteriaForDisplay());	// add displayable description of current search/browse parameters
 			$this->view->setVar('criteria_summary_truncated', mb_substr($vs_criteria_summary, 0, 60).((mb_strlen($vs_criteria_summary) > 60) ? '...' : ''));
 			
-			$va_settings = $this->getResultPrintFormSetting($ps_output_type);
-
-			if($va_settings == null)
-			{
+			$this->opo_result_context->setParameter('last_export_type', $ps_output_type);
+			$this->opo_result_context->saveContext();
+			
+			if(substr($ps_output_type, 0, 4) !== '_pdf') {
 				switch($ps_output_type) {
 					case '_xlsx':
 						require_once(__CA_LIB_DIR__."/core/Parsers/PHPExcel/PHPExcel.php");
@@ -641,129 +747,70 @@
 						$vs_file_extension = 'txt';
 						$vs_mimetype = "text/plain";
 					default:
-						if ((int)$ps_output_type) {
-							// $o_exporter = new DataExporter();
-	// 						if (!sizeof($va_buf = $o_exporter->export((int)$ps_output_type, $po_result, null, array('returnOutput' => true)))) {
-	// 							$this->response->setHTTPResponseCode(206, 'No action');		// nothing to export
-	// 							return;
-	// 						}
-	// 						$vs_export_target = $o_exporter->exportTarget((int)$ps_output_type);
-	// 						$vs_file_extension = $o_exporter->exportFileExtension((int)$ps_output_type);
-	// 						$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename.'_'.$vs_export_target), 0, 30);
-	// 						if(sizeof($va_buf) == 1) {		// single record - output as file
-	// 							header("Content-Disposition: attachment; filename=export_".$vs_output_file_name.".".$vs_file_extension);
-	// 							header("Content-type: text/xml");
-	// 							$this->opo_response->addContent($va_buf[0], 'view');	
-	// 							return;
-	// 						} else {		// more than one record... create a ZIP file
-	// 							header("Content-Disposition: attachment; filename=export_".$vs_output_file_name.".zip");
-	// 							header("Content-type: application/zip");
-	// 							$o_zip = new ZipFile();
-	// 							
-	// 							$vn_i = 1;
-	// 							foreach($va_buf as $vs_buf) {
-	// 								$o_zip->addFile($vs_buf, $vs_export_target.'_'.$vn_i.'.'.$vs_file_extension);
-	// 								$vn_i++;
-	// 							}
-	// 							$this->opo_response->addContent($o_zip->output(ZIPFILE_RETURN_STRING), 'view');	
-	// 							return;
-	// 						}
-						}
-						$vs_delimiter = "\t";	
 						break;
 				}
 
 				header("Content-Disposition: attachment; filename=export_".$vs_output_file_name.".".$vs_file_extension);
 				header("Content-type: ".$vs_mimetype);
-			}
-			else
-			{
-				if (!($vs_filename =  $va_settings['filename'])) {
-					$vs_filename = 'export_results.pdf';
-				}
-				if (!($vs_orientation =  $va_settings['orientation'])) {
-					$vs_orientation = 'P';
-				}
-				if (!($vs_page_format =  $va_settings['page_format'])) {
-					$vs_page_format = 'letter';
-				}
-				if (!($vs_language =  $va_settings['language'])) {
-					$vs_language = 'en';
-				}
-				if (!($vs_font =  $va_settings['font'])) {
-					$vs_font = 'dejavusans';
-				}
-				if (!($vb_unicode =  $va_settings['unicode'])) {
-					$vb_unicode = true;
-				}
-				if (!($vs_enocoding =  $va_settings['encoding'])) {
-					$vs_enocoding = 'UTF-8';
-				}
-				if (!($vs_margin_left =  $va_settings['margin_left'])) {
-					$vs_margin_left = '5';
-				}
-				if (!($vs_margin_top =  $va_settings['margin_top'])) {
-					$vs_margin_top = '5';
-				}
-				if (!($vs_margin_right =  $va_settings['margin_right'])) {
-					$vs_margin_right = '5';
-				}
-				if (!($vs_margin_bottom =  $va_settings['margin_bottom'])) {
-					$vs_margin_bottom = '8';
-				}
-				
-				require_once(__CA_LIB_DIR__."/core/Print/html2pdf/html2pdf.class.php");
-				try {
-					$vs_content = $this->render('Results/'.str_replace("<tablename>", $this->ops_tablename, $va_settings['script_to_render']));
-					$vo_html2pdf = new HTML2PDF($vs_orientation, $vs_page_format, $vs_language, $vb_unicode, $vs_enocoding, 
-						array($vs_margin_left, $vs_margin_top, $vs_margin_right, $vs_margin_bottom));
-					$vo_html2pdf->setDefaultFont($vs_font);
-					$vo_html2pdf->setTestIsImage(false);
-					$vo_html2pdf->WriteHTML($vs_content);
-					
-					header("Content-Disposition: attachment; filename=".$vs_filename);
-					header("Content-type: application/pdf");
-		
-					$vo_html2pdf->Output($vs_filename);
-					$vb_printed_properly = true;
-				} catch (Exception $e) {
-					$vb_printed_properly = false;
-					$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
-				}				
-			}
+							
+				// get display list
+				self::Index(null, null);
+				$va_display_list = $this->view->getVar('display_list');
 			
-			// get display list
-			self::Index(null, null);
-			$va_display_list = $this->view->getVar('display_list');
+				$va_rows = array();
 			
-			$va_rows = array();
+				// output header
 			
-			// output header
-			
-			$va_row = array();
-			foreach($va_display_list as $va_display_item) {
-				$va_row[] = $va_display_item['display'];
-			}
-			$va_rows[] = join($vs_delimiter, $va_row);
-			
-			$po_result->seek(0);
-			
-			$t_display = $this->view->getVar('t_display');
-			while($po_result->nextHit()) {
 				$va_row = array();
-				foreach($va_display_list as $vn_placement_id => $va_display_item) {
-					$vs_value = html_entity_decode($t_display->getDisplayValue($po_result, $vn_placement_id, array('convert_codes_to_display_text' => true, 'convertLineBreaks' => false)), ENT_QUOTES, 'UTF-8');
-
-					// quote values as required
-					if (preg_match("![^A-Za-z0-9 .;]+!", $vs_value)) {
-						$vs_value = '"'.str_replace('"', '""', $vs_value).'"';
-					}
-					$va_row[] = $vs_value;
+				foreach($va_display_list as $va_display_item) {
+					$va_row[] = $va_display_item['display'];
 				}
 				$va_rows[] = join($vs_delimiter, $va_row);
-			}
 			
-			$this->opo_response->addContent(join("\n", $va_rows), 'view');			
+				$po_result->seek(0);
+			
+				$t_display = $this->view->getVar('t_display');
+				while($po_result->nextHit()) {
+					$va_row = array();
+					foreach($va_display_list as $vn_placement_id => $va_display_item) {
+						$vs_value = html_entity_decode($t_display->getDisplayValue($po_result, $vn_placement_id, array('convert_codes_to_display_text' => true, 'convertLineBreaks' => false)), ENT_QUOTES, 'UTF-8');
+
+						// quote values as required
+						if (preg_match("![^A-Za-z0-9 .;]+!", $vs_value)) {
+							$vs_value = '"'.str_replace('"', '""', $vs_value).'"';
+						}
+						$va_row[] = $vs_value;
+					}
+					$va_rows[] = join($vs_delimiter, $va_row);
+				}
+			
+				$this->opo_response->addContent(join("\n", $va_rows), 'view');	
+			} else {
+				//
+				// PDF output
+				//
+				$va_template_info = caGetPrintTemplateDetails('results', substr($ps_output_type, 5));
+				if (!is_array($va_template_info)) {
+					$this->postError(3110, _t("Could not find view for PDF"),"BaseFindController->PrintSummary()");
+					return;
+				}
+				
+				try {
+					$this->view->setVar('base_path', $vs_base_path = pathinfo($va_template_info['path'], PATHINFO_DIRNAME));
+					$this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
+					
+					$vs_content = $this->render($va_template_info['path']);
+					$o_dompdf = new DOMPDF();
+					$o_dompdf->load_html($vs_content);
+					$o_dompdf->set_paper(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'));
+					$o_dompdf->set_base_path(caGetPrintTemplateDirectoryPath('results'));
+					$o_dompdf->render();
+					$o_dompdf->stream(caGetOption('filename', $va_template_info, 'export_results.pdf'));
+				} catch (Exception $e) {
+					$this->postError(3100, _t("Could not generate PDF"),"BaseFindController->PrintSummary()");
+				}
+				return;			
+			}		
 		}
 		# ------------------------------------------------------------------
 		# Sets
@@ -846,10 +893,15 @@
 				$t_set->addLabel(array('name' => $vs_set_name), $g_ui_locale_id, null, true);
 			
 				$vn_added_items_count = $t_set->addItems($va_row_ids);
+				
+				$this->view->setVar('set_id', $t_set->getPrimaryKey());
+				$this->view->setVar('t_set', $t_set);
+
+				if ($t_set->numErrors()) {
+					$this->view->setVar('error', join("; ", $t_set->getErrors()));
+				}
 			}
  		
-			$this->view->setVar('set_id', $t_set->getPrimaryKey());
-			$this->view->setVar('t_set', $t_set);
 			$this->view->setVar('set_name', $vs_set_name);
 			$this->view->setVar('set_code', $vs_set_code);
 			$this->view->setVar('num_items_added', $vn_added_items_count);
@@ -1476,4 +1528,3 @@
 		}
  		# ------------------------------------------------------------------
 	}
-?>

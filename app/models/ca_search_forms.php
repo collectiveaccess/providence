@@ -1180,7 +1180,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 				if (!is_array($va_values)) { $va_values = array($va_values); }
 				foreach($va_values as $vs_value) {
 					if (!strlen(trim($vs_value))) { continue; }
-					if (preg_match('![^A-Za-z0-9]+!', $vs_value) && ($vs_value{0} != '[')) {
+					if (preg_match('![^A-Za-z0-9\*]+!', $vs_value) && ($vs_value{0} != '[')) {
 						$vs_query_element = '"'.str_replace('"', '', $vs_value).'"';
 					} else {
 						$vs_query_element = $vs_value;
@@ -1242,7 +1242,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 				if (sizeof($va_sub_elements = $t_element->getElementsInSet()) > 1) {
 					foreach($va_sub_elements as $vn_element_id => $va_element_info) {
 						if ($va_tmp[1] == $va_element_info['element_code']) { continue; }
-						$va_elements[] = $va_tmp[0].'.'.$va_element_info['element_code'];
+						$va_elements[] = $va_tmp[0].'.'.$va_tmp[1].'.'.$va_element_info['element_code'];
 					}
 				}
 			} else {

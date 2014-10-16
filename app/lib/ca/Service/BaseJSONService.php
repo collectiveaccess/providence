@@ -70,9 +70,14 @@ class BaseJSONService {
 			if(!is_array($this->opa_post)){
 				$this->addError(_t("Data sent via POST doesn't seem to be in JSON format"));
 			}
+		} else if($vs_post_data = $this->opo_request->getParameter('source', pString)) {
+			$this->opa_post = json_decode($vs_post_data, true);
+			if(!is_array($this->opa_post)){
+				$this->addError(_t("Data sent via 'source' parameter doesn't seem to be in JSON format"));
+			}
 		} else {
 			$this->opa_post = array();
-		}		
+		}
 
 		$this->opa_valid_tables = array(
 			"ca_objects", "ca_object_lots", "ca_entities",
@@ -136,7 +141,11 @@ class BaseJSONService {
 
 		if ($pn_id && !is_numeric($pn_id) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD')) && preg_match("!^[A-Za-z0-9_\-\.,\[\]]+$!", $pn_id)) {
 			// User is loading by idno
-			if(!$t_instance->load(array($vs_idno_fld => $pn_id))){
+			$va_load_spec = array($vs_idno_fld => $pn_id);
+			if(!$vb_include_deleted && $t_instance->hasField('deleted')){
+				$va_load_spec['deleted'] = 0;
+			}
+			if(!$t_instance->load($va_load_spec)){
 					$this->opa_errors[] = _t("idno does not exist");
 					return false;
 				} else if(!$vb_include_deleted && $t_instance->get("deleted")){

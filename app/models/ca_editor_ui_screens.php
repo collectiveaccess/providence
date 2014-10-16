@@ -1207,7 +1207,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			
 			TooltipManager::add(
 				"#uiEditorBundle_{$vs_table}_{$vs_bundle_proc}",
-				"<h2>{$vs_label}</h2>{$vs_description}"
+				"<h2>{$vs_label}</h2>".
+				_t("Bundle name").": {$vs_bundle_proc}<br />".
+				((strlen($vs_description) > 0) ? _t("Description").": {$vs_description}<br />" : "")
 			);
 		}
 		
@@ -1240,24 +1242,29 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	 * @return bool True on success, false on error, null if no screen is loaded
 	 * 
 	 */
-	public function addTypeRestriction($pn_type_id, $va_settings=null) {
+	public function addTypeRestriction($pn_type_id, $pa_settings=null) {
 		if (!($vn_screen_id = $this->getPrimaryKey())) { return null; }		// screen must be loaded
-		if (!is_array($va_settings)) { $va_settings = array(); }
+		if (!is_array($pa_settings)) { $pa_settings = array(); }
 		
 		$t_ui = new ca_editor_uis($this->get('ui_id'));
 		if (!$t_ui->getPrimaryKey()) { return false; }
 		
 		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->getTableNum()))) { return false; }
-		
-		$va_type_list = $t_instance->getTypeList();
-		if (!isset($va_type_list[$pn_type_id])) { return false; }
+
+		if ($t_instance instanceof BaseRelationshipModel) { // interstitial type restriction incoming
+			$va_rel_type_list = $t_instance->getRelationshipTypes();
+			if(!isset($va_rel_type_list[$pn_type_id])) { return false; }
+		} else { // "normal" (list-based) type restriction
+			$va_type_list = $t_instance->getTypeList();
+			if (!isset($va_type_list[$pn_type_id])) { return false; }
+		}
 		
 		$t_restriction = new ca_editor_ui_screen_type_restrictions();
 		$t_restriction->setMode(ACCESS_WRITE);
 		$t_restriction->set('table_num', $t_ui->get('editor_type'));
 		$t_restriction->set('type_id', $pn_type_id);
 		$t_restriction->set('screen_id', $this->getPrimaryKey());
-		foreach($va_settings as $vs_setting => $vs_setting_value) {
+		foreach($pa_settings as $vs_setting => $vs_setting_value) {
 			$t_restriction->setSetting($vs_setting, $vs_setting_value);
 		}
 		$t_restriction->insert();
@@ -1291,7 +1298,12 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		
 		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->getTableNum()))) { return false; }
 		
-		$va_type_list = $t_instance->getTypeList();
+		if ($t_instance instanceof BaseRelationshipModel) { // interstitial type restrictions
+			$va_type_list = $t_instance->getRelationshipTypes();
+		} else { // "normal" (list-based) type restrictions
+			$va_type_list = $t_instance->getTypeList();
+		}
+
 		$va_current_restrictions = $this->getTypeRestrictions();
 		$va_current_type_ids = array();
 		foreach($va_current_restrictions as $vn_i => $va_restriction) {
@@ -1443,7 +1455,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			$vs_description = $t_instance->getDisplayDescription($t_instance->tableName().'.'.$vs_bundle_proc);
 			TooltipManager::add(
 				"#uiEditor_{$vn_placement_id}",
-				"<h2>{$vs_label}</h2>{$vs_description}"
+				"<h2>{$vs_label}</h2>".
+				_t("Bundle name").": {$vs_bundle_proc}<br />".
+				((strlen($vs_description) > 0) ? _t("Description").": {$vs_description}<br />" : "")
 			);
 		}
 		
@@ -1603,8 +1617,12 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($vn_table_num = $this->getTableNum()))) { return null; }
-		
-		$o_view->setVar('type_restrictions', $t_instance->getTypeListAsHTMLFormElement('type_restrictions[]', array('multiple' => 1, 'height' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)));
+
+		if($t_instance instanceof BaseRelationshipModel) { // interstitial
+			$o_view->setVar('type_restrictions', $t_instance->getRelationshipTypesAsHTMLSelect($t_instance->getLeftTableName(),null,null,array('name' => 'type_restrictions[]', 'multiple' => 1, 'size' => 5), array('values' => $va_restriction_type_ids)));
+		} else { // list-based
+			$o_view->setVar('type_restrictions', $t_instance->getTypeListAsHTMLFormElement('type_restrictions[]', array('multiple' => 1, 'height' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)));
+		}
 	
 		return $o_view->render('ca_editor_ui_screen_type_restrictions.php');
 	}
@@ -1616,4 +1634,3 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ----------------------------------------
 }
-?>

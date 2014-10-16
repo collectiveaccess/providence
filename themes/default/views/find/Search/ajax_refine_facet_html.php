@@ -64,6 +64,47 @@
 <?php
 	switch($vs_group_mode) {
 		# ------------------------------------------------------------
+		case 'hierarchical';
+?>
+	<h2 class='browse'><?php print unicode_ucfirst($va_facet_info['label_plural']); ?></h2>
+	<div class='clearDivide'></div>
+	<!--- BEGIN HIERARCHY BROWSER --->
+	<div id="hierarchyBrowser" class='hierarchyBrowser'>
+		<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
+	</div><!-- end hierarchyBrowser -->
+
+<?php
+	if ($t_item && $t_subject) {
+?>
+	<div class="hierarchyBrowserHelpText">
+		<?php print _t("Click on a %1 to see more specific %2 within that %3. Click on the arrow next to a %4 to find %5 related to it.", $t_item->getProperty('NAME_SINGULAR'), $t_item->getProperty('NAME_PLURAL'), $t_item->getProperty('NAME_SINGULAR'), $t_item->getProperty('NAME_SINGULAR'), $t_subject->getProperty('NAME_PLURAL') ); ?>
+	</div>
+<?php
+	}
+?>
+	
+	<script type="text/javascript">
+			var oHierBrowser;
+			
+			jQuery(document).ready(function() {
+				
+				oHierBrowser = caUI.initHierBrowser('hierarchyBrowser', {
+					levelDataUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacetHierarchyLevel', array('facet' => $vs_facet_name)); ?>',
+					initDataUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacetHierarchyAncestorList', array('facet' => $vs_facet_name)); ?>',
+					
+					editUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'addCriteria', array('facet' => $vs_facet_name, 'id' => '')); ?>',
+					editButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/glyphicons_223_chevron-right.png" border="0" title="<?php print _t("Browse with this term"); ?>">',
+					
+					initItemID: '<?php print $this->getVar('browse_last_id'); ?>',
+					indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
+					
+					currentSelectionDisplayID: 'browseCurrentSelection'
+				});
+			});
+		</script>
+<?php
+			break;
+		# ------------------------------------------------------------
 		case 'none':
 ?>
 	<div class="browseSelectPanelList">

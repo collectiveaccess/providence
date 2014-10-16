@@ -26,8 +26,8 @@
  * ----------------------------------------------------------------------
  */
  
-	JavascriptLoadManager::register('hierBrowser');
-	JavascriptLoadManager::register('tabUI');
+	AssetLoadManager::register('hierBrowser');
+	AssetLoadManager::register('tabUI');
 	
 	$t_subject 			= $this->getVar('t_subject');
 	$pa_ancestors 		= $this->getVar('ancestors');
@@ -84,7 +84,8 @@
 				if ($pn_id && $va_item[$t_subject->primaryKey()] && ($vs_item_id != $pn_id)) {
 					$va_path[] = '<a href="'.caEditorUrl($this->request, $t_subject->tableName(), $vn_id).'">'.$vs_label.'</a>';
 				} else {
-					$vn_item_id = array_pop(explode("-", $vs_item_id));
+					$va_tmp = explode("-", $vs_item_id);
+					$vn_item_id = array_pop($va_tmp);
 					$va_path[] = "<a href='#' onclick='jQuery(\"#{$vs_id_prefix}HierarchyBrowserContainer\").slideDown(250); o{$vs_id_prefix}HierarchyBrowser.setUpHierarchy(\"{$vn_item_id}\"); return false;'>{$vs_label}</a>";
 				}
 			}

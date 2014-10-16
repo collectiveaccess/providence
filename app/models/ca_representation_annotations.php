@@ -399,7 +399,7 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 	}
 	# ------------------------------------------------------
 	/**
-	 * Override BundlableLabelableBaseModelWithAttribute::get() to allow getting 
+	 * Override BundlableLabelableBaseModelWithAttributes::get() to allow getting 
 	 * annotation properties in simple get()-style notations like
 	 *   ca_representations_annotations.props.w
 	 */
@@ -412,6 +412,11 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 		}
 
 		if((sizeof($va_tmp)==2) && isset($va_tmp[0]) && ($va_tmp[0] == 'props')) {
+
+			if($va_tmp[1] == 'display') {
+				return $this->getPropertiesForDisplay($pa_options);
+			}
+
 			$vm_val = $this->getPropertyValue($va_tmp[1]);
 			
 			// this should be moved into the property implementation but for now, points is the only occurrence 
@@ -421,7 +426,8 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 					case 'points' :
 						$va_return = array();
 						foreach($vm_val as $va_point) {
-							$va_return[] = $va_point['x'].','.$va_point['y'];
+							// round values for display
+							$va_return[] = round($va_point['x'],2).','.round($va_point['y'],2);
 						}
 						if(!($vs_delimiter = caGetOption('delimiter',$pa_options))){
 							$vs_delimiter = '; ';
@@ -477,6 +483,14 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
  	# ------------------------------------------------------
  	public function getPropertyValues() {
  		return $this->opo_annotations_properties->getPropertyValues();
+ 	}
+ 	# ------------------------------------------------------
+ 	public function getPropertiesForDisplay($pa_options=null) {
+ 		if($this->opo_annotations_properties instanceof IRepresentationAnnotationPropertyCoder) {
+ 			return $this->opo_annotations_properties->getPropertiesForDisplay($pa_options);	
+ 		} else {
+ 			return '';
+ 		}
  	}
  	# ------------------------------------------------------
  	public function setPropertyValue($ps_property, $pm_value) {

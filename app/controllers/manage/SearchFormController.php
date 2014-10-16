@@ -34,7 +34,7 @@
  	class SearchFormController extends ActionController {
  		# -------------------------------------------------------
  		public function ListForms() {
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
 			
  			$t_form = new ca_search_forms();
  			$this->view->setVar('t_form', $t_form);

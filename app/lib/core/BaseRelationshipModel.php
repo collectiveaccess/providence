@@ -250,7 +250,7 @@
 						} else {
 							$va_criteria['type_code'] = $vs_type_code;
 						}
-						if ($t_rel_type->load(array($va_criteria))) {
+						if ($t_rel_type->load($va_criteria)) {
 							$va_restrict_to_type_list[] = "(crt.hier_left >= ".$t_rel_type->get('hier_left')." AND crt.hier_right <= ".$t_rel_type->get('hier_right').")";
 						}
 					}
@@ -295,7 +295,7 @@
 		/**
 		 * Returns an HTML <select> element of relationship types with values=type_id and option text = to the typename
 		 */
-		public function getRelationshipTypesAsHTMLSelect($ps_orientation, $pn_sub_type_left_id=null, $pn_sub_type_right_id=null, $pa_options=null) {
+		public function getRelationshipTypesAsHTMLSelect($ps_orientation, $pn_sub_type_left_id=null, $pn_sub_type_right_id=null, $pa_attributes=null, $pa_options=null) {
 			$vs_left_table_name = $this->getLeftTableName();
 			$vs_right_table_name = $this->getRightTableName();
 			if (!in_array($ps_orientation, array($vs_left_table_name, $vs_right_table_name))) { $ps_orientation = $vs_left_table_name; }
@@ -318,9 +318,9 @@
 				$va_options[str_repeat("&#160;&#160;&#160;", $vn_l-1).(($ps_orientation == $vs_left_table_name) ? $va_type['typename'] : $va_type['typename_reverse'])] = $va_type['type_id'];
 			}
 			
-			$vs_name = caGetOption('name', $pa_options, 'type_id');
+			$vs_name = caGetOption('name', $pa_attributes, 'type_id');
 			
-			return caHTMLSelect($vs_name, $va_options, $pa_options);
+			return caHTMLSelect($vs_name, $va_options, $pa_attributes, $pa_options);
 		}
 		# ------------------------------------------------------
 		/**
@@ -666,7 +666,7 @@
 		 * 
 		 */
 		public function getTypeID() {
-			return BaseModel::get('type_id');
+			return (BaseModel::hasField('type_id')) ? BaseModel::get('type_id') : null;
 		}
 		# ------------------------------------------------------
 		/**
@@ -740,4 +740,3 @@
 		}
 		# ------------------------------------------------------
 	}
-?>

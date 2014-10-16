@@ -404,6 +404,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		$this->BUNDLES['ca_movements'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related movements'));
 		
 		$this->BUNDLES['ca_list_items'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related vocabulary terms'));
+		$this->BUNDLES['ca_sets'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Sets'));
 		
 		$this->BUNDLES['hierarchy_navigation'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Hierarchy navigation'));
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
@@ -592,7 +593,8 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 			LEFT JOIN ca_list_items AS cli2 ON cli.item_id = cli2.parent_id
 			INNER JOIN ca_lists AS l ON l.list_id = cli.list_id
 			WHERE 
-				cli.parent_id IS NULL and cli.list_id IN (".join(',', $va_hierarchy_ids).") ".($pb_vocabularies ? " AND (l.use_as_vocabulary = 1)" : "")."
+				cli.parent_id IS NULL and cli.list_id IN (".join(',', $va_hierarchy_ids).") ".($pb_vocabularies ? " AND (l.use_as_vocabulary = 1)" : "")." AND
+				l.deleted = 0
 			GROUP BY
 				cli.item_id
 		");
@@ -607,7 +609,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 				SELECT count(*) children
 				FROM ca_list_items cli
 				WHERE 
-					cli.parent_id = ?
+					cli.parent_id = ? AND cli.deleted = 0
 			", (int)$qr_res->get('item_id'));
 			$vn_children_count = 0;
 			if ($qr_children->nextRow()) {
@@ -747,6 +749,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		if (method_exists($this->SETTINGS, $ps_name)) {
 			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
 		}
+		print caPrintStackTrace();
 		die($this->tableName()." does not implement method {$ps_name}");
 	}
 	# ------------------------------------------------------

@@ -101,6 +101,7 @@
 		 */
 		public function setSetting($ps_setting, $pm_value) {
 			$va_settings = $this->getSettings();
+			if (!is_array($va_settings)) { $va_settings = array(); }
 			if (!$this->isValidSetting($ps_setting)) { return $va_settings; }
 			$va_setting_info = $this->getSettingInfo($ps_setting);
 			if ($va_setting_info['displayType'] == DT_CHECKBOXES) { $pm_value = (int)$pm_value; }
@@ -195,16 +196,17 @@
 			$va_settings = $this->getAvailableSettings();
 			$va_setting_values = is_array($pa_options['settings']) ? $pa_options['settings'] : array();
 			
-			$po_request = 		caGetOption('request', $pa_options, null);
-			$vs_id = 			caGetOption('id', $pa_options, null);
-			$vs_name = 			caGetOption('name', $pa_options, null);
+			$po_request = 			caGetOption('request', $pa_options, null);
+			$vs_id = 				caGetOption('id', $pa_options, null);
+			$vs_name = 				caGetOption('name', $pa_options, null);
+			$vs_placement_code = 	caGetOption('placement_code', $pa_options, null);
 			
 			$va_options = array('request' => $po_request, 'id_prefix' => $vs_id);
 			foreach($va_settings as $vs_setting => $va_setting_info) {
 				$va_options['id'] = "{$vs_id}_{$vs_setting}";
 				$va_options['label_id'] = $va_options['id'].'_label';
 				if (!$vs_name) { $vs_name = $vs_id; }
-				$va_options['name'] = "{$vs_name}_{$vs_setting}";
+				$va_options['name'] = "{$vs_placement_code}{$vs_name}_{$vs_setting}";
 				
 				$va_options['value'] = caGetOption($vs_setting, $va_setting_values, $this->getSetting($vs_setting));
 				$va_options['helpText'] = caGetOption('helpText', $va_setting_info, '');
@@ -219,16 +221,24 @@
 		 * Returns bundle HTML (using bundle view) for specifying settings for the currently loaded row
 		 *
 		 * @param HTTPRequest Request object
+		 * @param string $ps_form_name
+		 * @param string $ps_placement_code
+		 * @param int $pn_table_num
 		 * @param array $pa_options Optional array of options. Support options are:
 		 *		id = 
 		 *		name = 
 		 *		settings = 
 		 * @return string HTML code for bundle
 		 */
-		public function getHTMLSettingFormBundle($po_request, $pa_options=null) {
+		public function getHTMLSettingFormBundle($po_request, $ps_form_name, $ps_placement_code, $pn_table_num, $pa_options=null) {
 				$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
-				$o_view->setVar('t_subject', $this);
 				
+				$o_view->setVar('t_subject', $this);
+				$o_view->setVar('table_num', $pn_table_num);
+				$o_view->setVar('id_prefix', $ps_form_name);	
+				$o_view->setVar('placement_code', $ps_placement_code);		
+				$o_view->setVar('request', $po_request);	
+			
 				return $o_view->render('settings.php');
 		}
 		# ------------------------------------------------------
@@ -372,7 +382,7 @@
 								color: jQuery('#".$pa_options["name"]."').val()
 							})}); </script>\n";
 							
-							JavascriptLoadManager::register('jquery', 'colorpicker');
+							AssetLoadManager::register('jquery', 'colorpicker');
 							
 					break;
 				# --------------------------------------------

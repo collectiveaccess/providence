@@ -188,6 +188,57 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Returns a combination of all properties for text display
+		 */
+		public function getPropertiesForDisplay($pa_options=null) {
+			switch($this->getProperty('type')) {
+				case 'rect':
+					// to be consistent with the polygon display, we're going to return a list of 4 points
+					$va_points = array();
+					$va_points['tl']['x'] = $this->getProperty('x');
+					$va_points['tl']['y'] = $this->getProperty('y');
+
+					$va_points['tr']['x'] = $this->getProperty('x') + $this->getProperty('w');
+					$va_points['tr']['y'] = $this->getProperty('y');
+
+					$va_points['bl']['x'] = $this->getProperty('x');
+					$va_points['bl']['y'] = $this->getProperty('y') + $this->getProperty('h');
+
+					$va_points['br']['x'] = $this->getProperty('x') + $this->getProperty('w');
+					$va_points['br']['y'] = $this->getProperty('y') + $this->getProperty('h');
+
+					return $this->_formatPoints($va_points, $pa_options);
+					break;
+				case 'circle':
+				case 'point':
+					$va_points = array();
+					$va_points['center']['x'] = $this->getProperty('x');
+					$va_points['center']['y'] = $this->getProperty('y');
+					return $this->_formatPoints($va_points, $pa_options);
+				case 'poly':
+					$va_points = $this->getProperty('points');
+					return $this->_formatPoints($va_points, $pa_options);
+				default:
+					return '';
+			}
+		}
+		# ------------------------------------------------------------------
+		private function _formatPoints($pa_points, $pa_options=null) {
+			if(!is_array($pa_points)) { return ''; }
+
+			$va_return = array();
+
+			foreach($pa_points as $va_point) {
+				// round values for display
+				$va_return[] = round($va_point['x'],2).','.round($va_point['y'],2);
+			}
+
+			$vs_delimiter = caGetOption('delimiter', $pa_options, '; ');
+
+			return join($vs_delimiter, $va_return);
+		}
+		# ------------------------------------------------------------------
+		/**
 		 * Validate property values prior to insertion into the database
 		 * This function checks whether the values make sense
 		 *

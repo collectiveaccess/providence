@@ -223,4 +223,58 @@
 		return $vs_buf;
 	}
 	# ---------------------------------------
+	/**
+	 * 
+	 */
+	function caBatchGetMediaFilenameToIdnoRegexList($pa_options=null) {
+		// Get list of regex packages that user can use to extract object idno's from filenames
+		$o_config = Configuration::load();
+		
+		$va_regex_list = $o_config->getAssoc('mediaFilenameToObjectIdnoRegexes');
+ 		if (!is_array($va_regex_list)) { $va_regex_list = array(); }
+ 		
+ 		return $va_regex_list;
+	}
+	# ---------------------------------------
+	/**
+	 * 
+	 */
+	function caBatchGetMediaFilenameReplacementRegexList($pa_options=null) {
+		$o_config = Configuration::load();
+		$o_log = caGetOption('log', $pa_options, null);
+		
+		// Get list of replacements that user can use to transform file names to match object idnos
+		$va_replacements_list = $o_config->getAssoc('mediaFilenameReplacements');
+		if (!is_array($va_replacements_list)) { $va_replacements_list = array(); }
+
+		// check if replacements are safe to use with preg_replace
+		foreach($va_replacements_list as $vs_replacement_code => $va_replacement) {
+			if(!isset($va_replacement['search']) || !is_array($va_replacement['search'])) {
+				if ($o_log) { $o_log->logError(_t("List of search expressions for replacement %1 is invalid. Check your configuration.", $vs_replacement_code)); }
+				unset($va_replacements_list[$vs_replacement_code]);
+				continue;
+			}
+			if(!isset($va_replacement['replace']) || !is_array($va_replacement['replace'])) {
+				if ($o_log) { $o_log->logError(_t("List of replacement patterns for replacement %1 is invalid. Check your configuration.", $vs_replacement_code)); }
+				unset($va_replacements_list[$vs_replacement_code]);
+				continue;
+			}
+			if(sizeof($va_replacement['search']) != sizeof($va_replacement['replace'])) {
+				if ($o_log) { $o_log->logError(_t("The search and replacement pattern lists for replacement %1 have different lengths. Check your configuration.", $vs_replacement_code)); }
+				unset($va_replacements_list[$vs_replacement_code]);
+				continue;
+			}
+
+			foreach($va_replacement['search'] as $vs_search){
+				if (@preg_match('!'.$vs_search.'!', "Just a test") === false) {
+					if ($o_log) { $o_log->logError(_t("One of the search patterns for replacement %1 is not a valid PCRE. Check your configuration.", $vs_replacement_code)); }
+					unset($va_replacements_list[$vs_replacement_code]);
+					continue(2);
+				}
+			}
+		}
+		
+		return $va_replacements_list;
+	}
+	# ---------------------------------------
 ?>

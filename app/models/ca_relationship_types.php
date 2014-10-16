@@ -852,4 +852,3 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
  	}
 	# ------------------------------------------------------
 }
-?>

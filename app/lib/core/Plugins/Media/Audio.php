@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2013 Whirl-i-Gig
+ * Copyright 2006-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -151,8 +151,8 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$this->opo_external_app_config = Configuration::load($vs_external_app_config_path);
 		$this->ops_path_to_ffmpeg = $this->opo_external_app_config->get('ffmpeg_app');
 
-		$this->ops_mediainfo_path = $this->opo_external_app_config->get('mediainfo_app');
-		$this->opb_mediainfo_available = caMediaInfoInstalled($this->ops_mediainfo_path);
+		$this->ops_mediainfo_path = caGetExternalApplicationPath('mediainfo');
+		$this->opb_mediainfo_available = caMediaInfoInstalled();
 
 		$this->opb_ffmpeg_available = caMediaPluginFFfmpegInstalled($this->ops_path_to_ffmpeg);
 
@@ -166,11 +166,11 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$this->register();
 		$va_status['available'] = true;
 		if (!$this->opb_ffmpeg_available) { 
-			$va_status['errors'][] = _t("Incoming Audio files will not be transcoded because ffmpeg is not installed.");
+			$va_status['errors'][] = _t("Incoming audio files will not be transcoded because ffmpeg is not installed.");
 		}
 		
 		if ($this->opb_mediainfo_available) { 
-			$va_status['notices'][] = _t("MediaInfo will be used to extract metadata from video files.");
+			$va_status['notices'][] = _t("MediaInfo will be used to extract metadata from audio files.");
 		}
 		return $va_status;
 	}
@@ -267,7 +267,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$this->handle = $this->ohandle = $info;
 			
 			if($this->opb_mediainfo_available){
-				$this->metadata = caExtractMetadataWithMediaInfo($this->ops_mediainfo_path, $filepath);
+				$this->metadata = caExtractMetadataWithMediaInfo($filepath);
 			} else {
 				$this->metadata = $this->handle;
 			}
@@ -611,8 +611,8 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		if ($mimetype == "audio/mpeg") {
 			// try to write getID3 tags (if set)
 			if (is_array($pa_options) && is_array($pa_options) && sizeof($pa_options) > 0) {
-				require_once('parsers/getid3/getid3.php');
-				require_once('parsers/getid3/write.php');
+				require_once(__CA_LIB_DIR__.'/core/Parsers/getid3/getid3.php');
+				require_once(__CA_LIB_DIR__.'/core/Parsers/getid3/write.php');
 				$o_getID3 = new getID3();
 				$o_tagwriter = new getid3_writetags();
 				$o_tagwriter->filename   = $filepath.".".$ext;
@@ -739,7 +739,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 				switch($pa_options["player"]) {
 					case 'small':
-						JavascriptLoadManager::register("swfobject");
+						AssetLoadManager::register("swfobject");
 						ob_start();
 						$vn_width = ($pa_options["viewer_width"] > 0) ? $pa_options["viewer_width"] : 165;
 						$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 38;
@@ -760,7 +760,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 						return "<a href='$ps_url'>".(($pa_options["text_only"]) ? $pa_options["text_only"] : "Listen to MP3")."</a>";
 						break;
 					default:
-						JavascriptLoadManager::register("mediaelement");
+						AssetLoadManager::register("mediaelement");
 						
 						$vn_width = ($pa_options["viewer_width"] > 0) ? $pa_options["viewer_width"] : 400;
 						$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
@@ -771,7 +771,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 					</div>	
 					<script type="text/javascript">
 						jQuery(document).ready(function() {
-							jQuery('#<?php print $vs_id; ?>').mediaelementplayer({showTimecodeFrameCount: true, framesPerSecond: 100, audioWidth: <?php print (int)$vn_width; ?>, audioHeight: <?php print (int)$vn_height; ?>  });
+							jQuery('#<?php print $vs_id; ?>').mediaelementplayer({showTimecodeFrameCount: true, framesPerSecond: 100, audioWidth: '<?php print $vn_width; ?>', audioHeight: '<?php print $vn_height; ?>'  });
 						});
 					</script>
 <?php
