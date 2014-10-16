@@ -62,6 +62,19 @@
 				),
 			);
 		}
-		
+
+		# -------------------------------------------------------
+		/**
+		 * Add plugin user actions
+		 */
+		public function hookGetRoleActionList($pa_role_list) {
+			$pa_role_list['plugin_aboutDrawingServicesPlugin'] = array(
+				'label' => _t('About Drawing services plugin'),
+				'description' => _t('Actions for About Drawing plugin'),
+				'actions' => aboutDrawingServicesPlugin::getRoleActionList()
+			);
+
+			return $pa_role_list;
+		}
 		# -------------------------------------------------------
 	}

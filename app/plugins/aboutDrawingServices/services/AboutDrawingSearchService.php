@@ -39,11 +39,7 @@ require_once(__CA_LIB_DIR__."/core/Datamodel.php");
 
 class AboutDrawingSearchService extends SearchJSONService {
 
-	public function __construct($po_request,$ps_table=""){
-
-		if(!$po_request->getUser()->canDoAction('can_use_about_drawing_search_service')) {
-			throw new Exception("You're not allowed to access this service.");
-		}
+	public function __construct($po_request,$ps_table="") {
 
 		parent::__construct($po_request,$ps_table);
 	}
