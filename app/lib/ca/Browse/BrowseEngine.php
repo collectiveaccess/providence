@@ -610,6 +610,13 @@
 							}
 						}
 					}
+					
+					if($va_facet_info['table'] && ($t_browse_table = $this->opo_datamodel->getInstanceByTableName($vs_facet_table = $va_facet_info['table'], true))) {
+						if (!($app = AppController::getInstance())) { return '???'; }
+						if ($t_browse_table->load($pn_row_id) && $t_browse_table->isReadable($app->getRequest(), 'preferred_labels')) {
+							return $t_browse_table->get("{$vs_facet_table}.preferred_labels");
+						}
+					}
 					return '???';
 					break;
 				# -----------------------------------------------------
@@ -4164,8 +4171,8 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 							AND
 							(ca_acl.access >= ?)
 					", $va_params);
-					
-					$va_hits = $qr_sort->getAllFieldValues('row_id');
+
+                    $va_hits = array_unique($qr_sort->getAllFieldValues('row_id'));
 					
 					// Find records with default ACL
 					$qr_sort = $this->opo_db->query("

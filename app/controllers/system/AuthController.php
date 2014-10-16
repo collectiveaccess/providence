@@ -70,7 +70,8 @@
 				
 				// Notify the user of the good news
  				$this->notification->addNotification(_t("You are now logged in"), __NOTIFICATION_TYPE_INFO__);
- 				$this->redirect($vs_redirect_url);
+ 				//$this->redirect($vs_redirect_url);
+ 				$this->render('welcome_html.php');
  			}
  		}
  		# -------------------------------------------------------

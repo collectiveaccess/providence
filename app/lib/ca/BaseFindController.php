@@ -94,6 +94,8 @@
  				$t_model->getTypeFieldName() 
  				&& 
  				(
+ 					(!$t_model->typeIDIsOptional())
+ 					&&
  					(!is_null($va_types = caGetTypeListForUser($this->ops_tablename, array('access' => __CA_BUNDLE_ACCESS_READONLY__))))
  					&& 
  					(is_array($va_types) && !sizeof($va_types))
