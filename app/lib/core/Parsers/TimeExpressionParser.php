@@ -2787,7 +2787,7 @@ class TimeExpressionParser {
 		
 		if (!$pa_options['timeOmit']) {
 			$vn_seconds = ($pa_date_pieces['hours'] * 3600) + ($pa_date_pieces['minutes'] * 60) + $pa_date_pieces['seconds'];
-			if (!$vn_seconds) { return $vs_date; }
+		//	if (!$vn_seconds) { return $vs_date; }
 			$vs_time = $this->_timeToText($vn_seconds, $pa_options);
 			
 			return $vs_date. ' '.$vs_datetime_conjunction.' '.$vs_time;
