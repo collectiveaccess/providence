@@ -759,8 +759,9 @@ class TimeExpressionParser {
 			$ps_expression = preg_replace('!([\d]{3})[\-]{1}[\D]+!', '\1_', $ps_expression);
 		}
 		
-		$ps_expression = preg_replace("![\-\–\—]{1}!", " - ", $ps_expression);
-		
+		if (!preg_match("!^[\-]{1}[\d]+$!", $ps_expression)) {
+			$ps_expression = preg_replace("![\-\–\—]{1}!", " - ", $ps_expression);
+		}
 		$va_era_list = array_merge(array_keys($this->opo_language_settings->getAssoc("ADBCTable")), array($this->opo_language_settings->get("dateADIndicator"), $this->opo_language_settings->get("dateBCIndicator")));
 		foreach($va_era_list as $vs_era) {
 			$ps_expression = preg_replace("/([\d]+)".$vs_era."[ ]*/i", "$1 $vs_era ", $ps_expression); #str_replace($vs_era, " ".$vs_era, $ps_expression);
@@ -801,7 +802,7 @@ class TimeExpressionParser {
 	
 		$va_conjunction_list = $this->opo_language_settings->getList("rangeConjunctions");
 		foreach($va_conjunction_list as $vs_conjunction) {
-			if (!preg_match("/^[A-Za-z0-9]+$/", $vs_conjunction)) {		// only add spaces around non-alphanumeric conjunctions
+			if (!preg_match("/^[A-Za-z0-9\-]+$/", $vs_conjunction)) {		// only add spaces around non-alphanumeric conjunctions
 				$ps_expression = str_replace($vs_conjunction, ' '.$vs_conjunction.' ', $ps_expression);
 			}
 		}
@@ -846,7 +847,10 @@ class TimeExpressionParser {
 							$vn_int = intval($va_token['value']);
 							if (($vn_int >= 1000) && ($vn_int <= 9999)) {
 								$this->skipToken();
-								return array('day' => null, 'month' => null, 'year' => $vn_int);
+								return array('day' => null, 'month' => null, 'year' => $vn_int, 'era'=> TEP_ERA_AD);
+							} elseif(($vn_int < 0) && is_int($vn_it)) {
+								$this->skipToken();
+								return array('day' => null, 'month' => null, 'year' => $vn_int, 'era'=> TEP_ERA_BC);
 							} else {
 								$va_peek = $this->peekToken(2);
 								if ((($vn_int >= 1) && ($vn_int <=31)) && ($va_peek['type'] != TEP_TOKEN_ERA)) {
@@ -1036,7 +1040,7 @@ class TimeExpressionParser {
 								if ($va_date_element = $this->_parseDateElement($pa_options)) {
 									$va_date = array(
 										'month' => $va_date_element['month'], 'day' => $va_date_element['day'], 
-										'year' => $va_date_element['year'],
+										'year' => $va_date_element['year'], 
 										'hours' => null, 'minutes' => null, 'seconds' => null,
 										'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 0
 									);
@@ -2787,7 +2791,6 @@ class TimeExpressionParser {
 		
 		if (!$pa_options['timeOmit']) {
 			$vn_seconds = ($pa_date_pieces['hours'] * 3600) + ($pa_date_pieces['minutes'] * 60) + $pa_date_pieces['seconds'];
-		//	if (!$vn_seconds) { return $vs_date; }
 			$vs_time = $this->_timeToText($vn_seconds, $pa_options);
 			
 			return $vs_date. ' '.$vs_datetime_conjunction.' '.$vs_time;
