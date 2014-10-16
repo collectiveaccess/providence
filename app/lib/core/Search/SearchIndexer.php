@@ -245,6 +245,7 @@ class SearchIndexer extends SearchBase {
 				
 				$this->indexRow($vn_table_num, $vn_id, $va_field_data[$vn_id], true, null, array(), array());
 				if ($pb_display_progress && $pb_interactive_display) {
+					CLIProgressBar::setMessage("Memory: ".caGetMemoryUsage());
 					print CLIProgressBar::next();
 				}
 				
@@ -432,6 +433,9 @@ class SearchIndexer extends SearchBase {
 				$va_hier_values = array_slice($va_hier_values, 0, $pn_max_levels);
 			}
 			
+			if (sizeof(SearchIndexer::$s_hier_path_cache) > 2000) { 
+				SearchIndexer::$s_hier_path_cache = array_slice(SearchIndexer::$s_hier_path_cache, 0, 500);
+			}
 			return SearchIndexer::$s_hier_path_cache[$vs_key] = array('values' => $va_hier_values, 'path' => join($ps_delimiter, $va_hier_values));
 		}
 		return SearchIndexer::$s_hier_path_cache[$vs_key] = null;
