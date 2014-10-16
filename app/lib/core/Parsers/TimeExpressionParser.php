@@ -1819,6 +1819,14 @@ class TimeExpressionParser {
 			}
 		
 			# date/time expression
+			
+			// Blank end day and month and year implies carry over of start date
+			if (!$pa_dates['end']['year'] && !$pa_dates['end']['month'] && !$pa_dates['end']['day']) {
+				$pa_dates['end']['year'] = $pa_dates['start']['year'];
+				$pa_dates['end']['month'] = $pa_dates['start']['month'];
+				$pa_dates['end']['day'] = $pa_dates['start']['day'];
+			}
+			
 			// Two-digit year windowing
 			if (
 				(!isset($pa_dates['start']['dont_window']) || !$pa_dates['start']['dont_window'])
@@ -3137,7 +3145,7 @@ class TimeExpressionParser {
         $k = array('seconds','minutes','hours','mday', 
                 'wday','mon','year','yday','weekday','month',0); 
         return(array_combine($k,split(":", 
-                gmdate('s:i:G:j:w:n:Y:z:l:F:U',is_null($ts)?time():$ts)))); 
+                date('s:i:G:j:w:n:Y:z:l:F:U',is_null($ts)?time():$ts)))); 
     } 
  	# -------------------------------------------------------------------
 }
