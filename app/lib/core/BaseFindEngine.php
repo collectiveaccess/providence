@@ -141,7 +141,7 @@
 			$va_sorted_hits = array();
 			
 			$va_joins = array();
-			$vs_locale_where = $vs_is_preferred_sql = '';
+			$vs_is_preferred_sql = '';
 			
 			$vs_primary_sort_field = array_shift($va_fields);
 			$va_primary_sort_field = explode('.', $vs_primary_sort_field);
@@ -218,8 +218,10 @@
 						// Add on hits that aren't sorted because they don't have an attribute associated
 						$va_missing_items = array_diff($pa_hits, $va_sorted_hits);
 						$va_sorted_hits = array_merge($va_sorted_hits, $va_missing_items);
+						return $va_sorted_hits;
 					}
-					return $va_sorted_hits;
+					// fallback for invalid field specs => don't return empty result sets
+					return $pa_hits;
 				} else {	
 					$va_field_info = $t_table->getFieldInfo($va_primary_sort_field[1]);
 					if ($va_field_info['START'] && $va_field_info['END']) {
@@ -257,7 +259,6 @@
 								$va_joins[$vs_table] = "INNER JOIN ".$va_rels['many_table']." ON ".$va_rels['many_table'].".".$va_rels['many_table_field']." = ".$va_rels['one_table'].".".$va_rels['one_table_field'].$vs_rel_type_sql;
 							}
 						}
-						$t_last_table = $t_table;
 						$vs_last_table = $vs_table;
 					}
 					

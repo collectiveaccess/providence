@@ -1084,6 +1084,17 @@
 		public function getTypeFieldName() {
 			return $this->ATTRIBUTE_TYPE_ID_FLD;
 		}
+		
+		# ------------------------------------------------------------------
+		/**
+		 * Determine if type for this model is mandatory 
+		 *
+		 * @return bool Returns true if type is optional (may be null in the database), false if it is mandatory or null if the model does not support types.
+		 */
+		public function typeIDIsOptional() {
+			if (!property_exists($this->tableName(), 'ATTRIBUTE_TYPE_ID_FLD')) { return null; }
+			return $this->getFieldInfo($this->ATTRIBUTE_TYPE_ID_FLD, 'IS_NULL');
+		}
 		# ------------------------------------------------------------------
 		/**
 		 * List code (from ca_lists.list_code) of list defining types for this table
@@ -1261,7 +1272,7 @@
 			$va_tmp = explode('.', $ps_field);
 			
 			if ($va_tmp[1] == $this->getTypeFieldName()) {
-				return $this->getTypeListAsHTMLFormElement(null, null, array_merge($pa_options, array('nullOption' => '-')));
+				return $this->getTypeListAsHTMLFormElement($ps_field, null, array_merge($pa_options, array('nullOption' => '-')));
 			}
 			
 			if (!in_array($va_tmp[0], array('created', 'modified'))) {		// let change log searches filter down to BaseModel
@@ -1798,11 +1809,22 @@
 			return null;
 		}
 		# ------------------------------------------------------------------
-		// returns the specific attribute with the specified attribute_id
-		// ** assuming it's attached to the current row **
-		public function getAttributeByID($pn_attribute_id) {
-			// TODO: Implement
-			return false;
+		/**
+		 * Return the specific attribute with the specified attribute_id (assuming it's attached to the current row)
+		 */
+		public function getAttributeByID($pn_attribute_id, $pa_options=null) {
+			if (isset($pa_options['row_id']) && $pa_options['row_id']) {
+				$vn_row_id = $pa_options['row_id'];
+			} else {
+				$vn_row_id = $this->getPrimaryKey();
+			}
+			if (!$vn_row_id) { return null; }
+			
+			$t_attr = new ca_attributes($pn_attribute_id);
+			if (!$t_attr->getPrimaryKey()) { return false; }
+			if ((int)$t_attr->get('row_id') !== (int)$vn_row_id) { return false; }
+			
+			return $t_attr->getAttributeValues(array('returnAs' => 'attributeInstance'));
 		}
 		# ------------------------------------------------------------------
 		/**
@@ -2250,7 +2272,7 @@
 					$vs_pk = $t_instance->primaryKey();
 					$qr_del = $o_db->query("SELECT {$vs_pk} FROM ".$t_instance->tableName()." WHERE {$vs_pk} IN (?) AND deleted = 1", array($va_row_ids));
 					
-					while($qr_del->nextRow()) {
+					while($qr_del && $qr_del->nextRow()) {
 						unset($va_references[$vn_table_num][$qr_del->get($vs_pk)]);
 					}
 				}

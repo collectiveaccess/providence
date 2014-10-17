@@ -128,6 +128,8 @@
 									break;
 							}
 						}
+					} elseif (ExpressionParser::hadError() && $o_log) {
+						$o_log->logError(_t('[%3] Error processing rule "%1" as an error occurred. Error number was "%2"', $va_rule['trigger'], ExpressionParser::$s_last_error, $ps_refinery_name));
 					}
 				}
 			}
@@ -858,12 +860,12 @@
 # ---------------------------------------
 /**
  * Uses caProcessRefineryRelated to set a list of relationships on related records. Also takes legacy relatedEntities into account
- * @param $po_refinery_instance instanceof BaseRefinery
+ * @param $po_refinery_instance BaseRefinery
  * @param $pa_item array
  * @param $pa_source_data array
  * @param $pn_value_index int
  * @param $o_log KLogger
- * @param $o_reader instanceof BaseDataReader
+ * @param $o_reader BaseDataReader
  * @param $va_val array
  * @param $va_attr_vals array
  */
@@ -903,7 +905,7 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 			if(is_array($pa_item_settings['applyRegularExpressions'])) {
 				if (is_array($pm_value)) {
 					foreach($pm_value as $vn_i => $vs_value) {
-						foreach($pa_item_settings['applyRegularExpressions'] as $vn_i => $va_regex) {
+						foreach($pa_item_settings['applyRegularExpressions'] as $vn_c => $va_regex) {
 							if (!strlen($va_regex['match'])) { continue; }
 							$vs_value = preg_replace("!".str_replace("!", "\\!", $va_regex['match'])."!".((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i'), $va_regex['replaceWith'], $vs_value);
 						}

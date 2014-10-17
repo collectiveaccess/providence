@@ -233,9 +233,7 @@
 				$va_return[] = round($va_point['x'],2).','.round($va_point['y'],2);
 			}
 
-			if(!($vs_delimiter = caGetOption('delimiter',$pa_options))){
-				$vs_delimiter = '; ';
-			}
+			$vs_delimiter = caGetOption('delimiter', $pa_options, '; ');
 
 			return join($vs_delimiter, $va_return);
 		}

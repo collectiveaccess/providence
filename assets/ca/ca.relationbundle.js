@@ -150,7 +150,7 @@ var caUI = caUI || {};
 						}
 					}
 				}, options.autocompleteOptions)
-			).click(function() { this.select(); });
+			).on('click', null, {}, function() { this.select(); });
 		}
 		
 		options.select = function(id, data) {
@@ -232,7 +232,7 @@ var caUI = caUI || {};
 					}
 					indexedValues[indexKey] = v;
 				}
-				jQuery(v).remove();
+				jQuery(v).detach();
 			});
 			indexedValues = caUI.utils.sortObj(indexedValues, true);
 			
@@ -254,7 +254,7 @@ var caUI = caUI || {};
 			var curRowID = rowID;
 			if (!rowID) { return; }
 			var n = rowID.split("_").pop();
-			jQuery('#' + rowID + ' .caDeleteItemButton').click(
+			jQuery('#' + rowID + ' .caDeleteItemButton').on('click', null, {},
 				function(e) { that.deleteFromBundle(n); e.preventDefault(); return false; }
 			);
 		}

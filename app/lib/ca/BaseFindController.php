@@ -70,7 +70,7 @@
  			
  			if ($this->ops_tablename) {
 				$this->opo_result_context = new ResultContext($po_request, $this->ops_tablename, $this->ops_find_type);
-				
+
 				if ($this->opn_type_restriction_id = $this->opo_result_context->getTypeRestriction($pb_type_restriction_has_changed)) {
 					$_GET['type_id'] = $this->opn_type_restriction_id;								// push type_id into globals so breadcrumb trail can pick it up
 					$this->opb_type_restriction_has_changed =  $pb_type_restriction_has_changed;	// get change status
@@ -94,6 +94,8 @@
  				$t_model->getTypeFieldName() 
  				&& 
  				(
+ 					(!$t_model->typeIDIsOptional())
+ 					&&
  					(!is_null($va_types = caGetTypeListForUser($this->ops_tablename, array('access' => __CA_BUNDLE_ACCESS_READONLY__))))
  					&& 
  					(is_array($va_types) && !sizeof($va_types))
@@ -702,11 +704,14 @@
 				return;
 			}
 
+			$vs_export_filename = preg_replace("/[^\p{L}\p{N}\-]/", '_', $this->opo_result_context->getSearchExpression());
+			$vs_export_filename = preg_replace("/[\_]+/", '_', $vs_export_filename);
+
 			$vs_tmp_file = tempnam(caGetTempDirPath(), 'export');
 			ca_data_exporters::exportRecordsFromSearchResult($t_exporter->get('exporter_code'), $po_result, $vs_tmp_file);
 
 			header('Content-Type: '.$t_exporter->getContentType().'; charset=UTF-8');
-			header('Content-Disposition: attachment; filename="batch_export.'.$t_exporter->getFileExtension().'"');
+			header('Content-Disposition: attachment; filename="'.$vs_export_filename.'.'.$t_exporter->getFileExtension().'"');
 			header('Content-Transfer-Encoding: binary');
 			readfile($vs_tmp_file);
 			@unlink($vs_tmp_file);

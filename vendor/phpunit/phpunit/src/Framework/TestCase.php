@@ -583,20 +583,25 @@ abstract class PHPUnit_Framework_TestCase extends PHPUnit_Framework_Assert imple
             );
         }
 
-        foreach ($this->required['functions'] as $requiredFunction) {
-            if (!function_exists($requiredFunction)) {
-                $missingRequirements[] = sprintf(
-                  'Function %s is required.',
-                  $requiredFunction
-                );
+        foreach ($this->required['functions'] as $function) {
+            $pieces = explode('::', $function);
+            if (2 === count($pieces) && method_exists($pieces[0], $pieces[1])) {
+                continue;
             }
+            if (function_exists($function)) {
+                continue;
+            }
+            $missingRequirements[] = sprintf(
+              'Function %s is required.',
+              $function
+            );
         }
 
-        foreach ($this->required['extensions'] as $requiredExtension) {
-            if (!extension_loaded($requiredExtension)) {
+        foreach ($this->required['extensions'] as $extension) {
+            if (!extension_loaded($extension)) {
                 $missingRequirements[] = sprintf(
                   'Extension %s is required.',
-                  $requiredExtension
+                  $extension
                 );
             }
         }
@@ -715,11 +720,13 @@ abstract class PHPUnit_Framework_TestCase extends PHPUnit_Framework_Assert imple
             }
 
             $data            = var_export(serialize($this->data), true);
+            $dataName        = var_export($this->dataName, true);
             $dependencyInput = var_export(serialize($this->dependencyInput), true);
             $includePath     = var_export(get_include_path(), true);
             // must do these fixes because TestCaseMethod.tpl has unserialize('{data}') in it, and we can't break BC
             // the lines above used to use addcslashes() rather than var_export(), which breaks null byte escape sequences
             $data            = "'." . $data . ".'";
+            $dataName        = "'.(" . $dataName . ").'";
             $dependencyInput = "'." . $dependencyInput . ".'";
             $includePath     = "'." . $includePath . ".'";
 
@@ -732,7 +739,7 @@ abstract class PHPUnit_Framework_TestCase extends PHPUnit_Framework_Assert imple
                 'methodName'                              => $this->name,
                 'collectCodeCoverageInformation'          => $coverage,
                 'data'                                    => $data,
-                'dataName'                                => $this->dataName,
+                'dataName'                                => $dataName,
                 'dependencyInput'                         => $dependencyInput,
                 'constants'                               => $constants,
                 'globals'                                 => $globals,
@@ -799,7 +806,9 @@ abstract class PHPUnit_Framework_TestCase extends PHPUnit_Framework_Assert imple
         $hookMethods = PHPUnit_Util_Test::getHookMethods(get_class($this));
 
         try {
+            $hasMetRequirements = false;
             $this->checkRequirements();
+            $hasMetRequirements = true;
 
             if ($this->inIsolation) {
                 foreach ($hookMethods['beforeClass'] as $method) {
@@ -838,13 +847,15 @@ abstract class PHPUnit_Framework_TestCase extends PHPUnit_Framework_Assert imple
         // Tear down the fixture. An exception raised in tearDown() will be
         // caught and passed on when no exception was raised before.
         try {
-            foreach ($hookMethods['after'] as $method) {
-                $this->$method();
-            }
-
-            if ($this->inIsolation) {
-                foreach ($hookMethods['afterClass'] as $method) {
+            if ($hasMetRequirements) {
+                foreach ($hookMethods['after'] as $method) {
                     $this->$method();
+                }
+
+                if ($this->inIsolation) {
+                    foreach ($hookMethods['afterClass'] as $method) {
+                        $this->$method();
+                    }
                 }
             }
         } catch (Exception $_e) {
