@@ -33,6 +33,8 @@
  /**
    *
    */
+   
+   define("__CA_DONT_DO_SEARCH_INDEXING__", 1);
 
 require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
 require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
