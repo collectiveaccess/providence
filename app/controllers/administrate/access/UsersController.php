@@ -43,7 +43,7 @@
  		}
  		# -------------------------------------------------------
  		public function Edit() {
- 			JavascriptLoadManager::register("bundleableEditor");
+ 			AssetLoadManager::register("bundleableEditor");
  			$t_user = $this->getUserObject();
 			
 			$va_profile_prefs = $t_user->getValidPreferences('profile');
@@ -61,7 +61,7 @@
  		}
  		# -------------------------------------------------------
  		public function Save() {
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
  			
  			$t_user = $this->getUserObject();
  			
@@ -69,6 +69,10 @@
  			
  			$t_user->setMode(ACCESS_WRITE);
  			foreach($t_user->getFormFields() as $vs_f => $va_field_info) {
+				// dont get/set password if backend doesn't support it
+				if($vs_f == 'password' && !AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_UPDATE_PASSWORDS__)) {
+					continue;
+				}
  				$t_user->set($vs_f, $_REQUEST[$vs_f]);
  				if ($t_user->numErrors()) {
  					$this->request->addActionErrors($t_user->errors(), 'field_'.$vs_f);
@@ -79,9 +83,11 @@
  				$t_user->set('entity_id', null);
  			}
 
- 			if ($this->request->getParameter('password', pString) != $this->request->getParameter('password_confirm', pString)) {
- 				$this->request->addActionError(new Error(1050, _t("Password does not match confirmation. Please try again."), "administrate/UserController->Save()", '', false, false), 'field_password');
- 			} 
+			if(AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_UPDATE_PASSWORDS__)) {
+				if ($this->request->getParameter('password', pString) != $this->request->getParameter('password_confirm', pString)) {
+					$this->request->addActionError(new Error(1050, _t("Password does not match confirmation. Please try again."), "administrate/UserController->Save()", '', false, false), 'field_password');
+				}
+			}
  			
  			AppNavigation::clearMenuBarCache($this->request);	// clear menu bar cache since changes may affect content
  			
@@ -191,7 +197,7 @@
  		}
  		# -------------------------------------------------------
  		public function ListUsers() {
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
  			if (($vn_userclass = $this->request->getParameter('userclass', pInteger)) == '') {
  				$vn_userclass = $this->request->user->getVar('ca_users_default_userclass');
  			} else {

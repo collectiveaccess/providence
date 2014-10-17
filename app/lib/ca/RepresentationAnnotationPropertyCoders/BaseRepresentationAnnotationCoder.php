@@ -37,7 +37,7 @@
  	require_once(__CA_LIB_DIR__.'/core/BaseObject.php');
  	require_once(__CA_LIB_DIR__.'/ca/RepresentationAnnotationPropertyCoders/IRepresentationAnnotationPropertyCoder.php');
  	
-	class BaseRepresentationAnnotationCoder extends BaseObject implements IRepresentationAnnotationPropertyCoder {
+	abstract class BaseRepresentationAnnotationCoder extends BaseObject implements IRepresentationAnnotationPropertyCoder {
 		# ------------------------------------------------------------------
 		protected $opo_config;
 		protected $opo_type_config;
@@ -52,7 +52,7 @@
 		 */
 		public function __construct() {
 			parent::__construct();
-			$this->opo_config = Configuration::load();;
+			$this->opo_config = Configuration::load();
 			$this->opo_type_config = Configuration::load($this->opo_config->get('annotation_type_config'));
 			
 			$this->opa_type_info = $this->opo_type_config->getAssoc('types');
@@ -181,4 +181,3 @@
 		}
 		# ------------------------------------------------------------------
 	}
-?>

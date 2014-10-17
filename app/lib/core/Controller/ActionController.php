@@ -132,6 +132,11 @@ class ActionController extends BaseObject {
 		return $vs_content;
 	}
 	# -------------------------------------------------------
+	/**
+	 * Get request object (by reference)
+	 *
+	 * @return RequestHTTP
+	 */
 	public function &getRequest() {
 		return $this->opo_request;
 	}
@@ -156,4 +161,3 @@ class ActionController extends BaseObject {
 	}
 	# -------------------------------------------------------
 }
-?>

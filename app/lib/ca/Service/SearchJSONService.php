@@ -74,7 +74,7 @@ class SearchJSONService extends BaseJSONService {
 	/**
 	 *
 	 */
-	private function search($pa_bundles=null){
+	protected function search($pa_bundles=null){
 		if (!($vo_search = caGetSearchInstance($this->getTableName()))) { 
 			$this->addError(_t("Invalid table"));
 			return false; 

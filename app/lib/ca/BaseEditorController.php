@@ -57,10 +57,10 @@
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
- 			JavascriptLoadManager::register('bundleListEditorUI');
- 			JavascriptLoadManager::register('panel');
- 			JavascriptLoadManager::register('maps');
- 			JavascriptLoadManager::register('openlayers');
+ 			AssetLoadManager::register('bundleListEditorUI');
+ 			AssetLoadManager::register('panel');
+ 			AssetLoadManager::register('maps');
+ 			AssetLoadManager::register('openlayers');
  			
  			$this->opo_datamodel = Datamodel::load();
  			$this->opo_app_plugin_manager = new ApplicationPluginManager();
@@ -75,7 +75,7 @@
  		 *
  		 */
  		public function Edit($pa_values=null, $pa_options=null) {
- 			JavascriptLoadManager::register('panel');
+ 			AssetLoadManager::register('panel');
  			
  			list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView($pa_options);
  			$vs_mode = $this->request->getParameter('mode', pString);
@@ -168,7 +168,12 @@
 				array()
 			);
  			if (!$this->request->getActionExtra() || !isset($va_nav['fragment'][str_replace("Screen", "screen_", $this->request->getActionExtra())])) {
- 				$this->request->setActionExtra($va_nav['defaultScreen']);
+ 				if (($vs_bundle = $this->request->getParameter('bundle', pString)) && ($vs_bundle_screen = $t_ui->getScreenWithBundle($vs_bundle))) {
+ 					// jump to screen containing url-specified bundle
+ 					$this->request->setActionExtra($vs_bundle_screen);
+ 				} else {
+ 					$this->request->setActionExtra($va_nav['defaultScreen']);
+ 				}
  			}
 			$this->view->setVar('t_ui', $t_ui);
 			
@@ -476,7 +481,7 @@
  		 * @param array $pa_options Array of options passed through to _initView 
  		 */
  		public function Summary($pa_options=null) {
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
  			list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
  			
  			
@@ -537,7 +542,7 @@
  		 * @param array $pa_options Array of options passed through to _initView 
  		 */
 		public function PrintSummary($pa_options=null) {
-			JavascriptLoadManager::register('tableList');
+			AssetLoadManager::register('tableList');
  			list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
  			
  			
@@ -626,6 +631,82 @@
 				$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
 			}
 		}
+		# -------------------------------------------------------
+		/**
+ 		 * Generates display for specific bundle or (optionally) a specific repetition in a bundle
+ 		 * ** Right now only attribute bundles are supported for printing **
+ 		 *
+ 		 * @param array $pa_options Array of options passed through to _initView 
+ 		 */
+		public function PrintBundle($pa_options=null) {
+ 			list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
+ 			
+ 			if (!$this->_checkAccess($t_subject)) { return false; }
+		
+			//
+			// PDF output
+			//
+			$vs_template = substr($this->request->getParameter('template', pString), 5); // get rid of _pdf_ prefix
+			if(!is_array($va_template_info = caGetPrintTemplateDetails('bundles', $vs_template))) {
+				$this->postError(3110, _t("Could not find view for PDF"),"BaseEditorController->PrintBundle()");
+				return;
+			}
+			
+			// Element code to display
+			$vs_element = $this->request->getParameter('element_code', pString); 
+			
+			$vn_attribute_id = $this->request->getParameter('attribute_id', pString); 
+			
+			// Does user have access to this element?
+			if ($this->request->user->getBundleAccessLevel($t_subject->tableName(), $vs_element) == __CA_BUNDLE_ACCESS_NONE__) {
+				$this->postError(2320, _t("No access to element"),"BaseEditorController->PrintBundle()");
+				return;
+			}
+			
+			// Add raw array of values to view
+			if ($vn_attribute_id > 0) {
+				$o_attr = $t_subject->getAttributeByID($vn_attribute_id);
+				if (((int)$o_attr->getRowID() !== (int)$vn_subject_id) || ((int)$o_attr->getTableNum() !== (int)$t_subject->tableNum())) {
+					$this->postError(2320, _t("Element is not part of current item"),"BaseEditorController->PrintBundle()");
+					return;
+				}
+				$this->view->setVar('valuesAsAttributeInstances', $va_values = array($o_attr));
+			} else {
+				$this->view->setVar('valuesAsAttributeInstances', $va_values = $t_subject->getAttributesByElement($vs_element));
+			}
+			
+			// Extract values into array for easier view processing
+			
+			$va_extracted_values = array();
+			foreach($va_values as $o_value) {
+				$va_extracted_values[] = $o_value->getDisplayValues();
+			}
+			$this->view->setVar('valuesAsElementCodeArrays', $va_extracted_values);
+			
+			$va_barcode_files_to_delete = array();
+			
+			try {
+				$this->view->setVar('base_path', $vs_base_path = pathinfo($va_template_info['path'], PATHINFO_DIRNAME));
+				$this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
+				
+				$va_barcode_files_to_delete += caDoPrintViewTagSubstitution($this->view, $t_subject, $va_template_info['path'], array('checkAccess' => $this->opa_access_values));
+				$vs_content = $this->render($va_template_info['path']);
+				$o_dompdf = new DOMPDF();
+				$o_dompdf->load_html($vs_content);
+				$o_dompdf->set_paper(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'));
+				$o_dompdf->set_base_path(caGetPrintTemplateDirectoryPath('summary'));
+				$o_dompdf->render();
+				$o_dompdf->stream(caGetOption('filename', $va_template_info, 'print_bundles.pdf'));
+	
+				$vb_printed_properly = true;
+				
+				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
+			} catch (Exception $e) {
+				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
+				$vb_printed_properly = false;
+				$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintBundle()");
+			}
+		}
  		# -------------------------------------------------------
  		/**
  		 * Returns change log display for currently edited record in current view inherited from ActionController
@@ -633,7 +714,7 @@
  		 * @param array $pa_options Array of options passed through to _initView 
  		 */
  		public function Log($pa_options=null) {
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
  			list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
  			
  			
@@ -649,7 +730,7 @@
  		 * @param array $pa_options Array of options passed through to _initView 
  		 */
  		public function Access($pa_options=null) {
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
  			list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
  			
  			
@@ -796,9 +877,9 @@
  		 */
  		protected function _initView($pa_options=null) {
  			// load required javascript
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register('imageScroller');
- 			JavascriptLoadManager::register('datePickerUI');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('imageScroller');
+ 			AssetLoadManager::register('datePickerUI');
  			
  			$t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
  			$vn_subject_id = $this->request->getParameter($t_subject->primaryKey(), pInteger);
@@ -838,7 +919,13 @@
  					$t_subject->set($vs_parent_id_fld, $vn_parent_id);
  					
  					$t_parent = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
- 					if ($t_parent->load($vn_parent_id)) {
+ 					if (
+ 						$t_parent->load($vn_parent_id) 
+ 						&& 
+ 						($t_parent->get('parent_id') || ($t_parent->getHierarchyType() == __CA_HIER_TYPE_ADHOC_MONO__))
+ 						&&
+ 						((!method_exists($t_parent, "getIDNoPlugInInstance") || !($o_numbering_plugin = $t_parent->getIDNoPlugInInstance())) || ($o_numbering_plugin->formatHas('FREE', 0)))
+ 					) {
  						$t_subject->set('idno', $t_parent->get('idno'));
  					}
  				}
@@ -1150,6 +1237,24 @@
  					$this->response->addContent($t_subject->getBundleFormHTML($ps_bundle, $pn_placement_id, $t_placement->get('settings'), array('request' => $this->request, 'contentOnly' => true), $vs_label));
  					break;
  			}
+ 		}
+ 		# ------------------------------------------------------------------
+ 		/**
+ 		 * 
+ 		 */
+ 		public function loadBundles() {
+ 			list($vn_subject_id, $t_subject) = $this->_initView();
+ 			
+ 			if (!$this->_checkAccess($t_subject)) { return false; }
+ 			
+ 			$ps_bundle_name = $this->request->getParameter("bundle", pString);
+ 			$pn_placement_id = $this->request->getParameter("placement_id", pInteger);
+ 			$pn_start = (int)$this->request->getParameter("start", pInteger);
+ 			if (!($pn_limit = $this->request->getParameter("limit", pInteger))) { $pn_limit = null; }
+ 			
+ 			$t_placement = new ca_editor_ui_bundle_placements($pn_placement_id);
+ 			
+ 			$this->response->addContent(json_encode($t_subject->getBundleFormValues($ps_bundle_name, "{$pn_placement_id}", $t_placement->get('settings'), array('start' => $pn_start, 'limit' => $pn_limit, 'request' => $this->request, 'contentOnly' => true))));
  		}
 		# ------------------------------------------------------------------
  		# Sidebar info handler

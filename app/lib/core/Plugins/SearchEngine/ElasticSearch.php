@@ -103,11 +103,17 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	/**
 	 * Completely clear index (usually in preparation for a full reindex)
 	 */
-	public function truncateIndex() {
+	public function truncateIndex($pn_table_num = null) {
+		$vs_table_name = '';
+		if($pn_table_num){
+			$o_dm = new Datamodel();
+			$vs_table_name = $o_dm->getTableName($pn_table_num) . '/';
+		}
 		$vo_http_client = new Zend_Http_Client();
 		$vo_http_client->setUri(
 			$this->ops_elasticsearch_base_url."/".
 			$this->ops_elasticsearch_index_name."/".
+			$vs_table_name.
 			"_query?q=*"
 		);
 
@@ -678,16 +684,15 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				$va_key[0]."/".$va_key[2]
 			);
 
-			$vo_http_client->setRawData(json_encode($va_post_json))->setEncType('text/json')->request('POST');
 			try {
+				$vo_http_client->setRawData(json_encode($va_post_json))->setEncType('text/json')->request('POST');
 				$vo_http_response = $vo_http_client->request();
-				$va_response = json_decode($vo_http_response->getBody(),true);
-				
-				if(!isset($va_response["ok"]) || $va_response["ok"]!=1){
-					caLogEvent('ERR', _t('Indexing commit failed for %1; response was %2', $vs_key, $vo_http_response->getBody()), 'ElasticSearch->flushContentBuffer()');
+
+				if($vo_http_response->getStatus() != 200) {
+					caLogEvent('ERR', _t('Indexing commit failed for %1; response was %2; request was %3', $vs_key, $vo_http_response->getBody(), json_encode($va_post_json)), 'ElasticSearch->flushContentBuffer()');
 				}
 			} catch (Exception $e){
-				caLogEvent('ERR', _t('Indexing commit failed for %1: %2; response was %3', $vs_key, $e->getMessage(), $vo_http_response->getBody()), 'ElasticSearch->flushContentBuffer()');
+				caLogEvent('ERR', _t('Indexing commit failed for %1 with Exception: %2', $vs_key, $e->getMessage()), 'ElasticSearch->flushContentBuffer()');
 			}
 		}
 		

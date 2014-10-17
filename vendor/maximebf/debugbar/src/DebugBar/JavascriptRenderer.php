@@ -42,7 +42,7 @@ class JavascriptRenderer
     );
 
     protected $jsVendors = array(
-       // 'vendor/jquery/dist/jquery.min.js',
+        'vendor/jquery/dist/jquery.min.js',
         'vendor/highlightjs/highlight.pack.js'
     );
 
@@ -58,7 +58,7 @@ class JavascriptRenderer
 
     protected $variableName = 'phpdebugbar';
 
-    protected $enableJqueryNoConflict = false;
+    protected $enableJqueryNoConflict = true;
 
     protected $initialization;
 
@@ -712,6 +712,10 @@ class JavascriptRenderer
             $html .= sprintf('<script type="text/javascript" src="%s"></script>' . "\n", $file);
         }
 
+        if ($this->enableJqueryNoConflict) {
+            $html .= '<script type="text/javascript">jQuery.noConflict(true);</script>' . "\n";
+        }
+
         return $html;
     }
 
@@ -768,9 +772,9 @@ class JavascriptRenderer
 
     /**
      * Returns the code needed to display the debug bar
-     * 
+     *
      * AJAX request should not render the initialization code.
-     * 
+     *
      * @param boolean $initialize Whether to render the de bug bar initialization code
      * @return string
      */
@@ -802,10 +806,6 @@ class JavascriptRenderer
     protected function getJsInitializationCode()
     {
         $js = '';
-
-        if ($this->enableJqueryNoConflict) {
-            $js .= "jQuery.noConflict(true);\n";
-        }
 
         if (($this->initialization & self::INITIALIZE_CONSTRUCTOR) === self::INITIALIZE_CONSTRUCTOR) {
             $js .= sprintf("var %s = new %s();\n", $this->variableName, $this->javascriptClass);

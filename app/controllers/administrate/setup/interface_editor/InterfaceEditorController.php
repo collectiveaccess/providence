@@ -40,9 +40,9 @@
  		}
  		# -------------------------------------------------------
  		protected function _initView($pa_options=null) {
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register('sortableUI');
- 			JavascriptLoadManager::register('bundleListEditorUI');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('sortableUI');
+ 			AssetLoadManager::register('bundleListEditorUI');
  			
  			$va_init = parent::_initView();
  			if (!$va_init[1]->getPrimaryKey()) {

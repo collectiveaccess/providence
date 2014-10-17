@@ -61,8 +61,8 @@
  				return;
  			}
  			
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register('panel');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('panel');
  			
  			
  			$this->opo_datamodel = Datamodel::load();
@@ -78,8 +78,8 @@
  		 *
  		 */
  		public function Index($pa_values=null, $pa_options=null) {
-			JavascriptLoadManager::register('tableList');
-			JavascriptLoadManager::register('fileupload');
+			AssetLoadManager::register('tableList');
+			AssetLoadManager::register('fileupload');
 		
  			$va_importers = ca_data_importers::getImporters();
  			$this->view->setVar('importer_list', $va_importers);
@@ -141,7 +141,7 @@
  		 * 
  		 */
  		public function Run() {
-			JavascriptLoadManager::register('fileupload');
+			AssetLoadManager::register('fileupload');
 			
  			$t_importer = $this->getImporterInstance();
  			

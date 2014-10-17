@@ -731,7 +731,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						default:
 							$va_access_point_info = $this->_getElementIDForAccessPoint($pn_subject_tablenum, $o_lucene_query_element->getTerm()->field);
 							$vs_access_point = $va_access_point_info['access_point'];
-							
 							$vs_term = $o_lucene_query_element->getTerm()->text;
 						
 							if ($vs_access_point && (mb_strtoupper($vs_term) == _t('[BLANK]'))) {

@@ -94,6 +94,12 @@ class Configuration {
 	private $ops_md5_path;
 
 	/* ---------------------------------------- */
+	/**
+	 * @param string $ps_file_path
+	 * @param bool $pb_dont_cache
+	 * @param bool $pb_dont_cache_instance
+	 * @return Configuration
+	 */
 	static function load($ps_file_path="", $pb_dont_cache=false, $pb_dont_cache_instance=false) {
 		global $_CONFIG_INSTANCE_CACHE;
 		if (!isset($_CONFIG_INSTANCE_CACHE[$ps_file_path]) || $pb_dont_cache || $pb_dont_cache_instance) {

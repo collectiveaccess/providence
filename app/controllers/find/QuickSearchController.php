@@ -79,7 +79,7 @@
 			$vs_default_actions["ca_loans"] = ($this->request->user->canDoAction("can_edit_ca_loans") ? "Edit" : "Summary");
 			$vs_default_actions["ca_movements"] = ($this->request->user->canDoAction("can_edit_ca_movements") ? "Edit" : "Summary");
 			$vs_default_actions["ca_tours"] = ($this->request->user->canDoAction("can_edit_ca_tours") ? "Edit" : "Summary");
-			$vs_default_actions["ca_tour_stops"] = ($this->request->user->canDoAction("can_edit_ca_tour_stops") ? "Edit" : "Summary");
+			$vs_default_actions["ca_tour_stops"] = ($this->request->user->canDoAction("can_edit_ca_tours") ? "Edit" : "Summary");
 
  			$va_searches = array(
  				'ca_objects' 					=> array('name' => 'ca_object_labels.name', 'displayidno' => 'ca_objects.idno', 'idno' => 'ca_objects.idno_sort', 'displayname' => _t('Objects'), 'primary_key' => 'object_id', 'module' => 'editor/objects', 'controller' => 'ObjectEditor', 'action' => $vs_default_actions["ca_objects"], 'searchModule' => 'find', 'searchController' => 'SearchObjects', 'searchAction' => "Index"),
