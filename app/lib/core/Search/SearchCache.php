@@ -44,11 +44,6 @@ class SearchCache {
 	private $ops_cache_key;
 
 	/**
-	 * @var Zend_Cache object used to store cached browse data
-	 */
-	private $opo_cache;
-
-	/**
 	 * @var Working copy of search data
 	 */
 	private $opa_search;
@@ -58,30 +53,6 @@ class SearchCache {
 	 *
 	 */
 	public function __construct($ps_search=null, $pn_table_num=null, $pa_options=null) {
-		$va_frontend_options = array(
-			'lifetime' => 3600, 				/* cache lives 1 hour */
-			'logging' => false,					/* do not use Zend_Log to log what happens */
-			'write_control' => true,			/* immediate read after write is enabled (we don't write often) */
-			'automatic_cleaning_factor' => 100, 	/* no automatic cache cleaning */
-			'automatic_serialization' => true	/* we store arrays, so we have to enable that */
-		);
-
-		$o_config = Configuration::load();
-		$va_backend_options = array(
-			'cache_dir' =>  __CA_APP_DIR__.'/tmp',		/* where to store cache data? */
-			'file_locking' => true,				/* cache corruption avoidance */
-			'read_control' => false,			/* no read control */
-			'file_name_prefix' => 'ca_search_'.$o_config->get('app_name'),	/* prefix of cache files */
-			'cache_file_perm' => 0700			/* permissions of cache files */
-		);
-
-
-		try {
-			$this->opo_cache = Zend_Cache::factory('Core', 'File', $va_frontend_options, $va_backend_options);
-		} catch (exception $e) {
-			// noop
-		}
-
 		$this->opa_search = array();
 
 		if ($ps_search && $pn_table_num) {
@@ -93,13 +64,16 @@ class SearchCache {
 	 *
 	 */
 	public function load($ps_search, $pn_table_num, $pa_options) {
-		if (!$this->opo_cache) { return false; }
 		$ps_cache_key = $this->generateCacheKey($ps_search, $pn_table_num, $pa_options);
-		if (is_array($va_cached_data = $this->opo_cache->load($ps_cache_key)) && sizeof($va_cached_data)) {
-			$this->opa_search = $va_cached_data;
-			$this->ops_cache_key = $ps_cache_key;
-			return true;
+		if(CompositeCache::contains($ps_cache_key, 'Search')) {
+			if(is_array($va_cached_data = CompositeCache::fetch($ps_cache_key, 'Search'))) {
+				Debug::msg('[SearchCache] cache hit for '.$ps_cache_key);
+				$this->opa_search = $va_cached_data;
+				$this->ops_cache_key = $ps_cache_key;
+				return true;
+			}
 		}
+		Debug::msg('[SearchCache] cache miss for '.$ps_cache_key);
 
 		return false;
 	}
@@ -116,7 +90,6 @@ class SearchCache {
 	 *
 	 */
 	public function save($ps_search, $pn_table_num, $pa_results, $pa_params=null, $pa_type_restrictions=null, $pa_options=null) {
-		if (!$this->opo_cache) { return false; }
 		if (!is_array($pa_params)) { $pa_params = array(); }
 		if (!is_array($pa_type_restrictions)) { $pa_type_restrictions = array(); }
 
@@ -128,28 +101,16 @@ class SearchCache {
 			'params' => $pa_params,
 			'type_restrictions' => $pa_type_restrictions
 		);
-
-		return $this->opo_cache->save($this->opa_search, $this->ops_cache_key, array('ca_search_cache'));
+		Debug::msg('[SearchCache] cache save for '.$this->ops_cache_key);
+		return CompositeCache::save($this->ops_cache_key, $this->opa_search, 'Search');
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
 	public function remove() {
-		if (!$this->opo_cache) { return false; }
 		$this->opa_search = array();
-		return $this->opo_cache->remove($this->ops_cache_key);
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public function clearAll() {
-		if (!$this->opo_cache) { return false; }
-		return $this->opo_cache->clean(
-			Zend_Cache::CLEANING_MODE_MATCHING_TAG,
-			array('ca_search_cache')
-		);
+		return CompositeCache::delete($this->ops_cache_key, 'Search');
 	}
 	# ------------------------------------------------------
 	/**
@@ -237,15 +198,17 @@ class SearchCache {
 	 *
 	 */
 	public function getGlobalParameter($ps_param) {
-		return $this->opo_cache->load('search_global_'.$ps_param);
+		if(CompositeCache::contains("search_global_{$ps_param}", 'Search')) {
+			return CompositeCache::fetch("search_global_{$ps_param}", 'Search');
+		}
+		return false;
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
 	public function setGlobalParameter($ps_param, $pm_value) {
-		if (!$this->opo_cache) { return false; }
-		$this->opo_cache->save($pm_value, 'search_global_'.$ps_param);
+		CompositeCache::save("search_global_{$ps_param}", $pm_value, 'Search');
 	}
 	# ------------------------------------------------------
 }
