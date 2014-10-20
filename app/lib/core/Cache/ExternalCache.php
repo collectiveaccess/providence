@@ -182,6 +182,10 @@ class ExternalCache {
 	# Helpers
 	# ------------------------------------------------
 	private static function getCacheObject() {
+		if(!defined('__CA_CACHE_BACKEND__')) {
+			define('__CA_CACHE_BACKEND__', 'file');
+		}
+
 		switch(__CA_CACHE_BACKEND__) {
 			case 'memcached':
 				return self::getMemcachedObject();
@@ -207,12 +211,19 @@ class ExternalCache {
 	}
 	# ------------------------------------------------
 	private static function getMemcachedObject(){
-		Debug::msg('Initiate memcached');
-		$memcached = new Memcached();
-		$memcached->addServer('localhost', 11211);
+		if(!defined('__CA_MEMCACHED_HOST__')) {
+			define('__CA_MEMCACHED_HOST__', 'localhost');
+		}
+
+		if(!defined('__CA_MEMCACHED_PORT__')) {
+			define('__CA_MEMCACHED_PORT__', 11211);
+		}
+
+		$o_memcached = new Memcached();
+		$o_memcached->addServer(__CA_MEMCACHED_HOST__, __CA_MEMCACHED_PORT__);
 
 		$o_cache = new \Doctrine\Common\Cache\MemcachedCache();
-		$o_cache->setMemcached($memcached);
+		$o_cache->setMemcached($o_memcached);
 		return $o_cache;
 	}
 	# ------------------------------------------------
