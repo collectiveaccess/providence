@@ -246,4 +246,3 @@ class RequestDispatcher extends BaseObject {
 	}
 	# -------------------------------------------------------
 }
- ?>

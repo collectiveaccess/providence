@@ -161,4 +161,3 @@ class ActionController extends BaseObject {
 	}
 	# -------------------------------------------------------
 }
-?>
