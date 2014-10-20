@@ -96,6 +96,8 @@ class MemoryCache {
 		if(!$ps_namespace) { throw new MemoryCacheInvalidParameterException('Namespace cannot be empty'); }
 		if(!$ps_key) { throw new MemoryCacheInvalidParameterException('Key cannot be empty'); }
 
+		if(!isset(self::$opa_caches[$ps_namespace])) { return false; }
+
 		if(array_key_exists($ps_key, self::$opa_caches[$ps_namespace])) {
 			unset(self::$opa_caches[$ps_namespace][$ps_key]);
 			return true;

@@ -358,7 +358,10 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 */
 	public function getSettings() {
 		if (is_null($this->get('datatype'))) { return null; }
-		return MemoryCache::fetch($this->getPrimaryKey(), 'ElementSettings');
+
+		// MemoryCache key can't be false or null so use special key for soon-to-be-inserted elements
+		$vm_cache_key = ($this->getPrimaryKey() ? $this->getPrimaryKey() : 'no_key');
+		return MemoryCache::fetch($vm_cache_key, 'ElementSettings');
 	}
 	# ------------------------------------------------------
 	/**
@@ -368,6 +371,9 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	public function setSetting($ps_setting, $pm_value, &$ps_error=null) {
 		if (is_null($this->get('datatype'))) { return null; }
 		if (!$this->isValidSetting($ps_setting)) { return null; }
+
+		// MemoryCache key can't be false or null so use special key for soon-to-be-inserted elements
+		$vm_cache_key = ($this->getPrimaryKey() ? $this->getPrimaryKey() : 'no_key');
 		
 		$o_value_instance = Attribute::getValueInstance($this->get('datatype'), null, true);
 		$vs_error = null;
@@ -384,7 +390,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$pm_value = '0';
 		}
 		$va_settings[$ps_setting] = $pm_value;
-		MemoryCache::save($this->getPrimaryKey(), $va_settings, 'ElementSettings');
+		MemoryCache::save($vm_cache_key, $va_settings, 'ElementSettings');
 
 		return true;
 	}

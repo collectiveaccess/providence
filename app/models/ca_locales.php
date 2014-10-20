@@ -188,6 +188,43 @@ class ca_locales extends BaseModel {
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
+	public function insert($pa_options=null) {
+		$vm_rc = parent::insert($pa_options);
+		$this->flushLocaleListCache();
+		return $vm_rc;
+	}
+	# ------------------------------------------------------
+	public function update($pa_options=null) {
+		$vm_rc = parent::update($pa_options);
+		$this->flushLocaleListCache();
+		return $vm_rc;
+	}
+	# ------------------------------------------------------
+	public function delete($pb_delete_related = false, $pa_options = NULL, $pa_fields = NULL, $pa_table_list = NULL) {
+		$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
+		$this->flushLocaleListCache();
+		return $vn_rc;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Helper to flush the specific possible cache keys for the getLocaleList function below. We don't want
+	 * to flush the whole cache because that would nuke the session too. After the initial setup, locales change
+	 * very, very rarely anyway.
+	 */
+	private function flushLocaleListCache() {
+		foreach($this->getFields() as $vs_field) {
+			foreach(array('asc', 'desc') as $vs_sort_direction) {
+				CompositeCache::delete("{$vs_field}/{$vs_sort_direction}/0/0/0", 'LocaleList');
+				CompositeCache::delete("{$vs_field}/{$vs_sort_direction}/0/0/1", 'LocaleList');
+				CompositeCache::delete("{$vs_field}/{$vs_sort_direction}/0/1/0", 'LocaleList');
+				CompositeCache::delete("{$vs_field}/{$vs_sort_direction}/0/1/1", 'LocaleList');
+				CompositeCache::delete("{$vs_field}/{$vs_sort_direction}/1/0/0", 'LocaleList');
+				CompositeCache::delete("{$vs_field}/{$vs_sort_direction}/1/0/1", 'LocaleList');
+				CompositeCache::delete("{$vs_field}/{$vs_sort_direction}/1/1/1", 'LocaleList');
+			}
+		}
+	}
+	# ------------------------------------------------------
 	/**
 	 *
 	 */
