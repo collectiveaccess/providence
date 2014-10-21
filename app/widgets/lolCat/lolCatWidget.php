@@ -27,7 +27,6 @@
  */
  	require_once(__CA_LIB_DIR__.'/ca/BaseWidget.php');
  	require_once(__CA_LIB_DIR__.'/ca/IWidget.php');
- 	require_once(__CA_LIB_DIR__.'/core/Zend/Cache.php');
  	require_once(__CA_LIB_DIR__.'/core/Zend/Feed.php');
  	require_once(__CA_LIB_DIR__.'/core/Zend/Feed/Rss.php');
  
@@ -66,47 +65,17 @@
 			$vs_feed_url = 'http://feeds.feedburner.com/ICanHasCheezburger';
 			$vs_feed_url_md5 = md5($vs_feed_url);
 
-			$va_frontend_options = array(
-				'lifetime' => 3 * 3600, 			/* cache lives 3 hours */
-				'logging' => false,					/* do not use Zend_Log to log what happens */
-				'write_control' => true,			/* immediate read after write is enabled (we don't write often) */
-				'automatic_cleaning_factor' => 0, 	/* no automatic cache cleaning */
-				'automatic_serialization' => true	/* we store objects, so we have to enable that */
-			);
-			
-			$va_backend_options = array(
-				'cache_dir' =>  __CA_APP_DIR__.'/tmp',		/* where to store cache data? */
-				'file_locking' => true,				/* cache corruption avoidance */
-				'read_control' => false,			/* no read control */
-				'file_name_prefix' => 'ca_browse',	/* prefix of cache files */
-				'cache_file_perm' => 0700			/* permissions of cache files */
-			);
-
-
-			try {
-				$vo_cache = Zend_Cache::factory('Core', 'File', $va_frontend_options, $va_backend_options);
-			} catch (exception $e) {
-				// noop
-			}
-			
-			if ($vo_cache) {
-				if (!($feed = $vo_cache->load($vs_feed_url_md5))) {
-					$vb_feed_error = false;
-					try {
-						$feed = Zend_Feed::import($vs_feed_url);
-					} catch (Exception $e) {
-						$vb_feed_error = true;
-					}
-					
-					if ($vb_feed_error) {
-						return null;
-					}
-					$vo_cache->save($feed, $vs_feed_url_md5, array('ca_widget_lolCat'));
-					$feed->__wakeup();
-				}
+			if(ExternalCache::contains($vs_feed_url_md5, 'Meow')) {
+				$feed = ExternalCache::fetch($vs_feed_url_md5, 'Meow');
 			} else {
-				// If no caching then just suck it over the network every time. Yay!
-				$feed = Zend_Feed::import($vs_feed_url);
+				try {
+					$feed = Zend_Feed::import($vs_feed_url);
+				} catch (Exception $e) {
+					return null;
+				}
+
+				ExternalCache::save($vs_feed_url_md5, $feed, 'Meow');
+				$feed->__wakeup();
 			}
 			
 			$this->opo_view->setVar('title', $feed->title());
@@ -127,8 +96,7 @@
 					$vs_url = $va_matches[1];
 					
 					$vn_width = 430;							// force width of image to 430 pixels
-					$vn_height = floor($vn_width / 1.57);		// assume aspect ratio is 1.57 (typical). This results is an occasional squished cat but who's counting?
-					
+					//$vn_height = floor($vn_width / 1.57);		// assume aspect ratio is 1.57 (typical). This results is an occasional squished cat but who's counting?
 					
 					$this->opo_view->setVar('item_image', "<img src='{$vs_url}' width='{$vn_width}'/>");
 					break;
@@ -155,5 +123,3 @@
 	BaseWidget::$s_widget_settings['lolCatWidget'] = array(		
 		
 	);
-	
-?>
