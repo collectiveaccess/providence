@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2012 Whirl-i-Gig
+ * Copyright 2011-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -67,13 +67,11 @@ class SearchCache {
 		$ps_cache_key = $this->generateCacheKey($ps_search, $pn_table_num, $pa_options);
 		if(CompositeCache::contains($ps_cache_key, 'Search')) {
 			if(is_array($va_cached_data = CompositeCache::fetch($ps_cache_key, 'Search'))) {
-				Debug::msg('[SearchCache] cache hit for '.$ps_cache_key);
 				$this->opa_search = $va_cached_data;
 				$this->ops_cache_key = $ps_cache_key;
 				return true;
 			}
 		}
-		Debug::msg('[SearchCache] cache miss for '.$ps_cache_key);
 
 		return false;
 	}
@@ -101,7 +99,6 @@ class SearchCache {
 			'params' => $pa_params,
 			'type_restrictions' => $pa_type_restrictions
 		);
-		Debug::msg('[SearchCache] cache save for '.$this->ops_cache_key);
 		return CompositeCache::save($this->ops_cache_key, $this->opa_search, 'Search');
 	}
 	# ------------------------------------------------------
