@@ -105,6 +105,26 @@ class CompositeCacheTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(array('foo' => 'bar'), $vm_ret, 'Cache item should not change');
 	}
 
+	public function testSetAndFetchFromExternalCache() {
+		$vm_ret = ExternalCache::save('foo',  array('foo' => 'bar'), 'barNamespace');
+		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
+
+		$vm_ret = CompositeCache::contains('foo', 'barNamespace');
+		$this->assertTrue($vm_ret, 'Checking for existence of a key we just set should return true');
+
+		$vm_ret = CompositeCache::contains('foo');
+		$this->assertFalse($vm_ret, 'The key should not exist in an unused namespace');
+
+		$vm_ret = CompositeCache::fetch('foo', 'barNamespace');
+		$this->assertArrayHasKey('foo', $vm_ret, 'Returned array should have key');
+		$this->assertEquals(array('foo' => 'bar'), $vm_ret, 'Cache item should not change');
+
+		// after we fetch it once using CompositeCache, it should be in memory
+		$vm_ret = MemoryCache::fetch('foo', 'barNamespace');
+		$this->assertArrayHasKey('foo', $vm_ret, 'Returned array should have key');
+		$this->assertEquals(array('foo' => 'bar'), $vm_ret, 'Cache item should not change');
+	}
+
 	public function testSetGetReplaceDeleteCycle() {
 		$vm_ret = CompositeCache::save('foo',  array('foo' => 'bar'));
 		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
