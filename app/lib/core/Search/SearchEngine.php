@@ -202,8 +202,6 @@ class SearchEngine extends SearchBase {
 			}
 		}
 
-		if($vb_no_cache) { Debug::msg('caching is disabled externally'); }
-
 		if(!$vb_from_cache) {
 			Debug::msg('cache miss for '.$vs_cache_key);
 			$vs_char_set = $this->opo_app_config->get('character_set');
