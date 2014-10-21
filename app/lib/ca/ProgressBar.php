@@ -71,11 +71,6 @@
 		private $ops_job_id = null;
 		
 		/**
-		 * A Zend_Cache object to record per-job_id progress bar details in. Only set if job_id is specified.
-		 */
-		private $opo_cache = null;
-		
-		/**
 		 * Display properties. Includes:
 		 *		outputToTerminal = print messages to the terminal when in CLI run mode [default=false]
 		 */
@@ -136,17 +131,18 @@
 		# -------------------------------------------------------
 		/**
 		 * Set current job_id
-		 * 
+		 *
+		 * @param string $ps_job_id
 		 * @return string The job_id that was set
 		 */
 		public function setJobID($ps_job_id) {
 			$this->ops_job_id = $ps_job_id;
-			if ($this->opo_cache = caGetCacheObject('caProgressBar', 3600 * 24)) {
-				// load values from store
-				if(is_array($va_data = $this->opo_cache->load($ps_job_id))) {
-					$this->setTotal($va_data['total']);
-				}
+
+			if(CompositeCache::contains($ps_job_id, 'ProgressBar')) {
+				$va_data = CompositeCache::fetch($ps_job_id, 'ProgressBar');
+				$this->setTotal($va_data['total']);
 			}
+
 			return $ps_job_id;
 		}
 		# -------------------------------------------------------
@@ -410,16 +406,19 @@
 		 */
 		private function setCache($ps_message=null) {
 			$va_data = null;
-			if ($this->ops_job_id && $this->opo_cache) {
-				if(!is_array($va_data = $this->opo_cache->load($this->ops_job_id))) {
+			if ($this->ops_job_id) {
+				if(CompositeCache::contains($this->ops_job_id, 'ProgressBar')) {
+					$va_data = CompositeCache::fetch($this->ops_job_id, 'ProgressBar');
+				}
+				if(!is_array($va_data)) {
 					$va_data = array();
 				}
 				$va_data['total'] = $this->getTotal();
 				$va_data['start'] = $this->opn_start;
 				$va_data['position'] = $this->getCurrentPosition();
 				$va_data['message'] = is_null($ps_message) ? $this->getMessage() : $ps_message;
-				
-				$this->opo_cache->save($va_data);
+
+				CompositeCache::save($this->ops_job_id, $va_data, 'ProgressBar');
 			}
 			
 			return $va_data;
@@ -428,12 +427,14 @@
 		/**
 		 * Get the per-job_id progress bar cache with the current state of the progress bar
 		 *
-		 * @return array The cached data or null if no job_id was set or the cache could not be opened.
+		 * @return array|null The cached data or null if no job_id was set or the cache could not be opened.
 		 */
 		private function getCache() {
 			$vs_data = null;
-			if ($this->ops_job_id && $this->opo_cache) {
-				if(!is_array($va_data = $this->opo_cache->load($this->ops_job_id))) {
+			if ($this->ops_job_id) {
+				if(CompositeCache::contains($this->ops_job_id, 'ProgressBar')) {
+					$va_data = CompositeCache::fetch($this->ops_job_id, 'ProgressBar');
+				} else {
 					$va_data = array('total' => $this->getTotal(), 'start' => $this->opn_start, 'position' => $this->getCurrentPosition(), 'message' => $this->getMessage());
 				}
 			}
