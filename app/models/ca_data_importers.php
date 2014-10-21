@@ -50,6 +50,9 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
 require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__.'/core/Db/Transaction.php');
 
+//define("__CA_DONT_DO_SEARCH_INDEXING__", true);
+
+
 BaseModel::$s_ca_models_definitions['ca_data_importers'] = array(
  	'NAME_SINGULAR' 	=> _t('data importer'),
  	'NAME_PLURAL' 		=> _t('data importers'),
@@ -850,6 +853,24 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						$va_replacement_values = preg_split("![\n\r]{1}!", (string)$o_replacement_values->getValue());
 						array_walk($va_replacement_values, function(&$v) { $v = trim($v); });
 					}
+						
+					// Strip excess space from keys
+					if (is_array($va_options)) {
+						foreach($va_options as $vs_k => $vm_v) {
+							if ($vs_k !== trim($vs_k)) {
+								unset($va_options[$vs_k]);
+								$va_options[trim($vs_k)] = $vm_v;
+							}
+						}
+					}
+					if (is_array($va_refinery_options)) {
+						foreach($va_refinery_options as $vs_k => $vm_v) {
+							if ($vs_k !== trim($vs_k)) {
+								unset($va_refinery_options[$vs_k]);
+								$va_refinery_options[trim($vs_k)] = $vm_v;
+							}
+						}
+					}
 					
 					$va_mapping[$vs_group][$vs_source][] = array(
 						'destination' => $vs_destination,
@@ -1230,6 +1251,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		if ($vb_use_ncurses = (isset($pa_options['useNcurses']) && ($pa_options['useNcurses'])) ? true : false) {
 			$vb_use_ncurses = caCLIUseNcurses();
 		}
+		$vb_use_ncurses = false;
 		$vn_error_window_height = null;
 
 		$vn_max_x = $vn_max_y = null;
@@ -2001,7 +2023,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//print_r($va_content_tree);
 			//die("END\n\n");
 			//continue;
-			$opa_app_plugin_manager->hookDataImportContentTree(array('mapping' => $t_mapping, 'content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'transaction' => &$o_trans, 'log' => &$o_log, 'reader' => $o_reader, 'environment' => $va_environment,'importEvent' => $o_event, 'importEventSource' => $vn_row));
+			if (!($opa_app_plugin_manager->hookDataImportContentTree(array('mapping' => $t_mapping, 'content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'transaction' => &$o_trans, 'log' => &$o_log, 'reader' => $o_reader, 'environment' => $va_environment,'importEvent' => $o_event, 'importEventSource' => $vn_row)))) {
+				continue;
+			}
 			
 			//print_r($va_content_tree);
 			//die("done\n");
@@ -2249,25 +2273,27 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											}
 										}
 										
-										$t_subject->update();
-
-										if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Invalid %2; values were %3: ", $vs_idno, $vs_element, ca_data_importers::formatValuesForLog($va_element_content)), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
-											if ($vs_item_error_policy == 'stop') {
-												$o_log->logAlert(_t('Import stopped due to mapping error policy'));
-												if($vb_use_ncurses) { ncurses_end(); }
-												
-												$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
-												
-												if ($o_trans) { $o_trans->rollback(); }
-												return false;
-											}
-										}
+										
 
 										break;
 								}
 						}
 					} 
+					
+					$t_subject->update();
+
+					if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Invalid %2; values were %3: ", $vs_idno, $vs_element, ca_data_importers::formatValuesForLog($va_element_content)), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+						ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
+						if ($vs_item_error_policy == 'stop') {
+							$o_log->logAlert(_t('Import stopped due to mapping error policy'));
+							if($vb_use_ncurses) { ncurses_end(); }
+							
+							$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
+							
+							if ($o_trans) { $o_trans->rollback(); }
+							return false;
+						}
+					}
 				} else {
 					// related
 					$vs_table_name = preg_replace('!^related\.!', '', $vs_table_name);
@@ -2561,6 +2587,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					}
 				}
 			}
+			
+			$opa_app_plugin_manager->hookDataPostImport(array('subject' => $t_subject, 'mapping' => $t_mapping, 'content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'transaction' => &$o_trans, 'log' => &$o_log, 'reader' => $o_reader, 'environment' => $va_environment,'importEvent' => $o_event, 'importEventSource' => $vn_row));
+			
 			
 			$o_log->logInfo(_t('[%1] Imported %2 as %3 ', $vs_idno, $vs_preferred_label_for_log, $vs_subject_table_name));
 			$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_SUCCESS__, _t('Imported %1', $vs_idno));

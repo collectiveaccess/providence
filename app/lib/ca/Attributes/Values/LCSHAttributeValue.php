@@ -161,6 +161,9 @@
  		# ------------------------------------------------------------------
  		private $ops_text_value;
  		private $ops_uri_value;
+ 		
+ 		static $s_term_cache = array();
+ 		static $s_term_cache_max_size = 2048;
  		# ------------------------------------------------------------------
  		public function __construct($pa_value_array=null) {
  			parent::__construct($pa_value_array);
@@ -206,6 +209,9 @@
  		 *
  		 */
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
+ 			if (isset(LCSHAttributeValue::$s_term_cache[$ps_value])) {
+ 				return LCSHAttributeValue::$s_term_cache[$ps_value];
+ 			}
  			$o_config = Configuration::load();
  			
  			$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
@@ -226,7 +232,7 @@
 				
 					$va_tmp1 = explode('/', $va_tmp[1]);
 					$vs_id = array_pop($va_tmp1);
-					return array(
+					LCSHAttributeValue::$s_term_cache[$ps_value] = array(
 						'value_longtext1' => trim($va_tmp[0]),						// text
 						'value_longtext2' => trim($vs_url),							// uri
 						'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
@@ -260,7 +266,7 @@
 							$vs_url = str_replace('http://id.loc.gov/', 'info:lc/', $vs_url);
 					
 							if ($vs_url) {
-								return array(
+								LCSHAttributeValue::$s_term_cache[$ps_value] = array(
 									'value_longtext1' => trim($vs_label)." [{$vs_url}]",						// text
 									'value_longtext2' => trim($vs_url),							// uri
 									'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
@@ -299,7 +305,7 @@
 								$va_url = explode("/", $vs_url);
 								$vs_id = array_pop($va_url);
 							
-								return array(
+								LCSHAttributeValue::$s_term_cache[$ps_value] = array(
 									'value_longtext1' => "{$vs_title} [{$vs_url}]",						// text
 									'value_longtext2' => $vs_url,							// uri
 									'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
@@ -310,11 +316,18 @@
 					}	
 				}
 			}
-			return array(
-				'value_longtext1' => '',	// text
-				'value_longtext2' => '',	// uri
-				'value_decimal1' => null	// id
-			);
+			if (!isset(LCSHAttributeValue::$s_term_cache[$ps_value])) {
+				LCSHAttributeValue::$s_term_cache[$ps_value] = array(
+					'value_longtext1' => '',	// text
+					'value_longtext2' => '',	// uri
+					'value_decimal1' => null	// id
+				);
+			}
+			
+			if(sizeof(LCSHAttributeValue::$s_term_cache > LCSHAttributeValue::$s_term_cache_max_size)) {
+				LCSHAttributeValue::$s_term_cache = array($ps_value => LCSHAttributeValue::$s_term_cache[$ps_value]);
+			}
+			return LCSHAttributeValue::$s_term_cache[$ps_value];
  		}
  		# ------------------------------------------------------------------
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
