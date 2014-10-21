@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/service/controllers/FindController.php :
+ * app/plugins/aboutDrawingServices/controllers/adFindController.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,23 +25,20 @@
  *
  * ----------------------------------------------------------------------
  */
-	require_once(__CA_LIB_DIR__.'/ca/Service/BaseServiceController.php');
-	require_once(__CA_LIB_DIR__.'/ca/Service/SearchJSONService.php');
+ 	require_once(__CA_APP_DIR__.'/plugins/aboutDrawingServices/services/AboutDrawingSearchService.php');
+	require_once(__CA_APP_DIR__.'/service/controllers/FindController.php');
 
-	class FindController extends BaseServiceController {
-		# -------------------------------------------------------
-		public function __construct(&$po_request, &$po_response, $pa_view_paths) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		}
+	class ADFindController extends FindController {
+
 		# -------------------------------------------------------
 		public function __call($ps_table, $pa_args){
-			$vo_service = new SearchJSONService($this->request,$ps_table);
+			$vo_service = new AboutDrawingSearchService($this->request,$ps_table);
 			$va_content = $vo_service->dispatch();
 
 			if(intval($this->request->getParameter("pretty",pInteger))>0){
 				$this->view->setVar("pretty_print",true);
 			}
-			
+
 			if($vo_service->hasErrors()){
 				$this->view->setVar("errors",$vo_service->getErrors());
 				$this->render("json_error.php");
@@ -51,4 +48,6 @@
 			}
 		}
 		# -------------------------------------------------------
+
+
 	}

@@ -551,6 +551,10 @@
 						$va_facet_info['table'] = $this->ops_tablename;
 						// fall through to default case
 					default:
+						if (!$vn_id && ($t_item->getHierarchyType() == __CA_HIER_TYPE_SIMPLE_MONO__)) {
+							// Force top level to be root for simple mono hierarchies
+							$vn_id = $t_item->getHierarchyRootID();
+						}
 						if(!$vn_id) {
 							$va_hier_ids = $this->opo_browse->getHierarchyIDsForFacet($ps_facet_name, array('checkAccess' => $va_access_values));
 							
