@@ -66,8 +66,8 @@ class BrowseCache {
 	 *
 	 */
 	public function load($ps_cache_key) {
-		if (CompositeCache::contains($ps_cache_key, 'Browse')) {
-			$this->opa_browse = CompositeCache::fetch($ps_cache_key, 'Browse');
+		if (ExternalCache::contains($ps_cache_key, 'Browse')) {
+			$this->opa_browse = ExternalCache::fetch($ps_cache_key, 'Browse');
 			$this->ops_cache_key = $ps_cache_key;
 			return true;
 		}
@@ -88,7 +88,7 @@ class BrowseCache {
 	 */
 	public function save() {
 		$this->ops_cache_key = $this->getCurrentCacheKey();
-		CompositeCache::save($this->ops_cache_key, $this->opa_browse, 'Browse');
+		ExternalCache::save($this->ops_cache_key, $this->opa_browse, 'Browse');
 		return true;
 	}
 	# ------------------------------------------------------
@@ -105,7 +105,7 @@ class BrowseCache {
 	 */
 	public function remove() {
 		$this->opa_browse = array();
-		return CompositeCache::delete($this->ops_cache_key, 'Browse');
+		return ExternalCache::delete($this->ops_cache_key, 'Browse');
 	}
 	# ------------------------------------------------------
 	/**
@@ -241,8 +241,8 @@ class BrowseCache {
 	 *
 	 */
 	public function getGlobalParameter($ps_param) {
-		if(CompositeCache::contains("browse_global_{$ps_param}", 'Browse')) {
-			return CompositeCache::fetch("browse_global_{$ps_param}", 'Browse');
+		if(ExternalCache::contains("browse_global_{$ps_param}", 'Browse')) {
+			return ExternalCache::fetch("browse_global_{$ps_param}", 'Browse');
 		}
 		return false;
 	}
@@ -251,7 +251,7 @@ class BrowseCache {
 	 *
 	 */
 	public function setGlobalParameter($ps_param, $pm_value) {
-		CompositeCache::save("browse_global_{$ps_param}", $pm_value, 'Browse');
+		ExternalCache::save("browse_global_{$ps_param}", $pm_value, 'Browse');
 	}
 	# ------------------------------------------------------
 	/**
