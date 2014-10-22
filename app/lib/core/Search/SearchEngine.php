@@ -172,26 +172,38 @@ class SearchEngine extends SearchBase {
 			
 		$vb_no_cache = isset($pa_options['no_cache']) ? $pa_options['no_cache'] : false;
 		unset($pa_options['no_cache']);
+
+		$vn_cache_timeout = (int) $this->opo_search_config->get('cache_timeout');
+		if($vn_cache_timeout == 0) { $vb_no_cache = true; } // don't try to cache if cache timeout is 0 (0 means disabled)
 		
 		$t_table = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
-		$vs_pk = $t_table->primaryKey();
 		
 		$vs_cache_key = md5($ps_search."/".print_R($this->getTypeRestrictionList(), true));
-		
 		$o_cache = new SearchCache();
-		if (
-			(!$vb_no_cache && ($o_cache->load($vs_cache_key, $this->opn_tablenum, $pa_options)))
-		) {
-			$va_hits = $o_cache->getResults();
-			if (isset($pa_options['sort']) && $pa_options['sort'] && ($pa_options['sort'] != '_natural')) {
-				$va_hits = $this->sortHits($va_hits, $this->ops_tablename, $pa_options['sort'], $ps_search, (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
-			} else {
-				if (($pa_options['sort'] == '_natural') && ($pa_options['sort_direction'] == 'desc')) {
-					$va_hits = array_reverse($va_hits);
+		$vb_from_cache = false;
+
+		if (!$vb_no_cache && ($o_cache->load($vs_cache_key, $this->opn_tablenum, $pa_options))) {
+			$vn_created_on = $o_cache->getParameter('created_on');
+			if((time() - $vn_created_on) < $vn_cache_timeout) {
+				Debug::msg('cache hit for '.$vs_cache_key);
+				$va_hits = $o_cache->getResults();
+				if (isset($pa_options['sort']) && $pa_options['sort'] && ($pa_options['sort'] != '_natural')) {
+					$va_hits = $this->sortHits($va_hits, $this->ops_tablename, $pa_options['sort'], $ps_search, (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
+				} else {
+					if (($pa_options['sort'] == '_natural') && ($pa_options['sort_direction'] == 'desc')) {
+						$va_hits = array_reverse($va_hits);
+					}
 				}
+				$o_res = new WLPlugSearchEngineCachedResult($va_hits, $this->opn_tablenum);
+				$vb_from_cache = true;
+			} else {
+				Debug::msg('cache expire for '.$vs_cache_key);
+				$o_cache->remove();
 			}
-			$o_res = new WLPlugSearchEngineCachedResult($va_hits, $this->opn_tablenum);
-		} else {
+		}
+
+		if(!$vb_from_cache) {
+			Debug::msg('cache miss for '.$vs_cache_key);
 			$vs_char_set = $this->opo_app_config->get('character_set');
 			
 			$o_query_parser = new LuceneSyntaxParser();
@@ -239,6 +251,10 @@ class SearchEngine extends SearchBase {
 				$this->addResultFilter($this->ops_tablename.'.source_id', 'IN', join(",",$va_source_ids));
 			}
 			
+			if (in_array($t_table->getHierarchyType(), array(__CA_HIER_TYPE_SIMPLE_MONO__, __CA_HIER_TYPE_MULTI_MONO__))) {
+				$this->addResultFilter($this->ops_tablename.'.parent_id', 'IS NOT', NULL);
+			}
+			
 			if (is_array($va_restrict_to_fields = caGetOption('restrictSearchToFields', $pa_options, null)) && $this->opo_engine->can('restrict_to_fields')) {
 				$this->opo_engine->setOption('restrictSearchToFields', $va_restrict_to_fields);
 			}
@@ -248,7 +264,7 @@ class SearchEngine extends SearchBase {
 			// cache the results
 			$va_hits = $o_res->getPrimaryKeyValues($vn_limit);
 			$o_res->seek(0);
-				
+
 			if (isset($pa_options['sets']) && $pa_options['sets']) {
 				$va_hits = $this->filterHitsBySets($va_hits, $pa_options['sets'], array('search' => $vs_search));
 			}
@@ -269,7 +285,9 @@ class SearchEngine extends SearchBase {
 			$o_res = new WLPlugSearchEngineCachedResult($va_hits, $this->opn_tablenum);
 			
 			// cache for later use
-			$o_cache->save($vs_cache_key, $this->opn_tablenum, $va_hits, null, null, array_merge($pa_options, array('filters' => $this->getResultFilters())));
+			if(!$vb_no_cache) {
+				$o_cache->save($vs_cache_key, $this->opn_tablenum, $va_hits, array('created_on' => time()), null, $pa_options);
+			}
 
 			// log search
 			$o_log = new Searchlog();
@@ -283,7 +301,7 @@ class SearchEngine extends SearchBase {
 				'user_id' => $vn_user_id, 
 				'table_num' => $this->opn_tablenum, 
 				'search_expression' => $ps_search, 
-				'num_hits' => sizeof($va_hit_values), 
+				'num_hits' => sizeof($va_hits),
 				'form_id' => $vn_search_form_id, 
 				'ip_addr' => $_SERVER['REMOTE_ADDR'] ?  $_SERVER['REMOTE_ADDR'] : null,
 				'details' => $vs_log_details,
@@ -291,6 +309,7 @@ class SearchEngine extends SearchBase {
 				'execution_time' => $vn_execution_time
 			));
 		}
+
 		if ($po_result) {
 			$po_result->init($o_res, $this->opa_tables, $pa_options);
 			return $po_result;
@@ -373,7 +392,7 @@ class SearchEngine extends SearchBase {
 						(ca_acl.access >= ?)
 				", $va_params);
 				
-				$va_hits = $qr_sort->getAllFieldValues('row_id');
+				$va_hits = array_unique($qr_sort->getAllFieldValues('row_id'));
 				
 				// Find records with default ACL
 				$qr_sort = $this->opo_db->query("
@@ -383,7 +402,7 @@ class SearchEngine extends SearchBase {
 					WHERE
 						ca_acl.row_id IS NULL;
 				", array((int)$this->opn_tablenum));
-				
+
 				$va_hits = array_merge($va_hits, $qr_sort->getAllFieldValues('row_id'));
 		} else {
 			// Default access is more restrictive than requested access (so *don't* return items with default ACL)
@@ -406,7 +425,7 @@ class SearchEngine extends SearchBase {
 					(ca_acl.access >= ?)
 			", $va_params);
 			
-			$va_hits = array_merge($va_hits, $qr_sort->getAllFieldValues('row_id'));
+			$va_hits = $qr_sort->getAllFieldValues('row_id');
 		}
 		
 		$this->cleanupTemporaryResultTable();

@@ -77,7 +77,9 @@ class PHPUnit_Util_Blacklist
         'SebastianBergmann\Comparator\Comparator' => 1,
         'SebastianBergmann\Exporter\Exporter' => 1,
         'SebastianBergmann\Version' => 1,
-        'Composer\Autoload\ClassLoader' => 1
+        'Composer\Autoload\ClassLoader' => 1,
+        'Instantiator\Instantiator' => 1,
+        'LazyMap\AbstractLazyMap' => 1
     );
 
     /**
@@ -136,6 +138,15 @@ class PHPUnit_Util_Blacklist
 
                 self::$directories[] = $directory;
             }
-       }
+
+            // Hide process isolation workaround on Windows.
+            // @see PHPUnit_Util_PHP::factory()
+            // @see PHPUnit_Util_PHP_Windows::process()
+            if (DIRECTORY_SEPARATOR === '\\') {
+                // tempnam() prefix is limited to first 3 chars.
+                // @see http://php.net/manual/en/function.tempnam.php
+                self::$directories[] = sys_get_temp_dir() . '\\PHP';
+            }
+        }
     }
 }

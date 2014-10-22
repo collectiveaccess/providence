@@ -709,7 +709,7 @@
 							FROM ca_attribute_values
 							WHERE
 								element_id in (?)
-						", $va_element_ids);
+						", array($va_element_ids));
 						if ($qr_c->nextRow()) { $vn_count = $qr_c->get('c'); } else { $vn_count = 0; }
 				
 						print CLIProgressBar::start($vn_count, _t('Re-processing attribute media'));

@@ -88,9 +88,6 @@
 		if(!initializeLocale($g_ui_locale)) die("Error loading locale ".$g_ui_locale);
 		$req->reloadAppConfig();
 	}
-
-	global $ca_translation_cache;
-	$ca_translation_cache = array();
 	
 	//
 	// PageFormat plug-in generates header/footer shell around page content
