@@ -172,26 +172,38 @@ class SearchEngine extends SearchBase {
 			
 		$vb_no_cache = isset($pa_options['no_cache']) ? $pa_options['no_cache'] : false;
 		unset($pa_options['no_cache']);
+
+		$vn_cache_timeout = (int) $this->opo_search_config->get('cache_timeout');
+		if($vn_cache_timeout == 0) { $vb_no_cache = true; } // don't try to cache if cache timeout is 0 (0 means disabled)
 		
 		$t_table = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
-		$vs_pk = $t_table->primaryKey();
 		
 		$vs_cache_key = md5($ps_search."/".print_R($this->getTypeRestrictionList(), true));
-		
 		$o_cache = new SearchCache();
-		if (
-			(!$vb_no_cache && ($o_cache->load($vs_cache_key, $this->opn_tablenum, $pa_options)))
-		) {
-			$va_hits = $o_cache->getResults();
-			if (isset($pa_options['sort']) && $pa_options['sort'] && ($pa_options['sort'] != '_natural')) {
-				$va_hits = $this->sortHits($va_hits, $this->ops_tablename, $pa_options['sort'], $ps_search, (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
-			} else {
-				if (($pa_options['sort'] == '_natural') && ($pa_options['sort_direction'] == 'desc')) {
-					$va_hits = array_reverse($va_hits);
+		$vb_from_cache = false;
+
+		if (!$vb_no_cache && ($o_cache->load($vs_cache_key, $this->opn_tablenum, $pa_options))) {
+			$vn_created_on = $o_cache->getParameter('created_on');
+			if((time() - $vn_created_on) < $vn_cache_timeout) {
+				Debug::msg('cache hit for '.$vs_cache_key);
+				$va_hits = $o_cache->getResults();
+				if (isset($pa_options['sort']) && $pa_options['sort'] && ($pa_options['sort'] != '_natural')) {
+					$va_hits = $this->sortHits($va_hits, $this->ops_tablename, $pa_options['sort'], $ps_search, (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
+				} else {
+					if (($pa_options['sort'] == '_natural') && ($pa_options['sort_direction'] == 'desc')) {
+						$va_hits = array_reverse($va_hits);
+					}
 				}
+				$o_res = new WLPlugSearchEngineCachedResult($va_hits, $this->opn_tablenum);
+				$vb_from_cache = true;
+			} else {
+				Debug::msg('cache expire for '.$vs_cache_key);
+				$o_cache->remove();
 			}
-			$o_res = new WLPlugSearchEngineCachedResult($va_hits, $this->opn_tablenum);
-		} else {
+		}
+
+		if(!$vb_from_cache) {
+			Debug::msg('cache miss for '.$vs_cache_key);
 			$vs_char_set = $this->opo_app_config->get('character_set');
 			
 			$o_query_parser = new LuceneSyntaxParser();
@@ -239,6 +251,10 @@ class SearchEngine extends SearchBase {
 				$this->addResultFilter($this->ops_tablename.'.source_id', 'IN', join(",",$va_source_ids));
 			}
 			
+			if (in_array($t_table->getHierarchyType(), array(__CA_HIER_TYPE_SIMPLE_MONO__, __CA_HIER_TYPE_MULTI_MONO__))) {
+				$this->addResultFilter($this->ops_tablename.'.parent_id', 'IS NOT', NULL);
+			}
+			
 			if (is_array($va_restrict_to_fields = caGetOption('restrictSearchToFields', $pa_options, null)) && $this->opo_engine->can('restrict_to_fields')) {
 				$this->opo_engine->setOption('restrictSearchToFields', $va_restrict_to_fields);
 			}
@@ -269,7 +285,9 @@ class SearchEngine extends SearchBase {
 			$o_res = new WLPlugSearchEngineCachedResult($va_hits, $this->opn_tablenum);
 			
 			// cache for later use
-			$o_cache->save($vs_cache_key, $this->opn_tablenum, $va_hits, null, null, array_merge($pa_options, array('filters' => $this->getResultFilters())));
+			if(!$vb_no_cache) {
+				$o_cache->save($vs_cache_key, $this->opn_tablenum, $va_hits, array('created_on' => time()), null, $pa_options);
+			}
 
 			// log search
 			$o_log = new Searchlog();
@@ -291,6 +309,7 @@ class SearchEngine extends SearchBase {
 				'execution_time' => $vn_execution_time
 			));
 		}
+
 		if ($po_result) {
 			$po_result->init($o_res, $this->opa_tables, $pa_options);
 			return $po_result;

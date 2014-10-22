@@ -610,6 +610,13 @@
 							}
 						}
 					}
+					
+					if($va_facet_info['table'] && ($t_browse_table = $this->opo_datamodel->getInstanceByTableName($vs_facet_table = $va_facet_info['table'], true))) {
+						if (!($app = AppController::getInstance())) { return '???'; }
+						if ($t_browse_table->load($pn_row_id) && $t_browse_table->isReadable($app->getRequest(), 'preferred_labels')) {
+							return $t_browse_table->get("{$vs_facet_table}.preferred_labels");
+						}
+					}
 					return '???';
 					break;
 				# -----------------------------------------------------
@@ -4588,22 +4595,6 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 		# ------------------------------------------------------------------
 		#
 		# ------------------------------------------------------------------
-		/**
-		 * 
-		 */
-		public function getCountsByFieldForSearch($ps_search, $pa_options=null) {
-			require_once(__CA_LIB_DIR__.'/core/Search/SearchCache.php');
-			
-			$vn_tablenum = $this->opo_datamodel->getTableNum($this->ops_tablename);
-			
-			$o_cache = new SearchCache();
-			
-			if ($o_cache->load($ps_search, $vn_tablenum, $pa_options)) {
-				return $o_cache->getCounts();
-			}
-			return array();
-		}
-		# ------------------------------------------------------
 		/**
 		 * Converts list of relationships type codes and/or numeric ids to an id-only list
 		 */

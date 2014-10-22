@@ -1239,6 +1239,8 @@
 					$vs_idno = $t_location->setIdnoWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 				}
 			}
+			
+			if (!$pn_parent_id) { $pn_parent_id = $t_location->getHierarchyRootID(); }
 
 
 			$vn_id = null;
@@ -2604,6 +2606,14 @@
 			if (strpos($ps_text_proc, ',') !== false) {
 				// is comma delimited
 				$va_tmp = explode(',', $ps_text_proc);
+				$va_name['surname'] = $va_tmp[0];
+				
+				if(sizeof($va_tmp) > 1) {
+					$va_name['forename'] = $va_tmp[1];
+				}
+			} elseif (strpos($ps_text_proc, '_') !== false) {
+				// is comma delimited
+				$va_tmp = explode('_', $ps_text_proc);
 				$va_name['surname'] = $va_tmp[0];
 				
 				if(sizeof($va_tmp) > 1) {

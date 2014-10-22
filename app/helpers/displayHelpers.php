@@ -46,7 +46,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
  * More about bundle display templates here: http://docs.collectiveaccess.org/wiki/Bundle_Display_Templates
  */
 
-define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.:\/]+)!");
+define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.\/]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/]+)!");
 	
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -2045,7 +2045,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		$pb_return_as_array = (bool)caGetOption('returnAsArray', $pa_options, false);
 		
 		if (($pa_sort = caGetOption('sort', $pa_options, null)) && !is_array($pa_sort)) {
-			$pa_sort = array($pa_sort);
+			$pa_sort = explode(";", $pa_sort);
 		}
 		$ps_sort_direction = caGetOption('sortDirection', $pa_options, null, array('forceUppercase' => true));
 		if(!in_array($ps_sort_direction, array('ASC', 'DESC'))) { $ps_sort_direction = 'ASC'; }
@@ -2276,13 +2276,16 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 				if ($va_unit['restrictToRelationshipTypes'] && strlen($va_unit['restrictToRelationshipTypes'])>0) {
 					$va_get_options['restrictToRelationshipTypes'] = preg_split('![\|,;]+!', $va_unit['restrictToRelationshipTypes']);
 				}
+				if ($va_unit['sort'] && is_array($va_unit['sort'])) {
+					$va_get_options['sort'] = $va_unit['sort'];
+					$va_get_options['sortDirection'] = $va_unit['sortDirection'];
+				}
 	
 				if (
 					((sizeof($va_relative_to_tmp) == 1) && ($va_relative_to_tmp[0] == $ps_tablename))
 					||
 					((sizeof($va_relative_to_tmp) >= 1) && ($va_relative_to_tmp[0] == $ps_tablename) && ($va_relative_to_tmp[1] != 'related'))
 				) {
-					
 					switch(strtolower($va_relative_to_tmp[1])) {
 						case 'hierarchy':
 							$va_relative_ids = $qr_res->get($t_rel_instance->tableName().".hierarchy.".$t_rel_instance->primaryKey(), $va_get_options);
@@ -2302,7 +2305,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 					}
 					
 				
-					$va_tmpl_val = caProcessTemplateForIDs($va_unit['content'], $va_relative_to_tmp[0], $va_relative_ids, array_merge($pa_options, array('returnAsArray' => true, 'delimiter' => $vs_unit_delimiter, 'resolveLinksUsing' => null)));
+					$va_tmpl_val = caProcessTemplateForIDs($va_unit['content'], $va_relative_to_tmp[0], $va_relative_ids, array_merge($pa_options, array('sort' => $va_get_options['sort'], 'sortDirection' => $va_get_options['sortDirection'], 'returnAsArray' => true, 'delimiter' => $vs_unit_delimiter, 'resolveLinksUsing' => null)));
 					foreach($va_tmpl_val as $vn_tmpl_i => $vs_tmpl_v) {
 						$va_proc_templates[$vn_tmpl_i] = str_ireplace($va_unit['tag'], $vs_tmpl_v, $va_proc_templates[$vn_tmpl_i]);
 					}

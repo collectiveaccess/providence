@@ -8066,7 +8066,7 @@ $pa_options["display_form_field_tips"] = true;
 									# Hierarchical <select>
 									#
 									$va_hier = $o_one_table->getHierarchyAsList(0, $vs_display_use_count, $va_display_use_count_filters, $vb_display_omit_items__with_zero_count);
-	
+									if (!is_array($va_hier)) { return ''; }
 									$va_display_fields = $va_attr["DISPLAY_FIELD"];
 									if (!in_array($vs_one_table_primary_key, $va_display_fields)) {
 										$va_display_fields[] = $o_one_table->tableName().".".$vs_one_table_primary_key;
@@ -10384,8 +10384,8 @@ $pa_options["display_form_field_tips"] = true;
 				(?, ?, 1)
 			", $vn_table_num, $vn_row_id);
 		}
-		$o_cache = caGetCacheObject("caRecentlyViewedCache");
-		if (!is_array($va_recently_viewed_list = $o_cache->load('recentlyViewed'))) {
+		$va_recently_viewed_list = CompositeCache::fetch('caRecentlyViewed');
+		if (!is_array($va_recently_viewed_list)) {
 			$va_recently_viewed_list = array();
 		}
 		if (!is_array($va_recently_viewed_list[$vn_table_num])) {
@@ -10397,7 +10397,7 @@ $pa_options["display_form_field_tips"] = true;
 		if (!in_array($vn_row_id, $va_recently_viewed_list[$vn_table_num])) {
 			array_unshift($va_recently_viewed_list[$vn_table_num], $vn_row_id);
 		}
-		$o_cache->save($va_recently_viewed_list, 'recentlyViewed');
+		CompositeCache::save('caRecentlyViewed', $va_recently_viewed_list);
 		return true;
 	}
 	# --------------------------------------------------------------------------------------------
@@ -10594,8 +10594,7 @@ $pa_options["display_form_field_tips"] = true;
 	 */
 	public function getRecentlyViewedItems($pn_limit=10, $pa_options=null) {
 		if (!isset($pa_options['dontUseCache']) || !$pa_options['dontUseCache']) {
-			$o_cache = caGetCacheObject("caRecentlyViewedCache");
-			$va_recently_viewed_items = $o_cache->load('recentlyViewed');
+			$va_recently_viewed_items = CompositeCache::fetch('caRecentlyViewed');
 			$vn_table_num = $this->tableNum();
 			
 			if(is_array($va_recently_viewed_items) && is_array($va_recently_viewed_items[$vn_table_num])) { 

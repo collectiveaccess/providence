@@ -422,9 +422,7 @@ class OAIPMHService extends BaseService {
 	 * @uses listResponse()
 	 */
 	private function resumeListResponse($oaiData, $token) {
-		$o_cache = caGetCacheObject('ca_oai_provider_'.$this->ops_provider);
-	
-		$va_token_info = $o_cache->load($token);
+		$va_token_info = ExternalCache::fetch($token, 'OAIPMHService');
 	
 		if(!$va_token_info || ($va_token_info['verb'] != $this->opo_request->getParameter('verb', pString))) {
 			$this->throwError(self::OAI_ERR_BAD_RESUMPTION_TOKEN);
@@ -603,8 +601,7 @@ class OAIPMHService extends BaseService {
 	 * @return array resumption token info
 	 */
 	private function createResumptionToken($verb, $metadataPrefix, $cursor, $set, $from, $until) {
-	
-		$o_cache = caGetCacheObject('ca_oai_provider_'.$this->ops_provider);
+
 		$va_token_info = array(
 			'verb' => $verb,
 			'metadata_prefix' => $metadataPrefix,
@@ -616,8 +613,8 @@ class OAIPMHService extends BaseService {
 		);
 		$vs_key = md5(print_r($va_token_info, true).'/'.time().'/'.rand(0, 1000000));
 		$va_token_info['key'] = $vs_key;
-	
-		$o_cache->save($va_token_info, $vs_key);
+
+		ExternalCache::save($vs_key, $va_token_info, 'OAIPMHService');
 	
 		return $va_token_info;
 	}

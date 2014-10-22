@@ -219,7 +219,7 @@ class ca_attributes extends BaseModel {
 		$this->set('element_id', $vn_attribute_id = $t_element->getPrimaryKey());
 		
 		// Force default of locale-less attributes to current user locale if possible
-		if (!isset($pa_values['locale_id'])) { $pa_values['locale_id'] = $g_ui_locale_id; }
+		if (!isset($pa_values['locale_id']) || !$pa_values['locale_id']) { $pa_values['locale_id'] = $g_ui_locale_id; }
 		if (isset($pa_values['locale_id'])) { $this->set('locale_id', $pa_values['locale_id']); }
 		
 		// TODO: verify table_num/row_id combo
@@ -318,10 +318,11 @@ class ca_attributes extends BaseModel {
 		$this->setMode(ACCESS_WRITE);
 		
 		// Force default of locale-less attributes to current user locale if possible
-		if (!isset($pa_values['locale_id'])) { $pa_values['locale_id'] = $g_ui_locale_id; }
+		if (!isset($pa_values['locale_id']) || !$pa_values['locale_id']) { $pa_values['locale_id'] = $g_ui_locale_id; }
 		if (isset($pa_values['locale_id'])) { $this->set('locale_id', $pa_values['locale_id']); }
-		$this->update();
 		
+		$this->update();
+
 		if ($this->numErrors()) {
 			if ($vb_web_set_transaction) {
 				$o_trans->rollback();

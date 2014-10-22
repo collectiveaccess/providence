@@ -26,6 +26,7 @@
  * ----------------------------------------------------------------------
  */
 
+require_once(__CA_LIB_DIR__."/core/Cache/CompositeCache.php");
 require_once(__CA_LIB_DIR__."/core/Configuration.php");
 require_once(__CA_LIB_DIR__."/core/Datamodel.php");
 require_once(__CA_LIB_DIR__."/core/Db.php");
@@ -259,8 +260,8 @@ class Installer {
 	}
 	# --------------------------------------------------
 	public function performPreInstallTasks(){
-		$va_dir_creation_errors = array();
 		$o_config = Configuration::load();
+		CompositeCache::flush(); // avoid stale cache
 
 		// create Lucene dir
 		if (($o_config->get('search_engine_plugin') == 'Lucene') && !file_exists($o_config->get('search_lucene_index_dir'))) {
