@@ -78,8 +78,8 @@ class Framework_TestCaseTest extends PHPUnit_Framework_TestCase
     public function testCaseToString()
     {
         $this->assertEquals(
-          'Framework_TestCaseTest::testCaseToString',
-          $this->toString()
+            'Framework_TestCaseTest::testCaseToString',
+            $this->toString()
         );
     }
 
@@ -204,6 +204,74 @@ class Framework_TestCaseTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($result->wasSuccessful());
     }
 
+    public function testExceptionWithMessage()
+    {
+        $test = new ThrowExceptionTestCase('test');
+        $test->setExpectedException('RuntimeException', 'A runtime error occurred');
+
+        $result = $test->run();
+
+        $this->assertEquals(1, count($result));
+        $this->assertTrue($result->wasSuccessful());
+    }
+
+    public function testExceptionWithWrongMessage()
+    {
+        $test = new ThrowExceptionTestCase('test');
+        $test->setExpectedException('RuntimeException', 'A logic error occurred');
+
+        $result = $test->run();
+
+        $this->assertEquals(1, $result->failureCount());
+        $this->assertEquals(1, count($result));
+        $this->assertEquals(
+            "Failed asserting that exception message 'A runtime error occurred' contains 'A logic error occurred'.",
+            $test->getStatusMessage()
+        );
+    }
+
+    public function testExceptionWithRegexpMessage()
+    {
+        $test = new ThrowExceptionTestCase('test');
+        $test->setExpectedExceptionRegExp('RuntimeException', '/runtime .*? occurred/');
+
+        $result = $test->run();
+
+        $this->assertEquals(1, count($result));
+        $this->assertTrue($result->wasSuccessful());
+    }
+
+    public function testExceptionWithWrongRegexpMessage()
+    {
+        $test = new ThrowExceptionTestCase('test');
+        $test->setExpectedExceptionRegExp('RuntimeException', '/logic .*? occurred/');
+
+        $result = $test->run();
+
+        $this->assertEquals(1, $result->failureCount());
+        $this->assertEquals(1, count($result));
+        $this->assertEquals(
+            "Failed asserting that exception message 'A runtime error occurred' matches '/logic .*? occurred/'.",
+            $test->getStatusMessage()
+        );
+    }
+
+    /**
+     * @covers PHPUnit_Framework_Constraint_ExceptionMessageRegExp
+     */
+    public function testExceptionWithInvalidRegexpMessage()
+    {
+        $test = new ThrowExceptionTestCase('test');
+        $test->setExpectedExceptionRegExp('RuntimeException', '#runtime .*? occurred/'); // wrong delimiter
+
+        $result = $test->run();
+
+        $this->assertEquals(
+            "Invalid expected exception message regex given: '#runtime .*? occurred/'",
+            $test->getStatusMessage()
+        );
+    }
+
     public function testNoException()
     {
         $test = new ThrowNoExceptionTestCase('test');
@@ -310,6 +378,25 @@ class Framework_TestCaseTest extends PHPUnit_Framework_TestCase
         $this->assertSame(123, self::$_testStatic);
     }
 
+    public function testIsInIsolationReturnsFalse()
+    {
+        $test   = new IsolationTest('testIsInIsolationReturnsFalse');
+        $result = $test->run();
+
+        $this->assertEquals(1, count($result));
+        $this->assertTrue($result->wasSuccessful());
+    }
+
+    public function testIsInIsolationReturnsTrue()
+    {
+        $test   = new IsolationTest('testIsInIsolationReturnsTrue');
+        $test->setRunTestInSeparateProcess(true);
+        $result = $test->run();
+
+        $this->assertEquals(1, count($result));
+        $this->assertTrue($result->wasSuccessful());
+    }
+
     public function testExpectOutputStringFooActualFoo()
     {
         $test   = new OutputTestCase('testExpectOutputStringFooActualFoo');
@@ -353,8 +440,8 @@ class Framework_TestCaseTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals(1, $result->skippedCount());
         $this->assertEquals(
-          'PHPUnit 1111111 (or later) is required.',
-          $test->getStatusMessage()
+            'PHPUnit 1111111 (or later) is required.',
+            $test->getStatusMessage()
         );
     }
 
@@ -365,8 +452,8 @@ class Framework_TestCaseTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals(1, $result->skippedCount());
         $this->assertEquals(
-          'PHP 9999999 (or later) is required.',
-          $test->getStatusMessage()
+            'PHP 9999999 (or later) is required.',
+            $test->getStatusMessage()
         );
     }
 
@@ -377,8 +464,8 @@ class Framework_TestCaseTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals(1, $result->skippedCount());
         $this->assertEquals(
-          'Operating system matching /DOESNOTEXIST/i is required.',
-          $test->getStatusMessage()
+            'Operating system matching /DOESNOTEXIST/i is required.',
+            $test->getStatusMessage()
         );
     }
 
@@ -389,8 +476,8 @@ class Framework_TestCaseTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals(1, $result->skippedCount());
         $this->assertEquals(
-          'Function testFunc is required.',
-          $test->getStatusMessage()
+            'Function testFunc is required.',
+            $test->getStatusMessage()
         );
     }
 
@@ -400,8 +487,8 @@ class Framework_TestCaseTest extends PHPUnit_Framework_TestCase
         $result = $test->run();
 
         $this->assertEquals(
-          'Extension testExt is required.',
-          $test->getStatusMessage()
+            'Extension testExt is required.',
+            $test->getStatusMessage()
         );
     }
 
@@ -411,14 +498,14 @@ class Framework_TestCaseTest extends PHPUnit_Framework_TestCase
         $result = $test->run();
 
         $this->assertEquals(
-          'PHP 99-dev (or later) is required.' . PHP_EOL .
-          'PHPUnit 9-dev (or later) is required.' . PHP_EOL .
-          'Operating system matching /DOESNOTEXIST/i is required.' . PHP_EOL .
-          'Function testFuncOne is required.' . PHP_EOL .
-          'Function testFuncTwo is required.' . PHP_EOL .
-          'Extension testExtOne is required.' . PHP_EOL .
-          'Extension testExtTwo is required.',
-          $test->getStatusMessage()
+            'PHP 99-dev (or later) is required.' . PHP_EOL .
+            'PHPUnit 9-dev (or later) is required.' . PHP_EOL .
+            'Operating system matching /DOESNOTEXIST/i is required.' . PHP_EOL .
+            'Function testFuncOne is required.' . PHP_EOL .
+            'Function testFuncTwo is required.' . PHP_EOL .
+            'Extension testExtOne is required.' . PHP_EOL .
+            'Extension testExtTwo is required.',
+            $test->getStatusMessage()
         );
     }
 
@@ -459,5 +546,4 @@ class Framework_TestCaseTest extends PHPUnit_Framework_TestCase
 
         $this->assertSame($expectedCwd, getcwd());
     }
-
 }

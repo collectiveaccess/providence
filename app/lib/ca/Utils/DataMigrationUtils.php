@@ -1239,6 +1239,8 @@
 					$vs_idno = $t_location->setIdnoWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 				}
 			}
+			
+			if (!$pn_parent_id) { $pn_parent_id = $t_location->getHierarchyRootID(); }
 
 
 			$vn_id = null;

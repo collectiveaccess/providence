@@ -260,7 +260,6 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Default values for mapped values.'),
-				'description' => _t('')
+				'description' => _t('Default values for mapped values.'),
 			)
 		);
-?>

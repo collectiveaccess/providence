@@ -118,6 +118,8 @@ class ExcelDataReader extends BaseDataReader {
 				if ($vs_val) { $vb_val_was_set = true; $vn_last_col_set = $vn_col;}
 				
 				$vn_col++;
+				
+				if ($vn_col > 255) { break; }	// max 255 columns; some Excel files have *thousands* of "phantom" columns
 			}
 			if (!$vb_val_was_set) { return $this->nextRow(); }	// skip completely blank rows
 			//$this->opa_row_buf = array_slice($this->opa_row_buf, 0, $vn_last_col_set);
