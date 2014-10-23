@@ -33,10 +33,10 @@
 		<form id="commentListForm"><input type="hidden" name="mode" value="search">
 		
 		<div style="text-align:right;">
-			<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Approve'); ?>").submit();' class='form-button'><span class='form-button'><?php print _t("Approve"); ?></span></a>
-			<a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Delete'); ?>").submit();' class='form-button'><span class='form-button'><?php print _t("Delete"); ?></span></a>
+			<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Approve'); ?>").submit();' class='form-button'><span class='form-button approve'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_APPROVE__); ?><span class='formtext'><?php print _t("Approve"); ?></span></span></a>
+			<a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Delete'); ?>").submit();' class='form-button'><span class='form-button delete'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DELETE__); ?><span class='formtext'><?php print _t("Delete"); ?></span></span></a>
 		</div>
-		<table id="caCommentsList" class="listtable" border="0" cellpadding="0" cellspacing="1" style="margin-top:3px;">
+		<table id="caCommentsList" class="listtable" border="0" cellpadding="0" cellspacing="1" style="margin-top:10px;">
 			<thead>
 				<tr>
 					<th class="list-header-nosort">
@@ -93,7 +93,7 @@
 <?php
 						if($vo_result->getMediaTag('ca_item_comments.media1', "thumbnail")){
 							print "<span style='white-space: nowrap;'>".$vo_result->getMediaTag("ca_item_comments.media1", "thumbnail");
-							print caNavButton($this->request, __CA_NAV_BUTTON_DOWNLOAD__, 'Download', 'manage', 'Comments', 'DownloadMedia', array('version' => 'original', 'comment_id' => $vo_result->get('ca_item_comments.comment_id'), 'mode' => 'search', 'download' => 1), array(), array('no_background' => true, 'dont_show_content' => true));
+							print caNavButton($this->request, __CA_NAV_BUTTON_DOWNLOAD__, _t('Download'), '', 'manage', 'Comments', 'DownloadMedia', array('version' => 'original', 'comment_id' => $vo_result->get('ca_item_comments.comment_id'), 'mode' => 'search', 'download' => 1), array(), array('no_background' => true, 'dont_show_content' => true));
 							print "</span>";
 						}
 ?>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,11 +33,15 @@
  /**
   *
   */
+  	define("__CA_ATTRIBUTE_VALUE_LCSH__", 13);
+  	
  	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
 	require_once(__CA_LIB_DIR__."/core/Zend/Http/Client.php");
+ 	require_once(__CA_LIB_DIR__.'/core/Zend/Feed.php');
+ 	require_once(__CA_LIB_DIR__.'/core/Zend/Feed/Atom.php');
  	require_once(__CA_LIB_DIR__.'/core/BaseModel.php');	// we use the BaseModel field type (FT_*) and display type (DT_*) constants
  	
  	global $_ca_attribute_settings;
@@ -100,6 +104,22 @@
 			'validForRootOnly' => 1,
 			'description' => _t('Layout for value when used in a display (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
 		),
+		'canMakePDF' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output?'),
+			'description' => _t('Check this option if this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
+		'canMakePDFForValue' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output for individual values?'),
+			'description' => _t('Check this option if individual values for this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
 		'displayDelimiter' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -141,6 +161,9 @@
  		# ------------------------------------------------------------------
  		private $ops_text_value;
  		private $ops_uri_value;
+ 		
+ 		static $s_term_cache = array();
+ 		static $s_term_cache_max_size = 2048;
  		# ------------------------------------------------------------------
  		public function __construct($pa_value_array=null) {
  			parent::__construct($pa_value_array);
@@ -178,7 +201,17 @@
 			return $this->ops_uri_value;
 		}
  		# ------------------------------------------------------------------
- 		public function parseValue($ps_value, $pa_element_info) {
+ 		/**
+ 		 * @param string $ps_value
+ 		 * @param array $pa_element_info
+ 		 * @param array $pa_options Options include:
+ 		 *		matchUsingLOCLabel = Match term using LOC label data rather than LOC subject heading search. The former is much more restrictive. [Default is false]		
+ 		 *
+ 		 */
+ 		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
+ 			if (isset(LCSHAttributeValue::$s_term_cache[$ps_value])) {
+ 				return LCSHAttributeValue::$s_term_cache[$ps_value];
+ 			}
  			$o_config = Configuration::load();
  			
  			$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
@@ -199,58 +232,102 @@
 				
 					$va_tmp1 = explode('/', $va_tmp[1]);
 					$vs_id = array_pop($va_tmp1);
-					return array(
+					LCSHAttributeValue::$s_term_cache[$ps_value] = array(
 						'value_longtext1' => trim($va_tmp[0]),						// text
 						'value_longtext2' => trim($vs_url),							// uri
 						'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
 					);
 				} else {
 					$ps_value = str_replace(array("‘", "’", "“", "”"), array("'", "'", '"', '"'), $ps_value);
-					$vs_service_url = "http://id.loc.gov/authorities/label/".rawurlencode($ps_value);
-					$o_client = new Zend_Http_Client($vs_service_url);
-					$o_client->setConfig(array(
-						'maxredirects' => 0,
-						'timeout'      => 30));
-						
-					try {
-						$o_response = $o_client->request(Zend_Http_Client::HEAD);
-					} catch (Exception $e) {
-						$this->postError(1970, _t('Could not connect to LCSH service for %1: %2', $ps_value, $e->getMessage()), 'LCSHAttributeValue->parseValue()');
-						return false;
-					}
-	
-					$vn_status = $o_response->getStatus();
-					$va_headers = $o_response->getHeaders();
 					
-					if (($vn_status == 302) && (isset($va_headers['X-preflabel'])) && $va_headers['X-preflabel']) {
-						$vs_url = $va_headers['Location'];
-						$va_url = explode("/", $vs_url);
-						$vs_id = array_pop($va_url);
-						$vs_label = $va_headers['X-preflabel'];
-						
-						$vs_url = str_replace('http://id.loc.gov/', 'info:lc/', $vs_url);
-						
-						if ($vs_url) {
-							return array(
-								'value_longtext1' => trim($vs_label)." [{$vs_url}]",						// text
-								'value_longtext2' => trim($vs_url),							// uri
-								'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
-							);
+					if (caGetOption('matchUsingLOCLabel', $pa_options, false)) {
+						$vs_service_url = "http://id.loc.gov/authorities/label/".rawurlencode($ps_value);
+						$o_client = new Zend_Http_Client($vs_service_url);
+						$o_client->setConfig(array(
+							'maxredirects' => 0,
+							'timeout'      => 30));
+					
+						try {
+							$o_response = $o_client->request(Zend_Http_Client::HEAD);
+						} catch (Exception $e) {
+							$this->postError(1970, _t('Could not connect to LCSH service for %1: %2', $ps_value, $e->getMessage()), 'LCSHAttributeValue->parseValue()');
+							return false;
+						}
+
+						// $vn_status = $o_response->getStatus();
+						$va_headers = $o_response->getHeaders();
+				
+						if (($vn_status >= 300) && ($vn_status <= 399) && (isset($va_headers['X-preflabel'])) && $va_headers['X-preflabel']) {
+							$vs_url = $va_headers['Location'];
+							$va_url = explode("/", $vs_url);
+							$vs_id = array_pop($va_url);
+							$vs_label = $va_headers['X-preflabel'];
+					
+							$vs_url = str_replace('http://id.loc.gov/', 'info:lc/', $vs_url);
+					
+							if ($vs_url) {
+								LCSHAttributeValue::$s_term_cache[$ps_value] = array(
+									'value_longtext1' => trim($vs_label)." [{$vs_url}]",						// text
+									'value_longtext2' => trim($vs_url),							// uri
+									'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
+								);
+							} else {
+								$this->postError(1970, _t('Could not get results from LCSH service for %1 [%2]', $ps_value, $vs_service_url), 'LCSHAttributeValue->parseValue()');
+								return false;
+							}
 						} else {
-							$this->postError(1970, _t('Could not get results from LCSH service for %1', $ps_value), 'LCSHAttributeValue->parseValue()');
+							$this->postError(1970, _t('Could not get results from LCSH service for %1 [%2]', $ps_value, $vs_service_url), 'LCSHAttributeValue->parseValue()');
 							return false;
 						}
 					} else {
-						$this->postError(1970, _t('Could not get results from LCSH service for %1', $ps_value), 'LCSHAttributeValue->parseValue()');
-						return false;
-					}
+						$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('vocabulary'));
+						
+						$vs_feed_url = "http://id.loc.gov/search/?q=".rawurlencode($ps_value)."&start=1&format=atom";
+						if ($vs_voc = $va_settings['vocabulary']) {
+							$vs_feed_url .= '&q='.rawurlencode($vs_voc);
+						}
+					
+						$vb_feed_error = false;
+						try {
+							$feed = Zend_Feed::import($vs_feed_url);
+						} catch (Exception $e) {
+							$vb_feed_error = true;
+						}
+					
+						if (!$vb_feed_error) {
+							foreach($feed as $item){
+							
+								$vs_title = trim($item->title());
+								$va_links = $item->link();
+								$o_url = is_array($va_links) ? array_shift($va_links) : $va_links;
+								$vs_url = trim($o_url->getAttribute('href'));
+							
+								$va_url = explode("/", $vs_url);
+								$vs_id = array_pop($va_url);
+							
+								LCSHAttributeValue::$s_term_cache[$ps_value] = array(
+									'value_longtext1' => "{$vs_title} [{$vs_url}]",						// text
+									'value_longtext2' => $vs_url,							// uri
+									'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
+								);
+							
+							}
+						}
+					}	
 				}
 			}
-			return array(
-				'value_longtext1' => '',	// text
-				'value_longtext2' => '',	// uri
-				'value_decimal1' => null	// id
-			);
+			if (!isset(LCSHAttributeValue::$s_term_cache[$ps_value])) {
+				LCSHAttributeValue::$s_term_cache[$ps_value] = array(
+					'value_longtext1' => '',	// text
+					'value_longtext2' => '',	// uri
+					'value_decimal1' => null	// id
+				);
+			}
+			
+			if(sizeof(LCSHAttributeValue::$s_term_cache > LCSHAttributeValue::$s_term_cache_max_size)) {
+				LCSHAttributeValue::$s_term_cache = array($ps_value => LCSHAttributeValue::$s_term_cache[$ps_value]);
+			}
+			return LCSHAttributeValue::$s_term_cache[$ps_value];
  		}
  		# ------------------------------------------------------------------
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
@@ -288,7 +365,7 @@
 				$vs_url = '/index.php/lookup/LCSH/Get';	
 			}
 			
-			$vs_element .= " <a href='#' style='display: none;' id='{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}' target='_lcsh_details'>"._t("More &rsaquo;")."</a>";
+			$vs_element .= " <a href='#' class='caLCSHServiceMoreLink' id='{fieldNamePrefix}".$pa_element_info['element_id']."_link{n}' target='_lcsh_details'>"._t("More &rsaquo;")."</a>";
 		
 			$vs_element .= '</div>';
 			$vs_element .= "
@@ -324,7 +401,7 @@
  			return $vs_element;
  		}
  		# ------------------------------------------------------------------
- 		public function getAvailableSettings() {
+ 		public function getAvailableSettings($pa_element_info=null) {
  			global $_ca_attribute_settings;
  			
  			return $_ca_attribute_settings['LCSHAttributeValue'];
@@ -337,6 +414,15 @@
 		 */
 		public function sortField() {
 			return 'value_longtext1';
+		}
+ 		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for LCSH attribute value
+		 * 
+		 * @return int Attribute value type code
+		 */
+		public function getType() {
+			return __CA_ATTRIBUTE_VALUE_LCSH__;
 		}
  		# ------------------------------------------------------------------
 	}

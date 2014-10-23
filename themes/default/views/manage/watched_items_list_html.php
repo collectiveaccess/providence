@@ -40,7 +40,7 @@
 			
 			<table id="caWatchedItemsList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
 				<div style="text-align:right;">
-					<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#WatchedItemsListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'WatchedItems', 'Delete'); ?>").submit();' class='form-button'><span class='form-button'>Delete</span></a>
+					<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#WatchedItemsListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'WatchedItems', 'Delete'); ?>").submit();' class='form-button'><span class='form-button delete'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DELETE__); ?>Delete</span></a>
 				</div>
 				<thead>
 					<tr>
@@ -65,7 +65,7 @@
 					<td>
 <?php
 						if($va_item["primary_key"]){
-							print caEditorLink($this->request, $vs_idno.$va_item["displayName"], '', $va_item["table_name"], $va_item["row_id"])." "."<a href='#' style='font-weight:bold; margin-left:5px; text-decoration:none;' id='changeLogLink".$va_item["watch_id"]."' onclick='jQuery(\"#changeLogLink".$va_item["watch_id"]."\").hide(); jQuery(\"#changeLogHide".$va_item["watch_id"]."\").show(); jQuery(\"#changeLog".$va_item["watch_id"]."\").slideDown(250); return false;'>"._t("Recent Changes")." &rsaquo;</a><a href='#' style='display:none; font-weight:bold; margin-left:5px; text-decoration:none;' id='changeLogHide".$va_item["watch_id"]."' onclick='jQuery(\"#changeLogHide".$va_item["watch_id"]."\").hide(); jQuery(\"#changeLogLink".$va_item["watch_id"]."\").show(); jQuery(\"#changeLog".$va_item["watch_id"]."\").slideUp(250); return false;'>"._t("Hide Recent Changes")." &rsaquo;</a>";
+							print caEditorLink($this->request, $vs_idno.$va_item["displayName"], '', $va_item["table_name"], $va_item["row_id"])." "."<a href='#' style='font-weight:bold; margin-left:5px; color:#555; text-decoration:none;' id='changeLogLink".$va_item["watch_id"]."' onclick='jQuery(\"#changeLogLink".$va_item["watch_id"]."\").hide(); jQuery(\"#changeLogHide".$va_item["watch_id"]."\").show(); jQuery(\"#changeLog".$va_item["watch_id"]."\").slideDown(250); return false;'>"._t("Recent Changes")." &rsaquo;</a><a href='#' style='display:none; font-weight:bold; margin-left:5px; text-decoration:none;' id='changeLogHide".$va_item["watch_id"]."' onclick='jQuery(\"#changeLogHide".$va_item["watch_id"]."\").hide(); jQuery(\"#changeLogLink".$va_item["watch_id"]."\").show(); jQuery(\"#changeLog".$va_item["watch_id"]."\").slideUp(250); return false;'>"._t("Hide Recent Changes")." &rsaquo;</a>";
 						}else{
 							print "item was deleted.  Row id: ".$va_item["row_id"]." table_num: ".$va_item["table_num"];
 						}

@@ -41,7 +41,7 @@
 </head>
 <body>
 	<div id='box'>
-	<div id="logo"><img src="<?php print $vs_path ?>/themes/default/graphics/installLogo.gif"/></div><!-- end logo -->
+	<div id="logo"><img src="<?php print $vs_path ?>/themes/default/graphics/logos/ca_logo.png"/></div><!-- end logo -->
 	<div id="content">
 		<div class='error'><?php print _t("Updating your database..."); ?></div>
 <?php

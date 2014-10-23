@@ -284,6 +284,7 @@ class VictimService extends NS11mmService {
 					unset($va_reps[$vn_i]['paths']);
 					unset($va_reps[$vn_i]['tags']);
 					unset($va_reps[$vn_i]['media']);
+					unset($va_reps[$vn_i]['media_metadata']);
 					unset($va_reps[$vn_i]['is_primary']);
 					unset($va_reps[$vn_i]['name']);
 					unset($va_reps[$vn_i]['status']);
@@ -324,7 +325,8 @@ class VictimService extends NS11mmService {
 					
 					$va_reps[$vn_i]['clips'] = array();
 					if (is_array($va_annotations = $t_rep->getAnnotations()) && sizeof($va_annotations)) {
-						foreach($va_annotations as $vn_annotation_id => $va_annotation) {
+						foreach($va_annotations as $vn_index => $va_annotation) {
+							$vn_annotation_id = $va_annotation['annotation_id'];
 							//if ($va_annotation['access'] == 0) { continue; }
 							$t_annotation = new ca_representation_annotations($vn_annotation_id);
 							

@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Pdf
  * @subpackage FileParser
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Png.php 22655 2010-07-22 18:47:20Z mabe $
+ * @version    $Id: Png.php 24593 2012-01-05 20:35:02Z matthew $
  */
 
 /** @see Zend_Pdf_FileParser_Image */
@@ -29,7 +29,7 @@ require_once 'Zend/Pdf/FileParser/Image.php';
  *
  * @package    Zend_Pdf
  * @subpackage FileParser
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Pdf_FileParser_Image_Png extends Zend_Pdf_FileParser_Image

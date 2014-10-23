@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2012 Whirl-i-Gig
+ * Copyright 2011-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -555,7 +555,7 @@ class ca_commerce_orders extends BaseModel {
 		if ($vn_rc = parent::insert($pa_options)) {
 			$this->sendStatusChangeEmailNotification(null, null, null);
 			
-			$this->set('order_number', ca_commerce_orders::generateOrderNumber($this->getPrimaryKey(), $this->get('created_on', array('GET_DIRECT_DATE' => true))));
+			$this->set('order_number', ca_commerce_orders::generateOrderNumber($this->getPrimaryKey(), $this->get('created_on', array('getDirectDate' => true))));
 			parent::update();
 		}
 		return $vn_rc;
@@ -602,7 +602,7 @@ class ca_commerce_orders extends BaseModel {
 		
 		$vb_status_changed = $this->changed('order_status');
 		
-		$this->set('order_number', ca_commerce_orders::generateOrderNumber($this->getPrimaryKey(), $this->get('created_on', array('GET_DIRECT_DATE' => true))));
+		$this->set('order_number', ca_commerce_orders::generateOrderNumber($this->getPrimaryKey(), $this->get('created_on', array('getDirectDate' => true))));
 			
 		if($vn_rc = parent::update($pa_options)) {
 			if ($vb_status_changed) { $this->sendStatusChangeEmailNotification($vn_old_status, $vn_old_ship_date, $vn_old_shipped_on_date); }
@@ -628,7 +628,7 @@ class ca_commerce_orders extends BaseModel {
 	 *
 	 */
 	private function _preSaveActions() {
-		if (($vs_shipped_on_date = $this->get('shipped_on_date', array('GET_DIRECT_DATE' => true))) && ($vs_shipping_date = $this->get('shipping_date', array('GET_DIRECT_DATE' => true)))) {
+		if (($vs_shipped_on_date = $this->get('shipped_on_date', array('getDirectDate' => true))) && ($vs_shipping_date = $this->get('shipping_date', array('getDirectDate' => true)))) {
 			if ($vs_shipped_on_date < $vs_shipping_date) {
 				$this->postError(1101, _t('Shipped on date must not be before the shipping date'), 'ca_commerce_orders->_preSaveActions()');
 			}
@@ -670,7 +670,7 @@ class ca_commerce_orders extends BaseModel {
 		$vn_user_id = is_object($g_request) ? $g_request->getUserID() : null;
 		
 		$vb_status_has_changed = (($vs_status = $this->get('order_status')) != $pn_old_status) ? true : false;
-		$vb_shipping_has_changed = (($this->get('shipped_on_date', array('GET_DIRECT_DATE' => true)) != $pn_old_shipped_on_date) || ($this->get('shipping_date', array('GET_DIRECT_DATE' => true)) != $pn_old_ship_date)) ? true : false;
+		$vb_shipping_has_changed = (($this->get('shipped_on_date', array('getDirectDate' => true)) != $pn_old_shipped_on_date) || ($this->get('shipping_date', array('getDirectDate' => true)) != $pn_old_ship_date)) ? true : false;
 		
 		$va_administrative_email_addresses = array();
 		$va_administrative_email_on_order_status = $this->opo_client_services_config->getList('administrative_email_on_order_status');
@@ -686,7 +686,7 @@ class ca_commerce_orders extends BaseModel {
 			$vs_sender_name = $this->opo_client_services_config->get('notification_sender_name');
 			$vs_sender_email = $this->opo_client_services_config->get('notification_sender_email');
 			
-			$vs_order_date = date("m/d/Y@g:i a", (int)$this->get('created_on', array('GET_DIRECT_DATE' => true)));
+			$vs_order_date = date("m/d/Y@g:i a", (int)$this->get('created_on', array('getDirectDate' => true)));
 			
 			if (!is_array($va_administrative_email_addresses = $this->opo_client_services_config->getList('administrative_email_addresses'))) {
 				$va_administrative_email_addresses = array();
@@ -710,16 +710,8 @@ class ca_commerce_orders extends BaseModel {
 					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_processed_awaiting_digitization.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
 					break;
 				case 'PROCESSED_AWAITING_MEDIA_ACCESS':
-					$vs_subject = _t('Payment for order (%2) posted on %1 has been processed; your downloads are now pending digitization of transfer of media to the server', $vs_order_date, $this->getOrderNumber());
+					$vs_subject = _t('Payment for order (%2) posted on %1 has been processed; your downloads are now pending transfer of media to the server', $vs_order_date, $this->getOrderNumber());
 					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_processed_awaiting_media_access.tpl", array('subject' => $vs_subject, 'from_user_id' => $vn_user_id, 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
-					break;
-				case 'PROCESSED_AWAITING_MEDIA_ACCESS':
-					$vs_subject = _t('Payment for order (%2) posted on %1 has been processed; your downloads are now pending digitization of transfer of media to the server', $vs_order_date, $this->getOrderNumber());
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_processed_awaiting_media_access.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
-					break;
-				case 'PROCESSED_AWAITING_MEDIA_ACCESS':
-					$vs_subject = _t('Payment for order (%2) posted on %1 has been processed; your downloads are now pending digitization of transfer of media to the server', $vs_order_date, $this->getOrderNumber());
-					caSendMessageUsingView($g_request, $vs_to_email, $vs_sender_email, "[{$vs_app_name}] {$vs_subject}", "commerce_order_status_processed_awaiting_media_access.tpl", array('subject' => $vs_subject, 'from_user_id' => $g_request->getUserID(), 'sender_name' => $vs_sender_name, 'sender_email' => $vs_sender_email, 'sent_on' => time(), 'login_url' => $vs_login_url, 't_order' => $this), null, $va_admin_addresses);
 					break;
 				case 'PROCESSED':
 					$vs_subject = _t('Payment for order (%2) posted on %1 has been processed', $vs_order_date, $this->getOrderNumber());
@@ -737,8 +729,8 @@ class ca_commerce_orders extends BaseModel {
 		} else {
 			// Has shipping date been changed?
 			if ($vb_shipping_has_changed) {
-				$vn_shipped_on_date = $this->get('shipped_on_date', array('GET_DIRECT_DATE' => true));
-				$vn_ship_date = $this->get('shipping_date', array('GET_DIRECT_DATE' => true));
+				$vn_shipped_on_date = $this->get('shipped_on_date', array('getDirectDate' => true));
+				$vn_ship_date = $this->get('shipping_date', array('getDirectDate' => true));
 				
 				if (($vn_shipped_on_date > 0) && ($vn_shipped_on_date != $pn_old_shipped_on_date)) {
 					// Notify client that package has shipped
@@ -778,7 +770,7 @@ class ca_commerce_orders extends BaseModel {
 		$vs_sender_name = $this->opo_client_services_config->get('notification_sender_name');
 		$vs_sender_email = $this->opo_client_services_config->get('notification_sender_email');
 		
-		$vs_order_date = date("m/d/Y@g:i a", (int)$this->get('created_on', array('GET_DIRECT_DATE' => true)));
+		$vs_order_date = date("m/d/Y@g:i a", (int)$this->get('created_on', array('getDirectDate' => true)));
 		
 		if (!is_array($va_administrative_email_addresses = $this->opo_client_services_config->getList('administrative_email_addresses'))) {
 			return false;
@@ -808,7 +800,7 @@ class ca_commerce_orders extends BaseModel {
 					$o_tep = new TimeExpressionParser();
 					if ($o_tep->parse($vs_v)) {
 						$va_dates = $o_tep->getUnixTimestamps();
-						if ($va_dates['start'] < $this->get('shipping_date', array('GET_DIRECT_DATE' => true))) {
+						if ($va_dates['start'] < $this->get('shipping_date', array('getDirectDate' => true))) {
 							$this->postError(1101, _t('Shipped on date must not be before the shipping date'), 'ca_commerce_orders->set()');
 							return false;
 						}
@@ -882,7 +874,7 @@ class ca_commerce_orders extends BaseModel {
 		$o_config = caGetClientServicesConfiguration();
 		$vs_currency = $o_config->get('currency');
 		
-		$va_payment_info = array('order_id' => $this->getPrimaryKey(), 'created_on' => (int)$this->get('created_on', array('GET_DIRECT_DATE' => true)));
+		$va_payment_info = array('order_id' => $this->getPrimaryKey(), 'created_on' => (int)$this->get('created_on', array('getDirectDate' => true)));
 		
 		$vb_dont_save_to_database = (isset($pa_options['dontSaveToDatabase']) && $pa_options['dontSaveToDatabase']) ? true : false;
 		$vb_dont_charge_credit_card = (isset($pa_options['dontChargeCreditCard']) && $pa_options['dontChargeCreditCard']) ? true : false;
@@ -1707,7 +1699,15 @@ class ca_commerce_orders extends BaseModel {
 		$va_item_ranks = $this->getItemIDRanks($pa_options);	// get current ranks
 		
 		$vn_i = 0;
-		$o_trans = new Transaction();
+		
+		$vb_web_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$o_trans = new Transaction($this->getDb());
+			$vb_web_set_transaction = true;
+		} else {
+			$o_trans = $this->getTransaction();
+		}
+		
 		$t_item = new ca_commerce_order_items();
 		$t_item->setTransaction($o_trans);
 		$t_item->setMode(ACCESS_WRITE);
@@ -1729,9 +1729,9 @@ class ca_commerce_orders extends BaseModel {
 		}
 		
 		if(sizeof($va_errors)) {
-			$o_trans->rollback();
+			if ($vb_web_set_transaction) { $o_trans->rollback(); }
 		} else {
-			$o_trans->commit();
+			if ($vb_web_set_transaction) { $o_trans->commit(); }
 		}
 		
 		return $va_errors;
@@ -2031,7 +2031,7 @@ class ca_commerce_orders extends BaseModel {
 	public function getOrderNumber() {
 		if (!$this->getPrimaryKey()) { return null; }
 		
-		return date("mdY", $this->get('created_on', array('GET_DIRECT_DATE' => true)))."-".$this->getPrimaryKey();
+		return date("mdY", $this->get('created_on', array('getDirectDate' => true)))."-".$this->getPrimaryKey();
 	}
 	# ------------------------------------------------------
 	/**

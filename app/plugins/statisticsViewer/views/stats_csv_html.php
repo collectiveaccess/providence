@@ -27,9 +27,11 @@
 	 * ---------------------------------------------------------------------- */
 
 	// local variables
-	$va_statistics 	= $this->getVar('statistics');
-	$va_columns = explode(",",$va_statistics->columns);
-	$va_total_columns = explode(",",$va_statistics->total_columns);
+	$va_statistics 	= $this->getVar('informations');
+	$va_columns = $va_statistics->columns;
+	$va_total_columns = $va_statistics->total_columns;
+    $query = $this->getVar('sql');
+    $qr_result = $query['result'];
 
 	header("Content-Type: application/csv-tab-delimited-table");
 	header("Content-disposition: filename=table.csv");	

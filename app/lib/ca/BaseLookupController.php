@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -129,12 +129,12 @@
 				}
 				
 				// get sort field
-				$vs_sort = '';
+				$vs_sort = '_natural';		// always sort first on relevance...
 				if ($vs_idno_fld = $this->opo_item_instance->getProperty('ID_NUMBERING_SORT_FIELD')) {
-					$vs_sort = $this->opo_item_instance->tableName().".{$vs_idno_fld}";
+					$vs_sort .= ";".$this->opo_item_instance->tableName().".{$vs_idno_fld}";
 				} else {
 					if (method_exists($this->opo_item_instance, "getLabelSortField")) {
-						$vs_sort = $this->opo_item_instance->getLabelTableName().'.'.$this->opo_item_instance->getLabelSortField();
+						$vs_sort .= ";".$this->opo_item_instance->getLabelTableName().'.'.$this->opo_item_instance->getLabelSortField();
 					}
 				}
 	
@@ -152,7 +152,7 @@
 				}
 				
 				// do search
-				$qr_res = $o_search->search('('.$ps_query.(intval($pb_exact) ? '' : '*').')'.$vs_type_query.$vs_additional_query_params, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
+				$qr_res = $o_search->search($ps_query.(intval($pb_exact) ? '' : '*').$vs_type_query.$vs_additional_query_params, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
 		
 				$qr_res->setOption('prefetch', $pn_limit);
 				$qr_res->setOption('dontPrefetchAttributes', true);
@@ -160,7 +160,8 @@
 				$va_opts = array('exclude' => $va_excludes, 'limit' => $pn_limit);
 				if(!$pb_no_inline && ($pb_quickadd || ($this->request->user && $this->request->user->canDoAction('can_quickadd_'.$this->opo_item_instance->tableName())))) {
 					$va_opts['inlineCreateQuery'] = $ps_query;
-					$va_opts['inlineCreateMessage'] = _t('<em>%1</em> does not exist. Create?', $ps_query);
+					$va_opts['inlineCreateMessageDoesNotExist'] = _t('<em>%1</em> does not exist. Create?', $ps_query);
+					$va_opts['inlineCreateMessage'] = _t('Create <em>%1</em>?', $ps_query);
 				} else {
 					$va_opts['emptyResultQuery'] = $ps_query;
 					$va_opts['emptyResultMessage'] = _t('No matches found for <em>%1</em>', $ps_query);
@@ -313,9 +314,10 @@
 						}
 					}
 				}
+				
+ 				$va_items_for_locale['_sortOrder'] = array_keys($va_items_for_locale);
 				$va_items_for_locale['_primaryKey'] = $t_item->primaryKey();	// pass the name of the primary key so the hierbrowser knows where to look for item_id's
  				$va_items_for_locale['_itemCount'] = $qr_children ? $qr_children->numHits() : 0;
- 			
  				$va_level_data[$pn_id] = $va_items_for_locale;
  			}
  			
@@ -415,6 +417,7 @@
 			$va_unique_within = $t_instance->getFieldInfo($ps_field, 'UNIQUE_WITHIN');
 			
 			$va_extra_wheres = array();
+			if ($t_instance->hasField('deleted')) { $va_extra_wheres[] = "(deleted = 0)"; }
 			$vs_extra_wheres = '';
 			$va_params = array((string)$ps_val, (int)$pn_id);
 			if (sizeof($va_unique_within)) {
@@ -422,9 +425,11 @@
 					$va_extra_wheres[] = "({$vs_within_field} = ?)";
 					$va_params[] = $pa_within_fields[$vs_within_field];
 				}
+			}
+			if (sizeof($va_extra_wheres) > 0) {
 				$vs_extra_wheres = ' AND '.join(' AND ', $va_extra_wheres);
 			}
-		
+			
 			$qr_res = $o_db->query("
 				SELECT {$vs_pk}
 				FROM ".$t_instance->tableName()."
@@ -432,7 +437,6 @@
 					({$ps_field} = ?) AND ({$vs_pk} <> ?)
 					{$vs_extra_wheres}
 			", $va_params);
-			
 			$va_ids = array();
 			while($qr_res->nextRow()) {
 				$va_ids[] = (int)$qr_res->get($vs_pk);
@@ -443,4 +447,3 @@
 		}
  		# -------------------------------------------------------
  	}
-?>

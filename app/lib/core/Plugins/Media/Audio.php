@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2013 Whirl-i-Gig
+ * Copyright 2006-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -151,8 +151,8 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$this->opo_external_app_config = Configuration::load($vs_external_app_config_path);
 		$this->ops_path_to_ffmpeg = $this->opo_external_app_config->get('ffmpeg_app');
 
-		$this->ops_mediainfo_path = $this->opo_external_app_config->get('mediainfo_app');
-		$this->opb_mediainfo_available = caMediaInfoInstalled($this->ops_mediainfo_path);
+		$this->ops_mediainfo_path = caGetExternalApplicationPath('mediainfo');
+		$this->opb_mediainfo_available = caMediaInfoInstalled();
 
 		$this->opb_ffmpeg_available = caMediaPluginFFfmpegInstalled($this->ops_path_to_ffmpeg);
 
@@ -166,11 +166,11 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$this->register();
 		$va_status['available'] = true;
 		if (!$this->opb_ffmpeg_available) { 
-			$va_status['errors'][] = _t("Incoming Audio files will not be transcoded because ffmpeg is not installed.");
+			$va_status['errors'][] = _t("Incoming audio files will not be transcoded because ffmpeg is not installed.");
 		}
 		
 		if ($this->opb_mediainfo_available) { 
-			$va_status['notices'][] = _t("MediaInfo will be used to extract metadata from video files.");
+			$va_status['notices'][] = _t("MediaInfo will be used to extract metadata from audio files.");
 		}
 		return $va_status;
 	}
@@ -267,7 +267,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$this->handle = $this->ohandle = $info;
 			
 			if($this->opb_mediainfo_available){
-				$this->metadata = caExtractMetadataWithMediaInfo($this->ops_mediainfo_path, $filepath);
+				$this->metadata = caExtractMetadataWithMediaInfo($filepath);
 			} else {
 				$this->metadata = $this->handle;
 			}
@@ -456,7 +456,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$w = round($w);
 				$h = round($h);
 				if (!($w > 0 && $h > 0)) {
-					$this->postError(1610, _t("%1: %2 during resize operation", $reason, $description), "WLPlugAudio->transform()");
+					$this->postError(1610, _t("Width or height was zero"), "WLPlugAudio->transform()");
 					return false;
 				}
 				if ($do_crop) {
@@ -480,7 +480,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		return 1;
 	}
 	# ----------------------------------------------------------
-	public function write($filepath, $mimetype) {
+	public function write($filepath, $mimetype, $pa_options=null) {
 		if (!$this->handle) { return false; }
 		if (!($ext = $this->info["EXPORT"][$mimetype])) {
 			# this plugin can't write this mimetype
@@ -611,8 +611,8 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		if ($mimetype == "audio/mpeg") {
 			// try to write getID3 tags (if set)
 			if (is_array($pa_options) && is_array($pa_options) && sizeof($pa_options) > 0) {
-				require_once('parsers/getid3/getid3.php');
-				require_once('parsers/getid3/write.php');
+				require_once(__CA_LIB_DIR__.'/core/Parsers/getid3/getid3.php');
+				require_once(__CA_LIB_DIR__.'/core/Parsers/getid3/write.php');
 				$o_getID3 = new getID3();
 				$o_tagwriter = new getid3_writetags();
 				$o_tagwriter->filename   = $filepath.".".$ext;
@@ -656,7 +656,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		
 		exec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($this->filepath)." -f mp3 -t {$vn_duration}  -y -ss {$vn_start} ".caEscapeShellArg($ps_filepath), $va_output, $vn_return);
 		if ($vn_return != 0) {
-			@unlink($filepath.".".$ext);
+			@unlink($ps_filepath);
 			$this->postError(1610, _t("Error extracting clip from %1 to %2: %3", $ps_start, $ps_end, join("; ", $va_output)), "WLPlugAudio->writeClip()");
 			return false;
 		}
@@ -739,17 +739,17 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 				switch($pa_options["player"]) {
 					case 'small':
-						JavascriptLoadManager::register("swfobject");
+						AssetLoadManager::register("swfobject");
 						ob_start();
 						$vn_width = ($pa_options["viewer_width"] > 0) ? $pa_options["viewer_width"] : 165;
 						$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 38;
 ?>
 						<div style='width: {$vn_width}px; height: {$vn_height}px;'>
-							<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0" width="<?php print $vn_viewer_width; ?>" height="<?php print $vn_viewer_height; ?>" id="<?php print $vs_id; ?>" align="">
+							<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0" width="<?php print $vn_width; ?>" height="<?php print $vn_height; ?>" id="<?php print $vs_id; ?>">
 								<param name="movie" value="<?php print $viewer_base_url; ?>/viewers/apps/niftyplayer.swf?file=<?php print $ps_url; ?>&as=0">
 								<param name="quality" value="high">
 								<param name="bgcolor" value="#FFFFFF">
-								<embed src="<?php print $viewer_base_url; ?>/viewers/apps/niftyplayer.swf?file=<?php print $ps_url; ?>&as=0" quality="high" bgcolor="#FFFFFF" width="<?php print $vn_viewer_width; ?>" height="<?php print $vn_viewer_height; ?>" align="" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer">
+								<embed src="<?php print $viewer_base_url; ?>/viewers/apps/niftyplayer.swf?file=<?php print $ps_url; ?>&as=0" quality="high" bgcolor="#FFFFFF" width="<?php print $vn_width; ?>" height="<?php print $vn_height; ?>" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer">
 								</embed>
 							</object>
 						</div>
@@ -760,7 +760,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 						return "<a href='$ps_url'>".(($pa_options["text_only"]) ? $pa_options["text_only"] : "Listen to MP3")."</a>";
 						break;
 					default:
-						JavascriptLoadManager::register("mediaelement");
+						AssetLoadManager::register("mediaelement");
 						
 						$vn_width = ($pa_options["viewer_width"] > 0) ? $pa_options["viewer_width"] : 400;
 						$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
@@ -771,7 +771,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 					</div>	
 					<script type="text/javascript">
 						jQuery(document).ready(function() {
-							jQuery('#<?php print $vs_id; ?>').mediaelementplayer({showTimecodeFrameCount: true, framesPerSecond: 100, audioWidth: <?php print (int)$vn_width; ?>, audioHeight: <?php print (int)$vn_height; ?>  });
+							jQuery('#<?php print $vs_id; ?>').mediaelementplayer({showTimecodeFrameCount: true, framesPerSecond: 100, audioWidth: '<?php print $vn_width; ?>', audioHeight: '<?php print $vn_height; ?>'  });
 						});
 					</script>
 <?php
@@ -792,7 +792,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
 ?>
 					<div style="width: {$vn_width}px; height: {$vn_height}px;">
-						<table border="0" cellpadding="0" cellspacing="0">
+						<table>
 							<tr>
 								<td>
 									<embed width="<?php print $vn_width; ?>" height="<?php print $vn_height + 16; ?>"
@@ -818,7 +818,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
 ?>
 					<div style="width: {$vn_width}px; height: {$vn_height}px;">
-						<table border="0" cellpadding="0" cellspacing="0">
+						<table>
 							<tr>
 								<td>
 									<embed width="<?php print $pa_properties["width"]; ?>" height="<?php print $pa_properties["height"] + 16; ?>"
@@ -844,7 +844,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
 ?>
 					<div style="width: {$vn_width}px; height: {$vn_height}px;">
-						<table border="0" cellpadding="0" cellspacing="0">
+						<table>
 							<tr>
 								<td>
 									<embed width="<?php print $pa_properties["width"]; ?>" height="<?php print $pa_properties["height"] + 16; ?>"

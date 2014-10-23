@@ -44,6 +44,7 @@
 	} else {
 		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'NPLabels');
 	}
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'NPLabels', $va_settings);
 ?>
 <div id="<?php print $vs_id_prefix; ?>NPLabels" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php

@@ -74,15 +74,27 @@
 		}
 		# ------------------------------------------------------------------
 		/**
-			Adds a label to the currently loaded row; the $pa_label_values array an associative array where keys are field names 
-			and values are the field values; some label are defined by more than a single field (people's names for instance) which is why
-			the label value is an array rather than a simple scalar value
-			
-			TODO: do checking when inserting preferred label values that a preferred value is not already defined for the locale.
+		 *	Adds a label to the currently loaded row; the $pa_label_values array an associative array where keys are field names 
+		 *	and values are the field values; some label are defined by more than a single field (people's names for instance) which is why
+		 *	the label value is an array rather than a simple scalar value
+		 *	
+		 *	TODO: do checking when inserting preferred label values that a preferred value is not already defined for the locale.
+		 *
+		 * @param array $pa_label_values
+		 * @param int $pn_locale_id
+		 * @param int $pn_type_id
+		 * @param bool $pb_is_preferred
+		 * @param array $pa_options Options include:
+		 *		truncateLongLabels = truncate label values that exceed the maximum storable length. [Default=false]
+		 * @return int id for newly created label, false on error or null if no row is loaded
 		 */ 
-		public function addLabel($pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false) {
+		public function addLabel($pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false, $pa_options=null) {
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
-		
+			
+			$vb_truncate_long_labels = caGetOption('truncateLongLabels', $pa_options, false);
+			
+			$vs_table_name = $this->tableName();
+			
 			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName()))) { return null; }
 			if ($this->inTransaction()) {
 				$o_trans = $this->getTransaction();
@@ -90,8 +102,16 @@
 			}
 			
 			$t_label->purify($this->purify());
+			$t_label->setLabelTypeList($this->getAppConfig()->get($pb_is_preferred ? "{$vs_table_name}_preferred_label_type_list" : "{$vs_table_name}_nonpreferred_label_type_list"));
+			
 			foreach($pa_label_values as $vs_field => $vs_value) {
 				if ($t_label->hasField($vs_field)) { 
+					if ($vb_truncate_long_labels) {
+						$va_field_len = $t_label->getFieldInfo($vs_field, 'BOUNDS_LENGTH');
+						if (isset($va_field_len[1]) && ($va_field_len[1] > 0) && (mb_strlen($vs_value) > $va_field_len[1])) {
+							$vs_value = mb_substr($vs_value, 0, $va_field_len[1]);
+						}
+					}
 					$t_label->set($vs_field, $vs_value); 
 					if ($t_label->numErrors()) { 
 						$this->errors = $t_label->errors; //array_merge($this->errors, $t_label->errors);
@@ -99,6 +119,8 @@
 					}
 				}
 			}
+			
+			
 			$t_label->set('locale_id', $pn_locale_id);
 			if ($t_label->hasField('type_id')) { $t_label->set('type_id', $pn_type_id); }
 			if ($t_label->hasField('is_preferred')) { $t_label->set('is_preferred', $pb_is_preferred ? 1 : 0); }
@@ -122,9 +144,22 @@
 		# ------------------------------------------------------------------
 		/**
 		 * Edit existing label
+		 *
+		 * @param int $pn_label_id
+		 * @param array $pa_label_values
+		 * @param int $pn_locale_id
+		 * @param int $pn_type_id
+		 * @param bool $pb_is_preferred
+		 * @param array $pa_options Options include:
+		 *		truncateLongLabels = truncate label values that exceed the maximum storable length. [Default=false]
+		 * @return int id for the edited label, false on error or null if no row is loaded
 		 */
-		public function editLabel($pn_label_id, $pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false) {
+		public function editLabel($pn_label_id, $pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false, $pa_options=null) {
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
+			
+			$vb_truncate_long_labels = caGetOption('truncateLongLabels', $pa_options, false);
+			
+			$vs_table_name = $this->tableName();
 			
 			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName()))) { return null; }
 			if ($this->inTransaction()) {
@@ -136,9 +171,18 @@
 			
 			if (!($t_label->load($pn_label_id))) { return null; }
 		
+			$t_label->setLabelTypeList($this->getAppConfig()->get($pb_is_preferred ? "{$vs_table_name}_preferred_label_type_list" : "{$vs_table_name}_nonpreferred_label_type_list"));
+			
 			$vb_has_changed = false;
 			foreach($pa_label_values as $vs_field => $vs_value) {
 				if ($t_label->hasField($vs_field)) { 
+					if ($vb_truncate_long_labels) {
+						// truncate label at maximum length of field
+						$va_field_len = $t_label->getFieldInfo($vs_field, 'BOUNDS_LENGTH');
+						if (isset($va_field_len[1]) && ($va_field_len[1] > 0) && (mb_strlen($vs_value) > $va_field_len[1])) {
+							$vs_value = mb_substr($vs_value, 0, $va_field_len[1]);
+						}
+					}
 					$t_label->set($vs_field, $vs_value); 
 					if ($t_label->numErrors()) { 
 						$this->errors = $t_label->errors;
@@ -171,7 +215,6 @@
 			
 			$this->opo_app_plugin_manager->hookAfterLabelUpdate(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 		
-			
 			if ($t_label->numErrors()) { 
 				$this->errors = $t_label->errors;
 				return false;
@@ -312,7 +355,7 @@
  			}
  			return false;
  		}
- 		# --------------------------------------------------------------------------------------------
+		# --------------------------------------------------------------------------------------------
 		/**
 		 * Find row(s) with fields having values matching specific values. 
 		 * Results can be returned as model instances, numeric ids or search results (when possible).
@@ -334,7 +377,7 @@
 		 * using the SearchEngine. For full-text searches, searches on attributes, or searches that require transformations or complex boolean operations use
 		 * the SearchEngine.
 		 *
-		 * @param array $pa_values An array of values to match. Keys are field names. This must be an array with at least one key-value pair where the key is a valid field name for the model.
+		 * @param array $pa_values An array of values to match. Keys are field names, metadata element codes or preferred_labels and /or nonpreferred_labels. This must be an array with at least one key-value pair where the key is a valid field name for the model.
 		 * @param array $pa_options Options are:
 		 *		transaction = optional Transaction instance. If set then all database access is done within the context of the transaction
 		 *		returnAs = what to return; possible values are:
@@ -360,6 +403,10 @@
 		 *
 		 *			The default is AND
 		 *
+		 *		sort = field to sort on. Must be in <table>.<field> format and be an intrinsic field in either the primary table or the label table. Sort order can be set using the sortDirection option.
+		 *		sortDirection = the direction of the sort. Values are ASC (ascending) and DESC (descending). [Default is ASC]
+		 *		allowWildcards = consider "%" as a wildcard when searching. Any term including a "%" character will be queried using the SQL LIKE operator. [Default is false]
+		 *
 		 * @return mixed Depending upon the returnAs option setting, an array, subclass of LabelableBaseModelWithAttributes or integer may be returned.
 		 */
 		public static function find($pa_values, $pa_options=null) {
@@ -372,6 +419,7 @@
 		
 			$vs_table = get_called_class();
 			$t_instance = new $vs_table;
+			$vn_table_num = $t_instance->tableNum();
 			$vs_table_pk = $t_instance->primaryKey();
 			
 			$t_label = $t_instance->getLabelTableInstance();
@@ -381,8 +429,23 @@
 			
 			$vb_has_simple_fields = false;
 			foreach ($pa_values as $vs_field => $vm_value) {
-				if (!is_array($vm_value) && $vm_value) { $vb_has_simple_fields = true; break; }
+				if (!is_array($vm_value) && $t_instance->hasField($vs_field)) { $vb_has_simple_fields = true; break; }
 			}
+			
+			$vb_has_label_fields = false;
+			foreach ($pa_values as $vs_field => $vm_value) {
+				if (in_array($vs_field, array('preferred_labels', 'nonpreferred_labels')) && is_array($vm_value) && sizeof($vm_value)) { $vb_has_label_fields = true; break; }
+			}
+			
+			$vb_has_attributes = false;
+			$va_element_codes = $t_instance->getApplicableElementCodes(null, true, false);
+			foreach ($pa_values as $vs_field => $vm_value) {
+				if (!is_array($vm_value) && in_array($vs_field, $va_element_codes)) { $vb_has_attributes = true; break; }
+			}
+			
+			
+			$va_joins = array();
+			$va_sql_params = array();
 			
 			if ($vb_has_simple_fields) {				
 				//
@@ -390,19 +453,30 @@
 				//
 				if ($t_instance->ATTRIBUTE_TYPE_LIST_CODE) {
 					if (isset($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD]) && !is_numeric($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD])) {
-						if ($vn_id = ca_lists::getItemID($t_instance->ATTRIBUTE_TYPE_LIST_CODE, $pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD])) {
-							$pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD] = $vn_id;
+						if(!is_array($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD])) { $pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD] = array($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD]); }
+						
+						foreach($pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD] as $vn_i => $vm_value) {
+							if (!is_numeric($vm_value)) {
+								if ($vn_id = ca_lists::getItemID($t_instance->ATTRIBUTE_TYPE_LIST_CODE, $vm_value)) {
+									$pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD][$vn_i] = $vn_id;
+								}
+							}
 						}
 					}
 				}
-
+			
 				//
 				// Convert other intrinsic list references
 				//
 				foreach($pa_values as $vs_field => $vm_value) {
+					if ($vs_field == $t_instance->ATTRIBUTE_TYPE_ID_FLD) { continue; }
 					if($vs_list_code = $t_instance->getFieldInfo($vs_field, 'LIST_CODE')) {
-						if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_value)) {
-							$pa_values[$vs_field] = $vn_id;
+						if(!is_array($vm_value)) { $pa_values[$vs_field] = $vm_value = array($vm_value); }
+						foreach($vm_value as $vn_i => $vm_ivalue) {
+							if (is_numeric($vm_ivalue)) { continue; }
+							if ($vn_id = ca_lists::getItemID($vs_list_code, $vm_ivalue)) {
+								$pa_values[$vs_field][$vn_i] = $vn_id;
+							}
 						}
 					}
 				}
@@ -410,97 +484,185 @@
 		
 			$va_sql_wheres = array();
 			if (
-				(!isset($pa_values['preferred_labels']) || !is_array($pa_values['preferred_labels']))
-				&&
-				(!isset($pa_values['nonpreferred_labels']) || !is_array($pa_values['nonpreferred_labels']))
-			
+				($vb_has_simple_fields && !$vb_has_attributes && !$vb_has_label_fields)
 			) {
 				return parent::find($pa_values, $pa_options);
 			}
 			
 			$va_label_sql = array();
-			if (isset($pa_values['preferred_labels']) && is_array($pa_values['preferred_labels'])) {
-				$va_sql_wheres[] = "({$vs_label_table}.is_preferred = 1)";
-				foreach ($pa_values['preferred_labels'] as $vs_field => $vm_value) {
-					if (!$t_label->hasField($vs_field)) {
-						return false;
-					}
-
-					if ($t_label->_getFieldTypeType($vs_field) == 0) {
-						if (!is_numeric($vm_value) && !is_null($vm_value)) {
-							$vm_value = intval($vm_value);
-						}
-					} else {
-						$vm_value = $t_label->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
-					}
-
-					if (is_null($vm_value)) {
-						$va_sql_wheres[] = "({$vs_label_table}.{$vs_field} IS NULL)";
-					} else {
-						if ($vm_value === '') { continue; }
-						$va_sql_wheres[] = "({$vs_label_table}.{$vs_field} = {$vm_value})";
-					}
-				}
+			
+			if ($vb_has_label_fields) {
+				$va_joins[] = " INNER JOIN {$vs_label_table} ON {$vs_label_table}.{$vs_table_pk} = {$vs_table}.{$vs_table_pk} ";
 				
-				$va_label_sql[] = "(".join(" {$ps_label_boolean} ", $va_sql_wheres).")";
-				$va_sql_wheres = array();
-			}
-			if (isset($pa_values['nonpreferred_labels']) && is_array($pa_values['nonpreferred_labels'])) {
-				$va_sql_wheres[] = "({$vs_label_table}.is_preferred = 0)";
-				foreach ($pa_values['nonpreferred_labels'] as $vs_field => $vm_value) {
-					if (!$t_label->hasField($vs_field)) {
-						return false;
-					}
-
-					if ($t_label->_getFieldTypeType($vs_field) == 0) {
-						if (!is_numeric($vm_value) && !is_null($vm_value)) {
-							$vm_value = intval($vm_value);
+				if (isset($pa_values['preferred_labels']) && is_array($pa_values['preferred_labels'])) {
+					$va_sql_wheres[] = "({$vs_label_table}.is_preferred = 1)";
+					foreach ($pa_values['preferred_labels'] as $vs_field => $vm_value) {
+						if (!$t_label->hasField($vs_field)) {
+							return false;
 						}
-					} else {
-						$vm_value = $t_label->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
-					}
 
-					if (is_null($vm_value)) {
-						$va_sql_wheres[] = "({$vs_label_table}.{$vs_field} IS NULL)";
-					} else {
-						if ($vm_value === '') { continue; }
-						$va_sql_wheres[] = "({$vs_label_table}.{$vs_field} = {$vm_value})";
+						if ($t_label->_getFieldTypeType($vs_field) == 0) {
+							if (!is_numeric($vm_value) && !is_null($vm_value)) {
+								$vm_value = intval($vm_value);
+							}
+						} else {
+							$vm_value = $t_label->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
+						}
+
+						if (is_null($vm_value)) {
+							$va_sql_wheres[] = "({$vs_label_table}.{$vs_field} IS NULL)";
+						} elseif (caGetOption('allowWildcards', $pa_options, false) && (strpos($vm_value, '%') !== false)) {
+							$va_sql_wheres[] = "({$vs_label_table}.{$vs_field} LIKE {$vm_value})";
+						} else {
+							if ($vm_value === '') { continue; }
+							$va_sql_wheres[] = "({$vs_label_table}.{$vs_field} = {$vm_value})";
+						}
 					}
-				}
 				
-				$va_label_sql[] = "(".join(" {$ps_label_boolean} ", $va_sql_wheres).")";
-				$va_sql_wheres = array();
+					$va_label_sql[] = "(".join(" {$ps_label_boolean} ", $va_sql_wheres).")";
+					$va_sql_wheres = array();
+				}
+				if (isset($pa_values['nonpreferred_labels']) && is_array($pa_values['nonpreferred_labels'])) {
+					$va_sql_wheres[] = "({$vs_label_table}.is_preferred = 0)";
+					foreach ($pa_values['nonpreferred_labels'] as $vs_field => $vm_value) {
+						if (!$t_label->hasField($vs_field)) {
+							return false;
+						}
+
+						if ($t_label->_getFieldTypeType($vs_field) == 0) {
+							if (!is_numeric($vm_value) && !is_null($vm_value)) {
+								$vm_value = intval($vm_value);
+							}
+						} else {
+							$vm_value = $t_label->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
+						}
+
+						if (is_null($vm_value)) {
+							$va_sql_wheres[] = "({$vs_label_table}.{$vs_field} IS NULL)";
+						} else {
+							if ($vm_value === '') { continue; }
+							$va_sql_wheres[] = "({$vs_label_table}.{$vs_field} = {$vm_value})";
+						}
+					}
+				
+					$va_label_sql[] = "(".join(" {$ps_label_boolean} ", $va_sql_wheres).")";
+					$va_sql_wheres = array();
+				}
 			}
 			
 			if ($vb_has_simple_fields) {
 				foreach ($pa_values as $vs_field => $vm_value) {
-					if (is_array($vm_value)) { continue; }
+					//if (is_array($vm_value)) { continue; }
 
 					if (!$t_instance->hasField($vs_field)) {
-						return false;
+						continue;
 					}
 
 					if ($t_instance->_getFieldTypeType($vs_field) == 0) {
 						if (!is_numeric($vm_value) && !is_null($vm_value)) {
-							$vm_value = intval($vm_value);
+							if (is_array($vm_value)) {
+								foreach($vm_value as $vn_i => $vm_ivalue) {
+									$vm_value[$vn_i] = intval($vm_ivalue);
+								}
+							} else {
+								$vm_value = intval($vm_value);
+							}
 						}
-					} else {
-						$vm_value = $t_instance->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
 					}
 
 					if (is_null($vm_value)) {
 						$va_label_sql[] = "({$vs_table}.{$vs_field} IS NULL)";
+					} elseif (caGetOption('allowWildcards', $pa_options, false) && (strpos($vm_value, '%') !== false)) {
+						$va_label_sql[] = "({$vs_table}.{$vs_field} LIKE ?)";
+						$va_sql_params[] = $vm_value;
 					} else {
 						if ($vm_value === '') { continue; }
-						$va_label_sql[] = "({$vs_table}.{$vs_field} = {$vm_value})";
+						if (is_array($vm_value)) {
+							if (!sizeof($vm_value)) { continue; }
+							$va_label_sql[] = "({$vs_table}.{$vs_field} IN (?))";
+						} else {
+							$va_label_sql[] = "({$vs_table}.{$vs_field} = ?)";
+						}
+						$va_sql_params[] = $vm_value;
 					}
 				}
 			}
+			
+			if ($vb_has_attributes) {
+				$va_joins[] = " INNER JOIN ca_attributes ON ca_attributes.row_id = {$vs_table}.{$vs_table_pk} AND ca_attributes.table_num = {$vn_table_num} ";
+				$va_joins[] = " INNER JOIN ca_attribute_values ON ca_attribute_values.attribute_id = ca_attributes.attribute_id ";
 		
+				foreach($pa_values as $vs_field => $vm_value) {
+					if (($vn_element_id = array_search($vs_field, $va_element_codes)) !== false) {
+						
+						$vs_q = " (ca_attribute_values.element_id = {$vn_element_id}) AND  ";
+						switch($vn_datatype = $t_instance->_getElementDatatype($vs_field)) {
+							case 0:	// continue
+							case 15: // media
+							case 16: // file
+								// SKIP
+								continue(2);
+								break;
+							case 2:	// date
+								if(is_array($va_date = caDateToHistoricTimestamps($vm_value))) {
+									$vs_q .= "((ca_attribute_values.value_decimal1 BETWEEN ? AND ?) OR (ca_attribute_values.value_decimal2 BETWEEN ? AND ?))";
+									array_push($va_sql_params, $va_date['start'], $va_date['end'], $va_date['start'], $va_date['end']);
+								} else {
+									continue(2);
+								}
+								break;
+							case 3:	// list
+								$vn_item_id = is_numeric($vm_value) ? (int)$vm_value : (int)caGetListItemID($vm_value);
+								
+								$vs_q .= "(ca_attribute_values.item_id = ?)";
+								$va_sql_params[] = $vn_item_id;
+								break;
+							default:
+								if (!($vs_fld = Attribute::getSortFieldForDatatype($vn_datatype))) { $vs_fld = 'value_longtext1'; }
+								
+								if (caGetOption('allowWildcards', $pa_options, false) && (strpos($vm_value, '%') !== false)) {
+									$vs_q .= "(ca_attribute_values.{$vs_fld} LIKE ?)";
+								} else {
+									$vs_q .= "(ca_attribute_values.{$vs_fld} = ?)";
+								}
+								$va_sql_params[] = (string)$vm_value;
+								break;
+						}
+						
+						
+						$va_label_sql[] = "({$vs_q})";
+						
+					}
+				}
+			}
+			
+			if (!sizeof($va_label_sql)) { return null; }
+			
 			$vs_deleted_sql = ($t_instance->hasField('deleted')) ? "({$vs_table}.deleted = 0) AND " : '';
-			$vs_sql = "SELECT * FROM {$vs_label_table}";
-			$vs_sql .= " INNER JOIN {$vs_table} ON {$vs_label_table}.{$vs_table_pk} = {$vs_table}.{$vs_table_pk} ";
+			$vs_sql = "SELECT * FROM {$vs_table}";
+			$vs_sql .= join("\n", $va_joins);
 			$vs_sql .=" WHERE {$vs_deleted_sql} ".join(" {$ps_boolean} ", $va_label_sql);
+			
+			$vs_orderby = '';
+			if ($vs_sort = caGetOption('sort', $pa_options, null)) {
+				$vs_sort_direction = caGetOption('sortDirection', $pa_options, 'ASC', array('validValues' => array('ASC', 'DESC')));
+				$va_tmp = explode(".", $vs_sort);
+				if (sizeof($va_tmp) == 2) {
+					switch($va_tmp[0]) {
+						case $vs_table:
+							if ($t_instance->hasField($va_tmp[1])) {
+								$vs_orderby = " ORDER BY {$vs_sort} {$vs_sort_direction}";
+							}
+							break;
+						case $vs_label_table:
+							if ($t_label->hasField($va_tmp[1])) {
+								$vs_orderby = " ORDER BY {$vs_sort} {$vs_sort_direction}";
+							}
+							break;
+					}
+				}
+				if ($vs_orderby) { $vs_sql .= $vs_orderby; }
+			}
 
 			if (isset($pa_options['transaction']) && ($pa_options['transaction'] instanceof Transaction)) {
 				$o_db = $pa_options['transaction']->getDb();
@@ -509,8 +671,8 @@
 			}
 		
 			$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
-		
-			$qr_res = $o_db->query($vs_sql);
+	
+			$qr_res = $o_db->query($vs_sql, $va_sql_params);
 			$vn_c = 0;
 		
 			$vs_pk = $t_instance->primaryKey();
@@ -536,6 +698,7 @@
 							if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
 						}
 					}
+					return $va_instances;
 					break;
 				case 'firstid':
 					if($qr_res->nextRow()) {
@@ -681,23 +844,16 @@
 						$vs_pk = $this->primaryKey();
 						$vs_label_table_name = $this->getLabelTableName();
 						$t_label_instance = $this->getLabelTableInstance();
-						$vs_display_field = ($t_label_instance->hasField($va_tmp[2])) ? $va_tmp[2] : $this->getLabelDisplayField();
-						
-						$vn_top_id = null;
-						if (!($va_ancestor_list = $this->getHierarchyAncestors(null, array(
-							'additionalTableToJoin' => $vs_label_table_name, 
-							'additionalTableJoinType' => 'LEFT',
-							'additionalTableSelectFields' => array('*'),
-							'additionalTableWheres' => array('('.$vs_label_table_name.'.is_preferred = 1 OR '.$vs_label_table_name.'.is_preferred IS NULL)'),
-							'includeSelf' => true
-						)))) {
-							$va_ancestor_list = array();
-						} else {
-							foreach($va_ancestor_list as $vn_i => $va_node) {
-								$va_ancestor_list[$vn_i]['NODE']['id'] = $vn_top_id = $va_node['NODE'][$vs_pk];
-							}
+						if (!$vs_template && ($vs_display_field = ($t_label_instance->hasField($va_tmp[2])) ? $t_label_instance->tableName().".".$va_tmp[2] : ($this->hasField($va_tmp[2]) ? $this->tableName().".".$va_tmp[2] : null))) {
+							$vs_template ="^{$vs_display_field}";
 						}
 						
+						$vn_top_id = null;
+						if (!($va_ancestor_list = $this->getHierarchyAncestors(null, array('idsOnly' => true, 'includeSelf' => true)))) {
+							$va_ancestor_list = array();
+						}
+						
+						// TODO: this should really be in a model subclass
 						if (($this->tableName() == 'ca_objects') && $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && ($vs_coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))) {
 							require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 							if ($this->getPrimaryKey() == $vn_top_id) {
@@ -711,15 +867,8 @@
 								$t_collection = new ca_collections();
 								foreach($va_collections as $vn_i => $va_collection) {
 									if (($va_collections_ancestor_list = $t_collection->getHierarchyAncestors($va_collection['collection_id'], array(
-										'additionalTableToJoin' => 'ca_collection_labels', 
-										'additionalTableJoinType' => 'INNER',
-										'additionalTableSelectFields' => array('*'),
-										'additionalTableWheres' => array('(ca_collection_labels.is_preferred = 1)'),
-										'includeSelf' => true
+										'idsOnly' => true, 'includeSelf' => true
 									)))) {
-										foreach($va_collections_ancestor_list as $vn_i => $va_node) {
-											$va_collections_ancestor_list[$vn_i]['NODE']['id'] = $va_node['NODE']['collection_id'];
-										}
 										$va_ancestor_list = array_merge($va_ancestor_list, $va_collections_ancestor_list);
 									}
 									
@@ -742,18 +891,23 @@
 						}
 						
 						$vb_check_access = is_array($pa_options['checkAccess']) && $this->hasField('access');
-						$va_tmp = array();
-						foreach($va_ancestor_list as $vn_i => $va_item) {
-							if ($vb_check_access && !in_array($va_item['NODE']['access'], $pa_options['checkAccess'])) { continue; }
-							if ($vs_template) {
-								$va_tmp[$va_item['NODE']['id']] = caProcessTemplate($vs_template, $va_item['NODE'], array('removePrefix' => 'preferred_labels.'));
-							} else {
-								if ($vs_label = $va_item['NODE'][$vs_display_field]) {
-									$va_tmp[$va_item['NODE']['id']] = $vs_label;
+						
+						if ($vb_check_access) {
+							$va_access_values = $this->getFieldValuesForIDs($va_ancestor_list, array('access'));
+							
+							$va_ancestor_list = array();
+							foreach ($va_access_values as $vn_ancestor_id => $vn_access_value) {
+								if (in_array($vn_access_value, $pa_options['checkAccess'])) {
+									$va_ancestor_list[] = $vn_ancestor_id;
 								}
 							}
 						}
-							
+					
+						if ($vs_template) {
+							$va_tmp = caProcessTemplateForIDs($vs_template, $this->tableName(), $va_ancestor_list, array('returnAsArray'=> true));
+						} else {
+							$va_tmp = $this->getPreferredDisplayLabelsForIDs($va_ancestor_list, array('returnAsArray'=> true, 'returnAllLocales' => $vb_return_all_locales));
+						}
 						
 						if ($vn_top > 0) {
 							$va_tmp = array_slice($va_tmp, sizeof($va_tmp) - $vn_top, $vn_top, true);
@@ -765,6 +919,10 @@
 						
 						if ($vs_direction == 'ASC') {
 							$va_tmp = array_reverse($va_tmp, true);
+						}
+						
+						if (caGetOption('returnAsLink', $pa_options, false)) {
+							$va_tmp = caCreateLinksFromText(array_values($va_tmp), $this->tableName(), array_keys($va_tmp));
 						}
 						
 						if ($vb_return_as_array) {
@@ -1029,7 +1187,7 @@
 				$va_data['preferred_labels'] = $va_preferred_labels_for_export;
 			}
 			
-			$va_non_preferred_labels = $this->get($this->tableName().".nonpreferred_labels", array('returnAsArray' => true, 'returnAllLocales' => true));
+			$va_nonpreferred_labels = $this->get($this->tableName().".nonpreferred_labels", array('returnAsArray' => true, 'returnAllLocales' => true));
 			if(is_array($va_nonpreferred_labels) && sizeof($va_nonpreferred_labels)) {
 				$va_nonpreferred_labels_for_export = array();
 				foreach($va_nonpreferred_labels as $vn_id => $va_labels_by_locale) {
@@ -1368,7 +1526,7 @@
 						true
 					);
 				} else {
-					$this->postError(1130, _t('Label must not be blank'), 'LabelableBaseModelWithAttributes->addDefaultLabel()');
+					$this->postError(1130, _t('Label must not be blank'), 'LabelableBaseModelWithAttributes->addDefaultLabel()', $this->tableName().'.preferred_labels');
 					return false;
 				}
 			}
@@ -1502,6 +1660,7 @@
 			$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
 			
 			$o_view->setVar('labels', $va_labels = $this->getPreferredLabels(null, $pa_options['dontCache']));
+			$o_view->setVar('t_subject', $this);
 			$o_view->setVar('t_label', $t_label);
 			$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
 			$o_view->setVar('graphicsPath', $pa_options['graphicsPath']);
@@ -1582,6 +1741,7 @@
 			$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
 		
 			$o_view->setVar('labels', $va_labels = $this->getNonPreferredLabels(null, $pa_options['dontCache']));
+			$o_view->setVar('t_subject', $this);
 			$o_view->setVar('t_label', $t_label);
 			$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
 			$o_view->setVar('graphicsPath', $pa_options['graphicsPath']);
@@ -1674,6 +1834,8 @@
 			}
 			if (!is_array($va_ids) || !sizeof($va_ids)) { return array(); }
 			
+			$vb_return_all_locales = caGetOption('returnAllLocales', $pa_options, false);
+			
 			$vs_cache_key = md5($this->tableName()."/".print_r($pa_ids, true).'/'.print_R($pa_options, true));
 			if (!isset($pa_options['noCache']) && !$pa_options['noCache'] && LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key]) {
 				return LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key];
@@ -1701,14 +1863,25 @@
 			
 			
 			while($qr_res->nextRow()) {
-				$va_labels[$qr_res->get($vs_pk)][$qr_res->get('locale_id')] = $qr_res->get($vs_display_field);
+				if ($vb_return_all_locales) { 
+					$va_labels[(int)$qr_res->get($vs_pk)][(int)$qr_res->get('locale_id')][] = $qr_res->get($vs_display_field);
+				} else {
+					$va_labels[(int)$qr_res->get($vs_pk)][(int)$qr_res->get('locale_id')] = $qr_res->get($vs_display_field);
+				}
 			}
 			
-			if (isset($pa_options['returnAllLocales']) && $pa_options['returnAllLocales']) {
-				return LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key] = $va_labels;
+			// make sure it's in same order the ids were passed in
+			$va_sorted_labels = array();
+			foreach($va_ids as $vn_id) {
+				if(!isset($va_labels[$vn_id]) || !$va_labels[$vn_id]) { continue; }
+				$va_sorted_labels[$vn_id] = $va_labels[$vn_id];
 			}
 			
-			return LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key] = caExtractValuesByUserLocale($va_labels);
+			if ($vb_return_all_locales) {
+				return LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key] = $va_sorted_labels;
+			}
+			
+			return LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key] = caExtractValuesByUserLocale($va_sorted_labels);
 		}
 		# ------------------------------------------------------------------
 		/**
@@ -1726,6 +1899,8 @@
 				if (intval($vn_id) > 0) { $va_ids[] = intval($vn_id); }
 			}
 			if (!is_array($va_ids) || !sizeof($va_ids)) { return array(); }
+			
+			$vb_return_all_locales = caGetOption('returnAllLocales', $pa_options, false);
 			
 			$vs_cache_key = md5($this->tableName()."/".print_r($pa_ids, true).'/'.print_R($pa_options, true).'_non_preferred');
 			if (!isset($pa_options['noCache']) && !$pa_options['noCache'] && LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key]) {
@@ -1757,11 +1932,17 @@
 				$va_labels[$qr_res->get($vs_pk)][$qr_res->get('locale_id')][] = $qr_res->get($vs_display_field);
 			}
 			
-			if (isset($pa_options['returnAllLocales']) && $pa_options['returnAllLocales']) {
-				return LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key] = $va_labels;
+			// make sure it's in same order the ids were passed in
+			$va_sorted_labels = array();
+			foreach($va_ids as $vn_id) {
+				$va_sorted_labels[$vn_id] = $va_labels[$vn_id];
 			}
 			
-			return LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key] = caExtractValuesByUserLocale($va_labels);
+			if ($vb_return_all_locales) {
+				return LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key] = $va_sorted_labels;
+			}
+			
+			return LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key] = caExtractValuesByUserLocale($va_sorted_labels);
 		}
 		# ------------------------------------------------------------------
 		# Hierarchies
@@ -2006,7 +2187,7 @@
 		/**
 		 * 
 		 */
-		public function getUserGroupHTMLFormBundle($po_request, $ps_form_name, $pn_table_num, $pn_item_id, $pn_user_id=null, $pa_options=null) {
+		public function getUserGroupHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pn_table_num, $pn_item_id, $pn_user_id=null, $pa_options=null) {
 			$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 			$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 			
@@ -2020,7 +2201,8 @@
 			
 			$o_view->setVar('t_instance', $this);
 			$o_view->setVar('table_num', $pn_table_num);
-			$o_view->setVar('id_prefix', $ps_form_name);		
+			$o_view->setVar('id_prefix', $ps_form_name);	
+			$o_view->setVar('placement_code', $ps_placement_code);		
 			$o_view->setVar('request', $po_request);	
 			$o_view->setVar('t_group', $t_group);
 			$o_view->setVar('initialValues', $this->getUserGroups(array('returnAsInitialValuesForBundle' => true)));
@@ -2074,7 +2256,7 @@
 			$qr_res->seek(0);
 			while($qr_res->nextRow()) {
 				$va_row = array();
-				foreach(array('user_id', 'fname', 'lname', 'email', 'sdatetime', 'edatetime', 'access') as $vs_f) {
+				foreach(array('user_id', 'user_name', 'fname', 'lname', 'email', 'sdatetime', 'edatetime', 'access') as $vs_f) {
 					$va_row[$vs_f] = $qr_res->get($vs_f);
 				}
 				if ($vb_supports_date_restrictions) {
@@ -2225,7 +2407,7 @@
 		/**
 		 * 
 		 */
-		public function getUserHTMLFormBundle($po_request, $ps_form_name, $pn_table_num, $pn_item_id, $pn_user_id=null, $pa_options=null) {
+		public function getUserHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pn_table_num, $pn_item_id, $pn_user_id=null, $pa_options=null) {
 			$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
 			$o_view = new View($po_request, "{$vs_view_path}/bundles/");
 			
@@ -2238,7 +2420,8 @@
 			
 			$o_view->setVar('t_instance', $this);
 			$o_view->setVar('table_num', $pn_table_num);
-			$o_view->setVar('id_prefix', $ps_form_name);		
+			$o_view->setVar('id_prefix', $ps_form_name);	
+			$o_view->setVar('placement_code', $ps_placement_code);		
 			$o_view->setVar('request', $po_request);	
 			$o_view->setVar('t_user', $t_user);
 			$o_view->setVar('initialValues', $this->getUsers(array('returnAsInitialValuesForBundle' => true)));

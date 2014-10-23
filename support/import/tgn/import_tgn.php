@@ -132,7 +132,7 @@
 	$t_place->logChanges(false);		// Don't log changes to records during import – takes time and we don't need the logs
 	
 	
-if (false) {	
+if (true) {	
 	for($vn_file_index=1; $vn_file_index <= 15; $vn_file_index++) {
 		$o_xml->open("tgn_xml_12/TGN{$vn_file_index}.xml");
 	
@@ -478,7 +478,7 @@ if (false) {
 	$t_place->setMode(ACCESS_WRITE);
 	$vn_tgn_root_id = $t_parent->getHierarchyRootID($vn_tgn_id);
 	
-if (false) {	
+if (true) {	
 	print "[Notice] LINKING TERMS IN HIERARCHY...\n";
 	$vn_last_message_length = 0;
 
@@ -584,7 +584,7 @@ if (false) {
 	$t_place->rebuildHierarchicalIndex($vn_tgn_id);
 
 
-if (false) {	
+if (true) {	
 	print "[Notice] ADDING RELATED PLACE LINKS...\n";
 	$vn_last_message_length = 0;
 

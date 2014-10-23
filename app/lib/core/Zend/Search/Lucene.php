@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Search_Lucene
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Lucene.php 21640 2010-03-24 18:28:32Z alexander $
+ * @version    $Id: Lucene.php 24593 2012-01-05 20:35:02Z matthew $
  */
 
 
@@ -89,7 +89,7 @@ require_once 'Zend/Search/Lucene/LockManager.php';
 /**
  * @category   Zend
  * @package    Zend_Search_Lucene
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Search_Lucene implements Zend_Search_Lucene_Interface
@@ -707,6 +707,8 @@ class Zend_Search_Lucene implements Zend_Search_Lucene_Interface
      */
     public function isDeleted($id)
     {
+        $this->commit();
+
         if ($id >= $this->_docCount) {
             require_once 'Zend/Search/Lucene/Exception.php';
             throw new Zend_Search_Lucene_Exception('Document id is out of the range.');
@@ -1521,7 +1523,7 @@ class Zend_Search_Lucene implements Zend_Search_Lucene_Interface
     }
 
     /**
-     * Skip terms stream up to specified term preffix.
+     * Skip terms stream up to the specified term preffix.
      *
      * Prefix contains fully specified field info and portion of searched term
      *

@@ -76,12 +76,12 @@
 			
 			<br style="clear: both;"/>
 			
-			<div style="float:left; ">
+			<div style="float:right; ">
+				<?php print caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Reset"), 'AdvancedSearchForm', array('onclick' => 'caAdvancedSearchFormReset()'), array()); ?>			
 				<?php print caFormSubmitButton($this->request, __CA_NAV_BUTTON_SEARCH__, _t("Search"), 'AdvancedSearchForm'); ?>
-				<?php print caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Reset"), 'AdvancedSearchForm', array('onclick' => 'caAdvancedSearchFormReset()'), array()); ?>
 			</div>
-			<div style="float: right;">
-				<?php print _t("Save as"); ?>:
+			<div class="saveAs" style="float: right; margin-right:20px;">
+				<?php print _t("Save search as"); ?>:
 				<?php print caHTMLTextInput('_label', array('size' => 10, 'id' => 'caAdvancedSearchSaveLabelInput')); ?>
 				<a href="#" onclick="caSaveSearch('AdvancedSearchForm', jQuery('#caAdvancedSearchSaveLabelInput').val(), [<?php print join(',', $va_flds); ?>]); return false;" class="button"><?php print _t('Go').' &rsaquo;' ?></a>
 			</div>
@@ -112,8 +112,10 @@
 	}
 	
 	function caAdvancedSearchFormReset() {
+		jQuery('#AdvancedSearchForm textarea').val('');
 		jQuery('#AdvancedSearchForm input[type=text]').val('');
+		jQuery('#AdvancedSearchForm input[type=hidden]').val('');
+		jQuery('#AdvancedSearchForm select').val('');
 		jQuery('#AdvancedSearchForm input[type=checkbox]').attr('checked', 0);
-		jQuery('#AdvancedSearchForm select').attr('selectedIndex', 0);
 	}
 </script>

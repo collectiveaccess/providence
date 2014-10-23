@@ -33,7 +33,7 @@
  		#
  		# -------------------------------------------------------
  		public function Index() {
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
  			
  			$t_event_log = new Eventlog();
  			

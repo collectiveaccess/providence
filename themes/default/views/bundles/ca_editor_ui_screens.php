@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2013 Whirl-i-Gig
+ * Copyright 2011-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,7 +27,7 @@
  */
  
  
-	JavascriptLoadManager::register('sortableUI');
+	AssetLoadManager::register('sortableUI');
 
 	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$t_ui 					= $this->getVar('t_ui');	
@@ -37,9 +37,10 @@
 	$va_errors = array();
 	$va_failed_inserts = array();
  
- 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_ui->tableNum().'_rel');
+ 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 ?>
-<div id="<?php print $vs_id_prefix.$t_ui->tableNum().'_rel'; ?>">
+<div id="<?php print $vs_id_prefix; ?>">
 <?php
 	//
 	// The bundle template - used to generate each bundle in the form
@@ -65,7 +66,7 @@
 					<td>
 						<div style="float:right;">
 							<span id="{fieldNamePrefix}edit_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'administrate/setup/interface_screen_editor', 'InterfaceScreenEditor', 'Edit', array('screen_id' => '{screen_id}'))); ?></span>
-							<a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
+							<a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DELETE__); ?></a>
 						</div>
 					</td>
 				</tr>
@@ -90,11 +91,11 @@
 ?>
 			
 <script type="text/javascript">
-	caUI.initBundle('#<?php print $vs_id_prefix.$t_ui->tableNum().'_rel'; ?>', {
+	caUI.initBundle('#<?php print $vs_id_prefix; ?>', {
 		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 		templateValues: ['name', 'locale_id', 'rank', 'screen_id', 'numPlacements', 'typeRestrictionsForDisplay', 'isDefault'],
 		initialValues: <?php print json_encode($va_initial_values); ?>,
-		initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
+		initialValueOrder: <?php print json_encode(is_array($va_initial_values) ? array_keys($va_initial_values) : null); ?>,
 		errors: <?php print json_encode($va_errors); ?>,
 		forceNewValues: <?php print json_encode($va_failed_inserts); ?>,
 		itemID: '<?php print $vs_id_prefix; ?>Item_',

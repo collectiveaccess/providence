@@ -45,7 +45,7 @@
 </head>
 <body>
 	<div id='box'>
-	<div id="logo"><img src="<?php print $vs_path ?>/themes/default/graphics/installLogo.gif"/></div><!-- end logo -->
+	<div id="logo"><img src="<?php print $vs_path ?>/themes/default/graphics/logos/ca_logo.png"/></div><!-- end logo -->
 	<div id="content">
 		<?php print "<div class='error'>An error in your system configuration has been detected</div>
 			General installation instructions can be found
@@ -56,7 +56,7 @@
 foreach ($opa_error_messages as $vs_message):
 ?>
 		<div class="permissionError">
-			<img src='<?php print $vs_path; ?>/themes/default/graphics/vorsicht.gif' class="permissionErrorIcon"/>
+			<img src='<?php print $vs_path; ?>/themes/default/graphics/buttons/glyphicons_078_warning_sign.png' class="permissionErrorIcon"/>
 			<?php print $vs_message; ?>
 			<div style='clear:both; height:1px;'><!-- empty --></div>
 		</div>

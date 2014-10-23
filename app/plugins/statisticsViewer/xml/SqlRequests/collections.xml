@@ -5,9 +5,9 @@
 		<title>First group</title>
 		<statistic>
 			<id>1</id>
-			<title>Répartition des collections par type</title>
+			<title>Collections by type</title>
 			<comment></comment>	
-			<sql>select ca_l_i.item_value as "collection type", count(*) as "number" from ca_collections ca_c left join ca_list_items ca_l_i on ca_c.type_id=ca_l_i.item_id and ca_l_i.parent_id is not null left join ca_lists ca_l on ca_l.list_id=ca_l_i.list_id group by ca_l_i.item_id order by 2 desc</sql>
+			<sql>select ca_l_i.item_value as "collection type", count(*) as "number" from ca_collections ca_c left join ca_list_items ca_l_i on ca_c.type_id=ca_l_i.item_id and ca_l_i.parent_id is not null left join ca_lists ca_l on ca_l.list_id=ca_l_i.list_id where ca_c.deleted=0 group by ca_l_i.item_id order by 2 desc</sql>
 			<columns>collection type,number</columns>
 			<total_columns>number</total_columns>
 			<charting>pie</charting>
@@ -39,7 +39,7 @@
 			<id>4</id>
 			<title>Collections by status</title>	
 			<comment></comment>	
-			<sql>SELECT ca_li.idno as Status, count(ca_col.collection_id) as Number FROM ca_collections ca_col LEFT JOIN ca_list_items ca_li ON ca_li.item_value = ca_col.status LEFT JOIN ca_lists ca_l ON ca_li.list_id=ca_l.list_id WHERE ca_l.list_code='workflow_statuses' and ca_li.item_value!="Root" group by ca_li.item_value</sql>
+			<sql>SELECT ca_li.idno as Status, count(ca_col.collection_id) as Number FROM ca_collections ca_col LEFT JOIN ca_list_items ca_li ON ca_li.item_value = ca_col.status LEFT JOIN ca_lists ca_l ON ca_li.list_id=ca_l.list_id WHERE ca_l.list_code='workflow_statuses' and ca_li.item_value!="Root" and ca_col.deleted = 0 group by ca_li.item_value</sql>
 			<columns>Status,Number</columns>
 			<total_columns>Number</total_columns>			
 			<charting>column</charting>
@@ -49,7 +49,7 @@
 			<id>5</id>
 			<title>Collections by access</title>	
 			<comment></comment>	
-			<sql>SELECT ca_li.idno as Access, count(ca_col.collection_id) as Number FROM ca_collections ca_col LEFT JOIN ca_list_items ca_li ON ca_li.item_value = ca_col.access LEFT JOIN ca_lists ca_l ON ca_li.list_id=ca_l.list_id WHERE ca_l.list_code='access_statuses' and ca_li.item_value!="Root" group by ca_li.item_value</sql>
+			<sql>SELECT ca_li.idno as Access, count(ca_col.collection_id) as Number FROM ca_collections ca_col LEFT JOIN ca_list_items ca_li ON ca_li.item_value = ca_col.access LEFT JOIN ca_lists ca_l ON ca_li.list_id=ca_l.list_id WHERE ca_l.list_code='access_statuses' and ca_li.item_value!="Root" and ca_col.deleted = 0 group by ca_li.item_value</sql>
 			<columns>Access,Number</columns>
 			<total_columns>Number</total_columns>			
 			<charting>column</charting>

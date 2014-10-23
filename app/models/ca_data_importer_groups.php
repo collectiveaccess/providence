@@ -190,8 +190,8 @@ class ca_data_importer_groups extends BaseModel {
 	/**
 	 *
 	 */
-	protected function initLabelDefinitions() {
-		parent::initLabelDefinitions();
+	protected function initLabelDefinitions($pa_options=null) {
+		parent::initLabelDefinitions($pa_options);
 		
 		// TODO
 	}

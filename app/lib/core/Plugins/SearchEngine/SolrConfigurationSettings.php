@@ -64,6 +64,9 @@ class SolrConfigurationSettings extends ASearchConfigurationSettings {
 	private $opa_setting_descriptions;
 	private $opa_setting_hints;
 	# ------------------------------------------------
+	private $ops_search_solr_url;
+	private $ops_search_solr_home_dir;
+	# ------------------------------------------------
 	public function __construct(){
 		$this->opo_search_base = new SearchBase();
 		$this->opo_app_config = Configuration::load();
@@ -75,6 +78,21 @@ class SolrConfigurationSettings extends ASearchConfigurationSettings {
 		$this->opa_setting_names = array();
 		$this->opa_setting_hints = array();
 		$this->_initMessages();
+
+		// allow overriding settings from search.conf via constant (usually defined in bootstrap file)
+		// this is useful for multi-instance setups which have the same set of config files for multiple instances
+		if(defined('__CA_SOLR_URL__') && (strlen(__CA_SOLR_URL__)>0)) {
+			$this->ops_search_solr_url = __CA_SOLR_URL__;
+		} else {
+			$this->ops_search_solr_url = $this->opo_search_config->get('search_solr_url');
+		}
+
+		if(defined('__CA_SOLR_HOME_DIR__') && (strlen(__CA_SOLR_HOME_DIR__)>0)) {
+			$this->ops_search_solr_home_dir = __CA_SOLR_HOME_DIR__;
+		} else {
+			$this->ops_search_solr_home_dir = $this->opo_search_config->get('search_solr_home_dir');
+		}
+
 		parent::__construct();
 	}
 	# ------------------------------------------------
@@ -145,7 +163,7 @@ class SolrConfigurationSettings extends ASearchConfigurationSettings {
 	}
 	# ------------------------------------------------
 	private function _checkSolrDirPermissions(){
-		$vs_solr_home = $this->opo_search_config->get("search_solr_home_dir");
+		$vs_solr_home = $this->ops_search_solr_home_dir;
 		/* try to create a new directory and delete it afterwards */
 		if(!@mkdir($vs_solr_home."/tmp", 0700)){
 			return __CA_SEARCH_CONFIG_ERROR__;
@@ -158,7 +176,7 @@ class SolrConfigurationSettings extends ASearchConfigurationSettings {
 	}
 	# ------------------------------------------------
 	private function _checkSolrCores(){
-		$vs_solr_home = $this->opo_search_config->get("search_solr_home_dir");
+		$vs_solr_home = $this->ops_search_solr_home_dir;
 		/* check existence of core-specific configuration files */
 		foreach($this->opo_search_base->getIndexedTables() as $vs_table){
 			$vs_core_path = $vs_solr_home."/".$vs_table;
@@ -177,7 +195,7 @@ class SolrConfigurationSettings extends ASearchConfigurationSettings {
 		$vo_http_client = new Zend_Http_Client();
 		foreach($this->opo_search_base->getIndexedTables() as $vs_table){
 			$vo_http_client->setUri(
-				$this->opo_search_config->get('search_solr_url')."/". /* general url */
+				$this->ops_search_solr_url."/". /* general url */
 				$vs_table. /* core name (i.e. table name) */
 				"/select" /* standard request handler */
 			);

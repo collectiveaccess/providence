@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  
- 	JavascriptLoadManager::register('hierBrowser');
+ 	AssetLoadManager::register('hierBrowser');
  
 	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$t_instance 		= $this->getVar('t_instance');
@@ -51,12 +51,18 @@
 	$vn_browse_last_id = (int)$this->request->session->getVar('ca_list_items_'.$vs_id_prefix.'_browse_last_id');
 
 	// params to pass during occurrence lookup
-	$va_lookup_params = (isset($va_settings['restrict_to_type']) && $va_settings['restrict_to_type']) ? array('type' => $va_settings['restrict_to_type'], 'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction']) : array();
+	$va_lookup_params = array('type' => isset($va_settings['restrict_to_type']) ? $va_settings['restrict_to_type'] : '', 'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction']);
 
 	if ($vb_batch) {
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
 	} else {
 		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel');
+	
+	}
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings);
+	
+	if(sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort) {
+		print caEditorBundleSortControls($this->request, $vs_id_prefix, $pa_settings);
 	}
 	
 	$va_errors = array();
@@ -167,7 +173,7 @@
 ?>
 
 	<textarea class='caNewItemTemplate' style='display: none;'>
-		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
+		<div style="clear: both;"><!-- empty --></div>
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo caRelatedItem">
 <?php
 		if (!(bool)$va_settings['useHierarchicalBrowser']) {
@@ -196,9 +202,9 @@
 ?>
 				<div style="float: right;"><a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a></div>
 
-				<div style='width: 690px; height: <?php print $va_settings['hierarchicalBrowserHeight']; ?>;'>
+				<div style='width: 700px; height: <?php print $va_settings['hierarchicalBrowserHeight']; ?>;'>
 					
-					<div id='<?php print $vs_id_prefix; ?>_hierarchyBrowser{n}' style='width: 100%; height: 100%;' class='hierarchyBrowser'>
+					<div id='<?php print $vs_id_prefix; ?>_hierarchyBrowser{n}' style='width: 100%; height: 140px;' class='hierarchyBrowser'>
 						<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
 					</div><!-- end hierarchyBrowser -->	</div>
 					
@@ -215,10 +221,9 @@
 				
 				<script type='text/javascript'>
 					jQuery(document).ready(function() { 
-						var init = true;
 						var <?php print $vs_id_prefix; ?>oHierBrowser{n} = caUI.initHierBrowser('<?php print $vs_id_prefix; ?>_hierarchyBrowser{n}', {
 							uiStyle: 'horizontal',
-							levelDataUrl: '<?php print caNavUrl($this->request, 'lookup', 'ListItem', 'GetHierarchyLevel', array('noSymbols' => 1, 'voc' => 1, 'lists' => join(';', $va_settings['restrict_to_lists']))); ?>',
+							levelDataUrl: '<?php print caNavUrl($this->request, 'lookup', 'ListItem', 'GetHierarchyLevel', array('noSymbols' => 1, 'voc' => 1, 'lists' => is_array($va_settings['restrict_to_lists']) ? join(';', $va_settings['restrict_to_lists']) : "")); ?>',
 							initDataUrl: '<?php print caNavUrl($this->request, 'lookup', 'ListItem', 'GetHierarchyAncestorList'); ?>',
 							
 							bundle: '<?php print $vs_id_prefix; ?>',
@@ -231,7 +236,8 @@
 							className: 'hierarchyBrowserLevel',
 							classNameContainer: 'hierarchyBrowserContainer',
 							
-							editButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/arrow_grey_right.gif" border="0" title="Edit"/>',
+							editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
+							disabledButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__); ?>",
 							
 							//initItemID: <?php print $vn_browse_last_id; ?>,
 							useAsRootID: <?php print $vn_use_as_root_id; ?>,
@@ -240,10 +246,7 @@
 							displayCurrentSelectionOnLoad: false,
 							currentSelectionDisplayID: '<?php print $vs_id_prefix; ?>_browseCurrentSelectionText{n}',
 							onSelection: function(item_id, parent_id, name, display, type_id) {
-								if (!init) {	// Don't actually select the init value, otherwise if you save w/no selection you get "phantom" relationships
-									caRelationBundle<?php print $vs_id_prefix; ?>.select('{n}', {id: item_id, type_id: type_id}, display);
-								}
-								init = false;
+								caRelationBundle<?php print $vs_id_prefix; ?>.select('{n}', {id: item_id, type_id: type_id}, display);
 							}
 						});
 						
@@ -270,23 +273,6 @@
 	</textarea>
 	
 	<div class="bundleContainer">
-<?php
-	if(sizeof($va_initial_values) && !$vb_read_only && !(bool)$va_settings['restrictToTermsRelatedToCollection'] && !$vs_sort) {
-?>
-		<div class="caItemListSortControlTrigger" id="<?php print $vs_id_prefix; ?>caItemListSortControlTrigger">
-			<?php print _t('Sort by'); ?>
-			<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/bg.gif" alt='Sort'/>
-		</div>
-		<div class="caItemListSortControls" id="<?php print $vs_id_prefix; ?>caItemListSortControls">
-			<a href='#' onclick="caRelationBundle<?php print $vs_id_prefix; ?>.sort('name'); return false;" class='caItemListSortControl'><?php print _t('name'); ?></a><br/>
-			<a href='#' onclick="caRelationBundle<?php print $vs_id_prefix; ?>.sort('idno'); return false;" class='caItemListSortControl'><?php print _t('idno'); ?></a><br/>
-			<a href='#' onclick="caRelationBundle<?php print $vs_id_prefix; ?>.sort('type'); return false;" class='caItemListSortControl'><?php print _t('type'); ?></a><br/>
-			<a href='#' onclick="caRelationBundle<?php print $vs_id_prefix; ?>.sort('entry'); return false;" class='caItemListSortControl'><?php print _t('entry'); ?></a><br/>
-		</div>
-<?php
-	}
-?>
-
 		<div class="caItemList">
 <?php
 	if (sizeof($va_errors)) {
@@ -373,6 +359,8 @@
 			interstitialButtonClassName: 'caInterstitialEditButton',
 			interstitialPanel: caRelationEditorPanel<?php print $vs_id_prefix; ?>,
 			interstitialUrl: '<?php print caNavUrl($this->request, 'editor', 'Interstitial', 'Form', array('t' => $t_item_rel->tableName())); ?>',
+			interstitialPrimaryTable: '<?php print $t_instance->tableName(); ?>',
+			interstitialPrimaryID: <?php print (int)$t_instance->getPrimaryKey(); ?>,
 			
 			minRepeats: <?php print caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
 			maxRepeats: <?php print caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>
@@ -400,9 +388,3 @@
 ?>
 	});
 </script>
-
-<?php
-	foreach($va_initial_values as $vn_id => $va_info) {
-		TooltipManager::add("#{$vs_id_prefix}_edit_related_{$vn_id}", "<h2>".$va_info['label']."</h2>");
-	}
-?>

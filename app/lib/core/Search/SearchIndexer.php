@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,36 +46,13 @@ class SearchIndexer extends SearchBase {
 
 	private $opa_dependencies_to_update;
 	
-	static public $s_related_rows_joins_cache = array();
-	static public $s_related_fields_joins_cache = array();	
-	
-	/** 
-	 * Global cache array for ca_metadata_element element_code => element_id conversions
-	 */
-	static public $s_SearchIndexer_element_id_cache = array();
-	
-	/** 
-	 * Global cache array for ca_metadata_element element_code => data type conversions
-	 */
-	static public $s_SearchIndexer_element_data_type_cache = array();
-		
-	/** 
-	 * Global cache array for ca_metadata_element element_code => list_id conversions
-	 */
-	static public $s_SearchIndexer_element_list_id_cache = array();
-	
-	/** 
-	 * Global cache array for field numbers
-	 */
-	static public $s_SearchIndexer_field_num_cache = array();
-	
 	private $opo_metadata_element = null;
 
 	# ------------------------------------------------
 	/**
 	 * Constructor takes Db() instance which it uses for all database access. You should pass an instance in
 	 * because all the database accesses need to be in the same transactional context as whatever else you're doing. In
-	 * the case of Table::insert(), Table::update() and Table::delete() [the main users of , they're always in a transactional context
+	 * the case of BaseModel::insert(), BaseModel::update() and BaseModel::delete()they're always in a transactional context
 	 * so this is critical. If you don't pass an Db() instance then the constructor creates a new one, which is useful for
 	 * cases where you're reindexing and not in a transaction.
 	 */
@@ -131,16 +108,23 @@ class SearchIndexer extends SearchBase {
 	/**
 	 * Forces a full reindex of all rows in the database or, optionally, a single table
 	 *
-	 * @param array $pa_table_name
+	 * @param array $pa_table_names
 	 * @param array $pa_options Reindexing options:
 	 *			showProgress
 	 *			interactiveProgressDisplay
 	 *			log
 	 *			callback
+	 * @return null|false
 	 */
 	public function reindex($pa_table_names=null, $pa_options=null) {
 		define('__CollectiveAccess_IS_REINDEXING__', 1);
 		$t_timer = new Timer();
+		
+		
+		$pb_display_progress = isset($pa_options['showProgress']) ? (bool)$pa_options['showProgress'] : true;
+		$pb_interactive_display = isset($pa_options['interactiveProgressDisplay']) ? (bool)$pa_options['interactiveProgressDisplay'] : false;
+		$ps_callback = isset($pa_options['callback']) ? (string)$pa_options['callback'] : false;
+		
 		if ($pa_table_names) {
 			if (!is_array($pa_table_names)) { $pa_table_names = array($pa_table_names); }
 			
@@ -148,6 +132,8 @@ class SearchIndexer extends SearchBase {
 			foreach($pa_table_names as $vs_table) {
 				if ($this->opo_datamodel->tableExists($vs_table)) {
 					$vn_num = $this->opo_datamodel->getTableNum($vs_table);
+					print "\nTRUNCATING {$vs_table}\n\n";
+					$this->opo_engine->truncateIndex($vn_num);
 					$t_instance = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
 					$va_table_names[$vn_num] = array('name' => $vs_table, 'num' => $vn_num, 'displayName' => $t_instance->getProperty('NAME_PLURAL'));
 				}
@@ -159,10 +145,6 @@ class SearchIndexer extends SearchBase {
 			$va_table_names = $this->getIndexedTables();
 		}
 		
-		$pb_display_progress = isset($pa_options['showProgress']) ? (bool)$pa_options['showProgress'] : true;
-		$pb_interactive_display = isset($pa_options['interactiveProgressDisplay']) ? (bool)$pa_options['interactiveProgressDisplay'] : false;
-		$ps_callback = isset($pa_options['callback']) ? (string)$pa_options['callback'] : false;
-		
 		$o_db = $this->opo_db;
 		
 		if ($pb_display_progress || $ps_callback) {
@@ -172,25 +154,25 @@ class SearchIndexer extends SearchBase {
 			}
 			if ($pb_display_progress) {
 				print "\nWILL INDEX [".join(", ", $va_names)."]\n\n";
-				$vn_last_message_length = 0;
 			}
 		}
 		
 		$vn_tc = 0;
+		
 		foreach($va_table_names as $vn_table_num => $va_table_info) {
 			$vs_table = $va_table_info['name'];
-			
 			$t_table_timer = new Timer();
 			$t_instance = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
 			$vs_table_pk = $t_instance->primaryKey();
+			
+			$vn_table_num = $t_instance->tableNum();
 
 			$va_fields_to_index = $this->getFieldsToIndex($vn_table_num);
 			if (!is_array($va_fields_to_index) || (sizeof($va_fields_to_index) == 0)) {
 				continue;
 			}
 
-
-			$qr_all = $o_db->query("SELECT ".$t_instance->primaryKey()." FROM $vs_table");
+			$qr_all = $o_db->query("SELECT ".$t_instance->primaryKey()." FROM {$vs_table}");
 
 			$vn_num_rows = $qr_all->numRows();
 			if ($pb_display_progress) {
@@ -198,9 +180,39 @@ class SearchIndexer extends SearchBase {
 			}
 
 			$vn_c = 0;
-			while($qr_all->nextRow()) {
-				$t_instance->load($qr_all->get($t_instance->primaryKey()));
-				$t_instance->doSearchIndexing(array(), true, $this->opo_engine->engineName());
+			$va_ids = $qr_all->getAllFieldValues($t_instance->primaryKey());
+
+			$va_element_ids = null;
+			if (method_exists($t_instance, "getApplicableElementCodes")) {
+				$va_element_ids = array_keys($t_instance->getApplicableElementCodes(null, false, false));
+			}
+			
+			$vn_table_num = $t_instance->tableNum();
+			$vs_table_pk = $t_instance->primaryKey();
+			$va_field_data = array();
+			
+			$va_intrinsic_list = $this->getFieldsToIndex($vs_table, $vs_table, array('intrinsicOnly' => true));
+			$va_intrinsic_list[$vs_table_pk] = array();
+			
+			foreach($va_ids as $vn_i => $vn_id) {
+				if (!($vn_i % 200)) {	// Pre-load attribute values for next 200 items to index; improves index performance
+					$va_id_slice = array_slice($va_ids, $vn_i, 200);
+					if ($va_element_ids) {
+						ca_attributes::prefetchAttributes($o_db, $vn_table_num, $va_id_slice, $va_element_ids);
+					}
+					$qr_field_data = $o_db->query("
+						SELECT ".join(", ", array_keys($va_intrinsic_list))." 
+						FROM {$vs_table}
+						WHERE {$vs_table_pk} IN (?)	
+					", array($va_id_slice));	
+					
+					$va_field_data = array();
+					while($qr_field_data->nextRow()) {
+						$va_field_data[(int)$qr_field_data->get($vs_table_pk)] = $qr_field_data->getRow();
+					}
+				}
+				
+				$this->indexRow($vn_table_num, $vn_id, $va_field_data[$vn_id], true, null, array(), array());
 				if ($pb_display_progress && $pb_interactive_display) {
 					print CLIProgressBar::next();
 				}
@@ -233,6 +245,7 @@ class SearchIndexer extends SearchBase {
 		
 		if ($pb_display_progress) {
 			print "\n\n\nDone! [Indexing for ".join(", ", $va_names)." took ".caFormatInterval((float)$t_timer->getTime(4))."]\n";
+			print "Note that if you're using an external search service like Apache Solr, the data may only now be sent to the actual service because it was buffered until now. So you still might have to wait a while for the script to finish.\n";
 		}
 		if ($ps_callback) { 
 			$ps_callback(
@@ -251,53 +264,79 @@ class SearchIndexer extends SearchBase {
 	}
 	# ------------------------------------------------
 	/**
+	 * Reindex selected rows in a table. Rows are indexed in the same way as would be done in a full reindex.
+	 *
+	 * @param mixed $pm_table_name_or_num The name or number of the table to reindex
+	 * @param array $pa_ids A list of ids in the table to reindex
+	 * @param array $pa_options An array of options to pass through to SearchIndexer::indexRow(). Normally omitted.
+	 *
+	 * @return mixed True on success, null if the table is invalid or no ids are specified.
+	 */
+	public function reindexRows($pm_table_name_or_num, $pa_ids, $pa_options=null) {
+		if(!($t_instance = $this->opo_datamodel->getInstance($pm_table_name_or_num))) { return null; }
+		if (!is_array($pa_ids) && !sizeof($pa_ids)) { return null; }
+		
+		$va_element_ids = null;
+		if (method_exists($t_instance, "getApplicableElementCodes")) {
+			$va_element_ids = array_keys($t_instance->getApplicableElementCodes(null, false, false));
+		}
+		
+		$vs_table = $t_instance->tableName();
+		$vn_table_num = $t_instance->tableNum();
+		$vs_table_pk = $t_instance->primaryKey();
+		$va_field_data = array();
+		
+		$va_intrinsic_list = $this->getFieldsToIndex($vs_table, $vs_table, array('intrinsicOnly' => true));
+		$va_intrinsic_list[$vs_table_pk] = array();
+		
+		foreach($pa_ids as $vn_i => $vn_id) {
+			if ($va_element_ids && (!($vn_i % 200))) {	// Pre-load attribute values for next 200 items to index; improves index performance
+				ca_attributes::prefetchAttributes($this->getDb(), $vn_table_num, $va_id_slice = array_slice($pa_ids, $vn_i, 200), $va_element_ids);
+			
+				$qr_field_data = $this->getDb()->query("
+					SELECT ".join(", ", array_keys($va_intrinsic_list))." 
+					FROM {$vs_table}
+					WHERE {$vs_table_pk} IN (?)	
+				", array($va_id_slice));	
+				
+				$va_field_data = array();
+				while($qr_field_data->nextRow()) {
+					$va_field_data[(int)$qr_field_data->get($vs_table_pk)] = $qr_field_data->getRow();
+				}
+			}
+			
+			$this->indexRow($vn_table_num, $vn_id, $va_field_data[$vn_id], false, null, array($vs_table_pk => true), array(), $pa_options);
+			
+		}
+		return true;
+	}
+	# ------------------------------------------------
+	/**
 	 * Fetches list of dependencies for a given table
 	 */
-	public function getDependencies($ps_subject_table){
-		/* set up cache */
-		$va_frontend_options = array(
-			'lifetime' => null, 				/* cache lives forever (until manual destruction) */
-			'logging' => false,					/* do not use Zend_Log to log what happens */
-			'write_control' => true,			/* immediate read after write is enabled (we don't write often) */
-			'automatic_cleaning_factor' => 0, 	/* no automatic cache cleaning */
-			'automatic_serialization' => true	/* we store arrays, so we have to enable that */
-		);
-		$vs_cache_dir = __CA_APP_DIR__.'/tmp';//$this->opo_app_config->get('site_home_dir').'/tmp';
-		$va_backend_options = array(
-			'cache_dir' => $vs_cache_dir,		/* where to store cache data? */
-			'file_locking' => true,				/* cache corruption avoidance */
-			'read_control' => false,			/* no read control */
-			'file_name_prefix' => 'ca_cache',	/* prefix of cache files */
-			'cache_file_perm' => 0700			/* permissions of cache files */
-		);
-		
-		try {
-			$vo_cache = Zend_Cache::factory('Core', 'File', $va_frontend_options, $va_backend_options);
-		} catch (Exception $e) {
-			// return dependencies without caching
-			return $this->__getDependencies($ps_subject_table);
-		}
+	public function getDependencies($ps_subject_table) {
 		/* handle total cache miss (completely new cache has been generated) */
-		if (!(is_array($va_cache_data = $vo_cache->load('ca_table_dependency_array')))) {
-    		$va_cache_data = array();
+		if(ExternalCache::contains('ca_table_dependency_array')) {
+			$va_cache_data = ExternalCache::fetch('ca_table_dependency_array');
 		}
 
 		/* cache outdated? (i.e. changes to search_indexing.conf) */
 		$va_configfile_stat = stat($this->opo_search_config->get('search_indexing_config'));
-		if($va_configfile_stat['mtime'] != $vo_cache->load('ca_table_dependency_array_mtime')) {
-			$vo_cache->save($va_configfile_stat['mtime'],'ca_table_dependency_array_mtime');
+		if($va_configfile_stat['mtime'] != ExternalCache::fetch('ca_table_dependency_array_mtime')) {
+			ExternalCache::save('ca_table_dependency_array_mtime', $va_configfile_stat['mtime']);
 			$va_cache_data = array();
 		}
 
 		if(isset($va_cache_data[$ps_subject_table]) && is_array($va_cache_data[$ps_subject_table])) { /* cache hit */
 			/* return data from cache */
-			/* TODO: probably we should implement some checks for data consistency */
+			//Debug::msg("Got table dependency array for table {$ps_subject_table} from external cache");
 			return $va_cache_data[$ps_subject_table];
 		} else { /* cache miss */
+			//Debug::msg("Cache miss for {$ps_subject_table}");
 			/* build dependency graph, store it in cache and return it */
 			$va_deps = $this->__getDependencies($ps_subject_table);
 			$va_cache_data[$ps_subject_table] = $va_deps;
-			$vo_cache->save($va_cache_data,'ca_table_dependency_array');
+			ExternalCache::save('ca_table_dependency_array', $va_cache_data);
 			return $va_deps;
 		}
 	}
@@ -306,6 +345,20 @@ class SearchIndexer extends SearchBase {
 	 * Generate hierarchical values for using in indexing of hierarchical values with INDEX_ANCESTORS enabled
 	 */
 	private function _genHierarchicalPath($pn_subject_row_id, $ps_field, $t_subject, $pa_options=null) {
+		$vs_key = md5("{$pn_subject_row_id}/{$ps_field}/".print_R($pa_options, true));
+		if(MemoryCache::contains($vs_key, 'SearchIndexerHierPaths')) {
+			return MemoryCache::fetch($vs_key, 'SearchIndexerHierPaths');
+		}
+		$pn_start = caGetOption('INDEX_ANCESTORS_START_AT_LEVEL', $pa_options, 0);
+		$pn_max_levels = caGetOption('INDEX_ANCESTORS_MAX_NUMBER_OF_LEVELS', $pa_options, null);
+		$ps_delimiter = caGetOption('INDEX_ANCESTORS_AS_PATH_WITH_DELIMITER', $pa_options, '; ');
+		
+		// Automagically generate hierarchical paths for preferred labels passed as label table + label field
+		if (is_subclass_of($t_subject, "BaseLabel")) {
+			$pn_subject_row_id = $t_subject->get($t_subject->getSubjectKey());
+			$t_subject = $t_subject->getSubjectTableInstance();
+			$ps_field = "preferred_labels.{$ps_field}";
+		}
 		$va_ids = $t_subject->getHierarchyAncestors($pn_subject_row_id, array('idsOnly' => true, 'includeSelf' => true));
 		$vs_subject_tablename = $t_subject->tableName();
 		
@@ -320,9 +373,6 @@ class SearchIndexer extends SearchBase {
 			}
 			$va_hier_values = array_reverse($va_hier_values);
 			
-			$pn_start = caGetOption('INDEX_ANCESTORS_START_AT_LEVEL', $pa_options, 0);
-			$pn_max_levels = caGetOption('INDEX_ANCESTORS_MAX_NUMBER_OF_LEVELS', $pa_options, null);
-			$ps_delimiter = caGetOption('INDEX_ANCESTORS_AS_PATH_WITH_DELIMITER', $pa_options, '; ');
 			
 			if ($pn_start > 0) {
 				$va_hier_values = array_slice($va_hier_values, $pn_start);
@@ -330,9 +380,16 @@ class SearchIndexer extends SearchBase {
 			if ($pn_max_levels > 0) {
 				$va_hier_values = array_slice($va_hier_values, 0, $pn_max_levels);
 			}
-			
-			return array('values' => $va_hier_values, 'path' => join($ps_delimiter, $va_hier_values));
+
+			if(MemoryCache::itemCountForNamespace('SearchIndexerHierPaths') > 100) {
+				MemoryCache::flush('SearchIndexerHierPaths');
+			}
+			$va_return = array('values' => $va_hier_values, 'path' => join($ps_delimiter, $va_hier_values));
+			MemoryCache::save($vs_key, $va_return, 'SearchIndexerHierPaths');
+			return $va_return;
 		}
+
+		MemoryCache::save($vs_key, null, 'SearchIndexerHierPaths');
 		return null;
 	}
 	# ------------------------------------------------
@@ -354,9 +411,12 @@ class SearchIndexer extends SearchBase {
 	 * array of indexing options passed through from the search_indices.conf (no options are defined yet - but will be soon)
 
 	 */
-	public function indexRow($pn_subject_tablenum, $pn_subject_row_id, $pa_field_data, $pb_reindex_mode=false, $pa_exclusion_list=null, $pa_changed_fields=null, $pa_old_values=null) {
+	public function indexRow($pn_subject_tablenum, $pn_subject_row_id, $pa_field_data, $pb_reindex_mode=false, $pa_exclusion_list=null, $pa_changed_fields=null, $pa_old_values=null, $pa_options=null) {
+		if (!$pb_reindex_mode && is_array($pa_changed_fields) && !sizeof($pa_changed_fields)) { return; }	// don't bother indexing if there are no changed fields
+		
 		$vs_subject_tablename = $this->opo_datamodel->getTableName($pn_subject_tablenum);
-		$t_subject = $this->getTableInstance($vs_subject_tablename, true);
+		$t_subject = $this->opo_datamodel->getInstanceByTableName($vs_subject_tablename, true);
+		$t_subject->setDb($this->getDb());	// force the subject instance to use the same db connection as the indexer, in case we're operating in a transaction
 		
 		// Prevent endless recursive reindexing
 		if (is_array($pa_exclusion_list[$pn_subject_tablenum]) && (isset($pa_exclusion_list[$pn_subject_tablenum][$pn_subject_row_id]))) { return; }
@@ -373,15 +433,6 @@ class SearchIndexer extends SearchBase {
 		
 		$vb_can_do_incremental_indexing = $this->opo_engine->can('incremental_reindexing') ? true : false;		// can the engine do incremental indexing? Or do we need to reindex the entire row every time?
 		
-		foreach($this->opo_search_config->get('search_indexing_replacements') as $vs_to_replace => $vs_replacement){
-			foreach($pa_field_data as $vs_k => &$vs_value) {
-				if($vs_replacement=="nothing") {
-					$vs_replacement="";
-				}
-				$vs_value = str_replace($vs_to_replace,$vs_replacement,$vs_value);
-			}
-		}
-		
 		if (!$pa_exclusion_list) { $pa_exclusion_list = array(); }
 		$pa_exclusion_list[$pn_subject_tablenum][$pn_subject_row_id] = true;
 			
@@ -394,14 +445,6 @@ class SearchIndexer extends SearchBase {
 			
 			foreach($va_fields_to_index as $vs_k => $va_data) {
 				if (preg_match('!^ca_attribute_(.*)$!', $vs_k, $va_matches)) {
-					if (!is_numeric($va_matches[1])) {
-						if ($vn_x = $this->_getElementID($va_matches[1])) {
-							$va_matches[1] = $vn_x;
-						} else {
-							unset($va_fields_to_index[$vs_k]);
-							continue;
-						}
-					}
 					unset($va_fields_to_index[$vs_k]);
 					if ($va_data['DONT_INDEX']) {	// remove attribute from indexing list
 						unset($va_fields_to_index['_ca_attribute_'.$va_matches[1]]);
@@ -419,7 +462,6 @@ class SearchIndexer extends SearchBase {
 			$pb_reindex_mode = true;
 			$vb_reindex_children = true;
 		}
-		
 		$vb_started_indexing = false;
 		if (is_array($va_fields_to_index)) {
 			$this->opo_engine->startRowIndexing($pn_subject_tablenum, $pn_subject_row_id);
@@ -447,80 +489,8 @@ class SearchIndexer extends SearchBase {
 					}
 					
 					$va_data['datatype'] = (int)$this->_getElementDataType($va_matches[1]);
+					$this->_indexAttribute($t_subject, $pn_subject_row_id, $va_matches[1], $va_data);
 					
-					switch($va_data['datatype']) {
-						case 0: 		// container
-							// index components of complex multi-value attributes
-							$va_attributes = $t_subject->getAttributesByElement($va_matches[1], array('row_id' => $pn_subject_row_id));
-							
-							if (sizeof($va_attributes)) { 
-								foreach($va_attributes as $vo_attribute) {
-									/* index each element of the container */
-									foreach($vo_attribute->getValues() as $vo_value) {
-										$vn_list_id = $this->_getElementListID($vo_value->getElementID());											
-										$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vo_value->getElementID(), $vo_attribute->getAttributeID(), $vo_value->getDisplayValue($vn_list_id), $va_data);																																															
-									}
-								}
-							} else {
-								// we are deleting a container so cleanup existing sub-values
-								$va_sub_elements = $this->opo_metadata_element->getElementsInSet($va_matches[1]);
-								
-								foreach($va_sub_elements as $vn_i => $va_element_info) {
-									$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$va_element_info['element_id'], $va_element_info['element_id'], '', $va_data);
-								}
-							}
-							break;
-						case 3:		// list
-							// We pull the preferred labels of list items for indexing here. We do so for all languages. Note that
-							// this only done for list attributes that are standalone and not a sub-element in a container. Perhaps
-							// we should also index the text of sub-element lists, but it's not clear that it is a good idea yet. The list_id's of
-							// sub-elements *are* indexed however, so advanced search forms passing ids instead of text will work.
-							$va_tmp = array();
-							if (is_array($va_attributes = $t_subject->getAttributesByElement($va_matches[1], array('row_id' => $pn_subject_row_id)))) {
-								foreach($va_attributes as $vo_attribute) {
-									foreach($vo_attribute->getValues() as $vo_value) {
-										$va_tmp[$vo_attribute->getAttributeID()] = $vo_value->getDisplayValue();
-									}
-								}
-							}
-							
-							$va_new_values = array();
-							$t_item = new ca_list_items();
-							$va_labels = $t_item->getPreferredDisplayLabelsForIDs($va_tmp, array('returnAllLocales' => true));
-							
-							foreach($va_labels as $vn_row_id => $va_labels_per_row) {
-								foreach($va_labels_per_row as $vn_locale_id => $vs_label) {
-									$va_new_values[$vn_row_id][$vs_label] = true;
-								}
-							}
-							
-							foreach($va_tmp as $vn_attribute_id => $vn_item_id) {
-								if(!$vn_item_id) { continue; }
-								if(!isset($va_new_values[$vn_item_id]) || !is_array($va_new_values[$vn_item_id])) { continue; }
-								$vs_v = join(' ;  ', array_merge(array($vn_item_id), array_keys($va_new_values[$vn_item_id])));	
-								$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$va_matches[1], $vn_attribute_id, $vs_v, $va_data);
-							}
-							
-							break;
-						default:
-							$va_attributes = $t_subject->getAttributesByElement($va_matches[1], array('row_id' => $pn_subject_row_id));
-							if (!is_array($va_attributes)) { break; }
-							foreach($va_attributes as $vo_attribute) {
-								foreach($vo_attribute->getValues() as $vo_value) {
-									//if the field is a daterange type get content from start and end fields
-									$va_field_list = $t_subject->getFieldsArray();
-									if(in_array($va_field_list[$vs_field]['FIELD_TYPE'],array(FT_DATERANGE,FT_HISTORIC_DATERANGE))) {
-										$start_field = $va_field_list[$vs_field]['START'];
-										$end_field = $va_field_list[$vs_field]['END'];
-										$pn_content = $pa_field_data[$start_field] . " - " .$pa_field_data[$end_field];
-									} else {
-										$pn_content = $vo_value->getDisplayValue();
-									}
-									$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$va_matches[1], $vo_attribute->getAttributeID(), $pn_content, $va_data);
-								}
-							}
-							break;
-					}
 				} else {
 					//
 					// Plain old field
@@ -529,6 +499,8 @@ class SearchIndexer extends SearchBase {
 						continue;
 					}
 					
+					if (!($vn_fld_num = $t_subject->fieldNum($vs_field))) { continue; }
+					
 					//
 					// Hierarchical indexing in primary table
 					//
@@ -536,9 +508,9 @@ class SearchIndexer extends SearchBase {
 						if ($t_subject && $t_subject->isHierarchical()) {
 							$vn_fld_num = $t_subject->fieldNum($vs_field);
 							if ($va_hier_values = $this->_genHierarchicalPath($pn_subject_row_id, $vs_field, $t_subject, $va_data)) {
-								$this->opo_engine->indexField($pn_subject_tablenum, $vn_fld_num, $pn_subject_row_id, join(" ", $va_hier_values['values']), $va_data);
+								$this->opo_engine->indexField($pn_subject_tablenum, 'I'.$vn_fld_num, $pn_subject_row_id, join(" ", $va_hier_values['values']), $va_data);
 								if(caGetOption('INDEX_ANCESTORS_AS_PATH_WITH_DELIMITER', $va_data, false) !== false) {
-									$this->opo_engine->indexField($pn_subject_tablenum, $vn_fld_num, $pn_subject_row_id, $va_hier_values['path'], array_merge($va_data, array('DONT_TOKENIZE' => 1)));
+									$this->opo_engine->indexField($pn_subject_tablenum, 'I'.$vn_fld_num, $pn_subject_row_id, $va_hier_values['path'], array_merge($va_data, array('DONT_TOKENIZE' => 1)));
 								}
 							}
 							
@@ -549,7 +521,7 @@ class SearchIndexer extends SearchBase {
 								$o_indexer = new SearchIndexer($this->opo_db);
 								$qr_children_res = $t_subject->makeSearchResult($vs_subject_tablename, $va_children_ids);
 								while($qr_children_res->nextHit()) {
-									$o_indexer->indexRow($pn_subject_tablenum, $vn_id=$qr_children_res->get($vs_subject_pk), array($vs_subject_pk => $vn_id, 'parent_id' => $qr_children_res->get('parent_id'), $vs_field => $qr_children_res->get($vs_field)), false, $pa_exclusion_list, array($vs_field => true), null);
+									$o_indexer->indexRow($pn_subject_tablenum, $qr_children_res->get($vs_subject_pk), array($vs_subject_pk => $vn_id, 'parent_id' => $qr_children_res->get('parent_id'), $vs_field => $qr_children_res->get($vs_field)), false, $pa_exclusion_list, array($vs_field => true), null);
 								}
 							}
 							continue;
@@ -559,7 +531,8 @@ class SearchIndexer extends SearchBase {
 					// specialized identifier (idno) processing; used IDNumbering plugin to generate searchable permutations of identifier
 					if (((isset($va_data['INDEX_AS_IDNO']) && $va_data['INDEX_AS_IDNO']) || in_array('INDEX_AS_IDNO', $va_data)) && method_exists($t_subject, "getIDNoPlugInInstance") && ($o_idno = $t_subject->getIDNoPlugInInstance())) {
 						$va_values = $o_idno->getIndexValues($pa_field_data[$vs_field]);
-						$this->opo_engine->indexField($pn_subject_tablenum, $vs_field, $pn_subject_row_id, join(" ", $va_values), $va_data);
+						$vn_fld_num = $t_subject->fieldNum($vs_field);
+						$this->opo_engine->indexField($pn_subject_tablenum, 'I'.$vn_fld_num, $pn_subject_row_id, join(" ", $va_values), $va_data);
 						continue;
 					}
 					
@@ -568,17 +541,21 @@ class SearchIndexer extends SearchBase {
 						// if the field is a daterange type get content from start and end fields
 						$start_field = $va_field_list[$vs_field]['START'];
 						$end_field = $va_field_list[$vs_field]['END'];
+						if(!$pa_field_data[$start_field] || !$pa_field_data[$start_field]) { continue; }
 						$pn_content = $pa_field_data[$start_field] . " - " .$pa_field_data[$end_field];
 					} else {
 						$va_content = array();
-						 if (isset($va_field_list[$vs_field]['LIST_CODE']) && $va_field_list[$vs_field]['LIST_CODE']) {
+						
+						if (isset($va_field_list[$vs_field]['LIST_CODE']) && $va_field_list[$vs_field]['LIST_CODE']) {
 							// Is reference to list item so index preferred label values
 							$t_item = new ca_list_items((int)$pa_field_data[$vs_field]);
 							$va_labels = $t_item->getPreferredDisplayLabelsForIDs(array((int)$pa_field_data[$vs_field]), array('returnAllLocales' => true));
 							
 							foreach($va_labels as $vn_label_row_id => $va_labels_per_row) {
-								foreach($va_labels_per_row as $vn_locale_id => $vs_label) {
-									$va_content[$vs_label] = true;
+								foreach($va_labels_per_row as $vn_locale_id => $va_label_list) {
+									foreach($va_label_list as $vs_label) {
+										$va_content[$vs_label] = true;
+									}
 								}
 							}
 							$va_content[$t_item->get('idno')] = true;
@@ -590,15 +567,17 @@ class SearchIndexer extends SearchBase {
 										$pb_reindex_mode = true;	// trigger full reindex of record so it reflects text of related item (if so indexed)
 									}
 								}
-								$this->opo_engine->indexField($pn_subject_tablenum, $vs_field, $pn_subject_row_id, $pn_content, $va_data);
+								
+								$this->opo_engine->indexField($pn_subject_tablenum, 'I'.$vn_fld_num, $pn_subject_row_id, $pn_content, $va_data);
 							}
 						}
 						$va_content[$pa_field_data[$vs_field]] = true;
-						$this->opo_engine->indexField($pn_subject_tablenum, $vs_field, $pn_subject_row_id, join(" ", array_keys($va_content)), $va_data);
+						
+						$this->opo_engine->indexField($pn_subject_tablenum, 'I'.$vn_fld_num, $pn_subject_row_id, join(" ", array_keys($va_content)), $va_data);
 						continue;
 					}
 					
-					$this->opo_engine->indexField($pn_subject_tablenum, $vs_field, $pn_subject_row_id, $pn_content, $va_data);
+					$this->opo_engine->indexField($pn_subject_tablenum, 'I'.$vn_fld_num, $pn_subject_row_id, $pn_content, $va_data);
 				}
 			}
 		}
@@ -632,8 +611,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 
 				$va_field_list = array_keys($va_fields_to_index);
 				
-				$va_table_list_list = array(); //$va_table_info['tables'];
-				$va_table_key_list = array(); //$va_table_info['keys'];
+				$va_table_list_list = $va_table_key_list = array();
 				
 				if (isset($va_table_info['key']) && $va_table_info['key']) {
 					$va_table_list_list = array('key' => array($vs_related_table));
@@ -645,13 +623,14 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 					}
 				}
 				
-				if (!is_array($va_table_list_list) || !sizeof($va_table_list_list)) { continue; } //$va_table_list_list = array($vs_related_table => array()); }
+				if (!is_array($va_table_list_list) || !sizeof($va_table_list_list)) { continue; }
 			
 				foreach($va_table_list_list as $vs_list_name => $va_linking_tables) {
 					array_push($va_linking_tables, $vs_related_table);
 					$vs_left_table = $vs_subject_tablename;
 	
 					$va_joins = array();
+					$vs_rel_type_id_fld = null;
 					foreach($va_linking_tables as $vs_right_table) {
 						if (is_array($va_table_key_list) && (isset($va_table_key_list[$vs_list_name][$vs_right_table][$vs_left_table]) || isset($va_table_key_list[$vs_list_name][$vs_left_table][$vs_right_table]))) {		// are the keys for this join specified in the indexing config?
 							if (isset($va_table_key_list[$vs_list_name][$vs_left_table][$vs_right_table])) {
@@ -678,13 +657,22 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 								$vs_join .= ")";
 							}
 							
+							if (($t_rel_instance = $this->opo_datamodel->getInstanceByTableName($vs_right_table, true)) && method_exists($t_rel_instance, "isRelationship") && $t_rel_instance->isRelationship() && $t_rel_instance->hasField('type_id')) { 
+								$vs_rel_type_id_fld = "{$vs_right_table}.type_id";
+							}
 							$va_joins[] = $vs_join;
 						} else {
 							if ($va_rel = $this->opo_datamodel->getOneToManyRelations($vs_left_table, $vs_right_table)) {
 								$va_joins[] = 'INNER JOIN '.$va_rel['many_table'].' ON '.$va_rel['one_table'].'.'.$va_rel['one_table_field'].' = '.$va_rel['many_table'].'.'.$va_rel['many_table_field'];
+								if (($t_rel_instance = $this->opo_datamodel->getInstanceByTableName($va_rel['many_table'], true)) && method_exists($t_rel_instance, "isRelationship") && $t_rel_instance->isRelationship() && $t_rel_instance->hasField('type_id')) { 
+									$vs_rel_type_id_fld = "{$vs_right_table}.type_id";
+								}
 							} else {
 								if ($va_rel = $this->opo_datamodel->getOneToManyRelations($vs_right_table, $vs_left_table)) {
 									$va_joins[] = 'INNER JOIN '.$va_rel['one_table'].' ON '.$va_rel['one_table'].'.'.$va_rel['one_table_field'].' = '.$va_rel['many_table'].'.'.$va_rel['many_table_field'];
+									if (($t_rel_instance = $this->opo_datamodel->getInstanceByTableName($va_rel['one_table'], true)) && method_exists($t_rel_instance, "isRelationship") && $t_rel_instance->isRelationship() && $t_rel_instance->hasField('type_id')) { 
+										$vs_rel_type_id_fld = "{$vs_right_table}.type_id";
+									}
 								}
 							}
 						}
@@ -702,6 +690,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 						$va_proc_field_list[$vn_i] = $vs_related_table.'.'.$va_field_list[$vn_i];
 					}
 					$va_proc_field_list[] = $vs_related_table.'.'.$vs_related_pk;
+					if ($vs_rel_type_id_fld) { $va_proc_field_list[] = $vs_rel_type_id_fld.' rel_type_id'; }
 					if (isset($va_rel['many_table']) && $va_rel['many_table']) { 
 						$va_proc_field_list[] = $va_rel['many_table'].'.'.$va_rel['many_table_field'];
 					}
@@ -712,17 +701,26 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 						WHERE
 							(".$vs_subject_tablename.'.'.$vs_subject_pk.' = ?)
 					';
+					//print "$vs_sql\n";
 					$qr_res = $this->opo_db->query($vs_sql, $pn_subject_row_id);
 					
 					if ($this->opo_db->numErrors()) {
-						// TODO: proper error reporting
-						print_r($this->opo_db->getErrors());
-						print "\n\n$vs_sql\n";
+						// Shouldn't ever happen
+						throw new Exception(_t("SQL error while getting content for index of related fields: %1; SQL was %2", $this->opo_db->getErrors(), $vs_sql));
 					}
+					
+					 if (method_exists($t_rel, "getApplicableElementCodes")) {
+ 						if (is_array($va_element_ids = array_keys($t_rel->getApplicableElementCodes(null, false, false))) && sizeof($va_element_ids)) {
+ 							$va_rel_row_ids = $qr_res->getAllFieldValues($vs_related_pk);
+ 							ca_attributes::prefetchAttributes($this->opo_db, $vn_related_tablenum, $va_rel_row_ids , $va_element_ids);
+ 						}
+  					}
+					
+					$qr_res->seek(0);
 					while($qr_res->nextRow()) {
 						$va_field_data = $qr_res->getRow();
 						$vn_row_id = $qr_res->get($vs_related_pk);
-						
+						$vn_rel_type_id = $qr_res->get('rel_type_id');
 						foreach($va_fields_to_index as $vs_rel_field => $va_rel_field_info) {
 //
 // BEGIN: Index attributes in related tables
@@ -745,72 +743,8 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 								$vb_is_attr = true;
 								
 								$va_rel_field_info['datatype'] = (int)$this->_getElementDataType($va_matches[1]);
-			
-								switch($va_rel_field_info['datatype']) {
-									case 0: 		// container
-										// index components of complex multi-value attributes
-										$va_attributes = $t_rel->getAttributesByElement($va_matches[1], array('row_id' => $vn_row_id));
-					
-										if (sizeof($va_attributes)) { 
-											foreach($va_attributes as $vo_attribute) {
-												foreach($vo_attribute->getValues() as $vo_value) {
-													$vn_list_id = $this->_getElementListID($vo_value->getElementID());
-													$this->opo_engine->indexField($vn_related_tablenum, 'A'.$vo_value->getElementID(), $vo_attribute->getAttributeID(), $vo_value->getDisplayValue($vn_list_id), $va_rel_field_info);	// 4 = ca_attributes
-												}
-											}
-										} else {
-											// we are deleting a container so cleanup existing sub-values
-											$va_sub_elements = $this->opo_metadata_element->getElementsInSet($va_matches[1]);
-						
-											foreach($va_sub_elements as $vn_i => $va_element_info) {
-												$this->opo_engine->indexField($vn_related_tablenum, 'A'.$va_element_info['element_id'], $va_element_info['element_id'], '', $va_rel_field_info);
-											}
-										}
-										break;
-									case 3:		// list
-										// We pull the preferred labels of list items for indexing here. We do so for all languages. Note that
-										// this only done for list attributes that are standalone and not a sub-element in a container. Perhaps
-										// we should also index the text of sub-element lists, but it's not clear that it is a good idea yet. The list_id's of
-										// sub-elements *are* indexed however, so advanced search forms passing ids instead of text will work.
-										$va_tmp = array();
-										if (is_array($va_attributes = $t_rel->getAttributesByElement($va_matches[1], array('row_id' => $vn_row_id)))) {
-											foreach($va_attributes as $vo_attribute) {
-												foreach($vo_attribute->getValues() as $vo_value) {
-													$va_tmp[$vo_attribute->getAttributeID()] = $vo_value->getDisplayValue();
-												}
-											}
-										}
-					
-										$va_new_values = array();
-										$t_item = new ca_list_items();
-										$va_labels = $t_item->getPreferredDisplayLabelsForIDs($va_tmp, array('returnAllLocales' => true));
-					
-										foreach($va_labels as $vn_label_row_id => $va_labels_per_row) {
-											foreach($va_labels_per_row as $vn_locale_id => $vs_label) {
-												$va_new_values[$vn_label_row_id][$vs_label] = true;
-											}
-										}
-					
-										foreach($va_tmp as $vn_attribute_id => $vn_item_id) {
-											if(!$vn_item_id) { continue; }
-											if(!isset($va_new_values[$vn_item_id]) || !is_array($va_new_values[$vn_item_id])) { continue; }
-											$vs_v = join(' ;  ', array_merge(array($vn_item_id), array_keys($va_new_values[$vn_item_id])));	
-											$this->opo_engine->indexField($vn_related_tablenum, 'A'.$va_matches[1], $vn_attribute_id, $vs_v, $va_rel_field_info);
-										}
-					
-										break;
-									default:
-										$va_attributes = $t_rel->getAttributesByElement($va_matches[1], array('row_id' => $vn_row_id));
-					
-										if (!is_array($va_attributes)) { break; }
-										foreach($va_attributes as $vo_attribute) {
-											foreach($vo_attribute->getValues() as $vo_value) {
-												$pn_content = $vo_value->getDisplayValue();
-												$this->opo_engine->indexField($vn_related_tablenum, 'A'.$va_matches[1], $vo_attribute->getAttributeID(), $pn_content, $va_rel_field_info);
-											}
-										}
-										break;
-								}
+				
+								$this->_indexAttribute($t_rel, $vn_row_id, $va_matches[1], array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id)));
 							}
 							
 							$vs_fld_data = trim($va_field_data[$vs_rel_field]);
@@ -837,14 +771,14 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 								if ($t_hier_rel && $t_hier_rel->isHierarchical()) {
 									// get hierarchy
 									if ($va_hier_values = $this->_genHierarchicalPath($vn_id, ($vb_is_label ? "preferred_labels.".$vs_rel_field : $vs_rel_field), $t_hier_rel, $va_rel_field_info)) {
-										$this->opo_engine->indexField($vn_related_tablenum, $vn_fld_num, $vn_id, $vs_fld_data.' '.join(" ", $va_hier_values['values']), $va_rel_field_info);
+										$this->opo_engine->indexField($vn_related_tablenum, 'I'.$vn_fld_num, $vn_id, $vs_fld_data.' '.join(" ", $va_hier_values['values']), array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id)));
 										if(caGetOption('INDEX_ANCESTORS_AS_PATH_WITH_DELIMITER', $va_rel_field_info, false) !== false) {
-											$this->opo_engine->indexField($vn_related_tablenum, $vn_fld_num, $vn_id, $va_hier_values['path'], array_merge($va_rel_field_info, array('DONT_TOKENIZE' => 1)));
+											$this->opo_engine->indexField($vn_related_tablenum, 'I'.$vn_fld_num, $vn_id, $va_hier_values['path'], array_merge($va_rel_field_info, array('DONT_TOKENIZE' => 1, 'relationship_type_id' => $vn_rel_type_id)));
 										}
 									}
 									
 									$va_children_ids = $t_hier_rel->getHierarchyAsList($vn_row_id, array('idsOnly' => true));
-							
+								
 									if (!$pb_reindex_mode && is_array($va_children_ids) && sizeof($va_children_ids) > 0) {
 										// trigger reindexing of children
 										$o_indexer = new SearchIndexer($this->opo_db);
@@ -852,7 +786,9 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 										$vs_pk = $t_hier_rel->primaryKey();
 										$vn_table_num = $t_hier_rel->tableNum();
 										while($qr_children_res->nextHit()) {
-											$o_indexer->indexRow($vn_table_num, $vn_id=$qr_children_res->get($vs_pk), array($vs_pk => $vn_id, 'parent_id' => $qr_children_res->get('parent_id'), $vs_rel_field => $qr_children_res->get($vs_rel_field)), false, $pa_exclusion_list, array($vs_rel_field => true), null);
+											$vn_id=$qr_children_res->get($vs_pk);
+											if ($vn_id == $vn_row_id) { continue; }
+											$o_indexer->indexRow($vn_table_num, $vn_id, array($vs_pk => $vn_id, 'parent_id' => $qr_children_res->get('parent_id'), $vs_rel_field => $qr_children_res->get($vs_rel_field)), false, $pa_exclusion_list, array($vs_rel_field => true), null);
 										}
 									}
 									continue;
@@ -865,9 +801,16 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 									break;
 								default:
 									if ($vb_is_attr) {
-										$this->opo_engine->indexField($vn_related_tablenum, 'A'.$va_matches[1], $qr_res->get($vs_related_pk), $vs_fld_data, $va_rel_field_info);
+										$this->opo_engine->indexField($vn_related_tablenum, 'A'.$va_matches[1], $qr_res->get($vs_related_pk), $vs_fld_data, array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id)));
 									} else {
-										$this->opo_engine->indexField($vn_related_tablenum, $this->opo_datamodel->getFieldNum($vs_related_table, $vs_rel_field), $qr_res->get($vs_related_pk), $vs_fld_data, $va_rel_field_info);
+										if (((isset($va_rel_field_info['INDEX_AS_IDNO']) && $va_rel_field_info['INDEX_AS_IDNO']) || in_array('INDEX_AS_IDNO', $va_rel_field_info)) && method_exists($t_rel, "getIDNoPlugInInstance") && ($o_idno = $t_rel->getIDNoPlugInInstance())) {
+											// specialized identifier (idno) processing; used IDNumbering plugin to generate searchable permutations of identifier
+											$va_values = $o_idno->getIndexValues($vs_fld_data);
+											$this->opo_engine->indexField($vn_related_tablenum, 'I'.$this->opo_datamodel->getFieldNum($vs_related_table, $vs_rel_field), $qr_res->get($vs_related_pk), join(" ", $va_values), array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id)));
+										} else {
+											// regular intrinsic
+											$this->opo_engine->indexField($vn_related_tablenum, 'I'.$this->opo_datamodel->getFieldNum($vs_related_table, $vs_rel_field), $qr_res->get($vs_related_pk), $vs_fld_data, array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id)));
+										}
 									}
 									break;	
 							}
@@ -876,17 +819,16 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 //
 						}
 					}
-					if (isset($va_fields_to_index['_count'])) {
-						$this->opo_engine->indexField($pn_subject_tablenum, '_count', $pn_subject_row_id, $qr_res->numRows(), array());
-					}
 				}
 			}
 		}
 }		
+
 		// save indexing on subject
 		if ($vb_started_indexing) {
 			$this->opo_engine->commitRowIndexing();
 		}
+		
 		
 		if ((!$pb_reindex_mode) && (sizeof($pa_changed_fields) > 0)) {
 			//
@@ -916,7 +858,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 			
 			if ($vb_can_do_incremental_indexing) { 
 				$va_rows_to_reindex_by_row_id = array();
-				
+				$va_row_ids_to_reindex_by_table = array();
 				foreach($va_rows_to_reindex as $vs_key => $va_row_to_reindex) {
 					foreach($va_row_to_reindex['field_nums'] as $vs_fld_name => $vn_fld_num) {
 						$vs_new_key = $va_row_to_reindex['table_num'].'/'.$va_row_to_reindex['field_table_num'].'/'.$vn_fld_num.'/'.$va_row_to_reindex['field_row_id'];
@@ -930,33 +872,126 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 								'field_name' => $vs_fld_name,
 								'field_row_id' => $va_row_to_reindex['field_row_id'],
 								'field_values' => $va_row_to_reindex['field_values'],
+								'relationship_type_id' => $va_row_to_reindex['relationship_type_id'],
 								'indexing_info' => $va_row_to_reindex['indexing_info'][$vs_fld_name]
 							);
 						}
 						$va_rows_to_reindex_by_row_id[$vs_new_key]['row_ids'][] = $va_row_to_reindex['row_id'];
+						$va_row_ids_to_reindex_by_table[$va_row_to_reindex['field_table_num']][] = $va_row_to_reindex['field_row_id'];
 					}
 				}
+				
+				foreach($va_row_ids_to_reindex_by_table as $vn_rel_tablenum => $va_rel_row_ids) {
+					if ($t_rel = $this->opo_datamodel->getInstanceByTableNum($vn_rel_tablenum, true)) {
+						if (method_exists($t_rel, "getApplicableElementCodes")) {
+							if (is_array($va_element_ids = array_keys($t_rel->getApplicableElementCodes(null, false, false))) && sizeof($va_element_ids)) {
+								ca_attributes::prefetchAttributes($this->opo_db, $vn_rel_tablenum, $va_rel_row_ids, $va_element_ids);
+							}
+						}
+					}
+				}
+				
 				$o_indexer = new SearchIndexer($this->opo_db);
 				foreach($va_rows_to_reindex_by_row_id as $va_row_to_reindex) {
-					if ($va_row_to_reindex['field_table_num'] === 4) {		// is attribute
-						$va_row_to_reindex['indexing_info']['datatype'] = $this->_getElementDataType($va_row_to_reindex['field_num']);
+					$vn_rel_type_id = $va_row_to_reindex['relationship_type_id'];
+					$t_rel = $this->opo_datamodel->getInstanceByTableNum($va_row_to_reindex['field_table_num'], true);
+					
+					if (substr($va_row_to_reindex['field_name'], 0, 14) == '_ca_attribute_') {		// is attribute
+						$va_row_to_reindex['indexing_info']['datatype'] = $this->_getElementDataType(substr($va_row_to_reindex['field_name'], 14));
 					}
 					
 					if (((isset($va_row_to_reindex['indexing_info']['INDEX_ANCESTORS']) && $va_row_to_reindex['indexing_info']['INDEX_ANCESTORS']) || in_array('INDEX_ANCESTORS', $va_row_to_reindex['indexing_info']))) {
 						if (!is_array($va_row_to_reindex['row_ids'])) { continue; }
-						foreach($va_row_to_reindex['row_ids'] as $vn_row_to_reindex_id) {
-							if ($t_dep = $this->getTableInstance($va_row_to_reindex['table_num'], true)) {
-								$va_dep_ids = $t_dep->getHierarchyAsList($vn_row_to_reindex_id, array('idsOnly' => true, 'includeSelf' => true));
-								foreach($va_dep_ids as $vn_dep_id) {
-									// TODO: this is slow...
-									if($t_dep->load($vn_dep_id)) {
-										$o_indexer->indexRow($va_row_to_reindex['table_num'], $vn_dep_id, $t_dep->getFieldValuesArray(), true, $pa_exclusion_list);
-									}
-								}
-							}
-						}
+						
+						$va_content = $this->_genHierarchicalPath($va_row_to_reindex['field_row_id'], $va_row_to_reindex['field_name'], $this->opo_datamodel->getInstanceByTableNum($va_row_to_reindex['field_table_num'], true), array());
+						
+						$vs_content = is_array($va_content['values']) ? join(" ", $va_content['values']) : "";
+						
+						$this->opo_engine->updateIndexingInPlace($va_row_to_reindex['table_num'], $va_row_to_reindex['row_ids'], $va_row_to_reindex['field_table_num'], $va_row_to_reindex['field_num'], $va_row_to_reindex['field_row_id'], $vs_content, array_merge($va_row_to_reindex['indexing_info'], array('relationship_type_id' => $vn_rel_type_id, 'literalContent' => $va_content['path'])));
 					} else {
-						$this->opo_engine->updateIndexingInPlace($va_row_to_reindex['table_num'], $va_row_to_reindex['row_ids'], $va_row_to_reindex['field_table_num'], $va_row_to_reindex['field_num'], $va_row_to_reindex['field_row_id'], $va_row_to_reindex['field_values'][$va_row_to_reindex['field_name']], $va_row_to_reindex['indexing_info']);
+						$vs_element_code = substr($va_row_to_reindex['field_name'], 14);
+						
+						if (isset($va_row_to_reindex['indexing_info']['datatype'])) {
+							$vs_v = '';
+							switch($va_row_to_reindex['indexing_info']['datatype']) {
+								case __CA_ATTRIBUTE_VALUE_CONTAINER__: 		// container
+									// index components of complex multi-value attributes
+									foreach($va_row_to_reindex['row_ids'] as $vn_rel_row_id) {
+										$this->opo_engine->startRowIndexing($va_row_to_reindex['table_num'], $vn_rel_row_id);
+										
+										$va_attributes = $t_rel->getAttributesByElement($vs_element_code, array('row_id' => $va_row_to_reindex['field_row_id']));
+				
+										if (sizeof($va_attributes)) { 
+											foreach($va_attributes as $vo_attribute) {
+												foreach($vo_attribute->getValues() as $vo_value) {
+													$vn_list_id = $this->_getElementListID($vo_value->getElementID());
+													$this->opo_engine->indexField($va_row_to_reindex['table_num'], 'A'.$vo_value->getElementID(), $va_row_to_reindex['field_row_id'], $vo_value->getDisplayValue($vn_list_id), array_merge($va_row_to_reindex['indexing_info'], array('relationship_type_id' => $vn_rel_type_id)));
+												}
+											}
+										} else {
+											// we are deleting a container so cleanup existing sub-values
+											$va_sub_elements = $this->opo_metadata_element->getElementsInSet($vs_element_code);
+					
+											foreach($va_sub_elements as $vn_i => $va_element_info) {
+												$this->opo_engine->indexField($va_row_to_reindex['table_num'], 'A'.$va_element_info['element_id'], $va_row_to_reindex['field_row_id'], '', array_merge($va_row_to_reindex['indexing_info'], array('relationship_type_id' => $vn_rel_type_id)));
+											}
+										}
+										$this->opo_engine->commitRowIndexing();
+									}
+									break;
+								case __CA_ATTRIBUTE_VALUE_LIST__:			// list
+									$va_tmp = array();
+									if (is_array($va_attributes = $t_rel->getAttributesByElement($vs_element_code, array('row_id' => $va_row_to_reindex['field_row_id'])))) {
+										foreach($va_attributes as $vo_attribute) {
+											foreach($vo_attribute->getValues() as $vo_value) {
+												$va_tmp[$vo_attribute->getAttributeID()] = $vo_value->getDisplayValue();
+											}
+										}
+									}
+				
+									$va_new_values = array();
+									$t_item = new ca_list_items();
+									$va_labels = $t_item->getPreferredDisplayLabelsForIDs($va_tmp, array('returnAllLocales' => true));
+				
+									foreach($va_labels as $vn_label_row_id => $va_labels_per_row) {
+										foreach($va_labels_per_row as $vn_locale_id => $va_label_list) {
+											foreach($va_label_list as $vs_label) {
+												$va_new_values[$vn_label_row_id][$vs_label] = true;
+											}
+										}
+									}
+				
+									foreach($va_tmp as $vn_attribute_id => $vn_item_id) {
+										if(!$vn_item_id) { continue; }
+										if(!isset($va_new_values[$vn_item_id]) || !is_array($va_new_values[$vn_item_id])) { continue; }
+										$vs_v = join(' ;  ', array_merge(array($vn_item_id), array_keys($va_new_values[$vn_item_id])));	
+									}
+				
+									$this->opo_engine->updateIndexingInPlace($va_row_to_reindex['table_num'], $va_row_to_reindex['row_ids'], $va_row_to_reindex['field_table_num'], $va_row_to_reindex['field_num'], $va_row_to_reindex['field_row_id'], $vs_v, array_merge($va_row_to_reindex['indexing_info'], array('relationship_type_id' => $vn_rel_type_id)));
+
+									break;
+								default:
+									
+									$va_tmp = array();
+									if (is_array($va_attributes = $t_rel->getAttributesByElement($vs_element_code, array('row_id' => $va_row_to_reindex['field_row_id'])))) {
+										foreach($va_attributes as $vo_attribute) {
+											foreach($vo_attribute->getValues() as $vo_value) {
+												$va_tmp[$vo_attribute->getAttributeID()] = $vo_value->getDisplayValue();
+											}
+										}
+									}
+				
+									
+									foreach($va_tmp as $vn_attribute_id => $vn_item_id) {
+										if(!$vn_item_id) { continue; }
+										$vs_v = join(' ;  ', $va_tmp);	
+									}
+									$this->opo_engine->updateIndexingInPlace($va_row_to_reindex['table_num'], $va_row_to_reindex['row_ids'], $va_row_to_reindex['field_table_num'], $va_row_to_reindex['field_num'], $va_row_to_reindex['field_row_id'], $vs_v, array_merge($va_row_to_reindex['indexing_info'], array('relationship_type_id' => $vn_rel_type_id)));
+									break;
+							}
+						} else {			
+							$this->opo_engine->updateIndexingInPlace($va_row_to_reindex['table_num'], $va_row_to_reindex['row_ids'], $va_row_to_reindex['field_table_num'], $va_row_to_reindex['field_num'], $va_row_to_reindex['field_row_id'], $va_row_to_reindex['field_values'][$va_row_to_reindex['field_name']], array_merge($va_row_to_reindex['indexing_info'], array('relationship_type_id' => $vn_rel_type_id)));
+						}
 					}
 				}
 			} else {
@@ -969,6 +1004,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 				// indexing tasks in a separate process when the number of dependent rows exceeds a certain threshold
 				//
 				$o_indexer = new SearchIndexer($this->opo_db);
+				$t_dep = null;
 				foreach($va_rows_to_reindex as $va_row_to_reindex) {
 					if ((!$t_dep) || ($t_dep->tableNum() != $va_row_to_reindex['table_num'])) {
 						$t_dep = $this->opo_datamodel->getInstanceByTableNum($va_row_to_reindex['table_num']);
@@ -1007,6 +1043,127 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 	}
 	# ------------------------------------------------
 	/**
+	 * 
+	 */
+	private function _indexAttribute($pt_subject, $pn_row_id, $pm_element_code_or_id, $pa_data) {
+		$va_attributes = $pt_subject->getAttributesByElement($pm_element_code_or_id, array('row_id' => $pn_row_id));
+		$pn_subject_tablenum = $pt_subject->tableNum();
+		$vn_element_id = $this->_getElementID($pm_element_code_or_id);
+		
+		$vn_datatype = isset($pa_data['datatype']) ? $pa_data['datatype'] : $this->_getElementDataType($vn_element_id);	
+		
+		switch($vn_datatype) {
+			case __CA_ATTRIBUTE_VALUE_CONTAINER__: 		// container
+				// index components of complex multi-value attributes
+				if (sizeof($va_attributes)) { 
+					foreach($va_attributes as $vo_attribute) {
+						/* index each element of the container */
+						
+						$va_sub_element_ids = $this->opo_metadata_element->getElementsInSet($pm_element_code_or_id, true, array('idsOnly' => true));
+					
+						$va_sub_element_ids = array_flip($va_sub_element_ids);
+						foreach($vo_attribute->getValues() as $vo_value) {
+							$vn_list_id = $this->_getElementListID($vo_value->getElementID());											
+							$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vo_value->getElementID(), $pn_row_id, $vo_value->getDisplayValue($vn_list_id), $pa_data);		
+							unset($va_sub_element_ids[$vo_value->getElementID()]);																																							
+						}
+						
+						// Clear out any elements that aren't defined
+						foreach(array_keys($va_sub_element_ids) as $vn_element_id) {
+							$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $pn_row_id, '', $pa_data);	
+						}
+					}
+				} else {
+					// we are deleting a container so cleanup existing sub-values
+					if (is_array($va_sub_elements = $this->opo_metadata_element->getElementsInSet($pm_element_code_or_id))) {
+						foreach($va_sub_elements as $vn_i => $va_element_info) {
+							$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $pn_row_id, '', $pa_data);
+						}
+					}
+				}
+				break;
+			case __CA_ATTRIBUTE_VALUE_LIST__:
+			case __CA_ATTRIBUTE_VALUE_OBJECTS__:
+			case __CA_ATTRIBUTE_VALUE_ENTITIES__:
+			case __CA_ATTRIBUTE_VALUE_PLACES__:
+			case __CA_ATTRIBUTE_VALUE_OCCURRENCES__:
+			case __CA_ATTRIBUTE_VALUE_COLLECTIONS__:
+			case __CA_ATTRIBUTE_VALUE_LOANS__:
+			case __CA_ATTRIBUTE_VALUE_MOVEMENTS__:
+			case __CA_ATTRIBUTE_VALUE_STORAGELOCATIONS__:
+			case __CA_ATTRIBUTE_VALUE_OBJECTLOTS__:
+				// We pull the preferred labels of list items for indexing here. We do so for all languages. Note that
+				// this only done for list attributes that are standalone and not a sub-element in a container. Perhaps
+				// we should also index the text of sub-element lists, but it's not clear that it is a good idea yet. The list_id's of
+				// sub-elements *are* indexed however, so advanced search forms passing ids instead of text will work.
+				$va_tmp = array();
+				$va_attributes = $pt_subject->getAttributesByElement($vn_element_id, array('row_id' => $pn_row_id));
+				
+				if (is_array($va_attributes) && sizeof($va_attributes)) {
+					foreach($va_attributes as $vo_attribute) {
+						foreach($vo_attribute->getValues() as $vo_value) {
+							$va_tmp[$vo_attribute->getAttributeID()] = $vo_value->getDisplayValue(array('idsOnly' => true));
+						}
+					}
+				} else {
+					// Delete indexing
+					$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $pn_row_id, '', $pa_data);
+				}
+				
+				if(is_array($va_tmp) && sizeof($va_tmp)) {
+					$va_new_values = array();
+					if ($t_item = AuthorityAttributeValue::elementTypeToInstance($vn_datatype)) {
+						$va_labels = $t_item->getPreferredDisplayLabelsForIDs($va_tmp, array('returnAllLocales' => true));
+				
+						foreach($va_labels as $vn_row_id => $va_labels_per_row) {
+							foreach($va_labels_per_row as $vn_locale_id => $va_label_list) {
+								foreach($va_label_list as $vs_label) {
+									$va_new_values[$vn_row_id][$vs_label] = true;
+								}
+							}
+						}
+				
+						foreach($va_tmp as $vn_attribute_id => $vn_item_id) {
+							if(!$vn_item_id) { continue; }
+							if(!isset($va_new_values[$vn_item_id]) || !is_array($va_new_values[$vn_item_id])) { continue; }
+							$vs_v = join(' ;  ', array_merge(array($vn_item_id), array_keys($va_new_values[$vn_item_id])));	
+							$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $pn_row_id, $vs_v, $pa_data);
+							if ($va_hier_values = $this->_genHierarchicalPath($vn_item_id, "preferred_labels.".$t_item->getLabelDisplayField(), $t_item, $pa_data)) {
+							
+								$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $pn_row_id, $vs_v.' '.join(" ", $va_hier_values['values']), $pa_data);
+								if(caGetOption('INDEX_ANCESTORS_AS_PATH_WITH_DELIMITER', $pa_data, false) !== false) {
+									$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $pn_row_id, $va_hier_values['path'], array_merge($pa_data, array('DONT_TOKENIZE' => 1)));
+								}
+							}
+						}
+					}
+				}
+				
+				break;
+			default:
+				$va_attributes = $pt_subject->getAttributesByElement($pm_element_code_or_id, array('row_id' => $pn_row_id));
+				if (!is_array($va_attributes)) { break; }
+				foreach($va_attributes as $vo_attribute) {
+					foreach($vo_attribute->getValues() as $vo_value) {
+						//if the field is a daterange type get content from start and end fields
+						$va_field_list = $pt_subject->getFieldsArray();
+						if(in_array($va_field_list[$vs_field]['FIELD_TYPE'],array(FT_DATERANGE,FT_HISTORIC_DATERANGE))) {
+							$start_field = $va_field_list[$vs_field]['START'];
+							$end_field = $va_field_list[$vs_field]['END'];
+							$vs_content = $pa_field_data[$start_field] . " - " .$pa_field_data[$end_field];
+						} else {
+							$vs_content = $vo_value->getDisplayValue();
+						}
+						$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $pn_row_id, $vs_content, $pa_data);
+					}
+				}
+				break;
+		}
+					
+		return true;
+	}
+	# ------------------------------------------------
+	/**
 	 * Removes indexing for specified row in table; this is the public call when one is deleting a record
 	 * and needs to remove the associated indexing. unindexRow() will also remove indexing for the specified
 	 * row from all dependent rows in other tables. It essentially undoes the results of indexRow().
@@ -1017,7 +1174,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 		$vb_can_do_incremental_indexing = $this->opo_engine->can('incremental_reindexing') ? true : false;		// can the engine do incremental indexing? Or do we need to reindex the entire row every time?
 		
 		$vs_subject_tablename 		= $this->opo_datamodel->getTableName($pn_subject_tablenum);
-		$t_subject 					= $this->getTableInstance($vs_subject_tablename, true);
+		$t_subject 					= $this->opo_datamodel->getInstanceByTableName($vs_subject_tablename, true);
 		$vs_subject_pk 				= $t_subject->primaryKey();
 
 		$va_deps = $this->getDependencies($vs_subject_tablename);
@@ -1094,13 +1251,14 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 		$va_dependent_rows = array();
 		$vs_subject_tablename = $this->opo_datamodel->getTableName($pn_subject_tablenum);
 		
-		$t_subject = $this->getTableInstance($vs_subject_tablename);
+		$t_subject = $this->opo_datamodel->getInstanceByTableName($vs_subject_tablename, true);
 		$vs_subject_pk = $t_subject->primaryKey();
 		
 // Loop through dependent tables
+
 		foreach($va_deps as $vs_dep_table) {
 		
-			$t_dep 				= $this->getTableInstance($vs_dep_table);
+			$t_dep 				= $this->opo_datamodel->getInstanceByTableName($vs_dep_table, true);
 			$vs_dep_pk 			= $t_dep->primaryKey();
 			$vn_dep_tablenum 	= $t_dep->tableNum();
 			
@@ -1171,15 +1329,17 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 											break;
 										default:
 											$vn_fld_num = null;
-											if (isset(SearchIndexer::$s_SearchIndexer_field_num_cache[$vn_rel_tablenum][$vs_field])) { 
-												$vn_fld_num = SearchIndexer::$s_SearchIndexer_field_num_cache[$vn_rel_tablenum][$vs_field]; 
+											if(MemoryCache::contains("{$vn_rel_tablenum}/{$vs_field}", 'SearchIndexerFieldNums')) {
+												$vn_fld_num = MemoryCache::fetch("{$vn_rel_tablenum}/{$vs_field}", 'SearchIndexerFieldNums');
 												break;
 											}
 											
 											if (preg_match('!^_ca_attribute_([\d]+)$!', $vs_field, $va_matches)) {
-												SearchIndexer::$s_SearchIndexer_field_num_cache[$vn_rel_tablenum][$vs_field] = $vn_fld_num = 'A'.$va_matches[1];
+												$vn_fld_num = 'A'.$va_matches[1];
+												MemoryCache::save("{$vn_rel_tablenum}/{$vs_field}", $vn_fld_num, 'SearchIndexerFieldNums');
 											} else {
-												SearchIndexer::$s_SearchIndexer_field_num_cache[$vn_rel_tablenum][$vs_field] = $vn_fld_num = 'I'.$t_rel->fieldNum($vs_field);
+												$vn_fld_num = 'I'.$t_rel->fieldNum($vs_field);
+												MemoryCache::save("{$vn_rel_tablenum}/{$vs_field}", $vn_fld_num, 'SearchIndexerFieldNums');
 											}
 							
 											break;
@@ -1189,6 +1349,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 									
 									$vn_fld_row_id = $qr_rel_rows->get($vn_rel_pk);
 									$vn_row_id = $qr_rel_rows->get($vs_dep_pk);
+									$vn_rel_type_id = $qr_rel_rows->get('type_id');
 									$vs_key = $vn_dep_tablenum.'/'.$vn_row_id.'/'.$vn_rel_tablenum.'/'.$vn_fld_row_id;
 									
 									if (!isset($va_dependent_rows[$vs_key])) {
@@ -1198,6 +1359,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 											'field_table_num' => $vn_rel_tablenum,
 											'field_row_id' => $vn_fld_row_id,
 											'field_values' => $qr_rel_rows->getRow(),
+											'relationship_type_id' => $vn_rel_type_id,
 											'field_nums' => array(),
 											'field_names' => array()
 										);
@@ -1205,6 +1367,48 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 									$va_dependent_rows[$vs_key]['field_nums'][$vs_field] = $vn_fld_num;
 									$va_dependent_rows[$vs_key]['field_names'][$vn_fld_num] = $vs_field;
 									$va_dependent_rows[$vs_key]['indexing_info'][$vs_field] = $va_indexing_info;
+									
+									// reindex any rows that have authority metadata elements that reference this
+									if (method_exists($t_dep, "getAuthorityElementReferences") && is_array($va_element_references = $t_dep->getAuthorityElementReferences(array('row_id' => $vn_row_id)))) {
+										foreach($va_element_references as $vn_element_table_num => $va_references) {
+											if(!is_array($va_references) || (sizeof($va_references) == 0)) { continue; }
+											
+											$va_element_fields_to_index = $this->getFieldsToIndex($vn_element_table_num, $vn_element_table_num);
+											$vs_element_table_name = $t_dep->getAppDatamodel()->getTableName($vn_element_table_num);
+											$vs_element_table_pk = $t_dep->getAppDatamodel()->getTablePrimaryKeyName($vn_element_table_num);
+				
+											$qr_field_data = $this->opo_db->query("
+												SELECT *
+												FROM {$vs_element_table_name}
+												WHERE {$vs_element_table_pk} IN (?)	
+											", array(array_keys($va_references)));	
+											
+											$va_field_data = array();
+											while($qr_field_data->nextRow()) {
+												$va_field_data[(int)$qr_field_data->get($vs_element_table_pk)] = $qr_field_data->getRow();
+											}
+			
+											foreach($va_references as $vn_element_row_id => $va_element_ids) {
+												$vs_key = $vn_element_table_num.'/'.$vn_element_row_id.'/'.$vn_element_table_num.'/'.$vn_element_row_id;
+												if (!isset($va_dependent_rows[$vs_key])) {
+													$va_dependent_rows[$vs_key] = array(
+														'table_num' => $vn_element_table_num,
+														'row_id' => $vn_element_row_id,
+														'field_table_num' => $vn_element_table_num,
+														'field_row_id' => $vn_element_row_id,
+														'field_values' => $va_field_data[$vn_element_row_id],
+														'field_nums' => array(),
+														'field_names' => array()
+													);
+												}
+												foreach($va_element_ids as $vn_element_id) {
+													$va_dependent_rows[$vs_key]['field_nums']['_ca_attribute_'.$vn_element_id] = 'A'.$vn_element_id;	
+													$va_dependent_rows[$vs_key]['field_names']['A'.$vn_element_id] = '_ca_attribute_'.$vn_element_id;	
+													$va_dependent_rows[$vs_key]['indexing_info']['_ca_attribute_'.$vn_element_id] = $va_element_fields_to_index['_ca_attribute_'.$vn_element_id];
+												}
+											}
+										}
+									}
 								}
 							}
 						}
@@ -1238,8 +1442,8 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 				$va_fld_names[$vs_f] = true;
 			}
 		}
-		
-		if (!isset(SearchIndexer::$s_related_rows_joins_cache[$vs_key]) || !(SearchIndexer::$s_related_rows_joins_cache[$vs_key])) {
+
+		if(!MemoryCache::contains($vs_key, 'SearchIndexerRelatedRowsJoins')) {
 			$vs_left_table = $vs_select_tablename = array_shift($pa_tables);
 	
 			$t_subject = $this->opo_datamodel->getInstanceByTableName($ps_subject_tablename, true);
@@ -1332,12 +1536,12 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 					$va_fld_names[$vs_v] = true;
 				}
 			}
-		
-			SearchIndexer::$s_related_rows_joins_cache[$vs_key] = $va_joins;
-			SearchIndexer::$s_related_fields_joins_cache[$vs_key] = $va_flds;
+
+			MemoryCache::save($vs_key, $va_joins, 'SearchIndexerRelatedRowsJoins');
+			MemoryCache::save($vs_key, $va_flds, 'SearchIndexerRelatedFieldsJoins');
 		} else {
-			$va_joins = SearchIndexer::$s_related_rows_joins_cache[$vs_key];
-			$va_flds = SearchIndexer::$s_related_fields_joins_cache[$vs_key];
+			$va_joins = MemoryCache::fetch($vs_key, 'SearchIndexerRelatedRowsJoins');
+			$va_flds = MemoryCache::fetch($vs_key, 'SearchIndexerRelatedFieldsJoins');
 			
 			$vs_select_tablename = array_shift($pa_tables);
 			$t_subject = $this->opo_datamodel->getInstanceByTableName($ps_subject_tablename, true);
@@ -1434,7 +1638,9 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 	 * Because of dependency and performance issues we do a straight query here rather than go through the ca_metadata_elements model
 	 */
 	private function _getElementID($ps_element_code) {
-		if (isset(SearchIndexer::$s_SearchIndexer_element_id_cache[$ps_element_code])) { return SearchIndexer::$s_SearchIndexer_element_id_cache[$ps_element_code]; }
+		if(MemoryCache::contains($ps_element_code, 'SearchIndexerElementIds')) {
+			return MemoryCache::fetch($ps_element_code, 'SearchIndexerElementIds');
+		}
 		
 		if (is_numeric($ps_element_code)) {
 			$qr_res = $this->opo_db->query("
@@ -1447,35 +1653,38 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 		}
 		if (!$qr_res->nextRow()) { return null; }
 		$vn_element_id =  $qr_res->get('element_id');
-		SearchIndexer::$s_SearchIndexer_element_data_type_cache[$ps_element_code] = SearchIndexer::$s_SearchIndexer_element_data_type_cache[$vn_element_id] = $qr_res->get('datatype');
-		SearchIndexer::$s_SearchIndexer_element_list_id_cache[$ps_element_code] = SearchIndexer::$s_SearchIndexer_element_list_id_cache[$vn_element_id] = $qr_res->get('list_id');
-		SearchIndexer::$s_SearchIndexer_element_id_cache[$vn_element_id] = $ps_element_code;
-		return SearchIndexer::$s_SearchIndexer_element_id_cache[$ps_element_code] = $vn_element_id;
+		MemoryCache::save($ps_element_code, $qr_res->get('datatype'), 'SearchIndexerElementDataTypes');
+		MemoryCache::save($vn_element_id, $qr_res->get('datatype'), 'SearchIndexerElementDataTypes');
+		MemoryCache::save($ps_element_code, $qr_res->get('list_id'), 'SearchIndexerElementListIds');
+		MemoryCache::save($vn_element_id, $qr_res->get('list_id'), 'SearchIndexerElementListIds');
+
+		MemoryCache::save($vn_element_id, $ps_element_code, 'SearchIndexerElementIds');
+		MemoryCache::save($ps_element_code, $vn_element_id, 'SearchIndexerElementIds');
+		return $vn_element_id;
 	}
 	# ------------------------------------------------
 	/**
 	 * Returns datatype code of ca_metadata_element with specified element_code or NULL if the element doesn't exist
 	 */
 	private function _getElementDataType($ps_element_code) {
-		$vn_element_id = $this->_getElementID($ps_element_code);	// ensures $s_SearchIndexer_element_data_type_cache[$ps_element_code] is populated
-		return SearchIndexer::$s_SearchIndexer_element_data_type_cache[$vn_element_id];
+		$vn_element_id = $this->_getElementID($ps_element_code);	// ensures MemoryCache is populated
+		return MemoryCache::fetch($vn_element_id, 'SearchIndexerElementDataTypes');
 	}
 	# ------------------------------------------------
 	/**
 	 * Returns list_id of ca_metadata_element with specified element_code or NULL if the element doesn't exist
 	 */
 	private function _getElementListID($ps_element_code) {
-		$vn_element_id = $this->_getElementID($ps_element_code);	// ensures $s_SearchIndexer_element_data_type_cache[$ps_element_code] is populated
-		return SearchIndexer::$s_SearchIndexer_element_list_id_cache[$vn_element_id];
+		$vn_element_id = $this->_getElementID($ps_element_code);	// ensures MemoryCache is populated
+		return MemoryCache::fetch($vn_element_id, 'SearchIndexerElementListIds');
 	}
 	# ------------------------------------------------
 	/**
 	 * Returns element_code of ca_metadata_element with specified element_id or NULL if the element doesn't exist
 	 */
 	private function _getElementListCode($pn_element_id) {
-		$vn_element_id = $this->_getElementID($pn_element_id);	// ensures $s_SearchIndexer_element_id_cache[$vn_element_id] is populated
-		return SearchIndexer::$s_SearchIndexer_element_id_cache[$vn_element_id];
+		$vn_element_id = $this->_getElementID($pn_element_id);	// ensures MemoryCache is populated
+		return MemoryCache::fetch($vn_element_id, 'SearchIndexerElementIds');
 	}
 	# ------------------------------------------------
 }
-?>

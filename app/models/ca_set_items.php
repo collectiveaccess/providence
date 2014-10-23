@@ -289,8 +289,8 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 		return parent::update($pa_options);
 	}
 	# ------------------------------------------------------
-	protected function initLabelDefinitions() {
-		parent::initLabelDefinitions();
+	protected function initLabelDefinitions($pa_options=null) {
+		parent::initLabelDefinitions($pa_options);
 		$this->BUNDLES['preferred_labels'] = array('type' => 'preferred_label', 'repeating' => true, 'label' => _t("Item captions"));
 	}
 	# ------------------------------------------------------

@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Search_Lucene
  * @subpackage Search
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: QueryParserContext.php 20096 2010-01-06 02:05:09Z bkarwin $
+ * @version    $Id: QueryParserContext.php 24593 2012-01-05 20:35:02Z matthew $
  */
 
 /** Zend_Search_Lucene_Search_QueryToken */
@@ -28,7 +28,7 @@ require_once 'Zend/Search/Lucene/Search/QueryToken.php';
  * @category   Zend
  * @package    Zend_Search_Lucene
  * @subpackage Search
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Search_Lucene_Search_QueryParserContext
@@ -172,15 +172,7 @@ class Zend_Search_Lucene_Search_QueryParserContext
         $this->_entries[] = $entry;
 
         $this->_nextEntryField = null;
-        
-		//
-		// CHANGED TO true FROM null on 4 October 2010 by SK
-		// This change forces the parser to implicitly use AND to combine terms
-		// in a subquery when no boolean is explicitly specified. Previously it was using
-		// boolean OR, which is problematic in settings where CA is used
-		//
-
-        $this->_nextEntrySign  = true;
+        $this->_nextEntrySign  = null;
     }
 
 

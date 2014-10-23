@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2011 Whirl-i-Gig
+ * Copyright 2010-2013 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,14 +41,16 @@
  	private $ops_content = '';						// content to dispay for item
  	private $ops_ajax_content_url = '';		// the URL to use when loading content via Ajax call
  	private $ops_ajax_content_id = null;		// the id to pin onto the end of the Ajax URL
+ 	private $ops_color = null;
  	# -------------------------------------------------------------------
  	/**
  	 * @param $pa_item_info - optional array of settings to initialize map item with. Supported settings are:
- 	 *		latitude - the latitude in decimal degrees of the item
- 	 *		longitude - the longitude in decimal degrees of the item
- 	 *		coordinates - an array or coordinate pairs as would be passed to setCoordinates(); if this setting is passed latitude and longitude settings will be ignored.
- 	 *		label - the text label to use for the item; this is typically used for the item tooltip
- 	 *		content - text content to use in the on-click info window; if you leave this blank no info window will appear
+ 	 *		latitude = the latitude in decimal degrees of the item
+ 	 *		longitude = the longitude in decimal degrees of the item
+ 	 *		coordinates = an array or coordinate pairs as would be passed to setCoordinates(); if this setting is passed latitude and longitude settings will be ignored.
+ 	 *		label = the text label to use for the item; this is typically used for the item tooltip
+ 	 *		content = text content to use in the on-click info window; if you leave this blank no info window will appear
+ 	 *		color = hex color to use for marker
  	 */
  	public function __construct($pa_item_info=null) {
  		if (is_array($pa_item_info)) {
@@ -74,6 +76,10 @@
  			
  			if (isset($pa_item_info['ajaxContentID'])) {
  				$this->setAjaxContentID($pa_item_info['ajaxContentID']);
+ 			}
+ 			
+ 			if (isset($pa_item_info['color'])) {
+ 				$this->setColor($pa_item_info['color']);
  			}
  		}
  	}
@@ -223,6 +229,26 @@
  	 */
 	public function getAjaxContentID() {
 		return $this->ops_ajax_content_id;
+	}
+	# -------------------------------------------------------------------
+ 	/**
+ 	 * Sets label of item; label is used in cases where short descriptive text is needed; in tooltips for example
+ 	 *
+ 	 * @param $ps_text - label text
+ 	 * @return boolean - always returns true
+ 	 */
+	public function setColor($ps_color) {
+		$this->ops_color = $ps_color;
+		return true;
+	}
+	# -------------------------------------------------------------------
+ 	/**
+ 	 * Get currently set label for item
+ 	 *
+ 	 * @return string - the current label
+ 	 */
+	public function getColor() {
+		return $this->ops_color;
 	}
 	# -------------------------------------------------------------------
  	/**

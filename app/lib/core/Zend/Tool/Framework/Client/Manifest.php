@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Tool
  * @subpackage Framework
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Manifest.php 18386 2009-09-23 20:44:43Z ralph $
+ * @version    $Id: Manifest.php 24593 2012-01-05 20:35:02Z matthew $
  */
 
 /**
@@ -54,7 +54,7 @@ require_once 'Zend/Tool/Framework/Registry/EnabledInterface.php';
  * Zend_Tool_Framework_Client_ConsoleClient_Manifest
  * @category   Zend
  * @package    Zend_Tool
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Tool_Framework_Client_Manifest
@@ -140,7 +140,7 @@ class Zend_Tool_Framework_Client_Manifest
                 if ($specialty == '_Global') {
                     continue;
                 }
-                
+
                 $metadatas[] = new Zend_Tool_Framework_Metadata_Tool(array(
                     'name'            => 'normalizedSpecialtyName',
                     'value'           => $lowerFilter->filter($specialty),

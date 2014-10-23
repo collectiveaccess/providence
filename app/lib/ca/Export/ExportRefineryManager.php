@@ -146,7 +146,7 @@
 			ExportRefineryManager::initRefineries();
 			
 			if(isset(ExportRefineryManager::$s_refinery_instances[$ps_refinery_name]) && is_object(ExportRefineryManager::$s_refinery_instances[$ps_refinery_name])) {
-				return ExportRefineryManager::$s_refinery_instances[$ps_widget_name]->getDescription();
+				return ExportRefineryManager::$s_refinery_instances[$ps_refinery_name]->getDescription();
 			}
 			
 			return null;
@@ -157,6 +157,7 @@
 		 */
 		public function getRefinerySettingsForm($ps_refinery_name, $ps_refinery_id, $pa_settings) {
 			$vs_buf = '';
+			$o_appvar = null;
 			ExportRefineryManager::initRefineries();
 			if (ExportRefineryManager::$s_refinery_instances[$ps_refinery_name] && is_object(ExportRefineryManager::$s_refinery_instances[$ps_refinery_name])) {
 				$va_available_settings = ExportRefineryManager::$s_refinery_instances[$ps_refinery_name]->getAvailableSettings();

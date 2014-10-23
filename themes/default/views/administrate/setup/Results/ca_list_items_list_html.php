@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -77,14 +77,14 @@ if (!$this->getVar('no_hierarchies_defined')) {
 ?>
 			<tr <?php print ($i ==1) ? "class='odd'" : ""; ?>>
 				<td style="width:10px">
-					<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_object_id; ?>' class="addItemToSetControl" />
+					<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_item_id; ?>' class="addItemToSetControl" />
 				</td>
 <?php
 				foreach($va_display_list as $vn_placement_id => $va_display_item) {
 					print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id)."</td>";
 				}
-				print "<td style='width:5%;'>".caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'administrate/setup/list_item_editor', 'ListItemEditor', 'Edit', array('item_id' => $vn_item_id));
-				print " <a href='#' onclick='caOpenBrowserWith(".$vn_item_id.");'>".caNavIcon($this->request, __CA_NAV_BUTTON_GO__, null, array('title' => _t('View in hierarchy')))."</a>";
+				print "<td style='width:5%;'><span class='editIcon'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_list_items', $vn_item_id, array())."</span>";
+				print " <a href='#' class='hierarchyIcon' onclick='caOpenBrowserWith(".$vn_item_id.");'>".caNavIcon($this->request, __CA_NAV_BUTTON_GO__, array('title' => _t('View in hierarchy')))."</a>";
 				print "</td>";		
 ?>	
 			</tr>
@@ -93,10 +93,29 @@ if (!$this->getVar('no_hierarchies_defined')) {
 			$vn_item_count++;
 		}
 ?>
-	</tbody></table>
+		</tbody>
+<?php
+		if (is_array($va_bottom_line = $this->getVar('bottom_line'))) {
+?>
+			<tfoot>
+				<tr>
+					<td colspan="2" class="listtableTotals"><?php print _t('Totals'); ?></td>
+<?php
+					foreach($va_bottom_line as $vn_placement_id => $vs_bottom_line_value) {
+						print "<td>{$vs_bottom_line_value}</td>";
+					}
+?>
+				</tr>
+			</tfoot>
+<?php
+		}
+?>
+	</table>
 </form><!--end caFindResultsForm -->
 </div><!--end scrollingResults -->
 <?php
+	TooltipManager::add('.hierarchyIcon', _t("View in Hierarchy"));
+	TooltipManager::add('.editIcon', _t("Edit List Item"));
 }
 ?>
 <div class="editorBottomPadding"><!-- empty --></div>

@@ -102,8 +102,9 @@
 						initDataUrl: '<?php print $va_lookup_urls['ancestorList']; ?>',
 						
 						editUrl: '<?php print caEditorUrl($this->request, $vs_table, null, false, array(), array('action' => $this->getVar('default_action'))); ?>',
-						editButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/arrow_grey_right.gif" border="0" title="Edit"/>',
-						
+						editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
+						disabledButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__); ?>",
+
 						initItemID: '<?php print $this->getVar('browse_last_id'); ?>',
 						indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
 						typeMenuID: 'browseTypeMenu',
@@ -181,4 +182,9 @@
 			}
 		});
 	}
+	
+	// Show "add to set" controls if set tools is open
+	jQuery(document).ready(function() {
+		if (jQuery("#searchSetTools").is(":visible")) { jQuery(".addItemToSetControl").show(); }
+	});
 </script>

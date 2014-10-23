@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Ldap
  * @subpackage Filter
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Filter.php 20096 2010-01-06 02:05:09Z bkarwin $
+ * @version    $Id: Filter.php 24593 2012-01-05 20:35:02Z matthew $
  */
 
 /**
@@ -31,7 +31,7 @@ require_once 'Zend/Ldap/Filter/String.php';
  * @category   Zend
  * @package    Zend_Ldap
  * @subpackage Filter
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Ldap_Filter extends Zend_Ldap_Filter_String
@@ -242,9 +242,9 @@ class Zend_Ldap_Filter extends Zend_Ldap_Filter_String
     private static function _createFilterString($attr, $value, $filtertype, $prepend = null, $append = null)
     {
         $str = $attr . $filtertype;
-        if (!is_null($prepend)) $str .= $prepend;
+        if ($prepend !== null) $str .= $prepend;
         $str .= self::escapeValue($value);
-        if (!is_null($append)) $str .= $append;
+        if ($append !== null) $str .= $append;
         return $str;
     }
 

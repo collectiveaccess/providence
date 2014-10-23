@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Filter
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: StripTags.php 22548 2010-07-11 12:48:34Z thomas $
+ * @version    $Id: StripTags.php 24593 2012-01-05 20:35:02Z matthew $
  */
 
 
@@ -29,7 +29,7 @@ require_once 'Zend/Filter/Interface.php';
 /**
  * @category   Zend
  * @package    Zend_Filter
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Filter_StripTags implements Zend_Filter_Interface
@@ -244,7 +244,14 @@ class Zend_Filter_StripTags implements Zend_Filter_Interface
             $pos   = strrpos($value, '<!--');
             $start = substr($value, 0, $pos);
             $value = substr($value, $pos);
-            $value = preg_replace('/<(?:!(?:--[\s\S]*?--\s*)?(>))/s', '',  $value);
+
+            // If there is no comment closing tag, strip whole text
+            if (!preg_match('/--\s*>/s', $value)) {
+                $value = '';
+            } else {
+                $value = preg_replace('/<(?:!(?:--[\s\S]*?--\s*)?(>))/s', '',  $value);
+            }
+
             $value = $start . $value;
         }
 
@@ -312,7 +319,7 @@ class Zend_Filter_StripTags implements Zend_Filter_Interface
         // If there are non-whitespace characters in the attribute string
         if (strlen($tagAttributes)) {
             // Parse iteratively for well-formed attributes
-            preg_match_all('/(\w+)\s*=\s*(?:(")(.*?)"|(\')(.*?)\')/s', $tagAttributes, $matches);
+            preg_match_all('/([\w-]+)\s*=\s*(?:(")(.*?)"|(\')(.*?)\')/s', $tagAttributes, $matches);
 
             // Initialize valid attribute accumulator
             $tagAttributes = '';

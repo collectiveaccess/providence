@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Soap
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Wsdl.php 20096 2010-01-06 02:05:09Z bkarwin $
+ * @version    $Id: Wsdl.php 25033 2012-08-17 19:50:08Z matthew $
  */
 
 /**
@@ -96,13 +96,23 @@ class Zend_Soap_Wsdl
                     xmlns:xsd='http://www.w3.org/2001/XMLSchema'
                     xmlns:soap-enc='http://schemas.xmlsoap.org/soap/encoding/'
                     xmlns:wsdl='http://schemas.xmlsoap.org/wsdl/'></definitions>";
+        libxml_disable_entity_loader(true);
         $this->_dom = new DOMDocument();
         if (!$this->_dom->loadXML($wsdl)) {
             require_once 'Zend/Server/Exception.php';
             throw new Zend_Server_Exception('Unable to create DomDocument');
         } else {
+            foreach ($this->_dom->childNodes as $child) {
+                if ($child->nodeType === XML_DOCUMENT_TYPE_NODE) {
+                    require_once 'Zend/Server/Exception.php';
+                    throw new Zend_Server_Exception(
+                        'Invalid XML: Detected use of illegal DOCTYPE'
+                    );
+                }
+            }
             $this->_wsdl = $this->_dom->documentElement;
         }
+        libxml_disable_entity_loader(false);
 
         $this->setComplexTypeStrategy($strategy);
     }
@@ -125,8 +135,10 @@ class Zend_Soap_Wsdl
             // @todo: This is the worst hack ever, but its needed due to design and non BC issues of WSDL generation
             $xml = $this->_dom->saveXML();
             $xml = str_replace($oldUri, $uri, $xml);
+            libxml_disable_entity_loader(true);
             $this->_dom = new DOMDocument();
             $this->_dom->loadXML($xml);
+            libxml_disable_entity_loader(false);
         }
 
         return $this;
@@ -317,11 +329,17 @@ class Zend_Soap_Wsdl
 
         if (is_array($fault)) {
             $node = $this->_dom->createElement('fault');
+            /**
+             * Note. Do we really need name attribute to be also set at wsdl:fault node???
+             * W3C standard doesn't mention it (http://www.w3.org/TR/wsdl#_soap:fault)
+             * But some real world WSDLs use it, so it may be required for compatibility reasons.
+             */
             if (isset($fault['name'])) {
                 $node->setAttribute('name', $fault['name']);
             }
-            $soap_node = $this->_dom->createElement('soap:body');
-            foreach ($output as $name => $value) {
+
+            $soap_node = $this->_dom->createElement('soap:fault');
+            foreach ($fault as $name => $value) {
                 $soap_node->setAttribute($name, $value);
             }
             $node->appendChild($soap_node);
@@ -424,7 +442,7 @@ class Zend_Soap_Wsdl
         }
 
         $doc = $this->_dom->createElement('documentation');
-        $doc_cdata = $this->_dom->createTextNode($documentation);
+        $doc_cdata = $this->_dom->createTextNode(str_replace(array("\r\n", "\r"), "\n", $documentation));
         $doc->appendChild($doc_cdata);
 
         if($node->hasChildNodes()) {
@@ -537,28 +555,24 @@ class Zend_Soap_Wsdl
             case 'string':
             case 'str':
                 return 'xsd:string';
-                break;
+            case 'long':
+                return 'xsd:long';
             case 'int':
             case 'integer':
                 return 'xsd:int';
-                break;
             case 'float':
-            case 'double':
                 return 'xsd:float';
-                break;
+            case 'double':
+                return 'xsd:double';
             case 'boolean':
             case 'bool':
                 return 'xsd:boolean';
-                break;
             case 'array':
                 return 'soap-enc:Array';
-                break;
             case 'object':
                 return 'xsd:struct';
-                break;
             case 'mixed':
                 return 'xsd:anyType';
-                break;
             case 'void':
                 return '';
             default:

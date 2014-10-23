@@ -122,7 +122,6 @@ class CollectiveAccessDataReader extends BaseDataReader {
 				$request = $this->opo_client->get("/service.php/item/{$this->ops_table}/id/{$vn_id}?pretty=1&format=import");
 				$response = $request->send();
 				$data = $response->json();
-				//print_R($data);
 				$this->opa_row_buf[$this->opn_current_row] = $data;
 			} catch (Exception $e) {
 				//return false;
@@ -168,8 +167,10 @@ class CollectiveAccessDataReader extends BaseDataReader {
 			
 			if (!$pb_return_all_locales) {
 				$va_data['attributes'] = caExtractValuesByUserLocale($va_data['attributes']);
-				$va_data['preferred_labels'] = array_pop(caExtractValuesByUserLocale(array($va_data['preferred_labels'])));
+				$va_tmp = caExtractValuesByUserLocale(array($va_data['preferred_labels']));
+				$va_data['preferred_labels'] = array_pop($va_tmp);
 			}
+			
 			switch(sizeof($va_col)) {
 				// ------------------------------------------------------------------------------------------------
 				case 2:
@@ -364,29 +365,41 @@ class CollectiveAccessDataReader extends BaseDataReader {
 				}
 			}
 			
+			if (is_array($va_data['nonpreferred_labels'])) {
+				foreach($va_data['nonpreferred_labels'] as $vs_locale => $va_label) {
+					foreach($va_label as $vs_f => $vs_v) {
+						$va_row[$this->ops_table.".nonpreferred_labels.{$vs_f}"] = $vs_v;
+					}
+				}
+			}
+			
 			foreach($va_data['intrinsic'] as $vs_f => $vs_v) {
 				$va_row[$this->ops_table.".{$vs_f}"] = $vs_v;
 			}
 			
-			foreach($va_data['attributes'] as $vs_f => $va_v) {
-				$va_row[$this->ops_table.".{$vs_f}"] = $this->get($this->ops_table.".{$vs_f}");
+			if (is_array($va_data['attributes'])) {
+				foreach($va_data['attributes'] as $vs_f => $va_v) {
+					$va_row[$this->ops_table.".{$vs_f}"] = $this->get($this->ops_table.".{$vs_f}");
+				}
 			}
 			
-			foreach($va_data['related'] as $vs_table => $va_rels) {
-				foreach($va_rels as $vn_i => $va_rel) {
-					foreach($va_rel as $vs_f => $vm_v) {
-						if (!is_array($vm_v)) {
+			if(is_array($va_data['related'])) {
+				foreach($va_data['related'] as $vs_table => $va_rels) {
+					foreach($va_rels as $vn_i => $va_rel) {
+						foreach($va_rel as $vs_f => $vm_v) {
+							if (!is_array($vm_v)) {
+								$va_row[$vs_table.".{$vs_f}"] = $this->get($vs_table.".{$vs_f}");
+							}
+						}
+					
+						foreach($va_rel['preferred_labels'] as $vs_f => $vs_v) {
+							$va_row[$vs_table.".preferred_labels.{$vs_f}"] = $this->get($vs_table.".preferred_labels.{$vs_f}");
+						}
+						foreach($va_rel['intrinsic'] as $vs_f => $vs_v) {
 							$va_row[$vs_table.".{$vs_f}"] = $this->get($vs_table.".{$vs_f}");
 						}
+						break;
 					}
-					
-					foreach($va_rel['preferred_labels'] as $vs_f => $vs_v) {
-						$va_row[$vs_table.".preferred_labels.{$vs_f}"] = $this->get($vs_table.".preferred_labels.{$vs_f}");
-					}
-					foreach($va_rel['intrinsic'] as $vs_f => $vs_v) {
-						$va_row[$vs_table.".{$vs_f}"] = $this->get($vs_table.".{$vs_f}");
-					}
-					break;
 				}
 			}
 		
@@ -424,3 +437,4 @@ class CollectiveAccessDataReader extends BaseDataReader {
 	}
 	# -------------------------------------------------------
 }
+?>

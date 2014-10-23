@@ -86,10 +86,10 @@
 				if (
 					($vs_type_opt = $pa_item['settings']['tourMaker_tourType'])
 				) {
-					$vs_type = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item);
+					$vs_type = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '));
 				}
 				if((is_null($vs_type) || !$vs_type) && ($vs_type_opt = $pa_item['settings']['tourMaker_tourTypeDefault'])) {
-					$vs_type = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item);
+					$vs_type = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '));
 				}
 			
 				if ((!isset($vs_type) || !$vs_type) && $o_log) {
@@ -105,7 +105,7 @@
 					foreach($pa_item['settings']['tourMaker_attributes'] as $vs_fld => $vs_val) {
 						if (is_array($vs_val)) { continue; }
 						if ($t_tour->hasField($vs_fld)) {
-							$t_tour->set($vs_fld, BaseRefinery::parsePlaceholder($vs_val, $pa_source_data, $pa_item));
+							$t_tour->set($vs_fld, BaseRefinery::parsePlaceholder($vs_val, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' ')));
 							unset($pa_item['settings']['tourMaker_attributes'][$vs_fld]);
 						}
 					}
@@ -127,12 +127,12 @@
 					foreach($pa_item['settings']['tourMaker_attributes'] as $vs_element => $va_attr) {
 						if (!is_array($va_attr)) {
 							$va_attr = array(
-								$vs_element => BaseRefinery::parsePlaceholder($va_attr, $pa_source_data, $pa_item),
+								$vs_element => BaseRefinery::parsePlaceholder($va_attr, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' ')),
 								'locale_id' => $g_ui_locale_id
 							);
 						} else {
 							foreach($va_attrs as $vs_k => $vs_v) {
-								$va_attr[$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item);
+								$va_attr[$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '));
 							}
 							$va_attr['locale_id'] = $g_ui_locale_id;
 						}

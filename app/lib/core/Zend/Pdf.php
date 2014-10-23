@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Pdf
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Pdf.php 22655 2010-07-22 18:47:20Z mabe $
+ * @version    $Id: Pdf.php 24593 2012-01-05 20:35:02Z matthew $
  */
 
 
@@ -47,6 +47,12 @@ require_once 'Zend/Pdf/Image.php';
 /** Zend_Pdf_Font */
 require_once 'Zend/Pdf/Font.php';
 
+/** Zend_Pdf_Resource_Extractor */
+require_once 'Zend/Pdf/Resource/Extractor.php';
+
+/** Zend_Pdf_Canvas */
+require_once 'Zend/Pdf/Canvas.php';
+
 
 /** Internally used classes */
 require_once 'Zend/Pdf/Element.php';
@@ -72,7 +78,7 @@ require_once 'Zend/Pdf/Element/String.php';
  *
  * @category   Zend
  * @package    Zend_Pdf
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Pdf
@@ -204,6 +210,14 @@ class Zend_Pdf
     protected static $_inheritableAttributes = array('Resources', 'MediaBox', 'CropBox', 'Rotate');
 
     /**
+     * True if the object is a newly created PDF document (affects save() method behavior)
+     * False otherwise
+     *
+     * @var boolean
+     */
+    protected $_isNewDocument = true;
+
+    /**
      * Request used memory manager
      *
      * @return Zend_Memory_Manager
@@ -256,7 +270,8 @@ class Zend_Pdf
     /**
      * Render PDF document and save it.
      *
-     * If $updateOnly is true, then it only appends new section to the end of file.
+     * If $updateOnly is true and it's not a new document, then it only
+     * appends new section to the end of file.
      *
      * @param string $filename
      * @param boolean $updateOnly
@@ -286,7 +301,7 @@ class Zend_Pdf
      * from a file.
 
      * $revision used to roll back document to specified version
-     * (0 - currtent version, 1 - previous version, 2 - ...)
+     * (0 - current version, 1 - previous version, 2 - ...)
      *
      * @param string  $source - PDF file to load
      * @param integer $revision
@@ -342,6 +357,8 @@ class Zend_Pdf
 
                 $this->_originalProperties = $this->properties;
             }
+
+            $this->_isNewDocument = false;
         } else {
             $this->_pdfHeaderVersion = Zend_Pdf::PDF_VERSION;
 
@@ -1168,7 +1185,8 @@ class Zend_Pdf
 
     /**
      * Render the completed PDF to a string.
-     * If $newSegmentOnly is true, then only appended part of PDF is returned.
+     * If $newSegmentOnly is true and it's not a new document,
+     * then only appended part of PDF is returned.
      *
      * @param boolean $newSegmentOnly
      * @param resource $outputStream
@@ -1177,6 +1195,12 @@ class Zend_Pdf
      */
     public function render($newSegmentOnly = false, $outputStream = null)
     {
+        if ($this->_isNewDocument) {
+            // Drop full document first time even $newSegmentOnly is set to true
+            $newSegmentOnly = false;
+            $this->_isNewDocument = false;
+        }
+
         // Save document properties if necessary
         if ($this->properties != $this->_originalProperties) {
             $docInfo = $this->_objFactory->newObject(new Zend_Pdf_Element_Dictionary());

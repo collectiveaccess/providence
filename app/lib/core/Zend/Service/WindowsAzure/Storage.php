@@ -15,15 +15,15 @@
  * @category   Zend
  * @package    Zend_Service_WindowsAzure
  * @subpackage Storage
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id$
+ * @version    $Id: Storage.php 24697 2012-03-23 13:11:04Z ezimuel $
  */
 
 /**
- * @see Zend_Service_WindowsAzure_Credentials_CredentialsAbstract
+ * @see Zend_Http_Client
  */
-require_once 'Zend/Service/WindowsAzure/Credentials/CredentialsAbstract.php';
+require_once 'Zend/Http/Client.php';
 
 /**
  * @see Zend_Service_WindowsAzure_Credentials_SharedKey
@@ -34,27 +34,11 @@ require_once 'Zend/Service/WindowsAzure/Credentials/SharedKey.php';
  * @see Zend_Service_WindowsAzure_RetryPolicy_RetryPolicyAbstract
  */
 require_once 'Zend/Service/WindowsAzure/RetryPolicy/RetryPolicyAbstract.php';
-
-/**
- * @see Zend_Service_WindowsAzure_Exception
- */
-require_once 'Zend/Service/WindowsAzure/Exception.php';
-
-/**
- * @see Zend_Http_Client
- */
-require_once 'Zend/Http/Client.php';
-
-/**
- * @see Zend_Http_Response
- */
-require_once 'Zend/Http/Response.php';
-
 /**
  * @category   Zend
  * @package    Zend_Service_WindowsAzure
  * @subpackage Storage
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Service_WindowsAzure_Storage
@@ -239,6 +223,16 @@ class Zend_Service_WindowsAzure_Storage
 		$this->_httpClientChannel->setAdapter($adapterInstance);
 	}
 	
+    /**
+     * Retrieve HTTP client channel
+     * 
+     * @return Zend_Http_Client_Adapter_Interface
+     */
+    public function getHttpClientChannel()
+    {
+        return $this->_httpClientChannel;
+    }
+	
 	/**
 	 * Set retry policy to use when making requests
 	 *
@@ -387,7 +381,7 @@ class Zend_Service_WindowsAzure_Storage
 		$requestHeaders = $this->_credentials
 						  ->signRequestHeaders($httpVerb, $path, $queryString, $headers, $forTableStorage, $resourceType, $requiredPermission, $rawData);
 
-		// Prepare request
+		// Prepare request 
 		$this->_httpClientChannel->resetParameters(true);
 		$this->_httpClientChannel->setUri($requestUrl);
 		$this->_httpClientChannel->setHeaders($requestHeaders);
@@ -412,6 +406,7 @@ class Zend_Service_WindowsAzure_Storage
 	protected function _parseResponse(Zend_Http_Response $response = null)
 	{
 		if (is_null($response)) {
+			require_once 'Zend/Service/WindowsAzure/Exception.php';
 			throw new Zend_Service_WindowsAzure_Exception('Response should not be null.');
 		}
 		
@@ -449,11 +444,13 @@ class Zend_Service_WindowsAzure_Storage
 		$headers = array();
 		foreach ($metadata as $key => $value) {
 			if (strpos($value, "\r") !== false || strpos($value, "\n") !== false) {
-				throw new Zend_Service_WindowsAzure_Exception('Metadata cannot contain newline characters.');
+                            require_once 'Zend/Service/WindowsAzure/Exception.php';
+                            throw new Zend_Service_WindowsAzure_Exception('Metadata cannot contain newline characters.');
 			}
 			
 			if (!self::isValidMetadataName($key)) {
-		    	throw new Zend_Service_WindowsAzure_Exception('Metadata name does not adhere to metadata naming conventions. See http://msdn.microsoft.com/en-us/library/aa664670(VS.71).aspx for more information.');
+                            require_once 'Zend/Service/WindowsAzure/Exception.php';
+                            throw new Zend_Service_WindowsAzure_Exception('Metadata name does not adhere to metadata naming conventions. See http://msdn.microsoft.com/en-us/library/aa664670(VS.71).aspx for more information.');
 			}
 			
 		    $headers["x-ms-meta-" . strtolower($key)] = $value;

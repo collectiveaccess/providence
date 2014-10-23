@@ -85,6 +85,7 @@
 	MetaTagManager::addLink('stylesheet', __CA_URL_ROOT__."/app/plugins/statisticsViewer/css/statisticsViewer.css",'text/css');	
   	print renderOptions(
   			$va_views_images_path,
+            $va_informations->id,
   			$va_parameters['positions'],
   			$va_parameters['selectedPosition'],
   			$va_parameters['ChartTypes'],

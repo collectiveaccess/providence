@@ -103,8 +103,8 @@
 				foreach($va_display_list as $vn_placement_id => $va_display_item) {
 					print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id)."</td>";
 				}
-				print "<td style='width:5%;'>".caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'administrate/setup/relationship_type_editor', 'RelationshipTypeEditor', 'Edit', array('type_id' => $vn_type_id));
-				print " <a href='#' onclick='caOpenBrowserWith(".$vn_type_id.");'>".caNavIcon($this->request, __CA_NAV_BUTTON_GO__, null, array('title' => _t('View in hierarchy')))."</a>";
+				print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), 'editIcon', 'ca_relationship_types', $vn_type_id, array())."</td>";
+				print " <a href='#' onclick='caOpenBrowserWith(".$vn_type_id.");'>".caNavIcon($this->request, __CA_NAV_BUTTON_GO__, array('title' => _t('View in hierarchy')))."</a>";
 				print "</td>";		
 ?>	
 			</tr>
@@ -117,6 +117,8 @@
 </form><!--end caFindResultsForm -->
 </div><!--end scrollingResults -->
 <?php
+	TooltipManager::add('.editIcon', _t("Edit"));
+
 }
 ?>
 <div class="editorBottomPadding"><!-- empty --></div>

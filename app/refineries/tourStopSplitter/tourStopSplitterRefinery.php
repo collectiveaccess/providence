@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,10 +33,11 @@
 		public function __construct() {
 			$this->ops_name = 'tourStopSplitter';
 			$this->ops_title = _t('Tour stop splitter');
-			$this->ops_description = _t('Provides several tourstop location-related import functions: splitting of multiple locations in a string into individual values, mapping of type and relationship type for related locations, building location hierarchies and merging location data with names.');
+			$this->ops_description = _t('Provides several tourstop location-related import functions.');
 			
 			$this->opb_returns_multiple_values = true;
-			
+			$this->opb_supports_relationships = true;
+
 			parent::__construct();
 		}
 		# -------------------------------------------------------
@@ -96,11 +97,11 @@
 				if (
 					($vs_rel_type_opt = $pa_item['settings']['tourStopSplitter_relationshipType'])
 				) {
-					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '));
 				}
 				
 				if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && ($vs_rel_type_opt = $pa_item['settings']['tourStopSplitter_relationshipTypeDefault'])) {
-					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '));
 				}
 				
 				if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log) {
@@ -111,11 +112,11 @@
 				if (
 					($vs_type_opt = $pa_item['settings']['tourStopSplitter_tourStopType'])
 				) {
-					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '));
 				}
 				
 				if((!isset($va_val['_type']) || !$va_val['_type']) && ($vs_type_opt = $pa_item['settings']['tourStopSplitter_tourStopTypeDefault'])) {
-					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '));
 				}
 				
 				if ((!isset($va_val['_type']) || !$va_val['_type']) && $o_log) {
@@ -137,11 +138,11 @@
 							
 				// Set stop parents
 				if ($va_parents = $pa_item['settings']['tourStopSplitter_parents']) {
-					$va_val['parent_id'] = $va_val['_parent_id'] = caProcessRefineryParents('tourStopSplitterRefinery', 'ca_tour_stops', $va_parents, $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log);
+					$va_val['parent_id'] = $va_val['_parent_id'] = caProcessRefineryParents('tourStopSplitterRefinery', 'ca_tour_stops', $va_parents, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'log' => $o_log));
 				}
 			
 				// Set attributes
-				if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']['tourStopSplitter_attributes'], $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log))) {
+				if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']['tourStopSplitter_attributes'], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'log' => $o_log)))) {
 					$va_val = array_merge($va_val, $va_attr_vals);
 				}
 				
@@ -177,6 +178,24 @@
 				'default' => '',
 				'label' => _t('Delimiter'),
 				'description' => _t('Sets the value of the delimiter to break on, separating data source values.')
+			),
+			'tourStopSplitter_matchOn' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Match on'),
+				'description' => _t('List indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails')
+			),
+			'tourStopSplitter_dontCreate' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => false,
+				'label' => _t('Do not create new records'),
+				'description' => _t('If set splitter will only match on existing records and will not create new ones.')
 			),
 			'tourStopSplitter_relationshipType' => array(
 				'formatType' => FT_TEXT,
@@ -240,6 +259,15 @@
 				'default' => '',
 				'label' => _t('Interstitial attributes'),
 				'description' => _t('Sets or maps metadata for the interstitial tour stop <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found.')
+			),
+			'tourStopSplitter_nonPreferredLabels' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Non-preferred labels'),
+				'description' => _t('List of non-preferred labels to apply to tour stops.')
 			)
 		);
 ?>

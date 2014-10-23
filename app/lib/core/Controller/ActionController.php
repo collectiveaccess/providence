@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2009 Whirl-i-Gig
+ * Copyright 2007-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,6 +35,7 @@
   */
  
 require_once(__CA_LIB_DIR__.'/core/BaseObject.php');
+require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
 require_once(__CA_LIB_DIR__.'/core/View.php');
 require_once(__CA_LIB_DIR__.'/core/Controller/Request/NotificationManager.php');
 
@@ -91,6 +92,10 @@ class ActionController extends BaseObject {
 		}
 	}
 	# -------------------------------------------------------
+	public function getAppDatamodel() {
+		return Datamodel::load();
+	}
+	# -------------------------------------------------------
 	public function initView() {
 		$this->opo_view = new View($this->opo_request, $this->opa_view_paths);
 		$this->opo_view->setVar('request', $this->getRequest());
@@ -103,10 +108,20 @@ class ActionController extends BaseObject {
 		return $this->opo_view;
 	}
 	# -------------------------------------------------------
-	public function &render($ps_view, $pb_dont_add_content_to_response=false) {
+	public function viewExists($ps_path) {
+		if (!$this->opo_view) { $this->initView(); }
+		return $this->opo_view->viewExists($ps_path);
+	}
+	# -------------------------------------------------------
+	public function getTagListForView($ps_path) {
+		if (!$this->opo_view) { $this->initView(); }
+		return $this->opo_view->getTagList($ps_path);
+	}
+	# -------------------------------------------------------
+	public function &render($ps_view, $pb_dont_add_content_to_response=false, $pb_dont_replace_tags=false) {
 		if (!$this->opo_view) { $this->initView(); }
 		
-		$vs_content = $this->opo_view->render($ps_view);
+		$vs_content = $this->opo_view->render($ps_view, $pb_dont_replace_tags);
 		
 		if ($this->opo_view->numErrors() > 0) {
 			$this->errors = $this->opo_view->errors;
@@ -117,6 +132,11 @@ class ActionController extends BaseObject {
 		return $vs_content;
 	}
 	# -------------------------------------------------------
+	/**
+	 * Get request object (by reference)
+	 *
+	 * @return RequestHTTP
+	 */
 	public function &getRequest() {
 		return $this->opo_request;
 	}
@@ -141,4 +161,3 @@ class ActionController extends BaseObject {
 	}
 	# -------------------------------------------------------
 }
-?>

@@ -39,9 +39,9 @@
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
- 			JavascriptLoadManager::register('tableList');
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register("panel");
+ 			AssetLoadManager::register('tableList');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register("panel");
  			
  			$this->opo_app_plugin_manager = new ApplicationPluginManager();
  			
@@ -398,9 +398,9 @@
  		/**
  		 * 
  		 */
- 		public function Info() {
+ 		public function Info($pa_options=null) {
  			$t_order = new ca_commerce_orders();
- 			$this->view->setVar('order_list', $va_order_list = $t_order->getOrders($va_options));
+ 			$this->view->setVar('order_list', $va_order_list = $t_order->getOrders($pa_options));
  			return $this->render('widget_checkout_info_html.php', true);
  		}
  		# -------------------------------------------------------

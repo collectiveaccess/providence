@@ -51,7 +51,7 @@
 		public function __construct($ps_widget_path, $pa_settings) {
 			$this->ops_widget_path = $ps_widget_path;
 			
-			if (is_array($pa_setting)) {
+			if (is_array($pa_settings)) {
 				$this->opa_settings = $pa_settings;
 			}
 			

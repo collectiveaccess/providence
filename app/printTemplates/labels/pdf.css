@@ -1,0 +1,19 @@
+/* Stylesheet used by DOMPDF to format PDF report output */
+
+@page { margin: 0px 0px; }
+
+.thumbnail { font: "arial, helvetica, sans-serif"; font-size: 11px; width: 120px; height: 120px; border-radius: 5px;}	
+.row { font: "arial, helvetica, sans-serif"; font-size: 11px; width: 100%; height: 80px; margin: 5px 0 0 10px; padding: 0px; overflow: none;}	
+.imageTiny { width: 72px; height: 72px; float: left; margin: 0 5px 0 0; border-radius: 5px;}
+.imageTinyPlaceholder { width: 72px; height: 72px; background-color: #eee; float: left; margin: 0 5px 0 0; border-radius: 5px;}
+
+.titleText { font: "arial, helvetica, sans-serif"; font-weight: bold; font-size: 14px; }
+.bodyText { font: "arial, helvetica, sans-serif"; font-size: 11px; }
+.smallText { font: "arial, helvetica, sans-serif"; font-size: 9px; }
+
+
+.code128 { font: "code128"; font-size: 14px; }
+.code39 { font: "fre3of9x"; font-size: 14px; }
+
+.pageBreak { page-break-before: always; }
+.clear { clear: both; line-height: 5px; }

@@ -48,7 +48,7 @@ class InterstitialSearch extends BaseSearch {
 	# ----------------------------------------------------------------------
 	public function __construct($ps_table) {
 		$this->ops_tablename = $ps_table;
-		$this->ops_primary_key = $o_db->getTablePrimaryKeyName($ps_table);
+		$this->ops_primary_key = $this->getDb()->getTablePrimaryKeyName($ps_table);
 	}
 	# ----------------------------------------------------------------------
 	public function &search($ps_search, $pa_options=null) {

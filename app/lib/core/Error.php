@@ -132,7 +132,7 @@ class Error {
 		$this->ops_redirect_on_error_page = $this->opo_config->get("error_redirect_to_page");
 		
 		# Set locale, if necessary
-		if (($vs_locale = $this->opo_config->get("locale")) && ((file_exists("Error/errors.".$vs_locale)) || (file_exists_incpath("Error/errors.".$vs_locale)))) {
+		if (($vs_locale = $this->opo_config->get("locale")) && ((file_exists("Error/errors.".$vs_locale)) || ($this->file_exists_incpath("Error/errors.".$vs_locale)))) {
 			$this->ops_locale = $vs_locale;
 		} 
 		
@@ -159,7 +159,7 @@ class Error {
 		$this->opb_halt_on_error = $pb_halt_on_error;
 		$this->opb_report_on_error = $pb_report_on_error;
 		if ($pn_error_number) {
-			$this->setError($pn_error_number, $ps_error_description, $ps_error_context);
+			$this->setError($pn_error_number, $ps_error_description, $ps_error_context, $ps_error_source);
 		}
 	}
 /**

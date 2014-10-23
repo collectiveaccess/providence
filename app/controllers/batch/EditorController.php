@@ -53,13 +53,12 @@
  		#
  		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 			
- 			JavascriptLoadManager::register('bundleListEditorUI');
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register('bundleListEditorUI');
- 			JavascriptLoadManager::register('panel');
- 			
  			parent::__construct($po_request, $po_response, $pa_view_paths);
+ 			
+ 			AssetLoadManager::register('bundleListEditorUI');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('bundleListEditorUI');
+ 			AssetLoadManager::register('panel');
  			
  			$this->opo_datamodel = Datamodel::load();
  			$this->opo_app_plugin_manager = new ApplicationPluginManager();
@@ -93,7 +92,7 @@
  			
  			$this->view->setVar('batch_editor_last_settings', $va_last_settings = is_array($va_last_settings = $this->request->user->getVar('batch_editor_last_settings')) ? $va_last_settings : array());
  			
- 			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
+ 			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, null, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 				array(),
 				array(),
 				false,
@@ -161,7 +160,7 @@
  
  		}
  		# -------------------------------------------------------
- 		public function Delete() {
+ 		public function Delete($pa_options=null) {
  			list($vn_set_id, $t_set, $t_subject, $t_ui) = $this->_initView($pa_options);
 
  			if (!$this->request->user->canDoAction('can_batch_delete_'.$t_set->getAppDatamodel()->getTableName($t_set->get('table_num')))) {
@@ -186,6 +185,70 @@
  		}
  		# -------------------------------------------------------
  		/**
+ 		 * 
+ 		 *
+ 		 * @param array $pa_options Array of options passed through to _initView 
+ 		 */
+ 		public function ChangeType($pa_options=null) {
+ 			if (!is_array($pa_options)) { $pa_options = array(); }
+ 			list($vn_set_id, $t_set, $t_subject, $t_ui) = $this->_initView($pa_options);
+ 			
+ 			if (!$vn_set_id) { 
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3200?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+ 			
+ 			// Can user batch edit this table?
+ 			if (!$this->request->user->canDoAction('can_batch_edit_'.$t_set->getAppDatamodel()->getTableName($t_set->get('table_num')))) {
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3210?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+ 			
+ 			if (!$this->request->user->canDoAction("can_change_type_".$t_subject->tableName()) || !method_exists($t_subject, "getTypeList")) {
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3260?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+ 			
+ 			$vn_new_type_id = $this->request->getParameter('new_type_id', pInteger);
+ 			$va_type_list = $t_subject->getTypeList();
+ 			if (!isset($va_type_list[$vn_new_type_id])) {
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3260?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+ 			
+ 			$va_last_settings = array(
+				'set_id' => $vn_set_id,
+				'screen' => $this->request->getActionExtra(),
+				'user_id' => $this->request->getUserID(),
+				'values' => $_REQUEST,
+				'sendMail' => (bool)$this->request->getParameter('send_email_when_done', pInteger),
+				'sendSMS' => (bool)$this->request->getParameter('send_sms_when_done', pInteger)
+			);
+ 			
+ 			if ((bool)$this->request->config->get('queue_enabled') && (bool)$this->request->getParameter('run_in_background', pInteger)) { // queue for background processing
+ 				$o_tq = new TaskQueue();
+ 				
+ 				$vs_row_key = $vs_entity_key = join("/", array($this->request->getUserID(), $t_set->getPrimaryKey(), time(), rand(1,999999)));
+				if (!$o_tq->addTask(
+					'batchEditor',
+					array_merge($va_last_settings, array('isBatchTypeChange' => true, 'new_type_id' => $vn_new_type_id)),
+					array("priority" => 100, "entity_key" => $vs_entity_key, "row_key" => $vs_row_key, 'user_id' => $this->request->getUserID())))
+				{
+					//$this->postError(100, _t("Couldn't queue batch processing for"),"EditorContro->_processMedia()");
+					
+				}
+				$this->render('editor/batch_queued_html.php');
+			} else { 
+				// run now
+				$app = AppController::getInstance();
+				$app->registerPlugin(new BatchEditorProgress($this->request, $t_set, $t_subject, array('type_id' => $vn_new_type_id, 'isBatchTypeChange' => true, 'sendMail' => (bool)$this->request->getParameter('send_email_when_done', pInteger), 'sendSMS' => (bool)$this->request->getParameter('send_sms_when_done', pInteger), 'runInBackground' => (bool)$this->request->getParameter('run_in_background', pInteger))));
+				$this->render('editor/batch_results_html.php');
+			}
+			
+ 			$this->request->user->setVar('batch_editor_last_settings', $va_last_settings);
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
  		 * Initializes editor view with core set of values, loads model with record to be edited and selects user interface to use.
  		 *
  		 * @param $pa_options Array of options. Supported options are:
@@ -193,9 +256,9 @@
  		 */
  		protected function _initView($pa_options=null) {
  			// load required javascript
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register('imageScroller');
- 			JavascriptLoadManager::register('datePickerUI');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('imageScroller');
+ 			AssetLoadManager::register('datePickerUI');
  			
  			$vn_set_id = $this->request->getParameter('set_id', pInteger);
  			$t_set = new ca_sets();

@@ -2,7 +2,7 @@
 /**
  * PHPExcel
  *
- * Copyright (c) 2006 - 2012 PHPExcel
+ * Copyright (c) 2006 - 2014 PHPExcel
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,9 +20,9 @@
  *
  * @category   PHPExcel
  * @package    PHPExcel_Writer_Excel2007
- * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
+ * @copyright  Copyright (c) 2006 - 2014 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version    ##VERSION##, ##DATE##
+ * @version    1.8.0, 2014-03-02
  */
 
 
@@ -31,7 +31,7 @@
  *
  * @category   PHPExcel
  * @package    PHPExcel_Writer_Excel2007
- * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
+ * @copyright  Copyright (c) 2006 - 2014 PHPExcel (http://www.codeplex.com/PHPExcel)
  */
 class PHPExcel_Writer_Excel2007_Workbook extends PHPExcel_Writer_Excel2007_WriterPart
 {
@@ -194,10 +194,14 @@ class PHPExcel_Writer_Excel2007_Workbook extends PHPExcel_Writer_Excel2007_Write
 	{
 		$objWriter->startElement('calcPr');
 
-		$objWriter->writeAttribute('calcId', 			'124519');
+		//	Set the calcid to a higher value than Excel itself will use, otherwise Excel will always recalc
+        //  If MS Excel does do a recalc, then users opening a file in MS Excel will be prompted to save on exit
+        //     because the file has changed
+		$objWriter->writeAttribute('calcId', 			'999999');
 		$objWriter->writeAttribute('calcMode', 			'auto');
 		//	fullCalcOnLoad isn't needed if we've recalculating for the save
-		$objWriter->writeAttribute('fullCalcOnLoad', 	($recalcRequired) ? '0' : '1');
+		$objWriter->writeAttribute('calcCompleted', 	($recalcRequired) ? 1 : 0);
+		$objWriter->writeAttribute('fullCalcOnLoad', 	($recalcRequired) ? 0 : 1);
 
 		$objWriter->endElement();
 	}

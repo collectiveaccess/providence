@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Oauth
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: AuthorizedRequest.php 20217 2010-01-12 16:01:57Z matthew $
+ * @version    $Id: AuthorizedRequest.php 24593 2012-01-05 20:35:02Z matthew $
  */
 
 /** Zend_Oauth_Token */
@@ -25,7 +25,7 @@ require_once 'Zend/Oauth/Token.php';
 /**
  * @category   Zend
  * @package    Zend_Oauth
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Oauth_Token_AuthorizedRequest extends Zend_Oauth_Token
@@ -44,14 +44,14 @@ class Zend_Oauth_Token_AuthorizedRequest extends Zend_Oauth_Token
      */
     public function __construct(array $data = null, Zend_Oauth_Http_Utility $utility = null)
     {
-        if (!is_null($data)) {
+        if ($data !== null) {
             $this->_data = $data;
             $params = $this->_parseData();
             if (count($params) > 0) {
                 $this->setParams($params);
             }
         }
-        if (!is_null($utility)) {
+        if ($utility !== null) {
             $this->_httpUtility = $utility;
         } else {
             $this->_httpUtility = new Zend_Oauth_Http_Utility;
@@ -60,7 +60,7 @@ class Zend_Oauth_Token_AuthorizedRequest extends Zend_Oauth_Token
 
     /**
      * Retrieve token data
-     * 
+     *
      * @return array
      */
     public function getData()
@@ -70,7 +70,7 @@ class Zend_Oauth_Token_AuthorizedRequest extends Zend_Oauth_Token
 
     /**
      * Indicate if token is valid
-     * 
+     *
      * @return bool
      */
     public function isValid()
@@ -85,7 +85,7 @@ class Zend_Oauth_Token_AuthorizedRequest extends Zend_Oauth_Token
 
     /**
      * Parse string data into array
-     * 
+     *
      * @return array
      */
     protected function _parseData()

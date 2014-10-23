@@ -36,7 +36,7 @@
 			"<div class='delete_warning_box'>"._t('Really delete ALL records in "%1"?', $t_set->getLabelForDisplay())."</div>",
 			"",
 			caFormSubmitButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'caDeleteForm', array()).
-			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), "batch", "Editor", "Edit", array('set_id' => $this->getVar('set_id')))
+			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', "batch", "Editor", "Edit", array('set_id' => $this->getVar('set_id')))
 		)."</div>\n";
 		
 		print caHTMLHiddenInput('confirm', array('value' => 1));
@@ -45,7 +45,7 @@
 		print "</form>\n";
 	} else {
 
-		JavascriptLoadManager::register("sortableUI");
+		AssetLoadManager::register("sortableUI");
 ?>
 <h1><?php print _t('Batch processing status'); ?></h1>
 
@@ -102,7 +102,7 @@
 				}
 				$vs_buf .= "</ul>";
 				
-				$vs_buf .= '<div class="batchProcessingReportSectionWarning">'.((sizeof($pa_errors) == 1) ? _t('Note: <strong>NO</strong> batch changes were saved due to the error.') : _t('Note: <strong>NO</strong> batch changes were saved due to %1 errors.', sizeof($pa_errors)))."</div>";
+				$vs_buf .= '<div class="batchProcessingReportSectionWarning">'._t('Note: The above record(s) were not deleted due to the errors.')."</div>";
 			}
 			if (is_array($pa_notices) && sizeof($pa_notices)) {
 				$vs_buf .= '<div class="batchProcessingReportSectionHead">'._t('Deleted successfully').':</div><ol>';

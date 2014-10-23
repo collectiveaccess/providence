@@ -20,7 +20,7 @@ DV.History = function(viewer) {
   this.URL_CHECK_INTERVAL = 500;
 
   // We need to use an iFrame to save history if we're in an old version of IE.
-  this.USE_IFRAME = DV.jQuery.browser.msie && DV.jQuery.browser.version < 8;
+  this.USE_IFRAME = false; //DV.jQuery.browser.msie && DV.jQuery.browser.version < 8;
 
   // The ordered list of history handlers matchers and callbacks.
   this.handlers = [];

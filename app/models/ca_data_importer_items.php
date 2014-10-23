@@ -185,8 +185,8 @@ class ca_data_importer_items extends BaseModel {
 		$this->initSettings();
 	}
 	# ------------------------------------------------------
-	protected function initLabelDefinitions() {
-		parent::initLabelDefinitions();
+	protected function initLabelDefinitions($pa_options=null) {
+		parent::initLabelDefinitions($pa_options);
 		
 		// TODO
 	}
@@ -234,6 +234,19 @@ class ca_data_importer_items extends BaseModel {
 			),
 			'label' => _t('Skip group if empty'),
 			'description' => _t('Skip all of the elements in the group if value for this element is empty.  For example, a field called Description Type would be irrelevant if the Description field is empty.')
+		);
+		$va_settings['skipIfEmpty'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Skip mapping if empty'),
+			'description' => _t('Skip mapping if value for this element is empty.')
 		);
 		$va_settings['skipGroupIfValue'] = array(
 			'formatType' => FT_TEXT,
@@ -293,6 +306,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Skip group if expression'),
 			'description' => _t('Skip all of the elements in the group if value for the expression is true.')
 		);
+		$va_settings['skipIfExpression'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Skip if expression'),
+			'description' => _t('Skip mapping if value for the expression is true.')
+		);
 		$va_settings['default'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -347,6 +369,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Format with template'),
 			'description' => _t('Format imported value with provided template. Template may include caret (^) prefixed placeholders that refer to data source values.')
 		);
+		$va_settings['applyRegularExpressions'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 4,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Apply one or more regular expression-based substitutions to a soruce value prior to import.'),
+			'description' => _t('A list of Perl-compatible regular expressions. Each expression has two parts, a matching expression and a substitution expression, and is expressed as a JSON object with <em>match</em> and <em>replaceWith</em> keys. Ex. [{"match": "([\\d]+)\\.([\\d]+)", "replaceWith": "\\1:\\2"}, {"match": "[^\\d:]+", "replaceWith": ""}] ')
+		);
 		$va_settings['maxLength'] = array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_FIELD,
@@ -386,6 +417,33 @@ class ca_data_importer_items extends BaseModel {
 			'default' => '',
 			'label' => _t('Convert newlines to HTML'),
 			'description' => _t('Convert newline characters in text to HTML &lt;BR/&gt; tags.')
+		);
+		$va_settings['useAsSingleValue'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Use as single value'),
+			'description' => _t('Force repeating values to be imported as a single value concatenated with the specified delimiter.')
+		);
+		$va_settings['matchOn'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Match on'),
+			'description' => _t('List indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails.')
+		);
+		$va_settings['truncateLongLabels'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Truncate long labels?'),
+			'description' => _t('Truncate preferred and non-preferred labels that exceed the maximum length to fit.')
 		);
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
@@ -465,8 +523,9 @@ class ca_data_importer_items extends BaseModel {
 		
 		$va_refinery_list = array();
 		foreach($va_refinery_names as $vs_name) {
-			$o_refinery = RefineryManager::getRefineryInstance($vs_name);
-			$va_refinery_list[$vs_name] = $o_refinery->getTitle();
+			if ($o_refinery = RefineryManager::getRefineryInstance($vs_name)) {
+				$va_refinery_list[$vs_name] = $o_refinery->getTitle();
+			}
 		}
 		
 		return $va_refinery_list;

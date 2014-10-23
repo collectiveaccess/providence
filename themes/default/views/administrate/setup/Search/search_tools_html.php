@@ -31,6 +31,20 @@
 <div id="searchToolsBox">
 	<div class="bg">
 <?php
+	if(is_array($va_export_mappings = $this->getVar('exporter_list')) && sizeof($va_export_mappings)>0) {
+?>
+		<div class="col">
+			<?php
+			print _t("Export results with mapping") . ":<br/>";
+			print caFormTag($this->request, 'exportWithMapping', 'caExportWithMappingForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+
+			print ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_subject->tableNum(), array('id' => 'caExporterList'),array('width' => '150px'));
+			print caFormSubmitLink($this->request, _t('Export'), 'button', 'caExportWithMappingForm') . " &rsaquo;";
+			?>
+			</form>
+		</div>
+<?php
+	}
 	if (is_array($va_forms = $this->getVar('print_forms')) && sizeof($va_forms)) {
 ?>
 		<div class="col">
@@ -89,7 +103,7 @@
 <?php
 	}
 ?>
-		<a href='#' id='hideTools' onclick='jQuery("#searchToolsBox").slideUp(250); jQuery("#showTools").slideDown(1); jQuery("input.addItemToSetControl").hide(); return false;'><img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/collapse.gif" width="11" height="11" border="0"></a>
+		<a href='#' id='hideTools' onclick='jQuery("#searchToolsBox").slideUp(250); jQuery("#showTools").slideDown(1); jQuery("input.addItemToSetControl").hide(); return false;'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_COLLAPSE__); ?></a>
 		<div style='clear:both;height:1px;'>&nbsp;</div>
 	</div><!-- end bg -->
 </div><!-- end searchToolsBox -->

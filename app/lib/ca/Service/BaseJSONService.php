@@ -62,7 +62,7 @@ class BaseJSONService {
 			$this->addError(("Invalid HTTP request method"));
 		}
 		
-		$this->opn_id = intval($this->opo_request->getParameter("id",pInteger));
+		$this->opn_id = $this->opo_request->getParameter("id",pString);	// we allow for a string to support fetching by idno; typically it's a numeric id
 
 		$vs_post_data = $this->opo_request->getRawPostData();
 		if(strlen(trim($vs_post_data))>0){
@@ -70,9 +70,14 @@ class BaseJSONService {
 			if(!is_array($this->opa_post)){
 				$this->addError(_t("Data sent via POST doesn't seem to be in JSON format"));
 			}
+		} else if($vs_post_data = $this->opo_request->getParameter('source', pString)) {
+			$this->opa_post = json_decode($vs_post_data, true);
+			if(!is_array($this->opa_post)){
+				$this->addError(_t("Data sent via 'source' parameter doesn't seem to be in JSON format"));
+			}
 		} else {
 			$this->opa_post = array();
-		}		
+		}
 
 		$this->opa_valid_tables = array(
 			"ca_objects", "ca_object_lots", "ca_entities",
@@ -84,7 +89,7 @@ class BaseJSONService {
 
 		if(strlen($ps_table)>0){
 			if(!in_array($ps_table, $this->opa_valid_tables)){
-				$this->addError(_t("Table name does not exist"));
+				$this->addError(_t("Table does not exist"));
 			}
 		}
 	}
@@ -121,10 +126,10 @@ class BaseJSONService {
 	/**
 	 * Get BaseModel instance for given table and optionally load the record with the specified ID
 	 * @param string $ps_table table name, e.g. "ca_objects"
-	 * @param int $pn_id primary key value of the record to load
+	 * @param mixed $pn_id integer primary key value of the record to load, or string idno value for the record to load 
 	 * @return BaseModel
 	 */
-	protected function _getTableInstance($ps_table,$pn_id=null){
+	protected function _getTableInstance($ps_table,$pn_id=null){		// $pn_id might be a string if the user is fetching by idno
 		if(!in_array($ps_table, $this->opa_valid_tables)){
 			$this->opa_errors[] = _t("Accessing this table directly is not allowed");
 			return false;
@@ -134,16 +139,30 @@ class BaseJSONService {
 
 		$t_instance = $this->opo_dm->getInstanceByTableName($ps_table);
 
-		if($pn_id > 0){
-			if(!$t_instance->load($pn_id)){
-				$this->opa_errors[] = _t("ID does not exist");
-				return false;
-			} else if(!$vb_include_deleted && $t_instance->get("deleted")){
-				$this->opa_errors[] = _t("ID does not exist");
-				return false;
+		if ($pn_id && !is_numeric($pn_id) && ($vs_idno_fld = $t_instance->getProperty('ID_NUMBERING_ID_FIELD')) && preg_match("!^[A-Za-z0-9_\-\.,\[\]]+$!", $pn_id)) {
+			// User is loading by idno
+			$va_load_spec = array($vs_idno_fld => $pn_id);
+			if(!$vb_include_deleted && $t_instance->hasField('deleted')){
+				$va_load_spec['deleted'] = 0;
+			}
+			if(!$t_instance->load($va_load_spec)){
+					$this->opa_errors[] = _t("idno does not exist");
+					return false;
+				} else if(!$vb_include_deleted && $t_instance->get("deleted")){
+					$this->opa_errors[] = _t("idno does not exist");
+					return false;
+				}
+		} else {
+			if($pn_id > 0){
+				if(!$t_instance->load($pn_id)){
+					$this->opa_errors[] = _t("ID does not exist");
+					return false;
+				} else if(!$vb_include_deleted && $t_instance->get("deleted")){
+					$this->opa_errors[] = _t("ID does not exist");
+					return false;
+				}
 			}
 		}
-
 		return $t_instance;
 	}
 	# -------------------------------------------------------

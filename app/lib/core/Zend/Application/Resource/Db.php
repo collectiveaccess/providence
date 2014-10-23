@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Application
  * @subpackage Resource
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Db.php 20816 2010-02-01 21:13:54Z freak $
+ * @version    $Id: Db.php 25123 2012-11-14 18:27:44Z matthew $
  */
 
 /**
@@ -32,7 +32,7 @@ require_once 'Zend/Application/Resource/ResourceAbstract.php';
  * @category   Zend
  * @package    Zend_Application
  * @subpackage Resource
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Application_Resource_Db extends Zend_Application_Resource_ResourceAbstract
@@ -45,7 +45,7 @@ class Zend_Application_Resource_Db extends Zend_Application_Resource_ResourceAbs
     protected $_adapter = null;
 
     /**
-     * @var Zend_Db_Adapter_Interface
+     * @var Zend_Db_Adapter_Abstract
      */
     protected $_db;
 
@@ -66,7 +66,7 @@ class Zend_Application_Resource_Db extends Zend_Application_Resource_ResourceAbs
     /**
      * Set the adapter
      *
-     * @param  $adapter string
+     * @param  string $adapter
      * @return Zend_Application_Resource_Db
      */
     public function setAdapter($adapter)
@@ -88,7 +88,7 @@ class Zend_Application_Resource_Db extends Zend_Application_Resource_ResourceAbs
     /**
      * Set the adapter params
      *
-     * @param  $adapter string
+     * @param  string $adapter
      * @return Zend_Application_Resource_Db
      */
     public function setParams(array $params)
@@ -132,7 +132,7 @@ class Zend_Application_Resource_Db extends Zend_Application_Resource_ResourceAbs
     /**
      * Retrieve initialized DB connection
      *
-     * @return null|Zend_Db_Adapter_Interface
+     * @return null|Zend_Db_Adapter_Abstract
      */
     public function getDbAdapter()
     {
@@ -140,6 +140,12 @@ class Zend_Application_Resource_Db extends Zend_Application_Resource_ResourceAbs
             && (null !== ($adapter = $this->getAdapter()))
         ) {
             $this->_db = Zend_Db::factory($adapter, $this->getParams());
+
+            if ($this->_db instanceof Zend_Db_Adapter_Abstract 
+                && $this->isDefaultTableAdapter()
+            ) {
+                Zend_Db_Table::setDefaultAdapter($this->_db);
+            }
         }
         return $this->_db;
     }
@@ -152,10 +158,39 @@ class Zend_Application_Resource_Db extends Zend_Application_Resource_ResourceAbs
     public function init()
     {
         if (null !== ($db = $this->getDbAdapter())) {
-            if ($this->isDefaultTableAdapter()) {
-                Zend_Db_Table::setDefaultAdapter($db);
-            }
             return $db;
         }
+    }
+
+    /**
+     * Set the default metadata cache
+     *
+     * @param string|Zend_Cache_Core $cache
+     * @return Zend_Application_Resource_Db
+     */
+    public function setDefaultMetadataCache($cache)
+    {
+        $metadataCache = null;
+
+        if (is_string($cache)) {
+            $bootstrap = $this->getBootstrap();
+            if ($bootstrap instanceof Zend_Application_Bootstrap_ResourceBootstrapper
+                && $bootstrap->hasPluginResource('CacheManager')
+            ) {
+                $cacheManager = $bootstrap->bootstrap('CacheManager')
+                    ->getResource('CacheManager');
+                if (null !== $cacheManager && $cacheManager->hasCache($cache)) {
+                    $metadataCache = $cacheManager->getCache($cache);
+                }
+            }
+        } else if ($cache instanceof Zend_Cache_Core) {
+            $metadataCache = $cache;
+        }
+
+        if ($metadataCache instanceof Zend_Cache_Core) {
+            Zend_Db_Table::setDefaultMetadataCache($metadataCache);
+        }
+
+        return $this;
     }
 }

@@ -30,6 +30,9 @@
 	$va_facet_info 			= $this->getVar('facet_info');
 	$vs_grouping_field		= $this->getVar('grouping');
 	$vs_group_mode 			= $va_facet_info["group_mode"];
+	$va_row_size = $this->request->config->get('browse_row_size');
+	$va_td_width = intval(100/$va_row_size);
+
 
 	if (!$va_facet||!$vs_facet_name) { 
 		print 'No facet defined'; 
@@ -54,13 +57,53 @@
 	}
 ?>
 </div>
-<h2><?php print unicode_ucfirst($va_facet_info['label_plural']); ?></h2>
-
 
 <div class="browseSelectPanelContentArea">
+	<h2 class='browse'><?php print unicode_ucfirst($va_facet_info['label_plural']); ?></h2>
 
 <?php
 	switch($vs_group_mode) {
+		# ------------------------------------------------------------
+		case 'hierarchical';
+?>
+	<h2 class='browse'><?php print unicode_ucfirst($va_facet_info['label_plural']); ?></h2>
+	<div class='clearDivide'></div>
+	<!--- BEGIN HIERARCHY BROWSER --->
+	<div id="hierarchyBrowser" class='hierarchyBrowser'>
+		<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
+	</div><!-- end hierarchyBrowser -->
+
+<?php
+	if ($t_item && $t_subject) {
+?>
+	<div class="hierarchyBrowserHelpText">
+		<?php print _t("Click on a %1 to see more specific %2 within that %3. Click on the arrow next to a %4 to find %5 related to it.", $t_item->getProperty('NAME_SINGULAR'), $t_item->getProperty('NAME_PLURAL'), $t_item->getProperty('NAME_SINGULAR'), $t_item->getProperty('NAME_SINGULAR'), $t_subject->getProperty('NAME_PLURAL') ); ?>
+	</div>
+<?php
+	}
+?>
+	
+	<script type="text/javascript">
+			var oHierBrowser;
+			
+			jQuery(document).ready(function() {
+				
+				oHierBrowser = caUI.initHierBrowser('hierarchyBrowser', {
+					levelDataUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacetHierarchyLevel', array('facet' => $vs_facet_name)); ?>',
+					initDataUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacetHierarchyAncestorList', array('facet' => $vs_facet_name)); ?>',
+					
+					editUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'addCriteria', array('facet' => $vs_facet_name, 'id' => '')); ?>',
+					editButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/glyphicons_223_chevron-right.png" border="0" title="<?php print _t("Browse with this term"); ?>">',
+					
+					initItemID: '<?php print $this->getVar('browse_last_id'); ?>',
+					indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
+					
+					currentSelectionDisplayID: 'browseCurrentSelection'
+				});
+			});
+		</script>
+<?php
+			break;
 		# ------------------------------------------------------------
 		case 'none':
 ?>
@@ -71,7 +114,7 @@
 			foreach($va_facet as $vn_i => $va_item) {
 ?>
 <?php
-				$va_row[] = "<td class='browseSelectPanelListCell'>".caNavLink($this->request, $va_item['label'], 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id)) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => $va_item['id'], 'mod_id' => $vm_modify_id))."</td>";
+				$va_row[] = "<td class='browseSelectPanelListCell' width='{$va_td_width}%;'>".caNavLink($this->request, $va_item['label'], 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id)) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => $va_item['id'], 'mod_id' => $vm_modify_id))."</td>";
 				
 				if (sizeof($va_row) == 5) {
 					print "<tr valign='top'>".join('', $va_row)."</tr>\n";
@@ -99,13 +142,13 @@
 ?>
 
 	<div class="browseSelectPanelHeader">
-<?php 
-	print _t("Jump to").': '; 
-	
+		<div class="jumpToGroup">
+<?php 	
 	foreach($va_groups as $vs_group) {
 		print " <a href='#".(($vs_group === '~') ? '~' : $vs_group)."'>{$vs_group}</a> ";
 	}
 ?>
+		</div>
 	</div>
 	<div class="browseSelectPanelList">
 <?php
@@ -119,7 +162,7 @@
 		<table class='browseSelectPanelListTable'>
 <?php
 				foreach($va_items as $va_item) {
-					$va_row[] = "<td class='browseSelectPanelListCell'>".caNavLink($this->request, $va_item['label'], 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id) > 0) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => $va_item['id'], 'mod_id' => $vm_modify_id))."</td>";
+					$va_row[] = "<td class='browseSelectPanelListCell' width='{$va_td_width}%;'>".caNavLink($this->request, $va_item['label'], 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id) > 0) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => $va_item['id'], 'mod_id' => $vm_modify_id))."</td>";
 					
 					if (sizeof($va_row) == 5) {
 						print "<tr valign='top'>".join('', $va_row)."</tr>\n";
@@ -146,4 +189,7 @@
 		# ------------------------------------------------------------
 	}
 ?>
+	<a href="#" onclick="$('#showRefine').show(); caUIBrowsePanel.hideBrowsePanel(); " class="browseSelectPanelButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_COLLAPSE__); ?></a>
+	<div style='clear:both;width:100%'></div>
+
 </div>

@@ -31,7 +31,7 @@ function _unicode_check($errors = false) {
 	
 	// Check for outdated PCRE library
 	// Note: we check if U+E2 is in the range U+E0 - U+E1. This test returns TRUE on old PCRE versions.
-	if (preg_match('/[à-á]/u', 'â')) {
+	if (preg_match('/[��-��]/u', '��')) {
 		if ($errors) {
 			$GLOBALS["UNICODE_ERROR"] = 'The PCRE library in your PHP installation is outdated. This will cause problems when handling Unicode text. If you are running PHP 4.3.3 or higher, make sure you are using the PCRE library supplied by PHP. Please refer to the <a href="http://www.php.net/pcre">PHP PCRE documentation</a> for more information.';
 		}
@@ -85,7 +85,7 @@ function unicode_settings() {
 		UNICODE_MULTIBYTE => 'Multi-byte: operations on Unicode strings are supported through the <a href="http://www.php.net/mbstring">PHP mbstring extension</a>.',
 		UNICODE_ERROR => 'Invalid: the current configuration is incompatible with Drupal.'
 	);
-	$form['settings'] = array('#type' => 'item', '#title' => t('String handling method'), '#value' => $options[$status]);
+	$form['settings'] = array('#type' => 'item', '#title' => _t('String handling method'), '#value' => $options[$status]);
 	return $form;
 }
 # ----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -132,7 +132,7 @@ function unicode_xml_parser_create(&$data) {
       $data = ereg_replace('^(<\?xml[^>]+encoding)="([^"]+)"', '\\1="utf-8"', $out);
     }
     else {
-      watchdog('php', t("Could not convert XML encoding '%s' to UTF-8.", array('%s' => $encoding)), WATCHDOG_WARNING);
+     // watchdog('php', t("Could not convert XML encoding '%s' to UTF-8.", array('%s' => $encoding)), WATCHDOG_WARNING);
       return 0;
     }
   }
@@ -165,7 +165,7 @@ function unicode_convert_to_utf8($data, $encoding) {
     $out = @recode_string($encoding .'..utf-8', $data);
   }
   else {
-    watchdog('php', t("Unsupported encoding '%s'. Please install iconv, GNU recode or mbstring for PHP.", array('%s' => $encoding)), WATCHDOG_ERROR);
+   // watchdog('php', t("Unsupported encoding '%s'. Please install iconv, GNU recode or mbstring for PHP.", array('%s' => $encoding)), WATCHDOG_ERROR);
     return FALSE;
   }
 
@@ -215,7 +215,7 @@ function truncate_utf8($string, $len, $wordsafe = FALSE, $dots = FALSE) {
  * Encodes MIME/HTTP header values that contain non-ASCII, UTF-8 encoded
  * characters.
  *
- * For example, mime_header_encode('tést.txt') returns "=?UTF-8?B?dMOpc3QudHh0?=".
+ * For example, mime_header_encode('t��st.txt') returns "=?UTF-8?B?dMOpc3QudHh0?=".
  *
  * See http://www.rfc-editor.org/rfc/rfc2047.txt for more information.
  *

@@ -40,13 +40,13 @@
  			// check access to set - if user doesn't have edit access we bail
  			$t_set = new ca_sets($po_request->getParameter('set_id', pInteger));
  			if (!$t_set->haveAccessToSet($po_request->getUserID(), __CA_SET_EDIT_ACCESS__, null, array('request' => $po_request))) {
- 				$this->postError(2320, _t("Access denied"), "RequestDispatcher->dispatch()");
+ 				$this->postError(2320, _t("Access denied"), "SetsEditorController->__construct");
  			}
  		}
  		# -------------------------------------------------------
  		protected function _initView($pa_options=null) {
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register('sortableUI');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('sortableUI');
  			$va_init = parent::_initView($pa_options);
  			if (!$va_init[1]->getPrimaryKey()) {
  				$va_init[1]->set('user_id', $this->request->getUserID());
@@ -66,7 +66,7 @@
 
  			if (!$vn_subject_id) { return; }
 			  if (!$this->UserCanDeleteSet($t_subject->get('user_id'))) {
-				$this->postError(2320, _t("Access denied here"), "RequestDispatcher->dispatch()");
+				$this->postError(2320, _t("Access denied"), "SetsEditorController->Delete()");
 			  }
 			  else {
 				parent::Delete($pa_options);
@@ -122,7 +122,7 @@
  			
  			$this->view->setVar('errors', $va_errors);
  			$this->view->setVar('set_id', $pn_set_id);
- 			$this->view->setVar('item_id', $pn_row_id);
+ 			$this->view->setVar('row_id', $pn_row_id);
  			$this->view->setVar('idno', $t_row->get($t_row->getProperty('ID_NUMBERING_ID_FIELD')));
  			$this->view->setVar('idno_sort', $t_row->get($t_row->getProperty('ID_NUMBERING_SORT_FIELD')));
  			$this->view->setVar('set_item_label', $t_row->getLabelForDisplay(false));

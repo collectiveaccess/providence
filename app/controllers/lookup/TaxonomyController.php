@@ -110,7 +110,8 @@
 							$va_context_options = array( 'http' => array(
 								'proxy' => $vs_proxy,
 								'request_fulluri' => true,
-								'timeout' => 5
+								'timeout' => 5,
+								'header' => 'User-agent: CollectiveAccess web service lookup',
 							));
 
 							if($vs_proxy_auth){

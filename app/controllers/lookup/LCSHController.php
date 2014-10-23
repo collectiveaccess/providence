@@ -47,7 +47,7 @@
 			if ($vn_element_id = $this->request->getParameter('element_id', pInteger)) {
 				$t_element = new ca_metadata_elements($vn_element_id);
 				if ($vs_voc = $t_element->getSetting('vocabulary')) {
-					$vs_voc_query .= '&q='.urlencode($vs_voc);
+					$vs_voc_query .= '&q='.rawurlencode($vs_voc);
 				}
 			}
 			$vo_conf = Configuration::load();
@@ -64,7 +64,8 @@
 
 						$va_context_options = array( 'http' => array(
 							'proxy' => $vs_proxy,
-							'request_fulluri' => true
+							'request_fulluri' => true,
+							'header' => 'User-agent: CollectiveAccess web service lookup',
 						));
 
 						if($vs_proxy_auth){

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -45,7 +45,7 @@
 			<th class='list-header-nosort'>
 				<?php print ($vs_default_action	== "Edit" ? _t("Edit") : _t("View")); ?>
 			</th>
-	<?php
+<?php
 			// output headers
 			$vn_id_count = 0;
 			foreach($va_display_list as $va_display_item) {
@@ -63,39 +63,50 @@
 				}
 				$vn_id_count++;
 			}
-	?>
+?>
 			</tr></thead><tbody>
-	<?php
+<?php
 			$i = 0;
 			$vn_item_count = 0;
 			
 			while(($vn_item_count < $vn_items_per_page) && $vo_result->nextHit()) {
 				$vn_lot_id = $vo_result->get('lot_id');
-	
-				if($vo_ar->userCanAccess($this->request->user->getUserID(), array("editor","object_lots"), "ObjectLotEditor", "Edit", array("lot_id" => $vn_lot_id))){
-					$vs_action = "Edit";
-				} else {
-					$vs_action = "Summary";
-				}
 				
 				($i == 2) ? $i = 0 : "";
-	?>
+?>
 				<tr <?php print ($i ==1) ? "class='odd'" : ""; ?>>
 					<td style="width:10px">
 						<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_lot_id; ?>' class="addItemToSetControl" />	
 					</td>
-	<?php
-					print "<td style='width:5%;'>".caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'editor/object_lots', 'ObjectLotEditor', $vs_action, array('lot_id' => $vn_lot_id))."</td>";
+<?php
+					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_object_lots', $vn_lot_id, array())."</td>";
 					foreach($va_display_list as $vn_placement_id => $va_display_item) {
 						print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request))."</td>";
 					}
-	?>	
+?>	
 				</tr>
-	<?php
+<?php
 				$i++;
 				$vn_item_count++;
 			}
-	?>
-		</tbody></table>
+?>
+			</tbody>
+<?php
+			if (is_array($va_bottom_line = $this->getVar('bottom_line'))) {
+?>
+				<tfoot>
+					<tr>
+						<td colspan="2" class="listtableTotals"><?php print _t('Totals'); ?></td>
+<?php
+						foreach($va_bottom_line as $vn_placement_id => $vs_bottom_line_value) {
+							print "<td>{$vs_bottom_line_value}</td>";
+						}
+?>
+					</tr>
+				</tfoot>
+<?php
+			}
+?>
+		</table>
 	</form>
 </div><!--end scrollingResults -->

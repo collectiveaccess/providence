@@ -122,6 +122,8 @@
 						// output
 						foreach($va_list_items as $vn_item_id => $va_item) {
 							unset($va_item['description']);
+							unset($va_item['icon']);
+							
 							if (!$va_item[$vs_label_display_field_name]) { $va_item[$vs_label_display_field_name] = $va_item['idno']; }
 							if (!$va_item[$vs_label_display_field_name]) { $va_item[$vs_label_display_field_name] = '???'; }
 							
@@ -148,6 +150,7 @@
 						}
 					}
 				}
+ 				$va_list_items['_sortOrder'] = array_keys($va_list_items);
 				$va_list_items['_primaryKey'] = $t_item->primaryKey();	// pass the name of the primary key so the hierbrowser knows where to look for item_id's
  				$va_list_items['_itemCount'] = $qr_res ? $qr_res->numRows() : 0;
  				

@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_InfoCard
  * @subpackage Zend_InfoCard_Xml_Security
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Security.php 20096 2010-01-06 02:05:09Z bkarwin $
+ * @version    $Id: Security.php 24593 2012-01-05 20:35:02Z matthew $
  */
 
 /**
@@ -30,7 +30,7 @@ require_once 'Zend/InfoCard/Xml/Security/Transform.php';
  * @category   Zend
  * @package    Zend_InfoCard
  * @subpackage Zend_InfoCard_Xml_Security
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_InfoCard_Xml_Security
@@ -174,7 +174,7 @@ class Zend_InfoCard_Xml_Security
 
         $transformed_xml_binhash = pack("H*", sha1($transformed_xml));
 
-        if($transformed_xml_binhash != $dValue) {
+        if(!self::_secureStringCompare($transformed_xml_binhash, $dValue)) {
             require_once 'Zend/InfoCard/Xml/Security/Exception.php';
             throw new Zend_InfoCard_Xml_Security_Exception("Locally Transformed XML does not match XML Document. Cannot Verify Signature");
         }
@@ -301,5 +301,27 @@ class Zend_InfoCard_Xml_Security
 
         require_once 'Zend/InfoCard/Xml/Security/Exception.php';
         throw new Zend_InfoCard_Xml_Security_Exception("Invalid code path");
+    }
+
+    /**
+     * Securely compare two strings for equality while avoided C level memcmp()
+     * optimisations capable of leaking timing information useful to an attacker
+     * attempting to iteratively guess the unknown string (e.g. password) being
+     * compared against.
+     *
+     * @param string $a
+     * @param string $b
+     * @return bool
+     */
+    static protected function _secureStringCompare($a, $b)
+    {
+        if (strlen($a) !== strlen($b)) {
+            return false;
+        }
+        $result = 0;
+        for ($i = 0; $i < strlen($a); $i++) {
+            $result |= ord($a[$i]) ^ ord($b[$i]);
+        }
+        return $result == 0;
     }
 }

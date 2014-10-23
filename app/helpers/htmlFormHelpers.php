@@ -265,8 +265,11 @@
 	 *		returnValueIfUnchecked = boolean indicating if checkbox should return value in request if unchecked; default is false
 	 */
 	function caHTMLCheckboxInput($ps_name, $pa_attributes=null, $pa_options=null) {
-		$vs_attr_string = _caHTMLMakeAttributeString($pa_attributes, $pa_options);
+		if (array_key_exists('checked', $pa_attributes) && !$pa_attributes['checked']) { unset($pa_attributes['checked']); }
+		if (array_key_exists('CHECKED', $pa_attributes) && !$pa_attributes['CHECKED']) { unset($pa_attributes['CHECKED']); }
 		
+		$vs_attr_string = _caHTMLMakeAttributeString($pa_attributes, $pa_options);
+	
 		if (isset($pa_options['returnValueIfUnchecked']) && $pa_options['returnValueIfUnchecked']) {
 			// javascript-y check box that returns form value even if unchecked
 			$vs_element = "<input name='{$ps_name}' {$vs_attr_string} type='checkbox'/>\n";
@@ -291,7 +294,14 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Generates an HTML <img> or Tilepic embed tag with supplied URL and attributes
 	 *
+	 * @param $ps_url string The image URL
+	 * @param $pa_options array Options include:
+	 *		scaleCSSWidthTo = width in pixels to *style* via CSS the returned image to. Does not actually alter the image. Aspect ratio of the image is preserved, with the combination of scaleCSSWidthTo and scaleCSSHeightTo being taken as a bounding box for the image. Only applicable to standard <img> tags. Tilepic display size cannot be styled using CSS; use the "width" and "height" options instead.
+	 *		scaleCSSHeightTo = height in pixels to *style* via CSS the returned image to.
+	 *
+	 * @return string
 	 */
 	function caHTMLImage($ps_url, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
@@ -301,6 +311,18 @@
 			'width', 'height',
 			'vspace', 'hspace', 'alt', 'title', 'usemap', 'align', 'border', 'class', 'style') as $vs_attr) {
 				if (isset($pa_options[$vs_attr])) { $va_attributes[$vs_attr] = $pa_options[$vs_attr]; }
+		}
+		
+		$vn_scale_css_width_to = caGetOption('scaleCSSWidthTo', $pa_options, null);
+		$vn_scale_css_height_to = caGetOption('scaleCSSHeightTo', $pa_options, null);
+		
+		if ($vn_scale_css_width_to || $vn_scale_css_height_to) {
+			if (!$vn_scale_css_width_to) { $vn_scale_css_width_to = $vn_scale_css_height_to; }
+			if (!$vn_scale_css_height_to) { $vn_scale_css_height_to = $vn_scale_css_width_to; }
+			
+			$va_scaled_dimensions = caFitImageDimensions($va_attributes['width'], $va_attributes['height'], $vn_scale_css_width_to, $vn_scale_css_height_to);
+			$va_attributes['width'] = $va_scaled_dimensions['width'].'px';
+			$va_attributes['height'] = $va_scaled_dimensions['height'].'px';
 		}
 		
 		$vs_attr_string = _caHTMLMakeAttributeString($va_attributes, $pa_options);
@@ -325,7 +347,7 @@
 			$vn_tile_height = 					(int)$pa_options["tile_height"];
 			
 			$vn_layers = 						(int)$pa_options["layers"];
-			$vn_ratio = 							(float)$pa_options["layer_ratio"];
+			$vn_ratio = 						(float)$pa_options["layer_ratio"];
 			
 			if (!($vs_id_name = (string)$pa_options["idname"])) {
 				$vs_id_name = (string)$pa_options["id"];
@@ -345,18 +367,21 @@
 			$vn_viewer_width = 				$pa_options["viewer_width"];
 			$vn_viewer_height = 			$pa_options["viewer_height"];
 			
-			$vs_annotation_load_url	=		isset($pa_options["annotation_load_url"]) ? $pa_options["annotation_load_url"] : null;
-			$vs_annotation_save_url	=		isset($pa_options["annotation_save_url"]) ? $pa_options["annotation_save_url"] : null;
+			$vs_annotation_load_url	=		caGetOption("annotation_load_url", $pa_options, null);
+			$vs_annotation_save_url	=		caGetOption("annotation_save_url", $pa_options, null);
+			$vs_help_load_url	=			caGetOption("help_load_url", $pa_options, null);
 			
-			if (!($vs_viewer_base_url =			(string)$pa_options["viewer_base_url"])) {
-				$vs_viewer_base_url = __CA_URL_ROOT__;
-			}
-			$vb_directly_embed_flash = (bool)$pa_options['directly_embed_flash'];
+			$vs_annotation_editor_panel =	caGetOption("annotationEditorPanel", $pa_options, null);
+			$vs_annotation_editor_url =		caGetOption("annotationEditorUrl", $pa_options, null);
+			
+			$vs_viewer_base_url =			caGetOption("viewer_base_url", $pa_options, __CA_URL_ROOT__);
+			
+			$vb_directly_embed_flash = 		(bool)$pa_options['directly_embed_flash'];
 			
 			$vn_label_typecode = 			intval($pa_options["tilepic_label_typecode"]);
 			
-			$vs_label_title = 					(string)$pa_options["tilepic_label_default_title"];
-			$vn_label_title_readonly = 	(string)$pa_options["tilepic_label_title_readonly"] ? 1 : 0;
+			$vs_label_title = 				(string)$pa_options["tilepic_label_default_title"];
+			$vn_label_title_readonly = 		(string)$pa_options["tilepic_label_title_readonly"] ? 1 : 0;
 			
 			if (!$vn_viewer_width || !$vn_viewer_height) {
 				$o_config = Configuration::load();
@@ -368,14 +393,14 @@
 
 			$vs_flash_vars = "tpViewerUrl={$vs_viewer_base_url}/viewers/apps/tilepic.php&tpImageUrl={$ps_url}&tpWidth={$vn_width}&tpHeight={$vn_height}&tpInitMagnification={$vn_init_magnification}&tpScales={$vn_layers}&tpRatio={$vn_ratio}&tpTileWidth={$vn_tile_width}&tpTileHeight={$vn_tile_height}&tpUseLabels={$vb_use_labels}&tpEditLabels={$vb_edit_labels}&tpParameterList={$vs_parameter_list}{$vs_app_parameters}&labelTypecode={$vn_label_typecode}&labelDefaultTitle=".urlencode($vs_label_title)."&labelTitleReadOnly={$vn_label_title_readonly}";
 			
-			$vs_error_tag = ($pa_options['alt_image_tag']) ? $pa_options['alt_image_tag'] : '';
+			$vs_error_tag = caGetOption("alt_image_tag", $pa_options, '');
 			
 			$vn_viewer_width_with_units = $vn_viewer_width;
 			$vn_viewer_height_with_units = $vn_viewer_height; 
 			if (preg_match('!^[\d]+$!', $vn_viewer_width)) { $vn_viewer_width_with_units .= 'px'; }
 			if (preg_match('!^[\d]+$!', $vn_viewer_height)) { $vn_viewer_height_with_units .= 'px'; }
 			
-			JavascriptLoadManager::register("swf/swfobject");
+			AssetLoadManager::register("swf/swfobject");
 $vs_tag = "
 				<div id='{$vs_id_name}' style='width:{$vn_viewer_width_with_units}; height: {$vn_viewer_height_with_units}; position: relative; z-index: 0;'>
 					{$vs_error_tag}
@@ -393,6 +418,10 @@ $vs_tag = "
 								buttonUrlPath: '{$vs_viewer_base_url}/themes/default/graphics/buttons',
 								annotationLoadUrl: '{$vs_annotation_load_url}',
 								annotationSaveUrl: '{$vs_annotation_save_url}',
+								annotationEditorPanel: '{$vs_annotation_editor_panel}',
+								annotationEditorUrl: '{$vs_annotation_editor_url}',
+								annotationEditorLink: '".addslashes(_t('More...'))."',
+								helpLoadUrl: '{$vs_help_load_url}',
 								info: {
 									width: '{$vn_width}',
 									height: '{$vn_height}',

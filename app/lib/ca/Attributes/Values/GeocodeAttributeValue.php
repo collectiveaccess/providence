@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,6 +33,8 @@
  /**
   *
   */
+  	define("__CA_ATTRIBUTE_VALUE_GEOCODE__", 4);
+  	
  	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AttributeValue.php');
@@ -94,6 +96,22 @@
 			'label' => _t('Can be used in display'),
 			'description' => _t('Check this option if this attribute value can be used for display in search results. (The default is to be.)')
 		),
+		'canMakePDF' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output?'),
+			'description' => _t('Check this option if this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
+		'canMakePDFForValue' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output for individual values?'),
+			'description' => _t('Check this option if individual values for this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
 		'mustNotBeBlank' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_CHECKBOXES,
@@ -101,6 +119,32 @@
 			'width' => 1, 'height' => 1,
 			'label' => _t('Must not be blank'),
 			'description' => _t('Check this option if this attribute value must be set to some value - it must not be blank in other words. (The default is not to be.)')
+		),
+		'tileServerURL' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'default' => '',
+			'width' => 90, 'height' => 1,
+			'label' => _t('Tile server URL'),
+			'validForRootOnly' => 0,
+			'description' => _t('URL for tileserver to load custom tiles from, with placeholders for X, Y and Z values in the format <em>${x}</em>. Ex. http://tileserver.net/maps/${z}/${x}/${y}.png. Leave blank if you do not wish to use custom map tiles.')
+		),
+		'tileLayerName' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'default' => '',
+			'width' => 90, 'height' => 1,
+			'label' => _t('Tile layer name'),
+			'validForRootOnly' => 0,
+			'description' => _t('Display name for layer containing tiles loaded from tile server specified in the <em>tile server URL</em> setting.')
+		),
+		'layerSwitcherControl' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Show layer switcher controls'),
+			'description' => _t('Check this option you want to include layer switching controls in the map.')
 		),
 		'displayTemplate' => array(
 			'formatType' => FT_TEXT,
@@ -181,7 +225,7 @@
 			return $this->ops_path_value;
 		}
  		# ------------------------------------------------------------------
- 		public function parseValue($ps_value, $pa_element_info) {	
+ 		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {	
  			$va_settings = $this->getSettingValuesFromElementArray(
  				$pa_element_info, 
  				array('mustNotBeBlank')
@@ -224,6 +268,7 @@
 					return null;
 				}
  			}
+ 			
 
  			// is it direct input (decimal lat, decimal long)?
  			if(
@@ -231,7 +276,7 @@
  				||
  				preg_match("!^([^\[]*)[\[]{1}([^\]]+)[\]]{1}$!", $ps_value, $va_matches)
  			) {
- 			
+
  				$va_feature_list = preg_split("/[:]+/", $va_matches[2]);
  				
  				$va_feature_list_proc = array();
@@ -239,24 +284,32 @@
  					$va_point_list = preg_split("/[;]+/", $vs_feature);
 					$va_parsed_points = array();
 					$vs_first_lat = $vs_first_long = '';
+					
 					foreach($va_point_list as $vs_point) {
-						$va_tmp = preg_split("/[ ]*[,\/][ ]*/", $vs_point);
-						
-						// convert from degrees minutes seconds to decimal format
-						if (caGISisDMS($va_tmp[0])) {
-							$va_tmp[0] = caGISminutesToSignedDecimal($va_tmp[0]);
+						// is it UTM?
+						if (is_array($va_utm_to_latlong = caGISUTMToSignedDecimals($vs_point))) {
+							$va_parsed_points[] = $va_utm_to_latlong['latitude'].','.$va_utm_to_latlong['longitude'];
+							if (!$vs_first_lat) { $vs_first_lat = $va_utm_to_latlong['latitude']; }
+							if (!$vs_first_long) { $vs_first_long = $va_utm_to_latlong['longitude']; }
 						} else {
-							$va_tmp[0] = caGISDecimalToSignedDecimal($va_tmp[0]);
-						}
-						if (caGISisDMS($va_tmp[1])) {
-							$va_tmp[1] = caGISminutesToSignedDecimal($va_tmp[1]);
-						} else {
-							$va_tmp[1] = caGISDecimalToSignedDecimal($va_tmp[1]);
-						}
+							$va_tmp = preg_split("/[ ]*[,\/][ ]*/", $vs_point);
 						
-						$va_parsed_points[] = $va_tmp[0].','.$va_tmp[1];
-						if (!$vs_first_lat) { $vs_first_lat = $va_tmp[0]; }
-						if (!$vs_first_long) { $vs_first_long = $va_tmp[1]; }
+							// convert from degrees minutes seconds to decimal format
+							if (caGISisDMS($va_tmp[0])) {
+								$va_tmp[0] = caGISminutesToSignedDecimal($va_tmp[0]);
+							} else {
+								$va_tmp[0] = caGISDecimalToSignedDecimal($va_tmp[0]);
+							}
+							if (caGISisDMS($va_tmp[1])) {
+								$va_tmp[1] = caGISminutesToSignedDecimal($va_tmp[1]);
+							} else {
+								$va_tmp[1] = caGISDecimalToSignedDecimal($va_tmp[1]);
+							}
+						
+							$va_parsed_points[] = $va_tmp[0].','.$va_tmp[1];
+							if (!$vs_first_lat) { $vs_first_lat = $va_tmp[0]; }
+							if (!$vs_first_long) { $vs_first_long = $va_tmp[1]; }
+						}
 					}
 					$va_feature_list_proc[] = join(';', $va_parsed_points);
 				}
@@ -269,26 +322,33 @@
  			} else {
 				$ps_value = preg_replace("!\[[\d,\-\.]+\]!", "", $ps_value);
 				if ($ps_value) {
-					if (!($r_fp = @fopen("http://maps.google.com/maps/geo?q=".urlencode($ps_value)."&key=$vs_google_map_key&sensor=false&output=csv&oe=utf8","r"))) {
+					$vs_google_response = @file_get_contents('https://maps.googleapis.com/maps/api/geocode/json?address='.urlencode($ps_value).'&sensor=false');
+					if(!($va_google_response = json_decode($vs_google_response,true)) || !isset($va_google_response['status'])){
 						$this->postError(1970, _t('Could not connect to Google for geocoding'), 'GeocodeAttributeValue->parseValue()');
 						return false;
 					}
-					$vs_geocoding = @fread($r_fp, 8192);
 
-					$va_geocoding = explode(",", $vs_geocoding);
-					if (($va_geocoding[0] == 200) && ($va_geocoding[2] != 0) && ($va_geocoding[3] != 0)) {
+					if(($va_google_response['status'] != 'OK') || !isset($va_google_response['results']) || sizeof($va_google_response['results'])==0){
+						$this->postError(1970, _t('Could not geocode address "%1": [%2]', $ps_value, $va_google_response['status']), 'GeocodeAttributeValue->parseValue()');
+						return false;
+					}
+
+					$va_first_result = array_shift($va_google_response['results']);
+
+					if(isset($va_first_result['geometry']['location']) && is_array($va_first_result['geometry']['location'])) {
 						return array(
 							'value_longtext1' => $ps_value,
-							'value_longtext2' => $va_geocoding[2].','.$va_geocoding[3],
-							'value_decimal1' => $va_geocoding[2],		// latitude
-							'value_decimal2' => $va_geocoding[3]		// longitude
+							'value_longtext2' => $va_first_result['geometry']['location']['lat'].','.$va_first_result['geometry']['location']['lng'],
+							'value_decimal1' => $va_first_result['geometry']['location']['lat'],
+							'value_decimal2' => $va_first_result['geometry']['location']['lng']
 						);
 					} else {
-						$this->postError(1970, _t('Could not geocode address: [%1] %2', $va_geocoding[0], $va_geocoding[1]), 'GeocodeAttributeValue->parseValue()');
+						$this->postError(1970, _t('Could not geocode address "%1"', $ps_value), 'GeocodeAttributeValue->parseValue()');
 						return false;
 					}
 				}
 			}
+
 			return array(
 				'value_longtext1' => '',
 				'value_longtext2' => '',
@@ -318,7 +378,7 @@
  			return $this->opo_geo_plugin->getAttributeBundleHTML($pa_element_info, $pa_options);
  		}
  		# ------------------------------------------------------------------
- 		public function getAvailableSettings() {
+ 		public function getAvailableSettings($pa_element_info=null) {
  			global $_ca_attribute_settings;
  			
  			return $_ca_attribute_settings['GeocodeAttributeValue'];
@@ -331,6 +391,15 @@
 		 */
 		public function sortField() {
 			return 'value_decimal1';
+		}
+ 		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for geocode attribute value
+		 * 
+		 * @return int Attribute value type code
+		 */
+		public function getType() {
+			return __CA_ATTRIBUTE_VALUE_GEOCODE__;
 		}
  		# ------------------------------------------------------------------
 	}

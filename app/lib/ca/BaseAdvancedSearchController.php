@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2011 Whirl-i-Gig
+ * Copyright 2010-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -62,7 +62,7 @@
  		public function Index($pa_options=null) {
  			$po_search = (isset($pa_options['search']) && $pa_options['search']) ? $pa_options['search'] : null;
  			parent::Index($pa_options);
- 			JavascriptLoadManager::register('browsable');	// need this to support browse panel when filtering/refining search results
+ 			AssetLoadManager::register('browsable');	// need this to support browse panel when filtering/refining search results
  			
  			$t_model = $this->opo_datamodel->getTableInstance($this->ops_tablename, true);
  			
@@ -132,6 +132,8 @@
  				$vb_is_new_search = true;
  			}
  			
+ 			$va_access_values = caGetUserAccessValues($this->request);
+ 			
 			if($vs_search && ($vs_search != "")){ /* any request? */
 				$va_search_opts = array(
 					'sort' => $vs_sort, 
@@ -172,7 +174,7 @@
  				if($vb_is_new_search || $vb_criteria_have_changed) {
  					$this->opo_result_context->setResultList($vo_result->getPrimaryKeyValues());
 					
-					$vn_page_num = 1;
+					if ($this->opo_result_context->searchExpressionHasChanged()) { $vn_page_num = 1; }
 				}
  				
  				$vo_result->seek(($vn_page_num - 1) * $vn_items_per_page);
@@ -222,7 +224,11 @@
  				case 'EXPORT':
  					$this->_genExport($vo_result, $this->request->getParameter("export_format", pString), $vs_search, $vs_search);
  					break;
- 				# ------------------------------------
+				# ------------------------------------
+				case 'EXPORTWITHMAPPING':
+					$this->_genExportWithMapping($vo_result, $this->request->getParameter("exporter_id", pInteger));
+					break;
+				# ------------------------------------
  				case 'HTML': 
 				default:
 					// generate type menu and type value list
@@ -323,7 +329,7 @@
  		# Sidebar info handler
  		# -------------------------------------------------------
  		public function Tools($pa_parameters) {
- 			parent::Tools($pa_parameters, $po_search);
+ 			parent::Tools($pa_parameters);
 
 			$this->view->setVar('mode_name', _t('search'));
 			$this->view->setVar('mode_type_singular', $this->searchName('singular'));

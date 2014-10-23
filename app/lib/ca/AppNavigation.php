@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2013 Whirl-i-Gig
+ * Copyright 2007-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -188,7 +188,12 @@
 							$va_trail[] = $va_dyn_menu[0]['displayName'];
 						}
 					} else {
-						if (isset($va_node['submenu']) && $va_node['submenu']) {
+						if ($vb_submenu_set = isset($va_node['submenu']) && $va_node['submenu']) {
+							if (isset($va_node['submenu']['requires'])) {
+								$vb_submenu_set = $this->_evaluateRequirements($va_node['submenu']['requires']);
+							}
+						}
+						if ($vb_submenu_set) {
 							if (isset($va_node['submenu']['type']) && ($va_node['submenu']['type'] == 'dynamic') && is_array($va_sub_menu = $this->getDynamicSubmenu($va_node['submenu']))) {
 								if (isset($va_node['submenu']['breadcrumbHints']) && is_array($va_node['submenu']['breadcrumbHints'])) {
 									if ($vs_trail_item = $this->_getBreadcrumbHint($va_node['submenu']['breadcrumbHints'])) {
@@ -280,8 +285,8 @@
 			$vn_i = 0;
 			while(sizeof($va_path) && ($vn_i < $pn_level)) {
 				$vs_path_element = array_shift($va_path);
-				$x = null;
-				if (!$vs_path_element) { return $x; }							// don't try to return menu if none exists
+				$n = null;
+				if (!$vs_path_element) { return $n; }							// don't try to return menu if none exists
 				$va_nav_info = isset($va_nav_info[$vs_path_element]['navigation']) ? $va_nav_info[$vs_path_element]['navigation'] : null;
 				
 				
@@ -290,8 +295,8 @@
 			
 			$vs_selected_element = array_shift($va_path);
 		
-			$x = null;
-			if ((!is_array($va_nav_info)) || (!sizeof($va_nav_info))) { return $x; }
+			$n = null;
+			if ((!is_array($va_nav_info)) || (!sizeof($va_nav_info))) { return $n; }
 
 			return $va_nav_info;
 		}
@@ -436,17 +441,32 @@
 		# -------------------------------------------------------
 		public function getHTMLWidgets() {
 			$vs_cur_selection = $this->getDestination();
-			foreach($this->opa_widgets_config as $vs_key => $va_info) {
+			$va_widgets_config = $this->opa_widgets_config;
+
+			// fire hook
+			$o_app_plugin_manager = new ApplicationPluginManager();
+			if ($va_revised_widgets_config = $o_app_plugin_manager->hookRenderWidgets($va_widgets_config)) {
+				$va_widgets_config = $va_revised_widgets_config;
+			}
+			foreach($va_widgets_config as $vs_key => $va_info) {
 				if(preg_match('!^/'.$va_info['domain']['module'].'/'.$va_info['domain']['controller'].'$!i', $vs_cur_selection)) {
 					$va_params = $this->_parseAdditionalParameters($va_info['parameters']);
 					
 					// invoke controller method
 					$vs_classname = ucfirst($va_info['handler']['controller']).'Controller';
-				
-					if (!include_once($this->ops_controller_path.'/'.$va_info['handler']['module'].'/'.$vs_classname.'.php')) {
-						// Invalid controller path
-						$this->postError(2300, _t("Invalid controller path"), "AppNavigation->getHTMLWidgets()");
-						return false;
+
+
+					if (!$va_info['handler']['isplugin']) {
+						if (!include_once($this->ops_controller_path.'/'.$va_info['handler']['module'].'/'.$vs_classname.'.php')) {
+							// Invalid controller path
+							$this->postError(2300, _t("Invalid controller path"), "AppNavigation->getHTMLWidgets()");
+							return false;
+						}
+					} else {
+						if (!include_once($this->opo_config->get('application_plugins').'/'.$va_info['handler']['module'].'/controllers/'.$vs_classname.'.php')) {
+							$this->postError(2300, _t("Invalid controller path"), "AppNavigation->getHTMLWidgets()");
+							return false;
+						}
 					}
 					
 					$o_action_controller = new $vs_classname($this->opo_request, $this->opo_response , $this->opo_request->config->get('views_directory').'/'.$va_info['handler']['module']);
@@ -589,17 +609,19 @@
 						$vs_buf .= $this->_genDynamicTopLevelMenuItems($va_submenu_nav, $vs_cur_selection, $va_additional_params, $ps_base_path, $va_defaults);
 					}
 				} else {
-				
-					if (isset($pa_navinfo[$vs_nav]) && isset($pa_navinfo[$vs_nav]['submenu']) && $pa_navinfo[$vs_nav]['submenu']) {
+					$va_req = $pa_navinfo[$vs_nav]['submenu']['requires'];
+					$vb_submenu_set = $this->_evaluateRequirements($va_req);
+					if ($vb_submenu_set && isset($pa_navinfo[$vs_nav]) && isset($pa_navinfo[$vs_nav]['submenu']) && $pa_navinfo[$vs_nav]['submenu']) {
 						if ($pa_navinfo[$vs_nav]['submenu']['type'] == 'dynamic') {
-							$vs_buf .= "<li>".caHTMLLink($vs_display_name, array('class' => (($vs_cur_selection == $ps_base_path.'/'.$vs_nav) ? 'sf-menu-selected' : ''), 'href' => '#'));
 							$va_submenu_nav = $this->getDynamicSubmenu($pa_navinfo[$vs_nav]['submenu']);
 							if (sizeof($va_submenu_nav)) {
+								$vs_buf .= "<li>".caHTMLLink($vs_display_name, array('class' => (($vs_cur_selection == $ps_base_path.'/'.$vs_nav) ? 'sf-menu-selected' : ''), 'href' => '#'));
 								$vs_buf .= $this->_genSubMenu($va_submenu_nav, $vs_cur_selection, $va_additional_params, $ps_base_path, $va_defaults);
+								$vs_buf .= "</li>\n";
 							}
-							$vs_buf .= "</li>\n";
 						} else {
-							$vs_buf .= "<li>".caNavLink($this->opo_request, $vs_display_name, (($vs_cur_selection == $ps_base_path.'/'.$vs_nav) ? 'sf-menu-selected' : ''), $va_defaults['module'], $va_defaults['controller'], $va_defaults['action'], $va_additional_params)."\n";
+							$vs_link = (is_array($va_defaults) && $va_defaults['module']) ? caNavLink($this->opo_request, $vs_display_name, (($vs_cur_selection == $ps_base_path.'/'.$vs_nav) ? 'sf-menu-selected' : ''), $va_defaults['module'], $va_defaults['controller'], $va_defaults['action'], $va_additional_params) : "<a href='#'>{$vs_display_name}</a>";
+							$vs_buf .= "<li>{$vs_link}\n";
 							$vs_buf .= $this->_genSubMenu($pa_navinfo[$vs_nav]['submenu']['navigation'], $vs_cur_selection, $va_additional_params, $ps_base_path, $va_defaults);
 							$vs_buf .= "</li>\n";
 						}
@@ -795,6 +817,12 @@
 				
 				$va_tmp = explode(':', $vs_requirement);
 				switch(strtolower($va_tmp[0])) {
+					case 'availabletypes':
+						$vn_min_access = (sizeof($va_tmp) >= 3) ? constant($va_tmp[2]) : __CA_BUNDLE_ACCESS_EDIT__;
+						$vn_min_types = (sizeof($va_tmp) >= 4) ? (int)$va_tmp[3] : 1;
+						$va_types = caGetTypeListForUser($va_tmp[1], array('access' => $vn_min_access));
+						$vs_value = (sizeof($va_types) >= $vn_min_types) ? true : false;
+						break;
 					case 'session':
 						if (isset($va_tmp[2])) {
 							$vs_value = ($this->opo_request->session->getVar($va_tmp[1]) == $va_tmp[2]) ? true : false;

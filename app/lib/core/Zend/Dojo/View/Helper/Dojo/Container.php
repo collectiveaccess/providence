@@ -15,8 +15,8 @@
  * @category   Zend
  * @package    Zend_Dojo
  * @subpackage View
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
- * @version    $Id: Container.php 21705 2010-03-31 17:38:19Z matthew $
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @version    $Id: Container.php 24593 2012-01-05 20:35:02Z matthew $
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -29,7 +29,7 @@ require_once 'Zend/Dojo.php';
  *
  * @package    Zend_Dojo
  * @subpackage View
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Dojo_View_Helper_Dojo_Container
@@ -67,7 +67,7 @@ class Zend_Dojo_View_Helper_Dojo_Container
      * Dojo version to use from CDN
      * @var string
      */
-    protected $_cdnVersion = '1.4.1';
+    protected $_cdnVersion = '1.5.0';
 
     /**
      * Has the dijit loader been registered?
@@ -267,6 +267,12 @@ class Zend_Dojo_View_Helper_Dojo_Container
                 case 'registerdojostylesheet':
                     $this->registerDojoStylesheet($value);
                     break;
+                case 'enable':
+                    if($value) {
+                        $this->enable();
+                    } else {
+                        $this->disable();
+                    }
             }
         }
 
@@ -839,7 +845,7 @@ class Zend_Dojo_View_Helper_Dojo_Container
     public function dijitsToJson()
     {
         require_once 'Zend/Json.php';
-        return Zend_Json::encode($this->getDijits());
+        return Zend_Json::encode($this->getDijits(), false, array('enableJsonExprFinder' => true));
     }
 
     /**
@@ -876,7 +882,7 @@ EOJ;
      */
     public function addJavascript($js)
     {
-        $js = preg_replace('/^\s*(.*?)\s*$/s', '$1', $js);
+        $js = trim($js);
         if (!in_array(substr($js, -1), array(';', '}'))) {
             $js .= ';';
         }
@@ -1130,7 +1136,7 @@ EOJ;
         }
 
         $onLoadActions = array();
-        // Get Zend specific onLoad actions; these will always be first to 
+        // Get Zend specific onLoad actions; these will always be first to
         // ensure that dijits are created in the correct order
         foreach ($this->_getZendLoadActions() as $callback) {
             $onLoadActions[] = 'dojo.addOnLoad(' . $callback . ');';
@@ -1171,12 +1177,12 @@ EOJ;
     /**
      * Add an onLoad action related to ZF dijit creation
      *
-     * This method is public, but prefixed with an underscore to indicate that 
+     * This method is public, but prefixed with an underscore to indicate that
      * it should not normally be called by userland code. It is pertinent to
-     * ensuring that the correct order of operations occurs during dijit 
+     * ensuring that the correct order of operations occurs during dijit
      * creation.
-     * 
-     * @param  string $callback 
+     *
+     * @param  string $callback
      * @return Zend_Dojo_View_Helper_Dojo_Container
      */
     public function _addZendLoad($callback)
@@ -1189,7 +1195,7 @@ EOJ;
 
     /**
      * Retrieve all ZF dijit callbacks
-     * 
+     *
      * @return array
      */
     public function _getZendLoadActions()

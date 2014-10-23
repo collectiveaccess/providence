@@ -51,8 +51,6 @@ class ExportCSV extends BaseExportFormat {
 	}
 	# ------------------------------------------------------
 	public function processExport($pa_data,$pa_options=array()){
-		//caDebug($pa_data,"Data to build CSV from");
-		//caDebug($pa_options,"Export format options");
 		$va_csv = array();
 		
 		foreach($pa_data as $pa_item){
@@ -74,7 +72,12 @@ class ExportCSV extends BaseExportFormat {
 		$vs_delimiter = (isset($pa_options['settings']['CSV_delimiter']) ? $pa_options['settings']['CSV_delimiter'] : ',');
 		$vs_enclosure = (isset($pa_options['settings']['CSV_enclosure']) ? $pa_options['settings']['CSV_enclosure'] : '"');
 
-		//caDebug($va_csv);
+		if ($vs_enclosure == '"') {
+			// Escape quotes
+			foreach($va_csv as $vn_i => $vs_csv) {
+				$va_csv[$vn_i] = str_replace('"', '""', $vs_csv);
+			}
+		}
 
 		return $vs_enclosure . join($vs_enclosure.$vs_delimiter.$vs_enclosure,$va_csv) . $vs_enclosure;
 	}
@@ -122,5 +125,14 @@ BaseExportFormat::$s_format_settings['CSV'] = array(
 		'default' => '"',
 		'label' => _t('Enclosure'),
 		'description' => _t('Character used to enclose the text content in the export. Typical values are single or double quotes.')
+	),
+	'CSV_print_field_names' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'width' => 40, 'height' => 1,
+		'takesLocale' => false,
+		'default' => '"',
+		'label' => _t('Print field names'),
+		'description' => _t('Print names of output fields in first row of output.')
 	),
 );

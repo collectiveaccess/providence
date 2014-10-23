@@ -31,7 +31,21 @@
 <div id="searchToolsBox">
 	<div class="bg">
 <?php
-	if (is_array($va_forms = $this->getVar('print_forms')) && sizeof($va_forms)) {
+	if(is_array($va_export_mappings = $this->getVar('exporter_list')) && sizeof($va_export_mappings)>0) {
+?>
+		<div class="col">
+			<?php
+			print _t("Export results with mapping") . ":<br/>";
+			print caFormTag($this->request, 'exportWithMapping', 'caExportWithMappingForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+
+			print ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_subject->tableNum(), array('id' => 'caExporterList'),array('width' => '150px'));
+			print caFormSubmitLink($this->request, _t('Export'), 'button', 'caExportWithMappingForm') . " &rsaquo;";
+			?>
+			</form>
+		</div>
+<?php
+	}
+	if (is_array($va_forms = $this->getVar('label_formats')) && sizeof($va_forms)) {
 ?>
 		<div class="col">
 <?php
@@ -39,7 +53,7 @@
 			print caFormTag($this->request, 'printLabels', 'caPrintLabelsForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); 
 	
 			$va_options = array();
-			foreach($this->getVar('print_forms') as $vn_ => $va_form_info) {
+			foreach($this->getVar('label_formats') as $vn_ => $va_form_info) {
 				$va_options[$va_form_info['name']] = $va_form_info['code'];
 			}
 			
@@ -68,11 +82,11 @@
 		<input type='hidden' name='download' value='1'/></form>
 	</div>
 <?php
-	if (in_array($t_subject->tableName(), array('ca_objects', 'ca_object_representations')) && ($this->request->user->canDoAction('can_download_media')) && is_array($va_download_versions = $this->request->config->getList('ca_object_representation_download_versions'))) {
+	if (in_array($t_subject->tableName(), array('ca_objects', 'ca_object_representations')) && ($this->request->user->canDoAction('can_download_ca_object_representations')) && is_array($va_download_versions = $this->request->config->getList('ca_object_representation_download_versions'))) {
 ?>	
 	<div class="col">
 <?php
-		print _t("Download media").":<br/>";
+		print _t("Download media as").":<br/>";
 ?>
 		<form id="caDownloadMediaFromSearchResult">
 <?php
@@ -96,7 +110,8 @@
 <?php
 	}
 ?>
-		<a href='#' id='hideTools' onclick='return caHandleResultsUIBoxes("tools", "hide");'><img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/collapse.gif" width="11" height="11" border="0"></a>
+
+		<a href='#' id='hideTools' onclick='return caHandleResultsUIBoxes("tools", "hide");'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_COLLAPSE__); ?></a>
 		<div style='clear:both;height:1px;'>&nbsp;</div>
 	</div><!-- end bg -->
 </div><!-- end searchToolsBox -->

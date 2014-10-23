@@ -58,7 +58,7 @@ class HTTPMultiClient {
 	 * Add request to list
 	 */
 	public function addRequest($ps_url, $ps_method='GET', $pa_data=array(), $ps_name='') {
-		if (!caIsURL($ps_url)) { return false; }
+		if (!isURL($ps_url)) { return false; }
 		$ps_method = strtoupper($ps_method);
 		if (!in_array($ps_method, array('GET', 'POST'))) { $ps_method = 'GET'; }
 		if (!is_array($pa_data)) { $pa_data = array(); }

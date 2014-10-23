@@ -2,7 +2,7 @@
 /**
  * PHPExcel
  *
- * Copyright (c) 2006 - 2012 PHPExcel
+ * Copyright (c) 2006 - 2014 PHPExcel
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,9 +20,9 @@
  *
  * @category   PHPExcel
  * @package    PHPExcel_Shared
- * @copyright  Copyright (c) 2006 - 2012 PHPExcel (http://www.codeplex.com/PHPExcel)
+ * @copyright  Copyright (c) 2006 - 2014 PHPExcel (http://www.codeplex.com/PHPExcel)
  * @license    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt	LGPL
- * @version    ##VERSION##, ##DATE##
+ * @version    1.8.0, 2014-03-02
  */
 
 defined('IDENTIFIER_OLE') ||
@@ -80,13 +80,17 @@ class PHPExcel_Shared_OLERead {
 			throw new PHPExcel_Reader_Exception("Could not open " . $sFileName . " for reading! File does not exist, or it is not readable.");
 		}
 
-		// Get the file data
-		$this->data = file_get_contents($sFileName);
+		// Get the file identifier
+		// Don't bother reading the whole file until we know it's a valid OLE file
+		$this->data = file_get_contents($sFileName, FALSE, NULL, 0, 8);
 
 		// Check OLE identifier
-		if (substr($this->data, 0, 8) != self::IDENTIFIER_OLE) {
+		if ($this->data != self::IDENTIFIER_OLE) {
 			throw new PHPExcel_Reader_Exception('The filename ' . $sFileName . ' is not recognised as an OLE file');
 		}
+
+		// Get the file data
+		$this->data = file_get_contents($sFileName);
 
 		// Total number of sectors used for the SAT
 		$this->numBigBlockDepotBlocks = self::_GetInt4d($this->data, self::NUM_BIG_BLOCK_DEPOT_BLOCKS_POS);
@@ -252,19 +256,22 @@ class PHPExcel_Shared_OLERead {
 
 			$name = str_replace("\x00", "", substr($d,0,$nameSize));
 
+
 			$this->props[] = array (
 				'name' => $name,
 				'type' => $type,
 				'startBlock' => $startBlock,
 				'size' => $size);
 
+			// tmp helper to simplify checks
+			$upName = strtoupper($name);
+
 			// Workbook directory entry (BIFF5 uses Book, BIFF8 uses Workbook)
-			if (($name == 'Workbook') || ($name == 'Book') || ($name == 'WORKBOOK') || ($name == 'BOOK')) {
+			if (($upName === 'WORKBOOK') || ($upName === 'BOOK')) {
 				$this->wrkbook = count($this->props) - 1;
 			}
-
-			// Root entry
-			if ($name == 'Root Entry' || $name == 'ROOT ENTRY' || $name == 'R') {
+			else if ( $upName === 'ROOT ENTRY' || $upName === 'R') {
+				// Root entry
 				$this->rootentry = count($this->props) - 1;
 			}
 

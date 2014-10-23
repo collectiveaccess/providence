@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,7 +31,7 @@ $va_last_settings 		= $this->getVar('last_settings');
 
 print $vs_control_box = caFormControlBox(
 		caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute data import"), 'caBatchMetadataImportForm', array('onclick' => 'caShowConfirmBatchExecutionPanel(); return false;')).' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'batch', 'MetadataImport', 'Index', array()),
+		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'batch', 'MetadataImport', 'Index', array()),
 		'', 
 		''
 	);
@@ -68,11 +68,29 @@ print $vs_control_box = caFormControlBox(
 			<span class="formLabelText"><?php print _t('Data file'); ?></span> 
 			<div class="bundleContainer">
 				<div class="caLabelList" >
-					<p>
+					<div style='padding:10px 0px 10px 10px;'>
+						<table class="caFileSourceControls">
+							<tr class="caFileSourceControls">
+								<td class="caSourceFileControlRadio">
 <?php	
-		print "<input type='file' name='sourceFile' id='caSourceFile'/>";
+		$va_attr = array('value' => 'file',  'onclick' => 'caSetBatchMetadataImportFormState();', 'id' => 'caFileInputRadio');
+		if (caGetOption('fileInput', $va_last_settings, 'file') === 'file') { $va_attr['checked'] = 'checked'; }
+		print caHTMLRadioButtonInput("fileInput", $va_attr)."</td><td class='formLabel caFileSourceControls'>"._t('From a file')." <span id='caFileInputContainer'><input type='file' name='sourceFile' id='caSourceFile'/></span>";
+		
 ?>
-					</p>
+								</td>
+							</tr>
+							<tr class="caFileSourceControls">
+								<td class="caSourceFileControlRadio">
+<?php		
+		$va_attr = array('value' => 'import',  'onclick' => 'caSetBatchMetadataImportFormState();', 'id' => 'caFileBrowserRadio');
+		if (caGetOption('fileInput', $va_last_settings, 'file') === 'import') { $va_attr['checked'] = 'checked'; }	
+		print caHTMLRadioButtonInput("fileInput", $va_attr)."</td><td class='formLabel caFileSourceControls'>"._t('From the import directory')." <div id='caFileBrowserContainer'>".$this->getVar('file_browser')."</div>";
+?>
+								</td>
+							</tr>
+						</table>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -88,10 +106,22 @@ print $vs_control_box = caFormControlBox(
 				</div>
 			</div>
 		</div>
+		<div class='bundleLabel' id="caSourceTextContainer">
+			<span class="formLabelText"><?php print _t('Data as text'); ?></span> 
+			<div class="bundleContainer">
+				<div class="caLabelList" >
+					<p>
+<?php
+		print caHTMLTextInput('sourceText', array('id' => 'caSourceText'), array('width' => '600px', 'height' => 3));
+?>
+					</p>
+				</div>
+			</div>
+		</div>
 		<div class='bundleLabel'>
 			<span class="formLabelText"><?php print _t('Log level'); ?></span> 
 			<div class="bundleContainer">
-				<div class="caLabelList" >
+				<div class="caLabelList">
 					<p>
 <?php
 		print caHTMLSelect('logLevel', caGetLogLevels(), array('id' => 'caLogLevel'), array('value' => $va_last_settings['logLevel']));
@@ -101,16 +131,17 @@ print $vs_control_box = caFormControlBox(
 			</div>
 		</div>
 		<div class='bundleLabel'>
-			<span class="formLabelText"><?php print _t('Dry run'); ?></span> 
+			<span class="formLabelText"><?php print _t('Testing options'); ?></span> 
 			<div class="bundleContainer">
 				<div class="caLabelList" >
-					<p>
+					<p class="formLabelPlain">
 <?php	
 		$va_attr = array('id' => 'caDryRun', 'value' => 1);
 		if ($va_last_settings['dryRun'] == 1) { $va_attr['checked'] = 1; }
-		print caHTMLCheckboxInput('dryRun', $va_attr);
+		print caHTMLCheckboxInput('dryRun', $va_attr)." "._t('Dry run');
 ?>
 					</p>
+					
 				</div>
 			</div>
 		</div>
@@ -155,10 +186,12 @@ print $vs_control_box = caFormControlBox(
 		var formatInfo = {};
 		for(var reader in caDataReaderInfo) {
 			for(var i in relevantFormats) {
-				if (jQuery.inArray(relevantFormats[i].toLowerCase(), caDataReaderInfo[reader]['formats']) > -1) {
-					formatInfo[relevantFormats[i].toLowerCase()] = caDataReaderInfo[reader];
-					opts.push("<option value='" + relevantFormats[i] + "'>" + caDataReaderInfo[reader]['displayName']+ "</option>");
-					break;
+				if(relevantFormats.hasOwnProperty(i)) {
+					if (jQuery.inArray(relevantFormats[i].toLowerCase(), caDataReaderInfo[reader]['formats']) > -1) {
+						formatInfo[relevantFormats[i].toLowerCase()] = caDataReaderInfo[reader];
+						opts.push("<option value='" + relevantFormats[i] + "'>" + caDataReaderInfo[reader]['displayName']+ "</option>");
+						break;
+					}
 				}
 			}
 		}
@@ -166,23 +199,48 @@ print $vs_control_box = caFormControlBox(
 		jQuery("#caInputFormatList").html(opts.join("\n")).val(currentFormat);
 		
 		currentFormat = jQuery("#caInputFormatList").val();
+		if(!currentFormat) { currentFormat = relevantFormats[0]; jQuery("#caInputFormatList").val(currentFormat); }
 		
 		// Set visibility of source input field based upon format
-		
 		if (info = formatInfo[currentFormat.toLowerCase()]) {
-			if (info['inputType'] == 0) {
-				// file
-				jQuery('#caSourceUrlContainer').hide(dontAnimate ? 0 : 150);
-				jQuery('#caSourceUrl').prop('disabled', true);
-				jQuery('#caSourceFileContainer').show(dontAnimate ? 0 : 150);
-				jQuery('#caSourceFile').prop('disabled', false);
-			} else {
-				// url
-				jQuery('#caSourceUrlContainer').show(dontAnimate ? 0 : 150);
-				jQuery('#caSourceUrl').prop('disabled', false);
-				jQuery('#caSourceFileContainer').hide(dontAnimate ? 0 : 150);
-				jQuery('#caSourceFile').prop('disabled', true);
+			switch(info['inputType']) {
+				case 0:
+				default:
+					// file
+					jQuery('#caSourceUrlContainer').hide(dontAnimate ? 0 : 150);
+					jQuery('#caSourceUrl').prop('disabled', true);
+					jQuery('#caSourceFileContainer').show(dontAnimate ? 0 : 150);
+					jQuery('#caSourceFile').prop('disabled', false);
+					jQuery('#caSourceTextContainer').hide(dontAnimate ? 0 : 150);
+					jQuery('#caSourceText').prop('disabled', true);
+					break;
+				case 1:
+					// url
+					jQuery('#caSourceUrlContainer').show(dontAnimate ? 0 : 150);
+					jQuery('#caSourceUrl').prop('disabled', false);
+					jQuery('#caSourceFileContainer').hide(dontAnimate ? 0 : 150);
+					jQuery('#caSourceFile').prop('disabled', true);
+					jQuery('#caSourceTextContainer').hide(dontAnimate ? 0 : 150);
+					jQuery('#caSourceText').prop('disabled', true);
+					break;
+				case 2:
+					// text
+					jQuery('#caSourceUrlContainer').hide(dontAnimate ? 0 : 150);
+					jQuery('#caSourceUrl').prop('disabled', true);
+					jQuery('#caSourceFileContainer').hide(dontAnimate ? 0 : 150);
+					jQuery('#caSourceFile').prop('disabled', true);
+					jQuery('#caSourceTextContainer').show(dontAnimate ? 0 : 150);
+					jQuery('#caSourceText').prop('disabled', false);
+					break;
 			}
+		}
+			
+		if (jQuery("#caFileInputRadio").is(":checked")) {
+			jQuery("#caFileInputContainer").show(dontAnimate ? 0 : 150);
+			jQuery("#caFileBrowserContainer").hide(dontAnimate ? 0 : 150);
+		} else {
+			jQuery("#caFileInputContainer").hide(dontAnimate ? 0 : 150);
+			jQuery("#caFileBrowserContainer").show(dontAnimate ? 0 : 150);
 		}
 	}
 	

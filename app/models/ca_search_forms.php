@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -201,7 +201,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	# Change logging
 	# ------------------------------------------------------
 	protected $UNIT_ID_FIELD = null;
-	protected $LOG_CHANGES_TO_SELF = false;
+	protected $LOG_CHANGES_TO_SELF = true;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
 		
@@ -314,8 +314,8 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		return parent::set($pa_fields, $pm_value, $pa_options);
 	}
 	# ------------------------------------------------------
-	protected function initLabelDefinitions() {
-		parent::initLabelDefinitions();
+	protected function initLabelDefinitions($pa_options=null) {
+		parent::initLabelDefinitions($pa_options);
 		$this->BUNDLES['ca_users'] = array('type' => 'special', 'repeating' => true, 'label' => _t('User access'));
 		$this->BUNDLES['ca_user_groups'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Group access'));
 		$this->BUNDLES['ca_search_form_placements'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Search form contents'));
@@ -1095,7 +1095,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 							'height' => (isset($va_element['settings']['height']) && ($va_element['settings']['height'] > 0)) ? $va_element['settings']['height'] : 1
 						)),
 						'label' => $vs_field_label,
-						'name' => $vs_field
+						'name' => $va_element['bundle_name']
 					); 
 					continue(2);
 				case 'created':
@@ -1128,7 +1128,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 						$va_labels = caExtractValuesByUserLocale(array(0 => $va_element['settings']['label']));
 						$vs_label = array_shift($va_labels);
 					} 
-					if (!$va_label && !($vs_label = $va_access_points[$va_tmp[0]]['name'])) {
+					if (!$vs_label && !($vs_label = $va_access_points[$va_tmp[0]]['name'])) {
 						$vs_label = $vs_field;
 					}
 				
@@ -1180,7 +1180,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 				if (!is_array($va_values)) { $va_values = array($va_values); }
 				foreach($va_values as $vs_value) {
 					if (!strlen(trim($vs_value))) { continue; }
-					if ((strpos($vs_value, ' ') !== false) && ($vs_value{0} != '[')) {
+					if (preg_match('![^A-Za-z0-9\*]+!', $vs_value) && ($vs_value{0} != '[')) {
 						$vs_query_element = '"'.str_replace('"', '', $vs_value).'"';
 					} else {
 						$vs_query_element = $vs_value;
@@ -1242,7 +1242,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 				if (sizeof($va_sub_elements = $t_element->getElementsInSet()) > 1) {
 					foreach($va_sub_elements as $vn_element_id => $va_element_info) {
 						if ($va_tmp[1] == $va_element_info['element_code']) { continue; }
-						$va_elements[] = $va_tmp[0].'.'.$va_element_info['element_code'];
+						$va_elements[] = $va_tmp[0].'.'.$va_tmp[1].'.'.$va_element_info['element_code'];
 					}
 				}
 			} else {
@@ -1261,7 +1261,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 	 * @param $ps_form_name The name of the HTML form this bundle will be part of
 	 * @return string HTML for bundle
 	 */
-	public function getSearchFormHTMLFormBundle($po_request, $ps_form_name, $pa_options=null) {
+	public function getSearchFormHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null) {
 		if (!$this->haveAccessToForm($po_request->getUserID(), __CA_SEARCH_FORM_EDIT_ACCESS__)) {
 			return null;
 		}
@@ -1271,13 +1271,14 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		
 		$o_view->setVar('lookup_urls', caJSONLookupServiceUrl($po_request, $this->_DATAMODEL->getTableName($this->get('table_num'))));
 		$o_view->setVar('t_form', $this);
-		$o_view->setVar('id_prefix', $ps_form_name);		
+		$o_view->setVar('id_prefix', $ps_form_name);	
+		$o_view->setVar('placement_code', $ps_placement_code);		
 		
 		return $o_view->render('ca_search_form_placements.php');
 	}
 	# ----------------------------------------
-	public function savePlacementsFromHTMLForm($po_request, $ps_form_prefix) {
-		if ($vs_bundles = $po_request->getParameter($ps_form_prefix.'_ca_search_form_placementsdisplayBundleList', pString)) {
+	public function savePlacementsFromHTMLForm($po_request, $ps_form_name, $ps_placement_code, $pa_options=null) {
+		if ($vs_bundles = $po_request->getParameter("{$ps_placement_code}{$ps_form_name}displayBundleList", pString)) {
 			$va_bundles = explode(';', $vs_bundles);
 			
 			$t_form = new ca_search_forms($this->getPrimaryKey());

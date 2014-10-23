@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -42,6 +42,7 @@ define("EEP_TOKEN_NOT_IN_OP", 8);
 define("EEP_TOKEN_REGEX_OP", 9);
 define("EEP_TOKEN_FUNCTION", 10);
 define("EEP_TOKEN_VARIABLE", 11);
+define("EEP_TOKEN_REGEX_PATTERN", 12);
 
 # --- Expression parse states
 define("EEP_STATE_BEGIN", 0);
@@ -75,7 +76,9 @@ class ExpressionParser {
             'min'           => 'min',
             'rand'          => 'rand',
             'round'         => 'round',
-            'random'		=> 'rand'
+            'random'		=> 'rand',
+            'current'		=> 'caIsCurrentDate',
+            'future'		=> 'caDateEndsInFuture'
     );
     
     private $opa_tokens;
@@ -97,10 +100,14 @@ class ExpressionParser {
 		$vb_in_quoted_literal = false;
 		$vb_in_variable_name = false;
 		$vb_escaped = false;
+		$vb_in_regex = false;
 		$vs_buf = '';
         while ($vn_i < strlen($ps_expression)) {
         	$vs_c = $ps_expression[$vn_i];
         	
+        	if (($vs_c == '\\') && !$vb_in_regex) {
+        		if (!$vb_escaped) { $vb_escaped = 2; continue; }
+        	}
         	switch($vs_c) {
         		case '^':
         			if ($vs_buf == '') {
@@ -108,16 +115,13 @@ class ExpressionParser {
         				$vs_buf .= $vs_c;
         			}
         			break;
-        		case '\\':
-        			if (!$vb_escaped) { $vb_escaped = 2; }
-        			break;
         		case '"':
         		case "'":
         			$vb_in_variable_name = false;
-        			if (!$vb_escaped && !$vb_in_quoted_literal) {
+        			if (!$vb_escaped && !$vb_in_quoted_literal && !$vb_in_regex) {
         				$vb_in_quoted_literal = true;
         				$vs_buf = '';
-        			} elseif($vb_in_quoted_literal && !$vb_escaped) {
+        			} elseif($vb_in_quoted_literal && !$vb_escaped && !$vb_in_regex) {
         				$vb_in_quoted_literal = false;
         				array_push($this->opa_tokens, $vs_buf);
         				$vs_buf = '';
@@ -125,17 +129,33 @@ class ExpressionParser {
         				$vs_buf .= $vs_c;
         			}
         			break;
+        		case '/':
+					$vb_in_variable_name = false;
+					if (!$vb_escaped && !$vb_in_quoted_literal && !$vb_in_regex && ($ps_expression[$vn_i - 1] === ' ')) {
+						$vb_in_regex = true;
+						$vs_buf = '/';
+						break;
+					} elseif($vb_in_regex && !$vb_escaped && !$vb_in_quoted_literal) {
+						$vb_in_regex = false;
+						$vs_buf .= '/';
+						array_push($this->opa_tokens, $vs_buf);
+						$vs_buf = '';
+						break;
+					} else {
+						$vs_buf .= $vs_c;
+						break;
+					}
         		case '(':
         		case ')':
         		case '+':
         		case '-':
         		case '*':
-        		case '/':
         		case '=':
         		case '<':
         		case '>':
         		case '!':
-        			if ($vb_in_quoted_literal) {
+        		//case '/':  [can fall through from above]
+        			if ($vb_in_quoted_literal || $vb_in_regex) {
         				$vs_buf .= $vs_c;
         			} else {
         				if (($vs_c == '/') && $vb_in_variable_name) { $vs_buf .= $vs_c; break; }	// forward slashes are treated as literals in variable names so we can use XML tag paths as varnames
@@ -191,7 +211,7 @@ class ExpressionParser {
         		case "\t":
         		case "\n":
         		case "\r":
-        			if (!$vb_in_quoted_literal) {
+        			if (!$vb_in_quoted_literal && !$vb_in_regex) {
         				if (strlen($vs_buf) > 0) { array_push($this->opa_tokens, $vs_buf); }
         				$vs_buf = '';
         				$vb_in_variable_name = false;
@@ -233,6 +253,11 @@ class ExpressionParser {
 				'value' => $vs_token, 'type' => EEP_TOKEN_FUNCTION,
 				'function' => $this->opa_functions[$vs_token_lc]
 			);
+		}
+		
+		// regex pattern
+		if (($vs_token_lc[0] == '/') && ($vs_token_lc[strlen($vs_token_lc)-1] == '/')) {
+			return array('value' => $vs_token, 'type' => EEP_TOKEN_REGEX_PATTERN);
 		}
 		
 		// open paren
@@ -314,7 +339,10 @@ class ExpressionParser {
      *
      */
 	public function parse($ps_expression, $pa_variables=null) {
+		$ps_expression = preg_replace("!(\=~|\!~|\=)!", " \\1 ", $ps_expression);
+		
 		$this->tokenize($ps_expression);
+		
 		if (is_array($pa_variables)) { $this->setVariables($pa_variables); }
 		
 		return $this->parseExpression();
@@ -333,9 +361,6 @@ class ExpressionParser {
 		$va_funcs = array();
 		
 		while($va_token = $this->peekToken()) {
-			//$this->skipToken();
-			//print "STATE IS $vn_state\n";
-			//print_R($va_token);
 			if ($this->getParseError()) { break; }
 			switch($vn_state) {
 				# -------------------------------------------------------
@@ -481,32 +506,9 @@ class ExpressionParser {
 				# -------------------------------------------------------
 				case EEP_STATE_NEED_REGEX_PATTERN_OPERAND:
 					switch($va_token['type']) {
-						case EEP_TOKEN_MATH_OP:
+						case EEP_TOKEN_REGEX_PATTERN:
 							$this->skipToken();
-							if ($va_token['value'] !== '/') {
-								$this->setParseError($va_token, EEP_ERROR_REGEX_PATTERN_MUST_FOLLOW_REGEX_OPERATOR);
-								break;
-							}
-							
-							$va_pattern = array();
-							$vb_at_end = false;
-							while($va_tok = $this->peekToken()) {
-								if ($va_tok['value'] === '/') { // pattern is done
-									$vb_at_end = true; 
-								}  else {
-									if ($vb_at_end && !preg_match("![A-Za-z]!", $va_tok['value'])) { break; }
-								}
-								if (!in_array($va_tok['type'], array(EEP_TOKEN_STRING_LITERAL, EEP_TOKEN_MATH_OP))) { 
-									$this->setParseError($va_token, EEP_ERROR_REGEX_PATTERN_MUST_FOLLOW_REGEX_OPERATOR);
-									break; 
-								}
-								
-								$va_pattern[] = $va_tok['value'];
-								
-								$this->skipToken();
-							}
-							array_unshift($va_pattern, "/");
-							$va_acc[] = join("", $va_pattern);
+							$va_acc[] = $va_token['value'];
 							$vn_state = EEP_STATE_NEED_OP;
 							break;
 						default:
@@ -540,6 +542,7 @@ class ExpressionParser {
 				# -------------------------------------------------------
 			}
 		}
+		
 		if(sizeof($va_acc) > 0) { 
 			return $this->processTerm($va_acc, $va_ops); 
 		}
@@ -687,6 +690,8 @@ class ExpressionParser {
 						case '=~':
 							foreach($va_operand1 as $vm_operand1) {
 								foreach($va_operand2 as $vm_operand2) {
+									if ($vm_operand2[0] !== '/') { $vm_operand2 = '/'.$vm_operand2; }
+									if ($vm_operand2[strlen($vm_operand2)-1] !== '/') { $vm_operand2 = $vm_operand2.'/'; }
 									if(preg_match($vm_operand2, $vm_operand1)) { return true; }
 								}		
 							}
@@ -695,6 +700,8 @@ class ExpressionParser {
 						case '!~':
 							foreach($va_operand1 as $vm_operand1) {
 								foreach($va_operand2 as $vm_operand2) {
+									if ($vm_operand2[0] !== '/') { $vm_operand2 = '/'.$vm_operand2; }
+									if ($vm_operand2[strlen($vm_operand2)-1] !== '/') { $vm_operand2 = $vm_operand2.'/'; }
 									if(!preg_match($vm_operand2, $vm_operand1)) { return true; }
 								}
 							}
@@ -789,6 +796,27 @@ class ExpressionParser {
         $e = new ExpressionParser();
         return $e->evaluateExpression($ps_expression, $pa_variables);
     }
+    
+	# -------------------------------------------------------------------
+	/**
+	 * Returns list of variables defined in the expression
+	 *
+	 * @param string $ps_expression
+	 * @return array
+	 */
+	static public function getVariableList($ps_expression) {
+		$o_exp = new ExpressionParser();
+		if ($o_exp->tokenize($ps_expression));
+		
+		$va_vars = array();
+		while($va_token = $o_exp->getToken()) {
+			if ($va_token['type'] == EEP_TOKEN_VARIABLE) {
+				$va_vars[] = $va_token['varname'];
+			}
+		}
+		
+		return $va_vars;
+	}
     # -------------------------------------------------------------------
     /**
      * 

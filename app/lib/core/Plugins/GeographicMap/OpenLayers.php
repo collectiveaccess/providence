@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2013 Whirl-i-Gig
+ * Copyright 2012-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -49,7 +49,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		
 		$this->description = _t('Generates maps using the OpenLayers API');
 		
-		JavascriptLoadManager::register("openlayers");
+		AssetLoadManager::register("openlayers");
 	}
 	# ------------------------------------------------
 	/**
@@ -66,23 +66,15 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 	 *		strokeColor = Color of plotted paths, in hex format with leading "#"
 	 *		fillColorSelected = Color to fill regions with when selected, in hex format with leading "#"
 	 *		strokeColorSelected = Color of plotted paths when selected, in hex format with leading "#"
-	 *
+	 *		layerSwitcherControl = Show layer switcher controls? [Default is false]
 	 * 		delimiter = HTML to place between items displayed in info overlays for plotted items. Default is an HTML break ("<br/>")
 	 * @return string HTML output
 	 */
 	public function render($ps_format, $pa_options=null) {
 		$o_config = Configuration::load();
 		
-		list($vn_width, $vn_height) = $this->getDimensions();
-		
-		if (!preg_match('!^[\d]+%$!', $vn_width)) {
-			$vn_width = intval($vn_width)."px";
-			if ($vn_width < 1) { $vn_width = 690; }
-		}
-		if (!preg_match('!^[\d]+%$!', $vn_height)) {
-			$vn_height = intval($vn_height)."px";
-			if ($vn_height < 1) { $vn_height = 300; }
-		}
+		list($vs_width, $vs_height) = $this->getDimensions();
+		list($vn_width, $vn_height) = $this->getDimensions(array('returnPixelValues' => true));
 		
 		$va_options = caGetOptions($pa_options, array());
 		
@@ -138,14 +130,26 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 			# ---------------------------------
 			case 'HTML':
 			default:
+				$va_layers = array();
 				
-				$vs_buf = "<div style='width:{$vn_width}; height:{$vn_height}' id='{$vs_id}' ".((isset($pa_options['classname']) && $pa_options['classname']) ? "class='".$pa_options['classname']."'" : "")."> </div>\n";
+				if ($vs_tileserver_url = caGetOption('tileServerURL', $pa_options, null)) {
+					if (!($vs_tile_layer_name = trim(caGetOption('tileLayerName', $pa_options, null)))) {
+						$vs_tile_layer_name = 'Custom layer';
+					}
+					$va_layers[] = "new OpenLayers.Layer.OSM('{$vs_tile_layer_name}', '{$vs_tileserver_url}',{ isBaseLayer: false, tileOptions : {crossOriginKeyword: null}})";
+				}
+		
+				$vs_layer_switcher_control = caGetOption('layerSwitcherControl', $pa_options, null) ? "map_{$vs_id}.addControl(new OpenLayers.Control.LayerSwitcher());" : "";
+		
+		
+				$va_layers[] = "new {$vs_base_layer}";
+				$vs_buf = "<div style='width:{$vs_width}; height:{$vs_height}' id='{$vs_id}' ".((isset($pa_options['classname']) && $pa_options['classname']) ? "class='".$pa_options['classname']."'" : "")."> </div>\n";
 				$vs_buf .= "
 <script type='text/javascript'>;
 	jQuery(document).ready(function() {
 		var map_{$vs_id} = new OpenLayers.Map({
 		div: '{$vs_id}',
-		layers: [new {$vs_base_layer}],
+		layers: [".join(",", $va_layers)."],
 		controls: [
 			new OpenLayers.Control.Navigation({
 				dragPanOptions: {
@@ -158,7 +162,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		center: [0, 0],
 		zoom: 1
 	});
-
+	{$vs_layer_switcher_control}
 		var features_{$vs_id} = [];
 		
 		var styles_{$vs_id} = new OpenLayers.StyleMap({
@@ -264,7 +268,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 				selectedFeature_{$vs_id} = feature;
 				
 				if (!popup_{$vs_id}) {
-					popup_{$vs_id} = new OpenLayers.Popup.AnchoredBubble('infoBubble', 
+					popup_{$vs_id} = new OpenLayers.Popup.Anchored('infoBubble', 
 						 feature.geometry.getBounds().getCenterLonLat(),
 						 null,
 						 feature.data.label + feature.data.content,
@@ -330,7 +334,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 	 * @return string HTML output
 	 */
 	public function getAttributeBundleHTML($pa_element_info, $pa_options=null) {
-		JavascriptLoadManager::register('openlayers');
+		AssetLoadManager::register('openlayers');
 		$o_config = Configuration::load();
 		
 		$va_element_width = caParseFormElementDimension($pa_element_info['settings']['fieldWidth']);
@@ -383,10 +387,26 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
  		
 		$po_request = isset($pa_options['request']) ? $pa_options['request'] : null;
 		
-		
 		$vs_id = $pa_element_info['element_id'];
 		
-		$vs_element = '<div id="{fieldNamePrefix}mapholder_'.$vs_id.'_{n}" class="mapholder" style="width:'.$vn_width.'spx; height:'.($vn_height + 40).'px; float: left; margin:-18px 0 0 0;">';
+		$vs_custom_tile_layer = '';
+		if ($vs_tileserver_url = caGetOption('tileServerURL', $pa_element_info['settings'], null)) {
+			if (!($vs_tile_layer_name = trim(caGetOption('tileLayerName', $pa_element_info['settings'], null)))) {
+				$vs_tile_layer_name = 'Custom layer';
+			}
+			$vs_custom_tile_layer = "	map_{$vs_id}.addLayer(
+		new OpenLayers.Layer.OSM('{$vs_tile_layer_name}', '{$vs_tileserver_url}', 
+			{
+				isBaseLayer: false,
+				tileOptions : {crossOriginKeyword: null}
+			}
+	));";
+		}
+		
+		$vs_layer_switcher_control = caGetOption('layerSwitcherControl', $pa_element_info['settings'], null) ? "map_{$vs_id}.addControl(new OpenLayers.Control.LayerSwitcher());" : "";
+		
+		
+		$vs_element = '<div id="{fieldNamePrefix}mapholder_'.$vs_id.'_{n}" class="mapholder" style="width:'.$vn_width.'px; height:'.($vn_height + 40).'px; float: left; margin:-18px 0 0 0;">';
 
 		$vs_element .= 		'<div class="olMapSearchControls" id="{fieldNamePrefix}Controls_{n}">';
 		if ($po_request) {
@@ -407,9 +427,14 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		$vs_element .='</div>';
 		$vs_element .= "<script type='text/javascript'>
 		
+		
 	var map_{$vs_id};
 	var points_{$vs_id};
 	jQuery(document).ready(function() {
+		OpenLayers.Util.onImageLoadError = function(){
+    		this.src = 'images/blank.png';
+		};
+
 		// Styles
 		var styles_{$vs_id} = new OpenLayers.StyleMap({
 			'default': new OpenLayers.Style({
@@ -474,6 +499,9 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 			zoom: 1
 		});
 		
+		
+		{$vs_custom_tile_layer}		
+		
 		var map_{$vs_id}_drag_ctrl = new OpenLayers.Control.DragFeature(points_{$vs_id}, {
 			onComplete: function(f) { map_serialize_features_{$vs_id}(f); }
 		});
@@ -493,18 +521,18 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		map_{$vs_id}_delete_button.activate();
 		
 		// Grab current map coordinates from input
-		var map_{$ps_id}_loc_str = '{".$pa_element_info['element_id']."}';
-		var map_{$ps_id}_loc_features = map_{$ps_id}_loc_str.match(/\[([\d\,\-\.\:\;]+)\]/)
-		if (map_{$ps_id}_loc_features && (map_{$ps_id}_loc_features.length > 1)) {
-			map_{$ps_id}_loc_features = map_{$ps_id}_loc_features[1].split(/:/);
+		var map_{$vs_id}_loc_str = '{".$pa_element_info['element_id']."}';
+		var map_{$vs_id}_loc_features = map_{$vs_id}_loc_str.match(/\[([\d\,\-\.\:\;]+)\]/)
+		if (map_{$vs_id}_loc_features && (map_{$vs_id}_loc_features.length > 1)) {
+			map_{$vs_id}_loc_features = map_{$vs_id}_loc_features[1].split(/:/);
 		} else {
-			map_{$ps_id}_loc_features = [];
+			map_{$vs_id}_loc_features = [];
 		}
 		var features_{$vs_id} = [];
 		
 		var i, j, c=0;
-		for(i=0; i < map_{$ps_id}_loc_features.length; i++) {
-			var ptlist = map_{$ps_id}_loc_features[i].split(/;/);
+		for(i=0; i < map_{$vs_id}_loc_features.length; i++) {
+			var ptlist = map_{$vs_id}_loc_features[i].split(/;/);
 			
 			if (ptlist.length > 1) {
 				// path
@@ -542,6 +570,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		map_{$vs_id}_editing_toolbar.activate();
  
 		map_{$vs_id}.addLayer(points_{$vs_id});
+		{$vs_layer_switcher_control}
 		
 		if (c > 0) {
 			map_{$vs_id}.zoomToExtent(points_{$vs_id}.getDataExtent());
@@ -580,7 +609,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 			return false;
 		}
 	</script>";
-		$vs_element .= '<input class="coordinates mapCoordinateDisplay" type="hidden" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}" id="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}"/>';
+		$vs_element .= '<input class="coordinates mapCoordinateDisplay" type="text" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}" id="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}"/>';
 		
 		return $vs_element;
 	}

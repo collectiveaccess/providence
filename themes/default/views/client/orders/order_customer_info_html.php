@@ -35,9 +35,9 @@
 	
 	print $vs_control_box = caFormControlBox(
 		(caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'caClientOrderCustomerForm')).' '.
-		(caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'client/orders', 'OrderEditor', 'CustomerInfo', array('order_id' => $vn_order_id))),
+		(caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'client/orders', 'OrderEditor', 'CustomerInfo', array('order_id' => $vn_order_id))),
 		'',
-		(caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'client/orders', 'OrderEditor', 'Delete', array('order_id' => $vn_order_id)))
+		(caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'client/orders', 'OrderEditor', 'Delete', array('order_id' => $vn_order_id)))
 	);
 	
 	print caFormTag($this->request, 'SaveCustomerInfo', 'caClientOrderCustomerForm', null, 'post', 'multipart/form-data', '_top', array());
@@ -59,14 +59,14 @@
 				select: function(event, ui) {
 					var user_id = ui.item.id;
 					jQuery('#transaction_user_id').val(user_id);
-					if(data[3]) {
-						jQuery('#caBillingFields input[name=billing_fname]').val(data[3]);
-						jQuery('#caBillingFields input[name=billing_lname]').val(data[4]);
-						jQuery('#caBillingFields input[name=billing_email]').val(data[5]);
+					if(user_id) {
+						jQuery('#caBillingFields input[name=billing_fname]').val(ui.item.fname);
+						jQuery('#caBillingFields input[name=billing_lname]').val(ui.item.lname);
+						jQuery('#caBillingFields input[name=billing_email]').val(ui.item.email);
 				
-						jQuery('#caShippingFields input[name=shipping_fname]').val(data[3]);
-						jQuery('#caShippingFields input[name=shipping_lname]').val(data[4]);
-						jQuery('#caShippingFields input[name=shipping_email]').val(data[5]);
+						jQuery('#caShippingFields input[name=shipping_fname]').val(ui.item.fname);
+						jQuery('#caShippingFields input[name=shipping_lname]').val(ui.item.lname);
+						jQuery('#caShippingFields input[name=shipping_email]').val(ui.item.email);
 				
 						// grab the user's profile information
 						jQuery.getJSON('<?php print caNavUrl($this->request, 'client/orders', 'OrderEditor', 'GetUserProfileInfo'); ?>', { user_id: user_id }, function(d, t, x) { 

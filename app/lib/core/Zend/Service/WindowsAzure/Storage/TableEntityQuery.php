@@ -15,16 +15,16 @@
  * @category   Zend
  * @package    Zend_Service_WindowsAzure
  * @subpackage Storage
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id$
+ * @version    $Id: TableEntityQuery.php 24593 2012-01-05 20:35:02Z matthew $
  */
 
 /**
  * @category   Zend
  * @package    Zend_Service_WindowsAzure
  * @subpackage Storage
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Service_WindowsAzure_Storage_TableEntityQuery
@@ -235,7 +235,7 @@ class Zend_Service_WindowsAzure_Storage_TableEntityQuery
 	        $identifier .= '(';
 	        
 	        if (!is_null($this->_partitionKey)) {
-	            $identifier .= 'PartitionKey=\'' . $this->_partitionKey . '\'';
+	            $identifier .= 'PartitionKey=\'' . self::encodeQuery($this->_partitionKey) . '\'';
 	        }
 	            
 	        if (!is_null($this->_partitionKey) && !is_null($this->_rowKey)) {
@@ -243,7 +243,7 @@ class Zend_Service_WindowsAzure_Storage_TableEntityQuery
 	        }
 	            
 	        if (!is_null($this->_rowKey)) {
-	            $identifier .= 'RowKey=\'' . $this->_rowKey . '\'';
+	            $identifier .= 'RowKey=\'' . self::encodeQuery($this->_rowKey) . '\'';
 	        }
 	            
 	        $identifier .= ')';
@@ -331,8 +331,9 @@ class Zend_Service_WindowsAzure_Storage_TableEntityQuery
 		$query = str_replace('+', '%2B', $query);
 		$query = str_replace(',', '%2C', $query);
 		$query = str_replace('$', '%24', $query);
-		
-		
+		$query = str_replace('{', '%7B', $query);
+		$query = str_replace('}', '%7D', $query);
+
 		$query = str_replace(' ', '%20', $query);
 		
 		return $query;

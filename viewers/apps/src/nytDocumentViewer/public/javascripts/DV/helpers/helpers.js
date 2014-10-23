@@ -56,9 +56,9 @@ DV.Schema.helpers = {
 
       viewer.$('form.DV-searchDocument').submit(this.events.compile('search'));
       viewer.$('.DV-searchBar').delegate('.DV-closeSearch','click',function(e){
+      	viewer.$('.DV-searchBar').fadeOut(250);
         e.preventDefault();
         // history.save('text/p'+context.models.document.currentPage());
-        context.open('ViewText');
       });
       viewer.$('.DV-searchBox').delegate('.DV-searchInput-cancel', 'click', DV.jQuery.proxy(this.clearSearch, this));
 
@@ -132,13 +132,13 @@ DV.Schema.helpers = {
 
       var docId = viewer.schema.document.id;
 
-      if(DV.jQuery.browser.msie == true){
-        this.elements.browserDocument.bind('focus.' + docId, DV.jQuery.proxy(this.focusWindow,this));
-        this.elements.browserDocument.bind('focusout.' + docId, DV.jQuery.proxy(this.focusOut,this));
-      }else{
+      //if(DV.jQuery.browser.msie == true){
+      //  this.elements.browserDocument.bind('focus.' + docId, DV.jQuery.proxy(this.focusWindow,this));
+      //  this.elements.browserDocument.bind('focusout.' + docId, DV.jQuery.proxy(this.focusOut,this));
+     // }else{
         this.elements.browserWindow.bind('focus.' + docId, DV.jQuery.proxy(this.focusWindow,this));
         this.elements.browserWindow.bind('blur.' + docId, DV.jQuery.proxy(this.blurWindow,this));
-      }
+     // }
 
       // When the document is scrolled, even in the background, resume polling.
       this.elements.window.bind('scroll.' + docId, DV.jQuery.proxy(this.focusWindow, this));

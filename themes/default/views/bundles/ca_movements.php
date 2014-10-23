@@ -45,12 +45,17 @@
 	$vs_last_color 		= 	((isset($va_settings['colorLastItem']) && $va_settings['colorLastItem'])) ? $va_settings['colorLastItem'] : '';
 	
 	// params to pass during occurrence lookup
-	$va_lookup_params = (isset($va_settings['restrict_to_type']) && $va_settings['restrict_to_type']) ? array('type' => $va_settings['restrict_to_type'], 'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction']) : array();	
+	$va_lookup_params = array('type' => isset($va_settings['restrict_to_type']) ? $va_settings['restrict_to_type'] : '', 'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction']);	
 
 	if ($vb_batch) {
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
 	} else {
 		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel');
+	}
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings);
+	
+	if(sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort) {
+		print caEditorBundleSortControls($this->request, $vs_id_prefix, $pa_settings);
 	}
 	
 	$va_errors = array();
@@ -143,23 +148,6 @@
 	</textarea>
 	
 	<div class="bundleContainer">
-<?php
-	if(sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort) {
-?>
-		<div class="caItemListSortControlTrigger" id="<?php print $vs_id_prefix; ?>caItemListSortControlTrigger">
-			<?php print _t('Sort by'); ?>
-			<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/bg.gif" alt='Sort'/>
-		</div>
-		<div class="caItemListSortControls" id="<?php print $vs_id_prefix; ?>caItemListSortControls">
-			<a href='#' onclick="caRelationBundle<?php print $vs_id_prefix; ?>.sort('name'); return false;" class='caItemListSortControl'><?php print _t('name'); ?></a><br/>
-			<a href='#' onclick="caRelationBundle<?php print $vs_id_prefix; ?>.sort('idno'); return false;" class='caItemListSortControl'><?php print _t('idno'); ?></a><br/>
-			<a href='#' onclick="caRelationBundle<?php print $vs_id_prefix; ?>.sort('type'); return false;" class='caItemListSortControl'><?php print _t('type'); ?></a><br/>
-			<a href='#' onclick="caRelationBundle<?php print $vs_id_prefix; ?>.sort('entry'); return false;" class='caItemListSortControl'><?php print _t('entry'); ?></a><br/>
-		</div>
-<?php
-	}
-?>
-
 		<div class="caItemList">
 <?php
 	if (sizeof($va_errors)) {
@@ -216,7 +204,7 @@
 				closeButtonSelector: ".close",
 				center: true,
 				onOpenCallback: function() {
-				jQuery("#topNavContainer").hide(250);
+					jQuery("#topNavContainer").hide(250);
 				},
 				onCloseCallback: function() {
 					jQuery("#topNavContainer").show(250);
@@ -241,7 +229,7 @@
 		
 		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-			templateValues: ['label', 'type_id', 'id'],
+			templateValues: ['label', 'id', 'type_id', 'typename', 'idno_sort'],
 			initialValues: <?php print json_encode($this->getVar('initialValues')); ?>,
 			initialValueOrder: <?php print json_encode(array_keys($this->getVar('initialValues'))); ?>,
 			itemID: '<?php print $vs_id_prefix; ?>Item_',
@@ -261,12 +249,15 @@
 			isSortable: <?php print ($vb_read_only || $vs_sort) ? "false" : "true"; ?>,
 			listSortOrderID: '<?php print $vs_id_prefix; ?>BundleList',
 			listSortItems: 'div.roundedRel',
+			autocompleteInputID: '<?php print $vs_id_prefix; ?>_autocomplete',
 			quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
-			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/movements', 'MovementQuickAdd', 'Form', array('movement_id' => 0)); ?>',
+			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/movements', 'MovementQuickAdd', 'Form', array('movement_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'])); ?>',
 			
 			interstitialButtonClassName: 'caInterstitialEditButton',
 			interstitialPanel: caRelationEditorPanel<?php print $vs_id_prefix; ?>,
 			interstitialUrl: '<?php print caNavUrl($this->request, 'editor', 'Interstitial', 'Form', array('t' => $t_item_rel->tableName())); ?>',
+			interstitialPrimaryTable: '<?php print $t_instance->tableName(); ?>',
+			interstitialPrimaryID: <?php print (int)$t_instance->getPrimaryKey(); ?>,
 			firstItemColor: '<?php print $vs_first_color; ?>',
 			lastItemColor: '<?php print $vs_last_color; ?>',
 			

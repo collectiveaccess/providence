@@ -2,10 +2,10 @@
 	$va_menu_color = $this->request->config->get('menu_color');
 ?>
 <div><div id="topNavContainer">
-	<div id="topNav">
-		<div class="roundedNav" style="background-color:#<?php print $va_menu_color; ?>;">
+	<div id="topNav" style="background-color:#<?php print $va_menu_color; ?>;">
+		<div class="roundedNav" >
 			<div id="logo" onclick='document.location="<?php print $this->request->getBaseUrlPath().'/'; ?>";'><?php print "<img src='".$this->request->getThemeUrlPath()."/graphics/logos/".$this->request->config->get('header_img')."' border='0' alt='"._t("Search")."'/>" ?></div>
-	
+				<div id="navWrapper">
 <?php
 		if ($this->request->isLoggedIn()) {
 			if ($this->request->user->canDoAction('can_quicksearch')) {
@@ -29,9 +29,9 @@
 						<input type="text" name="search" length="15" id="caQuickSearchFormText" value="<?php print htmlspecialchars($this->request->session->getVar('quick_search_last_search'), ENT_QUOTES, 'UTF-8'); ?>" onfocus="<?php print htmlspecialchars($this->request->session->getVar('quick_search_last_search'), ENT_QUOTES, 'UTF-8'); ?>"/>	
 <?php
 						}
-						print caFormSubmitLink($this->request, "<img src='".$this->request->getThemeUrlPath()."/graphics/buttons/glass.gif' border='0' style='float:right; margin:4px 5px 0px 0px;' alt='"._t("Search")."'/>", 'caQuickSearchFormSubmit', 'caQuickSearchForm'); 
+						print caFormSubmitLink($this->request, "<img src='".$this->request->getThemeUrlPath()."/graphics/buttons/glass.png' border='0' style='float:right;' alt='"._t("Search")."'/>", 'caQuickSearchFormSubmit', 'caQuickSearchForm'); 
 ?>
-						<input type="hidden" name="no_cache" value="1"/>
+						<!--<input type="hidden" name="no_cache" value="1"/>-->
 					</form>
 				</div>
 <?php
@@ -45,6 +45,7 @@
 	<?php
 		}
 ?>	
+			</div><!-- END navWrapper -->
 		</div><!-- END roundedNav -->
 		<div style="clear:both;"><!--EMPTY--></div>
 	</div><!-- END topNav -->

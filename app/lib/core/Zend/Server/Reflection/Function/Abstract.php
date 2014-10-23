@@ -14,7 +14,7 @@
  *
  * @category   Zend
  * @package    Zend_Server
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -46,9 +46,9 @@ require_once 'Zend/Server/Reflection/Prototype.php';
  * @category   Zend
  * @package    Zend_Server
  * @subpackage Reflection
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version $Id: Abstract.php 20637 2010-01-25 22:33:22Z matthew $
+ * @version $Id: Abstract.php 24593 2012-01-05 20:35:02Z matthew $
  */
 abstract class Zend_Server_Reflection_Function_Abstract
 {
@@ -293,7 +293,7 @@ abstract class Zend_Server_Reflection_Function_Abstract
             // Get param types and description
             if (preg_match_all('/@param\s+([^\s]+)/m', $docBlock, $matches)) {
                 $paramTypesTmp = $matches[1];
-                if (preg_match_all('/@param\s+\S+\s+(\$\S+)\s+(.*?)(@|\*\/)/s', $docBlock, $matches))
+                if (preg_match_all('/@param\s+\S+\s+(\$\S+)\s+(.*?)(?=@|\*\/)/s', $docBlock, $matches))
                 {
                     $paramDesc = $matches[2];
                     foreach ($paramDesc as $key => $value) {
@@ -306,6 +306,16 @@ abstract class Zend_Server_Reflection_Function_Abstract
         } else {
             $helpText = $function->getName();
             $return   = 'void';
+
+            // Try and auto-determine type, based on reflection
+            $paramTypesTmp = array();
+            foreach ($parameters as $i => $param) {
+                $paramType = 'mixed';
+                if ($param->isArray()) {
+                    $paramType = 'array';
+                }
+                $paramTypesTmp[$i] = $paramType;
+            }
         }
 
         // Set method description
@@ -339,7 +349,9 @@ abstract class Zend_Server_Reflection_Function_Abstract
             require_once 'Zend/Server/Reflection/Exception.php';
             throw new Zend_Server_Reflection_Exception(
                'Variable number of arguments is not supported for services (except optional parameters). '
-             . 'Number of function arguments must correspond to actual number of arguments described in a docblock.');
+             . 'Number of function arguments in ' . $function->getDeclaringClass()->getName() . '::'
+             . $function->getName() . '() must correspond to actual number of arguments described in the '
+             . 'docblock.');
         }
 
         $paramTypes = array();

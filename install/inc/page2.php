@@ -31,7 +31,7 @@
 	$va_profile_info = Installer::getProfileInfo("./profiles/xml", $ps_profile)
 ?>
 <div id='box'>
-	<div id="logo"><img src="<?php print $vs_url_path; ?>/graphics/installLogo.gif"/></div><!-- end logo -->
+	<div id="logo"><img src="<?php print $vs_url_path; ?>/graphics/ca_logo.png"/></div><!-- end logo -->
 	<div id="content">
 	<H1>
 		Installing CollectiveAccess <?php print constant('__CollectiveAccess__'); ?>...
@@ -81,16 +81,12 @@
 			$vo_installer->processLists('caGetListToBeLoaded');
 			
 			$vn_progress += 7;
-			caIncrementProgress($vn_progress, "Processing metadata elements");
-			$vo_installer->processMetadataElements('caGetMetadataElementToBeLoaded');
-			
-			$vn_progress += 7;
 			caIncrementProgress($vn_progress, "Processing relationship types");
 			$vo_installer->processRelationshipTypes();
-			
+
 			$vn_progress += 7;
-			caIncrementProgress($vn_progress, "Processing user interfaces");
-			$vo_installer->processUserInterfaces();
+			caIncrementProgress($vn_progress, "Processing metadata elements");
+			$vo_installer->processMetadataElements('caGetMetadataElementToBeLoaded');
 			
 			$vn_progress += 7;
 			caIncrementProgress($vn_progress, "Processing access roles");
@@ -102,6 +98,10 @@
 			
 			caIncrementProgress($vn_progress, "Creating logins");
 			$va_login_info = $vo_installer->processLogins();
+
+			$vn_progress += 7;
+			caIncrementProgress($vn_progress, "Processing user interfaces");
+			$vo_installer->processUserInterfaces();
 			
 			$vn_progress += 7;
 			caIncrementProgress($vn_progress, "Processing displays");

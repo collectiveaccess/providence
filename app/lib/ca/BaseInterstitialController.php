@@ -78,24 +78,34 @@
  			$pn_placement_id = 			$this->request->getParameter('placement_id', pInteger);		// placement_id of bundle that launched interstitial editor
  			$pn_n =			 			$this->request->getParameter('n', pInteger);				// index of bundle that launched interstitial editor
  			
+ 			$ps_primary_table = 		$this->request->getParameter('primary', pString);			// table name for item from which the interstitial editor was launched
+ 			$pn_primary_id = 			$this->request->getParameter('primary_id', pInteger);		// row_id of item from which the interstitial editor was launched
+ 			$this->view->setVar('primary_table', $ps_primary_table);
+ 			$this->view->setVar('primary_id', $pn_primary_id);
+ 			
  			if(is_array($pa_values)) {
  				foreach($pa_values as $vs_key => $vs_val) {
  					$t_subject->set($vs_key, $vs_val);
  				}
  			}
  			
- 			$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, null, array('editorPref' => 'interstitial'));
- 			
- 			
+ 			$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, $t_subject->getTypeID(), array('editorPref' => 'interstitial'));
 			
 			if (!$t_ui || !$t_ui->getPrimaryKey()) {
 				$this->notification->addNotification(_t('There is no configuration available for this editor. Check your system configuration and ensure there is at least one valid configuration for this type of editor.'), __NOTIFICATION_TYPE_ERROR__);
 				$va_field_values = array();
 			} else {
-				// Get default screen (this is all we show in quickadd, even if the UI has multiple screens)
-				$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
+				// Get default screen (this is all we show in interstitial, even if the UI has multiple screens)
+				$va_options = array();
+				if($vn_type_id = $t_subject->getTypeID()){
+					$va_options['restrictToTypes'][$vn_type_id] = $t_subject->getRelationshipTypeCode();
+				}
+
+				$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, null, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 					array(),
-					array()
+					array(),
+					false,
+					$va_options
 				);
  			
 				$this->view->setVar('t_ui', $t_ui);
@@ -151,6 +161,9 @@
  			
  			$pn_placement_id = 			$this->request->getParameter('placement_id', pInteger);		// placement_id of bundle that launched interstitial editor
  			
+ 			$ps_primary_table = 		$this->request->getParameter('primary', pString);	
+ 			$pn_primary_id = 			$this->request->getParameter('primary_id', pInteger);	
+ 			
  			// Make sure request isn't empty
  			if(!sizeof($_POST)) {
  				$va_response = array(
@@ -176,6 +189,7 @@
  			# trigger "BeforeSaveItem" hook 
 			$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => null, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => true));
  			
+
  			$t_placement = new ca_editor_ui_bundle_placements($pn_placement_id);
  			
  			$pa_bundle_settings = $t_placement->getSettings();
@@ -192,9 +206,21 @@
  			$vs_template = caGetBundleDisplayTemplate($t_subject, $vs_related_table, $pa_bundle_settings);
 		
  			$qr_rel_items = caMakeSearchResult($t_subject->tableName(), array($t_subject->getPrimaryKey()));
- 			$va_bundle_values = array_shift(caProcessRelationshipLookupLabel($qr_rel_items, $t_subject, array('template' => $vs_template)));
- 			if ($t_subject->hasField('type_id')) {
-				$va_bundle_values['relationship_typename'] = $t_subject->getRelationshipTypename(($t_subject->getLeftTableFieldName() == $vs_related_table) ? 'rtol' : 'ltor');
+ 			
+ 			//
+ 			// Handle case of self relationships where we need to figure out which direction things are going in
+ 			// 		
+			$va_bundle_values = array_shift(caProcessRelationshipLookupLabel($qr_rel_items, $t_subject, array('template' => $vs_template, 'primaryIDs' => array($ps_primary_table => array($pn_primary_id)))));
+
+			if ($t_subject->hasField('type_id')) {
+				if (method_exists($t_subject, "isSelfRelationship") && $t_subject->isSelfRelationship()) {
+					$vn_left_id = $t_subject->get($t_subject->getLeftTableFieldName());
+					$vn_right_id = $t_subject->get($t_subject->getRightTableFieldName());
+					
+					$va_bundle_values['relationship_typename'] = $t_subject->getRelationshipTypename(($vn_left_id == $pn_primary_id) ? 'ltol' : 'rtol');
+				} else {
+					$va_bundle_values['relationship_typename'] = $t_subject->getRelationshipTypename(($t_subject->getLeftTableFieldName() == $vs_related_table) ? 'rtol' : 'ltor');
+				}
 				$va_bundle_values['relationship_type_code'] = $t_subject->getRelationshipTypeCode();
 			}
  			
@@ -212,7 +238,7 @@
  					
  					switch($o_e->getErrorNumber()) {
  						case 1100:	// duplicate/invalid idno
- 							if (!$vn_subject_id) {		// can't save new record if idno is not valid (when updating everything but idno is saved if it is invalid)
+ 							if (!$t_subject->getPrimaryKey()) {		// can't save new record if idno is not valid (when updating everything but idno is saved if it is invalid)
  								$vb_no_save_error = true;
  							}
  							break;
@@ -224,7 +250,7 @@
   			$this->opo_result_context->saveContext();
  			
  			# trigger "SaveItem" hook 
-			$this->opo_app_plugin_manager->hookSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => true));
+			$this->opo_app_plugin_manager->hookSaveItem(array('id' => $t_subject->getPrimaryKey(), 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => true));
  			
  			$vn_id = $t_subject->getPrimaryKey();
  			
@@ -251,9 +277,9 @@
  		 */
  		protected function _initView($pa_options=null) {
  			// load required javascript
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register('imageScroller');
- 			JavascriptLoadManager::register('ckeditor');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('imageScroller');
+ 			AssetLoadManager::register('ckeditor');
 
  			if (!($t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name))) { return null; }
  			
@@ -294,7 +320,7 @@
  			if ($vs_parent_id_fld = $t_subject->getProperty('HIERARCHY_PARENT_ID_FLD')) {
  				$this->view->setVar('parent_id', $vn_parent_id = $this->request->getParameter($vs_parent_id_fld, pInteger));
 
- 				return array($t_subject, $t_ui, $vn_parent_id, $vn_above_id);
+ 				return array($t_subject, $t_ui, $vn_parent_id, null);
  			}
  			
  			return array($t_subject, $t_ui);

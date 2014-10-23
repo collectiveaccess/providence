@@ -32,7 +32,7 @@
 	$t_subject					= $this->getVar('t_subject');
 	
 	$va_settings 				= $this->getVar('settings');
-	$vs_order_type				= in_array($va_settings['order_type'][0], array('O', 'L')) ? $va_settings['order_type'][0] : 'O';
+	$vs_order_type				= in_array($va_settings['orderType'][0], array('O', 'L')) ? $va_settings['orderType'][0] : 'O';
 
 	$vb_read_only		=	(isset($va_settings['readonly']) && $va_settings['readonly']);
 
@@ -41,6 +41,7 @@
 	$va_orders = $t_subject->getClientHistory($vs_order_type);
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$vn_table_num.'OrderHistory');
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$vn_table_num.'OrderHistory', $va_settings);
 ?>
 <div id="<?php print $vs_id_prefix.$vn_table_num.'OrderHistory'; ?>">
 	<div class="bundleContainer">

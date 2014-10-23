@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Barcode
  * @subpackage Object
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Ean8.php 20096 2010-01-06 02:05:09Z bkarwin $
+ * @version    $Id: Ean8.php 24593 2012-01-05 20:35:02Z matthew $
  */
 
 /**
@@ -35,7 +35,7 @@ require_once 'Zend/Validate/Barcode.php';
  *
  * @category   Zend
  * @package    Zend_Barcode
- * @copyright  Copyright (c) 2005-2010 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Barcode_Object_Ean8 extends Zend_Barcode_Object_Ean13
@@ -59,9 +59,10 @@ class Zend_Barcode_Object_Ean8 extends Zend_Barcode_Object_Ean13
     {
         $quietZone       = $this->getQuietZone();
         $startCharacter  = (3 * $this->_barThinWidth) * $this->_factor;
+        $middleCharacter = (5 * $this->_barThinWidth) * $this->_factor;
         $stopCharacter   = (3 * $this->_barThinWidth) * $this->_factor;
         $encodedData     = (7 * $this->_barThinWidth) * $this->_factor * 8;
-        return $quietZone + $startCharacter + $encodedData + $stopCharacter + $quietZone;
+        return $quietZone + $startCharacter + $middleCharacter + $encodedData + $stopCharacter + $quietZone;
     }
 
         /**

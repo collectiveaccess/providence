@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -114,6 +114,8 @@
 		/**
 		 * Returns name of the "left" table (by convention the table mentioned first in the relationship table name)
 		 * (eg. if the table name is ca_objects_x_entities then the "left" name is ca_objects)
+		 *
+		 * @return string
 		 */
 		public function getLeftTableName() {
 			return $this->RELATIONSHIP_LEFT_TABLENAME;
@@ -122,6 +124,8 @@
  		/**
 		 * Returns name of the "right" table (by convention the table mentioned second in the relationship table name)
 		 * (eg. if the table name is ca_objects_x_entities then the "right" name is ca_entities)
+		 *
+		 * @return string
 		 */
 		public function getRightTableName() {
 			return $this->RELATIONSHIP_RIGHT_TABLENAME;
@@ -142,6 +146,8 @@
 		/**
 		 * Returns table number of the "left" table (by convention the table mentioned first in the relationship table name)
 		 * (eg. if the table name is ca_objects_x_entities then the "left" number corresponds to ca_objects)
+		 *
+		 * @return int
 		 */
 		public function getLeftTableNum() {
 			return $this->getAppDatamodel()->getTableNum($this->getLeftTableName());
@@ -150,6 +156,8 @@
 		/**
 		 * Returns table number of the "right" table (by convention the table mentioned second in the relationship table name)
 		 * (eg. if the table name is ca_objects_x_entities then the "right" number corresponds to ca_entities)
+		 *
+		 * @return int
 		 */
 		public function getRightTableNum() {
 			return $this->getAppDatamodel()->getTableNum($this->getRightTableName());
@@ -158,6 +166,8 @@
 		/**
 		 * Returns name of the "left" table (by convention the table mentioned first in the relationship table name) field name
 		 * (eg. if the table name is ca_objects_x_entities then the "left" name is ca_objects)
+		 *
+		 * @return string
 		 */
 		public function getLeftTableFieldName() {
 			return $this->RELATIONSHIP_LEFT_FIELDNAME;
@@ -166,6 +176,8 @@
 		/**
 		 * Returns name of the "right" table (by convention the table mentioned first in the relationship table name) field name
 		 * (eg. if the table name is ca_objects_x_entities then the "left" name is ca_objects)
+		 *
+		 * @return string
 		 */
 		public function getRightTableFieldName() {
 			return $this->RELATIONSHIP_RIGHT_FIELDNAME;
@@ -173,9 +185,29 @@
  		# ------------------------------------------------------
 		/**
 		 * Returns name of the foreign key pointing to ca_relationship_types (typically = 'type_id')
+		 *
+		 * @return string
 		 */
 		public function getTypeFieldName() {
 			return $this->RELATIONSHIP_TYPE_FIELDNAME;
+		}
+		# ------------------------------------------------------
+		/**
+		 * Returns true if relationship relates two records in the same table
+		 *
+		 * @return bool
+		 */
+		public function isSelfRelationship() {
+			return (bool)($this->getLeftTableNum() == $this->getRightTableNum());
+		}
+		# ------------------------------------------------------
+		/**
+		 * Returns true if model is a relationship
+		 *
+		 * @return bool
+		 */
+		public function isRelationship() {
+			return true;
 		}
  		# ------------------------------------------------------
 		/**
@@ -218,7 +250,7 @@
 						} else {
 							$va_criteria['type_code'] = $vs_type_code;
 						}
-						if ($t_rel_type->load(array($va_criteria))) {
+						if ($t_rel_type->load($va_criteria)) {
 							$va_restrict_to_type_list[] = "(crt.hier_left >= ".$t_rel_type->get('hier_left')." AND crt.hier_right <= ".$t_rel_type->get('hier_right').")";
 						}
 					}
@@ -263,12 +295,12 @@
 		/**
 		 * Returns an HTML <select> element of relationship types with values=type_id and option text = to the typename
 		 */
-		public function getRelationshipTypesAsHTMLSelect($ps_orientation, $pn_sub_type_left_id=null, $pn_sub_type_right_id=null, $pa_options=null) {
+		public function getRelationshipTypesAsHTMLSelect($ps_orientation, $pn_sub_type_left_id=null, $pn_sub_type_right_id=null, $pa_attributes=null, $pa_options=null) {
 			$vs_left_table_name = $this->getLeftTableName();
 			$vs_right_table_name = $this->getRightTableName();
 			if (!in_array($ps_orientation, array($vs_left_table_name, $vs_right_table_name))) { $ps_orientation = $vs_left_table_name; }
 			
-			$va_types = $this->getRelationshipTypes($pn_sub_type_left_id, $pn_sub_type_right_id);
+			$va_types = $this->getRelationshipTypes($pn_sub_type_left_id, $pn_sub_type_right_id, $pa_options);
 			$va_options = array();
 			
 			$va_parent_ids = array();
@@ -286,9 +318,9 @@
 				$va_options[str_repeat("&#160;&#160;&#160;", $vn_l-1).(($ps_orientation == $vs_left_table_name) ? $va_type['typename'] : $va_type['typename_reverse'])] = $va_type['type_id'];
 			}
 			
-			$vs_name = caGetOption('name', $pa_options, 'type_id');
+			$vs_name = caGetOption('name', $pa_attributes, 'type_id');
 			
-			return caHTMLSelect($vs_name, $va_options, $pa_options);
+			return caHTMLSelect($vs_name, $va_options, $pa_attributes, $pa_options);
 		}
 		# ------------------------------------------------------
 		/**
@@ -303,13 +335,16 @@
 		 *
 		 */
 		public function getRelationshipTypesBySubtype($ps_orientation, $pn_type_id, $pa_options=null) {
+			unset($pa_options['request']);
 			if (!$this->hasField('type_id')) { return array(); }
 			$vs_left_table_name = $this->getLeftTableName();
 			$vs_right_table_name = $this->getRightTableName();
 			
+			$vb_dont_include_subtypes_in_type_restriction = caGetOptions('dont_include_subtypes_in_type_restriction', $pa_options, false);
+			
 			$o_db = $this->getDb();
 			$t_rel_type = new ca_relationship_types();
-					
+			
 			$vs_restrict_to_relationship_type_sql = '';
 			if (isset($pa_options['restrict_to_relationship_types']) && $pa_options['restrict_to_relationship_types']) {
 				if(!is_array($pa_options['restrict_to_relationship_types'])) {
@@ -349,13 +384,19 @@
 			
 			// Support hierarchical subtypes - if the subtype restriction is a type with parents then include those as well
 			// Allows subtypes to "inherit" bindings from parent types
+			
 			$t_list_item = new ca_list_items($pn_type_id);
-			if (!is_array($va_ancestor_ids = $t_list_item->getHierarchyAncestors(null, array('idsOnly' => true, 'includeSelf' => true)))) {
-				$va_ancestor_ids = array();
+			
+			if (!$vb_dont_include_subtypes_in_type_restriction) {
+				if (!is_array($va_ancestor_ids = $t_list_item->getHierarchyAncestors(null, array('idsOnly' => true, 'includeSelf' => true)))) {
+					$va_ancestor_ids = array();
+				}
+				// remove hierarchy root from ancestor list, otherwise invalid bindings 
+				// from root nodes (which are not "real" rel types) may be inherited
+				array_pop($va_ancestor_ids);
+			} else {
+				$va_ancestor_ids = array($pn_type_id);
 			}
-			// remove hierarchy root from ancestor list, otherwise invalid bindings 
-			// from root nodes (which are not "real" rel types) may be inherited
-			array_pop($va_ancestor_ids);
 			
 			$va_types = array();
 			$va_parent_ids = array();
@@ -369,7 +410,6 @@
 				// self relationship
 				while($qr_res->nextRow()) {
 					$va_row = $qr_res->getRow();
-					
 					$vn_parent_id = $va_row['parent_id'];
 					$va_hier[$vn_parent_id][] = $va_row['type_id'];
 					
@@ -418,7 +458,7 @@
 							$va_tmp = $va_row;
 							
 							$vs_key = (strlen($va_tmp['rank']) > 0)  ? sprintf("%08d", (int)$va_tmp['rank']).preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']) : preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']);
-							//$va_tmp['typename'] = $va_tmp['typename'];
+						
 							unset($va_tmp['typename_reverse']);		// we pass the typename adjusted for direction in 'typename', so there's no need to include typename_reverse in the returned values
 
 							$va_types[$vn_parent_id][$vs_subtype][$vs_key][$va_row['type_id']][$va_row['locale_id']] = $va_tmp;
@@ -443,7 +483,6 @@
 								// indicate the directionality of the typename (ltor = left to right = "typename"; rtor = right to left = "typename_reverse")
 								//
 								$va_tmp = $va_row;
-								//$va_tmp['typename'] =  $va_tmp['typename'];
 								unset($va_tmp['typename_reverse']);		// we pass the typename adjusted for direction in 'typename', so there's no need to include typename_reverse in the returned values
 	
 								$vs_key = (strlen($va_tmp['rank']) > 0)  ? sprintf("%08d", (int)$va_tmp['rank']).preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']) : preg_replace('![^A-Za-z0-9_]+!', '_', $va_tmp['typename']);
@@ -472,18 +511,24 @@
 				foreach($va_types as $vs_subtype => $va_types_by_subtype) {
 					$va_types_by_locale = array();
 					foreach($va_types_by_subtype as $vs_key => $va_types_by_key) {
-						$va_types_by_locale += $va_types_by_key;
+						foreach($va_types_by_key as $vs_k => $va_v) {
+							foreach($va_v as $vs_k2 => $vs_v2) {
+								$va_types_by_locale[$vs_k][$vs_k2] = $vs_v2;
+							}
+						}
 					}
 				
-					// include mapping from parent type used in restriction to child types that inherit the binding
-					if (($vs_subtype != 'NULL') && (!isset($va_subtype_lookups[$vs_subtype]) || !$va_subtype_lookups[$vs_subtype])) {
-						$va_children = $t_list_item->getHierarchyChildren($vs_subtype, array('idsOnly' => true));
-						foreach($va_children as $vn_child) {
-							$va_processed_types['_type_map'][$vn_child] = $vs_subtype;
+					if (!$vb_dont_include_subtypes_in_type_restriction) {
+						// include mapping from parent type used in restriction to child types that inherit the binding
+						if (($vs_subtype != 'NULL') && (!isset($va_subtype_lookups[$vs_subtype]) || !$va_subtype_lookups[$vs_subtype])) {
+							$va_children = $t_list_item->getHierarchyChildren($vs_subtype, array('idsOnly' => true));
+							foreach($va_children as $vn_child) {
+								$va_processed_types['_type_map'][$vn_child] = $vs_subtype;
+							}
+							$va_subtype_lookups[$vs_subtype] = true;
 						}
-						$va_subtype_lookups[$vs_subtype] = true;
 					}
-					$va_processed_types[$vs_subtype] = caExtractValuesByUserLocale($va_types_by_locale, null, null, array('returnList' => true));					
+					$va_processed_types[$vs_subtype] = caExtractValuesByUserLocale($va_types_by_locale, null, null, array('returnList' => true));
 				}
 				
 			} else {
@@ -499,8 +544,11 @@
 					if ($ps_orientation == $vs_left_table_name) {
 						// right-to-left
 						
+						// expand subtype
+						$va_subtypes_to_check = ($va_row['sub_type_left_id'] > 0) ? caMakeTypeIDList($vs_left_table_name, array($va_row['sub_type_left_id'])) : null;
+						
 						// skip type if it has a subtype set and it's not in our list
-						if (!((!$va_row['sub_type_left_id'] || (in_array($va_row['sub_type_left_id'], $va_ancestor_ids))))) { continue; }
+						if (!((!$va_subtypes_to_check || sizeof(array_intersect($va_subtypes_to_check, $va_ancestor_ids))))) { continue; }
 						$vs_subtype = $va_row['sub_type_right_id'];
 						
 						$vs_key = (strlen($va_row['rank']) > 0)  ? sprintf("%08d", (int)$va_row['rank']).preg_replace('![^A-Za-z0-9_]+!', '_', $va_row['typename']) : preg_replace('![^A-Za-z0-9_]+!', '_', $va_row['typename']);
@@ -508,8 +556,11 @@
 					} else {
 						// left-to-right
 						
+						// expand subtype
+						$va_subtypes_to_check = ($va_row['sub_type_right_id'] > 0) ? caMakeTypeIDList($vs_right_table_name, array($va_row['sub_type_right_id'])) : null;
+						
 						// skip type if it has a subtype set and it's not in our list
-						if (!((!$va_row['sub_type_right_id'] || (in_array($va_row['sub_type_right_id'], $va_ancestor_ids))))) { continue; }
+						if (!((!$va_subtypes_to_check || sizeof(array_intersect($va_subtypes_to_check, $va_ancestor_ids))))) { continue; }
 						$vs_subtype = $va_row['sub_type_left_id'];	
 						
 						$va_row['typename'] = $va_row['typename_reverse'];
@@ -537,13 +588,15 @@
 						}
 					}
 					
-					// include mapping from parent type used in restriction to child types that inherit the binding
-					if (($vs_subtype != 'NULL') && (!isset($va_subtype_lookups[$vs_subtype]) || !$va_subtype_lookups[$vs_subtype])) {
-						$va_children = $t_list_item->getHierarchyChildren($vs_subtype, array('idsOnly' => true));
-						foreach($va_children as $vn_child) {
-							$va_processed_types['_type_map'][$vn_child] = $vs_subtype;
+					if (!$vb_dont_include_subtypes_in_type_restriction) {
+						// include mapping from parent type used in restriction to child types that inherit the binding
+						if (($vs_subtype != 'NULL') && (!isset($va_subtype_lookups[$vs_subtype]) || !$va_subtype_lookups[$vs_subtype])) {
+							$va_children = $t_list_item->getHierarchyChildren($vs_subtype, array('idsOnly' => true));
+							foreach($va_children as $vn_child) {
+								$va_processed_types['_type_map'][$vn_child] = $vs_subtype;
+							}
+							$va_subtype_lookups[$vs_subtype] = true;
 						}
-						$va_subtype_lookups[$vs_subtype] = true;
 					}
 					
 					$va_processed_types[$vs_subtype] = caExtractValuesByUserLocale($va_types_by_locale, null, null, array('returnList' => true));					
@@ -613,7 +666,7 @@
 		 * 
 		 */
 		public function getTypeID() {
-			return BaseModel::get('type_id');
+			return (BaseModel::hasField('type_id')) ? BaseModel::get('type_id') : null;
 		}
 		# ------------------------------------------------------
 		/**
@@ -622,8 +675,8 @@
 		 * @param string $ps_direction Determines the reading direction of the relationship. Possible values are 'ltor' (left-to-right) and 'rtol' (right-to-left). Default value is ltor.
 		 * @return string Type name or null if no row is loaded.
 		 */
-		public function getRelationshipTypename($ps_direction='ltor') {
-			if ($vn_type_id = $this->getTypeID()) {
+		public function getRelationshipTypename($ps_direction='ltor', $pn_type_id=null) {
+			if (($vn_type_id = $pn_type_id) || ($vn_type_id = $this->getTypeID())) {
 				$t_rel_type = new ca_relationship_types($vn_type_id);
 				return ($ps_direction == 'ltor') ? $t_rel_type->get('ca_relationship_types.preferred_labels.typename') : $t_rel_type->get('ca_relationship_types.preferred_labels.typename_reverse');
 			}
@@ -643,5 +696,47 @@
 			return null;
 		}
 		# ------------------------------------------------------
+		/**
+		 * Get row_ids linked to by this self-relationship. By default this method will return
+		 * row_ids for linked records on either side of the relationship for the currently loaded relationship.
+		 * You can omit specific row_ids from the list of returned ids by including them in the $pa_primary_ids parameters array.
+		 * You can obtain linked row_ids for multiple relationships, not necessarily including the currently loaded relationship,
+		 * by passing a list of relation_ids in the optional $pa_relationship_ids parameter.
+		 *
+		 * This method only returns values for self-relationships (Ex. ca_objects_x_objects, ca_entities_x_entities). It will return null
+		 * when called for non-self-relationships. The returned values are primary keys (row_ids) for the related record - Eg. ca_objects object_id's
+		 * for ca_objects_x_objects, ca_entities entity_id's for ca_entities_x_entities.
+		 *
+		 * @param array $pa_primary_ids List of row_ids to not include in the returned list. [Default is to include all row_ids]
+		 * @param array $pa_relationship_ids List of relationship relation_ids to return related row_ids for. [Default is to return row_ids for the currently loaded relationship only.]
+		 *
+		 * @return array An array of row_ids. If called on a non-self-relationship or with no loaded relationship and and empty $pa_relationship_ids parameter, will return null.
+		 */
+		public function getRelatedIDsForSelfRelationship($pa_primary_ids=null, $pa_relationship_ids=null) {
+			if (!$this->isSelfRelationship()) { return null; }
+			
+			if (!is_array($pa_primary_ids)) { $pa_primary_ids = array(); }
+			
+			if (!is_array($pa_relationship_ids) || !sizeof($pa_relationship_ids)) { 
+				if (!($vn_id = $this->getPrimaryKey())) { return null; }
+				$pa_relationship_ids = array($vn_id);
+			}
+			
+			$o_db = $this->getDb();
+			
+			$qr_res = $o_db->query("
+				SELECT * FROM ".$this->tableName()." WHERE relation_id IN (?)
+			", array($pa_relationship_ids));
+			
+			$va_ids = array();
+			$vs_left_fld = $this->getLeftTableFieldName();
+			$vs_right_fld = $this->getRightTableFieldName();
+			while($qr_res->nextRow()) {
+				if (!in_array($vn_id = $qr_res->get($vs_left_fld), $pa_primary_ids)) { $va_ids[$vn_id] = 1; }
+				if (!in_array($vn_id = $qr_res->get($vs_right_fld), $pa_primary_ids)) { $va_ids[$vn_id] = 1; }
+			}
+		
+			return array_keys($va_ids);
+		}
+		# ------------------------------------------------------
 	}
-?>

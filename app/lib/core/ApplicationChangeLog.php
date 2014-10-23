@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -173,7 +173,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 					$vs_output .= "<td>";
 					foreach($va_log_entries as $va_log_entry) {
 						foreach($va_log_entry['changes'] as $va_change) {
-							$vs_output .= '<span class="logChangeLabel">'.$va_log_entry['changetype_display'].' '.$va_change['label'].'</span>: '.$va_change['description']."<br/>\n";
+							$vs_output .= '<span class="logChangeLabel">'.$va_log_entry['changetype_display'].' '.$va_change['label'].'</span>: '.$va_change['description'].(isset($va_change['rel_typename']) ? ' ('.$va_change['rel_typename'].')' : '')."<br/>\n";
 						}
 					}
 					$vs_output .= "</div></td>";
@@ -304,7 +304,6 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 			foreach($pa_data as $va_log_entry) {
 				$va_grouped_data[$va_log_entry['unit_id']]['ca_table_num_'.$va_log_entry['logged_table_num']][] = $va_log_entry;
 			}
-			//print_r($va_grouped_data);
 			
 			//
 			// Process units
@@ -522,7 +521,9 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 									'description' => $t_related_table->getLabelForDisplay(),
 									'table_name' => $t_related_table->tableName(),
 									'table_num' => $t_related_table->tableNum(),
-									'row_id' => $t_related_table->getPrimaryKey()
+									'row_id' => $t_related_table->getPrimaryKey(),
+									'rel_type_id' => $va_log_entry['snapshot']['type_id'],
+									'rel_typename' => $t_rel->getRelationshipTypename('ltor', $va_log_entry['snapshot']['type_id'])
 								);
 							}
 						}

@@ -1,10 +1,9 @@
 <?php
 /**
  * @package dompdf
- * @link    http://www.dompdf.com/
+ * @link    http://dompdf.github.com/
  * @author  Benj Carson <benjcarson@digitaljunkies.ca>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
- * @version $Id: table_row_group_frame_decorator.cls.php 448 2011-11-13 13:00:03Z fabien.menager $
  */
 
 /**
@@ -31,14 +30,16 @@ class Table_Row_Group_Frame_Decorator extends Frame_Decorator {
    * Override split() to remove all child rows and this element from the cellmap
    *
    * @param Frame $child
+   * @param bool  $force_pagebreak
+   *
+   * @return void
    */
-  function split($child = null, $force_pagebreak = false) {
+  function split(Frame $child = null, $force_pagebreak = false) {
 
     if ( is_null($child) ) {
       parent::split();
       return;
     }
-
 
     // Remove child & all subsequent rows from the cellmap
     $cellmap = $this->get_parent()->get_cellmap();

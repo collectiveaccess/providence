@@ -105,6 +105,13 @@ BaseModel::$s_ca_models_definitions['ca_lists'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Use as vocabulary'), 'DESCRIPTION' => _t('Set this if the list is to be used as a controlled vocabulary for cataloguing.'),
 				'BOUNDS_VALUE' => array(0,1)
+		),
+		'deleted' => array(
+ 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
+ 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+ 				'IS_NULL' => false, 
+ 				'DEFAULT' => 0,
+ 				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if list item is deleted or not.')
 		)
  	)
 );
@@ -225,6 +232,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	static $s_list_item_value_display_cache = array();		// cache for results of getItemFromListForDisplayByItemValue()
 	static $s_list_item_get_cache = array();				// cache for results of getItemFromList()
 	static $s_item_id_cache = array();						// cache for ca_lists::getItemID()
+	static $s_item_id_to_code_cache = array();				// cache for ca_lists::itemIDsToIDNOs()
 	
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
@@ -259,6 +267,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			// create root in ca_list_items
 			$t_item_root = new ca_list_items();
 			$t_item_root->setMode(ACCESS_WRITE);
+			if ($this->inTransaction()) { $t_item_root->setTransaction($this->getTransaction()); }
 			$t_item_root->set('list_id', $this->getPrimaryKey());
 			$t_item_root->set('idno', $vs_title = 'Root node for '.$this->get('list_code'));
 			$t_item_root->set('is_enabled', 0);
@@ -296,6 +305,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		$t_item = new ca_list_items();
 		$t_item->setMode(ACCESS_WRITE);
+		
+		if ($this->inTransaction()) { $t_item->setTransaction($this->getTransaction()); }
 		
 		$t_item->set('list_id', $vn_list_id);
 		$t_item->set('item_value', $ps_value);
@@ -567,7 +578,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$va_items = $pa_items[$pn_root_id];
 		if (!is_array($va_items)) { return; }
 		if (isset($pa_options['extractValuesByUserLocale']) && $pa_options['extractValuesByUserLocale']) {
-			ksort($va_items);
+			uksort($va_items, "strnatcasecmp");
 			foreach($va_items as $vs_key => $va_items_by_item_id) {
 				foreach($va_items_by_item_id as $vn_item_id => $va_item_level) {
 					// output this item
@@ -788,7 +799,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			while($qr_res->nextRow()) {
 				 $va_items[$vn_item_id = $qr_res->get('item_id')][$qr_res->get('locale_id')] = $qr_res->getRow();
 			}
-			ca_lists::$s_list_item_display_cache[$vn_item_id] = ca_lists::$s_list_item_display_cache[$vs_idno] = $va_items;
+			ca_lists::$s_list_item_display_cache[$vn_item_id] = ca_lists::$s_list_item_display_cache[$ps_idno] = $va_items;
 		}
 		
 		$va_tmp = caExtractValuesByUserLocale($va_items, null, null, array());
@@ -916,11 +927,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function getItemIDFromListByLabel($pm_list_name_or_id, $ps_label_name) {
 		if ($vn_list_id = $this->_getListID($pm_list_name_or_id)) {
-			$t_item = new ca_list_items();
-			$va_list_items = $t_item->getListItemIDsByName($vn_list_id, $ps_label_name);
-			
-			if (is_array($va_list_items) && (sizeof($va_list_items))) {
-				return array_shift($va_list_items);
+			if ($vn_id = ca_list_items::find(array('list_id' => $vn_list_id, 'preferred_labels' => array('name_plural' => $ps_label_name)), array('returnAs' => 'firstId'))) {
+				return $vn_id;
+			} elseif ($vn_id = ca_list_items::find(array('list_id' => $vn_list_id, 'preferred_labels' => array('name_singular' => $ps_label_name)), array('returnAs' => 'firstId'))) {
+				return $vn_id;
 			}
 		}
 		return null;
@@ -1014,7 +1024,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * If no list is specified the currently loaded list is used.
 	 *
 	 * @param mixed $pm_list_name_or_id List code or list_id of list to return default item_id for. If omitted the currently loaded list will be used.
-	 * @return int The item_id of the default element or null if no list was specified or loaded, or if no default is set for the list in question.
+	 * @return int The item_id of the default element or null if no list was specified or loaded. If no default is set for the list in question the first item found is returned.
 	 */
 	public function getDefaultItemID($pm_list_name_or_id=null) {
 		if($pm_list_name_or_id) {
@@ -1031,7 +1041,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			return $t_list_item->getPrimaryKey();
 		}
 		
-		return null;
+		return array_shift($this->getItemsForList($vn_list_id, array('idsOnly' => true)));
 	}
 	# ------------------------------------------------------
 	/**
@@ -1104,15 +1114,22 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *	width = the display width of the list in characters or pixels
 	 *  limitToItemsWithID = An optional array of list item_ids. Item_ids not in the array will be omitted from the returned list.
 	 *  omitItemsWithID = An optional array of list item_ids. Item_ids in the array will be omitted from the returned list.
-	 *	
+	 *  disableItemsWithID = An optional array of list item_ids. Item_ids in the array will be disabled in the returned list.	
+	 *
 	 *	limitToItemsRelatedToCollections = an array of collection_ids or collection idno's; returned items will be restricted to those attached to the specified collections
 	 *	limitToItemsRelatedToCollectionWithRelationshipTypes = array of collection type names or type_ids; returned items will be restricted to those attached to the specified collectionss with the specified relationship type
 	 *	limitToListIDs = array of list_ids to restrict returned items to when using "limitToItemsRelatedToCollections"
+	 *
+	 *  indentForHierarchy = indicate hierarchy with indentation. [Default is true]
+	 * 	transaction = transaction to perform database operations within. [Default is null]
 	 * 
 	 * @return string - HTML code for the <select> element; empty string if the list is empty
 	 */
 	static public function getListAsHTMLFormElement($pm_list_name_or_id, $ps_name, $pa_attributes=null, $pa_options=null) {
 		$t_list = new ca_lists();
+		if($o_trans = caGetOption('transaction', $pa_options, null)) {
+			$t_list->setTransaction($o_trans);
+		}
 		
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (!(isset($pa_options['limitToItemsRelatedToCollection']) && is_array($pa_options['limitToItemsRelatedToCollections']))) {
@@ -1120,6 +1137,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			$t_list->load($vn_list_id);
 		}
 		$vn_root_id = (isset($pa_options['childrenOnlyForItemID']) && $pa_options['childrenOnlyForItemID']) ? $pa_options['childrenOnlyForItemID'] : null;
+		
+		$va_disabled_item_ids = caGetOption('disableItemsWithID', $pa_options, null);
 		
 		$vs_render_as = isset($pa_options['render']) ? $pa_options['render'] : ''; 
 		$vn_sort_type = $t_list->get('default_sort');
@@ -1180,7 +1199,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					}
 				}
 			} else {
-				$va_list_items = $t_list->getItemsForList($pm_list_name_or_id, array_merge($pa_options, array('returnHierarchyLevels' => true, 'item_id' => $vn_root_id, 'extractValuesByUserLocale' => true, 'sort' => $vn_sort_type)));
+				$va_list_items = $t_list->getItemsForList($pm_list_name_or_id, array_merge($pa_options, array('returnHierarchyLevels' => caGetOption('indentForHierarchy', $pa_options, true), 'item_id' => $vn_root_id, 'extractValuesByUserLocale' => true, 'sort' => $vn_sort_type)));
 			}
 		}
 		
@@ -1209,7 +1228,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			if (is_array($pa_options['omitItemsWithID']) && in_array($vn_item_id, $pa_options['omitItemsWithID'])) { continue; }
 			
 			$va_options[$va_item[$pa_options['key']]] = str_repeat('&nbsp;', intval($va_item['LEVEL']) * 3).' '.$va_item['name_singular'];
-			if (!$va_item['is_enabled']) { $va_disabled_options[$va_item[$pa_options['key']]] = true; }
+			if (!$va_item['is_enabled'] || (is_array($va_disabled_item_ids) && in_array($vn_item_id, $va_disabled_item_ids))) { $va_disabled_options[$va_item[$pa_options['key']]] = true; }
 			$va_colors[$vn_item_id] = $va_item['color'];
 			
 			if ($va_item['is_default']) { $vn_default_val = $va_item[$pa_options['key']]; }		// get default value
@@ -1336,13 +1355,23 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				return $vs_buf;
 				break;
 			case 'lookup':
+				$vs_value = $vs_hidden_value = "";
+				if(caGetOption('forSearch',$pa_options)) {
+					if($vs_val_id = caGetOption('value',$pa_options)) {
+						$vs_value = $t_list->getItemFromListForDisplayByItemID($pm_list_name_or_id, $vs_val_id);
+						$vs_hidden_value = $vs_val_id;
+					}
+				} else {
+					$vs_value = "{".$pa_options['element_id']."_label}";
+					$vs_hidden_value = "{".$pa_options['element_id']."}";
+				}
 				$vs_buf =
  				caHTMLTextInput(
  					$ps_name.'_autocomplete', 
 					array(
 						'width' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width']: 300, 
 						'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : 1, 
-						'value' => "{".$pa_options['element_id']."_label}", 
+						'value' => $vs_value, 
 						'maxlength' => 512,
 						'id' => $ps_name."_autocomplete",
 						'class' => 'lookupBg'
@@ -1351,7 +1380,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				caHTMLHiddenInput(
 					$ps_name,
 					array(
-						'value' => "{".$pa_options['element_id']."}", 
+						'value' => $vs_hidden_value, 
 						'id' => $ps_name
 					)
 				);
@@ -1399,7 +1428,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				$t_root_item = new ca_list_items();
 				$t_root_item->load(array('list_id' => $vn_list_id, 'parent_id' => null));
 				
-				JavascriptLoadManager::register("hierBrowser");
+				AssetLoadManager::register("hierBrowser");
 				
 				$vs_buf = "<div style='width: {$vn_width}; height: {$vn_height};'><div id='{$ps_name}_hierarchyBrowser{n}' style='width: 100%; height: 100%;' class='".(($vs_render_as == 'vert_hierbrowser') ? 'hierarchyBrowserVertical' : 'hierarchyBrowser')."'>
 					<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
@@ -1418,8 +1447,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				className: '".(($vs_render_as == 'vert_hierbrowser') ? 'hierarchyBrowserLevelVertical' : 'hierarchyBrowserLevel')."',
 				classNameContainer: '".(($vs_render_as == 'vert_hierbrowser') ? 'hierarchyBrowserContainerVertical' : 'hierarchyBrowserContainer')."',
 				
-				editButtonIcon: '<img src=\"".$pa_options['request']->getThemeUrlPath()."/graphics/buttons/arrow_grey_right.gif\" border=\"0\" title=\"Edit\"/>',
-				
+				editButtonIcon: \"".caNavIcon($pa_options['request'], __CA_NAV_BUTTON_RIGHT_ARROW__)."\",
+				disabledButtonIcon: \"".caNavIcon($pa_options['request'], __CA_NAV_BUTTON_DOT__)."\",
 				initItemID: '{".$pa_options['element_id']."}',
 				defaultItemID: '".$t_list->getDefaultItemID()."',
 				useAsRootID: '".$t_root_item->getPrimaryKey()."',
@@ -1460,6 +1489,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					)
 				);
 				return $vs_buf;
+				break;
+			case 'text':
+				return caHTMLTextInput($ps_name, $pa_attributes, $pa_options);
 				break;
 			case 'options':
 				return $va_options;
@@ -1503,101 +1535,6 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 * Returns a flat list of all list items in the specified list referenced by items in the specified table
-	 * (and optionally a search on that table)
-	 */
-	public function getReferencedItems($pm_table_num_or_name, $pm_list_name_or_id=null, $pa_reference_limit_ids=null, $ps_ref_table_fieldname=null, $pn_access=null) {
-		if (is_numeric($pm_table_num_or_name)) {
-			$vs_table_name = $this->getAppDataModel()->getTableName($pm_table_num_or_name);
-		} else {
-			$vs_table_name = $pm_table_num_or_name;
-		}
-		
-		if (!($t_ref_table = $this->getAppDatamodel()->getInstanceByTableName($vs_table_name, true))) {
-			return null;
-		}
-		
-		
-		if($pm_list_name_or_id) {
-			$vn_list_id = $this->_getListID($pm_list_name_or_id);
-		} else {
-			$vn_list_id = $this->getPrimaryKey();
-		}
-		if (!$vn_list_id || !$vs_table_name) { return null; }
-		
-		$o_db = $this->getDb();
-		
-		if (!$ps_ref_table_fieldname) {
-			$va_path = $this->getAppDatamodel()->getPath('ca_list_items', $vs_table_name);
-			array_shift($va_path); // remove 'ca_list_items' from path
-			
-			$vs_last_table = 'ca_list_items';
-			$va_joins = array();
-			foreach($va_path as $vs_rel_table_name => $vn_rel_table_num) {
-				$va_rels = $this->getAppDatamodel()->getRelationships($vs_last_table, $vs_rel_table_name);
-				$va_rel = $va_rels[$vs_last_table][$vs_rel_table_name][0];
-				
-				
-				$va_joins[] = "INNER JOIN {$vs_rel_table_name} ON {$vs_last_table}.".$va_rel[0]." = {$vs_rel_table_name}.".$va_rel[1];
-				
-				$vs_last_table = $vs_rel_table_name;
-			}
-		} else {
-			$va_joins[] = "INNER JOIN {$vs_table_name} ON {$vs_table_name}.{$ps_ref_table_fieldname} = ca_list_items.item_id";
-		}
-		
-		$va_sql_wheres = array();
-		if (is_array($pa_reference_limit_ids) && sizeof($pa_reference_limit_ids)) {
-			$va_sql_wheres[] = "({$vs_table_name}.".$t_ref_table->primaryKey()." IN (".join(',', $pa_reference_limit_ids)."))";
-		}
-		
-		if (!is_null($pn_access)) {
-			$va_sql_wheres[] = "({$vs_table_name}.access = ".intval($pn_access).")";
-		}
-		
-		// get counts
-		$vs_sql = "
-			SELECT ca_list_items.item_id, count(*) cnt
-			FROM ca_list_items
-			".join("\n", $va_joins)."
-			WHERE
-				(ca_list_items.deleted = 0) AND (ca_list_items.list_id = ?)
-				".(sizeof($va_sql_wheres) ? " AND ".join(' AND ', $va_sql_wheres) : "")."
-			GROUP BY
-				ca_list_items.item_id
-		";
-		$qr_items = $o_db->query($vs_sql, (int)$vn_list_id);
-		
-		$va_item_counts = array();
-		while($qr_items->nextRow()) {
-			$va_item_counts[$qr_items->get('item_id')] = $qr_items->get('cnt');
-		}
-		
-		$vs_sql = "
-			SELECT ca_list_items.item_id, ca_list_item_labels.*
-			FROM ca_list_items
-			INNER JOIN ca_list_item_labels ON ca_list_item_labels.item_id = ca_list_items.item_id
-			".join("\n", $va_joins)."
-			WHERE
-				(ca_list_items.deleted = 0) AND (ca_list_items.list_id = ?) AND (ca_list_item_labels.is_preferred = 1)
-				".(sizeof($va_sql_wheres) ? " AND ".join(' AND ', $va_sql_wheres) : "")."
-				
-			GROUP BY
-				ca_list_item_labels.label_id
-		";
-		
-		$qr_items = $o_db->query($vs_sql, (int)$vn_list_id);
-		
-		$va_items = array();
-		while($qr_items->nextRow()) {
-			$vn_item_id = $qr_items->get('item_id');
-			$va_items[$vn_item_id][$qr_items->get('locale_id')] = array_merge($qr_items->getRow(), array('cnt' => $va_item_counts[$vn_item_id]));
-		}
-		
-		return caExtractValuesByUserLocale($va_items);
-	}
-	# ------------------------------------------------------
-	/**
 	 * Returns list containing name and list_ids of all available lists. Names are indexed by locale_id - names for 
 	 * all locales are returned.
 	 *
@@ -1627,8 +1564,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 * Overrides BundlableLabelableBaseModelWithAttributes:isSaveable to implement system list access restrictions
 	 */
-	public function isSaveable($po_request) {
-		if(parent::isSaveable($po_request)){ // user could save this list
+	public function isSaveable($po_request, $ps_bundle_name=null) {
+		if(parent::isSaveable($po_request, $ps_bundle_name)){ // user could save this list
 			if($this->getPrimaryKey()){
 				if($this->get('is_system_list')){
 					if(!$po_request->user->canDoAction('can_edit_system_lists')){
@@ -1676,6 +1613,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @param array $pa_options Array of options:
 	 * 		dont_include_sub_items = if set, returned list is not expanded to include sub-items
 	 *		dontIncludeSubItems = synonym for dont_include_sub_items
+	 * 		transaction = transaction to perform database operations within. [Default is null]
 	 *
 	 * @return array List of numeric item_ids
 	 */
@@ -1687,23 +1625,30 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		}
 		$t_list = new ca_lists();
 		$t_item = new ca_list_items();
-		$va_item_ids = array();
+		if($o_trans = caGetOption('transaction', $pa_options, null)) {
+			$t_list->setTransaction($o_trans);
+			$t_item->setTransaction($o_trans);
+		}
+		
+		$va_tmp = $va_item_ids = array();
 		foreach($pa_idnos as $vs_idno) {
 			$vn_item_id = null;
 			if (is_numeric($vs_idno)) { 
-				$vn_item_id = (int)$vs_idno; 
+				$va_tmp = array((int)$vs_idno); 
 			} else {
-				$vn_item_id = (int)$t_list->getItemIDFromList($pm_list_name_or_id, $vs_idno);
+				$va_tmp = ca_list_items::find(array('idno' => $vs_idno, 'deleted' => 0), array('returnAs' => 'ids', 'transaction' => $o_trans));
 			}
 			
-			if ($vn_item_id && !(isset($pa_options['noChildren']) || $pa_options['noChildren'])) {
-				if ($qr_children = $t_item->getHierarchy($vn_item_id, array())) {
-					while($qr_children->nextRow()) {
-						$va_item_ids[$qr_children->get('item_id')] = true;
+			if (sizeof($va_tmp) && !(isset($pa_options['noChildren']) || $pa_options['noChildren'])) {
+				foreach($va_tmp as $vn_item_id) {
+					if ($qr_children = $t_item->getHierarchy($vn_item_id, array())) {
+						while($qr_children->nextRow()) {
+							$va_item_ids[$qr_children->get('item_id')] = true;
+						}
 					}
 				}
 			} else {
-				if ($vn_item_id) {
+				foreach($va_tmp as $vn_item_id) {
 					$va_item_ids[$vn_item_id] = true;
 				}
 			}
@@ -1713,14 +1658,20 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	/**
 	 *
+	 * 	transaction = transaction to perform database operations within. [Default is null]
 	 */
 	static public function getItemID($pm_list_name_or_id, $ps_idno, $pa_options=null) {
 		if ((!isset($pa_options['noCache']) || !isset($pa_options['noCache'])) && isset(ca_lists::$s_item_id_cache[$pm_list_name_or_id][$ps_idno])) {
 			return ca_lists::$s_item_id_cache[$pm_list_name_or_id][$ps_idno];
 		}
+		if($o_trans = caGetOption('transaction', $pa_options, null)) {
+			$o_db = $o_trans->getDb();
+		} else {
+			$o_db = new Db();
+		}
 		$vn_item_id = null;
 		if ($vn_list_id = ca_lists::getListID($pm_list_name_or_id)) {
-			$o_db = new Db();
+			
 			$qr_res = $o_db->query("SELECT item_id FROM ca_list_items WHERE deleted = 0 AND list_id = ? AND idno = ?", (int)$vn_list_id, (string)$ps_idno);
 			
 			if ($qr_res->nextRow()) {
@@ -1730,6 +1681,51 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		}
 		ca_lists::$s_item_id_cache[$pm_list_name_or_id][$ps_idno] = $vn_item_id;
 		return $vn_item_id;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Converts a list of item_id's to a list of idno strings. The conversion is literal without hierarchical expansion.
+	 *
+	 * @param array $pa_list A list of relationship numeric type_ids
+	 * @param array $pa_options Options include:
+	 * 		transaction = transaction to perform database operations within. [Default is null]
+	 * @return array A list of corresponding type_codes 
+	 */
+	 static public function itemIDsToIDNOs($pa_ids, $pa_options=null) {
+	 	if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
+	 	
+	 	$vs_key = md5(print_r($pa_ids, true));
+	 	if (isset(ca_lists::$s_item_id_to_code_cache[$vs_key])) {
+	 		return ca_lists::$s_item_id_to_code_cache[$vs_key];
+	 	}
+	 	
+	 	$va_ids = $va_non_numerics = array();
+	 	foreach($pa_ids as $pn_id) {
+	 		if (!is_numeric($pn_id)) {
+	 			$va_non_numerics[] = $pn_id;
+	 		} else {
+	 			$va_ids = (int)$pn_id;
+	 		}
+	 	}
+	 	
+	 	if($o_trans = caGetOption('transaction', $pa_options, null)) {
+			$o_db = $o_trans->getDb();
+		} else {
+			$o_db = new Db();
+		}
+		
+	 	$qr_res = $o_db->query("
+	 		SELECT item_id, idno 
+	 		FROM ca_list_items
+	 		WHERE
+	 			item_id IN (?)
+	 	", array($va_ids));
+	 	
+	 	$va_item_ids_to_codes = array();
+	 	while($qr_res->nextRow()) {
+	 		$va_item_ids_to_codes[$qr_res->get('item_id')] = $qr_res->get('idno');
+	 	}
+	 	return ca_lists::$s_item_id_to_code_cache[$vs_key] = $va_item_ids_to_codes + $va_non_numerics;
 	}
 	# ------------------------------------------------------
 }

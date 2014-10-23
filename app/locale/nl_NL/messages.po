@@ -1,19 +1,24 @@
+#
+# Translators:
+# dewulfevy <evy.dewulf@libis.kuleuven.be>, 2013-2014
 msgid ""
 msgstr ""
-"Project-Id-Version: CollectiveAccess Dutch translation\n"
+"Project-Id-Version: CollectiveAccess Providence\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-08-19 08:05-0800\n"
-"PO-Revision-Date: \n"
-"Last-Translator: gautiermichelin <gm@ideesculture.com>\n"
-"Language-Team: \n"
-"Language: nl_BE\n"
+"POT-Creation-Date: 2013-08-19 07:58-0800\n"
+"PO-Revision-Date: 2014-02-18 11:53+0100\n"
+"Last-Translator: Stefan <stefan@whirl-i-gig.com>\n"
+"Language-Team: Dutch (Netherlands) (http://www.transifex.com/projects/p/"
+"collectiveaccess-providence/language/nl_NL/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Poedit-Basepath: c:\\providence\n"
-"X-Poedit-KeywordsList: _;_t;_p\n"
-"X-Poedit-SourceCharset: utf-8\n"
+"Language: nl_NL\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 1.5.7\n"
+"X-Poedit-Basepath: c:\\providence\n"
+"X-Poedit-KeywordsList: _t;_p;_\n"
+"X-Poedit-SourceCharset: utf-8\n"
 "X-Poedit-SearchPath-0: c:\\providence\n"
 
 #: c:\providence/app/conf/annotation_types.conf:11
@@ -82,14 +87,12 @@ msgid "Coordinate of lower right corner of rectangular region"
 msgstr "Coördinaat van de rechterbenedenhoek van de rechthoekige regio"
 
 #: c:\providence/app/conf/annotation_types.conf:118
-#, fuzzy
 msgid "Annotation label"
-msgstr "Aantekening %1"
+msgstr "Aantekening label"
 
 #: c:\providence/app/conf/annotation_types.conf:125
-#, fuzzy
 msgid "Annotation description"
-msgstr "Aantekeningen editor"
+msgstr "Beschrijving aantekening"
 
 #: c:\providence/app/conf/annotation_types.conf:126
 #: c:\providence/app/models/ca_bundle_display_labels.php:79
@@ -113,25 +116,27 @@ msgstr "Beschrijving"
 
 #: c:\providence/app/conf/annotation_types.conf:133
 msgid "X"
-msgstr ""
+msgstr "X"
 
 #: c:\providence/app/conf/annotation_types.conf:134
-#, fuzzy
 msgid ""
 "X coordinate (as percentage of image width) of upper left corner of active "
 "region"
-msgstr "Coördinaat van de linkerbovenhoek van de rechthoekige regio"
+msgstr ""
+"X-coördinaat (als een percentage van de breedte van de afbeelding) van de "
+"linkerbovenhoek van het actieve gebied"
 
 #: c:\providence/app/conf/annotation_types.conf:141
 msgid "Y"
-msgstr ""
+msgstr "Y"
 
 #: c:\providence/app/conf/annotation_types.conf:142
-#, fuzzy
 msgid ""
 "Y coordinate (as percentage of image height) of upper left corner of active "
 "region"
-msgstr "Coördinaat van de linkerbovenhoek van de rechthoekige regio"
+msgstr ""
+"Y-coördinaat (als percentage van de hoogte van de afbeelding) van de "
+"linkerbovenhoek van het actieve gebied."
 
 #: c:\providence/app/conf/annotation_types.conf:149
 #: c:\providence/app/conf/bundle_types.conf:21
@@ -144,6 +149,8 @@ msgstr "Breedte"
 #: c:\providence/app/conf/annotation_types.conf:150
 msgid "Width (as percentage of image width) of active region"
 msgstr ""
+"Breedte (als percentage van de breedte van de afbeelding) van het actieve "
+"gebied."
 
 #: c:\providence/app/conf/annotation_types.conf:157
 #: c:\providence/app/conf/bundle_types.conf:28
@@ -154,6 +161,8 @@ msgstr "Hoogte"
 #: c:\providence/app/conf/annotation_types.conf:158
 msgid "Height (as percentage of image height) of active region"
 msgstr ""
+"Hoogte (als percentage van de hoogte van de afbeelding) van het actieve "
+"gebied."
 
 #: c:\providence/app/conf/annotation_types.conf:165
 #: c:\providence/app/conf/browse.conf:50
@@ -208,19 +217,16 @@ msgid "Type"
 msgstr "Type"
 
 #: c:\providence/app/conf/annotation_types.conf:170
-#, fuzzy
 msgid "Annotation type"
-msgstr "Aantekening %1"
+msgstr "Annotatietype"
 
 #: c:\providence/app/conf/annotation_types.conf:177
-#, fuzzy
 msgid "Options"
-msgstr "Bijschrift"
+msgstr "Opties"
 
 #: c:\providence/app/conf/annotation_types.conf:178
-#, fuzzy
 msgid "Type-specific annnotation options"
-msgstr "Datatypespecifieke opties "
+msgstr "Typespecifieke annotatie opties"
 
 #: c:\providence/app/conf/browse.conf:19
 #: c:\providence/app/models/ca_object_labels.php:40
@@ -233,19 +239,16 @@ msgid "object titles"
 msgstr "objecttitels"
 
 #: c:\providence/app/conf/browse.conf:33
-#, fuzzy
 msgid "Has media"
-msgstr "Verberg media"
+msgstr "Heeft media"
 
 #: c:\providence/app/conf/browse.conf:34
-#, fuzzy
 msgid "Has no media"
-msgstr "Geef media weer"
+msgstr "Heeft geen media"
 
 #: c:\providence/app/conf/browse.conf:36 c:\providence/app/conf/browse.conf:37
-#, fuzzy
 msgid "has media"
-msgstr "Geef media weer"
+msgstr "heeft media"
 
 #: c:\providence/app/conf/browse.conf:49
 #: c:\providence/app/conf/browse.conf:108
@@ -292,9 +295,8 @@ msgstr "Naam"
 #: c:\providence/app/conf/browse.conf:110
 #: c:\providence/app/conf/browse.conf:254
 #: c:\providence/app/conf/browse.conf:313
-#, fuzzy
 msgid "Role"
-msgstr "Rollen"
+msgstr "Rol"
 
 #: c:\providence/app/conf/browse.conf:57
 #: c:\providence/app/conf/browse.conf:260
@@ -391,14 +393,13 @@ msgstr "collecties"
 
 #: c:\providence/app/conf/browse.conf:111
 #: c:\providence/app/conf/browse.conf:314
-#, fuzzy
 msgid "Years"
-msgstr "jaren"
+msgstr "Jaren"
 
 #: c:\providence/app/conf/browse.conf:112
 #: c:\providence/app/conf/browse.conf:315
 msgid "Decades"
-msgstr ""
+msgstr "Decennia"
 
 #: c:\providence/app/conf/browse.conf:117
 #: c:\providence/app/conf/browse.conf:320
@@ -458,9 +459,8 @@ msgstr "opslagplaatsen"
 #: c:\providence/app/conf/browse.conf:646
 #: c:\providence/app/conf/browse.conf:735
 #: c:\providence/app/conf/browse.conf:810
-#, fuzzy
 msgid "term"
-msgstr "# Items"
+msgstr "term"
 
 #: c:\providence/app/conf/browse.conf:172
 #: c:\providence/app/conf/browse.conf:375
@@ -469,9 +469,8 @@ msgstr "# Items"
 #: c:\providence/app/conf/browse.conf:647
 #: c:\providence/app/conf/browse.conf:736
 #: c:\providence/app/conf/browse.conf:811
-#, fuzzy
 msgid "terms"
-msgstr "# Items"
+msgstr "termen"
 
 #: c:\providence/app/conf/browse.conf:181
 #: c:\providence/app/conf/browse.conf:384
@@ -531,9 +530,8 @@ msgstr "type"
 #: c:\providence/app/conf/browse.conf:882
 #: c:\providence/app/conf/browse.conf:929
 #: c:\providence/app/conf/browse.conf:963
-#, fuzzy
 msgid "types"
-msgstr "type"
+msgstr "types"
 
 #: c:\providence/app/conf/browse.conf:190
 #: c:\providence/app/conf/browse.conf:393
@@ -546,9 +544,8 @@ msgstr "type"
 #: c:\providence/app/conf/browse.conf:890
 #: c:\providence/app/conf/browse.conf:937
 #: c:\providence/app/conf/browse.conf:971
-#, fuzzy
 msgid "status"
-msgstr "Status"
+msgstr "status"
 
 #: c:\providence/app/conf/browse.conf:191
 #: c:\providence/app/conf/browse.conf:394
@@ -561,9 +558,8 @@ msgstr "Status"
 #: c:\providence/app/conf/browse.conf:891
 #: c:\providence/app/conf/browse.conf:938
 #: c:\providence/app/conf/browse.conf:972
-#, fuzzy
 msgid "statuses"
-msgstr "Status"
+msgstr "statussen"
 
 #: c:\providence/app/conf/browse.conf:200
 #: c:\providence/app/conf/browse.conf:403
@@ -573,9 +569,8 @@ msgstr "Status"
 #: c:\providence/app/conf/browse.conf:764
 #: c:\providence/app/conf/browse.conf:839
 #: c:\providence/app/conf/browse.conf:899
-#, fuzzy
 msgid "access status"
-msgstr "Verwervingsstatus"
+msgstr "Toegangsstatus"
 
 #: c:\providence/app/conf/browse.conf:201
 #: c:\providence/app/conf/browse.conf:404
@@ -585,9 +580,8 @@ msgstr "Verwervingsstatus"
 #: c:\providence/app/conf/browse.conf:765
 #: c:\providence/app/conf/browse.conf:840
 #: c:\providence/app/conf/browse.conf:900
-#, fuzzy
 msgid "access statuses"
-msgstr "Verwervingsstatus"
+msgstr "toegangsstatussen"
 
 #: c:\providence/app/conf/browse.conf:212
 #: c:\providence/app/helpers/utilityHelpers.php:853
@@ -601,21 +595,19 @@ msgstr "jaren"
 
 #: c:\providence/app/conf/browse.conf:223
 msgid "decade"
-msgstr ""
+msgstr "decennium"
 
 #: c:\providence/app/conf/browse.conf:224
 msgid "decades"
-msgstr ""
+msgstr "decennia"
 
 #: c:\providence/app/conf/browse.conf:239
-#, fuzzy
 msgid "object representation title"
-msgstr "Objectvoorstelling meerdere bestanden"
+msgstr "titel objectvoorstelling"
 
 #: c:\providence/app/conf/browse.conf:240
-#, fuzzy
 msgid "object representation titles"
-msgstr "Objectvoorstellingen meerdere bestanden"
+msgstr "titels objectvoorstelling"
 
 #: c:\providence/app/conf/browse.conf:710
 #: c:\providence/app/conf/browse.conf:798
@@ -646,15 +638,13 @@ msgstr "objecten"
 
 #: c:\providence/app/conf/browse.conf:946
 #: c:\providence/app/conf/browse.conf:980
-#, fuzzy
 msgid "access"
 msgstr "Toegang"
 
 #: c:\providence/app/conf/browse.conf:947
 #: c:\providence/app/conf/browse.conf:981
-#, fuzzy
 msgid "accesses"
-msgstr "Toegang"
+msgstr "toegangen"
 
 #: c:\providence/app/conf/bundle_types.conf:10
 #: c:\providence/app/conf/bundle_types.conf:52
@@ -822,9 +812,8 @@ msgstr "Video wordt verwerkt"
 #: c:\providence/app/conf/media_processing.conf:898
 #: c:\providence/app/conf/media_processing.conf:966
 #: c:\providence/app/conf/media_processing.conf:1026
-#, fuzzy
 msgid "Media is being processed"
-msgstr "Audio wordt verwerkt"
+msgstr "Media wordt verwerkt"
 
 #: c:\providence/app/conf/media_processing.conf:1147
 #: c:\providence/app/conf/media_processing.conf:1217
@@ -887,9 +876,8 @@ msgid "Edit"
 msgstr "Bewerken"
 
 #: c:\providence/app/conf/navigation.conf:37
-#, fuzzy
 msgid "Batch Editor"
-msgstr "Bewerk in bulk"
+msgstr "Batch editor"
 
 #: c:\providence/app/conf/navigation.conf:59
 #: c:\providence/app/models/ca_objects.php:78
@@ -1013,9 +1001,8 @@ msgid "Place"
 msgstr "Plaats"
 
 #: c:\providence/app/conf/navigation.conf:413
-#, fuzzy
 msgid "Place editor"
-msgstr "Plaats sets"
+msgstr "Plaats-editor"
 
 #: c:\providence/app/conf/navigation.conf:481
 msgid "Collection"
@@ -1045,14 +1032,12 @@ msgid "Occurrences"
 msgstr "Gebeurtenissen"
 
 #: c:\providence/app/conf/navigation.conf:652
-#, fuzzy
 msgid "Storage location"
-msgstr "Opslagplaatsen"
+msgstr "Bewaarplaats"
 
 #: c:\providence/app/conf/navigation.conf:661
-#, fuzzy
 msgid "Storage location editor"
-msgstr "Opslagplaats splitser"
+msgstr "Bewaarplaats-editor"
 
 #: c:\providence/app/conf/navigation.conf:729
 #: c:\providence/app/models/ca_bundle_displays.php:1070
@@ -1061,9 +1046,8 @@ msgid "Loan"
 msgstr "Lening"
 
 #: c:\providence/app/conf/navigation.conf:815
-#, fuzzy
 msgid "Movement"
-msgstr "Verplaatsingen"
+msgstr "Verplaatsing"
 
 #: c:\providence/app/conf/navigation.conf:901
 msgid "Representation annotations"
@@ -1398,21 +1382,18 @@ msgstr "Algemeen"
 
 #: c:\providence/app/conf/navigation.conf:1948
 #: c:\providence/app/conf/user_pref_defs.conf:14
-#, fuzzy
 msgid "Editing"
-msgstr "%1 bewerken"
+msgstr "Bewerken"
 
 #: c:\providence/app/conf/navigation.conf:1956
 #: c:\providence/app/conf/user_pref_defs.conf:46
-#, fuzzy
 msgid "Batch editing"
-msgstr "Bewerk in bulk"
+msgstr "Bewerk in batch"
 
 #: c:\providence/app/conf/navigation.conf:1964
 #: c:\providence/app/conf/user_pref_defs.conf:63
-#, fuzzy
 msgid "Quick add"
-msgstr "Quick Add"
+msgstr "Quick add"
 
 #: c:\providence/app/conf/navigation.conf:1972
 #: c:\providence/app/conf/navigation.conf:3151
@@ -1425,7 +1406,6 @@ msgstr "Media"
 
 #: c:\providence/app/conf/navigation.conf:1980
 #: c:\providence/app/conf/user_pref_defs.conf:81
-#, fuzzy
 msgid "Units of measurement"
 msgstr "Eenheden van afmetingen"
 
@@ -1463,9 +1443,8 @@ msgid "Edit set item"
 msgstr "Set-item bewerken"
 
 #: c:\providence/app/conf/navigation.conf:2137
-#, fuzzy
 msgid "Search tools"
-msgstr "Zoek rondleidingen"
+msgstr "Zoekmogelijkheden"
 
 #: c:\providence/app/conf/navigation.conf:2147
 msgid "Search forms"
@@ -1536,9 +1515,8 @@ msgid "Export"
 msgstr "Exporteren"
 
 #: c:\providence/app/conf/navigation.conf:2471
-#, fuzzy
 msgid "Exporter list"
-msgstr "exporter formaat"
+msgstr "Exporter lijst"
 
 #: c:\providence/app/conf/navigation.conf:2480
 msgid "Access control"
@@ -1573,9 +1551,8 @@ msgid "Administration"
 msgstr "Systeembeheer"
 
 #: c:\providence/app/conf/navigation.conf:2547
-#, fuzzy
 msgid "User interfaces"
-msgstr "gebruikersinterfaces"
+msgstr "Gebruikersinterfaces"
 
 #: c:\providence/app/conf/navigation.conf:2554
 #: c:\providence/themes/default/views/administrate/setup/widget_element_info_html.php:34
@@ -1596,9 +1573,8 @@ msgid "Configuration check"
 msgstr "Configuratiecontrole"
 
 #: c:\providence/app/conf/navigation.conf:2582
-#, fuzzy
 msgid "Maintenance"
-msgstr "Maine"
+msgstr "Onderhoud"
 
 #: c:\providence/app/conf/navigation.conf:2592
 #: c:\providence/themes/default/views/administrate/maintenance/search_reindex_landing_html.php:29
@@ -1622,9 +1598,8 @@ msgid "Rebuild hierarchical indices"
 msgstr "Hiërarchische indexen heropbouwen"
 
 #: c:\providence/app/conf/navigation.conf:2613
-#, fuzzy
 msgid "Export configuration"
-msgstr "Systeemconfiguratie"
+msgstr "Export configuratie"
 
 #: c:\providence/app/conf/navigation.conf:2624
 msgid "Relationship type editor"
@@ -1651,9 +1626,8 @@ msgid "Client"
 msgstr "Klant"
 
 #: c:\providence/app/conf/navigation.conf:2741
-#, fuzzy
 msgid "Sales communications"
-msgstr "Klanten boodschappen"
+msgstr ""
 
 #: c:\providence/app/conf/navigation.conf:2753
 #: c:\providence/app/conf/navigation.conf:2807
@@ -1663,9 +1637,8 @@ msgid "Messages"
 msgstr "Berichten"
 
 #: c:\providence/app/conf/navigation.conf:2768
-#, fuzzy
 msgid "Sales orders"
-msgstr "Verkoopsbestelling"
+msgstr "Verkoopsbestellingen"
 
 #: c:\providence/app/conf/navigation.conf:2776
 #: c:\providence/app/conf/navigation.conf:2846
@@ -1675,9 +1648,8 @@ msgid "List"
 msgstr "Lijst"
 
 #: c:\providence/app/conf/navigation.conf:2795
-#, fuzzy
 msgid "Library communications"
-msgstr "communicaties"
+msgstr "Bibliotheekcommunicaties"
 
 #: c:\providence/app/conf/navigation.conf:2822
 #: c:\providence/themes/default/views/client/library/checkout_html.php:55
@@ -1690,29 +1662,25 @@ msgid "Check-in"
 msgstr "Check-in"
 
 #: c:\providence/app/conf/navigation.conf:2838
-#, fuzzy
 msgid "Manage loans"
-msgstr "Beheer weergaves"
+msgstr "Beheer bruiklenen"
 
 #: c:\providence/app/conf/navigation.conf:2855
-#, fuzzy
 msgid "Calendar"
-msgstr "Start"
+msgstr "Kalender"
 
 #: c:\providence/app/conf/navigation.conf:2867
-#, fuzzy
 msgid "Order editor"
-msgstr "Bestellingsgeschiedenis"
+msgstr ""
 
 #: c:\providence/app/conf/navigation.conf:2878
 #: c:\providence/app/conf/navigation.conf:3021
-#, fuzzy
 msgid "Overview"
-msgstr "Bruikleen overzicht"
+msgstr "Overzicht"
 
 #: c:\providence/app/conf/navigation.conf:2894
 msgid "Customer &amp; sale info"
-msgstr ""
+msgstr "Klant &amp; verkoopsinfo"
 
 #: c:\providence/app/conf/navigation.conf:2908
 #: c:\providence/app/conf/navigation.conf:3051
@@ -1729,15 +1697,13 @@ msgstr "Bijkomende kosten"
 
 #: c:\providence/app/conf/navigation.conf:2938
 #: c:\providence/app/conf/navigation.conf:3081
-#, fuzzy
 msgid "Shipping details"
-msgstr "Verzendnota's"
+msgstr "Verzendgegevens"
 
 #: c:\providence/app/conf/navigation.conf:2953
 #: c:\providence/app/conf/navigation.conf:3096
-#, fuzzy
 msgid "Payment"
-msgstr "Betaalmethode"
+msgstr "Betaling"
 
 #: c:\providence/app/conf/navigation.conf:2968
 #: c:\providence/app/conf/navigation.conf:3111
@@ -1752,12 +1718,10 @@ msgid "Fulfillment events"
 msgstr "Circulatie gebeurtenissen"
 
 #: c:\providence/app/conf/navigation.conf:3010
-#, fuzzy
 msgid "Loan editor"
-msgstr "Geleend aan"
+msgstr "Bruikleen-editor"
 
 #: c:\providence/app/conf/navigation.conf:3037
-#, fuzzy
 msgid "Customer info"
 msgstr "Klant informatie"
 
@@ -1789,26 +1753,22 @@ msgid "Settings"
 msgstr "Instellingen"
 
 #: c:\providence/app/conf/navigation.conf:3174
-#, fuzzy
 msgid "Data"
-msgstr "Datatype"
+msgstr "Data"
 
 #: c:\providence/app/conf/navigation.conf:3181
-#, fuzzy
 msgid "Importer list"
-msgstr "Importers"
+msgstr "Importer lijst"
 
 #: c:\providence/app/conf/navigation.conf:3195
-#, fuzzy
 msgid "Run import"
-msgstr "importeren"
+msgstr "Voer import uit"
 
 #: c:\providence/app/conf/user_actions.conf:7
 msgid "System administration"
 msgstr "Systeembeheer"
 
 #: c:\providence/app/conf/user_actions.conf:8
-#, fuzzy
 msgid ""
 "Actions required for general administration of the system. Only trusted "
 "administrative users should have access to these actions."
@@ -1916,15 +1876,16 @@ msgstr ""
 "voor alle gebruikers"
 
 #: c:\providence/app/conf/user_actions.conf:55
-#, fuzzy
 msgid "Administrate sets"
-msgstr "Rapporten administrator"
+msgstr "Beheren van sets"
 
 #: c:\providence/app/conf/user_actions.conf:56
 msgid ""
 "Allow user view, edit and delete all sets regardless of ownership or access "
 "control"
 msgstr ""
+"Laat gebruikers toe om alle sets te bekijken, te bewerken en te verwijderen, "
+"ongeacht het eigendom of de toegangscontrole"
 
 #: c:\providence/app/conf/user_actions.conf:59
 msgid "Initiate search reindexing"
@@ -1935,29 +1896,29 @@ msgid "Allow user recreate system search indicies"
 msgstr "Sta gebruiker toe om zoekindexen te herindexeren"
 
 #: c:\providence/app/conf/user_actions.conf:66
-#, fuzzy
 msgid "Client interaction"
-msgstr "Twitter integratie"
+msgstr "Klantinteractie"
 
 #: c:\providence/app/conf/user_actions.conf:67
-#, fuzzy
 msgid ""
 "Actions required for interaction with clients or customers. Only users to "
 "handle client interactions/orders should have access to these actions."
 msgstr ""
-"Benodigde acties voor algemeen beheer van het systeem. Enkel betrouwbare "
-"administratieve gebruikers zouden toegang mogen krijgen tot deze acties."
+"Benodigde acties voor interactie met klanten. Enkel gebruikers die "
+"interacties of bestellingen met de klant mogen behandelen mogen toegang "
+"krijgen tot deze acties."
 
 #: c:\providence/app/conf/user_actions.conf:70
-#, fuzzy
 msgid "Can manage clients"
-msgstr "Inhoudsbeheer"
+msgstr "Kan klanten beheren"
 
 #: c:\providence/app/conf/user_actions.conf:71
 msgid ""
 "Indicates user is allowed to communicate with clients and manage their "
 "orders and requests."
 msgstr ""
+"Geeft aan dat de gebruiker is toegestaan ​​om te communiceren met klanten en "
+"om hun bestellingen en verzoeken te beheren."
 
 #: c:\providence/app/conf/user_actions.conf:77
 msgid "Searching and browsing"
@@ -1977,62 +1938,54 @@ msgstr ""
 "Laat gebruiker toe om Snel Zoeken interface te gebruiken om items te vinden"
 
 #: c:\providence/app/conf/user_actions.conf:88
-#, fuzzy
 msgid "Media import"
-msgstr "data import"
+msgstr "Media import"
 
 #: c:\providence/app/conf/user_actions.conf:89
-#, fuzzy
 msgid "Actions allowing batch import of media."
-msgstr "Acties betreffende moderatie van gebruikersgegenereerde inhoud."
+msgstr "Acties die toelaten om media in batch te importeren."
 
 #: c:\providence/app/conf/user_actions.conf:92
 #: c:\providence/app/controllers/batch/MediaImportController.php:307
 #: c:\providence/app/helpers/displayHelpers.php:1527
 msgid "Batch import media"
-msgstr "Importeer media in bulk"
+msgstr "Importeer media in batch"
 
 #: c:\providence/app/conf/user_actions.conf:93
-#, fuzzy
 msgid "Allow user to import folders of media"
-msgstr "Gebruiker toelaten om rapportsjablonen te verwijderen"
+msgstr "Sta gebruiker toe om mappen met media te importeren"
 
 #: c:\providence/app/conf/user_actions.conf:96
-#, fuzzy
 msgid "Batch import data"
-msgstr "Importeer media in bulk"
+msgstr "Importeer data in batch"
 
 #: c:\providence/app/conf/user_actions.conf:97
-#, fuzzy
 msgid "Allow user to data in various formats"
-msgstr "Gebruiker toelaten om rapportsjablonen te verwijderen"
+msgstr "Sta gebruiker om data in verschillende formaten te gebruiken"
 
 #: c:\providence/app/conf/user_actions.conf:102
-#, fuzzy
 msgid "Batch export"
-msgstr "Exporteer metadata in bulk"
+msgstr "Exporteer in batch"
 
 #: c:\providence/app/conf/user_actions.conf:103
-#, fuzzy
 msgid "Actions allowing batch export of records."
-msgstr ""
-"Acties betreffende het aanmaken, bewerken en verwijderen van rondleidingen."
+msgstr "Acties die toelaten om records in batch te exporteren."
 
 #: c:\providence/app/conf/user_actions.conf:106
 #: c:\providence/app/helpers/displayHelpers.php:1554
 msgid "Batch export metadata"
-msgstr "Exporteer metadata in bulk"
+msgstr "Exporteer metadata in batch"
 
 #: c:\providence/app/conf/user_actions.conf:107
-#, fuzzy
 msgid ""
 "Allow user to create export mappings and export arbitrary sets of records."
-msgstr "Sta gebruiker toe om eigen geavanceerde zoekformulieren aan te maken"
+msgstr ""
+"Sta gebruiker toe om export mappings aan te maken en om willekeurige "
+"recordsets te exporteren"
 
 #: c:\providence/app/conf/user_actions.conf:113
-#, fuzzy
 msgid "Personalization"
-msgstr "Visualisatie"
+msgstr "Personalisering"
 
 #: c:\providence/app/conf/user_actions.conf:114
 msgid "Actions allowing personalization of the user's environment."
@@ -2146,9 +2099,8 @@ msgstr ""
 "data"
 
 #: c:\providence/app/conf/user_actions.conf:168
-#, fuzzy
 msgid "Create sets"
-msgstr "Maak set aan"
+msgstr "Maak sets aan"
 
 #: c:\providence/app/conf/user_actions.conf:169
 msgid "Allow user to create their own sets objects or authority items"
@@ -2177,15 +2129,12 @@ msgstr ""
 "Sta gebruiker toe om sets waarvoor deze toegangsrechten heeft te verwijderen"
 
 #: c:\providence/app/conf/user_actions.conf:180
-#, fuzzy
 msgid "Delete own sets and set content"
-msgstr "Verwijder sets en setinhoud"
+msgstr "Verwijder eigen sets en setinhoud"
 
 #: c:\providence/app/conf/user_actions.conf:181
-#, fuzzy
 msgid "Allow user to delete sets which they created"
-msgstr ""
-"Sta gebruiker toe om sets waarvoor deze toegangsrechten heeft te verwijderen"
+msgstr "Sta gebruiker toe om sets te verwijderen die hij zelf aanmaakte"
 
 #: c:\providence/app/conf/user_actions.conf:184
 msgid "View sets"
@@ -2238,18 +2187,16 @@ msgid "Actions allowing creation, editing and deletion of objects."
 msgstr "Acties betreffende het aanmaken, bewerken en verwijderen van objecten."
 
 #: c:\providence/app/conf/user_actions.conf:214
-#, fuzzy
 msgid "Create object"
-msgstr "Nieuw lot aanmaken"
+msgstr "Maak object aan"
 
 #: c:\providence/app/conf/user_actions.conf:215
 msgid "Allow user to create new objects"
 msgstr "Sta gebruiker toe om nieuwe objecten aan te maken"
 
 #: c:\providence/app/conf/user_actions.conf:218
-#, fuzzy
 msgid "Edit object"
-msgstr "Object lot bewerken"
+msgstr "Bewerk object"
 
 #: c:\providence/app/conf/user_actions.conf:219
 msgid "Allow user to edit existing objects"
@@ -2300,14 +2247,12 @@ msgid "Allow user to duplicate objects"
 msgstr "Sta gebruiker toe om objecten te kopiëren"
 
 #: c:\providence/app/conf/user_actions.conf:242
-#, fuzzy
 msgid "Export objects"
-msgstr "Exporteer de inhoud"
+msgstr "Exporteer objecten"
 
 #: c:\providence/app/conf/user_actions.conf:243
-#, fuzzy
 msgid "Allow user to export objects"
-msgstr "Sta gebruiker toe om objecten te verwijderen"
+msgstr "Sta gebruiker toe om objecten te exporteren"
 
 #: c:\providence/app/conf/user_actions.conf:246
 #: c:\providence/app/conf/user_actions.conf:293
@@ -2325,9 +2270,8 @@ msgid "Change type"
 msgstr "Wijzig type"
 
 #: c:\providence/app/conf/user_actions.conf:247
-#, fuzzy
 msgid "Allow user to change types of existing objects"
-msgstr "Sta gebruiker toe om bestaande objecten te bewerken"
+msgstr "Sta gebruiker toe om types te veranderen van bestaande objecten"
 
 #: c:\providence/app/conf/user_actions.conf:250
 #: c:\providence/app/conf/user_actions.conf:297
@@ -2340,25 +2284,22 @@ msgstr "Sta gebruiker toe om bestaande objecten te bewerken"
 #: c:\providence/app/conf/user_actions.conf:638
 #: c:\providence/app/conf/user_actions.conf:689
 #: c:\providence/app/conf/user_actions.conf:740
-#, fuzzy
 msgid "Manage access control lists"
-msgstr "lijsten toegangsregels"
+msgstr "Beheer lijsten toegangscontrole"
 
 #: c:\providence/app/conf/user_actions.conf:251
-#, fuzzy
 msgid "Allow user to manage access control lists for objects"
-msgstr "Gebruiker toelaten om wijzigingenlogboek van objecten te bekijken"
+msgstr ""
+"Sta gebruiker toe om lijsten voor toegangscontrole voor objecten te beheren"
 
 #: c:\providence/app/conf/user_actions.conf:254
 #: c:\providence/app/conf/user_actions.conf:744
-#, fuzzy
 msgid "Batch edit objects"
-msgstr "Gerelateerde objecten"
+msgstr "Objecten in batch bewerken"
 
 #: c:\providence/app/conf/user_actions.conf:255
-#, fuzzy
 msgid "Allow user to edit batches of objects"
-msgstr "Sta gebruiker toe om bestaande objecten te bewerken"
+msgstr "Sta gebruiker toe om objecten in batch te bewerken"
 
 #: c:\providence/app/conf/user_actions.conf:261
 msgid "Object representation editing"
@@ -2392,9 +2333,8 @@ msgid "Delete object representation"
 msgstr "Verwijder objectweergave"
 
 #: c:\providence/app/conf/user_actions.conf:274
-#, fuzzy
 msgid "Allow user to delete object representations"
-msgstr "Gebruiker toelaten om objectrepresentaties te kopiëren"
+msgstr "Sta gebruikers toe om objectrepresentaties te verwijderen"
 
 #: c:\providence/app/conf/user_actions.conf:277
 msgid "Search object representations"
@@ -2421,119 +2361,104 @@ msgid "Allow user to duplicate object representations"
 msgstr "Gebruiker toelaten om objectrepresentaties te kopiëren"
 
 #: c:\providence/app/conf/user_actions.conf:289
-#, fuzzy
 msgid "Export object representations"
-msgstr "Bewerk objectweergave"
+msgstr "Exporteer objectrepresentaties"
 
 #: c:\providence/app/conf/user_actions.conf:290
-#, fuzzy
 msgid "Allow user to export object representations"
-msgstr "Sta gebruiker toe om objectweergaves te zoeken"
+msgstr "Sta gebruiker toe om objectrepresentaties te exporteren"
 
 #: c:\providence/app/conf/user_actions.conf:294
-#, fuzzy
 msgid "Allow user to change types of existing object representations"
-msgstr "Gebruiker toelaten om bestaande objectweergaves aan te passen"
+msgstr ""
+"Sta gebruiker toe om types te veranderen van bestaande objectrepresentaties"
 
 #: c:\providence/app/conf/user_actions.conf:298
-#, fuzzy
 msgid "Allow user to manage access control lists for object representations"
-msgstr "Gebruiker toelaten om nieuwe objectweergaves aan te maken"
+msgstr ""
+"Sta gebruiker toe om lijsten voor toegangscontrole te beheren voor "
+"objectrepresentaties"
 
 #: c:\providence/app/conf/user_actions.conf:301
-#, fuzzy
 msgid "Batch edit object representations"
-msgstr "Bewerk objectweergave"
+msgstr "Objectrepresentaties in batch bewerken"
 
 #: c:\providence/app/conf/user_actions.conf:302
-#, fuzzy
 msgid "Allow user to edit batches of object representations"
-msgstr "Sta gebruiker toe om objectweergaves te zoeken"
+msgstr "Sta gebruiker toe om objectrepresentaties in batch te bewerken"
 
 #: c:\providence/app/conf/user_actions.conf:308
-#, fuzzy
 msgid "Representation annotation editing"
-msgstr "Voorstelling aantekeningen"
+msgstr "Voorstelling aantekeningen bewerken "
 
 #: c:\providence/app/conf/user_actions.conf:309
-#, fuzzy
 msgid ""
 "Actions allowing creation, editing and deletion of annotation on object "
 "representations."
 msgstr ""
-"Acties betreffende het aanmaken, bewerken en verwijderen van "
-"objectvoorstellingen."
+"Acties betreffende het aanmaken, bewerken en verwijderen van aantekeningen "
+"op objectvoorstellingen."
 
 #: c:\providence/app/conf/user_actions.conf:312
-#, fuzzy
 msgid "Create representation annotations"
-msgstr "aantekening op voorstelling"
+msgstr "Maak aantekeningen voor voorstelling"
 
 #: c:\providence/app/conf/user_actions.conf:313
-#, fuzzy
 msgid "Allow user to create new representation annotations"
-msgstr "Gebruiker toelaten om nieuwe objectweergaves aan te maken"
+msgstr ""
+"Gebruiker toelaten om nieuwe aantekeningen voor voorstellingen aan te maken"
 
 #: c:\providence/app/conf/user_actions.conf:316
-#, fuzzy
 msgid "Edit representation annotations"
-msgstr "aantekening op voorstelling"
+msgstr "Bewerk aantekening op voorstelling"
 
 #: c:\providence/app/conf/user_actions.conf:317
-#, fuzzy
 msgid "Allow user to edit existing representation annotations"
-msgstr "Gebruiker toelaten om bestaande objectweergaves aan te passen"
+msgstr ""
+"Gebruiker toelaten om bestaande representatie aantekeningen aan te passen"
 
 #: c:\providence/app/conf/user_actions.conf:320
-#, fuzzy
 msgid "Delete representation annotations"
-msgstr "aantekening op voorstelling"
+msgstr "Verwijder representatie aantekeningen"
 
 #: c:\providence/app/conf/user_actions.conf:321
-#, fuzzy
 msgid "Allow user to delete representation annotations"
-msgstr "Gebruiker toelaten om rapportsjablonen te verwijderen"
+msgstr "Sta gebruiker toe om representatie aantekeningen te verwijderen"
 
 #: c:\providence/app/conf/user_actions.conf:324
-#, fuzzy
 msgid "Search representation annotations"
-msgstr "aantekening op voorstelling"
+msgstr "Doorzoek aantekeningen op representaties"
 
 #: c:\providence/app/conf/user_actions.conf:325
-#, fuzzy
 msgid "Allow user to search representation annotations"
-msgstr "Sta gebruiker toe om objectweergaves te zoeken"
+msgstr "Sta gebruiker toe om aantekeningen op representaties te doorzoeken"
 
 #: c:\providence/app/conf/user_actions.conf:328
-#, fuzzy
 msgid "Browse representation annotations"
-msgstr "aantekening op voorstelling"
+msgstr "Verken aantekeningen op representaties"
 
 #: c:\providence/app/conf/user_actions.conf:329
-#, fuzzy
 msgid "Allow user to browse representation annotations"
-msgstr "Sta gebruiker toe om objectweergaves te verkennen"
+msgstr "Sta gebruiker toe om aantekeningen op represenaties te verkennen"
 
 #: c:\providence/app/conf/user_actions.conf:332
-#, fuzzy
 msgid "Duplicate representation annotations"
-msgstr "aantekening op voorstelling"
+msgstr "Kopieer aantekeningen op representaties"
 
 #: c:\providence/app/conf/user_actions.conf:333
-#, fuzzy
 msgid "Allow user to duplicate representation annotations"
-msgstr "Gebruiker toelaten om objectrepresentaties te kopiëren"
+msgstr "Sta gebruiker toe om aantekeningen op representaties te kopiëren"
 
 #: c:\providence/app/conf/user_actions.conf:337
-#, fuzzy
 msgid ""
 "Allow user to manage access control lists for representation annotations"
-msgstr "Sta gebruiker toe om objectweergaves te zoeken"
+msgstr ""
+"Sta gebruiker toe om lijsten voor toegangscontrole op aantekeningen voor "
+"representaties te beheren"
 
 #: c:\providence/app/conf/user_actions.conf:343
-#, fuzzy
 msgid "Object lot editing"
-msgstr "Beheer van objecten"
+msgstr "Bewerk objectenlot "
 
 #: c:\providence/app/conf/user_actions.conf:344
 msgid "Actions allowing creation, editing and deletion of object lots."
@@ -2589,46 +2514,41 @@ msgid "Allow user to duplicate object lots"
 msgstr "Sta gebruiker toe om object lots te kopiëren"
 
 #: c:\providence/app/conf/user_actions.conf:371
-#, fuzzy
 msgid "Export object lots"
-msgstr "Object lot bewerken"
+msgstr "Exporteer objectloten"
 
 #: c:\providence/app/conf/user_actions.conf:372
-#, fuzzy
 msgid "Allow user to export object lots"
-msgstr "Sta gebruiker toe om object lots te verwijderen"
+msgstr "Sta gebruiker toe om objectloten te exporteren"
 
 #: c:\providence/app/conf/user_actions.conf:375
-#, fuzzy
 msgid "Quick add object lots"
-msgstr "Kopieer object lots"
+msgstr "Voeg snel objectloten toe"
 
 #: c:\providence/app/conf/user_actions.conf:376
-#, fuzzy
 msgid ""
 "Allow user to add object lots not already present while creating "
 "relationships"
-msgstr "object lot ⇔ objectvoorstelling relaties"
+msgstr ""
+"Sta gebruiker toe om objectenloten die nog niet aanwezig waren toe te voegen "
+"door relaties aan te maken"
 
 #: c:\providence/app/conf/user_actions.conf:380
-#, fuzzy
 msgid "Allow user to change types of existing object lots"
-msgstr "Gebruiker toelaten om bestaande object lots aan te passen"
+msgstr "Sta gebruiker toe om types van bestaanden objectloten te wijzigen"
 
 #: c:\providence/app/conf/user_actions.conf:384
-#, fuzzy
 msgid "Allow user to manage access control lists for object lots"
-msgstr "Gebruiker toelaten om object lots aan te maken"
+msgstr ""
+"Sta gebruiker toe om lijsten van toegangscontrole te beheren voor objectloten"
 
 #: c:\providence/app/conf/user_actions.conf:387
-#, fuzzy
 msgid "Batch edit object lots"
-msgstr "Object lot bewerken"
+msgstr "Objectloten in batch bewerken"
 
 #: c:\providence/app/conf/user_actions.conf:388
-#, fuzzy
 msgid "Allow user to edit batches of object lots"
-msgstr "Gebruiker toelaten om bestaande object lots aan te passen"
+msgstr "Sta gebruiker toe om objectloten in batch te bewerken"
 
 #: c:\providence/app/conf/user_actions.conf:394
 msgid "Entity authority editing"
@@ -2640,9 +2560,8 @@ msgstr ""
 "Acties betreffende het aanmaken, bewerken en verwijderen van entiteiten."
 
 #: c:\providence/app/conf/user_actions.conf:398
-#, fuzzy
 msgid "Create entity"
-msgstr "Entiteit aangemaakt"
+msgstr "Maak entiteit aan"
 
 #: c:\providence/app/conf/user_actions.conf:399
 msgid "Allow user to create new entities"
@@ -2654,7 +2573,7 @@ msgstr "Entiteit bewerken"
 
 #: c:\providence/app/conf/user_actions.conf:403
 msgid "Allow user to edit existing entities"
-msgstr "Sta gebruiker toe om betaanden entiteiten te wijzigen"
+msgstr "Sta gebruiker toe om bestaanden entiteiten te wijzigen"
 
 #: c:\providence/app/conf/user_actions.conf:406
 msgid "Delete entity"
@@ -2681,56 +2600,48 @@ msgid "Allow user to browse entities"
 msgstr "Sta gebruiker toe om entiteiten te verkennen"
 
 #: c:\providence/app/conf/user_actions.conf:418
-#, fuzzy
 msgid "Duplicate entities"
-msgstr "Kopieer items?"
+msgstr "Kopieer entiteiten"
 
 #: c:\providence/app/conf/user_actions.conf:419
 msgid "Allow user to duplicate entities"
 msgstr "Sta gebruiker toe om entiteiten te kopiëren"
 
 #: c:\providence/app/conf/user_actions.conf:422
-#, fuzzy
 msgid "Export entities"
-msgstr "Splitst entiteiten"
+msgstr "Exporteer entiteiten"
 
 #: c:\providence/app/conf/user_actions.conf:423
-#, fuzzy
 msgid "Allow user to export entities"
-msgstr "Sta gebruiker toe om entiteiten te verwijderen"
+msgstr "Sta gebruiker toe om entiteiten te exporteren"
 
 #: c:\providence/app/conf/user_actions.conf:426
-#, fuzzy
 msgid "Quick add entities"
-msgstr "Quick Add %1"
+msgstr "Voeg snel entiteiten toe"
 
 #: c:\providence/app/conf/user_actions.conf:427
-#, fuzzy
 msgid ""
 "Allow user to add entities not already present while creating relationships"
-msgstr "Gebruiker toelaten om bestaande objectweergaves aan te passen"
+msgstr ""
+"Sta gebruiker toe om entiteiten die nog niet aanwezig waren toe te voegen "
+"door relaties aan te maken"
 
 #: c:\providence/app/conf/user_actions.conf:431
-#, fuzzy
 msgid "Allow user to change types of existing entities"
-msgstr "Sta gebruiker toe om betaanden entiteiten te wijzigen"
+msgstr "Sta gebruiker toe om types van bestaande entiteiten te veranderen"
 
 #: c:\providence/app/conf/user_actions.conf:435
-#, fuzzy
 msgid "Allow user to manage access control lists for entities"
 msgstr ""
-"Gebruiker toelaten om een nieuwe plaats toe te voegen aan de entiteiten-"
-"authoriteit"
+"Sta gebruiker toe om lijsten met toegangscontrole te beheren voor entiteiten"
 
 #: c:\providence/app/conf/user_actions.conf:438
-#, fuzzy
 msgid "Batch edit entities"
-msgstr "Gerelateerde entiteiten"
+msgstr "Bewerk entiteiten in batch"
 
 #: c:\providence/app/conf/user_actions.conf:439
-#, fuzzy
 msgid "Allow user to edit batches of entities"
-msgstr "Sta gebruiker toe om betaanden entiteiten te wijzigen"
+msgstr "Sta gebruiker toe om entiteiten in batch te bewerken"
 
 #: c:\providence/app/conf/user_actions.conf:445
 msgid "Place authority editing"
@@ -2741,7 +2652,6 @@ msgid "Actions allowing creation, editing and deletion of places."
 msgstr "Acties betreffende het aanmaken, bewerken en verwijderen van plaatsen."
 
 #: c:\providence/app/conf/user_actions.conf:449
-#, fuzzy
 msgid "Create place"
 msgstr "Maak plaats aan"
 
@@ -2750,9 +2660,8 @@ msgid "Allow user to create new places"
 msgstr "Sta gebruiker toe om nieuwe plaatsen aan te maken"
 
 #: c:\providence/app/conf/user_actions.conf:453
-#, fuzzy
 msgid "Edit place"
-msgstr "Bewerk leningen"
+msgstr "Bewerk plaats"
 
 #: c:\providence/app/conf/user_actions.conf:454
 msgid "Allow user to edit existing places"
@@ -2783,54 +2692,48 @@ msgid "Allow user to browse places"
 msgstr "Sta gebruiker toe om plaatsen te verkennen"
 
 #: c:\providence/app/conf/user_actions.conf:469
-#, fuzzy
 msgid "Duplicate places"
-msgstr "Kopieer plaatsingen?"
+msgstr "Kopieer plaatsen"
 
 #: c:\providence/app/conf/user_actions.conf:470
 msgid "Allow user to duplicate places"
 msgstr "Sta gebruiker toe om plaatsen te kopiëren"
 
 #: c:\providence/app/conf/user_actions.conf:473
-#, fuzzy
 msgid "Export places"
-msgstr "Splitst plaatsen"
+msgstr "Exporteer plaatsen"
 
 #: c:\providence/app/conf/user_actions.conf:474
-#, fuzzy
 msgid "Allow user to export places"
-msgstr "Sta gebruiker toe om plaatsen te verwijderen"
+msgstr "Sta gebruiker toe om plaatsen te exporteren"
 
 #: c:\providence/app/conf/user_actions.conf:477
-#, fuzzy
 msgid "Quick add places"
-msgstr "Quick Add %1"
+msgstr "Voeg snel plaatsen toe"
 
 #: c:\providence/app/conf/user_actions.conf:478
-#, fuzzy
 msgid ""
 "Allow user to add places not already present while creating relationships"
-msgstr "Gebruiker toelaten om objectrepresentaties te kopiëren"
+msgstr ""
+"Sta gebruiker toe om plaatsen die nog niet aanwezig waren toe te voegen door "
+"relaties aan te maken"
 
 #: c:\providence/app/conf/user_actions.conf:482
-#, fuzzy
 msgid "Allow user to change types of existing places"
-msgstr "Sta gebruiker toe om bestaande plaatsen te bewerken"
+msgstr "Sta gebruiker toe om types van bestaande plaatsen te veranderen"
 
 #: c:\providence/app/conf/user_actions.conf:486
-#, fuzzy
 msgid "Allow user to manage access control lists for places"
-msgstr "Sta gebruiker toe om bestaande plaatsen te bewerken"
+msgstr ""
+"Sta gebruiker toe om lijsten van toegangscontrole te beheren voor plaatsen"
 
 #: c:\providence/app/conf/user_actions.conf:489
-#, fuzzy
 msgid "Batch edit places"
-msgstr "Bewerk in bulk"
+msgstr "Plaatsen in batch bewerken"
 
 #: c:\providence/app/conf/user_actions.conf:490
-#, fuzzy
 msgid "Allow user to edit batches of places"
-msgstr "Sta gebruiker toe om bestaande plaatsen te bewerken"
+msgstr "Sta gebruiker toe om plaatsen in batch te bewerken"
 
 #: c:\providence/app/conf/user_actions.conf:496
 msgid "Occurrence-based authority editing"
@@ -2845,9 +2748,8 @@ msgstr ""
 "gebeurtenisgebaseerde (gebruikersgedefinieerde) autoriteiten."
 
 #: c:\providence/app/conf/user_actions.conf:500
-#, fuzzy
 msgid "Create occurrence"
-msgstr "Gerelateerde gebeurtenissen"
+msgstr "Maak gebeurtenis aan"
 
 #: c:\providence/app/conf/user_actions.conf:501
 msgid "Allow user to create new occurrences"
@@ -2878,64 +2780,59 @@ msgid "Allow user to search occurrences"
 msgstr "Sta gebruiker toe om gebeurtenissen te zoeken"
 
 #: c:\providence/app/conf/user_actions.conf:516
-#, fuzzy
 msgid "Browse occurrences"
-msgstr "gebeurtenissen"
+msgstr "Doorblader gebeurtenissen"
 
 #: c:\providence/app/conf/user_actions.conf:517
 msgid "Allow user to browse occurrences"
 msgstr "Sta gebruiker toe om gebeurtenissen te verkennen"
 
 #: c:\providence/app/conf/user_actions.conf:520
-#, fuzzy
 msgid "Duplicate occurrences"
-msgstr "Splitst gebeurtenissen"
+msgstr "Kopieer gebeurtenissen"
 
 #: c:\providence/app/conf/user_actions.conf:521
 msgid "Allow user to duplicate occurrences"
 msgstr "Sta gebruiker toe om gebeurtenissen te kopiëren"
 
 #: c:\providence/app/conf/user_actions.conf:524
-#, fuzzy
 msgid "Export occurrences"
-msgstr "Bewerk gebeurtenis"
+msgstr "Exporteer gebeurtenissen"
 
 #: c:\providence/app/conf/user_actions.conf:525
-#, fuzzy
 msgid "Allow user to export occurrences"
-msgstr "Sta gebruiker toe om gebeurtenissen te verwijderen"
+msgstr "Sta gebruiker toe om gebeurtenissen te exporteren"
 
 #: c:\providence/app/conf/user_actions.conf:528
-#, fuzzy
 msgid "Quick add occurrences"
-msgstr "Gerelateerde gebeurtenissen"
+msgstr "Voeg snel gebeurtenissen toe"
 
 #: c:\providence/app/conf/user_actions.conf:529
-#, fuzzy
 msgid ""
 "Allow user to add occurrences not already present while creating "
 "relationships"
-msgstr "bestelling item ⇔ objectvoorstelling relaties"
+msgstr ""
+"Sta gebruiker toe om gebeurtenissen die nog niet aanwezig waren toe te "
+"voegen door het aanmaken van een relatie"
 
 #: c:\providence/app/conf/user_actions.conf:533
-#, fuzzy
 msgid "Allow user to change types of existing occurrences"
-msgstr "Sta gebruiker toe om bestaande gebeurtenissen te bewerken"
+msgstr ""
+"Sta gebruiker toe om het type van bestaande gebeurtenissen te veranderen"
 
 #: c:\providence/app/conf/user_actions.conf:537
-#, fuzzy
 msgid "Allow user to manage access control lists for occurrences"
-msgstr "Sta gebruiker toe om nieuwe gebeurtenissen aan te maken"
+msgstr ""
+"Sta gebruiker toe om lijsten met toegangscontrole te beheren voor "
+"gebeurtenissen"
 
 #: c:\providence/app/conf/user_actions.conf:540
-#, fuzzy
 msgid "Batch edit occurrences"
-msgstr "Gerelateerde gebeurtenissen"
+msgstr "Gebeurtenissen in batch bewerken"
 
 #: c:\providence/app/conf/user_actions.conf:541
-#, fuzzy
 msgid "Allow user to edit batches of occurrences"
-msgstr "Sta gebruiker toe om bestaande gebeurtenissen te bewerken"
+msgstr "Sta gebruiker toe om gebeurtenissen in batch te bewerken"
 
 #: c:\providence/app/conf/user_actions.conf:547
 msgid "Collection authority editing"
@@ -2947,18 +2844,16 @@ msgstr ""
 "Acties betreffende het aanmaken, bewerken en verwijderen van collecties."
 
 #: c:\providence/app/conf/user_actions.conf:551
-#, fuzzy
 msgid "Create collection"
-msgstr "Gerelateerde collecties"
+msgstr "Maak collectie aan"
 
 #: c:\providence/app/conf/user_actions.conf:552
 msgid "Allow user to create new collections"
 msgstr "Sta gebruiker toe om nieuwe collecties aan te maken"
 
 #: c:\providence/app/conf/user_actions.conf:555
-#, fuzzy
 msgid "Edit collection"
-msgstr "Collectie bewerken"
+msgstr "Bewerk collectie"
 
 #: c:\providence/app/conf/user_actions.conf:556
 msgid "Allow user to edit existing collections"
@@ -2989,55 +2884,47 @@ msgid "Allow user to browse collections"
 msgstr "Sta gebruiker toe om collecties te verkennen"
 
 #: c:\providence/app/conf/user_actions.conf:571
-#, fuzzy
 msgid "Duplicate collections"
-msgstr "Splitst collecties"
+msgstr "Kopieer collecties"
 
 #: c:\providence/app/conf/user_actions.conf:572
 msgid "Allow user to duplicate collections"
 msgstr "Sta gebruiker toe om collecties te kopiëren"
 
 #: c:\providence/app/conf/user_actions.conf:575
-#, fuzzy
 msgid "Export collections"
-msgstr "Splitst collecties"
+msgstr "Exporteer collecties"
 
 #: c:\providence/app/conf/user_actions.conf:576
-#, fuzzy
 msgid "Allow user to export collections"
-msgstr "Sta gebruiker toe om collecties te verwijderen"
+msgstr "Sta gebruiker toe om collecties te exporteren"
 
 #: c:\providence/app/conf/user_actions.conf:579
-#, fuzzy
 msgid "Quick add collections"
-msgstr "Gerelateerde collecties"
+msgstr "Voeg snel collecties toe"
 
 #: c:\providence/app/conf/user_actions.conf:580
-#, fuzzy
 msgid ""
 "Allow user to add collections not already present while creating "
 "relationships"
-msgstr "Gebruiker toelaten om bestaande objectweergaves aan te passen"
+msgstr "Sta gebruiker toe om "
 
 #: c:\providence/app/conf/user_actions.conf:584
-#, fuzzy
 msgid "Allow user to change types of existing collections"
-msgstr "Sta gebruiker toe om bestaande collecties te bewerken"
+msgstr "Sta gebruiker toe om types van bestaande collecties te veranderen"
 
 #: c:\providence/app/conf/user_actions.conf:588
-#, fuzzy
 msgid "Allow user to manage access control lists for collections"
-msgstr "Sta gebruiker toe om nieuwe collecties aan te maken"
+msgstr ""
+"Sta gebruiker toe om lijsten van toegangscontrole te beheren voor collecties"
 
 #: c:\providence/app/conf/user_actions.conf:591
-#, fuzzy
 msgid "Batch edit collections"
-msgstr "Gerelateerde collecties"
+msgstr "Collecties in batch bewerken"
 
 #: c:\providence/app/conf/user_actions.conf:592
-#, fuzzy
 msgid "Allow user to edit batches of collections"
-msgstr "Sta gebruiker toe om bestaande collecties te bewerken"
+msgstr "Sta gebruiker toe om collecties in batch te bewerken"
 
 #: c:\providence/app/conf/user_actions.conf:598
 msgid "Storage location authority editing"
@@ -3049,18 +2936,16 @@ msgstr ""
 "Acties betreffende het aanmaken, bewerken en verwijderen van opslaglocaties."
 
 #: c:\providence/app/conf/user_actions.conf:602
-#, fuzzy
 msgid "Create storage locations"
-msgstr "Opslagplaats aangemaakt"
+msgstr "Maak bewaarplaatsen aan"
 
 #: c:\providence/app/conf/user_actions.conf:603
 msgid "Allow user to create new storage locations"
 msgstr "Sta gebruiker toe om nieuwe opslaglocaties aan te maken"
 
 #: c:\providence/app/conf/user_actions.conf:606
-#, fuzzy
 msgid "Edit storage locations"
-msgstr "Opslaglocatie bewerken"
+msgstr "Bewerk bewaarplaatsen"
 
 #: c:\providence/app/conf/user_actions.conf:607
 msgid "Allow user to edit existing storage locations"
@@ -3099,60 +2984,54 @@ msgid "Allow user to duplicate storage locations"
 msgstr "Sta gebruiker toe om opslaglocaties te kopiëren"
 
 #: c:\providence/app/conf/user_actions.conf:626
-#, fuzzy
 msgid "Export storage locations"
-msgstr "Splitst opslagplaatsen"
+msgstr "Exporteer opslagplaatsen"
 
 #: c:\providence/app/conf/user_actions.conf:627
-#, fuzzy
 msgid "Allow user to export storage locations"
-msgstr "Sta gebruiker toe om opslaglocaties te verwijderen"
+msgstr "Sta gebruiker toe om opslagplaatsen te exporteren"
 
 #: c:\providence/app/conf/user_actions.conf:630
-#, fuzzy
 msgid "Quick add storage locations"
-msgstr "Kopieer opslaglocaties"
+msgstr "Voeg snel opslagplaatsen toe"
 
 #: c:\providence/app/conf/user_actions.conf:631
-#, fuzzy
 msgid ""
 "Allow user to add storage locations not already present while creating "
 "relationships"
-msgstr "opslaglocaties ⇔ opslaglocaties relaties"
+msgstr ""
+"Sta gebruiker toe om opslagplaatsen die nog niet aanwezig waren toe te "
+"voegen door relaties aan te maken"
 
 #: c:\providence/app/conf/user_actions.conf:635
-#, fuzzy
 msgid "Allow user to change types of existing storage locations"
-msgstr "Sta gebruiker toe om bestaande opslaglocaties te bewerken"
+msgstr "Sta gebruiker toe om types van bestaande opslagplaatsen te veranderen"
 
 #: c:\providence/app/conf/user_actions.conf:639
-#, fuzzy
 msgid "Allow user to manage access control lists for storage locations"
-msgstr "Sta gebruiker toe om nieuwe opslaglocaties aan te maken"
+msgstr ""
+"Sta gebruiker toe om lijsten van toegangscontrole te beheren voor "
+"opslagplaatsen"
 
 #: c:\providence/app/conf/user_actions.conf:642
-#, fuzzy
 msgid "Batch edit storage locations"
-msgstr "Gerelateerde opslaglocaties"
+msgstr "Opslagplaatsen in batch bewerken"
 
 #: c:\providence/app/conf/user_actions.conf:643
-#, fuzzy
 msgid "Allow user to edit batches of storage locations"
-msgstr "Sta gebruiker toe om bestaande opslaglocaties te bewerken"
+msgstr "Sta gebruiker toe om opslagplaatsen in batch te bewerken"
 
 #: c:\providence/app/conf/user_actions.conf:649
-#, fuzzy
 msgid "Loans editing"
-msgstr "Beheer van rondleidingen"
+msgstr "Bewerk uitleningen"
 
 #: c:\providence/app/conf/user_actions.conf:650
 msgid "Actions allowing creation, editing and deletion of loans."
 msgstr "Acties betreffende het aanmaken, bewerken en verwijderen van leningen."
 
 #: c:\providence/app/conf/user_actions.conf:653
-#, fuzzy
 msgid "Create loans"
-msgstr "Aangemaakt op"
+msgstr "Maak bruiklenen aan"
 
 #: c:\providence/app/conf/user_actions.conf:654
 msgid "Allow user to create new loans"
@@ -3167,9 +3046,8 @@ msgid "Allow user to edit existing loans"
 msgstr "Sta gebruiker toe om bestaande leningen te bewerken"
 
 #: c:\providence/app/conf/user_actions.conf:661
-#, fuzzy
 msgid "Delete loans"
-msgstr "Gerelateerde bruiklenen"
+msgstr "Verwijder bruiklenen"
 
 #: c:\providence/app/conf/user_actions.conf:662
 msgid "Allow user to delete loans"
@@ -3200,45 +3078,40 @@ msgid "Allow user to duplicate loans"
 msgstr "Sta gebruiker toe om leningen te kopiëren"
 
 #: c:\providence/app/conf/user_actions.conf:677
-#, fuzzy
 msgid "Export loans"
-msgstr "Bewerk leningen"
+msgstr "Exporteer ontleningen"
 
 #: c:\providence/app/conf/user_actions.conf:678
-#, fuzzy
 msgid "Allow user to export loans"
-msgstr "Sta gebruiker toe om leningen te verwijderen"
+msgstr "Sta gebruiker toe om ontleningen te exporteren"
 
 #: c:\providence/app/conf/user_actions.conf:681
-#, fuzzy
 msgid "Quick add loans"
-msgstr "Quick Add %1"
+msgstr "Voeg snel ontleningen toe"
 
 #: c:\providence/app/conf/user_actions.conf:682
-#, fuzzy
 msgid ""
 "Allow user to add loans not already present while creating relationships"
-msgstr "bruiklenen ⇔ voorstellingen relaties"
+msgstr ""
+"Sta gebruiker toe om ontleningen die nog niet aanwezig waren toe te voegen "
+"door relaties aan te maken"
 
 #: c:\providence/app/conf/user_actions.conf:686
-#, fuzzy
 msgid "Allow user to change types of existing loans"
-msgstr "Sta gebruiker toe om bestaande leningen te bewerken"
+msgstr "Sta gebruiker toe om types van bestaande ontleningen te veranderen"
 
 #: c:\providence/app/conf/user_actions.conf:690
-#, fuzzy
 msgid "Allow user to manage access control lists for loans"
-msgstr "Sta gebruiker toe om nieuwe opslaglocaties aan te maken"
+msgstr ""
+"Sta gebruiker toe om lijsten van toegangscontrole te beheren voor ontleningen"
 
 #: c:\providence/app/conf/user_actions.conf:693
-#, fuzzy
 msgid "Batch edit loans"
-msgstr "Bewerk in bulk"
+msgstr "Ontleningen in batch bewerken"
 
 #: c:\providence/app/conf/user_actions.conf:694
-#, fuzzy
 msgid "Allow user to edit batches of loans"
-msgstr "Sta gebruiker toe om bestaande leningen te bewerken"
+msgstr "Sta gebruiker toe om ontleningen in batch te bewerken"
 
 #: c:\providence/app/conf/user_actions.conf:700
 msgid "Movements editing"
@@ -3298,40 +3171,37 @@ msgid "Allow user to duplicate movements"
 msgstr "Sta gebruiker toe om verplaatsingen te kopiëren"
 
 #: c:\providence/app/conf/user_actions.conf:728
-#, fuzzy
 msgid "Export movements"
-msgstr "Bewerk verplaatsingen"
+msgstr "Exporteer verplaatsingen"
 
 #: c:\providence/app/conf/user_actions.conf:729
-#, fuzzy
 msgid "Allow user to export movements"
-msgstr "Sta gebruiker toe om verplaatsingen te verwijderen"
+msgstr "Sta gebruiker toe om verplaatsingen te exporteren"
 
 #: c:\providence/app/conf/user_actions.conf:732
-#, fuzzy
 msgid "Quick add movements"
-msgstr "Kopieer verplaatsingen"
+msgstr "Voeg snel verplaatsingen toe"
 
 #: c:\providence/app/conf/user_actions.conf:733
-#, fuzzy
 msgid ""
 "Allow user to add movements not already present while creating relationships"
-msgstr "verplaatsingen ⇔ voorstellingen relaties"
+msgstr ""
+"Sta gebruiker toe om verplaatsingen die nog niet aanwezig waren toe te "
+"voegen door relaties aan te maken"
 
 #: c:\providence/app/conf/user_actions.conf:737
-#, fuzzy
 msgid "Allow user to change types of existing movements"
-msgstr "Sta gebruiker toe om bestaande verplaatsingen te bewerken"
+msgstr "Sta gebruiker toe om types van bestaande verplaatsingen te veranderen"
 
 #: c:\providence/app/conf/user_actions.conf:741
-#, fuzzy
 msgid "Allow user to manage access control lists for movements"
-msgstr "Sta gebruiker toe om bestaande verplaatsingen te bewerken"
+msgstr ""
+"Sta gebruiker toe om lijsten van toegangscontrole te beheren voor "
+"verplaatsingen"
 
 #: c:\providence/app/conf/user_actions.conf:745
-#, fuzzy
 msgid "Allow user to edit batches of movements"
-msgstr "Sta gebruiker toe om bestaande verplaatsingen te bewerken"
+msgstr "Sta gebruiker toe om verplaatsingen in batch te bewerken"
 
 #: c:\providence/app/conf/user_actions.conf:751
 msgid "Tours editing"
@@ -3343,9 +3213,8 @@ msgstr ""
 "Acties betreffende het aanmaken, bewerken en verwijderen van rondleidingen."
 
 #: c:\providence/app/conf/user_actions.conf:755
-#, fuzzy
 msgid "Create tours"
-msgstr "Verwijder rondleidingen"
+msgstr "Maak rondleidingen aan"
 
 #: c:\providence/app/conf/user_actions.conf:756
 msgid "Allow user to create new tours"
@@ -3392,59 +3261,52 @@ msgid "Allow user to duplicate tours"
 msgstr "Sta gebruiker toe om rondleidingen te kopiëren"
 
 #: c:\providence/app/conf/user_actions.conf:779
-#, fuzzy
 msgid "Export tours"
-msgstr "Bewerk rondleidingen"
+msgstr "Exporteer rondleidingen"
 
 #: c:\providence/app/conf/user_actions.conf:780
-#, fuzzy
 msgid "Allow user to export tours"
-msgstr "Sta gebruiker toe om rondleidingen te verwijderen"
+msgstr "Sta gebruiker toe om rondleidingen te exporteren"
 
 #: c:\providence/app/conf/user_actions.conf:784
-#, fuzzy
 msgid "Allow user to change types of existing tours"
-msgstr "Sta gebruiker toe om bestaande rondleidingen te bewerken"
+msgstr "Sta gebruiker toe om types van bestaande rondleidingen te veranderen"
 
 #: c:\providence/app/conf/user_actions.conf:787
-#, fuzzy
 msgid "Manage access control lists for tours"
-msgstr "lijsten toegangsregels"
+msgstr "Beheer van lijsten voor toegangscontrole voor rondleidingen"
 
 #: c:\providence/app/conf/user_actions.conf:788
-#, fuzzy
 msgid "Allow user to manage access control lists for tours"
-msgstr "Sta gebruiker toe om lokalisatie configuratie te wijzigen"
+msgstr ""
+"Sta gebruiker toe om lijsten van toegangscontrole te beheren voor "
+"rondleidingen"
 
 #: c:\providence/app/conf/user_actions.conf:791
-#, fuzzy
 msgid "Manage access control lists for tour stops"
-msgstr "lijsten toegangsregels"
+msgstr "Beheer lijsten van toegangscontrole voor rondleidingshaltes"
 
 #: c:\providence/app/conf/user_actions.conf:792
-#, fuzzy
 msgid "Allow user to manage access control lists for tour stops"
-msgstr "Sta gebruiker toe om lokalisatie configuratie te wijzigen"
+msgstr ""
+"Sta gebruiker toe om lijsten van toegangscontrole te beheren voor "
+"rondleidingshaltes"
 
 #: c:\providence/app/conf/user_actions.conf:795
-#, fuzzy
 msgid "Batch edit tours"
-msgstr "Bewerk in bulk"
+msgstr "Rondleidingen in batch bewerken"
 
 #: c:\providence/app/conf/user_actions.conf:796
-#, fuzzy
 msgid "Allow user to edit batches of tours"
-msgstr "Sta gebruiker toe om bestaande rondleidingen te bewerken"
+msgstr "Sta gebruiker toe om rondleidingen in batch te bewerken"
 
 #: c:\providence/app/conf/user_actions.conf:799
-#, fuzzy
 msgid "Batch edit tour stops"
-msgstr "Gerelateerde rondleidingshaltes"
+msgstr "Rondleidingshaltes in batch bewerken"
 
 #: c:\providence/app/conf/user_actions.conf:800
-#, fuzzy
 msgid "Allow user to edit batches of tour stops"
-msgstr "Sta gebruiker toe om bestaande rondleidingen te bewerken"
+msgstr "Sta gebruiker toe om rondleidingshaltes in batch te bewerken"
 
 #: c:\providence/app/conf/user_actions.conf:806
 msgid "List &amp; vocabulary editing"
@@ -3458,9 +3320,8 @@ msgstr ""
 "lijstitems."
 
 #: c:\providence/app/conf/user_actions.conf:810
-#, fuzzy
 msgid "Create lists and list items"
-msgstr "Verwijder lijsten en lijstitems"
+msgstr "Maak lijst een lijstitems aan"
 
 #: c:\providence/app/conf/user_actions.conf:811
 msgid "Allow user to create new lists"
@@ -3491,66 +3352,54 @@ msgid "Allow user to duplicate lists"
 msgstr "Sta gebruiker toe om lijsten te kopiëren"
 
 #: c:\providence/app/conf/user_actions.conf:826
-#, fuzzy
 msgid "Duplicate list items"
-msgstr "Kopieer lijsten"
+msgstr "Kopieer lijstitems"
 
 #: c:\providence/app/conf/user_actions.conf:827
 msgid "Allow user to duplicate list items"
 msgstr "Sta gebruiker toe om lijsten te kopiëren"
 
 #: c:\providence/app/conf/user_actions.conf:830
-#, fuzzy
 msgid "Export list items"
-msgstr "Lijstitem bewerken"
+msgstr "Exporteer lijstitems"
 
 #: c:\providence/app/conf/user_actions.conf:831
-#, fuzzy
 msgid "Allow user to export list items"
-msgstr "Sta gebruiker toe om lijsten te kopiëren"
+msgstr "Sta gebruiker toe om lijstitems te exporteren"
 
 #: c:\providence/app/conf/user_actions.conf:834
-#, fuzzy
 msgid "Change type for list items"
-msgstr "Wijzig bestellingsstatus"
+msgstr "Verander type voor lijstitems"
 
 #: c:\providence/app/conf/user_actions.conf:835
-#, fuzzy
 msgid "Allow user to change types of existing list items"
-msgstr "Sta gebruiker toe om bestaande lijsten te bewerken"
+msgstr "Sta gebruiker toe om types van bestaande lijstitems te veranderen"
 
 #: c:\providence/app/conf/user_actions.conf:838
-#, fuzzy
 msgid "Manage access control lists for lists"
-msgstr "lijsten toegangsregels"
+msgstr "Beheer lijsten voor toegangscontrole voor lijsten"
 
 #: c:\providence/app/conf/user_actions.conf:839
-#, fuzzy
 msgid "Allow user to manage access control lists for lists"
 msgstr ""
-"Gebruiker toelaten om een nieuwe plaats toe te voegen aan de entiteiten-"
-"authoriteit"
+"Sta gebruiker toe om lijsten van toegangscontrole te beheren voor lijsten"
 
 #: c:\providence/app/conf/user_actions.conf:842
-#, fuzzy
 msgid "Manage access control lists for list items"
-msgstr "lijsten toegangsregels"
+msgstr "Lijsten van toegangscontrole voor lijstitems beheren"
 
 #: c:\providence/app/conf/user_actions.conf:843
-#, fuzzy
 msgid "Allow user to manage access control lists for list items"
 msgstr ""
-"Sta gebruiker toe om eigen sets van objecten of autoriteitsitems aan te maken"
+"Sta gebruiker toe om lijsten van toegangscontrole te beheren voor lijstitems"
 
 #: c:\providence/app/conf/user_actions.conf:846
-#, fuzzy
 msgid "Batch edit list items"
-msgstr "Lijstitem bewerken"
+msgstr "Lijstitems in batch bewerken"
 
 #: c:\providence/app/conf/user_actions.conf:847
-#, fuzzy
 msgid "Allow user to edit batches of list items"
-msgstr "Sta gebruiker toe om lijsten te kopiëren"
+msgstr "Sta gebruiker toe om lijstitems in batch te bewerken"
 
 #: c:\providence/app/conf/user_actions.conf:853
 msgid "Web service API access"
@@ -3565,52 +3414,44 @@ msgstr ""
 "interfaces."
 
 #: c:\providence/app/conf/user_actions.conf:860
-#, fuzzy
 msgid "Use JSON search service"
-msgstr "Gebruik zoek service"
+msgstr "Gebruik JSON zoekservice"
 
 #: c:\providence/app/conf/user_actions.conf:861
-#, fuzzy
 msgid "Allow user to use JSON search service"
-msgstr "Laat gebruiker toe om de zoek web service te gebruiken"
+msgstr "Sta gebruiker toe om JSON zoekservice te gebruiken"
 
 #: c:\providence/app/conf/user_actions.conf:864
-#, fuzzy
 msgid "Use JSON item service"
-msgstr "Gebruik iteminformatie service"
+msgstr "Gebruik JSON item service"
 
 #: c:\providence/app/conf/user_actions.conf:865
-#, fuzzy
 msgid ""
 "Allow user to use JSON item service (used to get and modify detailed "
 "information about records)."
 msgstr ""
-"Laat gebruiker toe om de iteminformatie web service te gebruiken (gebruikt "
-"om gedetailleerde informatie te verkrijgen over records)."
+"Laat gebruiker toe om JSON item service te gebruiken (gebruikt om "
+"gedetailleerde informatie over records te krijgen en te bewerken)."
 
 #: c:\providence/app/conf/user_actions.conf:868
-#, fuzzy
 msgid "Use JSON model service"
-msgstr "Gebruik verken-service"
+msgstr "Gebruik JSON model service"
 
 #: c:\providence/app/conf/user_actions.conf:869
-#, fuzzy
 msgid ""
 "Allow user to use JSON model service (used to get detailed information about "
 "the metadata schema)."
 msgstr ""
-"Laat gebruiker toe om de iteminformatie web service te gebruiken (gebruikt "
-"om gedetailleerde informatie te verkrijgen over records)."
+"Laat gebruiker toe om JSON model service te gebruiken (gebruikt om "
+"gedetailleerde informatie te verkrijgen over metadataschema)."
 
 #: c:\providence/app/conf/user_actions.conf:872
-#, fuzzy
 msgid "Use JSON browse service"
-msgstr "Gebruik verken-service"
+msgstr "Gebruik JSON browse service"
 
 #: c:\providence/app/conf/user_actions.conf:873
-#, fuzzy
 msgid "Allow user to use JSON browse service."
-msgstr "Sta gebruiker toe om de verken-webservice te gebruiken."
+msgstr "Sta gebruiker toe om JSON browse service te gebruiken."
 
 #: c:\providence/app/conf/user_actions.conf:879
 msgid "Use cataloguing service"
@@ -3657,28 +3498,29 @@ msgstr ""
 "voor creatie van sets, tags, commentaren)."
 
 #: c:\providence/app/conf/user_actions.conf:895
-#, fuzzy
 msgid "Use access control service"
-msgstr "Stel toegangsregels in"
+msgstr "Gebruik toegangscontrole service"
 
 #: c:\providence/app/conf/user_actions.conf:896
 msgid ""
 "Allow user to use access control web service. Note that this allows said "
 "user to create, edit and delete user accounts."
 msgstr ""
+"Laat gebruiker toe om toegangscontrole web service te gebruiken. Let wel dat "
+"dit de gebruiker toelaat om gebruikersaccounts aan te maken, te bewerken en "
+"te verwijderen."
 
 #: c:\providence/app/conf/user_actions.conf:902
 msgid "Pawtucket Actions"
 msgstr "Pawtucket acties"
 
 #: c:\providence/app/conf/user_actions.conf:903
-#, fuzzy
 msgid ""
 "Actions allowing access, sharing and modification of content on the front-"
 "end interface."
 msgstr ""
-"Acties betreffende toegang en aanpassing van inhoud via de front-end "
-"interface."
+"Acties betreffende de toegang, het delen en aanpassing van inhoud op de "
+"front-end interface."
 
 #: c:\providence/app/conf/user_actions.conf:906
 msgid "Can Download Media"
@@ -3686,35 +3528,37 @@ msgstr "Kan media downloaden"
 
 #: c:\providence/app/conf/user_actions.conf:907
 msgid "Allow user to download high resolution media in Pawtucket."
-msgstr "Sta gebruiker toe om hogeresolutei media te downloaden in Pawtucket."
+msgstr "Sta gebruiker toe om hogeresolutie media te downloaden in Pawtucket."
 
 #: c:\providence/app/conf/user_actions.conf:910
 msgid "Can Share Objects via Email"
-msgstr ""
+msgstr "Kan Objecten via Email Delen"
 
 #: c:\providence/app/conf/user_actions.conf:911
-#, fuzzy
 msgid "Allow user to share objects with other via email in Pawtucket."
-msgstr "Sta gebruiker toe om hogeresolutei media te downloaden in Pawtucket."
+msgstr ""
+"Sta gebruiker toe om objecten te delen met anderen via email in Pawtucket."
 
 #: c:\providence/app/conf/user_actions.conf:914
 msgid "Can Share Objects via Facebook"
-msgstr ""
+msgstr "Kan objecten delen via Facebook"
 
 #: c:\providence/app/conf/user_actions.conf:915
-#, fuzzy
 msgid "Allow user to share objects with other via email in Facebook."
-msgstr "Gebruiker toelaten om nieuwe objecten aan het systeem toe te voegen"
+msgstr ""
+"Sta gebruiker toe om objecten te delen met anderen via email in Facebook."
 
 #: c:\providence/app/conf/user_actions.conf:918
 msgid "Can Inititate Replication of Object Media to External Repositories"
-msgstr ""
+msgstr "Kan replicatie van object media naar Externe Repositories starten"
 
 #: c:\providence/app/conf/user_actions.conf:919
 msgid ""
 "Allow user to initiate replication of object media to external repositories "
 "such as YouTube."
 msgstr ""
+"Sta gebruiker toe om replicatie van object media naar externe repositories "
+"zoals YouTube te starten."
 
 #: c:\providence/app/conf/user_pref_defs.conf:87
 msgid "Duplication tools"
@@ -3799,24 +3643,24 @@ msgstr ""
 
 #: c:\providence/app/conf/user_pref_defs.conf:172
 msgid "Map base layer"
-msgstr ""
+msgstr "Basislaag kaart"
 
 #: c:\providence/app/conf/user_pref_defs.conf:173
 msgid "Sets base layer to use when searching, viewing or editing using maps."
 msgstr ""
+"Stelt de basislaag in om kaarten te doorzoeken, te bekijken of te bewerken."
 
 #: c:\providence/app/conf/user_pref_defs.conf:178
 msgid "OpenStreetMap"
-msgstr ""
+msgstr "OpenStreetMap"
 
 #: c:\providence/app/conf/user_pref_defs.conf:179
 msgid "Toner"
-msgstr ""
+msgstr "Toner"
 
 #: c:\providence/app/conf/user_pref_defs.conf:180
-#, fuzzy
 msgid "Watercolor"
-msgstr "Itemkleur"
+msgstr "Watercolor"
 
 #: c:\providence/app/conf/user_pref_defs.conf:187
 msgid "Naming policy for downloaded media"
@@ -3837,9 +3681,8 @@ msgstr ""
 "het systeem + bestandsextensie"
 
 #: c:\providence/app/conf/user_pref_defs.conf:194
-#, fuzzy
 msgid "Use object identifier + file extension"
-msgstr "Gebruik de object identificatiecode + versie + bestandsextensie"
+msgstr "Gebruik de object identificatiecode + bestandsextensie"
 
 #: c:\providence/app/conf/user_pref_defs.conf:195
 msgid "Use object identifier + version + file extension"
@@ -3852,34 +3695,33 @@ msgstr ""
 "bestandsextensie"
 
 #: c:\providence/app/conf/user_pref_defs.conf:201
-#, fuzzy
 msgid "Preferred PDF viewer"
-msgstr "Voorkeurslabel"
+msgstr "Verkozen PDF viewer"
 
 #: c:\providence/app/conf/user_pref_defs.conf:202
 msgid "Determines technique used to display PDF files."
-msgstr ""
+msgstr "Bepaalt de techniek die gebruikt wordt op PDF-bestanden te tonen."
 
 #: c:\providence/app/conf/user_pref_defs.conf:207
-#, fuzzy
 msgid "Use system default"
-msgstr "gebruik standaard"
+msgstr "Gebruik systeemstandaard"
 
 #: c:\providence/app/conf/user_pref_defs.conf:208
 msgid "Use document viewer interface (JPEG page previews)"
-msgstr ""
+msgstr "Gebruik documentviewer interface (JPEF pagina-previews)"
 
 #: c:\providence/app/conf/user_pref_defs.conf:209
 msgid "Use PDFJS viewer (no plugin required)"
-msgstr ""
+msgstr "Gebruik PDFJS viewer (geen plugin nodig)"
 
 #: c:\providence/app/conf/user_pref_defs.conf:210
 msgid "Use browser PDF plugin with fallback to PDFJS"
-msgstr ""
+msgstr "Gebruik browser PDF plugin met terugwijkmogelijkheid naar PDFJS"
 
 #: c:\providence/app/conf/user_pref_defs.conf:211
 msgid "Use browser PDF plugin with fallback to document viewer"
 msgstr ""
+"Gebruik browser PDF plugin met terugwijkmogelijkheid naar documentviewer"
 
 #: c:\providence/app/conf/user_pref_defs.conf:219
 msgid "Default cataloguing locale"
@@ -4045,178 +3887,149 @@ msgstr ""
 #: c:\providence/app/conf/user_pref_defs.conf:331
 #: c:\providence/app/conf/user_pref_defs.conf:338
 #: c:\providence/app/conf/user_pref_defs.conf:455
-#, fuzzy
 msgid "Loan editor user interface"
-msgstr "Gebruikersinterface lijst-editor"
+msgstr "Gebruikersinterface voor ontleningen te bewerken"
 
 #: c:\providence/app/conf/user_pref_defs.conf:318
 #: c:\providence/app/conf/user_pref_defs.conf:456
-#, fuzzy
 msgid "Selects which user interface to use when editing loans."
 msgstr ""
-"Selecteert welke gebruikersinterface te gebruiken bij het bewerken van "
-"plaatsen."
+"Selecteert welke gebruiksinterface te gebruiken bij het bewerken van "
+"uitleningen."
 
 #: c:\providence/app/conf/user_pref_defs.conf:324
 #: c:\providence/app/conf/user_pref_defs.conf:462
-#, fuzzy
 msgid "Movement editor user interface"
-msgstr "Gebruikersinterface set-editor"
+msgstr "Gebruikersinterface voor verplaatsingen te bewerken"
 
 #: c:\providence/app/conf/user_pref_defs.conf:325
 #: c:\providence/app/conf/user_pref_defs.conf:463
-#, fuzzy
 msgid "Selects which user interface to use when editing movements."
 msgstr ""
-"Bepaalt welke gebruikersinterface te gebruiken wanneer sets worden bewerkt."
+"Selecteert welke gebruikersinterface te gebruiken bij het bewerken van "
+"verplaatsingen."
 
 #: c:\providence/app/conf/user_pref_defs.conf:332
 #: c:\providence/app/conf/user_pref_defs.conf:470
-#, fuzzy
 msgid "Selects which user interface to use when editing tours."
 msgstr ""
-"Bepaalt welke gebruikersinterface te gebruiken wanneer sets worden bewerkt."
+"Selecteert welke gebruikersinterface te gebruiken bij het bewerken van "
+"rondleidingen."
 
 #: c:\providence/app/conf/user_pref_defs.conf:339
 #: c:\providence/app/conf/user_pref_defs.conf:477
-#, fuzzy
 msgid "Selects which user interface to use when editing tour stops."
 msgstr ""
-"Bepaalt welke gebruikersinterface te gebruiken wanneer sets worden bewerkt."
+"Selecteert welke gebruikersinterface te gebruiken bij het bewerken van "
+"rondleidingshaltes."
 
 #: c:\providence/app/conf/user_pref_defs.conf:345
-#, fuzzy
 msgid "Search form editor user interface"
-msgstr "Gebruikersinterface set-item-editor"
+msgstr "Gebruikersinterface voor het bewerken van het zoekformulier"
 
 #: c:\providence/app/conf/user_pref_defs.conf:346
-#, fuzzy
 msgid "Selects which user interface to use when editing search forms."
 msgstr ""
-"Bepaalt welke gebruikersinterface te gebruiken wanneer sets worden bewerkt."
+"Selecteert welke gebruikersinterface te gebruiken bij het bewerken van "
+"zoekformulieren."
 
 #: c:\providence/app/conf/user_pref_defs.conf:352
-#, fuzzy
 msgid "Display editor user interface"
-msgstr "Gebruikersinterface lijst-editor"
+msgstr "Gebruikersinterface voor bewerken van weergaves"
 
 #: c:\providence/app/conf/user_pref_defs.conf:353
-#, fuzzy
 msgid "Selects which user interface to use when editing displays."
 msgstr ""
 "Selecteert welke gebruikersinterface te gebruiken bij het bewerken van "
-"plaatsen."
+"weergaves."
 
 #: c:\providence/app/conf/user_pref_defs.conf:359
-#, fuzzy
 msgid "Relationship type editor user interface"
-msgstr "Gebruikersinterface set-item-editor"
+msgstr "Gebruikersinterface voor het bewerken van relatietypes"
 
 #: c:\providence/app/conf/user_pref_defs.conf:360
-#, fuzzy
 msgid "Selects which user interface to use when editing relationship types."
 msgstr ""
 "Selecteert welke gebruikersinterface te gebruiken bij het bewerken van "
-"lijstitems."
+"relatietypes."
 
 #: c:\providence/app/conf/user_pref_defs.conf:366
-#, fuzzy
 msgid "User interface editor user interface"
-msgstr "Gebruikersinterface set-item-editor"
+msgstr "Gebruikersinterface voor het bewerken van gebruikersinterface"
 
 #: c:\providence/app/conf/user_pref_defs.conf:367
-#, fuzzy
 msgid "Selects which user interface to use when editing user interfaces."
 msgstr ""
-"Bepaalt welke gebruikersinterface te gebruiken wanneer set items worden "
-"bewerkt."
+"Selecteert welke gebruikersinterface te gebruiken bij het bewerken van "
+"gebruikersinterface."
 
 #: c:\providence/app/conf/user_pref_defs.conf:373
-#, fuzzy
 msgid "User interface screen editor user interface"
-msgstr "Gebruikersinterface ingavescherm"
+msgstr ""
 
 #: c:\providence/app/conf/user_pref_defs.conf:374
-#, fuzzy
 msgid ""
 "Selects which user interface to use when editing user interface screens."
 msgstr ""
-"Bepaalt welke gebruikersinterface te gebruiken wanneer set items worden "
-"bewerkt."
 
 #: c:\providence/app/conf/user_pref_defs.conf:380
-#, fuzzy
 msgid "Import/export mapping editor user interface"
-msgstr "Import/export koppeling ingavescherm"
+msgstr ""
 
 #: c:\providence/app/conf/user_pref_defs.conf:381
-#, fuzzy
 msgid ""
 "Selects which user interface to use when editing import/export mappings."
 msgstr ""
-"Selecteert welke gebruikersinterface te gebruiken bij het bewerken van "
-"collecties."
 
 #: c:\providence/app/conf/user_pref_defs.conf:387
-#, fuzzy
 msgid "Import/export mapping group editor user interface"
-msgstr "Import/export koppelingsgroep ingavescherm"
+msgstr ""
 
 #: c:\providence/app/conf/user_pref_defs.conf:388
-#, fuzzy
 msgid ""
 "Selects which user interface to use when editing import/export mapping "
 "groups."
 msgstr ""
-"Selecteert welke gebruikersinterface te gebruiken bij het bewerken van "
-"objectloten."
 
 #: c:\providence/app/conf/user_pref_defs.conf:469
-#, fuzzy
 msgid "Tour editor user interface"
-msgstr "Gebruikersinterface set-editor"
+msgstr ""
 
 #: c:\providence/app/conf/user_pref_defs.conf:476
-#, fuzzy
 msgid "Tour stop editor user interface"
-msgstr "Gebruikersinterface lijst-editor"
+msgstr ""
 
 #: c:\providence/app/conf/user_pref_defs.conf:488
-#, fuzzy
 msgid "Selects which user interface to use when quick-adding entities."
 msgstr ""
-"Selecteert welke gebruikersinterface te gebruiken bij het bewerken van "
-"entiteiten."
+"Bepaalt welke gebruikersinterface te gebruiken om snel entiteiten toe te "
+"voegen."
 
 #: c:\providence/app/conf/user_pref_defs.conf:495
-#, fuzzy
 msgid "Selects which user interface to use when quick-adding places."
 msgstr ""
-"Selecteert welke gebruikersinterface te gebruiken bij het bewerken van "
-"plaatsen."
+"Bepaalt welke gebruikersinterface te gebruiken om snel plaatsen toe te "
+"voegen."
 
 #: c:\providence/app/conf/user_pref_defs.conf:502
-#, fuzzy
 msgid ""
 "Selects which user interface to use when editquick-addinging occurrences."
 msgstr ""
-"Selecteert welke gebruikersinterface te gebruiken bij het bewerken van "
-"occurences."
+"Bepaalt welke gebruikersinterface te gebruiken om snel gebeurtenissen toe te "
+"voegen."
 
 #: c:\providence/app/conf/user_pref_defs.conf:509
-#, fuzzy
 msgid "Selects which user interface to use when quick-adding collections."
 msgstr ""
-"Selecteert welke gebruikersinterface te gebruiken bij het bewerken van "
-"collecties."
+"Bepaalt welke gebruikersinterface te gebruiken om snel collecties toe te "
+"voegen."
 
 #: c:\providence/app/conf/user_pref_defs.conf:516
-#, fuzzy
 msgid ""
 "Selects which user interface to use when quick-adding storage locations."
 msgstr ""
-"Selecteert welke gebruikersinterface te gebruiken bij het bewerken van "
-"opslaglocaties."
+"Bepaalt welke gebruikersinterface te gebruiken om snel opslagplaatsen toe te "
+"voegen."
 
 #: c:\providence/app/conf/user_pref_defs.conf:526
 msgid "Display measurements in"
@@ -4258,9 +4071,8 @@ msgstr "Brits-amerikaanse eenheden"
 #: c:\providence/app/conf/user_pref_defs.conf:966
 #: c:\providence/app/conf/user_pref_defs.conf:988
 #: c:\providence/app/conf/user_pref_defs.conf:1026
-#, fuzzy
 msgid "Duplicate non-preferred labels?"
-msgstr "Niet-voorkeurslabels"
+msgstr "Kopieer niet-voorkeurslabels?"
 
 #: c:\providence/app/conf/user_pref_defs.conf:542
 msgid "If checked alternate names for the object will be duplicated."
@@ -4314,9 +4126,8 @@ msgstr "Kopieer relaties?"
 #: c:\providence/app/conf/user_pref_defs.conf:883
 #: c:\providence/app/conf/user_pref_defs.conf:951
 #: c:\providence/app/conf/user_pref_defs.conf:1011
-#, fuzzy
 msgid "Checked relationships will be duplicated."
-msgstr "Indien aangevinkt zullen alle velden van de lijst gekopieerd worden."
+msgstr "Aangevinkte relaties zullen gekopieerd worden."
 
 #: c:\providence/app/conf/user_pref_defs.conf:578
 #: c:\providence/app/conf/user_pref_defs.conf:628
@@ -4334,9 +4145,10 @@ msgid "Duplicate media?"
 msgstr "Kopieer media?"
 
 #: c:\providence/app/conf/user_pref_defs.conf:583
-#, fuzzy
 msgid "If checked all media associated with the object will be duplicated."
-msgstr "Indien aangevinkt zullen alle velden van het object gekopieerd worden."
+msgstr ""
+"Indien aangevinkt zullen alle media waarmee het object geassocieerd is "
+"verdubbeld worden."
 
 #: c:\providence/app/conf/user_pref_defs.conf:594
 msgid "If checked alternate names for the lot will be duplicated."
@@ -4450,9 +4262,8 @@ msgstr ""
 "Indien aangevinkt zullen alle velden van de rondleiding gekopieerd worden."
 
 #: c:\providence/app/conf/user_pref_defs.conf:917
-#, fuzzy
 msgid "Duplicate tour stops?"
-msgstr "Kopieer rondleidingen"
+msgstr "Kopieer rondleidingshaltes?"
 
 #: c:\providence/app/conf/user_pref_defs.conf:918
 msgid "If checked all stops in the tour will be included."
@@ -4529,9 +4340,8 @@ msgid "Organization"
 msgstr "Organisatie / bedrijf"
 
 #: c:\providence/app/conf/user_pref_defs.conf:1104
-#, fuzzy
 msgid "Your organization."
-msgstr "Verzendadres: organisatie / bedrijf"
+msgstr "Uw organisatie."
 
 #: c:\providence/app/conf/user_pref_defs.conf:1112
 #: c:\providence/app/models/ca_commerce_orders.php:128
@@ -4540,9 +4350,8 @@ msgid "Address 1"
 msgstr "Adreslijn 1"
 
 #: c:\providence/app/conf/user_pref_defs.conf:1113
-#, fuzzy
 msgid "Your street address."
-msgstr "Adres van auteur"
+msgstr "Uw adres."
 
 #: c:\providence/app/conf/user_pref_defs.conf:1121
 #: c:\providence/app/models/ca_commerce_orders.php:136
@@ -4552,7 +4361,7 @@ msgstr "Adreslijn 2"
 
 #: c:\providence/app/conf/user_pref_defs.conf:1122
 msgid "Any additional information about your street address."
-msgstr ""
+msgstr "Eventuele aanvullende informatie over uw adres."
 
 #: c:\providence/app/conf/user_pref_defs.conf:1130
 #: c:\providence/app/models/ca_commerce_orders.php:144
@@ -4561,9 +4370,8 @@ msgid "City"
 msgstr "Stad"
 
 #: c:\providence/app/conf/user_pref_defs.conf:1131
-#, fuzzy
 msgid "Your city."
-msgstr "Stad van auteur"
+msgstr "Uw stad."
 
 #: c:\providence/app/conf/user_pref_defs.conf:1139
 #: c:\providence/app/models/ca_commerce_orders.php:152
@@ -4572,9 +4380,8 @@ msgid "State/province"
 msgstr "Verzendadres: provincie"
 
 #: c:\providence/app/conf/user_pref_defs.conf:1140
-#, fuzzy
 msgid "Your state/province"
-msgstr "Verzendadres: provincie"
+msgstr "Uw staat/provincie."
 
 #: c:\providence/app/conf/user_pref_defs.conf:1148
 #: c:\providence/app/models/ca_commerce_orders.php:168
@@ -4583,9 +4390,8 @@ msgid "Country"
 msgstr "Land"
 
 #: c:\providence/app/conf/user_pref_defs.conf:1149
-#, fuzzy
 msgid "Your country."
-msgstr "Land van auteur"
+msgstr "Uw land."
 
 #: c:\providence/app/conf/user_pref_defs.conf:1158
 #: c:\providence/app/models/ca_commerce_orders.php:160
@@ -4594,9 +4400,8 @@ msgid "Postal code"
 msgstr "Postcode"
 
 #: c:\providence/app/conf/user_pref_defs.conf:1159
-#, fuzzy
 msgid "Your postal code."
-msgstr "Postcode van auteur"
+msgstr "Uw postcode."
 
 #: c:\providence/app/conf/user_pref_defs.conf:1167
 #: c:\providence/app/models/ca_commerce_orders.php:177
@@ -4605,9 +4410,8 @@ msgid "Phone"
 msgstr "Telefoonnummer"
 
 #: c:\providence/app/conf/user_pref_defs.conf:1168
-#, fuzzy
 msgid "Your phone number."
-msgstr "Bestellingsnummer"
+msgstr "Uw telefoonnummer."
 
 #: c:\providence/app/conf/user_pref_defs.conf:1176
 #: c:\providence/app/models/ca_commerce_orders.php:185
@@ -4617,7 +4421,7 @@ msgstr "Fax"
 
 #: c:\providence/app/conf/user_pref_defs.conf:1177
 msgid "Your fax."
-msgstr ""
+msgstr "Uw fax."
 
 #: c:\providence/app/conf/visualization.conf:7
 msgid "Map"
@@ -4626,9 +4430,8 @@ msgstr "Kaart"
 #: c:\providence/app/conf/visualization.conf:24
 #: c:\providence/app/conf/visualization.conf:55
 #: c:\providence/app/conf/visualization.conf:75
-#, fuzzy
 msgid "Timeline"
-msgstr "Geweigerd"
+msgstr "Tijdslijn"
 
 #: c:\providence/app/controllers/administrate/access/GroupsController.php:58
 #: c:\providence/app/controllers/administrate/access/UsersController.php:83
@@ -4975,7 +4778,7 @@ msgstr "Ongeldige ouder"
 
 #: c:\providence/app/controllers/batch/EditorController.php:216
 msgid "Batch editing %1 %2 with set %3"
-msgstr "%1 %2 in bulk bewerken met set %3"
+msgstr "%1 %2 in batch bewerken met set %3"
 
 #: c:\providence/app/controllers/batch/MediaImportController.php:105
 msgid "Import all media, matching with existing records where possible"
@@ -5594,8 +5397,8 @@ msgstr "Uw zoekacties werden verwijderd"
 #: c:\providence/app/controllers/manage/SavedSearchesController.php:80
 msgid "Please use the checkboxes to select searches for deletion"
 msgstr ""
-"Gebruik de aanvinkvakjes de zoekacties te selecteren die moeten verwijderd "
-"worden"
+"Gebruik de aanvinkvakjes om de zoekacties te selecteren die moeten "
+"verwijderd worden"
 
 #: c:\providence/app/controllers/manage/TagsController.php:88
 msgid "There are no unmoderated tags"
@@ -5715,7 +5518,7 @@ msgstr "Voorkeursinstellingen bewaard"
 #: c:\providence/app/helpers/batchHelpers.php:203
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:116
 msgid "In batch"
-msgstr "In bulk"
+msgstr "In batch"
 
 #: c:\providence/app/helpers/batchHelpers.php:50
 #: c:\providence/app/helpers/batchHelpers.php:82
@@ -6111,7 +5914,7 @@ msgstr "Toegepast op voorstelling"
 #: c:\providence/themes/default/views/batch/mediaimport/batch_results_html.php:109
 #: c:\providence/themes/default/views/manage/set_list_html.php:107
 msgid "Batch edit"
-msgstr "Bewerk in bulk"
+msgstr "Bewerk in batch"
 
 #: c:\providence/app/helpers/displayHelpers.php:888
 #: c:\providence/app/helpers/displayHelpers.php:935
@@ -6350,7 +6153,7 @@ msgstr "Verberg media"
 
 #: c:\providence/app/helpers/displayHelpers.php:1488
 msgid "Batch editing %1 %2 in set"
-msgstr "In bulk bewerken %1 %2 in set"
+msgstr "In batch bewerken %1 %2 in set"
 
 #: c:\providence/app/helpers/displayHelpers.php:1507
 msgid "Set contains <em>%1</em>"
@@ -7959,9 +7762,8 @@ msgid "downloaded_file"
 msgstr "gedownload_bestand"
 
 #: c:\providence/app/lib/ca/BaseEditorController.php:1075
-#, fuzzy
 msgid "downloaded_file.%1"
-msgstr "gedownload_bestand"
+msgstr ""
 
 #: c:\providence/app/lib/ca/BaseFindController.php:210
 #: c:\providence/app/models/ca_bundle_displays.php:700
@@ -8067,9 +7869,8 @@ msgstr "U bent niet toegestaan om %1 te quickadden."
 #: c:\providence/app/lib/ca/BaseRepresentationRelationship.php:62
 #: c:\providence/app/lib/ca/BaseRepresentationRelationship.php:118
 #: c:\providence/app/lib/ca/BaseRepresentationRelationship.php:193
-#, fuzzy
 msgid "Related %1 does not exist"
-msgstr "Gerelateerd object bestaat niet"
+msgstr ""
 
 #: c:\providence/app/lib/ca/BaseRepresentationRelationship.php:224
 #: c:\providence/app/models/ca_object_representations.php:430
@@ -8077,9 +7878,8 @@ msgid "Could not update primary flag for representation: %1"
 msgstr "Deze voorstelling kon niet als primair ingesteld worden: %1"
 
 #: c:\providence/app/lib/ca/BaseRepresentationRelationship.php:229
-#, fuzzy
 msgid "Could not load %1-representation link"
-msgstr "De objectvoorstellingslink kon niet geladen worden"
+msgstr ""
 
 #: c:\providence/app/lib/ca/BaseSearchController.php:137
 msgid "%1 search"
@@ -8104,7 +7904,7 @@ msgstr "Verwerking voltooid"
 
 #: c:\providence/app/lib/ca/BatchProcessor.php:186
 msgid "[%1] Batch edit completed"
-msgstr "[%1] In bulk bewerken voltooid"
+msgstr "[%1] In batch bewerken voltooid"
 
 #: c:\providence/app/lib/ca/BatchProcessor.php:202
 msgid "[%1] Batch processing for set %2 with %3 %4 begun at %5 is complete"
@@ -8172,9 +7972,8 @@ msgid "Imported %1 as %2"
 msgstr "%1 als %2 geïmporteerd"
 
 #: c:\providence/app/lib/ca/BatchProcessor.php:632
-#, fuzzy
 msgid "Added relationship between <em>%1</em> and %2 <em>%3</em>"
-msgstr "Voeg een nieuw %1 item toe %2 <em>%3</em>"
+msgstr ""
 
 #: c:\providence/app/lib/ca/BatchProcessor.php:639
 msgid "Could not add relationship between <em>%1</em> and %2 <em>%3</em>: %4"
@@ -8841,9 +8640,8 @@ msgid "Representation id=%1 does not exist"
 msgstr "Voorstelling id=%1 bestaat niet"
 
 #: c:\providence/app/lib/ca/RepresentableBaseModel.php:576
-#, fuzzy
 msgid "Representation id=%1 is not related to %3 id=%2"
-msgstr "Voorstelling id=%1 is niet gerelateerd aan object id=%2"
+msgstr ""
 
 #: c:\providence/app/lib/ca/SiteComments.php:119
 #: c:\providence/app/lib/ca/SiteComments.php:158
@@ -9500,9 +9298,8 @@ msgstr ""
 "uiteraard enkel nut als u meerdere elementen in een container bundelt."
 
 #: c:\providence/app/lib/ca/Attributes/Values/GeoNamesAttributeValue.php:135
-#, fuzzy
 msgid "Maximum number of GeoNames results"
-msgstr "Maximum aantal tekens"
+msgstr ""
 
 #: c:\providence/app/lib/ca/Attributes/Values/GeoNamesAttributeValue.php:136
 msgid ""
@@ -9511,9 +9308,8 @@ msgid ""
 msgstr ""
 
 #: c:\providence/app/lib/ca/Attributes/Values/GeoNamesAttributeValue.php:143
-#, fuzzy
 msgid "GeoNames elements"
-msgstr "Elementsnaam"
+msgstr ""
 
 #: c:\providence/app/lib/ca/Attributes/Values/GeoNamesAttributeValue.php:145
 msgid ""
@@ -9525,16 +9321,12 @@ msgid ""
 msgstr ""
 
 #: c:\providence/app/lib/ca/Attributes/Values/GeoNamesAttributeValue.php:152
-#, fuzzy
 msgid "GeoNames element delimiter"
-msgstr "Scheidingsteken"
+msgstr ""
 
 #: c:\providence/app/lib/ca/Attributes/Values/GeoNamesAttributeValue.php:154
-#, fuzzy
 msgid "Delimiter to use between multiple values pulled from GeoNames service."
 msgstr ""
-"Scheidingsteken te gebruiken tussen meerdere waardes indien gebruikt in een "
-"weergave."
 
 #: c:\providence/app/lib/ca/Attributes/Values/GeoNamesAttributeValue.php:217
 #: c:\providence/app/lib/ca/Attributes/Values/GeoNamesAttributeValue.php:230
@@ -10793,9 +10585,8 @@ msgid "Process queued tasks."
 msgstr "Verwerk taken in de wachtrij."
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:593
-#, fuzzy
 msgid "Re-processing representation media"
-msgstr "Media opnieuw verwerken"
+msgstr ""
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:598
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:650
@@ -10803,19 +10594,16 @@ msgid "Re-processing %1"
 msgstr "%1 opnieuw verwerken"
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:619
-#, fuzzy
 msgid "Error processing representation media: %1"
-msgstr "Fout bij het verwerken van media: %1"
+msgstr ""
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:637
-#, fuzzy
 msgid "Re-processing attribute media"
-msgstr "Media opnieuw verwerken"
+msgstr ""
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:657
-#, fuzzy
 msgid "Error processing attribute media: %1"
-msgstr "Fout bij het verwerken van media: %1"
+msgstr ""
 
 #: c:\providence/app/lib/ca/Utils/CLIUtils.php:674
 msgid ""
@@ -11250,6 +11038,17 @@ msgid ""
 "using the --user option. If you do not specify a user, the web server user "
 "for your server will be automatically determined and used."
 msgstr ""
+"CollectiveAccess moet zowel lees- als schrijftoegang tot de tijdelijke "
+"opslag directory (app/tmp), media-directory (media) en HTMLPurifier "
+"definition cache (app/lib/core/Parsers/HTMLPurifier/standalone/HTMLPurifier/"
+"DefinitionCache) hebben. Een run-time fout wordt weergegeven als een van "
+"deze locaties niet toegankelijk is voor de applicatie. Om deze rechten "
+"veranderen om CollectiveAccess toe te laten normaal te draaien voer je dit "
+"commando uit terwijl je ingelogd bent met administratieve/root privileges​. "
+"Je bent momenteel aangemeld als %1 (uid %2). Je kan opgeven welke gebruiker "
+"toegang tot de directories krijgt met de --user optie. Als u geen gebruiker "
+"opgeeft, zal de webserver gebruiker voor uw server automatisch worden "
+"bepaald en gebruikt."
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:158
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:161
@@ -11488,35 +11287,28 @@ msgstr ""
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1376
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1379
-#, fuzzy
 msgid "Could not insert movement %1: %2"
-msgstr "Kan object %1 niet toevoegen: %2"
+msgstr ""
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1388
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1390
-#, fuzzy
 msgid "Could not set preferred label for movement %1: %2"
-msgstr "Kan voorkeurslabel voor object %1 niet instellen: %2"
+msgstr ""
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1424
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1426
-#, fuzzy
 msgid "Could not set values for movement %1: %2"
-msgstr "Kan waarde voor object%1 niet instellen: %2"
+msgstr ""
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1441
-#, fuzzy
 msgid "Created new movement %1"
-msgstr "Nieuw object %1 aangemaakt"
+msgstr ""
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1450
-#, fuzzy
 msgid ""
 "Found existing movement %1 in DataMigrationUtils::getMovementID(); total of "
 "%2 movements were found"
 msgstr ""
-"Bestaande bruikleen %1 gevonden in DataMigrationUtils::getLoanID(); %2 "
-"bruiklenen werden gevonden in totaal"
 
 #: c:\providence/app/lib/ca/Utils/DataMigrationUtils.php:1549
 msgid "and"
@@ -12863,15 +12655,11 @@ msgstr ""
 "xpdf/download.html"
 
 #: c:\providence/app/lib/core/Plugins/Media/PDFWand.php:172
-#, fuzzy
 msgid ""
 "PDFMiner cannot be found: indexing of text locations in PDF files will not "
 "be performed; you can obtain PDFMiner at http://www.unixuser.org/~euske/"
 "python/pdfminer/index.html"
 msgstr ""
-"PDFToText werd niet gevonden: indexering van tekst in PDF bestanden zal niet "
-"worden uitgevoerd; PDFToText kan verkregen worden via http://www.foolabs.com/"
-"xpdf/download.html"
 
 #: c:\providence/app/lib/core/Plugins/Media/PDFWand.php:373
 msgid "File %1 is not a PDF"
@@ -12912,18 +12700,14 @@ msgid "Couldn't convert file to FLV format"
 msgstr "Kon bestand niet naar FLV formaat converteren"
 
 #: c:\providence/app/lib/core/Plugins/Media/Video.php:856
-#, fuzzy
 msgid ""
 "Couldn't convert file to MPEG4 format [%1]; does the ffmpeg preset '%2' "
 "exist? (command was %3)"
 msgstr ""
-"Kon bestand niet naar MPEG4 formaat converteren [%1]; bestaat de ffmpeg "
-"preset '%2'?"
 
 #: c:\providence/app/lib/core/Plugins/Media/Video.php:858
-#, fuzzy
 msgid "Couldn't convert file to MPEG4 format [%1] (command was %2)"
-msgstr "Kon bestand niet naar MPEG4 formaat converteren [%1]"
+msgstr ""
 
 #: c:\providence/app/lib/core/Plugins/Media/XMLDoc.php:112
 msgid "Accepts and processes XML-format documents"
@@ -16462,12 +16246,11 @@ msgstr "Importer instellingen"
 
 #: c:\providence/app/models/ca_data_importers.php:108
 msgid "Rules"
-msgstr ""
+msgstr "Regels"
 
 #: c:\providence/app/models/ca_data_importers.php:108
-#, fuzzy
 msgid "Importer rules"
-msgstr "Importers"
+msgstr ""
 
 #: c:\providence/app/models/ca_data_importers.php:115
 msgid "Importer worksheet"
@@ -16657,22 +16440,20 @@ msgid "Warning: skipped mapping at row %1 because source was not defined"
 msgstr "Opgelet: overgeslagen mapping op rij %1 omdat de bron niet bepaald was"
 
 #: c:\providence/app/models/ca_data_importers.php:754
-#, fuzzy
 msgid ""
 "[loadImporterFromFile:%1] Skipped mapping at row %2 because source was not "
 "defined"
-msgstr "Opgelet: overgeslagen mapping op rij %1 omdat de bron niet bepaald was"
+msgstr ""
 
 #: c:\providence/app/models/ca_data_importers.php:758
 msgid "Warning: skipped mapping at row %1 because destination was not defined"
 msgstr "Opgelet: overgeslagen mapping op rij %1 omdat doel niet bepaald was"
 
 #: c:\providence/app/models/ca_data_importers.php:759
-#, fuzzy
 msgid ""
 "[loadImporterFromFile:%1] Skipped mapping at row %2 because destination was "
 "not defined"
-msgstr "Opgelet: overgeslagen mapping op rij %1 omdat doel niet bepaald was"
+msgstr ""
 
 #: c:\providence/app/models/ca_data_importers.php:768
 msgid "Warning: invalid options for group %1/source %2"
@@ -16680,9 +16461,8 @@ msgstr "Opgelet: ongeldige mogelijkheden voor groep %1/bron %2"
 
 #: c:\providence/app/models/ca_data_importers.php:769
 #: c:\providence/app/models/ca_data_importers.php:780
-#, fuzzy
 msgid "[loadImporterFromFile:%1] Invalid options for group %2/source %3"
-msgstr "Opgelet: ongeldige mogelijkheden voor groep %1/bron %2"
+msgstr ""
 
 #: c:\providence/app/models/ca_data_importers.php:779
 msgid "Warning: refinery %1 does not exist"
@@ -16693,34 +16473,30 @@ msgid "Warning: invalid refinery options for group %1/source %2 = %3"
 msgstr "Opgelet: ongeldige verfijnmogelijkheden voor groep %1/bron %2 = %3"
 
 #: c:\providence/app/models/ca_data_importers.php:784
-#, fuzzy
 msgid ""
 "[loadImporterFromFile:%1] Invalid refinery options for group %2/source %3 = "
 "%4"
-msgstr "Opgelet: ongeldige verfijnmogelijkheden voor groep %1/bron %2 = %3"
+msgstr ""
 
 #: c:\providence/app/models/ca_data_importers.php:840
 msgid "You must set a code for your mapping!"
 msgstr "U moet een code instellen voor uw mapping!"
 
 #: c:\providence/app/models/ca_data_importers.php:841
-#, fuzzy
 msgid "[loadImporterFromFile:%1] You must set a code for your mapping!"
-msgstr "Fout: U moet een code instellen voor uw mapping!"
+msgstr ""
 
 #: c:\providence/app/models/ca_data_importers.php:852
 msgid "Mapping target table %1 is invalid\n"
 msgstr "Mapping doeltabel %1 is ongeldig\n"
 
 #: c:\providence/app/models/ca_data_importers.php:853
-#, fuzzy
 msgid "[loadImporterFromFile:%1] Mapping target table %2 is invalid\n"
-msgstr "Fout: Doeltabel %1 van de mapping is ongeldig!"
+msgstr ""
 
 #: c:\providence/app/models/ca_data_importers.php:871
-#, fuzzy
 msgid "[loadImporterFromFile:%1] Could not delete existing mapping for %2: %3"
-msgstr "Kan bestaande mapping voor %1  niet verwijderen: %2"
+msgstr ""
 
 #: c:\providence/app/models/ca_data_importers.php:889
 msgid "Error creating mapping: %1"
@@ -16728,9 +16504,8 @@ msgstr "Fout bij aanmaken mapping: %1"
 
 #: c:\providence/app/models/ca_data_importers.php:890
 #: c:\providence/app/models/ca_data_importers.php:898
-#, fuzzy
 msgid "[loadImporterFromFile:%1] Error creating mapping: %2"
-msgstr "Fout bij aanmaken mapping: %1"
+msgstr ""
 
 #: c:\providence/app/models/ca_data_importers.php:897
 msgid "Error creating mapping name: %1"
@@ -16743,13 +16518,10 @@ msgstr ""
 "gevonden worden."
 
 #: c:\providence/app/models/ca_data_importers.php:907
-#, fuzzy
 msgid ""
 "[loadImporterFromFile:%1] Skipped items for %2 because no common grouping "
 "could be found"
 msgstr ""
-"Overgeslagen items voor %1 omdat geen gemeenschappelijke groepering kon "
-"gevonden worden."
 
 #: c:\providence/app/models/ca_data_importers.php:1136
 msgid " Recent errors "
@@ -16880,9 +16652,8 @@ msgid "Importing %1"
 msgstr "%1 aan het importeren"
 
 #: c:\providence/app/models/ca_data_importers.php:1506
-#, fuzzy
 msgid "[%1] Skipped group %2 because target %3 is invalid"
-msgstr "[%1] groep %2 overgeslagen omdat de waarde voor %3 leeg is"
+msgstr ""
 
 #: c:\providence/app/models/ca_data_importers.php:1529
 msgid "[%1] Skipped row %2 because of type restriction"
@@ -16930,11 +16701,10 @@ msgid "Finished building content tree for %1 at %2 seconds"
 msgstr "Gedaan met het bouwen van inhoudsboom voor %1 in %2 secondes"
 
 #: c:\providence/app/models/ca_data_importers.php:1718
-#, fuzzy
 msgid ""
 "Content tree is\n"
 "%1"
-msgstr "Inhoudstype"
+msgstr ""
 
 #: c:\providence/app/models/ca_data_importers.php:1742
 msgid "Could not insert new record"
@@ -17040,14 +16810,12 @@ msgid "[%1] Could not add related list item with relationship %2:"
 msgstr "[%1] Kon gerelateerde item van lijst met relatie %2 niet toevoegen"
 
 #: c:\providence/app/models/ca_data_importers.php:2042
-#, fuzzy
 msgid "[%1] Could not add related loan with relationship %2:"
-msgstr "[%1] Kon gerelateerde plaats met relatie %2 niet toevoegen"
+msgstr ""
 
 #: c:\providence/app/models/ca_data_importers.php:2058
-#, fuzzy
 msgid "[%1] Could not add related movement with relationship %2:"
-msgstr "[%1] Kon gerelateerd object met relatie %2 niet toevoegen"
+msgstr ""
 
 #: c:\providence/app/models/ca_data_importers.php:2090
 msgid "Finished inserting content tree for %1 at %2 seconds into database"
@@ -19798,14 +19566,12 @@ msgid "object lot ⇔ entity relationships"
 msgstr "objectlot ⇔ entiteit relaties"
 
 #: c:\providence/app/models/ca_object_lots_x_object_lots.php:40
-#, fuzzy
 msgid "object lot ⇔ object lot relationship"
-msgstr "object ⇔ object relatie"
+msgstr ""
 
 #: c:\providence/app/models/ca_object_lots_x_object_lots.php:41
-#, fuzzy
 msgid "object lot ⇔ object lot relationships"
-msgstr "object ⇔ object relaties"
+msgstr ""
 
 #: c:\providence/app/models/ca_object_lots_x_object_representations.php:40
 msgid "object lot ⇔ representation relationship"
@@ -19962,25 +19728,19 @@ msgid "File is not part of this representation"
 msgstr "Bestand is geen onderdeel van deze voorstelling"
 
 #: c:\providence/app/models/ca_object_representations_x_collections.php:32
-#, fuzzy
 msgid "object representation ⇔ collection relationship"
-msgstr "voorstelling ⇔ collectie relatie"
+msgstr ""
 
 #: c:\providence/app/models/ca_object_representations_x_collections.php:33
-#, fuzzy
 msgid "object representation ⇔ collection relationships"
-msgstr "voorstelling ⇔ collectie relaties"
+msgstr ""
 
 #: c:\providence/app/models/ca_object_representations_x_collections.php:84
-#, fuzzy
 msgid ""
 "Indicates that the representation should be used to depict the collection is "
 "situations where only a single representation can be displayed (eg. search "
 "results)."
 msgstr ""
-"Duidt aan dat de voorstelling gebruikt dient te worden om het object af te "
-"beelden in situaties waarbij slechts een enkele voorstelling getoond kan "
-"worden (bijvoorbeeld zoekresultaten)."
 
 #: c:\providence/app/models/ca_object_representations_x_entities.php:40
 msgid "object representation ⇔ entity relationship"
@@ -19991,15 +19751,11 @@ msgid "object representation ⇔ entity relationships"
 msgstr "objectvoorstelling ⇔ entiteit relaties"
 
 #: c:\providence/app/models/ca_object_representations_x_entities.php:92
-#, fuzzy
 msgid ""
 "Indicates that the representation should be used to depict the entity is "
 "situations where only a single representation can be displayed (eg. search "
 "results)."
 msgstr ""
-"Duidt aan dat de voorstelling gebruikt dient te worden om het object af te "
-"beelden in situaties waarbij slechts een enkele voorstelling getoond kan "
-"worden (bijvoorbeeld zoekresultaten)."
 
 #: c:\providence/app/models/ca_object_representations_x_object_representations.php:40
 msgid "object representation ⇔ object representation relationship"
@@ -20010,67 +19766,49 @@ msgid "object representation ⇔ object representation relationships"
 msgstr "objectvoorstelling ⇔ objectvoorstelling relaties"
 
 #: c:\providence/app/models/ca_object_representations_x_occurrences.php:40
-#, fuzzy
 msgid "object representation ⇔ occurrence relationship"
-msgstr "objectvoorstelling ⇔ gebeurtenis relatie"
+msgstr ""
 
 #: c:\providence/app/models/ca_object_representations_x_occurrences.php:41
-#, fuzzy
 msgid "object representation ⇔ occurrence relationships"
-msgstr "objectvoorstelling ⇔ gebeurtenis relaties"
+msgstr ""
 
 #: c:\providence/app/models/ca_object_representations_x_occurrences.php:92
-#, fuzzy
 msgid ""
 "Indicates that the representation should be used to depict the occurrence is "
 "situations where only a single representation can be displayed (eg. search "
 "results)."
 msgstr ""
-"Duidt aan dat de voorstelling gebruikt dient te worden om het object af te "
-"beelden in situaties waarbij slechts een enkele voorstelling getoond kan "
-"worden (bijvoorbeeld zoekresultaten)."
 
 #: c:\providence/app/models/ca_object_representations_x_places.php:40
-#, fuzzy
 msgid "object representation ⇔ place relationship"
-msgstr "voorstelling ⇔ plaats relatie"
+msgstr ""
 
 #: c:\providence/app/models/ca_object_representations_x_places.php:41
-#, fuzzy
 msgid "object representation ⇔ place relationships"
-msgstr "voorstelling ⇔ plaats relaties"
+msgstr ""
 
 #: c:\providence/app/models/ca_object_representations_x_places.php:92
-#, fuzzy
 msgid ""
 "Indicates that the representation should be used to depict the place is "
 "situations where only a single representation can be displayed (eg. search "
 "results)."
 msgstr ""
-"Duidt aan dat de voorstelling gebruikt dient te worden om het object af te "
-"beelden in situaties waarbij slechts een enkele voorstelling getoond kan "
-"worden (bijvoorbeeld zoekresultaten)."
 
 #: c:\providence/app/models/ca_object_representations_x_storage_locations.php:40
-#, fuzzy
 msgid "object representation ⇔ storage location relationship"
-msgstr "voorstelling ⇔ opslaglocatie relatie"
+msgstr ""
 
 #: c:\providence/app/models/ca_object_representations_x_storage_locations.php:41
-#, fuzzy
 msgid "object representation ⇔ storage location relationships"
-msgstr "voorstelling ⇔ opslaglocatie relaties"
+msgstr ""
 
 #: c:\providence/app/models/ca_object_representations_x_storage_locations.php:92
-#, fuzzy
 msgid ""
 "Indicates that the representation should be used to depict the storage "
 "location is situations where only a single representation can be displayed "
 "(eg. search results)."
 msgstr ""
-"Duidt aan dat de voorstelling gebruikt dient te worden om het object af te "
-"beelden in situaties waarbij slechts een enkele voorstelling getoond kan "
-"worden (bijvoorbeeld zoekresultaten)."
 
 #: c:\providence/app/models/ca_object_representations_x_vocabulary_terms.php:40
 msgid "object representations ⇔ vocabulary term relationship"
@@ -20081,15 +19819,11 @@ msgid "object representations ⇔ vocabulary term relationships"
 msgstr "objectvoorstellingen ⇔ woordenlijst term relaties"
 
 #: c:\providence/app/models/ca_object_representations_x_vocabulary_terms.php:92
-#, fuzzy
 msgid ""
 "Indicates that the representation should be used to depict the list item is "
 "situations where only a single representation can be displayed (eg. search "
 "results)."
 msgstr ""
-"Duidt aan dat de voorstelling gebruikt dient te worden om het object af te "
-"beelden in situaties waarbij slechts een enkele voorstelling getoond kan "
-"worden (bijvoorbeeld zoekresultaten)."
 
 #: c:\providence/app/models/ca_object_representation_labels.php:40
 msgid "object representation caption"
@@ -20100,14 +19834,12 @@ msgid "object representation captions"
 msgstr "Objectvoorstelling bijschriften"
 
 #: c:\providence/app/models/ca_object_representation_labels.php:79
-#, fuzzy
 msgid "Representation label"
-msgstr "Voorstelling"
+msgstr ""
 
 #: c:\providence/app/models/ca_object_representation_labels.php:79
-#, fuzzy
 msgid "Label/caption for representation."
-msgstr "objectvoorstelling"
+msgstr ""
 
 #: c:\providence/app/models/ca_object_representation_multifiles.php:42
 msgid "object representation multifile"
@@ -22082,9 +21814,8 @@ msgstr ""
 "waarde in de CollectiveAccess lijst lijst_item_types."
 
 #: c:\providence/app/refineries/collectionHierarchyBuilder/collectionHierarchyBuilderRefinery.php:39
-#, fuzzy
 msgid "Collection hierarchy builder"
-msgstr "Collectie zoekacties"
+msgstr ""
 
 #: c:\providence/app/refineries/collectionHierarchyBuilder/collectionHierarchyBuilderRefinery.php:40
 #: c:\providence/app/refineries/collectionSplitter/collectionSplitterRefinery.php:40
@@ -22102,9 +21833,8 @@ msgid "Parents"
 msgstr "Ouders"
 
 #: c:\providence/app/refineries/collectionHierarchyBuilder/collectionHierarchyBuilderRefinery.php:97
-#, fuzzy
 msgid "Collection parents to create"
-msgstr "Oudercollecties om aan te maken, als het vereist is"
+msgstr ""
 
 #: c:\providence/app/refineries/collectionSplitter/collectionSplitterRefinery.php:39
 msgid "Collection splitter"
@@ -22511,10 +22241,8 @@ msgid "[entitySplitterRefinery] No relationship type is set for entity %1"
 msgstr ""
 
 #: c:\providence/app/refineries/entitySplitter/entitySplitterRefinery.php:127
-#, fuzzy
 msgid "[entitySplitterRefinery] No entity type is set for entity %1"
 msgstr ""
-"[listItemSplitterRefinery] Kan lijstitem %1 niet toevoegen aan lijst %2"
 
 #: c:\providence/app/refineries/entitySplitter/entitySplitterRefinery.php:207
 #: c:\providence/app/refineries/listItemSplitter/listItemSplitterRefinery.php:199
@@ -22528,20 +22256,15 @@ msgstr ""
 "gegevensbron te scheiden."
 
 #: c:\providence/app/refineries/entitySplitter/entitySplitterRefinery.php:269
-#, fuzzy
 msgid "Interstitial attributes"
-msgstr "Het ongeldig attribuut kan niet worden bewerkt"
+msgstr ""
 
 #: c:\providence/app/refineries/entitySplitter/entitySplitterRefinery.php:270
-#, fuzzy
 msgid ""
 "Sets or maps metadata for the interstitial entity <em>relationship</em> "
 "record by referencing the metadataElement code and the location in the data "
 "source where the data values can be found."
 msgstr ""
-"Stelt of mapt de metadata voor het lijstitemrecord in door te verwijzen naar "
-"de metadataElement code en de plaats in de gegevensbron waar de "
-"gegevenswaarden kunnen worden gevonden."
 
 #: c:\providence/app/refineries/listItemSplitter/listItemSplitterRefinery.php:37
 msgid "List item splitter"
@@ -22554,18 +22277,14 @@ msgid ""
 msgstr ""
 
 #: c:\providence/app/refineries/listItemSplitter/listItemSplitterRefinery.php:115
-#, fuzzy
 msgid ""
 "[listItemSplitterRefinery] Could not find list %1 for item %2; item was "
 "skipped"
 msgstr ""
-"[listItemSplitterRefinery] Kan lijstitem %1 niet toevoegen aan lijst %2"
 
 #: c:\providence/app/refineries/listItemSplitter/listItemSplitterRefinery.php:161
-#, fuzzy
 msgid "[listItemSplitterRefinery] No relationship type is set for item %1"
 msgstr ""
-"[listItemSplitterRefinery] Kan lijstitem %1 niet toevoegen aan lijst %2"
 
 #: c:\providence/app/refineries/listItemSplitter/listItemSplitterRefinery.php:170
 msgid "[listItemSplitterRefinery] Could not add list item %1 to list %2"
@@ -22634,9 +22353,8 @@ msgid "Parent list item"
 msgstr "Ouder lijst item"
 
 #: c:\providence/app/refineries/loanSplitter/loanSplitterRefinery.php:37
-#, fuzzy
 msgid "Loan splitter"
-msgstr "Plaats splitser"
+msgstr ""
 
 #: c:\providence/app/refineries/loanSplitter/loanSplitterRefinery.php:38
 msgid ""
@@ -22654,54 +22372,35 @@ msgid "[loanSplitterRefinery] No loan type is set for loan %1"
 msgstr ""
 
 #: c:\providence/app/refineries/loanSplitter/loanSplitterRefinery.php:176
-#, fuzzy
 msgid ""
 "Accepts a constant type code for the relationship type or a reference to the "
 "location in the data source where the type can be found.  Note for object "
 "data: if the relationship type matches that set as the hierarchy control, "
 "the object will be pulled in as a \"child\" element in the loan hierarchy."
 msgstr ""
-"Accepteert een constante typecode voor het relatietype of een verwijzing "
-"naar de plaats in de gegevensbron waar het type kan gevonden worden. "
-"Opmerking voor object-gegevens: als het relatietype overeenkomt met de set "
-"als hiërarchische controle, zal het object in de collectie-hiërarchie "
-"getrokken worden als \"kind<\"-element. "
 
 #: c:\providence/app/refineries/loanSplitter/loanSplitterRefinery.php:185
-#, fuzzy
 msgid ""
 "Accepts a constant list item idno from the list loan_types or a reference to "
 "the location in the data source where the type can be found."
 msgstr ""
-"Accepteert een constante lijstitem idno van de lijst plaats_types of een "
-"verwijzing naar de plaats in de gegevensbron waar het type kan worden "
-"gevonden."
 
 #: c:\providence/app/refineries/loanSplitter/loanSplitterRefinery.php:194
-#, fuzzy
 msgid ""
 "Sets or maps metadata for the loan record by referencing the metadataElement "
 "code and the location in the data source where the data values can be found."
 msgstr ""
-"Stelt of mapt de metadata voor het plaatsrecord in door te verwijzen naar de "
-"metadataElement code en de plaats in de gegevensbron waar de gegevenswaarden "
-"kunnen worden gevonden."
 
 #: c:\providence/app/refineries/loanSplitter/loanSplitterRefinery.php:211
-#, fuzzy
 msgid "Loan type default"
-msgstr "Standaard plaatstype"
+msgstr ""
 
 #: c:\providence/app/refineries/loanSplitter/loanSplitterRefinery.php:212
-#, fuzzy
 msgid ""
 "Sets the default loan type that will be used if none are defined or if the "
 "data source values do not match any values in the CollectiveAccess list "
 "loan_types."
 msgstr ""
-"Stelt het standaard plaatstype in dat gebruikt zal worden als geen enkele "
-"bepaald is of als de gegevensbron waardes niet overeenkomen met een enkele "
-"waarde in de CollectiveAccess lijst plaats_types."
 
 #: c:\providence/app/refineries/measurementsSplitter/measurementsSplitterRefinery.php:37
 msgid "Measurement splitter"
@@ -22826,9 +22525,8 @@ msgid "[placeSplitterRefinery] No place type is set for place %1"
 msgstr ""
 
 #: c:\providence/app/refineries/placeSplitter/placeSplitterRefinery.php:134
-#, fuzzy
 msgid "[placeSplitterRefinery] No place hierarchies are defined for %1"
-msgstr "[Fout] Er zijn geen plaatshiërarchieën gedefinieerd"
+msgstr ""
 
 #: c:\providence/app/refineries/placeSplitter/placeSplitterRefinery.php:141
 msgid "[placeSplitterRefinery] No parent found or place %1 in hierarchy %2"
@@ -22901,11 +22599,10 @@ msgid ""
 msgstr ""
 
 #: c:\providence/app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:148
-#, fuzzy
 msgid ""
 "[storageLocationSplitterRefinery] No storage location type is set for "
 "location %1"
-msgstr "opslaglocaties ⇔ opslaglocaties relatie"
+msgstr ""
 
 #: c:\providence/app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:155
 msgid ""
@@ -22914,16 +22611,12 @@ msgid ""
 msgstr ""
 
 #: c:\providence/app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:211
-#, fuzzy
 msgid "Sets the value of the delimiter to break hierarchical values on."
 msgstr ""
-"Stelt de waarde van de delimiter om af te breken, om waardes van de "
-"gegevensbron te scheiden."
 
 #: c:\providence/app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:219
-#, fuzzy
 msgid "Hierarchical storage location types"
-msgstr "Zoek opslagplaatsen"
+msgstr ""
 
 #: c:\providence/app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:220
 msgid ""
@@ -22973,9 +22666,8 @@ msgid "Tour maker"
 msgstr "Rondleidingsmaker"
 
 #: c:\providence/app/refineries/tourMaker/tourMakerRefinery.php:40
-#, fuzzy
 msgid "Creates tour records as required during import."
-msgstr "Maak rondleidingen aan zoals vereist"
+msgstr ""
 
 #: c:\providence/app/refineries/tourMaker/tourMakerRefinery.php:77
 msgid "[tourMakerRefinery] No value set for tour"
@@ -22986,16 +22678,12 @@ msgid "[tourMakerRefinery] No tour type is set for tour %1"
 msgstr ""
 
 #: c:\providence/app/refineries/tourMaker/tourMakerRefinery.php:115
-#, fuzzy
 msgid "[tourMakerRefinery] Could not create tour %1: %2"
 msgstr ""
-"[listItemSplitterRefinery] Kan lijstitem %1 niet toevoegen aan lijst %2"
 
 #: c:\providence/app/refineries/tourMaker/tourMakerRefinery.php:123
-#, fuzzy
 msgid "[tourMakerRefinery] Could not add label for tour %1: %2"
 msgstr ""
-"[listItemSplitterRefinery] Kan lijstitem %1 niet toevoegen aan lijst %2"
 
 #: c:\providence/app/refineries/tourMaker/tourMakerRefinery.php:142
 msgid "[tourMakerRefinery] Could not save data for tour %1: %2"
@@ -23046,17 +22734,13 @@ msgid "[tourStopSplitterRefinery] No relationship type is set for tour stop %1"
 msgstr ""
 
 #: c:\providence/app/refineries/tourStopSplitter/tourStopSplitterRefinery.php:120
-#, fuzzy
 msgid "[tourStopSplitterRefinery] No collection type is set for tour stop %1"
 msgstr ""
-"[listItemSplitterRefinery] Kan lijstitem %1 niet toevoegen aan lijst %2"
 
 #: c:\providence/app/refineries/tourStopSplitter/tourStopSplitterRefinery.php:130
-#, fuzzy
 msgid ""
 "[tourStopSplitterRefinery] Could not find tour %1 to relate stop stops to."
 msgstr ""
-"[listItemSplitterRefinery] Kan lijstitem %1 niet toevoegen aan lijst %2"
 
 #: c:\providence/app/refineries/tourStopSplitter/tourStopSplitterRefinery.php:201
 msgid "Tour stop type"
@@ -25369,9 +25053,8 @@ msgid "Set object identifier to file name"
 msgstr "Stel object identificatiecode in naar bestandsnaam"
 
 #: c:\providence/themes/default/views/batch/mediaimport/import_options_html.php:249
-#, fuzzy
 msgid "Set object identifier to directory and file name"
-msgstr "Stel object identificatiecode in naar bestandsnaam"
+msgstr ""
 
 #: c:\providence/themes/default/views/batch/mediaimport/import_options_html.php:273
 msgid "Status &amp; access"
@@ -25404,14 +25087,12 @@ msgid ""
 msgstr ""
 
 #: c:\providence/themes/default/views/batch/mediaimport/import_options_html.php:322
-#, fuzzy
 msgid "to %1 with relationship type"
-msgstr "Relatietype"
+msgstr ""
 
 #: c:\providence/themes/default/views/batch/mediaimport/import_options_html.php:340
-#, fuzzy
 msgid "Skip files"
-msgstr "%1 bestanden overgeslagen"
+msgstr "Sla bestanden over"
 
 #: c:\providence/themes/default/views/batch/mediaimport/import_options_html.php:345
 msgid ""
@@ -25420,6 +25101,11 @@ msgid ""
 "enclosed in \"/\" characters will be treated as <a href=\"http://www.pcre."
 "org/pcre.txt\" target=\"_new\">Perl-compatible regular expressions</a>."
 msgstr ""
+"Lijst namen van bestanden die u wilt overslaan tijdens het importeren "
+"hieronder op, één per regel. U kunt sterretjes (\"*\") gebruiken als "
+"wildcards om gedeeltelijke overeenkomsten te maken. Waardes tussen \"/\"-"
+"tekens zullen worden behandeld als <a href=\"http://www.pcre.org/pcre.txt\" "
+"target=\"_new\">Perl-compatibele reguliere expressies</ a>."
 
 #: c:\providence/themes/default/views/batch/mediaimport/import_options_html.php:370
 msgid "You are about to import files from <em>%1</em>"
@@ -25474,9 +25160,8 @@ msgid "Last modified"
 msgstr "Laatst gewijzigd"
 
 #: c:\providence/themes/default/views/batch/metadataimport/importer_list_html.php:85
-#, fuzzy
 msgid "No importers defined"
-msgstr "1 importer is gedefinieerd"
+msgstr "Geen importers gedefinieerd"
 
 #: c:\providence/themes/default/views/batch/metadataimport/importer_list_html.php:184
 #: c:\providence/themes/default/views/manage/export/exporter_list_html.php:158
@@ -25716,9 +25401,8 @@ msgstr "Quick Add"
 #: c:\providence/themes/default/views/bundles/ca_occurrences.php:179
 #: c:\providence/themes/default/views/bundles/ca_places.php:261
 #: c:\providence/themes/default/views/bundles/ca_storage_locations.php:249
-#, fuzzy
 msgid "Relation editor"
-msgstr "Relatietype ingavescherm"
+msgstr "Relatie ingavescherm"
 
 #: c:\providence/themes/default/views/bundles/ca_commerce_order_history.php:52
 msgid "No loans have been made"
@@ -25794,18 +25478,16 @@ msgid "Add screen"
 msgstr "Voeg scherm toe"
 
 #: c:\providence/themes/default/views/bundles/ca_list_items.php:104
-#, fuzzy
 msgid "No collection terms selected"
-msgstr "Geen collectie-onderwerpen"
+msgstr "Geen collectietermen geselecteerd"
 
 #: c:\providence/themes/default/views/bundles/ca_object_lots.php:197
 msgid "Add lot"
 msgstr "Voeg lot toe"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:64
-#, fuzzy
 msgid "Extracted metadata"
-msgstr "Bewerk metadata"
+msgstr "Afgeleide metadata"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:66
 msgid "MD5 signature"
@@ -25813,7 +25495,7 @@ msgstr "MD5 handtekening"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:80
 msgid "PRIMARY"
-msgstr ""
+msgstr "PRIMAIR"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:88
 #: c:\providence/themes/default/views/bundles/ca_object_representations_media_display.php:33
@@ -25826,33 +25508,28 @@ msgid "+ %1 additional previews"
 msgstr "+1% bijkomende voorbeeldweergaves"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:94
-#, fuzzy
 msgid "<h3>Fetched from:</h3> URL %1 on %2"
-msgstr "Opgehaald van URL %1 op %2"
+msgstr "<h3>Opgehaald van:</h3> URL %1 op %2"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:180
-#, fuzzy
 msgid "File name"
-msgstr "Tussenvoegsel"
+msgstr "Bestandsnaam"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:182
-#, fuzzy
 msgid "File name: %1"
-msgstr "Tussenvoegsel"
+msgstr "Bestandsnaam: %1"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:187
 msgid "Dimensions"
-msgstr ""
+msgstr "Dimensies"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:196
-#, fuzzy
 msgid "Will be primary after save"
-msgstr "Zal onderdeel zijn van lot"
+msgstr "Zal primair zijn na opslaan"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:197
-#, fuzzy
 msgid "Changes will be applied when you save"
-msgstr "Zal de waarde %1 krijgen indien opgeslagen"
+msgstr "Veranderen worden toegepast als u bewaard hebt"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:211
 msgid "Update media"
@@ -25861,32 +25538,28 @@ msgstr "Update media"
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:214
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:326
 msgid "using upload"
-msgstr ""
+msgstr "gebruik opload"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:221
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:333
-#, fuzzy
 msgid "from URL"
-msgstr "Haal op van URL"
+msgstr "van URL"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:260
-#, fuzzy
 msgid "Make primary"
-msgstr "Is primair?"
+msgstr "Maak primair"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:263
 msgid "Edit full record"
-msgstr ""
+msgstr "Bewerk volledig record"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:269
-#, fuzzy
 msgid "Annotations"
-msgstr "Aantekening %1"
+msgstr "Aantekeningen"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:307
-#, fuzzy
 msgid "Add representation with relationship type %1"
-msgstr "objectvoorstelling ⇔ entiteit relatie"
+msgstr "Voeg representaties toe met relatietype %1"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:307
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:401
@@ -25894,9 +25567,8 @@ msgid "Add representation"
 msgstr "Voeg voorstelling toe"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations.php:342
-#, fuzzy
 msgid "using existing"
-msgstr "Beheer van rondleidingen"
+msgstr "gebruik bestaande"
 
 #: c:\providence/themes/default/views/bundles/ca_object_representations_media_display.php:50
 msgid "or fetch from a URL"
@@ -27271,24 +26943,20 @@ msgid "Created entity "
 msgstr "Entiteit aangemaakt"
 
 #: c:\providence/themes/default/views/editor/interstitial/interstitial_html.php:50
-#, fuzzy
 msgid "Edit %1 relationship"
-msgstr "Voeg relatie toe"
+msgstr "Bewerk %1 relatie"
 
 #: c:\providence/themes/default/views/editor/interstitial/interstitial_html.php:77
-#, fuzzy
 msgid "No user interface defined"
-msgstr "1 gebruikersinterface is gedefinieerd"
+msgstr "Geen gebruikersinterface gedefinieerd"
 
 #: c:\providence/themes/default/views/editor/interstitial/interstitial_html.php:92
-#, fuzzy
 msgid "Saved changes to"
-msgstr "Veranderingen aan %1 bewaard"
+msgstr "Veranderingen bewaard aan"
 
 #: c:\providence/themes/default/views/editor/interstitial/interstitial_html.php:92
-#, fuzzy
 msgid "Edit %1"
-msgstr "%1 bewerken"
+msgstr "Bewerk %1"
 
 #: c:\providence/themes/default/views/editor/objects/representation_media_editor/image_tools_html.php:38
 msgid "Rotation"
@@ -27671,7 +27339,7 @@ msgstr "Er zijn geen weergavelijsten ingesteld"
 #: c:\providence/themes/default/views/manage/Results/ca_item_comments_list_html.php:36
 #: c:\providence/themes/default/views/manage/Results/ca_item_tags_list_html.php:36
 msgid "Batch actions"
-msgstr "Bulkacties"
+msgstr "Acties in batch"
 
 #: c:\providence/themes/default/views/manage/comment_list_html.php:57
 #: c:\providence/themes/default/views/manage/tag_list_html.php:59
@@ -28173,17 +27841,18 @@ msgid ""
 "%3 of %4 %5 were processed. %6 had errors. A full list of processed %7 "
 "follows:<br/><br/>"
 msgstr ""
+"Batch media import van de map <em>%1</em> voltooid op %2.\n"
+"%3 van %4 %5 werden verwerkt. %6 heeft foutmeldingen. Een volledige lijst "
+"van verwerkte %7 volgt: <br/><br/>"
 
 #: c:\providence/themes/default/views/mailTemplates/batch_media_import_completed.tpl:68
-#, fuzzy
 msgid "Imported media were added to the set <em>%1</em>"
-msgstr "Voeg geïmporteerde media toe aan set %1"
+msgstr ""
 
 #: c:\providence/themes/default/views/mailTemplates/batch_media_import_completed.tpl:71
 #: c:\providence/themes/default/views/mailTemplates/batch_processing_completed.tpl:67
-#, fuzzy
 msgid "Processing took %1"
-msgstr "%1 verwerken"
+msgstr "Verwerken nam %1 in beslag"
 
 #: c:\providence/themes/default/views/mailTemplates/batch_processing_completed.tpl:36
 msgid ""
@@ -28191,1463 +27860,6 @@ msgid ""
 "%3 of %4 %5 were processed. %6 had errors. A full list of processed %7 "
 "follows:<br/><br/>"
 msgstr ""
-
-#~ msgid "object events"
-#~ msgstr "object evenementen"
-
-#~ msgid "object lot events"
-#~ msgstr "objectlot evenementen"
-
-#~ msgid "Related events"
-#~ msgstr "Gerelateerde evenementen"
-
-#~ msgid "object event"
-#~ msgstr "object evenement"
-
-#~ msgid ""
-#~ "Unique numeric identifier used by CollectiveAccess internally to identify "
-#~ "this event"
-#~ msgstr ""
-#~ "Unieke numerieke identificatiecode, intern door CollectiveAccess gebruikt "
-#~ "om dit evenement te identificeren"
-
-#~ msgid "Event type"
-#~ msgstr "Evenementtype"
-
-#~ msgid "Planned date"
-#~ msgstr "Geplande datum"
-
-#~ msgid "Event date"
-#~ msgstr "Evenement datum"
-
-#~ msgid "object event ⇔ entity relationship"
-#~ msgstr "object evenement ⇔ entiteit relatie"
-
-#~ msgid "object event ⇔ entity relationships"
-#~ msgstr "object evenement ⇔ entiteit relaties"
-
-#~ msgid "object event ⇔ occurrence relationship"
-#~ msgstr "object evenement ⇔ gebeurtenis relatie"
-
-#~ msgid "object event ⇔ occurrence relationships"
-#~ msgstr "object evenement ⇔ gebeurtenis relaties"
-
-#~ msgid "object event ⇔ place relationship"
-#~ msgstr "object evenement ⇔ plaats relatie"
-
-#~ msgid "object event ⇔ place relationships"
-#~ msgstr "object evenement ⇔ plaats relaties"
-
-#~ msgid "object event ⇔ storage location relationship"
-#~ msgstr "object evenement ⇔ opslaglocatie relatie"
-
-#~ msgid "object event ⇔ storage location relationships"
-#~ msgstr "object evenement ⇔ opslaglocatie relaties"
-
-#~ msgid "object event ⇔ vocabulary term relationship"
-#~ msgstr "object evenement ⇔ woordenschat term relatie"
-
-#~ msgid "object event ⇔ vocabulary term relationships"
-#~ msgstr "object evenement ⇔ woordenschat term relaties"
-
-#~ msgid "object lot event"
-#~ msgstr "objectlot evenement"
-
-#~ msgid "Planned date for event"
-#~ msgstr "Geplande datum voor evenement"
-
-#~ msgid "Date (or range of dates) on which the event is planned to occur."
-#~ msgstr "Datum (of datumbereik) waarop het evenement gepland is."
-
-#~ msgid "Date event occurred on"
-#~ msgstr "Datum waarop het evenement plaatsvond"
-
-#~ msgid "Date (or range of dates) on which the event actually occurred."
-#~ msgstr "Datum (of datumbereik) waarop het evenement effectief plaatsvond."
-
-#~ msgid "object lot event ⇔ storage location relationship"
-#~ msgstr "objectlot evenement ⇔ opslaglocatie relatie"
-
-#~ msgid "object lot event ⇔ storage location relationships"
-#~ msgstr "objectlot evenement ⇔ opslaglocatie relaties"
-
-#~ msgid "object lot event ⇔ vocabulary term relationship"
-#~ msgstr "object lot evenement ⇔ woordenlijst term relatie"
-
-#~ msgid "object lot event ⇔ vocabulary term relationships"
-#~ msgstr "object lot evenement ⇔ woordenlijst term relaties"
-
-#~ msgid "Name of representation"
-#~ msgstr "Naam van voorstelling"
-
-#~ msgid "Joins date fields"
-#~ msgstr "Voegt datumvelden samen"
-
-#~ msgid "Join entity names from separate fields into a single record"
-#~ msgstr "Voegt entiteitsnamen van aparte velden samen in één enkel record"
-
-#~ msgid "Splits list items"
-#~ msgstr "Splitst lijstitems"
-
-#~ msgid "Splits measurements"
-#~ msgstr "Splitst afmetingen"
-
-#~ msgid "Splits tour stops"
-#~ msgstr "Splitst rondleidingshaltes"
-
-#~ msgid "Additional Information"
-#~ msgstr "Aanvullende informatie"
-
-#~ msgid "Display %1 version"
-#~ msgstr "Toon %1 versie"
-
-#~ msgid ""
-#~ "Installation requires the PHP memory_limit directive must be set to at "
-#~ "least 32 megabytes. Check your php.ini configuration file. If the "
-#~ "memory_limit setting is not increased installation may unexpectedly abort."
-#~ msgstr ""
-#~ "De installatie vereist dat de PHP memory_limit instelling op ten minste "
-#~ "32 megabytes is ingesteld. Controleer uw php.ini configuratiebestand. "
-#~ "Indien de memory_limit instelling niet wordt verhoogd kan de installatie "
-#~ "onverwacht ophouden."
-
-#~ msgid ""
-#~ "Installation would like the PHP memory_limit directive must be set to at "
-#~ "least 128 megabytes, just to be safe. Check your php.ini configuration "
-#~ "file. If the memory_limit setting is not increased installation can "
-#~ "unexpectedly abort."
-#~ msgstr ""
-#~ "Voor installatie wordt aangeraden dat de PHP memory_limit instelling op "
-#~ "ten minste 128 megabytes wordt ingesteld om op veilig te spelen. "
-#~ "Controleer uw php.ini configuratiebestand. Indien de memory_limit "
-#~ "instelling niet wordt verhoogd kan de installatie onverwacht ophouden."
-
-#~ msgid "Printable PDF"
-#~ msgstr "Afdrukbare PDF"
-
-#~ msgid "Value %1 [%2] cannot be blank"
-#~ msgstr "Waarde %1 [%2] mag niet leeg zijn"
-
-#~ msgid "Encoded Archival Description format"
-#~ msgstr "Encoded Archival Description formaat"
-
-#~ msgid "NewsML"
-#~ msgstr "NewsML"
-
-#~ msgid ""
-#~ "NewsML is designed to provide a media-type-independent, structural "
-#~ "framework for multi-media news. Beyond exchanging single items it can "
-#~ "also convey packages of multiple items in a structures layout."
-#~ msgstr ""
-#~ "NewsML is ontworpen om een media-type-onafhankelijk, gestructureerd "
-#~ "framework te leveren voor multimedia nieuws. Naast het uitwisselen van "
-#~ "individuele items, kan het ook pakketten van meerdere items uitdrukken in "
-#~ "een gestructureerde layout."
-
-#~ msgid "OAI DublinCore"
-#~ msgstr "OAI DublinCore"
-
-#~ msgid ""
-#~ "Public Broadcasting Core data format; used for data interchange between "
-#~ "audio/video archives"
-#~ msgstr ""
-#~ "Public Broadcasting Core data formaat; gebruikt voor data-uitwisseling "
-#~ "tussen audio/video archieven"
-
-#~ msgid "Tab delimited text"
-#~ msgstr "Tekst gescheiden door tabs"
-
-#~ msgid "%1' does not exist in this object"
-#~ msgstr "%1' bestaat niet in dit object"
-
-#~ msgid "Can't copy icon file for [%1] from %2 to %3"
-#~ msgstr ""
-#~ "Het icoon bestand voor [%1] kan niet worden gekopieërd van %2 naar %3"
-
-#~ msgid "No icon available for media type '%1' (system misconfiguration)"
-#~ msgstr ""
-#~ "Geen icoon beschikbaar voor media type '%1' (fout in configuratiesysteem)"
-
-#~ msgid "Can't copy icon file from %1 to %2"
-#~ msgstr "Icoon bestand kan niet worden gekopieërd van %1 naar %2"
-
-#~ msgid "No icon available for this media type (system misconfiguration)"
-#~ msgstr ""
-#~ "Geen icoon beschikbaar voor dit media type (fout in configuratiesysteem)"
-
-#~ msgid ""
-#~ "Icon for version %1 available for this media type (system "
-#~ "misconfiguration)"
-#~ msgstr ""
-#~ "Icoon voor versie %1 beschikbaar voor dit media type (fout in "
-#~ "configuratiesysteem)"
-
-#~ msgid "No icons available for this media type (system misconfiguration)"
-#~ msgstr ""
-#~ "Geen iconen beschikbaar voor dit media type (fout in configuratiesysteem)"
-
-#~ msgid "No icon available for this media type [%1] (system misconfiguration)"
-#~ msgstr ""
-#~ "Geen icoon beschikbaar voor dit media type [%1] (fout in "
-#~ "configuratiesysteem)"
-
-#~ msgid "Preview image for video"
-#~ msgstr "Preview afbeelding voor video"
-
-#~ msgid "Your system cannot play video. Sorry. :-("
-#~ msgstr "Sorry, uw systeem kan geen video afspelen."
-
-#~ msgid "Can't copy icon file from %1/%2 to %3"
-#~ msgstr "Het icoon bestand kan niet gekopieërd worden van %1/%2 naar %3"
-
-#~ msgid "MysqlFulltext database tables exist"
-#~ msgstr "MysqlFulltext database tabellen bestaan"
-
-#~ msgid ""
-#~ "The MysqlFulltext search engine requires that MySQL be the back-end "
-#~ "database for your CollectiveAccess installation."
-#~ msgstr ""
-#~ "De MysqlFulltext zoekmachine vereist dat MySQL gebruikt wordt als back-"
-#~ "end database voor uw CollectiveAccess installatie."
-
-#~ msgid ""
-#~ "The MysqlFulltext search engine requires that certain tables be present "
-#~ "in your database. They are installed by default and should be present, "
-#~ "but if they are not MysqlFulltext will not be able to operate."
-#~ msgstr ""
-#~ "De MysqlFulltext zoekmachine vereist dat bepaalde tabellen aanwezig zijn "
-#~ "in uw database. Deze worden standaard geïnstalleerd en zouden aanwezig "
-#~ "moeten zijn, maar indien niet zal MysqlFulltext niet in staat zijn "
-#~ "correct te werken."
-
-#~ msgid "bundle mappings"
-#~ msgstr "bundel mappings"
-
-#~ msgid ""
-#~ "Direction of mapping. \"Import\" indicates the mapping is <i>from</i> an "
-#~ "external source into CollectiveAccess; \"export\" means the mapping is "
-#~ "from CollectiveAccess to an external target."
-#~ msgstr ""
-#~ "Richting van mapping. \"Import\" geeft aan dat de mapping gebeurt <i>van</"
-#~ "i> een externe bron naar CollectiveAccess; \"export\" betekent dat de "
-#~ "mapping gebeurt van CollectiveAccess naar een extern doel."
-
-#~ msgid "fragment"
-#~ msgstr "fragment"
-
-#~ msgid "Code indicating import/export data format (Ex. EAD, METS)"
-#~ msgstr "Code die het import/export data formaat aanduidt (Bvb. EAD, METS)"
-
-#~ msgid "Unique identifer for this mapping."
-#~ msgstr "Unieke identificatiecode voor deze mapping"
-
-#~ msgid "Indicates if mapping is accessible to the public or not. "
-#~ msgstr "Geeft aan of de mapping al dan niet publiek toegankelijk is."
-
-#~ msgid "Mapping settings"
-#~ msgstr "Mapping instellingen"
-
-#~ msgid "Mapping units"
-#~ msgstr "Mappingunits"
-
-#~ msgid "Restrict use of mapping to specific types of item."
-#~ msgstr "Beperk het gebruik van mappingen tot specifieke itemtypes."
-
-#~ msgid "Default locale"
-#~ msgstr "Standaard lokalisatie"
-
-#~ msgid "Sets locale used for all newly imported data."
-#~ msgstr "Stelt de lokalisatie in voor alle nieuw geïmporteerde gegevens."
-
-#~ msgid "Path to identifier in import data"
-#~ msgstr "Pad naar de identificatiecode in de te importeren data"
-
-#~ msgid ""
-#~ "Specifies value in import data set to use as identifier when attempting "
-#~ "to match with existing data. For XML data sets, specify the key as a tag "
-#~ "path (ex. /record/head/identifier). For delimited data specify a column "
-#~ "number."
-#~ msgstr ""
-#~ "Bepaalt welke waarde in de te importeren dataset gebruikt kan worden als "
-#~ "identificatiecode, wanneer gezocht wordt naar overeenkomstige records in "
-#~ "de bestaande data. Voor XML datasets, specificeer de waarde als een tag "
-#~ "pad (bvb. /record/head/identifier). Voor door scheidingstekens "
-#~ "afgebakende gegevens specificeer een kolomnummer."
-
-#~ msgid "Remove existing relationships on update?"
-#~ msgstr "Verwijder bestaande relaties bij het bijwerken?"
-
-#~ msgid ""
-#~ "If checked all existing relationships will be removed before record is "
-#~ "updated. Otherwise any newly imported relationships will be added to "
-#~ "existing ones."
-#~ msgstr ""
-#~ "Indien aangevinkt zullen alle bestaande relaties worden verwijderd voor "
-#~ "het record wordt bijgewerkt. Anders zullen nieuw geïmporteerde relaties "
-#~ "toegevoegd worden aan de bestaande."
-
-#~ msgid "Remove existing data on update?"
-#~ msgstr "Verwijder bestaande data bij bijwerken?"
-
-#~ msgid ""
-#~ "If checked field values will be replaced with newly imported data when "
-#~ "the record is updated."
-#~ msgstr ""
-#~ "Indien aangevinkt zullen veldwaardes worden vervangen door nieuw "
-#~ "geïmporteerde gegevens wanneer het record wordt bijgewerkt."
-
-#~ msgid "Could not reorder group %1: %2"
-#~ msgstr "Groep kon niet herschikt worden %1: %2"
-
-#~ msgid "bundle mapping group"
-#~ msgstr "bundel mappinggroep"
-
-#~ msgid "bundle mapping groups"
-#~ msgstr "bundel mappinggroepen"
-
-#~ msgid "Unit code"
-#~ msgstr "Unit code"
-
-#~ msgid ""
-#~ "Path to CollectiveAccess bundle being mapped by this unit. The "
-#~ "CollectiveAccess portion of all rules in this unit will be applied "
-#~ "relative to this base path."
-#~ msgstr ""
-#~ "Pad naar de CollectiveAccess bundel die door deze eenheid gekoppeld "
-#~ "wordt. Het CollectiveAccess gedeelte van alle regels in deze eenheid "
-#~ "zullen relatief ten opzichte van dit pad worden uitgevoerd."
-
-#~ msgid "Base path for external target"
-#~ msgstr "Basispad voor extern doel"
-
-#~ msgid ""
-#~ "Path to element in external format being mapped by this unit. All "
-#~ "elements in the external file format being mapped to by this unit will be "
-#~ "created relative to this base path. The format of the base path is "
-#~ "determined by the format. For XML-based formats this will typically be an "
-#~ "XPath specification; for delimited targets this will be a column number."
-#~ msgstr ""
-#~ "Pad naar element in het extern formaat dat gekoppeld wordt door deze "
-#~ "unit. Alle elementen in het extern bestandsformaat die door deze unit "
-#~ "gekoppeld zullen worden, zullen gecreeërd worden relatief ten onzichte "
-#~ "van dit basispad. Het formaat van het basispad wordt bepaald door het "
-#~ "formaat. Voor XML-gebaseerde formaten zal dit typisch een XPath "
-#~ "specificatie zijn; door scheidingstekens afgebakende doelen zal dit een "
-#~ "kolomnummer zijn."
-
-#~ msgid "Unit settings"
-#~ msgstr "Unit instellingen"
-
-#~ msgid "Notes and remarks relating to the mapping unit"
-#~ msgstr "Nota's en opmerkingen betreffende de mappingunit"
-
-#~ msgid "Restrict use of mapping to specific types of relationships."
-#~ msgstr "Beperk het gebruik van mappings tot specifieke relatietypes."
-
-#~ msgid "List to add items to."
-#~ msgstr "Lijst waaraan items zullen worden toegevoegd."
-
-#~ msgid ""
-#~ "If mandatory then a record will fail to import if any of the values "
-#~ "mapped in this unit are invalid."
-#~ msgstr ""
-#~ "Indien vereist zal een record niet geïmporteerd worden indien één van de "
-#~ "gekoppelde waarden in deze groep ongeldig is."
-
-#~ msgid "Force output?"
-#~ msgstr "Forceer output?"
-
-#~ msgid ""
-#~ "Normally rules in a group are only applied if there is at least one "
-#~ "mapping to a non-static value and that value is set. If \"forceOutput\" "
-#~ "is checked then these rules will be applied even if no non-static values "
-#~ "are set."
-#~ msgstr ""
-#~ "Normaal gezien worden regels in een groep enkel toegepast indien er op "
-#~ "zijn minst één koppeling is naar een niet-statische waarde, en deze "
-#~ "waarde is ingesteld. Indien \"forceer output\" is aangevinkt, zullen deze "
-#~ "regels worden toegepast zelfs als er geen niet-statische waardes zijn "
-#~ "ingesteld."
-
-#~ msgid "Base path for %1 target"
-#~ msgstr "Basispad voor %1 doel"
-
-#~ msgid "mapping unit name"
-#~ msgstr "Naam van mappingunit"
-
-#~ msgid "mapping unit names"
-#~ msgstr "namen van mappingunit"
-
-#~ msgid "Name of mapping unit"
-#~ msgstr "Naam van mappingunit"
-
-#~ msgid "Description of mapping unit name"
-#~ msgstr "Beschrijving van mappingunit naam"
-
-#~ msgid "Locale of mapping unit name"
-#~ msgstr "Lokalisatie van mappingunit naam"
-
-#~ msgid "mapping names"
-#~ msgstr "mappingnamen"
-
-#~ msgid "Name of mapping"
-#~ msgstr "Naam van mapping"
-
-#~ msgid "Description of mapping"
-#~ msgstr "Beschrijving van mapping"
-
-#~ msgid "Locale of mapping name"
-#~ msgstr "Lokalisatie van mapping naam"
-
-#~ msgid "mapping rule"
-#~ msgstr "mappingsregel"
-
-#~ msgid "mapping rules"
-#~ msgstr "mappingsregels"
-
-#~ msgid "CollectiveAccess bundle"
-#~ msgstr "CollectiveAccess bundel"
-
-#~ msgid "Rule settings"
-#~ msgstr "Instellingen voor regel"
-
-#~ msgid "Notes and remarks relating to the mapping rule"
-#~ msgstr "Nota's en opmerkingen betreffende de mappingregel"
-
-#~ msgid ""
-#~ "Delimiter to use when splitting value into pieces. Should be blank if "
-#~ "value is not to be split."
-#~ msgstr ""
-#~ "Scheidingsteken waarmee de waarde in stukken wordt gesplitst. Dient leeg "
-#~ "te zijn indien de waarde niet gesplitst moet worden."
-
-#~ msgid "Part to use"
-#~ msgstr "Te gebruiken deel"
-
-#~ msgid ""
-#~ "Part of split value to use, starting from 1 (eg. 1 is the first part, 2 "
-#~ "is the second part, etc.). Should be blank if value is not to be split."
-#~ msgstr ""
-#~ "Te gebruiken deel van de gesplitste waarde, startend vanaf 1 (bvb. 1 is "
-#~ "het eerste deel, 2 is het tweede deel, enz...). Dient leeg te zijn indien "
-#~ "de waarde niet gesplitst moet worden."
-
-#~ msgid ""
-#~ "Custom format for output of this rule when exporting. Preface individual "
-#~ "values with a caret (^) in the format string to embed values."
-#~ msgstr ""
-#~ "Aangepast formaat voor output van deze regel bij het exporteren. Laat "
-#~ "individuele waardes door een hoedje (^) voorafgaan in het formaat om "
-#~ "waardes in te voegen."
-
-#~ msgid "Remarks relating to change"
-#~ msgstr "Opmerkingen gelinkt aan aanpassing"
-
-#~ msgid "placed"
-#~ msgstr "geplaatst"
-
-#~ msgid "fulfilled"
-#~ msgstr "verwerkt"
-
-#~ msgid "Date order is scheduled to ship on"
-#~ msgstr "Datum waarop de verzending van de bestelling gepland is"
-
-#~ msgid "import/export mappings"
-#~ msgstr "import/export mappings"
-
-#~ msgid ""
-#~ "An error will occur if an attempt is made to save an item with fewer than "
-#~ "this number of attributes of this type. Set to &gt; 1 to make this "
-#~ "attribute effectively mandatory. Set to zero if you don't wish to set a "
-#~ "limit."
-#~ msgstr ""
-#~ "Er zal een foutmelding verschijnen indien wordt getracht om een item op "
-#~ "te slaan met minder attributen voor dit type dan het opgegeven aantal. "
-#~ "Stel in op &gt; 1 om dit attribuut verplicht te maken. Stel in op nul "
-#~ "indien u geen limiet wenst in te stellen."
-
-#~ msgid ""
-#~ "An error will occur if an attempt is made to save an item with more than "
-#~ "this number of attributes of this type. Set to &gt; 1 to make this "
-#~ "attribute single-value. Otherwise set it to an appropriately high value."
-#~ msgstr ""
-#~ "Er zal een foutmelding verschijnen indien wordt getracht om een item op "
-#~ "te slaan met meer attributen voor dit type dan het opgegeven aantal. Stel "
-#~ "in op &gt; 1 om dit een enkelvoudig attribuut te maken. Indien niet, stel "
-#~ "dit in op een behoorlijk hoge waarde."
-
-#~ msgid ""
-#~ "The minimum number of attribute bundles to show in an editing form. If "
-#~ "the number of actual attributes is less than this number then the user "
-#~ "interface will show empty form bundles to reach this number. This number "
-#~ "should be less than or equal to the maximum number of attributes per row."
-#~ msgstr ""
-#~ "Het minimum aantal weer te geven attribuutbundels op een ingaveformulier. "
-#~ "Indien het effectieve aantal attributen kleiner is dan dit aantal, zal de "
-#~ "gebruikersinterface lege formulierbundels weergeven om dit aantal te "
-#~ "bereiken. Dit aantal dient kleiner dan of gelijk aan het maximaal aantal "
-#~ "attributen per rij te zijn."
-
-#~ msgid "No default UI locale is available"
-#~ msgstr "Er is geen standaard UI lokalisatie beschikbaar"
-
-#~ msgid "Provides media import services."
-#~ msgstr "Biedt media import diensten."
-
-#~ msgid "Media Import plugin"
-#~ msgstr "Media Importeerplugin"
-
-#~ msgid "Actions for media import plugin"
-#~ msgstr "Acties voor media importeerplugin"
-
-#~ msgid "Can use media import plugin functions"
-#~ msgstr "Kan media importeerplugin functionaliteiten gebruiken"
-
-#~ msgid ""
-#~ "User can use all media import plugin functionality, including batch media "
-#~ "import."
-#~ msgstr ""
-#~ "Gebruiker kan alle media importeerplugin functionaliteiten gebruiken, "
-#~ "inclusief het importeren van media in bulk."
-
-#~ msgid "Invalid directory"
-#~ msgstr "Ongeldige map"
-
-#~ msgid "Invalid object type value"
-#~ msgstr "Ongeldige waarde voor objecttype"
-
-#~ msgid "Invalid object representation type value"
-#~ msgstr "Ongeldige waarde voor objectvoorstelling type"
-
-#~ msgid "Invalid object status value"
-#~ msgstr "Ongeldige waarde voor object status"
-
-#~ msgid "Invalid object access value"
-#~ msgstr "Ongeldige waarde voor object toegang"
-
-#~ msgid "Invalid object representation access value"
-#~ msgstr "Ongeldige waarde voor objectvoorstelling toegang"
-
-#~ msgid "Invalid import mode"
-#~ msgstr "Ongeldige importeermodus"
-
-#~ msgid "Invalid identifier option"
-#~ msgstr "Ongeldige identificatiecode optie"
-
-#~ msgid "Invalid object locale_id"
-#~ msgstr "Ongeldig object locale_id"
-
-#~ msgid "CollectiveAccess batch media import processing report"
-#~ msgstr "CollectiveAccess bulk media importverwerkingsrapport"
-
-#~ msgid "Media import request could not be submitted due to errors"
-#~ msgstr ""
-#~ "De aanvraag tot media import kon niet worden verzonden wegens fouten"
-
-#~ msgid "The following errors occurred"
-#~ msgstr "Volgende problemen zijn opgetreden"
-
-#~ msgid "Media import request submitted"
-#~ msgstr "Media importeeraanvraag verstuurd"
-
-#~ msgid "There is no media available for import"
-#~ msgstr "Er is geen media beschikbaar om te importeren"
-
-#~ msgid "Upload media for <em>%1</em> and then retry"
-#~ msgstr "Upload media voor <em>%1</em> en probeer opnieuw"
-
-#~ msgid ""
-#~ "Create new object record for media if a matching one does not already "
-#~ "exist"
-#~ msgstr ""
-#~ "Maak een nieuw object record aan voor media als er nog geen oveenkomstig "
-#~ "record bestaat"
-
-#~ msgid "Object identifer-to-filename matching mode"
-#~ msgstr "Object identificatiecode naar bestandsnaam koppeling"
-
-#~ msgid "[Try each mode until match is found]"
-#~ msgstr "[Probeer elke modus totdat een koppeling gevonden is]"
-
-#~ msgid "Create new object records with type"
-#~ msgstr "Maak nieuwe object records aan van het type"
-
-#~ msgid "Create new object records with status"
-#~ msgstr "Maak nieuwe object records aan met status"
-
-#~ msgid "Create new object records with locale"
-#~ msgstr "Maak nieuwe object records aan met lokalisatie"
-
-#~ msgid "Option for object identifer"
-#~ msgstr "Optie voor object identificatiecode"
-
-#~ msgid "Use filename as identifier rather than set value"
-#~ msgstr ""
-#~ "Gebruik bestandsnaam als identificatiecode in plaats van de ingestelde "
-#~ "waarde"
-
-#~ msgid "Create object representation (media) records with type"
-#~ msgstr "Maak objectvoorstelling (media) records aan van het type"
-
-#~ msgid "Create object representation (media) records with status"
-#~ msgstr "Maak objectvoorstelling (media) records aan met status"
-
-#~ msgid "Create object representation (media) records with access"
-#~ msgstr "Maak objectvoorstelling (media) records aan met als toegangsrechten"
-
-#~ msgid "Create object representation (media) records with locale"
-#~ msgstr "Maak objectvoorstelling (media) records aan met als lokalisatie"
-
-#~ msgid "Wiki"
-#~ msgstr "Wiki"
-
-#~ msgid "No rules are configured"
-#~ msgstr "Er zijn geen regels geconfigureerd"
-
-#~ msgid "Show configured rules (%1)"
-#~ msgstr "Toon geconfigureerde regels (%1)"
-
-#~ msgid "Hide configured rules (%1)"
-#~ msgstr "Verberg geconfigureerde regels (%1)"
-
-#~ msgid "Edit unit"
-#~ msgstr "Unit bewerken"
-
-#~ msgid "Add unit"
-#~ msgstr "Unit toevoegen"
-
-#~ msgid "Edit settings"
-#~ msgstr "Instellingen bewerken"
-
-#~ msgid "Add rule"
-#~ msgstr "Regel toevoegen"
-
-#~ msgid "Add %1 to set"
-#~ msgstr "Voeg %1 toe aan set"
-
-#~ msgid "There are no items in this set"
-#~ msgstr "Deze set bevat geen items"
-
-#~ msgid "Object event identifier"
-#~ msgstr "Object evenement identificatiecode"
-
-#~ msgid ""
-#~ "<div class='error'>An error in your system configuration has been "
-#~ "detected</div>\n"
-#~ "\t\t\tGeneral installation instructions can be found\n"
-#~ "\t\t\t<a href='http://wiki.collectiveaccess.org/index.php?"
-#~ "title=Installation_(Providence)' target='_blank'>here</a>.\n"
-#~ "\t\t\tFor more specific hints on the existing issues please have a look "
-#~ "at the messages below."
-#~ msgstr ""
-#~ "<div class='error'>Er werd een probleem in uw systeemconfiguratie "
-#~ "gedetecteerd</div>\n"
-#~ "\t\t\tAlgemene installatie-instructies kunnen\n"
-#~ "\t\t\t<a href='http://wiki.collectiveaccess.org/index.php?"
-#~ "title=Installation_(Providence)' target='_blank'>hier</a> gevonden "
-#~ "worden.\n"
-#~ "\t\t\tVoor meer specifieke hints over de bestaande problemen, bekijk "
-#~ "onderstaande berichten."
-
-#~ msgid "Cataloguing"
-#~ msgstr "Catalogiseren"
-
-#~ msgid "EAD"
-#~ msgstr "EAD"
-
-#~ msgid "OAIDC"
-#~ msgstr "OAIDC"
-
-#~ msgid "PBCore"
-#~ msgstr "PBCore"
-
-#~ msgid "Preview image for audio"
-#~ msgstr "Preview afbeelding voor audio"
-
-#~ msgid "Your system cannot play FLV audio. Sorry. :-("
-#~ msgstr "Sorry, uw systeem kan geen FLV audio afspelen."
-
-#~ msgid "Didn't load because Imagick/MagickWand is available and preferred"
-#~ msgstr ""
-#~ "Niet geladen omdat Imagick/MagickWand beschikbaar is en de voorkeur geniet"
-
-#~ msgid "Didn't load because MagickWand is available and preferred"
-#~ msgstr "Niet geladen omdat MagickWand beschikbaar is en de voorkeur geniet"
-
-#~ msgid ""
-#~ "Provides image processing and conversion services using ImageMagick via "
-#~ "the MagickWand PHP extension"
-#~ msgstr ""
-#~ "Biedt afbeeldingsverwerking- en conversiediensten met ImageMagick via de "
-#~ "MagickWand PHP extensie"
-
-#~ msgid "Didn't load because MagickWand is not available"
-#~ msgstr "Niet geladen omdat MagickWand niet beschikbaar is"
-
-#~ msgid "%1: %2 during RGB colorspace transformation operation"
-#~ msgstr "%1: %2 tijdens RGB kleurruimte transformatie operatie"
-
-#~ msgid "%1: %2 during crop operation"
-#~ msgstr "%1: %2 tijdens bijsnijdoperatie"
-
-#~ msgid "Write permissions to Lucene index directory"
-#~ msgstr "Schrijfmachtigingen naar Lucene index map"
-
-#~ msgid "Indexes must exist and be readable"
-#~ msgstr "Indexen moeten bestaan en leesbaar zijn"
-
-#~ msgid ""
-#~ "The web server user (%1) must be allowed to write the Lucene index "
-#~ "directory (%2). You have to ensure that in order to get the Lucene search "
-#~ "engine back-end to work."
-#~ msgstr ""
-#~ "De webserver gebruiker (%1) moet toelating hebben om naar de Lucene index "
-#~ "map te schrijven (%2). U dient dit te verifiëren opdat de Lucene "
-#~ "zoekmachine back-end zou werken."
-
-#~ msgid ""
-#~ "You have to ensure that all Lucene indexes exist and can be opened. "
-#~ "Please check if a) the web server user (%1) is allowed to read and write "
-#~ "all subdirectories of %2 and b) that all indexes have been created (by "
-#~ "running a full reindex on the whole database).\n"
-#~ "\t\t\t\t"
-#~ msgstr ""
-#~ "U dient te zich ervan te verzekeren dat alle Lucene indexen bestaan en "
-#~ "kunnen geopend worden. Gelieve te verifiëren dat a) de webserver "
-#~ "gebruiker (%1) machtigingen heeft om te lezen en schrijven in alle "
-#~ "submappen van %2 en b) dat alle indexen gecreëerd zijn (door een "
-#~ "volledige herindexering te doen van de gehele database).\n"
-#~ "\t\t\t\t"
-
-#~ msgid ""
-#~ "Open a typical Unix shell (e.g. bash on Linux, Mac OS X, Solaris etc.) "
-#~ "and run &quot;chown -R "
-#~ msgstr ""
-#~ "Open een gebruikelijke Unix shell (bvb. bash op Linux, Mac OS X, Solaris, "
-#~ "enz...) en voer het volgende commando uit: &quot;chown -R "
-
-#~ msgid "Write permissions for Sphinx home directory"
-#~ msgstr "Schrijfmachtigingen voor Sphinx hoofdmap"
-
-#~ msgid "Sphinx process up and running"
-#~ msgstr "Sphinx process is actief"
-
-#~ msgid ""
-#~ "The web server user (%1) must be able to read and write the whole Sphinx "
-#~ "configuration."
-#~ msgstr ""
-#~ "De webserver gebruiker (%1) moet machtiging hebben om de gehele Sphinx "
-#~ "configuratie te lezen en schrijven"
-
-#~ msgid ""
-#~ "Change the owner of the Sphinx home directory to the web server user (%1)."
-#~ msgstr ""
-#~ "Wijzig de eigenaar van de Sphinx hoofdmap naar de webserver gebruiker "
-#~ "(%1)."
-
-#~ msgid "Make sure Sphinx is started"
-#~ msgstr "Zorg er voor dat Sphinx gestart is"
-
-#~ msgid "Unique identifer for this display."
-#~ msgstr "Unieke identificatiecode voor deze weergave"
-
-#~ msgid "Both"
-#~ msgstr "Beide"
-
-#~ msgid "bundle mapping relationship"
-#~ msgstr "bundel mapping relatie"
-
-#~ msgid "bundle mapping relationships"
-#~ msgstr "bundel mapping relaties"
-
-#~ msgid "Group for mapping relationship."
-#~ msgstr "Groep voor het mappen van relatie."
-
-#~ msgid "Element name"
-#~ msgstr "Elementnaam"
-
-#~ msgid "Name of value in bundle to map"
-#~ msgstr "Naam van de waarde in de bundle om te mappen"
-
-#~ msgid "Destination"
-#~ msgstr "Bestemming"
-
-#~ msgid "Item type to restrict mapping to use for."
-#~ msgstr "Item type waartoe het gebruik van mapping beperkt wordt."
-
-#~ msgid "Add collection label"
-#~ msgstr "Voeg collectielabel toe"
-
-#~ msgid "Add entity label"
-#~ msgstr "Voeg entiteitslabel toe"
-
-#~ msgid "Add lot label"
-#~ msgstr "Voeg lotlabel toe"
-
-#~ msgid "Add place label"
-#~ msgstr "Voeg plaatslabel toe"
-
-#~ msgid "Re-sort by"
-#~ msgstr "Hersorteer op"
-
-#~ msgid "Edit Representation Metadata"
-#~ msgstr "Metadata van voorstelling bewerken"
-
-#~ msgid "Click on a file icon to view more information about it"
-#~ msgstr "Klik op een bestandsicoon om meer informatie te bekijken"
-
-#~ msgid "VOC"
-#~ msgstr "VOC"
-
-#~ msgid "SYS"
-#~ msgstr "SYS"
-
-#~ msgid "Less"
-#~ msgstr "Minder info"
-
-#~ msgid "Screen labels"
-#~ msgstr "Scherm labels"
-
-#~ msgid "Add bundle"
-#~ msgstr "Bundel toevoegen"
-
-#~ msgid ""
-#~ "You will be able to configure screens for the user interface after saving "
-#~ "it for the first time."
-#~ msgstr ""
-#~ "Je zal gebruikersinterface schermen kunnen configureren nadat ze de "
-#~ "eerste keer zijn opgeslagen."
-
-#~ msgid "default"
-#~ msgstr "standaardwaarde"
-
-#~ msgid "No name set"
-#~ msgstr "Geen naam ingesteld"
-
-#~ msgid "Sort results by:"
-#~ msgstr "Resultaten sorteren volgens: "
-
-#~ msgid "Results per page:"
-#~ msgstr "Resultaten per pagina:"
-
-#~ msgid "No groups are available"
-#~ msgstr "Er zijn geen groepen beschikbaar"
-
-#~ msgid "with"
-#~ msgstr "met"
-
-#~ msgid "or"
-#~ msgstr "of"
-
-#~ msgid "QuickSearch results for"
-#~ msgstr "'Snel Zoeken' resultaten voor"
-
-#~ msgid "Save search as"
-#~ msgstr "Sla zoekactie op als"
-
-#~ msgid "Your groups"
-#~ msgstr "Uw groepen"
-
-#~ msgid "Group name"
-#~ msgstr "Groepsnaam"
-
-#~ msgid "Your user groups"
-#~ msgstr "Uw gebruikersgroepen"
-
-#~ msgid "%1 groups are available"
-#~ msgstr "Er zijn %1 groepen beschikbaar"
-
-#~ msgid "1 moderated tag"
-#~ msgstr "1 gemodereerde tag"
-
-#~ msgid "Added interface"
-#~ msgstr "Interface toegevoegd"
-
-#~ msgid "Saved changes to interface"
-#~ msgstr "Veranderingen aan interface bewaard."
-
-#~ msgid "Deleted user interface"
-#~ msgstr "Gebruikersinterface verwijderd"
-
-#~ msgid "Added screen"
-#~ msgstr "Scherm toegevoegd"
-
-#~ msgid "Saved changes to screen"
-#~ msgstr "Veranderingen aan het scherm bewaard"
-
-#~ msgid "Deleted screen"
-#~ msgstr "Scherm verwijderd"
-
-#~ msgid "This screen is at the top of the list"
-#~ msgstr "Dit scherm bevindt zich bovenaan de lijst"
-
-#~ msgid "This screen is at the bottom of the list"
-#~ msgstr "Dit scherm bevindt zich onderaan de lijst"
-
-#~ msgid "Bundle placement successfully removed"
-#~ msgstr "Plaatsing Bundel succesvol verwijderd"
-
-#~ msgid "This bundle is at the top of the list"
-#~ msgstr "Deze bundel bevindt zich bovenaan de lijst"
-
-#~ msgid "This bundle is at the bottom of the list"
-#~ msgstr "Deze bundel bevindt zich onderaan de lijst"
-
-#~ msgid "plural term"
-#~ msgstr "meervoudsterm"
-
-#~ msgid "No hierarchies are configured for %1"
-#~ msgstr "Er is geen hiërarchie geconfigureerd voor %1"
-
-#~ msgid ""
-#~ "Layout for metadata elements in this container when used in a display."
-#~ msgstr ""
-#~ "Layout voor metadata elementen in deze container indien gebruikt in een "
-#~ "weergave."
-
-#~ msgid "Layout for value when used in a display (can include HTML)."
-#~ msgstr ""
-#~ "Layout voor waarde wanneer gebruikt in een weergave (kan HTML bevatten)."
-
-#~ msgid ""
-#~ "Restrict this bundle to lookups on the specified type (for bundles doing "
-#~ "lookups on typed items - eg. objects, places, entities, et al)"
-#~ msgstr ""
-#~ "Beperk deze bundel tot zoekacties op het gespecificeerde type (voor "
-#~ "bundels die zoekacties doen op type-specifieke items - bvb objecten, "
-#~ "plaatsen, entititeiten, enz...)"
-
-#~ msgid ""
-#~ "Set to the list item code of the type of the typed lookup item to limit "
-#~ "lookups to."
-#~ msgstr ""
-#~ "Stel dit in op de lijstitem code van het type van het type-gebaseerd "
-#~ "zoekactie-item waartoe zoekacties gelimiteerd worden."
-
-#~ msgid ""
-#~ "Restrict this bundle to handling the specified list (for bundles doing "
-#~ "lookups on lists)"
-#~ msgstr ""
-#~ "Beperk deze bundel tot het behandelen van de gespecificeerde lijst (voor "
-#~ "bundels die zoekacties uitvoeren op lijsten)"
-
-#~ msgid ""
-#~ "Set to the list code of the list to limit lookups to, for bundles that do "
-#~ "lookups on lists and vocabularies."
-#~ msgstr ""
-#~ "Stel dit in op de lijstcode van de lijst waartoe zoekacties beperkt "
-#~ "dienen te worden, voor bundels die zoekacties doen op (woorden)lijsten."
-
-#~ msgid ""
-#~ "Only list relationships with the specified types. Set this to a list of "
-#~ "type codes."
-#~ msgstr ""
-#~ "Lijst enkel relaties op van de gespecificeerde types. Stel dit in op een "
-#~ "lijst van typecodes."
-
-#~ msgid ""
-#~ "Provides cataloguing tools for creation of collection item-based tours "
-#~ "(walking and otherwise)."
-#~ msgstr ""
-#~ "Biedt catalogiseertools aan voor de creatie van collectie-item gebaseerde "
-#~ "rondleidingen (wandelingen en andere)"
-
-#~ msgid "Tours plugin"
-#~ msgstr "Rondleidingenplugin"
-
-#~ msgid "Object editor"
-#~ msgstr "Object ingavescherm"
-
-#~ msgid "My user groups"
-#~ msgstr "Mijn gebruikersgroepen"
-
-#~ msgid "My search forms"
-#~ msgstr "Mijn zoekformulieren"
-
-#~ msgid "Allow user to use search (basic or advanced) interface to find items"
-#~ msgstr ""
-#~ "Laat gebruiker toe om de zoekinterface (basis of geavanceerd) te "
-#~ "gebruiken om items te vinden"
-
-#~ msgid "Allow user to use browse interface to find items"
-#~ msgstr ""
-#~ "Sta gebruikers toe om de doorblader interface te gebruiken om items te "
-#~ "vinden"
-
-#~ msgid "Your profile"
-#~ msgstr "Uw profiel"
-
-#~ msgid ""
-#~ "Your first name, to be used by the system for identification purposes"
-#~ msgstr "Uw voornaam, gebruikt door het systeem om u te identificeren"
-
-#~ msgid "Your last name, to be used by the system for identification purposes"
-#~ msgstr "Uw achternaam, gebruikt door het systeem om u te identificeren"
-
-#~ msgid ""
-#~ "Your email address, to be used by the system for notification purposes"
-#~ msgstr ""
-#~ "Uw emailadres, door het systeem gebruikt om u email-meldingen te versturen"
-
-#~ msgid "Add new user login"
-#~ msgstr "Voeg nieuwe user login toe"
-
-#~ msgid "Help"
-#~ msgstr "Help"
-
-#~ msgid ""
-#~ "At a minimum, the following information must be provided when creating a "
-#~ "new %1:"
-#~ msgstr ""
-#~ "De volgende informatie moet minstens voorzien worden bij het aanmaken van "
-#~ "een nieuwe %1:"
-
-#~ msgid "Search Results"
-#~ msgstr "Zoek Resultaten"
-
-#~ msgid "Back to Find"
-#~ msgstr "Terug naar Vinden"
-
-#~ msgid "New list"
-#~ msgstr "Nieuwe lijst"
-
-#~ msgid "Hierarchy position"
-#~ msgstr "Positie in de hiërarchie"
-
-#, fuzzy
-#~ msgid "Hide hierarchy info"
-#~ msgstr "Positie in de hiërarchie"
-
-#~ msgid "Editing list item"
-#~ msgstr "Bewerking van een lijst item"
-
-#, fuzzy
-#~ msgid "Add element"
-#~ msgstr "Voeg sub-element toe"
-
-#, fuzzy
-#~ msgid "Embedded metadata"
-#~ msgstr "Metadata-element toegevoegd"
-
-#~ msgid "Choose a location to move the current %1 under."
-#~ msgstr "Kies een locatie om de huidige %1 naartoe te verplaatsen."
-
-#~ msgid ""
-#~ "At a minimum, the following information must be provided when creating a "
-#~ "new %1 collection:"
-#~ msgstr ""
-#~ "De volgende informatie moet minstens voorzien worden bij het aanmaken van "
-#~ "een nieuwe %1 collection:"
-
-#~ msgid "New collection"
-#~ msgstr "Nieuwe collectie"
-
-#~ msgid "collection label not set"
-#~ msgstr "label collectie niet ingesteld"
-
-#~ msgid "Editing Entity"
-#~ msgstr "Entiteit bewerken"
-
-#~ msgid "Entity label not set"
-#~ msgstr "Entiteitslabel niet ingesteld"
-
-#~ msgid "New object event"
-#~ msgstr "Nieuwe object-gebeurtenis"
-
-#~ msgid ""
-#~ "At a minimum, the following information must be provided when creating a "
-#~ "new %1 lot:"
-#~ msgstr ""
-#~ "De volgende informatie moet minstens voorzien worden bij het aanmaken van "
-#~ "een nieuw %1 lot"
-
-#~ msgid "Editing Object Lot"
-#~ msgstr "Object lot bewerken"
-
-#~ msgid "New object lot"
-#~ msgstr "Nieuwe objectenlot"
-
-#~ msgid "object lot label not set"
-#~ msgstr "label object lot niet ingesteld"
-
-#~ msgid "Editing Object Representation"
-#~ msgstr "Objectenrepresentatie bewerken"
-
-#, fuzzy
-#~ msgid "View primary representation"
-#~ msgstr "Representatie bewerken"
-
-#~ msgid "Editing Object"
-#~ msgstr "Object bewerken"
-
-#~ msgid "Label not set"
-#~ msgstr "Label niet ingesteld"
-
-#~ msgid "New object"
-#~ msgstr "Nieuw object"
-
-#~ msgid "%1 label not set"
-#~ msgstr "%1 label niet ingesteld"
-
-#~ msgid "new place"
-#~ msgstr "Nieuwe plaats "
-
-#~ msgid "New storage location"
-#~ msgstr "Nieuwe opslagplaats"
-
-#, fuzzy
-#~ msgid "new storage location"
-#~ msgstr "Nieuwe opslagplaats"
-
-#~ msgid "Results layout:"
-#~ msgstr "Weergave resultaten: "
-
-#~ msgid "Preferred names"
-#~ msgstr "Voorkeursnamen"
-
-#~ msgid "Object type"
-#~ msgstr "Object type"
-
-#~ msgid "Object type not set"
-#~ msgstr "Object type niet ingesteld"
-
-#~ msgid ""
-#~ "At a minimum, the following information must be provided when creating a "
-#~ "new %1 set:"
-#~ msgstr ""
-#~ "De volgende informatie moet minstens voorzien worden bij het aanmaken van "
-#~ "een nieuw %1 set "
-
-#~ msgid "Editing set item"
-#~ msgstr "Set item toevoegen"
-
-#, fuzzy
-#~ msgid "You cannot edit this display"
-#~ msgstr "Deze set kan niet bewerkt worden"
-
-#~ msgid "Set could not be created because of errors: %1"
-#~ msgstr "Deze set kon niet aangemaakt worden wegens errors:%1"
-
-#~ msgid "Set was created"
-#~ msgstr "Set aangemaakt"
-
-#~ msgid "Changes to set were saved"
-#~ msgstr "Aanpassingen aan set werden bewaard"
-
-#~ msgid ""
-#~ "No Google Maps API key is configured. Please set google_map_key in your "
-#~ "application configuration file."
-#~ msgstr ""
-#~ "Er is geen Google Maps API key ingesteld. Gelieve google_map_key in uw "
-#~ "applicatie configuratiebestand in te stellen."
-
-#~ msgid "Enter coordinates"
-#~ msgstr "Voer coördinaten in"
-
-#~ msgid "Relationship Table"
-#~ msgstr "Relatietabel"
-
-#~ msgid "Relationship Table - for example ca_objects_x_entities"
-#~ msgstr "Relationele tabel - bijvoorbeeld ca_objects_x_entities"
-
-#~ msgid ""
-#~ "Relationship Type - an existing relationship type defined within the "
-#~ "given relationship table"
-#~ msgstr ""
-#~ "Relationeel type - een bestaand relationeel type gedefiniëerd binnen de "
-#~ "gegeven relationele tabel"
-
-#~ msgid "Reference Only"
-#~ msgstr "Enkel ter referentie"
-
-#~ msgid "Whether or not an autocomplete field is shown."
-#~ msgstr "Of een auto-aanvulveld getoond wordt of niet."
-
-#~ msgid "Create Item Link"
-#~ msgstr "Maak link aan voor dit item"
-
-#~ msgid "Whether or not a create item link should be set for this field."
-#~ msgstr ""
-#~ "Of een creëer item koppeling ingesteld moet worden voor dit veld of niet."
-
-#, fuzzy
-#~ msgid ""
-#~ "The type name for the right hand item - for example, individual is a "
-#~ "typename for ca_entities"
-#~ msgstr ""
-#~ "Het naamtype van het rechteritem - bijvoorbeeld, privépersoon is een "
-#~ "naamtype voor ca_donors"
-
-#, fuzzy
-#~ msgid "browses"
-#~ msgstr "Sluit de browser"
-
-#, fuzzy
-#~ msgid "Date/time of last use"
-#~ msgstr "Datum"
-
-#, fuzzy
-#~ msgid "object_lots"
-#~ msgstr "objectenlot"
-
-#, fuzzy
-#~ msgid "Source table"
-#~ msgstr "Meer "
-
-#, fuzzy
-#~ msgid "Occurred on"
-#~ msgstr "Gerelateerde objecten"
-
-#, fuzzy
-#~ msgid "Parser"
-#~ msgstr "Getal"
-
-#, fuzzy
-#~ msgid "list label"
-#~ msgstr "Labels afdrukken"
-
-#, fuzzy
-#~ msgid "list labels"
-#~ msgstr "Labels afdrukken"
-
-#, fuzzy
-#~ msgid "object_events"
-#~ msgstr "Nieuwe object-gebeurtenis"
-
-#, fuzzy
-#~ msgid "lot label"
-#~ msgstr "Voeg lotlabel toe"
-
-#, fuzzy
-#~ msgid "lot labels"
-#~ msgstr "Voeg lotlabel toe"
-
-#, fuzzy
-#~ msgid "object ⇔ object event relationship"
-#~ msgstr "Objectrelaties bewerken"
-
-#, fuzzy
-#~ msgid "object ⇔ object event relationships"
-#~ msgstr "Objectrelaties bewerken"
-
-#, fuzzy
-#~ msgid "Width of search form field, in characters."
-#~ msgstr "Breedte van het invulveld voor de data in de gebruikersinterface"
-
-#, fuzzy
-#~ msgid "set item label"
-#~ msgstr "Voeg entiteitslabel toe"
-
-#, fuzzy
-#~ msgid "set item labels"
-#~ msgstr "Labels afdrukken"
-
-#, fuzzy
-#~ msgid "set label"
-#~ msgstr "Voeg label toe"
-
-#, fuzzy
-#~ msgid "set labels"
-#~ msgstr "Labels afdrukken"
-
-#~ msgid "Item label display mode"
-#~ msgstr "Weergavemodus van het itemlabel"
-
-#~ msgid ""
-#~ "Determines which item labels (titles of objects, entities, places, etc.) "
-#~ "are displayed when labels in multiple languages are available. This "
-#~ "setting only expresses a preference; if suitable labels matching your "
-#~ "language preference do not exist then labels in other languages will be "
-#~ "used."
-#~ msgstr ""
-#~ "Bepaalt welke itemlabels (titels van objecten, entiteiten, plaatsen, "
-#~ "etc.) weergegeven worden wanneer er labels in meerdere talen beschikbaar "
-#~ "zijn. Deze instelling drukt enkel uw voorkeur uit; indien er geen "
-#~ "geschikte labels aanwezig zijn die overeenkomen met uw taalvoorkeur, "
-#~ "zullen labels in de andere talen gebruikt worden."
-
-#~ msgid "Always show labels in the item's language if possible"
-#~ msgstr "Labels altijd weergeven in de taal van het item indien mogelijk"
-
-#~ msgid "Browse for vocabulary and list terms"
-#~ msgstr "Navigeer door woordenlijsten"
-
-#~ msgid "Close list browser"
-#~ msgstr "Sluit de lijst browser"
-
-#~ msgid "Open list browser"
-#~ msgstr "Open de lijst browser"
-
-#, fuzzy
-#~ msgid "Browse for relationship types"
-#~ msgstr "Navigeren tussen opslaglocaties"
-
-#, fuzzy
-#~ msgid "Close type browser"
-#~ msgstr "Sluit de plaatsenbrowser"
-
-#, fuzzy
-#~ msgid "Open type browser"
-#~ msgstr "Open de plaatsenbrowser"
-
-#~ msgid "Forgot your password?"
-#~ msgstr "Wachtwoord vergeten?"
-
-#~ msgid "%1 must be less than %2 character%3 long"
-#~ msgstr "%1 moet minder dan %2 tekens%3 lang zijn"
-
-#, fuzzy
-#~ msgid "Element code or id is invalid"
-#~ msgstr "%1 is ongeldig"
-
-#~ msgid "New item under current"
-#~ msgstr "Nieuw item onder het huidige item"
-
-#~ msgid "New item next to current"
-#~ msgstr "Nieuw item naast het huidige item"
-
-#~ msgid "Your search did not find any %1"
-#~ msgstr "Uw zoekactie heeft geen %1 gevonden"
-
-#~ msgid "Close location browser"
-#~ msgstr "Locatiebrowser sluiten"
-
-#~ msgid "Open location browser"
-#~ msgstr "Open de locatiebrowser"
-
-#~ msgid "Close storage location browser"
-#~ msgstr "Opslaglocatiebrowser sluiten"
-
-#~ msgid "Open storage location browser"
-#~ msgstr "Opslaglocatiebrowser openen"
-
-#~ msgid "Find %1"
-#~ msgstr "%1 zoeken"
-
-#~ msgid "Add new metadata standard"
-#~ msgstr "Voeg een nieuwe metadata standaard toe"
-
-#~ msgid "Lot (object intake)"
-#~ msgstr "Lot (inname van objecten)"
-
-#~ msgid "Lots (object intake)"
-#~ msgstr "Lots (inname van objecten)"
-
-#~ msgid "Use filespace"
-#~ msgstr "Gebruik bestandsruimte"
-
-#~ msgid "Grant user access to the file space"
-#~ msgstr "Gebruiker toegang verlenen tot de bestandsruimte"
-
-#~ msgid "Use reports"
-#~ msgstr "Rapporten gebruiken"
-
-#~ msgid "Allow user access to report and report format configuration tools"
-#~ msgstr ""
-#~ "Gebruiker toegang verlenen tot de tools voor rapport(opmaak)instellingen"
-
-#~ msgid "Allow user to modify existing report formats"
-#~ msgstr "Gebruiker toelaten om bestaande rapportsjablonen te wijzigen"
-
-#~ msgid "Delete report format"
-#~ msgstr "Rapportsjabloon verwijderen"
-
-#~ msgid "Modify object"
-#~ msgstr "Object wijzigen"
-
-#~ msgid "Allow user to modify existing objects in the system"
-#~ msgstr "Gebruiker toelaten om bestaande objecten in het systeem te wijzigen"
-
-#~ msgid "Edit alternate object numbers"
-#~ msgstr "Alternatieve objectnummers bewerken"
-
-#~ msgid ""
-#~ "Allow user to add, edit or delete relationships between objects and other "
-#~ "objects and authorities"
-#~ msgstr ""
-#~ "Gebruiker toelaten om relaties tussen objecten en authoriteiten toe te "
-#~ "voegen, te bewerken of te verwijderen"
-
-#~ msgid "View object change log"
-#~ msgstr "Veranderingen-logboek object bekijken"
-
-#~ msgid "Edit object use rights"
-#~ msgstr "Objectsgebruiksrechten bewerken"
-
-#~ msgid "Allow user to add new lots to the system"
-#~ msgstr "Gebruiker toelaten om nieuwe loten aan het systeem toe te voegen"
-
-#~ msgid "Allow user to delete lots from the system"
-#~ msgstr "Gebruiker toelaten om loten van het systeem te verwijderen"
-
-#~ msgid "Allow user to add new entity to the entities authority"
-#~ msgstr ""
-#~ "Gebruiker toelaten om nieuwe entiteiten tot de entiteit-authoriteit toe "
-#~ "te voegen"
-
-#~ msgid "Allow user to edit existing entity in the entities authority"
-#~ msgstr ""
-#~ "Gebruiker toelaten om bestaande entiteit in de entiteit-authoriteit te "
-#~ "bewerken"
-
-#~ msgid "Allow user to delete entity from the entities authority"
-#~ msgstr ""
-#~ "Gebruiker toelaten om een entiteit van de entiteiten-authoriteit te "
-#~ "verwijderen"
-
-#~ msgid "Allow user to edit existing place in the entities authority"
-#~ msgstr ""
-#~ "Gebruiker toelaten om een bestaande plaats te bewerken in de entiteiten-"
-#~ "authoriteit"
-
-#~ msgid "Allow user to delete place from the entities authority"
-#~ msgstr ""
-#~ "Gebruikter toelaten om plaatsen te verwijderen uit de entiteiten-"
-#~ "authoriteit"
-
-#~ msgid "Set up"
-#~ msgstr "Configuratie"
-
-#~ msgid "Log out"
-#~ msgstr "Afmelden"
-
-#~ msgid ""
-#~ "At a minimum, the following information must be provided when creating a "
-#~ "new %1 place:"
-#~ msgstr ""
-#~ "De volgende informatie moet minstens voorzien worden bij het aanmaken van "
-#~ "een nieuw %1 plaats:"
-
-#~ msgid "place label not set"
-#~ msgstr "plaatslabel niet ingesteld"
-
-#~ msgid ""
-#~ "At a minimum, the following information must be provided when creating a "
-#~ "new %1 storage location:"
-#~ msgstr ""
-#~ "De volgende informatie moet minstens voorzien worden bij het aanmaken van "
-#~ "een nieuwe %1 opslagplaats:"
-
-#~ msgid "Timecode of start point in hh:mm:ss:ff format"
-#~ msgstr "Tijdscode van het startpunt in hh:mm:ss:ff formaat"
-
-#~ msgid "Timecode of end point in hh:mm:ss:ff format"
-#~ msgstr "Tijdscode van het eindpunt in hh:mm:ss:ff formaat"
-
-#~ msgid "Alternate labels for this entity"
-#~ msgstr "Plaatsvervangende labels voor deze entiteit"
-
-#~ msgid "Preferred labels for this entity"
-#~ msgstr "Voorkeurslabels voor deze entiteit"
-
-#~ msgid "Alternate labels for this occurrence"
-#~ msgstr "Plaatsvervangende labels voor deze occurence"
-
-#~ msgid "Preferred labels for this occurrence"
-#~ msgstr "Voorkeurslabels voor deze occurence"
-
-#~ msgid "Preferred labels for this object"
-#~ msgstr "Voorkeurslabels voor dit object"
-
-#~ msgid "fooey"
-#~ msgstr "fooey"
+"In batch verwerken van de set %1 voltooid op %2.\n"
+"%3 van %4 %5 werden verwerkt. %6 gaf foutmeldingen. Een volledige lijst van "
+"verwerkte %7 volgt: <br/><br/>"
