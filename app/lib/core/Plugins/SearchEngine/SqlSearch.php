@@ -661,13 +661,21 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							
 							$va_temp_tables = array();
 							$vn_w = 0;
+							
+					                $increment = 1;
+					                $qr_increment = mysql_query("SELECT variable_value b
+					                                FROM information_schema.GLOBAL_VARIABLES
+					                                WHERE VARIABLE_NAME = 'AUTO_INCREMENT_INCREMENT'");
+					                $incr = mysql_fetch_assoc($qr_increment);
+					                if (isset($incr) && is_array($incr)) { $increment = $incr['b']; }
+
 							foreach($va_words as $vs_word) {
 								$vn_w++;
 								$vs_temp_table = 'ca_sql_search_phrase_'.md5($pn_subject_tablenum."/".$vs_word."/".$vn_w);
 								$this->_createTempTable($vs_temp_table);
 								$vs_sql = "
 									INSERT INTO {$vs_temp_table}
-									SELECT swi.index_id + 1, 1
+									SELECT swi.index_id + {$increment}, 1
 									FROM ca_sql_search_words sw 
 									INNER JOIN ca_sql_search_word_index AS swi ON sw.word_id = swi.word_id 
 									".(sizeof($va_temp_tables) ? " INNER JOIN ".$va_temp_tables[sizeof($va_temp_tables) - 1]." AS tt ON swi.index_id = tt.row_id" : "")."
@@ -690,7 +698,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							
 							$vs_results_temp_table = array_pop($va_temp_tables);
 							
-							$this->opo_db->query("UPDATE {$vs_results_temp_table} SET row_id = row_id - 1");
+							$this->opo_db->query("UPDATE {$vs_results_temp_table} SET row_id = row_id - {$increment}");
 							$va_direct_query_temp_tables[$vs_results_temp_table] = true;
 							$vs_direct_sql_query = "SELECT swi.row_id, ca.boost 
 													FROM {$vs_results_temp_table} ca
