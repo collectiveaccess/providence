@@ -78,7 +78,7 @@ class Session {
 
 			// initialize session var storage
 			if($this->getSessionID() && !ExternalCache::contains($this->getSessionID(), 'SessionVars')) {
-				ExternalCache::save($this->getSessionID(), array(), 'SessionVars');
+				ExternalCache::save($this->getSessionID(), array(), 'SessionVars', $this->lifetime ? $this->lifetime + 3600 : 7 * 24 * 3600);
 			}
 		}
 	}
