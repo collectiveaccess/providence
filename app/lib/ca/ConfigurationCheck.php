@@ -442,7 +442,7 @@ final class ConfigurationCheck {
 			,ini_get("upload_max_filesize"),ini_get("post_max_size")));
 		}
 
-		if($vn_post_max_size < 5242880 || $vn_upload_max_filesize < 5242880){
+		if(($vn_post_max_size > 0 && $vn_post_max_size < 5242880) || ($vn_upload_max_filesize > 0 && $vn_upload_max_filesize < 5242880)){
 			self::addError(_t(
 				'It looks like at least one of the PHP configuration variables "post_max_size" and "upload_max_filesize" '.
 				'is set to a very low value. Note that the lowest of both values limits the size of the '.

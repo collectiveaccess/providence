@@ -499,7 +499,20 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 							$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
 							$va_placements[$vn_placement_id]['inlineEditingType'] = null;
 						} else {
-							$va_placements[$vn_placement_id]['allowInlineEditing'] = true;
+						
+                            if(isset($va_bundle_name[1])){
+                                // check if identifier is editable
+                                $id_editable = $t_subject->opo_idno_plugin_instance->isFormatEditable($vs_subject_table);
+
+                                // Do not allow in-line editing if the intrinsic element is identifier and
+                                // a). is not editable (editable = 0 in multipart_id_numbering.conf)
+                                // b). consists of multiple elements
+                                if($va_bundle_name[1] == $t_subject->getProperty('ID_NUMBERING_ID_FIELD') && $id_editable == false)
+                                    $va_placements[$vn_placement_id]['allowInlineEditing'] = false;
+                                else
+                                    $va_placements[$vn_placement_id]['allowInlineEditing'] = true;
+                            }						
+						
 							switch($t_subject->getFieldInfo($va_bundle_name[1], 'DISPLAY_TYPE')) {
 								case 'DT_SELECT':
 									if (($vs_list_code = $t_subject->getFieldInfo($va_bundle_name[1], 'LIST')) || ($vs_list_code = $t_subject->getFieldInfo($va_bundle_name[1], 'LIST_CODE'))) {
