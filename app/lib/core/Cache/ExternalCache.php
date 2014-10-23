@@ -109,10 +109,11 @@ class ExternalCache {
 	 * @param string $ps_key
 	 * @param mixed $pm_data
 	 * @param string $ps_namespace
+	 * @param int $pn_ttl 
 	 * @return bool
 	 * @throws ExternalCacheInvalidParameterException
 	 */
-	public static function save($ps_key, $pm_data, $ps_namespace='default') {
+	public static function save($ps_key, $pm_data, $ps_namespace='default', $pn_ttl=null) {
 		if(!self::init()) { return false; }
 		self::checkParameters($ps_namespace, $ps_key);
 
@@ -121,7 +122,7 @@ class ExternalCache {
 		}
 
 		// Cache::save() returns the lifetime of the item
-		self::getCache()->save($ps_namespace.':'.$ps_key, $pm_data, __CA_CACHE_TTL__);
+		self::getCache()->save($ps_namespace.':'.$ps_key, $pm_data, (!is_null($pn_ttl) && ($pn_ttl > 0)) ? $pn_ttl : __CA_CACHE_TTL__);
 		return true;
 	}
 	# ------------------------------------------------
