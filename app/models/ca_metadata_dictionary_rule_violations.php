@@ -75,8 +75,8 @@ BaseModel::$s_ca_models_definitions['ca_metadata_dictionary_rule_violations'] = 
 				'LABEL' => _t('Created on'), 'DESCRIPTION' => _t('Created on')
 		),
 		'last_checked_on' => array(
-				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'FIELD_TYPE' => FT_TIMESTAMP, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1, 'UPDATE_ON_UPDATE' => true,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Last checked on'), 'DESCRIPTION' => _t('Last checked on')
@@ -147,7 +147,7 @@ class ca_metadata_dictionary_rule_violations extends BaseModel {
 	# Change logging
 	# ------------------------------------------------------
 	protected $UNIT_ID_FIELD = null;
-	protected $LOG_CHANGES_TO_SELF = true;
+	protected $LOG_CHANGES_TO_SELF = false;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
 		

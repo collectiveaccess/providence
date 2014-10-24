@@ -2084,6 +2084,7 @@
 			
 			$t_entry = new ca_metadata_dictionary_entries();
 			$o_db = $t_entry->getDb();
+			$qr_res = $o_db->query("DELETE FROM ca_metadata_dictionary_rule_violations");
 			$qr_res = $o_db->query("DELETE FROM ca_metadata_dictionary_rules");
 			$qr_res = $o_db->query("DELETE FROM ca_metadata_dictionary_entries");
 			
@@ -2106,6 +2107,9 @@
 			$o_rows = $o_sheet->getRowIterator();
 			
 			$vn_add_count = 0;
+			$vn_rule_count = 0;
+			
+			$o_rows->next(); // skip first line
 			while ($o_rows->valid() && ($o_row = $o_rows->current())) {
 				$o_cells = $o_row->getCellIterator();
 				$o_cells->setIterateOnlyExistingCells(false); 
@@ -2134,7 +2138,7 @@
 					$va_data[$vn_c] = nl2br(preg_replace("![\n\r]{1}!", "\n\n", $vs_val));
 					$vn_c++;
 					
-					if ($vn_c > 4) { break; }
+					if ($vn_c > 5) { break; }
 				}
 				$o_rows->next();
 				
@@ -2164,10 +2168,34 @@
 				if ($t_entry->numErrors()) {
 					CLIUtils::addError(_t("Error while adding definition for %1: %2", $va_data[0], join("; ", $t_entry->getErrors())));
 				}
+				
+				// Add rules
+				if ($va_data[5]) {
+					if (!is_array($va_rules = json_decode($va_data[5], true))) {
+						CLIUtils::addError(_t('Could not decode rules for %1', $va_data[5]));
+						continue;		
+					}
+					foreach($va_rules as $va_rule) {
+						$t_rule = new ca_metadata_dictionary_rules();
+						$t_rule->setMode(ACCESS_WRITE);
+						$t_rule->set('entry_id', $t_entry->getPrimaryKey());
+						$t_rule->set('rule_code', (string)$va_rule['ruleCode']);
+						$t_rule->set('rule_level', (string)$va_rule['ruleLevel']);
+						$t_rule->set('expression', (string)$va_rule['expression']);
+						$t_rule->setSetting('rule_displayname', (string)$va_rule['ruleName']);
+						$t_rule->setSetting('rule_description', (string)$va_rule['ruleDescription']);
+						$t_rule->insert();
+						if ($t_rule->numErrors()) {
+							CLIUtils::addError(_t("Error while adding rule for %1: %2", $va_data[0], join("; ", $t_rule->getErrors())));
+						} else {
+							$vn_rule_count++;
+						}
+					}
+				}
 			}
 		
 
-			CLIUtils::addMessage(_t('Added %1 entries', $vn_add_count), array('color' => 'bold_green'));
+			CLIUtils::addMessage(_t('Added %1 entries and %2 rules', $vn_add_count, $vn_rule_count), array('color' => 'bold_green'));
 			return true;
 		}
 		# -------------------------------------------------------
@@ -2200,6 +2228,103 @@
 		 */
 		public static function load_metadata_dictionary_from_excel_fileHelp() {
 			return _t('Load metadata dictionary entries from an Excel file using the format described at http://docs.collectiveaccess.org/metadata_dictionary');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function validate_using_metadata_dictionary_rules($po_opts=null) {
+			require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_rules.php');
+			require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_rule_violations.php');
+			
+			$o_dm = Datamodel::load();
+			
+			$t_violation = new ca_metadata_dictionary_rule_violations();
+			
+			$va_rules = ca_metadata_dictionary_rules::getRules();
+			foreach($va_rules as $va_rule) {
+				$va_expression_tags = caGetTemplateTags($va_rule['expression']);
+				
+				$va_tmp = explode(".", $va_rule['bundle_name']);
+				if (!($t_instance = $o_dm->getInstanceByTableName($va_tmp[0]))) {
+					CLIUtils::addError(_t("Table for bundle %1 is not valid", $va_tmp[0]));
+					continue;
+				}
+				
+				$qr_records = call_user_func_array($t_instance->tableName()."::find", array(
+					array('deleted' => 0),
+					array('returnAs' => 'searchResult')
+				));
+				
+				$vn_table_num = $t_instance->tableNum();
+				while($qr_records->nextHit()) {
+					$t_violation->clear();
+					$vn_id = $qr_records->getPrimaryKey();
+					
+					// create array of values present in rule
+					$va_row = array($va_rule['bundle_name'] => $vs_val = $qr_records->get($va_rule['bundle_name']));
+					foreach($va_expression_tags as $vs_tag) {
+						$va_row[$vs_tag] = $qr_records->get($vs_tag);
+					}
+					
+					// is there a violation recorded for this rule and row?
+					if ($t_found = ca_metadata_dictionary_rule_violations::find(array('rule_id' => $va_rule['rule_id'], 'row_id' => $vn_id, 'table_num' => $vn_table_num), array('returnAs' => 'firstModelInstance'))) {
+						$t_violation = $t_found;
+					}
+						
+					if (ExpressionParser::evaluate($va_rule['expression'], $va_row)) {
+						// violation
+						
+						print "VIOLATION! ... ".$qr_records->getPrimaryKey()."/$vs_val/".($va_rule['expression'])."\n";
+						
+						if ($t_violation->getPrimaryKey()) {
+							$t_violation->setMode(ACCESS_WRITE);
+							$t_violation->update();
+						} else {
+							$t_violation->setMode(ACCESS_WRITE);
+							$t_violation->set('rule_id', $va_rule['rule_id']);
+							$t_violation->set('table_num', $t_instance->tableNum());
+							$t_violation->set('row_id', $qr_records->getPrimaryKey());
+							$t_violation->insert();
+						}
+					} else {
+						if ($t_violation->getPrimaryKey()) {
+							$t_violation->delete(true);		// remove violation
+						}
+					}
+				}
+			}
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function validate_using_metadata_dictionary_rulesParamList() {
+			return array(
+				
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function validate_using_metadata_dictionary_rulesUtilityClass() {
+			return _t('Maintenance');
+		}
+		
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function validate_using_metadata_dictionary_rulesShortHelp() {
+			return _t('Validate all records against metadata dictionary');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function validate_using_metadata_dictionary_rulesHelp() {
+			return _t('Validate all records against rules in metadata dictionary.');
 		}
 		# -------------------------------------------------------
 		/**

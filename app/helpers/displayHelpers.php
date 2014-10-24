@@ -1934,7 +1934,26 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
-	 * Replace "^" tags (eg. ^forename) in a template with values from an array
+	 * Returns a list of "^" prefixed-tags (eg. ^forename) present in a template
+	 *
+	 * @param string $ps_template
+	 * @param array $pa_options No options are currently supported
+	 * 
+	 * @return array An array of tags
+	 */
+	function caGetTemplateTags($ps_template, $pa_options=null) {
+		$va_tags = array();
+		if (preg_match_all(__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__, $ps_template, $va_matches)) {
+			foreach($va_matches[1] as $vn_i => $vs_possible_tag) {
+				$va_matches[1][$vn_i] = rtrim($vs_possible_tag, "/.");	// remove trailing slashes and periods
+			}
+			$va_tags = $va_matches[1];
+		}
+		return $va_tags;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Replace "^" prefix-edtags (eg. ^forename) in a template with values from an array
 	 *
 	 * @param string $ps_template String with embedded tags. Tags are just alphanumeric strings prefixed with a caret ("^")
 	 * @param array $pa_values Array of values; keys must match tag names
@@ -1949,13 +1968,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		$vs_prefix = isset($pa_options['prefix']) ? $pa_options['prefix'] : null;
 		$vs_remove_prefix = isset($pa_options['removePrefix']) ? $pa_options['removePrefix'] : null;
 		
-		$va_tags = array();
-		if (preg_match_all(__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__, $ps_template, $va_matches)) {
-			foreach($va_matches[1] as $vn_i => $vs_possible_tag) {
-				$va_matches[1][$vn_i] = rtrim($vs_possible_tag, "/.");	// remove trailing slashes and periods
-			}
-			$va_tags = $va_matches[1];
-		}
+		$va_tags = caGetTemplateTags($ps_template);
 		
 		$t_instance = null;
 		if (isset($pa_options['getFrom']) && (method_exists($pa_options['getFrom'], 'get'))) {
@@ -1995,7 +2008,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		foreach($pa_directives as $vs_directive) {
 			$va_tmp = explode(":", $vs_directive);
 			switch($va_tmp[0]) {
-				case 'LP':
+				case 'LP':		// left padding
 					$va_params = explode("/", $va_tmp[1]);
 					$vn_len = (int)$va_params[1];
 					$vs_str = (string)$va_params[0];
@@ -2003,7 +2016,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 						$ps_value = str_pad($ps_value, $vn_len, $vs_str, STR_PAD_LEFT);
 					}
 					break;
-				case 'RP':
+				case 'RP':		// right padding
 					$va_params = explode("/", $va_tmp[1]);
 					$vn_len = (int)$va_params[1];
 					$vs_str = (string)$va_params[0];
@@ -2017,7 +2030,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
-	 * Replace "^" tags (eg. ^forename) in a template with values from an array
+	 * Replace "^" prefixed tags (eg. ^forename) in a template with values from an array
 	 *
 	 * @param string $ps_template String with embedded tags. Tags are just alphanumeric strings prefixed with a caret ("^")
 	 * @param string $pm_tablename_or_num Table name or number of table from which values are being formatted

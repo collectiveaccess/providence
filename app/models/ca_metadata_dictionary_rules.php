@@ -180,7 +180,7 @@ class ca_metadata_dictionary_rules extends BaseModel {
 	# Change logging
 	# ------------------------------------------------------
 	protected $UNIT_ID_FIELD = null;
-	protected $LOG_CHANGES_TO_SELF = true;
+	protected $LOG_CHANGES_TO_SELF = false;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
 		
@@ -236,7 +236,7 @@ class ca_metadata_dictionary_rules extends BaseModel {
 	public function __destruct() {
 		unset($this->SETTINGS);
 	}
-	# ------------------------------------------------------
+	# ----------------------------------------
 	/**
 	 * Reroutes calls to method implemented by settings delegate to the delegate class
 	 */
@@ -247,5 +247,26 @@ class ca_metadata_dictionary_rules extends BaseModel {
 		die($this->tableName()." does not implement method {$ps_name}");
 	}
 	# ----------------------------------------
+	/**
+	 * 
+	 */
+	static public function getRules() {
+		$o_db = new Db();
+		$qr_rules = $o_db->query("
+			SELECT cmdr.rule_id, cmdr.entry_id, cmde.bundle_name, cmde.settings entry_settings, 
+			cmdr.rule_code, cmdr.rule_level, cmdr.expression, cmdr.settings rule_settings
+			FROM ca_metadata_dictionary_rules cmdr
+			INNER JOIN ca_metadata_dictionary_entries AS cmde ON cmde.entry_id = cmdr.entry_id
+		");
+		
+		$va_rules = $qr_rules->getAllRows();
+		
+		foreach($va_rules as $vn_i => $va_rule) {
+			$va_rules[$vn_i]['entry_settings'] = unserialize(base64_decode($va_rule['entry_settings']));
+			$va_rules[$vn_i]['rule_settings'] = unserialize(base64_decode($va_rule['rule_settings']));
+		}
+		
+		return $va_rules;
+	}
+	# ----------------------------------------
 }
-?>
