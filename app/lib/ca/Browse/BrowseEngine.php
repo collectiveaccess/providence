@@ -3424,19 +3424,11 @@
 					$vs_field_name = $va_facet_info['field'];
 					$va_field_info = $t_item->getFieldInfo($vs_field_name);
 					
-					$vs_sort_field = null;
-					
-					$t_list = new ca_lists();
-					$t_list_item = new ca_list_items();
-					
 					$va_joins = array();
 					$va_wheres = array();
 					$vs_where_sql = '';
 					
-						
 					$va_facet_values = null;
-					
-					
 					
 					if (sizeof($va_results) && ($this->numCriteria() > 0)) {
 						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
@@ -3506,33 +3498,35 @@
 					} else {
 						$vs_pk = $t_item->primaryKey();
 						$vs_sql = "
-							SELECT DISTINCT ca_metadata_dictionary_rules.*
+							SELECT DISTINCT ca_metadata_dictionary_rules.rule_id
 							FROM {$vs_browse_table_name}
 							INNER JOIN ca_metadata_dictionary_rule_violations ON ca_metadata_dictionary_rule_violations.row_id = {$vs_browse_table_name}.".$t_item->primaryKey()." AND ca_metadata_dictionary_rule_violations.table_num = {$vs_browse_table_num}
 							INNER JOIN ca_metadata_dictionary_rules ON ca_metadata_dictionary_rules.rule_id = ca_metadata_dictionary_rule_violations.rule_id
 							{$vs_join_sql}
 							WHERE
 								{$vs_where_sql}";
-						if($vs_sort_field) {
-							$vs_sql .= " ORDER BY {$vs_sort_field}";
-						}
+						
 						$qr_res = $this->opo_db->query($vs_sql);
 						
 						$va_values = array();
-						while($qr_res->nextRow()) {
-							if (!($vs_val = trim($qr_res->get('rule_code')))) { continue; }
-							if ($va_criteria[$vs_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
+						$t_rule = new ca_metadata_dictionary_rules();
+						while($qr_res->nextRow()) {	
+							if ($t_rule->load($qr_res->get('rule_id'))) {
+								if (!($vs_val = trim($t_rule->getSetting('rule_displayname')))) { continue; }
+								$vs_code = $t_rule->get('rule_code');
+								if ($va_criteria[$vs_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
 						
-							if (isset($va_facet_values[$vs_val])) {
-								$va_values[$vs_val] = $va_facet_values[$vs_val];
-							} else {
-								$va_values[$vs_val] = array(
-									'id' => $vs_val,
-									'label' => $vs_val
-								);
-							}
-							if (!is_null($vs_single_value) && ($vs_val == $vs_single_value)) {
-								$vb_single_value_is_present = true;
+								if (isset($va_facet_values[$vs_code])) {
+									$va_values[$vs_code] = $va_facet_values[$vs_code];
+								} else {
+									$va_values[$vs_code] = array(
+										'id' => $vs_code,
+										'label' => $vs_val
+									);
+								}
+								if (!is_null($vs_single_value) && ($vs_code == $vs_single_value)) {
+									$vb_single_value_is_present = true;
+								}
 							}
 						}
 						
