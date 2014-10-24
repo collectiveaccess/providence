@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/models/ca_metadata_dictionary_rules.php
+ * app/models/ca_metadata_dictionary_rule_violations.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -33,92 +33,59 @@
  /**
    *
    */
- 
-require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
-require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_rule_violations.php');
 
-global $_ca_metadata_dictionary_rules_settings;
-$_ca_metadata_dictionary_rules_settings = array(		// global
-	'rule_displayname' => array(
-		'formatType' => FT_TEXT,
-		'displayType' => DT_FIELD,
-		'width' => 90, 'height' => 1,
-		'takesLocale' => true,
-		'label' => _t('Rule display name'),
-		'description' => _t('Short name for this rule, used for display in issue lists.')
-	),
-	'rule_description' => array(
-		'formatType' => FT_TEXT,
-		'displayType' => DT_FIELD,
-		'width' => 90, 'height' => 8,
-		'takesLocale' => true,
-		'label' => _t('Rule description'),
-		'description' => _t('Long form description of rule, used for display to user when presenting issues.')
-	)
-);
-
-BaseModel::$s_ca_models_definitions['ca_metadata_dictionary_rules'] = array(
- 	'NAME_SINGULAR' 	=> _t('Metadata dictionary rule'),
- 	'NAME_PLURAL' 		=> _t('Metadata dictionary rules'),
+BaseModel::$s_ca_models_definitions['ca_metadata_dictionary_rule_violations'] = array(
+ 	'NAME_SINGULAR' 	=> _t('Metadata dictionary rule violation'),
+ 	'NAME_PLURAL' 		=> _t('Metadata dictionary rule violations'),
  	'FIELDS' 			=> array(
- 		'rule_id' => array(
+ 		'violation_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => 'Rule id', 'DESCRIPTION' => 'Identifier for rule'
+				'LABEL' => 'Violation id', 'DESCRIPTION' => 'Identifier for violation'
 		),
-		'entry_id' => array(
+		'rule_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => 'Entry id', 'DESCRIPTION' => 'Identifier for entry'
+				'LABEL' => 'Rule id', 'DESCRIPTION' => 'Identifier for rule'
 		),
-		'rule_code' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 30, 'DISPLAY_HEIGHT' => 1,
+		'table_num' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'FILTER' => '!^[\p{L}0-9_]+$!u',
-				'LABEL' => _t('Rule code'), 'DESCRIPTION' => _t('Unique alphanumeric code for the rule.'),
-				'BOUNDS_LENGTH' => array(1,30),
-				'UNIQUE_WITHIN' => array()
+				'LABEL' => 'Table', 'DESCRIPTION' => 'Table to which this violation applies.',
+				'BOUNDS_VALUE' => array(1,255)
 		),
-		'expression' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 90, 'DISPLAY_HEIGHT' => 3,
+		'row_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Expression'), 'DESCRIPTION' => _t('Expression to evaluate'),
-				'BOUNDS_VALUE' => array(1,65535)
+				'LABEL' => 'Row id', 'DESCRIPTION' => 'Identifier of row to which this violation applies.'
 		),
-		'rule_level' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 5, 'DISPLAY_HEIGHT' => 1,
+		'created_on' => array(
+				'FIELD_TYPE' => FT_TIMESTAMP, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Rule level'), 'DESCRIPTION' => _t('Level of importance of rule.'),
-				'BOUNDS_CHOICE_LIST' => array(
-					_t('Critical error') => 'CRIT',
-					_t('Error') => 'ERR',
-					_t('Warning') => 'WARN',
-					_t('Notice') => 'NOTE',
-					_t('Debug') => 'DEBG' 
-				)
+				'LABEL' => _t('Created on'), 'DESCRIPTION' => _t('Created on')
 		),
-		'settings' => array(
-				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+		'last_checked_on' => array(
+				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('Settings')
-		)
+				'LABEL' => _t('Last checked on'), 'DESCRIPTION' => _t('Last checked on')
+		),
  	)
 );
 
 
-class ca_metadata_dictionary_rules extends BaseModel {
+class ca_metadata_dictionary_rule_violations extends BaseModel {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -130,10 +97,10 @@ class ca_metadata_dictionary_rules extends BaseModel {
 	# --- Basic object parameters
 	# ------------------------------------------------------
 	# what table does this class represent?
-	protected $TABLE = 'ca_metadata_dictionary_rules';
+	protected $TABLE = 'ca_metadata_dictionary_rule_violations';
 	      
 	# what is the primary key of the table?
-	protected $PRIMARY_KEY = 'rule_id';
+	protected $PRIMARY_KEY = 'violation_id';
 
 	# ------------------------------------------------------
 	# --- Properties used by standard editing scripts
@@ -144,7 +111,7 @@ class ca_metadata_dictionary_rules extends BaseModel {
 	# ------------------------------------------------------
 
 	# Array of fields to display in a listing of records from this table
-	protected $LIST_FIELDS = array('bundle_name');
+	protected $LIST_FIELDS = array('violation_id');
 
 	# When the list of "list fields" above contains more than one field,
 	# the LIST_DELIMITER text is displayed between fields as a delimiter.
@@ -159,11 +126,11 @@ class ca_metadata_dictionary_rules extends BaseModel {
 
 	# List of fields to sort listing of records by; you can use 
 	# SQL 'ASC' and 'DESC' here if you like.
-	protected $ORDER_BY = array('rule_id');
+	protected $ORDER_BY = array('violation_id');
 
 	# If you want to order records arbitrarily, add a numeric field to the table and place
 	# its name here. The generic list scripts can then use it to order table records.
-	protected $RANK = 'rank';
+	protected $RANK = null;
 	
 	# ------------------------------------------------------
 	# Hierarchical table properties
@@ -209,43 +176,6 @@ class ca_metadata_dictionary_rules extends BaseModel {
 	function __construct($pn_id=null, $pa_additional_settings=null, $pa_setting_values=null) {
 		parent::__construct($pn_id);
 		
-		//
-		if (!is_array($pa_additional_settings)) { $pa_additional_settings = array(); }
-		$this->setSettingDefinitionsForRule($pa_additional_settings);
-		
-		if (is_array($pa_setting_values)) {
-			$this->setSettings($pa_setting_values);
-		}
-	}
-	# ------------------------------------------------------
-	/**
-	  * Sets setting definitions for to use for the current rule. Note that these definitions persist no matter what row is loaded
-	  * (or even if no row is loaded). You can set the definitions once and reuse the instance for many rules. All will have the set definitions.
-	  *
-	  * @param $pa_additional_settings array Array of settings definitions
-	  * @return bool Always returns true
-	  */
-	public function setSettingDefinitionsForRule($pa_additional_settings) {
-		if (!is_array($pa_additional_settings)) { $pa_additional_settings = array(); }
-		global $_ca_metadata_dictionary_rules_settings;
-		$this->SETTINGS = new ModelSettings($this, 'settings', array_merge($_ca_metadata_dictionary_rules_settings, $pa_additional_settings));
-		
-		return true;
-	}
-	# ----------------------------------------
-	public function __destruct() {
-		unset($this->SETTINGS);
-	}
-	# ------------------------------------------------------
-	/**
-	 * Reroutes calls to method implemented by settings delegate to the delegate class
-	 */
-	public function __call($ps_name, $pa_arguments) {
-		if (method_exists($this->SETTINGS, $ps_name)) {
-			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
-		}
-		die($this->tableName()." does not implement method {$ps_name}");
 	}
 	# ----------------------------------------
 }
-?>
