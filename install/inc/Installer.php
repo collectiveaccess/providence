@@ -867,20 +867,20 @@ class Installer {
 		}
 
 		$ca_db = new Db('',null, false);
-                $lists_result = $ca_db->query(" SELECT * FROM ca_lists");
+		$lists_result = $ca_db->query(" SELECT * FROM ca_lists");
 
 		$list_names = array();
-                $va_list_item_ids = array();
-                while($lists_result->nextRow()) {
-                        $list_names[$lists_result->get('list_id')] = $lists_result->get('list_code');
-                }
+		$va_list_item_ids = array();
+		while($lists_result->nextRow()) {
+			$list_names[$lists_result->get('list_id')] = $lists_result->get('list_code');
+		}
 
-                // get list items
-                $list_items_result = $ca_db->query(" SELECT * FROM ca_list_items cli INNER JOIN ca_list_item_labels AS clil ON clil.item_id = cli.item_id ");
-                while($list_items_result->nextRow()) {
-                        $list_type_code = $list_names[$list_items_result->get('list_id')];
-                        $va_list_item_ids[$list_type_code][$list_items_result->get('item_value')] = $list_items_result->get('item_id');
-                }
+		// get list items
+		$list_items_result = $ca_db->query(" SELECT * FROM ca_list_items cli INNER JOIN ca_list_item_labels AS clil ON clil.item_id = cli.item_id ");
+		while($list_items_result->nextRow()) {
+			$list_type_code = $list_names[$list_items_result->get('list_id')];
+			$va_list_item_ids[$list_type_code][$list_items_result->get('item_value')] = $list_items_result->get('item_id');
+		}
 
 		$vo_dm = Datamodel::load();
 
