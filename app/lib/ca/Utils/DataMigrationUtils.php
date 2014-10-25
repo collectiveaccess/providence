@@ -2611,6 +2611,14 @@
 				if(sizeof($va_tmp) > 1) {
 					$va_name['forename'] = $va_tmp[1];
 				}
+			} elseif (strpos($ps_text_proc, '_') !== false) {
+				// is comma delimited
+				$va_tmp = explode('_', $ps_text_proc);
+				$va_name['surname'] = $va_tmp[0];
+				
+				if(sizeof($va_tmp) > 1) {
+					$va_name['forename'] = $va_tmp[1];
+				}
 			} else {
 				// check for titles
 				$ps_text_proc = preg_replace('/[^\p{L}\p{N} \-]+/u', ' ', $ps_text_proc);

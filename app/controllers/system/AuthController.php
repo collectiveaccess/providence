@@ -64,8 +64,7 @@
 				$g_ui_units_pref = $this->request->user->getPreference('units');			// user's selected display units for measurements 	(available as global)
 								
 				if(!initializeLocale($g_ui_locale)) die("Error loading locale ".$g_ui_locale);
-				global $ca_translation_cache;
-				$ca_translation_cache = array();				
+				MemoryCache::flush('translation');
 				AppNavigation::clearMenuBarCache($this->request);	// want to clear menu bar on login
 				
 				// Notify the user of the good news

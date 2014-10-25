@@ -77,7 +77,9 @@ class PHPUnit_Util_Blacklist
         'SebastianBergmann\Comparator\Comparator' => 1,
         'SebastianBergmann\Exporter\Exporter' => 1,
         'SebastianBergmann\Version' => 1,
-        'Composer\Autoload\ClassLoader' => 1
+        'Composer\Autoload\ClassLoader' => 1,
+        'Instantiator\Instantiator' => 1,
+        'LazyMap\AbstractLazyMap' => 1
     );
 
     /**
@@ -145,6 +147,6 @@ class PHPUnit_Util_Blacklist
                 // @see http://php.net/manual/en/function.tempnam.php
                 self::$directories[] = sys_get_temp_dir() . '\\PHP';
             }
-       }
+        }
     }
 }
