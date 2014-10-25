@@ -107,6 +107,10 @@
 	</div><!-- end bg -->
 </div><!-- end searchOptionsBox -->
 <?php
+TooltipManager::add('#showOptions', _t("Display Options"));
+TooltipManager::add('#showRefine', _t("Refine Results"));
+TooltipManager::add('#showTools', _t("Export Tools"));
+
 if($vo_result->numHits() > 0) {
 
 	print $this->render('Search/search_tools_html.php');
