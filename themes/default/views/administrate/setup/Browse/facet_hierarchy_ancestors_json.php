@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * themes/default/views/administrate/setup/ca_list_items_search_html.php 
+ * Browse/facet_hierarchy_ancestors_json.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,37 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 	 
-	$vo_result = $this->getVar('result');
- 	print $this->render('Search/search_controls_html.php');
- ?>
-	
- 	<div id="resultBox">
-<?php
-	if($vo_result) {
-		print $this->render('Results/paging_controls_html.php');
-		
-		print $this->render('Results/search_options_html.php');
+ 
+	print json_encode($this->getVar('ancestors'));
 ?>
-	<div class="sectionBox">
-<?php
-		$vs_view = $this->getVar('current_view');
-		if ($vo_result->numHits() == 0) { $vs_view = 'no_results'; }
-		switch($vs_view) {
-			case 'no_results':
-				print $this->render('Results/no_results_html.php');
-				break;
-			case 'editable':
-				print $this->render('Results/ca_list_items_editable_html.php');
-				break;
-			case 'list':
-			default:
-				print $this->render('Results/ca_list_items_results_list_html.php');
-				break;
-		}
-?>		
-	</div><!-- end sectionbox -->
-<?php
-	}
-?>
-	</div><!-- end resultbox -->

@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * themes/default/views/administrate/setup/ca_list_items_search_html.php 
+ * themes/default/views/administrate/setup/Browse/widget_ca_list_items_browse.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,37 +25,15 @@
  *
  * ----------------------------------------------------------------------
  */
- 	 
-	$vo_result = $this->getVar('result');
- 	print $this->render('Search/search_controls_html.php');
- ?>
-	
- 	<div id="resultBox">
-<?php
-	if($vo_result) {
-		print $this->render('Results/paging_controls_html.php');
-		
-		print $this->render('Results/search_options_html.php');
+  
+  	$vo_result_context 			= $this->getVar('result_context');
+ 	$vo_result					= $this->getVar('result');
 ?>
-	<div class="sectionBox">
-<?php
-		$vs_view = $this->getVar('current_view');
-		if ($vo_result->numHits() == 0) { $vs_view = 'no_results'; }
-		switch($vs_view) {
-			case 'no_results':
-				print $this->render('Results/no_results_html.php');
-				break;
-			case 'editable':
-				print $this->render('Results/ca_list_items_editable_html.php');
-				break;
-			case 'list':
-			default:
-				print $this->render('Results/ca_list_items_results_list_html.php');
-				break;
-		}
-?>		
-	</div><!-- end sectionbox -->
-<?php
+<h3 class='collections'>
+	<?php print _t("Browse %1", $this->getVar('mode_type_plural'))."<br/>\n"; ?>
+</h3>
+<?php 
+	if ($vo_result) {
+		print $this->render('Search/search_sets_html.php'); 
 	}
 ?>
-	</div><!-- end resultbox -->

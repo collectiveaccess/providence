@@ -2443,8 +2443,14 @@ class TimeExpressionParser {
 							} else {
 								if ($vb_full_day_time_range) {
 									// days, but no times
-									$vs_start_date = $this->_dateToText(array('month' => $va_start_pieces['month'], 'day' => $va_start_pieces['day']), $pa_options);
-									$vs_end_date = $this->_dateToText(array('day' => $va_end_pieces['day']), $pa_options);
+									if((bool)$this->opo_language_settings->get('monthComesFirstInDelimitedDate')) {
+										$vs_start_date = $this->_dateToText(array('month' => $va_start_pieces['month'], 'day' => $va_start_pieces['day']), $pa_options);
+										$vs_end_date = $this->_dateToText(array('day' => $va_end_pieces['day']), $pa_options);
+									} else {
+										$vs_start_date = $this->_dateToText(array('day' => $va_start_pieces['day']), $pa_options);
+										$vs_end_date = $this->_dateToText(array('month' => $va_start_pieces['month'], 'day' => $va_end_pieces['day']), $pa_options);
+									}
+
 									$vs_year = $this->_dateToText(array('year' => $va_start_pieces['year'], 'era' => $va_start_pieces['era'], 'uncertainty' => $va_start_pieces['uncertainty'], 'uncertainty_units' => $va_start_pieces['uncertainty_units']), $pa_options);
 
 									return ($vs_range_preconjunction ? $vs_range_preconjunction.' ': '').$vs_start_date.' '.$vs_range_conjunction.' '.$vs_end_date.((((bool)$this->opo_datetime_settings->get('showCommaAfterDayForTextDates')) && ($pa_options['dateFormat'] == 'text')) ? ', ' : ' ').$vs_year;
@@ -2476,7 +2482,10 @@ class TimeExpressionParser {
 								// date range within single year without time
 								if(caGetOption('dateFormat', $pa_options, null) == 'text') {
 									$vs_start_date = $this->_dateToText(array('month' => $va_start_pieces['month'], 'day' => $va_start_pieces['day']), $pa_options);
-									$vs_end_date = $this->_dateToText(array('month' => $va_end_pieces['month'], 'day' => $va_end_pieces['day']), array_merge(array('forceCommaAfterDay' => true), $pa_options));
+									if((bool)$this->opo_datetime_settings->get('showCommaAfterDayForTextDates')) {
+										$pa_options['forceCommaAfterDay'] = true;
+									}
+									$vs_end_date = $this->_dateToText(array('month' => $va_end_pieces['month'], 'day' => $va_end_pieces['day']), $pa_options);
 									$vs_year = $this->_dateToText(array('year' => $va_start_pieces['year'], 'era' => $va_start_pieces['era'], 'uncertainty' => $va_start_pieces['uncertainty'], 'uncertainty_units' => $va_start_pieces['uncertainty_units']), $pa_options);
 									return ($vs_range_preconjunction ? $vs_range_preconjunction.' ': '').$vs_start_date.' '.$vs_range_conjunction.' '.$vs_end_date.' '.$vs_year;
 								} else {

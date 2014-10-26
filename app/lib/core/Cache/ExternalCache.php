@@ -121,8 +121,7 @@ class ExternalCache {
 			define('__CA_CACHE_TTL__', 3600);
 		}
 
-		// Cache::save() returns the lifetime of the item
-		self::getCache()->save($ps_namespace.':'.$ps_key, $pm_data, (!is_null($pn_ttl) && ($pn_ttl > 0)) ? $pn_ttl : __CA_CACHE_TTL__);
+		self::getCache()->save($ps_namespace.':'.$ps_key, $pm_data, (!is_null($pn_ttl) ? $pn_ttl : __CA_CACHE_TTL__));
 		return true;
 	}
 	# ------------------------------------------------
