@@ -2184,6 +2184,8 @@
 						$t_rule->set('expression', (string)$va_rule['expression']);
 						$t_rule->setSetting('rule_displayname', (string)$va_rule['ruleName']);
 						$t_rule->setSetting('rule_description', (string)$va_rule['ruleDescription']);
+						$t_rule->setSetting('rule_violationMessage', (string)$va_rule['violationMessage']);
+		
 						$t_rule->insert();
 						if ($t_rule->numErrors()) {
 							CLIUtils::addError(_t("Error while adding rule for %1: %2", $va_data[0], join("; ", $t_rule->getErrors())));

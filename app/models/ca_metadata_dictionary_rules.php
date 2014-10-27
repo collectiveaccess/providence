@@ -47,6 +47,14 @@ $_ca_metadata_dictionary_rules_settings = array(		// global
 		'label' => _t('Rule display name'),
 		'description' => _t('Short name for this rule, used for display in issue lists.')
 	),
+	'rule_violationMessage' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_FIELD,
+		'width' => 90, 'height' => 8,
+		'takesLocale' => true,
+		'label' => _t('Rule violation message'),
+		'description' => _t('Message used for display to user when presenting issues.')
+	),
 	'rule_description' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,
@@ -100,7 +108,6 @@ BaseModel::$s_ca_models_definitions['ca_metadata_dictionary_rules'] = array(
 				'DEFAULT' => '',
 				'LABEL' => _t('Rule level'), 'DESCRIPTION' => _t('Level of importance of rule.'),
 				'BOUNDS_CHOICE_LIST' => array(
-					_t('Critical error') => 'CRIT',
 					_t('Error') => 'ERR',
 					_t('Warning') => 'WARN',
 					_t('Notice') => 'NOTE',
@@ -250,14 +257,24 @@ class ca_metadata_dictionary_rules extends BaseModel {
 	/**
 	 * 
 	 */
-	static public function getRules() {
+	static public function getRules($pa_options=null) {
 		$o_db = new Db();
-		$qr_rules = $o_db->query("
+		
+		$vs_sql = "
 			SELECT cmdr.rule_id, cmdr.entry_id, cmde.bundle_name, cmde.settings entry_settings, 
 			cmdr.rule_code, cmdr.rule_level, cmdr.expression, cmdr.settings rule_settings
 			FROM ca_metadata_dictionary_rules cmdr
 			INNER JOIN ca_metadata_dictionary_entries AS cmde ON cmde.entry_id = cmdr.entry_id
-		");
+		";
+		
+		$va_wheres = $va_params = array();
+		if($va_bundles = caGetOption('bundles', $pa_options, null, array('castTo' => 'array'))) {
+			$va_wheres[] = "(cmde.bundle_name IN (?))";
+			$va_params[] = $va_bundles;
+		}
+		if (sizeof($va_wheres) > 0) { $vs_sql .= " WHERE ".join(" AND ", $va_wheres); }
+		
+		$qr_rules = $o_db->query($vs_sql, $va_params);
 		
 		$va_rules = $qr_rules->getAllRows();
 		
