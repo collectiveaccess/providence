@@ -840,6 +840,31 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		return true;
+	}	
+	# --------------------------------------------------------------------------------
+	/**
+	 * Returns true if bundle is valid for this model
+	 * 
+	 * @access public
+	 * @param string $ps_bundle bundle name
+     * @param int $pn_type_id Optional record type
+	 * @return bool
+	 */ 
+	public function hasBundle ($ps_bundle, $pn_type_id=null) {
+		$va_bundle_bits = explode(".", $ps_bundle);
+		$vn_num_bits = sizeof($va_bundle_bits);
+	
+		if (in_array($va_bundle_bits[1], array('hierarchy', 'parent', 'children', 'related'))) {
+			unset($va_bundle_bits[1]);
+			$va_bundle_bits = array_merge($va_bundle_bits);
+			$vn_num_bits = sizeof($va_bundle_bits);
+			$ps_bundle = join('.', $va_bundle_bits);
+		}
+		
+		if (($va_bundle_bits[0] != $this->tableName()) && ($t_rel = $this->getAppDatamodel()->getInstanceByTableName($va_bundle_bits[0], true))) {
+			return ($vn_num_bits == 1) ? true : $t_rel->hasBundle($ps_bundle, $pn_type_id);
+		} 
+		return parent::hasBundle($ps_bundle, $pn_type_id);
 	}
 	# ------------------------------------------------------------------
 	/**

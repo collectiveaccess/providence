@@ -2292,7 +2292,13 @@
 			$t_violation = new ca_metadata_dictionary_rule_violations();
 			
 			$va_rules = ca_metadata_dictionary_rules::getRules();
+			
+			print CLIProgressBar::start(sizeof($va_rules), _t('Evaluating'));
+					
+			$vn_total_rows = $vn_rule_num = 0;
+			$vn_num_rules = sizeof($va_rules);
 			foreach($va_rules as $va_rule) {
+				$vn_rule_num++;
 				$va_expression_tags = caGetTemplateTags($va_rule['expression']);
 				
 				$va_tmp = explode(".", $va_rule['bundle_name']);
@@ -2301,20 +2307,33 @@
 					continue;
 				}
 				
-				$qr_records = call_user_func_array($t_instance->tableName()."::find", array(
+				$vs_bundle_name_proc = str_replace("{$vs_table_name}.", "", $va_rule['bundle_name']);
+				$vn_table_num = $t_instance->tableNum();
+								
+				$qr_records = call_user_func_array(($vs_table_name = $t_instance->tableName())."::find", array(
 					array('deleted' => 0),
 					array('returnAs' => 'searchResult')
 				));
+				$vn_total_rows += $qr_records->numHits();
 				
-				$vn_table_num = $t_instance->tableNum();
+				CLIProgressBar::setTotal($vn_total_rows);
+				
+				$vn_count = 0;
 				while($qr_records->nextHit()) {
+					$vn_count++;
+					
+					print CLIProgressBar::next(1, _t("Rule %1 [%2/%3]: record %4", $va_rule['rule_settings']['rule_displayname'], $vn_rule_num, $vn_num_rules, $vn_count));
 					$t_violation->clear();
 					$vn_id = $qr_records->getPrimaryKey();
 					
-					// create array of values present in rule
-					$va_row = array($va_rule['bundle_name'] => $vs_val = $qr_records->get($va_rule['bundle_name']));
-					foreach($va_expression_tags as $vs_tag) {
-						$va_row[$vs_tag] = $qr_records->get($vs_tag);
+					$vb_skip = !$t_instance->hasBundle($va_rule['bundle_name'], $qr_records->get('type_id'));
+					
+					if (!$vb_skip) { 
+						// create array of values present in rule
+						$va_row = array($va_rule['bundle_name'] => $vs_val = $qr_records->get($va_rule['bundle_name']));
+						foreach($va_expression_tags as $vs_tag) {
+							$va_row[$vs_tag] = $qr_records->get($vs_tag);
+						}
 					}
 					
 					// is there a violation recorded for this rule and row?
@@ -2322,11 +2341,8 @@
 						$t_violation = $t_found;
 					}
 						
-					if (ExpressionParser::evaluate($va_rule['expression'], $va_row)) {
+					if (!$vb_skip && ExpressionParser::evaluate($va_rule['expression'], $va_row)) {
 						// violation
-						
-						//print "VIOLATION! ... ".$qr_records->getPrimaryKey()."/$vs_val/".($va_rule['expression'])."\n";
-						
 						if ($t_violation->getPrimaryKey()) {
 							$t_violation->setMode(ACCESS_WRITE);
 							$t_violation->update();
@@ -2344,6 +2360,7 @@
 					}
 				}
 			}
+			print CLIProgressBar::finish();
 		}
 		# -------------------------------------------------------
 		/**

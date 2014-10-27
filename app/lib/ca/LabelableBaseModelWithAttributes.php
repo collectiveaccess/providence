@@ -1160,6 +1160,42 @@
 			}
 			return parent::get($ps_field, $pa_options);
 		}
+		# --------------------------------------------------------------------------------
+		/**
+		 * Returns true if bundle is valid for this model
+		 * 
+		 * @access public
+		 * @param string $ps_bundle bundle name
+		 * @param int $pn_type_id Optional record type
+		 * @return bool
+		 */ 
+		public function hasBundle ($ps_bundle, $pn_type_id=null) {
+			$va_bundle_bits = explode(".", $ps_bundle);
+			$vn_num_bits = sizeof($va_bundle_bits);
+	
+			if (($vn_num_bits == 1) && (in_array($ps_bundle, array('preferred_labels', 'nonpreferred_labels'))))  {
+				return true;
+			} elseif ($vn_num_bits == 2) {
+				if (($va_bundle_bits[0] == $this->tableName()) && (in_array($va_bundle_bits[1], array('preferred_labels', 'nonpreferred_labels')))) {
+					return true;
+				} elseif (($va_bundle_bits[0] != $this->tableName()) && ($t_rel = $this->getAppDatamodel()->getInstanceByTableName($va_bundle_bits[0], true))) {
+					return $t_rel->hasBundle($ps_bundle, $pn_type_id);
+				} else {
+					return parent::hasBundle($ps_bundle, $pn_type_id);
+				}
+			} elseif($vn_num_bits == 3) {
+				if (($va_bundle_bits[0] == $this->tableName()) && (in_array($va_bundle_bits[1], array('preferred_labels', 'nonpreferred_labels')))) {
+					if (!($t_label = $this->getLabelTableInstance())) { return false; }
+					return $t_label->hasField($va_bundle_bits[2]);
+				} elseif (($va_bundle_bits[0] != $this->tableName()) && ($t_rel = $this->getAppDatamodel()->getInstanceByTableName($va_bundle_bits[0], true))) {
+					return $t_rel->hasBundle($ps_bundle, $pn_type_id);
+				} else {
+					return parent::hasBundle($ps_bundle, $pn_type_id);
+				}
+			} else {
+				return parent::hasBundle($ps_bundle, $pn_type_id);
+			}
+		}
 		# ------------------------------------------------------------------
 		/**
 		  *
