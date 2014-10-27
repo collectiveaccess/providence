@@ -86,7 +86,7 @@ class ca_setsTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($this->opn_object_id, $va_set_items['row_id'], 'Set item must be related to object');
 
 		//
-		// this is the actual PROV-434 bug
+		// this is (hopefully was?) the actual PROV-434 bug
 		// @see http://clangers.collectiveaccess.org/jira/browse/PROV-434
 		//
 		$va_items = $t_set->get('ca_set_items', array('returnAsArray' => true));
@@ -130,7 +130,7 @@ class ca_setsTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($this->opn_object_id, $va_set_items['row_id'], 'Set item must be related to object');
 
 		//
-		// this is the actual PROV-434 bug
+		// this is (hopefully was?) the actual PROV-434 bug
 		// @see http://clangers.collectiveaccess.org/jira/browse/PROV-434
 		//
 		$va_items = $t_set->get('ca_set_items', array('returnAsArray' => true));

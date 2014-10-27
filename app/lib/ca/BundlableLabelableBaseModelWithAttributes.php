@@ -578,7 +578,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							if ($vb_return_as_array) {
 								$va_return_values =  $va_text;
 							}
-							return join($vs_delimiter, $va_text);
+							if(is_array($va_text)) {
+								return join($vs_delimiter, $va_text);
+							} else {
+								return null;
+							}
 						}
 					}
 					
