@@ -268,6 +268,10 @@
 					'name' => _t('Spreadsheet with media icons (XLSX)'),
 					'code' => '_xlsx'
 				),
+                array(
+                    'name' => _t('Word processing (DOCX)'),
+                    'code' => '_docx'
+                )				
 			);
 			
 			// merge default formats with drop-in print templates
@@ -739,6 +743,11 @@
 						require_once(__CA_LIB_DIR__."/core/Parsers/PHPExcel/PHPExcel/Writer/Excel2007.php");
 						$vs_content = $this->render('Results/xlsx_results.php');
 						return;
+                    case '_docx':
+                        require_once(__CA_LIB_DIR__."/core/Parsers/PHPWord/Autoloader.php");
+                        \PhpOffice\PhpWord\Autoloader::register();
+                        $vs_content = $this->render('Results/docx_results.php');
+                        return;						
 					case '_csv':
 						$vs_delimiter = ",";
 						$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename.'_csv'), 0, 30);
