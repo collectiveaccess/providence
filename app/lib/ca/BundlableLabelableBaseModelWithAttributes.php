@@ -4826,13 +4826,7 @@ if (!$vb_batch) {
 			
 			foreach($va_path as $vs_join_table) {
 				$va_rel_info = $this->getAppDatamodel()->getRelationships($vs_cur_table, $vs_join_table);
-
-				if($vs_join_table=="ca_set_item_labels"){ // hack to have label-less set items appear in "ca_set_items" queries for ca_sets
-					$va_joins[] = 'LEFT JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
-				} else {
-					$va_joins[] = 'INNER JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
-				}
-
+				$va_joins[] = 'INNER JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
 				$vs_cur_table = $vs_join_table;
 			}
 			
