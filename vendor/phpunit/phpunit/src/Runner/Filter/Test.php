@@ -83,45 +83,41 @@ class PHPUnit_Runner_Filter_Test extends RecursiveFilterIterator
      */
     protected function setFilter($filter)
     {
-        if ($filter[0] != substr($filter, -1) ||
-            preg_match('/^[a-zA-Z0-9_]/', $filter)) {
-
+        if (PHPUnit_Util_Regex::pregMatchSafe($filter, '') === false) {
             // Handles:
             //  * testAssertEqualsSucceeds#4
             //  * testAssertEqualsSucceeds#4-8
             if (preg_match('/^(.*?)#(\d+)(?:-(\d+))?$/', $filter, $matches)) {
                 if (isset($matches[3]) && $matches[2] < $matches[3]) {
                     $filter = sprintf(
-                      '%s.*with data set #(\d+)$',
-                      $matches[1]
+                        '%s.*with data set #(\d+)$',
+                        $matches[1]
                     );
 
                     $this->filterMin = $matches[2];
                     $this->filterMax = $matches[3];
                 } else {
                     $filter = sprintf(
-                      '%s.*with data set #%s$',
-                      $matches[1],
-                      $matches[2]
+                        '%s.*with data set #%s$',
+                        $matches[1],
+                        $matches[2]
                     );
                 }
-            }
-
-            // Handles:
+            } // Handles:
             //  * testDetermineJsonError@JSON_ERROR_NONE
             //  * testDetermineJsonError@JSON.*
             elseif (preg_match('/^(.*?)@(.+)$/', $filter, $matches)) {
                 $filter = sprintf(
-                  '%s.*with data set "%s"$',
-                  $matches[1],
-                  $matches[2]
+                    '%s.*with data set "%s"$',
+                    $matches[1],
+                    $matches[2]
                 );
             }
 
             // Escape delimiters in regular expression. Do NOT use preg_quote,
             // to keep magic characters.
             $filter = sprintf('/%s/', str_replace(
-              '/', '\\/', $filter
+                '/', '\\/', $filter
             ));
         }
 

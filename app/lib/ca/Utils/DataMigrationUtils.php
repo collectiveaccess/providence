@@ -302,7 +302,9 @@
 				if ($o_log) { $o_log->logDebug(_t("Found existing entity %1 in DataMigrationUtils::getEntityID()", $pa_entity_name['forename']."/".$pa_entity_name['surname'])); }
 
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					return new ca_entities($vn_entity_id);
+					$t_entity = new ca_entities($vn_entity_id);
+					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction) { $t_entity->setTransaction($pa_options['transaction']); }
+					return $t_entity;
 				}
 			}
 
@@ -525,7 +527,9 @@
 
 				if ($o_log) { $o_log->logDebug(_t("Found existing place %1 in DataMigrationUtils::getPlaceID()", $ps_place_name)); }
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					return new ca_places($vn_place_id);
+					$t_place = new ca_places($vn_place_id);
+					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction) { $t_place->setTransaction($pa_options['transaction']); }
+					return $t_place;
 				}
 			}
 
@@ -749,7 +753,9 @@
 				if ($o_log) { $o_log->logDebug(_t("Found existing occurrence %1 in DataMigrationUtils::getOccurrenceID()", $ps_occ_name)); }
 
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					return new ca_occurrences($vn_occurrence_id);
+					$t_occurrence = new ca_occurrences($vn_occurrence_id);
+					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction) { $t_occurrence->setTransaction($pa_options['transaction']); }
+					return $t_occurrence;
 				}
 			}
 
@@ -1180,7 +1186,9 @@
 				if ($o_log) { $o_log->logDebug(_t("Found existing collection %1 in DataMigrationUtils::getCollectionID()", $ps_collection_name)); }
 
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					return new ca_collections($vn_collection_id);
+					$t_collection = new ca_collections($vn_collection_id);
+					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction) { $t_collection->setTransaction($pa_options['transaction']); }
+					return $t_collection;
 				}
 			}
 
@@ -1239,6 +1247,8 @@
 					$vs_idno = $t_location->setIdnoWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 				}
 			}
+			
+			if (!$pn_parent_id) { $pn_parent_id = $t_location->getHierarchyRootID(); }
 
 
 			$vn_id = null;
@@ -1398,7 +1408,9 @@
 				if ($o_log) { $o_log->logDebug(_t("Found existing storage location %1 in DataMigrationUtils::getStorageLocationID()", $ps_location_name)); }
 
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					return new ca_storage_locations($vn_location_id);
+					$t_location = new ca_storage_locations($vn_location_id); 
+					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction) { $t_location->setTransaction($pa_options['transaction']); }
+					return $t_location;
 				}
 			}
 
@@ -1619,7 +1631,9 @@
 				if ($o_log) { $o_log->logDebug(_t("Found existing object %1 in DataMigrationUtils::getObjectID()", $ps_object_name)); }
 
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					return new ca_objects($vn_object_id);
+					$t_object = new ca_objects($vn_object_id);
+					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction) { $t_object->setTransaction($pa_options['transaction']); }
+					return $t_object;
 				}
 			}
 
@@ -1833,7 +1847,9 @@
 				if ($o_log) { $o_log->logDebug(_t("Found existing lot %1 in DataMigrationUtils::getObjectLotID()", $ps_lot_name)); }
 
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					return new ca_object_lots($vn_lot_id);
+					$t_lot = new ca_object_lots($vn_lot_id);
+					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction) { $t_lot->setTransaction($pa_options['transaction']); }
+					return $t_lot;
 				}
 			}
 
@@ -2119,7 +2135,9 @@
 				if ($o_log) { $o_log->logDebug(_t("Found existing representation %1 in DataMigrationUtils::getObjectRepresentationID()", $ps_representation_name)); }
 
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					return new ca_object_representations($vn_representation_id);
+					$t_rep = new ca_object_representations($vn_representation_id);
+					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction) { $t_rep->setTransaction($pa_options['transaction']); }
+					return $t_rep;
 				}
 			}
 
@@ -2334,7 +2352,9 @@
 				if ($o_log) { $o_log->logDebug(_t("Found existing loan %1 in DataMigrationUtils::getLoanID()", $ps_loan_name)); }
 
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					return new ca_loans($vn_loan_id);
+					$t_loan = new ca_loans($vn_loan_id);
+					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction) { $t_loan->setTransaction($pa_options['transaction']); }
+					return $t_loan;
 				}
 			}
 
@@ -2550,7 +2570,9 @@
 				if ($o_log) { $o_log->logDebug(_t("Found existing movement %1 in DataMigrationUtils::getMovementID()", $ps_movement_name)); }
 				
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					return new ca_movements($vn_movement_id);
+					$t_movement = new ca_movements($vn_movement_id);
+					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction) { $t_movement->setTransaction($pa_options['transaction']); }
+					return $t_movement;
 				}
 			}
 				
@@ -2604,6 +2626,14 @@
 			if (strpos($ps_text_proc, ',') !== false) {
 				// is comma delimited
 				$va_tmp = explode(',', $ps_text_proc);
+				$va_name['surname'] = $va_tmp[0];
+				
+				if(sizeof($va_tmp) > 1) {
+					$va_name['forename'] = $va_tmp[1];
+				}
+			} elseif (strpos($ps_text_proc, '_') !== false) {
+				// is comma delimited
+				$va_tmp = explode('_', $ps_text_proc);
 				$va_name['surname'] = $va_tmp[0];
 				
 				if(sizeof($va_tmp) > 1) {
@@ -2708,4 +2738,3 @@
 		}
 		# -------------------------------------------------------
 	}
-?>

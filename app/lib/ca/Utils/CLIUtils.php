@@ -1503,6 +1503,54 @@
 			return _t("Loads the AAT from a Getty-provided XML file.");
 		}
 		# -------------------------------------------------------
+		/**
+		 * 
+		 */
+		public static function load_ULAN($po_opts=null) {
+			require_once(__CA_APP_DIR__.'/helpers/supportHelpers.php');
+			
+			if (!($vs_file_path = $po_opts->getOption('directory'))) {
+				CLIUtils::addError(_t("You must specify a data directory"));
+				return false;
+			}
+			if (!file_exists($vs_config_path = $po_opts->getOption('configuration'))) {
+				CLIUtils::addError(_t("You must specify a ULAN import configuration file"));
+				return false;
+			}
+			caLoadULAN($vs_file_path, $vs_config_path);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_ULANParamList() {
+			return array(
+				"directory|d=s" => _t('Path to directory containing ULAN XML files.'),
+				"configuration|c=s" => _t('Path to ULAN import configuration file.')
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_ULANUtilityClass() {
+			return _t('Import/Export');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_ULANShortHelp() {
+			return _t("Load Getty Art & Architecture Thesaurus (AAT) into CollectiveAccess.");
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_ULANHelp() {
+			return _t("Loads the AAT from a Getty-provided XML file.");
+		}
+		# -------------------------------------------------------
 		
 		/**
 		 * 

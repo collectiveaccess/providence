@@ -177,15 +177,6 @@ class PHPUnit_TextUI_ResultPrinter extends PHPUnit_Util_Printer implements PHPUn
         $this->printFailures($result);
 
         if ($this->verbose) {
-            if ($printSeparator && $result->deprecatedFeaturesCount() > 0) {
-                $this->write("\n--\n\n");
-            }
-
-            $printSeparator = $printSeparator ||
-                              $result->deprecatedFeaturesCount() > 0;
-
-            $this->printDeprecated($result);
-
             if ($printSeparator && $result->riskyCount() > 0) {
                 $this->write("\n--\n\n");
             }
@@ -227,14 +218,13 @@ class PHPUnit_TextUI_ResultPrinter extends PHPUnit_Util_Printer implements PHPUn
         }
 
         $this->write(
-          sprintf(
-            "There %s %d %s%s:\n",
-
-            ($count == 1) ? 'was' : 'were',
-            $count,
-            $type,
-            ($count == 1) ? '' : 's'
-          )
+            sprintf(
+                "There %s %d %s%s:\n",
+                ($count == 1) ? 'was' : 'were',
+                $count,
+                $type,
+                ($count == 1) ? '' : 's'
+            )
         );
 
         $i = 1;
@@ -260,21 +250,12 @@ class PHPUnit_TextUI_ResultPrinter extends PHPUnit_Util_Printer implements PHPUn
      */
     protected function printDefectHeader(PHPUnit_Framework_TestFailure $defect, $count)
     {
-        $failedTest = $defect->failedTest();
-
-        if ($failedTest instanceof PHPUnit_Framework_SelfDescribing) {
-            $testName = $failedTest->toString();
-        } else {
-            $testName = get_class($failedTest);
-        }
-
         $this->write(
-          sprintf(
-            "\n%d) %s\n",
-
-            $count,
-            $testName
-          )
+            sprintf(
+                "\n%d) %s\n",
+                $count,
+                $defect->getTestName()
+            )
         );
     }
 
@@ -283,26 +264,11 @@ class PHPUnit_TextUI_ResultPrinter extends PHPUnit_Util_Printer implements PHPUn
      */
     protected function printDefectTrace(PHPUnit_Framework_TestFailure $defect)
     {
-        $this->write($defect->getExceptionAsString());
+        $e = $defect->thrownException();
+        $this->write((string) $e);
 
-        $trace = PHPUnit_Util_Filter::getFilteredStacktrace(
-          $defect->thrownException()
-        );
-
-        if (!empty($trace)) {
-            $this->write("\n" . $trace);
-        }
-
-        $e = $defect->thrownException()->getPrevious();
-
-        while ($e) {
-          $this->write(
-            "\nCaused by\n" .
-            PHPUnit_Framework_TestFailure::exceptionToString($e). "\n" .
-            PHPUnit_Util_Filter::getFilteredStacktrace($e)
-          );
-
-          $e = $e->getPrevious();
+        while ($e = $e->getPrevious()) {
+            $this->write("\nCaused by\n" . $e);
         }
     }
 
@@ -348,44 +314,6 @@ class PHPUnit_TextUI_ResultPrinter extends PHPUnit_Util_Printer implements PHPUn
         $this->printDefects($result->skipped(), 'skipped test');
     }
 
-    /**
-     * @param PHPUnit_Framework_TestResult $result
-     * @since Method available since Release 4.0.0
-     */
-    protected function printDeprecated(PHPUnit_Framework_TestResult $result)
-    {
-        $deprecatedFeatures = $result->deprecatedFeatures();
-        $count              = count($deprecatedFeatures);
-
-        if ($count == 0) {
-            return;
-        }
-
-        $this->write(
-          sprintf(
-            "There %s %d tests that use%s deprecated features:\n",
-
-            ($count == 1) ? 'was' : 'were',
-            $count,
-            ($count != 1) ? '' : 's'
-          )
-        );
-
-        $i = 1;
-
-        foreach ($result->deprecatedFeatures() as $deprecatedFeature) {
-            $this->write(
-              sprintf(
-                "\n%d) %s\n\n%s\n",
-
-                $i++,
-                $deprecatedFeature->getMessage(),
-                $deprecatedFeature->getSource()
-              )
-            );
-        }
-    }
-
     protected function printHeader()
     {
         $this->write("\n\n" . PHP_Timer::resourceUsage() . "\n\n");
@@ -398,80 +326,61 @@ class PHPUnit_TextUI_ResultPrinter extends PHPUnit_Util_Printer implements PHPUn
     {
         if (count($result) === 0) {
             $this->writeWithColor(
-              'fg-black, bg-yellow',
-              'No tests executed!'
+                'fg-black, bg-yellow',
+                'No tests executed!'
             );
         } elseif ($result->wasSuccessful() &&
                  $result->allHarmless() &&
                  $result->allCompletelyImplemented() &&
                  $result->noneSkipped()) {
-
             $this->writeWithColor(
-              'fg-black, bg-green',
-              sprintf(
-                'OK (%d test%s, %d assertion%s)',
-
-                count($result),
-                (count($result) == 1) ? '' : 's',
-                $this->numAssertions,
-                ($this->numAssertions == 1) ? '' : 's'
-              )
+                'fg-black, bg-green',
+                sprintf(
+                    'OK (%d test%s, %d assertion%s)',
+                    count($result),
+                    (count($result) == 1) ? '' : 's',
+                    $this->numAssertions,
+                    ($this->numAssertions == 1) ? '' : 's'
+                )
             );
         } elseif ((!$result->allCompletelyImplemented() ||
                   !$result->allHarmless() ||
                   !$result->noneSkipped()) &&
                  $result->wasSuccessful()) {
             $this->writeWithColor(
-              'fg-black, bg-yellow',
-              sprintf(
-                "%sOK, but incomplete, skipped, or risky tests!\n" .
-                'Tests: %d, Assertions: %d%s%s%s.',
-
-                $this->verbose ? "\n" : '',
-                count($result),
-                $this->numAssertions,
-                $this->getCountString(
-                  $result->notImplementedCount(), 'Incomplete'
-                ),
-                $this->getCountString(
-                  $result->skippedCount(), 'Skipped'
-                ),
-                $this->getCountString(
-                  $result->riskyCount(), 'Risky'
+                'fg-black, bg-yellow',
+                sprintf(
+                    "%sOK, but incomplete, skipped, or risky tests!\n" .
+                    'Tests: %d, Assertions: %d%s%s%s.',
+                    $this->verbose ? "\n" : '',
+                    count($result),
+                    $this->numAssertions,
+                    $this->getCountString(
+                        $result->notImplementedCount(), 'Incomplete'
+                    ),
+                    $this->getCountString(
+                        $result->skippedCount(), 'Skipped'
+                    ),
+                    $this->getCountString(
+                        $result->riskyCount(), 'Risky'
+                    )
                 )
-              )
             );
         } else {
             $this->writeWithColor(
-              'fg-white, bg-red',
-              sprintf(
-                "\nFAILURES!\n" .
-                'Tests: %d, Assertions: %s%s%s%s%s.',
-
-                count($result),
-                $this->numAssertions,
-                $this->getCountString($result->failureCount(), 'Failures'),
-                $this->getCountString($result->errorCount(), 'Errors'),
-                $this->getCountString(
-                  $result->notImplementedCount(), 'Incomplete'
-                ),
-                $this->getCountString($result->skippedCount(), 'Skipped')
-              )
-            );
-        }
-
-        if (!$this->verbose &&
-            $result->deprecatedFeaturesCount() > 0) {
-            $this->write("\n");
-
-            $this->writeWithColor(
-              'fg-white, bg-red',
-              sprintf(
-                "Warning: Deprecated PHPUnit features are being used %s times!\n" .
-                'Use --verbose for more information.',
-
-                $result->deprecatedFeaturesCount()
-              )
+                'fg-white, bg-red',
+                sprintf(
+                    "\nFAILURES!\n" .
+                    'Tests: %d, Assertions: %s%s%s%s%s.',
+                    count($result),
+                    $this->numAssertions,
+                    $this->getCountString($result->failureCount(), 'Failures'),
+                    $this->getCountString($result->errorCount(), 'Errors'),
+                    $this->getCountString(
+                        $result->notImplementedCount(), 'Incomplete'
+                    ),
+                    $this->getCountString($result->skippedCount(), 'Skipped')
+                )
             );
         }
     }
@@ -488,10 +397,9 @@ class PHPUnit_TextUI_ResultPrinter extends PHPUnit_Util_Printer implements PHPUn
 
         if ($count > 0) {
             $string = sprintf(
-              ', %s: %d',
-
-              $name,
-              $count
+                ', %s: %d',
+                $name,
+                $count
             );
         }
 
@@ -606,9 +514,9 @@ class PHPUnit_TextUI_ResultPrinter extends PHPUnit_Util_Printer implements PHPUn
     {
         if ($this->debug) {
             $this->write(
-              sprintf(
-                "\nStarting test '%s'.\n", PHPUnit_Util_Test::describe($test)
-              )
+                sprintf(
+                    "\nStarting test '%s'.\n", PHPUnit_Util_Test::describe($test)
+                )
             );
         }
     }
@@ -634,7 +542,7 @@ class PHPUnit_TextUI_ResultPrinter extends PHPUnit_Util_Printer implements PHPUn
         $this->lastTestFailed = false;
 
         if ($test instanceof PHPUnit_Framework_TestCase) {
-            if (!$test->hasPerformedExpectationsOnOutput()) {
+            if (!$test->hasExpectationOnOutput()) {
                 $this->write($test->getActualOutput());
             }
         }
@@ -651,14 +559,13 @@ class PHPUnit_TextUI_ResultPrinter extends PHPUnit_Util_Printer implements PHPUn
 
         if ($this->column == $this->maxColumn) {
             $this->write(
-              sprintf(
-                ' %' . $this->numTestsWidth . 'd / %' .
-                       $this->numTestsWidth . 'd (%3s%%)',
-
-                $this->numTestsRun,
-                $this->numTests,
-                floor(($this->numTestsRun / $this->numTests) * 100)
-              )
+                sprintf(
+                    ' %' . $this->numTestsWidth . 'd / %' .
+                    $this->numTestsWidth . 'd (%3s%%)',
+                    $this->numTestsRun,
+                    $this->numTests,
+                    floor(($this->numTestsRun / $this->numTests) * 100)
+                )
             );
 
             $this->writeNewLine();

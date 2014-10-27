@@ -247,9 +247,8 @@
 
   <copy file="${basedir}/vendor/phpunit/php-token-stream/LICENSE" tofile="${basedir}/build/phar/php-token-stream/LICENSE"/>
   <copy todir="${basedir}/build/phar/php-token-stream">
-   <fileset dir="${basedir}/vendor/phpunit/php-token-stream/PHP">
+   <fileset dir="${basedir}/vendor/phpunit/php-token-stream/src">
     <include name="**/*.php" />
-    <exclude name="**/Autoload.*" />
    </fileset>
   </copy>
 
@@ -295,6 +294,13 @@
    <fileset dir="${basedir}/vendor/sebastian/version/src">
     <include name="**/*.php" />
     <exclude name="**/autoload.php" />
+   </fileset>
+  </copy>
+
+  <copy file="${basedir}/vendor/doctrine/instantiator/LICENSE" tofile="${basedir}/build/phar/doctrine-instantiator/LICENSE"/>
+  <copy todir="${basedir}/build/phar/doctrine-instantiator">
+   <fileset dir="${basedir}/vendor/doctrine/instantiator/src">
+    <include name="**/*.php" />
    </fileset>
   </copy>
 

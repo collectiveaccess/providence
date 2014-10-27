@@ -1284,6 +1284,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				switch($ps_bundle_name) {
 					# -------------------------------
 					case 'ca_object_representations':
+						foreach(array('restrict_to_types', 'restrict_to_relationship_types') as $vs_k) {
+							$pa_options[$vs_k] = $pa_bundle_settings[$vs_k];
+						}
 						$va_reps = $this->getRepresentations(array('thumbnail', 'original'), null, $pa_options);
 						
 						$t_item = new ca_object_representations();
@@ -4450,7 +4453,6 @@ if (!$vb_batch) {
 	 	if(isset($pa_options['returnLabelsAsArray']) && (!isset($pa_options['return_labels_as_array']) || !$pa_options['return_labels_as_array'])) { $pa_options['return_labels_as_array'] = $pa_options['returnLabelsAsArray']; }
 		if(isset($pa_options['restrictToLists']) && (!isset($pa_options['restrict_to_lists']) || !$pa_options['restrict_to_lists'])) { $pa_options['restrict_to_lists'] = $pa_options['restrictToLists']; }
 	 	if(isset($pa_options['groupFields'])) { $pa_options['groupFields'] = (bool)$pa_options['groupFields']; } else { $pa_options['groupFields'] = false; }
-	 	
 	 	
 		$o_db = $this->getDb();
 		$t_locale = new ca_locales();
