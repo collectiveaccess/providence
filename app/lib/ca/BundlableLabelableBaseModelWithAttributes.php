@@ -6117,14 +6117,21 @@ side. For many self-relations the direction determines the nature and display te
 	/**
 	 * 
 	 */
-	 public function getMetadataDictionaryRuleViolations($ps_bundle_name, $pa_options=null) {
+	 public function getMetadataDictionaryRuleViolations($ps_bundle_name=null, $pa_options=null) {
 	 	if (!($vn_id = $this->getPrimaryKey())) { return null; }
 	 	$o_db = $this->getDb();
-	 	$ps_bundle_name = str_replace("ca_attribute_", "", $ps_bundle_name);
 	 	
-	 	if (!preg_match('!^'.$this->tableName().'.!', $ps_bundle_name)) {
-	 		$ps_bundle_name = $this->tableName().".{$ps_bundle_name}";
-	 	}
+	 	$va_sql_params = array($vn_id, $this->tableNum());
+	 	$vs_bundle_sql = '';
+	 	
+	 	if ($ps_bundle_name = str_replace("ca_attribute_", "", $ps_bundle_name)) {	 	
+			if (!preg_match('!^'.$this->tableName().'.!', $ps_bundle_name)) {
+				$ps_bundle_name = $this->tableName().".{$ps_bundle_name}";
+			}
+			$vs_bundle_sql = "AND cmde.bundle_name = ?";
+			$va_sql_params[] = $ps_bundle_name;
+	 	} 
+	 	
 	 	
 	 	$qr_res = $o_db->query("
 	 		SELECT *
@@ -6132,8 +6139,8 @@ side. For many self-relations the direction determines the nature and display te
 	 		INNER JOIN ca_metadata_dictionary_rules AS cmdr ON cmdr.rule_id = cmdrv.rule_id
 	 		INNER JOIN ca_metadata_dictionary_entries AS cmde ON cmde.entry_id = cmdr.entry_id
 	 		WHERE
-	 			cmdrv.row_id = ? AND cmdrv.table_num = ? AND cmde.bundle_name = ?
-	 	", array($vn_id, $this->tableNum(), $ps_bundle_name));
+	 			cmdrv.row_id = ? AND cmdrv.table_num = ? {$vs_bundle_sql}
+	 	", $va_sql_params);
 	 	
 	 	$va_violations = array();
 	 	$va_rule_instances = array();
@@ -6144,6 +6151,7 @@ side. For many self-relations the direction determines the nature and display te
 	 		if ($t_rule && $t_rule->getPrimaryKey()) {
 	 			$va_violations[$vn_violation_id = $qr_res->get('violation_id')] = array(
 	 				'violation_id' => $vn_violation_id,
+	 				'bundle_name' => $qr_res->get('bundle_name'),
 	 				'displayname' => $t_rule->getSetting('rule_displayname'),
 	 				'message' => $t_rule->getSetting('rule_violationMessage'),
 	 				'code' => $qr_res->get('rule_code'),

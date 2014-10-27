@@ -8906,6 +8906,7 @@ $pa_options["display_form_field_tips"] = true;
 			return false; 
 		}
 		$t_item_rel = $va_rel_info['t_item_rel'];
+		if ($this->inTransaction()) { $t_item_rel->setTransaction($this->getTransaction()); }
 		
 		if ($pm_type_id && !is_numeric($pm_type_id)) {
 			$t_rel_type = new ca_relationship_types();
@@ -9044,6 +9045,7 @@ $pa_options["display_form_field_tips"] = true;
 			return false; 
 		}
 		$t_item_rel = $va_rel_info['t_item_rel'];
+		if ($this->inTransaction()) { $t_item_rel->setTransaction($this->getTransaction()); }
 		
 		
 		if ($va_rel_info['related_table_name'] == $this->tableName()) {
@@ -9425,6 +9427,7 @@ $pa_options["display_form_field_tips"] = true;
 			}
 		}
 		
+		if ($this->inTransaction()) { $t_item_rel->setTransaction($this->getTransaction()); }
 		return BaseModel::$s_relationship_info_cache[$vs_table][$vs_related_table_name] = BaseModel::$s_relationship_info_cache[$vs_table][$pm_rel_table_name_or_num] = array(
 			'related_table_name' => $vs_related_table_name,
 			'path' => $va_path,
