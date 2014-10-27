@@ -976,6 +976,13 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 					return false;
 				}
 			}
+		} else {
+			global $g_ui_locale_id;
+			if(!$g_ui_locale_id) { $g_ui_locale_id = 1; }
+
+			$t_item->addLabel(array(
+				'caption' => _t('[BLANK]'),
+			), $g_ui_locale_id);
 		}
 		return (int)$t_item->getPrimaryKey();
 	}
@@ -989,6 +996,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 */
 	public function addItems($pa_row_ids) {
 		$vn_set_id = $this->getPrimaryKey();
+		global $g_ui_locale_id;
+		if(!$g_ui_locale_id) { $g_ui_locale_id = 1; }
 		if (!$vn_set_id) { return false; } 
 		if (!is_array($pa_row_ids)) { return false; } 
 		if (!sizeof($pa_row_ids)) { return false; } 
@@ -1018,9 +1027,19 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$va_item_ids = $qr_res->getAllFieldValues('item_id');
 			
 			// Set the ranks of the newly created links
-			$qr_res = $this->getDb()->query("UPDATE ca_set_items SET rank = item_id WHERE set_id = ? AND table_num = ? AND type_id = ? AND row_id IN (?)", array(
+			$this->getDb()->query("UPDATE ca_set_items SET rank = item_id WHERE set_id = ? AND table_num = ? AND type_id = ? AND row_id IN (?)", array(
 				$vn_set_id, $vn_table_num, $vn_type_id, $va_row_ids
 			));
+
+			// Add empty labels to newly created items
+			foreach($va_item_ids as $vn_item_id) {
+				$va_label_values[] = "(".(int)$vn_item_id.",".(int)$g_ui_locale_id.",'"._t("[BLANK]")."')";
+			}
+			$this->getDb()->query("INSERT INTO ca_set_item_labels (item_id, locale_id, caption) VALUES ".join(",", $va_label_values));
+			if ($this->getDb()->numErrors()) {
+				$this->errors = $this->getDb()->errors;
+				return false;
+			}
 			
 			// Index the links
 			$o_indexer = new SearchIndexer($this->getDb());
