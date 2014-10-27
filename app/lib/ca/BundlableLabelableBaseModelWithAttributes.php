@@ -6209,12 +6209,16 @@ side. For many self-relations the direction determines the nature and display te
 			$va_expression_tags = caGetTemplateTags($va_rule['expression']);
 		
 			$t_violation->clear();
+			
+			$vb_skip = !$this->hasBundle($va_rule['bundle_name'], $this->getTypeID());
 				
 			
-			// create array of values present in rule
-			$va_row = array($va_rule['bundle_name'] => $vs_val = $this->get($va_rule['bundle_name']));
-			foreach($va_expression_tags as $vs_tag) {
-				$va_row[$vs_tag] = $this->get($vs_tag);
+			if (!$vb_skip) {
+				// create array of values present in rule
+				$va_row = array($va_rule['bundle_name'] => $vs_val = $this->get($va_rule['bundle_name']));
+				foreach($va_expression_tags as $vs_tag) {
+					$va_row[$vs_tag] = $this->get($vs_tag);
+				}
 			}
 			
 			// is there a violation recorded for this rule and row?
@@ -6222,7 +6226,7 @@ side. For many self-relations the direction determines the nature and display te
 				$t_violation = $t_found;
 			}
 					
-			if (ExpressionParser::evaluate($va_rule['expression'], $va_row)) {
+			if (!$vb_skip && ExpressionParser::evaluate($va_rule['expression'], $va_row)) {
 				// violation
 				if ($t_violation->getPrimaryKey()) {
 					$t_violation->setMode(ACCESS_WRITE);
