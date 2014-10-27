@@ -2325,7 +2325,7 @@
 					if (ExpressionParser::evaluate($va_rule['expression'], $va_row)) {
 						// violation
 						
-						print "VIOLATION! ... ".$qr_records->getPrimaryKey()."/$vs_val/".($va_rule['expression'])."\n";
+						//print "VIOLATION! ... ".$qr_records->getPrimaryKey()."/$vs_val/".($va_rule['expression'])."\n";
 						
 						if ($t_violation->getPrimaryKey()) {
 							$t_violation->setMode(ACCESS_WRITE);
