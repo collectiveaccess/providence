@@ -51,24 +51,35 @@ class SearchJSONService extends BaseJSONService {
 	public function dispatch(){
 		$va_post = $this->getRequestBodyArray();
 
+		$vs_cache_key =
+			md5(print_r($va_post, true)) .
+			md5(print_r($this->opo_request->getParameters(array('POST', 'GET', 'REQUEST')))) .
+			$this->getRequestMethod();
+
+		if(ExternalCache::contains($vs_cache_key, 'SearchJSONService')) {
+			return ExternalCache::fetch($vs_cache_key, 'SearchJSONService');
+		}
 
 		switch($this->getRequestMethod()){
 			case "GET":
 				if(sizeof($va_post)==0){
-					return $this->search();
+					$vm_return = $this->search();
 				} else {
 					if(is_array($va_post["bundles"])){
-						return $this->search($va_post["bundles"]);
+						$vm_return = $this->search($va_post["bundles"]);
 					} else {
 						$this->addError(_t("Invalid request body format"));
-						return false;
+						$vm_return = false;
 					}
 				}
 				break;
 			default:
 				$this->addError(_t("Invalid HTTP request method for this service"));
-				return false;
+				$vm_return = false;
 		}
+
+		ExternalCache::save($vs_cache_key, $vm_return, 'SearchJSONService');
+		return $vm_return;
 	}
 	# -------------------------------------------------------
 	/**
