@@ -54,6 +54,11 @@ class AboutDrawingSearchService extends SearchJSONService {
 			foreach($va_return['results'] as &$va_result) {
 				$vn_entity_id = $va_result['entity_id'];
 
+				if(ExternalCache::contains($vn_entity_id, 'AboutDrawingServiceEntities')) {
+					$va_result['ca_objects'] = ExternalCache::fetch($vn_entity_id, 'AboutDrawingServiceEntities');
+					continue;
+				}
+
 				$qr_objects = $o_db->query("
 					SELECT * FROM ca_entities, ca_objects_x_entities, ca_objects
 					WHERE ca_entities.entity_id = ca_objects_x_entities.entity_id
@@ -107,6 +112,8 @@ class AboutDrawingSearchService extends SearchJSONService {
 
 					$va_result['ca_objects'][] = $va_object_info;
 				}
+
+				ExternalCache::save($vn_entity_id, $va_result['ca_objects'], 'AboutDrawingServiceEntities');
 
 				/* the old&simple, but very slow code
 				$t_entity = new ca_entities($va_result['entity_id']);
