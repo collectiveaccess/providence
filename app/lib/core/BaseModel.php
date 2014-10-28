@@ -1874,7 +1874,7 @@ class BaseModel extends BaseObject {
 			$vn_gap_end = $pa_parent_info[$vs_hier_right_fld];
 			$vn_gap_size = ($vn_gap_end - $vn_gap_start);
 			
-			if ($vn_gap_size < 0.0001) {
+			if ($vn_gap_size < 0.00001) {
 				// rebuild hierarchical index if the current gap is not large enough to fit current record
 				$this->rebuildHierarchicalIndex($this->get($vs_hier_id_fld));
 				$pa_parent_info = $this->_getHierarchyParent($pa_parent_info[$this->primaryKey()]);
@@ -2911,10 +2911,6 @@ class BaseModel extends BaseObject {
 									$vs_hier_sql = ' AND ('.$vs_hier_id_fld.' = '.$this->get($vs_hier_id_fld).')';
 								} else {
 									$vs_hier_sql = "";
-								}
-								
-								if (($vn_orig_hier_right - $vn_orig_hier_left) == 0) {
-									die("!!!\n");
 								}
 								
 								$vn_ratio = ($vn_interval_end - $vn_interval_start)/($vn_orig_hier_right - $vn_orig_hier_left);
@@ -10346,7 +10342,7 @@ $pa_options["display_form_field_tips"] = true;
 	public function registerItemView($pn_user_id=null) {
 		global $g_ui_locale_id;
 		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
-		$pn_locale_id = $g_ui_locale_id;
+		if (!$pn_locale_id) { $pn_locale_id = $g_ui_locale_id; }
 		
 		$vn_table_num = $this->tableNum();
 		

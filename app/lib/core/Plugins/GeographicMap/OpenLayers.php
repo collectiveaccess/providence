@@ -615,4 +615,3 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 	}
 	# ------------------------------------------------
 }
-?>

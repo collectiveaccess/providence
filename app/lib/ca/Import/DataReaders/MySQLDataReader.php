@@ -199,4 +199,3 @@ class MySQLDataReader extends BaseDataReader {
 	}
 	# -------------------------------------------------------
 }
-?>

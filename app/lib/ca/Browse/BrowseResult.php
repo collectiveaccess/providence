@@ -64,8 +64,8 @@ class WLPlugSearchEngineBrowseEngine extends WLPlug implements IWLPlugSearchEngi
 		}
 	}
 	# -------------------------------------------------------
-	public function getHits() {
-		return $this->opa_hits;
+	public function getHits($pn_limit=null) {
+		return ($pn_limit > 0) ? array_slice($this->opa_hits, $this->opn_current_row + 1, $pn_limit) : $this->opa_hits;
 	}
 	# -------------------------------------------------------
 	public function seek($pn_index) {

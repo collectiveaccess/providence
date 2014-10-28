@@ -213,7 +213,7 @@
 							";
 						}
 						$qr_sort = $this->opo_db->query($vs_sql, (int)$vn_element_id, (int)$vn_table_num);
-						$va_sorted_hits = $qr_sort->getAllFieldValues('row_id');
+						$va_sorted_hits = array_unique($qr_sort->getAllFieldValues('row_id'));
 			
 						// Add on hits that aren't sorted because they don't have an attribute associated
 						$va_missing_items = array_diff($pa_hits, $va_sorted_hits);
@@ -303,7 +303,7 @@
 			
 			$qr_sort = $this->opo_db->query($vs_sql);
 			
-			$va_sorted_hits = $qr_sort->getAllFieldValues($vs_table_pk);
+			$va_sorted_hits = array_unique($qr_sort->getAllFieldValues($vs_table_pk));
 			
 			return $va_sorted_hits;
 		}
@@ -318,4 +318,3 @@
 		}
 		# ------------------------------------------------------------------
 	}	
-?>

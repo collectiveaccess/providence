@@ -1555,18 +1555,19 @@
 			
 			$vb_is_sub_element = (bool)($t_element->get('parent_id'));
 			$t_parent = $vb_is_sub_element ? $this->_getElementInstance($t_element->get('parent_id')) : null;
-			
+			while($vb_is_sub_element && ($t_parent->get('datatype') == 0) && ($t_parent->get('parent_id') > 0)) {
+				$t_parent = $this->_getElementInstance($t_parent->get('parent_id'));
+			}
 			
 			$vs_element_code = $t_element->get('element_code');
 			
 			// get all elements of this element set
-			$va_element_set = $t_element->getElementsInSet($vb_is_sub_element ? $t_element->get('parent_id') : null);
+			$va_element_set = $vb_is_sub_element ? $t_parent->getElementsInSet() : $t_element->getElementsInSet();
 			
 			if ($vb_is_sub_element) {
 				foreach($va_element_set as $vn_i => $va_element) {
 					if ($va_element['element_code'] !== $vs_element_code) { unset($va_element_set[$vn_i]); }
 				}
-				
 			}
 			
 			$t_attr = new ca_attributes();
@@ -1615,27 +1616,32 @@
 				unset($va_element_opts['values']);
 				$va_element_opts['values'] = '';
 				
-				$vs_form_element = ca_attributes::attributeHtmlFormElement($va_element, $va_element_opts);
-				//
-				// prep element for use as search element
-				//
-				// ... replace value
-				$vs_form_element = str_replace('{{'.$va_element['element_id'].'}}', $vs_value, $vs_form_element);
-				
 				// ... replace name of form element
 				$vs_fld_name = $vs_subelement_code; //str_replace('.', '_', $vs_subelement_code);
 				if (caGetOption('asArrayElement', $pa_options, false)) { $vs_fld_name .= "[]"; } 
 				
-				// escape any special characters in jQuery selectors
-				$vs_form_element = str_replace(
-					"jQuery('#{fieldNamePrefix}".$va_element['element_id']."_{n}')", 
-					"jQuery('#".str_replace(array("[", "]", "."), array("\\\\[", "\\\\]", "\\\\."), $vs_fld_name)."')", 
-					$vs_form_element
-				);
-				$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_{n}', $vs_fld_name, $vs_form_element);
+				if ($vs_force_value = caGetOption('force', $pa_options, false)) {
+					$vs_form_element = caHTMLHiddenInput($vs_fld_name, array('value' =>$vs_force_value));
+				} else {
+					$vs_form_element = ca_attributes::attributeHtmlFormElement($va_element, $va_element_opts);
+					//
+					// prep element for use as search element
+					//
+					// ... replace value
+					$vs_form_element = str_replace('{{'.$va_element['element_id'].'}}', $vs_value, $vs_form_element);
 				
-				$vs_form_element = str_replace('{n}', '', $vs_form_element);
-				$vs_form_element = str_replace('{'. $va_element['element_id'].'}', '', $vs_form_element);
+				
+					// escape any special characters in jQuery selectors
+					$vs_form_element = str_replace(
+						"jQuery('#{fieldNamePrefix}".$va_element['element_id']."_{n}')", 
+						"jQuery('#".str_replace(array("[", "]", "."), array("\\\\[", "\\\\]", "\\\\."), $vs_fld_name)."')", 
+						$vs_form_element
+					);
+					$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_{n}', $vs_fld_name, $vs_form_element);
+				
+					$vs_form_element = str_replace('{n}', '', $vs_form_element);
+					$vs_form_element = str_replace('{'. $va_element['element_id'].'}', '', $vs_form_element);
+				}
 				
 				$va_elements_by_container[$va_element['parent_id'] ? $va_element['parent_id'] : $va_element['element_id']][] = $vs_form_element;
 				
