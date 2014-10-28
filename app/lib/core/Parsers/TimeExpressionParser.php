@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2013 Whirl-i-Gig
+ * Copyright 2006-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -759,8 +759,9 @@ class TimeExpressionParser {
 			$ps_expression = preg_replace('!([\d]{3})[\-]{1}[\D]+!', '\1_', $ps_expression);
 		}
 		
-		$ps_expression = preg_replace("![\-\–\—]{1}!", " - ", $ps_expression);
-		
+		if (!preg_match("!^[\-]{1}[\d]+$!", $ps_expression)) {
+			$ps_expression = preg_replace("![\-\–\—]{1}!", " - ", $ps_expression);
+		}
 		$va_era_list = array_merge(array_keys($this->opo_language_settings->getAssoc("ADBCTable")), array($this->opo_language_settings->get("dateADIndicator"), $this->opo_language_settings->get("dateBCIndicator")));
 		foreach($va_era_list as $vs_era) {
 			$ps_expression = preg_replace("/([\d]+)".$vs_era."[ ]*/i", "$1 $vs_era ", $ps_expression); #str_replace($vs_era, " ".$vs_era, $ps_expression);
@@ -801,7 +802,7 @@ class TimeExpressionParser {
 	
 		$va_conjunction_list = $this->opo_language_settings->getList("rangeConjunctions");
 		foreach($va_conjunction_list as $vs_conjunction) {
-			if (!preg_match("/^[A-Za-z0-9]+$/", $vs_conjunction)) {		// only add spaces around non-alphanumeric conjunctions
+			if (!preg_match("/^[A-Za-z0-9\-]+$/", $vs_conjunction)) {		// only add spaces around non-alphanumeric conjunctions
 				$ps_expression = str_replace($vs_conjunction, ' '.$vs_conjunction.' ', $ps_expression);
 			}
 		}
@@ -812,7 +813,10 @@ class TimeExpressionParser {
 		
 		// support year ranges in the form yyyy/yyyy
 		$ps_expression = preg_replace("!^([\d]{4})/([\d]{4})$!", "$1 - $2", trim($ps_expression));
-		
+
+		// support date entry in the form yyyy-mm-dd/yyy-mm-dd (HSP)
+		$ps_expression = preg_replace("/([\d]{4}#[\d]{2}#[\d]{2})\/([\d]{4}#[\d]{2}#[\d]{2})/", "$1 - $2", $ps_expression);
+
 		return trim($ps_expression);
 	}
 	# -------------------------------------------------------------------
@@ -843,7 +847,10 @@ class TimeExpressionParser {
 							$vn_int = intval($va_token['value']);
 							if (($vn_int >= 1000) && ($vn_int <= 9999)) {
 								$this->skipToken();
-								return array('day' => null, 'month' => null, 'year' => $vn_int);
+								return array('day' => null, 'month' => null, 'year' => $vn_int, 'era'=> TEP_ERA_AD);
+							} elseif(($vn_int < 0) && is_int($vn_it)) {
+								$this->skipToken();
+								return array('day' => null, 'month' => null, 'year' => $vn_int, 'era'=> TEP_ERA_BC);
 							} else {
 								$va_peek = $this->peekToken(2);
 								if ((($vn_int >= 1) && ($vn_int <=31)) && ($va_peek['type'] != TEP_TOKEN_ERA)) {
@@ -1033,7 +1040,7 @@ class TimeExpressionParser {
 								if ($va_date_element = $this->_parseDateElement($pa_options)) {
 									$va_date = array(
 										'month' => $va_date_element['month'], 'day' => $va_date_element['day'], 
-										'year' => $va_date_element['year'],
+										'year' => $va_date_element['year'], 
 										'hours' => null, 'minutes' => null, 'seconds' => null,
 										'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => 0
 									);
@@ -1812,6 +1819,14 @@ class TimeExpressionParser {
 			}
 		
 			# date/time expression
+			
+			// Blank end day and month and year implies carry over of start date
+			if (!$pa_dates['end']['year'] && !$pa_dates['end']['month'] && !$pa_dates['end']['day']) {
+				$pa_dates['end']['year'] = $pa_dates['start']['year'];
+				$pa_dates['end']['month'] = $pa_dates['start']['month'];
+				$pa_dates['end']['day'] = $pa_dates['start']['day'];
+			}
+			
 			// Two-digit year windowing
 			if (
 				(!isset($pa_dates['start']['dont_window']) || !$pa_dates['start']['dont_window'])
@@ -1879,10 +1894,8 @@ class TimeExpressionParser {
 			if (($pa_dates['start']['day'] === null) && ($pa_dates['end']['day'] === null) && ($pa_dates['start']['year'] != TEP_START_OF_UNIVERSE) && $pa_dates['end']['year'] != TEP_END_OF_UNIVERSE) { 
 				$pa_dates['start']['day'] = 1; 
 				$pa_dates['end']['day'] = $this->daysInMonth($pa_dates['end']['month'], $pa_dates['end']['year'] ? $pa_dates['end']['year'] : 2004); // use leap year if no year is defined
-			} else {
-				if (($pa_dates['end']['day'] === null) && ($pa_dates['end']['year'] != TEP_END_OF_UNIVERSE) && ($pa_dates['start']['year'] != TEP_START_OF_UNIVERSE)) { 
-					$pa_dates['end']['day'] = $pa_dates['start']['day']; 
-				}
+			} elseif (($pa_dates['end']['day'] === null) && ($pa_dates['end']['year'] != TEP_END_OF_UNIVERSE) && ($pa_dates['start']['year'] != TEP_START_OF_UNIVERSE)) { 
+				$pa_dates['end']['day'] = $this->daysInMonth($pa_dates['end']['month'], $pa_dates['end']['year']);
 			}
 			
 			if ($pa_dates['end']['month'] === null) { 
@@ -2231,6 +2244,32 @@ class TimeExpressionParser {
 				}
 			}
 
+			// special treatment for HSP
+			if (caGetOption('dateFormat', $pa_options) == 'onlyDatesWithHyphens') {
+				// full year -> just return the year
+				if (
+					$va_start_pieces['year'] == $va_end_pieces['year']  &&
+					$va_start_pieces['day'] == 1 && $va_start_pieces['month'] == 1 &&
+					$va_start_pieces['hours'] == 0 && $va_start_pieces['minutes'] == 0 && $va_start_pieces['seconds'] == 0 &&
+					$va_end_pieces['day'] == 31 && $va_end_pieces['month'] == 12 &&
+					$va_end_pieces['hours'] == 23 && $va_end_pieces['minutes'] == 59 && $va_end_pieces['seconds'] == 59
+				) {
+					return ''.$va_start_pieces['year'];
+				}
+
+				$vs_date = $va_start_pieces['year'].'-'.sprintf('%02d', $va_start_pieces['month']).'-'.sprintf('%02d', $va_start_pieces['day']);
+
+				if(!(
+					$va_start_pieces['year'] == $va_end_pieces['year'] &&
+					$va_start_pieces['month'] == $va_end_pieces['month'] &&
+					$va_start_pieces['day'] == $va_end_pieces['day']
+				)) {
+					$vs_date .= '/'.$va_end_pieces['year'].'-'.sprintf('%02d', $va_end_pieces['month']).'-'.sprintf('%02d', $va_end_pieces['day']);
+				}
+
+				return $vs_date;
+			}
+
 			if ($pa_options['start_as_na_date']) {
 				$vs_date = $va_start_pieces['month'].'-'.$va_start_pieces['day'].'-'.$va_start_pieces['year'];
 				
@@ -2404,17 +2443,17 @@ class TimeExpressionParser {
 							} else {
 								if ($vb_full_day_time_range) {
 									// days, but no times
-									$vs_start_date = $this->_dateToText(array('month' => $va_start_pieces['month'], 'day' => $va_start_pieces['day']), $pa_options);
-									$vs_end_date = $this->_dateToText(array('month' => $va_end_pieces['month'], 'day' => $va_end_pieces['day']), $pa_options);
+									if((bool)$this->opo_language_settings->get('monthComesFirstInDelimitedDate')) {
+										$vs_start_date = $this->_dateToText(array('month' => $va_start_pieces['month'], 'day' => $va_start_pieces['day']), $pa_options);
+										$vs_end_date = $this->_dateToText(array('day' => $va_end_pieces['day']), $pa_options);
+									} else {
+										$vs_start_date = $this->_dateToText(array('day' => $va_start_pieces['day']), $pa_options);
+										$vs_end_date = $this->_dateToText(array('month' => $va_start_pieces['month'], 'day' => $va_end_pieces['day']), $pa_options);
+									}
+
 									$vs_year = $this->_dateToText(array('year' => $va_start_pieces['year'], 'era' => $va_start_pieces['era'], 'uncertainty' => $va_start_pieces['uncertainty'], 'uncertainty_units' => $va_start_pieces['uncertainty_units']), $pa_options);
 
-									$va_date_delimiters = $this->opo_language_settings->getList("dateDelimiters");
-									if (isset($pa_options['dateDelimiter']) && in_array($pa_options['dateDelimiter'], $va_date_delimiters)) {
-										$vs_date_delimiter = $pa_options['dateDelimiter'];
-									} else {
-										$vs_date_delimiter = $va_date_delimiters[0];
-									}
-									return ($vs_range_preconjunction ? $vs_range_preconjunction.' ': '').$vs_start_date.' '.$vs_range_conjunction.' '.$vs_end_date.$vs_date_delimiter.$vs_year;
+									return ($vs_range_preconjunction ? $vs_range_preconjunction.' ': '').$vs_start_date.' '.$vs_range_conjunction.' '.$vs_end_date.((((bool)$this->opo_datetime_settings->get('showCommaAfterDayForTextDates')) && ($pa_options['dateFormat'] == 'text')) ? ', ' : ' ').$vs_year;
 								} else {
 									// days with times
 									$vs_start_date = $this->_datetimeToText(array('month' => $va_start_pieces['month'], 'day' => $va_start_pieces['day'], 'hours' => $va_start_pieces['hours'], 'minutes' => $va_start_pieces['minutes'], 'seconds' => $va_start_pieces['seconds']), $pa_options);
@@ -2443,7 +2482,10 @@ class TimeExpressionParser {
 								// date range within single year without time
 								if(caGetOption('dateFormat', $pa_options, null) == 'text') {
 									$vs_start_date = $this->_dateToText(array('month' => $va_start_pieces['month'], 'day' => $va_start_pieces['day']), $pa_options);
-									$vs_end_date = $this->_dateToText(array('month' => $va_end_pieces['month'], 'day' => $va_end_pieces['day']), array_merge(array('forceCommaAfterDay' => true), $pa_options));
+									if((bool)$this->opo_datetime_settings->get('showCommaAfterDayForTextDates')) {
+										$pa_options['forceCommaAfterDay'] = true;
+									}
+									$vs_end_date = $this->_dateToText(array('month' => $va_end_pieces['month'], 'day' => $va_end_pieces['day']), $pa_options);
 									$vs_year = $this->_dateToText(array('year' => $va_start_pieces['year'], 'era' => $va_start_pieces['era'], 'uncertainty' => $va_start_pieces['uncertainty'], 'uncertainty_units' => $va_start_pieces['uncertainty_units']), $pa_options);
 									return ($vs_range_preconjunction ? $vs_range_preconjunction.' ': '').$vs_start_date.' '.$vs_range_conjunction.' '.$vs_end_date.' '.$vs_year;
 								} else {
@@ -2760,7 +2802,6 @@ class TimeExpressionParser {
 		
 		if (!$pa_options['timeOmit']) {
 			$vn_seconds = ($pa_date_pieces['hours'] * 3600) + ($pa_date_pieces['minutes'] * 60) + $pa_date_pieces['seconds'];
-			if (!$vn_seconds) { return $vs_date; }
 			$vs_time = $this->_timeToText($vn_seconds, $pa_options);
 			
 			return $vs_date. ' '.$vs_datetime_conjunction.' '.$vs_time;
@@ -3107,7 +3148,7 @@ class TimeExpressionParser {
         $k = array('seconds','minutes','hours','mday', 
                 'wday','mon','year','yday','weekday','month',0); 
         return(array_combine($k,split(":", 
-                gmdate('s:i:G:j:w:n:Y:z:l:F:U',is_null($ts)?time():$ts)))); 
+                date('s:i:G:j:w:n:Y:z:l:F:U',is_null($ts)?time():$ts)))); 
     } 
  	# -------------------------------------------------------------------
 }

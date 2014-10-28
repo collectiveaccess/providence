@@ -224,16 +224,6 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 
 	protected $FIELDS;
 	
-	
-	static $s_element_list_cache;
-	static $s_element_set_cache;
-	static $s_element_set_id_cache;
-	
-	static $s_settings_cache = array();
-	static $s_setting_value_cache = array();
-	
-	static $s_element_instance_cache = array();
-	
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -246,8 +236,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	#
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
-		ca_metadata_elements::$s_settings_cache[null] = array();
-		ca_metadata_elements::$s_setting_value_cache[null] = array();
+		MemoryCache::save('no_key', array(), 'ElementSettings');
+		MemoryCache::save('no_key', array(), 'ElementSettingValues');
 		
 		parent::__construct($pn_id);	# call superclass constructor
 		$this->FIELDS['datatype']['BOUNDS_CHOICE_LIST'] = array_flip(ca_metadata_elements::getAttributeTypes());
@@ -255,30 +245,30 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	# ------------------------------------------------------
 	public function load($pm_id=null, $pb_use_cache = true) {
 		if ($vn_rc = parent::load($pm_id, $pb_use_cache)) {
-			if (!isset(ca_metadata_elements::$s_settings_cache[$this->getPrimaryKey()])) {
-				ca_metadata_elements::$s_settings_cache[$this->getPrimaryKey()] = $this->get('settings');
+			if(!MemoryCache::contains($this->getPrimaryKey(), 'ElementSettings')) {
+				MemoryCache::save($this->getPrimaryKey(), $this->get('settings'), 'ElementSettings');
 			}
 		}
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
 	public function insert($pa_options=null) {
-		$this->set('settings', ca_metadata_elements::$s_settings_cache[null]);
+		$this->set('settings', MemoryCache::fetch('no_key', 'ElementSettings'));
 		if ($vn_rc =  parent::insert($pa_options)) {
-			ca_metadata_elements::$s_settings_cache[$this->getPrimaryKey()] = ca_metadata_elements::$s_settings_cache[null];
+			MemoryCache::save($this->getPrimaryKey(), MemoryCache::fetch('no_key', 'ElementSettings'), 'ElementSettings');
 		}
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
 	public function update($pa_options=null) {
-		$this->set('settings', ca_metadata_elements::$s_settings_cache[$this->getPrimaryKey()]);
+		$this->set('settings', MemoryCache::fetch($this->getPrimaryKey(), 'ElementSettings'));
 		return parent::update($pa_options);
 	}
 	# ------------------------------------------------------
 	public function delete($pb_delete_related = false, $pa_options = NULL, $pa_fields = NULL, $pa_table_list = NULL) {
 		$vn_id = $this->getPrimaryKey();
 		if ($vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
-			unset(ca_metadata_elements::$s_settings_cache[$vn_id]);
+			MemoryCache::delete($vn_id, 'ElementSettings');
 		}
 		return $vn_rc;
 	}
@@ -293,12 +283,12 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$pn_element_id = $this->getPrimaryKey();
 		}
 		if (!$pn_element_id) { return null; }
-		
-		if ($pb_use_cache && isset(ca_metadata_elements::$s_element_set_cache[$pn_element_id])) { 
-			if (caGetOption('idsOnly', $pa_options, false)) {
-				return ca_metadata_elements::$s_element_set_id_cache[$pn_element_id];
+
+		if($pb_use_cache && CompositeCache::contains($pn_element_id, 'ElementSets')) {
+			if(caGetOption('idsOnly', $pa_options, false)) {
+				return CompositeCache::fetch($pn_element_id, 'ElementSetIds');
 			} else {
-				return ca_metadata_elements::$s_element_set_cache[$pn_element_id]; 
+				return CompositeCache::fetch($pn_element_id, 'ElementSets');
 			}
 		}
 		
@@ -309,7 +299,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		foreach($va_hier as $va_element) {
 			$va_element_ids[] = $va_element['NODE']['element_id'];
 		}
-		ca_metadata_elements::$s_element_set_id_cache[$pn_element_id] = $va_element_ids;
+		CompositeCache::save($pn_element_id, $va_element_ids, 'ElementSetIds');
 		
 		if (caGetOption('idsOnly', $pa_options, false)) { return $va_element_ids; }
 		
@@ -329,8 +319,9 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	
 		$va_tmp = $this->_getSortedElementsForParent($va_element_set, $va_root['element_id']);
 		array_unshift($va_tmp, $va_root);
-		
-		return ca_metadata_elements::$s_element_set_cache[$pn_element_id] = $va_tmp;
+
+		CompositeCache::save($pn_element_id, $va_tmp, 'ElementSets');
+		return $va_tmp;
 	}
 	# ------------------------------------------------------
 	private function _getSortedElementsForParent(&$pa_element_set, $pn_parent_id) {
@@ -367,7 +358,10 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 */
 	public function getSettings() {
 		if (is_null($this->get('datatype'))) { return null; }
-		return ca_metadata_elements::$s_settings_cache[$this->getPrimaryKey()];
+
+		// MemoryCache key can't be false or null so use special key for soon-to-be-inserted elements
+		$vm_cache_key = ($this->getPrimaryKey() ? $this->getPrimaryKey() : 'no_key');
+		return MemoryCache::fetch($vm_cache_key, 'ElementSettings');
 	}
 	# ------------------------------------------------------
 	/**
@@ -377,6 +371,9 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	public function setSetting($ps_setting, $pm_value, &$ps_error=null) {
 		if (is_null($this->get('datatype'))) { return null; }
 		if (!$this->isValidSetting($ps_setting)) { return null; }
+
+		// MemoryCache key can't be false or null so use special key for soon-to-be-inserted elements
+		$vm_cache_key = ($this->getPrimaryKey() ? $this->getPrimaryKey() : 'no_key');
 		
 		$o_value_instance = Attribute::getValueInstance($this->get('datatype'), null, true);
 		$vs_error = null;
@@ -393,8 +390,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$pm_value = '0';
 		}
 		$va_settings[$ps_setting] = $pm_value;
-		ca_metadata_elements::$s_settings_cache[$this->getPrimaryKey()] = $va_settings;
-		
+		MemoryCache::save($vm_cache_key, $va_settings, 'ElementSettings');
+
 		return true;
 	}
 	# ------------------------------------------------------
@@ -402,13 +399,18 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * Return setting value
 	 */
 	public function getSetting($ps_setting, $pb_use_cache=false) {
-		if ($pb_use_cache && isset(ca_metadata_elements::$s_setting_value_cache[$vn_id = $this->getPrimaryKey()][$ps_setting])) { return ca_metadata_elements::$s_setting_value_cache[$vn_id][$ps_setting]; }
+		$vn_id = $this->getPrimaryKey();
+		if($pb_use_cache && MemoryCache::contains("{$vn_id}:{$ps_setting}", 'ElementSettingValues')){
+			return MemoryCache::fetch("{$vn_id}:{$ps_setting}", 'ElementSettingValues');
+		}
 		if (is_null($this->get('datatype'))) { return null; }
 		$va_settings = $this->getSettings();
 		$va_available_settings = $this->getAvailableSettings();
 		
 		$vs_default = isset($va_available_settings[$ps_setting]['default']) ? $va_available_settings[$ps_setting]['default'] : null;
-		return ca_metadata_elements::$s_setting_value_cache[$vn_id][$ps_setting] = isset($va_settings[$ps_setting]) ? $va_settings[$ps_setting] : $vs_default;
+		$vm_return = (isset($va_settings[$ps_setting]) ? $va_settings[$ps_setting] : $vs_default);
+		MemoryCache::save("{$vn_id}:{$ps_setting}", $vm_return, 'ElementSettingValues');
+		return $vm_return;
 	}
 	# ------------------------------------------------------
 	/**
@@ -559,7 +561,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 *
 	 * @param $pb_root_elements_only boolean If true, then only root elements are returned; default is false
 	 * @param $pm_table_name_or_num mixed Optional table name or number to filter list with. If specified then only elements that have a type restriction to the table are returned. If omitted (default) then all elements, regardless of type restrictions, are returned.
-	 * @param $pm_type_name_or_id mixed Optional type code or type_id to restrict elements to.  If specified then only elements that have a type restriction to the specified table and type are returned. 
+	 * @param $pm_type_name_or_id mixed Optional type code or type_id to restrict elements to.  If specified then only elements that have a type restriction to the specified table and type are returned.
 	 * @param $pb_use_cache boolean Optional control for list cache; if true [default] then the will be cached for the request; if false the list will be generated from the database. The list is always generated at least once in the current request - there is no inter-request caching
 	 * @param $pa_data_types array Optional list of element data types to filter on.
 	 *
@@ -569,9 +571,11 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		$o_dm = Datamodel::load();
 		$vn_table_num = $o_dm->getTableNum($pm_table_name_or_num);
 		$vs_cache_key = md5($pm_table_name_or_num.'/'.$pm_type_name_or_id.'/'.($pb_root_elements_only ? '1' : '0').'/'.($pb_index_by_element_code ? '1' : '0').print_R($pa_data_types, true));
-		if ($pb_use_cache && ca_metadata_elements::$s_element_list_cache[$vs_cache_key]) {
-			if (($pb_return_stats && isset(ca_metadata_elements::$s_element_list_cache[$vs_cache_key]['ui_counts'])) || !$pb_return_stats) {
-				return ca_metadata_elements::$s_element_list_cache[$vs_cache_key];
+
+		if($pb_use_cache && CompositeCache::contains($vs_cache_key, 'ElementList')) {
+			$va_element_list = CompositeCache::fetch($vs_cache_key, 'ElementList');
+			if (($pb_return_stats && isset($va_element_list['ui_counts'])) || !$pb_return_stats) {
+				return $va_element_list;
 			}
 		}
 		
@@ -633,11 +637,9 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		}
 		$va_return = array();
 		$t_element = new ca_metadata_elements();
-		
-		$va_element_ids = array();
+
 		while($qr_tmp->nextRow()){
 			$vn_element_id = $qr_tmp->get('element_id');
-			$vs_element_code = $qr_tmp->get('element_code');
 			$vs_datatype = $qr_tmp->get('datatype');
 			
 			if (is_array($pa_data_types) && !in_array($vs_datatype, $pa_data_types)) { continue; }
@@ -666,8 +668,10 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			}
 			$va_return = $va_return_proc;
 		}
-		
-		return ca_metadata_elements::$s_element_list_cache[$vs_cache_key] = sizeof($va_return) > 0 ? $va_return : false;
+
+		$vm_return = sizeof($va_return) > 0 ? $va_return : false;;
+		CompositeCache::save($vs_cache_key, $vm_return, 'ElementList');
+		return $vm_return;
 	}
 	# ------------------------------------------------------
 	/**
@@ -904,16 +908,22 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * 
 	 */
 	static public function getInstance($pm_element_code_or_id) {
-		if (isset(ca_metadata_elements::$s_element_instance_cache[$pm_element_code_or_id])) { return ca_metadata_elements::$s_element_instance_cache[$pm_element_code_or_id]; }
+		if(MemoryCache::contains($pm_element_code_or_id, 'ElementInstances')) {
+			return MemoryCache::fetch($pm_element_code_or_id, 'ElementInstances');
+		}
 		
 		$t_element = new ca_metadata_elements(is_numeric($pm_element_code_or_id) ? $pm_element_code_or_id : null);
 		
 		if (!($vn_element_id = $t_element->getPrimaryKey())) {
 			if ($t_element->load(array('element_code' => $pm_element_code_or_id))) {
-				return ca_metadata_elements::$s_element_instance_cache[$t_element->getPrimaryKey()] = ca_metadata_elements::$s_element_instance_cache[$t_element->get('element_code')] = $t_element;
+				MemoryCache::save($t_element->getPrimaryKey(), $t_element, 'ElementInstances');
+				MemoryCache::save($t_element->get('element_code'), $t_element, 'ElementInstances');
+				return $t_element;
 			}
 		} else {
-			return ca_metadata_elements::$s_element_instance_cache[$vn_element_id] = ca_metadata_elements::$s_element_instance_cache[$t_element->get('element_code')] = $t_element;
+			MemoryCache::save($vn_element_id, $t_element, 'ElementInstances');
+			MemoryCache::save($t_element->get('element_code'), $t_element, 'ElementInstances');
+			return $t_element;
 		}
 		return null;
 	}

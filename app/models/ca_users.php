@@ -375,7 +375,12 @@ class ca_users extends BaseModel {
 		# is that you create a new user record with the 'active' field set to false. You then
 		# send the confirmation key to the new user (usually via e-mail) and ask them to respond
 		# with the key. If they do, you know that the e-mail address is valid.
-		$vs_confirmation_key = md5(mcrypt_create_iv(24, MCRYPT_DEV_URANDOM));
+		if(function_exists('mcrypt_create_iv')) {
+			$vs_confirmation_key = md5(mcrypt_create_iv(24, MCRYPT_DEV_URANDOM));
+		} else {
+			$vs_confirmation_key = md5(uniqid(mt_rand(), true));
+		}
+
 		$this->set("confirmation_key", $vs_confirmation_key);
 
 		try {
@@ -1345,7 +1350,7 @@ class ca_users extends BaseModel {
 		if ($vb_got_group) {
 			$o_db = $this->getDb();
 			$qr_res = $o_db->query("
-				SELECT link_id 
+				SELECT relation_id 
 				FROM ca_users_x_groups
 				WHERE
 					(user_id = ?) AND
@@ -1760,6 +1765,7 @@ class ca_users extends BaseModel {
 	 *		useTable = if true and displayType for element in DT_CHECKBOXES checkboxes will be formatted in a table with numTableColumns columns
 	 *		numTableColumns = Number of columns to use when formatting checkboxes as a table. Default, if omitted, is 3
 	 *		genericUIList = forces FT_*_EDITOR_UI to return single UI list for table rather than by type
+	 *		classname = class to assign to form element
 	 * @return string HTML code to generate form widget
 	 */	
 	public function preferenceHtmlFormElement($ps_pref, $ps_format=null, $pa_options=null) {
@@ -1771,6 +1777,13 @@ class ca_users extends BaseModel {
 			
 			$vs_current_value = $this->getPreference($ps_pref);
 			$vs_output = "";
+			
+			$vs_class = "";
+			$vs_classname = "";
+			if(isset($pa_options['classname']) && $pa_options['classname']){
+				$vs_classname = $pa_options['classname'];
+				$vs_class = " class='".$pa_options['classname']."'";
+			}
 			
 			foreach(array(
 				'displayType', 'displayWidth', 'displayHeight', 'length', 'formatType', 'choiceList',
@@ -1798,7 +1811,7 @@ class ca_users extends BaseModel {
 					if ($vn_display_height > 1) {
 						$vs_output = "<textarea name='pref_$ps_pref' rows='".$vn_display_height."' cols='".$vn_display_width."'>".htmlspecialchars($vs_current_value, ENT_QUOTES, 'UTF-8')."</textarea>\n";
 					} else {
-						$vs_output = "<input type='text' name='pref_$ps_pref' size='$vn_display_width' maxlength='$vn_max_input_length' value='".htmlspecialchars($vs_current_value, ENT_QUOTES, 'UTF-8')."'/>\n";
+						$vs_output = "<input type='text' name='pref_$ps_pref' size='$vn_display_width' maxlength='$vn_max_input_length'".$vs_class." value='".htmlspecialchars($vs_current_value, ENT_QUOTES, 'UTF-8')."'/>\n";
 					}
 					break;
 				# ---------------------------------
@@ -1937,7 +1950,7 @@ class ca_users extends BaseModel {
 					if (!is_array($va_opts) || (sizeof($va_opts) == 0)) { $vs_output = ''; break; }
 					
 					
-					$vs_output = "<select name='pref_{$ps_pref}'>\n";
+					$vs_output = "<select name='pref_{$ps_pref}'".$vs_class.">\n";
 					foreach($va_opts as $vs_opt => $vs_val) {
 						$vs_selected = ($vs_val == $vs_current_value) ? "selected='1'" : "";
 						$vs_output .= "<option value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."' $vs_selected>".$vs_opt."</option>\n";	
@@ -1948,7 +1961,7 @@ class ca_users extends BaseModel {
 				case 'DT_CHECKBOXES':
 					if ($va_pref_info["formatType"] == 'FT_BIT') {
 						$vs_selected = ($vs_current_value) ? "CHECKED" : "";
-						$vs_output .= "<input type='checkbox' name='pref_$ps_pref' value='1' $vs_selected>\n";	
+						$vs_output .= "<input type='checkbox' name='pref_$ps_pref' value='1'".$vs_class." $vs_selected>\n";	
 					} else {
 						if ($vb_use_table = (isset($pa_options['useTable']) && (bool)$pa_options['useTable'])) {
 							$vs_output .= "<table width='100%'>";
@@ -1965,7 +1978,7 @@ class ca_users extends BaseModel {
 							
 							if ($vb_use_table && ($vn_c == 0)) { $vs_output .= "<tr>"; }
 							if ($vb_use_table) { $vs_output .= "<td width='".(floor(100/$vn_num_table_columns))."%'>"; }
-							$vs_output .= "<input type='checkbox' name='pref_".$ps_pref."[]' value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."' $vs_selected> ".$vs_opt." \n";	
+							$vs_output .= "<input type='checkbox' name='pref_".$ps_pref."[]' value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."'".$vs_class." $vs_selected> ".$vs_opt." \n";	
 							
 							if ($vb_use_table) { $vs_output .= "</td>"; }
 							$vn_c++;
@@ -1978,13 +1991,13 @@ class ca_users extends BaseModel {
 					break;
 				# ---------------------------------
 				case 'DT_STATEPROV_LIST':
-					$vs_output .= caHTMLSelect("pref_{$ps_pref}_select", array(), array('id' => "pref_{$ps_pref}_select"), array('value' => $vs_current_value));
-					$vs_output .= caHTMLTextInput("pref_{$ps_pref}_name", array('id' => "pref_{$ps_pref}_text", 'value' => $vs_current_value));
+					$vs_output .= caHTMLSelect("pref_{$ps_pref}_select", array(), array('id' => "pref_{$ps_pref}_select", 'class' => $vs_classname), array('value' => $vs_current_value));
+					$vs_output .= caHTMLTextInput("pref_{$ps_pref}_name", array('id' => "pref_{$ps_pref}_text", 'value' => $vs_current_value, 'class' => $vs_classname));
 					
 					break;
 				# ---------------------------------
 				case 'DT_COUNTRY_LIST':
-					$vs_output .= caHTMLSelect("pref_{$ps_pref}", caGetCountryList(), array('id' => "pref_{$ps_pref}"), array('value' => $vs_current_value));
+					$vs_output .= caHTMLSelect("pref_{$ps_pref}", caGetCountryList(), array('id' => "pref_{$ps_pref}", 'class' => $vs_classname), array('value' => $vs_current_value));
 						
 					if ($va_pref_info['stateProvPref']) {
 						$vs_output .="<script type='text/javascript'>\n";
@@ -2002,13 +2015,13 @@ class ca_users extends BaseModel {
 					break;
 				# ---------------------------------
 				case 'DT_CURRENCIES':
-					$vs_output .= caHTMLSelect("pref_{$ps_pref}", caAvailableCurrenciesForConversion(), array('id' => "pref_{$ps_pref}"), array('value' => $vs_current_value));
+					$vs_output .= caHTMLSelect("pref_{$ps_pref}", caAvailableCurrenciesForConversion(), array('id' => "pref_{$ps_pref}", 'class' => $vs_classname), array('value' => $vs_current_value));
 					break;
 				# ---------------------------------
 				case 'DT_RADIO_BUTTONS':
 					foreach($va_pref_info["choiceList"] as $vs_opt => $vs_val) {
 						$vs_selected = ($vs_val == $vs_current_value) ? "CHECKED" : "";
-						$vs_output .= "<input type='radio' name='pref_$ps_pref' value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."' $vs_selected> ".$vs_opt." \n";	
+						$vs_output .= "<input type='radio' name='pref_$ps_pref'".$vs_class." value='".htmlspecialchars($vs_val, ENT_QUOTES, 'UTF-8')."' $vs_selected> ".$vs_opt." \n";	
 					}
 					break;
 				# ---------------------------------
@@ -2023,7 +2036,7 @@ class ca_users extends BaseModel {
 						$vn_max_input_length = $vn_display_width;
 					}
 					
-					$vs_output = "<input type='password' name='pref_$ps_pref' size='$vn_display_width' maxlength='$vn_max_input_length' value='".htmlspecialchars($vs_current_value, ENT_QUOTES, 'UTF-8')."'/>\n";
+					$vs_output = "<input type='password' name='pref_$ps_pref' size='$vn_display_width' maxlength='$vn_max_input_length'".$vs_class." value='".htmlspecialchars($vs_current_value, ENT_QUOTES, 'UTF-8')."'/>\n";
 					
 					break;
 				# ---------------------------------

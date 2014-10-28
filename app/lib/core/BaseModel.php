@@ -1813,9 +1813,7 @@ class BaseModel extends BaseObject {
 					case FT_FILE:
 					case FT_MEDIA:
 						if (!$vs_cur_value) {
-							$t = new Timer();
 							$this->_FIELD_VALUES[$vs_field] = caUnserializeForDatabase($va_row[$vs_field]);
-							Debug::msg($vs_field.'; '.strlen($va_row[$vs_field]).'/'.$t->getTime(4).caPrintStackTrace());
 						}
 						break;
 					default:
@@ -1876,7 +1874,7 @@ class BaseModel extends BaseObject {
 			$vn_gap_end = $pa_parent_info[$vs_hier_right_fld];
 			$vn_gap_size = ($vn_gap_end - $vn_gap_start);
 			
-			if ($vn_gap_size < 0.00001) {
+			if ($vn_gap_size < 0.0001) {
 				// rebuild hierarchical index if the current gap is not large enough to fit current record
 				$this->rebuildHierarchicalIndex($this->get($vs_hier_id_fld));
 				$pa_parent_info = $this->_getHierarchyParent($pa_parent_info[$this->primaryKey()]);
@@ -2530,14 +2528,7 @@ class BaseModel extends BaseObject {
 				$vn_orig_hier_right 	= $this->get($vs_hier_right_fld);
 				
 				$vn_parent_id 			= $this->get($vs_parent_id_fld);
-				
-	if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing']) {		
-				if (($vn_orig_hier_right - $vn_orig_hier_left) == 0) {
-					$this->_calcHierarchicalIndexing($this->_getHierarchyParent($vn_parent_id));
-					$vn_orig_hier_left 		= $this->get($vs_hier_left_fld);
-					$vn_orig_hier_right 	= $this->get($vs_hier_right_fld);
-				}
-	}			
+					
 				if ($vb_parent_id_changed = $this->changed($vs_parent_id_fld)) {
 					$va_parent_info = $this->_getHierarchyParent($vn_parent_id);
 					
@@ -2607,14 +2598,15 @@ class BaseModel extends BaseObject {
 							break;
 					}
 					
+					
 	if (!isset($pa_options['dontSetHierarchicalIndexing']) || !$pa_options['dontSetHierarchicalIndexing']) {							
 						if ($va_parent_info) {
 							$va_hier_indexing = $this->_calcHierarchicalIndexing($va_parent_info);
 						} else {
 							$va_hier_indexing = array('left' => 1, 'right' => pow(2,32));
 						}
-						$this->set($this->getProperty('HIERARCHY_LEFT_INDEX_FLD'), $va_hier_indexing['left']);
-						$this->set($this->getProperty('HIERARCHY_RIGHT_INDEX_FLD'), $va_hier_indexing['right']);
+						$this->set($this->getProperty('HIERARCHY_LEFT_INDEX_FLD'), $vn_orig_hier_left = $va_hier_indexing['left']);
+						$this->set($this->getProperty('HIERARCHY_RIGHT_INDEX_FLD'), $vn_orig_hier_right = $va_hier_indexing['right']);
 	}
 				}
 			}
@@ -2921,18 +2913,22 @@ class BaseModel extends BaseObject {
 									$vs_hier_sql = "";
 								}
 								
+								if (($vn_orig_hier_right - $vn_orig_hier_left) == 0) {
+									die("!!!\n");
+								}
+								
 								$vn_ratio = ($vn_interval_end - $vn_interval_start)/($vn_orig_hier_right - $vn_orig_hier_left);
 								$vs_sql = "
 									UPDATE ".$this->tableName()."
 									SET
-										$vs_hier_left_fld = ($vn_interval_start + (($vs_hier_left_fld - $vn_orig_hier_left) * $vn_ratio)),
-										$vs_hier_right_fld = ($vn_interval_end + (($vs_hier_right_fld - $vn_orig_hier_right) * $vn_ratio))
+										$vs_hier_left_fld = ($vn_interval_start + (({$vs_hier_left_fld} - ?) * ?)),
+										$vs_hier_right_fld = ($vn_interval_end + (({$vs_hier_right_fld} - ?) * ?))
 									WHERE
-										(".$vs_hier_left_fld." BETWEEN ".$vn_orig_hier_left." AND ".$vn_orig_hier_right.")
+										({$vs_hier_left_fld} BETWEEN ? AND ?)
 										$vs_hier_sql
 								";
 								//print "<hr>$vs_sql<hr>";
-								$o_db->query($vs_sql);
+								$o_db->query($vs_sql, array($vn_orig_hier_left, $vn_ratio, $vn_orig_hier_right, $vn_ratio, $vn_orig_hier_left, $vn_orig_hier_right));
 								if ($vn_err = $o_db->numErrors()) {
 									$this->postError(2030, _t("Could not update sub records in hierarchy: [%1] %2", $vs_sql, join(';', $o_db->getErrors())),"BaseModel->update()");
 									if ($vb_we_set_transaction) { $this->removeTransaction(false); }
@@ -2953,6 +2949,7 @@ class BaseModel extends BaseObject {
 					if (is_array($va_rebuild_hierarchical_index)) {
 						//$this->rebuildHierarchicalIndex($this->get($vs_hier_id_fld));
 						$t_instance = $this->_DATAMODEL->getInstanceByTableName($this->tableName());
+						if ($this->inTransaction()) { $t_instance->setTransaction($this->getTransaction()); }
 						foreach($va_rebuild_hierarchical_index as $vn_child_id) {
 							if ($vn_child_id == $this->getPrimaryKey()) { continue; }
 							if ($t_instance->load($vn_child_id)) {
@@ -7480,10 +7477,23 @@ class BaseModel extends BaseObject {
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
-	 * 
+	 * Return all ancestors for a list of row_ids. The list is an aggregation of ancestors for all of the row_ids. It will not possible
+	 * to determine which row_ids have which ancestors from the returned value.
 	 * 
 	 * @param array $pa_row_ids 
-	 * @param array $pa_options
+	 * @param array $pa_options Options include:
+	 *		transaction = optional Transaction instance. If set then all database access is done within the context of the transaction
+	 *		returnAs = what to return; possible values are:
+	 *			searchResult			= a search result instance (aka. a subclass of BaseSearchResult), when the calling subclass is searchable (ie. <classname>Search and <classname>SearchResult classes are defined) 
+	 *			ids						= an array of ids (aka. primary keys)
+	 *			modelInstances			= an array of instances, one for each ancestor. Each instance is the same class as the caller, a subclass of BaseModel 
+	 *			firstId					= the id (primary key) of the first ancestor. This is the same as the first item in the array returned by 'ids'
+	 *			firstModelInstance		= the instance of the first ancestor. This is the same as the first instance in the array returned by 'modelInstances'
+	 *			count					= the number of ancestors
+	 *			[Default is ids]
+	 *	
+	 *		limit = if searchResult, ids or modelInstances is set, limits number of returned ancestoes. [Default is no limit]
+	 *		
 	 * @return mixed
 	 */
 	static public function getHierarchyAncestorsForIDs($pa_row_ids, $pa_options=null) {
@@ -7512,10 +7522,11 @@ class BaseModel extends BaseObject {
 					{$vs_table_pk} IN (?)
 			", array($va_level_row_ids));
 			$va_level_row_ids = $qr_level->getAllFieldValues($vs_parent_id_fld);
+			
 			$va_ancestor_row_ids = array_merge($va_ancestor_row_ids, $va_level_row_ids);
 		} while(($qr_level->numRows() > 0) && (sizeof($va_level_row_ids))) ;
-		
-		$va_ancestor_row_ids = array_unique($va_ancestor_row_ids);
+	
+		$va_ancestor_row_ids = array_values(array_unique($va_ancestor_row_ids));
 		if (!sizeof($va_ancestor_row_ids)) { return null; }
 		
 		$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
@@ -7558,6 +7569,104 @@ class BaseModel extends BaseObject {
 					return $t_instance->makeSearchResult($t_instance->tableName(), $va_ancestor_row_ids);
 				} else {
 					return $va_ancestor_row_ids;
+				}
+				break;
+		}
+		return null;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Return all children for a list of row_ids. The list is an aggregation of children for all of the row_ids. It will not possible
+	 * to determine which row_ids have which children from the returned value.
+	 * 
+	 * @param array $pa_row_ids 
+	 * @param array $pa_options Options include:
+	 *		transaction = optional Transaction instance. If set then all database access is done within the context of the transaction
+	 *		returnAs = what to return; possible values are:
+	 *			searchResult			= a search result instance (aka. a subclass of BaseSearchResult), when the calling subclass is searchable (ie. <classname>Search and <classname>SearchResult classes are defined) 
+	 *			ids						= an array of ids (aka. primary keys)
+	 *			modelInstances			= an array of instances, one for each children. Each instance is the same class as the caller, a subclass of BaseModel 
+	 *			firstId					= the id (primary key) of the first children. This is the same as the first item in the array returned by 'ids'
+	 *			firstModelInstance		= the instance of the first children. This is the same as the first instance in the array returned by 'modelInstances'
+	 *			count					= the number of children
+	 *			[Default is ids]
+	 *	
+	 *		limit = if searchResult, ids or modelInstances is set, limits number of returned children. [Default is no limit]
+	 *		
+	 * @return mixed
+	 */
+	static public function getHierarchyChildrenForIDs($pa_row_ids, $pa_options=null) {
+		if(!is_array($pa_row_ids) || (sizeof($pa_row_ids) == 0)) { return null; }
+		
+		$ps_return_as = caGetOption('returnAs', $pa_options, 'ids', array('forceLowercase' => true, 'validValues' => array('searchResult', 'ids', 'modelInstances', 'firstId', 'firstModelInstance', 'count')));
+		$o_trans = caGetOption('transaction', $pa_options, null);
+		$vs_table = get_called_class();
+		$t_instance = new $vs_table;
+		
+	 	if (!($vs_parent_id_fld = $t_instance->getProperty('HIERARCHY_PARENT_ID_FLD'))) { return null; }
+		if ($o_trans) { $t_instance->setTransaction($o_trans); }
+		
+		$vs_table_name = $t_instance->tableName();
+		$vs_table_pk = $t_instance->primaryKey();
+		
+		$o_db = $t_instance->getDb();
+		
+		$va_child_row_ids = array();
+		$va_level_row_ids = $pa_row_ids;
+		do {
+			$qr_level = $o_db->query("
+				SELECT {$vs_table_pk}
+				FROM {$vs_table_name}
+				WHERE
+					{$vs_parent_id_fld} IN (?)
+			", array($va_level_row_ids));
+			$va_level_row_ids = $qr_level->getAllFieldValues($vs_table_pk);
+			$va_child_row_ids = array_merge($va_child_row_ids, $va_level_row_ids);
+		} while(($qr_level->numRows() > 0) && (sizeof($va_level_row_ids))) ;
+		
+		$va_child_row_ids = array_values(array_unique($va_child_row_ids));
+		if (!sizeof($va_child_row_ids)) { return null; }
+		
+		$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
+		
+		
+		switch($ps_return_as) {
+			case 'firstmodelinstance':
+				$vn_child_id = array_shift($va_child_row_ids);
+				if ($t_instance->load((int)$vn_child_id)) {
+					return $t_instance;
+				}
+				return null;
+				break;
+			case 'modelinstances':
+				$va_instances = array();
+				foreach($va_child_row_ids as $vn_child_id) {
+					$t_instance = new $vs_table;
+					if ($o_trans) { $t_instance->setTransaction($o_trans); }
+					if ($t_instance->load((int)$vn_child_id)) {
+						$va_instances[] = $t_instance;
+						$vn_c++;
+						if ($vn_limit && ($vn_c >= $vn_limit)) { break; }
+					}
+				}
+				return $va_instances;
+				break;
+			case 'firstid':
+				return array_shift($va_child_row_ids);
+				break;
+			case 'count':
+				return sizeof($va_child_row_ids);
+				break;
+			default:
+			case 'ids':
+			case 'searchresult':
+				if ($vn_limit && (sizeof($va_child_row_ids) >= $vn_limit)) { 
+					$va_child_row_ids = array_slice($va_child_row_ids, 0, $vn_limit);
+				}
+				if ($ps_return_as == 'searchresult') {
+					return $t_instance->makeSearchResult($t_instance->tableName(), $va_child_row_ids);
+				} else {
+					return $va_child_row_ids;
 				}
 				break;
 		}
@@ -7956,7 +8065,7 @@ $pa_options["display_form_field_tips"] = true;
 									# Hierarchical <select>
 									#
 									$va_hier = $o_one_table->getHierarchyAsList(0, $vs_display_use_count, $va_display_use_count_filters, $vb_display_omit_items__with_zero_count);
-	
+									if (!is_array($va_hier)) { return ''; }
 									$va_display_fields = $va_attr["DISPLAY_FIELD"];
 									if (!in_array($vs_one_table_primary_key, $va_display_fields)) {
 										$va_display_fields[] = $o_one_table->tableName().".".$vs_one_table_primary_key;
@@ -8238,7 +8347,7 @@ $pa_options["display_form_field_tips"] = true;
 							# radio-button controls for foreign key and choice lists, but we don't bother because it's never
 							# really necessary.
 							if ($vn_display_height > 1) {
-								$vs_element = '<'.$vs_text_area_tag_name.' name="'.$pa_options["name"].'" rows="'.$vn_display_height.'" cols="'.$vn_display_width.'"'.($pa_options['readonly'] ? ' readonly="readonly" ' : '').' wrap="soft" '.$vs_js.' id=\''.$pa_options["id"]."' style='{$vs_dim_style}' ".$vs_css_class_attr.">".$this->escapeHTML($vm_field_value).'</'.$vs_text_area_tag_name.'>'."\n";
+								$vs_element = '<'.$vs_text_area_tag_name.' name="'.$pa_options["name"].'" rows="'.$vn_display_height.'" cols="'.$vn_display_width.'"'.($pa_options['readonly'] ? ' readonly="readonly" disabled="disabled"' : '').' wrap="soft" '.$vs_js.' id=\''.$pa_options["id"]."' style='{$vs_dim_style}' ".$vs_css_class_attr.">".$this->escapeHTML($vm_field_value).'</'.$vs_text_area_tag_name.'>'."\n";
 							} else {
 								$vs_element = '<input name="'.$pa_options["name"].'" type="text" size="'.($pa_options['size'] ? $pa_options['size'] : $vn_display_width).'"'.($pa_options['readonly'] ? ' readonly="readonly" ' : '').' value="'.$this->escapeHTML($vm_field_value).'" '.$vs_js.' id=\''.$pa_options["id"]."' {$vs_css_class_attr} style='{$vs_dim_style}'/>\n";
 							}
@@ -8665,6 +8774,7 @@ $pa_options["display_form_field_tips"] = true;
 		
 		if (!is_numeric($pn_rel_id)) {
 			if ($t_rel_item = $this->_DATAMODEL->getInstanceByTableName($va_rel_info['related_table_name'], true)) {
+				if ($this->inTransaction()) { $t_rel_item->setTransaction($this->getTransaction()); }
 				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load(array($vs_idno_fld => $pn_rel_id))) {
 					$pn_rel_id = $t_rel_item->getPrimaryKey();
 				}
@@ -8808,6 +8918,7 @@ $pa_options["display_form_field_tips"] = true;
 		
 		if (!is_numeric($pn_rel_id)) {
 			if ($t_rel_item = $this->_DATAMODEL->getInstanceByTableName($va_rel_info['related_table_name'], true)) {
+				if ($this->inTransaction()) { $t_rel_item->setTransaction($this->getTransaction()); }
 				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load(array($vs_idno_fld => $pn_rel_id))) {
 					$pn_rel_id = $t_rel_item->getPrimaryKey();
 				}
@@ -9357,6 +9468,7 @@ $pa_options["display_form_field_tips"] = true;
 		
 		if (!is_numeric($pn_rel_id)) {
 			if ($t_rel_item = $this->_DATAMODEL->getInstanceByTableName($va_rel_info['related_table_name'], true)) {
+				if ($this->inTransaction()) { $t_rel_item->setTransaction($this->getTransaction()); }
 				if (($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) && $t_rel_item->load(array($vs_idno_fld => $pn_rel_id))) {
 					$pn_rel_id = $t_rel_item->getPrimaryKey();
 				}
@@ -9495,7 +9607,7 @@ $pa_options["display_form_field_tips"] = true;
 				foreach($va_info as $va_relationship) {
 					# do any records exist?
 					$t_related = $this->_DATAMODEL->getInstanceByTableName($vs_many_table, true);
-					$t_related->setTransaction($o_trans);
+					if ($this->inTransaction()) { $t_related->setTransaction($o_trans); }
 					$vs_rel_pk = $t_related->primaryKey();
 					
 					$qr_record_check = $o_db->query($x="
@@ -10274,8 +10386,8 @@ $pa_options["display_form_field_tips"] = true;
 				(?, ?, 1)
 			", $vn_table_num, $vn_row_id);
 		}
-		$o_cache = caGetCacheObject("caRecentlyViewedCache");
-		if (!is_array($va_recently_viewed_list = $o_cache->load('recentlyViewed'))) {
+		$va_recently_viewed_list = CompositeCache::fetch('caRecentlyViewed');
+		if (!is_array($va_recently_viewed_list)) {
 			$va_recently_viewed_list = array();
 		}
 		if (!is_array($va_recently_viewed_list[$vn_table_num])) {
@@ -10287,7 +10399,7 @@ $pa_options["display_form_field_tips"] = true;
 		if (!in_array($vn_row_id, $va_recently_viewed_list[$vn_table_num])) {
 			array_unshift($va_recently_viewed_list[$vn_table_num], $vn_row_id);
 		}
-		$o_cache->save($va_recently_viewed_list, 'recentlyViewed');
+		CompositeCache::save('caRecentlyViewed', $va_recently_viewed_list);
 		return true;
 	}
 	# --------------------------------------------------------------------------------------------
@@ -10484,8 +10596,7 @@ $pa_options["display_form_field_tips"] = true;
 	 */
 	public function getRecentlyViewedItems($pn_limit=10, $pa_options=null) {
 		if (!isset($pa_options['dontUseCache']) || !$pa_options['dontUseCache']) {
-			$o_cache = caGetCacheObject("caRecentlyViewedCache");
-			$va_recently_viewed_items = $o_cache->load('recentlyViewed');
+			$va_recently_viewed_items = CompositeCache::fetch('caRecentlyViewed');
 			$vn_table_num = $this->tableNum();
 			
 			if(is_array($va_recently_viewed_items) && is_array($va_recently_viewed_items[$vn_table_num])) { 

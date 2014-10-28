@@ -70,7 +70,7 @@
  			
  			if ($this->ops_tablename) {
 				$this->opo_result_context = new ResultContext($po_request, $this->ops_tablename, $this->ops_find_type);
-				
+
 				if ($this->opn_type_restriction_id = $this->opo_result_context->getTypeRestriction($pb_type_restriction_has_changed)) {
 					$_GET['type_id'] = $this->opn_type_restriction_id;								// push type_id into globals so breadcrumb trail can pick it up
 					$this->opb_type_restriction_has_changed =  $pb_type_restriction_has_changed;	// get change status
@@ -94,6 +94,8 @@
  				$t_model->getTypeFieldName() 
  				&& 
  				(
+ 					(!$t_model->typeIDIsOptional())
+ 					&&
  					(!is_null($va_types = caGetTypeListForUser($this->ops_tablename, array('access' => __CA_BUNDLE_ACCESS_READONLY__))))
  					&& 
  					(is_array($va_types) && !sizeof($va_types))
@@ -266,6 +268,10 @@
 					'name' => _t('Spreadsheet with media icons (XLSX)'),
 					'code' => '_xlsx'
 				),
+                array(
+                    'name' => _t('Word processing (DOCX)'),
+                    'code' => '_docx'
+                )				
 			);
 			
 			// merge default formats with drop-in print templates
@@ -702,11 +708,18 @@
 				return;
 			}
 
+			if(substr(get_class($this), 0, 6) == 'Browse') {
+				$vs_export_filename = Configuration::load()->get($this->ops_tablename.'_batch_export_filename');
+			} else {
+				$vs_export_filename = preg_replace("/[^\p{L}\p{N}\-]/", '_', $this->opo_result_context->getSearchExpression());
+				$vs_export_filename = preg_replace("/[\_]+/", '_', $vs_export_filename);
+			}
+
 			$vs_tmp_file = tempnam(caGetTempDirPath(), 'export');
 			ca_data_exporters::exportRecordsFromSearchResult($t_exporter->get('exporter_code'), $po_result, $vs_tmp_file);
 
 			header('Content-Type: '.$t_exporter->getContentType().'; charset=UTF-8');
-			header('Content-Disposition: attachment; filename="batch_export.'.$t_exporter->getFileExtension().'"');
+			header('Content-Disposition: attachment; filename="'.$vs_export_filename.'.'.$t_exporter->getFileExtension().'"');
 			header('Content-Transfer-Encoding: binary');
 			readfile($vs_tmp_file);
 			@unlink($vs_tmp_file);
@@ -730,6 +743,11 @@
 						require_once(__CA_LIB_DIR__."/core/Parsers/PHPExcel/PHPExcel/Writer/Excel2007.php");
 						$vs_content = $this->render('Results/xlsx_results.php');
 						return;
+                    case '_docx':
+                        require_once(__CA_LIB_DIR__."/core/Parsers/PHPWord/Autoloader.php");
+                        \PhpOffice\PhpWord\Autoloader::register();
+                        $vs_content = $this->render('Results/docx_results.php');
+                        return;						
 					case '_csv':
 						$vs_delimiter = ",";
 						$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename.'_csv'), 0, 30);
@@ -891,6 +909,10 @@
 				
 				$this->view->setVar('set_id', $t_set->getPrimaryKey());
 				$this->view->setVar('t_set', $t_set);
+
+				if ($t_set->numErrors()) {
+					$this->view->setVar('error', join("; ", $t_set->getErrors()));
+				}
 			}
  		
 			$this->view->setVar('set_name', $vs_set_name);

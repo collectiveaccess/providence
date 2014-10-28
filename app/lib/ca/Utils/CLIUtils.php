@@ -43,27 +43,45 @@
 		/**
 		 * Create a fresh installation of CollectiveAccess based on contents of setup.php.  This is essentially a CLI
 		 * command wrapper for the installation process, as /install/inc/page2.php is a web wrapper.
+		 * @param Zend_Console_Getopt $po_opts
+		 * @param bool $pb_installing
+		 * @return bool
 		 */
-		public static function install($po_opts=null) {
+		public static function install($po_opts=null, $pb_installing = true) {
 			require_once(__CA_BASE_DIR__ . '/install/inc/Installer.php');
+			require_once(__CA_BASE_DIR__ . '/install/inc/Updater.php');
 
-			if (!$po_opts->getOption('profile-name')) {
+			if ($pb_installing && !$po_opts->getOption('profile-name')) {
 				CLIUtils::addError(_t("Missing required parameter: profile-name"));
 				return false;
 			}
-			if (!$po_opts->getOption('admin-email')) {
+			if ($pb_installing && !$po_opts->getOption('admin-email')) {
 				CLIUtils::addError(_t("Missing required parameter: admin-email"));
 				return false;
 			}
-
+			$vs_profile_directory = $po_opts->getOption('profile-directory');
+			$vs_profile_directory = $vs_profile_directory ? $vs_profile_directory : __CA_BASE_DIR__ . '/install/profiles/xml';
 			$t_total = new Timer();
-			$vo_installer = new Installer(
-				__CA_BASE_DIR__ . '/install/profiles/xml',
-				$po_opts->getOption('profile-name'),
-				$po_opts->getOption('admin-email'),
-				$po_opts->getOption('overwrite'),
-				$po_opts->getOption('debug')
-			);
+			// If we are installing, then use Installer, otherwise use Updater
+			$vo_installer = null;
+			if($pb_installing){
+				$vo_installer = new Installer(
+					$vs_profile_directory,
+					$po_opts->getOption('profile-name'),
+					$po_opts->getOption('admin-email'),
+					$po_opts->getOption('overwrite'),
+					$po_opts->getOption('debug')
+				);
+			} else {
+				$vo_installer = new Updater(
+					$vs_profile_directory,
+					$po_opts->getOption('profile-name'),
+					null, // If you are updating you don't want to generate an admin user
+					false, // If you are updating you never want to overwrite
+					$po_opts->getOption('debug')
+				);
+			}
+
 			$vb_quiet = $po_opts->getOption('quiet');
 
 			// if profile validation against XSD failed, we already have an error here
@@ -74,19 +92,20 @@
 				));
 				return false;
 			}
+			if($pb_installing){
+				if (!$vb_quiet) { CLIUtils::addMessage(_t("Performing preinstall tasks")); }
+				$vo_installer->performPreInstallTasks();
 
-			if (!$vb_quiet) { CLIUtils::addMessage(_t("Performing preinstall tasks")); }
-			$vo_installer->performPreInstallTasks();
-			
-			if (!$vb_quiet) { CLIUtils::addMessage(_t("Loading schema")); }
-			$vo_installer->loadSchema();
-			
-			if($vo_installer->numErrors()){
-				CLIUtils::addError(_t(
-					"There were errors loading the database schema: %1",
-					"\n * " . join("\n * ", $vo_installer->getErrors())
-				));
-				return false;
+				if (!$vb_quiet) { CLIUtils::addMessage(_t("Loading schema")); }
+				$vo_installer->loadSchema();
+
+				if($vo_installer->numErrors()){
+					CLIUtils::addError(_t(
+						"There were errors loading the database schema: %1",
+						"\n * " . join("\n * ", $vo_installer->getErrors())
+					));
+					return false;
+				}
 			}
 
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing locales")); }
@@ -101,8 +120,10 @@
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing metadata elements")); }
 			$vo_installer->processMetadataElements();
 
-			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing access roles")); }
-			$vo_installer->processRoles();
+			if(!$po_opts->getOption('skip-roles')){
+				if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing access roles")); }
+				$vo_installer->processRoles();
+			}
 
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing user groups")); }
 			$vo_installer->processGroups();
@@ -134,20 +155,23 @@
 				));
 				return false;
 			}
-
-			CLIUtils::addMessage(_t(
-				"Installation was successful!\n\nYou can now login with the following logins: %1\nMake a note of these passwords!",
-				"\n * " . join(
-					"\n * ",
-					array_map(
-						function ($username, $password) {
-							return _t("username %1 and password %2", $username, $password);
-						},
-						array_keys($va_login_info),
-						array_values($va_login_info)
+			if($pb_installing){
+				CLIUtils::addMessage(_t(
+					"Installation was successful!\n\nYou can now login with the following logins: %1\nMake a note of these passwords!",
+					"\n * " . join(
+						"\n * ",
+						array_map(
+							function ($username, $password) {
+								return _t("username %1 and password %2", $username, $password);
+							},
+							array_keys($va_login_info),
+							array_values($va_login_info)
+						)
 					)
-				)
-			));
+				));
+			} else {
+				CLIUtils::addMessage(_t("Update of installation profile successful"));
+			}
 
 			CLIUtils::addMessage($vs_time);
 			return true;
@@ -159,10 +183,12 @@
 		public static function installParamList() {
 			return array(
 				"profile-name|n=s" => _t('Name of the profile to install (filename in profiles directory, minus the .xml extension).'),
+				"profile-directory|p=s" => _t('Directory to get profile. Default is: "%1". This directory must contain the profile.xsd schema so that the installer can validate the installation profile.', __CA_BASE_DIR__ . '/install/profiles/xml'),
 				"admin-email|e=s" => _t('Email address of the system administrator (user@domain.tld).'),
 				"overwrite" => _t('Flag must be set in order to overwrite an existing installation.  Also, the __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ global must be set to a true value.'),
 				"debug|d" => _t('Debug flag for installer.'),
-				"quiet|q" => _t('Suppress progress messages.')
+				"quiet|q" => _t('Suppress progress messages.'),
+				"skip-roles|s" => _t('Skip Roles. Default is false, but if you have many roles and access control enabled then install may take some time')
 			);
 		}
 		# -------------------------------------------------------
@@ -189,6 +215,43 @@
 		 */
 		public static function installShortHelp() {
 			return _t("Performs a fresh installation of CollectiveAccess using the configured values in setup.php.");
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function update_installation_profileUtilityClass() {
+			return _t('Configuration - Experimental');
+		}
+		# -------------------------------------------------------
+		public static function update_installation_profileParamList() {
+			$va_params = self::installParamList();
+			unset($va_params['overwrite']);
+			unset($va_params['admin-email|e=s']);
+			return $va_params;
+		}
+		# -------------------------------------------------------
+		public static function update_installation_profile($po_opts=null) {
+			require_once(__CA_BASE_DIR__ . '/install/inc/Updater.php');
+			self::install($po_opts, false);
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function update_installation_profileHelp() {
+			return _t("EXPERIMENTAL - Updates the installation profile to match a supplied profile name.") ."\n".
+			"\t" . _t("This function only creates new values and is useful if you want to append changes from one profile onto another.")."\n".
+			"\t" . _t("Your new profile must exist in a directory that contains the profile.xsd schema and must validate against that schema in order for the update to apply successfully.");
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function update_installation_profileShortHelp() {
+			return _t("EXPERIMENTAL - Updates the installation profile to match a supplied profile name.");
 		}
 
 		# -------------------------------------------------------
@@ -646,7 +709,7 @@
 							FROM ca_attribute_values
 							WHERE
 								element_id in (?)
-						", $va_element_ids);
+						", array($va_element_ids));
 						if ($qr_c->nextRow()) { $vn_count = $qr_c->get('c'); } else { $vn_count = 0; }
 				
 						print CLIProgressBar::start($vn_count, _t('Re-processing attribute media'));
@@ -1437,6 +1500,54 @@
 		 *
 		 */
 		public static function load_AATHelp() {
+			return _t("Loads the AAT from a Getty-provided XML file.");
+		}
+		# -------------------------------------------------------
+		/**
+		 * 
+		 */
+		public static function load_ULAN($po_opts=null) {
+			require_once(__CA_APP_DIR__.'/helpers/supportHelpers.php');
+			
+			if (!($vs_file_path = $po_opts->getOption('directory'))) {
+				CLIUtils::addError(_t("You must specify a data directory"));
+				return false;
+			}
+			if (!file_exists($vs_config_path = $po_opts->getOption('configuration'))) {
+				CLIUtils::addError(_t("You must specify a ULAN import configuration file"));
+				return false;
+			}
+			caLoadULAN($vs_file_path, $vs_config_path);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_ULANParamList() {
+			return array(
+				"directory|d=s" => _t('Path to directory containing ULAN XML files.'),
+				"configuration|c=s" => _t('Path to ULAN import configuration file.')
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_ULANUtilityClass() {
+			return _t('Import/Export');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_ULANShortHelp() {
+			return _t("Load Getty Art & Architecture Thesaurus (AAT) into CollectiveAccess.");
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_ULANHelp() {
 			return _t("Loads the AAT from a Getty-provided XML file.");
 		}
 		# -------------------------------------------------------

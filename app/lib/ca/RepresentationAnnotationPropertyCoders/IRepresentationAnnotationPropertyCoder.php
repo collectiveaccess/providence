@@ -78,6 +78,5 @@
 		public function getAnnotationSortProperty($ps_type=null);
 
 		/* Get this annotation as a text-style display. Should always include all relevant properties. */
-		public function getPropertiesForDisplay();
+		public function getPropertiesForDisplay($pa_options=null);
 	}
-?>

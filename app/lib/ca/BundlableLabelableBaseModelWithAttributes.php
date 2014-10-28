@@ -578,7 +578,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							if ($vb_return_as_array) {
 								$va_return_values =  $va_text;
 							}
-							return join($vs_delimiter, $va_text);
+							if(is_array($va_text)) {
+								return join($vs_delimiter, $va_text);
+							} else {
+								return null;
+							}
 						}
 					}
 					
@@ -1193,7 +1197,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
  		// Check actions
- 		if (!$this->getPrimaryKey() && !$po_request->user->canDoAction('can_delete_'.$this->tableName())) {
+ 		if (!$this->getPrimaryKey() || !$po_request->user->canDoAction('can_delete_'.$this->tableName())) {
  			return false;
  		}
  		
@@ -1284,6 +1288,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				switch($ps_bundle_name) {
 					# -------------------------------
 					case 'ca_object_representations':
+						foreach(array('restrict_to_types', 'restrict_to_relationship_types') as $vs_k) {
+							$pa_options[$vs_k] = $pa_bundle_settings[$vs_k];
+						}
 						$va_reps = $this->getRepresentations(array('thumbnail', 'original'), null, $pa_options);
 						
 						$t_item = new ca_object_representations();
@@ -1639,6 +1646,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				switch($ps_bundle_name) {
 					# -------------------------------
 					case 'ca_object_representations':
+						$pa_options['start'] = 0; $pa_options['limit'] = 20;
+						$vs_element = $this->getRelatedHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options);	
+						break;
 					case 'ca_entities':
 					case 'ca_places':
 					case 'ca_occurrences':
@@ -1649,9 +1659,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					case 'ca_loans':
 					case 'ca_movements':
 					case 'ca_tour_stops':
-						$t = new Timer();
-						if (($ps_bundle_name != 'ca_object_representations') && ($this->_CONFIG->get($ps_bundle_name.'_disable'))) { return ''; }		// don't display if master "disable" switch is set
-						$pa_options['start'] = 0; $pa_options['limit'] = 5;
+						if (($this->_CONFIG->get($ps_bundle_name.'_disable'))) { return ''; }		// don't display if master "disable" switch is set
+						$pa_options['start'] = 0;
 						$vs_element = $this->getRelatedHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options);	
 						break;
 					# -------------------------------
@@ -4409,7 +4418,6 @@ if (!$vb_batch) {
 		if(isset($pa_options['restrictToLists']) && (!isset($pa_options['restrict_to_lists']) || !$pa_options['restrict_to_lists'])) { $pa_options['restrict_to_lists'] = $pa_options['restrictToLists']; }
 	 	if(isset($pa_options['groupFields'])) { $pa_options['groupFields'] = (bool)$pa_options['groupFields']; } else { $pa_options['groupFields'] = false; }
 	 	
-	 	
 		$o_db = $this->getDb();
 		$t_locale = new ca_locales();
 		$o_tep = new TimeExpressionParser();
@@ -4435,8 +4443,12 @@ if (!$vb_batch) {
 		$vn_start = (isset($pa_options['start']) && ((int)$pa_options['start'] > 0)) ? (int)$pa_options['start'] : 0;
               
 		if (is_numeric($pm_rel_table_name_or_num)) {
-			$vs_related_table_name = $this->getAppDataModel()->getTableName($pm_rel_table_name_or_num);
+			if(!($vs_related_table_name = $this->getAppDataModel()->getTableName($pm_rel_table_name_or_num))) { return null; }
 		} else {
+			if (sizeof($va_tmp = explode(".", $pm_rel_table_name_or_num)) > 1) {
+				$pm_rel_table_name_or_num = array_shift($va_tmp);
+			}
+			if (!($o_instance = $this->getAppDataModel()->getInstanceByTableName($pm_rel_table_name_or_num, true))) { return null; }
 			$vs_related_table_name = $pm_rel_table_name_or_num;
 		}
 		
@@ -4818,13 +4830,7 @@ if (!$vb_batch) {
 			
 			foreach($va_path as $vs_join_table) {
 				$va_rel_info = $this->getAppDatamodel()->getRelationships($vs_cur_table, $vs_join_table);
-
-				if($vs_join_table=="ca_set_item_labels"){ // hack to have label-less set items appear in "ca_set_items" queries for ca_sets
-					$va_joins[] = 'LEFT JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
-				} else {
-					$va_joins[] = 'INNER JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
-				}
-
+				$va_joins[] = 'INNER JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
 				$vs_cur_table = $vs_join_table;
 			}
 			
@@ -5840,9 +5846,11 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param mixed $pm_type_id Relationship type type_code or type_id, as defined in the ca_relationship_types table. This is required for all relationships that use relationship types. This includes all of the most common types of relationships.
 	 * @param string $ps_effective_date Optional date expression to qualify relation with. Any expression that the TimeExpressionParser can handle is supported here.
 	 * @param string $ps_source_info Text field for storing information about source of relationship. Not currently used.
-	 * @param string $ps_direction Optional direction specification for self-relationships (relationships linking two rows in the same table). Valid values are 'ltor' (left-to-right) and  'rtol' (right-to-left); the direction determines which "side" of the relationship the currently loaded row is on: 'ltor' puts the current row on the left side. For many self-relations the direction determines the nature and display text for the relationship.
+	 * @param string $ps_direction Optional direction specification for self-relationships (relationships linking two rows in the same table). Valid values are 'ltor' (left-to-right) and  'rtol' (right-to-left); the direction determines which "side" of the relationship the currently loaded row is on: 'ltor' puts the current row on the left
+     * @param null $pn_rank
+side. For many self-relations the direction determines the nature and display text for the relationship.
 	 * @param array $pa_options Array of additional options:
-	 *		allowDuplicates = if set to true, attempts to add a relationship that already exists will succeed. Default is false – duplicate relationships will not be created.
+	 *		allowDuplicates = if set to true, attempts to add a relationship that already exists will succeed. Default is false – duplicate relationships will not be created
 	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to add a duplicate relationship. Default is false – don't set error. addRelationship() will always return false when creation of a duplicate relationship fails, no matter how the setErrorOnDuplicate option is set.
 	 * @return boolean BaseRelationshipModel Loaded relationship model instance on success, false on error.
 	 */
@@ -5861,43 +5869,15 @@ $pa_options["display_form_field_tips"] = true;
 			'rank' => $pn_rank,
 			'options' => $pa_options,
 		));
-		
 		if ($t_rel = parent::addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options)) {
 			if ($t_rel->numErrors()) {
 				$this->errors = $t_rel->errors;
 				return false;
 			}
-			// are there interstitials to add?
-			if (isset($pa_options['interstitialValues']) && is_array($pa_options['interstitialValues'])) {
-				$t_rel->setMode(ACCESS_WRITE);
-				
-				foreach($pa_options['interstitialValues'] as $vs_element => $va_value) { 	
-					if ($t_rel->hasField($vs_element)) {
-						$t_rel->set($vs_element, $va_value);
-						continue;
-					}
-					if (is_array($va_value)) {
-						if (!isset($va_value['locale_id'])) {
-							$va_value['locale_id'] = $g_ui_locale_id ? $g_ui_locale_id : ca_locales::getDefaultCataloguingLocaleID();
-						}
-						// array of values (complex multi-valued attribute)
-						$t_rel->addAttribute($va_value, $vs_element);
-					} else {
-						// scalar value (simple single value attribute)
-						if ($va_value) {
-							$t_rel->addAttribute(array(
-								'locale_id' => $g_ui_locale_id ? $g_ui_locale_id : ca_locales::getDefaultCataloguingLocaleID(),
-								$vs_element => $va_value
-							), $vs_element);
-						}
-					}
-				}
-				$t_rel->update();
-				
-				if ($t_rel->numErrors()) {
-					$this->errors = $t_rel->errors;
-					return false;
-				}
+			$this->_processInterstitials($pa_options, $t_rel, false);
+			if ($t_rel->numErrors()) {
+				$this->errors = $t_rel->errors;
+				return false;
 			}
 		}
 		return $t_rel;
@@ -5920,39 +5900,15 @@ $pa_options["display_form_field_tips"] = true;
 	 * @return BaseRelationshipModel Loaded relationship model instance on success, false on error.
 	 */
 	public function editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $pa_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
-		global $g_ui_locale_id;
-		
 		if ($t_rel = parent::editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id, $ps_effective_date, $pa_source_info, $ps_direction, $pn_rank, $pa_options)) {
-			// are there interstitials to add?
-			if (isset($pa_options['interstitialValues']) && is_array($pa_options['interstitialValues'])) {
-				$t_rel->setMode(ACCESS_WRITE);
-				
-				foreach($pa_options['interstitialValues'] as $vs_element => $va_value) {
-					if ($t_rel->hasField($vs_element)) {
-						$t_rel->set($vs_element, $va_value);
-						continue;
-					}				
-					if (is_array($va_value)) {
-						if (!isset($va_value['locale_id'])) {
-							$va_value['locale_id'] = $g_ui_locale_id ? $g_ui_locale_id : ca_locales::getDefaultCataloguingLocaleID();
-						}
-						// array of values (complex multi-valued attribute)
-						$t_rel->replaceAttribute($va_value, $vs_element);
-					} else {
-						// scalar value (simple single value attribute)
-						if ($va_value) {
-							$t_rel->replaceAttribute(array(
-								'locale_id' => $g_ui_locale_id ? $g_ui_locale_id : ca_locales::getDefaultCataloguingLocaleID(),
-								$vs_element => $va_value
-							), $vs_element);
-						}
-					}
-				}
-				$t_rel->update();
-				if ($t_rel->numErrors()) {
-					$this->errors = $t_rel->errors;
-					return false;
-				}
+			if ($t_rel->numErrors()) {
+				$this->errors = $t_rel->errors;
+				return false;
+			}
+			$this->_processInterstitials($pa_options, $t_rel, true);
+			if ($t_rel->numErrors()) {
+				$this->errors = $t_rel->errors;
+				return false;
 			}
 		}
 		return $t_rel;
@@ -6075,5 +6031,45 @@ $pa_options["display_form_field_tips"] = true;
 		}
 	}
 	# --------------------------------------------------------------------------------------------
+	/**
+	 * @param array $pa_options
+	 * @param $t_rel
+	 * @param bool $pb_update
+	 */
+	private function _processInterstitials($pa_options, $t_rel, $pb_update) {
+		global $g_ui_locale_id;
+		// Are there interstitials to add?
+		if (isset($pa_options['interstitialValues']) && is_array($pa_options['interstitialValues'])) {
+			$t_rel->setMode(ACCESS_WRITE);
+			foreach ($pa_options['interstitialValues'] as $vs_element => $va_value) {
+				if ($t_rel->hasField($vs_element)) {
+					$t_rel->set($vs_element, $va_value);
+					continue;
+				}
+				// Convert a scalar or key-value array to an indexed array with a single element
+				if (!is_array($va_value) || array_keys($va_value) !== range(0, sizeof($va_value) - 1)) {
+					$va_value = array($va_value);
+				}
+				// Iterate through indexed array
+				foreach ($va_value as $va_value_instance) {
+					// Convert scalar to key-value array
+					if (!is_array($va_value_instance)) {
+						$va_value_instance = array($vs_element => $va_value_instance);
+					}
+					// Ensure we have a locale
+					if (!isset($va_value_instance['locale_id'])) {
+						$va_value_instance['locale_id'] = $g_ui_locale_id ? $g_ui_locale_id : ca_locales::getDefaultCataloguingLocaleID();
+					}
+					// Create or update the attribute
+					if ($pb_update) {
+						$t_rel->editAttribute($va_value_instance, $vs_element);
+					} else {
+						$t_rel->addAttribute($va_value_instance, $vs_element);
+					}
+				}
+			}
+			$t_rel->update();
+		}
+	}
 }
 ?>

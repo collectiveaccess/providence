@@ -414,7 +414,7 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 		if((sizeof($va_tmp)==2) && isset($va_tmp[0]) && ($va_tmp[0] == 'props')) {
 
 			if($va_tmp[1] == 'display') {
-				return $this->getPropertiesForDisplay();
+				return $this->getPropertiesForDisplay($pa_options);
 			}
 
 			$vm_val = $this->getPropertyValue($va_tmp[1]);
