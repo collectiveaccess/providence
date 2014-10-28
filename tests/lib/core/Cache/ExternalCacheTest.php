@@ -149,6 +149,31 @@ class ExternalCacheTest extends PHPUnit_Framework_TestCase {
 		$this->assertFalse($vm_ret, 'Should not return anything after deleting');
 	}
 
+	public function testWeirdKeys() {
+		// we could try to carefully engineer potentially dangerous
+		// cache keys (which may translate into on-disk file names depending
+		// on the selected backend) but this random selection should do for now.
+		$va_weird_chars = array('\\', '/', '_', '?', '-', '>', '<', '|', '{', '}', '[', ']', '(', ')', '$', '#', ':', ';', '"', '\'');
+
+		for($i=0; $i<20; $i++) {
+			$vm_ret = shuffle($va_weird_chars);
+			$this->assertTrue($vm_ret, 'Shuffling should not fail');
+
+			$vs_key = join('', $va_weird_chars);
+
+			$vm_ret = ExternalCache::contains($vs_key);
+			$this->assertFalse($vm_ret, 'Should not return anything for a new key');
+			$vm_ret = ExternalCache::save($vs_key, array('foo' => 'bar'));
+			$this->assertTrue($vm_ret, 'Setting new item in cache should return true');
+			$vm_ret = ExternalCache::fetch($vs_key);
+			$this->assertArrayHasKey('foo', $vm_ret, 'Returned array should have key');
+			$this->assertArrayNotHasKey('bar', $vm_ret, 'Returned array should not have key we did not set');
+			$this->assertEquals(array('foo' => 'bar'), $vm_ret, 'Cache item should not change');
+
+			ExternalCache::flush();
+		}
+	}
+
 	/**
 	 * @expectedException ExternalCacheInvalidParameterException
 	 */
