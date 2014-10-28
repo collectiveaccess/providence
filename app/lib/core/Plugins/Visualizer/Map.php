@@ -156,4 +156,3 @@ class WLPlugVisualizerMap Extends BaseVisualizerPlugIn Implements IWLPlugVisuali
 	}
 	# --------------------------------------------------------------------------------
 }
-?>

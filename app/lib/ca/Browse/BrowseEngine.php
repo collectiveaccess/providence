@@ -2663,7 +2663,7 @@
 										}
 									}
 								}
-								return $va_values_sorted_by_list_order;
+								return caSortArrayByKeyInValue($va_values_sorted_by_list_order, array('label'));
 								break;
 							case __CA_ATTRIBUTE_VALUE_OBJECTS__:
 							case __CA_ATTRIBUTE_VALUE_ENTITIES__:

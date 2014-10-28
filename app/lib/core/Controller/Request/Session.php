@@ -68,7 +68,11 @@ class Session {
 		# --- Read configuration
 		$this->name = ($vs_app_name = $o_config->get("app_name")) ? $vs_app_name : $ps_app_name;
 		$this->domain = $o_config->get("session_domain");
-		$this->lifetime = $o_config->get("session_lifetime");
+		$this->lifetime = (int) $o_config->get("session_lifetime");
+
+		if(!$this->lifetime) {
+			$this->lifetime = 3600 * 24 * 7;
+		}
 		
 		if (!$pb_dont_create_new_session) {
 			if (!($vs_session_id = $this->getSessionID())) {
@@ -78,7 +82,7 @@ class Session {
 
 			// initialize session var storage
 			if($this->getSessionID() && !ExternalCache::contains($this->getSessionID(), 'SessionVars')) {
-				ExternalCache::save($this->getSessionID(), array(), 'SessionVars');
+				ExternalCache::save($this->getSessionID(), array(), 'SessionVars', $this->lifetime);
 			}
 		}
 	}
@@ -146,7 +150,7 @@ class Session {
 				}
 			}
 			$va_vars[$ps_key] = $vm_val;
-			ExternalCache::save($this->getSessionID(), $va_vars, 'SessionVars');
+			ExternalCache::save($this->getSessionID(), $va_vars, 'SessionVars', $this->lifetime);
 			return true;
 		}
 		return false;
@@ -158,7 +162,7 @@ class Session {
 	public function delete ($ps_key) {
 		$va_vars = ExternalCache::fetch($this->getSessionID(), 'SessionVars');
 		unset($va_vars[$ps_key]);
-		ExternalCache::save($this->getSessionID(), $va_vars, 'SessionVars');
+		ExternalCache::save($this->getSessionID(), $va_vars, 'SessionVars', $this->lifetime);
 	}
 	# ----------------------------------------
 	/**

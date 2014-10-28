@@ -131,7 +131,7 @@
 				
 				}
 				if (isset($va_list[$ps_library]) && $va_list[$ps_library]) {
-					$va_tmp = preg_split("!(:)[^/]{2}!", $va_list[$ps_library]);
+					$va_tmp = preg_split("#[:]{1}(?!/)#", $va_list[$ps_library]);
 					if (sizeof($va_tmp) == 2) {
 						$va_list[$ps_library] = $va_tmp[0];
 						$pn_priority = (int)$va_tmp[1];

@@ -38,8 +38,11 @@
 	
 	class IDNumbering {
 		# -------------------------------------------------------
-		static public function newIDNumberer($ps_format, $pm_type='__default__', $ps_value=null, $po_db=null) {
-			$o_config = Configuration::load();
+		/**
+		 *
+		 */
+		static public function newIDNumberer($ps_format, $pm_type='__default__', $ps_value=null, $po_db=null, $po_config=null) {
+			$o_config = $po_config ? $po_config : Configuration::load();
 			$vs_classname = $o_config->get("{$ps_format}_id_numbering_plugin");
 			if (!file_exists(__CA_LIB_DIR__."/ca/IDNumbering/{$vs_classname}.php")) { return null; }
 			
@@ -50,4 +53,3 @@
 		}
 		# -------------------------------------------------------
 	}
-?>
