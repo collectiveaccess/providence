@@ -7196,9 +7196,10 @@ class BaseModel extends BaseObject {
 	 *		additionalTableToJoin: name of table to join to hierarchical table (and return fields from); only fields related many-to-one are currently supported
 	 *		returnChildCounts: if true, the number of children under each returned child is calculated and returned in the result set under the column name 'child_count'. Note that this count is always at least 1, even if there are no children. The 'has_children' column will be null if the row has, in fact no children, or non-null if it does have children. You should check 'has_children' before using 'child_count' and disregard 'child_count' if 'has_children' is null.
 	 *		idsOnly: if true, only the primary key id values of the children records are returned
-	 *		returnDeleted = return deleted records in list (def. false)
-	 *		start = 
-	 *		limit = 
+	 *		returnDeleted = return deleted records in list [default=false]
+	 *		start = Offset to start returning records from [default=0; no offset]
+	 *		limit = Maximum number of records to return [default=null; no limit]
+	 *
 	 * @return array 
 	 */
 	public function getHierarchyChildren($pn_id=null, $pa_options=null) {
