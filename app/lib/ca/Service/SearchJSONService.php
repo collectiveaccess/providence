@@ -51,6 +51,7 @@ class SearchJSONService extends BaseJSONService {
 	public function dispatch(){
 		$va_post = $this->getRequestBodyArray();
 
+		// make sure only requests that are actually identical get pulled from cache
 		$vs_cache_key =
 			md5(print_r($va_post, true)) .
 			md5(print_r($this->opo_request->getParameters(array('POST', 'GET', 'REQUEST')))) .
@@ -78,7 +79,8 @@ class SearchJSONService extends BaseJSONService {
 				$vm_return = false;
 		}
 
-		ExternalCache::save($vs_cache_key, $vm_return, 'SearchJSONService');
+		$vn_ttl = defined('__CA_SERVICE_API_CACHE_TTL__') ? __CA_SERVICE_API_CACHE_TTL__ : 60*60; // save for an hour by default
+		ExternalCache::save($vs_cache_key, $vm_return, 'SearchJSONService', $vn_ttl);
 		return $vm_return;
 	}
 	# -------------------------------------------------------
