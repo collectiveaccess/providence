@@ -303,7 +303,7 @@
 			
 			$qr_sort = $this->opo_db->query($vs_sql);
 			
-			$va_sorted_hits = array_unique($qr_sort->getAllFieldValues($vs_table_pk));
+			$va_sorted_hits = array_merge(array_unique($qr_sort->getAllFieldValues($vs_table_pk)));
 			
 			return $va_sorted_hits;
 		}

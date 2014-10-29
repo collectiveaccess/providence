@@ -2227,8 +2227,10 @@ class TimeExpressionParser {
 				$va_end_pieces['year'] = '????';
 				$pa_options['dateFormat'] = 'delimited';
 			}
-			
-			if ($va_start_pieces['era'] != $va_end_pieces['era']) {
+
+			// show era for dates that span eras, but not for 'before XXXX' dates, which technically span
+			// eras but .. you know, not really. Their startpoint is TEP_START_OF_UNIVERSE
+			if (($va_start_pieces['era'] != $va_end_pieces['era']) && ($va_dates['start'] > TEP_START_OF_UNIVERSE)) {
 				$pa_options['showADEra'] = true;
 			}
 			
@@ -2360,7 +2362,12 @@ class TimeExpressionParser {
 
 				if ($va_end_pieces['hours'] == 23 && $va_end_pieces['minutes'] == 59 && $va_end_pieces['seconds'] == 59) {
 					if ($va_end_pieces['day'] == 31 && $va_end_pieces['month'] == 12) {
-						return $vs_before_qualifier.' '. $this->_dateToText(array('year' => $va_end_pieces['year'], 'era' => $va_end_pieces['era'], 'uncertainty' => $va_end_pieces['uncertainty'], 'uncertainty_units' => $va_end_pieces['uncertainty_units']), $pa_options);
+						return $vs_before_qualifier.' '. $this->_dateToText(array(
+							'year' => $va_end_pieces['year'],
+							'era' => $va_end_pieces['era'],
+							'uncertainty' => $va_end_pieces['uncertainty'],
+							'uncertainty_units' => $va_end_pieces['uncertainty_units']
+						), $pa_options);
 					} else {
 						return $vs_before_qualifier.' '. $this->_dateToText($va_end_pieces, $pa_options);
 					}
@@ -2373,7 +2380,12 @@ class TimeExpressionParser {
 			if ($va_dates['end'] >= TEP_END_OF_UNIVERSE) {
 				if ($va_start_pieces['hours'] == 0 && $va_start_pieces['minutes'] == 0 && $va_start_pieces['seconds'] == 0) {
 					if ($va_start_pieces['day'] == 1 && $va_start_pieces['month'] == 1) {
-						$vs_date = $this->_dateToText(array('year' => $va_start_pieces['year'], 'era' => $va_start_pieces['era'], 'uncertainty' => $va_start_pieces['uncertainty'], 'uncertainty_units' => $va_start_pieces['uncertainty_units']), $pa_options);
+						$vs_date = $this->_dateToText(array(
+							'year' => $va_start_pieces['year'],
+							'era' => $va_start_pieces['era'],
+							'uncertainty' => $va_start_pieces['uncertainty'],
+							'uncertainty_units' => $va_start_pieces['uncertainty_units']
+						), $pa_options);
 					} else {
 						$vs_date = $this->_dateToText($va_start_pieces, $pa_options);
 					}
