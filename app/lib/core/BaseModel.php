@@ -7197,19 +7197,26 @@ class BaseModel extends BaseObject {
 	 *		returnChildCounts: if true, the number of children under each returned child is calculated and returned in the result set under the column name 'child_count'. Note that this count is always at least 1, even if there are no children. The 'has_children' column will be null if the row has, in fact no children, or non-null if it does have children. You should check 'has_children' before using 'child_count' and disregard 'child_count' if 'has_children' is null.
 	 *		idsOnly: if true, only the primary key id values of the children records are returned
 	 *		returnDeleted = return deleted records in list (def. false)
+	 *		start = 
+	 *		limit = 
 	 * @return array 
 	 */
 	public function getHierarchyChildren($pn_id=null, $pa_options=null) {
 		if (!$this->isHierarchical()) { return null; }
 		$pb_ids_only = (isset($pa_options['idsOnly']) && $pa_options['idsOnly']) ? true : false;
+		$pn_start = caGetOption('start', $pa_options, 0);
+		$pn_limit = caGetOption('limit', $pa_options, null);
 		
 		if (!$pn_id) { $pn_id = $this->getPrimaryKey(); }
 		if (!$pn_id) { return null; }
 		$qr_children = $this->getHierarchyChildrenAsQuery($pn_id, $pa_options);
 		
+		if ($pn_start > 0) { $qr_children->seek($pn_start); }
 		
 		$va_children = array();
 		$vs_pk = $this->primaryKey();
+		
+		$vn_c = 0;
 		while($qr_children->nextRow()) {
 			if ($pb_ids_only) {
 				$va_row = $qr_children->getRow();
@@ -7217,6 +7224,8 @@ class BaseModel extends BaseObject {
 			} else {
 				$va_children[] = $qr_children->getRow();
 			}
+			$vn_c++;
+			if (($vn_limit > 0) && ($vn_c >= $vn_limit)) { break;}
 		}
 		
 		return $va_children;
