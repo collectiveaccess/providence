@@ -1848,6 +1848,9 @@
 		 *				locale = if set to a valid locale_id or locale code, values will be returned in locale *if available*, otherwise will fallback to values in languages that are available using the standard fallback mechanism. Default is to use user's current locale.
 		 *				returnAllLocales = if set to true, values for all locales are returned, locale option is ignored and the returned array is indexed first by attribute_id and then by locale_id. Default is false.
 		 *				indexByRowID = if true first index of returned array is $pn_row_id, otherwise it is the element_id of the retrieved metadata element	
+		 *				indexValuesByValueID = index value array by value_id [default=false]
+		 *				indexValuesByElementCode = index value array by element code [default=true]
+		 *				indexValuesByElementCodeAndValueID = index value array by element codes, each of which has a sub-array indexed by value_id. Implies indexValuesByElementCode. [default=false]
 		 *				convertCodesToDisplayText =
 		 *				filter =
 		 *				ignoreLocale = if set all values are returned regardless of locale, but in the flattened structure returned when returnAllLocales is false
@@ -1861,6 +1864,11 @@
 			$pb_ignore_locale = caGetOption('ignoreLocale', $pa_options, null);
 			$ps_sort = caGetOption('sort', $pa_options, null);
 			$ps_sort_direction = caGetOption('sortDirection', $pa_options, 'asc', array('forceLowercase' => true, 'validValues' => array('asc', 'desc')));
+			
+			$pb_index_by_element_code = caGetOption('indexValuesByElementCode', $pa_options, true);
+			$pb_index_by_value_id = caGetOption('indexValuesByValueID', $pa_options, false);
+			$pb_index_by_element_code_and_value_id = caGetOption('indexValuesByElementCodeAndValueID', $pa_options, false);
+			if ($pb_index_by_element_code_and_value_id) { $pb_index_by_element_code = true; }
 			
 			$va_attribute_list = $this->getAttributesByElement($pm_element_code_or_id, array('row_id' => $pn_row_id));
 			if (!is_array($va_attribute_list)) { return array(); }
@@ -1901,10 +1909,19 @@
 					
 					if (isset($pa_options['convertLineBreaks']) && $pa_options['convertLineBreaks']) {
 						$vs_converted_value = preg_replace("!(\n|\r\n){2}!","<p/>",$o_value->getDisplayValue(array_merge($pa_options, array('list_id' => $vn_list_id))));
-						$va_display_values[$vs_element_code] = preg_replace("![\n]{1}!","<br/>",$vs_converted_value);
+						$vs_display_value = preg_replace("![\n]{1}!","<br/>",$vs_converted_value);
 					} else {
-						$va_display_values[$vs_element_code] = $o_value->getDisplayValue(array_merge($pa_options, array('list_id' => $vn_list_id)));
+						$vs_display_value = $o_value->getDisplayValue(array_merge($pa_options, array('list_id' => $vn_list_id)));
 					}
+					
+					if ($pb_index_by_element_code) { 
+						if ($pb_index_by_element_code_and_value_id) {
+							$va_display_values[$vs_element_code][$o_value->getValueID()] = $vs_display_value; 
+						} else {
+							$va_display_values[$vs_element_code] = $vs_display_value; 
+						}
+					}
+					if ($pb_index_by_value_id) { $va_display_values[$o_value->getValueID()] = $vs_display_value; }
 					
 					if ($vs_sort_fld && ($vs_sort_fld == $vs_element_code)) {
 						$vs_sort_key = $o_value->getDisplayValue(array_merge($pa_options, array('getDirectDate' => true, 'list_id' => $vn_list_id)));
