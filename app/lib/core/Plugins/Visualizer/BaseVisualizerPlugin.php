@@ -275,4 +275,3 @@ abstract class BaseVisualizerPlugin Extends WLPlug {
 	}
 	# ------------------------------------------------
 }
-?>

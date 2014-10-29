@@ -367,25 +367,31 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * 
 	 * @param $pm_list_name_or_id mixed - list_code or list_id of desired list
 	 * @param $pa_options array - optional array of options. Supported options include:
-	 *			returnHierarchyLevels =		if true list is returned with 'LEVEL' field set to hierarchical level of item, and items are returned in order such that if you loop through the returned list and indent each item according to its level you get a nicely formatted hierarchical display. Default is false.
-	 * 			extractValuesByUserLocale = if true then values are processed to be appropriate for current user locale; default is false:  return values for all locales
-	 *			directChildrenOnly =	 	if true, only children immediately below the specified item are returned; [default is false]
-	 * 			includeSelf =	if true, the specified item is included in the returned set of items; [default is false]
-	 *			type_id = 		optional list item type to limit returned items by; default is to not limit by type (eg. type_id = null)
-	 *			item_id =		optional item_id to use as root of hierarchy for returned items; if this is not set (the default) then all items in the list are returned
-	 *			sort =			if set to a __CA_LISTS_SORT_BY_*__ constant, will force the list to be sorted by that criteria overriding the sort order set in the ca_lists.default_sort field
-	 *			idsOnly = 		if true, only the primary key id values of the list items are returned
-	 *			enabledOnly =	return only enabled list items [default=false]
-	 *			labelsOnly = 	if true only labels in the current locale are returns in an array key'ed on item_id
+	 *		returnHierarchyLevels =		if true list is returned with 'LEVEL' field set to hierarchical level of item, and items are returned in order such that if you loop through the returned list and indent each item according to its level you get a nicely formatted hierarchical display. Default is false.
+	 * 		extractValuesByUserLocale = if true then values are processed to be appropriate for current user locale; default is false:  return values for all locales
+	 *		directChildrenOnly =	 	if true, only children immediately below the specified item are returned; [default is false]
+	 * 		includeSelf =	if true, the specified item is included in the returned set of items; [default is false]
+	 *		type_id = 		optional list item type to limit returned items by; default is to not limit by type (eg. type_id = null)
+	 *		item_id =		optional item_id to use as root of hierarchy for returned items; if this is not set (the default) then all items in the list are returned
+	 *		sort =			if set to a __CA_LISTS_SORT_BY_*__ constant, will force the list to be sorted by that criteria overriding the sort order set in the ca_lists.default_sort field
+	 *		idsOnly = 		if true, only the primary key id values of the list items are returned
+	 *		enabledOnly =	return only enabled list items [default=false]
+	 *		labelsOnly = 	if true only labels in the current locale are returns in an array key'ed on item_id
+	 *		start = 		offset to start returning records from [default=0; no offset]
+	 *		limit = 		maximum number of records to return [default=null; no limit]
 	 *
 	 * @return array List of items indexed first on item_id and then on locale_id of label
 	 */
 	public function getItemsForList($pm_list_name_or_id, $pa_options=null) {
+		$t = new Timer();
 		$vn_list_id = $this->_getListID($pm_list_name_or_id);
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (!isset($pa_options['returnHierarchyLevels'])) { $pa_options['returnHierarchyLevels'] = false; }
 		if ((isset($pa_options['directChildrenOnly']) && $pa_options['directChildrenOnly'])) { $pa_options['returnHierarchyLevels'] = false; }
 	
+		$pn_start = caGetOption('start', $pa_options, 0);
+		$pn_limit = caGetOption('limit', $pa_options, null);
+		
 		$vb_enabled_only = caGetOption('enabledOnly', $pa_options, false);
 	
 		$vb_labels_only = false;
@@ -451,21 +457,32 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				$vs_direct_children_sql = " AND cli.parent_id = ".(int)$pn_item_id;
 			}
 			$o_db = $this->getDb();
+			
+			$vs_limit_sql = '';
+			if ($pn_limit > 0) {
+				$vs_limit_sql = ($pn_start > 0) ? "LIMIT {$pn_start}, {$pn_limit}" : "LIMIT {$pn_limit}";
+			} 
 			$vs_sql = "
 				SELECT clil.*, cli.*
-				FROM ca_list_items cli
+				FROM ca_list_items cli use index(i_parent_id)
 				INNER JOIN ca_list_item_labels AS clil ON clil.item_id = cli.item_id
 				WHERE
 					(cli.deleted = 0) AND (clil.is_preferred = 1) AND (cli.list_id = ?) {$vs_type_sql} {$vs_direct_children_sql} {$vs_hier_sql} {$vs_enabled_sql}
 				{$vs_order_by}
+				{$vs_limit_sql}
 			";
 			//print $vs_sql;
 			$qr_res = $o_db->query($vs_sql, (int)$vn_list_id);
 			
 			$va_seen_locales = array();
 			$va_items = array();
+			
+			if ($pn_start > 0) { $qr_res->seek($pn_start); }
+			$vn_c = 0;
 			while($qr_res->nextRow()) {
 				$vn_item_id = $qr_res->get('item_id');
+				$vn_c++;
+				if (($pn_limit > 0) && ($vn_c > $pn_limit)) { break; }
 				if ((isset($pa_options['idsOnly']) && $pa_options['idsOnly'])) {
 					$va_items[] = $vn_item_id;
 					continue;
@@ -512,7 +529,6 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				'additionalTableSelectFields' => array('name_singular', 'name_plural', 'locale_id'),
 				'additionalTableWheres' => array('ca_list_item_labels.is_preferred = 1')
 			));
-			
 			foreach($va_list_items as $vn_i => $va_item) {
 				if ($pn_type_id && $va_item['NODE']['type_id'] != $pn_type_id) { continue; }
 				if ($vb_enabled_only && !$va_item['NODE']['is_enabled']) { continue; }
@@ -1729,4 +1745,3 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 }
-?>

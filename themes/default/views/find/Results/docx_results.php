@@ -118,7 +118,7 @@ $phpWord->addTableStyle('myOwnTableStyle', $styleTable, $styleFirstRow);
 				$mediaCell->addImage(
 					$vs_path,
 					array(
-						'width' => 200,
+						'width' => 195,
 						'wrappingStyle' => 'inline'
 					)
 				);
@@ -126,36 +126,7 @@ $phpWord->addTableStyle('myOwnTableStyle', $styleTable, $styleFirstRow);
 		}
 
 
-
-		// Second column : searching for media
-		/*
-		foreach($list as $vn_placement_id => $va_display_item) {
-
-
-			if (
-				(strpos($va_display_item['bundle_name'], 'ca_object_representations.media') !== false)
-				&&
-				($va_display_item['settings']['display_mode'] == 'media') // make sure that for the 'url' mode we don't insert the image here
-			) {
-				$vs_version = str_replace("ca_object_representations.media.", "", $va_display_item['bundle_name']);
-				$va_info = $vo_result->getMediaInfo('ca_object_representations.media',$vs_version);
-				
-				if($va_info['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
-					$vs_path = $vo_result->getMediaPath('ca_object_representations.media',$vs_version);
-					if (is_file($vs_path)) {
-						$mediaCell->addImage(
-    						$vs_path,
-    						array(
-    							'width' => 200,
-        						'wrappingStyle' => 'inline'
-    						)
-						);
-					}
-				}
-
-			} }
-		*/
-		// Second column : other attributes, relations...
+		// Second column : bundles
 		$contentCell = $table->addCell(12 * $cmToTwips);
 
 		$contentCell->addText($vo_result->getWithTemplate('^ca_objects.preferred_labels.name (^ca_objects.idno)'), $styleHeaderFont);
@@ -183,7 +154,6 @@ $phpWord->addTableStyle('myOwnTableStyle', $styleTable, $styleFirstRow);
 						);
 					}
 				}
-
 
 			} elseif ($vs_display_text = $t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request))) {
 

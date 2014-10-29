@@ -52,5 +52,4 @@ if($va_errors && is_array($va_errors)){
 	header('Content-Transfer-Encoding: binary');
 	print $vs_export;
 	exit();
-
 }

@@ -38,7 +38,14 @@ if(!$vs_file){
 	header('Content-Type: '.$vs_content_type.'; charset=UTF-8');
 	header('Content-Disposition: attachment; filename="'.$vs_filename.'.'.$vs_ext.'"');
 	header('Content-Transfer-Encoding: binary');
-	readfile($vs_file);
+	
+	set_time_limit(0);
+	$o_fp = @fopen($vs_file,"rb");
+	while(is_resource($o_fp) && !feof($o_fp)) {
+		print(@fread($o_fp, 1024*8));
+		ob_flush();
+		flush();
+	}
 	@unlink($vs_file);
 	exit();	
 }

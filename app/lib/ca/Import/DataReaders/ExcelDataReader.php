@@ -188,4 +188,3 @@ class ExcelDataReader extends BaseDataReader {
 	}
 	# -------------------------------------------------------
 }
-?>

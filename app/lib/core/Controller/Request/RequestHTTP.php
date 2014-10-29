@@ -770,4 +770,3 @@ class RequestHTTP extends Request {
 	}
 	# ----------------------------------------
  }
- ?>
