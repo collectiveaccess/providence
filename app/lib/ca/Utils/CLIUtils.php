@@ -120,6 +120,9 @@
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing metadata elements")); }
 			$vo_installer->processMetadataElements();
 
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing metadata dictionary")); }
+			$vo_installer->processMetadataDictionary();
+
 			if(!$po_opts->getOption('skip-roles')){
 				if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing access roles")); }
 				$vo_installer->processRoles();
