@@ -771,7 +771,7 @@ final class ConfigurationExporter {
 											if(preg_match("/^[a-z]{2,3}\_[A-Z]{2,3}$/",$vs_key)){
 												$vo_setting->setAttribute("locale", $vs_key);
 											} else {
-												continue;
+												$vo_setting->setAttribute("locale", "en_US");
 											}
 										}
 										$vo_settings->appendChild($vo_setting);
@@ -1190,7 +1190,7 @@ final class ConfigurationExporter {
 
 				$vs_buf .= "\t\t</groupAccess>\n";
 			}
-			
+
 			$va_placements = $t_display->getPlacements();
 			
 			$vs_buf .= "<bundlePlacements>\n";
@@ -1204,7 +1204,14 @@ final class ConfigurationExporter {
 							case 'label':
 								if(is_array($vm_value)) {
 									foreach($vm_value as $vn_locale_id => $vm_locale_specific_value) {
-										$vs_buf .= "<setting name='label' locale='".$this->opt_locale->localeIDToCode($vn_locale_id)."'>".caEscapeForXML($vm_locale_specific_value)."</setting>\n";
+										if(preg_match("/^[a-z]{2,3}\_[A-Z]{2,3}$/",$vn_locale_id)) { // locale code
+											$vs_locale_code = $vn_locale_id;
+										} else {
+											if(!($vs_locale_code = $this->opt_locale->localeIDToCode($vn_locale_id))) {
+												$vs_locale_code = 'en_US';
+											}
+										}
+										$vs_buf .= "<setting name='label' locale='".$vs_locale_code."'>".caEscapeForXML($vm_locale_specific_value)."</setting>\n";
 									}
 								}
 								break;
