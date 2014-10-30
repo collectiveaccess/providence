@@ -171,7 +171,7 @@
       <xs:element name="label" minOccurs="1" maxOccurs="unbounded">
         <xs:complexType>
           <xs:sequence>
-            <xs:element name="name" type="xs:string" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="name" type="stringRequired" minOccurs="1" maxOccurs="1"/>
           </xs:sequence>
           <xs:attribute name="locale" type="localeType" use="required"/>
         </xs:complexType>
@@ -184,7 +184,7 @@
       <xs:element name="label" minOccurs="1" maxOccurs="unbounded">
         <xs:complexType>
           <xs:sequence>
-            <xs:element name="name" type="xs:string" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="name" type="stringRequired" minOccurs="1" maxOccurs="1"/>
           </xs:sequence>
           <xs:attribute name="locale" type="localeType" use="required"/>
         </xs:complexType>
@@ -197,8 +197,8 @@
       <xs:element name="label" minOccurs="1" maxOccurs="unbounded">
         <xs:complexType>
           <xs:sequence>
-            <xs:element name="typename" type="xs:string" minOccurs="1" maxOccurs="1"/>
-            <xs:element name="typename_reverse" type="xs:string" minOccurs="1"
+            <xs:element name="typename" type="stringRequired" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="typename_reverse" type="stringRequired" minOccurs="1"
                         maxOccurs="1"/>
           </xs:sequence>
           <xs:attribute name="locale" type="localeType" use="required"/>
@@ -212,7 +212,7 @@
       <xs:element name="label" minOccurs="1" maxOccurs="unbounded">
         <xs:complexType>
           <xs:sequence>
-            <xs:element name="name" type="xs:string" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="name" type="stringRequired" minOccurs="1" maxOccurs="1"/>
           </xs:sequence>
           <xs:attribute name="locale" type="localeType" use="required"/>
         </xs:complexType>
@@ -225,7 +225,7 @@
       <xs:element name="label" minOccurs="1" maxOccurs="unbounded">
         <xs:complexType>
           <xs:sequence>
-            <xs:element name="name" type="xs:string" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="name" type="stringRequired" minOccurs="1" maxOccurs="1"/>
           </xs:sequence>
           <xs:attribute name="locale" type="localeType" use="required"/>
         </xs:complexType>
@@ -252,7 +252,7 @@
               <xs:complexType>
                 <xs:simpleContent>
                   <xs:extension base="xs:string">
-                    <xs:attribute name="name" type="xs:string"/>
+                    <xs:attribute name="name" type="xs:string" use="required"/>
                   </xs:extension>
                 </xs:simpleContent>
               </xs:complexType>
@@ -283,7 +283,7 @@
               <xs:complexType>
                 <xs:simpleContent>
                   <xs:extension base="xs:string">
-                    <xs:attribute name="name" type="xs:string"/>
+                    <xs:attribute name="name" type="xs:string" use="required"/>
                   </xs:extension>
                 </xs:simpleContent>
               </xs:complexType>
@@ -318,7 +318,7 @@
               <xs:complexType>
                 <xs:simpleContent>
                   <xs:extension base="xs:string">
-                    <xs:attribute name="name" type="xs:string"/>
+                    <xs:attribute name="name" type="xs:string" use="required"/>
                   </xs:extension>
                 </xs:simpleContent>
               </xs:complexType>
@@ -356,7 +356,7 @@
                     <xs:complexType>
                       <xs:simpleContent>
                         <xs:extension base="xs:string">
-                          <xs:attribute name="name" type="xs:string"/>
+                          <xs:attribute name="name" type="xs:string" use="required"/>
                         </xs:extension>
                       </xs:simpleContent>
                     </xs:complexType>
@@ -380,22 +380,16 @@
             <xs:element name="typeRestrictions" minOccurs="0" maxOccurs="1">
               <xs:complexType>
                 <xs:sequence>
-                  <xs:element name="restriction" minOccurs="1"
-                              maxOccurs="unbounded">
+                  <xs:element name="restriction" minOccurs="1" maxOccurs="unbounded">
                     <xs:complexType>
-                      <xs:simpleContent>
-                        <xs:extension base="xs:string">
-                          <xs:attribute name="code" type="xs:string" use="optional"/>
-                          <xs:attribute name="type" type="xs:string" use="required"/>
-                        </xs:extension>
-                      </xs:simpleContent>
+                      <xs:attribute name="code" type="codeType" use="optional"/>
+                      <xs:attribute name="type" type="xs:string" use="required"/>
                     </xs:complexType>
                   </xs:element>
                 </xs:sequence>
               </xs:complexType>
             </xs:element>
-            <xs:element name="bundlePlacements" type="bundlePlacements" minOccurs="1"
-                        maxOccurs="1"/>
+            <xs:element name="bundlePlacements" type="bundlePlacements" minOccurs="1" maxOccurs="1"/>
           </xs:sequence>
           <xs:attribute name="idno" type="codeType" use="required"/>
           <xs:attribute name="default" type="booleanType" use="required"/>
@@ -421,7 +415,7 @@
                                         use="required"/>
                           <xs:attribute name="option" type="xs:string"
                                         use="optional"/>
-                          <xs:attribute name="locale" type="xs:string"
+                          <xs:attribute name="locale" type="localeType"
                                         use="optional"/>
                         </xs:extension>
                       </xs:simpleContent>
@@ -454,7 +448,7 @@
                                         use="required"/>
                           <xs:attribute name="option" type="xs:string"
                                         use="optional"/>
-                          <xs:attribute name="locale" type="xs:string"
+                          <xs:attribute name="locale" type="localeType"
                                         use="optional"/>
                         </xs:extension>
                       </xs:simpleContent>
@@ -702,12 +696,8 @@
                         <xs:sequence>
                           <xs:element name="restriction" minOccurs="1" maxOccurs="unbounded">
                             <xs:complexType>
-                              <xs:simpleContent>
-                                <xs:extension base="xs:string">
-                                  <xs:attribute name="code" type="xs:string" use="optional"/>
-                                  <xs:attribute name="type" type="xs:string" use="required"/>
-                                </xs:extension>
-                              </xs:simpleContent>
+                              <xs:attribute name="code" type="xs:string" use="optional"/>
+                              <xs:attribute name="type" type="xs:string" use="required"/>
                             </xs:complexType>
                           </xs:element>
                         </xs:sequence>
@@ -895,7 +885,7 @@
                               <xs:simpleContent>
                                 <xs:extension base="xs:string">
                                   <xs:attribute name="name" type="xs:string"/>
-                                  <xs:attribute name="locale" type="xs:string"
+                                  <xs:attribute name="locale" type="localeType"
                                                 use="optional"/>
                                 </xs:extension>
                               </xs:simpleContent>
@@ -907,15 +897,10 @@
                     <xs:element name="typeRestrictions" minOccurs="0" maxOccurs="1">
                       <xs:complexType>
                         <xs:sequence>
-                          <xs:element name="restriction" minOccurs="1"
-                                      maxOccurs="unbounded">
+                          <xs:element name="restriction" minOccurs="1" maxOccurs="unbounded">
                             <xs:complexType>
-                              <xs:simpleContent>
-                                <xs:extension base="xs:string">
-                                  <xs:attribute name="code" type="xs:string" use="optional"/>
-                                  <xs:attribute name="type" type="xs:string" use="required"/>
-                                </xs:extension>
-                              </xs:simpleContent>
+                              <xs:attribute name="code" type="xs:string" use="optional"/>
+                              <xs:attribute name="type" type="xs:string" use="required"/>
                             </xs:complexType>
                           </xs:element>
                         </xs:sequence>
@@ -983,7 +968,7 @@
                               <xs:simpleContent>
                                 <xs:extension base="xs:string">
                                   <xs:attribute name="name" type="xs:string"/>
-                                  <xs:attribute name="locale" type="xs:string"
+                                  <xs:attribute name="locale" type="localeType"
                                                 use="optional"/>
                                 </xs:extension>
                               </xs:simpleContent>
