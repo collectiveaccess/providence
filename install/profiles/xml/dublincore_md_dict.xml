@@ -2055,10 +2055,9 @@
 <strong>Do not</strong> use zeros as placeholders.<br />
 <strong>Do not</strong> include part numbers here, such as for a pair of shoes that have been given the designation of A & B. Parts should be outlined in the Description field, and the number of detachable pieces entered in the Number of Components field.]]>
         </setting>
+        <setting name="restrict_to_types">physical_object</setting>
+        <setting name="restrict_to_types">image</setting>
       </settings>
-      <typeRestrictions>
-        <restriction type="physical_object"/>
-      </typeRestrictions>
       <rules>
         <rule code="accessionFormat" level="NOTE">
           <expression><![CDATA["^ca_objects.idno" !~ /^[0-9]{4}\.[0-9]+\.[0-9]+[\.0-9]*$/]]></expression>

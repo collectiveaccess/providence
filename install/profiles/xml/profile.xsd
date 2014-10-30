@@ -586,38 +586,6 @@
 
                     <!-- end settings -->
 
-                    <!-- type restrictions -->
-
-                    <xs:element name="typeRestrictions" minOccurs="0" maxOccurs="1">
-                      <xs:complexType>
-                        <xs:sequence>
-                          <xs:element name="restriction" minOccurs="1" maxOccurs="unbounded">
-                            <xs:complexType>
-                              <xs:attribute name="type" type="codeType" use="required"/>
-                            </xs:complexType>
-                          </xs:element>
-                        </xs:sequence>
-                      </xs:complexType>
-                    </xs:element>
-
-                    <!-- end type restrictions -->
-
-                    <!-- rel type restrictions -->
-
-                    <xs:element name="relationshipTypeRestrictions" minOccurs="0" maxOccurs="1">
-                      <xs:complexType>
-                        <xs:sequence>
-                          <xs:element name="restriction" minOccurs="1" maxOccurs="unbounded">
-                            <xs:complexType>
-                              <xs:attribute name="type" type="codeType" use="required"/>
-                            </xs:complexType>
-                          </xs:element>
-                        </xs:sequence>
-                      </xs:complexType>
-                    </xs:element>
-
-                    <!-- end rel type restrictions -->
-
                     <!-- rules -->
 
                     <xs:element name="rules" minOccurs="0" maxOccurs="1">
