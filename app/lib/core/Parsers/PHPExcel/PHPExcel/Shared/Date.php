@@ -183,8 +183,8 @@ class PHPExcel_Shared_Date
 	 *							or boolean FALSE on failure
 	 */
 	public static function PHPToExcel($dateValue = 0, $adjustToTimezone = FALSE, $timezone = NULL) {
-		$saveTimeZone = date_default_timezone_get();
-		date_default_timezone_set('UTC');
+		//$saveTimeZone = date_default_timezone_get();
+		//date_default_timezone_set('UTC');
 		$retValue = FALSE;
 		if ((is_object($dateValue)) && ($dateValue instanceof DateTime)) {
 			$retValue = self::FormattedPHPToExcel( $dateValue->format('Y'), $dateValue->format('m'), $dateValue->format('d'),
@@ -195,7 +195,7 @@ class PHPExcel_Shared_Date
 												   date('H',$dateValue), date('i',$dateValue), date('s',$dateValue)
 												 );
 		}
-		date_default_timezone_set($saveTimeZone);
+		//date_default_timezone_set($saveTimeZone);
 
 		return $retValue;
 	}	//	function PHPToExcel()
