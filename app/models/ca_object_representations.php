@@ -1579,6 +1579,18 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		return $va_export;
  	}
  	# ------------------------------------------------------
+ 	/**
+ 	 * 
+ 	 *
+ 	 * @param RequestHTTP $po_request
+ 	 * @param array $pa_options
+ 	 * @param array $pa_additional_display_options
+ 	 * @return string HTML output
+ 	 */
+ 	public function getRepresentationViewerHTMLBundle($po_request, $pa_options=null, $pa_additional_display_options=null) {
+ 		return caRepresentationViewerHTMLBundle($this, $po_request, $pa_options, $pa_additional_display_options);
+ 	}
+ 	# ------------------------------------------------------
 	/** 
 	 * Returns HTML form bundle (for use in a ca_object_representations editor form) for media
 	 *

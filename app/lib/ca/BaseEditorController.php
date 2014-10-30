@@ -1713,7 +1713,6 @@
  			$pn_representation_id 	= $this->request->getParameter('representation_id', pInteger);
  			$pn_value_id = $this->request->getParameter('value_id', pInteger);
  			if ($pn_value_id) {
- 			//print_R($_REQUEST); die;
  				return $this->DownloadAttributeMedia();
  			}
  			$ps_version = $this->request->getParameter('version', pString);

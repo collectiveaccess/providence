@@ -2032,10 +2032,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 						if ($vs_import_error_policy == 'stop') {
 							$o_log->logAlert(_t('Import stopped due to import error policy'));
-							if ($o_trans) { $o_trans->rollback(); }
 							
 							$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
 						
+							if ($o_trans) { $o_trans->rollback(); }
 							return false;
 						}
 					}
