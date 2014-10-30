@@ -4546,7 +4546,7 @@ span.bundleDisplayEditorPlacementListItemTitle {
 .elementSettingsUI {
 	position: absolute;
 	top: 40px;
-	left: 400px;
+	left: 150px;
 	overflow: auto;
 	width: 400px;
 	max-height:500px;
