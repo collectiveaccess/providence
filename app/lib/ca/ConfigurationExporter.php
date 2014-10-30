@@ -462,15 +462,19 @@ final class ConfigurationExporter {
 			$t_entry = new ca_metadata_dictionary_entries($qr_entries->get('entry_id'));
 			$vo_entry = $this->opo_dom->createElement("entry");
 			$vo_dict->appendChild($vo_entry);
-			$vo_entry->setAttribute('bundle', $qr_entries->get('bundle_name'));
+			$vo_entry->setAttribute('bundle', $t_entry->get('bundle_name'));
 
 			if(is_array($t_entry->getSettings())) {
 				$va_settings = array();
 
-				// bring array settings and key=>val settings in unified format: key=>array_of_vals
+				// bring array settings and key=>val settings in unified format: key=>array_of_vals or key=>locale=>val
 				foreach($t_entry->getSettings() as $vs_setting => $va_value){
 					if(is_array($va_value)) {
-						foreach($va_value as $vs_value) {
+						foreach($va_value as $vs_key => $vs_value) {
+							if(preg_match("/^[a-z]{2,3}\_[A-Z]{2,3}$/",$vs_key)) { // locale
+								$va_settings[$vs_setting][$vs_key] = $vs_value;
+								continue;
+							}
 							$va_settings[$vs_setting][] = $vs_value;
 						}
 					} else {
@@ -484,12 +488,15 @@ final class ConfigurationExporter {
 					$vo_entry->appendChild($vo_settings);
 
 					foreach($va_settings as $vs_setting => $va_values) {
-						foreach($va_values as $vs_value) {
+						foreach($va_values as $vs_key => $vs_value) {
 							if($vs_value != caEscapeForXML($vs_value)) { // if something is escaped in caEscapeForXML(), wrap in CDATA
 								$vo_setting = $this->opo_dom->createElement('setting');
 								$vo_setting->appendChild(new DOMCdataSection($vs_value));
 							} else {
 								$vo_setting = $this->opo_dom->createElement("setting", $vs_value);
+							}
+							if(preg_match("/^[a-z]{2,3}\_[A-Z]{2,3}$/",$vs_key)) { // locale
+								$vo_setting->setAttribute("locale", $vs_key);
 							}
 							$vo_setting->setAttribute("name", $vs_setting);
 							$vo_settings->appendChild($vo_setting);
@@ -509,6 +516,7 @@ final class ConfigurationExporter {
 					$vo_rule = $this->opo_dom->createElement("rule");
 					$vo_rules->appendChild($vo_rule);
 					$vo_rule->setAttribute('code', $va_rule['rule_code']);
+					$vo_rule->setAttribute('level', $va_rule['rule_level']);
 
 					// expression
 					if(isset($va_rule['expression']) && sizeof($va_rule['expression']) > 0) {
@@ -522,9 +530,13 @@ final class ConfigurationExporter {
 						$va_settings = array();
 
 						// bring array settings and key=>val settings in unified format: key=>array_of_vals
-						foreach($va_rule['settings'] as $vs_setting => $va_value){
+						foreach($va_rule['settings'] as $vs_setting => $va_value) {
 							if(is_array($va_value)) {
-								foreach($va_value as $vs_value) {
+								foreach($va_value as $vs_key => $vs_value) {
+									if(preg_match("/^[a-z]{2,3}\_[A-Z]{2,3}$/",$vs_key)) { // locale
+										$va_settings[$vs_setting][$vs_key] = $vs_value;
+										continue;
+									}
 									$va_settings[$vs_setting][] = $vs_value;
 								}
 							} else {
@@ -538,12 +550,15 @@ final class ConfigurationExporter {
 							$vo_rule->appendChild($vo_settings);
 
 							foreach($va_settings as $vs_setting => $va_values) {
-								foreach($va_values as $vs_value) {
+								foreach($va_values as $vs_key => $vs_value) {
 									if($vs_value != caEscapeForXML($vs_value)) { // if something is escaped in caEscapeForXML(), wrap in CDATA
 										$vo_setting = $this->opo_dom->createElement('setting');
 										$vo_setting->appendChild(new DOMCdataSection($vs_value));
 									} else {
 										$vo_setting = $this->opo_dom->createElement("setting", $vs_value);
+									}
+									if(preg_match("/^[a-z]{2,3}\_[A-Z]{2,3}$/",$vs_key)) { // locale
+										$vo_setting->setAttribute("locale", $vs_key);
 									}
 									$vo_setting->setAttribute("name", $vs_setting);
 									$vo_settings->appendChild($vo_setting);
