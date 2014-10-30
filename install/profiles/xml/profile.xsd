@@ -599,11 +599,7 @@
                         <xs:sequence>
                           <xs:element name="restriction" minOccurs="1" maxOccurs="unbounded">
                             <xs:complexType>
-                              <xs:complexContent>
-                                <xs:extension base="xs:string">
-                                  <xs:attribute name="type" type="xs:string" use="required"/>
-                                </xs:extension>
-                              </xs:complexContent>
+                              <xs:attribute name="type" type="codeType" use="required"/>
                             </xs:complexType>
                           </xs:element>
                         </xs:sequence>
@@ -619,11 +615,7 @@
                         <xs:sequence>
                           <xs:element name="restriction" minOccurs="1" maxOccurs="unbounded">
                             <xs:complexType>
-                              <xs:complexContent>
-                                <xs:extension base="xs:string">
-                                  <xs:attribute name="type" type="xs:string" use="required"/>
-                                </xs:extension>
-                              </xs:complexContent>
+                              <xs:attribute name="type" type="codeType" use="required"/>
                             </xs:complexType>
                           </xs:element>
                         </xs:sequence>
