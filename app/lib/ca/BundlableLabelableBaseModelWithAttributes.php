@@ -4260,7 +4260,7 @@ if (!$vb_batch) {
 					foreach($va_errs_by_bundle as $vn_i => $va_rule) {
 						$vs_bundle = str_replace($this->tableName().".", "", $vs_bundle);
 				
-						$po_request->addActionErrors(array(new Error(1100, $va_rule['rule_settings']['rule_violationMessage'], "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", 'MetadataDictionary', false,false)), $vs_bundle, 'general');
+						$po_request->addActionErrors(array(new Error(1100, $va_rule['rule_settings']['violationMessage'], "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", 'MetadataDictionary', false,false)), $vs_bundle, 'general');
 					}
 				}
 				return false; 
@@ -6138,9 +6138,11 @@ side. For many self-relations the direction determines the nature and display te
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
-	 * 
+	 * Fetch metadata dictionary rule violations for this instance and (optionally) a given bundle
+	 * @param null|string $ps_bundle_name
+	 * @return array|null
 	 */
-	 public function getMetadataDictionaryRuleViolations($ps_bundle_name=null, $pa_options=null) {
+	public function getMetadataDictionaryRuleViolations($ps_bundle_name=null) {
 	 	if (!($vn_id = $this->getPrimaryKey())) { return null; }
 	 	$o_db = $this->getDb();
 	 	
@@ -6172,15 +6174,16 @@ side. For many self-relations the direction determines the nature and display te
 	 		$t_rule = (isset($va_rule_instances[$vn_rule_id])) ? $va_rule_instances[$vn_rule_id] : ($va_rule_instances[$vn_rule_id] = new ca_metadata_dictionary_rules($vn_rule_id));
 	 	
 	 		if ($t_rule && $t_rule->getPrimaryKey()) {
-	 			$va_violations[$vn_violation_id = $qr_res->get('violation_id')] = array(
+				$vn_violation_id = $qr_res->get('violation_id');
+	 			$va_violations[$vn_violation_id] = array(
 	 				'violation_id' => $vn_violation_id,
 	 				'bundle_name' => $qr_res->get('bundle_name'),
-	 				'displayname' => $t_rule->getSetting('rule_displayname'),
-	 				'message' => $t_rule->getSetting('rule_violationMessage'),
+	 				'label' => $t_rule->getSetting('label'),
+	 				'violationMessage' => $t_rule->getSetting('violationMessage'),
 	 				'code' => $qr_res->get('rule_code'),
 	 				'level' => $vs_level = $qr_res->get('rule_level'),
 	 				'levelDisplay' => $t_rule->getChoiceListValue('rule_level', $vs_level),
-	 				'description' => $t_rule->getSetting('rule_description'),
+	 				'description' => $t_rule->getSetting('description'),
 	 				'created_on' => $qr_res->get('created_on'),
 	 				'last_checked_on' => $qr_res->get('last_checked_on')
 	 			);
