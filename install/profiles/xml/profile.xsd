@@ -670,7 +670,7 @@
                   </xs:sequence>
 
                   <!-- entry attributes -->
-                  <xs:attribute name="field" type="bundleType" use="required"/>
+                  <xs:attribute name="bundle" type="bundleType" use="required"/>
 
                 </xs:complexType>
               </xs:element>

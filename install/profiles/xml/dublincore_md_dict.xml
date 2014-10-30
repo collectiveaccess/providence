@@ -2045,7 +2045,7 @@
   </elementSets>
   
   <metadataDictionary>
-    <entry field="ca_objects.idno">
+    <entry bundle="ca_objects.idno">
       <settings>
         <setting name="label" locale="en_US">Accession number</setting>
         <setting name="mandatory">1</setting>
