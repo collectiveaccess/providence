@@ -85,9 +85,10 @@
  		# -------------------------------------------------------
  		public function getLotMedia() {
  			//if ((bool)$this->request->config->get('allow_download_of_all_object_media_in_a_lot')) {
+ 				set_time_limit(600); // allow a lot of time for this because the sets can be potentially large
 				$t_lot = new ca_object_lots($this->request->getParameter('lot_id', pInteger));
 				if ($t_lot->getPrimaryKey()) {
-					$va_object_ids = $t_lot->get('ca_objects.object_id', array('returnAsArray' => true));
+					$va_object_ids = $t_lot->get('ca_objects.object_id', array('returnAsArray' => true, 'limit' => 100000));
 					$qr_res = ca_objects::createResultSet($va_object_ids);
 					$qr_res->filterNonPrimaryRepresentations(false);
 					
