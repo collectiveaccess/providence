@@ -908,6 +908,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * 
 	 */
 	static public function getInstance($pm_element_code_or_id) {
+		if (!$pm_element_code_or_id) { return null; }
 		if(MemoryCache::contains($pm_element_code_or_id, 'ElementInstances')) {
 			return MemoryCache::fetch($pm_element_code_or_id, 'ElementInstances');
 		}
