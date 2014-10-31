@@ -90,41 +90,47 @@ class ExcelDataReader extends BaseDataReader {
 	public function nextRow() {
 		if (!$this->opo_rows) { return false; }
 		
-		if ($this->opn_current_row > 0) {
-			$this->opo_rows->next();
-		}
-		$this->opn_current_row++;
-		if (!$this->opo_rows->valid()) {return false; }
-		
-		if($o_row = $this->opo_rows->current()) {
-			$this->opa_row_buf = array(null);
-		
-			$o_cells = $o_row->getCellIterator();
-			$o_cells->setIterateOnlyExistingCells(false); 
-			
-			$va_row = array();
-			$vb_val_was_set = false;
-			$vn_col = 0;
-			$vn_last_col_set = null;
-			foreach ($o_cells as $o_cell) {
-				if (PHPExcel_Shared_Date::isDateTime($o_cell)) {
-					if (!($vs_val = caGetLocalizedDate(PHPExcel_Shared_Date::ExcelToPHP(trim((string)$o_cell->getValue()))))) {
-						$vs_val = trim((string)$o_cell->getValue());
-					}
-					$this->opa_row_buf[] = $vs_val;
-				} else {
-					$this->opa_row_buf[] = $vs_val = trim((string)$o_cell->getValue());
-				}
-				if ($vs_val) { $vb_val_was_set = true; $vn_last_col_set = $vn_col;}
-				
-				$vn_col++;
-				
-				if ($vn_col > 255) { break; }	// max 255 columns; some Excel files have *thousands* of "phantom" columns
+		while (true) {
+			if ($this->opn_current_row > 0) {
+				$this->opo_rows->next();
 			}
-			if (!$vb_val_was_set) { return $this->nextRow(); }	// skip completely blank rows
-			//$this->opa_row_buf = array_slice($this->opa_row_buf, 0, $vn_last_col_set);
+		
+			$this->opn_current_row++;
+			if (!$this->opo_rows->valid()) {return false; }
+		
+			if($o_row = $this->opo_rows->current()) {
+				$this->opa_row_buf = array(null);
+		
+				$o_cells = $o_row->getCellIterator();
+				$o_cells->setIterateOnlyExistingCells(false); 
 			
-			return $o_row;
+				$va_row = array();
+				$vb_val_was_set = false;
+				$vn_col = 0;
+				$vn_last_col_set = null;
+				foreach ($o_cells as $o_cell) {
+					if (PHPExcel_Shared_Date::isDateTime($o_cell)) {
+						if (!($vs_val = caGetLocalizedDate(PHPExcel_Shared_Date::ExcelToPHP(trim((string)$o_cell->getValue()))))) {
+							$vs_val = trim((string)$o_cell->getValue());
+						}
+						$this->opa_row_buf[] = $vs_val;
+					} else {
+						$this->opa_row_buf[] = $vs_val = trim((string)$o_cell->getValue());
+					}
+					if ($vs_val) { $vb_val_was_set = true; $vn_last_col_set = $vn_col;}
+				
+					$vn_col++;
+				
+					if ($vn_col > 255) { break; }	// max 255 columns; some Excel files have *thousands* of "phantom" columns
+				}
+				if (!$vb_val_was_set) { 
+					//return $this->nextRow(); 
+					print "no val!";
+					continue;
+				}	// skip completely blank rows
+			
+				return $o_row;
+			}
 		}
 		return false;
 	}
@@ -132,13 +138,14 @@ class ExcelDataReader extends BaseDataReader {
 	/**
 	 * 
 	 * 
-	 * @param string $ps_source
+	 * @param int $pn_row_num
 	 * @param array $pa_options
 	 * @return bool
 	 */
 	public function seek($pn_row_num) {
-		$this->opn_current_row = $pn_row_num;
-		return $this->opo_rows->seek($pn_row_num + 1);
+		$this->opn_current_row = $pn_row_num-1;
+		$this->opo_rows->seek($pn_row_num);
+		return $this->nextRow();
 	}
 	# -------------------------------------------------------
 	/**
@@ -183,9 +190,17 @@ class ExcelDataReader extends BaseDataReader {
 	 * 
 	 * @return int
 	 */
+	public function currentRow() {
+		return $this->opn_current_row;
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @return int
+	 */
 	public function getInputType() {
 		return __CA_DATA_READER_INPUT_FILE__;
 	}
 	# -------------------------------------------------------
 }
-?>
