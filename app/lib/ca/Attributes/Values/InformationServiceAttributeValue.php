@@ -216,13 +216,22 @@
  		}
  		# ------------------------------------------------------------------
  		/**
+ 		 * Return HTML form element for editing.
  		 *
+ 		 * @param array $pa_element_info An array of information about the metadata element being edited
+ 		 * @param array $pa_options array Options include:
+ 		 *			class = the CSS class to apply to all visible form elements [Default=lookupBg]
+ 		 *			width = the width of the form element [Default=field width defined in metadata element definition]
+ 		 *			height = the height of the form element [Default=field height defined in metadata element definition]
+ 		 *			request = the RequestHTTP object for the current request; required for lookups to work [Default is null]
  		 *
+ 		 * @return string
  		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
  			$o_config = Configuration::load();
  			
  			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight'));
+ 			$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : 'lookupBg');
  			
  			$vs_element = '<div id="infoservice_'.$pa_element_info['element_id'].'_input{n}">'.
  				caHTMLTextInput(
@@ -233,7 +242,7 @@
 						'value' => '{{'.$pa_element_info['element_id'].'}}', 
 						'maxlength' => 512,
 						'id' => "infoservice_".$pa_element_info['element_id']."_autocomplete{n}",
-						'class' => 'lookupBg'
+						'class' => $vs_class
 					)
 				).
 				caHTMLHiddenInput(

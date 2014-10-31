@@ -703,22 +703,26 @@ class BaseModel extends BaseObject {
 				//
 				// Generalized get
 				//
+				$va_field_info = $this->getFieldInfo($va_tmp[1]);
 				switch(sizeof($va_tmp)) {
 					case 2:
 						// support <table_name>.<field_name> syntax
-						$ps_field = $va_tmp[1];
-						break;
+						if ($va_field_info['FIELD_TYPE'] === FT_MEDIA) {
+							$va_tmp[2] = '';
+						} else {
+							$ps_field = $va_tmp[1];
+							break;
+						}
 					default: // > 2 elements
 						// media field?
-						$va_field_info = $this->getFieldInfo($va_tmp[1]);
 						if (($va_field_info['FIELD_TYPE'] === FT_MEDIA) && (!isset($pa_options['returnAsArray'])) && !$pa_options['returnAsArray']) {
 							$o_media_settings = new MediaProcessingSettings($va_tmp[0], $va_tmp[1]);
 							$va_versions = $o_media_settings->getMediaTypeVersions('*');
 							
 							$vs_version = $va_tmp[2];
 							if (!isset($va_versions[$vs_version])) {
-								$va_tmp = array_keys($va_versions);
-								$vs_version = array_shift($va_tmp);
+								$va_available_versions = array_keys($va_versions);
+								$vs_version = $va_tmp[2] = array_shift($va_available_versions);
 							}
 							
 							if (isset($va_tmp[3])) {
@@ -1874,7 +1878,7 @@ class BaseModel extends BaseObject {
 			$vn_gap_end = $pa_parent_info[$vs_hier_right_fld];
 			$vn_gap_size = ($vn_gap_end - $vn_gap_start);
 			
-			if ($vn_gap_size < 0.0001) {
+			if ($vn_gap_size < 0.00001) {
 				// rebuild hierarchical index if the current gap is not large enough to fit current record
 				$this->rebuildHierarchicalIndex($this->get($vs_hier_id_fld));
 				$pa_parent_info = $this->_getHierarchyParent($pa_parent_info[$this->primaryKey()]);
@@ -2911,10 +2915,6 @@ class BaseModel extends BaseObject {
 									$vs_hier_sql = ' AND ('.$vs_hier_id_fld.' = '.$this->get($vs_hier_id_fld).')';
 								} else {
 									$vs_hier_sql = "";
-								}
-								
-								if (($vn_orig_hier_right - $vn_orig_hier_left) == 0) {
-									die("!!!\n");
 								}
 								
 								$vn_ratio = ($vn_interval_end - $vn_interval_start)/($vn_orig_hier_right - $vn_orig_hier_left);
@@ -7200,20 +7200,28 @@ class BaseModel extends BaseObject {
 	 *		additionalTableToJoin: name of table to join to hierarchical table (and return fields from); only fields related many-to-one are currently supported
 	 *		returnChildCounts: if true, the number of children under each returned child is calculated and returned in the result set under the column name 'child_count'. Note that this count is always at least 1, even if there are no children. The 'has_children' column will be null if the row has, in fact no children, or non-null if it does have children. You should check 'has_children' before using 'child_count' and disregard 'child_count' if 'has_children' is null.
 	 *		idsOnly: if true, only the primary key id values of the children records are returned
-	 *		returnDeleted = return deleted records in list (def. false)
+	 *		returnDeleted = return deleted records in list [default=false]
+	 *		start = Offset to start returning records from [default=0; no offset]
+	 *		limit = Maximum number of records to return [default=null; no limit]
+	 *
 	 * @return array 
 	 */
 	public function getHierarchyChildren($pn_id=null, $pa_options=null) {
 		if (!$this->isHierarchical()) { return null; }
 		$pb_ids_only = (isset($pa_options['idsOnly']) && $pa_options['idsOnly']) ? true : false;
+		$pn_start = caGetOption('start', $pa_options, 0);
+		$pn_limit = caGetOption('limit', $pa_options, null);
 		
 		if (!$pn_id) { $pn_id = $this->getPrimaryKey(); }
 		if (!$pn_id) { return null; }
 		$qr_children = $this->getHierarchyChildrenAsQuery($pn_id, $pa_options);
 		
+		if ($pn_start > 0) { $qr_children->seek($pn_start); }
 		
 		$va_children = array();
 		$vs_pk = $this->primaryKey();
+		
+		$vn_c = 0;
 		while($qr_children->nextRow()) {
 			if ($pb_ids_only) {
 				$va_row = $qr_children->getRow();
@@ -7221,6 +7229,8 @@ class BaseModel extends BaseObject {
 			} else {
 				$va_children[] = $qr_children->getRow();
 			}
+			$vn_c++;
+			if (($vn_limit > 0) && ($vn_c >= $vn_limit)) { break;}
 		}
 		
 		return $va_children;
@@ -10346,7 +10356,7 @@ $pa_options["display_form_field_tips"] = true;
 	public function registerItemView($pn_user_id=null) {
 		global $g_ui_locale_id;
 		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
-		$pn_locale_id = $g_ui_locale_id;
+		if (!$pn_locale_id) { $pn_locale_id = $g_ui_locale_id; }
 		
 		$vn_table_num = $this->tableNum();
 		
