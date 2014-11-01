@@ -1025,7 +1025,7 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 		$vs_iptc_file = tempnam(caGetTempDirPath(), 'gmiptc');
 		@rename($vs_iptc_file, $vs_iptc_file.'.iptc'); // GM uses the file extension to figure out what we want
 		$vs_iptc_file .= '.iptc';
-		exec($this->ops_graphicsmagick_path." convert ".caEscapeShellArg($ps_filepath)." ".caEscapeShellArg($vs_iptc_file), $va_output, $vn_return);
+		exec($this->ops_graphicsmagick_path." convert ".caEscapeShellArg($ps_filepath)." ".caEscapeShellArg($vs_iptc_file). " 2> /dev/null", $va_output, $vn_return);
 
 		$vs_iptc_data = file_get_contents($vs_iptc_file);
 		@unlink($vs_iptc_file);
