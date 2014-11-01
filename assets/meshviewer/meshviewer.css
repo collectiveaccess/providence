@@ -1,0 +1,162 @@
+#progress {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -50px;
+    margin-left: -50px;
+    width: 140px;
+    height:20px;
+    display: block;
+    z-index: 100;
+}
+#info {
+    color:rgba(120, 120, 120, 1);
+    width: 100%;
+    text-align: left;
+
+    z-index: 100;
+}
+#info a, .button { color: #f00; text-decoration: underline; cursor: pointer }
+
+#buttons {
+    position:absolute;
+    border:1px solid blue;
+    bottom:20px;
+    right:20px;
+    width: 140px;
+    padding:20px;
+    border-radius: 10px;
+    color:rgba(120, 120, 120, 1);
+    border:1px solid rgba(150, 150, 150, 0.8);
+    background-color: rgba(170, 170, 170, 0.6);
+}
+.buttons-header {
+    border-bottom: 1px solid gray;
+    cursor:pointer;
+    margin-top: 20px;
+    font-size:11px;
+}
+#buttons p {
+    font-size:10px;
+}
+#face-buttons div {
+    margin-top: 0;
+}
+
+#face-buttons-table {
+    width: 120px;
+    height: 120px;
+    /*background: url('images/facets_120.png') no-repeat top left;*/
+}
+
+.face-button{
+    width: 40px;
+    height: 40px;
+    float:left;
+}
+
+#face-button-1{
+    background: url('images/cube-facets/facets_120_tranche_01.png') no-repeat top left;
+}
+
+#face-button-2{
+    background: url('images/cube-facets/facets_120_tranche_02.png') no-repeat top left;
+}
+
+#face-button-3{
+    background: url('images/cube-facets/facets_120_tranche_03.png') no-repeat top left;
+}
+
+#face-button-4{
+    background: url('images/cube-facets/facets_120_tranche_04.png') no-repeat top left;
+}
+
+#face-button-5{
+    background: url('images/cube-facets/facets_120_tranche_05.png') no-repeat top left;
+}
+
+#face-button-6{
+    background: url('images/cube-facets/facets_120_tranche_06.png') no-repeat top left;
+}
+
+#face-button-7{
+    background: url('images/cube-facets/facets_120_tranche_07.png') no-repeat top left;
+}
+
+#face-button-8{
+    background: url('images/cube-facets/facets_120_tranche_08.png') no-repeat top left;
+}
+
+#face-button-9{
+    background: url('images/cube-facets/facets_120_tranche_09.png') no-repeat top left;
+}
+
+.clearfix{
+    clear: both;
+}
+
+/* Sphere */
+.sphere-button{
+    width: 25px;
+    height: 53px;
+    margin: 0;
+    float: left;
+}
+
+#sphere-button-1{
+    background: url('images/sphere_01.png') no-repeat top left;
+}
+
+#sphere-button-2{
+    background: url('images/sphere_02.png') no-repeat top left;
+}
+
+#advanced-toggler-buttons A {
+    color:white;
+    text-decoration: none;
+    border-radius:6px;
+    font-size:8px;
+    padding: 4px;
+    margin-top: 4px;
+    margin-right: 4px;
+    line-height: 20px;
+    background-color: gray;
+}
+
+#leftMenu{
+    width:160px;
+    display:block;
+    position: relative;
+    top:0;
+    height:100%;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 10px;
+    border:1px solid blue;
+    display:none;
+}
+
+#leftMenu a{
+    color: #000000;
+}
+
+#mainViewer{
+    height:300px;
+}
+
+#timer{
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+#weight{
+    position: absolute;
+    top: 45px;
+    right: 20px;
+}
+
+#viewer {
+    height:100%;
+    top:0;
+}
