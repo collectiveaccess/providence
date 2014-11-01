@@ -596,7 +596,7 @@ class WLPlugMediaMeshTextured Extends BaseMediaPlugin Implements IWLPlugMedia {
     public function htmlTag($ps_url, $pa_properties, $pa_options=null, $pa_volume_info=null) {
         if (!is_array($pa_options)) { $pa_options = array(); }
 
-        JavascriptLoadManager::register("meshviewer");
+        AssetLoadManager::register("meshviewer");
         ob_start(); ?>
 
         <div id="mainViewer">
