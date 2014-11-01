@@ -350,6 +350,55 @@
 		}
 		return $_MEDIAHELPER_PLUGIN_CACHE_EXIFTOOL[$ps_exiftool_path] = false;
 	}
+ 	# ------------------------------------------------------------------------------------------------
+ 	/**
+	 * Detects if Blender (http://www.blender.org) is installed in the given path.
+	 * @param string $ps_blender_path path to Blender executable
+	 * @return boolean 
+	 */
+	function caBlenderInstalled($ps_blender_path=null) {
+		if(!$ps_blender_path) { $ps_blender_path = caGetExternalApplicationPath('blender'); }
+
+		global $_MEDIAHELPER_PLUGIN_CACHE_BLENDER;
+		if (isset($_MEDIAHELPER_PLUGIN_CACHE_BLENDER[$ps_blender_path])) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_BLENDER[$ps_blender_path];
+		} else {
+			$_MEDIAHELPER_PLUGIN_CACHE_BLENDER = array();
+		}
+		if (!trim($ps_blender_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_blender_path)) || !file_exists($ps_blender_path)) { return false; }
+		
+		if (!file_exists($ps_blender_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_BLENDER[$ps_blender_path] = false; }
+		// Executing "blender -v" to avoid opening main Blender app (default is not silent)
+		exec($ps_blender_path." -v",$va_output,$vn_return);
+
+		if(substr($va_output[0], 0, 7) == "Blender") {
+			return $_MEDIAHELPER_PLUGIN_CACHE_BLENDER[$ps_blender_path] = true;
+		}
+		return $_MEDIAHELPER_PLUGIN_CACHE_BLENDER[$ps_blender_path] = false;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Detects if obj2utf8x (http://threejs.org) is installed in the given path.
+	 * Direct link to source : https://github.com/mrdoob/three.js/tree/master/utils/converters/utf8
+	 * @param string $ps_obj2utf8x_path path to obj2utf8x executable
+	 * @return boolean 
+	 */
+	function caObj2utf8xInstalled($ps_obj2utf8x_path=null) {
+		if(!$ps_obj2utf8x_path) { $ps_obj2utf8x_path = caGetExternalApplicationPath('blender'); }
+		
+		global $_MEDIAHELPER_PLUGIN_CACHE_OBJ2UTF8;
+		if (isset($_MEDIAHELPER_PLUGIN_CACHE_OBJ2UTF8[$ps_obj2utf8x_path])) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_OBJ2UTF8[$ps_obj2utf8x_path];
+		} else {
+			$_MEDIAHELPER_PLUGIN_CACHE_OBJ2UTF8 = array();
+		}
+		if (!trim($ps_obj2utf8x_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_obj2utf8x_path)) || !file_exists($ps_obj2utf8x_path)) { return false; }
+		
+		if (!file_exists($ps_obj2utf8x_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_OBJ2UTF8[$ps_obj2utf8x_path] = false; }
+
+		return $_MEDIAHELPER_PLUGIN_CACHE_OBJ2UTF8[$ps_obj2utf8x_path] = true;
+	}	
+	
 	# ------------------------------------------------------------------------------------------------
 	/**
 	 * Extracts media metadata using MediaInfo
