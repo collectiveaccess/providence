@@ -703,22 +703,26 @@ class BaseModel extends BaseObject {
 				//
 				// Generalized get
 				//
+				$va_field_info = $this->getFieldInfo($va_tmp[1]);
 				switch(sizeof($va_tmp)) {
 					case 2:
 						// support <table_name>.<field_name> syntax
-						$ps_field = $va_tmp[1];
-						break;
+						if ($va_field_info['FIELD_TYPE'] === FT_MEDIA) {
+							$va_tmp[2] = '';
+						} else {
+							$ps_field = $va_tmp[1];
+							break;
+						}
 					default: // > 2 elements
 						// media field?
-						$va_field_info = $this->getFieldInfo($va_tmp[1]);
 						if (($va_field_info['FIELD_TYPE'] === FT_MEDIA) && (!isset($pa_options['returnAsArray'])) && !$pa_options['returnAsArray']) {
 							$o_media_settings = new MediaProcessingSettings($va_tmp[0], $va_tmp[1]);
 							$va_versions = $o_media_settings->getMediaTypeVersions('*');
 							
 							$vs_version = $va_tmp[2];
 							if (!isset($va_versions[$vs_version])) {
-								$va_tmp = array_keys($va_versions);
-								$vs_version = array_shift($va_tmp);
+								$va_available_versions = array_keys($va_versions);
+								$vs_version = $va_tmp[2] = array_shift($va_available_versions);
 							}
 							
 							if (isset($va_tmp[3])) {

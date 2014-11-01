@@ -1833,6 +1833,11 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			if ((int)($o_config->get("{$vs_left_table_name}_disable"))) { return false; }
 			if ((int)($o_config->get("{$vs_right_table_name}_disable"))) { return false; }
 		} else {
+			switch($vs_table_name) {
+				case 'ca_object_representations':
+					if (!(int)($o_config->get('ca_objects_disable'))) { return true; }	
+					break;
+			}
 			if ((int)($o_config->get($vs_table_name.'_disable'))) { return false; }
 		}
 		

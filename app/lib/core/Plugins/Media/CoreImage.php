@@ -845,7 +845,7 @@ class WLPlugMediaCoreImage Extends BaseMediaPlugin Implements IWLPlugMedia {
 		if (caMediaPluginCoreImageInstalled($this->ops_CoreImage_path)) {
 			$va_metadata = array();
 			
-			if(function_exists('exif_read_data')) {
+			if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
 				if (is_array($va_exif = caSanitizeArray(@exif_read_data($ps_filepath, 'EXIF', true, false)))) { $va_metadata['EXIF'] = $va_exif; }
 			}
 			
