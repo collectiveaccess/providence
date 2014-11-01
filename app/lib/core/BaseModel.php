@@ -4009,7 +4009,8 @@ class BaseModel extends BaseObject {
 				$vs_original_tmpname = $this->_SET_FILES[$ps_field]['tmp_name'];
 				$va_matches = array();
 
-				if(preg_match("/(\.zip|\.tar\.gz|\.tgz)$/",$vs_original_filename,$va_matches)){
+				// handling zip, tar, gz and tgz archives, making an exception for .obj.zip files
+				if((preg_match("/(\.zip|\.tar\.gz|\.tgz)$/",$vs_original_filename,$va_matches)) && !(preg_match("/(.*)(\.obj\.zip)$/",$vs_original_filename,$va_tmp))){
 					$vs_archive_extension = $va_matches[1];
 
 					// add file extension to temporary file if necessary; otherwise phar barfs when handling the archive
