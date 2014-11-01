@@ -1009,7 +1009,21 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 		if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
 			if (is_array($va_exif = caSanitizeArray(@exif_read_data($ps_filepath, 'EXIF', true, false)))) { $va_metadata['EXIF'] = $va_exif; }
 		}
-			
+
+		// if the builtin EXIF extraction is not used or failed for some reason, try GraphicsMagick's
+		if(!isset($va_metadata['EXIF']) || !is_array($va_metadata['EXIF'])) {
+			exec($this->ops_graphicsmagick_path.' identify -format "%[EXIF:*]" '.caEscapeShellArg($ps_filepath), $va_output, $vn_return);
+			if(is_array($va_output) && sizeof($va_output)>1) {
+				foreach($va_output as $vs_output_line) {
+					$va_tmp = explode('=', $vs_output_line); // format is "Make=NIKON CORPORATION"
+					if(isset($va_tmp[0]) && isset($va_tmp[1])) {
+						$va_metadata['EXIF'][$va_tmp[0]] = $va_tmp[1];
+					}
+				}
+			}
+			$va_output = array();
+		}
+
 		$o_xmp = new XMPParser();
 		if ($o_xmp->parse($ps_filepath)) {
 			if (is_array($va_xmp_metadata = $o_xmp->getMetadata()) && sizeof($va_xmp_metadata)) {
