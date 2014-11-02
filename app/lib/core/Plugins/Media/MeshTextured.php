@@ -597,17 +597,12 @@ class WLPlugMediaMeshTextured Extends BaseMediaPlugin Implements IWLPlugMedia {
         if (!is_array($pa_options)) { $pa_options = array(); }
 
         AssetLoadManager::register("meshviewer");
+        $url = dirname($ps_url)."/".basename($ps_url,".3dutf8")."/".basename($ps_url,".3dutf8").".js";
         ob_start(); ?>
 
         <div id="mainViewer">
 
-
             <pre style="color:white;">
-                <?php
-                $url = dirname($ps_url)."/".basename($ps_url,".3dutf8")."/".basename($ps_url,".3dutf8").".js";
-                //print  $url;
-                ?>
-                <?php /*print __CA_URL_ROOT__;?>/js/meshviewer/meshviewer.js */ ?>
             </pre>
 
             <div id="viewer"></div>
@@ -617,6 +612,7 @@ class WLPlugMediaMeshTextured Extends BaseMediaPlugin Implements IWLPlugMedia {
 
             <div id="buttons">
                 <div id="face-buttons">
+                <!--
                     <div class="buttons-header">VIEW</div>
                     <div class="buttons-detail">
                         <div id="face-buttons-table">
@@ -633,7 +629,7 @@ class WLPlugMediaMeshTextured Extends BaseMediaPlugin Implements IWLPlugMedia {
                             <div class="face-button" id="face-button-9" onclick="javascript:showBack()"></div>
                             <div class="clearfix"></div>
                         </div>
-                    </div>
+                    </div>-->
                 </div>
                 <div id="advanced-buttons">
                     <div class="buttons-header">ADVANCED</div>
@@ -644,27 +640,31 @@ class WLPlugMediaMeshTextured Extends BaseMediaPlugin Implements IWLPlugMedia {
                             <div id="sphere-button-2" class="sphere-button" onclick="javascript:rotateRight()"></div>
                             <div class="clearfix"></div>
                         </div>
+                        <!--
                         <div id="pan-buttons">
                             <p>PAN</p>
                             <img src="<?php print __CA_URL_ROOT__;?>/js/meshviewer/icons/24/square_empty_icon&24.png" /><img src="<?php print __CA_URL_ROOT__;?>/js/meshviewer/icons/24/sq_br_up_icon&24.png" onclick="javascript:translateUp()"/><br/>
                             <img src="<?php print __CA_URL_ROOT__;?>/js/meshviewer/icons/24/sq_br_prev_icon&24.png" onclick="javascript:translateLeft()"/><img src="<?php print __CA_URL_ROOT__;?>/js/meshviewer/icons/24/square_shape_icon&24.png" onclick="javascript:translateReset()"/><img src="<?php print __CA_URL_ROOT__;?>/js/meshviewer/icons/24/sq_br_next_icon&24.png" onclick="javascript:translateRight()"/><br/>
                             <img src="<?php print __CA_URL_ROOT__;?>/js/meshviewer/icons/24/square_empty_icon&24.png" /><img src="<?php print __CA_URL_ROOT__;?>/js/meshviewer/icons/24/sq_br_down_icon&24.png" onclick="javascript:translateDown()"/><br/>
                         </div>
+                        -->
                         <div id="zoom-buttons">
                             <P>ZOOM</P>
-                            <img src="<?php print __CA_URL_ROOT__;?>/js/meshviewer/icons/24/sq_minus_icon&24.png" onclick="javascript:zoomOut()"/>
-                            <img src="<?php print __CA_URL_ROOT__;?>/js/meshviewer/icons/24/sq_plus_icon&24.png" onclick="javascript:zoomIn()" /><br/>
+                            <img src="<?php print __CA_URL_ROOT__;?>/assets/meshviewer/icons/24/sq_minus_icon&24.png" onclick="javascript:zoomOut()"/>
+                            <img src="<?php print __CA_URL_ROOT__;?>/assets/meshviewer/icons/24/sq_plus_icon&24.png" onclick="javascript:zoomIn()" /><br/>
                         </div>
                         <div id="advanced-toggler-buttons">
                             <P>TOGGLERS</P>
                             <a href="javascript:scene.add(axes);">AXIS ON</a>
                             <a href="javascript:scene.remove(axes);">AXIS OFF</a><br/>
+                            <!--
                             <a href="javascript:scene.add(boundingbox);">BBOX ON</a>
                             <a href="javascript:scene.remove(boundingbox);">BBOX OFF</a><br/>
                             <a href="javascript:addPlinth();">PLINTH ON</a>
                             <a href="javascript:removePlinth();">PLINTH OFF</a><br/>
                             <a href="javascript:rotateOn();">ROTATE ON</a>
                             <a href="javascript:rotateOff();">ROTATE OFF</a>
+                            -->
                         </div>
                     </div>
                 </div>
