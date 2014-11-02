@@ -50,7 +50,7 @@
 				break;
 			case 'list':
 			default:
-				print $this->render('Results/ca_list_items_list_html.php');
+				print $this->render('Results/ca_list_items_results_list_html.php');
 				break;
 		}
 ?>		

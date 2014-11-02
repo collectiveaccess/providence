@@ -271,7 +271,7 @@
 				if ($vo_result_context->getParameter('availableVisualizationCount') > 0) {
 					if (is_array($va_dependencies = $vo_result_context->getParameter('availableVisualizationDependencies'))) {
 						foreach($va_dependencies as $vs_dependency) {
-							JavascriptLoadManager::register($vs_dependency);
+							AssetLoadManager::register($vs_dependency);
 						}
 					}
 					
@@ -402,4 +402,3 @@
 		}		
 		# --------------------------------------------------------------------------------
 	}
-?>

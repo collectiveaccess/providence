@@ -1732,7 +1732,9 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
  		$va_bundle_settings = array();
  		$t_rel_type = new ca_relationship_types();
  		$va_map = $this->getAppConfig()->getAssoc('current_location_criteria');
- 		
+ 		if(!is_array($va_map)){
+		    $va_map = array();
+	    }
  		foreach($va_map as $vs_table => $va_types) {
  			$va_bundle_settings["{$vs_table}_showTypes"] = array();
  			foreach($va_types as $vs_type => $va_config) {

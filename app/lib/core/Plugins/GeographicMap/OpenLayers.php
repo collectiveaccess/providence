@@ -49,7 +49,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		
 		$this->description = _t('Generates maps using the OpenLayers API');
 		
-		JavascriptLoadManager::register("openlayers");
+		AssetLoadManager::register("openlayers");
 	}
 	# ------------------------------------------------
 	/**
@@ -334,7 +334,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 	 * @return string HTML output
 	 */
 	public function getAttributeBundleHTML($pa_element_info, $pa_options=null) {
-		JavascriptLoadManager::register('openlayers');
+		AssetLoadManager::register('openlayers');
 		$o_config = Configuration::load();
 		
 		$va_element_width = caParseFormElementDimension($pa_element_info['settings']['fieldWidth']);
@@ -615,4 +615,3 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 	}
 	# ------------------------------------------------
 }
-?>

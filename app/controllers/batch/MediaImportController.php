@@ -64,8 +64,8 @@
  				return;
  			}
  			
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register('panel');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('panel');
  			
  			$this->opo_datamodel = Datamodel::load();
  			$this->opo_app_plugin_manager = new ApplicationPluginManager();
@@ -80,7 +80,7 @@
  		 *
  		 */
  		public function Index($pa_values=null, $pa_options=null) {
- 			JavascriptLoadManager::register("directoryBrowser");
+ 			AssetLoadManager::register("directoryBrowser");
  			list($t_ui) = $this->_initView($pa_options);
  			
  			$this->view->setVar('batch_mediaimport_last_settings', $va_last_settings = is_array($va_last_settings = $this->request->user->getVar('batch_mediaimport_last_settings')) ? $va_last_settings : array());
@@ -304,9 +304,9 @@
  		 */
  		protected function _initView($pa_options=null) {
  			// load required javascript
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register('imageScroller');
- 			JavascriptLoadManager::register('datePickerUI');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('imageScroller');
+ 			AssetLoadManager::register('datePickerUI');
  			
  			$t_ui = new ca_editor_uis();
  			if (!isset($pa_options['ui']) && !$pa_options['ui']) {

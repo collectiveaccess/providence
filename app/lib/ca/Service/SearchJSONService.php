@@ -51,30 +51,43 @@ class SearchJSONService extends BaseJSONService {
 	public function dispatch(){
 		$va_post = $this->getRequestBodyArray();
 
+		// make sure only requests that are actually identical get pulled from cache
+		$vs_cache_key =
+			md5(print_r($va_post, true)) .
+			md5(print_r($this->opo_request->getParameters(array('POST', 'GET', 'REQUEST')))) .
+			$this->getRequestMethod();
+
+		if(ExternalCache::contains($vs_cache_key, 'SearchJSONService')) {
+			return ExternalCache::fetch($vs_cache_key, 'SearchJSONService');
+		}
 
 		switch($this->getRequestMethod()){
 			case "GET":
 				if(sizeof($va_post)==0){
-					return $this->search();
+					$vm_return = $this->search();
 				} else {
 					if(is_array($va_post["bundles"])){
-						return $this->search($va_post["bundles"]);
+						$vm_return = $this->search($va_post["bundles"]);
 					} else {
 						$this->addError(_t("Invalid request body format"));
-						return false;
+						$vm_return = false;
 					}
 				}
 				break;
 			default:
 				$this->addError(_t("Invalid HTTP request method for this service"));
-				return false;
+				$vm_return = false;
 		}
+
+		$vn_ttl = defined('__CA_SERVICE_API_CACHE_TTL__') ? __CA_SERVICE_API_CACHE_TTL__ : 60*60; // save for an hour by default
+		ExternalCache::save($vs_cache_key, $vm_return, 'SearchJSONService', $vn_ttl);
+		return $vm_return;
 	}
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
-	private function search($pa_bundles=null){
+	protected function search($pa_bundles=null){
 		if (!($vo_search = caGetSearchInstance($this->getTableName()))) { 
 			$this->addError(_t("Invalid table"));
 			return false; 
@@ -132,5 +145,3 @@ class SearchJSONService extends BaseJSONService {
 	}
 	# -------------------------------------------------------
 }
-
-?>

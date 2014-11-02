@@ -62,7 +62,7 @@
  		public function Index($pa_options=null) {
  			$po_search = (isset($pa_options['search']) && $pa_options['search']) ? $pa_options['search'] : null;
  			parent::Index($pa_options);
- 			JavascriptLoadManager::register('browsable');	// need this to support browse panel when filtering/refining search results
+ 			AssetLoadManager::register('browsable');	// need this to support browse panel when filtering/refining search results
  			
  			$t_model = $this->opo_datamodel->getTableInstance($this->ops_tablename, true);
  			
@@ -224,7 +224,11 @@
  				case 'EXPORT':
  					$this->_genExport($vo_result, $this->request->getParameter("export_format", pString), $vs_search, $vs_search);
  					break;
- 				# ------------------------------------
+				# ------------------------------------
+				case 'EXPORTWITHMAPPING':
+					$this->_genExportWithMapping($vo_result, $this->request->getParameter("exporter_id", pInteger));
+					break;
+				# ------------------------------------
  				case 'HTML': 
 				default:
 					// generate type menu and type value list
@@ -340,4 +344,3 @@
  		}
  		# -------------------------------------------------------
  	}
-?>

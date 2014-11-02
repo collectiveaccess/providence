@@ -1578,6 +1578,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		}
  		return $va_export;
  	}
+ 	# ------------------------------------------------------
  	/**
  	 * 
  	 *
@@ -1587,90 +1588,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  	 * @return string HTML output
  	 */
  	public function getRepresentationViewerHTMLBundle($po_request, $pa_options=null, $pa_additional_display_options=null) {
- 		$va_access_values = (isset($pa_options['access']) && is_array($pa_options['access'])) ? $pa_options['access'] : array();	
- 		$vs_display_type = (isset($pa_options['display']) && $pa_options['display']) ? $pa_options['display'] : 'media_overlay';	
- 		$vs_container_dom_id = (isset($pa_options['containerID']) && $pa_options['containerID']) ? $pa_options['containerID'] : null;	
- 		$vn_object_id = (isset($pa_options['object_id']) && $pa_options['object_id']) ? $pa_options['object_id'] : null;
- 		$vn_item_id = (isset($pa_options['item_id']) && $pa_options['item_id']) ? $pa_options['item_id'] : null;
- 		$vn_order_item_id = (isset($pa_options['order_item_id']) && $pa_options['order_item_id']) ? $pa_options['order_item_id'] : null;
- 		$vb_media_editor = (isset($pa_options['mediaEditor']) && $pa_options['mediaEditor']) ? true : false;
- 		$vb_no_controls = (isset($pa_options['noControls']) && $pa_options['noControls']) ? true : false;
- 		
- 		$vn_item_id = (isset($pa_options['item_id']) && $pa_options['item_id']) ? $pa_options['item_id'] : null;
- 		
- 		$t_object = new ca_objects($vn_object_id);
- 		//if (!$t_object->getPrimaryKey()) { return false; }
- 		
- 		if(!$this->getPrimaryKey()) {
- 			$this->load($t_object->getPrimaryRepresentationID(array('checkAccess' => $va_access_values)));
- 		}
- 		
-		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
-		
-		$t_set_item = new ca_set_items();
-		if ($vn_item_id) { $t_set_item->load($vn_item_id); }
-		
-		$t_order_item = new ca_commerce_order_items();
-		if ($vn_order_item_id) { $t_order_item->load($vn_order_item_id); }
-		
-		$o_view->setVar('containerID', $vs_container_dom_id);
-		
-		$o_view->setVar('t_object_representation', $this);
- 		if (($vn_representation_id = $this->getPrimaryKey()) && ((!sizeof($va_access_values) || in_array($this->get('access'), $va_access_values)))) { 		// check rep access
-			$va_rep_display_info = caGetMediaDisplayInfo($vs_display_type, $this->getMediaInfo('media', 'INPUT', 'MIMETYPE'));
-			$va_rep_display_info['poster_frame_url'] = $this->getMediaUrl('media', $va_rep_display_info['poster_frame_version']);
-			
-			$o_view->setVar('num_multifiles', $this->numFiles());
-				
- 			if (isset($pa_options['use_book_viewer'])) {
- 				$va_rep_display_info['use_book_viewer'] = (bool)$pa_options['use_book_viewer'];
- 			}		
-			$o_view->setVar('display_type', $vs_display_type);
-			
-			if (is_array($pa_additional_display_options)) { $va_rep_display_info = array_merge($va_rep_display_info, $pa_additional_display_options); }
-			$o_view->setVar('display_options', $va_rep_display_info);
-			$o_view->setVar('representation_id', $vn_representation_id);
-			$o_view->setVar('t_object_representation', $this);
-			$o_view->setVar('versions', $va_versions = $this->getMediaVersions('media'));
-			
-			$t_media = new Media();
-			$o_view->setVar('version_type', $t_media->getMimetypeTypename($this->getMediaInfo('media', 'original', 'MIMETYPE')));
-		
-			if ($t_object->getPrimaryKey()) { 
-				$o_view->setVar('reps', $va_reps = $t_object->getRepresentations(array('icon'), null, array("return_with_access" => $va_access_values)));
-				
-				$vn_next_rep = $vn_prev_rep = null;
-				
-				$va_rep_list = array_values($va_reps);
-				foreach($va_rep_list as $vn_i => $va_rep) {
-					if ($va_rep['representation_id'] == $vn_representation_id) {
-						if (isset($va_rep_list[$vn_i - 1])) {
-							$vn_prev_rep = $va_rep_list[$vn_i - 1]['representation_id'];
-						}
-						if (isset($va_rep_list[$vn_i + 1])) {
-							$vn_next_rep = $va_rep_list[$vn_i + 1]['representation_id'];
-						}
-						$o_view->setVar('representation_index', $vn_i + 1);
-					}
-				}
-				$o_view->setVar('previous_representation_id', $vn_prev_rep);
-				$o_view->setVar('next_representation_id', $vn_next_rep);
-			}	
-			$ps_version 	= $po_request->getParameter('version', pString);
-			if (!in_array($ps_version, $va_versions)) { 
-				if (!($ps_version = $va_rep_display_info['display_version'])) { $ps_version = null; }
-			}
-			$o_view->setVar('version', $ps_version);
-			$o_view->setVar('version_info', $this->getMediaInfo('media', $ps_version));
-			
- 			$o_view->setVar('t_object', $t_object);
- 			$o_view->setVar('t_set_item', $t_set_item);
- 			$o_view->setVar('t_order_item', $t_order_item);
- 			//$o_view->setVar('only_show_reps_in_order', $vb_only_show_reps_in_order);
- 			$o_view->setVar('use_media_editor', $vb_media_editor);
- 			$o_view->setVar('noControls', $vb_no_controls);
-		}
-		return $o_view->render('representation_viewer_html.php');
+ 		return caRepresentationViewerHTMLBundle($this, $po_request, $pa_options, $pa_additional_display_options);
  	}
  	# ------------------------------------------------------
 	/** 
@@ -1780,4 +1698,3 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	}
 	# ------------------------------------------------------
 }
-?>

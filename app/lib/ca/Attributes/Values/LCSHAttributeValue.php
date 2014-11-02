@@ -104,6 +104,22 @@
 			'validForRootOnly' => 1,
 			'description' => _t('Layout for value when used in a display (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
 		),
+		'canMakePDF' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output?'),
+			'description' => _t('Check this option if this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
+		'canMakePDFForValue' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output for individual values?'),
+			'description' => _t('Check this option if individual values for this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
 		'displayDelimiter' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -145,6 +161,9 @@
  		# ------------------------------------------------------------------
  		private $ops_text_value;
  		private $ops_uri_value;
+ 		
+ 		static $s_term_cache = array();
+ 		static $s_term_cache_max_size = 2048;
  		# ------------------------------------------------------------------
  		public function __construct($pa_value_array=null) {
  			parent::__construct($pa_value_array);
@@ -190,6 +209,9 @@
  		 *
  		 */
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
+ 			if (isset(LCSHAttributeValue::$s_term_cache[$ps_value])) {
+ 				return LCSHAttributeValue::$s_term_cache[$ps_value];
+ 			}
  			$o_config = Configuration::load();
  			
  			$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
@@ -210,7 +232,7 @@
 				
 					$va_tmp1 = explode('/', $va_tmp[1]);
 					$vs_id = array_pop($va_tmp1);
-					return array(
+					LCSHAttributeValue::$s_term_cache[$ps_value] = array(
 						'value_longtext1' => trim($va_tmp[0]),						// text
 						'value_longtext2' => trim($vs_url),							// uri
 						'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
@@ -244,7 +266,7 @@
 							$vs_url = str_replace('http://id.loc.gov/', 'info:lc/', $vs_url);
 					
 							if ($vs_url) {
-								return array(
+								LCSHAttributeValue::$s_term_cache[$ps_value] = array(
 									'value_longtext1' => trim($vs_label)." [{$vs_url}]",						// text
 									'value_longtext2' => trim($vs_url),							// uri
 									'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
@@ -283,7 +305,7 @@
 								$va_url = explode("/", $vs_url);
 								$vs_id = array_pop($va_url);
 							
-								return array(
+								LCSHAttributeValue::$s_term_cache[$ps_value] = array(
 									'value_longtext1' => "{$vs_title} [{$vs_url}]",						// text
 									'value_longtext2' => $vs_url,							// uri
 									'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
@@ -294,16 +316,37 @@
 					}	
 				}
 			}
-			return array(
-				'value_longtext1' => '',	// text
-				'value_longtext2' => '',	// uri
-				'value_decimal1' => null	// id
-			);
+			if (!isset(LCSHAttributeValue::$s_term_cache[$ps_value])) {
+				LCSHAttributeValue::$s_term_cache[$ps_value] = array(
+					'value_longtext1' => '',	// text
+					'value_longtext2' => '',	// uri
+					'value_decimal1' => null	// id
+				);
+			}
+			
+			if(sizeof(LCSHAttributeValue::$s_term_cache > LCSHAttributeValue::$s_term_cache_max_size)) {
+				LCSHAttributeValue::$s_term_cache = array($ps_value => LCSHAttributeValue::$s_term_cache[$ps_value]);
+			}
+			return LCSHAttributeValue::$s_term_cache[$ps_value];
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 * Return HTML form element for editing.
+ 		 *
+ 		 * @param array $pa_element_info An array of information about the metadata element being edited
+ 		 * @param array $pa_options array Options include:
+ 		 *			forSearch = settings and options regarding visual text editor are ignored [Default=false]
+ 		 *			class = the CSS class to apply to all visible form elements [Default=lookupBg]
+ 		 *			width = the width of the form element [Default=field width defined in metadata element definition]
+ 		 *			height = the height of the form element [Default=field height defined in metadata element definition]
+ 		 *			request = the RequestHTTP object for the current request; required for lookups to work [Default is null]
+ 		 *
+ 		 * @return string
+ 		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
+ 			$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : '');
  			if (isset($pa_options['forSearch']) && $pa_options['forSearch']) {
- 				return caHTMLTextInput("{fieldNamePrefix}".$pa_element_info['element_id']."_{n}", array('id' => "{fieldNamePrefix}".$pa_element_info['element_id']."_{n}", 'value' => $pa_options['value']), $pa_options);
+ 				return caHTMLTextInput("{fieldNamePrefix}".$pa_element_info['element_id']."_{n}", array('id' => "{fieldNamePrefix}".$pa_element_info['element_id']."_{n}", 'value' => $pa_options['value'], 'class' => $vs_class), $pa_options);
  			}
  			$o_config = Configuration::load();
  			
@@ -318,7 +361,7 @@
 						'value' => '{{'.$pa_element_info['element_id'].'}}', 
 						'maxlength' => 512,
 						'id' => "lcsh_".$pa_element_info['element_id']."_autocomplete{n}",
-						'class' => 'lookupBg'
+						'class' => $vs_class ? $vs_class : 'lookupBg'
 					)
 				).
 				caHTMLHiddenInput(

@@ -34,6 +34,8 @@ $vs_content_type = $t_exporter->getContentType();
 
 $va_errors = $this->getVar('errors');
 
+$vs_filename = ($this->getVar('file_name') ? $this->getVar('file_name') : $vn_id);
+
 if($va_errors && is_array($va_errors)){
 	print "<div class='notification-error-box'><h2 style='margin-left:25px;'>"._t("Export mapping has errors")."</h2>";
 	print "<ul>";
@@ -46,9 +48,8 @@ if($va_errors && is_array($va_errors)){
 } else {
 
 	header('Content-Type: '.$vs_content_type.'; charset=UTF-8');
-	header('Content-Disposition: attachment; filename="'.$vn_id.".".$vs_ext.'"');
+	header('Content-Disposition: attachment; filename="'.$vs_filename.".".$vs_ext.'"');
 	header('Content-Transfer-Encoding: binary');
 	print $vs_export;
 	exit();
-
 }

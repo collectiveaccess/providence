@@ -76,12 +76,12 @@
 	if ($vb_media_is_set) {
 ?>						
 						<div style="float:right;">
-							<?php print urldecode(caNavButton($this->request, __CA_NAV_BUTTON_DOWNLOAD__, _t('Download'), '', 'editor/objects', 'ObjectEditor', 'DownloadRepresentation', array('version' => 'original', 'representation_id' => $t_subject->getPrimaryKey(), 'download' => 1), array('id' => "{$vs_id_prefix}download"), array('no_background' => true, 'dont_show_content' => true))); ?>
+							<?php print urldecode(caNavButton($this->request, __CA_NAV_BUTTON_DOWNLOAD__, _t('Download'), '', '*', '*', 'DownloadMedia', array('version' => 'original', 'representation_id' => $t_subject->getPrimaryKey(), 'download' => 1), array('id' => "{$vs_id_prefix}download"), array('no_background' => true, 'dont_show_content' => true))); ?>
 						</div>
 <?php
 	}
 ?>
-						<a href="#" onclick="caMediaPanel.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetRepresentationEditor', array('representation_id' => $t_subject->getPrimaryKey()))); ?>'); return false;"><?php print $t_subject->getMediaTag('media', 'preview170'); ?></a>
+						<a href="#" onclick="caMediaPanel.showPanel('<?php print urldecode(caNavUrl($this->request, '*', '*', 'GetRepresentationEditor', array('representation_id' => $t_subject->getPrimaryKey()))); ?>'); return false;"><?php print $t_subject->getMediaTag('media', 'preview170'); ?></a>
 					</div>
 				</td>
 			</tr>

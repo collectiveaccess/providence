@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  
-	JavascriptLoadManager::register("panel");
+	AssetLoadManager::register("panel");
 	
 	$vb_queue_enabled = (bool)$this->request->config->get('queue_enabled');
  	$va_last_settings = $this->getVar('batch_mediaimport_last_settings');

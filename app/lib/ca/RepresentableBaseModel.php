@@ -48,6 +48,10 @@
 		 *		return_primary_only - If true then only the primary representation will be returned
 		 *		return_with_access - Set to an array of access values to filter representation through; only representations with an access value in the list will be returned
 		 *		checkAccess - synonym for return_with_access
+		 *		start = 
+		 *		limit = 
+		 *		restrict_to_types = An array of type_ids or type codes to restrict count to specified types of representations to
+		 *		restrict_to_relationship_types = An array of relationship type_ids or relationship codes to restrict count to
 		 *		.. and options supported by getMediaTag() .. [they are passed through]
 		 *	
 		 * @return array An array of information about the linked representations
@@ -56,6 +60,10 @@
 			global $AUTH_CURRENT_USER_ID;
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
 			if (!is_array($pa_options)) { $pa_options = array(); }
+			
+			$pn_start = caGetOption('start', $pa_options, 0);
+			$pn_limit = caGetOption('limit', $pa_options, null);
+		
 		
 			if (caGetBundleAccessLevel($this->tableName(), 'ca_object_representations') == __CA_BUNDLE_ACCESS_NONE__) {
 				return null;
@@ -80,8 +88,18 @@
 
 			$o_db = $this->getDb();
 			
-			if (!($vs_linking_table = $this->_getRepresentationRelationshipTableName())) { return null; }
+			if (!($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($this->tableName()))) { return null; }
 			$vs_pk = $this->primaryKey();
+			$vs_limit_sql = '';
+			if ($pn_limit > 0) {
+				if ($pn_start > 0) {
+					$vs_limit_sql = "LIMIT {$pn_start}, {$pn_limit}";
+				} else {
+					$vs_limit_sql = "LIMIT {$pn_limit}";
+				}
+			}
+			
+			$va_type_restriction_filters = $this->_getRestrictionSQL($vs_linking_table, (int)$vn_id, $pa_options);
 		
 			$qr_reps = $o_db->query("
 				SELECT caor.representation_id, caor.media, caoor.is_primary, caor.access, caor.status, l.name, caor.locale_id, caor.media_metadata, caor.type_id, caor.idno, caor.idno_sort, caor.md5, caor.mimetype, caor.original_filename, caoor.rank
@@ -92,18 +110,26 @@
 					caoor.{$vs_pk} = ? AND deleted = 0
 					{$vs_is_primary_sql}
 					{$vs_access_sql}
+					{$va_type_restriction_filters['sql']}
 				ORDER BY
 					caoor.rank, caoor.is_primary DESC
-			", (int)$vn_id);
+				{$vs_limit_sql}
+			", $va_type_restriction_filters['params']);
 			
 			$va_reps = array();
 			$t_rep = new ca_object_representations();
+			
+			if($AUTH_CURRENT_USER_ID) {
+				$va_can_read = caCanRead($AUTH_CURRENT_USER_ID, 'ca_object_representations', $qr_reps->getAllFieldValues('representation_id'), null, array('returnAsArray' => true));
+			} else {
+				$va_can_read = $qr_reps->getAllFieldValues('representation_id');
+			}
+			
+			$qr_reps->seek(0);
 			while($qr_reps->nextRow()) {
 				$vn_rep_id = $qr_reps->get('representation_id');
-
-				if($AUTH_CURRENT_USER_ID) { // this might not be set if this method is accessed via CLI script
-					if(!caCanRead($AUTH_CURRENT_USER_ID, 'ca_object_representations', $vn_rep_id)){ continue; }	
-				}
+				
+				if (!in_array($vn_rep_id, $va_can_read)) { continue; }
 			
 				$va_tmp = $qr_reps->getRow();
 				$va_tmp['tags'] = array();
@@ -151,7 +177,40 @@
 			foreach($va_labels as $vn_rep_id => $vs_label) {
 				$va_reps[$vn_rep_id]['label'] = $vs_label;
 			}
+			
 			return $va_reps;
+		}
+		# ------------------------------------------------------
+		/**
+		 * General SQL query WHERE clauses and parameters to restrict queries to specific representation and/or relationship types
+		 */
+		private function _getRestrictionSQL($ps_linking_table, $pn_id, $pa_options) {
+			$va_restrict_to_types = caGetOption('restrictToTypes', $pa_options, caGetOption('restrict_to_types', $pa_options, null));
+			$va_restrict_to_relationship_types = caGetOption('restrictToRelationshipTypes', $pa_options, caGetOption('restrict_to_relationship_types', $pa_options, null));
+		
+			$vs_filter_sql = '';
+			$pa_params = array($pn_id);
+			if ($va_restrict_to_relationship_types || $va_restrict_to_types) {
+				if ($va_restrict_to_relationship_types && ($t_rel = $this->getAppDatamodel()->getInstanceByTableName($ps_linking_table, true)) && ($t_rel->hasField('type_id'))) {
+					$va_restrict_to_relationship_types = caMakeRelationshipTypeIDList($ps_linking_table, $va_restrict_to_relationship_types);
+					
+					if (is_array($va_restrict_to_relationship_types) && sizeof($va_restrict_to_relationship_types)) {
+						$vs_filter_sql .= " AND (caoor.type_id IN (?))";
+						$pa_params[] = $va_restrict_to_relationship_types; 
+					}
+				}
+				
+				
+				if ($va_restrict_to_types) {
+					$va_restrict_to_types = caMakeTypeIDList('ca_object_representations', $va_restrict_to_types);
+					if (is_array($va_restrict_to_types) && sizeof($va_restrict_to_types)) {
+						$vs_filter_sql .= " AND (caor.type_id IN (?))";
+						$pa_params[] = $va_restrict_to_types; 
+					}
+				}
+			}
+			
+			return array('sql' => $vs_filter_sql, 'params' => $pa_params);
 		}
 		# ------------------------------------------------------
 		/**
@@ -217,6 +276,8 @@
 		 *		return_primary_only - If true then only the primary representation will be returned
 		 *		return_with_access - Set to an array of access values to filter representation through; only representations with an access value in the list will be returned
 		 *		checkAccess - synonym for return_with_access
+		 *		restrict_to_types = An array of type_ids or type codes to restrict count to specified types of representations to
+		 *		restrict_to_relationship_types = An array of relationship type_ids or relationship codes to restrict count to
 		 *
 		 * @return array A list of representation_ids
 		 */
@@ -244,8 +305,11 @@
 				$vs_access_sql = '';
 			}
 			
-			if (!($vs_linking_table = $this->_getRepresentationRelationshipTableName())) { return null; }
+			if (!($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($this->tableName()))) { return null; }
 			$vs_pk = $this->primaryKey();
+			
+			$va_type_restriction_filters = $this->_getRestrictionSQL($vs_linking_table, (int)$vn_id, $pa_options);
+		
 		
 			$o_db = $this->getDb();
 			$qr_reps = $o_db->query("
@@ -256,7 +320,8 @@
 					caoor.{$vs_pk} = ? AND caor.deleted = 0
 					{$vs_is_primary_sql}
 					{$vs_access_sql}
-			", (int)$vn_id);
+					{$va_type_restriction_filters['sql']}
+			", $va_type_restriction_filters['params']);
 		
 			$va_rep_ids = array();
 			while($qr_reps->nextRow()) {
@@ -269,6 +334,8 @@
 		 * Returns number of representations attached to the currently loaded row
 		 *
 		 * @param array $pa_options Optional array of options. Supported options include:
+		 *		restrict_to_types = An array of type_ids or type codes to restrict count to specified types of representations to
+		 *		restrict_to_relationship_types = An array of relationship type_ids or relationship codes to restrict count to
 		 *		return_with_type - A type to restrict the count to. Can be either an integer type_id or item_code string
 		 *		return_with_access - An array of access values to restrict counts to
 		 *		checkAccess - synonym for return_with_access
@@ -299,10 +366,12 @@
 			} else {
 				$vs_access_sql = '';
 			}
-			
-			if (!($vs_linking_table = $this->_getRepresentationRelationshipTableName())) { return null; }
+	
+			if (!($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($this->tableName()))) { return null; }
 			$vs_pk = $this->primaryKey();
 		
+			$va_type_restriction_filters = $this->_getRestrictionSQL($vs_linking_table, (int)$vn_id, $pa_options);
+			
 			$o_db = $this->getDb();
 		
 			$qr_reps = $o_db->query("
@@ -314,7 +383,8 @@
 					caoor.{$vs_pk} = ? AND caor.deleted = 0
 					{$vs_type_sql}
 					{$vs_access_sql}
-			", (int)$vn_id);
+					{$va_type_restriction_filters['sql']}
+			", $va_type_restriction_filters['params']);
 
 			$qr_reps->nextRow();
 		
@@ -734,6 +804,7 @@
 			if (is_array($va_path) && sizeof($va_path) == 3) {
 				$vs_rel_table = $va_path[1];
 				if ($t_rel = $this->getAppDatamodel()->getInstanceByTableName($vs_rel_table)) {
+					if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
 					if ($t_rel->load(array($this->primaryKey() => $this->getPrimaryKey(), 'representation_id' => $pn_representation_id))) {
 						$t_rel->setMode(ACCESS_WRITE);
 						$t_rel->delete();
@@ -946,7 +1017,7 @@
 			$o_db = $this->getDb();
 			
 			
-			if (!($vs_linking_table = $this->_getRepresentationRelationshipTableName())) { return null; }
+			if (!($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($this->tableName()))) { return null; }
 			$vs_pk = $this->primaryKey();
 		
 			$qr_res = $o_db->query("
@@ -993,7 +1064,7 @@
 			}
 			$o_db = $this->getDb();
 			
-			if (!($vs_linking_table = $this->_getRepresentationRelationshipTableName())) { return null; }
+			if (!($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($this->tableName()))) { return null; }
 			$vs_pk = $this->primaryKey();
 		
 			$qr_res = $o_db->query("
@@ -1015,9 +1086,9 @@
 		/**
 		 *
 		 */
-		private function _getRepresentationRelationshipTableName() {
+		static public function getRepresentationRelationshipTableName($ps_table_name) {
 			$o_dm = Datamodel::load();
-			$va_path = $o_dm->getPath($this->tableName(), 'ca_object_representations');
+			$va_path = $o_dm->getPath($ps_table_name, 'ca_object_representations');
 			if (!is_array($va_path) || (sizeof($va_path) != 3)) { return null; }
 			$va_path = array_keys($va_path);
 			return $va_path[1];
@@ -1035,4 +1106,3 @@
 		}
 		# ------------------------------------------------------
 	}
-?>

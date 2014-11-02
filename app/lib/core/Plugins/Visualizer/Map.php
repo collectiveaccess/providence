@@ -151,9 +151,8 @@ class WLPlugVisualizerMap Extends BaseVisualizerPlugIn Implements IWLPlugVisuali
 	 */
 	public function registerDependencies() {
 		$va_packages = array("openlayers", "maps");
-		foreach($va_packages as $vs_package) { JavascriptLoadManager::register($vs_package); }
+		foreach($va_packages as $vs_package) { AssetLoadManager::register($vs_package); }
 		return $va_packages;
 	}
 	# --------------------------------------------------------------------------------
 }
-?>

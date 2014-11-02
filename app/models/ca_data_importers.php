@@ -50,6 +50,9 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
 require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__.'/core/Db/Transaction.php');
 
+//define("__CA_DONT_DO_SEARCH_INDEXING__", true);
+
+
 BaseModel::$s_ca_models_definitions['ca_data_importers'] = array(
  	'NAME_SINGULAR' 	=> _t('data importer'),
  	'NAME_PLURAL' 		=> _t('data importers'),
@@ -850,6 +853,24 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						$va_replacement_values = preg_split("![\n\r]{1}!", (string)$o_replacement_values->getValue());
 						array_walk($va_replacement_values, function(&$v) { $v = trim($v); });
 					}
+						
+					// Strip excess space from keys
+					if (is_array($va_options)) {
+						foreach($va_options as $vs_k => $vm_v) {
+							if ($vs_k !== trim($vs_k)) {
+								unset($va_options[$vs_k]);
+								$va_options[trim($vs_k)] = $vm_v;
+							}
+						}
+					}
+					if (is_array($va_refinery_options)) {
+						foreach($va_refinery_options as $vs_k => $vm_v) {
+							if ($vs_k !== trim($vs_k)) {
+								unset($va_refinery_options[$vs_k]);
+								$va_refinery_options[trim($vs_k)] = $vm_v;
+							}
+						}
+					}
 					
 					$va_mapping[$vs_group][$vs_source][] = array(
 						'destination' => $vs_destination,
@@ -1080,11 +1101,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
-		$r_ncurses_win = (isset($pa_options['window']) && $pa_options['window']) ? $pa_options['window'] : null;
 		$o_log = (isset($pa_options['log']) && $pa_options['log']) ? $pa_options['log'] : null;
-		$r_ncurses_win = (isset($pa_options['window']) && $pa_options['window']) ? $pa_options['window'] : null;
 		
-		$vb_dont_output = (!isset($pa_options['dontOutput']) || !$pa_options['dontOutput'] || $r_ncurses_win) ?  true : false;
+		$vb_dont_output = (!isset($pa_options['dontOutput']) || !$pa_options['dontOutput']) ?  true : false;
 		
 		$vs_display_message = "(".date("Y-m-d H:i:s").") {$ps_message}";
 		array_unshift(ca_data_importers::$s_import_error_list, preg_replace("![\r\n\t]+!", " ", $vs_display_message));
@@ -1094,22 +1113,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		//
 		if (!$vb_dont_output) { print "{$ps_message}\n"; }
 		
-		
-		// 
-		// Output to screen via NCurses
-		//
-		$vn_max_x = $vn_max_y = null;
-		if ($r_ncurses_win) {
-			ncurses_getmaxyx($r_ncurses_win, $vn_max_y, $vn_max_x);
-			
-			foreach(ca_data_importers::$s_import_error_list as $vn_i => $vs_message) {
-				if ($vn_i >= ($vn_max_y - 1)) { break; }
-				ncurses_mvwaddstr($r_ncurses_win, $vn_i+1, 2, mb_substr($vs_message, 0, $vn_max_x - 4));
-			}
-			
-			ncurses_refresh($vn_i);
-			ncurses_wrefresh($r_ncurses_win);
-		}
 		
 		$po_request = (isset($pa_options['request']) && $pa_options['request']) ? $pa_options['request'] : null;
 		if ($po_request && isset($pa_options['reportCallback']) && ($ps_callback = $pa_options['reportCallback'])) {
@@ -1157,7 +1160,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 *		description = Text describing purpose of import to be logged.
 	 *		showCLIProgressBar = Show command-line progress bar. Default is false.
 	 *		format = Format of data being imported. MANDATORY
-	 *		useNcurses = Use ncurses library to format output
 	 *		logDirectory = path to directory where logs should be written
 	 *		logLevel = KLogger constant for minimum log level to record. Default is KLogger::INFO. Constants are, in descending order of shrillness:
 	 *			KLogger::EMERG = Emergency messages (system is unusable)
@@ -1226,47 +1228,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		$o_progress = caGetOption('progressBar', $pa_options, new ProgressBar('WebUI'));
 		if ($vb_show_cli_progress_bar) { $o_progress->setMode('CLI'); $o_progress->set('outputToTerminal', true); }
-
-		if ($vb_use_ncurses = (isset($pa_options['useNcurses']) && ($pa_options['useNcurses'])) ? true : false) {
-			$vb_use_ncurses = caCLIUseNcurses();
-		}
-		$vn_error_window_height = null;
-
-		$vn_max_x = $vn_max_y = null;
-		if($vb_use_ncurses) {
-			ncurses_init();
-			$r_screen = ncurses_newwin( 0, 0, 0, 0); 
-			ncurses_border(0,0, 0,0, 0,0, 0,0);
-			
-			ncurses_getmaxyx($r_screen, $vn_max_y, $vn_max_x);
-			
-			$vn_error_window_height = $vn_max_y - 8;
-			$r_errors = ncurses_newwin($vn_error_window_height, $vn_max_x - 4, 4, 2);
-			ncurses_wborder($r_errors, 0,0, 0,0, 0,0, 0,0);
-			
-			ncurses_wattron($r_errors, NCURSES_A_REVERSE);
-			ncurses_mvwaddstr($r_errors, 0, 1, _t(" Recent errors "));
-			ncurses_wattroff($r_errors, NCURSES_A_REVERSE);
-			
-			$r_progress = ncurses_newwin(3, $vn_max_x - 4, $vn_max_y-4, 2);
-			ncurses_wborder($r_progress, 0,0, 0,0, 0,0, 0,0);
-			
-			ncurses_wattron($r_progress, NCURSES_A_REVERSE);
-			ncurses_mvwaddstr($r_progress, 0, 1, _t(" Progress "));
-			ncurses_wattroff($r_progress, NCURSES_A_REVERSE);
-			
-			$r_status = ncurses_newwin(3, $vn_max_x - 4, 1, 2);
-			ncurses_wborder($r_status, 0,0, 0,0, 0,0, 0,0);
-			
-			ncurses_wattron($r_status, NCURSES_A_REVERSE);
-			ncurses_mvwaddstr($r_status, 0, 1, _t(" Import status "));
-			ncurses_wattroff($r_status, NCURSES_A_REVERSE);
-			
-			ncurses_refresh(0);
-			ncurses_wrefresh($r_progress);
-			ncurses_wrefresh($r_errors);
-			ncurses_wrefresh($r_status);
-		}
 		
 		$o_log->logInfo(_t('Started import of %1 using mapping %2', $ps_source, $t_mapping->get("importer_code")));		
 		
@@ -1291,13 +1252,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$ps_format = (isset($pa_options['format']) && $pa_options['format']) ? $pa_options['format'] : null;	
 		if (!($o_reader = $t_mapping->getDataReader($ps_source, $ps_format))) {
 			ca_data_importers::logImportError(_t("Could not open source %1 (format=%2)", $ps_source, $ps_format), $va_log_import_error_opts);
-			if($vb_use_ncurses) { ncurses_end(); }
 			if ($o_trans) { $o_trans->rollback(); }
 			return false;
 		}
 		if (!$o_reader->read($ps_source, array('basePath' => $t_mapping->getSetting('basePath')))) {
 			ca_data_importers::logImportError(_t("Could not read source %1 (format=%2)", $ps_source, $ps_format), $va_log_import_error_opts);
-			if($vb_use_ncurses) { ncurses_end(); }
 			if ($o_trans) { $o_trans->rollback(); }
 			return false;
 		}
@@ -1305,6 +1264,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$o_log->logDebug(_t('Finished reading input source at %1 seconds', $t->getTime(4)));
 		
 		$vn_num_items = $o_reader->numRows();
+		$o_log->logDebug(_t('Found %1 rows in input source', $vn_num_items));
 
 		$o_progress->setTotal($vn_num_items);
 		$o_progress->start(_t('Importing from %1', $ps_source), array('window' => $r_progress));
@@ -1317,7 +1277,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$vn_table_num = $t_mapping->get('table_num');
 		if (!($t_subject = $o_dm->getInstanceByTableNum($vn_table_num))) {
 			// invalid table
-			if($vb_use_ncurses) { ncurses_end(); }
+			$o_log->logError(_t('Mapping uses invalid table %1 as target', $vn_table_num));
 			if ($o_trans) { $o_trans->rollback(); }
 			return false;
 		}
@@ -1453,6 +1413,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			
 		
 			if ($vn_row < $vn_num_initial_rows_to_skip) {	// skip over initial header rows
+				$o_log->logDebug(_t('Skipped initial row %1 of %2', $vn_row, $vn_num_initial_rows_to_skip));
 				$vn_row++;
 				continue;
 			}
@@ -1465,20 +1426,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$t_subject = $o_dm->getInstanceByTableNum($vn_table_num);
 			if ($o_trans) { $t_subject->setTransaction($o_trans); }
 			$t_subject->setMode(ACCESS_WRITE);
-			
-			// Update status display
-			if($vb_use_ncurses && ca_data_importers::$s_num_records_processed) {
-				ncurses_mvwaddstr($r_status, 1, 2, 
-					_t("Items processed/skipped: %1/%2", ca_data_importers::$s_num_records_processed, ca_data_importers::$s_num_records_skipped).str_repeat(" ", 5).
-					_t("Errors: %1 (%2)", ca_data_importers::$s_num_import_errors, sprintf("%3.1f", (ca_data_importers::$s_num_import_errors/ ca_data_importers::$s_num_records_processed) * 100)."%").str_repeat(" ", 6).
-					_t("Mapping: %1", $ps_mapping).str_repeat(" ", 5).
-					_t("Source: %1", $ps_source).str_repeat(" ", 5).
-					date("Y-m-d H:i:s").str_repeat(" ", 5)
-				);
-				ncurses_refresh(0);
-				ncurses_wrefresh($r_status);
-			}
-			
 			
 			//
 			// Get data for current row
@@ -1713,9 +1660,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				foreach($va_items as $vn_item_id => $va_item) {
 					if ($vb_use_as_single_value = caGetOption('useAsSingleValue', $va_item['settings'], false)) {
 						// Force repeating values to be imported as a single value
-						$va_vals = array(ca_data_importers::getValueFromSource($va_item, $o_reader, array('delimiter' => caGetOption('delimiter', $va_item['settings'], ''), 'returnAsArray' => false)));
+						$va_vals = array(ca_data_importers::getValueFromSource($va_item, $o_reader, array('delimiter' => caGetOption('delimiter', $va_item['settings'], ''), 'returnAsArray' => false, 'lookahead' => caGetOption('lookahead', $va_item['settings'], 0))));
 					} else {
-						$va_vals = ca_data_importers::getValueFromSource($va_item, $o_reader, array('returnAsArray' => true, 'environment' => $va_environment));
+						$va_vals = ca_data_importers::getValueFromSource($va_item, $o_reader, array('returnAsArray' => true, 'environment' => $va_environment, 'lookahead' => caGetOption('lookahead', $va_item['settings'], 0)));
 					}
 					
 					if (!sizeof($va_vals)) { $va_vals = array(0 => null); }	// consider missing values equivalent to blanks
@@ -1998,7 +1945,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//print_r($va_content_tree);
 			//die("END\n\n");
 			//continue;
-			$opa_app_plugin_manager->hookDataImportContentTree(array('mapping' => $t_mapping, 'content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'transaction' => &$o_trans, 'log' => &$o_log, 'reader' => $o_reader, 'environment' => $va_environment,'importEvent' => $o_event, 'importEventSource' => $vn_row));
+			if (!($opa_app_plugin_manager->hookDataImportContentTree(array('mapping' => $t_mapping, 'content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'type_id' => &$vs_type, 'transaction' => &$o_trans, 'log' => &$o_log, 'reader' => $o_reader, 'environment' => $va_environment,'importEvent' => $o_event, 'importEventSource' => $vn_row)))) {
+				continue;
+			}
 			
 			//print_r($va_content_tree);
 			//die("done\n");
@@ -2043,7 +1992,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 					if ($vs_import_error_policy == 'stop') {
 						$o_log->logAlert(_t('Import stopped due to import error policy'));
-						if($vb_use_ncurses) { ncurses_end(); }
 						
 						$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
 						
@@ -2068,7 +2016,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 					if ($vs_import_error_policy == 'stop') {
 						$o_log->logAlert(_t('Import stopped due to import error policy'));
-						if($vb_use_ncurses) { ncurses_end(); }
 						
 						$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
 						
@@ -2085,11 +2032,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 						if ($vs_import_error_policy == 'stop') {
 							$o_log->logAlert(_t('Import stopped due to import error policy'));
-							if($vb_use_ncurses) { ncurses_end(); }
-							if ($o_trans) { $o_trans->rollback(); }
 							
 							$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
 						
+							if ($o_trans) { $o_trans->rollback(); }
 							return false;
 						}
 					}
@@ -2111,8 +2057,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 							if ($vs_import_error_policy == 'stop') {
 								$o_log->logAlert(_t('Import stopped due to import error policy'));
-								if($vb_use_ncurses) { ncurses_end(); }
-						
+								
 								$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
 						
 								if ($o_trans) { $o_trans->rollback(); }
@@ -2157,7 +2102,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											
 											if ($vs_import_error_policy == 'stop') {
 												$o_log->logAlert(_t('Import stopped due to import error policy %1', $vs_import_error_policy));
-												if($vb_use_ncurses) { ncurses_end(); }
 												
 												$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
 						
@@ -2166,7 +2110,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											}
 											if ($vs_item_error_policy == 'stop') {
 												$o_log->logAlert(_t('Import stopped due to mapping error policy'));
-												if($vb_use_ncurses) { ncurses_end(); }
 												if ($o_trans) { $o_trans->rollback(); }
 												return false;
 											}
@@ -2183,7 +2126,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 											if ($vs_item_error_policy == 'stop') {
 												$o_log->logAlert(_t('Import stopped due to mapping error policy'));
-												if($vb_use_ncurses) { ncurses_end(); }
 												
 												$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
 												
@@ -2201,8 +2143,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 												if ($vs_item_error_policy == 'stop') {
 													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
-													if($vb_use_ncurses) { ncurses_end(); }
-												
+													
 													$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
 												
 													if ($o_trans) { $o_trans->rollback(); }
@@ -2237,22 +2178,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 											if ($vs_item_error_policy == 'stop') {
 												$o_log->logAlert(_t('Import stopped due to mapping error policy'));
-												if($vb_use_ncurses) { ncurses_end(); }
-												
-												$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
-												
-												if ($o_trans) { $o_trans->rollback(); }
-												return false;
-											}
-										}
-										
-										$t_subject->update();
-
-										if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Invalid %2; values were %3: ", $vs_idno, $vs_element, ca_data_importers::formatValuesForLog($va_element_content)), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
-											if ($vs_item_error_policy == 'stop') {
-												$o_log->logAlert(_t('Import stopped due to mapping error policy'));
-												if($vb_use_ncurses) { ncurses_end(); }
 												
 												$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
 												
@@ -2265,6 +2190,21 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								}
 						}
 					} 
+					
+					$t_subject->update();
+
+					if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Invalid %2; values were %3: ", $vs_idno, $vs_element, ca_data_importers::formatValuesForLog($va_element_content)), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+						ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
+						if ($vs_item_error_policy == 'stop') {
+							$o_log->logAlert(_t('Import stopped due to mapping error policy'));
+							if($vb_use_ncurses) { ncurses_end(); }
+							
+							$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
+							
+							if ($o_trans) { $o_trans->rollback(); }
+							return false;
+						}
+					}
 				} else {
 					// related
 					$vs_table_name = preg_replace('!^related\.!', '', $vs_table_name);
@@ -2295,7 +2235,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 											if ($vs_item_error_policy == 'stop') {
 												$o_log->logAlert(_t('Import stopped due to mapping error policy'));
-												if($vb_use_ncurses) { ncurses_end(); }
+												
 												if ($o_trans) { $o_trans->rollback(); }
 												return false;
 											}
@@ -2317,7 +2257,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 											if ($vs_item_error_policy == 'stop') {
 												$o_log->logAlert(_t('Import stopped due to mapping error policy'));
-												if($vb_use_ncurses) { ncurses_end(); }
+												
 												if ($o_trans) { $o_trans->rollback(); }
 												return false;
 											}
@@ -2334,7 +2274,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 											if ($vs_item_error_policy == 'stop') {
 												$o_log->logAlert(_t('Import stopped due to mapping error policy'));
-												if($vb_use_ncurses) { ncurses_end(); }
+												
 												if ($o_trans) { $o_trans->rollback(); }
 												return false;
 											}
@@ -2350,7 +2290,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 											if ($vs_item_error_policy == 'stop') {
 												$o_log->logAlert(_t('Import stopped due to mapping error policy'));
-												if($vb_use_ncurses) { ncurses_end(); }
+											
 												if ($o_trans) { $o_trans->rollback(); }
 												return false;
 											}
@@ -2367,7 +2307,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 											if ($vs_item_error_policy == 'stop') {
 												$o_log->logAlert(_t('Import stopped due to mapping error policy'));
-												if($vb_use_ncurses) { ncurses_end(); }
+												
 												if ($o_trans) { $o_trans->rollback(); }
 												return false;
 											}
@@ -2383,7 +2323,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 											if ($vs_item_error_policy == 'stop') {
 												$o_log->logAlert(_t('Import stopped due to mapping error policy'));
-												if($vb_use_ncurses) { ncurses_end(); }
+												
 												if ($o_trans) { $o_trans->rollback(); }
 												return false;
 											}
@@ -2399,7 +2339,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 											if ($vs_item_error_policy == 'stop') {
 												$o_log->logAlert(_t('Import stopped due to mapping error policy'));
-												if($vb_use_ncurses) { ncurses_end(); }
+												
 												if ($o_trans) { $o_trans->rollback(); }
 												return false;
 											}
@@ -2417,7 +2357,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 											if ($vs_item_error_policy == 'stop') {
 												$o_log->logAlert(_t('Import stopped due to mapping error policy'));
-												if($vb_use_ncurses) { ncurses_end(); }
+												
 												if ($o_trans) { $o_trans->rollback(); }
 												return false;
 											}
@@ -2432,7 +2372,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 											if ($vs_item_error_policy == 'stop') {
 												$o_log->logAlert(_t('Import stopped due to mapping error policy'));
-												if($vb_use_ncurses) { ncurses_end(); }
+												
 												if ($o_trans) { $o_trans->rollback(); }
 												return false;
 											}
@@ -2457,7 +2397,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 // 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 // 											if ($vs_item_error_policy == 'stop') {
 // 												$o_log->logAlert(_t('Import stopped due to mapping error policy'));
-// 												if($vb_use_ncurses) { ncurses_end(); }
+// 												
 // 												if ($o_trans) { $o_trans->rollback(); }
 // 												return false;
 // 											}
@@ -2473,7 +2413,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 											if ($vs_item_error_policy == 'stop') {
 												$o_log->logAlert(_t('Import stopped due to mapping error policy'));
-												if($vb_use_ncurses) { ncurses_end(); }
+												
 												if ($o_trans) { $o_trans->rollback(); }
 												return false;
 											}
@@ -2489,7 +2429,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 											if ($vs_item_error_policy == 'stop') {
 												$o_log->logAlert(_t('Import stopped due to mapping error policy'));
-												if($vb_use_ncurses) { ncurses_end(); }
+												
 												if ($o_trans) { $o_trans->rollback(); }
 												return false;
 											}
@@ -2531,7 +2471,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 // 				ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 // 				if ($vs_item_error_policy == 'stop') {
 // 					$o_log->logAlert(_t('Import stopped due to mapping error policy'));
-// 					if($vb_use_ncurses) { ncurses_end(); }
+// 					
 // 					
 // 					$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
 // 					
@@ -2551,13 +2491,16 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 					if ($vs_import_error_policy == 'stop') {
 						$o_log->logAlert(_t('Import stopped due to import error policy'));
-						if($vb_use_ncurses) { ncurses_end(); }
+						
 						$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
 						if ($o_trans) { $o_trans->rollback(); }
 						return false;
 					}
 				}
 			}
+			
+			$opa_app_plugin_manager->hookDataPostImport(array('subject' => $t_subject, 'mapping' => $t_mapping, 'content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'transaction' => &$o_trans, 'log' => &$o_log, 'reader' => $o_reader, 'environment' => $va_environment,'importEvent' => $o_event, 'importEventSource' => $vn_row));
+			
 			
 			$o_log->logInfo(_t('[%1] Imported %2 as %3 ', $vs_idno, $vs_preferred_label_for_log, $vs_subject_table_name));
 			$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_SUCCESS__, _t('Imported %1', $vs_idno));
@@ -2581,8 +2524,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			);
 			$ps_callback($po_request, $va_general, ca_data_importers::$s_import_error_list, true);
 		}
-		
-		if($vb_use_ncurses) { ncurses_end(); }
 		
 		if ($pb_dry_run) {
 			if ($o_trans) { $o_trans->rollback(); }
@@ -2629,11 +2570,17 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$pb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
 		$pa_environment = caGetOption('environment', $pa_options, array(), array('castTo' => 'array'));
 		$ps_delimiter = caGetOption('delimiter', $pa_options, ';');
+		$pn_lookahead = caGetOption('lookahead', $pa_options, 0);
+		
 		if (preg_match('!^_CONSTANT_:[^:]+:(.*)$!', $pa_item['source'], $va_matches)) {
 			$vm_value = $va_matches[1];
 		} elseif(isset($pa_environment[$pa_item['source']])) {
 			$vm_value = $pa_environment[$pa_item['source']];
 		} else {
+			$vn_cur_pos = $po_reader->currentRow();
+			if (($vn_seek_to = ($po_reader->currentRow() + $pn_lookahead)) >= 0) {
+				$po_reader->seek($vn_seek_to);
+			}
 			if ($po_reader->valuesCanRepeat()) {
 				$vm_value = $po_reader->get($pa_item['source'], array('returnAsArray' => true));
 				if (!is_array($vm_value)) { return $pb_return_as_array ? array() : null; }
@@ -2648,6 +2595,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			} else {
 				$vm_value = trim($po_reader->get($pa_item['source']));
 			}
+			$po_reader->seek($vn_cur_pos);
 		}
 		
 		$vm_value = ca_data_importers::replaceValue($vm_value, $pa_item);
@@ -2694,7 +2642,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	public function __destruct() {
-		//ncurses_end();
+	
 	}
 	# ------------------------------------------------------
 }

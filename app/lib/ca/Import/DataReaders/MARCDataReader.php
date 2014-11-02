@@ -204,6 +204,15 @@ class MARCDataReader extends BaseDataReader {
 	 * 
 	 * @return int
 	 */
+	public function currentRow() {
+		return $this->opn_current_row;
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @return int
+	 */
 	public function getInputType() {
 		return __CA_DATA_READER_INPUT_FILE__;
 	}

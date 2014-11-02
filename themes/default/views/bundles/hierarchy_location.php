@@ -26,8 +26,8 @@
  * ----------------------------------------------------------------------
  */
  
-	JavascriptLoadManager::register('hierBrowser');
-	JavascriptLoadManager::register('tabUI');
+	AssetLoadManager::register('hierBrowser');
+	AssetLoadManager::register('tabUI');
 	
 	$t_subject 			= $this->getVar('t_subject');
 	$vs_subject_label	= $t_subject->getLabelForDisplay();
@@ -266,35 +266,36 @@
 					</div><!-- end hierbrowser -->				
 <?php
 		if (($t_subject->tableName() == 'ca_storage_locations') && (bool)$t_subject->getAppConfig()->get('record_movement_information_when_moving_storage_location')) {
-			//
-			// Add movement form
-			//
+			if ($t_ui = ca_editor_uis::loadDefaultUI('ca_movements', $this->request, null, array('editorPref' => 'quickadd'))) {
+				//
+				// Add movement form
+				//
 ?>
 			<div id="<?php print $vs_id_prefix; ?>StorageLocationMovementForm" style="width: 98%; margin: 5px 0px 2px 6px;">
 				<h3><?php print _t('Movement details'); ?></h3>
 <?php
-			$t_ui = ca_editor_uis::loadDefaultUI('ca_movements', $this->request, null, array('editorPref' => 'quickadd'));
-			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, null, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
-				array(),
-				array()
-			);
+				$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, null, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
+					array(),
+					array()
+				);
 	
-			$t_movement = new ca_movements();
-			$va_form_elements = $t_movement->getBundleFormHTMLForScreen($va_nav['defaultScreen'], array(
-					'request' => $this->request, 
-					'formName' => $vs_id_prefix.'StorageLocationMovementForm',
-					'omit' => array('ca_storage_locations')
-			));
-			print caHTMLHiddenInput($vs_id_prefix.'_movement_screen', array('value' => $va_nav['defaultScreen']));
-			print caHTMLHiddenInput($vs_id_prefix.'_movement_form_name', array('value' => $vs_id_prefix.'StorageLocationMovementForm'));
+				$t_movement = new ca_movements();
+				$va_form_elements = $t_movement->getBundleFormHTMLForScreen($va_nav['defaultScreen'], array(
+						'request' => $this->request, 
+						'formName' => $vs_id_prefix.'StorageLocationMovementForm',
+						'omit' => array('ca_storage_locations')
+				));
+				print caHTMLHiddenInput($vs_id_prefix.'_movement_screen', array('value' => $va_nav['defaultScreen']));
+				print caHTMLHiddenInput($vs_id_prefix.'_movement_form_name', array('value' => $vs_id_prefix.'StorageLocationMovementForm'));
 			
-			print join("\n", $va_form_elements);
+				print join("\n", $va_form_elements);
 ?>
 			</div>
 			<script type="text/javascript">
 				jQuery("#<?php print $vs_id_prefix; ?>StorageLocationMovementForm textarea, #<?php print $vs_id_prefix; ?>StorageLocationMovementForm input").css("max-width", "600px");
 			</script>
 <?php
+			}
 		}
 ?>
 		</div>

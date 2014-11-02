@@ -135,6 +135,10 @@ class SearchResult extends BaseObject {
 		$this->errors = array();
 	}
 	# ------------------------------------------------------------------
+	public function getDb() {
+		return $this->opo_db;
+	}
+	# ------------------------------------------------------------------
 	public function tableNum() {
 		return $this->opn_table_num;
 	}
@@ -298,7 +302,7 @@ class SearchResult extends BaseObject {
 		if(isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_instance->hasField('access')) {
 			$vs_criteria_sql .= " AND ({$ps_tablename}.access IN (".join(",", $pa_options['checkAccess']) ."))";	
 		}
-		if(isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_instance->hasField('access')) {
+		if(isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $this->opo_subject_instance->hasField('access')) {
 			$vs_criteria_sql .= " AND ({$this->ops_table_name}.access IN (".join(",", $pa_options['checkAccess']) ."))";	
 		}
 	
@@ -853,10 +857,10 @@ class SearchResult extends BaseObject {
 								foreach($va_ids as $vn_id) {
 									// TODO: This is too slow
 									if($t_instance->load($vn_id)) {
-										$va_vals = $t_instance->get($vs_field_spec.".preferred_labels", array_merge($pa_options, array('returnAsArray' => true)));
-									
+										$va_vals = $t_instance->get($vs_field_spec, array_merge($pa_options, array('returnAsArray' => true)));
+										
 										// Add/replace hierarchy name
-										if (in_array($t_instance->getProperty('HIERARCHY_TYPE'), array(__CA_HIER_TYPE_MULTI_MONO__, __CA_HIER_TYPE_ADHOC_MONO__)) &&  $t_instance->getHierarchyName()) {
+										if (($t_instance->getProperty('HIERARCHY_TYPE') == __CA_HIER_TYPE_MULTI_MONO__) &&  $t_instance->getHierarchyName()) {
 											$vn_first_key = array_shift(array_keys($va_vals));
 											if ($vb_return_all_locales) {
 												$va_vals[$vn_first_key] = array(0 => array($t_instance->getHierarchyName()));
@@ -874,7 +878,6 @@ class SearchResult extends BaseObject {
 									}
 								}
 							}
-							
 							
 							if ($vb_return_as_array) {
 								return $va_vals;
@@ -923,7 +926,7 @@ class SearchResult extends BaseObject {
 // Return attribute values for primary table 
 //
 			
-			if ($t_element = $t_instance->_getElementInstance($va_path_components['field_name'])) {
+			if ($va_path_components['field_name'] && ($t_element = $t_instance->_getElementInstance($va_path_components['field_name']))) {
 				$vn_element_id = $t_element->getPrimaryKey();
 			} else {
 				$vn_element_id = null;
@@ -1290,9 +1293,9 @@ class SearchResult extends BaseObject {
 								foreach($va_values_by_locale as $vn_locale_id => $va_values) {
 									foreach($va_values as $vn_i => $va_value) {
 										$va_ids[] = $va_value[$vs_pk];
-										
-										if (caGetOption('GET_DIRECT_DATE', $pa_options, false) || caGetOption('getDirectDate', $pa_options, false)) {
-											if (caGetOption('sortable', $pa_options, false)) { 
+					
+										if(caGetOption('getDirectDate', $pa_options, false)) {
+											if(caGetOption('sortable', $pa_options, false)) {
 												$vs_prop = $va_value[$va_field_info['START']].'/'.$va_value[$va_field_info['END']];
 											} else {
 												$vs_prop = $va_value[$va_field_info['START']];
@@ -1306,7 +1309,6 @@ class SearchResult extends BaseObject {
 											}
 											$vs_prop = $this->opo_tep->getText($pa_options);
 										}
-										
 										if ($vb_return_all_locales) {
 											$va_return_values[$vn_row_id][$vn_locale_id][] = $vs_prop;
 										} else {
@@ -1529,8 +1531,8 @@ class SearchResult extends BaseObject {
 								}
 								break;
 							case FT_DATERANGE:
-								if (caGetOption('GET_DIRECT_DATE', $pa_options, false) || caGetOption('getDirectDate', $pa_options, false)) {
-									if ((isset($pa_options['sortable']) && $pa_options['sortable'])) {
+								if(caGetOption('getDirectDate', $pa_options, false)) {
+									if(caGetOption('sortable', $pa_options, false)) {
 										$va_value[$va_path_components['field_name']] = $va_value[$va_field_info['START']].'/'.$va_value[$va_field_info['END']];
 									} else {
 										$va_value[$va_path_components['field_name']] = $va_value[$va_field_info['START']];
@@ -1542,8 +1544,8 @@ class SearchResult extends BaseObject {
 								}
 								break;
 							case FT_HISTORIC_DATERANGE:
-								if (caGetOption('GET_DIRECT_DATE', $pa_options, false) || caGetOption('getDirectDate', $pa_options, false)) {
-									if (caGetOption('sortable', $pa_options, false)) { 
+								if(caGetOption('getDirectDate', $pa_options, false)) {
+									if(caGetOption('sortable', $pa_options, false)) {
 										$va_value[$va_path_components['field_name']] = $va_value[$va_field_info['START']].'/'.$va_value[$va_field_info['END']];
 									} else {
 										$va_value[$va_path_components['field_name']] = $va_value[$va_field_info['START']];
@@ -1555,6 +1557,7 @@ class SearchResult extends BaseObject {
 								}
 								break;
 							case FT_MEDIA:
+							
 								if(!$vs_version = $va_path_components['subfield_name']) {
 									$vs_version = "largeicon";
 								}

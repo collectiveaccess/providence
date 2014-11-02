@@ -132,6 +132,22 @@
 			'label' => _t('Can be used in display'),
 			'description' => _t('Check this option if this attribute value can be used for display in search results. (The default is to be.)')
 		),
+		'canMakePDF' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output?'),
+			'description' => _t('Check this option if this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
+		'canMakePDFForValue' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output for individual values?'),
+			'description' => _t('Check this option if individual values for this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
 		'displayTemplate' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -171,9 +187,10 @@
  		 *
  		 * @param array Optional array of options. Support options are:
  		 * 			list_id = if set then the numeric item_id value is translated into label text in the current locale. If not set then the numeric item_id is returned.
- 		 *			useSingular = If list_id is set then by default the returned text is the plural label. Setting this option to true will force use of the singular label.
- 		 *			showHierarchy = If true then hierarchical parents of list item will be returned and hierarchical options described below will be used to control the output
- 		 *			returnIdno = If true list item idno is returned rather than preferred label
+ 		 *			useSingular = If list_id is set then by default the returned text is the plural label. Setting this option to true will force use of the singular label. [Default is false]
+ 		 *			showHierarchy = If true then hierarchical parents of list item will be returned and hierarchical options described below will be used to control the output [Default is false]
+ 		 *			returnIdno = If true list item idno is returned rather than preferred label [Default is false]
+ 		 *			idsOnly = Return numeric item_id only [Default is false]
  		 *			HIERARCHICAL OPTIONS: 
  		 *				direction - For hierarchy specifications (eg. ca_objects.hierarchy) this determines the order in which the hierarchy is returned. ASC will return the hierarchy root first while DESC will return it with the lowest node first. Default is ASC.
  		 *				top - For hierarchy specifications (eg. ca_objects.hierarchy) this option, if set, will limit the returned hierarchy to the first X nodes from the root down. Default is to not limit.
@@ -187,7 +204,9 @@
 			if($vb_return_idno = ((isset($pa_options['returnIdno']) && (bool)$pa_options['returnIdno']))) {
 				return caGetListItemIdno($this->ops_text_value); 
 			}
-				
+			$vb_ids_only = (bool)caGetOption('idsOnly', $pa_options, false);
+			if ($vb_ids_only) { return (int)$this->ops_text_value; }
+			
 			$vn_list_id = (is_array($pa_options) && isset($pa_options['list_id'])) ? (int)$pa_options['list_id'] : null;
 			if ($vn_list_id > 0) {
 				$t_list = new ca_lists();
@@ -305,7 +324,8 @@
  			if (($pa_element_info['parent_id']) && ($pa_element_info['settings']['render'] == 'checklist')) { $pa_element_info['settings']['render'] = ''; }	// checklists can only be top-level
  			if ((!isset($pa_options['width']) || !strlen($pa_options['width'])) && isset($pa_element_info['settings']['listWidth']) && strlen($pa_element_info['settings']['listWidth']) > 0) { $pa_options['width'] = $pa_element_info['settings']['listWidth']; }
  			if ((!isset($pa_options['height']) || !strlen($pa_options['height'])) && isset($pa_element_info['settings']['listHeight']) && strlen($pa_element_info['settings']['listHeight']) > 0) { $pa_options['height'] = $pa_element_info['settings']['listHeight']; }
- 
+ 			$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : '');
+ 			
  			if (isset($pa_options['nullOption']) && strlen($pa_options['nullOption'])) {
  				$vb_null_option = $pa_options['nullOption'];
  			} else {
@@ -317,7 +337,7 @@
  			$vn_max_columns = $pa_element_info['settings']['maxColumns'];
  			if (!$vb_require_value) { $vn_max_columns++; }
  			
- 			return ca_lists::getListAsHTMLFormElement($pa_element_info['list_id'], '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', array('id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}'), array_merge($pa_options, array('render' => $vs_render, 'maxColumns' => $vn_max_columns, 'element_id' => $pa_element_info['element_id'], 'nullOption' => $vb_null_option)));
+ 			return ca_lists::getListAsHTMLFormElement($pa_element_info['list_id'], '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', array('class' => $vs_class, 'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}'), array_merge($pa_options, array('render' => $vs_render, 'maxColumns' => $vn_max_columns, 'element_id' => $pa_element_info['element_id'], 'nullOption' => $vb_null_option)));
  		}
  		# ------------------------------------------------------------------
  		public function getAvailableSettings($pa_element_info=null) {
