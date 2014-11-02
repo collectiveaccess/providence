@@ -1194,7 +1194,7 @@ class BaseModel extends BaseObject {
 									$vm_value = preg_replace("/[^\d-.]+/", "", $vm_value); # strip non-numeric characters
 									if (!preg_match("/^[\-]{0,1}[\d.]+$/", $vm_value)) {
 										$this->postError(1100,_t("'%1' for %2 is not numeric", $vm_orig_value, $vs_field),"BaseModel->set()");
-										return "";
+										return false;
 									}
 								}
 							}
