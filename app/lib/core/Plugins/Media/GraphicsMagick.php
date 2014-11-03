@@ -1010,7 +1010,14 @@ class WLPlugMediaGraphicsMagick Extends BaseMediaPlugin Implements IWLPlugMedia 
 			if (is_array($va_exif = caSanitizeArray(@exif_read_data($ps_filepath, 'EXIF', true, false)))) { $va_metadata['EXIF'] = $va_exif; }
 		}
 
-		// if the builtin EXIF extraction is not used or failed for some reason, try GraphicsMagick's
+		// if the builtin EXIF extraction is not used or failed for some reason, try ExifTool
+		if(!isset($va_metadata['EXIF']) || !is_array($va_metadata['EXIF'])) {
+			if(caExifToolInstalled()) {
+				$va_metadata['EXIF'] = caExtractMetadataWithExifTool($ps_filepath);
+			}
+		}
+
+		// else try GraphicsMagick
 		if(!isset($va_metadata['EXIF']) || !is_array($va_metadata['EXIF'])) {
 			exec($this->ops_graphicsmagick_path.' identify -format "%[EXIF:*]" '.caEscapeShellArg($ps_filepath), $va_output, $vn_return);
 			if(is_array($va_output) && sizeof($va_output)>1) {
