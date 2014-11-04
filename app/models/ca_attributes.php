@@ -517,13 +517,16 @@ class ca_attributes extends BaseModel {
 			$vs_errors = '';
 		}
 
-		$ps_formatted_element = str_replace("^LABEL", "<span id='_attribute_value_".$pa_element_info['element_code']."'>{$vs_label}</span>", $ps_format);
+		$ps_formatted_element = str_replace("^LABEL", "<span class='_attribute_value_".$pa_element_info['element_code']."'>{$vs_label}</span>", $ps_format);
 		$ps_formatted_element = str_replace("^ELEMENT", $vs_element, $ps_formatted_element);
 		$ps_formatted_element = str_replace("^DESCRIPTION", "", $ps_formatted_element);
 		$ps_formatted_element = str_replace("^EXTRA", "", $ps_formatted_element);
 	
 		if ($vs_description) {
-			TooltipManager::add('#_attribute_value_'.$pa_element_info['element_code'], "<h3>".$vs_label."</h3>".$vs_description);
+			// don't use TooltipManager to make sure the tooltip is also displayed when this element is added dynamically (via "add" button)
+			//TooltipManager::add('#_attribute_value_'.$pa_element_info['element_code'], "<h3>".$vs_label."</h3>".$vs_description);
+
+			$ps_formatted_element .= "\n".caGetTooltipJS(array('._attribute_value_'.$pa_element_info['element_code'] => $vs_description));
 		}
 		return $ps_formatted_element;
 	}

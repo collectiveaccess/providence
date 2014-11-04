@@ -107,6 +107,7 @@
  			AssetLoadManager::register('browsable');
  			AssetLoadManager::register('imageScroller');
  			AssetLoadManager::register('maps3');
+ 			AssetLoadManager::register('jquery', 'expander');
  			
  			$va_access_values = caGetUserAccessValues($this->request);
  			$this->view->setVar('access_values', $va_access_values);

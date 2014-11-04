@@ -309,8 +309,12 @@
  			);
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
  			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight'));
+ 			$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : 'rulerBg');
  			
  			return caHTMLTextInput(
  				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 
@@ -319,7 +323,7 @@
  					'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight'], 
  					'value' => '{{'.$pa_element_info['element_id'].'}}',
  					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
-					'class' => 'rulerBg'
+					'class' => $vs_class
  				)
  			);
  		}

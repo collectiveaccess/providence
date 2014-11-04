@@ -529,6 +529,7 @@ class ca_commerce_orders extends BaseModel {
 		$this->setOrderStatusDropDown();
 	 	$this->opo_client_services_config = caGetClientServicesConfiguration();
 		$va_configured_payment_options = $this->opo_client_services_config->getList('payment_methods');
+		if(!is_array($va_configured_payment_options)) { $va_configured_payment_options = array(); }
 		$va_available_payment_methods = BaseModel::$s_ca_models_definitions['ca_commerce_orders']['FIELDS']['payment_method']['BOUNDS_CHOICE_LIST'];
 
 		$va_used_payment_methods = array();

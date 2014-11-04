@@ -740,6 +740,38 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	}
 	# ------------------------------------------------------
 	/**
+	 * Checks if array of row ids of a table are in a set.
+	 *
+	 * @param mixed $pm_table_name_or_num Name or number of table
+	 * @param int $ps_row_ids array of row ids in table specified by $pm_table_name_or_num to check for
+	 * @param mixed $pm_set_code_or_id Set code or set_id of set to check for item
+	 * @return array of row_ids found in set. If the table or set are invalid null will be returned.
+	 */
+	public function areInSet($pm_table_name_or_num, $pa_row_ids, $pm_set_code_or_id) {
+		if (!($vn_table_num = $this->_getTableNum($pm_table_name_or_num))) { return null; }
+		if (!($vn_set_id = $this->_getSetID($pm_set_code_or_id))) { return null; }
+		if (!is_array($pa_row_ids) || !sizeof($pa_row_ids)) { return null; }
+		$o_db = $this->getDb();
+		
+		$qr_res = $o_db->query("
+			SELECT csi.row_id
+			FROM ca_sets cs
+			INNER JOIN ca_set_items AS csi ON cs.set_id = csi.set_id
+			WHERE
+				(cs.deleted = 0) AND (cs.set_id = ?) AND (csi.row_id IN (".join(", ", $pa_row_ids).")) AND (cs.table_num = ?)
+		", (int)$vn_set_id, (int)$vn_table_num);
+		
+		$va_found_row_ids = array();
+		if ($qr_res->numRows() > 0) {
+			while($qr_res->nextRow()){
+				$va_found_row_ids[] = $qr_res->get("row_id");
+			}
+		}
+		
+		return $va_found_row_ids;
+	}
+	# ------------------------------------------------------
+	/**
 	 * Returns a random set_id from a group defined by specified options. These options are the same as those for ca_sets::getSets()
 	 *
 	 * @param array $pa_options Array of options. Supported options are:
@@ -1283,9 +1315,11 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *			thumbnailVersion = Same as 'thumbnailVersions' except it is a single value. (Maintained for compatibility with older code.)
 	 *			limit = Limits the total number of records to be returned
 	 *			checkAccess = An array of row-level access values to check set members for, often produced by the caGetUserAccessValues() helper. Set members with access values not in the list will be omitted. If this option is not set or left null no access checking is done.
-	 *			returnRowIdsOnly = If true a simple array of row_ids (keys of the set members) for members of the set is returned rather than full item-level info for each set member.
+	 *			returnRowIdsOnly = If true a simple array of row_ids (keys of the set members) for members of the set is returned rather than full item-level info for each set member. IDs are keys in the returned array.
 	 *			returnItemIdsOnly = If true a simple array of item_ids (keys for the ca_set_items rows themselves) is returned rather than full item-level info for each set member.
 	 *			returnItemAttributes = A list of attribute element codes for the ca_set_item record to return values for.
+	 *			idsOnly = Return a simple numerically indexed array of row_ids
+	 *
 	 * @return array An array of items. The format varies depending upon the options set. If returnRowIdsOnly or returnItemIdsOnly are set then the returned array is a 
 	 *			simple list of ids. The full return array is key'ed on ca_set_items.item_id and then on locale_id. The values are arrays with keys set to a number of fields including:
 	 *			set_id, item_id, row_id, rank, label_id, locale_id, caption (from the ca_set_items label), all instrinsic field content from the row_id, the display label of the row
@@ -1433,7 +1467,11 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			
 			unset($va_row['media']);
 			
-			if (isset($pa_options['returnRowIdsOnly']) && ($pa_options['returnRowIdsOnly'])) {
+			if (
+				(isset($pa_options['returnRowIdsOnly']) && ($pa_options['returnRowIdsOnly']))
+				||
+				(isset($pa_options['idsOnly']) && ($pa_options['idsOnly']))
+			) {
 				$va_items[$qr_res->get('row_id')] = true;
 				continue;
 			}
@@ -1480,10 +1518,11 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 				}
 				
 				$va_row['representation_count'] = (int)$va_representation_counts[$qr_res->get('row_id')];
+			}	
+			
+			if (is_array($va_labels[$vn_item_id = $qr_res->get('item_id')])) {
+				$va_row = array_merge($va_row, $va_labels[$vn_item_id]);
 			}
-
-			$va_row = array_merge($va_row, $va_labels[$qr_res->get('item_id')]);
-
 			if (isset($pa_options['returnItemAttributes']) && is_array($pa_options['returnItemAttributes']) && sizeof($pa_options['returnItemAttributes'])) {
 				// TODO: doing a load for each item is inefficient... must replace with a query
 				$t_item = new ca_set_items($va_row['item_id']);
@@ -1496,6 +1535,10 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			}
 		
 			$va_items[$qr_res->get('item_id')][($qr_res->get('rel_locale_id') ? $qr_res->get('rel_locale_id') : 0)] = $va_row;
+		}
+		
+		if (caGetOption('idsOnly', $pa_options, false)) {
+			return array_keys($va_items);
 		}
 		return $va_items;
 	}
@@ -2171,4 +2214,3 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 	}
 	# ---------------------------------------------------------------
 }
-?>

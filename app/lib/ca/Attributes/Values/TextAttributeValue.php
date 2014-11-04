@@ -250,10 +250,20 @@
  		}
  		# ------------------------------------------------------------------
  		/**
- 		 * @param array $pa_element_info
- 		 * @param array $pa_options Array of options:
- 		 *		usewysiwygeditor = if set, overrides element level setting for visual text editor
- 		 *		forSearch = if set, settings and options regarding visual text editor are ignored and it's never used
+ 		 * Return HTML form element for editing.
+ 		 *
+ 		 * @param array $pa_element_info An array of information about the metadata element being edited
+ 		 * @param array $pa_options array Options include:
+ 		 *			usewysiwygeditor = overrides element level setting for visual text editor [Default=false]
+ 		 *			forSearch = settings and options regarding visual text editor are ignored [Default=false]
+ 		 *			class = the CSS class to apply to all visible form elements [Default=null]
+ 		 *			width = the width of the form element [Default=field width defined in metadata element definition]
+ 		 *			height = the height of the form element [Default=field height defined in metadata element definition]
+ 		 *			t_subject = an instance of the model to which the attribute belongs; required if suggestExistingValues lookups are enabled [Default is null]
+ 		 *			request = the RequestHTTP object for the current request; required if suggestExistingValues lookups are enabled [Default is null]
+ 		 *			suggestExistingValues = suggest values based on existing input for this element as user types [Default is false]		
+ 		 *
+ 		 * @return string
  		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
  			
@@ -269,6 +279,8 @@
  			
  			$vs_width = trim((isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth']);
  			$vs_height = trim((isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight']);
+ 			$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : '');
+ 			
  			
  			if (!preg_match("!^[\d\.]+px$!i", $vs_width)) {
  				$vs_width = ((int)$vs_width * 6)."px";
@@ -276,8 +288,6 @@
  			if (!preg_match("!^[\d\.]+px$!i", $vs_height)) {
  				$vs_height = ((int)$vs_height * 16)."px";
  			}
- 			
- 			$vs_class = null;
  			
  			if ($va_settings['usewysiwygeditor']) {
  				$o_config = Configuration::load();
@@ -306,6 +316,7 @@
  					'height' => $vs_height, 
  					'value' => '{{'.$pa_element_info['element_id'].'}}', 
  					'maxlength' => $va_settings['maxChars'],
+ 					'class' => $vs_class,
  					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 'class' => "{$vs_class}".($va_settings['usewysiwygeditor'] ? " ckeditor" : '')
  				);
  			if (caGetOption('readonly', $pa_options, false)) { 
