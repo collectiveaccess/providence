@@ -1493,7 +1493,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			if (is_array($va_violations) && sizeof($va_violations)) {
 				$va_violation_text = array();
 				foreach($va_violations as $va_violation) {
-					$va_violation_text[] = "<li class='caMetadataDictionaryViolation'><span class='caMetadataDictionaryViolation".(ucfirst(strtolower($va_violation['level'])))."'>".$va_violation['levelDisplay'].'</span>: '.$va_violation['message']."</li>";
+					$va_violation_text[] = "<li class='caMetadataDictionaryViolation'><span class='caMetadataDictionaryViolation".(ucfirst(strtolower($va_violation['level'])))."'>".$va_violation['levelDisplay'].'</span>: '.$va_violation['violationMessage']."</li>";
 				}
 				$pa_bundle_settings['definition'][$g_ui_locale] = "<div class='caMetadataDictionaryViolationsList'><div class='caMetadataDictionaryViolationsListHeading'>"._t('These problems require attention:')."</div><ol>".join("\n", $va_violation_text)."</ol></div>\n".$pa_bundle_settings['definition'][$g_ui_locale]."<br style='clear: both;'/>";
 			}
