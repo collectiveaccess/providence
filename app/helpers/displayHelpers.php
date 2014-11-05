@@ -1023,7 +1023,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 					$va_violation_messages = array();
 					foreach($va_violations as $vn_violation_id => $va_violation) {
 						$vs_label = $t_item->getDisplayLabel($va_violation['bundle_name']);
-						$va_violation_messages[] = "<li><em><u>{$vs_label}</u></em> ".$va_violation['message']."</li>";
+						$va_violation_messages[] = "<li><em><u>{$vs_label}</u></em> ".$va_violation['violationMessage']."</li>";
 					}
 					
 					$vs_more_info .= "<div id='caInspectorViolationsList'>".($vs_num_violations_display = "<img src='".$po_view->request->getThemeUrlPath()."/graphics/icons/warning_small.gif' border='0'/> ".(($vn_num_violations > 1) ? _t('%1 problems require attention', $vn_num_violations) : _t('%1 problem requires attention', $vn_num_violations)))."</div>\n"; 
