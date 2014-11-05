@@ -2317,6 +2317,7 @@
 					array('deleted' => 0),
 					array('returnAs' => 'searchResult')
 				));
+				if (!$qr_records) { continue; }
 				$vn_total_rows += $qr_records->numHits();
 				
 				CLIProgressBar::setTotal($vn_total_rows);
