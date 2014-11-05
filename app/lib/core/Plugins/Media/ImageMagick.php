@@ -1017,7 +1017,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			// if the builtin EXIF extraction is not used or failed for some reason, try ExifTool
 			if(!isset($va_metadata['EXIF']) || !is_array($va_metadata['EXIF'])) {
 				if(caExifToolInstalled()) {
-					$va_metadata['EXIF'] = caExtractMetadataWithExifTool($ps_filepath);
+					$va_metadata['EXIF'] = caExtractMetadataWithExifTool($ps_filepath, true);
 				}
 			}
 			

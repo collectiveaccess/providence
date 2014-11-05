@@ -388,16 +388,20 @@
 	 * Extracts media metadata using ExifTool
 	 *
 	 * @param string $ps_filepath file path
-	 * 
+	 * @param bool $pb_skip_unknown If set to true, exiftool won't try to extract unknown tags from the source file
+	 * 			Use this if metadata extraction fails for unknown reasons. Sometimes tools like Photoshop write weird
+	 *			binary data into the files that causes json_decode to barf.
+	 *
 	 * @return array|null Extracted metadata, null if exiftool is not installed or something went wrong
 	 */
-	function caExtractMetadataWithExifTool($ps_filepath){
+	function caExtractMetadataWithExifTool($ps_filepath, $pb_skip_unknown=false){
 		if (caExifToolInstalled()) {
+			$vs_unknown_param = ($pb_skip_unknown ? '' : '-u');
 			$vs_path_to_exif_tool = caGetExternalApplicationPath('exiftool');
-			exec("{$vs_path_to_exif_tool} -json -a -u -g1 ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
+			exec("{$vs_path_to_exif_tool} -json -a {$vs_unknown_param} -g1 ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
 
 			if($vn_return == 0) {
-				$va_data = json_decode(join(' ', $va_output), true);
+				$va_data = json_decode(join("\n", $va_output), true);
 				if(!is_array($va_data)) { return null; }
 				$va_data = array_shift($va_data);
 
