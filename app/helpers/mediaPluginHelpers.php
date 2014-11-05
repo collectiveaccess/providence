@@ -388,18 +388,23 @@
 	 * Extracts media metadata using ExifTool
 	 *
 	 * @param string $ps_filepath file path
-	 * @param string $ps_exiftool_path optional path to ExifTool binary. If omitted the path configured in external_applications.conf is used.
 	 * 
-	 * @return array Extracted metadata
+	 * @return array|null Extracted metadata, null if exiftool is not installed or something went wrong
 	 */
-	function caExtractMetadataWithExifTool($ps_filepath, $ps_mediainfo_path=null){
+	function caExtractMetadataWithExifTool($ps_filepath){
 		if (caExifToolInstalled()) {
-			if (!$vs_path_to_exif_tool) { $vs_path_to_exif_tool = caGetExternalApplicationPath('exiftool'); }
+			$vs_path_to_exif_tool = caGetExternalApplicationPath('exiftool');
 			exec("{$vs_path_to_exif_tool} -json -a -u -g1 ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
-			
-			if (!is_array($va_data = array_pop(json_decode(join(" ", $va_output), true)))) { return false; }
-			
-			return $va_data;
+
+			if($vn_return == 0) {
+				$va_data = json_decode(join(' ', $va_output), true);
+				if(!is_array($va_data)) { return null; }
+				$va_data = array_shift($va_data);
+
+				if(sizeof($va_data)>0) {
+					return $va_data;
+				}
+			}
 		}
 		return null;
 	}
