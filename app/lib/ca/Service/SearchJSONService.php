@@ -54,7 +54,7 @@ class SearchJSONService extends BaseJSONService {
 		// make sure only requests that are actually identical get pulled from cache
 		$vs_cache_key =
 			md5(print_r($va_post, true)) .
-			md5(print_r($this->opo_request->getParameters(array('POST', 'GET', 'REQUEST')))) .
+			md5(print_r($this->opo_request->getParameters(array('POST', 'GET', 'REQUEST')), true)) .
 			$this->getRequestMethod();
 
 		if(ExternalCache::contains($vs_cache_key, 'SearchJSONService')) {

@@ -89,12 +89,23 @@
 				$t_lot = new ca_object_lots($this->request->getParameter('lot_id', pInteger));
 				if ($t_lot->getPrimaryKey()) {
 					$va_object_ids = $t_lot->get('ca_objects.object_id', array('returnAsArray' => true, 'limit' => 100000));
+					if(!is_array($va_object_ids) || !sizeof($va_object_ids)) {
+						$this->notification->addNotification(_t('No media is available for download'), __NOTIFICATION_TYPE_ERROR__);
+						$this->opo_response->setRedirect(caEditorUrl($this->opo_request, 'ca_object_lots', $t_lot->getPrimaryKey()));
+						return;
+					}
 					$qr_res = ca_objects::createResultSet($va_object_ids);
 					$qr_res->filterNonPrimaryRepresentations(false);
 					
 					$va_paths = array();
 					while($qr_res->nextHit()) {
-						$va_paths[$qr_res->get('object_id')] = array('idno' => $qr_res->get('idno'), 'paths' => $qr_res->getMediaPaths('ca_object_representations.media', 'original'));
+						$va_original_paths = $qr_res->getMediaPaths('ca_object_representations.media', 'original');
+						if(sizeof($va_original_paths)>0) {
+							$va_paths[$qr_res->get('object_id')] = array(
+								'idno' => $qr_res->get('idno'),
+								'paths' => $va_original_paths
+							);
+						}
 					}
 					
 					if (sizeof($va_paths) > 0){
@@ -128,6 +139,8 @@
 						return;
 					} else {
 						$this->notification->addNotification(_t('No media is available for download'), __NOTIFICATION_TYPE_ERROR__);
+						$this->opo_response->setRedirect(caEditorUrl($this->opo_request, 'ca_object_lots', $t_lot->getPrimaryKey()));
+						return;
 					}
 				}
 			//}
