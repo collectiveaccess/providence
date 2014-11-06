@@ -263,9 +263,9 @@
  		# -------------------------------------------------------
 		# Ajax
 		# -------------------------------------------------------
-		public function getAdvancedSearchForm($pb_render_view=true) {
+		public function getAdvancedSearchForm($pb_render_view=null) {
 			$t_form = new ca_search_forms();
- 			if (!$vn_form_id = $this->request->getParameter('form_id', pInteger)) {
+ 			if (!($vn_form_id = $this->request->getParameter('form_id', pInteger))) {
  				if ((!($vn_form_id = $this->opo_result_context->getParameter('form_id'))) || (!$t_form->haveAccessToForm($this->request->getUserID(), __CA_SEARCH_FORM_READ_ACCESS__, $vn_form_id))) {
  					if (sizeof($va_forms = $t_form->getForms(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_SEARCH_FORM_READ_ACCESS__)))) {
  						$va_tmp = array_keys($va_forms);
@@ -293,7 +293,7 @@
 			$this->opo_result_context->setAsLastFind();
 			$this->opo_result_context->saveContext();
 			
-			if ($pb_render_view) { $this->render('Search/search_advanced_form_html.php'); }
+			if ($pb_render_view || is_null($pb_render_view)) { $this->render('Search/search_advanced_form_html.php'); }
 		}
 		# ------------------------------------------------------------------
  		/**
