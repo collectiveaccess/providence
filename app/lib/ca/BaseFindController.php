@@ -147,12 +147,13 @@
 			//
 			if (!sizeof($va_display_list)) {
 				if ($vs_idno_fld = $t_model->getProperty('ID_NUMBERING_ID_FIELD')) {
+					$va_multipar_id = new MultipartIDNumber($this->ops_tablename, '__default__', null, $t_model->getDb());
 					$va_display_list[$this->ops_tablename.'.'.$vs_idno_fld] = array(
 						'placement_id' => $this->ops_tablename.'.'.$vs_idno_fld,
 						'bundle_name' => $this->ops_tablename.'.'.$vs_idno_fld,
 						'display' => $t_model->getDisplayLabel($this->ops_tablename.'.'.$vs_idno_fld),
 						'settings' => array(),
-						'allowInlineEditing' => true,
+						'allowInlineEditing' => $va_multipar_id->isFormatEditable($this->ops_tablename),
 						'inlineEditingType' => DT_FIELD,
 						'inlineEditingListValues' => array()
 					);
