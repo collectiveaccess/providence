@@ -50,17 +50,28 @@ class AboutDrawingSearchService extends SearchJSONService {
 		$va_return = parent::search($pa_bundles);
 		if(($this->getTableName() == 'ca_entities') && is_array($va_return['results']) && sizeof($va_return['results'])>0) {
 			$o_db = new Db();
+			$t_element = new ca_metadata_elements();
+
+			$t_element->load(array('element_code' => 'is_index_display'));
+			$vn_element_id = $t_element->getPrimaryKey();
+			if(!$vn_element_id) { return $va_return; }
+			$vn_yes_id = caGetListItemID('yn', 'yes');
+
 
 			foreach($va_return['results'] as &$va_result) {
 				$vn_entity_id = $va_result['entity_id'];
 
 				$qr_objects = $o_db->query("
-					SELECT * FROM ca_entities, ca_objects_x_entities, ca_objects
+					SELECT DISTINCT ca_objects.object_id FROM ca_entities, ca_objects_x_entities, ca_objects, ca_attributes, ca_attribute_values
 					WHERE ca_entities.entity_id = ca_objects_x_entities.entity_id
+					AND ca_attributes.row_id = ca_objects.object_id
+					AND ca_attribute_values.attribute_id = ca_attributes.attribute_id
 					AND ca_objects_x_entities.object_id = ca_objects.object_id
+					AND ca_attribute_values.element_id = ?
 					AND ca_entities.entity_id = ?
+					AND ca_attribute_values.item_id = ?
 					AND ca_objects.deleted = 0
-				", $vn_entity_id);
+				", $vn_element_id, $vn_entity_id, $vn_yes_id);
 
 				while($qr_objects->nextRow()) {
 					$va_object_info = array();

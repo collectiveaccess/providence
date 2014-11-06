@@ -1153,4 +1153,24 @@ class MultipartIDNumber extends IDNumber {
 		$this->opo_db = $po_db;
 	}
 	# -------------------------------------------------------
+	/**
+	 * Returns true if editable is set to 1 for the identifier, otherwise returns false
+	 * Also, if the identifier consists of multiple elements, false will be returned
+	 * @param string $ps_format_name
+	 * @return bool
+	 */
+	public function isFormatEditable($ps_format_name) {
+		$va_elements = $this->getElements();
+		if(sizeof($va_elements) == 1 ){
+			$vs_edit_info = $this->opa_formats[$ps_format_name][$this->getType()]['elements'][key($va_elements)];
+			switch($vs_edit_info['editable']){
+				case 1:
+					return true;
+				default:
+					return false;
+			}
+		}
+		return false;
+	}
+	# -------------------------------------------------------
 }
