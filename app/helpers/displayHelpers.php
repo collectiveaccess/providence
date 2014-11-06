@@ -1822,6 +1822,11 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			if ((int)($o_config->get("{$vs_left_table_name}_disable"))) { return false; }
 			if ((int)($o_config->get("{$vs_right_table_name}_disable"))) { return false; }
 		} else {
+			switch($vs_table_name) {
+				case 'ca_object_representations':
+					if (!(int)($o_config->get('ca_objects_disable'))) { return true; }	
+					break;
+			}
 			if ((int)($o_config->get($vs_table_name.'_disable'))) { return false; }
 		}
 		
@@ -1919,10 +1924,11 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 	 */
 	function caGetMediaDisplayInfo($ps_context, $ps_mimetype) {
 		$o_config = Configuration::load();
-		$o_media_display_config = Configuration::load($o_config->get('media_display'));
+		$o_media_display_config = Configuration::load(__CA_APP_DIR__.'/conf/media_display.conf');
 		
 		if (!is_array($va_context = $o_media_display_config->getAssoc($ps_context))) { return null; }
 	
+		if (!$ps_mimetype) { return $va_context; }
 		foreach($va_context as $vs_media_class => $va_media_class_info) {
 			if (!is_array($va_mimetypes = $va_media_class_info['mimetypes'])) { continue; }
 			
@@ -2967,6 +2973,23 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 	/**
 	 * Returns date range as a localized string for display, subject to the settings in the app/conf/datetime.conf configuration 
 	 *
+	 * @param int $pn_start_timestamp Historic start timestamp for date range to localize
+	 * @param int $pn_end_timestamp Historic end timestamp for date range to localize
+	 * @param array $pa_options All options supported by TimeExpressionParser::getText() are supported
+	 *
+	 * @return string Localized date/time expression
+	 */
+	function caGetLocalizedHistoricDateRange($pn_start_timestamp, $pn_end_timestamp, $pa_options=null) {
+		$o_tep = new TimeExpressionParser();
+		
+		$o_tep->setHistoricTimestamps($pn_start_timestamp, $pn_end_timestamp);
+		
+		return $o_tep->getText($pa_options);
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Returns date range as a localized string for display, subject to the settings in the app/conf/datetime.conf configuration 
+	 *
 	 * @param int $pn_start_timestamp Start of date range, as Unix timestamp
 	 * @param int $pn_end_timestamp End of date range, as Unix timestamp
 	 * @param array $pa_options All options supported by TimeExpressionParser::getText() are supported
@@ -3151,7 +3174,6 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 	 *						from which the interstitial was launched.
 	 * @return mixed 
 	 */
-$ca_relationship_lookup_parse_cache = array();
 	function caProcessRelationshipLookupLabel($qr_rel_items, $pt_rel, $pa_options=null) {
 		$va_initial_values = array();
 		
@@ -3412,7 +3434,6 @@ $ca_relationship_lookup_parse_cache = array();
 		if (!in_array(__CA_APP_TYPE__, array('PROVIDENCE', 'PAWTUCKET'))) { return $pa_text; }
 		if (__CA_APP_TYPE__ == 'PAWTUCKET') {
 			$o_config = Configuration::load();
-			if (!$o_config->get("allow_detail_for_{$ps_table_name}")) { return $pa_text; }
 		}
 		
 		$vb_can_handle_target = false;
@@ -3999,4 +4020,22 @@ $ca_relationship_lookup_parse_cache = array();
 		}
 		return $o_view->render('representation_viewer_html.php');
  	}
+	# ------------------------------------------------------------------
+	/**
+	 * Get Javascript code that generates Tooltips for a list of elements
+	 * @param array $pa_tooltips List of tooltips to set as selector=>text map
+	 * @param string $ps_class CSS class to use for tooltips
+	 * @return string
+	 */
+	function caGetTooltipJS($pa_tooltips, $ps_class = 'tooltipFormat') {
+		$vs_buf = "<script type='text/javascript'>\njQuery(document).ready(function() {\n";
+
+		foreach($pa_tooltips as $vs_element_selector => $vs_tooltip_text) {
+			$vs_buf .= "jQuery('{$vs_element_selector}').attr('title', '".preg_replace('![\n\r]{1}!', ' ', addslashes($vs_tooltip_text))."').tooltip({ tooltipClass: '{$ps_class}', show: 150, hide: 150});\n";
+		}
+
+		$vs_buf .= "});\n</script>\n";
+
+		return $vs_buf;
+	}
 	# ------------------------------------------------------------------

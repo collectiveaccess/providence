@@ -1046,7 +1046,7 @@ div.notification-info-box {
 }
 
 div.notification-error-box {
-    background:	url('../graphics/icons/glyphicons_078_warning_sign.png') no-repeat 10px 5px;
+    background:	url('../graphics/buttons/glyphicons_078_warning_sign.png') no-repeat 10px 5px;
     text-indent: 32px;
     background-color: #eeeeee;
     padding: 5px;
@@ -4546,7 +4546,7 @@ span.bundleDisplayEditorPlacementListItemTitle {
 .elementSettingsUI {
 	position: absolute;
 	top: 40px;
-	left: 400px;
+	left: 150px;
 	overflow: auto;
 	width: 400px;
 	max-height:500px;

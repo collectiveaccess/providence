@@ -691,7 +691,7 @@ class TilepicParser {
 			$vs_filepath = $vs_tmp_fname;
         }
         
-         if(function_exists('exif_read_data')) {
+         if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
 			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation_rotate = null;
@@ -956,7 +956,7 @@ class TilepicParser {
 				$vs_filepath = $vs_tmp_fname;
 		}
 
-		 if(function_exists('exif_read_data')) {
+		 if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
 			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation_rotate = null;
@@ -1222,7 +1222,7 @@ class TilepicParser {
 			$vs_filepath = $vs_tmp_fname;
         }
         
-        if(function_exists('exif_read_data')) {
+        if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
 			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation_rotate = null;
@@ -1513,7 +1513,7 @@ class TilepicParser {
 			return false;
         }
         
-        if(function_exists('exif_read_data')) {
+        if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
 			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation = $va_exif['IFD0']['Orientation'];
@@ -1723,7 +1723,7 @@ class TilepicParser {
 			return false;
 		}
 
-		if(function_exists('exif_read_data')) {
+		if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
 			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
 				if (isset($va_exif['IFD0']['Orientation'])) {
 					$vn_orientation = $va_exif['IFD0']['Orientation'];
@@ -1938,7 +1938,7 @@ class TilepicParser {
 					break;
 				case IMAGETYPE_JPEG:
 					$r_image = imagecreatefromjpeg($ps_filepath);
-					 if(function_exists('exif_read_data')) {
+					 if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
 						if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
 							if (isset($va_exif['IFD0']['Orientation'])) {
 								$vn_orientation = $va_exif['IFD0']['Orientation'];

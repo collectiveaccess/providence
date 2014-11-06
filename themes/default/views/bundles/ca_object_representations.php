@@ -81,7 +81,7 @@
 	
 	if ($vb_batch) {
 		print "<div class='editorBatchModeControl'>"._t("In batch")." ".
-			caHTMLSelect($vs_id_prefix.$t_item->tableNum()."_rel_batch_mode", array(
+			caHTMLSelect($vs_id_prefix."_batch_mode", array(
 				_t("do not use") => "_disabled_", 
 				_t('add to each item') => '_add_', 
 				_t('replace values') => '_replace_',

@@ -117,6 +117,11 @@
  		}
  		# ------------------------------------------------------------------
  		/**
+ 		 * Return attribute display value. 
+ 		 *
+ 		 * @param array $pa_options
+ 		 * @return string
+ 		 *
  		 * Options:
  		 *	showMediaInfo - if true media info (dimensions, filesize, bit depth) is returns as part of display; default is false
  		 *	version - name of media version to return; default is 'thumbnail'
@@ -133,6 +138,9 @@
 			if(!isset($pa_options['showMediaInfo'])) { $pa_options['showMediaInfo'] = false; }
 			if(!isset($pa_options['version'])) { $pa_options['version'] = 'thumbnail'; }
 			$vs_version = $pa_options['version'];
+			
+			$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : '');
+ 			
 			
 			if(!isset($pa_options['return'])) { $pa_options['return'] = null; } else { $pa_options['return'] = strtolower($pa_options['return']); }
 			
@@ -275,6 +283,15 @@
 			);
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 * Return HTML form element for editing.
+ 		 *
+ 		 * @param array $pa_element_info An array of information about the metadata element being edited
+ 		 * @param array $pa_options array Options include:
+ 		 *			NONE (yet)
+ 		 *
+ 		 * @return string
+ 		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
  			$vs_element = '<div>';
  			$vs_element .= '<div>{'.$pa_element_info['element_id'].'}</div>';

@@ -31,6 +31,7 @@
  */
 
 require_once(__CA_LIB_DIR__."/core/Cache/MemoryCache.php");
+require_once(__CA_LIB_DIR__."/core/Cache/CAFileSystemCache.php");
 
 class ExternalCache {
 	# ------------------------------------------------
@@ -202,7 +203,7 @@ class ExternalCache {
 		$vs_cache_dir = $vs_cache_base_dir.DIRECTORY_SEPARATOR.__CA_APP_NAME__.'Cache';
 
 		try {
-			$o_cache = new \Doctrine\Common\Cache\FilesystemCache($vs_cache_dir);
+			$o_cache = new \Doctrine\Common\Cache\CAFileSystemCache($vs_cache_dir);
 			return $o_cache;
 		} catch (InvalidArgumentException $e) {
 			// carry on ... but no caching :(

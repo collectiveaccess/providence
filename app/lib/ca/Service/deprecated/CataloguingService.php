@@ -48,7 +48,7 @@ class CataloguingService extends BaseService {
 	}
 	# -------------------------------------------------------
 	/**
-	 * Adds item of type ���type��� to the database using the data in the
+	 * Adds item of type “type” to the database using the data in the
 	 * associative array $fieldInfo to populate fields.
 	 * 
 	 * @param string $type can be one of: [ca_objects, ca_entities, ca_places, ca_occurrences, ca_collections, ca_list_items]
