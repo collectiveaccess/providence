@@ -36,7 +36,7 @@ if(!$vs_file){
 	print _t('Invalid parameters');
 } else {
 	header('Content-Type: '.$vs_content_type.'; charset=UTF-8');
-	header('Content-Disposition: attachment; filename="'.$vs_filename.'.'.$vs_ext.'"');
+	header('Content-Disposition: attachment; filename="'.$vs_filename.($vs_ext ? '.'.$vs_ext : '').'"');
 	header('Content-Transfer-Encoding: binary');
 	
 	set_time_limit(0);

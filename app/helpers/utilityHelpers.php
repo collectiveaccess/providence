@@ -2143,4 +2143,10 @@ function caFileIsIncludable($ps_file) {
 		return false;
 	}
 	# ----------------------------------------
-?>
+	function caHumanFilesize($bytes, $decimals = 2) {
+		$size = array('B','KiB','MiB','GiB','TiB');
+		$factor = floor((strlen($bytes) - 1) / 3);
+
+		return sprintf("%,{$decimals}f", $bytes/pow(1024, $factor)).@$size[$factor];
+	}
+	# ----------------------------------------

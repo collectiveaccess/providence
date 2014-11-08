@@ -6916,3 +6916,11 @@ td.caSourceFileControlRadio {
 	width: 30px;
 	height: 35px;
 }
+
+/** Metadata export preview **/
+.caExportPreview {
+    max-height: 250px;
+    overflow: scroll;
+    width: 100%;
+    border: 1px solid #e6e6e6;
+}
