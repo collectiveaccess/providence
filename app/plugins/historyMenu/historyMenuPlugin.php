@@ -186,6 +186,9 @@
 							case 'ca_tour_stops':
 								$vs_priv_name = 'can_edit_ca_tours';
 								break;
+							case 'ca_sets':
+								$vs_priv_name = 'can_edit_sets';
+								break;
 							default:
 								$vs_priv_name = 'can_edit_'.$vs_table_name;
 								break;
