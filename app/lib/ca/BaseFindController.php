@@ -682,52 +682,6 @@
 		}
 		# -------------------------------------------------------
 		/**
-		 * Action to trigger export of current find result set
-		 */
-		public function exportWithMapping() {
-			set_time_limit(7200);
-			return $this->Index(array('output_format' => 'EXPORTWITHMAPPING'));
-		}
-		# -------------------------------------------------------
-		protected function _genExportWithMapping($po_result, $pn_exporter_id) {
-			// Can user batch export?
-			if (!$this->request->user->canDoAction('can_batch_export_metadata')) {
-				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3440?r='.urlencode($this->request->getFullUrlPath()));
-				return;
-			}
-
-			// Can user export records of this type?
-			if (!$this->request->user->canDoAction('can_export_'.$this->ops_tablename)) {
-				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3430?r='.urlencode($this->request->getFullUrlPath()));
-				return;
-			}
-
-			$t_exporter = new ca_data_exporters($pn_exporter_id);
-
-			if(!($t_exporter->getPrimaryKey()>0)) {
-				$this->postError(3420, _t("Could not load export mapping"), "BaseFindController->_genExportWithMapping()");
-				return;
-			}
-
-			if(substr(get_class($this), 0, 6) == 'Browse') {
-				$vs_export_filename = Configuration::load()->get($this->ops_tablename.'_batch_export_filename');
-			} else {
-				$vs_export_filename = preg_replace("/[^\p{L}\p{N}\-]/", '_', $this->opo_result_context->getSearchExpression());
-				$vs_export_filename = preg_replace("/[\_]+/", '_', $vs_export_filename);
-			}
-
-			$vs_tmp_file = tempnam(caGetTempDirPath(), 'export');
-			ca_data_exporters::exportRecordsFromSearchResult($t_exporter->get('exporter_code'), $po_result, $vs_tmp_file);
-
-			header('Content-Type: '.$t_exporter->getContentType().'; charset=UTF-8');
-			header('Content-Disposition: attachment; filename="'.$vs_export_filename.'.'.$t_exporter->getFileExtension().'"');
-			header('Content-Transfer-Encoding: binary');
-			readfile($vs_tmp_file);
-			@unlink($vs_tmp_file);
-			exit();
-		}
-		# -------------------------------------------------------
-		/**
 		 * Generate  export file of current result
 		 */
 		protected function _genExport($po_result, $ps_output_type, $ps_output_filename, $ps_title=null) {
