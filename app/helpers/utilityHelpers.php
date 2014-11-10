@@ -2150,3 +2150,22 @@ function caFileIsIncludable($ps_file) {
 		return sprintf("%,{$decimals}f", $bytes/pow(1024, $factor)).@$size[$factor];
 	}
 	# ----------------------------------------
+	/**
+	 * Upload a local file to a GitHub repository
+	 * @param string $ps_user GitHub username
+	 * @param string $ps_token access token. Global account password can be used here but it's recommended to create a personal access token instead.
+	 * @param string $ps_owner The repository owner
+	 * @param string $ps_repo repository name
+	 * @param string $ps_git_path path for the file inside the repository, e.g. "/exports/from_collectiveaccess/export.xml."
+	 * @param string $ps_local_filepath file to upload as absolute local path. Note that the file must be loaded in memory to be committed to GitHub.
+	 * @param string $ps_commit_msg commit message
+	 * @param bool $pb_update_on_conflict Determines what happens if file already exists in GitHub repository.
+	 * 		true means the file is updated in place for. false means we abort.
+	 */
+	function caUploadFileToGitHub($ps_user, $ps_token, $ps_owner, $ps_repo, $ps_git_path, $ps_local_filepath, $ps_commit_msg, $pb_update_on_conflict=true) {
+		$o_client = new \Github\Client();
+		$vs_content = @file_get_contents($ps_local_filepath);
+		$o_client->authenticate($ps_user, $ps_token);
+		$o_client->repositories()->contents()->create($ps_owner, $ps_repo, $ps_git_path, $vs_content, $ps_commit_msg);
+	}
+	# ----------------------------------------

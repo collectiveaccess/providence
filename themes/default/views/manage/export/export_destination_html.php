@@ -71,7 +71,7 @@ if($va_errors && is_array($va_errors)){
 			<td style="vertical-align: top;"><span class='formLabelPlain'><?php print _t("Destination(s)"); ?>&colon;</td>
 			<td>
 				<div><?php print caHTMLCheckboxInput('exportDestinationFile', array('checked' => 'checked')); ?> File download</div>
-				<div><?php print caHTMLCheckboxInput('exportDestinationGitHub'); ?> GitHub</div>
+				<div><?php print caHTMLCheckboxInput('exportDestinationGitHub', array('checked' => 'checked')); ?> GitHub</div>
 			</td>
 		</tr>
 		<tr>
