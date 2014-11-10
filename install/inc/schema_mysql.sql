@@ -6386,6 +6386,37 @@ create unique index u_all on ca_commerce_order_items_x_object_representations
 
 
 /*==========================================================================*/
+create table ca_object_checkouts (
+   checkout_id	            int unsigned					not null AUTO_INCREMENT,
+   group_uuid               char(36) not null,
+   object_id                int unsigned not null,
+   user_id                	int unsigned not null,
+   created_on				int unsigned not null,
+   checkout_date			int unsigned null,
+   due_date					int unsigned null,
+   return_date				int unsigned null,
+   checkout_notes			text not null,
+   return_notes				text not null,
+   deleted					tinyint unsigned not null,
+   
+   primary key (checkout_id),
+   index i_group_uuid (group_uuid),
+   index i_object_id (object_id),
+   index i_user_id (user_id),
+   index i_created_on (created_on),
+   index i_checkout_date (checkout_date),
+   index i_due_date (due_date),
+   index i_return_date (return_date),
+   
+   constraint fk_ca_object_checkouts_object_id foreign key (object_id)
+      references ca_objects (object_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_object_checkouts_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
 create table ca_sql_search_words 
 (
   word_id int(10) unsigned not null auto_increment,
@@ -6507,5 +6538,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 113 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (113, unix_timestamp());
+/* CURRENT MIGRATION: 114 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (114, unix_timestamp());
