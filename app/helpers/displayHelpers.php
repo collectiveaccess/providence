@@ -1788,14 +1788,17 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 	 * @return string HTML implementing the inspector
 	 */
 	function caBatchMetadataExportInspector($po_view) {
-		$vs_color = "444444"; 
-		$vs_buf .= "<h3 class='nextPrevious'>".caNavLink($po_view->request, _t('Back to list'), '', 'manage', 'MetadataExport', 'Index', $pa_other_params=null, $pa_attributes=null)."</h3>";
-		$vs_buf .= "<h4><div id='caColorbox' style='border: 6px solid #{$vs_color}; padding-bottom:15px;'>\n";
+		$vs_color = "444444";
+		$vs_buf = "<h4><div id='caColorbox' style='border: 6px solid #{$vs_color}; padding-bottom:15px;'>\n";
 
 		$vs_buf .= "<strong>"._t("Batch export metadata")."</strong>\n";
 
 		$t_item = $po_view->getVar("t_item");
 		$vs_buf .= "<p>"._t("Selected exporter").":<br />".$t_item->getLabelForDisplay()."</p>";
+
+		if($vn_id = $po_view->request->getParameter('item_id', pInteger)) {
+			$vs_buf .= "<p>".caEditorLink($po_view->request, _t("Back to record"), 'caResultsEditorEditLink', $t_item->getTargetTableName(), $vn_id)."</p>";
+		}
 		
 		$vs_buf .= "</div></h4>\n";
 		
