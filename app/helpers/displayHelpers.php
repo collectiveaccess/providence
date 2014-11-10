@@ -1019,6 +1019,17 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 					TooltipManager::add("#caInspectorChangeDate", "<h2>"._t('Last changed on')."</h2>"._t('Last changed on %1', caGetLocalizedDate($va_last_change['timestamp'], array('dateFormat' => 'delimited'))));
 				}
 				
+				if (method_exists($t_item, 'getMetadataDictionaryRuleViolations') && is_array($va_violations = $t_item->getMetadataDictionaryRuleViolations()) && (($vn_num_violations = (sizeof($va_violations))) > 0)) {
+					$va_violation_messages = array();
+					foreach($va_violations as $vn_violation_id => $va_violation) {
+						$vs_label = $t_item->getDisplayLabel($va_violation['bundle_name']);
+						$va_violation_messages[] = "<li><em><u>{$vs_label}</u></em> ".$va_violation['violationMessage']."</li>";
+					}
+					
+					$vs_more_info .= "<div id='caInspectorViolationsList'>".($vs_num_violations_display = "<img src='".$po_view->request->getThemeUrlPath()."/graphics/icons/warning_small.gif' border='0'/> ".(($vn_num_violations > 1) ? _t('%1 problems require attention', $vn_num_violations) : _t('%1 problem requires attention', $vn_num_violations)))."</div>\n"; 
+					TooltipManager::add("#caInspectorViolationsList", "<h2>{$vs_num_violations_display}</h2><ol>".join("\n", $va_violation_messages))."</ol>\n";
+				}
+				
 				$vs_more_info .= "</div>\n";
 			}
 			
@@ -1940,7 +1951,26 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
-	 * Replace "^" tags (eg. ^forename) in a template with values from an array
+	 * Returns a list of "^" prefixed-tags (eg. ^forename) present in a template
+	 *
+	 * @param string $ps_template
+	 * @param array $pa_options No options are currently supported
+	 * 
+	 * @return array An array of tags
+	 */
+	function caGetTemplateTags($ps_template, $pa_options=null) {
+		$va_tags = array();
+		if (preg_match_all(__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__, $ps_template, $va_matches)) {
+			foreach($va_matches[1] as $vn_i => $vs_possible_tag) {
+				$va_matches[1][$vn_i] = rtrim($vs_possible_tag, "/.");	// remove trailing slashes and periods
+			}
+			$va_tags = $va_matches[1];
+		}
+		return $va_tags;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Replace "^" prefix-edtags (eg. ^forename) in a template with values from an array
 	 *
 	 * @param string $ps_template String with embedded tags. Tags are just alphanumeric strings prefixed with a caret ("^")
 	 * @param array $pa_values Array of values; keys must match tag names
@@ -1955,13 +1985,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		$vs_prefix = isset($pa_options['prefix']) ? $pa_options['prefix'] : null;
 		$vs_remove_prefix = isset($pa_options['removePrefix']) ? $pa_options['removePrefix'] : null;
 		
-		$va_tags = array();
-		if (preg_match_all(__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__, $ps_template, $va_matches)) {
-			foreach($va_matches[1] as $vn_i => $vs_possible_tag) {
-				$va_matches[1][$vn_i] = rtrim($vs_possible_tag, "/.");	// remove trailing slashes and periods
-			}
-			$va_tags = $va_matches[1];
-		}
+		$va_tags = caGetTemplateTags($ps_template);
 		
 		$t_instance = null;
 		if (isset($pa_options['getFrom']) && (method_exists($pa_options['getFrom'], 'get'))) {
@@ -2001,7 +2025,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		foreach($pa_directives as $vs_directive) {
 			$va_tmp = explode(":", $vs_directive);
 			switch($va_tmp[0]) {
-				case 'LP':
+				case 'LP':		// left padding
 					$va_params = explode("/", $va_tmp[1]);
 					$vn_len = (int)$va_params[1];
 					$vs_str = (string)$va_params[0];
@@ -2009,7 +2033,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 						$ps_value = str_pad($ps_value, $vn_len, $vs_str, STR_PAD_LEFT);
 					}
 					break;
-				case 'RP':
+				case 'RP':		// right padding
 					$va_params = explode("/", $va_tmp[1]);
 					$vn_len = (int)$va_params[1];
 					$vs_str = (string)$va_params[0];
@@ -2023,7 +2047,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
-	 * Replace "^" tags (eg. ^forename) in a template with values from an array
+	 * Replace "^" prefixed tags (eg. ^forename) in a template with values from an array
 	 *
 	 * @param string $ps_template String with embedded tags. Tags are just alphanumeric strings prefixed with a caret ("^")
 	 * @param string $pm_tablename_or_num Table name or number of table from which values are being formatted
@@ -3590,8 +3614,9 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		
 		if (!($vs_definition = trim(caGetOption($g_ui_locale, $pa_settings['definition'], null)))) { return ''; }
 		
-		$vs_buf = "<span style='position: absolute; top: 2px; right: 26px;'>";
-		$vs_buf .= "<a href='#' onclick='caBundleVisibilityManager.toggleDictionaryEntry(\"{$ps_id_prefix}\");  return false;'><img src=\"".$po_request->getThemeUrlPath()."/graphics/icons/info.png\" border=\"0\" id=\"{$ps_id_prefix}MetadataDictionaryToggleButton\"/></a>";
+		$vs_buf = '';
+		$vs_buf .= "<span style='position: absolute; top: 2px; right: 26px;'>";
+		$vs_buf .= "<a href='#' class='caMetadataDictionaryDefinitionToggle' onclick='caBundleVisibilityManager.toggleDictionaryEntry(\"{$ps_id_prefix}\");  return false;'><img src=\"".$po_request->getThemeUrlPath()."/graphics/icons/info.png\" border=\"0\" id=\"{$ps_id_prefix}MetadataDictionaryToggleButton\"/></a>";
 		$vs_buf .= "</span>\n";	
 		
 		$vs_buf .= "<div id='{$ps_id_prefix}DictionaryEntry' class='caMetadataDictionaryDefinition'>{$vs_definition}</div>";
