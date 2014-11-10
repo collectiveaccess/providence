@@ -166,7 +166,6 @@ class Configuration {
 
 			if ($vs_local_conf_file_path) {
 				$va_local_configfile_stat = @stat($vs_local_conf_file_path);
-				print_R($va_local_configfile_stat);
 				if($va_local_configfile_stat['mtime'] != ExternalCache::fetch('ca_config_file_local_mtime_'.$vs_path_as_md5, 'Configuration')) { // local config file has changed
 					ExternalCache::save('ca_config_file_local_mtime_'.$vs_path_as_md5, $va_local_configfile_stat['mtime'], 'Configuration');
 					$vb_cache_is_invalid = true;
