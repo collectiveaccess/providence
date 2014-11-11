@@ -104,8 +104,8 @@ class MetadataExportController extends ActionController {
 	 */
 	public function ExportData() {
 		// Can user batch export?
-		if (!$this->request->user->canDoAction('can_batch_export_metadata')) {
-			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3440?r='.urlencode($this->request->getFullUrlPath()));
+		if (!$this->getRequest()->user->canDoAction('can_batch_export_metadata')) {
+			$this->getResponse()->setRedirect($this->getRequest()->config->get('error_display_url').'/n/3440?r='.urlencode($this->getRequest()->getFullUrlPath()));
 			return;
 		}
 
@@ -113,8 +113,8 @@ class MetadataExportController extends ActionController {
 		$t_subject = $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true);
 
 		// Can user export records of this type?
-		if (!$this->request->user->canDoAction('can_export_'.$t_subject->tableName())) {
-			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3430?r='.urlencode($this->request->getFullUrlPath()));
+		if (!$this->getRequest()->user->canDoAction('can_export_'.$t_subject->tableName())) {
+			$this->getResponse()->setRedirect($this->getRequest()->config->get('error_display_url').'/n/3430?r='.urlencode($this->getRequest()->getFullUrlPath()));
 			return;
 		}
 
@@ -122,7 +122,7 @@ class MetadataExportController extends ActionController {
 
 		// run now
 		$app = AppController::getInstance();
-		$app->registerPlugin(new BatchMetadataExportProgress($this->request));
+		$app->registerPlugin(new BatchMetadataExportProgress($this->getRequest()));
 
 		$this->render('export/export_results_html.php');
 	}
@@ -134,15 +134,15 @@ class MetadataExportController extends ActionController {
 		$t_exporter = $this->getExporterInstance();
 
 		if(!$t_exporter->getPrimaryKey()) {
-			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3420?r='.urlencode($this->request->getFullUrlPath()));
+			$this->getResponse()->setRedirect($this->getRequest()->config->get('error_display_url').'/n/3420?r='.urlencode($this->getRequest()->getFullUrlPath()));
 			return;
 		}
 
 		$t_subject = $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true);
 
 		// Can user export records of this type?
-		if (!$this->request->user->canDoAction('can_export_'.$t_subject->tableName())) {
-			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3430?r='.urlencode($this->request->getFullUrlPath()));
+		if (!$this->getRequest()->user->canDoAction('can_export_'.$t_subject->tableName())) {
+			$this->getResponse()->setRedirect($this->getRequest()->config->get('error_display_url').'/n/3430?r='.urlencode($this->getRequest()->getFullUrlPath()));
 			return;
 		}
 
@@ -154,7 +154,7 @@ class MetadataExportController extends ActionController {
 
 			$o_config = $t_subject->getAppConfig();
 
-			$vn_id = $this->request->getParameter('item_id', pInteger);
+			$vn_id = $this->getRequest()->getParameter('item_id', pInteger);
 			$this->view->setVar("t_subject", $t_subject);
 
 			// alternate destinations
@@ -162,7 +162,7 @@ class MetadataExportController extends ActionController {
 			$this->view->setVar('exporter_alternate_destinations', $va_alt_dest);
 
 			// filename set via request wins
-			$vs_filename = $this->request->getParameter('file_name', pString);
+			$vs_filename = $this->getRequest()->getParameter('file_name', pString);
 
 			// else run template from config
 			if(!$vs_filename && ($vs_export_filename_template = $o_config->get($t_subject->tableName()."_single_item_export_filename"))) {
@@ -179,8 +179,8 @@ class MetadataExportController extends ActionController {
 			$this->view->setVar('file_name', $vs_filename);
 
 			// Can user read this particular item?
-			if(!caCanRead($this->request->getUserID(), $t_exporter->get('table_num'), $vn_id)) {
-				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
+			if(!caCanRead($this->getRequest()->getUserID(), $t_exporter->get('table_num'), $vn_id)) {
+				$this->getResponse()->setRedirect($this->getRequest()->config->get('error_display_url').'/n/2320?r='.urlencode($this->getRequest()->getFullUrlPath()));
 				return;
 			}
 
@@ -194,7 +194,7 @@ class MetadataExportController extends ActionController {
 			file_put_contents($vs_tmp_file, $vs_export);
 
 			// Store file name in session for later retrieval. We don't want to have to pass that on through a bunch of requests.
-			$o_session = $this->request->getSession();
+			$o_session = $this->getRequest()->getSession();
 			$o_session->setVar('export_file', $vs_tmp_file);
 
 			// show destination screen if configured and if we didn't just come here from there
@@ -212,17 +212,17 @@ class MetadataExportController extends ActionController {
 		$va_alt_dest = $o_config->getAssoc('exporter_alternate_destinations');
 		$this->view->setVar('exporter_alternate_destinations', $va_alt_dest);
 
-		$vs_filename = $this->request->getParameter('file_name', pString);
+		$vs_filename = $this->getRequest()->getParameter('file_name', pString);
 		$this->view->setVar('file_name', $vs_filename);
 
-		$o_session = $this->request->getSession();
+		$o_session = $this->getRequest()->getSession();
 		if(!($vs_tmp_file = $o_session->getVar('export_file'))) {
 			return;
 		}
 
 		$this->view->setVar('export_file', $vs_tmp_file);
 
-		$vs_dest_code = $this->request->getParameter('destination', pString);
+		$vs_dest_code = $this->getRequest()->getParameter('destination', pString);
 
 		$vb_success = false;
 		if(is_array($va_alt_dest) && sizeof($va_alt_dest)>0) {
@@ -250,13 +250,13 @@ class MetadataExportController extends ActionController {
 	# -------------------------------------------------------
 	public function Delete() {
 		$t_exporter = $this->getExporterInstance();
-		if ($this->request->getParameter('confirm', pInteger)) {
+		if ($this->getRequest()->getParameter('confirm', pInteger)) {
 			$t_exporter->setMode(ACCESS_WRITE);
 			$t_exporter->delete(true);
 
 			if ($t_exporter->numErrors()) {
 				foreach ($t_exporter->errors() as $o_e) {
-					$this->request->addActionError($o_e, 'general');
+					$this->getRequest()->addActionError($o_e, 'general');
 					$this->notification->addNotification($o_e->getErrorDescription(), __NOTIFICATION_TYPE_ERROR__);
 				}
 			} else {
@@ -274,10 +274,10 @@ class MetadataExportController extends ActionController {
 	 * Process export generated by ExportData action
 	 */
 	public function DownloadExport(){
-		$ps_file = trim($this->request->getParameter('file',pString));
+		$ps_file = trim($this->getRequest()->getParameter('file',pString));
 
 		if(!($t_exporter = $this->getExporterFromFileParameter())) {
-			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3420?r='.urlencode($this->request->getFullUrlPath()));
+			$this->getResponse()->setRedirect($this->getRequest()->config->get('error_display_url').'/n/3420?r='.urlencode($this->getRequest()->getFullUrlPath()));
 			return;
 		}
 
@@ -292,7 +292,7 @@ class MetadataExportController extends ActionController {
 		$this->view->setVar('t_exporter', $t_exporter);
 
 		// filename set via request wins
-		$vs_filename = $this->request->getParameter('file_name', pString);
+		$vs_filename = $this->getRequest()->getParameter('file_name', pString);
 
 		// otherwise get from config file
 		if(!$vs_filename){
@@ -310,7 +310,7 @@ class MetadataExportController extends ActionController {
 
 		// go to export destination screen if configured and if we didn't just come here from there
 		if($o_conf->get('exporter_show_destination_screen')) {
-			if(!$this->request->getParameter('exportDestinationsSet', pInteger)) {
+			if(!$this->getRequest()->getParameter('exportDestinationsSet', pInteger)) {
 				$this->render('export/export_destination_html.php');
 				return;
 			}
@@ -339,7 +339,7 @@ class MetadataExportController extends ActionController {
 	# Utilities
 	# -------------------------------------------------------
 	private function getExporterInstance($pb_set_view_vars=true, $pn_exporter_id=null) {
-		if (!($vn_exporter_id = $this->request->getParameter('exporter_id', pInteger))) {
+		if (!($vn_exporter_id = $this->getRequest()->getParameter('exporter_id', pInteger))) {
 			$vn_exporter_id = $pn_exporter_id;
 		}
 		$t_exporter = new ca_data_exporters($vn_exporter_id);
@@ -354,7 +354,7 @@ class MetadataExportController extends ActionController {
 	 * @return ca_data_exporters|null
 	 */
 	private function getExporterFromFileParameter() {
-		$ps_file = trim($this->request->getParameter('file',pString));
+		$ps_file = trim($this->getRequest()->getParameter('file',pString));
 		$va_matches = array();
 		if($ps_file && preg_match("/^([0-9]+)\_[0-9a-f]{32,32}$/", $ps_file, $va_matches)) {
 			if(file_exists(__CA_APP_DIR__.'/tmp/'.$ps_file)) {
@@ -377,7 +377,7 @@ class MetadataExportController extends ActionController {
 	 * @param array $pa_parameters Array of parameters as specified in navigation.conf, including primary key value and type_id
 	 */
 	public function Info($pa_parameters) {
-		if(($this->request->getAction()=="Index") || ($this->request->getAction()=="Delete")){
+		if(($this->getRequest()->getAction()=="Index") || ($this->getRequest()->getAction()=="Delete")){
 			$t_exporter = $this->getExporterInstance(false);
 			$this->view->setVar('t_item', $t_exporter);
 			$this->view->setVar('exporter_count', ca_data_exporters::getExporterCount());
