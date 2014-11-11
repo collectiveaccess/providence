@@ -25,8 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$o_zip = $this->getVar('zip');
- 	$vs_file_path = $o_zip->output(ZIPFILE_FILEPATH);
+ 	$vs_file_path = $this->getVar('tmp_file');
  
 	header("Content-type: application/zip");
 	header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
