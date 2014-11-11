@@ -215,55 +215,60 @@ class MetadataExportController extends ActionController {
 	 */
 	public function DownloadExport(){
 		$ps_file = trim($this->request->getParameter('file',pString));
-		$va_matches = array();
-		if($ps_file && preg_match("/^([0-9]+)\_[0-9a-f]{32,32}$/", $ps_file, $va_matches)) {
-			if(file_exists(__CA_APP_DIR__.'/tmp/'.$ps_file)) {
-				if($va_matches[1]){
-					$t_exporter = new ca_data_exporters($va_matches[1]);
-					if($t_exporter->getPrimaryKey()) {
-						$t_subject = $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true);
-						$o_conf = $t_subject->getAppConfig();
-						$vs_file = __CA_APP_DIR__.'/tmp/'.$ps_file;
 
-						$this->view->setVar('file', $vs_file);
-						$this->view->setVar('file_base', $ps_file);
-						$this->view->setVar('extension',$t_exporter->getFileExtension());
-						$this->view->setVar('content_type',$t_exporter->getContentType());
-						$this->view->setVar('t_exporter', $t_exporter);
+		if(!($t_exporter = $this->getExporterFromFileParameter())) {
+			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3420?r='.urlencode($this->request->getFullUrlPath()));
+			return;
+		}
 
-						if($vs_export_filename = $o_conf->get($t_subject->tableName()."_batch_export_filename")) {
-							$this->view->setVar('file_name', $vs_export_filename);
-						}
+		$t_subject = $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true);
+		$o_conf = $t_subject->getAppConfig();
+		$vs_file = __CA_APP_DIR__.'/tmp/'.$ps_file;
 
-						// overwrite filename if set via request
-						if($vs_filename = $this->request->getParameter('file_name', pString)) {
-							$this->view->setVar('file_name', $vs_filename);
-							$this->view->setVar('extension', false); // extension is already included in above string
-						}
+		$this->view->setVar('file', $vs_file);
+		$this->view->setVar('file_base', $ps_file);
+		$this->view->setVar('extension',$t_exporter->getFileExtension());
+		$this->view->setVar('content_type',$t_exporter->getContentType());
+		$this->view->setVar('t_exporter', $t_exporter);
 
-						// go to export destination screen if configured and if we didn't just come here from there
-						if($o_conf->get('exporter_show_destination_screen')) {
-							if(!$this->request->getParameter('exportDestinationsSet', pInteger)) {
-								$this->render('export/export_destination_html.php');
-								return;
-							}
+		if($vs_export_filename = $o_conf->get($t_subject->tableName()."_batch_export_filename")) {
+			$this->view->setVar('file_name', $vs_export_filename);
+		}
 
-							// deal with alternate destinations before rendering download screen
-							$va_alt_dest = $o_conf->getAssoc('exporter_alternate_destinations');
-							if(is_array($va_alt_dest) && sizeof($va_alt_dest)>0) {
-								foreach($va_alt_dest as $va_alt) {
-									switch($va_alt['type']) {
-										case 'github':
-											caUploadFileToGitHub($va_alt['username'], $va_alt['token'], $va_alt['owner'], $va_alt['repository'], $va_alt['base_dir']."/".$ps_file, $vs_file, 'Commit created by CollectiveAccess on '.date('c'));
-											break;
-										case 'local':
-										default:
-											break;
-									}
-								}
-							}
-						}
-					}
+		// overwrite filename if set via request
+		if($vs_filename = $this->request->getParameter('file_name', pString)) {
+			$this->view->setVar('file_name', $vs_filename);
+			$this->view->setVar('extension', false); // extension is already included in above string
+		}
+
+		// go to export destination screen if configured and if we didn't just come here from there
+		if($o_conf->get('exporter_show_destination_screen')) {
+			if(!$this->request->getParameter('exportDestinationsSet', pInteger)) {
+				$this->render('export/export_destination_html.php');
+				return;
+			}
+		}
+
+		// deal with alternate destinations before rendering download screen
+		$va_alt_dest = $o_conf->getAssoc('exporter_alternate_destinations');
+		$this->view->setVar('exporter_alternate_destinations', $va_alt_dest);
+
+		if(is_array($va_alt_dest) && sizeof($va_alt_dest)>0) {
+			$vs_store_filename = ($this->view->getVar('file_name') ? $this->view->getVar('file_name') : 'batch_export');
+			$vs_ext = $this->view->getVar('extension');
+
+			foreach($va_alt_dest as $va_alt) {
+				if(!isset($va_alt['type'])) { continue; }
+				switch($va_alt['type']) {
+					case 'github':
+						@caUploadFileToGitHub(
+							$va_alt['username'], $va_alt['token'], $va_alt['owner'], $va_alt['repository'],
+							$va_alt['base_dir']."/".$vs_store_filename.($vs_ext ? '.'.$vs_ext : ''), $vs_file
+						);
+						break;
+					case 'local':
+					default:
+						break;
 				}
 			}
 		}
@@ -283,6 +288,25 @@ class MetadataExportController extends ActionController {
 			$this->view->setVar('t_exporter', $t_exporter);
 		}
 		return $t_exporter;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * @return ca_data_exporters|null
+	 */
+	private function getExporterFromFileParameter() {
+		$ps_file = trim($this->request->getParameter('file',pString));
+		$va_matches = array();
+		if($ps_file && preg_match("/^([0-9]+)\_[0-9a-f]{32,32}$/", $ps_file, $va_matches)) {
+			if(file_exists(__CA_APP_DIR__.'/tmp/'.$ps_file)) {
+				if($va_matches[1]) {
+					$t_exporter = new ca_data_exporters($va_matches[1]);
+					if($t_exporter->getPrimaryKey()) {
+						return $t_exporter;
+					}
+				}
+			}
+		}
+		return null;
 	}
 	# ------------------------------------------------------------------
 	# Sidebar info handler

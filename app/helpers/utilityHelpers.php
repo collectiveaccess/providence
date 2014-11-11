@@ -2156,16 +2156,48 @@ function caFileIsIncludable($ps_file) {
 	 * @param string $ps_token access token. Global account password can be used here but it's recommended to create a personal access token instead.
 	 * @param string $ps_owner The repository owner
 	 * @param string $ps_repo repository name
-	 * @param string $ps_git_path path for the file inside the repository, e.g. "/exports/from_collectiveaccess/export.xml."
+	 * @param string $ps_git_path path for the file destination inside the repository, e.g. "/exports/from_collectiveaccess/export.xml."
 	 * @param string $ps_local_filepath file to upload as absolute local path. Note that the file must be loaded in memory to be committed to GitHub.
 	 * @param string $ps_commit_msg commit message
 	 * @param bool $pb_update_on_conflict Determines what happens if file already exists in GitHub repository.
 	 * 		true means the file is updated in place for. false means we abort.
+	 * @return bool success state
 	 */
-	function caUploadFileToGitHub($ps_user, $ps_token, $ps_owner, $ps_repo, $ps_git_path, $ps_local_filepath, $ps_commit_msg, $pb_update_on_conflict=true) {
+	function caUploadFileToGitHub($ps_user, $ps_token, $ps_owner, $ps_repo, $ps_git_path, $ps_local_filepath, $ps_commit_msg = null, $pb_update_on_conflict=false) {
+		if(!$ps_user || !$ps_token || !$ps_owner || !$ps_repo || !$ps_git_path || !$ps_local_filepath) {
+			caLogEvent('DEBG', "Invalid parameters for GitHub file upload. Check your configuration!", 'caUploadFileToGitHub');
+			return false;
+		}
+
+		if(!$ps_commit_msg) {
+			$ps_commit_msg = 'Commit created by CollectiveAccess on '.date('c');
+		}
+
+
 		$o_client = new \Github\Client();
-		$vs_content = @file_get_contents($ps_local_filepath);
 		$o_client->authenticate($ps_user, $ps_token);
-		$o_client->repositories()->contents()->create($ps_owner, $ps_repo, $ps_git_path, $vs_content, $ps_commit_msg);
+
+		$vs_content = @file_get_contents($ps_local_filepath);
+
+		try {
+			$o_client->repositories()->contents()->create($ps_owner, $ps_repo, $ps_git_path, $vs_content, $ps_commit_msg);
+		} catch (Github\Exception\RuntimeException $e) {
+			switch($e->getCode()) {
+				case 401:
+					caLogEvent('DEBG', "Could not authenticate with GitHub. Error message was: ".$e->getMessage()." - Code was: ".$e->getCode(), 'caUploadFileToGitHub');
+					break;
+				case 422:
+					if($pb_update_on_conflict) {
+						// @todo get SHA of parent commit. this won't work as-is
+						$o_client->repositories()->contents()->update($ps_owner, $ps_repo, $ps_git_path, $vs_content, $ps_commit_msg, '');
+					} else {
+						caLogEvent('DEBG', "Could not upload file to GitHub. It looks like a file already exists at {$ps_git_path}.", 'caUploadFileToGitHub');
+					}
+					break;
+			}
+			return false;
+		}
+
+		return true;
 	}
 	# ----------------------------------------
