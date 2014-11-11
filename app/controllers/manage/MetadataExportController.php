@@ -157,6 +157,10 @@ class MetadataExportController extends ActionController {
 			$vn_id = $this->request->getParameter('item_id', pInteger);
 			$this->view->setVar("t_subject", $t_subject);
 
+			// alternate destinations
+			$va_alt_dest = $o_config->getAssoc('exporter_alternate_destinations');
+			$this->view->setVar('exporter_alternate_destinations', $va_alt_dest);
+
 			// filename set via request wins
 			$vs_filename = $this->request->getParameter('file_name', pString);
 
@@ -181,37 +185,67 @@ class MetadataExportController extends ActionController {
 			}
 
 			$this->view->setVar('item_id',$vn_id);
+
+			// do export and dump into tmp file
 			$vs_export = ca_data_exporters::exportRecord($t_exporter->get('exporter_code'), $vn_id, array('singleRecord' => true));
 			$this->view->setVar("export", $vs_export);
 
+			$vs_tmp_file = tempnam(__CA_APP_DIR__.DIRECTORY_SEPARATOR.'tmp', 'singleItemExport');
+			file_put_contents($vs_tmp_file, $vs_export);
+
+			// Store file name in session for later retrieval. We don't want to have to pass that on through a bunch of requests.
+			$o_session = $this->request->getSession();
+			$o_session->setVar('export_file', $vs_tmp_file);
+
 			// show destination screen if configured and if we didn't just come here from there
-			if($o_config->get('exporter_show_destination_screen') && !$this->request->getParameter('exportDestinationsSet', pInteger)) {
+			if($o_config->get('exporter_show_destination_screen')) {
 				$this->render('export/export_destination_html.php');
 				return;
-			}
-
-			// deal with alternate destinations before rendering download screen
-			$va_alt_dest = $o_config->getAssoc('exporter_alternate_destinations');
-			$this->view->setVar('exporter_alternate_destinations', $va_alt_dest);
-
-			if(is_array($va_alt_dest) && sizeof($va_alt_dest)>0) {
-				$vs_tmp_file = tempnam(caGetTempDirPath(), 'singleItemExport');
-				file_put_contents($vs_tmp_file, $vs_export);
-
-				foreach($va_alt_dest as $va_alt) {
-					// github is the only type we support atm
-					if(!isset($va_alt['type']) || ($va_alt['type'] != 'github')) { continue; }
-
-					@caUploadFileToGitHub(
-						$va_alt['username'], $va_alt['token'], $va_alt['owner'], $va_alt['repository'],
-						preg_replace('!/+!','/', $va_alt['base_dir'].'/'.$vs_filename),
-						$vs_tmp_file, $va_alt['branch'], (bool)$va_alt['update_existing']
-					);
-				}
 			}
 		}
 
 		$this->render('export/export_single_results_html.php');
+	}
+	# -------------------------------------------------------
+	public function ProcessDestination() {
+		$o_config = Configuration::load();
+		$va_alt_dest = $o_config->getAssoc('exporter_alternate_destinations');
+		$this->view->setVar('exporter_alternate_destinations', $va_alt_dest);
+
+		$vs_filename = $this->request->getParameter('file_name', pString);
+		$this->view->setVar('file_name', $vs_filename);
+
+		$o_session = $this->request->getSession();
+		if(!($vs_tmp_file = $o_session->getVar('export_file'))) {
+			return;
+		}
+
+		$this->view->setVar('export_file', $vs_tmp_file);
+
+		$vs_dest_code = $this->request->getParameter('destination', pString);
+
+		$vb_success = false;
+		if(is_array($va_alt_dest) && sizeof($va_alt_dest)>0) {
+			if(is_array($va_alt_dest[$vs_dest_code])) {
+				$va_dest = $va_alt_dest[$vs_dest_code];
+				// github is the only type we support atm
+				if(!isset($va_dest['type']) || ($va_dest['type'] != 'github')) { return; }
+				if(!isset($va_dest['display']) || !$va_dest['display']) { $va_dest['display'] = "???"; }
+				$this->view->setVar('dest_display_name', $va_dest['display']);
+
+				if(caUploadFileToGitHub(
+					$va_dest['username'], $va_dest['token'], $va_dest['owner'], $va_dest['repository'],
+					preg_replace('!/+!','/', $va_dest['base_dir'].'/'.$vs_filename),
+					$vs_tmp_file, $va_dest['branch'], (bool)$va_dest['update_existing']
+				)) {
+					$vb_success = true;
+				}
+			}
+		}
+
+		$this->view->setVar('alternate_destination_success', $vb_success);
+
+		$this->render('export/download_feedback_html.php');
 	}
 	# -------------------------------------------------------
 	public function Delete() {

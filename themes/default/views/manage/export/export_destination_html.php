@@ -32,8 +32,10 @@ $vn_id = $this->getVar('item_id');
 $vs_ext = $t_exporter->getFileExtension();
 $vs_content_type = $t_exporter->getContentType();
 $va_errors = $this->getVar('errors');
-
 $vs_filename = ($this->getVar('file_name') ? $this->getVar('file_name') : $vn_id);
+$vs_file_base = $this->getVar('file_base', pString);
+
+$va_destinations = $this->getVar('exporter_alternate_destinations');
 
 if($va_errors && is_array($va_errors)){
 	print "<div class='notification-error-box'><h2 style='margin-left:25px;'>"._t("Export mapping has errors")."</h2>";
@@ -45,16 +47,7 @@ if($va_errors && is_array($va_errors)){
 
 	print "</ul></div>";
 } else {
-	if($vs_export) {
-		print "<h2>"._t("Your export is ready for download. The preview below may be inaccurate. Download the export for best results.")."</h2>\n";
-		print "<pre class='caExportPreview'>".caEscapeForXML($vs_export)."</pre>\n";
-	} else {
-		$vs_file_base = $this->getVar('file_base', pString);
-		print "<h2>"._t("Your export is ready for download.")."</h2>\n";
-
-	}
-	print "<h2>"._t("Choose destination(s) for your export.")."</h2>\n";
-	print caFormTag($this->request, $this->request->getAction(), 'caExportDestinationForm', 'manage/MetadataExport');
+	print "<h2>"._t("The export has been processed. Configure your download below.")."</h2>\n";
 	print caHTMLHiddenInput('exporter_id', array('value' => $t_exporter->getPrimaryKey()));
 	print caHTMLHiddenInput('item_id', array('value' => $vn_id));
 	print caHTMLHiddenInput('exportDestinationsSet', array('value' => 1));
@@ -65,20 +58,38 @@ if($va_errors && is_array($va_errors)){
 	<table>
 		<tr>
 			<td><span class='formLabelPlain'><?php print _t("File name"); ?>&colon;</td>
-			<td><?php print caHTMLTextInput('file_name', array('value' => $vs_filename, 'size' => 40)); ?></td>
+			<td><?php print caHTMLTextInput('file_name', array('id' => 'file_name', 'value' => $vs_filename, 'size' => 40)); ?></td>
 		</tr>
 		<tr>
 			<td style="vertical-align: top;"><span class='formLabelPlain'><?php print _t("Destination(s)"); ?>&colon;</td>
 			<td>
-				<div><?php print caHTMLCheckboxInput('exportDestinationFile', array('checked' => 'checked')); ?> File download</div>
-				<div><?php print caHTMLCheckboxInput('exportDestinationGitHub', array('checked' => 'checked')); ?> GitHub</div>
+
+<?php
+				if(is_array($va_destinations)) {
+					foreach($va_destinations as $vs_code => $va_dest) {
+						if(!isset($va_dest['type']) || ($va_dest['type'] != 'github')) { continue; }
+
+						$va_attributes = array();
+						if(isset($va_dest['checked']) && $va_dest['checked']) { $va_attributes['checked'] = 'checked'; }
+						if(!isset($va_dest['display']) || !$va_dest['display']) { $va_dest['display'] = "???"; }
+
+						print "<div>".caJSButton($this->request, __CA_NAV_BUTTON_UPDATE__, $va_dest['display'], $vs_code, array('onclick' => 'caProcessDestination("'.$vs_code.'"); return false;'))."<div/>\n";
+					}
+				}
+?>
+				<div><?php print caJSButton($this->request, __CA_NAV_BUTTON_DOWNLOAD__, _t('Download'), 'file_download', array('onclick' => 'caProcessDestination("file_download");')); ?></div>
 			</td>
 		</tr>
-		<tr>
-			<td><?php if($vn_id) { print caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t('Back to previous screen'), 'backButton', array('onclick' => 'window.history.back()')); } ?>&nbsp;</td>
-			<td><?php print caFormSubmitButton($this->request, __CA_NAV_BUTTON_DOWNLOAD__, _t('Go'), 'caExportDestinationForm'); ?></td>
-		</tr>
 	</table>
-	</form>
+	<div id="caExporterDestinationFeedback"></div>
 <?php
 }
+?>
+
+<script type="text/javascript">
+	function caProcessDestination(dest_code) {
+		var file_name = jQuery('#file_name').val();
+		jQuery('#caExporterDestinationFeedback').html("<?php print caBusyIndicatorIcon($this->request); ?>");
+		jQuery("#caExporterDestinationFeedback").load('<?php print caNavUrl($this->request, 'manage', 'MetadataExport', 'ProcessDestination'); ?>', { file_name : file_name, destination : dest_code });
+	}
+</script>

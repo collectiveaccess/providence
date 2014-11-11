@@ -2199,6 +2199,7 @@ function caFileIsIncludable($ps_file) {
 							caLogEvent('DEBG', "Could not update exiting file in GitHub. Error message was: ".$ex->getMessage()." - Code was: ".$ex->getCode(), 'caUploadFileToGitHub');
 							break;
 						}
+						return true;
 					} else {
 						caLogEvent('DEBG', "Could not upload file to GitHub. It looks like a file already exists at {$ps_git_path}.", 'caUploadFileToGitHub');
 					}
