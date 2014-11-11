@@ -263,7 +263,8 @@ class MetadataExportController extends ActionController {
 					case 'github':
 						@caUploadFileToGitHub(
 							$va_alt['username'], $va_alt['token'], $va_alt['owner'], $va_alt['repository'],
-							$va_alt['base_dir']."/".$vs_store_filename.($vs_ext ? '.'.$vs_ext : ''), $vs_file
+							$va_alt['base_dir']."/".$vs_store_filename.($vs_ext ? '.'.$vs_ext : ''),
+							$vs_file, $va_alt['branch'], (bool)$va_alt['update_existing']
 						);
 						break;
 					case 'local':

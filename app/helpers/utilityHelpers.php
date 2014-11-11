@@ -2158,12 +2158,14 @@ function caFileIsIncludable($ps_file) {
 	 * @param string $ps_repo repository name
 	 * @param string $ps_git_path path for the file destination inside the repository, e.g. "/exports/from_collectiveaccess/export.xml."
 	 * @param string $ps_local_filepath file to upload as absolute local path. Note that the file must be loaded in memory to be committed to GitHub.
-	 * @param string $ps_commit_msg commit message
+	 * @param string $ps_branch branch to commit to. defaults to 'master'
 	 * @param bool $pb_update_on_conflict Determines what happens if file already exists in GitHub repository.
-	 * 		true means the file is updated in place for. false means we abort.
+	 * 		true means the file is updated in place for. false means we abort. default is true
+	 * @param string $ps_commit_msg commit message
 	 * @return bool success state
 	 */
-	function caUploadFileToGitHub($ps_user, $ps_token, $ps_owner, $ps_repo, $ps_git_path, $ps_local_filepath, $ps_commit_msg = null, $pb_update_on_conflict=false) {
+	function caUploadFileToGitHub($ps_user, $ps_token, $ps_owner, $ps_repo, $ps_git_path, $ps_local_filepath, $ps_branch = 'master', $pb_update_on_conflict=true, $ps_commit_msg = null) {
+		// check mandatory params
 		if(!$ps_user || !$ps_token || !$ps_owner || !$ps_repo || !$ps_git_path || !$ps_local_filepath) {
 			caLogEvent('DEBG', "Invalid parameters for GitHub file upload. Check your configuration!", 'caUploadFileToGitHub');
 			return false;
@@ -2180,7 +2182,7 @@ function caFileIsIncludable($ps_file) {
 		$vs_content = @file_get_contents($ps_local_filepath);
 
 		try {
-			$o_client->repositories()->contents()->create($ps_owner, $ps_repo, $ps_git_path, $vs_content, $ps_commit_msg);
+			$o_client->repositories()->contents()->create($ps_owner, $ps_repo, $ps_git_path, $vs_content, $ps_commit_msg, $ps_branch);
 		} catch (Github\Exception\RuntimeException $e) {
 			switch($e->getCode()) {
 				case 401:
@@ -2188,8 +2190,15 @@ function caFileIsIncludable($ps_file) {
 					break;
 				case 422:
 					if($pb_update_on_conflict) {
-						// @todo get SHA of parent commit. this won't work as-is
-						$o_client->repositories()->contents()->update($ps_owner, $ps_repo, $ps_git_path, $vs_content, $ps_commit_msg, '');
+						try {
+							$va_content = $o_client->repositories()->contents()->show($ps_owner, $ps_repo, $ps_git_path);
+							if(isset($va_content['sha'])) {
+								$o_client->repositories()->contents()->update($ps_owner, $ps_repo, $ps_git_path, $vs_content, $ps_commit_msg, $va_content['sha'], $ps_branch);
+							}
+						} catch (Github\Exception\RuntimeException $ex) {
+							caLogEvent('DEBG', "Could not update exiting file in GitHub. Error message was: ".$ex->getMessage()." - Code was: ".$ex->getCode(), 'caUploadFileToGitHub');
+							break;
+						}
 					} else {
 						caLogEvent('DEBG', "Could not upload file to GitHub. It looks like a file already exists at {$ps_git_path}.", 'caUploadFileToGitHub');
 					}
