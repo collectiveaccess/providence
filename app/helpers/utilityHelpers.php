@@ -2205,6 +2205,12 @@ function caFileIsIncludable($ps_file) {
 					break;
 			}
 			return false;
+		} catch (Github\Exception\ValidationFailedException $e) {
+			caLogEvent('DEBG', "Could not upload file to GitHub. The parameter validation failed. Error message was: ".$e->getMessage()." - Code was: ".$e->getCode(), 'caUploadFileToGitHub');
+			return false;
+		} catch (Exception $e) {
+			caLogEvent('DEBG', "Could not upload file to GitHub. A generic error occurred. Error message was: ".$e->getMessage()." - Code was: ".$e->getCode(), 'caUploadFileToGitHub');
+			return false;
 		}
 
 		return true;

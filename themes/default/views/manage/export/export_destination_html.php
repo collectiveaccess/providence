@@ -65,7 +65,7 @@ if($va_errors && is_array($va_errors)){
 	<table>
 		<tr>
 			<td><span class='formLabelPlain'><?php print _t("File name"); ?>&colon;</td>
-			<td><?php print caHTMLTextInput('file_name', array('value' => $vs_filename.'.'.$vs_ext, 'size' => 40)); ?></td>
+			<td><?php print caHTMLTextInput('file_name', array('value' => $vs_filename, 'size' => 40)); ?></td>
 		</tr>
 		<tr>
 			<td style="vertical-align: top;"><span class='formLabelPlain'><?php print _t("Destination(s)"); ?>&colon;</td>

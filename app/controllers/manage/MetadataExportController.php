@@ -157,16 +157,22 @@ class MetadataExportController extends ActionController {
 			$vn_id = $this->request->getParameter('item_id', pInteger);
 			$this->view->setVar("t_subject", $t_subject);
 
-			if($vs_export_filename_template = $o_config->get($t_subject->tableName()."_single_item_export_filename")) {
-				if($vs_filename = caProcessTemplateForIDs($vs_export_filename_template, $t_subject->tableNum(), array($vn_id))){
-					$this->view->setVar('file_name', $vs_filename);
+			// filename set via request wins
+			$vs_filename = $this->request->getParameter('file_name', pString);
+
+			// else run template from config
+			if(!$vs_filename && ($vs_export_filename_template = $o_config->get($t_subject->tableName()."_single_item_export_filename"))) {
+				if($vs_filename = caProcessTemplateForIDs($vs_export_filename_template, $t_subject->tableNum(), array($vn_id))) {
+					// processed template comes without file extension
+					$vs_filename = $vs_filename.'.'.$t_exporter->getFileExtension();
 				}
 			}
 
-			// overwrite filename if set via request
-			if($vs_filename = $this->request->getParameter('file_name', pString)) {
-				$this->view->setVar('file_name', $vs_filename);
-			}
+			// still no filename? use hardcoded default
+			if(!$vs_filename) { $vs_filename = $vn_id.'.'.$t_exporter->getFileExtension(); }
+
+			// pass to view
+			$this->view->setVar('file_name', $vs_filename);
 
 			// Can user read this particular item?
 			if(!caCanRead($this->request->getUserID(), $t_exporter->get('table_num'), $vn_id)) {
@@ -182,6 +188,26 @@ class MetadataExportController extends ActionController {
 			if($o_config->get('exporter_show_destination_screen') && !$this->request->getParameter('exportDestinationsSet', pInteger)) {
 				$this->render('export/export_destination_html.php');
 				return;
+			}
+
+			// deal with alternate destinations before rendering download screen
+			$va_alt_dest = $o_config->getAssoc('exporter_alternate_destinations');
+			$this->view->setVar('exporter_alternate_destinations', $va_alt_dest);
+
+			if(is_array($va_alt_dest) && sizeof($va_alt_dest)>0) {
+				$vs_tmp_file = tempnam(caGetTempDirPath(), 'singleItemExport');
+				file_put_contents($vs_tmp_file, $vs_export);
+
+				foreach($va_alt_dest as $va_alt) {
+					// github is the only type we support atm
+					if(!isset($va_alt['type']) || ($va_alt['type'] != 'github')) { continue; }
+
+					@caUploadFileToGitHub(
+						$va_alt['username'], $va_alt['token'], $va_alt['owner'], $va_alt['repository'],
+						preg_replace('!/+!','/', $va_alt['base_dir'].'/'.$vs_filename),
+						$vs_tmp_file, $va_alt['branch'], (bool)$va_alt['update_existing']
+					);
+				}
 			}
 		}
 
@@ -231,15 +257,22 @@ class MetadataExportController extends ActionController {
 		$this->view->setVar('content_type',$t_exporter->getContentType());
 		$this->view->setVar('t_exporter', $t_exporter);
 
-		if($vs_export_filename = $o_conf->get($t_subject->tableName()."_batch_export_filename")) {
-			$this->view->setVar('file_name', $vs_export_filename);
+		// filename set via request wins
+		$vs_filename = $this->request->getParameter('file_name', pString);
+
+		// otherwise get from config file
+		if(!$vs_filename){
+			if($vs_filename = $o_conf->get($t_subject->tableName()."_batch_export_filename")) {
+				// config setting comes without file extension
+				$vs_filename = $vs_filename.'.'.$t_exporter->getFileExtension();
+			}
 		}
 
-		// overwrite filename if set via request
-		if($vs_filename = $this->request->getParameter('file_name', pString)) {
-			$this->view->setVar('file_name', $vs_filename);
-			$this->view->setVar('extension', false); // extension is already included in above string
-		}
+		// still no filename? -> go for hardcoded default
+		if(!$vs_filename) { $vs_filename = 'batch_export.'.$t_exporter->getFileExtension(); }
+
+		// pass to view
+		$this->view->setVar('file_name', $vs_filename);
 
 		// go to export destination screen if configured and if we didn't just come here from there
 		if($o_conf->get('exporter_show_destination_screen')) {
@@ -254,23 +287,15 @@ class MetadataExportController extends ActionController {
 		$this->view->setVar('exporter_alternate_destinations', $va_alt_dest);
 
 		if(is_array($va_alt_dest) && sizeof($va_alt_dest)>0) {
-			$vs_store_filename = ($this->view->getVar('file_name') ? $this->view->getVar('file_name') : 'batch_export');
-			$vs_ext = $this->view->getVar('extension');
-
 			foreach($va_alt_dest as $va_alt) {
-				if(!isset($va_alt['type'])) { continue; }
-				switch($va_alt['type']) {
-					case 'github':
-						@caUploadFileToGitHub(
-							$va_alt['username'], $va_alt['token'], $va_alt['owner'], $va_alt['repository'],
-							$va_alt['base_dir']."/".$vs_store_filename.($vs_ext ? '.'.$vs_ext : ''),
-							$vs_file, $va_alt['branch'], (bool)$va_alt['update_existing']
-						);
-						break;
-					case 'local':
-					default:
-						break;
-				}
+				// github is the only type we support atm
+				if(!isset($va_alt['type']) || ($va_alt['type'] != 'github')) { continue; }
+
+				@caUploadFileToGitHub(
+					$va_alt['username'], $va_alt['token'], $va_alt['owner'], $va_alt['repository'],
+					preg_replace('!/+!','/', $va_alt['base_dir']."/".$vs_filename),
+					$vs_file, $va_alt['branch'], (bool)$va_alt['update_existing']
+				);
 			}
 		}
 
