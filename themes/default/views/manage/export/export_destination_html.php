@@ -89,7 +89,12 @@ if($va_errors && is_array($va_errors)){
 <script type="text/javascript">
 	function caProcessDestination(dest_code) {
 		var file_name = jQuery('#file_name').val();
-		jQuery('#caExporterDestinationFeedback').html("<?php print caBusyIndicatorIcon($this->request); ?>");
-		jQuery("#caExporterDestinationFeedback").load('<?php print caNavUrl($this->request, 'manage', 'MetadataExport', 'ProcessDestination'); ?>', { file_name : file_name, destination : dest_code });
+
+		if(dest_code == 'file_download') { // for file download, really redirect to action
+			window.location.href = "<?php print caNavUrl($this->request, 'manage', 'MetadataExport', 'ProcessDestination'); ?>?file_name=" + file_name + "&destination=file_download";
+		} else { // for other destinations like github, load async
+			jQuery('#caExporterDestinationFeedback').html("<?php print caBusyIndicatorIcon($this->request); ?>");
+			jQuery("#caExporterDestinationFeedback").load('<?php print caNavUrl($this->request, 'manage', 'MetadataExport', 'ProcessDestination'); ?>', { file_name : file_name, destination : dest_code });
+		}
 	}
 </script>

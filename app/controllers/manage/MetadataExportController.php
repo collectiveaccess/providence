@@ -193,9 +193,10 @@ class MetadataExportController extends ActionController {
 			$vs_tmp_file = tempnam(__CA_APP_DIR__.DIRECTORY_SEPARATOR.'tmp', 'singleItemExport');
 			file_put_contents($vs_tmp_file, $vs_export);
 
-			// Store file name in session for later retrieval. We don't want to have to pass that on through a bunch of requests.
+			// Store file name and type in session for later retrieval. We don't want to have to pass that on through a bunch of requests.
 			$o_session = $this->getRequest()->getSession();
 			$o_session->setVar('export_file', $vs_tmp_file);
+			$o_session->setVar('export_content_type', $t_exporter->getContentType());
 
 			// show destination screen if configured and if we didn't just come here from there
 			if($o_config->get('exporter_show_destination_screen')) {
@@ -219,11 +220,22 @@ class MetadataExportController extends ActionController {
 		if(!($vs_tmp_file = $o_session->getVar('export_file'))) {
 			return;
 		}
+		if(!($vs_content_type = $o_session->getVar('export_content_type'))) {
+			return;
+		}
 
 		$this->view->setVar('export_file', $vs_tmp_file);
+		$this->view->setVar('export_content_type', $vs_content_type);
 
 		$vs_dest_code = $this->getRequest()->getParameter('destination', pString);
 
+		// catch plain old download
+		if($vs_dest_code == 'file_download') {
+			$this->render('export/download_export_binary.php');
+			return;
+		}
+
+		// other destination
 		$vb_success = false;
 		if(is_array($va_alt_dest) && sizeof($va_alt_dest)>0) {
 			if(is_array($va_alt_dest[$vs_dest_code])) {
