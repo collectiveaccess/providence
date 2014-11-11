@@ -35,8 +35,8 @@
 	header("Pragma: no-cache");
 	header("Cache-control: private");
 	header('Content-Length: ' . filesize($vs_file_path));
-	
 	header("Content-Disposition: attachment; filename=".$this->getVar('download_name'));
+
 	set_time_limit(0);
 	$o_fp = @fopen($vs_file_path,"rb");
 	while(is_resource($o_fp) && !feof($o_fp)) {
@@ -44,4 +44,5 @@
 		ob_flush();
 		flush();
 	}
-?>
+	@unlink($vs_file_path);
+	exit();
