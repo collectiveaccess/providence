@@ -3173,6 +3173,11 @@ input[type="text"], input[type="textarea"], textarea,  input[type="password"] {
 	border-radius: 3px;
 }
 
+input[type="text"]:disabled, input[type="textarea"]:disabled, textarea:disabled {
+    color: #808080;
+    -webkit-text-fill-color:#808080;
+}
+
 textarea:focus{
     border: solid #666 1px;
     outline-style:none;  /** remove glow in Safari */
