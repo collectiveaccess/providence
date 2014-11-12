@@ -63,7 +63,7 @@ if($va_errors && is_array($va_errors)){
 		<tr>
 			<td style="vertical-align: top;"><span class='formLabelPlain'><?php print _t("Destination(s)"); ?>&colon;</td>
 			<td>
-
+				<div><?php print caJSButton($this->request, __CA_NAV_BUTTON_DOWNLOAD__, _t('Download'), 'file_download', array('onclick' => 'caProcessDestination("file_download");')); ?></div>
 <?php
 				if(is_array($va_destinations)) {
 					foreach($va_destinations as $vs_code => $va_dest) {
@@ -77,11 +77,10 @@ if($va_errors && is_array($va_errors)){
 					}
 				}
 ?>
-				<div><?php print caJSButton($this->request, __CA_NAV_BUTTON_DOWNLOAD__, _t('Download'), 'file_download', array('onclick' => 'caProcessDestination("file_download");')); ?></div>
 			</td>
 		</tr>
 	</table>
-	<div id="caExporterDestinationFeedback"></div>
+	<div id="caExporterDestinationFeedback" style="margin-top: 20px; text-align: center;"></div>
 <?php
 }
 ?>
@@ -91,7 +90,7 @@ if($va_errors && is_array($va_errors)){
 		var file_name = jQuery('#file_name').val();
 
 		if(dest_code == 'file_download') { // for file download, really redirect to action
-			window.location.href = "<?php print caNavUrl($this->request, 'manage', 'MetadataExport', 'ProcessDestination'); ?>?file_name=" + file_name + "&destination=file_download";
+			window.location.href = "<?php print caNavUrl($this->request, 'manage', 'MetadataExport', 'ProcessDestination'); ?>?file_name=" + encodeURIComponent(file_name) + "&destination=file_download";
 		} else { // for other destinations like github, load async
 			jQuery('#caExporterDestinationFeedback').html("<?php print caBusyIndicatorIcon($this->request); ?>");
 			jQuery("#caExporterDestinationFeedback").load('<?php print caNavUrl($this->request, 'manage', 'MetadataExport', 'ProcessDestination'); ?>', { file_name : file_name, destination : dest_code });

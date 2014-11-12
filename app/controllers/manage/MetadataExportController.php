@@ -150,7 +150,10 @@ class MetadataExportController extends ActionController {
 
 		$va_errors = ca_data_exporters::checkMapping($t_exporter->get('exporter_code'));
 		if(is_array($va_errors) && (sizeof($va_errors)>0)){
+
 			$this->getView()->setVar("errors",$va_errors);
+			$this->render('export/export_errors.php');
+
 		} else {
 			set_time_limit(3600);
 
@@ -177,7 +180,7 @@ class MetadataExportController extends ActionController {
 			// still no filename? use hardcoded default
 			if(!$vs_filename) { $vs_filename = $vn_id.'.'.$t_exporter->getFileExtension(); }
 
-			// pass to view
+			// pass to view as default value for form field
 			$this->getView()->setVar('file_name', $vs_filename);
 
 			// Can user read this particular item?
@@ -201,13 +204,12 @@ class MetadataExportController extends ActionController {
 			$o_session->setVar('export_content_type', $t_exporter->getContentType());
 
 			// show destination screen if configured and if we didn't just come here from there
-			if($o_config->get('exporter_show_destination_screen')) {
-				$this->render('export/export_destination_html.php');
-				return;
-			}
+			// @todo always show destination screen?
+			//if($o_config->get('exporter_show_destination_screen')) {
+			$this->render('export/export_destination_html.php');
+			//	return;
+			//}
 		}
-
-		$this->render('export/export_single_results_html.php');
 	}
 	# -------------------------------------------------------
 	public function ProcessDestination() {
@@ -219,6 +221,7 @@ class MetadataExportController extends ActionController {
 		$this->getView()->setVar('file_name', $vs_filename);
 
 		$o_session = $this->getRequest()->getSession();
+
 		if(!($vs_tmp_file = $o_session->getVar('export_file'))) {
 			return;
 		}
@@ -231,7 +234,7 @@ class MetadataExportController extends ActionController {
 
 		$vs_dest_code = $this->getRequest()->getParameter('destination', pString);
 
-		// catch plain old download
+		// catch plain old file download request and download as binary
 		if($vs_dest_code == 'file_download') {
 			$this->render('export/download_export_binary.php');
 			return;
@@ -391,7 +394,6 @@ class MetadataExportController extends ActionController {
 		$va_tmp_dir_contents = caGetDirectoryContentsAsList(__CA_APP_DIR__.DIRECTORY_SEPARATOR.'tmp', false);
 		foreach($va_tmp_dir_contents as $vs_file) {
 			if(preg_match("/^singleItemExport/", basename($vs_file))) {
-				caDebug(time() - filemtime($vs_file));
 				if((time() - filemtime($vs_file)) > 60*60) {
 					@unlink($vs_file);
 				}
