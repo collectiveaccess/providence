@@ -32,5 +32,5 @@
 	if($vb_success) {
 		print "<div>"._t("Upload to <i>%1</i> successful", $vs_display_name)."</div>";
 	} else {
-		print "<div>"._t("There was an error while uploading to <i>%1</i>. Check the Event Log for more information.", $vs_display_name)."</div>";
+		print "<div>"._t("There was an error while uploading to <i>%1</i>. Check the events log for more information.", $vs_display_name)."</div>";
 	}

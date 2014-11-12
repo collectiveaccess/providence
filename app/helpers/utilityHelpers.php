@@ -2195,14 +2195,17 @@ function caFileIsIncludable($ps_file) {
 							if(isset($va_content['sha'])) {
 								$o_client->repositories()->contents()->update($ps_owner, $ps_repo, $ps_git_path, $vs_content, $ps_commit_msg, $va_content['sha'], $ps_branch);
 							}
+							return true; // overwrite was successful if there was no exception in above statement
 						} catch (Github\Exception\RuntimeException $ex) {
 							caLogEvent('DEBG', "Could not update exiting file in GitHub. Error message was: ".$ex->getMessage()." - Code was: ".$ex->getCode(), 'caUploadFileToGitHub');
 							break;
 						}
-						return true;
 					} else {
 						caLogEvent('DEBG', "Could not upload file to GitHub. It looks like a file already exists at {$ps_git_path}.", 'caUploadFileToGitHub');
 					}
+					break;
+				default:
+					caLogEvent('DEBG', "Could not upload file to GitHub. A generic error occurred. Error message was: ".$e->getMessage()." - Code was: ".$e->getCode(), 'caUploadFileToGitHub');
 					break;
 			}
 			return false;
