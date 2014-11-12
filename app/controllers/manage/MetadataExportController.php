@@ -246,10 +246,15 @@ class MetadataExportController extends ActionController {
 				if(!isset($va_dest['display']) || !$va_dest['display']) { $va_dest['display'] = "???"; }
 				$this->getView()->setVar('dest_display_name', $va_dest['display']);
 
+				if(isset($va_dest['base_dir']) && strlen($va_dest['base_dir'])>0) {
+					$vs_git_path = preg_replace('!/+!','/', $va_dest['base_dir'].'/'.$vs_filename);
+				} else {
+					$vs_git_path = $vs_filename;
+				}
+
 				if(caUploadFileToGitHub(
 					$va_dest['username'], $va_dest['token'], $va_dest['owner'], $va_dest['repository'],
-					preg_replace('!/+!','/', $va_dest['base_dir'].'/'.$vs_filename),
-					$vs_tmp_file, $va_dest['branch'], (bool)$va_dest['update_existing']
+					$vs_git_path, $vs_tmp_file, $va_dest['branch'], (bool)$va_dest['update_existing']
 				)) {
 					$vb_success = true;
 				}
