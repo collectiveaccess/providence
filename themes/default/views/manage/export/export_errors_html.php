@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * manage/export/download_batch_html.php:
+ * manage/export/export_errors_html.php:
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,25 +26,15 @@
  * ----------------------------------------------------------------------
  */
 
-$vs_file = $this->getVar('file');
-$vs_ext = $this->getVar('extension');
-$vs_content_type = $this->getVar('content_type');
-$vs_filename = $this->getVar('file_name');
+$va_errors = $this->getVar('errors');
 
-if(!$vs_file){
-	print _t('Invalid parameters');
-} else {
-	header('Content-Type: '.$vs_content_type.'; charset=UTF-8');
-	header('Content-Disposition: attachment; filename="'.$vs_filename.'"');
-	header('Content-Transfer-Encoding: binary');
-	
-	set_time_limit(0);
-	$o_fp = @fopen($vs_file,"rb");
-	while(is_resource($o_fp) && !feof($o_fp)) {
-		print(@fread($o_fp, 1024*8));
-		ob_flush();
-		flush();
+if($va_errors && is_array($va_errors)){
+	print "<div class='notification-error-box'><h2 style='margin-left:25px;'>"._t("Export mapping has errors")."</h2>";
+	print "<ul>";
+
+	foreach($va_errors as $vs_error){
+		print "<li class='notification-error-box'>$vs_error</li>";
 	}
-	@unlink($vs_file);
-	exit();	
+
+	print "</ul></div>";
 }
