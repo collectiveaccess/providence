@@ -44,6 +44,5 @@ if(!$vs_file){
 		ob_flush();
 		flush();
 	}
-	@unlink($vs_file);
 	exit();	
 }

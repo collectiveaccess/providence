@@ -59,6 +59,8 @@ class MetadataExportController extends ActionController {
 
 		$this->opo_datamodel = Datamodel::load();
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
+
+		$this->cleanOldExportFilesFromTmpDir();
 	}
 	# -------------------------------------------------------
 	/**
@@ -73,7 +75,7 @@ class MetadataExportController extends ActionController {
 		AssetLoadManager::register('fileupload');
 
 		$va_exporters = ca_data_exporters::getExporters();
-		$this->view->setVar('exporter_list', $va_exporters);
+		$this->getView()->setVar('exporter_list', $va_exporters);
 		$this->render('export/exporter_list_html.php');
 	}
 	# -------------------------------------------------------
@@ -95,7 +97,7 @@ class MetadataExportController extends ActionController {
 			$va_response['skippedMessage'] = ($vn_skip_count == 1) ? _t('Skipped %1 worksheet', $vn_skip_count) : _t('Skipped %1 worksheet', $vn_skip_count);
 		}
 
-		$this->view->setVar('response', $va_response);
+		$this->getView()->setVar('response', $va_response);
 		$this->render('export/file_upload_response_json.php');
 	}
 	# -------------------------------------------------------
@@ -118,7 +120,7 @@ class MetadataExportController extends ActionController {
 			return;
 		}
 
-		$this->view->setVar("t_subject", $t_subject);
+		$this->getView()->setVar("t_subject", $t_subject);
 
 		// run now
 		$app = AppController::getInstance();
@@ -148,18 +150,18 @@ class MetadataExportController extends ActionController {
 
 		$va_errors = ca_data_exporters::checkMapping($t_exporter->get('exporter_code'));
 		if(is_array($va_errors) && (sizeof($va_errors)>0)){
-			$this->view->setVar("errors",$va_errors);
+			$this->getView()->setVar("errors",$va_errors);
 		} else {
 			set_time_limit(3600);
 
 			$o_config = $t_subject->getAppConfig();
 
 			$vn_id = $this->getRequest()->getParameter('item_id', pInteger);
-			$this->view->setVar("t_subject", $t_subject);
+			$this->getView()->setVar("t_subject", $t_subject);
 
 			// alternate destinations
 			$va_alt_dest = $o_config->getAssoc('exporter_alternate_destinations');
-			$this->view->setVar('exporter_alternate_destinations', $va_alt_dest);
+			$this->getView()->setVar('exporter_alternate_destinations', $va_alt_dest);
 
 			// filename set via request wins
 			$vs_filename = $this->getRequest()->getParameter('file_name', pString);
@@ -176,7 +178,7 @@ class MetadataExportController extends ActionController {
 			if(!$vs_filename) { $vs_filename = $vn_id.'.'.$t_exporter->getFileExtension(); }
 
 			// pass to view
-			$this->view->setVar('file_name', $vs_filename);
+			$this->getView()->setVar('file_name', $vs_filename);
 
 			// Can user read this particular item?
 			if(!caCanRead($this->getRequest()->getUserID(), $t_exporter->get('table_num'), $vn_id)) {
@@ -184,16 +186,16 @@ class MetadataExportController extends ActionController {
 				return;
 			}
 
-			$this->view->setVar('item_id',$vn_id);
+			$this->getView()->setVar('item_id',$vn_id);
 
-			// do export and dump into tmp file
+			// do item export and dump into tmp file
 			$vs_export = ca_data_exporters::exportRecord($t_exporter->get('exporter_code'), $vn_id, array('singleRecord' => true));
-			$this->view->setVar("export", $vs_export);
+			$this->getView()->setVar("export", $vs_export);
 
 			$vs_tmp_file = tempnam(__CA_APP_DIR__.DIRECTORY_SEPARATOR.'tmp', 'singleItemExport');
 			file_put_contents($vs_tmp_file, $vs_export);
 
-			// Store file name and type in session for later retrieval. We don't want to have to pass that on through a bunch of requests.
+			// Store file name and content type in session for later retrieval. We don't want to have to pass that on through a bunch of requests.
 			$o_session = $this->getRequest()->getSession();
 			$o_session->setVar('export_file', $vs_tmp_file);
 			$o_session->setVar('export_content_type', $t_exporter->getContentType());
@@ -211,10 +213,10 @@ class MetadataExportController extends ActionController {
 	public function ProcessDestination() {
 		$o_config = Configuration::load();
 		$va_alt_dest = $o_config->getAssoc('exporter_alternate_destinations');
-		$this->view->setVar('exporter_alternate_destinations', $va_alt_dest);
+		$this->getView()->setVar('exporter_alternate_destinations', $va_alt_dest);
 
 		$vs_filename = $this->getRequest()->getParameter('file_name', pString);
-		$this->view->setVar('file_name', $vs_filename);
+		$this->getView()->setVar('file_name', $vs_filename);
 
 		$o_session = $this->getRequest()->getSession();
 		if(!($vs_tmp_file = $o_session->getVar('export_file'))) {
@@ -224,8 +226,8 @@ class MetadataExportController extends ActionController {
 			return;
 		}
 
-		$this->view->setVar('export_file', $vs_tmp_file);
-		$this->view->setVar('export_content_type', $vs_content_type);
+		$this->getView()->setVar('export_file', $vs_tmp_file);
+		$this->getView()->setVar('export_content_type', $vs_content_type);
 
 		$vs_dest_code = $this->getRequest()->getParameter('destination', pString);
 
@@ -243,7 +245,7 @@ class MetadataExportController extends ActionController {
 				// github is the only type we support atm
 				if(!isset($va_dest['type']) || ($va_dest['type'] != 'github')) { return; }
 				if(!isset($va_dest['display']) || !$va_dest['display']) { $va_dest['display'] = "???"; }
-				$this->view->setVar('dest_display_name', $va_dest['display']);
+				$this->getView()->setVar('dest_display_name', $va_dest['display']);
 
 				if(caUploadFileToGitHub(
 					$va_dest['username'], $va_dest['token'], $va_dest['owner'], $va_dest['repository'],
@@ -255,7 +257,7 @@ class MetadataExportController extends ActionController {
 			}
 		}
 
-		$this->view->setVar('alternate_destination_success', $vb_success);
+		$this->getView()->setVar('alternate_destination_success', $vb_success);
 
 		$this->render('export/download_feedback_html.php');
 	}
@@ -297,11 +299,11 @@ class MetadataExportController extends ActionController {
 		$o_conf = $t_subject->getAppConfig();
 		$vs_file = __CA_APP_DIR__.'/tmp/'.$ps_file;
 
-		$this->view->setVar('file', $vs_file);
-		$this->view->setVar('file_base', $ps_file);
-		$this->view->setVar('extension',$t_exporter->getFileExtension());
-		$this->view->setVar('content_type',$t_exporter->getContentType());
-		$this->view->setVar('t_exporter', $t_exporter);
+		$this->getView()->setVar('file', $vs_file);
+		$this->getView()->setVar('file_base', $ps_file);
+		$this->getView()->setVar('extension',$t_exporter->getFileExtension());
+		$this->getView()->setVar('content_type',$t_exporter->getContentType());
+		$this->getView()->setVar('t_exporter', $t_exporter);
 
 		// filename set via request wins
 		$vs_filename = $this->getRequest()->getParameter('file_name', pString);
@@ -318,7 +320,7 @@ class MetadataExportController extends ActionController {
 		if(!$vs_filename) { $vs_filename = 'batch_export.'.$t_exporter->getFileExtension(); }
 
 		// pass to view
-		$this->view->setVar('file_name', $vs_filename);
+		$this->getView()->setVar('file_name', $vs_filename);
 
 		// go to export destination screen if configured and if we didn't just come here from there
 		if($o_conf->get('exporter_show_destination_screen')) {
@@ -330,7 +332,7 @@ class MetadataExportController extends ActionController {
 
 		// deal with alternate destinations before rendering download screen
 		$va_alt_dest = $o_conf->getAssoc('exporter_alternate_destinations');
-		$this->view->setVar('exporter_alternate_destinations', $va_alt_dest);
+		$this->getView()->setVar('exporter_alternate_destinations', $va_alt_dest);
 
 		if(is_array($va_alt_dest) && sizeof($va_alt_dest)>0) {
 			foreach($va_alt_dest as $va_alt) {
@@ -356,8 +358,8 @@ class MetadataExportController extends ActionController {
 		}
 		$t_exporter = new ca_data_exporters($vn_exporter_id);
 		if ($pb_set_view_vars){
-			$this->view->setVar('exporter_id', $vn_exporter_id);
-			$this->view->setVar('t_exporter', $t_exporter);
+			$this->getView()->setVar('exporter_id', $vn_exporter_id);
+			$this->getView()->setVar('t_exporter', $t_exporter);
 		}
 		return $t_exporter;
 	}
@@ -381,23 +383,40 @@ class MetadataExportController extends ActionController {
 		return null;
 	}
 	# ------------------------------------------------------------------
+	/**
+	 * Cleans up temporary export files older than an hour
+	 * By then everybody should have gotten everything they need from the export dest screen
+	 */
+	private function cleanOldExportFilesFromTmpDir() {
+		$va_tmp_dir_contents = caGetDirectoryContentsAsList(__CA_APP_DIR__.DIRECTORY_SEPARATOR.'tmp', false);
+		foreach($va_tmp_dir_contents as $vs_file) {
+			if(preg_match("/^singleItemExport/", basename($vs_file))) {
+				caDebug(time() - filemtime($vs_file));
+				if((time() - filemtime($vs_file)) > 60*60) {
+					@unlink($vs_file);
+				}
+			}
+		}
+	}
+	# ------------------------------------------------------------------
 	# Sidebar info handler
 	# ------------------------------------------------------------------
 	/**
 	 * Sets up view variables for upper-left-hand info panel (aka. "inspector"). Actual rendering is performed by calling sub-class.
 	 *
 	 * @param array $pa_parameters Array of parameters as specified in navigation.conf, including primary key value and type_id
+	 * @return string rendered view ready for display
 	 */
 	public function Info($pa_parameters) {
 		if(($this->getRequest()->getAction()=="Index") || ($this->getRequest()->getAction()=="Delete")){
 			$t_exporter = $this->getExporterInstance(false);
-			$this->view->setVar('t_item', $t_exporter);
-			$this->view->setVar('exporter_count', ca_data_exporters::getExporterCount());
+			$this->getView()->setVar('t_item', $t_exporter);
+			$this->getView()->setVar('exporter_count', ca_data_exporters::getExporterCount());
 
 			return $this->render('export/widget_exporter_list_html.php', true);
 		} else {
 			$t_exporter = $this->getExporterInstance();
-			$this->view->setVar('t_item', $t_exporter);
+			$this->getView()->setVar('t_item', $t_exporter);
 			return $this->render('export/widget_exporter_info_html.php', true);
 		}
 	}
