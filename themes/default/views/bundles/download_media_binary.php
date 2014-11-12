@@ -43,4 +43,3 @@
 		ob_flush();
 		flush();
 	}
-?>

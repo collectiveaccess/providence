@@ -41,12 +41,15 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
  class ApplicationChangeLog {
  	# ----------------------------------------------------------------------
  	private $ops_change_log_database = '';
+	private $opb_dont_show_timestamp_in_change_log = false;
  	# ----------------------------------------------------------------------
  	public function __construct() {
  		$o_config = Configuration::load();
 		if ($this->ops_change_log_database = $o_config->get("change_log_database")) {
 			$this->ops_change_log_database .= ".";
 		}
+
+		$this->opb_dont_show_timestamp_in_change_log = (bool) $o_config->get('dont_show_timestamp_in_change_log');
  	}
  	# ----------------------------------------------------------------------
  	/**
@@ -319,7 +322,11 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 						//
 						// Get date/time stamp for display
 						//
-						$vs_datetime = date("n/d/Y@g:i:sa T", $va_log_entry['log_datetime']);
+						if($this->opb_dont_show_timestamp_in_change_log) {
+							$vs_datetime = date("n/d/Y", $va_log_entry['log_datetime']);
+						} else {
+							$vs_datetime = date("n/d/Y@g:i:sa T", $va_log_entry['log_datetime']);
+						}
 						
 						//
 						// Get user name

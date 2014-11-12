@@ -25,8 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$o_zip = $this->getVar('zip');
- 	$vs_file_path = $o_zip->output(ZIPFILE_FILEPATH);
+ 	$vs_file_path = $this->getVar('tmp_file');
  
 	header("Content-type: application/zip");
 	header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
@@ -35,8 +34,8 @@
 	header("Pragma: no-cache");
 	header("Cache-control: private");
 	header('Content-Length: ' . filesize($vs_file_path));
-	
 	header("Content-Disposition: attachment; filename=".$this->getVar('download_name'));
+
 	set_time_limit(0);
 	$o_fp = @fopen($vs_file_path,"rb");
 	while(is_resource($o_fp) && !feof($o_fp)) {
@@ -44,4 +43,5 @@
 		ob_flush();
 		flush();
 	}
-?>
+	@unlink($vs_file_path);
+	exit();
