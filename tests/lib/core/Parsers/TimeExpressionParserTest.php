@@ -248,6 +248,34 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($va_parse[1], "1999.123123595900");
 	}
 
+	public function testFullDateWith3DigitYear() {
+		$o_tep = new TimeExpressionParser();
+		$vb_res = $o_tep->parse('January 17 999');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "999.01170000000000000000");
+		$this->assertEquals($va_parse['end'], "999.01172359590000000000");
+
+		$vb_res = $o_tep->parse('17 January 999');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "999.01170000000000000000");
+		$this->assertEquals($va_parse['end'], "999.01172359590000000000");
+
+		$vb_res = $o_tep->parse('1/17/999');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "999.01170000000000000000");
+		$this->assertEquals($va_parse['end'], "999.01172359590000000000");
+
+		$o_tep->setLanguage('de_DE');
+		$vb_res = $o_tep->parse('17.1.999');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals($va_parse['start'], "999.01170000000000000000");
+		$this->assertEquals($va_parse['end'], "999.01172359590000000000");
+	}
+
 	public function testHistoricYearRanges() {
 		$o_tep = new TimeExpressionParser();
 		$vb_res = $o_tep->parse('1930 - 1946');
