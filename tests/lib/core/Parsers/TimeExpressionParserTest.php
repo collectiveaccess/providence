@@ -236,6 +236,17 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
  		$this->assertEquals($va_parse[1], "1870.031123595900");
  	}
 
+	public function testHistoricDayDateWithUmlautForFrenchLocale() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('fr_FR');
+		$vb_res = $o_tep->parse('24 Décembre 1870');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+
+		$this->assertEquals($va_parse['start'], "1870.122400000000");
+		$this->assertEquals($va_parse['end'], "1870.122423595900");
+	}
+
 	public function testCenturyDatesForGermanLocale() {
 		$o_tep = new TimeExpressionParser();
 		$o_tep->setLanguage('de_DE');
