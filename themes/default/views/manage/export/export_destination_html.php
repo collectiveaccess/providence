@@ -26,14 +26,8 @@
  * ----------------------------------------------------------------------
  */
 
-$t_exporter = $this->getVar('t_exporter');
-$vs_export = $this->getVar('export');
-$vn_id = $this->getVar('item_id');
-$vs_ext = $t_exporter->getFileExtension();
-$vs_content_type = $t_exporter->getContentType();
 $va_errors = $this->getVar('errors');
 $vs_filename = ($this->getVar('file_name') ? $this->getVar('file_name') : $vn_id);
-$vs_file_base = $this->getVar('file_base', pString);
 
 $va_destinations = $this->getVar('exporter_alternate_destinations');
 
@@ -48,12 +42,6 @@ if($va_errors && is_array($va_errors)){
 	print "</ul></div>";
 } else {
 	print "<h2>"._t("The export has been processed. Configure your download below.")."</h2>\n";
-	print caHTMLHiddenInput('exporter_id', array('value' => $t_exporter->getPrimaryKey()));
-	print caHTMLHiddenInput('item_id', array('value' => $vn_id));
-	print caHTMLHiddenInput('exportDestinationsSet', array('value' => 1));
-	if(isset($vs_file_base)) {
-		print caHTMLHiddenInput('file', array('value' => $vs_file_base));
-	}
 ?>
 	<table>
 		<tr>
