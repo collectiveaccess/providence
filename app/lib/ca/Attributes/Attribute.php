@@ -170,7 +170,7 @@ require_once(__CA_LIB_DIR__.'/core/Configuration.php');
  		}
  		# ------------------------------------------------------------------
  		static public function getValueInstance($pn_datatype, $pa_value_array=null, $pb_use_cache=false) {
- 			if ($pb_use_cache && Attribute::$s_instance_cache[$pn_datatype]) {
+ 			if ($pb_use_cache && is_null($pa_value_array) && Attribute::$s_instance_cache[$pn_datatype]) {
  				return Attribute::$s_instance_cache[$pn_datatype];
  			}
  			
