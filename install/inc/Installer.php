@@ -1534,6 +1534,9 @@ class Installer {
 			$va_login_info[$vs_user_name] = $vs_password;
 		}
 
+		$o_si = new SearchIndexer();
+		$o_si->reindex('ca_users', array('showProgress' => false));
+
 		return $va_login_info;
 	}
 	# --------------------------------------------------
