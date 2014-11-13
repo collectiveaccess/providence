@@ -310,7 +310,6 @@ class wamDataImporterPlugin extends BaseApplicationPlugin {
 										}
 										if($va_coordinates){
 											$pa_params['content_tree'][$ps_table_name][$vn_c][$vs_field]['coordinates'] = '['.join(';', $va_coordinates) . ']';
-											caDebug($pa_params);
 										}
 									}
 							}
