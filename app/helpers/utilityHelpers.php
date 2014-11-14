@@ -36,7 +36,6 @@
    
 require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
 require_once(__CA_LIB_DIR__.'/core/Configuration.php');
-require_once(__CA_LIB_DIR__.'/core/Parsers/ZipFile.php');
 require_once(__CA_LIB_DIR__.'/core/Logging/Eventlog.php');
 require_once(__CA_LIB_DIR__.'/core/Utils/Encoding.php');
 require_once(__CA_LIB_DIR__.'/core/Zend/Measure/Length.php');
@@ -50,13 +49,14 @@ require_once(__CA_LIB_DIR__.'/core/Zend/Measure/Length.php');
  * in the format %n (where n is a number). Each parameter passed after $ps_key corresponds to a 
  * placeholder (ex. the first parameter replaces %1, the second %2)
  */
- 
-global $ca_translation_cache;
-$ca_translation_cache = array();
+
+MemoryCache::flush('translation');
+
 function _t($ps_key) {
-	global $ca_translation_cache, $_;
-	
-	if (!isset($ca_translation_cache[$ps_key])) {
+	if(!$ps_key) { return ''; }
+	global $_;
+
+	if(!MemoryCache::contains($ps_key, 'translation')) {
 		if (is_array($_)) {
 			$vs_str = $ps_key;
 			foreach($_ as $o_locale) {
@@ -72,9 +72,9 @@ function _t($ps_key) {
 				$vs_str = $_->_($ps_key);
 			} 
 		}
-		$ca_translation_cache[$ps_key] = $vs_str;
+		MemoryCache::save($ps_key, $vs_str, 'translation');
 	} else {
-		$vs_str = $ca_translation_cache[$ps_key];
+		$vs_str = MemoryCache::fetch($ps_key, 'translation');
 	}
 	
 	if (sizeof($va_args = func_get_args()) > 1) {
@@ -90,9 +90,12 @@ function _t($ps_key) {
  * The same as _t(), but rather than returning the translated string, it prints it
  **/
 function _p($ps_key) {
-	global $ca_translation_cache, $_;
+	if(!$ps_key) { return; }
+	global $_;
 	
-	if (!sizeof(func_get_args()) && isset($ca_translation_cache[$ps_key])) { print $ca_translation_cache[$ps_key]; return; }
+	if (!sizeof(func_get_args()) && MemoryCache::contains($ps_key, 'translation')) {
+		print MemoryCache::fetch($ps_key, 'translation'); return;
+	}
 	
 	if (is_array($_)) {
 		$vs_str = $ps_key;
@@ -116,8 +119,9 @@ function _p($ps_key) {
 			$vs_str = str_replace("%{$vn_i}", $va_args[$vn_i], $vs_str);
 		}
 	}
-	
-	print $ca_translation_cache[$ps_key] = $vs_str;
+
+	MemoryCache::save($ps_key, $vs_str, 'translation');
+	print $vs_str;
 	return;
 }
 # ----------------------------------------------------------------------
@@ -412,17 +416,17 @@ function caFileIsIncludable($ps_file) {
 	# ----------------------------------------
 	function caZipDirectory($ps_directory, $ps_name, $ps_output_file) {
 		$va_files_to_zip = caGetDirectoryContentsAsList($ps_directory);
-		
-		$o_zip = new ZipFile();
+
+		$vs_tmp_name = caGetTempFileName('caZipDirectory', 'zip');
+		$o_phar = new PharData($vs_tmp_name, null, null, Phar::ZIP);
 		foreach($va_files_to_zip as $vs_file) {
 			$vs_name = str_replace($ps_directory, $ps_name, $vs_file);
-			$o_zip->addFile($vs_file, $vs_name);
+			$o_phar->addFile($vs_file, $vs_name);
 		}
-		
-		$vs_new_file = $o_zip->output(ZIPFILE_FILEPATH);
-		copy($vs_new_file, $ps_output_file);
-		unlink ($vs_new_file);
-		
+
+		copy($vs_tmp_name, $ps_output_file);
+		unlink($vs_tmp_name);
+
 		return true;
 	}
 	# ----------------------------------------
@@ -525,6 +529,17 @@ function caFileIsIncludable($ps_file) {
 				}
 			}
 		}
+	}
+	# ----------------------------------------
+	function caGetTempFileName($ps_prefix, $ps_extension = null) {
+		$vs_tmp = tempnam(caGetTempDirPath(), $ps_prefix);
+		@unlink($vs_tmp);
+
+		if($ps_extension && strlen($ps_extension)>0) {
+			$vs_tmp = $vs_tmp.'.'.$ps_extension;
+		}
+
+		return $vs_tmp;
 	}
 	# ----------------------------------------
 	function caQuoteList($pa_list) {
@@ -2138,4 +2153,80 @@ function caFileIsIncludable($ps_file) {
 		return false;
 	}
 	# ----------------------------------------
-?>
+	function caHumanFilesize($bytes, $decimals = 2) {
+		$size = array('B','KiB','MiB','GiB','TiB');
+		$factor = floor((strlen($bytes) - 1) / 3);
+
+		return sprintf("%,{$decimals}f", $bytes/pow(1024, $factor)).@$size[$factor];
+	}
+	# ----------------------------------------
+	/**
+	 * Upload a local file to a GitHub repository
+	 * @param string $ps_user GitHub username
+	 * @param string $ps_token access token. Global account password can be used here but it's recommended to create a personal access token instead.
+	 * @param string $ps_owner The repository owner
+	 * @param string $ps_repo repository name
+	 * @param string $ps_git_path path for the file destination inside the repository, e.g. "/exports/from_collectiveaccess/export.xml."
+	 * @param string $ps_local_filepath file to upload as absolute local path. Note that the file must be loaded in memory to be committed to GitHub.
+	 * @param string $ps_branch branch to commit to. defaults to 'master'
+	 * @param bool $pb_update_on_conflict Determines what happens if file already exists in GitHub repository.
+	 * 		true means the file is updated in place for. false means we abort. default is true
+	 * @param string $ps_commit_msg commit message
+	 * @return bool success state
+	 */
+	function caUploadFileToGitHub($ps_user, $ps_token, $ps_owner, $ps_repo, $ps_git_path, $ps_local_filepath, $ps_branch = 'master', $pb_update_on_conflict=true, $ps_commit_msg = null) {
+		// check mandatory params
+		if(!$ps_user || !$ps_token || !$ps_owner || !$ps_repo || !$ps_git_path || !$ps_local_filepath) {
+			caLogEvent('DEBG', "Invalid parameters for GitHub file upload. Check your configuration!", 'caUploadFileToGitHub');
+			return false;
+		}
+
+		if(!$ps_commit_msg) {
+			$ps_commit_msg = 'Commit created by CollectiveAccess on '.date('c');
+		}
+
+
+		$o_client = new \Github\Client();
+		$o_client->authenticate($ps_user, $ps_token);
+
+		$vs_content = @file_get_contents($ps_local_filepath);
+
+		try {
+			$o_client->repositories()->contents()->create($ps_owner, $ps_repo, $ps_git_path, $vs_content, $ps_commit_msg, $ps_branch);
+		} catch (Github\Exception\RuntimeException $e) {
+			switch($e->getCode()) {
+				case 401:
+					caLogEvent('DEBG', "Could not authenticate with GitHub. Error message was: ".$e->getMessage()." - Code was: ".$e->getCode(), 'caUploadFileToGitHub');
+					break;
+				case 422:
+					if($pb_update_on_conflict) {
+						try {
+							$va_content = $o_client->repositories()->contents()->show($ps_owner, $ps_repo, $ps_git_path);
+							if(isset($va_content['sha'])) {
+								$o_client->repositories()->contents()->update($ps_owner, $ps_repo, $ps_git_path, $vs_content, $ps_commit_msg, $va_content['sha'], $ps_branch);
+							}
+							return true; // overwrite was successful if there was no exception in above statement
+						} catch (Github\Exception\RuntimeException $ex) {
+							caLogEvent('DEBG', "Could not update exiting file in GitHub. Error message was: ".$ex->getMessage()." - Code was: ".$ex->getCode(), 'caUploadFileToGitHub');
+							break;
+						}
+					} else {
+						caLogEvent('DEBG', "Could not upload file to GitHub. It looks like a file already exists at {$ps_git_path}.", 'caUploadFileToGitHub');
+					}
+					break;
+				default:
+					caLogEvent('DEBG', "Could not upload file to GitHub. A generic error occurred. Error message was: ".$e->getMessage()." - Code was: ".$e->getCode(), 'caUploadFileToGitHub');
+					break;
+			}
+			return false;
+		} catch (Github\Exception\ValidationFailedException $e) {
+			caLogEvent('DEBG', "Could not upload file to GitHub. The parameter validation failed. Error message was: ".$e->getMessage()." - Code was: ".$e->getCode(), 'caUploadFileToGitHub');
+			return false;
+		} catch (Exception $e) {
+			caLogEvent('DEBG', "Could not upload file to GitHub. A generic error occurred. Error message was: ".$e->getMessage()." - Code was: ".$e->getCode(), 'caUploadFileToGitHub');
+			return false;
+		}
+
+		return true;
+	}
+	# ----------------------------------------

@@ -1713,7 +1713,6 @@
  			$pn_representation_id 	= $this->request->getParameter('representation_id', pInteger);
  			$pn_value_id = $this->request->getParameter('value_id', pInteger);
  			if ($pn_value_id) {
- 			//print_R($_REQUEST); die;
  				return $this->DownloadAttributeMedia();
  			}
  			$ps_version = $this->request->getParameter('version', pString);
@@ -1808,16 +1807,17 @@
 			if (sizeof($va_file_paths) > 1) {
 				if (!($vn_limit = ini_get('max_execution_time'))) { $vn_limit = 30; }
 				set_time_limit($vn_limit * 2);
-				$o_zip = new ZipFile();
+				$vs_tmp_name = caGetTempFileName('DownloadMedia', 'zip');
+				$o_phar = new PharData($vs_tmp_name, null, null, Phar::ZIP);
 				foreach($va_file_paths as $vs_path => $vs_name) {
-					$o_zip->addFile($vs_path, $vs_name, null, array('compression' => 0));	// don't try to compress
+					$o_phar->addFile($vs_path, $vs_name);
 				}
-				$o_view->setVar('archive_path', $vs_path = $o_zip->output(ZIPFILE_FILEPATH));
+				$o_view->setVar('archive_path', $vs_tmp_name);
 				$o_view->setVar('archive_name', preg_replace('![^A-Za-z0-9\.\-]+!', '_', $t_subject->get('idno')).'.zip');
 				
  				$this->response->addContent($o_view->render('download_media_binary.php'));
 				
- 				if ($vs_path) { unlink($vs_path); }
+ 				if ($vs_tmp_name) { @unlink($vs_tmp_name); }
 			} else {
 				foreach($va_file_paths as $vs_path => $vs_name) {
 					$o_view->setVar('archive_path', $vs_path);

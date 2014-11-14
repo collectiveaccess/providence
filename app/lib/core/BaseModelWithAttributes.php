@@ -1466,6 +1466,9 @@
 				if (isset($pa_bundle_settings['usewysiwygeditor']) && strlen($pa_bundle_settings['usewysiwygeditor']) == 0) {
 					unset($pa_bundle_settings['usewysiwygeditor']);	// let null usewysiwygeditor bundle option fall back to metadata element setting
 				}
+				if(!is_array($va_label)) { 
+					$va_label = array('name' => '???', 'description' => '');
+				}
 				$va_elements_by_container[$va_element['parent_id']][] = $vs_br.ca_attributes::attributeHtmlFormElement($va_element, array_merge($pa_bundle_settings, array_merge($pa_options, array(
 					'label' => (sizeof($va_element_set) > 1) ? $va_label['name'] : '',
 					'description' => $va_label['description'],
@@ -1552,18 +1555,19 @@
 			
 			$vb_is_sub_element = (bool)($t_element->get('parent_id'));
 			$t_parent = $vb_is_sub_element ? $this->_getElementInstance($t_element->get('parent_id')) : null;
-			
+			while($vb_is_sub_element && ($t_parent->get('datatype') == 0) && ($t_parent->get('parent_id') > 0)) {
+				$t_parent = $this->_getElementInstance($t_parent->get('parent_id'));
+			}
 			
 			$vs_element_code = $t_element->get('element_code');
 			
 			// get all elements of this element set
-			$va_element_set = $t_element->getElementsInSet($vb_is_sub_element ? $t_element->get('parent_id') : null);
+			$va_element_set = $vb_is_sub_element ? $t_parent->getElementsInSet() : $t_element->getElementsInSet();
 			
 			if ($vb_is_sub_element) {
 				foreach($va_element_set as $vn_i => $va_element) {
 					if ($va_element['element_code'] !== $vs_element_code) { unset($va_element_set[$vn_i]); }
 				}
-				
 			}
 			
 			$t_attr = new ca_attributes();
@@ -1612,27 +1616,32 @@
 				unset($va_element_opts['values']);
 				$va_element_opts['values'] = '';
 				
-				$vs_form_element = ca_attributes::attributeHtmlFormElement($va_element, $va_element_opts);
-				//
-				// prep element for use as search element
-				//
-				// ... replace value
-				$vs_form_element = str_replace('{{'.$va_element['element_id'].'}}', $vs_value, $vs_form_element);
-				
 				// ... replace name of form element
 				$vs_fld_name = $vs_subelement_code; //str_replace('.', '_', $vs_subelement_code);
 				if (caGetOption('asArrayElement', $pa_options, false)) { $vs_fld_name .= "[]"; } 
 				
-				// escape any special characters in jQuery selectors
-				$vs_form_element = str_replace(
-					"jQuery('#{fieldNamePrefix}".$va_element['element_id']."_{n}')", 
-					"jQuery('#".str_replace(array("[", "]", "."), array("\\\\[", "\\\\]", "\\\\."), $vs_fld_name)."')", 
-					$vs_form_element
-				);
-				$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_{n}', $vs_fld_name, $vs_form_element);
+				if ($vs_force_value = caGetOption('force', $pa_options, false)) {
+					$vs_form_element = caHTMLHiddenInput($vs_fld_name, array('value' =>$vs_force_value));
+				} else {
+					$vs_form_element = ca_attributes::attributeHtmlFormElement($va_element, $va_element_opts);
+					//
+					// prep element for use as search element
+					//
+					// ... replace value
+					$vs_form_element = str_replace('{{'.$va_element['element_id'].'}}', $vs_value, $vs_form_element);
 				
-				$vs_form_element = str_replace('{n}', '', $vs_form_element);
-				$vs_form_element = str_replace('{'. $va_element['element_id'].'}', '', $vs_form_element);
+				
+					// escape any special characters in jQuery selectors
+					$vs_form_element = str_replace(
+						"jQuery('#{fieldNamePrefix}".$va_element['element_id']."_{n}')", 
+						"jQuery('#".str_replace(array("[", "]", "."), array("\\\\[", "\\\\]", "\\\\."), $vs_fld_name)."')", 
+						$vs_form_element
+					);
+					$vs_form_element = str_replace('{fieldNamePrefix}'.$va_element['element_id'].'_{n}', $vs_fld_name, $vs_form_element);
+				
+					$vs_form_element = str_replace('{n}', '', $vs_form_element);
+					$vs_form_element = str_replace('{'. $va_element['element_id'].'}', '', $vs_form_element);
+				}
 				
 				$va_elements_by_container[$va_element['parent_id'] ? $va_element['parent_id'] : $va_element['element_id']][] = $vs_form_element;
 				
@@ -1839,6 +1848,9 @@
 		 *				locale = if set to a valid locale_id or locale code, values will be returned in locale *if available*, otherwise will fallback to values in languages that are available using the standard fallback mechanism. Default is to use user's current locale.
 		 *				returnAllLocales = if set to true, values for all locales are returned, locale option is ignored and the returned array is indexed first by attribute_id and then by locale_id. Default is false.
 		 *				indexByRowID = if true first index of returned array is $pn_row_id, otherwise it is the element_id of the retrieved metadata element	
+		 *				indexValuesByValueID = index value array by value_id [default=false]
+		 *				indexValuesByElementCode = index value array by element code [default=true]
+		 *				indexValuesByElementCodeAndValueID = index value array by element codes, each of which has a sub-array indexed by value_id. Implies indexValuesByElementCode. [default=false]
 		 *				convertCodesToDisplayText =
 		 *				filter =
 		 *				ignoreLocale = if set all values are returned regardless of locale, but in the flattened structure returned when returnAllLocales is false
@@ -1852,6 +1864,11 @@
 			$pb_ignore_locale = caGetOption('ignoreLocale', $pa_options, null);
 			$ps_sort = caGetOption('sort', $pa_options, null);
 			$ps_sort_direction = caGetOption('sortDirection', $pa_options, 'asc', array('forceLowercase' => true, 'validValues' => array('asc', 'desc')));
+			
+			$pb_index_by_element_code = caGetOption('indexValuesByElementCode', $pa_options, true);
+			$pb_index_by_value_id = caGetOption('indexValuesByValueID', $pa_options, false);
+			$pb_index_by_element_code_and_value_id = caGetOption('indexValuesByElementCodeAndValueID', $pa_options, false);
+			if ($pb_index_by_element_code_and_value_id) { $pb_index_by_element_code = true; }
 			
 			$va_attribute_list = $this->getAttributesByElement($pm_element_code_or_id, array('row_id' => $pn_row_id));
 			if (!is_array($va_attribute_list)) { return array(); }
@@ -1892,10 +1909,19 @@
 					
 					if (isset($pa_options['convertLineBreaks']) && $pa_options['convertLineBreaks']) {
 						$vs_converted_value = preg_replace("!(\n|\r\n){2}!","<p/>",$o_value->getDisplayValue(array_merge($pa_options, array('list_id' => $vn_list_id))));
-						$va_display_values[$vs_element_code] = preg_replace("![\n]{1}!","<br/>",$vs_converted_value);
+						$vs_display_value = preg_replace("![\n]{1}!","<br/>",$vs_converted_value);
 					} else {
-						$va_display_values[$vs_element_code] = $o_value->getDisplayValue(array_merge($pa_options, array('list_id' => $vn_list_id)));
+						$vs_display_value = $o_value->getDisplayValue(array_merge($pa_options, array('list_id' => $vn_list_id)));
 					}
+					
+					if ($pb_index_by_element_code) { 
+						if ($pb_index_by_element_code_and_value_id) {
+							$va_display_values[$vs_element_code][$o_value->getValueID()] = $vs_display_value; 
+						} else {
+							$va_display_values[$vs_element_code] = $vs_display_value; 
+						}
+					}
+					if ($pb_index_by_value_id) { $va_display_values[$o_value->getValueID()] = $vs_display_value; }
 					
 					if ($vs_sort_fld && ($vs_sort_fld == $vs_element_code)) {
 						$vs_sort_key = $o_value->getDisplayValue(array_merge($pa_options, array('getDirectDate' => true, 'list_id' => $vn_list_id)));

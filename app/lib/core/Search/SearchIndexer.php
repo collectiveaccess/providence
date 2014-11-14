@@ -46,41 +46,6 @@ class SearchIndexer extends SearchBase {
 
 	private $opa_dependencies_to_update;
 	
-	/**
-	 * Cache array for generated hierarchical paths
-	 */
-	static public $s_related_rows_joins_cache = array();
-	
-	/**
-	 * Cache array for SQL joins used to fetch related records indexing
-	 */
-	static public $s_related_fields_joins_cache = array();	
-	
-	/**
-	 * Cache array for generated hierarchical paths
-	 */
-	static public $s_hier_path_cache = array();
-	
-	/** 
-	 * Cache array for ca_metadata_element element_code => element_id conversions
-	 */
-	static public $s_SearchIndexer_element_id_cache = array();
-	
-	/** 
-	 * Cache array for ca_metadata_element element_code => data type conversions
-	 */
-	static public $s_SearchIndexer_element_data_type_cache = array();
-		
-	/** 
-	 * Cache array for ca_metadata_element element_code => list_id conversions
-	 */
-	static public $s_SearchIndexer_element_list_id_cache = array();
-	
-	/** 
-	 * Cache array for field numbers
-	 */
-	static public $s_SearchIndexer_field_num_cache = array();
-	
 	private $opo_metadata_element = null;
 
 	# ------------------------------------------------
@@ -143,12 +108,13 @@ class SearchIndexer extends SearchBase {
 	/**
 	 * Forces a full reindex of all rows in the database or, optionally, a single table
 	 *
-	 * @param array $pa_table_name
+	 * @param array $pa_table_names
 	 * @param array $pa_options Reindexing options:
 	 *			showProgress
 	 *			interactiveProgressDisplay
 	 *			log
 	 *			callback
+	 * @return null|false
 	 */
 	public function reindex($pa_table_names=null, $pa_options=null) {
 		define('__CollectiveAccess_IS_REINDEXING__', 1);
@@ -166,7 +132,9 @@ class SearchIndexer extends SearchBase {
 			foreach($pa_table_names as $vs_table) {
 				if ($this->opo_datamodel->tableExists($vs_table)) {
 					$vn_num = $this->opo_datamodel->getTableNum($vs_table);
-					print "\nTRUNCATING {$vs_table}\n\n";
+					if($pb_display_progress) {
+						print "\nTRUNCATING {$vs_table}\n\n";
+					}
 					$this->opo_engine->truncateIndex($vn_num);
 					$t_instance = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
 					$va_table_names[$vn_num] = array('name' => $vs_table, 'num' => $vn_num, 'displayName' => $t_instance->getProperty('NAME_PLURAL'));
@@ -280,6 +248,7 @@ class SearchIndexer extends SearchBase {
 		
 		if ($pb_display_progress) {
 			print "\n\n\nDone! [Indexing for ".join(", ", $va_names)." took ".caFormatInterval((float)$t_timer->getTime(4))."]\n";
+			print "Note that if you're using an external search service like Apache Solr, the data may only now be sent to the actual service because it was buffered until now. So you still might have to wait a while for the script to finish.\n";
 		}
 		if ($ps_callback) { 
 			$ps_callback(
@@ -348,51 +317,29 @@ class SearchIndexer extends SearchBase {
 	/**
 	 * Fetches list of dependencies for a given table
 	 */
-	public function getDependencies($ps_subject_table){
-		/* set up cache */
-		$va_frontend_options = array(
-			'lifetime' => null, 				/* cache lives forever (until manual destruction) */
-			'logging' => false,					/* do not use Zend_Log to log what happens */
-			'write_control' => true,			/* immediate read after write is enabled (we don't write often) */
-			'automatic_cleaning_factor' => 0, 	/* no automatic cache cleaning */
-			'automatic_serialization' => true	/* we store arrays, so we have to enable that */
-		);
-		$vs_cache_dir = __CA_APP_DIR__.'/tmp';//$this->opo_app_config->get('site_home_dir').'/tmp';
-		$va_backend_options = array(
-			'cache_dir' => $vs_cache_dir,		/* where to store cache data? */
-			'file_locking' => true,				/* cache corruption avoidance */
-			'read_control' => false,			/* no read control */
-			'file_name_prefix' => 'ca_cache',	/* prefix of cache files */
-			'cache_file_perm' => 0700			/* permissions of cache files */
-		);
-		
-		try {
-			$vo_cache = Zend_Cache::factory('Core', 'File', $va_frontend_options, $va_backend_options);
-		} catch (Exception $e) {
-			// return dependencies without caching
-			return $this->__getDependencies($ps_subject_table);
-		}
+	public function getDependencies($ps_subject_table) {
 		/* handle total cache miss (completely new cache has been generated) */
-		if (!(is_array($va_cache_data = $vo_cache->load('ca_table_dependency_array')))) {
-    		$va_cache_data = array();
+		if(ExternalCache::contains('ca_table_dependency_array')) {
+			$va_cache_data = ExternalCache::fetch('ca_table_dependency_array');
 		}
 
 		/* cache outdated? (i.e. changes to search_indexing.conf) */
 		$va_configfile_stat = stat($this->opo_search_config->get('search_indexing_config'));
-		if($va_configfile_stat['mtime'] != $vo_cache->load('ca_table_dependency_array_mtime')) {
-			$vo_cache->save($va_configfile_stat['mtime'],'ca_table_dependency_array_mtime');
+		if($va_configfile_stat['mtime'] != ExternalCache::fetch('ca_table_dependency_array_mtime')) {
+			ExternalCache::save('ca_table_dependency_array_mtime', $va_configfile_stat['mtime']);
 			$va_cache_data = array();
 		}
 
 		if(isset($va_cache_data[$ps_subject_table]) && is_array($va_cache_data[$ps_subject_table])) { /* cache hit */
 			/* return data from cache */
-			/* TODO: probably we should implement some checks for data consistency */
+			//Debug::msg("Got table dependency array for table {$ps_subject_table} from external cache");
 			return $va_cache_data[$ps_subject_table];
 		} else { /* cache miss */
+			//Debug::msg("Cache miss for {$ps_subject_table}");
 			/* build dependency graph, store it in cache and return it */
 			$va_deps = $this->__getDependencies($ps_subject_table);
 			$va_cache_data[$ps_subject_table] = $va_deps;
-			$vo_cache->save($va_cache_data,'ca_table_dependency_array');
+			ExternalCache::save('ca_table_dependency_array', $va_cache_data);
 			return $va_deps;
 		}
 	}
@@ -401,8 +348,9 @@ class SearchIndexer extends SearchBase {
 	 * Generate hierarchical values for using in indexing of hierarchical values with INDEX_ANCESTORS enabled
 	 */
 	private function _genHierarchicalPath($pn_subject_row_id, $ps_field, $t_subject, $pa_options=null) {
-		if (isset(SearchIndexer::$s_hier_path_cache[$vs_key = md5("{$pn_subject_row_id}/{$ps_field}/".print_R($pa_options, true))])) { 
-			return SearchIndexer::$s_hier_path_cache[$vs_key];
+		$vs_key = md5("{$pn_subject_row_id}/{$ps_field}/".print_R($pa_options, true));
+		if(MemoryCache::contains($vs_key, 'SearchIndexerHierPaths')) {
+			return MemoryCache::fetch($vs_key, 'SearchIndexerHierPaths');
 		}
 		$pn_start = caGetOption('INDEX_ANCESTORS_START_AT_LEVEL', $pa_options, 0);
 		$pn_max_levels = caGetOption('INDEX_ANCESTORS_MAX_NUMBER_OF_LEVELS', $pa_options, null);
@@ -435,13 +383,17 @@ class SearchIndexer extends SearchBase {
 			if ($pn_max_levels > 0) {
 				$va_hier_values = array_slice($va_hier_values, 0, $pn_max_levels);
 			}
-			
-			if (sizeof(SearchIndexer::$s_hier_path_cache)> 100) {
-				SearchIndexer::$s_hier_path_cache = array();
+
+			if(MemoryCache::itemCountForNamespace('SearchIndexerHierPaths') > 100) {
+				MemoryCache::flush('SearchIndexerHierPaths');
 			}
-			return SearchIndexer::$s_hier_path_cache[$vs_key] = array('values' => $va_hier_values, 'path' => join($ps_delimiter, $va_hier_values));
+			$va_return = array('values' => $va_hier_values, 'path' => join($ps_delimiter, $va_hier_values));
+			MemoryCache::save($vs_key, $va_return, 'SearchIndexerHierPaths');
+			return $va_return;
 		}
-		return SearchIndexer::$s_hier_path_cache[$vs_key] = null;
+
+		MemoryCache::save($vs_key, null, 'SearchIndexerHierPaths');
+		return null;
 	}
 	# ------------------------------------------------
 	/**
@@ -1380,15 +1332,17 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 											break;
 										default:
 											$vn_fld_num = null;
-											if (isset(SearchIndexer::$s_SearchIndexer_field_num_cache[$vn_rel_tablenum][$vs_field])) { 
-												$vn_fld_num = SearchIndexer::$s_SearchIndexer_field_num_cache[$vn_rel_tablenum][$vs_field]; 
+											if(MemoryCache::contains("{$vn_rel_tablenum}/{$vs_field}", 'SearchIndexerFieldNums')) {
+												$vn_fld_num = MemoryCache::fetch("{$vn_rel_tablenum}/{$vs_field}", 'SearchIndexerFieldNums');
 												break;
 											}
 											
 											if (preg_match('!^_ca_attribute_([\d]+)$!', $vs_field, $va_matches)) {
-												SearchIndexer::$s_SearchIndexer_field_num_cache[$vn_rel_tablenum][$vs_field] = $vn_fld_num = 'A'.$va_matches[1];
+												$vn_fld_num = 'A'.$va_matches[1];
+												MemoryCache::save("{$vn_rel_tablenum}/{$vs_field}", $vn_fld_num, 'SearchIndexerFieldNums');
 											} else {
-												SearchIndexer::$s_SearchIndexer_field_num_cache[$vn_rel_tablenum][$vs_field] = $vn_fld_num = 'I'.$t_rel->fieldNum($vs_field);
+												$vn_fld_num = 'I'.$t_rel->fieldNum($vs_field);
+												MemoryCache::save("{$vn_rel_tablenum}/{$vs_field}", $vn_fld_num, 'SearchIndexerFieldNums');
 											}
 							
 											break;
@@ -1491,8 +1445,8 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 				$va_fld_names[$vs_f] = true;
 			}
 		}
-		
-		if (!isset(SearchIndexer::$s_related_rows_joins_cache[$vs_key]) || !(SearchIndexer::$s_related_rows_joins_cache[$vs_key])) {
+
+		if(!MemoryCache::contains($vs_key, 'SearchIndexerRelatedRowsJoins')) {
 			$vs_left_table = $vs_select_tablename = array_shift($pa_tables);
 	
 			$t_subject = $this->opo_datamodel->getInstanceByTableName($ps_subject_tablename, true);
@@ -1585,12 +1539,12 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 					$va_fld_names[$vs_v] = true;
 				}
 			}
-		
-			SearchIndexer::$s_related_rows_joins_cache[$vs_key] = $va_joins;
-			SearchIndexer::$s_related_fields_joins_cache[$vs_key] = $va_flds;
+
+			MemoryCache::save($vs_key, $va_joins, 'SearchIndexerRelatedRowsJoins');
+			MemoryCache::save($vs_key, $va_flds, 'SearchIndexerRelatedFieldsJoins');
 		} else {
-			$va_joins = SearchIndexer::$s_related_rows_joins_cache[$vs_key];
-			$va_flds = SearchIndexer::$s_related_fields_joins_cache[$vs_key];
+			$va_joins = MemoryCache::fetch($vs_key, 'SearchIndexerRelatedRowsJoins');
+			$va_flds = MemoryCache::fetch($vs_key, 'SearchIndexerRelatedFieldsJoins');
 			
 			$vs_select_tablename = array_shift($pa_tables);
 			$t_subject = $this->opo_datamodel->getInstanceByTableName($ps_subject_tablename, true);
@@ -1687,7 +1641,9 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 	 * Because of dependency and performance issues we do a straight query here rather than go through the ca_metadata_elements model
 	 */
 	private function _getElementID($ps_element_code) {
-		if (isset(SearchIndexer::$s_SearchIndexer_element_id_cache[$ps_element_code])) { return SearchIndexer::$s_SearchIndexer_element_id_cache[$ps_element_code]; }
+		if(MemoryCache::contains($ps_element_code, 'SearchIndexerElementIds')) {
+			return MemoryCache::fetch($ps_element_code, 'SearchIndexerElementIds');
+		}
 		
 		if (is_numeric($ps_element_code)) {
 			$qr_res = $this->opo_db->query("
@@ -1700,34 +1656,38 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 		}
 		if (!$qr_res->nextRow()) { return null; }
 		$vn_element_id =  $qr_res->get('element_id');
-		SearchIndexer::$s_SearchIndexer_element_data_type_cache[$ps_element_code] = SearchIndexer::$s_SearchIndexer_element_data_type_cache[$vn_element_id] = $qr_res->get('datatype');
-		SearchIndexer::$s_SearchIndexer_element_list_id_cache[$ps_element_code] = SearchIndexer::$s_SearchIndexer_element_list_id_cache[$vn_element_id] = $qr_res->get('list_id');
-		SearchIndexer::$s_SearchIndexer_element_id_cache[$vn_element_id] = $ps_element_code;
-		return SearchIndexer::$s_SearchIndexer_element_id_cache[$ps_element_code] = $vn_element_id;
+		MemoryCache::save($ps_element_code, $qr_res->get('datatype'), 'SearchIndexerElementDataTypes');
+		MemoryCache::save($vn_element_id, $qr_res->get('datatype'), 'SearchIndexerElementDataTypes');
+		MemoryCache::save($ps_element_code, $qr_res->get('list_id'), 'SearchIndexerElementListIds');
+		MemoryCache::save($vn_element_id, $qr_res->get('list_id'), 'SearchIndexerElementListIds');
+
+		MemoryCache::save($vn_element_id, $ps_element_code, 'SearchIndexerElementIds');
+		MemoryCache::save($ps_element_code, $vn_element_id, 'SearchIndexerElementIds');
+		return $vn_element_id;
 	}
 	# ------------------------------------------------
 	/**
 	 * Returns datatype code of ca_metadata_element with specified element_code or NULL if the element doesn't exist
 	 */
 	private function _getElementDataType($ps_element_code) {
-		$vn_element_id = $this->_getElementID($ps_element_code);	// ensures $s_SearchIndexer_element_data_type_cache[$ps_element_code] is populated
-		return SearchIndexer::$s_SearchIndexer_element_data_type_cache[$vn_element_id];
+		$vn_element_id = $this->_getElementID($ps_element_code);	// ensures MemoryCache is populated
+		return MemoryCache::fetch($vn_element_id, 'SearchIndexerElementDataTypes');
 	}
 	# ------------------------------------------------
 	/**
 	 * Returns list_id of ca_metadata_element with specified element_code or NULL if the element doesn't exist
 	 */
 	private function _getElementListID($ps_element_code) {
-		$vn_element_id = $this->_getElementID($ps_element_code);	// ensures $s_SearchIndexer_element_data_type_cache[$ps_element_code] is populated
-		return SearchIndexer::$s_SearchIndexer_element_list_id_cache[$vn_element_id];
+		$vn_element_id = $this->_getElementID($ps_element_code);	// ensures MemoryCache is populated
+		return MemoryCache::fetch($vn_element_id, 'SearchIndexerElementListIds');
 	}
 	# ------------------------------------------------
 	/**
 	 * Returns element_code of ca_metadata_element with specified element_id or NULL if the element doesn't exist
 	 */
 	private function _getElementListCode($pn_element_id) {
-		$vn_element_id = $this->_getElementID($pn_element_id);	// ensures $s_SearchIndexer_element_id_cache[$vn_element_id] is populated
-		return SearchIndexer::$s_SearchIndexer_element_id_cache[$vn_element_id];
+		$vn_element_id = $this->_getElementID($pn_element_id);	// ensures MemoryCache is populated
+		return MemoryCache::fetch($vn_element_id, 'SearchIndexerElementIds');
 	}
 	# ------------------------------------------------
 }

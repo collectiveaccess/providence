@@ -204,7 +204,21 @@
 			);
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 * Return HTML form element for editing.
+ 		 *
+ 		 * @param array $pa_element_info An array of information about the metadata element being edited
+ 		 * @param array $pa_options array Options include:
+ 		 *			class = the CSS class to apply to all visible form elements [Default=lookupBg]
+ 		 *			width = the width of the form element [Default=field width defined in metadata element definition]
+ 		 *			height = the height of the form element [Default=field height defined in metadata element definition]
+ 		 *
+ 		 * @return string
+ 		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
+ 			//$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : '');
+ 			
+ 			// TODO: this should be prettier
  			$vs_element = '<div>';
  			$vs_element .= '<div>{'.$pa_element_info['element_id'].'}</div>';
  			$vs_element .= '<div id="{fieldNamePrefix}upload_control_{n}" class="attributeFileDownloadControl">'._t("Set file").': <input type="file" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}"></div>' ;

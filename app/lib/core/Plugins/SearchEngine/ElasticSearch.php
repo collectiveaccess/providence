@@ -106,7 +106,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	public function truncateIndex($pn_table_num = null) {
 		$vs_table_name = '';
 		if($pn_table_num){
-			$o_dm = new Datamodel();
+			$o_dm = Datamodel::load();
 			$vs_table_name = $o_dm->getTableName($pn_table_num) . '/';
 		}
 		$vo_http_client = new Zend_Http_Client();
@@ -141,20 +141,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	public function search($pn_subject_tablenum, $ps_search_expression, $pa_filters=array(), $po_rewritten_query=null){
 		$vn_i = 0;
 		$va_old_signs = $po_rewritten_query->getSigns();
-		
+
 		$va_terms = $va_signs = array();
 		foreach($po_rewritten_query->getSubqueries() as $o_lucene_query_element) {
-			if (!$va_old_signs || !is_array($va_old_signs)) {	// if array is null then according to Zend Lucene all subqueries should be "are required"... so we AND them
-				$vs_op = "AND";
-			} else {
-				if (is_null($va_old_signs[$vn_i])) {	// is the sign for a particular query is null then OR is (it is "neither required nor prohibited")
-					$vs_op = 'OR';
-				} else {
-					$vs_op = ($va_old_signs[$vn_i] === false) ? 'NOT' : 'AND';	// true sign indicated "required" (AND) operation, false indicated "prohibited" (NOT) operation
-				}
-			}
-			if ($vn_i == 0) { $vs_op = 'OR'; }
-			
 			switch($vs_class = get_class($o_lucene_query_element)) {
 				case 'Zend_Search_Lucene_Search_Query_Term':
 				case 'Zend_Search_Lucene_Search_Query_MultiTerm':
@@ -171,6 +160,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 					} else {
 						$vs_access_point = $o_lucene_query_element->getTerm()->field;
 						$vs_term = $o_lucene_query_element->getTerm()->text;
+
+						$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('"'.$vs_term.'"', $vs_access_point));
 					}
 					
 					if ($vs_access_point) {
@@ -179,7 +170,6 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 						if (in_array($vs_table, array('created', 'modified'))) {
 							
 							if (!$this->opo_tep->parse($vs_term)) { break; }
-							$va_range = $this->opo_tep->getUnixTimestamps();
 							$vn_user_id = null;
 							if ($vs_field = trim($vs_field)) {
 								if (!is_int($vs_field)) {
@@ -191,7 +181,6 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 									$vn_user_id = (int)$vs_field;
 								}
 							}
-							$vs_user_sql = ($vn_user_id)  ? " AND (ccl.user_id = ".(int)$vn_user_id.")" : "";
 									
 							switch($vs_table) {
 								case 'created':
@@ -228,85 +217,75 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 						} else {
 							if ($vs_table && $vs_field) {
 								$t_table = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
-								if ($t_table) {
-									$vs_table_num = $t_table->tableNum();
-									if (is_numeric($vs_field)) {
-										$vs_fld_num = $vs_field;
-									} else {
-										$vs_fld_num = $this->opo_datamodel->getFieldNum($vs_table, $vs_field);
-										
-										if (!$vs_fld_num) {
-											$t_element = new ca_metadata_elements();
-											if ($t_element->load(array('element_code' => ($vs_sub_field ? $vs_sub_field : $vs_field)))) {
-												$vs_fld_num = $t_element->getPrimaryKey();
-												
-												//
-												// For certain types of attributes we can directly query the
-												// attributes in the database rather than using the full text index
-												// This allows us to do "intelligent" querying... for example on date ranges
-												// parsed from natural language input and for length dimensions using unit conversion
-												//
-												switch($t_element->get('datatype')) {
-													case 2:		// dates	
-														$vb_exact = ($vs_term{0} == "#") ? true : false;	// dates prepended by "#" are considered "exact" or "contained - the matched dates must be wholly contained by the search term
-														if ($vb_exact) {
-															$vs_raw_term = substr($vs_term, 1);
-															if ($this->opo_tep->parse($vs_term)) {
-																$va_dates = $this->opo_tep->getHistoricTimestamps();
-																// TODO: fix date handling to reflect distinctions in ranges
-																$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('['.$this->opo_tep->getText(array('start_as_iso8601' => true))." TO ".$this->opo_tep->getText(array('end_as_iso8601' => true)).']', $vs_access_point));
-															}
-														} else {
-															if ($this->opo_tep->parse($vs_term)) {
-																$va_dates = $this->opo_tep->getHistoricTimestamps();
-																// TODO: fix date handling to reflect distinctions in ranges
-																$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('['.$this->opo_tep->getText(array('start_as_iso8601' => true))." TO ".$this->opo_tep->getText(array('end_as_iso8601' => true)).']', $vs_access_point));
-															}
-														}
-														break;
-													case 4:		// geocode
-														$t_geocode = new GeocodeAttributeValue();
-														if ($va_coords = caParseGISSearch($vs_term)) {
-															$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('['.$va_coords['min_latitude'].','.$va_coords['min_longitude']." TO ".$va_coords['max_latitude'].','.$va_coords['max_longitude'].']', $vs_access_point));
-														}
-														break;
-													case 6:		// currency
-														$t_cur = new CurrencyAttributeValue();
-														$va_parsed_value = $t_cur->parseValue($vs_term, $t_element->getFieldValuesArray());
-														$vn_amount = (float)$va_parsed_value['value_decimal1'];
-														$vs_currency = preg_replace('![^A-Z0-9]+!', '', $va_parsed_value['value_longtext1']);
-														
-														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term($vn_amount, $vs_access_point));
-														break;
-													case 8:		// length
-														$t_len = new LengthAttributeValue();
-														$va_parsed_value = $t_len->parseValue($vs_term, $t_element->getFieldValuesArray());
-														$vn_len = (float)$va_parsed_value['value_decimal1'];	// this is always in meters so we can compare this value to the one in the database
-														
-														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term($vn_len, $vs_access_point));
-														break;
-													case 9:		// weight
-														$t_weight = new WeightAttributeValue();
-														$va_parsed_value = $t_weight->parseValue($vs_term, $t_element->getFieldValuesArray());
-														$vn_weight = (float)$va_parsed_value['value_decimal1'];	// this is always in kilograms so we can compare this value to the one in the database
-														
-														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term($vn_weight, $vs_access_point));
-														break;
-													case 10:	// timecode
-														$t_timecode = new TimecodeAttributeValue();
-														$va_parsed_value = $t_timecode->parseValue($vs_term, $t_element->getFieldValuesArray());
-														$vn_timecode = (float)$va_parsed_value['value_decimal1'];
-														
-														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term($vn_timecode, $vs_access_point));	
-														break;
-													case 11: 	// integer
-														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term((float)$vs_term, $vs_access_point));
-														break;
-													case 12:	// decimal
-														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term((float)$vs_term, $vs_access_point));
-														break;
+								if(!$t_table) { break; }
+
+								$vs_fld_num = $this->opo_datamodel->getFieldNum($vs_table, $vs_field);
+
+								if (!$vs_fld_num) { // probably attribute
+									$t_element = new ca_metadata_elements();
+									if ($t_element->load(array('element_code' => ($vs_sub_field ? $vs_sub_field : $vs_field)))) {
+										//
+										// For certain types of attributes we can directly query the
+										// attributes in the database rather than using the full text index
+										// This allows us to do "intelligent" querying... for example on date ranges
+										// parsed from natural language input and for length dimensions using unit conversion
+										//
+										switch($t_element->get('datatype')) {
+											case 2:		// dates
+												$vb_exact = ($vs_term{0} == "#") ? true : false;	// dates prepended by "#" are considered "exact" or "contained - the matched dates must be wholly contained by the search term
+												if ($vb_exact) {
+													if ($this->opo_tep->parse($vs_term)) {
+														// TODO: fix date handling to reflect distinctions in ranges
+														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('['.$this->opo_tep->getText(array('start_as_iso8601' => true))." TO ".$this->opo_tep->getText(array('end_as_iso8601' => true)).']', $vs_access_point));
+													}
+												} else {
+													if ($this->opo_tep->parse($vs_term)) {
+														// TODO: fix date handling to reflect distinctions in ranges
+														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('['.$this->opo_tep->getText(array('start_as_iso8601' => true))." TO ".$this->opo_tep->getText(array('end_as_iso8601' => true)).']', $vs_access_point));
+													}
 												}
-											}
+												break;
+											case 4:		// geocode
+												$t_geocode = new GeocodeAttributeValue();
+												if ($va_coords = caParseGISSearch($vs_term)) {
+													$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('['.$va_coords['min_latitude'].','.$va_coords['min_longitude']." TO ".$va_coords['max_latitude'].','.$va_coords['max_longitude'].']', $vs_access_point));
+												}
+												break;
+											case 6:		// currency
+												$t_cur = new CurrencyAttributeValue();
+												$va_parsed_value = $t_cur->parseValue($vs_term, $t_element->getFieldValuesArray());
+												$vn_amount = (float)$va_parsed_value['value_decimal1'];
+												$vs_currency = preg_replace('![^A-Z0-9]+!', '', $va_parsed_value['value_longtext1']);
+
+												$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term($vn_amount, $vs_access_point));
+												break;
+											case 8:		// length
+												$t_len = new LengthAttributeValue();
+												$va_parsed_value = $t_len->parseValue($vs_term, $t_element->getFieldValuesArray());
+												$vn_len = (float)$va_parsed_value['value_decimal1'];	// this is always in meters so we can compare this value to the one in the database
+
+												$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term($vn_len, $vs_access_point));
+												break;
+											case 9:		// weight
+												$t_weight = new WeightAttributeValue();
+												$va_parsed_value = $t_weight->parseValue($vs_term, $t_element->getFieldValuesArray());
+												$vn_weight = (float)$va_parsed_value['value_decimal1'];	// this is always in kilograms so we can compare this value to the one in the database
+
+												$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term($vn_weight, $vs_access_point));
+												break;
+											case 10:	// timecode
+												$t_timecode = new TimecodeAttributeValue();
+												$va_parsed_value = $t_timecode->parseValue($vs_term, $t_element->getFieldValuesArray());
+												$vn_timecode = (float)$va_parsed_value['value_decimal1'];
+
+												$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term($vn_timecode, $vs_access_point));
+												break;
+											case 11: 	// integer
+												$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term((float)$vs_term, $vs_access_point));
+												break;
+											case 12:	// decimal
+												$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term((float)$vs_term, $vs_access_point));
+												break;
 										}
 									}
 								}

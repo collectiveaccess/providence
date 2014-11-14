@@ -872,7 +872,7 @@ class SearchResult extends BaseObject {
 									// TODO: This is too slow
 									if($t_instance->load($vn_id)) {
 										$va_vals = $t_instance->get($vs_field_spec, array_merge($pa_options, array('returnAsArray' => true)));
-										if (is_array($va_vals)) { $va_vals = array_reverse($va_vals); }
+										
 										// Add/replace hierarchy name
 										if (($t_instance->getProperty('HIERARCHY_TYPE') == __CA_HIER_TYPE_MULTI_MONO__) &&  $t_instance->getHierarchyName()) {
 											$vn_first_key = array_shift(array_keys($va_vals));
@@ -892,7 +892,6 @@ class SearchResult extends BaseObject {
 									}
 								}
 							}
-							
 							
 							if ($vb_return_as_array) {
 								return $va_vals;

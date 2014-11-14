@@ -445,6 +445,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Truncate long labels?'),
 			'description' => _t('Truncate preferred and non-preferred labels that exceed the maximum length to fit.')
 		);
+		$va_settings['lookahead'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '0',
+			'label' => _t('Lookahead'),
+			'description' => _t('Number of rows ahead of the current row to pull value from.')
+		);
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
 	# ------------------------------------------------------

@@ -71,7 +71,7 @@
 				array(
 					_t('from results') => 'from_results',
 					_t('from checked') => 'from_checked'
-				), 
+				),
 				array('id' => 'caCreateSetFromResultsMode', 'class' => 'searchSetsSelect'),
 				array('value' => null, 'width' => '140px')
 			);

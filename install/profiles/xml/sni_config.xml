@@ -1351,7 +1351,7 @@
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Work</name_singular>
-              <name_plural>Work</name_plural>
+              <name_plural>Works</name_plural>
             </label>
           </labels>
           <items>
@@ -1359,7 +1359,7 @@
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Version</name_singular>
-                  <name_plural>Version</name_plural>
+                  <name_plural>Versions</name_plural>
                 </label>
               </labels>
             </item>
@@ -3145,8 +3145,8 @@
         <item idno="raw_footage" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Original Raw Footage/Recording</name_singular>
-              <name_plural>Original Raw Footage/Recordings</name_plural>
+              <name_singular>Raw Footage/Recording</name_singular>
+              <name_plural>Raw Footage/Recordings</name_plural>
             </label>
           </labels>
         </item>
@@ -3252,7 +3252,7 @@
     <list code="awards" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
-          <name>Genre</name>
+          <name>Awards</name>
         </label>
       </labels>
       <items/>

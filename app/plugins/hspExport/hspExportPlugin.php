@@ -57,7 +57,9 @@
 			}
 			
 			if(isset($va_item['text']) && (strlen($va_item['text'])>0)) {
+				$va_item['text'] = str_replace("&amp;", '{amp_placeholder}', $va_item['text']); // make sure we don't transform &amp; to &amp;amp; in the next line
 				$va_item['text'] = str_replace("&", "&amp;", $va_item['text']);
+				$va_item['text'] = str_replace('{amp_placeholder}', "&amp;", $va_item['text']);
 			}
 
 			return;
@@ -71,4 +73,3 @@
 		}
 		# -------------------------------------------------------
 	}
-?>

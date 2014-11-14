@@ -106,6 +106,46 @@ class Framework_MockObjectTest extends PHPUnit_Framework_TestCase
         $mock->doSomething();
     }
 
+    public function testMockedMethodIsCalledAtLeastTwice()
+    {
+        $mock = $this->getMock('AnInterface');
+        $mock->expects($this->atLeast(2))
+             ->method('doSomething');
+
+        $mock->doSomething();
+        $mock->doSomething();
+    }
+
+    public function testMockedMethodIsCalledAtLeastTwice2()
+    {
+        $mock = $this->getMock('AnInterface');
+        $mock->expects($this->atLeast(2))
+             ->method('doSomething');
+
+        $mock->doSomething();
+        $mock->doSomething();
+        $mock->doSomething();
+    }
+
+    public function testMockedMethodIsCalledAtMostTwice()
+    {
+        $mock = $this->getMock('AnInterface');
+        $mock->expects($this->atMost(2))
+             ->method('doSomething');
+
+        $mock->doSomething();
+        $mock->doSomething();
+    }
+
+    public function testMockedMethodIsCalledAtMosttTwice2()
+    {
+        $mock = $this->getMock('AnInterface');
+        $mock->expects($this->atMost(2))
+             ->method('doSomething');
+
+        $mock->doSomething();
+    }
+
     public function testMockedMethodIsCalledOnce()
     {
         $mock = $this->getMock('AnInterface');
@@ -381,9 +421,24 @@ class Framework_MockObjectTest extends PHPUnit_Framework_TestCase
              ->method('doSomething');
     }
 
-    public function testGetMockForTraversableInterface()
+    public function traversableProvider()
     {
-        $mock = $this->getMock('TraversableMockTestInterface');
+        return array(
+          array('Traversable'),
+          array('\Traversable'),
+          array('TraversableMockTestInterface'),
+          array(array('Traversable')),
+          array(array('Iterator','Traversable')),
+          array(array('\Iterator','\Traversable'))
+        );
+    }
+
+    /**
+     * @dataProvider traversableProvider
+     */
+    public function testGetMockForTraversable($type)
+    {
+        $mock = $this->getMock($type);
         $this->assertInstanceOf('Traversable', $mock);
     }
 
@@ -627,6 +682,31 @@ class Framework_MockObjectTest extends PHPUnit_Framework_TestCase
         } catch (PHPUnit_Framework_ExpectationFailedException $e) {
             $this->assertSame(
                 'SomeClass::right() was not expected to be called.',
+                $e->getMessage()
+            );
+        }
+
+        $this->resetMockObjects();
+    }
+
+    /**
+     * @ticket 199
+     */
+    public function testWithAnythingInsteadOfWithAnyParameters()
+    {
+        $mock = $this->getMock('SomeClass', array('right'), array(), '', TRUE, TRUE, TRUE);
+        $mock->expects($this->once())
+             ->method('right')
+             ->with($this->anything());
+
+        try {
+            $mock->right();
+            $this->fail('Expected exception');
+        } catch (PHPUnit_Framework_ExpectationFailedException $e) {
+            $this->assertSame(
+                "Expectation failed for method name is equal to <string:right> when invoked 1 time(s)\n" .
+                "Parameter count for invocation SomeClass::right() is too low.\n" .
+                "To allow 0 or more parameters with any value, omit ->with() or use ->withAnyParameters() instead.",
                 $e->getMessage()
             );
         }

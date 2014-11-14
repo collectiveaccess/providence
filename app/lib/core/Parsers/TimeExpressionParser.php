@@ -221,7 +221,7 @@ class TimeExpressionParser {
 		if ($this->tokenize($this->preprocess($ps_expression)) == 0) {
 			// nothing to parse
 			return false;
-		} 
+		}
 
 		$va_dates = array();
 		
@@ -848,7 +848,7 @@ class TimeExpressionParser {
 							if (($vn_int >= 1000) && ($vn_int <= 9999)) {
 								$this->skipToken();
 								return array('day' => null, 'month' => null, 'year' => $vn_int, 'era'=> TEP_ERA_AD);
-							} elseif(($vn_int < 0) && is_int($vn_it)) {
+							} elseif(($vn_int < 0) && is_int($vn_int)) {
 								$this->skipToken();
 								return array('day' => null, 'month' => null, 'year' => $vn_int, 'era'=> TEP_ERA_BC);
 							} else {
@@ -881,17 +881,18 @@ class TimeExpressionParser {
 							if ($va_peek = $this->peekToken()) {
 								if ($va_peek['type'] == TEP_TOKEN_INTEGER) {
 									$vn_int = intval($va_peek['value']);
-									if (($vn_int >= 1000) && ($vn_int <= 9999)) {
+									// we need support for "May 31, 1990" so we can't check $vn_int > 1 here
+									if (($vn_int > 31) && ($vn_int <= 9999)) {
 										$vn_year = $vn_int;
 										$this->skipToken();
 									} else {
-										if (($vn_int >= 1) && ($vn_int <=31)) {
+										if (($vn_int >= 1) && ($vn_int <= 31)) {
 											$vn_day = $vn_int;
 											$this->skipToken();
 											if ($va_peek = $this->peekToken()) {
 												if ($va_peek['type'] == TEP_TOKEN_INTEGER) {
 													$vn_int = intval($va_peek['value']);
-													if (($vn_int >= 1000) && ($vn_int <= 9999)) {
+													if (($vn_int >= 1) && ($vn_int <= 9999)) {
 														$vn_year = $vn_int;
 														$this->skipToken();
 													}
@@ -921,7 +922,7 @@ class TimeExpressionParser {
 							
 							// is a year defined? (it's optional)
 							if ($va_peek = $this->peekToken()) {
-								if (($va_peek['type'] == TEP_TOKEN_INTEGER) && (intval($va_peek['value']) >= 1000) && (intval($va_peek['value']) <= 9999)) {
+								if (($va_peek['type'] == TEP_TOKEN_INTEGER) && (intval($va_peek['value']) >= 1) && (intval($va_peek['value']) <= 9999)) {
 									$vn_year = intval($va_peek['value']);
 									$this->skipToken();
 								}
@@ -2227,8 +2228,10 @@ class TimeExpressionParser {
 				$va_end_pieces['year'] = '????';
 				$pa_options['dateFormat'] = 'delimited';
 			}
-			
-			if ($va_start_pieces['era'] != $va_end_pieces['era']) {
+
+			// show era for dates that span eras, but not for 'before XXXX' dates, which technically span
+			// eras but .. you know, not really. Their startpoint is TEP_START_OF_UNIVERSE
+			if (($va_start_pieces['era'] != $va_end_pieces['era']) && ($va_dates['start'] > TEP_START_OF_UNIVERSE)) {
 				$pa_options['showADEra'] = true;
 			}
 			
@@ -2360,7 +2363,12 @@ class TimeExpressionParser {
 
 				if ($va_end_pieces['hours'] == 23 && $va_end_pieces['minutes'] == 59 && $va_end_pieces['seconds'] == 59) {
 					if ($va_end_pieces['day'] == 31 && $va_end_pieces['month'] == 12) {
-						return $vs_before_qualifier.' '. $this->_dateToText(array('year' => $va_end_pieces['year'], 'era' => $va_end_pieces['era'], 'uncertainty' => $va_end_pieces['uncertainty'], 'uncertainty_units' => $va_end_pieces['uncertainty_units']), $pa_options);
+						return $vs_before_qualifier.' '. $this->_dateToText(array(
+							'year' => $va_end_pieces['year'],
+							'era' => $va_end_pieces['era'],
+							'uncertainty' => $va_end_pieces['uncertainty'],
+							'uncertainty_units' => $va_end_pieces['uncertainty_units']
+						), $pa_options);
 					} else {
 						return $vs_before_qualifier.' '. $this->_dateToText($va_end_pieces, $pa_options);
 					}
@@ -2373,7 +2381,12 @@ class TimeExpressionParser {
 			if ($va_dates['end'] >= TEP_END_OF_UNIVERSE) {
 				if ($va_start_pieces['hours'] == 0 && $va_start_pieces['minutes'] == 0 && $va_start_pieces['seconds'] == 0) {
 					if ($va_start_pieces['day'] == 1 && $va_start_pieces['month'] == 1) {
-						$vs_date = $this->_dateToText(array('year' => $va_start_pieces['year'], 'era' => $va_start_pieces['era'], 'uncertainty' => $va_start_pieces['uncertainty'], 'uncertainty_units' => $va_start_pieces['uncertainty_units']), $pa_options);
+						$vs_date = $this->_dateToText(array(
+							'year' => $va_start_pieces['year'],
+							'era' => $va_start_pieces['era'],
+							'uncertainty' => $va_start_pieces['uncertainty'],
+							'uncertainty_units' => $va_start_pieces['uncertainty_units']
+						), $pa_options);
 					} else {
 						$vs_date = $this->_dateToText($va_start_pieces, $pa_options);
 					}
@@ -2443,17 +2456,17 @@ class TimeExpressionParser {
 							} else {
 								if ($vb_full_day_time_range) {
 									// days, but no times
-									$vs_start_date = $this->_dateToText(array('month' => $va_start_pieces['month'], 'day' => $va_start_pieces['day']), $pa_options);
-									$vs_end_date = $this->_dateToText(array('month' => $va_end_pieces['month'], 'day' => $va_end_pieces['day']), $pa_options);
+									if((bool)$this->opo_language_settings->get('monthComesFirstInDelimitedDate')) {
+										$vs_start_date = $this->_dateToText(array('month' => $va_start_pieces['month'], 'day' => $va_start_pieces['day']), $pa_options);
+										$vs_end_date = $this->_dateToText(array('day' => $va_end_pieces['day']), $pa_options);
+									} else {
+										$vs_start_date = $this->_dateToText(array('day' => $va_start_pieces['day']), $pa_options);
+										$vs_end_date = $this->_dateToText(array('month' => $va_start_pieces['month'], 'day' => $va_end_pieces['day']), $pa_options);
+									}
+
 									$vs_year = $this->_dateToText(array('year' => $va_start_pieces['year'], 'era' => $va_start_pieces['era'], 'uncertainty' => $va_start_pieces['uncertainty'], 'uncertainty_units' => $va_start_pieces['uncertainty_units']), $pa_options);
 
-									$va_date_delimiters = $this->opo_language_settings->getList("dateDelimiters");
-									if (isset($pa_options['dateDelimiter']) && in_array($pa_options['dateDelimiter'], $va_date_delimiters)) {
-										$vs_date_delimiter = $pa_options['dateDelimiter'];
-									} else {
-										$vs_date_delimiter = $va_date_delimiters[0];
-									}
-									return ($vs_range_preconjunction ? $vs_range_preconjunction.' ': '').$vs_start_date.' '.$vs_range_conjunction.' '.$vs_end_date.$vs_date_delimiter.$vs_year;
+									return ($vs_range_preconjunction ? $vs_range_preconjunction.' ': '').$vs_start_date.' '.$vs_range_conjunction.' '.$vs_end_date.((((bool)$this->opo_datetime_settings->get('showCommaAfterDayForTextDates')) && ($pa_options['dateFormat'] == 'text')) ? ', ' : ' ').$vs_year;
 								} else {
 									// days with times
 									$vs_start_date = $this->_datetimeToText(array('month' => $va_start_pieces['month'], 'day' => $va_start_pieces['day'], 'hours' => $va_start_pieces['hours'], 'minutes' => $va_start_pieces['minutes'], 'seconds' => $va_start_pieces['seconds']), $pa_options);
@@ -2482,7 +2495,10 @@ class TimeExpressionParser {
 								// date range within single year without time
 								if(caGetOption('dateFormat', $pa_options, null) == 'text') {
 									$vs_start_date = $this->_dateToText(array('month' => $va_start_pieces['month'], 'day' => $va_start_pieces['day']), $pa_options);
-									$vs_end_date = $this->_dateToText(array('month' => $va_end_pieces['month'], 'day' => $va_end_pieces['day']), array_merge(array('forceCommaAfterDay' => true), $pa_options));
+									if((bool)$this->opo_datetime_settings->get('showCommaAfterDayForTextDates')) {
+										$pa_options['forceCommaAfterDay'] = true;
+									}
+									$vs_end_date = $this->_dateToText(array('month' => $va_end_pieces['month'], 'day' => $va_end_pieces['day']), $pa_options);
 									$vs_year = $this->_dateToText(array('year' => $va_start_pieces['year'], 'era' => $va_start_pieces['era'], 'uncertainty' => $va_start_pieces['uncertainty'], 'uncertainty_units' => $va_start_pieces['uncertainty_units']), $pa_options);
 									return ($vs_range_preconjunction ? $vs_range_preconjunction.' ': '').$vs_start_date.' '.$vs_range_conjunction.' '.$vs_end_date.' '.$vs_year;
 								} else {

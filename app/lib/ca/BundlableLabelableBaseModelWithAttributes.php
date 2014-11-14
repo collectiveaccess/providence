@@ -578,7 +578,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							if ($vb_return_as_array) {
 								$va_return_values =  $va_text;
 							}
-							return join($vs_delimiter, $va_text);
+							if(is_array($va_text)) {
+								return join($vs_delimiter, $va_text);
+							} else {
+								return null;
+							}
 						}
 					}
 					
@@ -1284,6 +1288,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				switch($ps_bundle_name) {
 					# -------------------------------
 					case 'ca_object_representations':
+						foreach(array('restrict_to_types', 'restrict_to_relationship_types') as $vs_k) {
+							$pa_options[$vs_k] = $pa_bundle_settings[$vs_k];
+						}
 						$va_reps = $this->getRepresentations(array('thumbnail', 'original'), null, $pa_options);
 						
 						$t_item = new ca_object_representations();
@@ -1398,7 +1405,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		// Check if user has access to this type
-		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
+		// The type id is not set for batch edits so skip this check for those.
+		if (!$vb_batch && (bool)$this->getAppConfig()->get('perform_type_access_checking')) {
 			$vn_type_access = $pa_options['request']->user->getTypeAccessLevel($this->tableName(), $this->getTypeID());
 			if ($vn_type_access == __CA_BUNDLE_ACCESS_NONE__) {
 				return;
@@ -4411,7 +4419,6 @@ if (!$vb_batch) {
 		if(isset($pa_options['restrictToLists']) && (!isset($pa_options['restrict_to_lists']) || !$pa_options['restrict_to_lists'])) { $pa_options['restrict_to_lists'] = $pa_options['restrictToLists']; }
 	 	if(isset($pa_options['groupFields'])) { $pa_options['groupFields'] = (bool)$pa_options['groupFields']; } else { $pa_options['groupFields'] = false; }
 	 	
-	 	
 		$o_db = $this->getDb();
 		$t_locale = new ca_locales();
 		$o_tep = new TimeExpressionParser();
@@ -4824,13 +4831,7 @@ if (!$vb_batch) {
 			
 			foreach($va_path as $vs_join_table) {
 				$va_rel_info = $this->getAppDatamodel()->getRelationships($vs_cur_table, $vs_join_table);
-
-				if($vs_join_table=="ca_set_item_labels"){ // hack to have label-less set items appear in "ca_set_items" queries for ca_sets
-					$va_joins[] = 'LEFT JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
-				} else {
-					$va_joins[] = 'INNER JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
-				}
-
+				$va_joins[] = 'INNER JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
 				$vs_cur_table = $vs_join_table;
 			}
 			

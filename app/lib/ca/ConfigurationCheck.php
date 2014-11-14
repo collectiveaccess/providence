@@ -278,6 +278,15 @@ final class ConfigurationCheck {
 		if(!file_exists(__CA_APP_DIR__."/tmp") || !is_writable(__CA_APP_DIR__."/tmp")){
 			self::addError(_t("It looks like the directory for temporary files is not writable by the webserver. Please change the permissions of %1 and enable the user which runs the webserver to write this directory.",__CA_APP_DIR__."/tmp"));
 		}
+
+		if(defined('__CA_CACHE_BACKEND__') && __CA_CACHE_BACKEND__ == 'file' && defined('__CA_CACHE_FILEPATH__')) {
+			if(
+				file_exists(__CA_CACHE_FILEPATH__.DIRECTORY_SEPARATOR.__CA_APP_NAME__.'Cache') && // if it doesn't exist, it can be probably be created or the above check would fail
+				!is_writable(__CA_CACHE_FILEPATH__.DIRECTORY_SEPARATOR.__CA_APP_NAME__.'Cache')
+			) {
+				self::addError(_t("It looks like the cache directory is not writable by the webserver. Please change the permissions of %1 and enable the user which runs the webserver to write this directory.",__CA_CACHE_FILEPATH__.DIRECTORY_SEPARATOR.__CA_APP_NAME__.'Cache'));
+			}
+		}
 		return true;
 	}
 	# -------------------------------------------------------
@@ -365,6 +374,9 @@ final class ConfigurationCheck {
 		}
 		if (!in_array('sha256', hash_algos())){
 			self::addError(_t("Your PHP installation doesn't seem to have support for the sha256 hashing algorithm. Please install a newer version of either PHP or the hash module."));
+		}
+		if (!class_exists('PharData')) {
+			self::addError(_t("The PHP phar module is required for CollectiveAccess to run. Please install it."));
 		}
 		
 		if (@preg_match('/\p{L}/u', 'a') != 1) {
