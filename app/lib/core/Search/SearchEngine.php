@@ -185,7 +185,7 @@ class SearchEngine extends SearchBase {
 		if (!$vb_no_cache && ($o_cache->load($vs_cache_key, $this->opn_tablenum, $pa_options))) {
 			$vn_created_on = $o_cache->getParameter('created_on');
 			if((time() - $vn_created_on) < $vn_cache_timeout) {
-				Debug::msg('cache hit for '.$vs_cache_key);
+				Debug::msg('SEARCH cache hit for '.$vs_cache_key);
 				$va_hits = $o_cache->getResults();
 				if (isset($pa_options['sort']) && $pa_options['sort'] && ($pa_options['sort'] != '_natural')) {
 					$va_hits = $this->sortHits($va_hits, $this->ops_tablename, $pa_options['sort'], $ps_search, (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
@@ -203,7 +203,7 @@ class SearchEngine extends SearchBase {
 		}
 
 		if(!$vb_from_cache) {
-			Debug::msg('cache miss for '.$vs_cache_key);
+			Debug::msg('SEARCH cache miss for '.$vs_cache_key);
 			$vs_char_set = $this->opo_app_config->get('character_set');
 			
 			$o_query_parser = new LuceneSyntaxParser();
