@@ -33,9 +33,6 @@
  /**
    *
    */
-   
-   define("__CA_DONT_DO_SEARCH_INDEXING__", 1);
-
 require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
 require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_LIB_DIR__.'/ca/Import/DataReaderManager.php');
@@ -51,8 +48,6 @@ require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
 require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__.'/core/Db/Transaction.php');
-
-//define("__CA_DONT_DO_SEARCH_INDEXING__", true);
 
 
 BaseModel::$s_ca_models_definitions['ca_data_importers'] = array(
