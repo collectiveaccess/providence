@@ -87,7 +87,7 @@
 		 * @var Instance of Db database client
 		 */
 		protected $opo_db;
-		
+
 		/**
 		 * @var Instance of Configuration class loaded with application configuration (app.conf)
 		 */
@@ -140,7 +140,7 @@
 				$this->opn_browse_table_num = $this->opo_datamodel->getTableNum($pm_subject_table_name_or_num);
 				$this->ops_browse_table_name = $pm_subject_table_name_or_num;
 			}
-			
+
 			$this->opo_config = Configuration::load();
 			$this->opo_ca_browse_config = Configuration::load($this->opo_config->get('browse_config'));
 			$this->opa_browse_settings = $this->opo_ca_browse_config->getAssoc($this->ops_browse_table_name);
@@ -4121,94 +4121,6 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 		 */
 		public function getCachedSortDirectionSetting() {
 			return $this->opo_ca_browse_cache->getParameter('sort_direction');
-		}
-		# ------------------------------------------------------------------
-		/**
-		 * @param $pa_hits Array of row_ids to filter. *MUST HAVE row_ids AS KEYS, NOT VALUES*
-		 */
-		public function filterHitsByACL($pa_hits, $pn_user_id, $pn_access=__CA_ACL_READONLY_ACCESS__, $pa_options=null) {
-			$vs_browse_tmp_table = $this->loadListIntoTemporaryResultTable($pa_hits, $this->opo_ca_browse_cache->getCacheKey());
-			
-			if (!sizeof($pa_hits)) { return $pa_hits; }
-			if (!(int)$pn_user_id) { return $pa_hits; }
-			if (!($t_table = $this->opo_datamodel->getInstanceByTableNum($this->opn_browse_table_num, true))) { return $pa_hits; }
-			
-			$vs_table_name = $t_table->tableName();
-			$vs_table_pk = $t_table->primaryKey();
-			
-			$t_user = new ca_users($pn_user_id);
-			if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {
-				$va_group_ids = array_keys($va_groups);
-				$vs_group_sql = '
-						OR
-						(ca_acl.group_id IN (?))';
-				$va_params = array((int)$this->opn_browse_table_num, (int)$pn_user_id, $va_group_ids, (int)$pn_access);
-			} else {
-				$va_group_ids = null;
-				$vs_group_sql = '';
-				$va_params = array((int)$this->opn_browse_table_num, (int)$pn_user_id, (int)$pn_access);
-			}
-			
-			$va_hits = array();
-			
-			if ($pn_access <= $this->opo_config->get('default_item_access_level')) {
-				// Requested access is more restrictive than default access (so return items with default ACL)
-				
-					// Find records that have ACL that matches
-					$qr_sort = $this->opo_db->query("
-						SELECT ca_acl.row_id
-						FROM ca_acl
-						INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = ca_acl.row_id
-						WHERE
-							(ca_acl.table_num = ?)
-							AND
-							(
-								(ca_acl.user_id = ?)
-								{$vs_group_sql}
-								OR 
-								(ca_acl.user_id IS NULL AND ca_acl.group_id IS NULL)
-							)
-							AND
-							(ca_acl.access >= ?)
-					", $va_params);
-
-                    $va_hits = array_unique($qr_sort->getAllFieldValues('row_id'));
-					
-					// Find records with default ACL
-					$qr_sort = $this->opo_db->query("
-						SELECT {$vs_browse_tmp_table}.row_id
-						FROM {$vs_browse_tmp_table}
-						LEFT OUTER JOIN ca_acl ON {$vs_browse_tmp_table}.row_id = ca_acl.row_id AND ca_acl.table_num = ?
-						WHERE
-							ca_acl.row_id IS NULL;
-					", array((int)$this->opn_browse_table_num));
-					
-					$va_hits = array_merge($va_hits, $qr_sort->getAllFieldValues('row_id'));
-			} else {
-				// Default access is more restrictive than requested access (so *don't* return items with default ACL)
-				
-					// Find records that have ACL that matches
-					$qr_sort = $this->opo_db->query("
-						SELECT ca_acl.row_id
-						FROM ca_acl
-						INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = ca_acl.row_id
-						WHERE
-							(ca_acl.table_num = ?)
-							AND
-							(
-								(ca_acl.user_id = ?)
-								{$vs_group_sql}
-								OR 
-								(ca_acl.user_id IS NULL AND ca_acl.group_id IS NULL)
-							)
-							AND
-							(ca_acl.access >= ?)
-					", $va_params);
-					
-					$va_hits = $qr_sort->getAllFieldValues('row_id');
-			}
-			
-			return $va_hits;
 		}
 		# ------------------------------------------------------------------
 		/**
