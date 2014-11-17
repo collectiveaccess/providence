@@ -143,11 +143,11 @@
 				$vs_group_sql = '
 					OR
 					(ca_acl.group_id IN (?))';
-				$va_params = array((int)$this->opn_tablenum, (int)$pn_user_id, $va_group_ids, (int)$pn_access);
+				$va_params = array((int)$pn_table_num, (int)$pn_user_id, $va_group_ids, (int)$pn_access);
 			} else {
 				$va_group_ids = null;
 				$vs_group_sql = '';
-				$va_params = array((int)$this->opn_tablenum, (int)$pn_user_id, (int)$pn_access);
+				$va_params = array((int)$pn_table_num, (int)$pn_user_id, (int)$pn_access);
 			}
 
 			// Find records that have ACL that matches
@@ -178,7 +178,7 @@
 				LEFT JOIN (SELECT * FROM ca_acl WHERE ca_acl.user_id = ?) AS ca_acl ON {$vs_search_tmp_table}.row_id = ca_acl.row_id AND ca_acl.table_num = ?
 				WHERE
 					ca_acl.row_id IS NULL
-			", array($pn_user_id, (int)$this->opn_tablenum));
+			", array($pn_user_id, (int)$pn_table_num));
 
 				$va_hits = array_merge($va_hits, $qr_sort->getAllFieldValues('row_id'));
 			}
