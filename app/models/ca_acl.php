@@ -251,7 +251,8 @@ class ca_acl extends BaseModel {
 					} // max access found so just return
 				}
 			}
-			
+
+			// user group acls
 			$va_groups = $t_user->getUserGroups();
 			if (is_array($va_groups)) {
 				$va_group_ids = array_keys($va_groups);
@@ -275,9 +276,15 @@ class ca_acl extends BaseModel {
 					}
 				}
 			}
+
+			// exceptions trump global access and the config setting so if we found some ACLs for either
+			// the user or one of their groups, we use the maximum access value from that list of ACLs
+			if(!is_null($vn_access)) {
+				return $vn_access;
+			}
 		}
 		
-		// Get world access
+		// If no valid exceptions found, get world access for this item
 		$qr_res = $o_db->query("
 			SELECT max(access) a 
 			FROM ca_acl
@@ -294,7 +301,7 @@ class ca_acl extends BaseModel {
 			return ca_acl::$s_acl_access_value_cache[$vn_user_id][$pn_table_num][$pn_row_id] = $vn_access; 
 		}
 		
-		// If no ACL exists return default
+		// If no valid ACL exists return default from config
 		$o_config = Configuration::load();
 		return ca_acl::$s_acl_access_value_cache[$vn_user_id][$pn_table_num][$pn_row_id] = (int)$o_config->get('default_item_access_level');
 	}
