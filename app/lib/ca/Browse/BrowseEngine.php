@@ -1674,7 +1674,7 @@
 						$va_results = $qr_res->getAllFieldValues($t_item->primaryKey());
 					
 						if ((!isset($pa_options['dontFilterByACL']) || !$pa_options['dontFilterByACL']) && $this->opo_config->get('perform_item_level_access_checking') && method_exists($t_item, "supportsACL") && $t_item->supportsACL()) {
-							$va_results = $this->filterHitsByACL($va_results, $vn_user_id, __CA_ACL_READONLY_ACCESS__);
+							$va_results = $this->filterHitsByACL($va_results, $this->opn_browse_table_num, $vn_user_id, __CA_ACL_READONLY_ACCESS__);
 						}
 					
 						$this->opo_ca_browse_cache->setResults($va_results);
@@ -1754,7 +1754,7 @@
 					$va_results = $qr_res->getAllFieldValues($vs_pk);
 					
 					if ((!isset($pa_options['dontFilterByACL']) || !$pa_options['dontFilterByACL']) && $this->opo_config->get('perform_item_level_access_checking') && method_exists($t_item, "supportsACL") && $t_item->supportsACL()) {
-						$va_results = array_keys($this->filterHitsByACL($va_results, $vn_user_id, __CA_ACL_READONLY_ACCESS__));
+						$va_results = array_keys($this->filterHitsByACL($va_results, $this->opn_browse_table_num, $vn_user_id, __CA_ACL_READONLY_ACCESS__));
 					}
 					$this->opo_ca_browse_cache->setResults($va_results);
 				} else {

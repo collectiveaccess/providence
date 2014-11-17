@@ -122,16 +122,18 @@
 		/**
 		 * Filter list of hits by ACL
 		 * @param array $pa_hits
+		 * @param int $pn_table_num
 		 * @param int $pn_user_id
 		 * @param int $pn_access
 		 * @param null $pa_options
 		 * @return array
 		 */
-		public function filterHitsByACL($pa_hits, $pn_user_id, $pn_access=__CA_ACL_READONLY_ACCESS__, $pa_options=null) {
+		public function filterHitsByACL($pa_hits, $pn_table_num, $pn_user_id, $pn_access=__CA_ACL_READONLY_ACCESS__, $pa_options=null) {
 			if (!sizeof($pa_hits)) { return $pa_hits; }
 			if (!(int)$pn_user_id) { $pn_user_id = 0; }
-			if (!($t_table = $this->opo_datamodel->getInstanceByTableNum($this->opn_tablenum, true))) { return $pa_hits; }
 			$o_conf = Configuration::load();
+			$o_dm = Datamodel::load();
+			if (!($t_table = $o_dm->getInstanceByTableNum($pn_table_num, true))) { return $pa_hits; }
 
 			$vs_search_tmp_table = $this->loadListIntoTemporaryResultTable($pa_hits, md5(isset($pa_options['search']) ? $pa_options['search'] : rand(0, 1000000)));
 
@@ -165,7 +167,6 @@
 			AND
 				(ca_acl.access >= ?)
 			", $va_params);
-
 			$va_hits = array_unique($qr_sort->getAllFieldValues('row_id'));
 
 			// Requested access is more restrictive than default access (so return items with default ACL)
