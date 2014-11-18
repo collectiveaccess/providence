@@ -65,6 +65,20 @@ class SearchJSONService extends BaseJSONService {
 					}
 				}
 				break;
+				
+            case "POST":
+                if(sizeof($va_post)==0){
+                    return $this->search();
+                } else {
+                    if(is_array($va_post["bundles"])){
+                        return $this->search($va_post["bundles"]);
+                    } else {
+                        $this->addError(_t("Invalid request body format"));
+                        return false;
+                    }
+                }
+                break;					
+				
 			default:
 				$this->addError(_t("Invalid HTTP request method for this service"));
 				return false;
