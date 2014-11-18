@@ -36,6 +36,8 @@
 		private $opo_datamodel;
 
 		private $opa_table_display_names;
+
+		private $opb_dont_show_timestamp = false;
 		# -------------------------------------------------------
 		public function __construct($ps_widget_path, $pa_settings) {
 			$this->title = _t('Recently created');
@@ -44,6 +46,7 @@
 			
 			$this->opo_config = Configuration::load($ps_widget_path.'/conf/recentlyCreated.conf');
 			$this->opo_datamodel = Datamodel::load();
+			$this->opb_dont_show_timestamp = (bool)Configuration::load()->get('dont_show_timestamp_in_change_log');
 
 			$this->opa_table_display_names = array(
 				'ca_objects' => _t('Objects'),
@@ -97,6 +100,7 @@
 			}
 			if ($t_table = $this->opo_datamodel->getInstanceByTableName($pa_settings['display_type'], true)) {
 				$vo_db = new Db();
+				$o_tep = new TimeExpressionParser();
 				if($pa_settings["display_limit"] && intval($pa_settings["display_limit"])>0 && intval($pa_settings["display_limit"])<1000){
 					$vn_limit = intval($pa_settings["display_limit"]);
 				} else {
@@ -155,15 +159,18 @@
 					$qr_create_date = $vo_db->query($vs_sql);
 					if($qr_create_date->nextRow()){
 						$vn_time_created = intval($qr_create_date->get("log_datetime"));
+						$o_tep->setUnixTimestamps($vn_time_created, $vn_time_created);
+						$va_options = ($this->opb_dont_show_timestamp ? array('timeOmit' => true) : null);
+						$vs_datetime_text = $o_tep->getText($va_options);
 					} else {
-						$vn_time_created = null;
+						$vs_datetime_text = '';
 					}
 					$va_item_list[$qr_records->get($t_table->primaryKey())] = array(
 						"display" => $qr_records->get($t_table->getLabelTableName().".".$t_table->getLabelDisplayField()),
 						"idno" => $qr_records->get("idno"),
 						"idno_stub" => $qr_records->get("idno_stub"),
 						"locale_id" => $qr_records->get($t_table->getLabelTableName().".locale_id"),
-						"datetime" => $vn_time_created
+						"datetime" => $vs_datetime_text
 					);
 				}
 				if(!(intval($pa_settings["height_px"]) > 30 && intval($pa_settings["height_px"]) < 1000)){ // if value is not within reasonable boundaries, set it to default
