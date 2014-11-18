@@ -1046,7 +1046,7 @@ div.notification-info-box {
 }
 
 div.notification-error-box {
-    background:	url('../graphics/icons/glyphicons_078_warning_sign.png') no-repeat 10px 5px;
+    background:	url('../graphics/buttons/glyphicons_078_warning_sign.png') no-repeat 10px 5px;
     text-indent: 32px;
     background-color: #eeeeee;
     padding: 5px;
@@ -3171,6 +3171,11 @@ input[type="text"], input[type="textarea"], textarea,  input[type="password"] {
 	-webkit-border-radius: 3px;
 	-moz-border-radius: 3px;
 	border-radius: 3px;
+}
+
+input[type="text"]:disabled, input[type="textarea"]:disabled, textarea:disabled {
+    color: #808080;
+    -webkit-text-fill-color:#808080;
 }
 
 textarea:focus{
@@ -6915,4 +6920,12 @@ td.caSourceFileControlRadio {
 	vertical-align: top;
 	width: 30px;
 	height: 35px;
+}
+
+/** Metadata export preview **/
+.caExportPreview {
+    max-height: 250px;
+    overflow: scroll;
+    width: 100%;
+    border: 1px solid #e6e6e6;
 }

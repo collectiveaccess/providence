@@ -69,8 +69,8 @@
 			print " ";
 			print caHTMLSelect('set_create_mode', 
 				array(
-					'from results' => _t('from_results'),
-					'from checked' => _t('from_checked')
+					_t('from results') => 'from_results',
+					_t('from checked') => 'from_checked'
 				), 
 				array('id' => 'caCreateSetFromResultsMode', 'class' => 'searchSetsSelect'),
 				array('value' => null, 'width' => '140px')

@@ -132,7 +132,9 @@ class SearchIndexer extends SearchBase {
 			foreach($pa_table_names as $vs_table) {
 				if ($this->opo_datamodel->tableExists($vs_table)) {
 					$vn_num = $this->opo_datamodel->getTableNum($vs_table);
-					print "\nTRUNCATING {$vs_table}\n\n";
+					if($pb_display_progress) {
+						print "\nTRUNCATING {$vs_table}\n\n";
+					}
 					$this->opo_engine->truncateIndex($vn_num);
 					$t_instance = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
 					$va_table_names[$vn_num] = array('name' => $vs_table, 'num' => $vn_num, 'displayName' => $t_instance->getProperty('NAME_PLURAL'));

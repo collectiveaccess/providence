@@ -53,7 +53,8 @@
 				if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
 					if(!initializeLocale($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) die("Error loading locale ".$g_ui_locale);
 				}
-				$this->redirect(sprintf('%s?redirect=%s', caNavUrl($this->request, 'system', 'auth', 'login'), urlencode($vs_redirect_url)));
+				$this->render('login_html.php');
+				//$this->redirect(sprintf('%s?redirect=%s', caNavUrl($this->request, 'system', 'auth', 'login'), urlencode($vs_redirect_url)));
 			} else {
 				//
 				// Reset locale globals

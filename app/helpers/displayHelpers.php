@@ -961,11 +961,21 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			
 				TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($vs_type_name, 'UTF-8')));
 			}
-			
+
+			//
+			// Download media in lot ($vn_num_objects is only set for object lots)
 			if ($vn_num_objects > 0) {
 				$vs_buf .= caNavLink($po_view->request, caNavIcon($po_view->request, __CA_NAV_BUTTON_DOWNLOAD__), "button", $po_view->request->getModulePath(), $po_view->request->getController(), 'getLotMedia', array('lot_id' => $t_item->getPrimaryKey(), 'download' => 1), array('id' => 'inspectorLotMediaDownloadButton'));
+				TooltipManager::add('#inspectorLotMediaDownloadButton', _t("Download all media associated with objects in this lot"));
 			}
-			TooltipManager::add('#inspectorLotMediaDownloadButton', _t("Download all media associated with objects in this lot"));
+
+			//
+			// Download media in set
+			if(($vs_table_name == 'ca_sets') && (sizeof($t_item->getItemRowIDs())>0)) {
+				$vs_buf .= caNavLink($po_view->request, caNavIcon($po_view->request, __CA_NAV_BUTTON_DOWNLOAD__), "button", $po_view->request->getModulePath(), $po_view->request->getController(), 'getSetMedia', array('set_id' => $t_item->getPrimaryKey(), 'download' => 1), array('id' => 'inspectorLotMediaDownloadButton'));
+
+				TooltipManager::add('#inspectorLotMediaDownloadButton', _t("Download all media associated with records in this set"));
+			}
 		
 			$vs_more_info = '';
 			
@@ -1788,14 +1798,17 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 	 * @return string HTML implementing the inspector
 	 */
 	function caBatchMetadataExportInspector($po_view) {
-		$vs_color = "444444"; 
-		$vs_buf .= "<h3 class='nextPrevious'>".caNavLink($po_view->request, _t('Back to list'), '', 'manage', 'MetadataExport', 'Index', $pa_other_params=null, $pa_attributes=null)."</h3>";
-		$vs_buf .= "<h4><div id='caColorbox' style='border: 6px solid #{$vs_color}; padding-bottom:15px;'>\n";
+		$vs_color = "444444";
+		$vs_buf = "<h4><div id='caColorbox' style='border: 6px solid #{$vs_color}; padding-bottom:15px;'>\n";
 
 		$vs_buf .= "<strong>"._t("Batch export metadata")."</strong>\n";
 
 		$t_item = $po_view->getVar("t_item");
 		$vs_buf .= "<p>"._t("Selected exporter").":<br />".$t_item->getLabelForDisplay()."</p>";
+
+		if($vn_id = $po_view->request->getParameter('item_id', pInteger)) {
+			$vs_buf .= "<p>".caEditorLink($po_view->request, _t("Back to record"), 'caResultsEditorEditLink', $t_item->getTargetTableName(), $vn_id)."</p>";
+		}
 		
 		$vs_buf .= "</div></h4>\n";
 		
@@ -4020,4 +4033,22 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		}
 		return $o_view->render('representation_viewer_html.php');
  	}
+	# ------------------------------------------------------------------
+	/**
+	 * Get Javascript code that generates Tooltips for a list of elements
+	 * @param array $pa_tooltips List of tooltips to set as selector=>text map
+	 * @param string $ps_class CSS class to use for tooltips
+	 * @return string
+	 */
+	function caGetTooltipJS($pa_tooltips, $ps_class = 'tooltipFormat') {
+		$vs_buf = "<script type='text/javascript'>\njQuery(document).ready(function() {\n";
+
+		foreach($pa_tooltips as $vs_element_selector => $vs_tooltip_text) {
+			$vs_buf .= "jQuery('{$vs_element_selector}').attr('title', '".preg_replace('![\n\r]{1}!', ' ', addslashes($vs_tooltip_text))."').tooltip({ tooltipClass: '{$ps_class}', show: 150, hide: 150});\n";
+		}
+
+		$vs_buf .= "});\n</script>\n";
+
+		return $vs_buf;
+	}
 	# ------------------------------------------------------------------

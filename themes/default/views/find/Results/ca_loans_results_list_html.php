@@ -41,7 +41,7 @@
 			<thead>
 			<tr>
 			<th style="width:10px; text-align:center;" class='list-header-nosort'>
-				<input type='checkbox' name='record' value='' id='addItemToSetSelectAllControl' class='addItemToSetControl' onchange="jQuery('.addItemToSetControl').attr('checked', jQuery('#addItemToSetSelectAllControl').attr('checked'));"/>
+				<input type='checkbox' name='record' value='' id='addItemToSetSelectAllControl' class='addItemToSetControl' onchange="jQuery('.addItemToSetControl').attr('checked', (jQuery('#addItemToSetSelectAllControl').attr('checked') == 'checked'));"/>
 			</th>
 			<th class='list-header-nosort'>
 				<?php print ($vs_default_action	== "Edit" ? _t("Edit") : _t("View")); ?>

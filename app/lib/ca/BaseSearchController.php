@@ -126,10 +126,11 @@
  			
  			if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) { 
  				$va_tmp = array_keys($this->opa_sorts);
- 				$vs_sort = array_shift($va_tmp); 
+ 				$vs_sort = array_shift($va_tmp);
  			}
  			$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
-			$vn_display_id 	= $this->opo_result_context->getCurrentBundleDisplay();
+
+			$vb_sort_has_changed = $this->opo_result_context->sortHasChanged();
  			
  			if (!$this->opn_type_restriction_id) { $this->opn_type_restriction_id = ''; }
  			$this->view->setVar('type_id', $this->opn_type_restriction_id);
@@ -140,7 +141,7 @@
  			$va_sortable_elements = ca_metadata_elements::getSortableElements($this->ops_tablename, $this->opn_type_restriction_id);
  			
  			if (!is_array($this->opa_sorts)) { $this->opa_sorts = array(); }
- 			foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
+ 			foreach($va_sortable_elements as $va_sortable_element) {
  				$this->opa_sorts[$this->ops_tablename.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
  			}
  			
@@ -222,7 +223,7 @@
 					$vo_result->filterResult('ca_objects.type_id', $vn_show_type_id);
 				}
 		
- 				if($vb_is_new_search || $vb_criteria_have_changed) {
+ 				if($vb_is_new_search || $vb_criteria_have_changed || $vb_sort_has_changed) {
 					$this->opo_result_context->setResultList($vo_result->getPrimaryKeyValues());
 					$this->opo_result_context->setParameter('availableVisualizationChecked', 0);
 					if ($this->opo_result_context->searchExpressionHasChanged()) { $vn_page_num = 1; }
@@ -323,10 +324,6 @@
  				case 'EXPORT':
  					$this->_genExport($vo_result, $this->request->getParameter("export_format", pString), $vs_search, $vs_search);
  					break;
-				# ------------------------------------
-				case 'EXPORTWITHMAPPING':
-					$this->_genExportWithMapping($vo_result, $this->request->getParameter("exporter_id", pInteger));
-					break;
  				# ------------------------------------
  				case 'HTML': 
 				default:

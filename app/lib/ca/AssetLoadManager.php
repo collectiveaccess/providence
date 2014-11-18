@@ -169,8 +169,8 @@
 		/**
 		 * Causes the specified code to be loaded.
 		 *
-		 * @param $ps_scriptcontent (string) script content to load
-		 * @return (bool) - false if empty code, true if load succeeded
+		 * @param string|null $ps_content script content to load
+		 * @return bool - false if empty code, true if load succeeded
 		 */
 		static function addComplementaryScript($ps_content=null) {
 			global $g_asset_config, $g_asset_load_list, $g_asset_complementary;			

@@ -485,7 +485,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$this->metadata = array();
 					
 					// exif
-					if(function_exists('exif_read_data')) {
+					if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
 						if (is_array($va_exif = caSanitizeArray(@exif_read_data($ps_filepath, 'EXIF', true, false)))) { 							
 							//
 							// Rotate incoming image as needed

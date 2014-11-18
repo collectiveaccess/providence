@@ -221,7 +221,7 @@ class TimeExpressionParser {
 		if ($this->tokenize($this->preprocess($ps_expression)) == 0) {
 			// nothing to parse
 			return false;
-		} 
+		}
 
 		$va_dates = array();
 		
@@ -848,7 +848,7 @@ class TimeExpressionParser {
 							if (($vn_int >= 1000) && ($vn_int <= 9999)) {
 								$this->skipToken();
 								return array('day' => null, 'month' => null, 'year' => $vn_int, 'era'=> TEP_ERA_AD);
-							} elseif(($vn_int < 0) && is_int($vn_it)) {
+							} elseif(($vn_int < 0) && is_int($vn_int)) {
 								$this->skipToken();
 								return array('day' => null, 'month' => null, 'year' => $vn_int, 'era'=> TEP_ERA_BC);
 							} else {
@@ -881,17 +881,18 @@ class TimeExpressionParser {
 							if ($va_peek = $this->peekToken()) {
 								if ($va_peek['type'] == TEP_TOKEN_INTEGER) {
 									$vn_int = intval($va_peek['value']);
-									if (($vn_int >= 1000) && ($vn_int <= 9999)) {
+									// we need support for "May 31, 1990" so we can't check $vn_int > 1 here
+									if (($vn_int > 31) && ($vn_int <= 9999)) {
 										$vn_year = $vn_int;
 										$this->skipToken();
 									} else {
-										if (($vn_int >= 1) && ($vn_int <=31)) {
+										if (($vn_int >= 1) && ($vn_int <= 31)) {
 											$vn_day = $vn_int;
 											$this->skipToken();
 											if ($va_peek = $this->peekToken()) {
 												if ($va_peek['type'] == TEP_TOKEN_INTEGER) {
 													$vn_int = intval($va_peek['value']);
-													if (($vn_int >= 1000) && ($vn_int <= 9999)) {
+													if (($vn_int >= 1) && ($vn_int <= 9999)) {
 														$vn_year = $vn_int;
 														$this->skipToken();
 													}
@@ -921,7 +922,7 @@ class TimeExpressionParser {
 							
 							// is a year defined? (it's optional)
 							if ($va_peek = $this->peekToken()) {
-								if (($va_peek['type'] == TEP_TOKEN_INTEGER) && (intval($va_peek['value']) >= 1000) && (intval($va_peek['value']) <= 9999)) {
+								if (($va_peek['type'] == TEP_TOKEN_INTEGER) && (intval($va_peek['value']) >= 1) && (intval($va_peek['value']) <= 9999)) {
 									$vn_year = intval($va_peek['value']);
 									$this->skipToken();
 								}
