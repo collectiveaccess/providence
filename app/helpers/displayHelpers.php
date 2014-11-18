@@ -971,8 +971,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 
 			//
 			// Download media in set
-			if($vs_table_name == 'ca_sets') {
-				$vn_num_set_items = sizeof($t_item->getItemRowIDs());
+			if(($vs_table_name == 'ca_sets') && (sizeof($t_item->getItemRowIDs())>0)) {
 				$vs_buf .= caNavLink($po_view->request, caNavIcon($po_view->request, __CA_NAV_BUTTON_DOWNLOAD__), "button", $po_view->request->getModulePath(), $po_view->request->getController(), 'getSetMedia', array('set_id' => $t_item->getPrimaryKey(), 'download' => 1), array('id' => 'inspectorLotMediaDownloadButton'));
 
 				TooltipManager::add('#inspectorLotMediaDownloadButton', _t("Download all media associated with records in this set"));
