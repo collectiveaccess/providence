@@ -43,6 +43,7 @@
 		private $opa_context = null;
 		private $opb_is_new_search = false;
 		private $opb_search_expression_has_changed = null;
+		private $opb_sort_has_changed = false;
 		# ------------------------------------------------------------------
 		/**
 		 * To create a result context you pass the table and type of the current find; the ResultContext will be loaded
@@ -119,6 +120,15 @@
 				}
 			}
 			return $this->opb_search_expression_has_changed = false;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Determines if the sort direction is changing during this request
+		 *
+		 * @return bool True if sort is changing
+		 */
+		public function sortHasChanged() {
+			return $this->opb_sort_has_changed;
 		}
 		# ------------------------------------------------------------------
 		/**
@@ -284,6 +294,7 @@
 					return $va_context['sort'] ? $va_context['sort'] : null;
 				}
 			} else {
+				$this->opb_sort_has_changed = true;
 				$this->setContextValue('sort', $ps_sort);
 				return $ps_sort;
 			}

@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/controllers/manage/SetEditorController.php : 
+ * app/controllers/manage/SetEditorController.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -15,28 +15,28 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
  */
- 
+
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
  	require_once(__CA_LIB_DIR__."/ca/BaseEditorController.php");
- 	
- 
+
+
  	class SetEditorController extends BaseEditorController {
  		# -------------------------------------------------------
  		protected $ops_table_name = 'ca_sets';		// name of "subject" table (what we're editing)
  		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
- 			
+
  			// check access to set - if user doesn't have edit access we bail
  			$t_set = new ca_sets($po_request->getParameter('set_id', pInteger));
  			if (!$t_set->haveAccessToSet($po_request->getUserID(), __CA_SET_EDIT_ACCESS__, null, array('request' => $po_request))) {
@@ -94,12 +94,12 @@
  		public function GetItemInfo() {
  			if ($pn_set_id = $this->request->getParameter('set_id', pInteger)) {
 				$t_set = new ca_sets($pn_set_id);
-				
+
 				if (!$t_set->getPrimaryKey()) {
-					$this->notification->addNotification(_t("The set does not exist"), __NOTIFICATION_TYPE_ERROR__);	
+					$this->notification->addNotification(_t("The set does not exist"), __NOTIFICATION_TYPE_ERROR__);
 					return;
 				}
-				
+
 				// does user have edit access to set?
 				if (!$t_set->haveAccessToSet($this->request->getUserID(), __CA_SET_EDIT_ACCESS__, null, array('request' => $this->request))) {
 					$this->notification->addNotification(_t("You cannot edit this set"), __NOTIFICATION_TYPE_ERROR__);
@@ -112,21 +112,21 @@
 				$pn_table_num = $this->request->getParameter('table_num', pInteger);
 				$vn_set_item_count = 0;
 			}
- 			
+
  			$pn_row_id = $this->request->getParameter('row_id', pInteger);
- 			
+
  			$t_row = $this->opo_datamodel->getInstanceByTableNum($pn_table_num, true);
  			if (!($t_row->load($pn_row_id))) {
  				$va_errors[] = _t("Row_id is invalid");
  			}
- 			
+
  			$this->view->setVar('errors', $va_errors);
  			$this->view->setVar('set_id', $pn_set_id);
  			$this->view->setVar('row_id', $pn_row_id);
  			$this->view->setVar('idno', $t_row->get($t_row->getProperty('ID_NUMBERING_ID_FIELD')));
  			$this->view->setVar('idno_sort', $t_row->get($t_row->getProperty('ID_NUMBERING_SORT_FIELD')));
  			$this->view->setVar('set_item_label', $t_row->getLabelForDisplay(false));
- 			
+
  			$this->view->setVar('representation_tag', '');
  			if (method_exists($t_row, 'getRepresentations')) {
  				if ($vn_set_item_count > 50) {
@@ -144,6 +144,82 @@
  			}
  			$this->render('ajax_set_item_info_json.php');
  		}
+		# -------------------------------------------------------
+		/**
+		 * Download (accessible) media for all records in this set
+		 */
+		public function getSetMedia() {
+			set_time_limit(600); // allow a lot of time for this because the sets can be potentially large
+			$o_dm = Datamodel::load();
+			$t_set = new ca_sets($this->request->getParameter('set_id', pInteger));
+			if (!$t_set->getPrimaryKey()) {
+				$this->notification->addNotification(_t('No set defined'), __NOTIFICATION_TYPE_ERROR__);
+				$this->opo_response->setRedirect(caEditorUrl($this->opo_request, 'ca_sets', $t_set->getPrimaryKey()));
+				return false;
+			}
+
+			$va_record_ids = array_keys($t_set->getItemRowIDs(array('limit' => 100000)));
+			if(!is_array($va_record_ids) || !sizeof($va_record_ids)) {
+				$this->notification->addNotification(_t('No media is available for download'), __NOTIFICATION_TYPE_ERROR__);
+				$this->opo_response->setRedirect(caEditorUrl($this->opo_request, 'ca_sets', $t_set->getPrimaryKey()));
+				return false;
+			}
+
+			$vs_subject_table = $o_dm->getTableName($t_set->get('table_num'));
+			$t_instance = $o_dm->getInstanceByTableName($vs_subject_table);
+
+			$qr_res = $vs_subject_table::createResultSet($va_record_ids);
+			$qr_res->filterNonPrimaryRepresentations(false);
+
+			$va_paths = array();
+			while($qr_res->nextHit()) {
+				$va_original_paths = $qr_res->getMediaPaths('ca_object_representations.media', 'original');
+				if(sizeof($va_original_paths)>0) {
+					$va_paths[$qr_res->get($t_instance->primaryKey())] = array(
+						'idno' => $qr_res->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
+						'paths' => $va_original_paths
+					);
+				}
+			}
+
+			if (sizeof($va_paths) > 0){
+				$vs_tmp_name = caGetTempFileName('DownloadSetMedia', 'zip');
+				$o_phar = new PharData($vs_tmp_name, null, null, Phar::ZIP);
+
+				foreach($va_paths as $vn_pk => $va_path_info) {
+					$vn_c = 1;
+					foreach($va_path_info['paths'] as $vs_path) {
+						if (!file_exists($vs_path)) { continue; }
+						$vs_filename = $va_path_info['idno'] ? $va_path_info['idno'] : $vn_pk;
+						$vs_filename .= "_{$vn_c}";
+
+						if ($vs_ext = pathinfo($vs_path, PATHINFO_EXTENSION)) {
+							$vs_filename .= ".{$vs_ext}";
+						}
+						$o_phar->addFile($vs_path, $vs_filename);
+
+						$vn_c++;
+					}
+				}
+
+				$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
+
+				// send download
+				$vs_set_code = $t_set->get('set_code');
+
+				$o_view->setVar('tmp_file', $vs_tmp_name);
+				$o_view->setVar('download_name', 'media_for_'.mb_substr(preg_replace('![^A-Za-z0-9]+!u', '_', $vs_set_code ? $vs_set_code : $t_set->getPrimaryKey()), 0, 20).'.zip');
+
+				$this->response->addContent($o_view->render('ca_sets_download_media.php'));
+				return;
+			} else {
+				$this->notification->addNotification(_t('No media is available for download'), __NOTIFICATION_TYPE_ERROR__);
+				$this->opo_response->setRedirect(caEditorUrl($this->opo_request, 'ca_sets', $t_set->getPrimaryKey()));
+				return;
+			}
+
+			return $this->Edit();
+		}
  		# -------------------------------------------------------
  		# Sidebar info handler
  		# -------------------------------------------------------

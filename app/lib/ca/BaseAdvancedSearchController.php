@@ -79,7 +79,8 @@
  				$vs_sort = array_shift($va_tmp); 
  			}
 			$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
-			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
+
+			$vb_sort_has_changed = $this->opo_result_context->sortHasChanged();
 
  			if (!$this->opn_type_restriction_id) { $this->opn_type_restriction_id = ''; }
  			$this->view->setVar('type_id', $this->opn_type_restriction_id);
@@ -171,7 +172,7 @@
  				$this->opo_result_context->setParameter('form_data', $va_form_data);
  				$this->opo_result_context->setSearchExpression($vs_search);
  				
- 				if($vb_is_new_search || $vb_criteria_have_changed) {
+ 				if($vb_is_new_search || $vb_criteria_have_changed || $vb_sort_has_changed) {
  					$this->opo_result_context->setResultList($vo_result->getPrimaryKeyValues());
 					
 					if ($this->opo_result_context->searchExpressionHasChanged()) { $vn_page_num = 1; }
@@ -224,10 +225,6 @@
  				case 'EXPORT':
  					$this->_genExport($vo_result, $this->request->getParameter("export_format", pString), $vs_search, $vs_search);
  					break;
-				# ------------------------------------
-				case 'EXPORTWITHMAPPING':
-					$this->_genExportWithMapping($vo_result, $this->request->getParameter("exporter_id", pInteger));
-					break;
 				# ------------------------------------
  				case 'HTML': 
 				default:

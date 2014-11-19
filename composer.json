@@ -3,6 +3,7 @@
         "phpunit/phpunit": "4.3.*",
         "maximebf/debugbar": ">=1.0.0",
         "doctrine/common": "2.3.0",
-        "elasticsearch/elasticsearch": "~1.0"
+        "elasticsearch/elasticsearch": "~1.0",
+        "knplabs/github-api": "~1.2"
     }
 }

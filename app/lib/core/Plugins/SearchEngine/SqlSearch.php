@@ -170,7 +170,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				'cacheCleanFactor' => 0.50,									// percentage of words retained when cleaning the cache
 				
 				'omitPrivateIndexing' => false,								//
-				'restrictSearchToFields' => null
+				'restrictSearchToFields' => null,
+				'strictPhraseSearching' => true							// strict phrase searching finds only records with the precise phrase; non-strict will find fields with all of the words, in any order
 		);
 		
 		// Defines specific capabilities of this engine and plug-in
@@ -439,8 +440,18 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	# -------------------------------------------------------
 	private function _doQueriesForSqlSearch($po_rewritten_query, $pn_subject_tablenum, $ps_dest_table, $pn_level=0, $pa_options=null) {		// query is always of type Zend_Search_Lucene_Search_Query_Boolean
 		$vn_i = 0;
+		
+		switch(get_class($po_rewritten_query)){
+			case 'Zend_Search_Lucene_Search_Query_MultiTerm':
+				$va_elements = $po_rewritten_query->getTerms();
+				break;
+			default:
+				$va_elements = $po_rewritten_query->getSubqueries();
+				break;
+		}
+		
 		$va_old_signs = $po_rewritten_query->getSigns();
-		foreach($po_rewritten_query->getSubqueries() as $o_lucene_query_element) {
+		foreach($va_elements as $o_lucene_query_element) {
 			$vb_is_blank_search = false;
 			
 			if (is_null($va_old_signs)) {	// if array is null then according to Zend Lucene all subqueries should be "are required"... so we AND them
@@ -456,11 +467,12 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			
 			
 			$va_direct_query_temp_tables = array();	// List of temporary tables created by direct search queries; tables listed here are dropped at the end of processing for the query element		
-			$vs_direct_sql_query = null;
 			$pa_direct_sql_query_params = null; // set to array with values to use with direct SQL query placeholders or null to pass single standard table_num value as param (most queries just need this single value)
-					
+			$vs_direct_sql_query = null;
+			
 			switch($vs_class = get_class($o_lucene_query_element)) {
 				case 'Zend_Search_Lucene_Search_Query_Boolean':
+				case 'Zend_Search_Lucene_Search_Query_MultiTerm':
 					$this->_createTempTable('ca_sql_search_temp_'.$pn_level);
 					
 					if (($vs_op == 'AND') && ($vn_i == 0)) {
@@ -516,7 +528,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					$this->_dropTempTable('ca_sql_search_temp_'.$pn_level);
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Term':
-				case 'Zend_Search_Lucene_Search_Query_MultiTerm':
+				case 'Zend_Search_Lucene_Index_Term':
 				case 'Zend_Search_Lucene_Search_Query_Phrase':
 				case 'Zend_Search_Lucene_Search_Query_Range':
 					$va_ft_terms = array();
@@ -640,6 +652,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							}
 							break;
 						case 'Zend_Search_Lucene_Search_Query_Phrase':
+	if ($this->getOption('strictPhraseSearching')) {
 						 	$va_words = array();
 						 	foreach($o_lucene_query_element->getQueryTerms() as $o_term) {
 								if (!$vs_access_point && ($vs_field = $o_term->field)) { $vs_access_point = $vs_field; }
@@ -711,24 +724,19 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							}
 							
 							break;
-						// case 'Zend_Search_Lucene_Search_Query_MultiTerm':
-// 							$va_ft_like_term_list = array();
-// 							
-// 							foreach($o_lucene_query_element->getTerms() as $o_term) {
-// 							
-// 								$va_access_point_info = $this->_getElementIDForAccessPoint($pn_subject_tablenum, $o_term->field);
-// 								print_R($va_access_point_info);
-// 								$vs_access_point = $va_access_point_info['access_point'];
-// 							
-// 								$va_raw_terms[] = $vs_term = (string)(method_exists($o_term, "getTerm") ? $o_term->getTerm()->text : $o_term->text);
-// 								if (!$vs_access_point && ($vs_field = method_exists($o_term, "getTerm") ? $o_term->getTerm()->field : $o_term->field)) { $vs_access_point = $vs_field; }
-// 								
-// 								$vs_stripped_term = preg_replace('!\*+$!u', '', $vs_term);
-// 								$va_ft_like_terms[] = $vs_stripped_term;
-// 							}
-// 							break;
+		}
 						default:
-							$va_term_objs = ($vs_class == 'Zend_Search_Lucene_Search_Query_MultiTerm') ? $o_lucene_query_element->getTerms() : array($o_lucene_query_element->getTerm());
+							switch($vs_class) {
+								case 'Zend_Search_Lucene_Search_Query_Phrase':
+									$va_term_objs = $o_lucene_query_element->getQueryTerms();
+									break;
+								case 'Zend_Search_Lucene_Index_Term':
+									$va_term_objs = array($o_lucene_query_element);
+									break;
+								default:
+									$va_term_objs = array($o_lucene_query_element->getTerm());
+									break;
+							}
 							
 							foreach($va_term_objs as $o_term) {
 								$va_access_point_info = $this->_getElementIDForAccessPoint($pn_subject_tablenum, $o_term->field);
@@ -1239,7 +1247,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$vs_sql = "
 										DELETE FROM {$ps_dest_table} 
 										WHERE 
-											row_id IN ({$vs_sql})
+											row_id IN (?)
 									";
 									if ($this->debug) { Debug::msg('NOT '.$vs_sql); }
 									$qr_res = $this->opo_db->query($vs_sql, array($va_ids));

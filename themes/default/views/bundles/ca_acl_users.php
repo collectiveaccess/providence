@@ -34,7 +34,8 @@
 	$vs_add_label 		= $this->getVar('add_label');
 	$t_acl = new ca_acl();
 	
-	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_users') == __CA_BUNDLE_ACCESS_READONLY__));
+	//$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_users') == __CA_BUNDLE_ACCESS_READONLY__));
+	$vb_read_only = false;
 	
 	$va_initial_values = $this->getVar('initialValues');
 	if (!is_array($va_initial_values)) { $va_initial_values = array(); }

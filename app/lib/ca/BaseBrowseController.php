@@ -136,6 +136,8 @@
  				$vs_sort = array_shift($va_tmp); 
  			}
 			$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
+
+			$vb_sort_has_changed = $this->opo_result_context->sortHasChanged();
 			
  			if (!$vn_page_num || $vb_criteria_have_changed) { $vn_page_num = 1; }
  			
@@ -249,7 +251,7 @@
 			$vo_result->setOption('prefetch', $vn_items_per_page);
 			
 			if ($vo_result) {
-				if ($vb_criteria_have_changed) {
+				if ($vb_criteria_have_changed || $vb_sort_has_changed) {
 					// Put the results id list into the results context - we used this for previous/next navigation
 					$this->opo_result_context->setResultList($vo_result->getPrimaryKeyValues());
 					$this->opo_result_context->setParameter('availableVisualizationChecked', 0);
@@ -340,10 +342,6 @@
  				case 'EXPORT':
  					$this->_genExport($vo_result, $this->request->getParameter("export_format", pString), _t('Browse'), _t('Browse'));
  					break;
-				# ------------------------------------
-				case 'EXPORTWITHMAPPING':
-					$this->_genExportWithMapping($vo_result, $this->request->getParameter("exporter_id", pInteger));
-					break;
 				# ------------------------------------
  				case 'HTML': 
 				default:

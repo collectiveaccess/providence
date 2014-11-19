@@ -41,7 +41,7 @@ if (!$this->getVar('no_hierarchies_defined')) {
 		<thead>
 		<tr>
 		<th style="width:10px; text-align:center;" class='list-header-nosort'>
-			<input type='checkbox' name='record' value='' id='addItemToSetSelectAllControl' class='addItemToSetControl' onchange="jQuery('.addItemToSetControl').attr('checked', jQuery('#addItemToSetSelectAllControl').attr('checked'));"/>
+			<input type='checkbox' name='record' value='' id='addItemToSetSelectAllControl' class='addItemToSetControl' onchange="jQuery('.addItemToSetControl').attr('checked', (jQuery('#addItemToSetSelectAllControl').attr('checked') == 'checked'));"/>
 		</th>
 <?php
 		// output headers
