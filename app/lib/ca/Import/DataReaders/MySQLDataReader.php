@@ -95,7 +95,7 @@ class MySQLDataReader extends BaseDataReader {
 			$vn_limit = caGetOption('limit', $va_path, 0, array('castTo' => 'int'));
 			$vn_offset = caGetOption('offset', $va_path, 0, array('castTo' => 'int'));
 			$vs_limit = $vn_limit ? (" LIMIT " . ($vn_offset ? "$vn_offset, $vn_limit" : $vn_limit)) : "";
-
+			$this->opo_handle->query("SET character_set_results=utf8");
 			$this->opo_rows = $this->opo_handle->query("SELECT * FROM {$this->ops_table}$vs_limit");
 		} catch (Exception $e) {
 			return false;
