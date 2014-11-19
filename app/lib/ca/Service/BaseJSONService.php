@@ -58,7 +58,7 @@ class BaseJSONService {
 		
 		$this->ops_method = $this->opo_request->getRequestMethod();
 		
-		if(!in_array($this->ops_method, array("PUT","DELETE","GET","OPTIONS"))){
+		if(!in_array($this->ops_method, array("PUT","DELETE","GET","POST","OPTIONS"))){
 			$this->addError(("Invalid HTTP request method"));
 		}
 		
