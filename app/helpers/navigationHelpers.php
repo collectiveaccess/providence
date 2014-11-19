@@ -507,21 +507,21 @@
 		$vs_classname = '';
 		switch($pn_type) {
 			case __CA_NAV_BUTTON_ADD__:
-				$vs_img_name = 'glyphicons_190_circle_plus_small';	
+				$vs_img_name = 'Document_Add';	
 				break;
 			case __CA_NAV_BUTTON_DELETE__:
-				$vs_img_name = 'glyphicons_199_ban';
+				$vs_img_name = 'Trash';
 				$vs_classname = 'deleteIcon'; 
 				break;
 			case __CA_NAV_BUTTON_CANCEL__:
-				$vs_img_name = 'glyphicons_445_floppy_remove';
+				$vs_img_name = 'Document_Remove';
 				$vs_classname = 'cancelIcon';
 				break;
 			case __CA_NAV_BUTTON_REMOVE__:
 				$vs_img_name = 'glyphicons_192_circle_remove';
 				break;				
 			case __CA_NAV_BUTTON_EDIT__:
-				$vs_img_name = 'glyphicons_036_file';
+				$vs_img_name = 'New';
 				$vs_classname = 'editIcon'; 
 				break;
 			case __CA_NAV_BUTTON_BATCH_EDIT__:
@@ -532,7 +532,7 @@
 				$vs_img_name = 'alert';
 				break;
 			case __CA_NAV_BUTTON_SEARCH__:
-				$vs_img_name = 'glyphicons_027_search';
+				$vs_img_name = 'Search';
 				break;
 			case __CA_NAV_BUTTON_GLASS__:
 				$vs_img_name = 'glass';
@@ -560,13 +560,13 @@
 				$vs_img_name = 'glyphicons_206_ok_2';
 				break;
 			case __CA_NAV_BUTTON_SAVE__:
-				$vs_img_name = 'glyphicons_198_ok';
+				$vs_img_name = 'Document_Tick';
 				break;
 			case __CA_NAV_BUTTON_HELP__:
 				$vs_img_name = 'help';
 				break;
 			case __CA_NAV_BUTTON_GO__:
-				$vs_img_name = 'glyphicons_426_git_merge';
+				$vs_img_name = 'Play';
 				$vs_classname = 'hierarchyIcon';
 				break;
 			case __CA_NAV_BUTTON_DEL_BUNDLE__:
@@ -582,7 +582,7 @@
 				$vs_img_name = 'glyphicons_051_eye_open_small';
 				break;
 			case __CA_NAV_BUTTON_ADD_LARGE__:
-				$vs_img_name = 'glyphicons_298_hospital';
+				$vs_img_name = 'Folder_Add';
 				break;	
 			case __CA_NAV_BUTTON_ZOOM_IN__:
 				$vs_img_name = 'zoom_in';

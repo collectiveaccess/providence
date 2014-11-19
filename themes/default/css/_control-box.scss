@@ -30,7 +30,10 @@ div.control-box {
 	line-height: 1.5
 
 	}
-
+	
+	img.form-button-left{
+    margin-top: 0;
+	}
 
 	input[type="text"], input[type="textarea"], textarea, input[type="password"] {
 		width: auto;
@@ -38,7 +41,7 @@ div.control-box {
 
 	.form-header-button img,
 	.form-button img {
-		display: none;
+		//display: none;
 	}
 
 	a.form-header-button,
