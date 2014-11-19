@@ -880,6 +880,8 @@
 				$va_criteria = $this->getCriteria();
 				if (!$vb_no_cache && (intval(time() - $vn_created_on) < $this->opo_ca_browse_config->get('cache_timeout'))) {
 					$vb_results_cached = true;
+					$this->opo_ca_browse_cache->setParameter('created_on', time() + $this->opo_ca_browse_config->get('cache_timeout'));
+					$vb_need_to_save_in_cache = true;
 					
 					Debug::msg("Cache hit for {$vs_cache_key}");
 				} else {
@@ -1575,6 +1577,7 @@
 									unset($va_options['sort']);					// browse engine takes care of sort so there is no reason to waste time having the search engine do so
 									$va_options['filterNonPrimaryRepresentations'] = true;	// filter out non-primary representations in ca_objects results to save (a bit) of time
 									
+									$o_search->setOption('strictPhraseSearching', caGetOption('strictPhraseSearching', $va_options, true));
 									$qr_res = $o_search->search($va_row_ids[0], $va_options);
 
 									if ($qr_res->numHits() > 0) {

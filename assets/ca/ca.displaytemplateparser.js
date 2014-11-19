@@ -127,6 +127,7 @@ var caUI = caUI || {};
 		};
 		
 		that.convertFractionalNumberToDecimal = function(fractionalExpression, locale) {
+			if(!fractionalExpression) { return ''; }
 			// convert ascii fractions (eg. 1/2) to decimal
 			var matches;
 			if (matches = fractionalExpression.match(/^([\d]*)[ ]*([\d]+)\/([\d]+)/)) {
