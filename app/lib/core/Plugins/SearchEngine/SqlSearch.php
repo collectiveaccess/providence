@@ -233,7 +233,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		$t = new Timer();
 		$this->_setMode('search');
 		$this->opa_filters = $pa_filters;
-		
 		if (!($t_instance = $this->opo_datamodel->getInstanceByTableNum($pn_subject_tablenum, true))) {
 			// TODO: Better error message
 			die("Invalid subject table");
@@ -457,7 +456,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			
 			
 			$va_direct_query_temp_tables = array();	// List of temporary tables created by direct search queries; tables listed here are dropped at the end of processing for the query element		
-			
+			$vs_direct_sql_query = null;
+			$pa_direct_sql_query_params = null; // set to array with values to use with direct SQL query placeholders or null to pass single standard table_num value as param (most queries just need this single value)
+					
 			switch($vs_class = get_class($o_lucene_query_element)) {
 				case 'Zend_Search_Lucene_Search_Query_Boolean':
 					$this->_createTempTable('ca_sql_search_temp_'.$pn_level);
@@ -521,9 +522,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					$va_ft_terms = array();
 					$va_ft_like_terms = array();
 					$va_ft_stem_terms = array();
-					
-					$vs_direct_sql_query = null;
-					$pa_direct_sql_query_params = null; // set to array with values to use with direct SQL query placeholders or null to pass single standard table_num value as param (most queries just need this single value)
 					
 					$va_tmp = array();
 					$vs_access_point = '';
@@ -746,25 +744,24 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$vb_output_term = false;
 								foreach($va_terms as $vs_term) {
 									if (in_array(trim(mb_strtolower($vs_term, 'UTF-8')), WLPlugSearchEngineSqlSearch::$s_stop_words)) { continue; }
-								//	if (get_class($o_lucene_query_element) != 'Zend_Search_Lucene_Search_Query_MultiTerm') {
 									$vs_stripped_term = preg_replace('!\*+$!u', '', $vs_term);
 									
-										// do stemming
-										if ($this->opb_do_stemming) {
-											$vs_to_stem = preg_replace('!\*$!u', '', $vs_term);
-											if (!preg_match('!y$!u', $vs_to_stem) && !preg_match('![0-9]+!', $vs_to_stem)) {	// don't stem things ending in 'y' as that can cause problems (eg "Bowery" becomes "Boweri")
-												if (!($vs_stem = trim($this->opo_stemmer->stem($vs_to_stem)))) {
-													$vs_stem = (string)$vs_term;
-												}
-												$va_ft_stem_terms[] = "'".$this->opo_db->escape($vs_stem)."'";
-											} else {
-												$va_ft_terms[] = '"'.$this->opo_db->escape($vs_term).'"';
+									// do stemming
+									if ($this->opb_do_stemming) {
+										$vs_to_stem = preg_replace('!\*$!u', '', $vs_term);
+										if (!preg_match('!y$!u', $vs_to_stem) && !preg_match('![0-9]+!', $vs_to_stem)) {	// don't stem things ending in 'y' as that can cause problems (eg "Bowery" becomes "Boweri")
+											if (!($vs_stem = trim($this->opo_stemmer->stem($vs_to_stem)))) {
+												$vs_stem = (string)$vs_term;
 											}
+											$va_ft_stem_terms[] = "'".$this->opo_db->escape($vs_stem)."'";
 										} else {
 											$va_ft_terms[] = '"'.$this->opo_db->escape($vs_term).'"';
 										}
-										$vb_output_term = true;	
-								//	}
+									} else {
+										$va_ft_terms[] = '"'.$this->opo_db->escape($vs_term).'"';
+									}
+									$vb_output_term = true;	
+								
 								}
 								if ($vb_output_term) {
 									$va_raw_terms[] = $vs_term;
@@ -798,11 +795,11 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								}
 							}
 							$vs_user_sql = ($vn_user_id)  ? " AND (ccl.user_id = ".(int)$vn_user_id.")" : "";
-									
+							
 							switch($vs_table) {
 								case 'created':
 									$vs_direct_sql_query = "
-											SELECT ccl.logged_row_id, 1
+											SELECT ccl.logged_row_id row_id, 1
 											FROM ca_change_log ccl
 											WHERE
 												(ccl.log_datetime BETWEEN ".(int)$va_range['start']." AND ".(int)$va_range['end'].")
@@ -815,7 +812,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									break;
 								case 'modified':
 									$vs_direct_sql_query = "
-											SELECT ccl.logged_row_id, 1
+											SELECT ccl.logged_row_id row_id, 1
 											FROM ca_change_log ccl
 											WHERE
 												(ccl.log_datetime BETWEEN ".(int)$va_range['start']." AND ".(int)$va_range['end'].")
@@ -825,7 +822,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 												(ccl.changetype = 'U')
 												{$vs_user_sql}
 										UNION
-											SELECT ccls.subject_row_id, 1
+											SELECT ccls.subject_row_id row_id, 1
 											FROM ca_change_log ccl
 											INNER JOIN ca_change_log_subjects AS ccls ON ccls.log_id = ccl.log_id
 											WHERE
