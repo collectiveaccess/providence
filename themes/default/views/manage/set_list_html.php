@@ -32,7 +32,8 @@
 	$t_list = new ca_lists();
 	$vs_set_type_menu = '<div class="sf-small-menu form-header-button rounded" style="padding: 6px;">'.
 							'<div style="float:right; margin: 3px;">'.
-								'<a href="#" onclick="_navigateToNewForm(jQuery(\'#typeList\').val(), jQuery(\'#tableList\').val());">'.caNavIcon($this->request, __CA_NAV_BUTTON_ADD_LARGE__).'</a>'.
+								'<a href="#" class="form-button" onclick="_navigateToNewForm(jQuery(\'#typeList\').val(), jQuery(\'#tableList\').val());"><span class="form-button">'.caNavIcon($this->request, __CA_NAV_BUTTON_ADD_LARGE__, _t("Add")).'</span></a>'.
+							//'<a href="#" class="form-button" onclick="_navigateToNewForm(jQuery(\'#typeList\').val(), jQuery(\'#tableList\').val());"><span class="form-button">Add</span></a>'.
 							'</div>'.
 						'<form action="#">'._t('Create New').' '.$t_list->getListAsHTMLFormElement('set_types', 'set_type', array('id' => 'typeList')).' '._t('containing').' '.caHTMLSelect('table_num', $this->getVar('table_list'), array('id' => 'tableList')).'</form>'.
 						'</div>';

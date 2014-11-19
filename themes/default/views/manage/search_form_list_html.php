@@ -33,7 +33,8 @@
 	
 	$vs_set_type_menu = '<div class="sf-small-menu form-header-button rounded">'.
 							'<div style="float:right; margin: 3px;">'.
-								'<a href="#" onclick="_navigateToNewForm(jQuery(\'#tableList\').val());">'.caNavIcon($this->request, __CA_NAV_BUTTON_ADD__).'</a>'.
+								//'<a href="#" onclick="_navigateToNewForm(jQuery(\'#tableList\').val());">'.caNavIcon($this->request, __CA_NAV_BUTTON_ADD__).'</a>'.
+							'<a href="#" class="form-button" onclick="_navigateToNewForm(jQuery(\'#tableList\').val());"><span class="form-button">Add</span></a>'.
 							'</div>'.
 						'<form action="#">'._t('New search form for ').' '.caHTMLSelect('table_num', $this->getVar('table_list'), array('id' => 'tableList')).'</form>'.
 						'</div>';
