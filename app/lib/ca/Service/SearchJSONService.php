@@ -54,6 +54,7 @@ class SearchJSONService extends BaseJSONService {
 
 		switch($this->getRequestMethod()){
 			case "GET":
+			case "POST":
 				if(sizeof($va_post)==0){
 					return $this->search();
 				} else {
