@@ -42,6 +42,12 @@ a.form-button,
 span.form-button, 
 del.form-button {
 	font-size: inherit;
+
+	img,
+	img.deleteIcon,
+	img.cancelIcon {
+		margin-top: 0;
+	}
 }
 
 a.form-button span, 
@@ -71,6 +77,11 @@ a.form-button:hover span {
 .caDeleteLabelButton {
 	position: absolute;
 	right: 4px;
+
+	.uiScreenItem & {
+		position: relative;
+		margin-left: 20px;
+	}
 }
 
 a.caNodecLabelButton {

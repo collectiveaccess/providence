@@ -99,11 +99,10 @@ div.control-box {
   div.control-box del.form-button span {
     padding: 6px 12px 6px 12px;
     line-height: 1.5; }
+  div.control-box img.form-button-left {
+    margin-top: 0; }
   div.control-box input[type="text"], div.control-box input[type="textarea"], div.control-box textarea, div.control-box input[type="password"] {
     width: auto; }
-  div.control-box .form-header-button img,
-  div.control-box .form-button img {
-    display: none; }
   div.control-box a.form-header-button,
   div.control-box a.button {
     padding: 6px 12px 6px 12px;
@@ -1206,6 +1205,16 @@ a.form-button,
 span.form-button,
 del.form-button {
   font-size: inherit; }
+  a.form-button img,
+  a.form-button img.deleteIcon,
+  a.form-button img.cancelIcon,
+  span.form-button img,
+  span.form-button img.deleteIcon,
+  span.form-button img.cancelIcon,
+  del.form-button img,
+  del.form-button img.deleteIcon,
+  del.form-button img.cancelIcon {
+    margin-top: 0; }
 
 a.form-button span,
 span.form-button button,
@@ -1227,6 +1236,10 @@ a.form-button:hover span {
 .caDeleteLabelButton {
   position: absolute;
   right: 4px; }
+  .uiScreenItem .caDeleteItemButton, .uiScreenItem
+  .caDeleteLabelButton {
+    position: relative;
+    margin-left: 20px; }
 
 a.caNodecLabelButton {
   text-decoration: none; }
@@ -1456,3 +1469,6 @@ img {
 
 .mapholder img {
   max-width: auto; }
+
+div.delete_warning_box {
+  height: 32px; }
