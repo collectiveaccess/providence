@@ -107,13 +107,13 @@ var caUI = caUI || {};
 							that.post(e, formData);
 						} else {
 							// handle errors here
-							that.setErrors([data.error]);
+							that.setErrors(["Service error " + data.error]);
 							jQuery("#" + that.formID).find(".quickAddProgress").empty();
 						}
 					},
 					error: function(jqXHR, textStatus, errorThrown) {
 						// handle errors here
-						that.setErrors([textStatus]);
+						that.setErrors(["Network error " + textStatus]);
 						jQuery("#" + that.formID).find(".quickAddProgress").empty();
 					}
 				});

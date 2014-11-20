@@ -6331,7 +6331,7 @@ div.quickAddControls {
 
 div.quickAddProgress {
     float: right;
-    margin: 8px 70px 0 0;
+    margin: 6px 70px 0 0;
 }
 
 input[type='text'].ui-autocomplete-loading {
