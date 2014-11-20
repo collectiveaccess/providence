@@ -2112,5 +2112,38 @@
  			// send download
  			$this->response->addContent($o_view->render('ca_attributes_download_media.php'));
  		}
-		# ------------------------------------------------------------------
+ 		# -------------------------------------------------------
+ 		/**
+ 		 * Handle ajax media uploads from editor
+ 		 */ 
+ 		public function UploadFiles($pa_options=null) {
+ 			// TODO: can user edit record?
+ 			if (!$this->request->isLoggedIn()) { 
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+ 			
+ 			if (!is_writeable($vs_tmp_directory = $this->request->config->get('ajax_media_upload_tmp_directory'))) {
+ 				$vs_tmp_directory = caGetTempDirPath();
+ 			}
+ 			
+ 			$vn_user_id = $this->request->getUserID();
+ 			//print_R($_FILES);
+ 			$va_stored_files = array();
+ 			foreach($_FILES as $vn_i => $va_file) {
+ 				if(!file_exists($vs_tmp_directory.'/'.$vn_user_id)) { 
+ 					mkdir($vs_tmp_directory.'/'.$vn_user_id);
+ 				}
+ 				// TODO:
+ 				//		1. Store file metadata (original filename)
+ 				//		2. Don't pass full path back to client; make root implicit
+ 				copy($va_file['tmp_name'], $vs_dest_path = $vs_tmp_directory.'/'.$vn_user_id.'/'.pathinfo($va_file['tmp_name'], PATHINFO_FILENAME));
+ 				$va_stored_files[$vn_i] = $vs_dest_path;
+ 			}
+ 			
+ 			// TODO: cleanup old files here
+ 			
+ 			print json_encode($va_stored_files);
+ 		}
+		# -------------------------------------------------------
  	}
