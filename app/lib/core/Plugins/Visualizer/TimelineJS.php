@@ -73,13 +73,15 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 		// from the entire data set
 		$qr_res = $this->getData();
 		while($qr_res->nextHit()) {
-			foreach($pa_viz_settings['sources'] as $vs_source_name => $va_source) {
+			foreach($pa_viz_settings['sources'] as $va_source) {
 				if($qr_res->get($va_source['data'])) {
 					$this->opn_num_items_rendered++;
 				}
 			}
+
+			if($this->opn_num_items_rendered >= 100) { break; }
 		}
-		
+
 		$vs_buf = "
 	<div id='timeline-embed' style='width: {$vs_width}; height: {$vs_height};'></div>
     <script type='text/javascript'>
@@ -122,9 +124,8 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 		$qr_res = $this->getData();
 		$vs_table_name = $qr_res->tableName();
 		$vs_pk = $qr_res->primaryKey();
-		
+
 		$vn_c = 0;
-		$va_results = array();
 		
 		while($qr_res->nextHit()) {
 			foreach($pa_viz_settings['sources'] as $vs_source_name => $va_source) {
@@ -153,12 +154,12 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 					)
 				);
 			}
-			
+
 			$vn_c++;
-			if ($vn_c > 2000) { break; }
+			if ($vn_c >= 100) { break; }
 		}
-		
-		
+
+
 		return json_encode(array('timeline' => $va_data));
 	}
 	# ------------------------------------------------

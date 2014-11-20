@@ -283,12 +283,12 @@
  			$vs_element = caHTMLTextInput(
  				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 
  				array(
- 					'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'],
- 					'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight'], 
- 					'value' => '{{{'.$pa_element_info['element_id'].'}}}', 
- 					'maxlength' => $va_settings['maxChars'],
- 					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
- 					'class' => $vs_class
+					'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'],
+					'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight'],
+					'value' => '{{'.$pa_element_info['element_id'].'}}',
+					'maxlength' => $va_settings['maxChars'],
+					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
+					'class' => $vs_class
  				)
  			);
  			

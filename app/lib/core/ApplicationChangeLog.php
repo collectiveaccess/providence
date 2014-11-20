@@ -275,6 +275,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 		//print "<pre>".print_r($pa_data, true)."</pre>\n";	
 		$va_log_output = array();
 		$vs_blank_placeholder = '&lt;'._t('BLANK').'&gt;';
+		$o_tep = new TimeExpressionParser();
 		
 		if (!$pa_options) { $pa_options = array(); }
 		
@@ -322,10 +323,11 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 						//
 						// Get date/time stamp for display
 						//
+						$o_tep->setUnixTimestamps($va_log_entry['log_datetime'], $va_log_entry['log_datetime']);
 						if($this->opb_dont_show_timestamp_in_change_log) {
-							$vs_datetime = date("n/d/Y", $va_log_entry['log_datetime']);
+							$vs_datetime = $o_tep->getText(array('timeOmit' => true));
 						} else {
-							$vs_datetime = date("n/d/Y@g:i:sa T", $va_log_entry['log_datetime']);
+							$vs_datetime = $o_tep->getText();
 						}
 						
 						//
