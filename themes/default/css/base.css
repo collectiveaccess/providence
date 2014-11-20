@@ -6325,6 +6325,15 @@ div.quickAddTypeList {
     margin-top: 6px;
 }
 
+div.quickAddControls {
+	float: right;
+}
+
+div.quickAddProgress {
+    float: right;
+    margin: 8px 70px 0 0;
+}
+
 input[type='text'].ui-autocomplete-loading {
     background: white url('../graphics/icons/indicator.gif') right center no-repeat;
 }

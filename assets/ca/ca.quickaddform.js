@@ -27,6 +27,10 @@
  
 var caUI = caUI || {};
 
+//
+// TODO: Finish up error handling
+//
+
 (function ($) {
 	caUI.initQuickAddFormHandler = function(options) {
 		// --------------------------------------------------------------------------------
@@ -41,6 +45,9 @@ var caUI = caUI || {};
 			
 			headerText: "QuickAdd",
 			saveText: "Saved record: %1",
+			sendingFilesText: "Sending files (%1)",
+			sendingDataText: "Processing form",
+			busyIndicator: '',
 			
 			_files: {}
 		}, options);
@@ -54,6 +61,8 @@ var caUI = caUI || {};
 		// Define methods
 		// --------------------------------------------------------------------------------
 		that.save = function(e) {
+			jQuery("#" + that.formID).find(".quickAddProgress").html(that.sendingDataText);
+		
 			// Force CKEditor text into form elements where we can grab it
 			jQuery.each(CKEDITOR.instances, function(k, instance) {
 				instance.updateElement();
@@ -62,6 +71,8 @@ var caUI = caUI || {};
 			var formData = jQuery("#" + that.formID).serializeObject();
 			
 			if(Object.keys(that._files).length > 0) {
+				jQuery("#" + that.formID).find(".quickAddProgress").html((that.busyIndicator ? that.busyIndicator + ' ' : '') + that.sendingFilesText.replace("%1", "0%"));
+				
 				// Copy files in form into a FormData instance
 				var fileData = new FormData();
 				jQuery.each(that._files, function(k, v) {
@@ -75,10 +86,19 @@ var caUI = caUI || {};
 					dataType: 'json',
 					processData: false, // don't let jQuery try to process the files
 					contentType: false, // set content type to false as jQuery will tell the server its a query string request
+					xhr: function() {
+						var jqXHR = new window.XMLHttpRequest();
+						jqXHR.upload.addEventListener("progress", function(e){
+							if (e.lengthComputable) {  
+								var percentComplete = Math.round((e.loaded / e.total) * 100);
+								jQuery("#" + that.formID).find(".quickAddProgress").html((that.busyIndicator ? that.busyIndicator + ' ' : '') + that.sendingFilesText.replace("%1", percentComplete + "%"));
+							}
+						}, false); 
+						return jqXHR;
+					},
 					success: function(data, textStatus, jqXHR) {
 						if(typeof data.error === 'undefined') {
 							// success... add file paths to form data
-							console.log("File paths on server", data);
 							jQuery.each(data, function(k, v) {
 								formData[k] = v;
 							});
@@ -87,12 +107,14 @@ var caUI = caUI || {};
 							that.post(e, formData);
 						} else {
 							// handle errors here
-							console.log('ERRORS: ' + data.error);
+							that.setErrors([data.error]);
+							jQuery("#" + that.formID).find(".quickAddProgress").empty();
 						}
 					},
 					error: function(jqXHR, textStatus, errorThrown) {
 						// handle errors here
-						console.log('ERRORS: ' + textStatus);
+						that.setErrors([textStatus]);
+						jQuery("#" + that.formID).find(".quickAddProgress").empty();
 					}
 				});
 			} else {
@@ -102,6 +124,7 @@ var caUI = caUI || {};
 		};
 		
 		that.post = function(e, formData) {
+			jQuery("#" + that.formID).find(".quickAddProgress").html((that.busyIndicator ? that.busyIndicator + ' ' : '') + that.sendingDataText);
 			jQuery.post(that.saveUrl, formData, function(resp, textStatus) {
 				if (resp.status == 0) {
 					var inputID = jQuery("#" + that.formID).parent().data('autocompleteInputID');
@@ -113,32 +136,36 @@ var caUI = caUI || {};
 					jQuery('#' + itemIDID).val(resp.id);
 					jQuery('#' + typeIDID).val(resp.type_id);
 					
-					relationbundle.select(null, resp);
+					if(relationbundle) { relationbundle.select(null, resp); }
 					jQuery.jGrowl(that.saveText.replace('%1', resp.display), { header: that.headerText }); 
 					jQuery("#" + that.formID).parent().data('panel').hidePanel();
 				} else {
 					// error
-					var content = '<div class="notification-error-box rounded"><ul class="notification-error-box">';
-					for(var e in resp.errors) {
-						content += '<li class="notification-error-box">' + e + '</li>';
-					}
-					content += '</ul></div>';
-					
-					jQuery("#" + that.formErrorsPanelID).html(content).slideDown(200);
-					
-					var quickAddClearErrorInterval = setInterval(function() {
-						jQuery("#" + that.formErrorsPanelID).slideUp(500);
-						clearInterval(quickAddClearErrorInterval);
-					}, 3000);
+					that.setErrors(resp.errors);
 				}
+				jQuery("#" + that.formID).find(".quickAddProgress").empty();
 			}, "json");
+		};
+		
+		that.setErrors = function(errors) {
+			var content = '<div class="notification-error-box rounded"><ul class="notification-error-box">';
+			for(var e in errors) {
+				content += '<li class="notification-error-box">' + e + '</li>';
+			}
+			content += '</ul></div>';
+			
+			jQuery("#" + that.formErrorsPanelID).html(content).slideDown(200);
+			
+			var quickAddClearErrorInterval = setInterval(function() {
+				jQuery("#" + that.formErrorsPanelID).slideUp(500);
+				clearInterval(quickAddClearErrorInterval);
+			}, 3000);
 		};
 		
 		that.switchForm = function() {
 			jQuery.each(CKEDITOR.instances, function(k, instance) {
 				instance.updateElement();
 			});
-			console.log("set", jQuery("#" + that.formID + " input[name=type_id]"), "to", jQuery("#" + that.formTypeSelectID).val(), that.formTypeSelectID);
 			jQuery("#" + that.formID + " input[name=type_id]").val(jQuery("#" + that.formTypeSelectID).val());
 			var formData = jQuery("#" + that.formID).serializeObject();
 			jQuery("#" + that.formID).parent().load(that.formUrl, formData);

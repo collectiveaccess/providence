@@ -52,17 +52,18 @@
 		saveUrl: '<?php print caNavUrl($this->request, "editor/objects", "ObjectQuickAdd", "Save"); ?>',
 		
 		headerText: '<?php print addslashes(_t('Quick add %1', $t_subject->getTypeName())); ?>',
-		saveText: '<?php print addslashes(_t('Created %1 ', $t_subject->getTypeName())); ?> <em>%1</em>'
+		saveText: '<?php print addslashes(_t('Created %1 ', $t_subject->getTypeName())); ?> <em>%1</em>',
+		busyIndicator: '<?php print addslashes(caBusyIndicatorIcon($this->request)); ?>'
 	});
 </script>	
 <form action="#" name="<?php print $vs_form_name; ?>" method="POST" enctype="multipart/form-data" id="<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>">
 	<div class='dialogHeader quickaddDialogHeader'><?php 
 	print "<div class='quickAddTypeList'>"._t('Quick Add %1', $t_subject->getTypeListAsHTMLFormElement('change_type_id', array('id' => "{$vs_form_name}TypeID{$vs_field_name_prefix}{$vs_n}", 'onchange' => "caQuickAddFormHandler.switchForm();"), array('value' => $t_subject->get('type_id'), 'restrictToTypes' => $va_restrict_to_types)))."</div>"; 
-	
 	if ($vb_can_edit) {
-		print "<div style='float: right;'>".caJSButton($this->request, __CA_NAV_BUTTON_ADD_LARGE__, _t("Add %1", $t_subject->getTypeName()), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caQuickAddFormHandler.save(event);"))
-		.' '.caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "jQuery(\"#{$vs_form_name}".$vs_field_name_prefix.$vs_n."\").parent().data(\"panel\").hidePanel();"))."</div><br style='clear: both;'/>\n";
+		print "<div class='quickAddControls'>".caJSButton($this->request, __CA_NAV_BUTTON_ADD_LARGE__, _t("Add %1", $t_subject->getTypeName()), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caQuickAddFormHandler.save(event);"))
+		.' '.caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "jQuery(\"#{$vs_form_name}".$vs_field_name_prefix.$vs_n."\").parent().data(\"panel\").hidePanel();"))."</div>\n";
 	}
+	print "<div class='quickAddProgress'></div><br style='clear: both;'/>";
 ?>
 	</div>
 	
