@@ -6915,6 +6915,52 @@ div.caUseHistoryDate {
 	font-size: 12px;
 }
 
+div.caMetadataDictionaryViolationsList {
+	padding: 10px;
+	background-color: #fff;
+	margin: 0 0 0 15px;
+	
+	width: 33%;
+	
+    border: 2px solid #e6e6e6;
+    
+	font-weight: normal;
+	font-size: 12px;
+	
+	float: right;
+}
+
+div.caMetadataDictionaryViolationsList ol {
+	list-style:none;
+    padding-left:0;
+}
+
+div.caMetadataDictionaryViolationsListHeading {
+	font-weight: bold;
+	font-size: 12px;
+}
+
+.caMetadataDictionaryViolationCrit {
+	font-weight: bold;
+	color: Red;
+}
+
+.caMetadataDictionaryViolationErr {
+	color: Red;
+}
+
+.caMetadataDictionaryViolationWarn {
+	color: GoldenRod
+}
+
+.caMetadataDictionaryViolationNote {
+	color: Blue;
+}
+
+.caMetadataDictionaryViolationDebg {
+	color: #333;
+}
+
 /** Metadata importer **/
 table.caFileSourceControls {
 	width: 700px
