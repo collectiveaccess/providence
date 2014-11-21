@@ -543,6 +543,14 @@
 					return urldecode($pn_row_id);
 					break;
 				# -----------------------------------------------------
+				case 'violations':
+					if (!($t_rule = $this->opo_datamodel->getInstanceByTableName('ca_metadata_dictionary_rules', true))) { break; }
+					if ($t_rule->load(array('rule_code' => $pn_row_id))) {
+						return $t_rule->getSetting('rule_displayname');
+					}
+					return urldecode($pn_row_id);
+					break;
+				# -----------------------------------------------------
 				case 'location':
 					$va_tmp = explode(":", urldecode($pn_row_id));
 					$vs_loc_table_name = $this->opo_datamodel->getTableName($va_tmp[0]);
@@ -1556,6 +1564,53 @@
 										$vn_i++;
 									}
 									break;
+								
+							# -----------------------------------------------------
+							case 'violations':
+								$vs_field_name = $va_facet_info['field'];
+								$vs_table_name = $this->ops_browse_table_name;
+								
+								if ($va_facet_info['relative_to']) {
+									if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
+										$va_relative_to_join = $va_relative_execute_sql_data['relative_joins'];	
+										$vs_relative_to_join = join("\n", $va_relative_to_join);
+										$vs_table_name = $vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
+										$vs_target_browse_table_num = $va_relative_execute_sql_data['target_table_num'];
+										$vs_target_browse_table_pk = $va_relative_execute_sql_data['target_table_pk'];
+									}
+								}
+								
+								foreach($va_row_ids as $vn_row_id) {
+									$vn_row_id = urldecode($vn_row_id);
+									if ($vn_i == 0) {
+										$vs_sql = "
+											SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+											FROM ".$this->ops_browse_table_name."
+											INNER JOIN ca_metadata_dictionary_rule_violations ON ca_metadata_dictionary_rule_violations.row_id = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AND ca_metadata_dictionary_rule_violations.table_num = ".$t_item->tableNum()."
+											INNER JOIN ca_metadata_dictionary_rules ON ca_metadata_dictionary_rules.rule_id = ca_metadata_dictionary_rule_violations.rule_id
+											{$vs_relative_to_join}
+											WHERE
+												(ca_metadata_dictionary_rules.rule_code = ?)";
+												
+										$qr_res = $this->opo_db->query($vs_sql, $vn_row_id);
+									} else {
+										$vs_sql = "
+											SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+											FROM ".$this->ops_browse_table_name."
+											INNER JOIN ca_metadata_dictionary_rule_violations ON ca_metadata_dictionary_rule_violations.row_id = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AND ca_metadata_dictionary_rule_violations.table_num = ".$t_item->tableNum()."
+											INNER JOIN ca_metadata_dictionary_rules ON ca_metadata_dictionary_rules.rule_id = ca_metadata_dictionary_rule_violations.rule_id
+											{$vs_relative_to_join}
+											WHERE
+												(ca_metadata_dictionary_rules.rule_code = ?)";
+												
+										$qr_res = $this->opo_db->query($vs_sql, $vn_row_id);
+										
+									} 
+									$va_acc[$vn_i] = $qr_res->getAllFieldValues($this->ops_browse_table_name.'.'.$t_item->primaryKey());
+									
+									$vn_i++;
+								}
+								break;
 							# -----------------------------------------------------
 							default:
 								// handle "search" criteria - search engine queries that can be browsed
@@ -3354,6 +3409,127 @@
 							}
 							if (!is_null($vs_single_value) && ($vs_val == $vs_single_value)) {
 								$vb_single_value_is_present = true;
+							}
+						}
+						
+						if (!is_null($vs_single_value) && !$vb_single_value_is_present) {
+							return array();
+						}
+						return $va_values;
+					}
+					
+				
+					return array();
+					break;
+				# -----------------------------------------------------
+				case 'violations':
+					$t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true);
+					$vs_field_name = $va_facet_info['field'];
+					$va_field_info = $t_item->getFieldInfo($vs_field_name);
+					
+					$va_joins = array();
+					$va_wheres = array();
+					$vs_where_sql = '';
+					
+					$va_facet_values = null;
+					
+					if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
+					}
+					
+					if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_item->hasField('access')) {
+						$va_wheres[] = "(".$vs_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
+					}
+					
+					if ($vs_browse_type_limit_sql) {
+						$va_wheres[] = $vs_browse_type_limit_sql;
+					}
+										
+					if ($t_item->hasField('deleted')) {
+						$va_wheres[] = "(".$vs_browse_table_name.".deleted = 0)";
+					}
+					
+					if ($va_facet_info['relative_to']) {
+						if ($t_subject->hasField('deleted')) {
+							$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
+						}
+						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+							$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
+							$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
+						}
+					}
+					
+					if ($this->opo_config->get('perform_item_level_access_checking')) {
+						if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
+							// Join to limit what browse table items are used to generate facet
+							$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
+							$va_wheres[] = "(
+								((
+									(ca_acl.user_id = ".(int)$vn_user_id.")
+									".((sizeof($va_group_ids) > 0) ? "OR
+									(ca_acl.group_id IN (".join(",", $va_group_ids)."))" : "")."
+									OR
+									(ca_acl.user_id IS NULL and ca_acl.group_id IS NULL)
+								) AND ca_acl.access >= ".__CA_ACL_READONLY_ACCESS__.")
+								".(($vb_show_if_no_acl) ? "OR ca_acl.acl_id IS NULL" : "")."
+							)";
+						}
+					}
+					
+					$vs_join_sql = join("\n", $va_joins);
+					
+					if (is_array($va_wheres) && sizeof($va_wheres) && ($vs_where_sql = join(' AND ', $va_wheres))) {
+						$vs_where_sql = '('.$vs_where_sql.')';
+					}
+					
+					if ($vb_check_availability_only) {
+						$vs_sql = "
+							SELECT 1
+							FROM {$vs_browse_table_name}
+							INNER JOIN ca_metadata_dictionary_rule_violations ON ca_metadata_dictionary_rule_violations.row_id = {$vs_browse_table_name}.".$t_item->primaryKey()." AND ca_metadata_dictionary_rule_violations.table_num = {$vs_browse_table_num}
+							{$vs_join_sql}
+							WHERE
+								{$vs_where_sql}
+							LIMIT 2";
+							
+						$qr_res = $this->opo_db->query($vs_sql);
+					
+						if ($qr_res->nextRow()) {
+							return ((int)$qr_res->numRows() > 0) ? true : false;
+						}
+						return false;
+					} else {
+						$vs_pk = $t_item->primaryKey();
+						$vs_sql = "
+							SELECT DISTINCT ca_metadata_dictionary_rules.rule_id
+							FROM {$vs_browse_table_name}
+							INNER JOIN ca_metadata_dictionary_rule_violations ON ca_metadata_dictionary_rule_violations.row_id = {$vs_browse_table_name}.".$t_item->primaryKey()." AND ca_metadata_dictionary_rule_violations.table_num = {$vs_browse_table_num}
+							INNER JOIN ca_metadata_dictionary_rules ON ca_metadata_dictionary_rules.rule_id = ca_metadata_dictionary_rule_violations.rule_id
+							{$vs_join_sql}
+							WHERE
+								{$vs_where_sql}";
+						
+						$qr_res = $this->opo_db->query($vs_sql);
+						
+						$va_values = array();
+						$t_rule = new ca_metadata_dictionary_rules();
+						while($qr_res->nextRow()) {	
+							if ($t_rule->load($qr_res->get('rule_id'))) {
+								if (!($vs_val = trim($t_rule->getSetting('rule_displayname')))) { continue; }
+								$vs_code = $t_rule->get('rule_code');
+								if ($va_criteria[$vs_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
+						
+								if (isset($va_facet_values[$vs_code])) {
+									$va_values[$vs_code] = $va_facet_values[$vs_code];
+								} else {
+									$va_values[$vs_code] = array(
+										'id' => $vs_code,
+										'label' => $vs_val
+									);
+								}
+								if (!is_null($vs_single_value) && ($vs_code == $vs_single_value)) {
+									$vb_single_value_is_present = true;
+								}
 							}
 						}
 						
