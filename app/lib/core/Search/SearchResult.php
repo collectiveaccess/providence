@@ -334,6 +334,10 @@ class SearchResult extends BaseObject {
 		//print "<pre>$vs_sql</pre>";
 		$qr_rel = $this->opo_db->query($vs_sql);
 		
+		if (is_array($this->opa_prefetch_cache[$ps_tablename]) && (sizeof($this->opa_prefetch_cache[$ps_tablename]) > 32768)) {
+			$this->opa_prefetch_cache[$ps_tablename] = array_slice($this->opa_prefetch_cache[$ps_tablename], 0, 4096);
+		}
+		
 		$va_rel_row_ids = array();
 		while($qr_rel->nextRow()) {
 			$va_row = $qr_rel->getRow();
@@ -366,6 +370,12 @@ class SearchResult extends BaseObject {
 		//print "PREFETCH RELATED (".join("; ", $va_row_ids)."): ".$ps_tablename.' - '. $pn_start.' - '. $pn_num_rows."<br>";
 		$vs_md5 = caMakeCacheKeyFromOptions($pa_options);
 		$va_rel_items = $this->opo_subject_instance->getRelatedItems($ps_tablename, array_merge($pa_options, array('row_ids' => $va_row_ids, 'limit' => 100000)));		// if there are more than 100,000 then we have a problem
+		
+		
+		if (is_array($this->opa_rel_prefetch_cache[$ps_tablename]) && (sizeof($this->opa_rel_prefetch_cache[$ps_tablename]) > 32768)) {
+			$this->opa_rel_prefetch_cache[$ps_tablename] = array_slice($this->opa_rel_prefetch_cache[$ps_tablename], 0, 4096);
+		}
+		
 		foreach($va_rel_items as $vn_relation_id => $va_rel_item) {
 			$this->opa_rel_prefetch_cache[$ps_tablename][$va_rel_item['row_id']][$vs_md5][] = $va_rel_item;
 		}
@@ -388,6 +398,10 @@ class SearchResult extends BaseObject {
 		if ($this->opa_timestamp_cache['fetched'][$vs_key]) { return true; }
 		
 		$o_log = new ApplicationChangeLog();
+	
+		if (is_array($this->opa_timestamp_cache[$ps_tablename]) && (sizeof($this->opa_timestamp_cache[$ps_tablename]) > 32768)) {
+			$this->opa_timestamp_cache[$ps_tablename] = array_slice($this->opa_timestamp_cache[$ps_tablename], 0, 4096);
+		}
 	
 		if (!is_array($this->opa_timestamp_cache['created_on'][$ps_tablename])) { $this->opa_timestamp_cache['created_on'][$ps_tablename] = array(); }
 		$this->opa_timestamp_cache['created_on'][$ps_tablename] += $o_log->getCreatedOnTimestampsForIDs($ps_tablename, $va_row_ids);
