@@ -633,7 +633,6 @@
 								'message' =>  $vs_msg = _t('Failed to create set %1: %2', $vs_set_create_name, join("; ", $t_set->getErrors())),
 								'status' => 'SET ERROR'
 							);
-							$vn_notices++;
 							$o_log->logError($vs_msg);
 						} else {
 							$t_set->addLabel(array('name' => $vs_set_create_name), $vn_locale_id, null, true);
@@ -904,13 +903,13 @@
 							$o_eventlog->log(array(
 								"CODE" => 'ERR',
 								"SOURCE" => "mediaImport",
-								"MESSAGE" => _t("Error creating new object while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors()))
+								"MESSAGE" => _t("Error creating new record while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors()))
 							));
 							$va_errors[$vs_relative_directory.'/'.$f] = array(
 								'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
 								'label' => $t_instance->getLabelForDisplay(),
 								'errors' => $t_instance->errors(),
-								'message' => $vs_msg = _t("Error creating new object while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors())),
+								'message' => $vs_msg = _t("Error creating new record while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors())),
 								'status' => 'ERROR',
 							);
 							$o_log->logError($vs_msg);
@@ -918,22 +917,28 @@
 							continue;
 						}
 
-						$t_instance->addLabel(
-							array('name' => $f), $vn_locale_id, null, true
-						);
+						if($t_instance->tableName() == 'ca_entities') { // entity labels deserve special treatment
+							$t_instance->addLabel(
+								array('surname' => $f), $vn_locale_id, null, true
+							);
+						} else {
+							$t_instance->addLabel(
+								array($t_instance->getLabelDisplayField() => $f), $vn_locale_id, null, true
+							);
+						}
 
 						if ($t_instance->numErrors()) {
 							$o_eventlog->log(array(
 								"CODE" => 'ERR',
 								"SOURCE" => "mediaImport",
-								"MESSAGE" => _t("Error creating object label while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors()))
+								"MESSAGE" => _t("Error creating record label while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors()))
 							));
 
 							$va_errors[$vs_relative_directory.'/'.$f] = array(
 								'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
 								'label' => $t_instance->getLabelForDisplay(),
 								'errors' => $t_instance->errors(),
-								'message' => $vs_msg = _t("Error creating object label while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors())),
+								'message' => $vs_msg = _t("Error creating record label while importing %1 from %2: %3", $f, $vs_relative_directory, join('; ', $t_instance->getErrors())),
 								'status' => 'ERROR',
 							);
 							$o_log->logError($vs_msg);
