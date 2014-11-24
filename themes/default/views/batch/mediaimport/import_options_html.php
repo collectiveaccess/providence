@@ -50,7 +50,20 @@
 	<div class="sectionBox">
 <?php
 		print caFormTag($this->request, 'Save/'.$this->request->getActionExtra(), 'caBatchMediaImportForm', null, 'POST', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
+		print caHTMLHiddenInput('import_target', array('value' => $this->getVar('import_target')));
 ?>
+		<div class='bundleLabel'>
+			<span class="formLabelText"><?php print _t('Import target'); ?></span>
+			<div class="bundleContainer">
+				<div class="caLabelList" >
+					<p>
+						<?php
+						print $this->getVar('import_target');
+						?>
+					</p>
+				</div>
+			</div>
+		</div>
 		<div class='bundleLabel'>
 			<span class="formLabelText"><?php print _t('Directory to import'); ?></span> 
 			<div class="bundleContainer">
