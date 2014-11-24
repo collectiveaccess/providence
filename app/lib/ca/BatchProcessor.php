@@ -813,7 +813,7 @@
 												$va_notices[$vs_relative_directory.'/'.$vs_match_name.'_match'] = array(
 													'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
 													'label' => $t_instance->getLabelForDisplay(),
-													'message' => $vs_msg = _t('Matched media %1 from %2 to %3 using %4', $f, $vs_relative_directory, caGetTableDisplayName($vs_import_target, false), $vs_regex_name),
+													'message' => $vs_msg = _t('Matched media %1 from %2 to %3 using expression "%4"', $f, $vs_relative_directory, caGetTableDisplayName($vs_import_target, false), $va_regex_info['displayName']),
 													'status' => 'MATCHED'
 												);
 												$o_log->logInfo($vs_msg);
