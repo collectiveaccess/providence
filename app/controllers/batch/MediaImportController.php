@@ -141,7 +141,7 @@
 			$this->view->setVar('import_target', caHTMLSelect('import_target', $this->opa_importable_tables, array(
 				'id' => 'caImportTargetSelect',
 				'onchange' => 'window.location.replace("'.caNavUrl($this->getRequest(), $this->getRequest()->getModulePath(), $this->getRequest()->getController(), $this->getRequest()->getAction()) . '/target/" + jQuery("#caImportTargetSelect").val()); return false;'
-			), array('value' => $va_last_settings['importTarget'])));
+			), array('value' => $vs_import_target)));
 			
 			$this->view->setVar('import_mode', caHTMLSelect('import_mode', array(
 				_t('Import all media, matching with existing records where possible') => 'TRY_TO_MATCH',
