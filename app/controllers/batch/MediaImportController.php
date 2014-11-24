@@ -158,7 +158,11 @@
  			$this->view->setVar($vs_import_target.'_type_list', $t_instance->getTypeListAsHTMLFormElement($vs_import_target.'_type_id', null, array('value' => $va_last_settings[$vs_import_target.'_type_id'])));
  			$this->view->setVar($vs_import_target.'_limit_to_types_list', $t_instance->getTypeListAsHTMLFormElement($vs_import_target.'_limit_matching_to_type_ids[]', array('multiple' => 1), array('height' => '100px', 'values' => $va_last_settings[$vs_import_target.'_limit_matching_to_type_ids'])));
  			$this->view->setVar('ca_object_representations_type_list', $t_rep->getTypeListAsHTMLFormElement('ca_object_representations_type_id', null, array('value' => $va_last_settings['ca_object_representations_type_id'])));
- 		
+
+			if($vs_import_target != 'ca_objects') { // non-object representations have relationship types
+				$t_rel = ca_relationship_types::getRelationshipTypeInstance($t_instance->tableName(), 'ca_object_representations');
+				$this->getView()->setVar($vs_import_target.'_representation_relationship_type', $t_rel->getRelationshipTypesAsHTMLSelect('ltor',null,null, array('name' => $vs_import_target.'_representation_relationship_type'), array('value' => $va_last_settings[$vs_import_target.'_representation_relationship_type'])));
+			}
  		
  			$va_importer_list = ca_data_importers::getImporters(null, array('formats' => array('exif')));
  			$va_object_importer_options = $va_object_representation_importer_options = array("-" => '');
@@ -252,7 +256,11 @@
  				'skipFileList' => $this->request->getParameter('skip_file_list', pString),
 				'importTarget' => $vs_import_target
  			);
- 			
+
+			if($vn_rel_type = $this->request->getParameter($vs_import_target.'_representation_relationship_type', pInteger)) {
+				$va_options[$vs_import_target.'_representation_relationship_type'] = $vn_rel_type;
+			}
+
  			if (is_array($va_create_relationships_for = $this->request->getParameter('create_relationship_for', pArray))) {
  				$va_options['create_relationship_for'] = $va_create_relationships_for;
  				foreach($va_create_relationships_for as $vs_rel_table) {

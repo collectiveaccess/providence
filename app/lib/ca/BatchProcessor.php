@@ -572,6 +572,8 @@
  			$vn_status 							= $pa_options[$vs_import_target.'_status'];
  			$vn_object_representation_status 	= $pa_options['ca_object_representations_status'];
 
+			$vn_rel_type_id 					= (isset($pa_options[$vs_import_target.'_representation_relationship_type']) ? $pa_options[$vs_import_target.'_representation_relationship_type'] : null);
+
  			$vn_mapping_id						= $pa_options[$vs_import_target.'_mapping_id'];
  			$vn_object_representation_mapping_id= $pa_options['ca_object_representations_mapping_id'];
 
@@ -845,7 +847,7 @@
 					// found existing object
 					$t_instance->setMode(ACCESS_WRITE);
 
-					$t_new_rep = $t_instance->addRepresentation($vs_directory.'/'.$f, $vn_rep_type_id, $vn_locale_id, $vn_object_representation_status, $vn_object_representation_access, false, array(), array('original_filename' => $f, 'returnRepresentation' => true));
+					$t_new_rep = $t_instance->addRepresentation($vs_directory.'/'.$f, $vn_rep_type_id, $vn_locale_id, $vn_object_representation_status, $vn_object_representation_access, false, array(), array('original_filename' => $f, 'returnRepresentation' => true, 'type_id' => $vn_rel_type_id));
 
 					if ($t_instance->numErrors()) {
 						$o_eventlog->log(array(
@@ -946,7 +948,7 @@
 							continue;
 						}
 
-						$t_new_rep = $t_instance->addRepresentation($vs_directory.'/'.$f, $vn_rep_type_id, $vn_locale_id, $vn_object_representation_status, $vn_object_representation_access, true, array(), array('original_filename' => $f, 'returnRepresentation' => true));
+						$t_new_rep = $t_instance->addRepresentation($vs_directory.'/'.$f, $vn_rep_type_id, $vn_locale_id, $vn_object_representation_status, $vn_object_representation_access, true, array(), array('original_filename' => $f, 'returnRepresentation' => true, 'type_id' => $vn_rel_type_id));
 
 						if ($t_instance->numErrors()) {
 							$o_eventlog->log(array(

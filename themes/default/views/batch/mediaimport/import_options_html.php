@@ -174,6 +174,13 @@
 										print _t('Type used for newly created object representations')."<br/>\n".$this->getVar('ca_object_representations_type_list')."</div>\n";
 ?>
 									</td>
+<?php if($vs_reltypes = $this->getVar($t_instance->tableName().'_representation_relationship_type')) { ?>
+									<td class='formLabel'>
+										<?php
+										print _t('Type used for relationship')."<br/>\n".$vs_reltypes."</div>\n";
+										?>
+									</td>
+<?php } ?>
 								</tr>
 							</table>
 						</div>
