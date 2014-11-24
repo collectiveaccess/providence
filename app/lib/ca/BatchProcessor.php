@@ -633,6 +633,7 @@
 								'message' =>  $vs_msg = _t('Failed to create set %1: %2', $vs_set_create_name, join("; ", $t_set->getErrors())),
 								'status' => 'SET ERROR'
 							);
+							$vn_notices++;
 							$o_log->logError($vs_msg);
 						} else {
 							$t_set->addLabel(array('name' => $vs_set_create_name), $vn_locale_id, null, true);
@@ -712,6 +713,7 @@
  					continue;
  				}
 
+				$t_instance = $po_request->getAppDatamodel()->getInstance($vs_import_target, false);
 				$t_instance->setTransaction($o_trans);
 
 				$vs_modified_filename = $f;
@@ -1029,14 +1031,14 @@
 				}
 
  				if (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
-					$ps_callback($po_request, $vn_c, $vn_num_items, _t("[%3/%4] Processing %1 (%3)", caTruncateStringWithEllipsis($vs_relative_directory, 20).'/'.caTruncateStringWithEllipsis($f, 30), $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')), $vn_c, $vn_num_items), $t_new_rep, time() - $vn_start_time, memory_get_usage(true), sizeof($va_notices), sizeof($va_errors));
+					$ps_callback($po_request, $vn_c, $vn_num_items, _t("[%3/%4] Processing %1 (%3)", caTruncateStringWithEllipsis($vs_relative_directory, 20).'/'.caTruncateStringWithEllipsis($f, 30), $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')), $vn_c, $vn_num_items), $t_new_rep, time() - $vn_start_time, memory_get_usage(true), $vn_c, sizeof($va_errors));
 				}
 
 				$vn_c++;
  			}
 
 			if (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
-				$ps_callback($po_request, $vn_num_items, $vn_num_items, _t("Processing completed"), null, time() - $vn_start_time, memory_get_usage(true), sizeof($va_notices), sizeof($va_errors));
+				$ps_callback($po_request, $vn_num_items, $vn_num_items, _t("Processing completed"), null, time() - $vn_start_time, memory_get_usage(true), $vn_c, sizeof($va_errors));
 			}
 
 			$vn_elapsed_time = time() - $vn_start_time;
@@ -1044,7 +1046,7 @@
 				$va_general = array(
 					'elapsedTime' => $vn_elapsed_time,
 					'numErrors' => sizeof($va_errors),
-					'numProcessed' => sizeof($va_notices),
+					'numProcessed' => $vn_c,
 					'batchSize' => $vn_num_items,
 					'table' => $t_instance->tableName(),
 					'set_id' => $t_set->getPrimaryKey(),
@@ -1070,7 +1072,7 @@
 					caSendMessageUsingView($po_request, array($vs_email => $po_request->user->get('fname').' '.$po_request->user->get('lname')), __CA_ADMIN_EMAIL__, _t('[%1] Batch media import completed', $po_request->config->get('app_display_name')), 'batch_media_import_completed.tpl',
 						array(
 							'notices' => $va_notices, 'errors' => $va_errors,
-							'directory' => $vs_relative_directory, 'numErrors' => sizeof($va_errors), 'numProcessed' => sizeof($va_notices),
+							'directory' => $vs_relative_directory, 'numErrors' => sizeof($va_errors), 'numProcessed' => $vn_c,
 							'subjectNameSingular' => _t('file'),
 							'subjectNamePlural' => _t('files'),
 							'startedOn' => $vs_started_on,
