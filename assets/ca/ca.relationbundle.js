@@ -80,7 +80,7 @@ var caUI = caUI || {};
 					types.push({type_id: typeList[i].type_id, typename: typeList[i].typename, direction: typeList[i].direction});
 				}
 			}
-		}
+		};
 		
 		options.onAddItem = function(id, options, isNew) {
 			if (!isNew) { return; }
@@ -151,7 +151,7 @@ var caUI = caUI || {};
 					}
 				}, options.autocompleteOptions)
 			).on('click', null, {}, function() { this.select(); });
-		}
+		};
 		
 		options.select = function(id, data) {
 			if (!id) { id = 'new_' + (that.getCount() - 1); } // default to current "new" option
@@ -209,7 +209,7 @@ var caUI = caUI || {};
 				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).data('item_type_id', type_id);
 			}
 			that.showUnsavedChangesWarning(true);
-		}
+		};
 		
 		options.sort = function(key) {
 			var indexedValues = {};
@@ -226,6 +226,7 @@ var caUI = caUI || {};
 							if (key == 'idno') {
 								indexKey = jQuery('#' + id_string + ' .itemIdno').text() + "/" + id_string;
 							} else {
+                                alert(id_string);
 								indexKey = id_string;
 							}
 						}
@@ -248,7 +249,7 @@ var caUI = caUI || {};
 			
 			caUI.utils.showUnsavedChangesWarning(true);
 			that._updateSortOrderListIDFormElement();
-		}
+		};
 	
 		options.setDeleteButton = function(rowID) {
 			var curRowID = rowID;
@@ -257,7 +258,7 @@ var caUI = caUI || {};
 			jQuery('#' + rowID + ' .caDeleteItemButton').on('click', null, {},
 				function(e) { that.deleteFromBundle(n); e.preventDefault(); return false; }
 			);
-		}
+		};
 		
 		var that = caUI.initBundle(container, options);
 		

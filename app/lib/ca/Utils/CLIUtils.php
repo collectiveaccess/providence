@@ -2779,7 +2779,7 @@
 		 */
 		public static function reload_object_current_locationsParamList() {
 			return array(
-			
+				
 			);
 		}
 		# -------------------------------------------------------
@@ -2803,6 +2803,75 @@
 		 */
 		public static function reload_object_current_locationsHelp() {
 			return _t('CollectiveAccess supports browse on current locations of collection objects using values cached in the object records. From time to time these values may become out of date. Use this command to regenerate the cached values based upon the current state of the database.');
+		}
+		# -------------------------------------------------------
+		/**
+		 * 
+		 */
+		public static function clear_caches($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/core/Configuration.php");
+			$o_config = Configuration::load();
+			
+			$ps_cache = strtolower((string)$po_opts->getOption('cache'));
+			if (!in_array($ps_cache, array('all', 'app', 'usermedia'))) { $ps_cache = 'all'; }
+		
+			if (in_array($ps_cache, array('all', 'app'))) {
+				CLIUtils::addMessage(_t('Clearing application caches...'));
+				if (is_writable($o_config->get('taskqueue_tmp_directory'))) {
+					caRemoveDirectory($o_config->get('taskqueue_tmp_directory'), false);
+				} else {
+					CLIUtils::addError(_t('Skipping clearing of application cache because it is not writable'));	
+				}
+			}
+			if (in_array($ps_cache, array('all', 'usermedia'))) {
+				if (($vs_tmp_directory = $o_config->get('ajax_media_upload_tmp_directory')) && (file_exists($vs_tmp_directory))) {
+					if (is_writable($vs_tmp_directory)) {
+						CLIUtils::addMessage(_t('Clearing user media cache in %1...', $vs_tmp_directory));
+						caRemoveDirectory($vs_tmp_directory, false);
+					} else {
+						CLIUtils::addError(_t('Skipping clearing of user media cache because it is not writable'));
+					}
+				} else {
+					if (!$vs_tmp_directory) {
+						CLIUtils::addError(_t('Skipping clearing of user media cache because no cache directory is configured'));
+					} else {
+						CLIUtils::addError(_t('Skipping clearing of user media cache because the configured directory at %1 does not exist', $vs_tmp_directory));
+					}
+				}
+			}
+			
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function clear_cachesParamList() {
+			return array(
+				"cache|c=s" => _t('Which cache to clear. Use "app" for the application cache (include all user sessions); use "userMedia" for user-uploaded media; use "all" for all cached. Default is all.'),
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function clear_cachesUtilityClass() {
+			return _t('Maintenance');
+		}
+		
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function clear_cachesShortHelp() {
+			return _t('Clear application caches and tmp directories.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function clear_cachesHelp() {
+			return _t('CollectiveAccess stores often used values, processed configuration files, user-uploaded media and other types of data in application caches. You can clear these caches using this command.');
 		}
 		# -------------------------------------------------------
 	}

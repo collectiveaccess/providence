@@ -26,4 +26,4 @@
  * ----------------------------------------------------------------------
  */
  
-print caBatchMetadataExportInspector($this, array('backText' => _t('Back to list')));
+print caBatchMetadataExportInspector($this);

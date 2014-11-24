@@ -263,13 +263,6 @@ class Installer {
 		$o_config = Configuration::load();
 		CompositeCache::flush(); // avoid stale cache
 
-		// create Lucene dir
-		if (($o_config->get('search_engine_plugin') == 'Lucene') && !file_exists($o_config->get('search_lucene_index_dir'))) {
-			if (!self::createDirectoryPath($o_config->get('search_lucene_index_dir'))) {
-				$this->addError("Couldn't create Lucene directory at ".$o_config->get('search_lucene_index_dir')." (only matters if you are using Lucene as your search engine)");
-			}
-		}
-
 		// create tmp dir
 		if (!file_exists($o_config->get('taskqueue_tmp_directory'))) {
 			if (!self::createDirectoryPath($o_config->get('taskqueue_tmp_directory'))) {

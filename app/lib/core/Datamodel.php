@@ -229,7 +229,7 @@ class Datamodel {
 	 * @return string The field name or null if the table or field number are invalid
 	 */
 	public function getFieldName($ps_table, $pn_field_num) {
-		if(!$ps_table || !$pn_field_num) { return null; }
+		if(!$ps_table || !is_int($pn_field_num)) { return null; }
 
 		if(MemoryCache::contains("{$ps_table}/{$pn_field_num}", 'DatamodelFieldName')) {
 			return MemoryCache::fetch("{$ps_table}/{$pn_field_num}", 'DatamodelFieldName');

@@ -559,6 +559,28 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Get name for exporter target table
+	 * @return null|string
+	 */
+	public function getTargetTableName() {
+		if(!$this->getPrimaryKey()) { return null; }
+
+		$o_dm = Datamodel::load();
+		return $o_dm->getTableName($this->get('table_num'));
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get instance for exporter target table
+	 * @return BaseModel|null
+	 */
+	public function getTargetTableInstance() {
+		if(!$this->getPrimaryKey()) { return null; }
+
+		$o_dm = Datamodel::load();
+		return $o_dm->getTableInstance($this->get('table_num'));
+	}
+	# ------------------------------------------------------
+	/**
 	 * Get file extension for downloadable files, depending on the format
 	 */
 	public function getFileExtension(){

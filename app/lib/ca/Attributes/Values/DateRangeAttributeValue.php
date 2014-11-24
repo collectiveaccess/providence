@@ -354,17 +354,20 @@
  			}
  			
  			if ((bool)$va_settings['useDatePicker']) {
- 				global $g_ui_locale;
-
- 				// nothing terrible happens if this fails. If no package is registered for the current 
- 				// locale, the LoadManager simply ignores it and the default settings (en_US) apply
- 				AssetLoadManager::register("datepicker_i18n_{$g_ui_locale}"); 
+				global $g_ui_locale;
 
  				$vs_element .= "<script type='text/javascript'>
  					jQuery(document).ready(function() {
  						jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').datepicker({constrainInput: false});
  					});
  				</script>\n";
+
+				// load localization for datepicker. we can't use the asset manager here
+				// because that doesn't get the script out in time for quickadd forms
+				$vs_i18n_relative_path = '/assets/jquery/jquery-ui/i18n/jquery.ui.datepicker-'.$g_ui_locale.'.js';
+				if(file_exists(__CA_BASE_DIR__.$vs_i18n_relative_path)) {
+					$vs_element .= "<script src='".__CA_URL_ROOT__.$vs_i18n_relative_path."' type='text/javascript'></script>\n";
+				}
  			}
  			
  			return $vs_element;

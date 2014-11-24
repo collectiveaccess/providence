@@ -185,7 +185,7 @@ class SearchEngine extends SearchBase {
 		if (!$vb_no_cache && ($o_cache->load($vs_cache_key, $this->opn_tablenum, $pa_options))) {
 			$vn_created_on = $o_cache->getParameter('created_on');
 			if((time() - $vn_created_on) < $vn_cache_timeout) {
-				Debug::msg('cache hit for '.$vs_cache_key);
+				Debug::msg('SEARCH cache hit for '.$vs_cache_key);
 				$va_hits = $o_cache->getResults();
 				if (isset($pa_options['sort']) && $pa_options['sort'] && ($pa_options['sort'] != '_natural')) {
 					$va_hits = $this->sortHits($va_hits, $this->ops_tablename, $pa_options['sort'], $ps_search, (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
@@ -203,7 +203,7 @@ class SearchEngine extends SearchBase {
 		}
 
 		if(!$vb_from_cache) {
-			Debug::msg('cache miss for '.$vs_cache_key);
+			Debug::msg('SEARCH cache miss for '.$vs_cache_key);
 			$vs_char_set = $this->opo_app_config->get('character_set');
 			
 			$o_query_parser = new LuceneSyntaxParser();
@@ -271,7 +271,7 @@ class SearchEngine extends SearchBase {
 						
 			$vn_user_id = (isset($pa_options['user_id']) && (int)$pa_options['user_id']) ?  (int)$pa_options['user_id'] : (int)$AUTH_CURRENT_USER_ID;
 			if ((!isset($pa_options['dontFilterByACL']) || !$pa_options['dontFilterByACL']) && $this->opo_app_config->get('perform_item_level_access_checking') && method_exists($t_table, "supportsACL") && $t_table->supportsACL()) {
-				$va_hits = $this->filterHitsByACL($va_hits, $vn_user_id, __CA_ACL_READONLY_ACCESS__);
+				$va_hits = $this->filterHitsByACL($va_hits, $this->opn_tablenum, $vn_user_id, __CA_ACL_READONLY_ACCESS__);
 			}
 			
 			if (isset($pa_options['sort']) && $pa_options['sort'] && ($pa_options['sort'] != '_natural')) {
@@ -343,95 +343,7 @@ class SearchEngine extends SearchBase {
 		$this->cleanupTemporaryResultTable();
 		return $qr_sort->getAllFieldValues('row_id');
 	}
-	# ------------------------------------------------------------------
-	/**
-	 * @param $pa_hits Array of row_ids to filter. 
-	 */
-	public function filterHitsByACL($pa_hits, $pn_user_id, $pn_access=__CA_ACL_READONLY_ACCESS__, $pa_options=null) {
-		if (!sizeof($pa_hits)) { return $pa_hits; }
-		if (!(int)$pn_user_id) { $pn_user_id = 0; }
-		if (!($t_table = $this->opo_datamodel->getInstanceByTableNum($this->opn_tablenum, true))) { return $pa_hits; }
-		
-		$vs_search_tmp_table = $this->loadListIntoTemporaryResultTable($pa_hits, md5(isset($pa_options['search']) ? $pa_options['search'] : rand(0, 1000000)));
-		
-		$vs_table_name = $t_table->tableName();
-		$vs_table_pk = $t_table->primaryKey();
-		
-		$t_user = new ca_users($pn_user_id);
-		if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {
-			$va_group_ids = array_keys($va_groups);
-			$vs_group_sql = '
-					OR
-					(ca_acl.group_id IN (?))';
-			$va_params = array((int)$this->opn_tablenum, (int)$pn_user_id, $va_group_ids, (int)$pn_access);
-		} else {
-			$va_group_ids = null;
-			$vs_group_sql = '';
-			$va_params = array((int)$this->opn_tablenum, (int)$pn_user_id, (int)$pn_access);
-		}
-		
-		$va_hits = array();
-		if ($pn_access <= $this->opo_app_config->get('default_item_access_level')) {
-			// Requested access is more restrictive than default access (so return items with default ACL)
-			
-				// Find records that have ACL that matches
-				$qr_sort = $this->opo_db->query("
-					SELECT ca_acl.row_id
-					FROM ca_acl
-					INNER JOIN {$vs_search_tmp_table} ON {$vs_search_tmp_table}.row_id = ca_acl.row_id
-					WHERE
-						(ca_acl.table_num = ?)
-						AND
-						(
-							(ca_acl.user_id = ?)
-							{$vs_group_sql}
-							OR 
-							(ca_acl.user_id IS NULL AND ca_acl.group_id IS NULL)
-						)
-						AND
-						(ca_acl.access >= ?)
-				", $va_params);
-				
-				$va_hits = array_unique($qr_sort->getAllFieldValues('row_id'));
-				
-				// Find records with default ACL
-				$qr_sort = $this->opo_db->query("
-					SELECT {$vs_search_tmp_table}.row_id
-					FROM {$vs_search_tmp_table}
-					LEFT OUTER JOIN ca_acl ON {$vs_search_tmp_table}.row_id = ca_acl.row_id AND ca_acl.table_num = ?
-					WHERE
-						ca_acl.row_id IS NULL;
-				", array((int)$this->opn_tablenum));
 
-				$va_hits = array_merge($va_hits, $qr_sort->getAllFieldValues('row_id'));
-		} else {
-			// Default access is more restrictive than requested access (so *don't* return items with default ACL)
-			
-			// Find records that have ACL that matches
-			$qr_sort = $this->opo_db->query("
-				SELECT ca_acl.row_id
-				FROM ca_acl
-				INNER JOIN {$vs_search_tmp_table} ON {$vs_search_tmp_table}.row_id = ca_acl.row_id
-				WHERE
-					(ca_acl.table_num = ?)
-					AND
-					(
-						(ca_acl.user_id = ?)
-						{$vs_group_sql}
-						OR 
-						(ca_acl.user_id IS NULL AND ca_acl.group_id IS NULL)
-					)
-					AND
-					(ca_acl.access >= ?)
-			", $va_params);
-			
-			$va_hits = $qr_sort->getAllFieldValues('row_id');
-		}
-		
-		$this->cleanupTemporaryResultTable();
-		return $va_hits;
-	}
-	# ------------------------------------------------------------------
 	/**
 	 *
 	 */

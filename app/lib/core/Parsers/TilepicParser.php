@@ -1498,6 +1498,15 @@ class TilepicParser {
 		}
 	}
 	# ------------------------------------------------------------------------------------
+	public function setResourceLimits_imagick($po_handle) {
+		$po_handle->setResourceLimit(imagick::RESOURCETYPE_MEMORY, 1024*1024*1024);		// Set maximum amount of memory in bytes to allocate for the pixel cache from the heap.
+		$po_handle->setResourceLimit(imagick::RESOURCETYPE_MAP, 1024*1024*1024);		// Set maximum amount of memory map in bytes to allocate for the pixel cache.
+		$po_handle->setResourceLimit(imagick::RESOURCETYPE_AREA, 6144*6144);			// Set the maximum width * height of an image that can reside in the pixel cache memory.
+		$po_handle->setResourceLimit(imagick::RESOURCETYPE_FILE, 1024);					// Set maximum number of open pixel cache files.
+		$po_handle->setResourceLimit(imagick::RESOURCETYPE_DISK, 64*1024*1024*1024);					// Set maximum amount of disk space in bytes permitted for use by the pixel cache.	
+		return true;
+	}
+	# ------------------------------------------------------------------------------------
 	function encode_imagick ($ps_filepath, $ps_output_path, $pa_options) {
 		if (!($magick = $this->mimetype2magick[$pa_options["output_mimetype"]])) {
 			$this->error = "Invalid output format";
@@ -1508,10 +1517,13 @@ class TilepicParser {
 		# Open image
 		#
 		$h = new Imagick();
+		$this->setResourceLimits_imagick($h);
+		
         if (!$h->readImage($ps_filepath)) {
 			$this->error = "Couldn't open image $ps_filepath";
 			return false;
         }
+        $h->profileImage('*', null);
         
         if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
 			if (is_array($va_exif = @exif_read_data($ps_filepath, 'EXIF', true, false))) { 
@@ -1706,6 +1718,15 @@ class TilepicParser {
 		}
 	}
 	# ------------------------------------------------------------------------------------
+	public function setResourceLimits_gmagick($po_handle) {
+		$po_handle->setResourceLimit(Gmagick::RESOURCETYPE_MEMORY, 1024*1024*1024);		// Set maximum amount of memory in bytes to allocate for the pixel cache from the heap.
+		$po_handle->setResourceLimit(Gmagick::RESOURCETYPE_MAP, 1024*1024*1024);		// Set maximum amount of memory map in bytes to allocate for the pixel cache.
+		$po_handle->setResourceLimit(Gmagick::RESOURCETYPE_AREA, 6144*6144);			// Set the maximum width * height of an image that can reside in the pixel cache memory.
+		$po_handle->setResourceLimit(Gmagick::RESOURCETYPE_FILE, 1024);					// Set maximum number of open pixel cache files.
+		$po_handle->setResourceLimit(Gmagick::RESOURCETYPE_DISK, 64*1024*1024*1024);					// Set maximum amount of disk space in bytes permitted for use by the pixel cache.
+		return true;
+	}
+	# ------------------------------------------------------------------------------------
 	function encode_gmagick ($ps_filepath, $ps_output_path, $pa_options) {
 		if (!($magick = $this->mimetype2magick[$pa_options["output_mimetype"]])) {
 			$this->error = "Invalid output format";
@@ -1717,6 +1738,8 @@ class TilepicParser {
 		#
 		try {
 			$h = new Gmagick($ps_filepath);
+			$h->stripimage();
+			$this->setResourceLimits_gmagick($h);
 			$h->setimageindex(0);	// force use of first image in multi-page TIFF
 		} catch (Exception $e){
 			$this->error = "Couldn't open image $ps_filepath";
@@ -2324,6 +2347,7 @@ class TilepicParser {
 		}
 		
 		$h = new Imagick();
+		$this->setResourceLimits_imagick($h);
 		if ($h->newImage($layer_tiles[$layer_number]["width"], $layer_tiles[$layer_number]["height"], "#ffffff")) {
 			$this->error = "Couldn't create new image for layer";
 			return false;
@@ -2340,6 +2364,7 @@ class TilepicParser {
 				$tile = $this->getTile($tile_number);
 				if ($tile) { 
 					$t = new Imagick();
+					$this->setResourceLimits_imagick($t);
 					$t->readImageBlob($tile);
 					if (!$h->compositeImage($t, imagick::COMPOSITE_OVER,$cx,$cy)) {
 						$this->error = "Couldn't add tile: composite failed";

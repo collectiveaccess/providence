@@ -27,7 +27,6 @@
  */
  
  	require_once(__CA_MODELS_DIR__."/ca_object_lots.php");
-	require_once(__CA_LIB_DIR__."/core/Parsers/ZipFile.php");
  	require_once(__CA_LIB_DIR__."/ca/BaseEditorController.php");
  
  	class ObjectLotEditorController extends BaseEditorController {
@@ -109,7 +108,8 @@
 					}
 					
 					if (sizeof($va_paths) > 0){
-						$o_zip = new ZipFile();
+						$vs_tmp_name = caGetTempFileName('DownloadLotMedia', 'zip');
+						$o_phar = new PharData($vs_tmp_name, null, null, Phar::ZIP);
 						
 						foreach($va_paths as $vn_object_id => $va_path_info) {
 							$vn_c = 1;
@@ -121,7 +121,7 @@
 								if ($vs_ext = pathinfo($vs_path, PATHINFO_EXTENSION)) {
 									$vs_filename .= ".{$vs_ext}";
 								}
-								$o_zip->addFile($vs_path, $vs_filename, 0, array('compression' => 0));
+								$o_phar->addFile($vs_path, $vs_filename);
 								
 								$vn_c++;
 							}
@@ -132,7 +132,7 @@
 						// send download
 						$vs_idno = $t_lot->get('idno_stub');			
 						
-						$o_view->setVar('zip', $o_zip);
+						$o_view->setVar('tmp_file', $vs_tmp_name);
 						$o_view->setVar('download_name', 'media_for_'.mb_substr(preg_replace('![^A-Za-z0-9]+!u', '_', $vs_idno ? $vs_idno : $t_lot->getPrimaryKey()), 0, 20).'.zip');
 						
 						$this->response->addContent($o_view->render('ca_object_lots_download_media.php'));
