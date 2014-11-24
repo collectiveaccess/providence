@@ -120,6 +120,9 @@
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing metadata elements")); }
 			$vo_installer->processMetadataElements();
 
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing metadata dictionary")); }
+			$vo_installer->processMetadataDictionary();
+
 			if(!$po_opts->getOption('skip-roles')){
 				if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing access roles")); }
 				$vo_installer->processRoles();
@@ -2230,9 +2233,9 @@
 						$t_rule->set('rule_code', (string)$va_rule['ruleCode']);
 						$t_rule->set('rule_level', (string)$va_rule['ruleLevel']);
 						$t_rule->set('expression', (string)$va_rule['expression']);
-						$t_rule->setSetting('rule_displayname', (string)$va_rule['ruleName']);
-						$t_rule->setSetting('rule_description', (string)$va_rule['ruleDescription']);
-						$t_rule->setSetting('rule_violationMessage', (string)$va_rule['violationMessage']);
+						$t_rule->setSetting('label', (string)$va_rule['label']);
+						$t_rule->setSetting('description', (string)$va_rule['description']);
+						$t_rule->setSetting('violationMessage', (string)$va_rule['violationMessage']);
 		
 						$t_rule->insert();
 						if ($t_rule->numErrors()) {
@@ -2314,6 +2317,7 @@
 					array('deleted' => 0),
 					array('returnAs' => 'searchResult')
 				));
+				if (!$qr_records) { continue; }
 				$vn_total_rows += $qr_records->numHits();
 				
 				CLIProgressBar::setTotal($vn_total_rows);
@@ -2322,7 +2326,7 @@
 				while($qr_records->nextHit()) {
 					$vn_count++;
 					
-					print CLIProgressBar::next(1, _t("Rule %1 [%2/%3]: record %4", $va_rule['rule_settings']['rule_displayname'], $vn_rule_num, $vn_num_rules, $vn_count));
+					print CLIProgressBar::next(1, _t("Rule %1 [%2/%3]: record %4", $va_rule['rule_settings']['label'], $vn_rule_num, $vn_num_rules, $vn_count));
 					$t_violation->clear();
 					$vn_id = $qr_records->getPrimaryKey();
 					
