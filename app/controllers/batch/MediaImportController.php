@@ -83,7 +83,6 @@
 				caGetTableDisplayName('ca_object_lots') => 'ca_object_lots',
 				caGetTableDisplayName('ca_movements') => 'ca_movements',
 				caGetTableDisplayName('ca_loans') => 'ca_loans',
-				caGetTableDisplayName('ca_commerce_order_items') => 'ca_commerce_order_items',
 			);
 
 			foreach($this->opa_importable_tables as $vs_key => $vs_table) {
