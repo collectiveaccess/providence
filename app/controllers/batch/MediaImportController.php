@@ -80,7 +80,6 @@
 				caGetTableDisplayName('ca_collections') => 'ca_collections',
 				caGetTableDisplayName('ca_occurrences') => 'ca_occurrences',
 				caGetTableDisplayName('ca_storage_locations') => 'ca_storage_locations',
-				caGetTableDisplayName('ca_list_items') => 'ca_list_items',
 				caGetTableDisplayName('ca_object_lots') => 'ca_object_lots',
 				caGetTableDisplayName('ca_movements') => 'ca_movements',
 				caGetTableDisplayName('ca_loans') => 'ca_loans',

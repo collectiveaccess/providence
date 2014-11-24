@@ -873,13 +873,21 @@
 						}
 					}
 				} else {
-					// should we create new object?
+					// should we create new record?
 					if (in_array($vs_import_mode, array('TRY_TO_MATCH', 'DONT_MATCH'))) {
 						$t_instance->setMode(ACCESS_WRITE);
 						$t_instance->set('type_id', $vn_type_id);
 						$t_instance->set('locale_id', $vn_locale_id);
-						$t_instance->set('status', $vn_status)		;
-						$t_instance->set('access', $vn_access)		;
+						$t_instance->set('status', $vn_status);
+						$t_instance->set('access', $vn_access);
+
+						// for places, take first hierarchy we can find. in most setups there is but one. we might wanna make this configurable via setup screen at some point
+						if($t_instance->hasField('hierarchy_id')) {
+							$va_hierarchies = $t_instance->getHierarchyList();
+							reset($va_hierarchies);
+							$vn_hierarchy_id = key($va_hierarchies);
+							$t_instance->set('hierarchy_id', $vn_hierarchy_id);
+						}
 
 						switch($vs_idno_mode) {
 							case 'filename':
