@@ -322,7 +322,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$va_field_list = $this->getFormFields(true, true);
 		foreach($va_field_list as $vn_i => $vs_field) {
 			if (in_array($vs_field, array($vs_idno_fld, $vs_idno_sort_fld, $vs_pk))) { continue; }		// skip idno fields
-			$t_dupe->set($vs_field, $this->get($this->tableName().'.'.$vs_field));
+			$va_fld_info = $t_dupe->getFieldInfo($vs_field);
+			if($va_fld_info['FIELD_TYPE'] == FT_MEDIA) { // media deserves special treatment
+				$t_dupe->set($vs_field, $this->getMediaPath($vs_field, 'original'));
+			} else {
+				$t_dupe->set($vs_field, $this->get($this->tableName().'.'.$vs_field));
+			}
 		}
 		$t_dupe->set($this->getTypeFieldName(), $this->getTypeID());
 		
