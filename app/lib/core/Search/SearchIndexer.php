@@ -216,6 +216,7 @@ class SearchIndexer extends SearchBase {
 				
 				$this->indexRow($vn_table_num, $vn_id, $va_field_data[$vn_id], true, null, array(), array());
 				if ($pb_display_progress && $pb_interactive_display) {
+					CLIProgressBar::setMessage("Memory: ".caGetMemoryUsage());
 					print CLIProgressBar::next();
 				}
 				

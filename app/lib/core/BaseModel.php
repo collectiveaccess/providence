@@ -1473,7 +1473,17 @@ class BaseModel extends BaseObject {
 						
 						$va_matches = null;
 						
-						if (is_string($vm_value) && (file_exists($vm_value) || ($vb_allow_fetching_of_urls && isURL($vm_value)))) {
+						if (
+							is_string($vm_value) 
+							&& 
+							(
+								file_exists($vm_value) 
+								|| 
+								($vb_allow_fetching_of_urls && isURL($vm_value))
+								||
+								(preg_match("!^userMedia[\d]+/!", $vm_value))
+							)
+						) {
 							$this->_SET_FILES[$vs_field]['original_filename'] = $pa_options["original_filename"];
 							$this->_SET_FILES[$vs_field]['tmp_name'] = $vm_value;
 							$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
@@ -3986,6 +3996,22 @@ class BaseModel extends BaseObject {
 				$vb_is_fetched_file = true;
 			}
 			
+			// is it server-side stored user media?
+			if (preg_match("!^userMedia[\d]+/!", $this->_SET_FILES[$ps_field]['tmp_name'])) {
+				// use configured directory to dump media with fallback to standard tmp directory
+				if (!is_writeable($vs_tmp_directory = $this->getAppConfig()->get('ajax_media_upload_tmp_directory'))) {
+					$vs_tmp_directory = caGetTempDirPath();
+				}
+				$this->_SET_FILES[$ps_field]['tmp_name'] = "{$vs_tmp_directory}/".$this->_SET_FILES[$ps_field]['tmp_name'];
+				
+				// read metadata
+				if (file_exists("{$vs_tmp_directory}/".$this->_SET_FILES[$ps_field]['tmp_name']."_metadata")) {
+					if (is_array($va_tmp_metadata = json_decode(file_get_contents("{$vs_tmp_directory}/".$this->_SET_FILES[$ps_field]['tmp_name']."_metadata")))) {
+						$this->_SET_FILES[$ps_field]['original_filename'] = $va_tmp_metadata['original_filename'];
+					}
+				}
+			}
+			
 			if (isset($this->_SET_FILES[$ps_field]['tmp_name']) && (file_exists($this->_SET_FILES[$ps_field]['tmp_name']))) {
 				if (!isset($pa_options['dont_allow_duplicate_media'])) {
 					$pa_options['dont_allow_duplicate_media'] = (bool)$this->getAppConfig()->get('dont_allow_duplicate_media');
@@ -5680,11 +5706,38 @@ class BaseModel extends BaseObject {
 	 * Returns true if field exists in this object
 	 * 
 	 * @access public
-	 * @param string $field field name
+	 * @param string $ps_field field name
 	 * @return bool
 	 */ 
-	public function hasField ($field) {
-		return (isset($this->FIELDS[$field]) && $this->FIELDS[$field]) ? true : false;
+	public function hasField ($ps_field) {
+		return (isset($this->FIELDS[$ps_field]) && $this->FIELDS[$ps_field]) ? true : false;
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Returns true if bundle is valid for this model
+	 * 
+	 * @access public
+	 * @param string $ps_bundle bundle name
+     * @param int $pn_type_id Optional record type
+	 * @return bool
+	 */ 
+	public function hasBundle ($ps_bundle, $pn_type_id=null) {
+		$va_bundle_bits = explode(".", $ps_bundle);
+		$vn_num_bits = sizeof($va_bundle_bits);
+	
+		if ($vn_num_bits == 1) {
+			return $this->hasField($va_bundle_bits[0]);
+		} elseif ($vn_num_bits == 2) {
+			if ($va_bundle_bits[0] == $this->tableName()) {
+				return $this->hasField($va_bundle_bits[1]);
+			} elseif (($va_bundle_bits[0] != $this->tableName()) && ($t_rel = $this->getAppDatamodel->getInstanceByTableName($va_bundle_bits[0], true))) {
+				return $t_rel->hasBundle($ps_bundle, $pn_type_id);
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -8916,6 +8969,7 @@ $pa_options["display_form_field_tips"] = true;
 			return false; 
 		}
 		$t_item_rel = $va_rel_info['t_item_rel'];
+		if ($this->inTransaction()) { $t_item_rel->setTransaction($this->getTransaction()); }
 		
 		if ($pm_type_id && !is_numeric($pm_type_id)) {
 			$t_rel_type = new ca_relationship_types();
@@ -9054,6 +9108,7 @@ $pa_options["display_form_field_tips"] = true;
 			return false; 
 		}
 		$t_item_rel = $va_rel_info['t_item_rel'];
+		if ($this->inTransaction()) { $t_item_rel->setTransaction($this->getTransaction()); }
 		
 		
 		if ($va_rel_info['related_table_name'] == $this->tableName()) {
@@ -9435,6 +9490,7 @@ $pa_options["display_form_field_tips"] = true;
 			}
 		}
 		
+		if ($this->inTransaction()) { $t_item_rel->setTransaction($this->getTransaction()); }
 		return BaseModel::$s_relationship_info_cache[$vs_table][$vs_related_table_name] = BaseModel::$s_relationship_info_cache[$vs_table][$pm_rel_table_name_or_num] = array(
 			'related_table_name' => $vs_related_table_name,
 			'path' => $va_path,

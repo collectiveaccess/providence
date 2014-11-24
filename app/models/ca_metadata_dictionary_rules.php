@@ -35,60 +35,34 @@
    */
  
 require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
+require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_rule_violations.php');
 
 global $_ca_metadata_dictionary_rules_settings;
 $_ca_metadata_dictionary_rules_settings = array(		// global
-	'label' => array(
+	'rule_displayname' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,
-		'width' => 30, 'height' => 1,
+		'width' => 90, 'height' => 1,
 		'takesLocale' => true,
-		'label' => _t('Alternate label to place on bundle'),
-		'description' => _t('Custom label text to use for this placement of this bundle.')
+		'label' => _t('Rule display name'),
+		'description' => _t('Short name for this rule, used for display in issue lists.')
 	),
-	'add_label' => array(
+	'rule_violationMessage' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,
-		'width' => 30, 'height' => 1,
+		'width' => 90, 'height' => 8,
 		'takesLocale' => true,
-		'label' => _t('Alternate label to place on bundle add button'),
-		'description' => _t('Custom text to use for the add button for this placement of this bundle.')
+		'label' => _t('Rule violation message'),
+		'description' => _t('Message used for display to user when presenting issues.')
 	),
-	'description' => array(
+	'rule_description' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,
-		'width' => 30, 'height' => 5,
+		'width' => 90, 'height' => 8,
 		'takesLocale' => true,
-		'label' => _t('Descriptive text for bundle.'),
-		'description' => _t('Descriptive text to use for help for bundle. Will override descriptive text set for underlying metadata element, if set.')
-	),
-	'width' => array(
-		'formatType' => FT_TEXT,
-		'displayType' => DT_FIELD,
-		'width' => 4, 'height' => 1,
-		'takesLocale' => false,
-		'default' => "",
-		'label' => _t('Width'),
-		'description' => _t('Width, in characters or pixels, of search form elements.')
-	),
-	'height' => array(
-		'formatType' => FT_TEXT,
-		'displayType' => DT_FIELD,
-		'width' => 4, 'height' => 1,
-		'takesLocale' => false,
-		'default' => "",
-		'label' => _t('Height'),
-		'description' => _t('Width, in characters or pixels, of search form elements.')
-	),
-	'readonly' => array(
-		'formatType' => FT_NUMBER,
-		'displayType' => DT_CHECKBOXES,
-		'width' => 30, 'height' => 1,
-		'takesLocale' => false,
-		'default' => '0',
-		'label' => _t('Read only?'),
-		'description' => _t('If checked, field will not be editable.')
-	),
+		'label' => _t('Rule description'),
+		'description' => _t('Long form description of rule, used for display to user when presenting issues.')
+	)
 );
 
 BaseModel::$s_ca_models_definitions['ca_metadata_dictionary_rules'] = array(
@@ -109,13 +83,36 @@ BaseModel::$s_ca_models_definitions['ca_metadata_dictionary_rules'] = array(
 				'DEFAULT' => '',
 				'LABEL' => 'Entry id', 'DESCRIPTION' => 'Identifier for entry'
 		),
-		'rule_name' => array(
+		'rule_code' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => 30, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Rule name'), 'DESCRIPTION' => _t('Name of rule to apply'),
-				'BOUNDS_VALUE' => array(1,255)
+				'FILTER' => '!^[\p{L}0-9_]+$!u',
+				'LABEL' => _t('Rule code'), 'DESCRIPTION' => _t('Unique alphanumeric code for the rule.'),
+				'BOUNDS_LENGTH' => array(1,30),
+				'UNIQUE_WITHIN' => array()
+		),
+		'expression' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 90, 'DISPLAY_HEIGHT' => 3,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Expression'), 'DESCRIPTION' => _t('Expression to evaluate'),
+				'BOUNDS_VALUE' => array(1,65535)
+		),
+		'rule_level' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 5, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Rule level'), 'DESCRIPTION' => _t('Level of importance of rule.'),
+				'BOUNDS_CHOICE_LIST' => array(
+					_t('Error') => 'ERR',
+					_t('Warning') => 'WARN',
+					_t('Notice') => 'NOTE',
+					_t('Debug') => 'DEBG' 
+				)
 		),
 		'settings' => array(
 				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
@@ -126,7 +123,6 @@ BaseModel::$s_ca_models_definitions['ca_metadata_dictionary_rules'] = array(
 		)
  	)
 );
-
 
 
 class ca_metadata_dictionary_rules extends BaseModel {
@@ -191,7 +187,7 @@ class ca_metadata_dictionary_rules extends BaseModel {
 	# Change logging
 	# ------------------------------------------------------
 	protected $UNIT_ID_FIELD = null;
-	protected $LOG_CHANGES_TO_SELF = true;
+	protected $LOG_CHANGES_TO_SELF = false;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
 		
@@ -247,7 +243,7 @@ class ca_metadata_dictionary_rules extends BaseModel {
 	public function __destruct() {
 		unset($this->SETTINGS);
 	}
-	# ------------------------------------------------------
+	# ----------------------------------------
 	/**
 	 * Reroutes calls to method implemented by settings delegate to the delegate class
 	 */
@@ -258,5 +254,36 @@ class ca_metadata_dictionary_rules extends BaseModel {
 		die($this->tableName()." does not implement method {$ps_name}");
 	}
 	# ----------------------------------------
+	/**
+	 * 
+	 */
+	static public function getRules($pa_options=null) {
+		$o_db = new Db();
+		
+		$vs_sql = "
+			SELECT cmdr.rule_id, cmdr.entry_id, cmde.bundle_name, cmde.settings entry_settings, 
+			cmdr.rule_code, cmdr.rule_level, cmdr.expression, cmdr.settings rule_settings
+			FROM ca_metadata_dictionary_rules cmdr
+			INNER JOIN ca_metadata_dictionary_entries AS cmde ON cmde.entry_id = cmdr.entry_id
+		";
+		
+		$va_wheres = $va_params = array();
+		if($va_bundles = caGetOption('bundles', $pa_options, null, array('castTo' => 'array'))) {
+			$va_wheres[] = "(cmde.bundle_name IN (?))";
+			$va_params[] = $va_bundles;
+		}
+		if (sizeof($va_wheres) > 0) { $vs_sql .= " WHERE ".join(" AND ", $va_wheres); }
+		
+		$qr_rules = $o_db->query($vs_sql, $va_params);
+		
+		$va_rules = $qr_rules->getAllRows();
+		
+		foreach($va_rules as $vn_i => $va_rule) {
+			$va_rules[$vn_i]['entry_settings'] = unserialize(base64_decode($va_rule['entry_settings']));
+			$va_rules[$vn_i]['rule_settings'] = unserialize(base64_decode($va_rule['rule_settings']));
+		}
+		
+		return $va_rules;
+	}
+	# ----------------------------------------
 }
-?>

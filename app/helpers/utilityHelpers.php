@@ -303,9 +303,11 @@ function caFileIsIncludable($ps_file) {
 	 * @param bool $pb_include_hidden_files Optional. By default caGetDirectoryContentsAsList() does not consider hidden files (files starting with a '.') when calculating file counts. Set this to true to include hidden files in counts. Note that the special UNIX '.' and '..' directory entries are *never* counted as files.
 	 * @param bool $pb_sort Optional. If set paths are returns sorted alphabetically. Default is false.
 	 * @param bool $pb_include_directories. If set paths to directories are included. Default is false (only files are returned).
+	 * @param array $pa_options Additional options, including:
+	 *		modifiedSince = Only return files and directories modified after a Unix timestamp [Default=null]
 	 * @return array An array of file paths.
 	 */
-	function &caGetDirectoryContentsAsList($dir, $pb_recursive=true, $pb_include_hidden_files=false, $pb_sort=false, $pb_include_directories=false) {
+	function &caGetDirectoryContentsAsList($dir, $pb_recursive=true, $pb_include_hidden_files=false, $pb_sort=false, $pb_include_directories=false, $pa_options=null) {
 		$va_file_list = array();
 		if(substr($dir, -1, 1) == "/"){
 			$dir = substr($dir, 0, strlen($dir) - 1);
@@ -314,6 +316,14 @@ function caFileIsIncludable($ps_file) {
 		if($va_paths = scandir($dir, 0)) {
 			foreach($va_paths as $item) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
+					if (
+						(isset($pa_option['modifiedSince']) && ($pa_option['modifiedSince'] > 0))
+						&&
+						(is_array($va_stat = @stat("{$dir}/{$item}")))
+						&&
+						($va_stat['mtime'] < $pa_option['modifiedSince'])	
+					) { continue; }
+				
 					$vb_is_dir = is_dir("{$dir}/{$item}");
 					if ($pb_include_directories && $vb_is_dir) {
 						$va_file_list["{$dir}/{$item}"] = true;
