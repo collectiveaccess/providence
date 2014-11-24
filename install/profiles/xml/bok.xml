@@ -542,7 +542,7 @@
             </label>
           </labels>
         </item>
-        <item idno="eng" enabled="1" default="0">
+        <item idno="eng" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>English</name_singular>
@@ -622,15 +622,40 @@
             </label>
           </labels>
         </item>
-        <item idno="tlh" enabled="0" default="0">
+      </items>
+    </list>
+    <list code="category_area" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Category Area</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="organisation_planning" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Klingon</name_singular>
-              <name_plural>Klingon</name_plural>
+              <name_singular>ORGANISATIONAL PLANNING, ADMINISTRATION AND MANAGEMENT</name_singular>
+              <name_plural>ORGANISATIONAL PLANNING, ADMINISTRATION AND MANAGEMENT</name_plural>
             </label>
           </labels>
         </item>
-      </items>
+        <item idno="applied_pa_management" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>APPLIED PA MANAGEMENT</name_singular>
+              <name_plural>APPLIED PA MANAGEMENT</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="enabling_personal" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>ENABLING PERSONAL COMPETENCES</name_singular>
+              <name_plural>ENABLING PERSONAL COMPETENCES</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>        
     </list>
     
   </lists>
@@ -671,7 +696,7 @@
       <settings>
         <setting name="fieldWidth">640px</setting>
         <setting name="fieldHeight">3</setting>
-        <setting name="minChars">0</setting>
+        <setting name="minChars">1</setting>
         <setting name="maxChars">65535</setting>
       </settings>
       <typeRestrictions>
@@ -688,7 +713,7 @@
     <metadataElement code="regions" datatype="List" list="geographic_regions">
       <labels>
         <label locale="en_US">
-          <name>Applicable Region(s) </name>
+          <name>Applicable region(s) </name>
           <description>Geographic region(s) where the resource is relevant.Default should be "Global." Up to 3 regions can be added below.</description>
         </label>
       </labels>
@@ -774,6 +799,14 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+        <restriction code="ca_entities">
+          <table>ca_entities</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1000</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="comments" datatype="Text">
@@ -825,26 +858,8 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-      </typeRestrictions>
-    </metadataElement>
-    <metadataElement code="dropbox" datatype="List" list="yes_no">
-      <labels>
-        <label locale="en_US">
-          <name>Uploaded to dropbox?</name>
-          <description>Has the resource been added to the dropbox?</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">80</setting>
-        <setting name="fieldHeight">1</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
-        <setting name="render">yes_no_checkboxes</setting>
-        <setting name="maxColumns">3</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_objects</table>
+        <restriction code="r2">
+          <table>ca_object_representations</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -904,7 +919,7 @@
     <metadataElement code="knowledge_requirements" datatype="Text">
       <labels>
         <label locale="en_US">
-          <name>Knowledge Requirements</name>
+          <name>Knowledge requirements</name>
         </label>
       </labels>
       <settings>
@@ -916,6 +931,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_occurrences</table>
+          <type>competence</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -939,6 +955,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_occurrences</table>
+          <type>competence</type>          
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -962,6 +979,7 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_occurrences</table>
+          <type>competence</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -985,6 +1003,32 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_occurrences</table>
+          <type>competence</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="area" datatype="List" list="category_area">
+      <labels>
+        <label locale="en_US">
+          <name>Category Area</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+        <setting name="maxColumns">3</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_occurrences</table>
+          <type>category</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -1292,12 +1336,6 @@
                 <setting name="label" locale="en_US">Recommended by</setting>
               </settings>
              </placement>            
-            <placement code="ca_attribute_permissions">
-              <bundle>ca_attribute_permissions</bundle>
-            </placement>
-            <placement code="ca_attribute_dropbox">
-              <bundle>ca_attribute_dropbox</bundle>
-            </placement>
             <placement code="ca_attribute_comments">
               <bundle>ca_attribute_comments</bundle>
             </placement>
@@ -1322,8 +1360,17 @@
             </label>
           </labels>
           <bundlePlacements>
+            <placement code="ca_occurrences">
+              <bundle>ca_occurrences</bundle>
+               <settings>
+                <setting name="label" locale="en_US">Relevant competences</setting>
+              </settings>
+            </placement>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
+               <settings>
+                <setting name="label" locale="en_US">Related resources</setting>
+              </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -1364,30 +1411,24 @@
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
             </placement>
+            <placement code="ca_attribute_email">
+              <bundle>ca_attribute_email</bundle>
+            </placement>            
+            <placement code="ca_orgs">
+              <bundle>ca_entities</bundle>
+               <settings>
+              <setting name="restrict_to_types">org</setting>
+                <setting name="label" locale="en_US">Organization</setting>
+              </settings>
+            </placement>
             <placement code="ca_attribute_biography">
               <bundle>ca_attribute_biography</bundle>
             </placement>
             <placement code="ca_attribute_biography_source">
               <bundle>ca_attribute_biography_source</bundle>
             </placement>
-            <placement code="ca_attribute_internal_notes">
-              <bundle>ca_attribute_internal_notes</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="altnames" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Alternate names</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="nonpreferred_labels">
-              <bundle>nonpreferred_labels</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Alternate names</setting>
-                <setting name="add_label" locale="en_US">Add name</setting>
-              </settings>
+            <placement code="access">
+              <bundle>access</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -1404,9 +1445,6 @@
             <placement code="ca_attribute_telephone">
               <bundle>ca_attribute_telephone</bundle>
             </placement>
-            <placement code="ca_attribute_email">
-              <bundle>ca_attribute_email</bundle>
-            </placement>
           </bundlePlacements>
         </screen>
         <screen idno="relationships" default="0">
@@ -1418,28 +1456,18 @@
           <bundlePlacements>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
-            </placement>
-           <placement code="ca_object_lots">
-              <bundle>ca_object_lots</bundle>
+               <settings>
+                <setting name="label" locale="en_US">Related resources</setting>
+              </settings>
             </placement>
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
             </placement>
-            <placement code="ca_events">
+            <placement code="ca_occurrences">
               <bundle>ca_occurrences</bundle>
-              <settings>
-                <setting name="restrict_to_type">event</setting>
-                <setting name="label" locale="en_US">Related events</setting>
+               <settings>
+                <setting name="label" locale="en_US">Relevant competences</setting>
               </settings>
-            </placement>
-            <placement code="ca_places">
-              <bundle>ca_places</bundle>
-            </placement>
-            <placement code="ca_collections">
-              <bundle>ca_collections</bundle>
-            </placement>
-            <placement code="ca_loans">
-              <bundle>ca_loans</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -1555,17 +1583,23 @@
     <userInterface code="competence_cataloguers_ui" type="ca_occurrences">
       <labels>
         <label locale="en_US">
-          <name>Event editor</name>
+          <name>Competence editor</name>
         </label>
       </labels>
       <screens>
-        <screen idno="basic" default="1">
+        <screen idno="basicComp" default="1">
           <labels>
             <label locale="en_US">
               <name>Basic info</name>
             </label>
           </labels>
+          <typeRestrictions>
+            <restriction code="competence" type="competence"/>
+          </typeRestrictions>
           <bundlePlacements>
+              <placement code="hierarchy_location">
+              <bundle>hierarchy_location</bundle>
+            </placement>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
@@ -1588,7 +1622,7 @@
               <bundle>ca_occurrences</bundle>
             <settings>
                 <setting name="restrict_to_relationship_types">recommendedPrior</setting>
-                <setting name="label" locale="en_US">Recommended prior competence requirements</setting>
+               <setting name="label" locale="en_US">Recommended prior competence requirements</setting>
               </settings>
              </placement>    
            <placement code="ca_other">
@@ -1609,10 +1643,13 @@
             </placement>
            <placement code="ca_resources">
               <bundle>ca_objects</bundle>
-            <settings>
+            <settings> 
                 <setting name="label" locale="en_US">Relevant learning resources</setting>
               </settings>
-             </placement>             
+             </placement> 
+            <placement code="ca_entities">
+              <bundle>ca_entities</bundle>
+            </placement>            
             <placement code="access">
               <bundle>access</bundle>
             </placement>
@@ -1621,7 +1658,51 @@
             </placement>
           </bundlePlacements>
         </screen>
-    </screens>
+        <screen idno="basicCatLevel" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction code="category" type="category"/>
+            <restriction code="level" type="level"/>
+          </typeRestrictions>
+          <bundlePlacements>
+              <placement code="hierarchy_location">
+              <bundle>hierarchy_location</bundle>
+            </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Name</setting>
+              </settings>
+            </placement>
+            <placement code="idno">
+              <bundle>idno</bundle>
+               <settings>
+                <setting name="label" locale="en_US">Code</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_details">
+              <bundle>ca_attribute_details</bundle>
+            </placement>          
+            <placement code="ca_attribute_area">
+              <bundle>ca_attribute_area</bundle>
+            </placement> 
+            <placement code="ca_entities">
+              <bundle>ca_entities</bundle>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        
+      </screens>
     </userInterface>
     <userInterface code="standard_collection_ui" type="ca_collections">
       <labels>
@@ -1928,6 +2009,12 @@
             <placement code="set_code">
               <bundle>set_code</bundle>
             </placement>
+            <placement code="ca_users">
+              <bundle>ca_users</bundle>
+            </placement>
+            <placement code="ca_user_groups">
+              <bundle>ca_user_groups</bundle>
+            </placement>
             <placement code="access">
               <bundle>access</bundle>
             </placement>
@@ -2011,8 +2098,8 @@
             <placement code="status">
               <bundle>status</bundle>
             </placement>
-            <placement code="ca_attribute_caption">
-              <bundle>ca_attribute_caption</bundle>
+            <placement code="ca_attribute_permissions">
+              <bundle>ca_attribute_permissions</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -2157,11 +2244,21 @@
   <relationshipTypes>
     <relationshipTable name="ca_objects_x_entities">
       <types>
-        <type code="recommend" default="1">
+        <type code="contributed" default="1">
           <labels>
             <label locale="en_US">
-              <typename>recommended by</typename>
-              <typename_reverse>recommends</typename_reverse>
+              <typename>contributed by</typename>
+              <typename_reverse>contributed</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
+        </type>
+        <type code="curated" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>curated by</typename>
+              <typename_reverse>curated</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -2178,8 +2275,8 @@
               <typename_reverse>is relevant for</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
+          <subTypeLeft></subTypeLeft>
+          <subTypeRight></subTypeRight>
         </type>
     </types>
     </relationshipTable>
@@ -2417,15 +2514,15 @@
     </relationshipTable>
     <relationshipTable name="ca_entities_x_occurrences">
       <types>
-        <type code="attended" default="1">
+        <type code="is_relevant_for" default="1">
           <labels>
             <label locale="en_US">
-              <typename>attended</typename>
-              <typename_reverse>was attended by</typename_reverse>
+              <typename>is relevant for</typename>
+              <typename_reverse>is relevant for</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
-          <subTypeRight>event</subTypeRight>
+          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -2747,7 +2844,7 @@
     </relationshipTable>
   </relationshipTypes>
    <displays>
-    <display code="basi_report" type="ca_objects" system="1">
+    <display code="basic_report" type="ca_objects" system="1">
       <labels>
         <label locale="en_US">
           <name>Basic Report</name>
@@ -2790,9 +2887,6 @@
         </placement>                      
         <placement code="permissions">
           <bundle>ca_objects.permissions</bundle>
-        </placement>
-        <placement code="dropbox">
-          <bundle>ca_objects.dropbox</bundle>
         </placement>
         <placement code="comments">
           <bundle>ca_objects.comments</bundle>

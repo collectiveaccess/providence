@@ -322,7 +322,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$va_field_list = $this->getFormFields(true, true);
 		foreach($va_field_list as $vn_i => $vs_field) {
 			if (in_array($vs_field, array($vs_idno_fld, $vs_idno_sort_fld, $vs_pk))) { continue; }		// skip idno fields
-			$t_dupe->set($vs_field, $this->get($this->tableName().'.'.$vs_field));
+			$va_fld_info = $t_dupe->getFieldInfo($vs_field);
+			if($va_fld_info['FIELD_TYPE'] == FT_MEDIA) { // media deserves special treatment
+				$t_dupe->set($vs_field, $this->getMediaPath($vs_field, 'original'));
+			} else {
+				$t_dupe->set($vs_field, $this->get($this->tableName().'.'.$vs_field));
+			}
 		}
 		$t_dupe->set($this->getTypeFieldName(), $this->getTypeID());
 		
@@ -840,6 +845,31 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		return true;
+	}	
+	# --------------------------------------------------------------------------------
+	/**
+	 * Returns true if bundle is valid for this model
+	 * 
+	 * @access public
+	 * @param string $ps_bundle bundle name
+     * @param int $pn_type_id Optional record type
+	 * @return bool
+	 */ 
+	public function hasBundle ($ps_bundle, $pn_type_id=null) {
+		$va_bundle_bits = explode(".", $ps_bundle);
+		$vn_num_bits = sizeof($va_bundle_bits);
+	
+		if (in_array($va_bundle_bits[1], array('hierarchy', 'parent', 'children', 'related'))) {
+			unset($va_bundle_bits[1]);
+			$va_bundle_bits = array_merge($va_bundle_bits);
+			$vn_num_bits = sizeof($va_bundle_bits);
+			$ps_bundle = join('.', $va_bundle_bits);
+		}
+		
+		if (($va_bundle_bits[0] != $this->tableName()) && ($t_rel = $this->getAppDatamodel()->getInstanceByTableName($va_bundle_bits[0], true))) {
+			return ($vn_num_bits == 1) ? true : $t_rel->hasBundle($ps_bundle, $pn_type_id);
+		} 
+		return parent::hasBundle($ps_bundle, $pn_type_id);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -1405,7 +1435,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		// Check if user has access to this type
-		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
+		// The type id is not set for batch edits so skip this check for those.
+		if (!$vb_batch && (bool)$this->getAppConfig()->get('perform_type_access_checking')) {
 			$vn_type_access = $pa_options['request']->user->getTypeAccessLevel($this->tableName(), $this->getTypeID());
 			if ($vn_type_access == __CA_BUNDLE_ACCESS_NONE__) {
 				return;
@@ -1436,8 +1467,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
-		
-		
 		$va_info = $this->getBundleInfo($ps_bundle_name);
 		if (!($vs_type = $va_info['type'])) { return null; }
 		
@@ -1455,6 +1484,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$vs_label = $vs_label_text = null;
 		
 		$ps_bundle_name_proc = str_replace("ca_attribute_", "", $ps_bundle_name);
+		$va_violations = null;
 		if (
 			($va_dictionary_entry = ca_metadata_dictionary_entries::getEntry($ps_bundle_name_proc, $pa_bundle_settings))
 			||
@@ -1463,6 +1493,15 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$pa_bundle_settings['definition'][$g_ui_locale] = $va_dictionary_entry['settings']['definition'];
 			if ($va_dictionary_entry['settings']['mandatory']) {
 				$pa_bundle_settings['definition'][$g_ui_locale] = $this->getAppConfig()->get('required_field_marker').$pa_bundle_settings['definition'][$g_ui_locale];
+			}
+			
+			$va_violations = $this->getMetadataDictionaryRuleViolations($ps_bundle_name);
+			if (is_array($va_violations) && sizeof($va_violations)) {
+				$va_violation_text = array();
+				foreach($va_violations as $va_violation) {
+					$va_violation_text[] = "<li class='caMetadataDictionaryViolation'><span class='caMetadataDictionaryViolation".(ucfirst(strtolower($va_violation['level'])))."'>".$va_violation['levelDisplay'].'</span>: '.$va_violation['message']."</li>";
+				}
+				$pa_bundle_settings['definition'][$g_ui_locale] = "<div class='caMetadataDictionaryViolationsList'><div class='caMetadataDictionaryViolationsListHeading'>"._t('These problems require attention:')."</div><ol>".join("\n", $va_violation_text)."</ol></div>\n".$pa_bundle_settings['definition'][$g_ui_locale]."<br style='clear: both;'/>";
 			}
 			if (!caGetOption($g_ui_locale, $pa_bundle_settings['description'], null)) { $pa_bundle_settings['description'][$g_ui_locale] = $va_dictionary_entry['settings']['definition']; }
 		}
@@ -1919,6 +1958,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 			$vs_documentation_link = "<a class='bundleDocumentationLink' href='$vs_documentation_url' target='_blank'>documentation</a>";
 		}
+		
+		
+		if (is_array($va_violations) && sizeof($va_violations)) {
+			$vs_label .= "<img src='".$pa_options['request']->getThemeUrlPath()."/graphics/icons/warning_small.gif' style='margin-left: 5px;' onclick='jQuery(this).parent().find(\".caMetadataDictionaryDefinitionToggle\").click();  return false;'/>";
+		} 
 
 		$vs_output = str_replace("^ELEMENT", $vs_element, $vs_display_format);
 		$vs_output = str_replace("^ERRORS", join('; ', $va_errors), $vs_output);
@@ -3008,7 +3052,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$vb_batch = caGetOption('batch', $pa_options, false); 
 		
 		if (!$this->inTransaction()) {
-			$this->setTransaction(new Transaction($this->getDb()));
+			$this->setTransaction(new Transaction());
 			$vb_we_set_transaction = true;
 		} else {
 			if ($vb_dryrun) {
@@ -4203,16 +4247,43 @@ if (!$vb_batch) {
 		}
 	
 		BaseModel::unsetChangeLogUnitID();
+		$va_bundle_names = array();
+		foreach($va_bundles as $va_bundle) {
+			$vs_bundle_name = str_replace('ca_attribute_', '', $va_bundle['bundle_name']);
+			if (!$this->getAppDataModel()->getInstanceByTableName($vs_bundle_name, true)) {
+				$vs_bundle_name = $this->tableName().'.'.$vs_bundle_name;
+			}
+			
+			$va_bundle_names[] = $vs_bundle_name;
+		}
+		$va_violations = $this->validateUsingMetadataDictionaryRules(array('bundles' => $va_bundle_names));
+		if (sizeof($va_violations)) {
+			if ($vb_we_set_transaction && isset($va_violations['ERR']) && is_array($va_violations['ERR']) && (sizeof($va_violations['ERR']) > 0)) { 
+			 	BaseModel::unsetChangeLogUnitID();
+				$this->removeTransaction(false); 
+				
+				foreach($va_violations['ERR'] as $vs_bundle => $va_errs_by_bundle) {
+					foreach($va_errs_by_bundle as $vn_i => $va_rule) {
+						$vs_bundle = str_replace($this->tableName().".", "", $vs_bundle);
+				
+						$po_request->addActionErrors(array(new Error(1100, $va_rule['rule_settings']['rule_violationMessage'], "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", 'MetadataDictionary', false,false)), $vs_bundle, 'general');
+					}
+				}
+				return false; 
+			}		
+		}
+		
 		
 		if ($vb_dryrun) { $this->removeTransaction(false); }
 		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
+		
 		return true;
 	}
  	# ------------------------------------------------------
  	/**
  	 *
  	 */
- 	private function _processRelated($po_request, $ps_bundlename, $ps_form_prefix, $ps_placement_code, $pa_options=null) {
+ 	private function _processRelated($po_request, $ps_bundle_name, $ps_form_prefix, $ps_placement_code, $pa_options=null) {
  		$pa_settings = caGetOption('settings', $pa_options, array());
  		$vb_batch = caGetOption('batch', $pa_options, false);
 		
@@ -4223,7 +4294,7 @@ if (!$vb_batch) {
  		$va_rel_ids_sorted = $va_rel_sort_order = explode(';',$po_request->getParameter("{$ps_placement_code}{$ps_form_prefix}BundleList", pString));
 		sort($va_rel_ids_sorted, SORT_NUMERIC);
 						
- 		$va_rel_items = $this->getRelatedItems($ps_bundlename, $pa_settings);
+ 		$va_rel_items = $this->getRelatedItems($ps_bundle_name, $pa_settings);
  		
  		$va_rels_to_add = $va_rels_to_delete = array();
  if(!$vb_batch) {	
@@ -4246,16 +4317,16 @@ if (!$vb_batch) {
 				}
 				
 				$vs_effective_daterange = $po_request->getParameter("{$ps_placement_code}{$ps_form_prefix}_effective_date".$va_rel_item[$vs_key], pString);
-				$this->editRelationship($ps_bundlename, $va_rel_item[$vs_key], $vn_id, $vn_type_id, null, null, $vs_direction, $vn_rank);	
+				$this->editRelationship($ps_bundle_name, $va_rel_item[$vs_key], $vn_id, $vn_type_id, null, null, $vs_direction, $vn_rank);	
 					
 				if ($this->numErrors()) {
-					$po_request->addActionErrors($this->errors(), $ps_bundlename);
+					$po_request->addActionErrors($this->errors(), $ps_bundle_name);
 				}
 			} else {
 				// is it a delete key?
 				$this->clearErrors();
 				if (($po_request->getParameter("{$ps_placement_code}{$ps_form_prefix}_".$va_rel_item[$vs_key].'_delete', pInteger)) > 0) {
-					$va_rels_to_delete[] = array('bundle' => $ps_bundlename, 'relation_id' => $va_rel_item[$vs_key]);
+					$va_rels_to_delete[] = array('bundle' => $ps_bundle_name, 'relation_id' => $va_rel_item[$vs_key]);
 				}
 			}
 		}
@@ -4266,11 +4337,11 @@ if (!$vb_batch) {
 			$vs_batch_mode = $_REQUEST["{$ps_placement_code}{$ps_form_prefix}_batch_mode"];
  			if ($vs_batch_mode == '_disabled_') { return true; }
 			if ($vs_batch_mode == '_delete_') {				// remove all relationships and return
-				$this->removeRelationships($ps_bundlename);
+				$this->removeRelationships($ps_bundle_name);
 				return true;
 			}
 			if ($vs_batch_mode == '_replace_') {			// remove all existing relationships and then add new ones
-				$this->removeRelationships($ps_bundlename);
+				$this->removeRelationships($ps_bundle_name);
 			}
 		}
  		foreach($_REQUEST as $vs_key => $vs_value ) {
@@ -4286,18 +4357,18 @@ if (!$vb_batch) {
 					}
 				
 					$va_rels_to_add[] = array(
-						'bundle' => $ps_bundlename, 'row_id' => $vn_new_id, 'type_id' => $vn_new_type_id, 'direction' => $vs_direction
+						'bundle' => $ps_bundle_name, 'row_id' => $vn_new_id, 'type_id' => $vn_new_type_id, 'direction' => $vs_direction
 					);
 				}
 			}
 			
 			// check for checklist mode ca_list_items
-			if ($ps_bundlename == 'ca_list_items') {
+			if ($ps_bundle_name == 'ca_list_items') {
 				if (preg_match("/^{$ps_placement_code}{$ps_form_prefix}_item_id_new_([\d]+)/", $vs_key, $va_matches)) { 
 					if ($vn_rel_type_id = $po_request->getParameter("{$ps_placement_code}{$ps_form_prefix}_type_idchecklist", pInteger)) {
 						if ($vn_item_id = $po_request->getParameter($vs_key, pInteger)) {
 							$va_rels_to_add[] = array(
-								'bundle' => $ps_bundlename, 'row_id' => $vn_item_id, 'type_id' => $vn_rel_type_id, 'direction' => null
+								'bundle' => $ps_bundle_name, 'row_id' => $vn_item_id, 'type_id' => $vn_rel_type_id, 'direction' => null
 							);
 						}
 					}
@@ -4305,7 +4376,7 @@ if (!$vb_batch) {
 				
 				if (preg_match("/^{$ps_placement_code}{$ps_form_prefix}_item_id_([\d]+)_delete/", $vs_key, $va_matches)) { 
 					if ($po_request->getParameter($vs_key, pInteger)) {
-						$va_rels_to_delete[] = array('bundle' => $ps_bundlename, 'relation_id' => $va_matches[1]);
+						$va_rels_to_delete[] = array('bundle' => $ps_bundle_name, 'relation_id' => $va_matches[1]);
 					}
 				}
 			}
@@ -4314,11 +4385,11 @@ if (!$vb_batch) {
 		// Check min/max
 		$vn_total_rel_count = (sizeof($va_rel_items) + sizeof($va_rels_to_add) - sizeof($va_rels_to_delete));
 		if ($vn_min_relationships && ($vn_total_rel_count < $vn_min_relationships)) {
-			$po_request->addActionErrors(array(new Error(2590, ($vn_min_relationships == 1) ? _t('There must be at least %1 relationship for %2', $vn_min_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundlename, 'NAME_PLURAL')) : _t('There must be at least %1 relationships for %2', $vn_min_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundlename, 'NAME_PLURAL')), 'BundleableLabelableBaseModelWithAttributes::_processRelated()', null, null, false, false)), $ps_bundlename);
+			$po_request->addActionErrors(array(new Error(2590, ($vn_min_relationships == 1) ? _t('There must be at least %1 relationship for %2', $vn_min_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundle_name, 'NAME_PLURAL')) : _t('There must be at least %1 relationships for %2', $vn_min_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundle_name, 'NAME_PLURAL')), 'BundleableLabelableBaseModelWithAttributes::_processRelated()', null, null, false, false)), $ps_bundle_name);
 			return false;
 		}
 		if ($vn_max_relationships && ($vn_total_rel_count > $vn_max_relationships)) {
-			$po_request->addActionErrors(array(new Error(2590, ($vn_max_relationships == 1) ? _t('There must be no more than %1 relationship for %2', $vn_max_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundlename, 'NAME_PLURAL')) : _t('There must be no more than %1 relationships for %2', $vn_max_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundlename, 'NAME_PLURAL')), 'BundleableLabelableBaseModelWithAttributes::_processRelated()', null, null, false, false)), $ps_bundlename);
+			$po_request->addActionErrors(array(new Error(2590, ($vn_max_relationships == 1) ? _t('There must be no more than %1 relationship for %2', $vn_max_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundle_name, 'NAME_PLURAL')) : _t('There must be no more than %1 relationships for %2', $vn_max_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundle_name, 'NAME_PLURAL')), 'BundleableLabelableBaseModelWithAttributes::_processRelated()', null, null, false, false)), $ps_bundle_name);
 			return false;
 		}
 		
@@ -4326,13 +4397,13 @@ if (!$vb_batch) {
 		foreach($va_rels_to_delete as $va_rel_to_delete) {
 			$this->removeRelationship($va_rel_to_delete['bundle'], $va_rel_to_delete['relation_id']);
 			if ($this->numErrors()) {
-				$po_request->addActionErrors($this->errors(), $ps_bundlename);
+				$po_request->addActionErrors($this->errors(), $ps_bundle_name);
 			}
 		}
 		foreach($va_rels_to_add as $va_rel_to_add) {
 			$this->addRelationship($va_rel_to_add['bundle'], $va_rel_to_add['row_id'], $va_rel_to_add['type_id'], null, null, $va_rel_to_add['direction']);
 			if ($this->numErrors()) {
-				$po_request->addActionErrors($this->errors(), $ps_bundlename);
+				$po_request->addActionErrors($this->errors(), $ps_bundle_name);
 			}
 		}
 		
@@ -6071,5 +6142,120 @@ side. For many self-relations the direction determines the nature and display te
 			$t_rel->update();
 		}
 	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * 
+	 */
+	 public function getMetadataDictionaryRuleViolations($ps_bundle_name=null, $pa_options=null) {
+	 	if (!($vn_id = $this->getPrimaryKey())) { return null; }
+	 	$o_db = $this->getDb();
+	 	
+	 	$va_sql_params = array($vn_id, $this->tableNum());
+	 	$vs_bundle_sql = '';
+	 	
+	 	if ($ps_bundle_name = str_replace("ca_attribute_", "", $ps_bundle_name)) {	 	
+			if (!preg_match('!^'.$this->tableName().'.!', $ps_bundle_name)) {
+				$ps_bundle_name = $this->tableName().".{$ps_bundle_name}";
+			}
+			$vs_bundle_sql = "AND cmde.bundle_name = ?";
+			$va_sql_params[] = $ps_bundle_name;
+	 	} 
+	 	
+	 	
+	 	$qr_res = $o_db->query("
+	 		SELECT *
+	 		FROM ca_metadata_dictionary_rule_violations cmdrv
+	 		INNER JOIN ca_metadata_dictionary_rules AS cmdr ON cmdr.rule_id = cmdrv.rule_id
+	 		INNER JOIN ca_metadata_dictionary_entries AS cmde ON cmde.entry_id = cmdr.entry_id
+	 		WHERE
+	 			cmdrv.row_id = ? AND cmdrv.table_num = ? {$vs_bundle_sql}
+	 	", $va_sql_params);
+	 	
+	 	$va_violations = array();
+	 	$va_rule_instances = array();
+	 	while($qr_res->nextRow()) {
+	 		$vn_rule_id = $qr_res->get('rule_id');
+	 		$t_rule = (isset($va_rule_instances[$vn_rule_id])) ? $va_rule_instances[$vn_rule_id] : ($va_rule_instances[$vn_rule_id] = new ca_metadata_dictionary_rules($vn_rule_id));
+	 	
+	 		if ($t_rule && $t_rule->getPrimaryKey()) {
+	 			$va_violations[$vn_violation_id = $qr_res->get('violation_id')] = array(
+	 				'violation_id' => $vn_violation_id,
+	 				'bundle_name' => $qr_res->get('bundle_name'),
+	 				'displayname' => $t_rule->getSetting('rule_displayname'),
+	 				'message' => $t_rule->getSetting('rule_violationMessage'),
+	 				'code' => $qr_res->get('rule_code'),
+	 				'level' => $vs_level = $qr_res->get('rule_level'),
+	 				'levelDisplay' => $t_rule->getChoiceListValue('rule_level', $vs_level),
+	 				'description' => $t_rule->getSetting('rule_description'),
+	 				'created_on' => $qr_res->get('created_on'),
+	 				'last_checked_on' => $qr_res->get('last_checked_on')
+	 			);
+	 		}
+	 	}
+	 	
+	 	return $va_violations;
+	 }
+	 # --------------------------------------------------------------------------------------------
+	/**
+	 * 
+	 */
+	 public function validateUsingMetadataDictionaryRules($pa_options=null) {
+	 	if(!$this->getPrimaryKey()) { return null; }
+	 	$o_db = $this->getDb();
+	 	$o_dm = Datamodel::load();
+			
+		$t_violation = new ca_metadata_dictionary_rule_violations();
+		
+		$va_rules = ca_metadata_dictionary_rules::getRules(array('bundles' => caGetOption('bundles', $pa_options, null)));
+		
+		$vn_violation_count = 0;
+		$va_violations = array();
+			
+		foreach($va_rules as $va_rule) {
+			$va_expression_tags = caGetTemplateTags($va_rule['expression']);
+		
+			$t_violation->clear();
+			
+			$vb_skip = !$this->hasBundle($va_rule['bundle_name'], $this->getTypeID());
+				
+			
+			if (!$vb_skip) {
+				// create array of values present in rule
+				$va_row = array($va_rule['bundle_name'] => $vs_val = $this->get($va_rule['bundle_name']));
+				foreach($va_expression_tags as $vs_tag) {
+					$va_row[$vs_tag] = $this->get($vs_tag);
+				}
+			}
+			
+			// is there a violation recorded for this rule and row?
+			if ($t_found = ca_metadata_dictionary_rule_violations::find(array('rule_id' => $va_rule['rule_id'], 'row_id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum()), array('returnAs' => 'firstModelInstance'))) {
+				$t_violation = $t_found;
+			}
+					
+			if (!$vb_skip && ExpressionParser::evaluate($va_rule['expression'], $va_row)) {
+				// violation
+				if ($t_violation->getPrimaryKey()) {
+					$t_violation->setMode(ACCESS_WRITE);
+					$t_violation->update();
+				} else {
+					$t_violation->setMode(ACCESS_WRITE);
+					$t_violation->set('rule_id', $va_rule['rule_id']);
+					$t_violation->set('table_num', $this->tableNum());
+					$t_violation->set('row_id', $this->getPrimaryKey());
+					$t_violation->insert();
+				}
+				
+				$va_violations[$va_rule['rule_level']][$va_rule['bundle_name']][] = $va_rule;
+				$vn_violation_count++;
+			} else {
+				if ($t_violation->getPrimaryKey()) {
+					$t_violation->setMode(ACCESS_WRITE);
+					$t_violation->delete(true);		// remove violation
+				}
+			}
+		}
+		
+		return $va_violations;
+	 }
+	 # --------------------------------------------------------------------------------------------
 }
-?>

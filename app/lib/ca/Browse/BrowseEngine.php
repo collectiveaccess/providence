@@ -87,7 +87,7 @@
 		 * @var Instance of Db database client
 		 */
 		protected $opo_db;
-		
+
 		/**
 		 * @var Instance of Configuration class loaded with application configuration (app.conf)
 		 */
@@ -140,7 +140,7 @@
 				$this->opn_browse_table_num = $this->opo_datamodel->getTableNum($pm_subject_table_name_or_num);
 				$this->ops_browse_table_name = $pm_subject_table_name_or_num;
 			}
-			
+
 			$this->opo_config = Configuration::load();
 			$this->opo_ca_browse_config = Configuration::load($this->opo_config->get('browse_config'));
 			$this->opa_browse_settings = $this->opo_ca_browse_config->getAssoc($this->ops_browse_table_name);
@@ -543,6 +543,14 @@
 					return urldecode($pn_row_id);
 					break;
 				# -----------------------------------------------------
+				case 'violations':
+					if (!($t_rule = $this->opo_datamodel->getInstanceByTableName('ca_metadata_dictionary_rules', true))) { break; }
+					if ($t_rule->load(array('rule_code' => $pn_row_id))) {
+						return $t_rule->getSetting('rule_displayname');
+					}
+					return urldecode($pn_row_id);
+					break;
+				# -----------------------------------------------------
 				case 'location':
 					$va_tmp = explode(":", urldecode($pn_row_id));
 					$vs_loc_table_name = $this->opo_datamodel->getTableName($va_tmp[0]);
@@ -880,6 +888,8 @@
 				$va_criteria = $this->getCriteria();
 				if (!$vb_no_cache && (intval(time() - $vn_created_on) < $this->opo_ca_browse_config->get('cache_timeout'))) {
 					$vb_results_cached = true;
+					$this->opo_ca_browse_cache->setParameter('created_on', time() + $this->opo_ca_browse_config->get('cache_timeout'));
+					$vb_need_to_save_in_cache = true;
 					
 					Debug::msg("Cache hit for {$vs_cache_key}");
 				} else {
@@ -1554,6 +1564,53 @@
 										$vn_i++;
 									}
 									break;
+								
+							# -----------------------------------------------------
+							case 'violations':
+								$vs_field_name = $va_facet_info['field'];
+								$vs_table_name = $this->ops_browse_table_name;
+								
+								if ($va_facet_info['relative_to']) {
+									if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
+										$va_relative_to_join = $va_relative_execute_sql_data['relative_joins'];	
+										$vs_relative_to_join = join("\n", $va_relative_to_join);
+										$vs_table_name = $vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
+										$vs_target_browse_table_num = $va_relative_execute_sql_data['target_table_num'];
+										$vs_target_browse_table_pk = $va_relative_execute_sql_data['target_table_pk'];
+									}
+								}
+								
+								foreach($va_row_ids as $vn_row_id) {
+									$vn_row_id = urldecode($vn_row_id);
+									if ($vn_i == 0) {
+										$vs_sql = "
+											SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+											FROM ".$this->ops_browse_table_name."
+											INNER JOIN ca_metadata_dictionary_rule_violations ON ca_metadata_dictionary_rule_violations.row_id = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AND ca_metadata_dictionary_rule_violations.table_num = ".$t_item->tableNum()."
+											INNER JOIN ca_metadata_dictionary_rules ON ca_metadata_dictionary_rules.rule_id = ca_metadata_dictionary_rule_violations.rule_id
+											{$vs_relative_to_join}
+											WHERE
+												(ca_metadata_dictionary_rules.rule_code = ?)";
+												
+										$qr_res = $this->opo_db->query($vs_sql, $vn_row_id);
+									} else {
+										$vs_sql = "
+											SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
+											FROM ".$this->ops_browse_table_name."
+											INNER JOIN ca_metadata_dictionary_rule_violations ON ca_metadata_dictionary_rule_violations.row_id = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()." AND ca_metadata_dictionary_rule_violations.table_num = ".$t_item->tableNum()."
+											INNER JOIN ca_metadata_dictionary_rules ON ca_metadata_dictionary_rules.rule_id = ca_metadata_dictionary_rule_violations.rule_id
+											{$vs_relative_to_join}
+											WHERE
+												(ca_metadata_dictionary_rules.rule_code = ?)";
+												
+										$qr_res = $this->opo_db->query($vs_sql, $vn_row_id);
+										
+									} 
+									$va_acc[$vn_i] = $qr_res->getAllFieldValues($this->ops_browse_table_name.'.'.$t_item->primaryKey());
+									
+									$vn_i++;
+								}
+								break;
 							# -----------------------------------------------------
 							default:
 								// handle "search" criteria - search engine queries that can be browsed
@@ -1575,6 +1632,7 @@
 									unset($va_options['sort']);					// browse engine takes care of sort so there is no reason to waste time having the search engine do so
 									$va_options['filterNonPrimaryRepresentations'] = true;	// filter out non-primary representations in ca_objects results to save (a bit) of time
 									
+									$o_search->setOption('strictPhraseSearching', caGetOption('strictPhraseSearching', $va_options, true));
 									$qr_res = $o_search->search($va_row_ids[0], $va_options);
 
 									if ($qr_res->numHits() > 0) {
@@ -1674,7 +1732,7 @@
 						$va_results = $qr_res->getAllFieldValues($t_item->primaryKey());
 					
 						if ((!isset($pa_options['dontFilterByACL']) || !$pa_options['dontFilterByACL']) && $this->opo_config->get('perform_item_level_access_checking') && method_exists($t_item, "supportsACL") && $t_item->supportsACL()) {
-							$va_results = $this->filterHitsByACL($va_results, $vn_user_id, __CA_ACL_READONLY_ACCESS__);
+							$va_results = $this->filterHitsByACL($va_results, $this->opn_browse_table_num, $vn_user_id, __CA_ACL_READONLY_ACCESS__);
 						}
 					
 						$this->opo_ca_browse_cache->setResults($va_results);
@@ -1754,7 +1812,7 @@
 					$va_results = $qr_res->getAllFieldValues($vs_pk);
 					
 					if ((!isset($pa_options['dontFilterByACL']) || !$pa_options['dontFilterByACL']) && $this->opo_config->get('perform_item_level_access_checking') && method_exists($t_item, "supportsACL") && $t_item->supportsACL()) {
-						$va_results = array_keys($this->filterHitsByACL($va_results, $vn_user_id, __CA_ACL_READONLY_ACCESS__));
+						$va_results = array_keys($this->filterHitsByACL($va_results, $this->opn_browse_table_num, $vn_user_id, __CA_ACL_READONLY_ACCESS__));
 					}
 					$this->opo_ca_browse_cache->setResults($va_results);
 				} else {
@@ -3364,6 +3422,127 @@
 					return array();
 					break;
 				# -----------------------------------------------------
+				case 'violations':
+					$t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true);
+					$vs_field_name = $va_facet_info['field'];
+					$va_field_info = $t_item->getFieldInfo($vs_field_name);
+					
+					$va_joins = array();
+					$va_wheres = array();
+					$vs_where_sql = '';
+					
+					$va_facet_values = null;
+					
+					if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
+					}
+					
+					if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_item->hasField('access')) {
+						$va_wheres[] = "(".$vs_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
+					}
+					
+					if ($vs_browse_type_limit_sql) {
+						$va_wheres[] = $vs_browse_type_limit_sql;
+					}
+										
+					if ($t_item->hasField('deleted')) {
+						$va_wheres[] = "(".$vs_browse_table_name.".deleted = 0)";
+					}
+					
+					if ($va_facet_info['relative_to']) {
+						if ($t_subject->hasField('deleted')) {
+							$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
+						}
+						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+							$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
+							$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
+						}
+					}
+					
+					if ($this->opo_config->get('perform_item_level_access_checking')) {
+						if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
+							// Join to limit what browse table items are used to generate facet
+							$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
+							$va_wheres[] = "(
+								((
+									(ca_acl.user_id = ".(int)$vn_user_id.")
+									".((sizeof($va_group_ids) > 0) ? "OR
+									(ca_acl.group_id IN (".join(",", $va_group_ids)."))" : "")."
+									OR
+									(ca_acl.user_id IS NULL and ca_acl.group_id IS NULL)
+								) AND ca_acl.access >= ".__CA_ACL_READONLY_ACCESS__.")
+								".(($vb_show_if_no_acl) ? "OR ca_acl.acl_id IS NULL" : "")."
+							)";
+						}
+					}
+					
+					$vs_join_sql = join("\n", $va_joins);
+					
+					if (is_array($va_wheres) && sizeof($va_wheres) && ($vs_where_sql = join(' AND ', $va_wheres))) {
+						$vs_where_sql = '('.$vs_where_sql.')';
+					}
+					
+					if ($vb_check_availability_only) {
+						$vs_sql = "
+							SELECT 1
+							FROM {$vs_browse_table_name}
+							INNER JOIN ca_metadata_dictionary_rule_violations ON ca_metadata_dictionary_rule_violations.row_id = {$vs_browse_table_name}.".$t_item->primaryKey()." AND ca_metadata_dictionary_rule_violations.table_num = {$vs_browse_table_num}
+							{$vs_join_sql}
+							WHERE
+								{$vs_where_sql}
+							LIMIT 2";
+							
+						$qr_res = $this->opo_db->query($vs_sql);
+					
+						if ($qr_res->nextRow()) {
+							return ((int)$qr_res->numRows() > 0) ? true : false;
+						}
+						return false;
+					} else {
+						$vs_pk = $t_item->primaryKey();
+						$vs_sql = "
+							SELECT DISTINCT ca_metadata_dictionary_rules.rule_id
+							FROM {$vs_browse_table_name}
+							INNER JOIN ca_metadata_dictionary_rule_violations ON ca_metadata_dictionary_rule_violations.row_id = {$vs_browse_table_name}.".$t_item->primaryKey()." AND ca_metadata_dictionary_rule_violations.table_num = {$vs_browse_table_num}
+							INNER JOIN ca_metadata_dictionary_rules ON ca_metadata_dictionary_rules.rule_id = ca_metadata_dictionary_rule_violations.rule_id
+							{$vs_join_sql}
+							WHERE
+								{$vs_where_sql}";
+						
+						$qr_res = $this->opo_db->query($vs_sql);
+						
+						$va_values = array();
+						$t_rule = new ca_metadata_dictionary_rules();
+						while($qr_res->nextRow()) {	
+							if ($t_rule->load($qr_res->get('rule_id'))) {
+								if (!($vs_val = trim($t_rule->getSetting('rule_displayname')))) { continue; }
+								$vs_code = $t_rule->get('rule_code');
+								if ($va_criteria[$vs_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
+						
+								if (isset($va_facet_values[$vs_code])) {
+									$va_values[$vs_code] = $va_facet_values[$vs_code];
+								} else {
+									$va_values[$vs_code] = array(
+										'id' => $vs_code,
+										'label' => $vs_val
+									);
+								}
+								if (!is_null($vs_single_value) && ($vs_code == $vs_single_value)) {
+									$vb_single_value_is_present = true;
+								}
+							}
+						}
+						
+						if (!is_null($vs_single_value) && !$vb_single_value_is_present) {
+							return array();
+						}
+						return $va_values;
+					}
+					
+				
+					return array();
+					break;
+				# -----------------------------------------------------
 				case 'normalizedDates':
 					$t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true);
 					$t_element = new ca_metadata_elements();
@@ -4121,94 +4300,6 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 		 */
 		public function getCachedSortDirectionSetting() {
 			return $this->opo_ca_browse_cache->getParameter('sort_direction');
-		}
-		# ------------------------------------------------------------------
-		/**
-		 * @param $pa_hits Array of row_ids to filter. *MUST HAVE row_ids AS KEYS, NOT VALUES*
-		 */
-		public function filterHitsByACL($pa_hits, $pn_user_id, $pn_access=__CA_ACL_READONLY_ACCESS__, $pa_options=null) {
-			$vs_browse_tmp_table = $this->loadListIntoTemporaryResultTable($pa_hits, $this->opo_ca_browse_cache->getCacheKey());
-			
-			if (!sizeof($pa_hits)) { return $pa_hits; }
-			if (!(int)$pn_user_id) { return $pa_hits; }
-			if (!($t_table = $this->opo_datamodel->getInstanceByTableNum($this->opn_browse_table_num, true))) { return $pa_hits; }
-			
-			$vs_table_name = $t_table->tableName();
-			$vs_table_pk = $t_table->primaryKey();
-			
-			$t_user = new ca_users($pn_user_id);
-			if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {
-				$va_group_ids = array_keys($va_groups);
-				$vs_group_sql = '
-						OR
-						(ca_acl.group_id IN (?))';
-				$va_params = array((int)$this->opn_browse_table_num, (int)$pn_user_id, $va_group_ids, (int)$pn_access);
-			} else {
-				$va_group_ids = null;
-				$vs_group_sql = '';
-				$va_params = array((int)$this->opn_browse_table_num, (int)$pn_user_id, (int)$pn_access);
-			}
-			
-			$va_hits = array();
-			
-			if ($pn_access <= $this->opo_config->get('default_item_access_level')) {
-				// Requested access is more restrictive than default access (so return items with default ACL)
-				
-					// Find records that have ACL that matches
-					$qr_sort = $this->opo_db->query("
-						SELECT ca_acl.row_id
-						FROM ca_acl
-						INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = ca_acl.row_id
-						WHERE
-							(ca_acl.table_num = ?)
-							AND
-							(
-								(ca_acl.user_id = ?)
-								{$vs_group_sql}
-								OR 
-								(ca_acl.user_id IS NULL AND ca_acl.group_id IS NULL)
-							)
-							AND
-							(ca_acl.access >= ?)
-					", $va_params);
-
-                    $va_hits = array_unique($qr_sort->getAllFieldValues('row_id'));
-					
-					// Find records with default ACL
-					$qr_sort = $this->opo_db->query("
-						SELECT {$vs_browse_tmp_table}.row_id
-						FROM {$vs_browse_tmp_table}
-						LEFT OUTER JOIN ca_acl ON {$vs_browse_tmp_table}.row_id = ca_acl.row_id AND ca_acl.table_num = ?
-						WHERE
-							ca_acl.row_id IS NULL;
-					", array((int)$this->opn_browse_table_num));
-					
-					$va_hits = array_merge($va_hits, $qr_sort->getAllFieldValues('row_id'));
-			} else {
-				// Default access is more restrictive than requested access (so *don't* return items with default ACL)
-				
-					// Find records that have ACL that matches
-					$qr_sort = $this->opo_db->query("
-						SELECT ca_acl.row_id
-						FROM ca_acl
-						INNER JOIN {$vs_browse_tmp_table} ON {$vs_browse_tmp_table}.row_id = ca_acl.row_id
-						WHERE
-							(ca_acl.table_num = ?)
-							AND
-							(
-								(ca_acl.user_id = ?)
-								{$vs_group_sql}
-								OR 
-								(ca_acl.user_id IS NULL AND ca_acl.group_id IS NULL)
-							)
-							AND
-							(ca_acl.access >= ?)
-					", $va_params);
-					
-					$va_hits = $qr_sort->getAllFieldValues('row_id');
-			}
-			
-			return $va_hits;
 		}
 		# ------------------------------------------------------------------
 		/**

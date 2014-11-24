@@ -43,6 +43,7 @@
 		private $opa_context = null;
 		private $opb_is_new_search = false;
 		private $opb_search_expression_has_changed = null;
+		private $opb_sort_has_changed = false;
 		# ------------------------------------------------------------------
 		/**
 		 * To create a result context you pass the table and type of the current find; the ResultContext will be loaded
@@ -119,6 +120,15 @@
 				}
 			}
 			return $this->opb_search_expression_has_changed = false;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Determines if the sort direction is changing during this request
+		 *
+		 * @return bool True if sort is changing
+		 */
+		public function sortHasChanged() {
+			return $this->opb_sort_has_changed;
 		}
 		# ------------------------------------------------------------------
 		/**
@@ -284,6 +294,7 @@
 					return $va_context['sort'] ? $va_context['sort'] : null;
 				}
 			} else {
+				$this->opb_sort_has_changed = true;
 				$this->setContextValue('sort', $ps_sort);
 				return $ps_sort;
 			}
@@ -469,10 +480,20 @@
 		 *
 		 * @return boolean - always return true
 		 */
-		public function setAsLastFind() {
+		public function setAsLastFind($pb_set_action=true) {
 			$o_storage = $this->getPersistentStorageInstance();
+			
+			$vs_action = null;
+			if ($pb_set_action) {
+				if ($vs_action = $this->opo_request->getAction()) {
+					if ($vs_action_extra = $this->opo_request->getActionExtra()) {
+						$vs_action .= '/'.$vs_action_extra;
+					}
+				}
+			}
+			
 			$o_storage->setVar('result_last_context_'.$this->ops_table_name, $this->ops_find_type.($this->ops_find_subtype ? '/'.$this->ops_find_subtype : ''), array('volatile' => true));	
-			$o_storage->setVar('result_last_context_'.$this->ops_table_name.'_action', $this->opo_request->getAction());
+			$o_storage->setVar('result_last_context_'.$this->ops_table_name.'_action', $pb_set_action ? $vs_action : null);
 			return true;
 		}
 		# ------------------------------------------------------------------

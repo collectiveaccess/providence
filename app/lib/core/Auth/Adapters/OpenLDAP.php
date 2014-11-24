@@ -72,8 +72,12 @@ class OpenLDAPAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 
 		// log in
 		$vo_bind = @ldap_bind($vo_ldap, $vs_bind_rdn, $ps_password);
-
 		if(!$vo_bind) { // wrong credentials
+			if (ldap_get_option($vo_ldap, 0x0032, $extended_error)) {
+				caLogEvent("ERR", "LDAP ERROR (".ldap_errno($vo_ldap).") {$extended_error} [{$vs_bind_rdn}]", "OpenLDAP::Authenticate");
+			
+				print "LDAP ERROR (".ldap_errno($vo_ldap).") {$extended_error} [{$vs_bind_rdn}]\n";
+			}
 			ldap_unbind($vo_ldap);
 			return false;
 		}

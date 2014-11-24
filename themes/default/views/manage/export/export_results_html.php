@@ -63,9 +63,9 @@
 		caFlushOutput();
 	}
 
-	function caExportAddDownloadLink($po_request,$vs_filename){
+	function caExportAddDownloadLink($po_request) {
 		print "<script type='text/javascript'>";
-		print "jQuery('#exportDownloadLink').html(\"".caNavLink($po_request,_t("Download export"),null,'manage','MetadataExport','DownloadExport',array('file' => $vs_filename),array('style' => 'font-size: 14px;'))."\");";
+		print "jQuery('#exportDownloadLink').html(\"".caNavLink($po_request,_t("Set up export download"), null, 'manage', 'MetadataExport', 'SetupBatchExport', null, array('style' => 'font-size: 14px;'))."\");";
 		print "</script>";
 		caFlushOutput();
 	}

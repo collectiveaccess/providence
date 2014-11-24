@@ -79,7 +79,8 @@
  				$vs_sort = array_shift($va_tmp); 
  			}
 			$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
-			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
+
+			$vb_sort_has_changed = $this->opo_result_context->sortHasChanged();
 
  			if (!$this->opn_type_restriction_id) { $this->opn_type_restriction_id = ''; }
  			$this->view->setVar('type_id', $this->opn_type_restriction_id);
@@ -171,7 +172,7 @@
  				$this->opo_result_context->setParameter('form_data', $va_form_data);
  				$this->opo_result_context->setSearchExpression($vs_search);
  				
- 				if($vb_is_new_search || $vb_criteria_have_changed) {
+ 				if($vb_is_new_search || $vb_criteria_have_changed || $vb_sort_has_changed) {
  					$this->opo_result_context->setResultList($vo_result->getPrimaryKeyValues());
 					
 					if ($this->opo_result_context->searchExpressionHasChanged()) { $vn_page_num = 1; }
@@ -225,10 +226,6 @@
  					$this->_genExport($vo_result, $this->request->getParameter("export_format", pString), $vs_search, $vs_search);
  					break;
 				# ------------------------------------
-				case 'EXPORTWITHMAPPING':
-					$this->_genExportWithMapping($vo_result, $this->request->getParameter("exporter_id", pInteger));
-					break;
-				# ------------------------------------
  				case 'HTML': 
 				default:
 					// generate type menu and type value list
@@ -263,9 +260,9 @@
  		# -------------------------------------------------------
 		# Ajax
 		# -------------------------------------------------------
-		public function getAdvancedSearchForm($pb_render_view=true) {
+		public function getAdvancedSearchForm($pb_render_view=null) {
 			$t_form = new ca_search_forms();
- 			if (!$vn_form_id = $this->request->getParameter('form_id', pInteger)) {
+ 			if (!($vn_form_id = $this->request->getParameter('form_id', pInteger))) {
  				if ((!($vn_form_id = $this->opo_result_context->getParameter('form_id'))) || (!$t_form->haveAccessToForm($this->request->getUserID(), __CA_SEARCH_FORM_READ_ACCESS__, $vn_form_id))) {
  					if (sizeof($va_forms = $t_form->getForms(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_SEARCH_FORM_READ_ACCESS__)))) {
  						$va_tmp = array_keys($va_forms);
@@ -293,7 +290,7 @@
 			$this->opo_result_context->setAsLastFind();
 			$this->opo_result_context->saveContext();
 			
-			if ($pb_render_view) { $this->render('Search/search_advanced_form_html.php'); }
+			if ($pb_render_view || is_null($pb_render_view)) { $this->render('Search/search_advanced_form_html.php'); }
 		}
 		# ------------------------------------------------------------------
  		/**

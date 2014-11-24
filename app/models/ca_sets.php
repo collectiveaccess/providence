@@ -1040,7 +1040,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$va_item_values = array();
 		$va_row_ids = array_unique($pa_row_ids);
 		foreach($va_row_ids as $vn_row_id) {
-			$va_item_values[] = "(".(int)$vn_set_id.",".(int)$vn_table_num.",".(int)$vn_row_id.",".(int)$vn_type_id.")";
+			$va_item_values[] = "(".(int)$vn_set_id.",".(int)$vn_table_num.",".(int)$vn_row_id.",".(int)$vn_type_id.", '')";
 		}
 		
 		if(sizeof($va_item_values)) {

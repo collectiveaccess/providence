@@ -39,9 +39,9 @@
 		}
 		print "<br/>\n";
 		if (sizeof($va_sets['user']) == 1) {
-			print _t("1 set created by other users");
+			print _t("1 set created by users");
 		} else {
-			print _t("%1 sets created by other users", sizeof($va_sets['user']));
+			print _t("%1 sets created by users", sizeof($va_sets['user']));
 		}
 		print "<br/>\n";
 		if (sizeof($va_sets['public']) == 1) {

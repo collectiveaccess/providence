@@ -1987,6 +1987,7 @@
 				$t_rep->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
 				
 				if(isset($pa_values['media']) && $pa_values['media']) {
+					if(is_array($pa_values['media'])) { $pa_values['media'] = array_shift($pa_values['media']); }
 					if (($vb_match_media_without_extension) && !isURL($pa_values['media']) && !file_exists($pa_values['media'])) {
 						$vs_dirname = pathinfo($pa_values['media'], PATHINFO_DIRNAME);
 						$vs_filename = preg_replace('!\.[A-Za-z0-9]{1,4}$!', '', pathinfo($pa_values['media'], PATHINFO_BASENAME));

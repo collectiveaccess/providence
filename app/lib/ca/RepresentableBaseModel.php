@@ -804,6 +804,7 @@
 			if (is_array($va_path) && sizeof($va_path) == 3) {
 				$vs_rel_table = $va_path[1];
 				if ($t_rel = $this->getAppDatamodel()->getInstanceByTableName($vs_rel_table)) {
+					if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
 					if ($t_rel->load(array($this->primaryKey() => $this->getPrimaryKey(), 'representation_id' => $pn_representation_id))) {
 						$t_rel->setMode(ACCESS_WRITE);
 						$t_rel->delete();

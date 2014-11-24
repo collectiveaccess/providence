@@ -1,7 +1,7 @@
 # *** use ONLY lowercase letters in lists: input will be forced to lowercase for comparison ***
 
 # List month names; used whenever name of month needs to be displayed
-monthList = [januar, februar, märz, april, mai, juni, juli, august, september, oktober, november, dezember]
+monthList = [januar, februar, marz, april, mai, juni, juli, august, september, oktober, november, dezember]
 
 # *** the following list of months is for display and *SHOULD* be capitalized where appropriate
 monthListDisplay = [Januar, Februar, März, April, Mai, Juni, Juli, August, September, Oktober, November, Dezember]
@@ -31,7 +31,7 @@ rangeConjunctions = [bis, -, und, ..]
 dateTimeConjunctions = [um]
 
 dateDelimiters = [/,-,.]
-timeDelimiters = [:,.]
+timeDelimiters = [:]
 
 timeAMMeridian = am
 timePMMeridian = pm

@@ -375,6 +375,9 @@ final class ConfigurationCheck {
 		if (!in_array('sha256', hash_algos())){
 			self::addError(_t("Your PHP installation doesn't seem to have support for the sha256 hashing algorithm. Please install a newer version of either PHP or the hash module."));
 		}
+		if (!class_exists('PharData')) {
+			self::addError(_t("The PHP phar module is required for CollectiveAccess to run. Please install it."));
+		}
 		
 		if (@preg_match('/\p{L}/u', 'a') != 1) {
 			self::addError(_t("Your version of the PHP PCRE module lacks unicode features. Please install a module version with UTF-8 support."));
