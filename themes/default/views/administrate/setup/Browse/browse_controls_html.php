@@ -144,10 +144,10 @@
 		
 		print $this->render('Results/paging_controls_html.php');
 		print $this->render('Results/'.$this->getVar('target').'_results_'.$vs_view.'_html.php');
+		print $this->render('Results/paging_controls_minimal_html.php');
 	}
 	if (!$this->request->isAjax()) {
 ?>
-	<div class='divide' style='margin-top:15px;'></div>
 	</div><!-- end resultbox -->
 
 	<div style="clear:both; height:1px;"><!-- empty --></div>
