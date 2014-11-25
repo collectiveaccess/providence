@@ -208,7 +208,10 @@
 					
 					if ($va_tmp[0] != $this->ops_tablename) { continue; }
 					
-					if ($t_model->hasField($va_tmp[1])) { 
+					if ($t_model->hasField($va_tmp[1])) {
+						if($t_model->getFieldInfo($va_tmp[1], 'FIELD_TYPE') == FT_MEDIA) { // sorting media fields doesn't really make sense and can lead to sql errors
+							continue;
+						}
 						$va_display_list[$vn_i]['is_sortable'] = true;
 						
 						if ($t_model->hasField($va_tmp[1].'_sort')) {
