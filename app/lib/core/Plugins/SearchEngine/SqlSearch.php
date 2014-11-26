@@ -749,7 +749,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									break;
 								}
 								
-								$va_terms = $this->_tokenize($vs_term, true, $vn_i);
+								$va_terms = array($vs_term); //$this->_tokenize($vs_term, true, $vn_i);
 								$vb_has_wildcard = (bool)(preg_match('!\*$!', $vs_term));
 								$vb_output_term = false;
 								foreach($va_terms as $vs_term) {
