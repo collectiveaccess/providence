@@ -7010,6 +7010,10 @@ div.caLibraryTransactionListContainer {
 	display: none;
 }
 
+div.caLibraryTransactionResultsContainer {
+	display: none;
+}
+
 div.caLibraryTransactionListLabel {
 	font-size: 14px;
 	font-weight: bold;
@@ -7066,5 +7070,19 @@ div.caLibraryTransactionResultsContainer {
 
 div.caLibraryTransactionResultsLabel {
 	font-size: 14px;
+	font-weight: bold;
+}
+
+div.caLibraryTransactionListItemDueDateContainer {
+	margin: 0 0 0 82px;
+}
+
+div.caLibraryTransactionListItemDueDateLabel {
+	font-size: 11px;
+}
+
+div.caLibraryTransactionListItemWillReserve {
+	color: #cc000;
+	font-size: 11px;
 	font-weight: bold;
 }

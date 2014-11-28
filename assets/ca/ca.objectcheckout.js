@@ -46,9 +46,12 @@ var caUI = caUI || {};
 			getInfoURL : null,
 			saveTransactionURL: null,
 			
+			removeButtonIcon: '(X)',
+			
 			cookieJar: jQuery.cookieJar('caBundleVisibility')
 		}, options);
 		
+		jQuery('#' + that.transactionListContainerID).hide();
 		jQuery('#' + that.transactionSubmitContainerID).hide();
 		jQuery('#' + that.transactionResultsContainerID).hide();
 		
@@ -80,21 +83,50 @@ var caUI = caUI || {};
 						
 						// get object info
 						jQuery.getJSON(
-							that.getInfoURL + '/object_id/' + object_id,
-							{}, function(data) {
+							that.getInfoURL,
+							{object_id: object_id, user_id: that.user_id}, function(data) {
 								// on success add to transactionList display
-								var _disp = data.media + ' ' + data.name + " (" + data.status_display + ")";
-								if ((data.status == 0) && (data.config.allow_override_of_due_dates == 1)) {	// item available so allow setting of due date
-									_disp += "<br/>Due on <input type='text' name='due_date' id='dueDate_" + object_id + "' value='" + data.config.default_checkout_date + "' size='10'/>";
+								
+								var _disp = '<div class="caLibraryTransactionListItemContainer"><div class="caLibraryTransactionListItemMedia">' + data.media + '</div><div class="caLibraryTransactionListItemName">' + data.title + "</div>";
+								
+								
+								// Status values:
+								// 	0 = available; 1 = out; 2 = out with reservations; 3 = available with reservations
+								//
+								_disp += '<div>Status: ' + data.status_display + '</div>';
+								
+								// Show reservation details if item is not available and reserved by user other than the current one or not out with current user
+								if (
+									((data.status == 1) || (data.status == 2))
+									&&
+									!data.isOutWithCurrentUser && !data.isReservedByCurrentUser
+								) {
+									if ((that.user_id != data.current_user_id) && ((data.status == 1) || (data.status == 2))) {
+										_disp += '<div class="caLibraryTransactionListItemWillReserve">' + data.reserve_display_label + ' (' + data.holder_display_label + ')</div>';
+									}
+									if ((that.user_id != data.current_user_id) && (data.status == 3)) {
+										_disp += '<div class="caLibraryTransactionListItemWillReserve">' + data.reserve_display_label + '</div>';
+									}
 								}
 								
-								// add note field
-								_disp += "<br/>Notes <textarea name='note' id='note_" + object_id + "' rows='2' cols='90'></textarea>";
 								
-								// TODO: handle reservations?
+								// Show notes and due date if item is available
+								if ((data.status == 0) || (data.status == 3)) {
+									// add note field
+									_disp += '<div class="caLibraryTransactionListItemNotesContainer"><div class="caLibraryTransactionListItemNotesLabel">' + data.notes_display_label + '</div><textarea name="note" id="note_' + object_id + '" rows="2" cols="90"></textarea></div>';
+								
+									if (((data.status == 0) || (data.status == 3)) && (data.config.allow_override_of_due_dates == 1)) {	// item available so allow setting of due date
+										_disp += '<div class="caLibraryTransactionListItemDueDateContainer"><div class="caLibraryTransactionListItemDueDateLabel">' + data.due_on_display_label + '</div><input type="text" name="due_date" id="dueDate_' + object_id + '" value="' + data.config.default_checkout_date + '" size="10"/></div>';
+									}
+								} else {
+									_disp += '<br style="clear: both;"/>';
+								}
+								
+								// remove button
+								_disp += '<div class="caLibraryTransactionListItemRemoveButton"><a href="#" id="itemRemove_' + object_id + '" data-object_id="' + object_id + '">' + that.removeButtonIcon + '</a></div>';
 								
 								// support removal of items
-								jQuery('#' + that.transactionListContainerID + ' .transactionList').append("<li id='item_" + object_id + "'>" + _disp + " <a href='#' id='itemRemove_" + object_id + "' data-object_id='" + object_id + "'>X</a></li>");
+								jQuery('#' + that.transactionListContainerID + ' .transactionList').append("<li id='item_" + object_id + "'>" + _disp + "</li>");
 								jQuery('#itemRemove_' + object_id).on('click', function() {
 									var object_id_to_delete = jQuery(this).data('object_id');
 									jQuery('li#item_' + object_id_to_delete).remove();
@@ -108,6 +140,7 @@ var caUI = caUI || {};
 									that.itemList = newItemList;
 									if (that.itemList.length == 0) {
 										jQuery('#' + that.transactionSubmitContainerID).hide();
+										jQuery('#' + that.transactionListContainerID).hide();
 									}
 								});
 								that.itemList.push({
@@ -115,7 +148,13 @@ var caUI = caUI || {};
 								});
 								jQuery('#dueDate_' + object_id).datepicker({minDate: 0, dateFormat: 'yy-mm-dd'});
 								
-								(that.itemList.length > 0) ? jQuery('#' + that.transactionSubmitContainerID).show() : jQuery('#' + that.transactionSubmitContainerID).hide();
+								if(that.itemList.length > 0) {
+									jQuery('#' + that.transactionSubmitContainerID).show();
+									jQuery('#' + that.transactionListContainerID).show();
+								} else {
+									jQuery('#' + that.transactionSubmitContainerID).hide();
+									jQuery('#' + that.transactionListContainerID).hide();
+								}
 								
 								// reset autocomplete to blank
 								jQuery('#' + that.autocompleteID).val('');
@@ -123,7 +162,7 @@ var caUI = caUI || {};
 						);
 					}
 				}
-			});
+			}).click(function() { this.select(); }).focus();
 			
 			jQuery('#transactionSubmit').on('click', function(e) {
 				// marshall transaction data and submit
@@ -152,6 +191,7 @@ var caUI = caUI || {};
 								jQuery('#' + that.transactionListContainerID + ' .transactionList li').remove();
 								that.itemList = [];
 								jQuery('#' + that.transactionSubmitContainerID).hide();
+								jQuery('#' + that.transactionListContainerID).hide();
 								jQuery('#' + that.autocompleteID).focus();
 						
 								// clear transaction results
@@ -183,7 +223,7 @@ var caUI = caUI || {};
 					});
 				}
 			
-		}).click(function() { this.select(); }).focus();
+		});
 		
 		// --------------------------------------------------------------------------------
 		// Define methods

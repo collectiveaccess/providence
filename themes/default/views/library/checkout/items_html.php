@@ -4,29 +4,36 @@
 ?>
 <h1><?php print _t('Check out: add items'); ?></h1>
 
-<form>
-	<?php print _t('Find').' '.caHTMLTextInput('user', array('id' => 'objectAutocomplete'), array('width' => '500px')); ?>
-</form>
+<div class=""caLibraryUIContainer">
+	<div class="caLibraryFindAutocompleteContainer">
+		<form>
+			<div class="caLibraryFindAutocompleteLabel"><?php print _t('Item name or number to check out'); ?></div>
+			<?php print caHTMLTextInput('user', array('id' => 'objectAutocomplete'), array('width' => '500px')); ?>
+		</form>
+	</div>
 
-<form>
-	<div id="transactionListContainer">
-		<ol class="transactionList">
+	<form>
+		<div class="caLibraryTransactionListContainer" id="transactionListContainer">
+			<div class="caLibraryTransactionListLabel"><?php print _t('Items to check out'); ?></div>
+			<ol class="transactionList">
 	
-		</ol>
-	</div>
-	<div id="transactionSubmitContainer">
-		<a href='#' class='button' id="transactionSubmit"><?php print _t('Check out items'); ?></a>
-	</div>
+			</ol>
+		</div>
+		<div class="caLibrarySubmitListContainer" id="transactionSubmitContainer">
+			<?php print caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t('Check out items'), 'transactionSubmit', array(), array()); ?>
+		</div>
 	
-	<div id="transactionResultsContainer">
-		<ol class="transactionSuccesses">
+		<div class="caLibraryTransactionResultsContainer" id="transactionResultsContainer">
+			<div class="caLibraryTransactionResultsLabel"><?php print _t('Results'); ?></div>
+			<ol class="transactionSuccesses">
 	
-		</ol>
-		<ol class="transactionErrors">
+			</ol>
+			<ol class="transactionErrors">
 	
-		</ol>
-	</div>
-</form>
+			</ol>
+		</div>
+	</form>
+</div>
 
 
 <script type="text/javascript">
@@ -36,7 +43,9 @@
 
 			searchURL: '<?php print caNavUrl($this->request, 'lookup', 'Object', 'Get', array('max' => 100, 'inlineCreate' => 0, 'quickadd' => 0, 'types' => join(";", $pa_types))); ?>',
 			getInfoURL : '<?php print caNavUrl($this->request, '*', '*', 'GetObjectInfo', array()); ?>',
-			saveTransactionURL: '<?php print caNavUrl($this->request, '*', '*', 'SaveTransaction', array()); ?>'
+			saveTransactionURL: '<?php print caNavUrl($this->request, '*', '*', 'SaveTransaction', array()); ?>',
+			
+			removeButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/x.png" border="0" title="Remove"/>'
 		});
 	});
 </script>

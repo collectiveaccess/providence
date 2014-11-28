@@ -1,5 +1,5 @@
 <?php
-	$pa_types = array();
+	
 ?>
 <h1><?php print _t('Check in'); ?></h1>
 
@@ -38,7 +38,7 @@
 	jQuery(document).ready(function() {
 		var checkinManager = caUI.initObjectCheckinManager({
 
-			searchURL: '<?php print caNavUrl($this->request, 'lookup', 'ObjectCheckout', 'Get', array('max' => 100, 'inlineCreate' => 0, 'quickadd' => 0, 'types' => join(";", $pa_types))); ?>',
+			searchURL: '<?php print caNavUrl($this->request, 'lookup', 'ObjectCheckout', 'Get', array('max' => 100, 'inlineCreate' => 0, 'quickadd' => 0)); ?>',
 			getInfoURL : '<?php print caNavUrl($this->request, '*', '*', 'GetObjectInfo', array()); ?>',
 			saveTransactionURL: '<?php print caNavUrl($this->request, '*', '*', 'SaveTransaction', array()); ?>',
 			

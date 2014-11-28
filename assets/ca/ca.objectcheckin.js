@@ -88,7 +88,7 @@ var caUI = caUI || {};
 								_disp += '<div class="caLibraryTransactionListItemBorrower">' + data.borrower + "</div>";
 								
 								// add note field
-								_disp += '<div class="caLibraryTransactionListItemNotesContainer"><div class="caLibraryTransactionListItemNotesLabel">Notes</div><textarea name="note" id="note_' + checkout_id + '" rows="2" cols="90"></textarea>';
+								_disp += '<div class="caLibraryTransactionListItemNotesContainer"><div class="caLibraryTransactionListItemNotesLabel">Notes</div><textarea name="note" id="note_' + checkout_id + '" rows="2" cols="90"></textarea></div>';
 								
 								// add remove button
 								_disp += '<div class="caLibraryTransactionListItemRemoveButton"><a href="#" id="itemRemove_' + checkout_id + '" data-checkout_id="' + checkout_id + '">' + that.removeButtonIcon + '</a>';

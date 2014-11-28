@@ -1,12 +1,19 @@
 <?php
 
 ?>
-<h2><?php print _t('Check out: choose user'); ?></h2>
-<form>
-	User <?php print caHTMLTextInput('user', array('id' => 'user_autocomplete'), array('width' => '500px')); ?>
-	
-	<a href="#" class="button" id="nextButton"><?php print _t('Next'); ?></a>
-</form>
+<h1><?php print _t('Check out: choose user'); ?></h1>
+
+<div class=""caLibraryUIContainer">
+	<div class="caLibraryFindAutocompleteContainer">
+		<form>
+			<div class="caLibraryFindAutocompleteLabel"><?php print _t('Name of user checking out item'); ?></div>
+			<?php print caHTMLTextInput('user', array('id' => 'user_autocomplete'), array('width' => '500px')); ?>
+		</form>
+	</div>
+	<div class="caLibrarySubmitListContainer">
+		<?php print caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t('Next'), 'nextButton', array(), array()); ?>
+	</div>
+</div>
 
 <script type="text/javascript">
 	jQuery(document).ready(function() {

@@ -295,11 +295,27 @@ class ca_object_checkouts extends BaseModel {
 		if (!$t_object->getPrimaryKey()) { return null; }
 		
 		// is object available?
-		if ($t_object->getCheckoutStatus() !== __CA_OBJECTS_CHECKOUT_STATUS_AVAILABLE__) { 
-			throw new Exception(_t('Object is already out'));
+		if (!in_array($t_object->getCheckoutStatus(), array(__CA_OBJECTS_CHECKOUT_STATUS_AVAILABLE__, __CA_OBJECTS_CHECKOUT_STATUS_RESERVED__))) { 
+			throw new Exception(_t('Item is already out'));
 		}
 		
-		$vs_uuid = $this->getTransactionUUID();
+		// is there a reservation for this user?
+		$o_db = $this->getDb();
+		$qr_res = $o_db->query("
+			SELECT *
+			FROM ca_object_checkouts
+			WHERE
+				user_id = ? AND object_id = ? AND checkout_date IS NULL AND return_date IS NULL
+		", array($pn_user_id, $pn_object_id));
+		$vb_update = false;
+		if ($qr_res->nextRow()) {
+			$vs_uuid = $qr_res->get('group_uuid');
+			if ($this->load($qr_res->get('checkout_id'))) {
+				$vb_update = true;
+			}
+		} else {
+			$vs_uuid = $this->getTransactionUUID();
+		}
 		$va_checkout_config = ca_object_checkouts::getObjectCheckoutConfigForType($t_object->getTypeCode());
 		
 		if (!($va_checkout_config['allow_override_of_due_dates'] && $ps_due_date && caDateToUnixTimestamp($ps_due_date))) {
@@ -316,7 +332,7 @@ class ca_object_checkouts extends BaseModel {
 			'checkout_date' => _t('today'),
 			'due_date' => $ps_due_date
 		));	
-		return $this->insert();
+		return $vb_update ? $this->update() : $this->insert();
 	}
 	# ------------------------------------------------------
 	/**
@@ -329,7 +345,7 @@ class ca_object_checkouts extends BaseModel {
 		
 		// is object out?
 		if ($t_object->getCheckoutStatus() === __CA_OBJECTS_CHECKOUT_STATUS_AVAILABLE__) { 
-			throw new Exception(_t('Object is not out'));
+			throw new Exception(_t('Item is not out'));
 		}
 		
 		$this->setMode(ACCESS_WRITE);
@@ -347,6 +363,20 @@ class ca_object_checkouts extends BaseModel {
 		// TODO: does user have read access to object?
 		$t_object = new ca_objects($pn_object_id);
 		if (!$t_object->getPrimaryKey()) { return null; }
+		
+		// is object out?
+		if ($t_object->getCheckoutStatus() === __CA_OBJECTS_CHECKOUT_STATUS_AVAILABLE__) { 
+			throw new Exception(_t('Item is not out'));
+		}
+		$va_reservations = $this->objectHasReservations($pn_object_id);
+		// is object already reserved by this user?
+		if (is_array($va_reservations)) {
+			foreach($va_reservations as $va_reservation) {
+				if ($va_reservation['user_id'] == $pn_user_id) {
+					throw new Exception(_t('Item is already reserved by this user'));
+				}
+			}
+		}
 		
 		$vs_uuid = $this->getTransactionUUID();
 		$va_checkout_config = ca_object_checkouts::getObjectCheckoutConfigForType($t_object->getTypeCode());
@@ -443,6 +473,7 @@ class ca_object_checkouts extends BaseModel {
 			while($qr_res->nextRow()) {
 				$va_reservations[] = $qr_res->getRow();
 			}
+			return $va_reservations;
 		}
 		return false;
 	}
@@ -493,7 +524,7 @@ class ca_object_checkouts extends BaseModel {
 				created_on
 		", array(time(), $pn_object_id));
 		
-		if ($qr_res->numRows() > 0) {
+		if ($qr_res->nextRow()) {
 			return new ca_object_checkouts($qr_res->get('checkout_id'));
 		}
 		
@@ -513,7 +544,7 @@ class ca_object_checkouts extends BaseModel {
 				created_on
 		", array(time(), $pn_object_id));
 		
-		if ($qr_res->numRows() > 0) {
+		if ($qr_res->nextRow()) {
 			return new ca_object_checkouts($qr_res->get('checkout_id'));
 		}
 		return null;
