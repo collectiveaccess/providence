@@ -71,6 +71,7 @@
  			$pn_checkout_id = $this->request->getParameter('checkout_id', pInteger);
  			
  			$t_checkout = new ca_object_checkouts($pn_checkout_id);
+ 			$t_user = new ca_users($t_checkout->get('user_id'));
  			$t_object = new ca_objects($t_checkout->get('object_id'));
  			$va_status = $t_object->getCheckoutStatus();
 			$va_checkout_config = ca_object_checkouts::getObjectCheckoutConfigForType($t_object->getTypeCode());
@@ -82,8 +83,12 @@
  				'media' => $t_object->get('ca_object_representations.media.icon'),
  				'status' => $t_object->getCheckoutStatus(),
  				'status_display' => $t_object->getCheckoutStatus(array('returnAsText' => true)),
+ 				'checkout_date' => $t_checkout->get('ca_object_checkouts.checkout_date', array('timeOmit' => true)),
+ 				'user_name' => $t_user->get('ca_users.fname').' '.$t_user->get('ca_users.lname'),
  				'config' => $va_checkout_config
  			);
+ 			$va_info['title'] = $va_info['name'].' ('.$va_info['idno'].')';
+ 			$va_info['borrower'] = _t('Borrowed by %1 on %2', $va_info['user_name'], $va_info['checkout_date']);
  			$this->view->setVar('data', $va_info);
  			$this->render('checkin/ajax_data_json.php');
  		}

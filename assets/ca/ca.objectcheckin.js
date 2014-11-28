@@ -84,7 +84,8 @@ var caUI = caUI || {};
 							that.getInfoURL + '/checkout_id/' + checkout_id,
 							{}, function(data) {
 								// on success add to transactionList display
-								var _disp = '<div class="caLibraryTransactionListItemContainer"><div class="caLibraryTransactionListItemMedia">' + data.media + '</div><div class="caLibraryTransactionListItemName">' + data.name + " (" + data.idno + ")</div>";
+								var _disp = '<div class="caLibraryTransactionListItemContainer"><div class="caLibraryTransactionListItemMedia">' + data.media + '</div><div class="caLibraryTransactionListItemName">' + data.title + "</div>";
+								_disp += '<div class="caLibraryTransactionListItemBorrower">' + data.borrower + "</div>";
 								
 								// add note field
 								_disp += '<div class="caLibraryTransactionListItemNotesContainer"><div class="caLibraryTransactionListItemNotesLabel">Notes</div><textarea name="note" id="note_' + checkout_id + '" rows="2" cols="90"></textarea>';

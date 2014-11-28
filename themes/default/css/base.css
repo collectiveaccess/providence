@@ -7035,6 +7035,10 @@ div.caLibraryTransactionListItemName {
 	font-style: italic;
 }
 
+div.caLibraryTransactionListItemBorrower {
+	font-size: 10px;
+}
+
 div.caLibraryTransactionListItemNotesContainer {
 	margin: 3px;
 }
