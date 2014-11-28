@@ -1872,7 +1872,13 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
  	# ------------------------------------------------------
  	# Object checkout 
  	# ------------------------------------------------------
- 	
+ 	/**
+	 *
+	 */
+ 	public function canBeCheckedOut() {
+ 		if (!$this->getPrimaryKey()) { return false; }
+ 		return ca_object_checkouts::getObjectCheckoutConfigForType($this->getTypeCode()) ? true : false;
+ 	}
 	# ------------------------------------------------------
 	/**
 	 *
@@ -1881,22 +1887,36 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		if (!($vn_object_id = $this->getPrimaryKey())) { return null; }
 		
 		$vb_return_as_text = caGetOption('returnAsText', $pa_options, false);
+		$vb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
 		
 		$t_checkout = new ca_object_checkouts();
-		$vb_is_out = $t_checkout->objectIsOut($vn_object_id);
+		$va_is_out = $t_checkout->objectIsOut($vn_object_id);
 		$va_reservations = $t_checkout->objectHasReservations($vn_object_id);
 		$vn_num_reservations = sizeof($va_reservations);
 		$vb_is_reserved = is_array($va_reservations) && sizeof($va_reservations);
 		
-		if ($vb_is_out && $vb_is_reserved) {
-			return $vb_return_as_text ? (($vn_num_reservations == 1) ? _t('Out; % reservation', $vn_num_reservations) : _t('Out; % reservations', $vn_num_reservations)) : __CA_OBJECTS_CHECKOUT_STATUS_OUT_WITH_RESERVATIONS__;
-		} elseif ($vb_is_out) {
-			return $vb_return_as_text ? _t('Out') : __CA_OBJECTS_CHECKOUT_STATUS_OUT__;
+		$va_info = array('user_name' => null, 'checkout_date' => null, 'user_id' => null);
+		
+		if ($va_is_out) {
+			$t_checkout->load($va_is_out['checkout_id']);
+			$va_info['status'] = $vb_is_reserved ? __CA_OBJECTS_CHECKOUT_STATUS_OUT_WITH_RESERVATIONS__ : __CA_OBJECTS_CHECKOUT_STATUS_OUT__;
+			$va_info['status_display'] = $vb_is_reserved ? ((($vn_num_reservations == 1) ? _t('Out; % reservation', $vn_num_reservations) : _t('Out; % reservations', $vn_num_reservations))) : _t('Out');
+			$va_info['user_id'] = $va_is_out['user_id'];
+			$va_info['checkout_date'] = $t_checkout->get('checkout_date', array('timeOmit' => true));
+			
+			$t_user = new ca_users($va_info['user_id']);
+			$va_info['user_name'] = $t_user->get('fname').' '.$t_user->get('lname').(($vs_email = $t_user->get('email')) ? " ({$vs_email})" : '');
 		} elseif ($vb_is_reserved) {
-			return $vb_return_as_text ? _t('Reserved') : __CA_OBJECTS_CHECKOUT_STATUS_RESERVED__;
+			$va_info['status'] = __CA_OBJECTS_CHECKOUT_STATUS_RESERVED__;
+			$va_info['status_display'] = ($vn_num_reservations == 1) ? _t('Reserved') : _t('%1 reservations', $vn_num_reservations);
 		} else {
-			return $vb_return_as_text ? _t('Available') : __CA_OBJECTS_CHECKOUT_STATUS_AVAILABLE__;
+			$va_info['status'] = __CA_OBJECTS_CHECKOUT_STATUS_AVAILABLE__;
+			$va_info['status_display'] = _t('Available');
 		}
+		
+		if ($vb_return_as_array) { return $va_info; }
+		if ($vb_return_as_text) { return $va_info['status_display']; }
+		return $va_info['status'];
 	}
 	# ------------------------------------------------------
 	/**

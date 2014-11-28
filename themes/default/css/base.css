@@ -410,6 +410,11 @@ a.inspectorOnLoan {
     font-style: italic;
 }
 
+div.inspectorCheckedOut {
+    color: #0000cc;
+    font-style: italic;
+}
+
 .inspectorDeaccessioned {
     color: #cc0000;
     font-style: italic;
