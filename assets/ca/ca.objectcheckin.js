@@ -45,9 +45,12 @@ var caUI = caUI || {};
 			getInfoURL : null,
 			saveTransactionURL: null,
 			
+			removeButtonIcon: '(X)',
+			
 			cookieJar: jQuery.cookieJar('caBundleVisibility')
 		}, options);
 		
+		jQuery('#' + that.transactionListContainerID).hide();
 		jQuery('#' + that.transactionSubmitContainerID).hide();
 		jQuery('#' + that.transactionResultsContainerID).hide();
 		
@@ -81,13 +84,16 @@ var caUI = caUI || {};
 							that.getInfoURL + '/checkout_id/' + checkout_id,
 							{}, function(data) {
 								// on success add to transactionList display
-								var _disp = data.media + ' ' + data.name + " (" + data.status_display + ")";
+								var _disp = '<div class="caLibraryTransactionListItemContainer"><div class="caLibraryTransactionListItemMedia">' + data.media + '</div><div class="caLibraryTransactionListItemName">' + data.name + " (" + data.idno + ")</div>";
 								
 								// add note field
-								_disp += "<br/>Notes <textarea name='note' id='note_" + checkout_id + "' rows='2' cols='90'></textarea>";
+								_disp += '<div class="caLibraryTransactionListItemNotesContainer"><div class="caLibraryTransactionListItemNotesLabel">Notes</div><textarea name="note" id="note_' + checkout_id + '" rows="2" cols="90"></textarea>';
+								
+								// add remove button
+								_disp += '<div class="caLibraryTransactionListItemRemoveButton"><a href="#" id="itemRemove_' + checkout_id + '" data-checkout_id="' + checkout_id + '">' + that.removeButtonIcon + '</a>';
 								
 								// support removal of items
-								jQuery('#' + that.transactionListContainerID + ' .transactionList').append("<li id='item_" + checkout_id + "'>" + _disp + " <a href='#' id='itemRemove_" + checkout_id + "' data-checkout_id='" + checkout_id + "'>X</a></li>");
+								jQuery('#' + that.transactionListContainerID + ' .transactionList').append("<li id='item_" + checkout_id + "'>" + _disp + "</li>");
 								jQuery('#itemRemove_' + checkout_id).on('click', function() {
 									var checkout_id_to_delete = jQuery(this).data('checkout_id');
 									jQuery('li#item_' + checkout_id_to_delete).remove();
@@ -100,6 +106,7 @@ var caUI = caUI || {};
 									});
 									that.itemList = newItemList;
 									if (that.itemList.length == 0) {
+										jQuery('#' + that.transactionListContainerID).hide();
 										jQuery('#' + that.transactionSubmitContainerID).hide();
 									}
 								});
@@ -107,7 +114,13 @@ var caUI = caUI || {};
 									checkout_id: checkout_id
 								});
 								
-								(that.itemList.length > 0) ? jQuery('#' + that.transactionSubmitContainerID).show() : jQuery('#' + that.transactionSubmitContainerID).hide();
+								if (that.itemList.length > 0) {
+									jQuery('#' + that.transactionSubmitContainerID).show();
+									jQuery('#' + that.transactionListContainerID).show();
+								} else {
+									jQuery('#' + that.transactionSubmitContainerID).hide();
+									jQuery('#' + that.transactionListContainerID).hide();
+								}
 								
 								// reset autocomplete to blank
 								jQuery('#' + that.autocompleteID).val('');
@@ -140,6 +153,7 @@ var caUI = caUI || {};
 								jQuery('#' + that.transactionListContainerID + ' .transactionList li').remove();
 								that.itemList = [];
 								jQuery('#' + that.transactionSubmitContainerID).hide();
+								jQuery('#' + that.transactionListContainerID).hide();
 								jQuery('#' + that.autocompleteID).focus();
 						
 								// clear transaction results

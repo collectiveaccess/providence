@@ -109,17 +109,21 @@
 					if ($t_checkout->isOut()) { 
 						try {
 							$t_checkout->checkin($vn_object_id, $va_item['note']);
+							
+							$t_user = new ca_users($t_checkout->get('user_id'));
+							$vs_user_name = $t_user->get('ca_users.fname').' '.$t_user->get('ca_users.lname');
+							$vs_borrow_date = $t_checkout->get('ca_object_checkouts.checkout_date', array('timeOmit' => true));
 						
 							if ($t_checkout->numErrors() == 0) {
-								$va_ret['checkins'][] = _t('Returned %1', $t_object->get('ca_objects.preferred_labels.name'));
+								$va_ret['checkins'][] = _t('Returned <em>%1</em> (%2) borrowed by %3 on %4', $t_object->get('ca_objects.preferred_labels.name'), $t_object->get('ca_objects.idno'), $vs_user_name, $vs_borrow_date);
 							} else {
-								$va_ret['errors'][] = _t('Could not check in %1: %2', $t_object->get('ca_objects.preferred_labels.name'), join("; ", $t_checkout->getErrors()));
+								$va_ret['errors'][] = _t('Could not check in <em>%1</em> (%2): %3', $t_object->get('ca_objects.preferred_labels.name'), $t_object->get('ca_objects.idno'), join("; ", $t_checkout->getErrors()));
 							}
 						} catch (Exception $e) {
-							$va_ret['errors'][] = _t('%1 is not out', $t_object->get('ca_objects.preferred_labels.name'));
+							$va_ret['errors'][] = _t('<em>%1</em> (%2) is not out', $t_object->get('ca_objects.preferred_labels.name'), $t_object->get('ca_objects.idno'));
 						}
 					} else {
-						$va_ret['errors'][] = _t('%1 is not out', $t_object->get('ca_objects.preferred_labels.name'));
+						$va_ret['errors'][] = _t('<em>%1</em> (%2) is not out', $t_object->get('ca_objects.preferred_labels.name'), $t_object->get('ca_objects.idno'));
 					}
 				}
 			}

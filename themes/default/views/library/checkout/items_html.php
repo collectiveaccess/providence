@@ -2,7 +2,7 @@
 	$pn_user_id = $this->getVar('user_id');
 	if (!is_array($pa_types = $this->getVar('checkout_types'))) { $pa_types = array(); }
 ?>
-<h2><?php print _t('Check out: add items'); ?></h2>
+<h1><?php print _t('Check out: add items'); ?></h1>
 
 <form>
 	<?php print _t('Find').' '.caHTMLTextInput('user', array('id' => 'objectAutocomplete'), array('width' => '500px')); ?>

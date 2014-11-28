@@ -519,5 +519,29 @@ class ca_object_checkouts extends BaseModel {
 		return null;
 	}
 	# ------------------------------------------------------
+	# Stats
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function numOutstandingCheckouts($po_db=null) {
+		$o_db = $po_db ? $po_db : new Db();
+		
+		$qr_res = $o_db->query("
+			SELECT count(*) c
+			FROM ca_object_checkouts
+			WHERE
+				checkout_date IS NOT NULL
+				AND
+				return_date IS NULL
+				AND
+				deleted = 0
+		");
+		if ($qr_res->nextRow()) {
+			return (int)$qr_res->get('c');
+		}
+		return 0;
+	}
+	# ------------------------------------------------------
 		 
 }

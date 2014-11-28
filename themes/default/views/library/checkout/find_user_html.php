@@ -1,7 +1,7 @@
 <?php
 
 ?>
-<h2><?php print _t('Check out: find user'); ?></h2>
+<h2><?php print _t('Check out: choose user'); ?></h2>
 <form>
 	User <?php print caHTMLTextInput('user', array('id' => 'user_autocomplete'), array('width' => '500px')); ?>
 	

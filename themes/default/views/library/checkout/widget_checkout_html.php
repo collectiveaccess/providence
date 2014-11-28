@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
 ?>
-	<h3><?php print _t('Library check out'); ?>:
+	<h3 class='libraryCheckOut'><?php print _t('Library check out'); ?>:
 	<div><?php
 		print _t('Outstanding items: %1', ca_object_checkouts::numOutstandingCheckouts())."<br/>\n";
 	?></div>
