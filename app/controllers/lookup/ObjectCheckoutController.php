@@ -34,4 +34,14 @@
  		protected $ops_name_singular = 'object checkout';
  		protected $ops_search_class = 'ObjectCheckoutSearch';
  		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
+		public function Get($pa_additional_query_params=null, $pa_options=null) {
+			
+			$pa_options['filters'][] = array("ca_object_checkouts.checkout_date", "IS NOT", "NULL");
+			$pa_options['filters'][] = array("ca_object_checkouts.return_date", "IS", "NULL");
+			return parent::Get($pa_additional_query_params, $pa_options);
+		}
+ 		# -------------------------------------------------------
  	}

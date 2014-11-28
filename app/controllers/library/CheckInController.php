@@ -39,6 +39,11 @@
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
+ 			if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_do_library_checkin')) { 
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+ 			
  			AssetLoadManager::register('objectcheckin');
  			
  			$this->opo_app_plugin_manager = new ApplicationPluginManager();
@@ -48,6 +53,10 @@
  		 * Begin checkout process with user select
  		 */
  		public function Index() {
+ 			if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_do_library_checkin')) { 
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
  			$this->render('checkin/items_html.php');
  		}
  		# -------------------------------------------------------
@@ -55,6 +64,10 @@
  		 * Return info via ajax on selected object
  		 */
  		public function GetObjectInfo() {
+ 			if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_do_library_checkin')) { 
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
  			$pn_checkout_id = $this->request->getParameter('checkout_id', pInteger);
  			
  			$t_checkout = new ca_object_checkouts($pn_checkout_id);
@@ -71,13 +84,18 @@
  				'status_display' => $t_object->getCheckoutStatus(array('returnAsText' => true)),
  				'config' => $va_checkout_config
  			);
- 			print json_encode($va_info);
+ 			$this->view->setVar('data', $va_info);
+ 			$this->render('checkin/ajax_data_json.php');
  		}
  		# -------------------------------------------------------
  		/**
  		 * 
  		 */
  		public function SaveTransaction() {
+ 			if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_do_library_checkin')) { 
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
  			$ps_item_list = $this->request->getParameter('item_list', pString);
  			$pa_item_list = json_decode($ps_item_list, true);
  			
@@ -106,7 +124,8 @@
 				}
 			}
  			
- 			print json_encode($va_ret);
+ 			$this->view->setVar('data', $va_ret);
+ 			$this->render('checkin/ajax_data_json.php');
  		}
  		# -------------------------------------------------------
  	}
