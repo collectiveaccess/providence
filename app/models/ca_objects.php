@@ -42,6 +42,7 @@ require_once(__CA_MODELS_DIR__."/ca_loans_x_objects.php");
 require_once(__CA_MODELS_DIR__."/ca_objects_x_storage_locations.php");
 require_once(__CA_MODELS_DIR__."/ca_commerce_orders.php");
 require_once(__CA_MODELS_DIR__."/ca_commerce_order_items.php");
+require_once(__CA_MODELS_DIR__."/ca_object_checkouts.php");
 require_once(__CA_MODELS_DIR__."/ca_object_lots.php");
 require_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
@@ -1869,4 +1870,53 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
  		return ca_objects::$s_current_location_type_configuration_cache[caMakeCacheKeyFromOptions($pa_options, "{$vs_table_name}/{$pm_current_loc_subclass}")] = ca_objects::$s_current_location_type_configuration_cache[$vs_cache_key] = null;
  	}
  	# ------------------------------------------------------
+ 	# Object checkout 
+ 	# ------------------------------------------------------
+ 	
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getCheckoutStatus($pa_options=null) {
+		if (!($vn_object_id = $this->getPrimaryKey())) { return null; }
+		
+		$vb_return_as_text = caGetOption('returnAsText', $pa_options, false);
+		
+		$t_checkout = new ca_object_checkouts();
+		$vb_is_out = $t_checkout->objectIsOut($vn_object_id);
+		$va_reservations = $t_checkout->objectHasReservations($vn_object_id);
+		$vn_num_reservations = sizeof($va_reservations);
+		$vb_is_reserved = is_array($va_reservations) && sizeof($va_reservations);
+		
+		if ($vb_is_out && $vb_is_reserved) {
+			return $vb_return_as_text ? (($vn_num_reservations == 1) ? _t('Out; % reservation', $vn_num_reservations) : _t('Out; % reservations', $vn_num_reservations)) : __CA_OBJECTS_CHECKOUT_STATUS_OUT_WITH_RESERVATIONS__;
+		} elseif ($vb_is_out) {
+			return $vb_return_as_text ? _t('Out') : __CA_OBJECTS_CHECKOUT_STATUS_OUT__;
+		} elseif ($vb_is_reserved) {
+			return $vb_return_as_text ? _t('Reserved') : __CA_OBJECTS_CHECKOUT_STATUS_RESERVED__;
+		} else {
+			return $vb_return_as_text ? _t('Available') : __CA_OBJECTS_CHECKOUT_STATUS_AVAILABLE__;
+		}
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getCheckoutHistory($pa_options=null) {
+		
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getCheckoutReservations($pa_options=null) {
+		if (!($vn_object_id = $this->getPrimaryKey())) { return null; }
+		
+		$t_checkout = new ca_object_checkouts();
+		$va_reservations = $t_checkout->objectHasReservations($vn_object_id);
+		$vb_is_reserved = is_array($va_reservations) && sizeof($va_reservations);
+		
+		return $vb_is_reserved ? $va_reservations : array();
+	}
+	# ------------------------------------------------------
 }

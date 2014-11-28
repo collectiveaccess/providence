@@ -1145,6 +1145,17 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Returns ca_list_items.idno (aka "type code") for $pn_type_id
+		 *
+		 * @param int $pn_type_id Number id for the type
+		 * @return string idno (aka "type code") for specified list item id (aka "type id")
+		 */
+		public function getTypeCodeForID($pn_type_id) {
+			$va_types = $this->getTypeList();
+			return isset($va_types[$pn_type_id]) ? $va_types[$pn_type_id]['idno'] : null;
+		}
+		# ------------------------------------------------------------------
+		/**
 		 * Returns default ca_list_items.item_id (aka "type_id") for this model
 		 *
 		 * @return int - item_id (aka "type_id") for default type
