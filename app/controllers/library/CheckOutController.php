@@ -145,4 +145,11 @@
  			$this->render('checkout/ajax_data_json.php');
  		}
  		# -------------------------------------------------------
+ 		/**
+ 		 * 
+ 		 */
+ 		public function Info() {
+ 			return $this->render('checkout/widget_checkout_html.php', true);
+ 		}
+ 		# -------------------------------------------------------
  	}

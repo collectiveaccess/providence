@@ -128,4 +128,11 @@
  			$this->render('checkin/ajax_data_json.php');
  		}
  		# -------------------------------------------------------
+ 		/**
+ 		 * 
+ 		 */
+ 		public function Info() {
+ 			return $this->render('checkin/widget_checkin_html.php', true);
+ 		}
+ 		# -------------------------------------------------------
  	}
