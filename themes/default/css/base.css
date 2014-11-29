@@ -7091,3 +7091,9 @@ div.caLibraryTransactionListItemWillReserve {
 	font-size: 11px;
 	font-weight: bold;
 }
+
+table.caLibraryHistory, tr.caLibraryHistory, th.caLibraryHistory, td.caLibraryHistory {
+	border: 1px solid #000;
+	border-collapse: collapse;
+	padding: 5px;
+}

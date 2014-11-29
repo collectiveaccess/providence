@@ -34,7 +34,7 @@
    *
    */
 
-require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
+require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 
 /**
@@ -134,7 +134,7 @@ BaseModel::$s_ca_models_definitions['ca_object_checkouts'] = array(
  	)
 );
 
-class ca_object_checkouts extends BaseModel {
+class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -262,7 +262,12 @@ class ca_object_checkouts extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Creates a new ca_object_checkouts instance and initialize with a new group uuid. The returned instance
+	 * can be used to do one or more checkouts, checkins and reservations. All checkouts and reservations will be
+	 * bound together with the same uuid.
 	 *
+	 * @param string $ps_uuid A uuid to use; if omitted one will be generated
+	 * @return ca_object_checkouts 
 	 */
 	static public function newCheckoutTransaction($ps_uuid=null) {
 		$t_instance = new ca_object_checkouts();
@@ -272,7 +277,9 @@ class ca_object_checkouts extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Return uuid for current transaction group. Will generate a new uuid if required.
 	 *
+	 * @return string
 	 */
 	public function getTransactionUUID() {
 		if (!$this->ops_transaction_uuid) { $this->ops_transaction_uuid = caGenerateGUID(); }
@@ -280,19 +287,31 @@ class ca_object_checkouts extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Set uuid for current transaction group directly.
 	 *
+	 * @param string The uuid
+	 * @return string The value that was set
 	 */
 	public function setTransactionUUID($ps_uuid) {
 		return $this->ops_transaction_uuid = $ps_uuid;	
 	}
 	# ------------------------------------------------------
 	/**
+	 * Checkout an object for a user. Will throw an exception if the item is currently out or object or user_id are invalid;
 	 *
+	 * @param int $pn_object_id
+	 * @param int $pn_user_id
+	 * @param string $ps_note Optional checkin notes
+	 * @param string $ps_due_date A valid date time expression for the date item is due to be returned. If omitted the default date as configured will be used.
+	 *
+	 * @return bool True on success, false on failure
 	 */
 	public function checkout($pn_object_id, $pn_user_id, $ps_note=null, $ps_due_date=null) {
 		// TODO: does user have read access to object?
 		$t_object = new ca_objects($pn_object_id);
-		if (!$t_object->getPrimaryKey()) { return null; }
+		if (!$t_object->getPrimaryKey()) { throw new Exception(_t('Object_id is not valid')); }
+		$t_user = new ca_users($pn_user_id);
+		if (!$t_user->getPrimaryKey()) { throw new Exception(_t('User_id is not valid')); }
 		
 		// is object available?
 		if (!in_array($t_object->getCheckoutStatus(), array(__CA_OBJECTS_CHECKOUT_STATUS_AVAILABLE__, __CA_OBJECTS_CHECKOUT_STATUS_RESERVED__))) { 
@@ -306,6 +325,8 @@ class ca_object_checkouts extends BaseModel {
 			FROM ca_object_checkouts
 			WHERE
 				user_id = ? AND object_id = ? AND checkout_date IS NULL AND return_date IS NULL
+			ORDER BY 
+				created_on
 		", array($pn_user_id, $pn_object_id));
 		$vb_update = false;
 		if ($qr_res->nextRow()) {
@@ -422,7 +443,6 @@ class ca_object_checkouts extends BaseModel {
 		
 		$va_type_config = $o_config->getAssoc('checkout_types');
 		
-		// TODO: expand hierarchicall?
 		return array_keys($va_type_config);
 	}
 	# ------------------------------------------------------
@@ -456,7 +476,7 @@ class ca_object_checkouts extends BaseModel {
 		// is it out?
 		$o_db = $this->getDb();
 		$qr_res = $o_db->query("
-			SELECT *
+			SELECT checkout_id
 			FROM ca_object_checkouts
 			WHERE
 				(created_on <= ?)
@@ -468,14 +488,62 @@ class ca_object_checkouts extends BaseModel {
 				(object_id = ?)
 		", array(time(), $pn_object_id));
 		
-		if ($qr_res->numRows() > 0) {
-			$va_reservations = array();
-			while($qr_res->nextRow()) {
-				$va_reservations[] = $qr_res->getRow();
-			}
-			return $va_reservations;
+		$va_checkout_ids = $qr_res->getAllFieldValues('checkout_id');
+		if (!sizeof($va_checkout_ids)) { return array(); }
+		
+		if (!($qr_history = caMakeSearchResult('ca_object_checkouts', $va_checkout_ids))) { return array(); }
+		
+		$va_reservations = array();
+		while($qr_history->nextHit()) {
+			$va_reservations[] = array(
+				'group_uuid' => $qr_history->get('ca_object_checkouts.group_uuid'),
+				'checkout_id' => $qr_history->get('ca_object_checkouts.checkout_id'),
+				'user_id' => $qr_history->get('ca_object_checkouts.user_id'),
+				'user_name' => $qr_history->get('ca_users.fname').' '.$qr_history->get('ca_users.lname').(($vs_email = $qr_history->get('ca_users.email')) ? " ({$vs_email})" : ''),
+				'created_on' => $qr_history->get('ca_object_checkouts.created_on', array('timeOmit' => true)),
+				'checkout_notes' => $qr_history->get('ca_object_checkouts.checkout_notes')
+			);
 		}
-		return false;
+		return $va_reservations;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function objectHistory($pn_object_id) {
+		$o_db = $this->getDb();
+		$qr_res = $o_db->query("
+			SELECT checkout_id
+			FROM ca_object_checkouts
+			WHERE
+				(object_id = ?) AND (deleted = 0) AND (checkout_date IS NOT NULL)
+			ORDER BY 
+				created_on
+		", array($pn_object_id));
+		
+		$va_checkout_ids = $qr_res->getAllFieldValues('checkout_id');
+		if (!sizeof($va_checkout_ids)) { return array(); }
+		
+		if (!($qr_history = caMakeSearchResult('ca_object_checkouts', $va_checkout_ids))) { return array(); }
+		
+		$va_history = array();
+		
+		while($qr_history->nextHit()) {
+			$va_history[] = array(
+				'checkout_id' => $qr_history->get('ca_object_checkouts.checkout_id'),
+				'group_uuid' => $qr_history->get('ca_object_checkouts.group_uuid'),
+				'user_id' => $qr_history->get('ca_object_checkouts.user_id'),
+				'user_name' => $qr_history->get('ca_users.fname').' '.$qr_history->get('ca_users.lname').(($vs_email = $qr_history->get('ca_users.email')) ? " ({$vs_email})" : ''),
+				'created_on' => $qr_history->get('ca_object_checkouts.created_on', array('timeOmit' => true)),
+				'checkout_date' => $qr_history->get('ca_object_checkouts.checkout_date', array('timeOmit' => true)),
+				'due_date' => $qr_history->get('ca_object_checkouts.due_date', array('timeOmit' => true)),
+				'return_date' => $qr_history->get('ca_object_checkouts.return_date', array('timeOmit' => true)),
+				'return_notes' => $qr_history->get('ca_object_checkouts.return_notes'),
+				'checkout_notes' => $qr_history->get('ca_object_checkouts.checkout_notes')
+			);
+		}
+		
+		return $va_history;
 	}
 	# ------------------------------------------------------
 	/**
@@ -553,7 +621,10 @@ class ca_object_checkouts extends BaseModel {
 	# Stats
 	# ------------------------------------------------------
 	/**
+	 * Return number of outstanding checkouts that need to be returned
 	 *
+	 * @param Db $po_db A Db instance to use for database access. If omitted a new instance will be used.
+	 * @return int 
 	 */
 	static public function numOutstandingCheckouts($po_db=null) {
 		$o_db = $po_db ? $po_db : new Db();
