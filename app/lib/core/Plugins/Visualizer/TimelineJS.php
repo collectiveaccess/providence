@@ -73,14 +73,16 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 		// from the entire data set
 		$qr_res = $this->getData();
 		while($qr_res->nextHit()) {
-			foreach($pa_viz_settings['sources'] as $vs_source_name => $va_source) {
+			foreach($pa_viz_settings['sources'] as $va_source) {
 				if($qr_res->get($va_source['data'])) {
 					$this->opn_num_items_rendered++;
 				}
 			}
+
+			if($this->opn_num_items_rendered >= 100) { break; }
 		}
-		
-		$vs_buf = "
+
+		$vs_buf = $this->getLocaleJSSrc($po_request)."
 	<div id='timeline-embed' style='width: {$vs_width}; height: {$vs_height};'></div>
     <script type='text/javascript'>
 		jQuery(document).ready(function() {
@@ -94,7 +96,7 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 		});
 	</script>
 ";
-		
+
 		return $vs_buf;
 	}
 	# ------------------------------------------------
@@ -122,9 +124,8 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 		$qr_res = $this->getData();
 		$vs_table_name = $qr_res->tableName();
 		$vs_pk = $qr_res->primaryKey();
-		
+
 		$vn_c = 0;
-		$va_results = array();
 		
 		while($qr_res->nextHit()) {
 			foreach($pa_viz_settings['sources'] as $vs_source_name => $va_source) {
@@ -153,12 +154,12 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 					)
 				);
 			}
-			
+
 			$vn_c++;
-			if ($vn_c > 2000) { break; }
+			if ($vn_c >= 100) { break; }
 		}
-		
-		
+
+
 		return json_encode(array('timeline' => $va_data));
 	}
 	# ------------------------------------------------
@@ -216,5 +217,14 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 		return $va_packages;
 	}
 	# ------------------------------------------------
+	private function getLocaleJSSrc($po_request) {
+		// try to include locale file
+		global $g_ui_locale; $va_matches = array();
+		preg_match("/^([a-z]{2,3})\_[A-Z]{2,3}$/", $g_ui_locale, $va_matches);
+		if(isset($va_matches[1]) && file_exists(__CA_BASE_DIR__.'/assets/timelinejs/js/locale/'.$va_matches[1].'.js')) {
+			return "<script src='".$po_request->getBaseUrlPath()."/assets/timelinejs/js/locale/".$va_matches[1].".js' type='text/javascript'></script>";
+		}
+		return '';
+	}
+	# ------------------------------------------------
 }
-?>

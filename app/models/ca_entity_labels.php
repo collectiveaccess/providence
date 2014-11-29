@@ -294,4 +294,3 @@ class ca_entity_labels extends BaseLabel {
 	}
 	# ------------------------------------------------------
 }
-?>

@@ -512,7 +512,19 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 							$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
 							$va_placements[$vn_placement_id]['inlineEditingType'] = null;
 						} else {
-							$va_placements[$vn_placement_id]['allowInlineEditing'] = true;
+							if(isset($va_bundle_name[1])){
+								// check if identifier is editable
+								$id_editable = $t_subject->opo_idno_plugin_instance->isFormatEditable($vs_subject_table);
+
+								// Do not allow in-line editing if the intrinsic element is identifier and
+								// a). is not editable (editable = 0 in multipart_id_numbering.conf)
+								// b). consists of multiple elements
+								if($va_bundle_name[1] == $t_subject->getProperty('ID_NUMBERING_ID_FIELD') && $id_editable == false)
+									$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
+								else
+									$va_placements[$vn_placement_id]['allowInlineEditing'] = true;
+							}
+
 							switch($t_subject->getFieldInfo($va_bundle_name[1], 'DISPLAY_TYPE')) {
 								case 'DT_SELECT':
 									if (($vs_list_code = $t_subject->getFieldInfo($va_bundle_name[1], 'LIST')) || ($vs_list_code = $t_subject->getFieldInfo($va_bundle_name[1], 'LIST_CODE'))) {
@@ -609,7 +621,8 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		$pm_table_name_or_num = 							caGetOption('table', $pa_options, null);
 		$pn_user_id = 										caGetOption('user_id', $pa_options, null);
-		$pn_access = 										caGetOption('access', $pa_options, null); 
+		$pn_user_access = 									caGetOption('access', $pa_options, null); 
+		$pa_access = 										caGetOption('checkAccess', $pa_options, null); 
 		$pa_restrict_to_types = 							caGetOption('restrictToTypes', $pa_options, null);
 		$pb_dont_include_subtypes_in_type_restriction = 	caGetOption('dontIncludeSubtypesInTypeRestriction', $pa_options, false);
 		
@@ -631,13 +644,18 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				$va_sql_wheres[] = "(cbdtr.type_id IS NULL OR cbdtr.type_id IN (".join(",", $va_type_list)."))";
 			}
 		}
+		if (is_array($pa_access) && (sizeof($pa_access))) {
+			$pa_access = array_map("intval", $pa_access);
+			$va_sql_wheres[] = "(bd.access IN (".join(",", $pa_access)."))";
+		}
+		
 		$va_sql_access_wheres = array();
 		if ($pn_user_id) {
 			$t_user = $o_dm->getInstanceByTableName('ca_users', true);
 			$t_user->load($pn_user_id);
 			
 			if ($t_user->getPrimaryKey()) {
-				$vs_access_sql = ($pn_access > 0) ? " AND (access >= ".intval($pn_access).")" : "";
+				$vs_access_sql = ($pn_user_access > 0) ? " AND (access >= ".intval($pn_user_access).")" : "";
 				if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {
 					$vs_sql = "(
 						(bd.user_id = ".intval($pn_user_id).") OR 
@@ -666,7 +684,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		
-		if ($pn_access == __CA_BUNDLE_DISPLAY_READ_ACCESS__) {
+		if ($pn_user_access == __CA_BUNDLE_DISPLAY_READ_ACCESS__) {
 			$va_sql_access_wheres[] = "(bd.is_system = 1)";
 		}
 		
@@ -761,11 +779,11 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 	 * Determines if user has access to a display at a specified access level.
 	 *
 	 * @param int $pn_user_id user_id of user to check display access for
-	 * @param int $pn_access type of access required. Use __CA_BUNDLE_DISPLAY_READ_ACCESS__ for read-only access or __CA_BUNDLE_DISPLAY_EDIT_ACCESS__ for editing (full) access
+	 * @param int $pn_user_access type of access required. Use __CA_BUNDLE_DISPLAY_READ_ACCESS__ for read-only access or __CA_BUNDLE_DISPLAY_EDIT_ACCESS__ for editing (full) access
 	 * @param int $pn_display_id The id of the display to check. If omitted then currently loaded display will be checked.
 	 * @return bool True if user has access, false if not
 	 */
-	public function haveAccessToDisplay($pn_user_id, $pn_access, $pn_display_id=null) {
+	public function haveAccessToDisplay($pn_user_id, $pn_user_access, $pn_display_id=null) {
 		if ($pn_display_id) {
 			$vn_display_id = $pn_display_id;
 			$t_disp = new ca_bundle_displays($vn_display_id);
@@ -777,17 +795,17 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		if(!$vn_display_id && !($vn_display_id = $t_disp->getPrimaryKey())) { 
 			return true; // new display
 		}
-		if (isset(ca_bundle_displays::$s_have_access_to_display_cache[$vn_display_id.'/'.$pn_user_id.'/'.$pn_access])) {
-			return ca_bundle_displays::$s_have_access_to_display_cache[$vn_display_id.'/'.$pn_user_id.'/'.$pn_access];
+		if (isset(ca_bundle_displays::$s_have_access_to_display_cache[$vn_display_id.'/'.$pn_user_id.'/'.$pn_user_access])) {
+			return ca_bundle_displays::$s_have_access_to_display_cache[$vn_display_id.'/'.$pn_user_id.'/'.$pn_user_access];
 		}
 		
 		if (($vn_display_user_id == $pn_user_id)) {	// owners have all access
-			return ca_bundle_displays::$s_have_access_to_display_cache[$vn_display_id.'/'.$pn_user_id.'/'.$pn_access] = true;
+			return ca_bundle_displays::$s_have_access_to_display_cache[$vn_display_id.'/'.$pn_user_id.'/'.$pn_user_access] = true;
 		}
 		
 		
-		if ((bool)$t_disp->get('is_system') && ($pn_access == __CA_BUNDLE_DISPLAY_READ_ACCESS__)) {	// system displays are readable by all
-			return ca_bundle_displays::$s_have_access_to_display_cache[$vn_display_id.'/'.$pn_user_id.'/'.$pn_access] = true;
+		if ((bool)$t_disp->get('is_system') && ($pn_user_access == __CA_BUNDLE_DISPLAY_READ_ACCESS__)) {	// system displays are readable by all
+			return ca_bundle_displays::$s_have_access_to_display_cache[$vn_display_id.'/'.$pn_user_id.'/'.$pn_user_access] = true;
 		}
 		
 		$o_db =  $this->getDb();
@@ -798,9 +816,9 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			INNER JOIN ca_users_x_groups AS uxg ON uxg.group_id = ug.group_id
 			WHERE 
 				(dxg.access >= ?) AND (uxg.user_id = ?) AND (dxg.display_id = ?)
-		", (int)$pn_access, (int)$pn_user_id, (int)$vn_display_id);
+		", (int)$pn_user_access, (int)$pn_user_id, (int)$vn_display_id);
 	
-		if ($qr_res->numRows() > 0) { return ca_bundle_displays::$s_have_access_to_display_cache[$vn_display_id.'/'.$pn_user_id.'/'.$pn_access] = true; }
+		if ($qr_res->numRows() > 0) { return ca_bundle_displays::$s_have_access_to_display_cache[$vn_display_id.'/'.$pn_user_id.'/'.$pn_user_access] = true; }
 		
 		$qr_res = $o_db->query("
 			SELECT dxu.display_id 
@@ -808,11 +826,11 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			INNER JOIN ca_users AS u ON dxu.user_id = u.user_id
 			WHERE 
 				(dxu.access >= ?) AND (u.user_id = ?) AND (dxu.display_id = ?)
-		", (int)$pn_access, (int)$pn_user_id, (int)$vn_display_id);
+		", (int)$pn_user_access, (int)$pn_user_id, (int)$vn_display_id);
 	
-		if ($qr_res->numRows() > 0) { return ca_bundle_displays::$s_have_access_to_display_cache[$vn_display_id.'/'.$pn_user_id.'/'.$pn_access] = true; }
+		if ($qr_res->numRows() > 0) { return ca_bundle_displays::$s_have_access_to_display_cache[$vn_display_id.'/'.$pn_user_id.'/'.$pn_user_access] = true; }
 		
-		return ca_bundle_displays::$s_have_access_to_display_cache[$vn_display_id.'/'.$pn_user_id.'/'.$pn_access] = false;
+		return ca_bundle_displays::$s_have_access_to_display_cache[$vn_display_id.'/'.$pn_user_id.'/'.$pn_user_access] = false;
 	}
 	# ------------------------------------------------------
 	# Settings
@@ -1745,22 +1763,6 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		$va_bundle_bits = explode('.', $vs_bundle_name);
-		
-		//$pa_options['hierarchicalDelimiter'] = '';
-		// $pa_options['showHierarchy'] = caGetOption('showHierarchy', $pa_options, caGetOption('show_hierarchy', $va_settings, false));
-// 		if ($pa_options['showHierarchy']) {
-// 			if ($va_bundle_bits[1] == 'related') {
-// 				array_splice($va_bundle_bits, 2, 0, 'hierarchy');
-// 			} else {
-// 				array_splice($va_bundle_bits, 1, 0, 'hierarchy');
-// 			}
-// 			$vs_bundle_name = join(".", $va_bundle_bits);
-// 			
-// 			$pa_options['hierarchicalDelimiter'] = 		caGetOption('hierarchical_delimiter', $va_settings, null);
-// 			$pa_options['direction'] = 					caGetOption('hierarchy_order', $va_settings, null);
-// 			$pa_options['bottom'] = 					caGetOption('hierarchy_limit', $va_settings, null);
-// 			$pa_options['removeFirstItems'] = 			caGetOption('remove_first_items', $va_settings, null);
-// 		}
 		
 		$pa_options['restrictToRelationshipTypes'] = 	caGetOption('restrict_to_relationship_types', $va_settings, null);
 		$pa_options['restrictToTypes'] =				caGetOption('restrict_to_types', $va_settings, null);

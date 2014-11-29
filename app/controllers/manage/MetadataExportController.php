@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/controllers/manage/MetadataExportController.php : 
+ * app/controllers/manage/MetadataExportController.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -15,10 +15,10 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
@@ -29,232 +29,358 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
- 	require_once(__CA_APP_DIR__."/helpers/batchHelpers.php");
- 	require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
- 	require_once(__CA_MODELS_DIR__."/ca_sets.php");
- 	require_once(__CA_MODELS_DIR__."/ca_data_exporters.php");
- 	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
- 	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
- 	require_once(__CA_LIB_DIR__."/ca/BatchProcessor.php");
- 	require_once(__CA_LIB_DIR__."/ca/BatchMetadataExportProgress.php");
 
- 
- 	class MetadataExportController extends ActionController {
- 		# -------------------------------------------------------
- 		protected $opo_datamodel;
- 		protected $opo_app_plugin_manager;
- 		# -------------------------------------------------------
- 		#
- 		# -------------------------------------------------------
- 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 			
- 			AssetLoadManager::register('bundleableEditor');
- 			AssetLoadManager::register('panel');
- 			
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 			
- 			$this->opo_datamodel = Datamodel::load();
- 			$this->opo_app_plugin_manager = new ApplicationPluginManager();
- 		}
- 		# -------------------------------------------------------
- 		/**
- 		 * List 
- 		 *
- 		 * @param array $pa_values An optional array of values to preset in the format, overriding any existing values in the model of the record being editing.
- 		 * @param array $pa_options Array of options passed through to _initView
- 		 *
- 		 */
- 		public function Index($pa_values=null, $pa_options=null) {
-			AssetLoadManager::register('tableList');
-			AssetLoadManager::register('fileupload');
-		
- 			$va_exporters = ca_data_exporters::getExporters();
- 			$this->view->setVar('exporter_list', $va_exporters);
- 			$this->render('export/exporter_list_html.php');
- 		}
- 		# -------------------------------------------------------
- 		public function UploadExporters() {
- 			$va_response = array('uploadMessage' => '', 'skippedMessage' => '');
-				foreach($_FILES as $vs_param => $va_file) {
-					foreach($va_file['name'] as $vn_i => $vs_name) {
-						file_put_contents("/tmp/uploadExp", print_r($va_file,true) ,FILE_APPEND);
-						if ($t_importer = ca_data_exporters::loadExporterFromFile($va_file['tmp_name'][$vn_i], $va_errors)) {
-							$va_response['copied'][$vs_name] = true;
-						} else {
-							$va_response['skipped'][$vs_name] = true;
-						}
-					}
-				}
-			
-			$va_response['uploadMessage'] = (($vn_upload_count = sizeof($va_response['copied'])) == 1) ? _t('Uploaded %1 worksheet', $vn_upload_count) : _t('Uploaded %1 worksheets', $vn_upload_count);
-			if (is_array($va_response['skipped']) && ($vn_skip_count = sizeof($va_response['skipped'])) && !$va_response['error']) {
-				$va_response['skippedMessage'] = ($vn_skip_count == 1) ? _t('Skipped %1 worksheet', $vn_skip_count) : _t('Skipped %1 worksheet', $vn_skip_count);
-			}
-			
- 			$this->view->setVar('response', $va_response);
- 			$this->render('export/file_upload_response_json.php');
- 		}
- 		# -------------------------------------------------------
- 		public function ExportData() {
- 			// Can user batch export?
- 			if (!$this->request->user->canDoAction('can_batch_export_metadata')) {
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3440?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
+/**
+ *
+ */
 
- 			$t_exporter = $this->getExporterInstance();
-			$t_subject = $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true);
+require_once(__CA_APP_DIR__."/helpers/batchHelpers.php");
+require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
+require_once(__CA_MODELS_DIR__."/ca_sets.php");
+require_once(__CA_MODELS_DIR__."/ca_data_exporters.php");
+require_once(__CA_LIB_DIR__."/core/Datamodel.php");
+require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
+require_once(__CA_LIB_DIR__."/ca/BatchProcessor.php");
+require_once(__CA_LIB_DIR__."/ca/BatchMetadataExportProgress.php");
 
-			// Can user export records of this type?
-			if (!$this->request->user->canDoAction('can_export_'.$t_subject->tableName())) {
-				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3430?r='.urlencode($this->request->getFullUrlPath()));
-				return;
-			}
 
- 			$this->view->setVar("t_subject", $t_subject);
- 			
-			// run now
-			$app = AppController::getInstance();
-			$app->registerPlugin(new BatchMetadataExportProgress($this->request));
+class MetadataExportController extends ActionController {
+	# -------------------------------------------------------
+	protected $opo_datamodel;
+	protected $opo_app_plugin_manager;
+	# -------------------------------------------------------
+	#
+	# -------------------------------------------------------
+	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+		AssetLoadManager::register('bundleableEditor');
+		AssetLoadManager::register('panel');
 
-			$this->render('export/export_results_html.php');
- 		}
- 		# -------------------------------------------------------
- 		public function ExportSingleData() { 	
- 			$t_exporter = $this->getExporterInstance();
+		parent::__construct($po_request, $po_response, $pa_view_paths);
 
-			if(!$t_exporter->getPrimaryKey()) {
-				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3420?r='.urlencode($this->request->getFullUrlPath()));
-				return;
-			}
+		$this->opo_datamodel = Datamodel::load();
+		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 
- 			$t_subject = $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true);
+		$this->cleanOldExportFilesFromTmpDir();
+	}
+	# -------------------------------------------------------
+	/**
+	 * List
+	 *
+	 * @param array $pa_values An optional array of values to preset in the format, overriding any existing values in the model of the record being editing.
+	 * @param array $pa_options Array of options passed through to _initView
+	 *
+	 */
+	public function Index($pa_values=null, $pa_options=null) {
+		AssetLoadManager::register('tableList');
+		AssetLoadManager::register('fileupload');
 
- 			// Can user export records of this type?
- 			if (!$this->request->user->canDoAction('can_export_'.$t_subject->tableName())) {
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3430?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
-
- 			$va_errors = ca_data_exporters::checkMapping($t_exporter->get('exporter_code'));
- 			if(is_array($va_errors) && (sizeof($va_errors)>0)){
- 				$this->view->setVar("errors",$va_errors);
- 			} else {
- 				set_time_limit(3600);
-
-	 			$vn_id = $this->request->getParameter('item_id', pInteger);
-				$this->view->setVar("t_subject", $t_subject);
-
-				if($vs_export_filename_template = $t_subject->getAppConfig()->get($t_subject->tableName()."_single_item_export_filename")) {
-					if($vs_filename = caProcessTemplateForIDs($vs_export_filename_template, $t_subject->tableNum(), array($vn_id))){
-						$this->view->setVar('file_name', $vs_filename);
-					}
-				}
-
-				// Can user read this particular item?
-				if(!caCanRead($this->request->getUserID(), $t_exporter->get('table_num'), $vn_id)) {
-					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
-					return;
-				}
-
-	 			$this->view->setVar('item_id',$vn_id);
-
-	 			$vs_export = ca_data_exporters::exportRecord($t_exporter->get('exporter_code'), $vn_id, array('singleRecord' => true));
-
-	 			$this->view->setVar("export", $vs_export);
- 			}
-
- 			$this->render('export/export_single_results_html.php');
- 		}
- 		# -------------------------------------------------------
-		public function Delete($pa_values=null) {
-			$t_exporter = $this->getExporterInstance();
-			if ($this->request->getParameter('confirm', pInteger)) {
-				$t_exporter->setMode(ACCESS_WRITE);
-				$t_exporter->delete(true);
-
-				if ($t_exporter->numErrors()) {
-					foreach ($t_exporter->errors() as $o_e) {
-						$this->request->addActionError($o_e, 'general');
-						$this->notification->addNotification($o_e->getErrorDescription(), __NOTIFICATION_TYPE_ERROR__);
-					}
+		$va_exporters = ca_data_exporters::getExporters();
+		$this->getView()->setVar('exporter_list', $va_exporters);
+		$this->render('export/exporter_list_html.php');
+	}
+	# -------------------------------------------------------
+	public function UploadExporters() {
+		$va_response = array('uploadMessage' => '', 'skippedMessage' => '');
+		foreach($_FILES as $va_file) {
+			foreach($va_file['name'] as $vn_i => $vs_name) {
+				file_put_contents("/tmp/uploadExp", print_r($va_file,true) ,FILE_APPEND);
+				if ($t_importer = ca_data_exporters::loadExporterFromFile($va_file['tmp_name'][$vn_i], $va_errors)) {
+					$va_response['copied'][$vs_name] = true;
 				} else {
-					$this->notification->addNotification(_t("Deleted importer"), __NOTIFICATION_TYPE_INFO__);
+					$va_response['skipped'][$vs_name] = true;
 				}
+			}
+		}
 
-				$this->Index();
+		$va_response['uploadMessage'] = (($vn_upload_count = sizeof($va_response['copied'])) == 1) ? _t('Uploaded %1 worksheet', $vn_upload_count) : _t('Uploaded %1 worksheets', $vn_upload_count);
+		if (is_array($va_response['skipped']) && ($vn_skip_count = sizeof($va_response['skipped'])) && !$va_response['error']) {
+			$va_response['skippedMessage'] = ($vn_skip_count == 1) ? _t('Skipped %1 worksheet', $vn_skip_count) : _t('Skipped %1 worksheet', $vn_skip_count);
+		}
+
+		$this->getView()->setVar('response', $va_response);
+		$this->render('export/file_upload_response_json.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 * Export list/set of records via Batch processor
+	 */
+	public function ExportData() {
+		// Can user batch export?
+		if (!$this->getRequest()->user->canDoAction('can_batch_export_metadata')) {
+			$this->getResponse()->setRedirect($this->getRequest()->config->get('error_display_url').'/n/3440?r='.urlencode($this->getRequest()->getFullUrlPath()));
+			return;
+		}
+
+		$t_exporter = $this->getExporterInstance();
+		$t_subject = $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true);
+
+		// Can user export records of this type?
+		if (!$this->getRequest()->user->canDoAction('can_export_'.$t_subject->tableName())) {
+			$this->getResponse()->setRedirect($this->getRequest()->config->get('error_display_url').'/n/3430?r='.urlencode($this->getRequest()->getFullUrlPath()));
+			return;
+		}
+
+		$this->getView()->setVar("t_subject", $t_subject);
+
+		// run now
+		$app = AppController::getInstance();
+		$app->registerPlugin(new BatchMetadataExportProgress($this->getRequest()));
+
+		$this->render('export/export_results_html.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 * Export single record (usually via inspector)
+	 */
+	public function ExportSingleData() {
+		$t_exporter = $this->getExporterInstance();
+
+		if(!$t_exporter->getPrimaryKey()) {
+			$this->getResponse()->setRedirect($this->getRequest()->config->get('error_display_url').'/n/3420?r='.urlencode($this->getRequest()->getFullUrlPath()));
+			return;
+		}
+
+		$t_subject = $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true);
+
+		// Can user export records of this type?
+		if (!$this->getRequest()->user->canDoAction('can_export_'.$t_subject->tableName())) {
+			$this->getResponse()->setRedirect($this->getRequest()->config->get('error_display_url').'/n/3430?r='.urlencode($this->getRequest()->getFullUrlPath()));
+			return;
+		}
+
+		$va_errors = ca_data_exporters::checkMapping($t_exporter->get('exporter_code'));
+		if(is_array($va_errors) && (sizeof($va_errors)>0)){
+
+			$this->getView()->setVar("errors",$va_errors);
+			$this->render('export/export_errors_html.php');
+
+		} else {
+			set_time_limit(3600);
+
+			$o_config = $t_subject->getAppConfig();
+
+			$vn_id = $this->getRequest()->getParameter('item_id', pInteger);
+			$this->getView()->setVar("t_subject", $t_subject);
+
+			// alternate destinations
+			$va_alt_dest = $o_config->getAssoc('exporter_alternate_destinations');
+			$this->getView()->setVar('exporter_alternate_destinations', $va_alt_dest);
+
+			// filename set via request wins
+			$vs_filename = $this->getRequest()->getParameter('file_name', pString);
+
+			// else run template from config
+			if(!$vs_filename && ($vs_export_filename_template = $o_config->get($t_subject->tableName()."_single_item_export_filename"))) {
+				if($vs_filename = caProcessTemplateForIDs($vs_export_filename_template, $t_subject->tableNum(), array($vn_id))) {
+					// processed template comes without file extension
+					$vs_filename = $vs_filename.'.'.$t_exporter->getFileExtension();
+				}
+			}
+
+			// still no filename? use hardcoded default
+			if(!$vs_filename) { $vs_filename = $vn_id.'.'.$t_exporter->getFileExtension(); }
+
+			// pass to view as default value for form field
+			$this->getView()->setVar('file_name', $vs_filename);
+
+			// Can user read this particular item?
+			if(!caCanRead($this->getRequest()->getUserID(), $t_exporter->get('table_num'), $vn_id)) {
+				$this->getResponse()->setRedirect($this->getRequest()->config->get('error_display_url').'/n/2320?r='.urlencode($this->getRequest()->getFullUrlPath()));
 				return;
-			} else {
-				$this->render('export/exporter_delete_html.php');
 			}
+
+			$this->getView()->setVar('item_id',$vn_id);
+
+			// do item export and dump into tmp file
+			$vs_export = ca_data_exporters::exportRecord($t_exporter->get('exporter_code'), $vn_id, array('singleRecord' => true));
+			$this->getView()->setVar("export", $vs_export);
+
+			$vs_tmp_file = tempnam(__CA_APP_DIR__.DIRECTORY_SEPARATOR.'tmp', 'dataExport');
+			file_put_contents($vs_tmp_file, $vs_export);
+
+			// Store file name and exporter data in session for later retrieval. We don't want to have to pass that on through a bunch of requests.
+			$o_session = $this->getRequest()->getSession();
+			$o_session->setVar('export_file', $vs_tmp_file);
+			$o_session->setVar('export_content_type', $t_exporter->getContentType());
+			$o_session->setVar('exporter_id', $t_exporter->getPrimaryKey());
+
+			$this->render('export/export_destination_html.php');
 		}
-		# -------------------------------------------------------
-		public function DownloadExport(){
-			$ps_file = trim($this->request->getParameter('file',pString));
-			$va_matches = array();
-			if($ps_file && preg_match("/^([0-9]+)\_[0-9a-f]{32,32}$/", $ps_file, $va_matches)){
-				if(file_exists(__CA_APP_DIR__.'/tmp/'.$ps_file)){
-					if($va_matches[1]){
-						$t_exporter = new ca_data_exporters($va_matches[1]);
-						if($t_exporter->getPrimaryKey()){
-							$t_subject = $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true);
+	}
+	# -------------------------------------------------------
+	public function ProcessDestination() {
+		$o_config = Configuration::load();
+		$va_alt_dest = $o_config->getAssoc('exporter_alternate_destinations');
+		$this->getView()->setVar('exporter_alternate_destinations', $va_alt_dest);
 
-							$this->view->setVar('file',__CA_APP_DIR__.'/tmp/'.$ps_file);
-							$this->view->setVar('extension',$t_exporter->getFileExtension());
-							$this->view->setVar('content_type',$t_exporter->getContentType());
+		$vs_filename = $this->getRequest()->getParameter('file_name', pString);
+		$this->getView()->setVar('file_name', $vs_filename);
 
-							if($vs_export_filename = $t_subject->getAppConfig()->get($t_subject->tableName()."_batch_export_filename")) {
-								$this->view->setVar('file_name', $vs_export_filename);
-							}
-						}
-					}
+		$o_session = $this->getRequest()->getSession();
+
+		if(!($vs_tmp_file = $o_session->getVar('export_file'))) {
+			return; //@todo error handling
+		}
+		if(!($vs_content_type = $o_session->getVar('export_content_type'))) {
+			return; // @todo error handling
+		}
+
+		$this->getView()->setVar('export_file', $vs_tmp_file);
+		$this->getView()->setVar('export_content_type', $vs_content_type);
+
+		$vs_dest_code = $this->getRequest()->getParameter('destination', pString);
+
+		// catch plain old file download request and download as binary
+		if($vs_dest_code == 'file_download') {
+			$this->render('export/download_export_binary.php');
+			return;
+		}
+
+		// other destination
+		$vb_success = false;
+		if(is_array($va_alt_dest) && sizeof($va_alt_dest)>0) {
+			if(is_array($va_alt_dest[$vs_dest_code])) {
+				$va_dest = $va_alt_dest[$vs_dest_code];
+				// github is the only type we support atm
+				if(!isset($va_dest['type']) || ($va_dest['type'] != 'github')) { return; }
+				if(!isset($va_dest['display']) || !$va_dest['display']) { $va_dest['display'] = "???"; }
+				$this->getView()->setVar('dest_display_name', $va_dest['display']);
+
+				if(isset($va_dest['base_dir']) && strlen($va_dest['base_dir'])>0) {
+					$vs_git_path = preg_replace('!/+!','/', $va_dest['base_dir'].'/'.$vs_filename);
+				} else {
+					$vs_git_path = $vs_filename;
+				}
+
+				if(caUploadFileToGitHub(
+					$va_dest['username'], $va_dest['token'], $va_dest['owner'], $va_dest['repository'],
+					$vs_git_path, $vs_tmp_file, $va_dest['branch'], (bool)$va_dest['update_existing']
+				)) {
+					$vb_success = true;
 				}
 			}
-
-			$this->render('export/download_batch_html.php');
 		}
-		# -------------------------------------------------------
-		# Utilities
-		# -------------------------------------------------------
-		private function getExporterInstance($pb_set_view_vars=true, $pn_exporter_id=null) {
-			if (!($vn_exporter_id = $this->request->getParameter('exporter_id', pInteger))) {
-				$vn_exporter_id = $pn_exporter_id;
-			}
-			$t_exporter = new ca_data_exporters($vn_exporter_id);
-			if ($pb_set_view_vars){
-				$this->view->setVar('exporter_id', $vn_exporter_id);
-				$this->view->setVar('t_exporter', $t_exporter);
-			}
-			return $t_exporter;
-		}
-		# ------------------------------------------------------------------
- 		# Sidebar info handler
- 		# ------------------------------------------------------------------
- 		/**
- 		 * Sets up view variables for upper-left-hand info panel (aka. "inspector"). Actual rendering is performed by calling sub-class.
- 		 *
- 		 * @param array $pa_parameters Array of parameters as specified in navigation.conf, including primary key value and type_id
- 		 */
- 		public function Info($pa_parameters) {
- 			$o_dm = Datamodel::load();
 
- 			if(($this->request->getAction()=="Index") || ($this->request->getAction()=="Delete")){
-	 			$t_exporter = $this->getExporterInstance(false);
-	 			$this->view->setVar('t_item', $t_exporter);
-				$this->view->setVar('exporter_count', ca_data_exporters::getExporterCount());
-				
-	 			return $this->render('export/widget_exporter_list_html.php', true);
- 			} else {
- 				$t_exporter = $this->getExporterInstance();
-	 			$this->view->setVar('t_item', $t_exporter);
- 				return $this->render('export/widget_exporter_info_html.php', true);
- 			}
- 		}
-		# ------------------------------------------------------------------
- 	}
- ?>
+		$this->getView()->setVar('alternate_destination_success', $vb_success);
+
+		$this->render('export/download_feedback_html.php');
+	}
+	# -------------------------------------------------------
+	public function Delete() {
+		$t_exporter = $this->getExporterInstance();
+		if ($this->getRequest()->getParameter('confirm', pInteger)) {
+			$t_exporter->setMode(ACCESS_WRITE);
+			$t_exporter->delete(true);
+
+			if ($t_exporter->numErrors()) {
+				foreach ($t_exporter->errors() as $o_e) {
+					$this->getRequest()->addActionError($o_e, 'general');
+					$this->notification->addNotification($o_e->getErrorDescription(), __NOTIFICATION_TYPE_ERROR__);
+				}
+			} else {
+				$this->notification->addNotification(_t("Deleted importer"), __NOTIFICATION_TYPE_INFO__);
+			}
+
+			$this->Index();
+			return;
+		} else {
+			$this->render('export/exporter_delete_html.php');
+		}
+	}
+	# -------------------------------------------------------
+	/**
+	 * Prepare export generated by ExportData action
+	 */
+	public function SetupBatchExport() {
+		$o_conf = Configuration::load();
+		$o_session = $this->getRequest()->getSession();
+
+		if(!($vn_exporter_id = $o_session->getVar('exporter_id'))) {
+			$this->getResponse()->setRedirect($this->getRequest()->config->get('error_display_url').'/n/3420?r='.urlencode($this->getRequest()->getFullUrlPath()));
+			return;
+		}
+
+		$t_exporter = new ca_data_exporters($vn_exporter_id);
+		if(!$t_exporter->getPrimaryKey()) {
+			$this->getResponse()->setRedirect($this->getRequest()->config->get('error_display_url').'/n/3420?r='.urlencode($this->getRequest()->getFullUrlPath()));
+			return;
+		}
+
+		$t_subject = $t_exporter->getAppDatamodel()->getInstanceByTableNum($t_exporter->get('table_num'), true);
+
+		// alternate destinations
+		$va_alt_dest = $o_conf->getAssoc('exporter_alternate_destinations');
+		$this->getView()->setVar('exporter_alternate_destinations', $va_alt_dest);
+
+		// filename set via request wins
+		$vs_filename = $this->getRequest()->getParameter('file_name', pString);
+
+		// otherwise get from config file
+		if(!$vs_filename) {
+			if($vs_filename = $o_conf->get($t_subject->tableName()."_batch_export_filename")) {
+				// config setting comes without file extension
+				$vs_filename = $vs_filename.'.'.$t_exporter->getFileExtension();
+			}
+		}
+
+		// still no filename? -> go for hardcoded default
+		if(!$vs_filename) { $vs_filename = 'batch_export.'.$t_exporter->getFileExtension(); }
+
+		// pass to view
+		$this->getView()->setVar('file_name', $vs_filename);
+
+		$this->render('export/export_destination_html.php');
+	}
+	# -------------------------------------------------------
+	# Utilities
+	# -------------------------------------------------------
+	private function getExporterInstance($pb_set_view_vars=true, $pn_exporter_id=null) {
+		if (!($vn_exporter_id = $this->getRequest()->getParameter('exporter_id', pInteger))) {
+			$vn_exporter_id = $pn_exporter_id;
+		}
+		$t_exporter = new ca_data_exporters($vn_exporter_id);
+		if ($pb_set_view_vars){
+			$this->getView()->setVar('exporter_id', $vn_exporter_id);
+			$this->getView()->setVar('t_exporter', $t_exporter);
+		}
+		return $t_exporter;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Cleans up temporary export files older than an hour
+	 * By then everybody should have gotten everything they need from the export dest screen
+	 */
+	private function cleanOldExportFilesFromTmpDir() {
+		$va_tmp_dir_contents = caGetDirectoryContentsAsList(__CA_APP_DIR__.DIRECTORY_SEPARATOR.'tmp', false);
+		foreach($va_tmp_dir_contents as $vs_file) {
+			if(preg_match("/^dataExport/", basename($vs_file))) {
+				if((time() - filemtime($vs_file)) > 60*60) {
+					@unlink($vs_file);
+				}
+			}
+		}
+	}
+	# ------------------------------------------------------------------
+	# Sidebar info handler
+	# ------------------------------------------------------------------
+	/**
+	 * Sets up view variables for upper-left-hand info panel (aka. "inspector"). Actual rendering is performed by calling sub-class.
+	 *
+	 * @param array $pa_parameters Array of parameters as specified in navigation.conf, including primary key value and type_id
+	 * @return string rendered view ready for display
+	 */
+	public function Info($pa_parameters) {
+		if(($this->getRequest()->getAction()=="Index") || ($this->getRequest()->getAction()=="Delete")){
+			$t_exporter = $this->getExporterInstance(false);
+			$this->getView()->setVar('t_item', $t_exporter);
+			$this->getView()->setVar('exporter_count', ca_data_exporters::getExporterCount());
+
+			return $this->render('export/widget_exporter_list_html.php', true);
+		} else {
+			$t_exporter = $this->getExporterInstance();
+			$this->getView()->setVar('t_item', $t_exporter);
+			return $this->render('export/widget_exporter_info_html.php', true);
+		}
+	}
+	# ------------------------------------------------------------------
+}

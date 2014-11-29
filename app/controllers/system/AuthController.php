@@ -53,7 +53,8 @@
 				if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
 					if(!initializeLocale($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) die("Error loading locale ".$g_ui_locale);
 				}
-				$this->redirect(sprintf('%s?redirect=%s', caNavUrl($this->request, 'system', 'auth', 'login'), urlencode($vs_redirect_url)));
+				$this->render('login_html.php');
+				//$this->redirect(sprintf('%s?redirect=%s', caNavUrl($this->request, 'system', 'auth', 'login'), urlencode($vs_redirect_url)));
 			} else {
 				//
 				// Reset locale globals
@@ -64,8 +65,7 @@
 				$g_ui_units_pref = $this->request->user->getPreference('units');			// user's selected display units for measurements 	(available as global)
 								
 				if(!initializeLocale($g_ui_locale)) die("Error loading locale ".$g_ui_locale);
-				global $ca_translation_cache;
-				$ca_translation_cache = array();				
+				MemoryCache::flush('translation');
 				AppNavigation::clearMenuBarCache($this->request);	// want to clear menu bar on login
 				
 				// Notify the user of the good news

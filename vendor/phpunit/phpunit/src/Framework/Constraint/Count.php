@@ -92,9 +92,7 @@ class PHPUnit_Framework_Constraint_Count extends PHPUnit_Framework_Constraint
     {
         if ($other instanceof Countable || is_array($other)) {
             return count($other);
-        }
-
-        else if ($other instanceof Traversable) {
+        } elseif ($other instanceof Traversable) {
             if ($other instanceof IteratorAggregate) {
                 $iterator = $other->getIterator();
             } else {
@@ -108,7 +106,7 @@ class PHPUnit_Framework_Constraint_Count extends PHPUnit_Framework_Constraint
             // moves pointer
             if ($key !== null) {
                 $iterator->rewind();
-                while ($key !== $iterator->key()) {
+                while ($iterator->valid() && $key !== $iterator->key()) {
                     $iterator->next();
                 }
             }
@@ -129,10 +127,9 @@ class PHPUnit_Framework_Constraint_Count extends PHPUnit_Framework_Constraint
     protected function failureDescription($other)
     {
         return sprintf(
-          'actual size %d matches expected size %d',
-
-          $this->getCountOf($other),
-          $this->expectedCount
+            'actual size %d matches expected size %d',
+            $this->getCountOf($other),
+            $this->expectedCount
         );
     }
 

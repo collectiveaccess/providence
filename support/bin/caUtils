@@ -263,7 +263,8 @@
 					if (!isset($_SERVER['SCRIPT_FILENAME']) || !$_SERVER['SCRIPT_FILENAME']) { $_SERVER['SCRIPT_FILENAME'] = join("/", $va_cwd)."/index.php"; }
 					if (!isset($_SERVER['HTTP_HOST']) || !$_SERVER['HTTP_HOST']) { $_SERVER['HTTP_HOST'] = 'localhost'; }
 					
-					print "[\033[1;33mWARNING\033[0m] Guessing base path and hostname because configuration is not available. Loading any CollectiveAccess screen (except for the installer) in a web browser will cache configuration details and resolve this issue.\n\n";
+					print "[\033[1;33mWARNING\033[0m] Configuration is not available. Loading any CollectiveAccess screen (except for the installer) in a web browser will cache configuration details and resolve this issue.\n\n";
+					die;
 				}
 				
 				require_once($vs_setup_path_fallback);

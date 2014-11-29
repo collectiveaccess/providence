@@ -82,19 +82,22 @@ class PHPUnit_Util_Filter
             $eTrace = $e->getSyntheticTrace();
             $eFile  = $e->getSyntheticFile();
             $eLine  = $e->getSyntheticLine();
+        } elseif ($e instanceof PHPUnit_Framework_Exception) {
+            $eTrace = $e->getSerializableTrace();
+            $eFile  = $e->getFile();
+            $eLine  = $e->getLine();
         } else {
             if ($e->getPrevious()) {
-                $eTrace = $e->getPrevious()->getTrace();
-            } else {
-                $eTrace = $e->getTrace();
+                $e = $e->getPrevious();
             }
+            $eTrace = $e->getTrace();
             $eFile  = $e->getFile();
             $eLine  = $e->getLine();
         }
 
         if (!self::frameExists($eTrace, $eFile, $eLine)) {
             array_unshift(
-              $eTrace, array('file' => $eFile, 'line' => $eLine)
+                $eTrace, array('file' => $eFile, 'line' => $eLine)
             );
         }
 
@@ -107,10 +110,9 @@ class PHPUnit_Util_Filter
                 $frame['file'] !== $script) {
                 if ($asString === true) {
                     $filteredStacktrace .= sprintf(
-                      "%s:%s\n",
-
-                      $frame['file'],
-                      isset($frame['line']) ? $frame['line'] : '?'
+                        "%s:%s\n",
+                        $frame['file'],
+                        isset($frame['line']) ? $frame['line'] : '?'
                     );
                 } else {
                     $filteredStacktrace[] = $frame;

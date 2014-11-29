@@ -185,6 +185,15 @@ class MySQLDataReader extends BaseDataReader {
 	 * 
 	 * @return int
 	 */
+	public function currentRow() {
+		return $this->opn_current_row;
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @return int
+	 */
 	public function inputType() {
 		return $this->opo_rows->numRows();
 	}
@@ -199,4 +208,3 @@ class MySQLDataReader extends BaseDataReader {
 	}
 	# -------------------------------------------------------
 }
-?>

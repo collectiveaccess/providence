@@ -46,7 +46,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
  * More about bundle display templates here: http://docs.collectiveaccess.org/wiki/Bundle_Display_Templates
  */
 
-define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.:\/]+)!");
+define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.\/]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/]+)!");
 	
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -961,11 +961,21 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			
 				TooltipManager::add("#caDuplicateItemButton", _t('Duplicate this %1', mb_strtolower($vs_type_name, 'UTF-8')));
 			}
-			
+
+			//
+			// Download media in lot ($vn_num_objects is only set for object lots)
 			if ($vn_num_objects > 0) {
 				$vs_buf .= caNavLink($po_view->request, caNavIcon($po_view->request, __CA_NAV_BUTTON_DOWNLOAD__), "button", $po_view->request->getModulePath(), $po_view->request->getController(), 'getLotMedia', array('lot_id' => $t_item->getPrimaryKey(), 'download' => 1), array('id' => 'inspectorLotMediaDownloadButton'));
+				TooltipManager::add('#inspectorLotMediaDownloadButton', _t("Download all media associated with objects in this lot"));
 			}
-			TooltipManager::add('#inspectorLotMediaDownloadButton', _t("Download all media associated with objects in this lot"));
+
+			//
+			// Download media in set
+			if(($vs_table_name == 'ca_sets') && (sizeof($t_item->getItemRowIDs())>0)) {
+				$vs_buf .= caNavLink($po_view->request, caNavIcon($po_view->request, __CA_NAV_BUTTON_DOWNLOAD__), "button", $po_view->request->getModulePath(), $po_view->request->getController(), 'getSetMedia', array('set_id' => $t_item->getPrimaryKey(), 'download' => 1), array('id' => 'inspectorLotMediaDownloadButton'));
+
+				TooltipManager::add('#inspectorLotMediaDownloadButton', _t("Download all media associated with records in this set"));
+			}
 		
 			$vs_more_info = '';
 			
@@ -1017,6 +1027,17 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 						"</div>";
 					
 					TooltipManager::add("#caInspectorChangeDate", "<h2>"._t('Last changed on')."</h2>"._t('Last changed on %1', caGetLocalizedDate($va_last_change['timestamp'], array('dateFormat' => 'delimited'))));
+				}
+				
+				if (method_exists($t_item, 'getMetadataDictionaryRuleViolations') && is_array($va_violations = $t_item->getMetadataDictionaryRuleViolations()) && (($vn_num_violations = (sizeof($va_violations))) > 0)) {
+					$va_violation_messages = array();
+					foreach($va_violations as $vn_violation_id => $va_violation) {
+						$vs_label = $t_item->getDisplayLabel($va_violation['bundle_name']);
+						$va_violation_messages[] = "<li><em><u>{$vs_label}</u></em> ".$va_violation['message']."</li>";
+					}
+					
+					$vs_more_info .= "<div id='caInspectorViolationsList'>".($vs_num_violations_display = "<img src='".$po_view->request->getThemeUrlPath()."/graphics/icons/warning_small.gif' border='0'/> ".(($vn_num_violations > 1) ? _t('%1 problems require attention', $vn_num_violations) : _t('%1 problem requires attention', $vn_num_violations)))."</div>\n"; 
+					TooltipManager::add("#caInspectorViolationsList", "<h2>{$vs_num_violations_display}</h2><ol>".join("\n", $va_violation_messages))."</ol>\n";
 				}
 				
 				$vs_more_info .= "</div>\n";
@@ -1788,14 +1809,17 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 	 * @return string HTML implementing the inspector
 	 */
 	function caBatchMetadataExportInspector($po_view) {
-		$vs_color = "444444"; 
-		$vs_buf .= "<h3 class='nextPrevious'>".caNavLink($po_view->request, _t('Back to list'), '', 'manage', 'MetadataExport', 'Index', $pa_other_params=null, $pa_attributes=null)."</h3>";
-		$vs_buf .= "<h4><div id='caColorbox' style='border: 6px solid #{$vs_color}; padding-bottom:15px;'>\n";
+		$vs_color = "444444";
+		$vs_buf = "<h4><div id='caColorbox' style='border: 6px solid #{$vs_color}; padding-bottom:15px;'>\n";
 
 		$vs_buf .= "<strong>"._t("Batch export metadata")."</strong>\n";
 
 		$t_item = $po_view->getVar("t_item");
 		$vs_buf .= "<p>"._t("Selected exporter").":<br />".$t_item->getLabelForDisplay()."</p>";
+
+		if($vn_id = $po_view->request->getParameter('item_id', pInteger)) {
+			$vs_buf .= "<p>".caEditorLink($po_view->request, _t("Back to record"), 'caResultsEditorEditLink', $t_item->getTargetTableName(), $vn_id)."</p>";
+		}
 		
 		$vs_buf .= "</div></h4>\n";
 		
@@ -1822,6 +1846,11 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			if ((int)($o_config->get("{$vs_left_table_name}_disable"))) { return false; }
 			if ((int)($o_config->get("{$vs_right_table_name}_disable"))) { return false; }
 		} else {
+			switch($vs_table_name) {
+				case 'ca_object_representations':
+					if (!(int)($o_config->get('ca_objects_disable'))) { return true; }	
+					break;
+			}
 			if ((int)($o_config->get($vs_table_name.'_disable'))) { return false; }
 		}
 		
@@ -1919,10 +1948,11 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 	 */
 	function caGetMediaDisplayInfo($ps_context, $ps_mimetype) {
 		$o_config = Configuration::load();
-		$o_media_display_config = Configuration::load($o_config->get('media_display'));
+		$o_media_display_config = Configuration::load(__CA_APP_DIR__.'/conf/media_display.conf');
 		
 		if (!is_array($va_context = $o_media_display_config->getAssoc($ps_context))) { return null; }
 	
+		if (!$ps_mimetype) { return $va_context; }
 		foreach($va_context as $vs_media_class => $va_media_class_info) {
 			if (!is_array($va_mimetypes = $va_media_class_info['mimetypes'])) { continue; }
 			
@@ -1934,7 +1964,26 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
-	 * Replace "^" tags (eg. ^forename) in a template with values from an array
+	 * Returns a list of "^" prefixed-tags (eg. ^forename) present in a template
+	 *
+	 * @param string $ps_template
+	 * @param array $pa_options No options are currently supported
+	 * 
+	 * @return array An array of tags
+	 */
+	function caGetTemplateTags($ps_template, $pa_options=null) {
+		$va_tags = array();
+		if (preg_match_all(__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__, $ps_template, $va_matches)) {
+			foreach($va_matches[1] as $vn_i => $vs_possible_tag) {
+				$va_matches[1][$vn_i] = rtrim($vs_possible_tag, "/.");	// remove trailing slashes and periods
+			}
+			$va_tags = $va_matches[1];
+		}
+		return $va_tags;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Replace "^" prefix-edtags (eg. ^forename) in a template with values from an array
 	 *
 	 * @param string $ps_template String with embedded tags. Tags are just alphanumeric strings prefixed with a caret ("^")
 	 * @param array $pa_values Array of values; keys must match tag names
@@ -1949,13 +1998,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		$vs_prefix = isset($pa_options['prefix']) ? $pa_options['prefix'] : null;
 		$vs_remove_prefix = isset($pa_options['removePrefix']) ? $pa_options['removePrefix'] : null;
 		
-		$va_tags = array();
-		if (preg_match_all(__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__, $ps_template, $va_matches)) {
-			foreach($va_matches[1] as $vn_i => $vs_possible_tag) {
-				$va_matches[1][$vn_i] = rtrim($vs_possible_tag, "/.");	// remove trailing slashes and periods
-			}
-			$va_tags = $va_matches[1];
-		}
+		$va_tags = caGetTemplateTags($ps_template);
 		
 		$t_instance = null;
 		if (isset($pa_options['getFrom']) && (method_exists($pa_options['getFrom'], 'get'))) {
@@ -1995,7 +2038,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		foreach($pa_directives as $vs_directive) {
 			$va_tmp = explode(":", $vs_directive);
 			switch($va_tmp[0]) {
-				case 'LP':
+				case 'LP':		// left padding
 					$va_params = explode("/", $va_tmp[1]);
 					$vn_len = (int)$va_params[1];
 					$vs_str = (string)$va_params[0];
@@ -2003,7 +2046,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 						$ps_value = str_pad($ps_value, $vn_len, $vs_str, STR_PAD_LEFT);
 					}
 					break;
-				case 'RP':
+				case 'RP':		// right padding
 					$va_params = explode("/", $va_tmp[1]);
 					$vn_len = (int)$va_params[1];
 					$vs_str = (string)$va_params[0];
@@ -2017,7 +2060,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
-	 * Replace "^" tags (eg. ^forename) in a template with values from an array
+	 * Replace "^" prefixed tags (eg. ^forename) in a template with values from an array
 	 *
 	 * @param string $ps_template String with embedded tags. Tags are just alphanumeric strings prefixed with a caret ("^")
 	 * @param string $pm_tablename_or_num Table name or number of table from which values are being formatted
@@ -2967,6 +3010,23 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 	/**
 	 * Returns date range as a localized string for display, subject to the settings in the app/conf/datetime.conf configuration 
 	 *
+	 * @param int $pn_start_timestamp Historic start timestamp for date range to localize
+	 * @param int $pn_end_timestamp Historic end timestamp for date range to localize
+	 * @param array $pa_options All options supported by TimeExpressionParser::getText() are supported
+	 *
+	 * @return string Localized date/time expression
+	 */
+	function caGetLocalizedHistoricDateRange($pn_start_timestamp, $pn_end_timestamp, $pa_options=null) {
+		$o_tep = new TimeExpressionParser();
+		
+		$o_tep->setHistoricTimestamps($pn_start_timestamp, $pn_end_timestamp);
+		
+		return $o_tep->getText($pa_options);
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Returns date range as a localized string for display, subject to the settings in the app/conf/datetime.conf configuration 
+	 *
 	 * @param int $pn_start_timestamp Start of date range, as Unix timestamp
 	 * @param int $pn_end_timestamp End of date range, as Unix timestamp
 	 * @param array $pa_options All options supported by TimeExpressionParser::getText() are supported
@@ -3151,7 +3211,6 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 	 *						from which the interstitial was launched.
 	 * @return mixed 
 	 */
-$ca_relationship_lookup_parse_cache = array();
 	function caProcessRelationshipLookupLabel($qr_rel_items, $pt_rel, $pa_options=null) {
 		$va_initial_values = array();
 		
@@ -3412,7 +3471,6 @@ $ca_relationship_lookup_parse_cache = array();
 		if (!in_array(__CA_APP_TYPE__, array('PROVIDENCE', 'PAWTUCKET'))) { return $pa_text; }
 		if (__CA_APP_TYPE__ == 'PAWTUCKET') {
 			$o_config = Configuration::load();
-			if (!$o_config->get("allow_detail_for_{$ps_table_name}")) { return $pa_text; }
 		}
 		
 		$vb_can_handle_target = false;
@@ -3569,8 +3627,9 @@ $ca_relationship_lookup_parse_cache = array();
 		
 		if (!($vs_definition = trim(caGetOption($g_ui_locale, $pa_settings['definition'], null)))) { return ''; }
 		
-		$vs_buf = "<span style='position: absolute; top: 2px; right: 26px;'>";
-		$vs_buf .= "<a href='#' onclick='caBundleVisibilityManager.toggleDictionaryEntry(\"{$ps_id_prefix}\");  return false;'><img src=\"".$po_request->getThemeUrlPath()."/graphics/icons/info.png\" border=\"0\" id=\"{$ps_id_prefix}MetadataDictionaryToggleButton\"/></a>";
+		$vs_buf = '';
+		$vs_buf .= "<span style='position: absolute; top: 2px; right: 26px;'>";
+		$vs_buf .= "<a href='#' class='caMetadataDictionaryDefinitionToggle' onclick='caBundleVisibilityManager.toggleDictionaryEntry(\"{$ps_id_prefix}\");  return false;'><img src=\"".$po_request->getThemeUrlPath()."/graphics/icons/info.png\" border=\"0\" id=\"{$ps_id_prefix}MetadataDictionaryToggleButton\"/></a>";
 		$vs_buf .= "</span>\n";	
 		
 		$vs_buf .= "<div id='{$ps_id_prefix}DictionaryEntry' class='caMetadataDictionaryDefinition'>{$vs_definition}</div>";
@@ -3999,4 +4058,22 @@ $ca_relationship_lookup_parse_cache = array();
 		}
 		return $o_view->render('representation_viewer_html.php');
  	}
+	# ------------------------------------------------------------------
+	/**
+	 * Get Javascript code that generates Tooltips for a list of elements
+	 * @param array $pa_tooltips List of tooltips to set as selector=>text map
+	 * @param string $ps_class CSS class to use for tooltips
+	 * @return string
+	 */
+	function caGetTooltipJS($pa_tooltips, $ps_class = 'tooltipFormat') {
+		$vs_buf = "<script type='text/javascript'>\njQuery(document).ready(function() {\n";
+
+		foreach($pa_tooltips as $vs_element_selector => $vs_tooltip_text) {
+			$vs_buf .= "jQuery('{$vs_element_selector}').attr('title', '".preg_replace('![\n\r]{1}!', ' ', addslashes($vs_tooltip_text))."').tooltip({ tooltipClass: '{$ps_class}', show: 150, hide: 150});\n";
+		}
+
+		$vs_buf .= "});\n</script>\n";
+
+		return $vs_buf;
+	}
 	# ------------------------------------------------------------------

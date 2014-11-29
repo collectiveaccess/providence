@@ -1713,7 +1713,6 @@
  			$pn_representation_id 	= $this->request->getParameter('representation_id', pInteger);
  			$pn_value_id = $this->request->getParameter('value_id', pInteger);
  			if ($pn_value_id) {
- 			//print_R($_REQUEST); die;
  				return $this->DownloadAttributeMedia();
  			}
  			$ps_version = $this->request->getParameter('version', pString);
@@ -1808,16 +1807,17 @@
 			if (sizeof($va_file_paths) > 1) {
 				if (!($vn_limit = ini_get('max_execution_time'))) { $vn_limit = 30; }
 				set_time_limit($vn_limit * 2);
-				$o_zip = new ZipFile();
+				$vs_tmp_name = caGetTempFileName('DownloadMedia', 'zip');
+				$o_phar = new PharData($vs_tmp_name, null, null, Phar::ZIP);
 				foreach($va_file_paths as $vs_path => $vs_name) {
-					$o_zip->addFile($vs_path, $vs_name, null, array('compression' => 0));	// don't try to compress
+					$o_phar->addFile($vs_path, $vs_name);
 				}
-				$o_view->setVar('archive_path', $vs_path = $o_zip->output(ZIPFILE_FILEPATH));
+				$o_view->setVar('archive_path', $vs_tmp_name);
 				$o_view->setVar('archive_name', preg_replace('![^A-Za-z0-9\.\-]+!', '_', $t_subject->get('idno')).'.zip');
 				
  				$this->response->addContent($o_view->render('download_media_binary.php'));
 				
- 				if ($vs_path) { unlink($vs_path); }
+ 				if ($vs_tmp_name) { @unlink($vs_tmp_name); }
 			} else {
 				foreach($va_file_paths as $vs_path => $vs_name) {
 					$o_view->setVar('archive_path', $vs_path);
@@ -2112,5 +2112,52 @@
  			// send download
  			$this->response->addContent($o_view->render('ca_attributes_download_media.php'));
  		}
-		# ------------------------------------------------------------------
+ 		# -------------------------------------------------------
+ 		/**
+ 		 * Handle ajax media uploads from editor
+ 		 */ 
+ 		public function UploadFiles($pa_options=null) {
+ 			if (!$this->request->isLoggedIn() || ((int)$this->request->user->get('userclass') !== 0)) { 
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+ 			
+ 			// use configured directory to dump media with fallback to standard tmp directory
+ 			if (!is_writeable($vs_tmp_directory = $this->request->config->get('ajax_media_upload_tmp_directory'))) {
+ 				$vs_tmp_directory = caGetTempDirPath();
+ 			}
+ 			
+ 			$vn_user_id = $this->request->getUserID();
+ 			$vs_user_dir = $vs_tmp_directory."/userMedia{$vn_user_id}";
+			if(!file_exists($vs_user_dir)) { 
+				mkdir($vs_user_dir);
+			}
+			if (!($vn_timeout = (int)$this->request->config->get('ajax_media_upload_tmp_directory_timeout'))) {
+				$vn_timeout = 24 * 60 * 60;
+			}
+			
+ 		
+ 			// Cleanup any old files here
+ 			$va_files_to_delete = caGetDirectoryContentsAsList($vs_user_dir, true, false, false, true, array('modifiedSince' => time() - $vn_timeout));
+ 			foreach($va_files_to_delete as $vs_file_to_delete) {
+ 				@unlink($vs_file_to_delete);
+ 			}
+ 			
+ 			$va_stored_files = array();
+ 			foreach($_FILES as $vn_i => $va_file) {
+ 				$vs_dest_filename = pathinfo($va_file['tmp_name'], PATHINFO_FILENAME);
+ 				copy($va_file['tmp_name'], $vs_dest_path = $vs_tmp_directory."/userMedia{$vn_user_id}/{$vs_dest_filename}");
+ 				
+ 				// write file metadata
+ 				file_put_contents("{$vs_dest_path}_metadata", json_encode(array(
+ 					'original_filename' => $va_file['name'],
+ 					'size' => filesize($vs_dest_path)
+ 				)));
+ 				$va_stored_files[$vn_i] = "userMedia{$vn_user_id}/{$vs_dest_filename}"; // only return the user directory and file name, not the entire path
+ 			}
+ 			
+ 			
+ 			print json_encode($va_stored_files);
+ 		}
+		# -------------------------------------------------------
  	}

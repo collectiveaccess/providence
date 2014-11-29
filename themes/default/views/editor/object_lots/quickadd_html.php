@@ -40,15 +40,32 @@
 	$vb_can_edit	 	= $t_subject->isSaveable($this->request);
 	
 	$vs_form_name = "ObjectLotQuickAddForm";
-?>		
+?>				
+<script type="text/javascript">
+	var caQuickAddFormHandler = caUI.initQuickAddFormHandler({
+		formID: '<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>',
+		formErrorsPanelID: '<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>',
+		formTypeSelectID: '<?php print $vs_form_name; ?>TypeID<?php print $vs_field_name_prefix.$vs_n; ?>', 
+		
+		formUrl: '<?php print caNavUrl($this->request, 'editor/object_lots', 'ObjectLotQuickAdd', 'Form'); ?>',
+		fileUploadUrl: '<?php print caNavUrl($this->request, "editor/object_lots", "ObjectLotEditor", "UploadFiles"); ?>',
+		saveUrl: '<?php print caNavUrl($this->request, "editor/object_lots", "ObjectLotQuickAdd", "Save"); ?>',
+		
+		headerText: '<?php print addslashes(_t('Quick add %1', $t_subject->getTypeName())); ?>',
+		saveText: '<?php print addslashes(_t('Created %1 ', $t_subject->getTypeName())); ?> <em>%1</em>',
+		busyIndicator: '<?php print addslashes(caBusyIndicatorIcon($this->request)); ?>'
+		
+	});
+</script>
 <form action="#" name="<?php print $vs_form_name; ?>" method="POST" enctype="multipart/form-data" id="<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>">
 	<div class='quickAddDialogHeader'><?php 
-	print "<div class='quickAddTypeList'>"._t('Quick Add %1', $t_subject->getTypeListAsHTMLFormElement('change_type_id', array('id' => "{$vs_form_name}TypeID{$vs_field_name_prefix}{$vs_n}", 'onchange' => "caSwitchTypeQuickAddForm{$vs_field_name_prefix}{$vs_n}();"), array('value' => $t_subject->get('type_id'), 'restrictToTypes' => $va_restrict_to_types)))."</div>"; 
-	
+	print "<div class='quickAddTypeList'>"._t('Quick Add %1', $t_subject->getTypeListAsHTMLFormElement('change_type_id', array('id' => "{$vs_form_name}TypeID{$vs_field_name_prefix}{$vs_n}", 'onchange' => "caQuickAddFormHandler.switchForm();"), array('value' => $t_subject->get('type_id'), 'restrictToTypes' => $va_restrict_to_types)))."</div>"; 
 	if ($vb_can_edit) {
-		print "<div style='float: right;'>".caJSButton($this->request, __CA_NAV_BUTTON_ADD_LARGE__, _t("Add %1", $t_subject->getTypeName()), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caSave{$vs_form_name}{$vs_field_name_prefix}{$vs_n}(event);"))
-		.' '.caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "jQuery(\"#{$vs_form_name}".$vs_field_name_prefix.$vs_n."\").parent().data(\"panel\").hidePanel();"))."</div><br style='clear: both;'/>\n";
+		print "<div class='quickAddControls'>".caJSButton($this->request, __CA_NAV_BUTTON_ADD_LARGE__, _t("Add %1", $t_subject->getTypeName()), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caQuickAddFormHandler.save(event);"))
+		.' '.caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "jQuery(\"#{$vs_form_name}".$vs_field_name_prefix.$vs_n."\").parent().data(\"panel\").hidePanel();"))."</div>\n";
 	}
+	print "<div class='quickAddProgress'></div><br style='clear: both;'/>";
+	
 ?>
 	</div>
 	
@@ -78,53 +95,6 @@
 		<input type='hidden' name='q' value='<?php print htmlspecialchars($vs_q, ENT_QUOTES, 'UTF-8'); ?>'/>
 		<input type='hidden' name='screen' value='<?php print htmlspecialchars($this->getVar('screen')); ?>'/>
 		<input type='hidden' name='types' value='<?php print htmlspecialchars(is_array($va_restrict_to_types) ? join(',', $va_restrict_to_types) : ''); ?>'/>
-		
-		
 
-		<script type="text/javascript">
-			function caSave<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>(e) {
-				jQuery.each(CKEDITOR.instances, function(k, instance) {
-					instance.updateElement();
-				});
-				
-				jQuery.post('<?php print caNavUrl($this->request, "editor/object_lots", "ObjectLotQuickAdd", "Save"); ?>', jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").serialize(), function(resp, textStatus) {
-				
-					if (resp.status == 0) {
-						var inputID = jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('autocompleteInputID');
-						var itemIDID = jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('autocompleteItemIDID');
-						var typeIDID = jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('autocompleteTypeIDID');
-						var relationbundle = jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('relationbundle');
-					
-						jQuery('#' + inputID).val(resp.display);
-						jQuery('#' + itemIDID).val(resp.id);
-						jQuery('#' + typeIDID).val(resp.type_id);
-						
-						relationbundle.select(null, resp);
-						
-						jQuery.jGrowl('<?php print addslashes(_t('Created %1 ', $t_subject->getTypeName())); ?> <em>' + resp.display + '</em>', { header: '<?php print addslashes(_t('Quick add %1', $t_subject->getTypeName())); ?>' }); 
-						jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().data('panel').hidePanel();
-					} else {
-						// error
-						var content = '<div class="notification-error-box rounded"><ul class="notification-error-box">';
-						for(var e in resp.errors) {
-							content += '<li class="notification-error-box">' + e + '</li>';
-						}
-						content += '</ul></div>';
-						
-						jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").html(content).slideDown(200);
-						
-						var quickAddClearErrorInterval = setInterval(function() {
-							jQuery("#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>").slideUp(500);
-							clearInterval(quickAddClearErrorInterval);
-						}, 3000);
-					}
-				}, "json");
-			}
-			function caSwitchTypeQuickAddForm<?php print $vs_field_name_prefix.$vs_n; ?>() {
-				jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?> input[name=type_id]").val(jQuery("#<?php print $vs_form_name; ?>TypeID<?php print $vs_field_name_prefix.$vs_n; ?>").val());
-				var data = jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").serialize();
-				jQuery("#<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>").parent().load("<?php print caNavUrl($this->request, 'editor/object_lots', 'ObjectLotQuickAdd', 'Form'); ?>", data);
-			}
-		</script>
 	</div>
 </form>

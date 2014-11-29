@@ -31,7 +31,7 @@ rangeConjunctions = [bis, -, und, ..]
 dateTimeConjunctions = [um]
 
 dateDelimiters = [/,-,.]
-timeDelimiters = [:,.]
+timeDelimiters = [:]
 
 timeAMMeridian = am
 timePMMeridian = pm
@@ -49,11 +49,17 @@ dateUncertaintyDayIndicator = [d]
 # What to use to indicate a geological date ("millions of years ago")
 dateMYA = [mya]
 
-dateADIndicator = ad
-dateBCIndicator = bc
+dateADIndicator = n.Chr.
+dateBCIndicator = v.Chr.
 ADBCTable = {
-	a.d. = ad, n.chr. = ad,
-	b.c. = bc, v.chr. = bc, v.u.z = bc
+	a.d. = n.Chr.,
+	n.chr. = n.Chr.,
+	v.chr. = v.Chr.,
+	"n. chr." = n.Chr.,
+    "v. chr." = v.Chr.,
+	b.c. = v.Chr.,
+	v.u.z = v.Chr.
+	v.u.z. = v.Chr.
 }
 
 nowDate = [jetzt,now]

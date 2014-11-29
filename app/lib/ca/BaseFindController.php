@@ -38,7 +38,6 @@
  	require_once(__CA_LIB_DIR__.'/ca/ResultContext.php');
  	require_once(__CA_MODELS_DIR__.'/ca_bundle_displays.php');
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
-	require_once(__CA_LIB_DIR__."/core/Parsers/ZipFile.php");
 	require_once(__CA_LIB_DIR__."/core/AccessRestrictions.php");
  	require_once(__CA_LIB_DIR__.'/ca/Visualizer.php');
  	require_once(__CA_LIB_DIR__.'/core/Parsers/dompdf/dompdf_config.inc.php');
@@ -147,12 +146,13 @@
 			//
 			if (!sizeof($va_display_list)) {
 				if ($vs_idno_fld = $t_model->getProperty('ID_NUMBERING_ID_FIELD')) {
+					$va_multipar_id = new MultipartIDNumber($this->ops_tablename, '__default__', null, $t_model->getDb());
 					$va_display_list[$this->ops_tablename.'.'.$vs_idno_fld] = array(
 						'placement_id' => $this->ops_tablename.'.'.$vs_idno_fld,
 						'bundle_name' => $this->ops_tablename.'.'.$vs_idno_fld,
 						'display' => $t_model->getDisplayLabel($this->ops_tablename.'.'.$vs_idno_fld),
 						'settings' => array(),
-						'allowInlineEditing' => true,
+						'allowInlineEditing' => $va_multipar_id->isFormatEditable($this->ops_tablename),
 						'inlineEditingType' => DT_FIELD,
 						'inlineEditingListValues' => array()
 					);
@@ -208,7 +208,10 @@
 					
 					if ($va_tmp[0] != $this->ops_tablename) { continue; }
 					
-					if ($t_model->hasField($va_tmp[1])) { 
+					if ($t_model->hasField($va_tmp[1])) {
+						if($t_model->getFieldInfo($va_tmp[1], 'FIELD_TYPE') == FT_MEDIA) { // sorting media fields doesn't really make sense and can lead to sql errors
+							continue;
+						}
 						$va_display_list[$vn_i]['is_sortable'] = true;
 						
 						if ($t_model->hasField($va_tmp[1].'_sort')) {
@@ -268,6 +271,10 @@
 					'name' => _t('Spreadsheet with media icons (XLSX)'),
 					'code' => '_xlsx'
 				),
+                array(
+                    'name' => _t('Word processing (DOCX)'),
+                    'code' => '_docx'
+                )				
 			);
 			
 			// merge default formats with drop-in print templates
@@ -677,48 +684,6 @@
 		}
 		# -------------------------------------------------------
 		/**
-		 * Action to trigger export of current find result set
-		 */
-		public function exportWithMapping() {
-			set_time_limit(7200);
-			return $this->Index(array('output_format' => 'EXPORTWITHMAPPING'));
-		}
-		# -------------------------------------------------------
-		protected function _genExportWithMapping($po_result, $pn_exporter_id) {
-			// Can user batch export?
-			if (!$this->request->user->canDoAction('can_batch_export_metadata')) {
-				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3440?r='.urlencode($this->request->getFullUrlPath()));
-				return;
-			}
-
-			// Can user export records of this type?
-			if (!$this->request->user->canDoAction('can_export_'.$this->ops_tablename)) {
-				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/3430?r='.urlencode($this->request->getFullUrlPath()));
-				return;
-			}
-
-			$t_exporter = new ca_data_exporters($pn_exporter_id);
-
-			if(!($t_exporter->getPrimaryKey()>0)) {
-				$this->postError(3420, _t("Could not load export mapping"), "BaseFindController->_genExportWithMapping()");
-				return;
-			}
-
-			$vs_export_filename = preg_replace("/[^\p{L}\p{N}\-]/", '_', $this->opo_result_context->getSearchExpression());
-			$vs_export_filename = preg_replace("/[\_]+/", '_', $vs_export_filename);
-
-			$vs_tmp_file = tempnam(caGetTempDirPath(), 'export');
-			ca_data_exporters::exportRecordsFromSearchResult($t_exporter->get('exporter_code'), $po_result, $vs_tmp_file);
-
-			header('Content-Type: '.$t_exporter->getContentType().'; charset=UTF-8');
-			header('Content-Disposition: attachment; filename="'.$vs_export_filename.'.'.$t_exporter->getFileExtension().'"');
-			header('Content-Transfer-Encoding: binary');
-			readfile($vs_tmp_file);
-			@unlink($vs_tmp_file);
-			exit();
-		}
-		# -------------------------------------------------------
-		/**
 		 * Generate  export file of current result
 		 */
 		protected function _genExport($po_result, $ps_output_type, $ps_output_filename, $ps_title=null) {
@@ -735,6 +700,11 @@
 						require_once(__CA_LIB_DIR__."/core/Parsers/PHPExcel/PHPExcel/Writer/Excel2007.php");
 						$vs_content = $this->render('Results/xlsx_results.php');
 						return;
+                    case '_docx':
+                        require_once(__CA_LIB_DIR__."/core/Parsers/PHPWord/Autoloader.php");
+                        \PhpOffice\PhpWord\Autoloader::register();
+                        $vs_content = $this->render('Results/docx_results.php');
+                        return;						
 					case '_csv':
 						$vs_delimiter = ",";
 						$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename.'_csv'), 0, 30);
@@ -986,7 +956,9 @@
  				if (is_array($pa_ids) && sizeof($pa_ids)) {
  					$ps_version = $this->request->getParameter('version', pString);
 					if ($qr_res = $t_subject->makeSearchResult($t_subject->tableName(), $pa_ids, array('filterNonPrimaryRepresentations' => false))) {
-						$o_zip = new ZipFile();
+						$vs_tmp_name = caGetTempFileName('DownloadRepresentations', 'zip');
+						$o_phar = new PharData($vs_tmp_name, null, null, Phar::ZIP);
+
 						if (!($vn_limit = ini_get('max_execution_time'))) { $vn_limit = 30; }
 						set_time_limit($vn_limit * 2);
 						
@@ -1038,11 +1010,12 @@
 								if ($vs_path_with_embedding = caEmbedMetadataIntoRepresentation(new ca_objects($qr_res->get('ca_objects.object_id')), new ca_object_representations($vn_representation_id), $vs_version)) {
 									$vs_path = $vs_path_with_embedding;
 								}
-								$o_zip->addFile($vs_path, $vs_filename, 0, array('compression' => 0));
+								$o_phar->addFile($vs_path, $vs_filename);
 								$vn_file_count++;
 							}
 						}
-						$this->view->setVar('zip', $o_zip);
+
+						$this->view->setVar('tmp_file', $vs_tmp_name);
 						$this->view->setVar('download_name', 'media_for_'.mb_substr(preg_replace('![^A-Za-z0-9]+!u', '_', $this->getCriteriaForDisplay()), 0, 20).'.zip');
 						
  						set_time_limit($vn_limit);
