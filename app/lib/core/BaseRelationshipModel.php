@@ -665,7 +665,14 @@
 		/**
 		 * 
 		 */
-		public function getTypeID() {
+		public function getTypeID($pn_id = NULL) {
+			if ($pn_id) {
+				$qr_res = $this->getDb()->query("SELECT type_id FROM ".$this->tableName()." WHERE ".$this->primaryKey()." = ?", array((int)$pn_id));
+				if($qr_res->nextRow()) {
+					return $qr_res->get('type_id');
+				}
+				return null;
+			}
 			return (BaseModel::hasField('type_id')) ? BaseModel::get('type_id') : null;
 		}
 		# ------------------------------------------------------
