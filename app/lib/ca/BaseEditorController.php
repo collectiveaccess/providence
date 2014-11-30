@@ -804,10 +804,10 @@
 			if ($t_subject->hasField('acl_inherit_from_ca_collections') || $t_subject->hasField('acl_inherit_from_parent')) {
 				$t_subject->setMode(ACCESS_WRITE);
 				if ($t_subject->hasField('acl_inherit_from_ca_collections')) {
-					$t_subject->set('acl_inherit_from_ca_collections', $this->request->getParameter('acl_inherit_from_ca_collections', pString));
+					$t_subject->set('acl_inherit_from_ca_collections', $this->request->getParameter('acl_inherit_from_ca_collections', pInteger));
 				}
 				if ($t_subject->hasField('acl_inherit_from_parent')) {
-					$t_subject->set('acl_inherit_from_parent', $this->request->getParameter('acl_inherit_from_parent', pString));
+					$t_subject->set('acl_inherit_from_parent', $this->request->getParameter('acl_inherit_from_parent', pInteger));
 				}
 				$t_subject->update();
 				
