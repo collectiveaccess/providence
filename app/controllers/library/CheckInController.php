@@ -80,7 +80,7 @@
  				'object_id' => $t_object->getPrimaryKey(),
  				'idno' => $t_object->get('idno'),
  				'name' => $t_object->get('ca_objects.preferred_labels.name'),
- 				'media' => $t_object->get('ca_object_representations.media.icon'),
+ 				'media' => $t_object->getWithTemplate('^ca_object_representations.media.icon'),
  				'status' => $t_object->getCheckoutStatus(),
  				'status_display' => $t_object->getCheckoutStatus(array('returnAsText' => true)),
  				'checkout_date' => $t_checkout->get('ca_object_checkouts.checkout_date', array('timeOmit' => true)),
