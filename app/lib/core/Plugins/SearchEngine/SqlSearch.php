@@ -748,25 +748,33 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$vb_is_blank_search = true; 
 									break;
 								}
-								$va_terms = $this->_tokenize($vs_term, true, $vn_i);
+								
+								$va_terms = array($vs_term); //$this->_tokenize($vs_term, true, $vn_i);
+								$vb_has_wildcard = (bool)(preg_match('!\*$!', $vs_term));
 								$vb_output_term = false;
 								foreach($va_terms as $vs_term) {
+									if ($vb_has_wildcard) { $vs_term .= '*'; }
+									
 									if (in_array(trim(mb_strtolower($vs_term, 'UTF-8')), WLPlugSearchEngineSqlSearch::$s_stop_words)) { continue; }
 									$vs_stripped_term = preg_replace('!\*+$!u', '', $vs_term);
 									
-									// do stemming
-									if ($this->opb_do_stemming) {
-										$vs_to_stem = preg_replace('!\*$!u', '', $vs_term);
-										if (!preg_match('!y$!u', $vs_to_stem) && !preg_match('![0-9]+!', $vs_to_stem)) {	// don't stem things ending in 'y' as that can cause problems (eg "Bowery" becomes "Boweri")
-											if (!($vs_stem = trim($this->opo_stemmer->stem($vs_to_stem)))) {
-												$vs_stem = (string)$vs_term;
+									if ($vb_has_wildcard) {
+										$va_ft_like_terms[] = $vs_stripped_term;
+									} else {
+										// do stemming
+										if ($this->opb_do_stemming) {
+											$vs_to_stem = preg_replace('!\*$!u', '', $vs_term);
+											if (!preg_match('!y$!u', $vs_to_stem) && !preg_match('![0-9]+!', $vs_to_stem)) {	// don't stem things ending in 'y' as that can cause problems (eg "Bowery" becomes "Boweri")
+												if (!($vs_stem = trim($this->opo_stemmer->stem($vs_to_stem)))) {
+													$vs_stem = (string)$vs_term;
+												}
+												$va_ft_stem_terms[] = "'".$this->opo_db->escape($vs_stem)."'";
+											} else {
+												$va_ft_terms[] = '"'.$this->opo_db->escape($vs_term).'"';
 											}
-											$va_ft_stem_terms[] = "'".$this->opo_db->escape($vs_stem)."'";
 										} else {
 											$va_ft_terms[] = '"'.$this->opo_db->escape($vs_term).'"';
 										}
-									} else {
-										$va_ft_terms[] = '"'.$this->opo_db->escape($vs_term).'"';
 									}
 									$vb_output_term = true;	
 								
