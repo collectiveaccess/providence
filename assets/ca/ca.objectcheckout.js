@@ -68,6 +68,11 @@ var caUI = caUI || {};
 				select: function(event, ui) {
 					var object_id = ui.item.id;
 					if (parseInt(object_id)) {
+						if (object_id <= 0) {
+							jQuery('#' + that.autocompleteID).val('');	// reset autocomplete to blank
+							return false;
+						}
+					
 						var due_date = ui.item.due_date;
 						
 						// is it already on the list?
@@ -108,7 +113,6 @@ var caUI = caUI || {};
 										_disp += '<div class="caLibraryTransactionListItemWillReserve">' + data.reserve_display_label + '</div>';
 									}
 								}
-								
 								
 								// Show notes and due date if item is available
 								if ((data.status == 0) || (data.status == 3)) {

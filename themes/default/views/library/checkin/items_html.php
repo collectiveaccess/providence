@@ -7,7 +7,7 @@
 	<div class="caLibraryFindAutocompleteContainer">
 		<form>
 			<div class="caLibraryFindAutocompleteLabel"><?php print _t('Item name or number being returned'); ?></div>
-			<?php print caHTMLTextInput('user', array('id' => 'objectAutocomplete'), array('width' => '500px')); ?>
+			<?php print caHTMLTextInput('user', array('id' => 'objectAutocomplete'), array('width' => '500px', 'autocomplete' => 'off')); ?>
 		</form>
 	</div>
 
