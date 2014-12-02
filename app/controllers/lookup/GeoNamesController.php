@@ -54,7 +54,7 @@ class GeoNamesController extends ActionController {
 		
 		$va_items = array();
 		if (unicode_strlen($ps_query) >= 3) {
-			$vs_base = "http://api.geonames.org/search";
+			$vs_base = $vo_conf->get('geonames_api_base_url') . '/search';
 			$t_locale = new ca_locales($g_ui_locale_id);
 			$vs_lang = $t_locale->get("language");
 			$va_params = array(
@@ -65,6 +65,7 @@ class GeoNamesController extends ActionController {
 				'maxRows' => $vn_max,
 			);
 
+			$vs_query_string = '';
 			foreach ($va_params as $vs_key => $vs_value) {
 				$vs_query_string .= "$vs_key=" . urlencode($vs_value) . "&";
 			}
@@ -73,6 +74,7 @@ class GeoNamesController extends ActionController {
 
 				if($vs_proxy = $vo_conf->get('web_services_proxy_url')){ /* proxy server is configured */
 
+					$vs_proxy_auth = null;
 					if(($vs_proxy_user = $vo_conf->get('web_services_proxy_auth_user')) && ($vs_proxy_pass = $vo_conf->get('web_services_proxy_auth_pw'))){
 						$vs_proxy_auth = base64_encode("{$vs_proxy_user}:{$vs_proxy_pass}");
 					}
