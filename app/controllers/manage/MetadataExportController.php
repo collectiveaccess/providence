@@ -83,7 +83,6 @@ class MetadataExportController extends ActionController {
 		$va_response = array('uploadMessage' => '', 'skippedMessage' => '');
 		foreach($_FILES as $va_file) {
 			foreach($va_file['name'] as $vn_i => $vs_name) {
-				file_put_contents("/tmp/uploadExp", print_r($va_file,true) ,FILE_APPEND);
 				if ($t_importer = ca_data_exporters::loadExporterFromFile($va_file['tmp_name'][$vn_i], $va_errors)) {
 					$va_response['copied'][$vs_name] = true;
 				} else {
