@@ -689,6 +689,7 @@
 		protected function _genExport($po_result, $ps_output_type, $ps_output_filename, $ps_title=null) {
 			$this->view->setVar('criteria_summary', $vs_criteria_summary = $this->getCriteriaForDisplay());	// add displayable description of current search/browse parameters
 			$this->view->setVar('criteria_summary_truncated', mb_substr($vs_criteria_summary, 0, 60).((mb_strlen($vs_criteria_summary) > 60) ? '...' : ''));
+			$po_result->seek(0); // reset result before exporting anything
 			
 			$this->opo_result_context->setParameter('last_export_type', $ps_output_type);
 			$this->opo_result_context->saveContext();
@@ -698,12 +699,12 @@
 					case '_xlsx':
 						require_once(__CA_LIB_DIR__."/core/Parsers/PHPExcel/PHPExcel.php");
 						require_once(__CA_LIB_DIR__."/core/Parsers/PHPExcel/PHPExcel/Writer/Excel2007.php");
-						$vs_content = $this->render('Results/xlsx_results.php');
+						$this->render('Results/xlsx_results.php');
 						return;
                     case '_docx':
                         require_once(__CA_LIB_DIR__."/core/Parsers/PHPWord/Autoloader.php");
                         \PhpOffice\PhpWord\Autoloader::register();
-                        $vs_content = $this->render('Results/docx_results.php');
+                        $this->render('Results/docx_results.php');
                         return;						
 					case '_csv':
 						$vs_delimiter = ",";
