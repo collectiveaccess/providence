@@ -2260,3 +2260,58 @@ function caFileIsIncludable($ps_file) {
 		return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($vs_data), 4));
 	}
 	# ----------------------------------------
+	/**
+ 	 * Query external web service and return whatever body it returns as string
+ 	 * @param string $ps_url URL of the web service to query
+	 * @return string
+ 	 */
+	function caQueryExternalWebservice($ps_url) {
+		if(!isURL($ps_url)) { return false; }
+
+		$o_conf = Configuration::load();
+
+		if($vs_proxy = $o_conf->get('web_services_proxy_url')){ /* proxy server is configured */
+
+			$vs_proxy_auth = null;
+			if(($vs_proxy_user = $o_conf->get('web_services_proxy_auth_user')) && ($vs_proxy_pass = $o_conf->get('web_services_proxy_auth_pw'))){
+				$vs_proxy_auth = base64_encode("{$vs_proxy_user}:{$vs_proxy_pass}");
+			}
+
+			// non-authed proxy requests go through curl to properly support https queries
+			// everything else is still handled via file_get_contents and stream contexts
+			if(is_null($vs_proxy_auth) && function_exists('curl_exec')) {
+				$vo_curl = curl_init();
+				curl_setopt($vo_curl, CURLOPT_URL, $ps_url);
+				curl_setopt($vo_curl, CURLOPT_PROXY, $vs_proxy);
+				curl_setopt($vo_curl, CURLOPT_SSL_VERIFYHOST, 0);
+				curl_setopt($vo_curl, CURLOPT_SSL_VERIFYPEER, false);
+				curl_setopt($vo_curl, CURLOPT_FOLLOWLOCATION, true);
+				curl_setopt($vo_curl, CURLOPT_RETURNTRANSFER, 1);
+				curl_setopt($vo_curl, CURLOPT_AUTOREFERER, true);
+				curl_setopt($vo_curl, CURLOPT_CONNECTTIMEOUT, 120);
+				curl_setopt($vo_curl, CURLOPT_TIMEOUT, 120);
+				curl_setopt($vo_curl, CURLOPT_MAXREDIRS, 10);
+				curl_setopt($vo_curl, CURLOPT_USERAGENT, 'CollectiveAccess web service lookup');
+
+				$vs_content = curl_exec($vo_curl);
+				curl_close($vo_curl);
+				return $vs_content;
+			} else {
+				$va_context_options = array( 'http' => array(
+					'proxy' => $vs_proxy,
+					'request_fulluri' => true,
+					'header' => 'User-agent: CollectiveAccess web service lookup',
+				));
+
+				if($vs_proxy_auth){
+					$va_context_options['http']['header'] = "Proxy-Authorization: Basic {$vs_proxy_auth}";
+				}
+
+				$vo_context = stream_context_create($va_context_options);
+				return @file_get_contents($ps_url, false, $vo_context);
+			}
+		} else {
+			return @file_get_contents($ps_url);
+		}
+	}
+	# ----------------------------------------
