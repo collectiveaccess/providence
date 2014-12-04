@@ -31,7 +31,6 @@
 	$vo_result 				= $this->getVar('result');
 	$vn_items_per_page 		= $this->getVar('current_items_per_page');
 	$vs_current_sort 		= $this->getVar('current_sort');
-	$vo_ar					= $this->getVar('access_restrictions');
 
 	// For easier calculation
 	// 1 cm = 1440/2.54 = 566.93 twips

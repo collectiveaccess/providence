@@ -806,14 +806,14 @@
 											$vs_bool = 'AND';
 										}
 
-										$o_log->logDebug("Trying to find objects using boolean {$vs_bool} and values ".print_r($va_values,true));
+										$o_log->logDebug("Trying to find records using boolean {$vs_bool} and values ".print_r($va_values,true));
 
 										if (class_exists($vs_import_target) && ($vn_id = $vs_import_target::find($va_values, array('returnAs' => 'firstId', 'boolean' => $vs_bool)))) {
 											if ($t_instance->load($vn_id)) {
 												$va_notices[$vs_relative_directory.'/'.$vs_match_name.'_match'] = array(
 													'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
 													'label' => $t_instance->getLabelForDisplay(),
-													'message' => $vs_msg = _t('Matched media %1 from %2 to object using %3', $f, $vs_relative_directory, $vs_regex_name),
+													'message' => $vs_msg = _t('Matched media %1 from %2 to %3 using expression "%4"', $f, $vs_relative_directory, caGetTableDisplayName($vs_import_target, false), $va_regex_info['displayName']),
 													'status' => 'MATCHED'
 												);
 												$o_log->logInfo($vs_msg);
@@ -835,7 +835,7 @@
 						$va_notices[$vs_relative_directory.'/'.$f.'_match'] = array(
  							'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
  							'label' => $t_instance->getLabelForDisplay(),
- 							'message' => $vs_msg = _t('Matched media %1 from %2 to object using filename', $f, $vs_relative_directory),
+ 							'message' => $vs_msg = _t('Matched media %1 from %2 to %3 using filename', $f, $vs_relative_directory, caGetTableDisplayName($vs_import_target, false)),
  							'status' => 'MATCHED'
  						);
 						$o_log->logInfo($vs_msg);
