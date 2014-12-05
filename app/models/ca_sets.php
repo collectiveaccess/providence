@@ -315,6 +315,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 */
 	protected function initLabelDefinitions($pa_options=null) {
 		parent::initLabelDefinitions($pa_options);
+		unset($this->BUNDLES['nonpreferred_labels']); // sets have no nonpreferred labels
 		$this->BUNDLES['ca_users'] = array('type' => 'special', 'repeating' => true, 'label' => _t('User access'));
 		$this->BUNDLES['ca_user_groups'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Group access'));
 		$this->BUNDLES['ca_set_items'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Set items'));
