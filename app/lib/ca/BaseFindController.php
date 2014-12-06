@@ -745,7 +745,8 @@
 					$va_row = array();
 					foreach($va_display_list as $vn_placement_id => $va_display_item) {
 						$vs_value = html_entity_decode($t_display->getDisplayValue($po_result, $vn_placement_id, array('convert_codes_to_display_text' => true, 'convertLineBreaks' => false)), ENT_QUOTES, 'UTF-8');
-
+						$vs_value = preg_replace("![\r\n\t]+!", " ", $vs_value);
+						
 						// quote values as required
 						if (preg_match("![^A-Za-z0-9 .;]+!", $vs_value)) {
 							$vs_value = '"'.str_replace('"', '""', $vs_value).'"';
