@@ -138,7 +138,7 @@
 				}
 
 			} elseif ($vs_display_text = $t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request))) {
-				$o_sheet->setCellValue($vs_column.$vn_line,$vs_display_text);
+				$o_sheet->setCellValue($vs_column.$vn_line, html_entity_decode($vs_display_text));
 				// We trust the autosizing up to a certain point, but
 				// we want column widths to be finite :-).
 				// Since Arial is not fixed-with and font rendering
