@@ -281,7 +281,7 @@ class BaseModel extends BaseObject {
 	 *
 	 * @access private
 	 */
-	private $opb_log_changes = false;
+	private $opb_log_changes = true;
 
 
 	# --------------------------------------------------------------------------------
