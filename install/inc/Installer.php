@@ -263,13 +263,6 @@ class Installer {
 		$o_config = Configuration::load();
 		CompositeCache::flush(); // avoid stale cache
 
-		// create Lucene dir
-		if (($o_config->get('search_engine_plugin') == 'Lucene') && !file_exists($o_config->get('search_lucene_index_dir'))) {
-			if (!self::createDirectoryPath($o_config->get('search_lucene_index_dir'))) {
-				$this->addError("Couldn't create Lucene directory at ".$o_config->get('search_lucene_index_dir')." (only matters if you are using Lucene as your search engine)");
-			}
-		}
-
 		// create tmp dir
 		if (!file_exists($o_config->get('taskqueue_tmp_directory'))) {
 			if (!self::createDirectoryPath($o_config->get('taskqueue_tmp_directory'))) {
@@ -543,8 +536,8 @@ class Installer {
 		$t_rel_types = new ca_relationship_types();
 		$t_list = new ca_lists();
 
+		$va_elements = array();
 		if($this->ops_base_name){ // "merge" profile and its base
-			$va_elements = array();
 			foreach($this->opo_base->elementSets->children() as $vo_element){
 				$va_elements[self::getAttribute($vo_element, "code")] = $vo_element;
 			}
@@ -660,6 +653,60 @@ class Installer {
 		}
 
 		return $vn_element_id;
+	}
+	# --------------------------------------------------
+	public function processMetadataDictionary() {
+		require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_entries.php');
+
+		if(!$this->opo_profile->metadataDictionary) { return true; } // no dict specified. it's optional, so don't barf
+
+		// dictionary entries don't have a code or any other attribute that could be used for
+		// identification so we won't support setting them in a base profile, for now ...
+
+		foreach($this->opo_profile->metadataDictionary->children() as $vo_entry) {
+			$vs_field = self::getAttribute($vo_entry, "bundle");
+
+			if(strlen($vs_field)<1) {
+				$this->addError("No bundle specified in a metadata dictionary entry. Skipping row.");
+				continue;
+			}
+
+			// insert dictionary entry
+			$t_entry = new ca_metadata_dictionary_entries();
+			$t_entry->setMode(ACCESS_WRITE);
+			$t_entry->set('bundle_name', $vs_field);
+			$this->_processSettings($t_entry, $vo_entry->settings);
+
+			$t_entry->insert();
+
+			if($t_entry->numErrors() > 0 || !($t_entry->getPrimaryKey()>0)) {
+				$this->addError("There were errors while adding dictionary entry: " . join(';', $t_entry->getErrors()));
+				return false;
+			}
+
+			if($vo_entry->rules) {
+				foreach($vo_entry->rules->children() as $vo_rule) {
+					$vs_code = self::getAttribute($vo_rule, "code");
+					$vs_level = self::getAttribute($vo_rule, "level");
+
+					$t_rule = new ca_metadata_dictionary_rules();
+					$t_rule->setMode(ACCESS_WRITE);
+					$t_rule->set('entry_id', $t_entry->getPrimaryKey());
+					$t_rule->set('rule_code', $vs_code);
+					$t_rule->set('rule_level', $vs_level);
+					$t_rule->set('expression', (string) $vo_rule->expression);
+					$this->_processSettings($t_rule, $vo_rule->settings);
+
+					$t_rule->insert();
+					if ($t_rule->numErrors()) {
+						$this->addError("There were errors while adding dictionary rule: " . join(';', $t_rule->getErrors()));
+						continue;
+					}
+				}
+			}
+		}
+
+		return true;
 	}
 	# --------------------------------------------------
 	public function processUserInterfaces(){
@@ -867,20 +914,20 @@ class Installer {
 		}
 
 		$ca_db = new Db('',null, false);
-                $lists_result = $ca_db->query(" SELECT * FROM ca_lists");
+		$lists_result = $ca_db->query(" SELECT * FROM ca_lists");
 
 		$list_names = array();
-                $va_list_item_ids = array();
-                while($lists_result->nextRow()) {
-                        $list_names[$lists_result->get('list_id')] = $lists_result->get('list_code');
-                }
+		$va_list_item_ids = array();
+		while($lists_result->nextRow()) {
+			$list_names[$lists_result->get('list_id')] = $lists_result->get('list_code');
+		}
 
-                // get list items
-                $list_items_result = $ca_db->query(" SELECT * FROM ca_list_items cli INNER JOIN ca_list_item_labels AS clil ON clil.item_id = cli.item_id ");
-                while($list_items_result->nextRow()) {
-                        $list_type_code = $list_names[$list_items_result->get('list_id')];
-                        $va_list_item_ids[$list_type_code][$list_items_result->get('item_value')] = $list_items_result->get('item_id');
-                }
+		// get list items
+		$list_items_result = $ca_db->query(" SELECT * FROM ca_list_items cli INNER JOIN ca_list_item_labels AS clil ON clil.item_id = cli.item_id ");
+		while($list_items_result->nextRow()) {
+			$list_type_code = $list_names[$list_items_result->get('list_id')];
+			$va_list_item_ids[$list_type_code][$list_items_result->get('item_value')] = $list_items_result->get('item_id');
+		}
 
 		$vo_dm = Datamodel::load();
 

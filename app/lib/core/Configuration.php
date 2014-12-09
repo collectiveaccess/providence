@@ -147,8 +147,8 @@ class Configuration {
 				ExternalCache::flush();
 
 				// save current times for global.conf and setup.php
-				ExternalCache::save('ca_global_config_mtime', $va_global_config_stat['mtime'], 'Configuration');
-				ExternalCache::save('ca_setup_mtime', $va_setup_stat['mtime'], 'Configuration');
+				ExternalCache::save('ca_global_config_mtime', $va_global_config_stat['mtime'], 'Configuration', 0);
+				ExternalCache::save('ca_setup_mtime', $va_setup_stat['mtime'], 'Configuration', 0);
 			}
 
 			$va_cache_data = ExternalCache::fetch($vs_path_as_md5, 'Configuration');
@@ -385,7 +385,11 @@ class Configuration {
 								break;
 							# -------------------
 							case '\\':
-								$vb_escape_set = true;
+								if ($vb_escape_set) {
+									$vs_scalar_value .= $vs_token;
+								} else {
+									$vb_escape_set = true;
+								}
 								break;
 							# -------------------
 							default:
@@ -572,7 +576,11 @@ class Configuration {
 								break;
 							# -------------------
 							case '\\':
-								$vb_escape_set = true;
+								if ($vb_escape_set) {
+									$vs_scalar_value .= $vs_token;
+								} else {
+									$vb_escape_set = true;
+								}
 								break;
 							# -------------------
 							default:

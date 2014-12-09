@@ -55,7 +55,7 @@
 	$va_rep_type_list = $t_item->getTypeList();
 	$va_errors = array();
 	
-	$vn_rep_count = $t_subject->getRepresentationCount();
+	$vn_rep_count = $t_subject->getRepresentationCount($va_settings);
 	$va_initial_values = $t_subject->getBundleFormValues($this->getVar('bundle_name'), $this->getVar('placement_code'), $va_settings, array('start' => 0, 'limit' => $vn_num_per_page, 'request' => $this->request));
 	
 	foreach($va_initial_values as $vn_representation_id => $va_rep) {
@@ -81,7 +81,7 @@
 	
 	if ($vb_batch) {
 		print "<div class='editorBatchModeControl'>"._t("In batch")." ".
-			caHTMLSelect($vs_id_prefix.$t_item->tableNum()."_rel_batch_mode", array(
+			caHTMLSelect($vs_id_prefix."_batch_mode", array(
 				_t("do not use") => "_disabled_", 
 				_t('add to each item') => '_add_', 
 				_t('replace values') => '_replace_',
@@ -297,7 +297,7 @@
 	<textarea class='caNewItemTemplate' style='display: none;'>	
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo">
 
-			<h2><?php print ($t_item_rel->hasField('type_id')) ? _t('Add representation with relationship type %1', $t_item_rel->getRelationshipTypesAsHTMLSelect($vs_rel_dir, $vn_left_sub_type_id, $vn_right_sub_type_id, array('name' => '{fieldNamePrefix}type_id_{n}'))) : _t('Add representation'); ?></h2>
+			<h2><?php print ($t_item_rel->hasField('type_id')) ? _t('Add representation with relationship type %1', $t_item_rel->getRelationshipTypesAsHTMLSelect($vs_rel_dir, $vn_left_sub_type_id, $vn_right_sub_type_id, array('name' => '{fieldNamePrefix}type_id_{n}'), $va_settings)) : _t('Add representation'); ?></h2>
 
 			<span class="formLabelError">{error}</span>
 			<div style="float: right;">

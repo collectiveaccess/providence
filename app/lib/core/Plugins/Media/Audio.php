@@ -41,6 +41,7 @@
 include_once(__CA_LIB_DIR__."/core/Plugins/Media/BaseMediaPlugin.php");
 include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMedia.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/getid3/getid3.php");
+include_once(__CA_LIB_DIR__."/core/Parsers/getid3/write.php");
 include_once(__CA_LIB_DIR__."/core/Configuration.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 include_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
@@ -611,16 +612,12 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		if ($mimetype == "audio/mpeg") {
 			// try to write getID3 tags (if set)
 			if (is_array($pa_options) && is_array($pa_options) && sizeof($pa_options) > 0) {
-				require_once(__CA_LIB_DIR__.'/core/Parsers/getid3/getid3.php');
-				require_once(__CA_LIB_DIR__.'/core/Parsers/getid3/write.php');
-				$o_getID3 = new getID3();
 				$o_tagwriter = new getid3_writetags();
 				$o_tagwriter->filename   = $filepath.".".$ext;
 				$o_tagwriter->tagformats = array('id3v2.3');
 				$o_tagwriter->tag_data = $pa_options;
-
 				// write them tags
-				if (!$o_tagwriter->WriteTags()) {
+				if (!@$o_tagwriter->WriteTags()) {
 					// failed to write tags
 				}
 			}

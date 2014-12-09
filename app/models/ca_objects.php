@@ -1123,6 +1123,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 	
 		if(is_array($va_location_types = caGetOption('ca_storage_locations_showRelationshipTypes', $pa_bundle_settings, null)) && is_array($va_locations) && sizeof($va_locations)) {	
 			$t_location = new ca_storage_locations();
+			if ($this->inTransaction()) { $t_location->setTransaction($this->getTransaction()); }
 			$va_location_type_info = $t_location->getTypeList(); 
 			
 			$vs_name_singular = $t_location->getProperty('NAME_SINGULAR');
@@ -1412,7 +1413,9 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
  		", array($vn_object_id, $vn_current_date));
  	
  		if($qr_res->nextRow()) {
- 			return new ca_objects_x_storage_locations($qr_res->get('relation_id'));
+ 			$t_loc =  new ca_objects_x_storage_locations($qr_res->get('relation_id'));
+ 			if ($this->inTransaction()) { $t_loc->setTransaction($this->getTransaction()); }
+ 			return $t_loc;
  		}
  		return false;
  	}

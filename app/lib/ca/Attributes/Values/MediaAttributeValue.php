@@ -117,6 +117,11 @@
  		}
  		# ------------------------------------------------------------------
  		/**
+ 		 * Return attribute display value. 
+ 		 *
+ 		 * @param array $pa_options
+ 		 * @return string
+ 		 *
  		 * Options:
  		 *	showMediaInfo - if true media info (dimensions, filesize, bit depth) is returns as part of display; default is false
  		 *	version - name of media version to return; default is 'thumbnail'
@@ -133,6 +138,9 @@
 			if(!isset($pa_options['showMediaInfo'])) { $pa_options['showMediaInfo'] = false; }
 			if(!isset($pa_options['version'])) { $pa_options['version'] = 'thumbnail'; }
 			$vs_version = $pa_options['version'];
+			
+			$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : '');
+ 			
 			
 			if(!isset($pa_options['return'])) { $pa_options['return'] = null; } else { $pa_options['return'] = strtolower($pa_options['return']); }
 			
@@ -237,18 +245,38 @@
 		}
  		# ------------------------------------------------------------------
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
+ 			$vb_is_file_path = false;
+ 			$vb_is_user_media = false;
  			if (
  				(is_array($ps_value) && $ps_value['_uploaded_file'] && file_exists($ps_value['tmp_name']) && (filesize($ps_value['tmp_name']) > 0))
  				||
  				($vb_is_file_path = file_exists($ps_value))
  				||
  				($vb_is_file_path = isURL($ps_value))
+ 				||
+ 				($vb_is_user_media = preg_match("!^userMedia[\d]+/!", $ps_value))
  			) {
  				// got file
+ 				$vs_original_name = null;
+ 				if ($vb_is_user_media) {
+ 					$vb_is_file_path = true;
+ 					$o_config = Configuration::load();
+ 					if (!is_writeable($vs_tmp_directory = $o_config->get('ajax_media_upload_tmp_directory'))) {
+						$vs_tmp_directory = caGetTempDirPath();
+					}
+					$ps_value = "{$vs_tmp_directory}/{$ps_value}";
+					
+					// read metadata
+					if (file_exists("{$ps_value}_metadata")) {
+						if (is_array($va_tmp_metadata = json_decode(file_get_contents("{$ps_value}_metadata"), true))) {
+							$vs_original_name = $va_tmp_metadata['original_filename'];
+						}
+					}
+ 				}
  				if ($vb_is_file_path) {
  					return array(
 						'value_blob' => $ps_value,
-						'value_longtext2' => $ps_value,
+						'value_longtext2' => $vs_original_name ? $vs_original_name : $ps_value,
 						'value_decimal1' => null,
 						'value_decimal2' => null,
 						'_media' => true			// this tells the ca_attribute_values (which is the caller) to treat value_blob as a path to a file to be ingested
@@ -275,6 +303,15 @@
 			);
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 * Return HTML form element for editing.
+ 		 *
+ 		 * @param array $pa_element_info An array of information about the metadata element being edited
+ 		 * @param array $pa_options array Options include:
+ 		 *			NONE (yet)
+ 		 *
+ 		 * @return string
+ 		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
  			$vs_element = '<div>';
  			$vs_element .= '<div>{'.$pa_element_info['element_id'].'}</div>';

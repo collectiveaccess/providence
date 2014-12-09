@@ -31,6 +31,7 @@
  */
 
 require_once(__CA_LIB_DIR__."/core/Cache/MemoryCache.php");
+require_once(__CA_LIB_DIR__."/core/Cache/CAFileSystemCache.php");
 
 class ExternalCache {
 	# ------------------------------------------------
@@ -109,10 +110,11 @@ class ExternalCache {
 	 * @param string $ps_key
 	 * @param mixed $pm_data
 	 * @param string $ps_namespace
+	 * @param int $pn_ttl 
 	 * @return bool
 	 * @throws ExternalCacheInvalidParameterException
 	 */
-	public static function save($ps_key, $pm_data, $ps_namespace='default') {
+	public static function save($ps_key, $pm_data, $ps_namespace='default', $pn_ttl=null) {
 		if(!self::init()) { return false; }
 		self::checkParameters($ps_namespace, $ps_key);
 
@@ -120,8 +122,7 @@ class ExternalCache {
 			define('__CA_CACHE_TTL__', 3600);
 		}
 
-		// Cache::save() returns the lifetime of the item
-		self::getCache()->save($ps_namespace.':'.$ps_key, $pm_data, __CA_CACHE_TTL__);
+		self::getCache()->save($ps_namespace.':'.$ps_key, $pm_data, (!is_null($pn_ttl) ? $pn_ttl : __CA_CACHE_TTL__));
 		return true;
 	}
 	# ------------------------------------------------
@@ -202,7 +203,7 @@ class ExternalCache {
 		$vs_cache_dir = $vs_cache_base_dir.DIRECTORY_SEPARATOR.__CA_APP_NAME__.'Cache';
 
 		try {
-			$o_cache = new \Doctrine\Common\Cache\FilesystemCache($vs_cache_dir);
+			$o_cache = new \Doctrine\Common\Cache\CAFileSystemCache($vs_cache_dir);
 			return $o_cache;
 		} catch (InvalidArgumentException $e) {
 			// carry on ... but no caching :(

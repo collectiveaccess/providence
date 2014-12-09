@@ -59,29 +59,46 @@
 			// Do export
 			//
 			
-			if ($req->isLoggedIn()) {
-				set_time_limit(3600*24); // if it takes more than 24 hours we're in trouble
-				$vn_id = $req->getParameter('exporter_id',pInteger);
+			if (!$req->isLoggedIn()) {
+				return;
+			}
+
+			set_time_limit(3600*24); // if it takes more than 24 hours we're in trouble
+			$vn_id = $req->getParameter('exporter_id',pInteger);
+			$t_exporter = new ca_data_exporters($vn_id);
+
+			$vs_file = tempnam(__CA_APP_DIR__.DIRECTORY_SEPARATOR.'tmp', 'dataExport');
+
+			// we have 3 different sources for batch exports: search/browse result, sets and search expressions (deprecated)
+			// they all operate on different parameters and on different static functions in ca_data_exporters
+			if($req->getParameter('caIsExportFromSearchOrBrowseResult', pInteger)) { // batch export from search or browse result
+
+				$vs_find_type = $req->getParameter('find_type',pString);
+				$vo_result_context = new ResultContext($req, $t_exporter->getTargetTableName(), $vs_find_type);
+				$t_instance = $t_exporter->getTargetTableInstance();
+				$o_result = $t_instance->makeSearchResult($t_instance->tableName(), $vo_result_context->getResultList());
+				ca_data_exporters::exportRecordsFromSearchResult($t_exporter->get('exporter_code'), $o_result, $vs_file, array('request' => $req, 'progressCallback' => 'caIncrementBatchMetadataExportProgress'));
+
+			} else if($vn_set_id = $req->getParameter('set_id',pInteger)) { // batch export from set
+
+				ca_data_exporters::exportRecordsFromSet($t_exporter->get('exporter_code'), $vn_set_id, $vs_file, array('request' => $req, 'progressCallback' => 'caIncrementBatchMetadataExportProgress'));
+
+			} else { // batch export from search expression (deprecated)
+
 				$vs_search = $req->getParameter('search',pString);
-
-				$t_exporter = new ca_data_exporters($vn_id);
-
-				$vs_file = tempnam(caGetTempDirPath(), 'export');
-
-				if($vn_set_id = $req->getParameter('set_id',pInteger)) {
-					ca_data_exporters::exportRecordsFromSet($t_exporter->get('exporter_code'), $vn_set_id, $vs_file, array('request' => $req, 'progressCallback' => 'caIncrementBatchMetadataExportProgress'));
-				} else {
-					ca_data_exporters::exportRecordsFromSearchExpression($t_exporter->get('exporter_code'), $vs_search, $vs_file, array('request' => $req, 'progressCallback' => 'caIncrementBatchMetadataExportProgress'));
-				}
+				ca_data_exporters::exportRecordsFromSearchExpression($t_exporter->get('exporter_code'), $vs_search, $vs_file, array('request' => $req, 'progressCallback' => 'caIncrementBatchMetadataExportProgress'));
 
 			}
 
-			// export done, move file to application tmp dir and create download link (separate action in the export controller)
+			// export done, record it in session for later usage in download/destination action
 			if(filesize($vs_file)){
-				$vs_new_filename = $vn_id."_".md5($vs_file);
-				rename($vs_file, __CA_APP_DIR__.'/tmp/'.$vs_new_filename);
 
-				caExportAddDownloadLink($req,$vs_new_filename);
+				$o_session = $req->getSession();
+				$o_session->setVar('export_file', $vs_file);
+				$o_session->setVar('export_content_type', $t_exporter->getContentType());
+				$o_session->setVar('exporter_id', $t_exporter->getPrimaryKey());
+
+				caExportAddDownloadLink($req);
 			}
 		}
 		# -------------------------------------------------------

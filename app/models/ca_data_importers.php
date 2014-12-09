@@ -33,7 +33,6 @@
  /**
    *
    */
-
 require_once(__CA_LIB_DIR__.'/core/ModelSettings.php');
 require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_LIB_DIR__.'/ca/Import/DataReaderManager.php');
@@ -49,8 +48,6 @@ require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
 require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__.'/core/Db/Transaction.php');
-
-//define("__CA_DONT_DO_SEARCH_INDEXING__", true);
 
 
 BaseModel::$s_ca_models_definitions['ca_data_importers'] = array(
@@ -1660,9 +1657,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				foreach($va_items as $vn_item_id => $va_item) {
 					if ($vb_use_as_single_value = caGetOption('useAsSingleValue', $va_item['settings'], false)) {
 						// Force repeating values to be imported as a single value
-						$va_vals = array(ca_data_importers::getValueFromSource($va_item, $o_reader, array('delimiter' => caGetOption('delimiter', $va_item['settings'], ''), 'returnAsArray' => false)));
+						$va_vals = array(ca_data_importers::getValueFromSource($va_item, $o_reader, array('delimiter' => caGetOption('delimiter', $va_item['settings'], ''), 'returnAsArray' => false, 'lookahead' => caGetOption('lookahead', $va_item['settings'], 0))));
 					} else {
-						$va_vals = ca_data_importers::getValueFromSource($va_item, $o_reader, array('returnAsArray' => true, 'environment' => $va_environment));
+						$va_vals = ca_data_importers::getValueFromSource($va_item, $o_reader, array('returnAsArray' => true, 'environment' => $va_environment, 'lookahead' => caGetOption('lookahead', $va_item['settings'], 0)));
 					}
 					
 					if (!sizeof($va_vals)) { $va_vals = array(0 => null); }	// consider missing values equivalent to blanks
@@ -2032,10 +2029,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 						if ($vs_import_error_policy == 'stop') {
 							$o_log->logAlert(_t('Import stopped due to import error policy'));
-							if ($o_trans) { $o_trans->rollback(); }
 							
 							$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
 						
+							if ($o_trans) { $o_trans->rollback(); }
 							return false;
 						}
 					}
@@ -2570,11 +2567,17 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$pb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
 		$pa_environment = caGetOption('environment', $pa_options, array(), array('castTo' => 'array'));
 		$ps_delimiter = caGetOption('delimiter', $pa_options, ';');
+		$pn_lookahead = caGetOption('lookahead', $pa_options, 0);
+		
 		if (preg_match('!^_CONSTANT_:[^:]+:(.*)$!', $pa_item['source'], $va_matches)) {
 			$vm_value = $va_matches[1];
 		} elseif(isset($pa_environment[$pa_item['source']])) {
 			$vm_value = $pa_environment[$pa_item['source']];
 		} else {
+			$vn_cur_pos = $po_reader->currentRow();
+			if (($vn_seek_to = ($po_reader->currentRow() + $pn_lookahead)) >= 0) {
+				$po_reader->seek($vn_seek_to);
+			}
 			if ($po_reader->valuesCanRepeat()) {
 				$vm_value = $po_reader->get($pa_item['source'], array('returnAsArray' => true));
 				if (!is_array($vm_value)) { return $pb_return_as_array ? array() : null; }
@@ -2589,6 +2592,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			} else {
 				$vm_value = trim($po_reader->get($pa_item['source']));
 			}
+			$po_reader->seek($vn_cur_pos);
 		}
 		
 		$vm_value = ca_data_importers::replaceValue($vm_value, $pa_item);

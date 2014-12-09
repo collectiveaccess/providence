@@ -114,6 +114,13 @@ class ObjectSearchResult extends BaseSearchResult {
 	/**
 	 *
 	 */
+	public function getTagForPrimaryRepresentation($ps_version, $pa_options=null) {
+		return $this->getMediaTag('ca_object_representations.media', $ps_version, $pa_options);
+	}
+	# -------------------------------------
+	/**
+	 *
+	 */
 	public function getMediaTag($ps_field, $ps_version, $pa_options=null) {
 		$va_tmp = explode('.', $ps_field);
 		

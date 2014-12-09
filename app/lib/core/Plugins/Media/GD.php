@@ -358,7 +358,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$vs_typename = "GIF";
 					break;
 				case IMAGETYPE_JPEG:
-					if(function_exists('exif_read_data')) {
+					if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
 						$this->metadata["EXIF"] = $va_exif = caSanitizeArray(@exif_read_data($filepath, 'EXIF', true, false));
 						
 						

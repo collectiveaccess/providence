@@ -25,13 +25,12 @@
  *
  * ----------------------------------------------------------------------
  */
- 
+
 	$t_display				= $this->getVar('t_display');
 	$va_display_list 		= $this->getVar('display_list');
 	$vo_result 				= $this->getVar('result');
 	$vn_items_per_page 		= $this->getVar('current_items_per_page');
 	$vs_current_sort 		= $this->getVar('current_sort');
-	$vo_ar					= $this->getVar('access_restrictions');
 
 	$vn_ratio_pixels_to_excel_height = 0.85;
 	$vn_ratio_pixels_to_excel_width = 0.135;
@@ -71,7 +70,7 @@
 			'borders' => array(
 					'allborders'=>array(
 							'style' => PHPExcel_Style_Border::BORDER_THIN)));
-	
+
 	$o_sheet->getDefaultStyle()->applyFromArray($cellstyle);
 	$o_sheet->setTitle("CollectiveAccess");
 	
