@@ -503,6 +503,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			$t_rep = $this;
 		} else {
 			$t_rep = new ca_object_representations($pn_representation_id);
+			if($this->inTransaction()) { $t_rep->setTransaction($this->getTransaction()); }
 		}
  		
  		$va_media_info = $t_rep->getMediaInfo('media');
@@ -676,6 +677,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		}
 		
  		$t_annotation = new ca_representation_annotations();
+ 		if($this->inTransaction()) { $t_annotation->setTransaction($this->getTransaction()); }
  		$t_annotation->setMode(ACCESS_WRITE);
  		
  		$t_annotation->set('representation_id', $vn_representation_id);
@@ -767,6 +769,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		}
 		
  		$t_annotation = new ca_representation_annotations($pn_annotation_id);
+ 		if($this->inTransaction()) { $t_annotation->setTransaction($this->getTransaction()); }
  		if ($t_annotation->getPrimaryKey() && ($t_annotation->get('representation_id') == $vn_representation_id)) {
  			foreach($o_coder->getPropertyList() as $vs_property) {
  				$t_annotation->setPropertyValue($vs_property, $o_coder->getProperty($vs_property));
@@ -830,6 +833,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		if (!($vn_representation_id = $this->getPrimaryKey())) { return null; }
  		
  		$t_annotation = new ca_representation_annotations($pn_annotation_id);
+ 		if($this->inTransaction()) { $t_annotation->setTransaction($this->getTransaction()); }
  		if ($t_annotation->get('representation_id') == $vn_representation_id) {
  			$t_annotation->setMode(ACCESS_WRITE);
  			$t_annotation->delete(true);
@@ -884,7 +888,9 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		
 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 		$t_item = new ca_representation_annotations();
+		if($this->inTransaction()) { $t_item->setTransaction($this->getTransaction()); }
 		$t_item_label = new ca_representation_annotation_labels();
+		if($this->inTransaction()) { $t_item_label->setTransaction($this->getTransaction()); }
 		
 		$o_view->setVar('id_prefix', $ps_form_name);
 		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
@@ -920,13 +926,13 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$vn_c = 0;
 		foreach($va_rel_items as $vn_id => $va_rel_item) {
 			$this->clearErrors();
-			if (strlen($vn_status = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_status_'.$va_rel_item['annotation_id'], pString))) {
-				$vn_access = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_access_'.$va_rel_item['annotation_id'], pInteger);
-				$vn_locale_id = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_locale_id_'.$va_rel_item['annotation_id'], pInteger);
+			if (strlen($vn_status = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_status_'.$va_rel_item['annotation_id'], pString))) {
+				$vn_access = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_access_'.$va_rel_item['annotation_id'], pInteger);
+				$vn_locale_id = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_locale_id_'.$va_rel_item['annotation_id'], pInteger);
 				
 				$va_properties = array();
 				foreach($o_coder->getPropertyList() as $vs_property) {
-					$va_properties[$vs_property] = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_'.$vs_property.'_'.$va_rel_item['annotation_id'], pString);
+					$va_properties[$vs_property] = $po_request->getParameter($x=$ps_placement_code.$ps_form_prefix.'_'.$vs_property.'_'.$va_rel_item['annotation_id'], pString);
 				}
 
 				// edit annotation
@@ -936,8 +942,9 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 					$po_request->addActionErrors($this->errors(), 'ca_representation_annotations', $va_rel_item['annotation_id']);
 				} else {
 					// try to add/edit label
-					if ($vs_label = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_label_'.$va_rel_item['annotation_id'], pString)) {
+					if ($vs_label = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_label_'.$va_rel_item['annotation_id'], pString)) {
 						$t_annotation = new ca_representation_annotations($va_rel_item['annotation_id']);
+						if($this->inTransaction()) { $t_annotation->setTransaction($this->getTransaction()); }
 						if ($t_annotation->getPrimaryKey()) {
 							$t_annotation->setMode(ACCESS_WRITE);
 							
@@ -965,7 +972,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			} else {
 				// is it a delete key?
 				$this->clearErrors();
-				if (($po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_'.$va_rel_item['annotation_id'].'_delete', pInteger)) > 0) {
+				if (($po_request->getParameter($ps_placement_code.$ps_form_prefix.'_'.$va_rel_item['annotation_id'].'_delete', pInteger)) > 0) {
 					// delete!
 					$this->removeAnnotation($va_rel_item['annotation_id']);
 					if ($this->numErrors()) {
@@ -977,19 +984,19 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		
  		// check for new annotations to add
  		foreach($_REQUEST as $vs_key => $vs_value ) {
-			if (!preg_match('/^'.$ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_status_new_([\d]+)/', $vs_key, $va_matches)) { continue; }
+			if (!preg_match('/^'.$ps_placement_code.$ps_form_prefix.'_status_new_([\d]+)/', $vs_key, $va_matches)) { continue; }
 			$vn_c = intval($va_matches[1]);
-			if (strlen($vn_status = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_status_new_'.$vn_c, pString)) > 0) {
-				$vn_access = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_access_new_'.$vn_c, pInteger);
-				$vn_locale_id = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_locale_id_new_'.$vn_c, pInteger);
+			if (strlen($vn_status = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_status_new_'.$vn_c, pString)) > 0) {
+				$vn_access = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_access_new_'.$vn_c, pInteger);
+				$vn_locale_id = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_locale_id_new_'.$vn_c, pInteger);
 				
 				$va_properties = array();
 				foreach($o_coder->getPropertyList() as $vs_property) {
-					$va_properties[$vs_property] = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_'.$vs_property.'_new_'.$vn_c, pString);
+					$va_properties[$vs_property] = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_'.$vs_property.'_new_'.$vn_c, pString);
 				}
 				
 				// create annotation
-				$vs_label = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_label_new_'.$vn_c, pString);
+				$vs_label = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_label_new_'.$vn_c, pString);
 				$vn_annotation_id = $this->addAnnotation($vs_label, $vn_locale_id, $po_request->getUserID(), $va_properties, $vn_status, $vn_access);
 				
 				if ($this->numErrors()) {
@@ -1047,6 +1054,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		if (!trim($ps_resource_path)) { $ps_resource_path = '/'; }
  		
  		$t_multifile = new ca_object_representation_multifiles();
+ 		if($this->inTransaction()) { $t_multifile->setTransaction($this->getTransaction()); }
  		if (!$pb_allow_duplicates) {
  			if ($t_multifile->load(array('resource_path' => $ps_resource_path, 'representation_id' => $this->getPrimaryKey()))) {
  				return null;
@@ -1074,6 +1082,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		if(!$this->getPrimaryKey()) { return null; }
  		
  		$t_multifile = new ca_object_representation_multifiles($pn_multifile_id);
+ 		if($this->inTransaction()) { $t_multifile->setTransaction($this->getTransaction()); }
  		
  		if ($t_multifile->get('representation_id') == $this->getPrimaryKey()) {
  			$t_multifile->setMode(ACCESS_WRITE);
@@ -1180,6 +1189,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		if(!$this->getPrimaryKey()) { return null; }
  	
  		$t_multifile = new ca_object_representation_multifiles($pn_multifile_id);
+ 		if($this->inTransaction()) { $t_multifile->setTransaction($this->getTransaction()); }
  		
  		if ($t_multifile->get('representation_id') == $this->getPrimaryKey()) {
  			return $t_multifile;
@@ -1220,6 +1230,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		if(!$this->getPrimaryKey()) { return null; }
  		
  		$t_caption = new ca_object_representation_captions();
+ 		if($this->inTransaction()) { $t_caption->setTransaction($this->getTransaction()); }
  		if ($t_caption->load(array('representation_id' => $this->getPrimaryKey(), 'locale_id' => $pn_locale_id))) {
  			return null;
  		}
@@ -1247,6 +1258,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		if(!$this->getPrimaryKey()) { return null; }
  		
  		$t_caption = new ca_object_representation_captions($pn_caption_id);
+ 		if($this->inTransaction()) { $t_caption->setTransaction($this->getTransaction()); }
  		
  		if ($t_caption->get('representation_id') == $this->getPrimaryKey()) {
  			$t_caption->setMode(ACCESS_WRITE);
@@ -1360,6 +1372,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		if(!$this->getPrimaryKey()) { return null; }
  	
  		$t_caption = new ca_object_representation_captions($pn_caption_id);
+ 		if($this->inTransaction()) { $t_caption->setTransaction($this->getTransaction()); }
  		
  		if ($t_caption->get('representation_id') == $this->getPrimaryKey()) {
  			return $t_caption;
