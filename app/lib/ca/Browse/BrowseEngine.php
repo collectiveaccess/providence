@@ -546,7 +546,7 @@
 				case 'violations':
 					if (!($t_rule = $this->opo_datamodel->getInstanceByTableName('ca_metadata_dictionary_rules', true))) { break; }
 					if ($t_rule->load(array('rule_code' => $pn_row_id))) {
-						return $t_rule->getSetting('rule_displayname');
+						return $t_rule->getSetting('label');
 					}
 					return urldecode($pn_row_id);
 					break;
@@ -2699,13 +2699,14 @@
 								// Translate value idnos to ids
 								if (is_array($va_suppress_values)) { $va_suppress_values = ca_lists::getItemIDsFromList($t_element->get('list_id'), $va_suppress_values); }
 								
+								$va_facet_list = array();
 								foreach($va_values as $vn_val) {
 									if (!$vn_val) { continue; }
 									if (is_array($va_suppress_values) && (in_array($vn_val, $va_suppress_values))) { continue; }
 									
 									if ($va_criteria[$vn_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
 									$vn_child_count = isset($va_list_child_count_cache[$vn_val]) ? $va_list_child_count_cache[$vn_val] : 0;
-									$va_values[$vn_val] = array(
+									$va_facet_list[$vn_val] = array(
 										'id' => $vn_val,
 										'label' => $va_list_label_cache[$vn_val],
 										'parent_id' => isset($va_list_item_cache[$vn_val]['parent_id']) ? $va_list_item_cache[$vn_val]['parent_id'] : null,
@@ -2716,8 +2717,8 @@
 								$va_values_sorted_by_list_order = array();
 								if (is_array($va_list_item_cache)) {
 									foreach($va_list_item_cache as $vn_item_id => $va_item) {
-										if(isset($va_values[$vn_item_id])) {
-											$va_values_sorted_by_list_order[$vn_item_id] = $va_values[$vn_item_id];
+										if(isset($va_facet_list[$vn_item_id])) {
+											$va_values_sorted_by_list_order[$vn_item_id] = $va_facet_list[$vn_item_id];
 										}
 									}
 								}
@@ -3515,7 +3516,7 @@
 						$t_rule = new ca_metadata_dictionary_rules();
 						while($qr_res->nextRow()) {	
 							if ($t_rule->load($qr_res->get('rule_id'))) {
-								if (!($vs_val = trim($t_rule->getSetting('rule_displayname')))) { continue; }
+								if (!($vs_val = trim($t_rule->getSetting('label')))) { continue; }
 								$vs_code = $t_rule->get('rule_code');
 								if ($va_criteria[$vs_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
 						

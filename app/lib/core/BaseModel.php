@@ -707,12 +707,8 @@ class BaseModel extends BaseObject {
 				switch(sizeof($va_tmp)) {
 					case 2:
 						// support <table_name>.<field_name> syntax
-						if ($va_field_info['FIELD_TYPE'] === FT_MEDIA) {
-							$va_tmp[2] = '';
-						} else {
-							$ps_field = $va_tmp[1];
-							break;
-						}
+						$ps_field = $va_tmp[1];
+						break;
 					default: // > 2 elements
 						// media field?
 						if (($va_field_info['FIELD_TYPE'] === FT_MEDIA) && (!isset($pa_options['returnAsArray'])) && !$pa_options['returnAsArray']) {
@@ -4642,6 +4638,9 @@ class BaseModel extends BaseObject {
 					// Generate preview frames for media that support that (Eg. video)
 					// and add them as "multifiles" assuming the current model supports that (ca_object_representations does)
 					if (!sizeof($va_process_these_versions_only) && ((bool)$this->_CONFIG->get('video_preview_generate_frames') || (bool)$this->_CONFIG->get('document_preview_generate_pages')) && method_exists($this, 'addFile')) {
+						if (method_exists($this, 'removeAllFiles')) {
+							$this->removeAllFiles();                // get rid of any previously existing frames (they might be hanging ar
+						}
 						$va_preview_frame_list = $m->writePreviews(
 							array(
 								'width' => $m->get("width"), 
@@ -4658,7 +4657,6 @@ class BaseModel extends BaseObject {
 							)
 						);
 							
-						$this->removeAllFiles();		// get rid of any previously existing frames (they might be hanging around if we're editing an existing record)
 						if (is_array($va_preview_frame_list)) {
 							foreach($va_preview_frame_list as $vn_time => $vs_frame) {
 								$this->addFile($vs_frame, $vn_time, true);	// the resource path for each frame is it's time, in seconds (may be fractional) for video, or page number for documents
