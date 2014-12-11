@@ -536,8 +536,8 @@ class Installer {
 		$t_rel_types = new ca_relationship_types();
 		$t_list = new ca_lists();
 
+		$va_elements = array();
 		if($this->ops_base_name){ // "merge" profile and its base
-			$va_elements = array();
 			foreach($this->opo_base->elementSets->children() as $vo_element){
 				$va_elements[self::getAttribute($vo_element, "code")] = $vo_element;
 			}
@@ -653,6 +653,60 @@ class Installer {
 		}
 
 		return $vn_element_id;
+	}
+	# --------------------------------------------------
+	public function processMetadataDictionary() {
+		require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_entries.php');
+
+		if(!$this->opo_profile->metadataDictionary) { return true; } // no dict specified. it's optional, so don't barf
+
+		// dictionary entries don't have a code or any other attribute that could be used for
+		// identification so we won't support setting them in a base profile, for now ...
+
+		foreach($this->opo_profile->metadataDictionary->children() as $vo_entry) {
+			$vs_field = self::getAttribute($vo_entry, "bundle");
+
+			if(strlen($vs_field)<1) {
+				$this->addError("No bundle specified in a metadata dictionary entry. Skipping row.");
+				continue;
+			}
+
+			// insert dictionary entry
+			$t_entry = new ca_metadata_dictionary_entries();
+			$t_entry->setMode(ACCESS_WRITE);
+			$t_entry->set('bundle_name', $vs_field);
+			$this->_processSettings($t_entry, $vo_entry->settings);
+
+			$t_entry->insert();
+
+			if($t_entry->numErrors() > 0 || !($t_entry->getPrimaryKey()>0)) {
+				$this->addError("There were errors while adding dictionary entry: " . join(';', $t_entry->getErrors()));
+				return false;
+			}
+
+			if($vo_entry->rules) {
+				foreach($vo_entry->rules->children() as $vo_rule) {
+					$vs_code = self::getAttribute($vo_rule, "code");
+					$vs_level = self::getAttribute($vo_rule, "level");
+
+					$t_rule = new ca_metadata_dictionary_rules();
+					$t_rule->setMode(ACCESS_WRITE);
+					$t_rule->set('entry_id', $t_entry->getPrimaryKey());
+					$t_rule->set('rule_code', $vs_code);
+					$t_rule->set('rule_level', $vs_level);
+					$t_rule->set('expression', (string) $vo_rule->expression);
+					$this->_processSettings($t_rule, $vo_rule->settings);
+
+					$t_rule->insert();
+					if ($t_rule->numErrors()) {
+						$this->addError("There were errors while adding dictionary rule: " . join(';', $t_rule->getErrors()));
+						continue;
+					}
+				}
+			}
+		}
+
+		return true;
 	}
 	# --------------------------------------------------
 	public function processUserInterfaces(){

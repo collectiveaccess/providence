@@ -67,7 +67,7 @@ class VictimService extends NS11mmService {
         if (!$until) { $until = date('c'); }
         $vs_range = ($from && $until) ? self::utcToDb($from).' to '.self::utcToDb($until) : null;
         
-		$qr_res = $o_search->search("ca_entities.type_id:".$this->opn_victim_type_id, array('limitToModifiedOn' => $vs_range));
+		$qr_res = $o_search->search((trim($vs_range) ? "modified:\"{$vs_range}\" " : '')."ca_entities.type_id:".$this->opn_victim_type_id, array('limitToModifiedOn' => $vs_range));
 		
 		
         $skip = $this->opo_request->getParameter('skip', pInteger);
@@ -141,6 +141,7 @@ class VictimService extends NS11mmService {
 		
 		$va_place_type_idnos = array();
 		foreach($va_place_type_list as $vn_type_id => $va_type) {
+			if (!$va_type['is_enabled']) { continue; }
 			$va_place_type_idnos[] = $va_type['idno'];
 		}
 		$va_data['place_types'] = $va_place_type_idnos;

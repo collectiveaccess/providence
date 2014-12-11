@@ -316,7 +316,7 @@
  			$va_buf = array();
  			if (!($t_model = $this->opo_datamodel->getTableInstance($this->ops_tablename, true))) { return '?'; }
  			foreach($va_form_data as $vs_bundle => $vs_value) {
- 				if (!trim($vs_value)) { continue; }
+ 				if (!$vs_value || (!is_array($vs_value) && !trim($vs_value))) { continue; }
  				$va_buf[] = $t_model->getDisplayLabel($vs_bundle).": ".$vs_value;
  			}
  			

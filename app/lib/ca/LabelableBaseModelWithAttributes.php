@@ -2118,6 +2118,7 @@
 			
 			$o_dm = Datamodel::load();
 			$t_rel = $o_dm->getInstanceByTableName($vs_group_rel_table, true);
+			if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
 			
 			$va_current_groups = $this->getUserGroups();
 			
@@ -2175,6 +2176,7 @@
 			
 			$o_dm = Datamodel::load();
 			$t_rel = $o_dm->getInstanceByTableName($vs_group_rel_table);
+			if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
 			
 			$va_current_groups = $this->getUserGroups();
 			
@@ -2349,6 +2351,7 @@
 			$o_dm = Datamodel::load();
 			$t_rel = $o_dm->getInstanceByTableName($vs_user_rel_table, true);
 			
+			if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
 			foreach($pa_user_ids as $vn_user_id => $vn_access) {
 				$t_rel->clear();
 				$t_rel->load(array('user_id' => $vn_user_id, $vs_pk => $vn_id));		// try to load existing record
@@ -2396,6 +2399,7 @@
 			
 			$o_dm = Datamodel::load();
 			$t_rel = $o_dm->getInstanceByTableName($vs_user_rel_table);
+			if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
 			
 			$va_current_users = $this->getUsers();
 			
