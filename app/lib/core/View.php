@@ -92,7 +92,7 @@ class View extends BaseObject {
 	public function addViewPath($pm_path) {
 		if (is_array($pm_path)) {
 			foreach($pm_path as $vs_path) {
-				$this->opa_view_paths[] = $ps_path;
+				$this->opa_view_paths[] = $vs_path;
 			}
 		} else {
 			$this->opa_view_paths[] = $pm_path;
