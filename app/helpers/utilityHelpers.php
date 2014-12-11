@@ -986,6 +986,7 @@ function caFileIsIncludable($ps_file) {
 		}
 		$va_sorted_by_key = array();
 		foreach($pa_values as $vn_id => $va_data) {
+			if (!is_array($va_data)) { continue; }
 			$va_key = array();
 			foreach($va_sort_keys as $vs_sort_key) {
 				$va_key[] = $va_data[$vs_sort_key];
