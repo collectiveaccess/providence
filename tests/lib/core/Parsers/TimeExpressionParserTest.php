@@ -222,6 +222,12 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($va_parse[1], "1945.050823595900");
 	}
 
+	public function testInvalidMonthDateForGermanLocale() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('de_DE');
+		$vb_res = $o_tep->parse('24.13.14');
+		$this->assertEquals($vb_res, false);
+	}
 
 	public function testHistoricDayDateWithUmlautForGermanLocale() {
  		$o_tep = new TimeExpressionParser();

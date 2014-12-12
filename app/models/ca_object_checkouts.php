@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/models/ca_objects_x_storage_locations.php : table access class for table ca_objects_x_storage_locations
+ * app/models/ca_object_checkouts.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,68 +33,99 @@
  /**
    *
    */
-require_once(__CA_LIB_DIR__.'/ca/ObjectRelationshipBaseModel.php');
+
+require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
 
 
-BaseModel::$s_ca_models_definitions['ca_objects_x_storage_locations'] = array(
- 	'NAME_SINGULAR' 	=> _t('object ⇔ storage location relationship'),
- 	'NAME_PLURAL' 		=> _t('object ⇔ storage location relationships'),
+BaseModel::$s_ca_models_definitions['ca_object_checkouts'] = array(
+ 	'NAME_SINGULAR' 	=> _t('object checkout'),
+ 	'NAME_PLURAL' 		=> _t('object checkouts'),
  	'FIELDS' 			=> array(
- 		'relation_id' => array(
+ 		'checkout_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
+				'DEFAULT' => '','LABEL' => _t('Checkout id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this object checkout entry')
+		),
+		'group_uuid' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 36, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => 'Relation id', 'DESCRIPTION' => 'Identifier for Relation'
+				'BOUNDS_LENGTH' => array(0, 36),
+				'LABEL' => 'Group UUID', 'DESCRIPTION' => 'UUID for group checkout is part of.'
 		),
 		'object_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => 'Object id', 'DESCRIPTION' => 'Identifier for Object'
+				'LABEL' => 'Object ID', 'DESCRIPTION' => 'The id of the object that was checked out.'
 		),
-		'type_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Type id', 'DESCRIPTION' => 'Identifier for Type',
-				'BOUNDS_VALUE' => array(0,65535)
-		),
-		'location_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Location id', 'DESCRIPTION' => 'Identifier for Location'
-		),
-		'source_info' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Source information', 'DESCRIPTION' => 'Source information'
-		),
-		'effective_date' => array(
-				'FIELD_TYPE' => FT_HISTORIC_DATERANGE, 'DISPLAY_TYPE' => DT_FIELD, 
+		'user_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DISPLAY_FIELD' => array('ca_users.lname', 'ca_users.fname'),
+				'DEFAULT' => '',
+				'LABEL' => _t('User'), 'DESCRIPTION' => _t('The user who checked out the object.')
+		),
+		'created_on' => array(
+				'FIELD_TYPE' => FT_TIMESTAMP, 'DISPLAY_TYPE' => DT_FIELD,
+				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Created on'), 'DESCRIPTION' => _t('Date/time the checkout entry was created.'),
+		),
+		'checkout_date' => array(
+				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
-				'START' => 'sdatetime', 'END' => 'edatetime',
-				'LABEL' => _t('Effective dates'), 'DESCRIPTION' => _t('Period of time for which this relationship was in effect. This is an option qualification for the relationship. If left blank, this relationship is implied to have existed for as long as the related items have existed.')
+				'LABEL' => _t('Checkout date'), 'DESCRIPTION' => _t('Date/time the item was checked out.'),
 		),
-		'rank' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+		'due_date' => array(
+				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Date due'), 'DESCRIPTION' => _t('Date/time the item is due to be returned.'),
+		),
+		'return_date' => array(
+				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 15, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Date returned'), 'DESCRIPTION' => _t('Date/time the item was returned.'),
+		),
+		'checkout_notes' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 90, 'DISPLAY_HEIGHT' => 4,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('The relative priority of the relationship when displayed in a list with other relationships. Lower numbers indicate higher priority.')
-		)
+				'BOUNDS_LENGTH' => array(0, 65535),
+				'LABEL' => 'Checkout notes', 'DESCRIPTION' => 'Notes made at checkout time.'
+		),
+		'return_notes' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 90, 'DISPLAY_HEIGHT' => 4,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'BOUNDS_LENGTH' => array(0, 65535),
+				'LABEL' => 'Return notes', 'DESCRIPTION' => 'Notes at return of object.'
+		),
+		'deleted' => array(
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 0,
+				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if the order is deleted or not.'),
+				'BOUNDS_VALUE' => array(0,1)
+		),
  	)
 );
 
-class ca_objects_x_storage_locations extends ObjectRelationshipBaseModel {
+class ca_object_checkouts extends BaseModel {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -106,10 +137,10 @@ class ca_objects_x_storage_locations extends ObjectRelationshipBaseModel {
 	# --- Basic object parameters
 	# ------------------------------------------------------
 	# what table does this class represent?
-	protected $TABLE = 'ca_objects_x_storage_locations';
+	protected $TABLE = 'ca_object_checkouts';
 	      
 	# what is the primary key of the table?
-	protected $PRIMARY_KEY = 'relation_id';
+	protected $PRIMARY_KEY = 'checkout_id';
 
 	# ------------------------------------------------------
 	# --- Properties used by standard editing scripts
@@ -120,12 +151,13 @@ class ca_objects_x_storage_locations extends ObjectRelationshipBaseModel {
 	# ------------------------------------------------------
 
 	# Array of fields to display in a listing of records from this table
-	protected $LIST_FIELDS = array('source_info');
+	protected $LIST_FIELDS = array('user_id', 'object_id', 'created_on');
 
 	# When the list of "list fields" above contains more than one field,
 	# the LIST_DELIMITER text is displayed between fields as a delimiter.
 	# This is typically a comma or space, but can be any string you like
 	protected $LIST_DELIMITER = ' ';
+
 
 	# What you'd call a single record from this table (eg. a "person")
 	protected $NAME_SINGULAR;
@@ -135,7 +167,7 @@ class ca_objects_x_storage_locations extends ObjectRelationshipBaseModel {
 
 	# List of fields to sort listing of records by; you can use 
 	# SQL 'ASC' and 'DESC' here if you like.
-	protected $ORDER_BY = array('source_info');
+	protected $ORDER_BY = array();
 
 	# Maximum number of record to display per page in a listing
 	protected $MAX_RECORDS_PER_PAGE = 20; 
@@ -147,7 +179,7 @@ class ca_objects_x_storage_locations extends ObjectRelationshipBaseModel {
 
 	# If you want to order records arbitrarily, add a numeric field to the table and place
 	# its name here. The generic list scripts can then use it to order table records.
-	protected $RANK = 'rank';
+	protected $RANK = '';
 	
 	
 	# ------------------------------------------------------
@@ -165,10 +197,10 @@ class ca_objects_x_storage_locations extends ObjectRelationshipBaseModel {
 	# Change logging
 	# ------------------------------------------------------
 	protected $UNIT_ID_FIELD = null;
-	protected $LOG_CHANGES_TO_SELF = false;
+	protected $LOG_CHANGES_TO_SELF = true;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
-			'object_id', 'location_id'
+			"object_id"
 		),
 		"RELATED_TABLES" => array(
 		
@@ -176,23 +208,19 @@ class ca_objects_x_storage_locations extends ObjectRelationshipBaseModel {
 	);
 	
 	# ------------------------------------------------------
-	# --- Relationship info
+	# Labels
 	# ------------------------------------------------------
-	protected $RELATIONSHIP_LEFT_TABLENAME = 'ca_objects';
-	protected $RELATIONSHIP_RIGHT_TABLENAME = 'ca_storage_locations';
-	protected $RELATIONSHIP_LEFT_FIELDNAME = 'object_id';
-	protected $RELATIONSHIP_RIGHT_FIELDNAME = 'location_id';
-	protected $RELATIONSHIP_TYPE_FIELDNAME = 'type_id';
+	protected $LABEL_TABLE_NAME = null;
+	
+	# ------------------------------------------------------
+	# Self-relations
+	# ------------------------------------------------------
+	protected $SELF_RELATION_TABLE_NAME = null;
 	
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
 	# are listed here is the order in which they will be returned using getFields()
-	#
-	# There are number of types of information that can be set here, some having to do with the 
-	# underlying specifics of the field (eg. is it NULL?) and others having to do with input 
-	# validation (eg. must be between 50 and 100) or presentation in an HTML form (eg. show it as 
-	# a text field 30 characters wide). See the documentation for BaseRelationshipModel.php for a complete list
-	# of field specifiers.
+
 	protected $FIELDS;
 	
 	# ------------------------------------------------------
@@ -208,22 +236,6 @@ class ca_objects_x_storage_locations extends ObjectRelationshipBaseModel {
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);	# call superclass constructor
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public function insert($pa_options=null) {
-		if (!$this->get('effective_date', array('getDirectDate' => true))) {  $this->set('effective_date', _t('now')); }
-		return parent::insert($pa_options);
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public function update($pa_options=null) {
-		if (!$this->get('effective_date', array('getDirectDate' => true))) { $this->set('effective_date', _t('now')); }
-		return parent::update($pa_options);
 	}
 	# ------------------------------------------------------
 }

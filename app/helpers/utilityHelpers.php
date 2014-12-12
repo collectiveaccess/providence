@@ -303,9 +303,11 @@ function caFileIsIncludable($ps_file) {
 	 * @param bool $pb_include_hidden_files Optional. By default caGetDirectoryContentsAsList() does not consider hidden files (files starting with a '.') when calculating file counts. Set this to true to include hidden files in counts. Note that the special UNIX '.' and '..' directory entries are *never* counted as files.
 	 * @param bool $pb_sort Optional. If set paths are returns sorted alphabetically. Default is false.
 	 * @param bool $pb_include_directories. If set paths to directories are included. Default is false (only files are returned).
+	 * @param array $pa_options Additional options, including:
+	 *		modifiedSince = Only return files and directories modified after a Unix timestamp [Default=null]
 	 * @return array An array of file paths.
 	 */
-	function &caGetDirectoryContentsAsList($dir, $pb_recursive=true, $pb_include_hidden_files=false, $pb_sort=false, $pb_include_directories=false) {
+	function &caGetDirectoryContentsAsList($dir, $pb_recursive=true, $pb_include_hidden_files=false, $pb_sort=false, $pb_include_directories=false, $pa_options=null) {
 		$va_file_list = array();
 		if(substr($dir, -1, 1) == "/"){
 			$dir = substr($dir, 0, strlen($dir) - 1);
@@ -314,6 +316,14 @@ function caFileIsIncludable($ps_file) {
 		if($va_paths = scandir($dir, 0)) {
 			foreach($va_paths as $item) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
+					if (
+						(isset($pa_option['modifiedSince']) && ($pa_option['modifiedSince'] > 0))
+						&&
+						(is_array($va_stat = @stat("{$dir}/{$item}")))
+						&&
+						($va_stat['mtime'] < $pa_option['modifiedSince'])	
+					) { continue; }
+				
 					$vb_is_dir = is_dir("{$dir}/{$item}");
 					if ($pb_include_directories && $vb_is_dir) {
 						$va_file_list["{$dir}/{$item}"] = true;
@@ -976,6 +986,7 @@ function caFileIsIncludable($ps_file) {
 		}
 		$va_sorted_by_key = array();
 		foreach($pa_values as $vn_id => $va_data) {
+			if (!is_array($va_data)) { continue; }
 			$va_key = array();
 			foreach($va_sort_keys as $vs_sort_key) {
 				$va_key[] = $va_data[$vs_sort_key];
@@ -2228,5 +2239,60 @@ function caFileIsIncludable($ps_file) {
 		}
 
 		return true;
+	}
+	# ----------------------------------------
+	/**
+ 	 * Query external web service and return whatever body it returns as string
+ 	 * @param string $ps_url URL of the web service to query
+	 * @return string
+ 	 */
+	function caQueryExternalWebservice($ps_url) {
+		if(!isURL($ps_url)) { return false; }
+
+		$o_conf = Configuration::load();
+
+		if($vs_proxy = $o_conf->get('web_services_proxy_url')){ /* proxy server is configured */
+
+			$vs_proxy_auth = null;
+			if(($vs_proxy_user = $o_conf->get('web_services_proxy_auth_user')) && ($vs_proxy_pass = $o_conf->get('web_services_proxy_auth_pw'))){
+				$vs_proxy_auth = base64_encode("{$vs_proxy_user}:{$vs_proxy_pass}");
+			}
+
+			// non-authed proxy requests go through curl to properly support https queries
+			// everything else is still handled via file_get_contents and stream contexts
+			if(is_null($vs_proxy_auth) && function_exists('curl_exec')) {
+				$vo_curl = curl_init();
+				curl_setopt($vo_curl, CURLOPT_URL, $ps_url);
+				curl_setopt($vo_curl, CURLOPT_PROXY, $vs_proxy);
+				curl_setopt($vo_curl, CURLOPT_SSL_VERIFYHOST, 0);
+				curl_setopt($vo_curl, CURLOPT_SSL_VERIFYPEER, false);
+				curl_setopt($vo_curl, CURLOPT_FOLLOWLOCATION, true);
+				curl_setopt($vo_curl, CURLOPT_RETURNTRANSFER, 1);
+				curl_setopt($vo_curl, CURLOPT_AUTOREFERER, true);
+				curl_setopt($vo_curl, CURLOPT_CONNECTTIMEOUT, 120);
+				curl_setopt($vo_curl, CURLOPT_TIMEOUT, 120);
+				curl_setopt($vo_curl, CURLOPT_MAXREDIRS, 10);
+				curl_setopt($vo_curl, CURLOPT_USERAGENT, 'CollectiveAccess web service lookup');
+
+				$vs_content = curl_exec($vo_curl);
+				curl_close($vo_curl);
+				return $vs_content;
+			} else {
+				$va_context_options = array( 'http' => array(
+					'proxy' => $vs_proxy,
+					'request_fulluri' => true,
+					'header' => 'User-agent: CollectiveAccess web service lookup',
+				));
+
+				if($vs_proxy_auth){
+					$va_context_options['http']['header'] = "Proxy-Authorization: Basic {$vs_proxy_auth}";
+				}
+
+				$vo_context = stream_context_create($va_context_options);
+				return @file_get_contents($ps_url, false, $vo_context);
+			}
+		} else {
+			return @file_get_contents($ps_url);
+		}
 	}
 	# ----------------------------------------

@@ -315,6 +315,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 */
 	protected function initLabelDefinitions($pa_options=null) {
 		parent::initLabelDefinitions($pa_options);
+		unset($this->BUNDLES['nonpreferred_labels']); // sets have no nonpreferred labels
 		$this->BUNDLES['ca_users'] = array('type' => 'special', 'repeating' => true, 'label' => _t('User access'));
 		$this->BUNDLES['ca_user_groups'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Group access'));
 		$this->BUNDLES['ca_set_items'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Set items'));
@@ -971,8 +972,16 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		$vn_table_num = $this->get('table_num');
 		
+		if (!$this->inTransaction()) {
+			$o_trans = new Transaction($this->getDb());
+			$vb_web_set_transaction = true;
+		} else {
+			$o_trans = $this->getTransaction();
+		}
+		
 		// Verify existance of row before adding to set
 		$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($vn_table_num, true);
+		$t_instance->setTransaction($o_trans);
 		if (!$t_instance->load($pn_row_id)) {
 			$this->postError(750, _t('Item does not exist'), 'ca_sets->addItem()');
 			return false;
@@ -980,6 +989,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		// Add it to the set
 		$t_item = new ca_set_items();
+		$t_item->setTransaction($o_trans);
 		$t_item->setMode(ACCESS_WRITE);
 		$t_item->set('set_id', $this->getPrimaryKey());
 		$t_item->set('table_num', $vn_table_num);

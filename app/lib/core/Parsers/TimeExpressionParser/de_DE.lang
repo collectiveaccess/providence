@@ -31,7 +31,7 @@ rangeConjunctions = [bis, -, und, ..]
 dateTimeConjunctions = [um]
 
 dateDelimiters = [/,-,.]
-timeDelimiters = [:,.]
+timeDelimiters = [:]
 
 timeAMMeridian = am
 timePMMeridian = pm
