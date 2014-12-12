@@ -67,7 +67,7 @@ class InmagicReader extends BaseXMLDataReader {
 	/**
 	 * 
 	 */
-	protected $ops_root_tag = 'Results';
+	protected $ops_root_tag = 'inm:Record';
 	
 	/**
 	 * Merge attributes of row-level tag into record as regular values?

@@ -43,27 +43,45 @@
 		/**
 		 * Create a fresh installation of CollectiveAccess based on contents of setup.php.  This is essentially a CLI
 		 * command wrapper for the installation process, as /install/inc/page2.php is a web wrapper.
+		 * @param Zend_Console_Getopt $po_opts
+		 * @param bool $pb_installing
+		 * @return bool
 		 */
-		public static function install($po_opts=null) {
+		public static function install($po_opts=null, $pb_installing = true) {
 			require_once(__CA_BASE_DIR__ . '/install/inc/Installer.php');
+			require_once(__CA_BASE_DIR__ . '/install/inc/Updater.php');
 
-			if (!$po_opts->getOption('profile-name')) {
+			if ($pb_installing && !$po_opts->getOption('profile-name')) {
 				CLIUtils::addError(_t("Missing required parameter: profile-name"));
 				return false;
 			}
-			if (!$po_opts->getOption('admin-email')) {
+			if ($pb_installing && !$po_opts->getOption('admin-email')) {
 				CLIUtils::addError(_t("Missing required parameter: admin-email"));
 				return false;
 			}
-
+			$vs_profile_directory = $po_opts->getOption('profile-directory');
+			$vs_profile_directory = $vs_profile_directory ? $vs_profile_directory : __CA_BASE_DIR__ . '/install/profiles/xml';
 			$t_total = new Timer();
-			$vo_installer = new Installer(
-				__CA_BASE_DIR__ . '/install/profiles/xml',
-				$po_opts->getOption('profile-name'),
-				$po_opts->getOption('admin-email'),
-				$po_opts->getOption('overwrite'),
-				$po_opts->getOption('debug')
-			);
+			// If we are installing, then use Installer, otherwise use Updater
+			$vo_installer = null;
+			if($pb_installing){
+				$vo_installer = new Installer(
+					$vs_profile_directory,
+					$po_opts->getOption('profile-name'),
+					$po_opts->getOption('admin-email'),
+					$po_opts->getOption('overwrite'),
+					$po_opts->getOption('debug')
+				);
+			} else {
+				$vo_installer = new Updater(
+					$vs_profile_directory,
+					$po_opts->getOption('profile-name'),
+					null, // If you are updating you don't want to generate an admin user
+					false, // If you are updating you never want to overwrite
+					$po_opts->getOption('debug')
+				);
+			}
+
 			$vb_quiet = $po_opts->getOption('quiet');
 
 			// if profile validation against XSD failed, we already have an error here
@@ -74,19 +92,20 @@
 				));
 				return false;
 			}
+			if($pb_installing){
+				if (!$vb_quiet) { CLIUtils::addMessage(_t("Performing preinstall tasks")); }
+				$vo_installer->performPreInstallTasks();
 
-			if (!$vb_quiet) { CLIUtils::addMessage(_t("Performing preinstall tasks")); }
-			$vo_installer->performPreInstallTasks();
-			
-			if (!$vb_quiet) { CLIUtils::addMessage(_t("Loading schema")); }
-			$vo_installer->loadSchema();
-			
-			if($vo_installer->numErrors()){
-				CLIUtils::addError(_t(
-					"There were errors loading the database schema: %1",
-					"\n * " . join("\n * ", $vo_installer->getErrors())
-				));
-				return false;
+				if (!$vb_quiet) { CLIUtils::addMessage(_t("Loading schema")); }
+				$vo_installer->loadSchema();
+
+				if($vo_installer->numErrors()){
+					CLIUtils::addError(_t(
+						"There were errors loading the database schema: %1",
+						"\n * " . join("\n * ", $vo_installer->getErrors())
+					));
+					return false;
+				}
 			}
 
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing locales")); }
@@ -101,8 +120,13 @@
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing metadata elements")); }
 			$vo_installer->processMetadataElements();
 
-			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing access roles")); }
-			$vo_installer->processRoles();
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing metadata dictionary")); }
+			$vo_installer->processMetadataDictionary();
+
+			if(!$po_opts->getOption('skip-roles')){
+				if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing access roles")); }
+				$vo_installer->processRoles();
+			}
 
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing user groups")); }
 			$vo_installer->processGroups();
@@ -134,20 +158,23 @@
 				));
 				return false;
 			}
-
-			CLIUtils::addMessage(_t(
-				"Installation was successful!\n\nYou can now login with the following logins: %1\nMake a note of these passwords!",
-				"\n * " . join(
-					"\n * ",
-					array_map(
-						function ($username, $password) {
-							return _t("username %1 and password %2", $username, $password);
-						},
-						array_keys($va_login_info),
-						array_values($va_login_info)
+			if($pb_installing){
+				CLIUtils::addMessage(_t(
+					"Installation was successful!\n\nYou can now login with the following logins: %1\nMake a note of these passwords!",
+					"\n * " . join(
+						"\n * ",
+						array_map(
+							function ($username, $password) {
+								return _t("username %1 and password %2", $username, $password);
+							},
+							array_keys($va_login_info),
+							array_values($va_login_info)
+						)
 					)
-				)
-			));
+				));
+			} else {
+				CLIUtils::addMessage(_t("Update of installation profile successful"));
+			}
 
 			CLIUtils::addMessage($vs_time);
 			return true;
@@ -159,10 +186,12 @@
 		public static function installParamList() {
 			return array(
 				"profile-name|n=s" => _t('Name of the profile to install (filename in profiles directory, minus the .xml extension).'),
+				"profile-directory|p=s" => _t('Directory to get profile. Default is: "%1". This directory must contain the profile.xsd schema so that the installer can validate the installation profile.', __CA_BASE_DIR__ . '/install/profiles/xml'),
 				"admin-email|e=s" => _t('Email address of the system administrator (user@domain.tld).'),
 				"overwrite" => _t('Flag must be set in order to overwrite an existing installation.  Also, the __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ global must be set to a true value.'),
 				"debug|d" => _t('Debug flag for installer.'),
-				"quiet|q" => _t('Suppress progress messages.')
+				"quiet|q" => _t('Suppress progress messages.'),
+				"skip-roles|s" => _t('Skip Roles. Default is false, but if you have many roles and access control enabled then install may take some time')
 			);
 		}
 		# -------------------------------------------------------
@@ -189,6 +218,43 @@
 		 */
 		public static function installShortHelp() {
 			return _t("Performs a fresh installation of CollectiveAccess using the configured values in setup.php.");
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function update_installation_profileUtilityClass() {
+			return _t('Configuration - Experimental');
+		}
+		# -------------------------------------------------------
+		public static function update_installation_profileParamList() {
+			$va_params = self::installParamList();
+			unset($va_params['overwrite']);
+			unset($va_params['admin-email|e=s']);
+			return $va_params;
+		}
+		# -------------------------------------------------------
+		public static function update_installation_profile($po_opts=null) {
+			require_once(__CA_BASE_DIR__ . '/install/inc/Updater.php');
+			self::install($po_opts, false);
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function update_installation_profileHelp() {
+			return _t("EXPERIMENTAL - Updates the installation profile to match a supplied profile name.") ."\n".
+			"\t" . _t("This function only creates new values and is useful if you want to append changes from one profile onto another.")."\n".
+			"\t" . _t("Your new profile must exist in a directory that contains the profile.xsd schema and must validate against that schema in order for the update to apply successfully.");
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function update_installation_profileShortHelp() {
+			return _t("EXPERIMENTAL - Updates the installation profile to match a supplied profile name.");
 		}
 
 		# -------------------------------------------------------
@@ -646,7 +712,7 @@
 							FROM ca_attribute_values
 							WHERE
 								element_id in (?)
-						", $va_element_ids);
+						", array($va_element_ids));
 						if ($qr_c->nextRow()) { $vn_count = $qr_c->get('c'); } else { $vn_count = 0; }
 				
 						print CLIProgressBar::start($vn_count, _t('Re-processing attribute media'));
@@ -1440,6 +1506,54 @@
 			return _t("Loads the AAT from a Getty-provided XML file.");
 		}
 		# -------------------------------------------------------
+		/**
+		 * 
+		 */
+		public static function load_ULAN($po_opts=null) {
+			require_once(__CA_APP_DIR__.'/helpers/supportHelpers.php');
+			
+			if (!($vs_file_path = $po_opts->getOption('directory'))) {
+				CLIUtils::addError(_t("You must specify a data directory"));
+				return false;
+			}
+			if (!file_exists($vs_config_path = $po_opts->getOption('configuration'))) {
+				CLIUtils::addError(_t("You must specify a ULAN import configuration file"));
+				return false;
+			}
+			caLoadULAN($vs_file_path, $vs_config_path);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_ULANParamList() {
+			return array(
+				"directory|d=s" => _t('Path to directory containing ULAN XML files.'),
+				"configuration|c=s" => _t('Path to ULAN import configuration file.')
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_ULANUtilityClass() {
+			return _t('Import/Export');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_ULANShortHelp() {
+			return _t("Load Getty Art & Architecture Thesaurus (AAT) into CollectiveAccess.");
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_ULANHelp() {
+			return _t("Loads the AAT from a Getty-provided XML file.");
+		}
+		# -------------------------------------------------------
 		
 		/**
 		 * 
@@ -1596,13 +1710,13 @@
 			if(defined('__CA_ELASTICSEARCH_BASE_URL__') && (strlen(__CA_ELASTICSEARCH_BASE_URL__)>0)) {
 				$vs_elasticsearch_base_url = __CA_ELASTICSEARCH_BASE_URL__;
 			} else {
-				$vs_elasticsearch_base_url = $vo_search_indexing_conf->get('search_elasticsearch_base_url');
+				$vs_elasticsearch_base_url = $vo_search_conf->get('search_elasticsearch_base_url');
 			}
 
 			if(defined('__CA_ELASTICSEARCH_INDEX_NAME__') && (strlen(__CA_ELASTICSEARCH_INDEX_NAME__)>0)) {
 				$vs_elasticsearch_index_name = __CA_ELASTICSEARCH_INDEX_NAME__;
 			} else {
-				$vs_elasticsearch_index_name = $vo_search_indexing_conf->get('search_elasticsearch_index_name');
+				$vs_elasticsearch_index_name = $vo_search_conf->get('search_elasticsearch_index_name');
 			}
 	
 			// delete and create index
@@ -2021,6 +2135,7 @@
 			
 			$t_entry = new ca_metadata_dictionary_entries();
 			$o_db = $t_entry->getDb();
+			$qr_res = $o_db->query("DELETE FROM ca_metadata_dictionary_rule_violations");
 			$qr_res = $o_db->query("DELETE FROM ca_metadata_dictionary_rules");
 			$qr_res = $o_db->query("DELETE FROM ca_metadata_dictionary_entries");
 			
@@ -2043,6 +2158,9 @@
 			$o_rows = $o_sheet->getRowIterator();
 			
 			$vn_add_count = 0;
+			$vn_rule_count = 0;
+			
+			$o_rows->next(); // skip first line
 			while ($o_rows->valid() && ($o_row = $o_rows->current())) {
 				$o_cells = $o_row->getCellIterator();
 				$o_cells->setIterateOnlyExistingCells(false); 
@@ -2071,7 +2189,7 @@
 					$va_data[$vn_c] = nl2br(preg_replace("![\n\r]{1}!", "\n\n", $vs_val));
 					$vn_c++;
 					
-					if ($vn_c > 4) { break; }
+					if ($vn_c > 5) { break; }
 				}
 				$o_rows->next();
 				
@@ -2101,10 +2219,36 @@
 				if ($t_entry->numErrors()) {
 					CLIUtils::addError(_t("Error while adding definition for %1: %2", $va_data[0], join("; ", $t_entry->getErrors())));
 				}
+				
+				// Add rules
+				if ($va_data[5]) {
+					if (!is_array($va_rules = json_decode($va_data[5], true))) {
+						CLIUtils::addError(_t('Could not decode rules for %1', $va_data[5]));
+						continue;		
+					}
+					foreach($va_rules as $va_rule) {
+						$t_rule = new ca_metadata_dictionary_rules();
+						$t_rule->setMode(ACCESS_WRITE);
+						$t_rule->set('entry_id', $t_entry->getPrimaryKey());
+						$t_rule->set('rule_code', (string)$va_rule['ruleCode']);
+						$t_rule->set('rule_level', (string)$va_rule['ruleLevel']);
+						$t_rule->set('expression', (string)$va_rule['expression']);
+						$t_rule->setSetting('label', (string)$va_rule['label']);
+						$t_rule->setSetting('description', (string)$va_rule['description']);
+						$t_rule->setSetting('violationMessage', (string)$va_rule['violationMessage']);
+		
+						$t_rule->insert();
+						if ($t_rule->numErrors()) {
+							CLIUtils::addError(_t("Error while adding rule for %1: %2", $va_data[0], join("; ", $t_rule->getErrors())));
+						} else {
+							$vn_rule_count++;
+						}
+					}
+				}
 			}
 		
 
-			CLIUtils::addMessage(_t('Added %1 entries', $vn_add_count), array('color' => 'bold_green'));
+			CLIUtils::addMessage(_t('Added %1 entries and %2 rules', $vn_add_count, $vn_rule_count), array('color' => 'bold_green'));
 			return true;
 		}
 		# -------------------------------------------------------
@@ -2137,6 +2281,121 @@
 		 */
 		public static function load_metadata_dictionary_from_excel_fileHelp() {
 			return _t('Load metadata dictionary entries from an Excel file using the format described at http://docs.collectiveaccess.org/metadata_dictionary');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function validate_using_metadata_dictionary_rules($po_opts=null) {
+			require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_rules.php');
+			require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_rule_violations.php');
+			
+			$o_dm = Datamodel::load();
+			
+			$t_violation = new ca_metadata_dictionary_rule_violations();
+			
+			$va_rules = ca_metadata_dictionary_rules::getRules();
+			
+			print CLIProgressBar::start(sizeof($va_rules), _t('Evaluating'));
+					
+			$vn_total_rows = $vn_rule_num = 0;
+			$vn_num_rules = sizeof($va_rules);
+			foreach($va_rules as $va_rule) {
+				$vn_rule_num++;
+				$va_expression_tags = caGetTemplateTags($va_rule['expression']);
+				
+				$va_tmp = explode(".", $va_rule['bundle_name']);
+				if (!($t_instance = $o_dm->getInstanceByTableName($va_tmp[0]))) {
+					CLIUtils::addError(_t("Table for bundle %1 is not valid", $va_tmp[0]));
+					continue;
+				}
+				
+				$vs_bundle_name_proc = str_replace("{$vs_table_name}.", "", $va_rule['bundle_name']);
+				$vn_table_num = $t_instance->tableNum();
+								
+				$qr_records = call_user_func_array(($vs_table_name = $t_instance->tableName())."::find", array(
+					array('deleted' => 0),
+					array('returnAs' => 'searchResult')
+				));
+				if (!$qr_records) { continue; }
+				$vn_total_rows += $qr_records->numHits();
+				
+				CLIProgressBar::setTotal($vn_total_rows);
+				
+				$vn_count = 0;
+				while($qr_records->nextHit()) {
+					$vn_count++;
+					
+					print CLIProgressBar::next(1, _t("Rule %1 [%2/%3]: record %4", $va_rule['rule_settings']['label'], $vn_rule_num, $vn_num_rules, $vn_count));
+					$t_violation->clear();
+					$vn_id = $qr_records->getPrimaryKey();
+					
+					$vb_skip = !$t_instance->hasBundle($va_rule['bundle_name'], $qr_records->get('type_id'));
+					
+					if (!$vb_skip) { 
+						// create array of values present in rule
+						$va_row = array($va_rule['bundle_name'] => $vs_val = $qr_records->get($va_rule['bundle_name']));
+						foreach($va_expression_tags as $vs_tag) {
+							$va_row[$vs_tag] = $qr_records->get($vs_tag);
+						}
+					}
+					
+					// is there a violation recorded for this rule and row?
+					if ($t_found = ca_metadata_dictionary_rule_violations::find(array('rule_id' => $va_rule['rule_id'], 'row_id' => $vn_id, 'table_num' => $vn_table_num), array('returnAs' => 'firstModelInstance'))) {
+						$t_violation = $t_found;
+					}
+						
+					if (!$vb_skip && ExpressionParser::evaluate($va_rule['expression'], $va_row)) {
+						// violation
+						if ($t_violation->getPrimaryKey()) {
+							$t_violation->setMode(ACCESS_WRITE);
+							$t_violation->update();
+						} else {
+							$t_violation->setMode(ACCESS_WRITE);
+							$t_violation->set('rule_id', $va_rule['rule_id']);
+							$t_violation->set('table_num', $t_instance->tableNum());
+							$t_violation->set('row_id', $qr_records->getPrimaryKey());
+							$t_violation->insert();
+						}
+					} else {
+						if ($t_violation->getPrimaryKey()) {
+							$t_violation->delete(true);		// remove violation
+						}
+					}
+				}
+			}
+			print CLIProgressBar::finish();
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function validate_using_metadata_dictionary_rulesParamList() {
+			return array(
+				
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function validate_using_metadata_dictionary_rulesUtilityClass() {
+			return _t('Maintenance');
+		}
+		
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function validate_using_metadata_dictionary_rulesShortHelp() {
+			return _t('Validate all records against metadata dictionary');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function validate_using_metadata_dictionary_rulesHelp() {
+			return _t('Validate all records against rules in metadata dictionary.');
 		}
 		# -------------------------------------------------------
 		/**
@@ -2520,7 +2779,7 @@
 		 */
 		public static function reload_object_current_locationsParamList() {
 			return array(
-			
+				
 			);
 		}
 		# -------------------------------------------------------
@@ -2544,6 +2803,75 @@
 		 */
 		public static function reload_object_current_locationsHelp() {
 			return _t('CollectiveAccess supports browse on current locations of collection objects using values cached in the object records. From time to time these values may become out of date. Use this command to regenerate the cached values based upon the current state of the database.');
+		}
+		# -------------------------------------------------------
+		/**
+		 * 
+		 */
+		public static function clear_caches($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/core/Configuration.php");
+			$o_config = Configuration::load();
+			
+			$ps_cache = strtolower((string)$po_opts->getOption('cache'));
+			if (!in_array($ps_cache, array('all', 'app', 'usermedia'))) { $ps_cache = 'all'; }
+		
+			if (in_array($ps_cache, array('all', 'app'))) {
+				CLIUtils::addMessage(_t('Clearing application caches...'));
+				if (is_writable($o_config->get('taskqueue_tmp_directory'))) {
+					caRemoveDirectory($o_config->get('taskqueue_tmp_directory'), false);
+				} else {
+					CLIUtils::addError(_t('Skipping clearing of application cache because it is not writable'));	
+				}
+			}
+			if (in_array($ps_cache, array('all', 'usermedia'))) {
+				if (($vs_tmp_directory = $o_config->get('ajax_media_upload_tmp_directory')) && (file_exists($vs_tmp_directory))) {
+					if (is_writable($vs_tmp_directory)) {
+						CLIUtils::addMessage(_t('Clearing user media cache in %1...', $vs_tmp_directory));
+						caRemoveDirectory($vs_tmp_directory, false);
+					} else {
+						CLIUtils::addError(_t('Skipping clearing of user media cache because it is not writable'));
+					}
+				} else {
+					if (!$vs_tmp_directory) {
+						CLIUtils::addError(_t('Skipping clearing of user media cache because no cache directory is configured'));
+					} else {
+						CLIUtils::addError(_t('Skipping clearing of user media cache because the configured directory at %1 does not exist', $vs_tmp_directory));
+					}
+				}
+			}
+			
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function clear_cachesParamList() {
+			return array(
+				"cache|c=s" => _t('Which cache to clear. Use "app" for the application cache (include all user sessions); use "userMedia" for user-uploaded media; use "all" for all cached. Default is all.'),
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function clear_cachesUtilityClass() {
+			return _t('Maintenance');
+		}
+		
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function clear_cachesShortHelp() {
+			return _t('Clear application caches and tmp directories.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function clear_cachesHelp() {
+			return _t('CollectiveAccess stores often used values, processed configuration files, user-uploaded media and other types of data in application caches. You can clear these caches using this command.');
 		}
 		# -------------------------------------------------------
 	}

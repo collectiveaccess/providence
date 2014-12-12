@@ -423,6 +423,15 @@ class CollectiveAccessDataReader extends BaseDataReader {
 	 * 
 	 * @return int
 	 */
+	public function currentRow() {
+		return $this->opn_current_row;
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @return int
+	 */
 	public function inputType() {
 		return is_array($this->opa_row_ids) ? sizeof($this->opa_row_ids) : 0;
 	}

@@ -10,6 +10,6 @@ Allow from all
 <FilesMatch "^(index|service|tilepic)\.php$">
         Allow from all
 </FilesMatch>
-<FilesMatch "^.*\.(css|gif|jpg|png|js|woff|ttf|swf|m4v)$">
+<FilesMatch "^.*\.(css|gif|jpg|png|js|woff|ttf|swf|map|m4v)$">
         Allow from all
 </FilesMatch>

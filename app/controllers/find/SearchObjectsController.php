@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -91,9 +91,9 @@
  		 */ 
  		public function Index($pa_options=null) {
  			$pa_options['search'] = $this->opo_browse;
- 			JavascriptLoadManager::register('imageScroller');
- 			JavascriptLoadManager::register('tabUI');
- 			JavascriptLoadManager::register('panel');
+ 			AssetLoadManager::register('imageScroller');
+ 			AssetLoadManager::register('tabUI');
+ 			AssetLoadManager::register('panel');
             return parent::Index($pa_options);
  		}
  		# -------------------------------------------------------
@@ -105,7 +105,7 @@
  			$t_object = new ca_objects($vn_object_id);
  			$t_rep = new ca_object_representations($t_object->getPrimaryRepresentationID());
  			
- 			$this->response->addContent($t_rep->getRepresentationViewerHTMLBundle($this->request, array('display' => 'media_overlay', 'object_id' => $vn_object_id, 'containerID' => 'caMediaPanelContentArea')));
+ 			$this->response->addContent(caGetMediaViewerHTMLBundle($this->request, array('display' => 'media_overlay', 't_subject' => $t_object, 't_representation' => $t_rep, 'containerID' => 'caMediaPanelContentArea')));
  		}
  		# -------------------------------------------------------
  		/**
@@ -144,4 +144,3 @@
  		}
  		# -------------------------------------------------------
  	}
- ?>

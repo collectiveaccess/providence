@@ -148,8 +148,8 @@
 			$vn_day = date("j");
 			
 			// Does data exist in cache? Is it current?
-			$o_cache = caGetCacheObject('ca_currency_conversion', 60*60*24);
-			if (is_array($va_data = $o_cache->load('data')) && ($va_data['year'] == $vn_year) && ($va_data['day'] == $vn_day)) {
+			$va_data = ExternalCache::fetch('EuroBankData');
+			if (is_array($va_data) && ($va_data['year'] == $vn_year) && ($va_data['day'] == $vn_day)) {
 				return $va_data['rates'];
 			}
 
@@ -168,9 +168,7 @@
 					$va_data['rates'][$vs_currency] = $vn_rate;
 				}
 				$va_data['rates']['EUR'] = 1.0;	// add Euro to list
-				if ($o_cache) {
-					$o_cache->save($va_data, 'data');
-				}
+				ExternalCache::save('EuroBankData', $va_data);
 				return $va_data['rates'];
 			}
 			throw(new Exception(_t("Cannot fetch data from %1", WLPlugCurrencyConversionEuroBank::CONVERSION_SERVICE_URL)));

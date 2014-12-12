@@ -142,6 +142,22 @@
 			'label' => _t('Can be used in display'),
 			'description' => _t('Check this option if this attribute value can be used for display in search results. (The default is to be.)')
 		),
+		'canMakePDF' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output?'),
+			'description' => _t('Check this option if this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
+		'canMakePDFForValue' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output for individual values?'),
+			'description' => _t('Check this option if individual values for this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
 		'displayTemplate' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -286,11 +302,24 @@
  		}
  		# ------------------------------------------------------------------
  		/**
+ 		 * Return HTML form element for editing.
  		 *
+ 		 * @param array $pa_element_info An array of information about the metadata element being edited
+ 		 * @param array $pa_options array Options include:
+ 		 *			class = the CSS class to apply to all visible form elements [Default=dateBg]
+ 		 *			width = the width of the form element [Default=field width defined in metadata element definition]
+ 		 *			height = the height of the form element [Default=field height defined in metadata element definition]
+ 		 *			t_subject = an instance of the model to which the attribute belongs; required if suggestExistingValues lookups are enabled [Default is null]
+ 		 *			request = the RequestHTTP object for the current request; required if suggestExistingValues lookups are enabled [Default is null]
+ 		 *			suggestExistingValues = suggest values based on existing input for this element as user types [Default is false]		
+ 		 *			useDatePicker = use calendar-style date picker [Default=false]
+ 		 *
+ 		 * @return string
  		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
 			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'suggestExistingValues', 'useDatePicker'));
-
+			$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : 'dateBg');
+			
 			if (isset($pa_options['useDatePicker'])) {
  				$va_settings['useDatePicker'] = $pa_options['useDatePicker'];
  			}
@@ -303,7 +332,7 @@
 					'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'],
 					'value' => '{{'.$pa_element_info['element_id'].'}}',
 					'maxlength' => $vn_max_length,
-					'class' => 'dateBg'
+					'class' => $vs_class
 				)
 			);
 			
@@ -325,17 +354,20 @@
  			}
  			
  			if ((bool)$va_settings['useDatePicker']) {
- 				global $g_ui_locale;
-
- 				// nothing terrible happens if this fails. If no package is registered for the current 
- 				// locale, the LoadManager simply ignores it and the default settings (en_US) apply
- 				JavascriptLoadManager::register("datepicker_i18n_{$g_ui_locale}"); 
+				global $g_ui_locale;
 
  				$vs_element .= "<script type='text/javascript'>
  					jQuery(document).ready(function() {
  						jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').datepicker({constrainInput: false});
  					});
  				</script>\n";
+
+				// load localization for datepicker. we can't use the asset manager here
+				// because that doesn't get the script out in time for quickadd forms
+				$vs_i18n_relative_path = '/assets/jquery/jquery-ui/i18n/jquery.ui.datepicker-'.$g_ui_locale.'.js';
+				if(file_exists(__CA_BASE_DIR__.$vs_i18n_relative_path)) {
+					$vs_element .= "<script src='".__CA_URL_ROOT__.$vs_i18n_relative_path."' type='text/javascript'></script>\n";
+				}
  			}
  			
  			return $vs_element;

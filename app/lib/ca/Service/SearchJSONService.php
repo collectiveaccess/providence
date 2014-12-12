@@ -30,11 +30,11 @@
  * ----------------------------------------------------------------------
  */
 
- /**
-  *
-  */
+/**
+ *
+ */
 
-require_once(__CA_LIB_DIR__."/ca/Service/BaseJSONService.php"); 
+require_once(__CA_LIB_DIR__."/ca/Service/BaseJSONService.php");
 
 class SearchJSONService extends BaseJSONService {
 	# -------------------------------------------------------
@@ -44,46 +44,60 @@ class SearchJSONService extends BaseJSONService {
 	public function __construct($po_request,$ps_table=""){
 		$this->ops_query = $po_request->getParameter("q",pString);
 		$this->opb_deleted_only = (bool)$po_request->getParameter("deleted",pInteger);
-		
+
 		parent::__construct($po_request,$ps_table);
 	}
 	# -------------------------------------------------------
 	public function dispatch(){
 		$va_post = $this->getRequestBodyArray();
 
+		// make sure only requests that are actually identical get pulled from cache
+		$vs_cache_key =
+			md5(print_r($va_post, true)) .
+			md5(print_r($this->opo_request->getParameters(array('POST', 'GET', 'REQUEST')), true)) .
+			$this->getRequestMethod();
+
+		if(ExternalCache::contains($vs_cache_key, 'SearchJSONService')) {
+			return ExternalCache::fetch($vs_cache_key, 'SearchJSONService');
+		}
 
 		switch($this->getRequestMethod()){
 			case "GET":
+			case "POST":
 				if(sizeof($va_post)==0){
-					return $this->search();
+					$vm_return = $this->search();
 				} else {
 					if(is_array($va_post["bundles"])){
-						return $this->search($va_post["bundles"]);
+						$vm_return = $this->search($va_post["bundles"]);
 					} else {
 						$this->addError(_t("Invalid request body format"));
-						return false;
+						$vm_return = false;
 					}
 				}
 				break;
 			default:
 				$this->addError(_t("Invalid HTTP request method for this service"));
-				return false;
+				$vm_return = false;
 		}
+
+		$vn_ttl = defined('__CA_SERVICE_API_CACHE_TTL__') ? __CA_SERVICE_API_CACHE_TTL__ : 60*60; // save for an hour by default
+		ExternalCache::save($vs_cache_key, $vm_return, 'SearchJSONService', $vn_ttl);
+		return $vm_return;
 	}
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
-	private function search($pa_bundles=null){
-		if (!($vo_search = caGetSearchInstance($this->getTableName()))) { 
+	protected function search($pa_bundles=null){
+		if (!($vo_search = caGetSearchInstance($this->getTableName()))) {
 			$this->addError(_t("Invalid table"));
-			return false; 
+			return false;
 		}
 		$t_instance = $this->_getTableInstance($vs_table_name = $this->getTableName());
 
 		$va_return = array();
 		$vo_result = $vo_search->search($this->ops_query, array(
-			'deletedOnly' => $this->opb_deleted_only, 
+			'deletedOnly' => $this->opb_deleted_only,
 			'sort' => $this->opo_request->getParameter('sort', pString))		// user-specified sort
 		);
 
@@ -132,5 +146,3 @@ class SearchJSONService extends BaseJSONService {
 	}
 	# -------------------------------------------------------
 }
-
-?>

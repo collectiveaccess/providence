@@ -388,18 +388,27 @@
 	 * Extracts media metadata using ExifTool
 	 *
 	 * @param string $ps_filepath file path
-	 * @param string $ps_exiftool_path optional path to ExifTool binary. If omitted the path configured in external_applications.conf is used.
-	 * 
-	 * @return array Extracted metadata
+	 * @param bool $pb_skip_unknown If set to true, exiftool won't try to extract unknown tags from the source file
+	 * 			Use this if metadata extraction fails for unknown reasons. Sometimes tools like Photoshop write weird
+	 *			binary data into the files that causes json_decode to barf.
+	 *
+	 * @return array|null Extracted metadata, null if exiftool is not installed or something went wrong
 	 */
-	function caExtractMetadataWithExifTool($ps_filepath, $ps_mediainfo_path=null){
+	function caExtractMetadataWithExifTool($ps_filepath, $pb_skip_unknown=false){
 		if (caExifToolInstalled()) {
-			if (!$vs_path_to_exif_tool) { $vs_path_to_exif_tool = caGetExternalApplicationPath('exiftool'); }
-			exec("{$vs_path_to_exif_tool} -json -a -u -g1 ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
-			
-			if (!is_array($va_data = array_pop(json_decode(join(" ", $va_output), true)))) { return false; }
-			
-			return $va_data;
+			$vs_unknown_param = ($pb_skip_unknown ? '' : '-u');
+			$vs_path_to_exif_tool = caGetExternalApplicationPath('exiftool');
+			exec("{$vs_path_to_exif_tool} -json -a {$vs_unknown_param} -g1 ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
+
+			if($vn_return == 0) {
+				$va_data = json_decode(join("\n", $va_output), true);
+				if(!is_array($va_data)) { return null; }
+				$va_data = array_shift($va_data);
+
+				if(sizeof($va_data)>0) {
+					return $va_data;
+				}
+			}
 		}
 		return null;
 	}
@@ -472,7 +481,7 @@
 			}
 			
 			if (is_array($va_date_elements)) {
-				if (($vs_raw_date = $va_exif_data['IFD0']['DateTimeOriginal']) || ($vs_raw_date = $va_exif_data['EXIF']['DateTimeOriginal'])) {
+				if (($vs_raw_date = $va_exif_data['IFD0']['DateTimeOriginal']) || ($vs_raw_date = $va_exif_data['EXIF']['DateTimeOriginal']) || ($vs_raw_date = $va_exif_data['ExifIFD']['DateTimeOriginal'])) {
 					$va_date_tmp = preg_split('![: ]+!', $vs_raw_date); 
 					$vs_date = 	$va_date_tmp[0].'-'.$va_date_tmp[1].'-'.$va_date_tmp[2].'T'.$va_date_tmp[3].':'.$va_date_tmp[4].':'.$va_date_tmp[5];
 					foreach($va_date_elements as $vs_element) {
@@ -485,7 +494,7 @@
 			
 			if (is_array($va_date_containers)) {
 				$t_list = new ca_lists();
-				if (($vs_raw_date = $va_exif_data['IFD0']['DateTimeOriginal']) || ($vs_raw_date = $va_exif_data['EXIF']['DateTimeOriginal'])) {
+				if (($vs_raw_date = $va_exif_data['IFD0']['DateTimeOriginal']) || ($vs_raw_date = $va_exif_data['EXIF']['DateTimeOriginal']) || ($vs_raw_date = $va_exif_data['ExifIFD']['DateTimeOriginal'])) {
 					$va_date_tmp = preg_split('![: ]+!', $vs_raw_date); 
 					$vs_date = 	$va_date_tmp[0].'-'.$va_date_tmp[1].'-'.$va_date_tmp[2].'T'.$va_date_tmp[3].':'.$va_date_tmp[4].':'.$va_date_tmp[5];
 					foreach($va_date_containers as $vs_container => $va_info) {

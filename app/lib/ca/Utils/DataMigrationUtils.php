@@ -302,7 +302,9 @@
 				if ($o_log) { $o_log->logDebug(_t("Found existing entity %1 in DataMigrationUtils::getEntityID()", $pa_entity_name['forename']."/".$pa_entity_name['surname'])); }
 
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					return new ca_entities($vn_entity_id);
+					$t_entity = new ca_entities($vn_entity_id);
+					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction) { $t_entity->setTransaction($pa_options['transaction']); }
+					return $t_entity;
 				}
 			}
 
@@ -525,7 +527,9 @@
 
 				if ($o_log) { $o_log->logDebug(_t("Found existing place %1 in DataMigrationUtils::getPlaceID()", $ps_place_name)); }
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					return new ca_places($vn_place_id);
+					$t_place = new ca_places($vn_place_id);
+					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction) { $t_place->setTransaction($pa_options['transaction']); }
+					return $t_place;
 				}
 			}
 
@@ -749,7 +753,9 @@
 				if ($o_log) { $o_log->logDebug(_t("Found existing occurrence %1 in DataMigrationUtils::getOccurrenceID()", $ps_occ_name)); }
 
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					return new ca_occurrences($vn_occurrence_id);
+					$t_occurrence = new ca_occurrences($vn_occurrence_id);
+					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction) { $t_occurrence->setTransaction($pa_options['transaction']); }
+					return $t_occurrence;
 				}
 			}
 
@@ -1180,7 +1186,9 @@
 				if ($o_log) { $o_log->logDebug(_t("Found existing collection %1 in DataMigrationUtils::getCollectionID()", $ps_collection_name)); }
 
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					return new ca_collections($vn_collection_id);
+					$t_collection = new ca_collections($vn_collection_id);
+					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction) { $t_collection->setTransaction($pa_options['transaction']); }
+					return $t_collection;
 				}
 			}
 
@@ -1239,6 +1247,8 @@
 					$vs_idno = $t_location->setIdnoWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 				}
 			}
+			
+			if (!$pn_parent_id) { $pn_parent_id = $t_location->getHierarchyRootID(); }
 
 
 			$vn_id = null;
@@ -1398,7 +1408,9 @@
 				if ($o_log) { $o_log->logDebug(_t("Found existing storage location %1 in DataMigrationUtils::getStorageLocationID()", $ps_location_name)); }
 
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					return new ca_storage_locations($vn_location_id);
+					$t_location = new ca_storage_locations($vn_location_id); 
+					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction) { $t_location->setTransaction($pa_options['transaction']); }
+					return $t_location;
 				}
 			}
 
@@ -1619,7 +1631,9 @@
 				if ($o_log) { $o_log->logDebug(_t("Found existing object %1 in DataMigrationUtils::getObjectID()", $ps_object_name)); }
 
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					return new ca_objects($vn_object_id);
+					$t_object = new ca_objects($vn_object_id);
+					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction) { $t_object->setTransaction($pa_options['transaction']); }
+					return $t_object;
 				}
 			}
 
@@ -1833,7 +1847,9 @@
 				if ($o_log) { $o_log->logDebug(_t("Found existing lot %1 in DataMigrationUtils::getObjectLotID()", $ps_lot_name)); }
 
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					return new ca_object_lots($vn_lot_id);
+					$t_lot = new ca_object_lots($vn_lot_id);
+					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction) { $t_lot->setTransaction($pa_options['transaction']); }
+					return $t_lot;
 				}
 			}
 
@@ -1971,6 +1987,7 @@
 				$t_rep->set('status', isset($pa_values['status']) ? $pa_values['status'] : 0);
 				
 				if(isset($pa_values['media']) && $pa_values['media']) {
+					if(is_array($pa_values['media'])) { $pa_values['media'] = array_shift($pa_values['media']); }
 					if (($vb_match_media_without_extension) && !isURL($pa_values['media']) && !file_exists($pa_values['media'])) {
 						$vs_dirname = pathinfo($pa_values['media'], PATHINFO_DIRNAME);
 						$vs_filename = preg_replace('!\.[A-Za-z0-9]{1,4}$!', '', pathinfo($pa_values['media'], PATHINFO_BASENAME));
@@ -2119,7 +2136,9 @@
 				if ($o_log) { $o_log->logDebug(_t("Found existing representation %1 in DataMigrationUtils::getObjectRepresentationID()", $ps_representation_name)); }
 
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					return new ca_object_representations($vn_representation_id);
+					$t_rep = new ca_object_representations($vn_representation_id);
+					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction) { $t_rep->setTransaction($pa_options['transaction']); }
+					return $t_rep;
 				}
 			}
 
@@ -2334,7 +2353,9 @@
 				if ($o_log) { $o_log->logDebug(_t("Found existing loan %1 in DataMigrationUtils::getLoanID()", $ps_loan_name)); }
 
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					return new ca_loans($vn_loan_id);
+					$t_loan = new ca_loans($vn_loan_id);
+					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction) { $t_loan->setTransaction($pa_options['transaction']); }
+					return $t_loan;
 				}
 			}
 
@@ -2550,7 +2571,9 @@
 				if ($o_log) { $o_log->logDebug(_t("Found existing movement %1 in DataMigrationUtils::getMovementID()", $ps_movement_name)); }
 				
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					return new ca_movements($vn_movement_id);
+					$t_movement = new ca_movements($vn_movement_id);
+					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction) { $t_movement->setTransaction($pa_options['transaction']); }
+					return $t_movement;
 				}
 			}
 				
@@ -2581,13 +2604,14 @@
 		 */
 		static function splitEntityName($ps_text, $pa_options=null) {
 			global $g_ui_locale;
-			$ps_text_proc = trim(preg_replace("![ ]+!", " ", $ps_text));
+			$ps_text = $ps_original_text = trim(preg_replace("![ ]+!", " ", $ps_text));
 			
 			if (isset($pa_options['locale']) && $pa_options['locale']) {
 				$vs_locale = $pa_options['locale'];
 			} else {
 				$vs_locale = $g_ui_locale;
 			}
+			if (!$vs_locale && defined('__CA_DEFAULT_LOCALE__')) { $vs_locale = __CA_DEFAULT_LOCALE__; }
 		
 			if (file_exists($vs_lang_filepath = __CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils/'.$vs_locale.'.lang')) {
 				/** @var Configuration $o_config */
@@ -2601,7 +2625,39 @@
 			}
 			
 			$va_name = array();
-			if (strpos($ps_text_proc, ',') !== false) {
+		
+			// check for titles
+			//$ps_text = preg_replace('/[^\p{L}\p{N} \-]+/u', ' ', $ps_text);
+			
+			$vs_prefix_for_name = null;
+			foreach($va_titles as $vs_title) {
+				if (preg_match("!^({$vs_title})!i", $ps_text, $va_matches)) {
+					$vs_prefix_for_name = $va_matches[1];
+					$ps_text = str_replace($va_matches[1], '', $ps_text);
+				}
+			}
+			
+			// check for suffixes
+			$vs_suffix_for_name = null;
+			foreach($va_corp_suffixes as $vs_suffix) {
+				if (preg_match("!({$vs_suffix})$!i", $ps_text, $va_matches)) {
+					$vs_suffix_for_name = $va_matches[1];
+					$ps_text = str_replace($va_matches[1], '', $ps_text);
+				}
+			}
+			
+			if ($vs_suffix_for_name) {
+				// is corporation
+				$va_tmp = preg_split('![, ]+!', trim($ps_text));
+				if (strpos($va_tmp[0], '.') !== false) {
+					$va_name['forename'] = array_shift($va_tmp);
+					$va_name['surname'] = join(' ', $va_tmp);
+				} else {
+					$va_name['surname'] = $ps_text;
+				}
+				$va_name['prefix'] = $vs_prefix_for_name;
+				$va_name['suffix'] = $vs_suffix_for_name;
+			} elseif (strpos($ps_text, ',') !== false) {
 				// is comma delimited
 				$va_tmp = explode(',', $ps_text_proc);
 				$va_name['surname'] = $va_tmp[0];
@@ -2609,58 +2665,60 @@
 				if(sizeof($va_tmp) > 1) {
 					$va_name['forename'] = $va_tmp[1];
 				}
+			} elseif (strpos($ps_text_proc, '_') !== false) {
+				// is comma delimited
+				$va_tmp = explode('_', $ps_text_proc);
+				$va_name['surname'] = $va_tmp[0];
+				
+				if(sizeof($va_tmp) > 1) {
+					$va_name['forename'] = $va_tmp[1];
+				}
 			} else {
-				// check for titles
-				$ps_text_proc = preg_replace('/[^\p{L}\p{N} \-]+/u', ' ', $ps_text_proc);
-				foreach($va_titles as $vs_title) {
-					if (preg_match("!^({$vs_title})!", $ps_text_proc, $va_matches)) {
-						$va_name['prefix'] = $va_matches[1];
-						$ps_text_proc = str_replace($va_matches[1], '', $ps_text_proc);
-					}
-				}
-				
-				// check for suffixes
-				foreach($va_corp_suffixes as $vs_suffix) {
-					if (preg_match("!({$vs_suffix})$!", $ps_text_proc, $va_matches)) {
-						$va_name['suffix'] = $va_matches[1];
-						$ps_text_proc = str_replace($va_matches[1], '', $ps_text_proc);
-					}
-				}
-				
-				$va_tmp = preg_split('![ ]+!', trim($ps_text_proc));
-				
 				$va_name = array(
-					'surname' => '', 'forename' => '', 'middlename' => '', 'displayname' => ''
+					'surname' => '', 'forename' => '', 'middlename' => '', 'displayname' => '', 'prefix' => $vs_prefix_for_name, 'suffix' => $vs_suffix_for_name
 				);
-				switch(sizeof($va_tmp)) {
-					case 1:
-						$va_name['surname'] = $ps_text_proc;
-						break;
-					case 2:
-						$va_name['forename'] = $va_tmp[0];
-						$va_name['surname'] = $va_tmp[1];
-						break;
-					case 3:
-						$va_name['forename'] = $va_tmp[0];
-						$va_name['middlename'] = $va_tmp[1];
-						$va_name['surname'] = $va_tmp[2];
-						break;
-					case 4:
-					default:
-						if (strpos($ps_text_proc, ' '._t('and').' ') !== false) {
-							$va_name['surname'] = array_pop($va_tmp);
-							$va_name['forename'] = join(' ', $va_tmp);
-						} else {
-							$va_name['forename'] = array_shift($va_tmp);
-							$va_name['middlename'] = array_shift($va_tmp);
-							$va_name['surname'] = join(' ', $va_tmp);
-						}
-						break;
+				
+				$va_tmp = preg_split('![ ]+!', trim($ps_text));
+				if (($vn_i = array_search("&", $va_tmp)) !== false) {
+					if ((sizeof($va_tmp) - ($vn_i + 1)) > 1) {
+						$va_name['surname'] = array_pop($va_tmp);
+						$va_name['forename'] = join(' ', array_slice($va_tmp, 0, $vn_i));
+						$va_name['middlename'] = join(' ', array_slice($va_tmp, $vn_i));
+					} else {
+						$va_name['surname'] = array_pop($va_tmp);
+						$va_name['forename'] = join(' ', $va_tmp);
+					}
+				} else {
+				
+					switch(sizeof($va_tmp)) {
+						case 1:
+							$va_name['surname'] = $ps_text;
+							break;
+						case 2:
+							$va_name['forename'] = $va_tmp[0];
+							$va_name['surname'] = $va_tmp[1];
+							break;
+						case 3:
+							$va_name['forename'] = $va_tmp[0];
+							$va_name['middlename'] = $va_tmp[1];
+							$va_name['surname'] = $va_tmp[2];
+							break;
+						case 4:
+						default:
+							if (strpos($ps_text, ' '._t('and').' ') !== false) {
+								$va_name['surname'] = array_pop($va_tmp);
+								$va_name['forename'] = join(' ', $va_tmp);
+							} else {
+								$va_name['forename'] = array_shift($va_tmp);
+								$va_name['middlename'] = array_shift($va_tmp);
+								$va_name['surname'] = join(' ', $va_tmp);
+							}
+							break;
+					}
 				}
 			}
 			
-			$va_name['displayname'] = $ps_text_proc;
-			$va_name['_originalText'] = $ps_text;
+			$va_name['displayname'] = $ps_original_text;
 			foreach($va_name as $vs_k => $vs_v) {
 				$va_name[$vs_k] = trim($vs_v);
 			}
@@ -2708,4 +2766,3 @@
 		}
 		# -------------------------------------------------------
 	}
-?>

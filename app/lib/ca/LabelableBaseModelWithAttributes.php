@@ -102,6 +102,8 @@
 			}
 			
 			$t_label->purify($this->purify());
+			$t_label->setLabelTypeList($this->getAppConfig()->get($pb_is_preferred ? "{$vs_table_name}_preferred_label_type_list" : "{$vs_table_name}_nonpreferred_label_type_list"));
+			
 			foreach($pa_label_values as $vs_field => $vs_value) {
 				if ($t_label->hasField($vs_field)) { 
 					if ($vb_truncate_long_labels) {
@@ -118,7 +120,6 @@
 				}
 			}
 			
-			$t_label->setLabelTypeList($this->getAppConfig()->get($pb_is_preferred ? "{$vs_table_name}_preferred_label_type_list" : "{$vs_table_name}_nonpreferred_label_type_list"));
 			
 			$t_label->set('locale_id', $pn_locale_id);
 			if ($t_label->hasField('type_id')) { $t_label->set('type_id', $pn_type_id); }
@@ -920,6 +921,10 @@
 							$va_tmp = array_reverse($va_tmp, true);
 						}
 						
+						if (caGetOption('returnAsLink', $pa_options, false)) {
+							$va_tmp = caCreateLinksFromText(array_values($va_tmp), $this->tableName(), array_keys($va_tmp));
+						}
+						
 						if ($vb_return_as_array) {
 							return $va_tmp;
 						} else {
@@ -1154,6 +1159,42 @@
 					break;
 			}
 			return parent::get($ps_field, $pa_options);
+		}
+		# --------------------------------------------------------------------------------
+		/**
+		 * Returns true if bundle is valid for this model
+		 * 
+		 * @access public
+		 * @param string $ps_bundle bundle name
+		 * @param int $pn_type_id Optional record type
+		 * @return bool
+		 */ 
+		public function hasBundle ($ps_bundle, $pn_type_id=null) {
+			$va_bundle_bits = explode(".", $ps_bundle);
+			$vn_num_bits = sizeof($va_bundle_bits);
+	
+			if (($vn_num_bits == 1) && (in_array($ps_bundle, array('preferred_labels', 'nonpreferred_labels'))))  {
+				return true;
+			} elseif ($vn_num_bits == 2) {
+				if (($va_bundle_bits[0] == $this->tableName()) && (in_array($va_bundle_bits[1], array('preferred_labels', 'nonpreferred_labels')))) {
+					return true;
+				} elseif (($va_bundle_bits[0] != $this->tableName()) && ($t_rel = $this->getAppDatamodel()->getInstanceByTableName($va_bundle_bits[0], true))) {
+					return $t_rel->hasBundle($ps_bundle, $pn_type_id);
+				} else {
+					return parent::hasBundle($ps_bundle, $pn_type_id);
+				}
+			} elseif($vn_num_bits == 3) {
+				if (($va_bundle_bits[0] == $this->tableName()) && (in_array($va_bundle_bits[1], array('preferred_labels', 'nonpreferred_labels')))) {
+					if (!($t_label = $this->getLabelTableInstance())) { return false; }
+					return $t_label->hasField($va_bundle_bits[2]);
+				} elseif (($va_bundle_bits[0] != $this->tableName()) && ($t_rel = $this->getAppDatamodel()->getInstanceByTableName($va_bundle_bits[0], true))) {
+					return $t_rel->hasBundle($ps_bundle, $pn_type_id);
+				} else {
+					return parent::hasBundle($ps_bundle, $pn_type_id);
+				}
+			} else {
+				return parent::hasBundle($ps_bundle, $pn_type_id);
+			}
 		}
 		# ------------------------------------------------------------------
 		/**
@@ -1521,7 +1562,7 @@
 						true
 					);
 				} else {
-					$this->postError(1130, _t('Label must not be blank'), 'LabelableBaseModelWithAttributes->addDefaultLabel()');
+					$this->postError(1130, _t('Label must not be blank'), 'LabelableBaseModelWithAttributes->addDefaultLabel()', $this->tableName().'.preferred_labels');
 					return false;
 				}
 			}
@@ -2077,6 +2118,7 @@
 			
 			$o_dm = Datamodel::load();
 			$t_rel = $o_dm->getInstanceByTableName($vs_group_rel_table, true);
+			if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
 			
 			$va_current_groups = $this->getUserGroups();
 			
@@ -2134,6 +2176,7 @@
 			
 			$o_dm = Datamodel::load();
 			$t_rel = $o_dm->getInstanceByTableName($vs_group_rel_table);
+			if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
 			
 			$va_current_groups = $this->getUserGroups();
 			
@@ -2308,6 +2351,7 @@
 			$o_dm = Datamodel::load();
 			$t_rel = $o_dm->getInstanceByTableName($vs_user_rel_table, true);
 			
+			if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
 			foreach($pa_user_ids as $vn_user_id => $vn_access) {
 				$t_rel->clear();
 				$t_rel->load(array('user_id' => $vn_user_id, $vs_pk => $vn_id));		// try to load existing record
@@ -2355,6 +2399,7 @@
 			
 			$o_dm = Datamodel::load();
 			$t_rel = $o_dm->getInstanceByTableName($vs_user_rel_table);
+			if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
 			
 			$va_current_users = $this->getUsers();
 			

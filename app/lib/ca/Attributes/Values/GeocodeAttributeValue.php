@@ -96,6 +96,22 @@
 			'label' => _t('Can be used in display'),
 			'description' => _t('Check this option if this attribute value can be used for display in search results. (The default is to be.)')
 		),
+		'canMakePDF' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output?'),
+			'description' => _t('Check this option if this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
+		'canMakePDFForValue' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output for individual values?'),
+			'description' => _t('Check this option if individual values for this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
 		'mustNotBeBlank' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_CHECKBOXES,
@@ -343,14 +359,22 @@
  		}
  		# ------------------------------------------------------------------
  		/**
- 		 * @param array $pa_element_info
- 		 * @param array $pa_options Supported options are 
- 		 *			forSearch = if true, elenent is returned for use in a search form
- 		 *	@return string HTML for element		
+ 		 * Return HTML form element for editing.
+ 		 *
+ 		 * @param array $pa_element_info An array of information about the metadata element being edited
+ 		 * @param array $pa_options array Options include:
+ 		 *			forSearch = simple text entry is returned for use with search forms [Default=false]
+ 		 *			class = the CSS class to apply to all visible form elements [Default=lookupBg]
+ 		 *			width = the width of the form element [Default=field width defined in metadata element definition]
+ 		 *			height = the height of the form element [Default=field height defined in metadata element definition]
+ 		 *
+ 		 * @return string
  		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
+ 			$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : '');
+ 			
  			if (isset($pa_options['forSearch']) && $pa_options['forSearch']) {
- 				return caHTMLTextInput("{fieldNamePrefix}".$pa_element_info['element_id']."_{n}", array('id' => "{fieldNamePrefix}".$pa_element_info['element_id']."_{n}", 'value' => $pa_options['value']), $pa_options);
+ 				return caHTMLTextInput("{fieldNamePrefix}".$pa_element_info['element_id']."_{n}", array('id' => "{fieldNamePrefix}".$pa_element_info['element_id']."_{n}", 'value' => $pa_options['value'], 'class' => $vs_class), $pa_options);
  			}
  			if ((!isset($pa_options['baseLayer']) || !$pa_options['baseLayer']) || (isset($pa_options['request']) && ($pa_options['request']))) {
  				if ($vs_base_layer_pref = $pa_options['request']->user->getPreference('maps_base_layer')) {

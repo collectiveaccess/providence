@@ -117,7 +117,6 @@ BaseModel::$s_ca_models_definitions['ca_metadata_dictionary_entries'] = array(
 );
 
 
-
 class ca_metadata_dictionary_entries extends BaseModel {
 	# ---------------------------------
 	# --- Object attribute properties
@@ -291,6 +290,35 @@ class ca_metadata_dictionary_entries extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Get list of rules for currently loaded row
+	 * @return array|null
+	 */
+	public function getRules() {
+		if(!$this->getPrimaryKey()) { return null; }
+
+		if(MemoryCache::contains($this->getPrimaryKey(), 'MDDictRuleList')) {
+			return MemoryCache::fetch($this->getPrimaryKey(), 'MDDictRuleList');
+		}
+
+		$o_db = $this->getDb();
+
+		$qr_rules = $o_db->query("
+			SELECT * FROM ca_metadata_dictionary_rules ORDER BY rule_id
+		");
+
+		$va_return = array();
+
+		while($qr_rules->nextRow()) {
+			$va_return[$qr_rules->get('rule_id')] = $qr_rules->getRow();
+			$va_return[$qr_rules->get('rule_id')]['settings'] = caUnserializeForDatabase($qr_rules->get('settings'));
+		}
+
+		MemoryCache::save($this->getPrimaryKey(), $va_return, 'MDDictRuleList');
+
+		return $va_return;
+	}
+	# ------------------------------------------------------
+	/**
 	 * Check for existence of a dictionary entry for a bundle and return cache indices if it exists.
 	 *
 	 * @param string $ps_bundle_name The bundle name to find a dictionary entry for. 
@@ -409,4 +437,3 @@ class ca_metadata_dictionary_entries extends BaseModel {
 	}
 	# ------------------------------------------------------
 }
-?>

@@ -127,7 +127,7 @@ class ZipFile {
 	 * Constructor
 	 */
 	public function __construct() {
-		$this->_tmp_data_path = tempnam("/tmp", "ZIP");
+		$this->_tmp_data_path = tempnam(caGetTempDirPath(), "ZIP");
 		$this->_tmp_data = fopen($this->_tmp_data_path, "w+");
 	}
 	# ----------------------------------------------------------------------

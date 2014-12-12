@@ -1046,7 +1046,7 @@ div.notification-info-box {
 }
 
 div.notification-error-box {
-    background:	url('../graphics/icons/glyphicons_078_warning_sign.png') no-repeat 10px 5px;
+    background:	url('../graphics/buttons/glyphicons_078_warning_sign.png') no-repeat 10px 5px;
     text-indent: 32px;
     background-color: #eeeeee;
     padding: 5px;
@@ -1613,6 +1613,7 @@ table.listtable {
     font-size: 8pt;
     width: 100%;
     text-align: left;
+    clear:both;
 }   
 #caWatchedItemsList.listtable {
 	font-size:12px;
@@ -1837,6 +1838,8 @@ div.search-hier-browser-box {
     margin-left: 0px;
     padding: 7px 5px 3px 5px;
     border-bottom: 1px solid #e9e9e9;
+    
+    position: relative;
 }
 
 .labelInfo #image{
@@ -2758,6 +2761,32 @@ a.editorFieldListLink {
     display: none;
 }
 
+div.editorBundlePrintControl {
+    position: absolute; 
+    top: 2px; 
+    right: 27px;
+}
+
+div.editorBundlePrintControl select {
+    font-size: 9px;
+    font-weight: normal;
+    height: 17px;
+    vertical-align: top;
+}
+
+div.editorBundleValuePrintControl {
+    position: absolute; 
+    bottom: 2px; 
+    right: 5px;
+}
+
+div.editorBundleValuePrintControl select {
+    font-size: 9px;
+    font-weight: normal;
+    height: 17px;
+    vertical-align: top;
+}
+
 #caHierarchyOverviewHeader {
     font-size: 13px;
     font-weight: bold;
@@ -3142,6 +3171,11 @@ input[type="text"], input[type="textarea"], textarea,  input[type="password"] {
 	-webkit-border-radius: 3px;
 	-moz-border-radius: 3px;
 	border-radius: 3px;
+}
+
+input[type="text"]:disabled, input[type="textarea"]:disabled, textarea:disabled {
+    color: #808080;
+    -webkit-text-fill-color:#808080;
 }
 
 textarea:focus{
@@ -4517,7 +4551,7 @@ span.bundleDisplayEditorPlacementListItemTitle {
 .elementSettingsUI {
 	position: absolute;
 	top: 40px;
-	left: 400px;
+	left: 150px;
 	overflow: auto;
 	width: 400px;
 	max-height:500px;
@@ -5196,6 +5230,8 @@ div.listRel {
 
 .caItemList {
     /* margin-top: 10px; */
+    max-height: 500px;
+    overflow-y: auto;
 }
 
 .caItemListSortControlTrigger {
@@ -5237,6 +5273,21 @@ div.listRel {
 
 .caItemListSortControls ul li a {
 	text-decoration: none;
+}
+
+div.caItemLoadNextBundles {
+	padding: 10px;
+}
+
+a.caItemLoadNextBundles {
+	text-decoration: none;
+	font-weight: bold;
+	font-size: 12px;
+}
+
+.caItemLoadNextBundlesLoadIndicator {
+	display: none;
+	margin-left: 12px;
 }
 
 .roundedRel .caDeleteItemButton, .roundedRel .caInterstitialEditButton {
@@ -6274,6 +6325,15 @@ div.quickAddTypeList {
     margin-top: 6px;
 }
 
+div.quickAddControls {
+	float: right;
+}
+
+div.quickAddProgress {
+    float: right;
+    margin: 6px 70px 0 0;
+}
+
 input[type='text'].ui-autocomplete-loading {
     background: white url('../graphics/icons/indicator.gif') right center no-repeat;
 }
@@ -6855,6 +6915,52 @@ div.caUseHistoryDate {
 	font-size: 12px;
 }
 
+div.caMetadataDictionaryViolationsList {
+	padding: 10px;
+	background-color: #fff;
+	margin: 0 0 0 15px;
+	
+	width: 33%;
+	
+    border: 2px solid #e6e6e6;
+    
+	font-weight: normal;
+	font-size: 12px;
+	
+	float: right;
+}
+
+div.caMetadataDictionaryViolationsList ol {
+	list-style:none;
+    padding-left:0;
+}
+
+div.caMetadataDictionaryViolationsListHeading {
+	font-weight: bold;
+	font-size: 12px;
+}
+
+.caMetadataDictionaryViolationCrit {
+	font-weight: bold;
+	color: Red;
+}
+
+.caMetadataDictionaryViolationErr {
+	color: Red;
+}
+
+.caMetadataDictionaryViolationWarn {
+	color: GoldenRod
+}
+
+.caMetadataDictionaryViolationNote {
+	color: Blue;
+}
+
+.caMetadataDictionaryViolationDebg {
+	color: #333;
+}
+
 /** Metadata importer **/
 table.caFileSourceControls {
 	width: 700px
@@ -6869,4 +6975,12 @@ td.caSourceFileControlRadio {
 	vertical-align: top;
 	width: 30px;
 	height: 35px;
+}
+
+/** Metadata export preview **/
+.caExportPreview {
+    max-height: 250px;
+    overflow: scroll;
+    width: 100%;
+    border: 1px solid #e6e6e6;
 }

@@ -31,7 +31,7 @@
 						}
 						print caFormSubmitLink($this->request, "<img src='".$this->request->getThemeUrlPath()."/graphics/buttons/glass.png' border='0' style='float:right;' alt='"._t("Search")."'/>", 'caQuickSearchFormSubmit', 'caQuickSearchForm'); 
 ?>
-						<input type="hidden" name="no_cache" value="1"/>
+						<!--<input type="hidden" name="no_cache" value="1"/>-->
 					</form>
 				</div>
 <?php

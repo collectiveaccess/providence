@@ -116,7 +116,7 @@ class PHPUnit_Util_GlobalState
     {
         if (ini_get('register_long_arrays') == '1') {
             $superGlobalArrays = array_merge(
-              self::$superGlobalArrays, self::$superGlobalArraysLong
+                self::$superGlobalArrays, self::$superGlobalArraysLong
             );
         } else {
             $superGlobalArrays = self::$superGlobalArrays;
@@ -134,7 +134,7 @@ class PHPUnit_Util_GlobalState
                 !in_array($key, $blacklist)) {
                 if (isset(self::$globals['GLOBALS'][$key])) {
                     $GLOBALS[$key] = unserialize(
-                      self::$globals['GLOBALS'][$key]
+                        self::$globals['GLOBALS'][$key]
                     );
                 } else {
                     unset($GLOBALS[$key]);
@@ -163,15 +163,15 @@ class PHPUnit_Util_GlobalState
             is_array($GLOBALS[$superGlobalArray]) &&
             isset(self::$globals[$superGlobalArray])) {
             $keys = array_keys(
-              array_merge(
-                $GLOBALS[$superGlobalArray], self::$globals[$superGlobalArray]
-              )
+                array_merge(
+                    $GLOBALS[$superGlobalArray], self::$globals[$superGlobalArray]
+                )
             );
 
             foreach ($keys as $key) {
                 if (isset(self::$globals[$superGlobalArray][$key])) {
                     $GLOBALS[$superGlobalArray][$key] = unserialize(
-                      self::$globals[$superGlobalArray][$key]
+                        self::$globals[$superGlobalArray][$key]
                     );
                 } else {
                     unset($GLOBALS[$superGlobalArray][$key]);
@@ -215,9 +215,9 @@ class PHPUnit_Util_GlobalState
 
         foreach ($iniSettings as $key => $value) {
             $result .= sprintf(
-              '@ini_set(%s, %s);' . "\n",
-              self::exportVariable($key),
-              self::exportVariable($value)
+                '@ini_set(%s, %s);' . "\n",
+                self::exportVariable($key),
+                self::exportVariable($value)
             );
         }
 
@@ -232,10 +232,10 @@ class PHPUnit_Util_GlobalState
         if (isset($constants['user'])) {
             foreach ($constants['user'] as $name => $value) {
                 $result .= sprintf(
-                  'if (!defined(\'%s\')) define(\'%s\', %s);' . "\n",
-                  $name,
-                  $name,
-                  self::exportVariable($value)
+                    'if (!defined(\'%s\')) define(\'%s\', %s);' . "\n",
+                    $name,
+                    $name,
+                    self::exportVariable($value)
                 );
             }
         }
@@ -257,10 +257,10 @@ class PHPUnit_Util_GlobalState
                     }
 
                     $result .= sprintf(
-                      '$GLOBALS[\'%s\'][\'%s\'] = %s;' . "\n",
-                      $superGlobalArray,
-                      $key,
-                      self::exportVariable($GLOBALS[$superGlobalArray][$key])
+                        '$GLOBALS[\'%s\'][\'%s\'] = %s;' . "\n",
+                        $superGlobalArray,
+                        $key,
+                        self::exportVariable($GLOBALS[$superGlobalArray][$key])
                     );
                 }
             }
@@ -272,9 +272,9 @@ class PHPUnit_Util_GlobalState
         foreach (array_keys($GLOBALS) as $key) {
             if (!in_array($key, $blacklist) && !$GLOBALS[$key] instanceof Closure) {
                 $result .= sprintf(
-                  '$GLOBALS[\'%s\'] = %s;' . "\n",
-                  $key,
-                  self::exportVariable($GLOBALS[$key])
+                    '$GLOBALS[\'%s\'] = %s;' . "\n",
+                    $key,
+                    self::exportVariable($GLOBALS[$key])
                 );
             }
         }
@@ -286,7 +286,7 @@ class PHPUnit_Util_GlobalState
     {
         if (ini_get('register_long_arrays') == '1') {
             return array_merge(
-              self::$superGlobalArrays, self::$superGlobalArraysLong
+                self::$superGlobalArrays, self::$superGlobalArraysLong
             );
         } else {
             return self::$superGlobalArrays;
@@ -307,7 +307,9 @@ class PHPUnit_Util_GlobalState
                 strpos($declaredClasses[$i], 'PHP_Timer') !== 0 &&
                 strpos($declaredClasses[$i], 'PHP_Token_Stream') !== 0 &&
                 strpos($declaredClasses[$i], 'Symfony') !== 0 &&
-                strpos($declaredClasses[$i], 'Text_Template') !== 0) {
+                strpos($declaredClasses[$i], 'Text_Template') !== 0 &&
+                strpos($declaredClasses[$i], 'Instantiator') !== 0 &&
+                strpos($declaredClasses[$i], 'LazyMap') !== 0) {
                 $class = new ReflectionClass($declaredClasses[$i]);
 
                 if ($class->isSubclassOf('PHPUnit_Framework_Test')) {
@@ -362,10 +364,9 @@ class PHPUnit_Util_GlobalState
            (is_array($variable) && self::arrayOnlyContainsScalars($variable))) {
             return var_export($variable, true);
         }
-
-        return 'unserialize(\'' .
-                str_replace("'", "\'", serialize($variable)) .
-                '\')';
+        return 'unserialize(' .
+                var_export(serialize($variable), true) .
+                ')';
     }
 
     protected static function arrayOnlyContainsScalars(array $array)

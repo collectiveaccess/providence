@@ -141,6 +141,22 @@
 			'label' => _t('Can be used in display'),
 			'description' => _t('Check this option if this attribute value can be used for display in search results. (The default is to be.)')
 		),
+		'canMakePDF' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output?'),
+			'description' => _t('Check this option if this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
+		'canMakePDFForValue' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output for individual values?'),
+			'description' => _t('Check this option if individual values for this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
 		'displayTemplate' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -245,19 +261,34 @@
  				'value_longtext1' => $ps_value
  			);
  		}
- 		# ------------------------------------------------------------------
+ 		# ------------------------------------------------------------------/**
+ 		/**
+ 		 * Return HTML form element for editing.
+ 		 *
+ 		 * @param array $pa_element_info An array of information about the metadata element being edited
+ 		 * @param array $pa_options array Options include:
+ 		 *			class = the CSS class to apply to all visible form elements [Default=urlBg]
+ 		 *			width = the width of the form element [Default=field width defined in metadata element definition]
+ 		 *			height = the height of the form element [Default=field height defined in metadata element definition]
+ 		 *			t_subject = an instance of the model to which the attribute belongs; required if suggestExistingValues lookups are enabled [Default is null]
+ 		 *			request = the RequestHTTP object for the current request; required if suggestExistingValues lookups are enabled [Default is null]
+ 		 *			suggestExistingValues = suggest values based on existing input for this element as user types [Default is false]		
+ 		 *
+ 		 * @return string
+ 		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
  			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'minChars', 'maxChars', 'suggestExistingValues'));
+ 			$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : 'urlBg');
  			
  			$vs_element = caHTMLTextInput(
  				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 
  				array(
- 					'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'],
- 					'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight'], 
- 					'value' => '{{'.$pa_element_info['element_id'].'}}', 
- 					'maxlength' => $va_settings['maxChars'],
- 					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
- 					'class' => 'urlBg'
+					'size' => (isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth'],
+					'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight'],
+					'value' => '{{'.$pa_element_info['element_id'].'}}',
+					'maxlength' => $va_settings['maxChars'],
+					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
+					'class' => $vs_class
  				)
  			);
  			

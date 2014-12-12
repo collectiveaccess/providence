@@ -128,6 +128,8 @@
 									break;
 							}
 						}
+					} elseif (ExpressionParser::hadError() && $o_log) {
+						$o_log->logError(_t('[%3] Error processing rule "%1" as an error occurred. Error number was "%2"', $va_rule['trigger'], ExpressionParser::$s_last_error, $ps_refinery_name));
 					}
 				}
 			}
@@ -240,7 +242,8 @@
 				if(is_array($va_attrs)) {
 					foreach($va_attrs as $vs_k => $vs_v) {
 						// BaseRefinery::parsePlaceholder may return an array if the input format supports repeated values (as XML does)
-						$va_vals = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader));
+						
+						$va_vals = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_c, array('delimiter' => caGetOption('delimiter', $pa_options, null), 'reader' => $o_reader));
 
 						if (sizeof($va_vals) > 1) { $vb_is_repeating = true; }
 						
@@ -254,11 +257,11 @@
 								if ($vn_c >= $vn_num_repeats) { break; }
 							}
 						} else {
-							$va_attr_vals[$vs_element_code][$vs_k] = (is_array($vm_v = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader)))) ? join(" ", $vm_v) : $vm_v;
+							$va_attr_vals[$vs_element_code][$vs_k] = (is_array($vm_v = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_c, array('delimiter' => caGetOption('delimiter', $pa_options, null), 'reader' => $o_reader)))) ? join(" ", $vm_v) : $vm_v;
 						}
 					}
 				} else {
-					$va_attr_vals[$vs_element_code][$vs_element_code] = (is_array($vm_v = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader)))) ? join(" ", $vm_v) : $vm_v;
+					$va_attr_vals[$vs_element_code][$vs_element_code] = (is_array($vm_v = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $pn_c, array('returnDelimitedValueAt' => $pn_c,'delimiter' => caGetOption('delimiter', $pa_options, null), 'reader' => $o_reader)))) ? join(" ", $vm_v) : $vm_v;
 				}
 			}
 			return $va_attr_vals;
@@ -483,7 +486,7 @@
 		
 		$pn_value_index = caGetOption('valueIndex', $pa_options, 0);
 		
-		// We can probably always use the item destination – using group destination is a vestige of older code and no longer uses
+		// We can probably always use the item destination – using group destination is a vestige of older code and no longer is used
 		// but we're leaving it in for now as a fallback it item dest is not set for some reason
 		$va_group_dest = (isset($pa_item['destination']) && $pa_item['destination']) ? explode(".", $pa_item['destination']) : explode(".", $pa_group['destination']);
 		
@@ -655,17 +658,17 @@
 						}
 		
 						// Set attributes
-						if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']["{$ps_refinery_name}_attributes"], $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader)))) {
+						if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']["{$ps_refinery_name}_attributes"], $pa_source_data, $pa_item, $vn_i, array('log' => $o_log, 'reader' => $o_reader)))) {
 							$va_val = array_merge($va_val, $va_attr_vals);
 						}
 			
 						// Set interstitials
-						if (isset($pa_options['mapping']) && is_array($va_attr_vals = caProcessInterstitialAttributes($ps_refinery_name, $pa_options['mapping']->get('table_num'), $ps_table, $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader)))) {
+						if (isset($pa_options['mapping']) && is_array($va_attr_vals = caProcessInterstitialAttributes($ps_refinery_name, $pa_options['mapping']->get('table_num'), $ps_table, $pa_source_data, $pa_item, $vn_i, array('log' => $o_log, 'reader' => $o_reader)))) {
 							$va_val = array_merge($va_val, $va_attr_vals);
 						}
 
 						// Set relationships on the related table
-						caProcessRefineryRelatedMultiple($po_refinery_instance, $pa_item, $pa_source_data, $pn_value_index, $o_log, $o_reader, $va_val, $va_attr_vals);
+						caProcessRefineryRelatedMultiple($po_refinery_instance, $pa_item, $pa_source_data, $vn_i, $o_log, $o_reader, $va_val, $va_attr_vals);
 
 						// Set nonpreferred labels
 						if (is_array($va_non_preferred_labels = $pa_item['settings']["{$ps_refinery_name}_nonPreferredLabels"])) {
@@ -858,12 +861,12 @@
 # ---------------------------------------
 /**
  * Uses caProcessRefineryRelated to set a list of relationships on related records. Also takes legacy relatedEntities into account
- * @param $po_refinery_instance instanceof BaseRefinery
+ * @param $po_refinery_instance BaseRefinery
  * @param $pa_item array
  * @param $pa_source_data array
  * @param $pn_value_index int
  * @param $o_log KLogger
- * @param $o_reader instanceof BaseDataReader
+ * @param $o_reader BaseDataReader
  * @param $va_val array
  * @param $va_attr_vals array
  */
@@ -903,7 +906,7 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 			if(is_array($pa_item_settings['applyRegularExpressions'])) {
 				if (is_array($pm_value)) {
 					foreach($pm_value as $vn_i => $vs_value) {
-						foreach($pa_item_settings['applyRegularExpressions'] as $vn_i => $va_regex) {
+						foreach($pa_item_settings['applyRegularExpressions'] as $vn_c => $va_regex) {
 							if (!strlen($va_regex['match'])) { continue; }
 							$vs_value = preg_replace("!".str_replace("!", "\\!", $va_regex['match'])."!".((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i'), $va_regex['replaceWith'], $vs_value);
 						}
