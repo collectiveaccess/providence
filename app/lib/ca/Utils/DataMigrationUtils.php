@@ -784,6 +784,11 @@
 		static function getListItemID($pm_list_code_or_id, $ps_item_idno, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if(!isset($pa_options['outputErrors'])) { $pa_options['outputErrors'] = false; }
+			
+			$o_trans = null;
+			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
+				$o_trans = $pa_options['transaction'];
+			}
 
 			$pa_match_on = caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
 
@@ -803,17 +808,16 @@
 			$vs_cache_key = md5($pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id.'/'.$vs_singular_label.'/'.$vs_plural_label . '/' . json_encode($pa_match_on));
 			
 			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
+			if ($o_trans) { $o_event->setTransaction($o_trans); }
+			
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			/** @var KLogger $o_log */
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 			if ($pa_options['cache'] && isset(DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key])) {
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
-					$t_item = new ca_list_items(DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key]);
-
-					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
-						$t_item->setTransaction($pa_options['transaction']);
-					}
-
+					$t_item = new ca_list_items();
+					if ($o_trans) { $t_item->setTransaction($o_trans); }
+					$t_item->load(DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key]);
 					return $t_item;
 				}
 				if ($o_event) {
@@ -825,21 +829,20 @@
 				return DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key];
 			}
 
-			if (!($vn_list_id = ca_lists::getListID($pm_list_code_or_id))) {
+			if (!($vn_list_id = ca_lists::getListID($pm_list_code_or_id, $pa_options))) {
 				if(isset($pa_options['outputErrors']) && $pa_options['outputErrors']) {
 					print "[Error] "._t("Could not find list with list code %1", $pm_list_code_or_id)."\n";
 				}
 				if ($o_log) { $o_log->logError(_t("Could not find list with list code %1", $pm_list_code_or_id)); }
 				return DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key] = null;
 			}
-			if (!$vn_parent_id) { $vn_parent_id = caGetListRootID($pm_list_code_or_id); }
+			if (!$vn_parent_id) { $vn_parent_id = caGetListRootID($pm_list_code_or_id, $pa_options); }
 
 			$t_list = new ca_lists();
 			$t_item = new ca_list_items();
-			if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
-				$t_list->setTransaction($pa_options['transaction']);
-				$t_item->setTransaction($pa_options['transaction']);
-				if ($o_event) { $o_event->setTransaction($pa_options['transaction']); }
+			if ($o_trans){
+				$t_list->setTransaction($o_trans);
+				$t_item->setTransaction($o_trans);
 			}
 
 
@@ -849,11 +852,11 @@
 					case 'label':
 					case 'labels':
 						if (trim($vs_singular_label) || trim($vs_plural_label)) {
-							if ($vn_item_id = (ca_list_items::find(array('preferred_labels' => array('name_singular' => $vs_singular_label), 'parent_id' => $vn_parent_id, 'list_id' => $vn_list_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+							if ($vn_item_id = (ca_list_items::find(array('preferred_labels' => array('name_singular' => $vs_singular_label), 'parent_id' => $vn_parent_id, 'list_id' => $vn_list_id), array('returnAs' => 'firstId', 'transaction' => $o_trans)))) {
 								if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using singular label %3", $ps_item_idno, $pm_list_code_or_id, $vs_singular_label)); }
 								break(2);
 							} else {
-								if ($vn_item_id = (ca_list_items::find(array('preferred_labels' => array('name_plural' => $vs_plural_label), 'parent_id' => $vn_parent_id, 'list_id' => $vn_list_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+								if ($vn_item_id = (ca_list_items::find(array('preferred_labels' => array('name_plural' => $vs_plural_label), 'parent_id' => $vn_parent_id, 'list_id' => $vn_list_id), array('returnAs' => 'firstId', 'transaction' => $o_trans)))) {
 									if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using plural label %3", $ps_item_idno, $pm_list_code_or_id, $vs_plural_label)); }
 									break(2);
 								}
@@ -862,7 +865,7 @@
 						}
 					case 'idno':
 						if ($ps_item_idno == '%') { break; }	// don't try to match on an unreplaced idno placeholder
-						if ($vn_item_id = (ca_list_items::find(array('idno' => $ps_item_idno ? $ps_item_idno : $vs_plural_label, 'list_id' => $vn_list_id, 'parent_id' => $vn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+						if ($vn_item_id = (ca_list_items::find(array('idno' => $ps_item_idno ? $ps_item_idno : $vs_plural_label, 'list_id' => $vn_list_id, 'parent_id' => $vn_parent_id), array('returnAs' => 'firstId', 'transaction' => $o_trans)))) {
 							if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using idno with %3", $ps_item_idno, $pm_list_code_or_id, $ps_item_idno)); }
 							break(2);
 						}
@@ -879,9 +882,7 @@
 				}
 				if (isset($pa_options['returnInstance']) && $pa_options['returnInstance']) {
 					$t_item = new ca_list_items($vn_item_id);
-					if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
-						$t_item->setTransaction($pa_options['transaction']);
-					}
+					if ($o_trans){ $t_item->setTransaction($o_trans); }
 					return $t_item;
 				}
 
