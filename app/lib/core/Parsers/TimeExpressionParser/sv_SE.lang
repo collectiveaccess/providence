@@ -24,9 +24,9 @@ monthTable = {
 }
 
 # List of day names, starting with Sunday
-dayListDisplay = [S�ndag, M�ndag, Tisdag, Onsdag, Torsdag, Fredag, L�rdag]
+dayListDisplay = [Söndag, Måndag, Tisdag, Onsdag, Torsdag, Fredag, Lördag]
 
-rangePreConjunctions = [fr�n, mellan]
+rangePreConjunctions = [från, mellan]
 rangeConjunctions = [till, -, och, .., genom]
 
 dateTimeConjunctions = [vid,@]
@@ -42,13 +42,13 @@ meridianTable = {
 	e.m. = em
 }
 
-dateCircaIndicator = [cirka, c, c., ca, ca.]
+dateCircaIndicator = [cirka, c, c., ca, ca., möjligen, förmodligen]
 dateUncertaintyIndicator = [~]
-dateUncertaintyYearIndicator = [�]
+dateUncertaintyYearIndicator = [å]
 dateUncertaintyDayIndicator = [d]
 
 # What to use to indicate a geological date ("millions of years ago")
-dateMYA = [m�s]
+dateMYA = [mås]
 
 dateADIndicator = ek
 dateBCIndicator = fk
@@ -59,15 +59,15 @@ ADBCTable = {
 
 nowDate = [nu]
 todayDate = [idag]
-yesterdayDate = [ig�r]
+yesterdayDate = [igår]
 tomorrowDate = [imorgon]
-undatedDate = [undated, unknown]
+undatedDate = [odaterat, okänt]
 
-presentDate = [p�g�ende, ?, ??, ???, ????]
-beforeQualifier = [f�re]
-diedQualifier = [d., d, d�d]
+presentDate = [pågående, ?, ??, ???, ????]
+beforeQualifier = [före]
+diedQualifier = [d., d, död]
 afterQualifier = [efter]
-bornQualifier = [f., f, f�dd]
+bornQualifier = [f., f, född]
 
 # Text to indicate century (as in "20th century")
 centuryIndicator = [sekel]
@@ -94,3 +94,9 @@ definiteArticles = [de, den ,det]
 
 # Indefinite articles
 indefiniteArticles = [en, ett]
+
+# Seasons
+winterSeason = [vinter]
+springSeason = [vår]
+summerSeason = [sommar]
+autumnSeason = [höst]

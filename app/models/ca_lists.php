@@ -308,6 +308,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		if ($this->inTransaction()) { $t_item->setTransaction($this->getTransaction()); }
 		
+		print "ADD ITEM $ps_value; ".print_r($this->getTransaction()->getDb()->getHandle(), true)."<Br>\n";
 		$t_item->set('list_id', $vn_list_id);
 		$t_item->set('item_value', $ps_value);
 		$t_item->set('is_enabled', $pb_is_enabled ? 1 : 0);
@@ -1064,7 +1065,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 */
 	private function _getListID($pm_list_name_or_id) {
-		return ca_lists::getListID($pm_list_name_or_id);
+		return ca_lists::getListID($pm_list_name_or_id, array('transaction' => $this->getTransaction()));
 	}
 	# ------------------------------------------------------
 	/**
@@ -1073,7 +1074,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @param mixed $pm_list_name_or_id List code or list_id
 	 * @return int list for the specified list, or null if the list does not exist
 	 */
-	static function getListID($pm_list_name_or_id) {
+	static function getListID($pm_list_name_or_id, $pa_options=null) {
 		if (ca_lists::$s_list_id_cache[$pm_list_name_or_id]) {
 			return ca_lists::$s_list_id_cache[$pm_list_name_or_id];
 		}
@@ -1081,6 +1082,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			$vn_list_id = intval($pm_list_name_or_id);
 		} else {
 			$t_list = new ca_lists();
+			$o_trans = caGetOption('transaction', $pa_options, null);
+			if ($o_trans) { $t_list->setTransaction($o_trans); }
 			if (!$t_list->load(array('list_code' => $pm_list_name_or_id))) {
 				return null;
 			}
@@ -1096,7 +1099,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @param mixed $pm_list_name_or_id List code or list_id
 	 * @return int list for the specified list, or null if the list does not exist
 	 */
-	static function getListCode($pm_list_name_or_id) {
+	static function getListCode($pm_list_name_or_id, $pa_options=null) {
 		if (ca_lists::$s_list_code_cache[$pm_list_name_or_id]) {
 			return ca_lists::$s_list_code_cache[$pm_list_name_or_id];
 		}
@@ -1104,6 +1107,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			return $pm_list_name_or_id;
 		} else {
 			$t_list = new ca_lists();
+			$o_trans = caGetOption('transaction', $pa_options, null);
+			if ($o_trans) { $t_list->setTransaction($o_trans); }
 			if (!$t_list->load((int)$pm_list_name_or_id)) {
 				return null;
 			}

@@ -30,11 +30,11 @@
  * ----------------------------------------------------------------------
  */
 
- /**
-  *
-  */
+/**
+ *
+ */
 
-require_once(__CA_LIB_DIR__."/ca/Service/BaseJSONService.php"); 
+require_once(__CA_LIB_DIR__."/ca/Service/BaseJSONService.php");
 
 class SearchJSONService extends BaseJSONService {
 	# -------------------------------------------------------
@@ -44,7 +44,7 @@ class SearchJSONService extends BaseJSONService {
 	public function __construct($po_request,$ps_table=""){
 		$this->ops_query = $po_request->getParameter("q",pString);
 		$this->opb_deleted_only = (bool)$po_request->getParameter("deleted",pInteger);
-		
+
 		parent::__construct($po_request,$ps_table);
 	}
 	# -------------------------------------------------------
@@ -63,6 +63,7 @@ class SearchJSONService extends BaseJSONService {
 
 		switch($this->getRequestMethod()){
 			case "GET":
+			case "POST":
 				if(sizeof($va_post)==0){
 					$vm_return = $this->search();
 				} else {
@@ -88,15 +89,15 @@ class SearchJSONService extends BaseJSONService {
 	 *
 	 */
 	protected function search($pa_bundles=null){
-		if (!($vo_search = caGetSearchInstance($this->getTableName()))) { 
+		if (!($vo_search = caGetSearchInstance($this->getTableName()))) {
 			$this->addError(_t("Invalid table"));
-			return false; 
+			return false;
 		}
 		$t_instance = $this->_getTableInstance($vs_table_name = $this->getTableName());
 
 		$va_return = array();
 		$vo_result = $vo_search->search($this->ops_query, array(
-			'deletedOnly' => $this->opb_deleted_only, 
+			'deletedOnly' => $this->opb_deleted_only,
 			'sort' => $this->opo_request->getParameter('sort', pString))		// user-specified sort
 		);
 

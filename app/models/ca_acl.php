@@ -416,10 +416,16 @@ class ca_acl extends BaseModel {
 				}
 				
 				// Delete existing inherited rows
-				$qr_del = $o_db->query("DELETE FROM ca_acl WHERE inherited_from_table_num = ? AND inherited_from_row_id = ? AND table_num = ? AND row_id = ?", array((int)$vn_subject_table_num, (int)$pn_subject_id, (int)$vn_target_table_num, (int)$pn_target_id));
+				$o_db->query("DELETE FROM ca_acl WHERE inherited_from_table_num = ? AND inherited_from_row_id = ? AND table_num = ? AND row_id = ?", array((int)$vn_subject_table_num, (int)$pn_subject_id, (int)$vn_target_table_num, (int)$pn_target_id));
 				
 				if (!isset($pa_options['deleteACLOnly']) || !$pa_options['deleteACLOnly']) {
-					$qr_clone = $o_db->query("
+					// only inherit if inherit_from field is set. $ps_target and $vs_target_pk have been verified at this pont
+					$qr_inherit = $o_db->query("SELECT acl_inherit_from_{$vs_subject} FROM {$ps_target} WHERE {$vs_target_pk} = ?", $pn_target_id);
+					if(!$qr_inherit->nextRow()) { return false; }
+					if(!$qr_inherit->get("acl_inherit_from_{$vs_subject}")) { return false; }
+
+					// insert inherited ACLs
+					$o_db->query("
 						INSERT INTO ca_acl
 						(group_id, user_id, table_num, row_id, access, notes, inherited_from_table_num, inherited_from_row_id)
 						SELECT group_id, user_id, {$vn_target_table_num}, {$pn_target_id}, access, notes, {$vn_subject_table_num}, {$pn_subject_id}
