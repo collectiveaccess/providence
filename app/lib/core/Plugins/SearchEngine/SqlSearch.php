@@ -282,11 +282,27 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							$t_last_table = $t_table;
 							$vs_last_table = $vs_table;
 						}
-						$va_wheres[] = "(".$va_filter['field']." ".$va_filter['operator']." ".$this->_filterValueToQueryValue($va_filter).")";
+						$vs_where = "(".$va_filter['field']." ".$va_filter['operator']." ".$this->_filterValueToQueryValue($va_filter).")";
 					} else {
 						// join in primary table
-						$va_wheres[] = "(".$va_filter['field']." ".$va_filter['operator']." ".$this->_filterValueToQueryValue($va_filter).")";
+						$vs_where = "(".$va_filter['field']." ".$va_filter['operator']." ".$this->_filterValueToQueryValue($va_filter).")";
 					}
+					
+					if (in_array('NULL', $va_filter)) {
+						switch($va_filter['operator']) {
+							case 'in':
+								if (strpos(strtolower($va_filter['value']), 'null') !== false) {
+									$vs_where = "({$vs_where} OR (".$va_filter['field']." IS NULL))";
+								}
+								break;
+							case 'not in':
+								if (strpos(strtolower($va_filter['value']), 'null') !== false) {
+									$vs_where = "({$vs_where} OR (".$va_filter['field']." IS NOT NULL))";
+								}
+								break;
+						}
+					}
+					$va_wheres[] = $vs_where;
 				}
 			}
 			
@@ -342,16 +358,31 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							$t_last_table = $t_table;
 							$vs_last_table = $vs_table;
 						}
-						$va_wheres[] = "(".$va_filter['field']." ".$va_filter['operator']." ".$this->_filterValueToQueryValue($va_filter).")";
+						$vs_where = "(".$va_filter['field']." ".$va_filter['operator']." ".$this->_filterValueToQueryValue($va_filter).")";
 					} else {
 						$t_table = $this->opo_datamodel->getInstanceByTableName($va_tmp[0], true);
 						// join in primary table
 						if (!isset($va_joins[$va_tmp[0]])) {
 							$va_joins[$va_tmp[0]] = "INNER JOIN ".$va_tmp[0]." ON ".$va_tmp[0].".".$t_table->primaryKey()." = ca_sql_search_search_final.row_id";
 						}
-						$va_wheres[] = "(".$va_filter['field']." ".$va_filter['operator']." ".$this->_filterValueToQueryValue($va_filter).")";
+						$vs_where = "(".$va_filter['field']." ".$va_filter['operator']." ".$this->_filterValueToQueryValue($va_filter).")";
 					}
+					
+					switch($va_filter['operator']) {
+						case 'in':
+							if (strpos(strtolower($va_filter['value']), 'null') !== false) {
+								$vs_where = "({$vs_where} OR (".$va_filter['field']." IS NULL))";
+							}
+							break;
+						case 'not in':
+							if (strpos(strtolower($va_filter['value']), 'null') !== false) {
+								$vs_where = "({$vs_where} OR (".$va_filter['field']." IS NOT NULL))";
+							}
+							break;
+					}
+					$va_wheres[] = $vs_where;
 				}
+				
 				Debug::msg("set up filters for {$ps_search_expression} took ".$t->getTime(4));
 			}
 			
@@ -1897,6 +1928,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				$va_tmp = explode(',', $pa_filter['value']);
 				$va_values = array();
 				foreach($va_tmp as $vs_tmp) {
+					if ($vs_tmp == 'NULL') { continue; }
 					$va_values[] = (int)$vs_tmp;
 				}
 				return "(".join(",", $va_values).")";

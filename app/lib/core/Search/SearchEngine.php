@@ -243,6 +243,9 @@ class SearchEngine extends SearchBase {
 			} 
 					
 			if (is_array($va_type_ids = $this->getTypeRestrictionList()) && sizeof($va_type_ids)) {
+				if ($t_table->getFieldInfo('type_id', 'IS_NULL')) {
+					$va_type_ids[] = 'NULL';
+				}
 				$this->addResultFilter($this->ops_tablename.'.type_id', 'IN', join(",",$va_type_ids));
 			}
 			
