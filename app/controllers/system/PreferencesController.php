@@ -104,6 +104,8 @@
 						foreach($_REQUEST AS $vs_k => $vs_v) {
 							if (preg_match("!pref_{$vs_pref}_([\d]+)!", $vs_k, $va_matches)) {
 								$va_ui_prefs[$vs_pref][$va_matches[1]] = $vs_v;
+							} elseif (preg_match("!pref_{$vs_pref}__NONE_!", $vs_k)) {
+								$va_ui_prefs[$vs_pref]['_NONE_'] = $vs_v;
 							}
 						}
 					

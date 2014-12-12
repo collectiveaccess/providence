@@ -1724,10 +1724,15 @@ class ca_users extends BaseModel {
 				case 'FT_IMPORT_EXPORT_MAPPING_GROUP_EDITOR_UI':
 					$vn_table_num = $this->_editorPrefFormatTypeToTableNum($va_pref_info["formatType"]);
 					
+					$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($vn_table_num, true);
+					
 					$va_valid_uis = $this->_getUIListByType($vn_table_num);
 					if (is_array($ps_value)) {
 						foreach($ps_value as $vn_type_id => $vn_ui_id) {
 							if (!isset($va_valid_uis[$vn_type_id][$vn_ui_id])) {
+								if ($t_instance && (bool)$t_instance->getFieldInfo($t_instance->getTypeFieldName(), 'IS_NULL') && ($vn_type_id === '_NONE_')) {
+									return true;
+								}
 								if (!isset($va_valid_uis['__all__'][$vn_ui_id])) {
 									return false;
 								}
@@ -1899,9 +1904,14 @@ class ca_users extends BaseModel {
 								$vs_output = '';
 								$va_ui_list_by_type = $this->_getUIListByType($vn_table_num);
 								
-								$va_types = $t_instance->getTypeList(array('returnHierarchyLevels' => true));
+								$va_types = array();
+								if ((bool)$t_instance->getFieldInfo($t_instance->getTypeFieldName(), 'IS_NULL')) {
+									$va_types['_NONE_'] = array('LEVEL' => 0, 'name_singular' => _t('NONE'),  'name_plural' => _t('NONE'));
+								}
+								$va_types += $t_instance->getTypeList(array('returnHierarchyLevels' => true));
 								
 								if(!is_array($va_types) || !sizeof($va_types)) { $va_types = array(1 => array()); }	// force ones with no types to get processed for __all__
+								
 								foreach($va_types as $vn_type_id => $va_type) {
 									$va_opts = array();
 									
