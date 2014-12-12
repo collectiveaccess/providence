@@ -793,7 +793,12 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										$va_ft_like_terms[] = $vs_stripped_term;
 									} else {
 										// do stemming
-										if ($this->opb_do_stemming) {
+										$vb_do_stemming = $this->opb_do_stemming;
+										if (mb_substr($vs_term, -1) == '|') {
+											$vs_term = mb_substr($vs_term, 0, mb_strlen($vs_term) - 1);
+											$vb_do_stemming = false;
+										}
+										if ($vb_do_stemming) {
 											$vs_to_stem = preg_replace('!\*$!u', '', $vs_term);
 											if (!preg_match('!y$!u', $vs_to_stem) && !preg_match('![0-9]+!', $vs_to_stem)) {	// don't stem things ending in 'y' as that can cause problems (eg "Bowery" becomes "Boweri")
 												if (!($vs_stem = trim($this->opo_stemmer->stem($vs_to_stem)))) {
