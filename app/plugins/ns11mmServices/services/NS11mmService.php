@@ -60,7 +60,7 @@ class NS11mmService extends BaseService {
 	 * @param string $password
 	 * @return int
 	 */
-	public function auth($username="",$password=""){
+	public function auth($pa_options=null){
 		if (!$username) { $username = $this->opo_request->getParameter('username', pString); }
 		if (!$password) { $password = $this->opo_request->getParameter('password', pString); }
 		if(($username != "") && ($password != "")){

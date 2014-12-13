@@ -46,7 +46,7 @@ require_once(__CA_MODELS_DIR__."/ca_user_groups.php");
 require_once(__CA_MODELS_DIR__."/ca_search_forms.php");
 require_once(__CA_MODELS_DIR__."/ca_search_form_placements.php");
 require_once(__CA_MODELS_DIR__."/ca_editor_ui_screens.php");
-
+require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_entries.php');
 
 
 final class ConfigurationExporter {
@@ -116,6 +116,9 @@ final class ConfigurationExporter {
 		$vo_root->appendChild($o_exporter->getLocalesAsDOM());
 		$vo_root->appendChild($o_exporter->getListsAsDOM());
 		$vo_root->appendChild($o_exporter->getElementsAsDOM());
+		if($o_dict = $o_exporter->getMetadataDictionaryAsDOM()) {
+			$vo_root->appendChild($o_dict);
+		}
 		$vo_root->appendChild($o_exporter->getUIsAsDOM());
 		$vo_root->appendChild($o_exporter->getRelationshipTypesAsDOM());
 		$vo_root->appendChild($o_exporter->getRolesAsDOM());
@@ -445,6 +448,131 @@ final class ConfigurationExporter {
 		return $vo_elements;
 	}
 	# -------------------------------------------------------
+	/**
+	 * @return DOMElement|null
+	 */
+	public function getMetadataDictionaryAsDOM() {
+		$vo_dict = $this->opo_dom->createElement("metadataDictionary");
+
+		$qr_entries = $this->opo_db->query("SELECT entry_id FROM ca_metadata_dictionary_entries ORDER BY entry_id");
+
+		if($qr_entries->numRows() < 1) { return null; }
+
+		while($qr_entries->nextRow()) {
+			$t_entry = new ca_metadata_dictionary_entries($qr_entries->get('entry_id'));
+			$vo_entry = $this->opo_dom->createElement("entry");
+			$vo_dict->appendChild($vo_entry);
+			$vo_entry->setAttribute('bundle', $t_entry->get('bundle_name'));
+
+			if(is_array($t_entry->getSettings())) {
+				$va_settings = array();
+
+				// bring array settings and key=>val settings in unified format: key=>array_of_vals or key=>locale=>val
+				foreach($t_entry->getSettings() as $vs_setting => $va_value){
+					if(is_array($va_value)) {
+						foreach($va_value as $vs_key => $vs_value) {
+							if(preg_match("/^[a-z]{2,3}\_[A-Z]{2,3}$/",$vs_key)) { // locale
+								$va_settings[$vs_setting][$vs_key] = $vs_value;
+								continue;
+							}
+							$va_settings[$vs_setting][] = $vs_value;
+						}
+					} else {
+						$va_settings[$vs_setting][] = $va_value;
+					}
+				}
+
+				// append settings to XML tree
+				if(sizeof($va_settings)>0) {
+					$vo_settings = $this->opo_dom->createElement("settings");
+					$vo_entry->appendChild($vo_settings);
+
+					foreach($va_settings as $vs_setting => $va_values) {
+						foreach($va_values as $vs_key => $vs_value) {
+							if($vs_value != caEscapeForXML($vs_value)) { // if something is escaped in caEscapeForXML(), wrap in CDATA
+								$vo_setting = $this->opo_dom->createElement('setting');
+								$vo_setting->appendChild(new DOMCdataSection($vs_value));
+							} else {
+								$vo_setting = $this->opo_dom->createElement("setting", $vs_value);
+							}
+							if(preg_match("/^[a-z]{2,3}\_[A-Z]{2,3}$/",$vs_key)) { // locale
+								$vo_setting->setAttribute("locale", $vs_key);
+							}
+							$vo_setting->setAttribute("name", $vs_setting);
+							$vo_settings->appendChild($vo_setting);
+						}
+					}
+				}
+			}
+
+			// rules for this dictionary
+			$va_rules = $t_entry->getRules();
+
+			if(is_array($va_rules) && sizeof($va_rules)>0) {
+				$vo_rules = $this->opo_dom->createElement("rules");
+				$vo_entry->appendChild($vo_rules);
+
+				foreach($va_rules as $va_rule) {
+					$vo_rule = $this->opo_dom->createElement("rule");
+					$vo_rules->appendChild($vo_rule);
+					$vo_rule->setAttribute('code', $va_rule['rule_code']);
+					$vo_rule->setAttribute('level', $va_rule['rule_level']);
+
+					// expression
+					if(isset($va_rule['expression']) && sizeof($va_rule['expression']) > 0) {
+						$vo_expression = $this->opo_dom->createElement('expression');
+						$vo_expression->appendChild(new DOMCdataSection($va_rule['expression']));
+						$vo_rule->appendChild($vo_expression);
+					}
+
+					// rule settings
+					if(isset($va_rule['settings']) && is_array($va_rule['settings'])) {
+						$va_settings = array();
+
+						// bring array settings and key=>val settings in unified format: key=>array_of_vals
+						foreach($va_rule['settings'] as $vs_setting => $va_value) {
+							if(is_array($va_value)) {
+								foreach($va_value as $vs_key => $vs_value) {
+									if(preg_match("/^[a-z]{2,3}\_[A-Z]{2,3}$/",$vs_key)) { // locale
+										$va_settings[$vs_setting][$vs_key] = $vs_value;
+										continue;
+									}
+									$va_settings[$vs_setting][] = $vs_value;
+								}
+							} else {
+								$va_settings[$vs_setting][] = $va_value;
+							}
+						}
+
+						// append settings to XML tree
+						if(sizeof($va_settings)>0) {
+							$vo_settings = $this->opo_dom->createElement("settings");
+							$vo_rule->appendChild($vo_settings);
+
+							foreach($va_settings as $vs_setting => $va_values) {
+								foreach($va_values as $vs_key => $vs_value) {
+									if($vs_value != caEscapeForXML($vs_value)) { // if something is escaped in caEscapeForXML(), wrap in CDATA
+										$vo_setting = $this->opo_dom->createElement('setting');
+										$vo_setting->appendChild(new DOMCdataSection($vs_value));
+									} else {
+										$vo_setting = $this->opo_dom->createElement("setting", $vs_value);
+									}
+									if(preg_match("/^[a-z]{2,3}\_[A-Z]{2,3}$/",$vs_key)) { // locale
+										$vo_setting->setAttribute("locale", $vs_key);
+									}
+									$vo_setting->setAttribute("name", $vs_setting);
+									$vo_settings->appendChild($vo_setting);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return $vo_dict;
+	}
+	# -------------------------------------------------------
 	public function getUIsAsDOM(){
 		$t_list = new ca_lists();
 		
@@ -643,7 +771,7 @@ final class ConfigurationExporter {
 											if(preg_match("/^[a-z]{2,3}\_[A-Z]{2,3}$/",$vs_key)){
 												$vo_setting->setAttribute("locale", $vs_key);
 											} else {
-												continue;
+												$vo_setting->setAttribute("locale", "en_US");
 											}
 										}
 										$vo_settings->appendChild($vo_setting);
@@ -908,7 +1036,7 @@ final class ConfigurationExporter {
 
 			$vo_form->appendChild($vo_labels);
 			
-			if(is_array($t_form->getSettings())){
+			if(is_array($t_form->getSettings())) {
 				$vo_settings = $this->opo_dom->createElement("settings");
 				foreach($t_form->getSettings() as $vs_setting => $va_value){
 					if(is_array($va_value)){
@@ -1062,7 +1190,7 @@ final class ConfigurationExporter {
 
 				$vs_buf .= "\t\t</groupAccess>\n";
 			}
-			
+
 			$va_placements = $t_display->getPlacements();
 			
 			$vs_buf .= "<bundlePlacements>\n";
@@ -1076,7 +1204,14 @@ final class ConfigurationExporter {
 							case 'label':
 								if(is_array($vm_value)) {
 									foreach($vm_value as $vn_locale_id => $vm_locale_specific_value) {
-										$vs_buf .= "<setting name='label' locale='".$this->opt_locale->localeIDToCode($vn_locale_id)."'>".caEscapeForXML($vm_locale_specific_value)."</setting>\n";
+										if(preg_match("/^[a-z]{2,3}\_[A-Z]{2,3}$/",$vn_locale_id)) { // locale code
+											$vs_locale_code = $vn_locale_id;
+										} else {
+											if(!($vs_locale_code = $this->opt_locale->localeIDToCode($vn_locale_id))) {
+												$vs_locale_code = 'en_US';
+											}
+										}
+										$vs_buf .= "<setting name='label' locale='".$vs_locale_code."'>".caEscapeForXML($vm_locale_specific_value)."</setting>\n";
 									}
 								}
 								break;

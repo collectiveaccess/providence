@@ -136,7 +136,7 @@
 
 				}
 
-			} elseif ($vs_display_text = strip_tags($t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request)))) {
+			} elseif ($vs_display_text = $t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request))) {
 				$o_sheet->setCellValue($vs_column.$vn_line,$vs_display_text);
 				// We trust the autosizing up to a certain point, but
 				// we want column widths to be finite :-).
