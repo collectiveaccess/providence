@@ -397,6 +397,7 @@
 
 		$va_output = array();
 		exec($ps_mediainfo_path.' --Inform="Video;%Duration/String3%" '.caEscapeShellArg($ps_filepath), $va_output, $vn_return);
+		if(!is_array($va_output) || (sizeof($va_output) != 1)) { return null; }
 		$va_tmp = explode(':', array_shift($va_output));
 
 		if(sizeof($va_tmp)==3) { // should have hours, minutes, seconds
