@@ -67,8 +67,7 @@ class VictimService extends NS11mmService {
         if (!$until) { $until = date('c'); }
         $vs_range = ($from && $until) ? self::utcToDb($from).' to '.self::utcToDb($until) : null;
         
-		$qr_res = $o_search->search((trim($vs_range) ? "modified:\"{$vs_range}\" " : '')."ca_entities.type_id:".$this->opn_victim_type_id, array('limitToModifiedOn' => $vs_range));
-		
+		$qr_res = $o_search->search("ca_entities.type_id:".$this->opn_victim_type_id, array('limitToModifiedOn' => $vs_range));
 		
         $skip = $this->opo_request->getParameter('skip', pInteger);
         $limit = $this->opo_request->getParameter('limit', pInteger);
@@ -526,7 +525,7 @@ class VictimService extends NS11mmService {
 		
 		// is the entity a victim?
 		if ($t_entity->getTypeID() != $this->opn_victim_type_id) {
-			return $this->makeResponse(array(), 500, 'Entity is not of type "victim"');
+			return $this->makeResponse(array(), 500, 'Entity is not of type "victim"; expected '.$this->opn_victim_type_id.'; got '.$t_entity->getTypeID());
 		}
 		
 		return $t_entity;
