@@ -385,6 +385,28 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Extract video duration using MediaInfo. This can be used as a fallback to getID3
+	 * @param string $ps_filepath
+	 * @param string|null $ps_mediainfo_path
+	 *
+	 * @return float|null
+	 */
+	function caExtractVideoFileDurationWithMediaInfo($ps_filepath, $ps_mediainfo_path=null) {
+		if(!$ps_mediainfo_path) { $ps_mediainfo_path = caGetExternalApplicationPath('mediainfo'); }
+		if(!caMediaInfoInstalled($ps_mediainfo_path)) { return null; }
+
+		$va_output = array();
+		exec($ps_mediainfo_path.' --Inform="Video;%Duration/String3%" '.caEscapeShellArg($ps_filepath), $va_output, $vn_return);
+		$va_tmp = explode(':', array_shift($va_output));
+
+		if(sizeof($va_tmp)==3) { // should have hours, minutes, seconds
+			return round(intval($va_tmp[0]) * 3600 + intval($va_tmp[1]) * 60 + floatval($va_tmp[2]));
+		}
+
+		return null;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	 * Extracts media metadata using ExifTool
 	 *
 	 * @param string $ps_filepath file path
