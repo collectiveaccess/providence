@@ -308,7 +308,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		if ($this->inTransaction()) { $t_item->setTransaction($this->getTransaction()); }
 		
-		print "ADD ITEM $ps_value; ".print_r($this->getTransaction()->getDb()->getHandle(), true)."<Br>\n";
+		//print "ADD ITEM $ps_value; ".print_r($this->getTransaction()->getDb()->getHandle(), true)."<Br>\n";
 		$t_item->set('list_id', $vn_list_id);
 		$t_item->set('item_value', $ps_value);
 		$t_item->set('is_enabled', $pb_is_enabled ? 1 : 0);
