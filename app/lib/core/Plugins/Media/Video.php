@@ -407,9 +407,9 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 			$this->properties["duration"] = $this->handle["playtime_seconds"];
 
-			// getID3 sometimes messes up the duration. mediainfo seems a little more reliable so if it's available, use that duration as baseline
-			if(caMediaInfoInstalled()) {
-				$this->properties['duration'] = $this->handle["playtime_seconds"] = caExtractVideoFileDurationWithMediaInfo($filepath);
+			// getID3 sometimes messes up the duration. mediainfo seems a little more reliable so use it if it's available
+			if($this->opb_mediainfo_available && ($vn_mediainfo_duration = caExtractVideoFileDurationWithMediaInfo($filepath))) {
+				$this->properties['duration'] = $this->handle["playtime_seconds"] = $vn_mediainfo_duration;
 			}
 
 			$this->properties["filesize"] = filesize($filepath);
