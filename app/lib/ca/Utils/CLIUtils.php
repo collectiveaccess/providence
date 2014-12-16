@@ -446,7 +446,11 @@
 
 			CLIUtils::addMessage(_t('There are %1 files total', sizeof($va_contents)));
 
-			$vs_percent = sprintf("%2.1f", ($vn_delete_count/sizeof($va_contents)) * 100)."%";
+			if(sizeof($va_contents) > 0) {
+				$vs_percent = sprintf("%2.1f", ($vn_delete_count/sizeof($va_contents)) * 100)."%";
+			} else {
+				$vs_percent = '0.0%';
+			}
 
 			if ($vn_delete_count == 1) {
 				CLIUtils::addMessage($vb_delete_opt ? _t("%1 file (%2) was deleted", $vn_delete_count, $vs_percent) : _t("%1 file (%2) is unused", $vn_delete_count, $vs_percent));
