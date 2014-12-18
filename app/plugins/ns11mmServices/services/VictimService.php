@@ -69,7 +69,6 @@ class VictimService extends NS11mmService {
         
 		$qr_res = $o_search->search("ca_entities.type_id:".$this->opn_victim_type_id, array('limitToModifiedOn' => $vs_range));
 		
-		
         $skip = $this->opo_request->getParameter('skip', pInteger);
         $limit = $this->opo_request->getParameter('limit', pInteger);
         
@@ -141,6 +140,7 @@ class VictimService extends NS11mmService {
 		
 		$va_place_type_idnos = array();
 		foreach($va_place_type_list as $vn_type_id => $va_type) {
+			if (!$va_type['is_enabled']) { continue; }
 			$va_place_type_idnos[] = $va_type['idno'];
 		}
 		$va_data['place_types'] = $va_place_type_idnos;
@@ -525,7 +525,7 @@ class VictimService extends NS11mmService {
 		
 		// is the entity a victim?
 		if ($t_entity->getTypeID() != $this->opn_victim_type_id) {
-			return $this->makeResponse(array(), 500, 'Entity is not of type "victim"');
+			return $this->makeResponse(array(), 500, 'Entity is not of type "victim"; expected '.$this->opn_victim_type_id.'; got '.$t_entity->getTypeID());
 		}
 		
 		return $t_entity;

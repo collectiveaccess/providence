@@ -70,6 +70,12 @@ var caUI = caUI || {};
 			
 			var formData = jQuery("#" + that.formID).serializeObject();
 			
+			// Added "forced relationship" settings if available
+			var relatedID = jQuery("#" + that.formID).parent().data('relatedID');
+			var relatedTable = jQuery("#" + that.formID).parent().data('relatedTable');
+			var relationshipType = jQuery("#" + that.formID).parent().data('relationshipType');
+			jQuery.extend(formData, {relatedID: relatedID, relatedTable: relatedTable, relationshipType: relationshipType });
+			
 			if(Object.keys(that._files).length > 0) {
 				jQuery("#" + that.formID).find(".quickAddProgress").html((that.busyIndicator ? that.busyIndicator + ' ' : '') + that.sendingFilesText.replace("%1", "0%"));
 				
@@ -139,6 +145,12 @@ var caUI = caUI || {};
 					if(relationbundle) { relationbundle.select(null, resp); }
 					jQuery.jGrowl(that.saveText.replace('%1', resp.display), { header: that.headerText }); 
 					jQuery("#" + that.formID).parent().data('panel').hidePanel();
+					
+					if(formData['relatedID'] && caBundleUpdateManager) { 
+						caBundleUpdateManager.reloadBundle('ca_objects_location'); 
+						caBundleUpdateManager.reloadBundle('ca_objects_history'); 
+						caBundleUpdateManager.reloadInspector(); 
+					}
 				} else {
 					// error
 					that.setErrors(resp.errors);

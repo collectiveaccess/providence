@@ -219,12 +219,11 @@
  			} else {
  				$this->request->user->setVar('ca_users_default_userclass', $vn_userclass);
  			}
- 			if (($vn_userclass < 0) || ($vn_userclass >= 2)) { $vn_userclass = 0; }
+ 			if ((!$vn_userclass) || ($vn_userclass < 0) || ($vn_userclass >= 2)) { $vn_userclass = 0; }
  			$t_user = $this->getUserObject();
  			
  			$this->view->setVar('userclass', $vn_userclass);
  			$this->view->setVar('userclass_displayname', $t_user->getChoiceListValue('userclass', $vn_userclass));
- 			
  			
  			$vs_sort_field = $this->request->getParameter('sort', pString);
  			$this->view->setVar('user_list', $t_user->getUserList(array('sort' => $vs_sort_field, 'sort_direction' => 'asc', 'userclass' => $vn_userclass)));

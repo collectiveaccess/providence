@@ -243,6 +243,9 @@ class SearchEngine extends SearchBase {
 			} 
 					
 			if (is_array($va_type_ids = $this->getTypeRestrictionList()) && sizeof($va_type_ids)) {
+				if ($t_table->getFieldInfo('type_id', 'IS_NULL')) {
+					$va_type_ids[] = 'NULL';
+				}
 				$this->addResultFilter($this->ops_tablename.'.type_id', 'IN', join(",",$va_type_ids));
 			}
 			
@@ -505,14 +508,20 @@ class SearchEngine extends SearchBase {
 								break;
 						}
 					} 
+					
+					if(isset($va_ap_info['options']) && ($va_ap_info['options']['DONT_STEM'] || in_array('DONT_STEM', $va_ap_info['options']))) {
+						$vs_term .= '|';
+					}
 					$va_terms['terms'][] = new Zend_Search_Lucene_Index_Term($vs_term, $vs_field);
 					$va_terms['signs'][] = ($vs_bool == 'AND') ? true : null;
+					$va_terms['options'][] = is_array($va_ap_info['options']) ? $va_ap_info['options'] : array();
 				}
 				
 				if (is_array($va_additional_criteria = $va_ap_info['additional_criteria'])) {
 					foreach($va_additional_criteria as $vs_criterion) {
 						$va_terms['terms'][] = new Zend_Search_Lucene_Index_Term($vs_criterion);
 						$va_terms['signs'][] = $vs_bool;
+						$va_terms['options'][] = is_array($va_ap_info['options']) ? $va_ap_info['options'] : array();
 					}
 				}
 				
@@ -529,13 +538,14 @@ class SearchEngine extends SearchBase {
 				if (method_exists($t_instance, "getLabelTableName")) {
 					return array(
 						'terms' => array(new Zend_Search_Lucene_Index_Term($po_term->getTerm()->text, $t_instance->getLabelTableName().'.'.((isset($va_tmp2[2]) && $va_tmp2[2]) ? $va_tmp2[2] : $t_instance->getLabelDisplayField()).($va_tmp[1] ? '/'.$va_tmp[1] : ''))),
-						'signs' => array($pb_sign)
+						'signs' => array($pb_sign),
+						'options' => array()
 					);
 				}
 			}
 		}
 		
-		return array('terms' => array($po_term->getTerm()), 'signs' => array($pb_sign));
+		return array('terms' => array($po_term->getTerm()), 'signs' => array($pb_sign), 'options' => array());
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -567,12 +577,14 @@ class SearchEngine extends SearchBase {
 				foreach($va_fields as $vs_field) {
 					$va_terms['terms'][] = new Zend_Search_Lucene_Search_Query_Phrase($va_index_term_strings, null, $vs_field);
 					$va_terms['signs'][] = ($vs_bool == 'AND') ? true : null;
+					$va_terms['options'][] = is_array($va_ap_info['options']) ? $va_ap_info['options'] : array();
 				}
 				
 				if (is_array($va_additional_criteria = $va_ap_info['additional_criteria'])) {
 					foreach($va_additional_criteria as $vs_criterion) {
 						$va_terms['terms'][] = new Zend_Search_Lucene_Index_Term($vs_criterion);
 						$va_terms['signs'][] = $vs_bool;
+						$va_terms['options'][] = is_array($va_ap_info['options']) ? $va_ap_info['options'] : array();
 					}
 				}
 				
@@ -588,13 +600,14 @@ class SearchEngine extends SearchBase {
 				if (method_exists($t_instance, "getLabelTableName")) {
 					return array(
 						'terms' => array(new Zend_Search_Lucene_Search_Query_Phrase($va_index_term_strings, null, $t_instance->getLabelTableName().'.'.$t_instance->getLabelDisplayField().($va_tmp[1] ? '/'.$va_tmp[1] : ''))),
-						'signs' => array($pb_sign)
+						'signs' => array($pb_sign),
+						'options' => array()
 					);
 				}
 			}
 		}
 		
-		return array('terms' => array($po_term), 'signs' => array($pb_sign));
+		return array('terms' => array($po_term), 'signs' => array($pb_sign), 'options' => array());
 	}
 	# ------------------------------------------------------------------
 	/**

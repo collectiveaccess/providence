@@ -1211,10 +1211,9 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 			} else {
 				// incremental indexing engines delete dependent rows here
 				// delete from index where other subjects reference it 
-				//$this->opo_engine->removeRowIndexing(null, null, $pn_subject_tablenum, null, $pn_subject_row_id);
 			
 				foreach($this->opa_dependencies_to_update as $va_item) {
-					$this->opo_engine->removeRowIndexing($va_item['table_num'], $va_item['row_id'], $pn_subject_tablenum, null, $pn_subject_row_id); 
+					$this->opo_engine->removeRowIndexing($va_item['table_num'], $va_item['row_id'], $va_item['field_table_num'], null, $va_item['field_row_id']); 
 				}
 			}	
 		}

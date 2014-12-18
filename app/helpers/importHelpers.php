@@ -742,8 +742,6 @@
 						}
 					
 						if ($vn_item_id) {
-							//$po_refinery_instance->setReturnsMultipleValues(false);
-							//return $vn_item_id;
 							$va_vals[][$vs_terminal] = $vn_item_id;
 							continue;
 						} else {

@@ -36,6 +36,10 @@ require_once(__CA_LIB_DIR__.'/core/Auth/PasswordHash.php');
 class ExternalDBAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	# --------------------------------------------------------------------------------
 	public static function authenticate($ps_username, $ps_password = '', $pa_options=null) {
+		if(!$ps_username) {
+			return false;
+		}
+
 		$o_auth_config = Configuration::load(Configuration::load()->get('authentication_config'));
 
 		$o_log = new Eventlog();

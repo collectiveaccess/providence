@@ -42,6 +42,10 @@ class ActiveDirectoryAdapter extends BaseAuthAdapter implements IAuthAdapter {
 			throw new ActiveDirectoryException(_t("PHP's LDAP module is required for LDAP authentication!"));
 		}
 
+		if(!$ps_username) {
+			return false;
+		}
+
 		// ldap config
 		$vs_ldaphost = $o_auth_config->get("ldap_host");
 		$vs_ldapport = $o_auth_config->get("ldap_port");
