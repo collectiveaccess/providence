@@ -422,7 +422,7 @@ function caFileIsIncludable($ps_file) {
 		$vs_new_file = $o_zip->output(ZIPFILE_FILEPATH);
 		copy($vs_new_file, $ps_output_file);
 		unlink ($vs_new_file);
-		
+
 		return true;
 	}
 	# ----------------------------------------
@@ -433,6 +433,17 @@ function caFileIsIncludable($ps_file) {
 		$list = @scandir('phar://'.$ps_filename);
 	
 		return (bool)$list;
+	}
+	# ----------------------------------------
+	/**
+	 * Detemines if a given path is valid by validating it against a regular expression and running it through file_exists
+	 * @param $ps_path
+	 * @return bool
+	 */
+	function caIsValidFilePath($ps_path) {
+		if (!$ps_path || (preg_match("/[^\/A-Za-z0-9\.:_-\ \\]+/", $ps_path)) || !file_exists($ps_path)) { return false; }
+
+		return true;
 	}
 	# ----------------------------------------
 	function caGetOSFamily() {

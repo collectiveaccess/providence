@@ -66,7 +66,7 @@
 		} else {
 			$_MEDIAHELPER_PLUGIN_CACHE_COREIMAGE = array();
 		}
-		if (!$ps_path_to_coreimage || (preg_match("/[^\/A-Za-z0-9]+/", $ps_path_to_coreimage)) || !file_exists($ps_path_to_coreimage)) { return false; }
+		if (!caIsValidFilePath($ps_path_to_coreimage)) { return false; }
 
 		exec($ps_path_to_coreimage.' 2> /dev/null', $va_output, $vn_return);
 		if (($vn_return >= 0) && ($vn_return < 127)) {
@@ -90,7 +90,7 @@
 		} else {
 			$_MEDIAHELPER_PLUGIN_CACHE_IMAGEMAGICK = array();
 		}
-		if (!$ps_imagemagick_path || (preg_match("/[^\/A-Za-z0-9\.:_-]+/", $ps_imagemagick_path)) || !file_exists($ps_imagemagick_path) || !is_dir($ps_imagemagick_path)) { return false; }
+		if (!caIsValidFilePath($ps_imagemagick_path)) { return false; }
 
 		exec($ps_imagemagick_path.'/identify 2> /dev/null', $va_output, $vn_return);
 		if (($vn_return >= 0) && ($vn_return < 127)) {
@@ -114,7 +114,7 @@
 		} else {
 			$_MEDIAHELPER_PLUGIN_CACHE_GRAPHICSMAGICK = array();
 		}
-		if (!$ps_graphicsmagick_path || (preg_match("/[^\/A-Za-z0-9\.:_-]+/", $ps_graphicsmagick_path)) || !file_exists($ps_graphicsmagick_path)) { return false; }
+		if (!caIsValidFilePath($ps_graphicsmagick_path)) { return false; }
 
 		exec($ps_graphicsmagick_path.' 2> /dev/null', $va_output, $vn_return);
 		if (($vn_return >= 0) && ($vn_return < 127)) {
@@ -138,7 +138,7 @@
 		} else {
 			$_MEDIAHELPER_PLUGIN_CACHE_DCRAW = array();
 		}
-		if (!$ps_path_to_dcraw || (preg_match("/[^\/A-Za-z0-9\.:_-]+/", $ps_path_to_dcraw)) || !file_exists($ps_path_to_dcraw)) { return false; }
+		if (!caIsValidFilePath($ps_path_to_dcraw)) { return false; }
 
 		exec($ps_path_to_dcraw.' -i 2> /dev/null', $va_output, $vn_return);
 		if (($vn_return >= 0) && ($vn_return < 127)) {
@@ -162,7 +162,7 @@
 		} else {
 			$_MEDIAHELPER_PLUGIN_CACHE_FFMPEG = array();
 		}
-		if (!$ps_path_to_ffmpeg || (preg_match("/[^\/A-Za-z0-9\.:_-]+/", $ps_path_to_ffmpeg)) || !file_exists($ps_path_to_ffmpeg)) { return false; }
+		if (!caIsValidFilePath($ps_path_to_ffmpeg)) { return false; }
 
 		exec($ps_path_to_ffmpeg.'> /dev/null 2>&1', $va_output, $vn_return);
 		if (($vn_return >= 0) && ($vn_return < 127)) {
@@ -186,7 +186,7 @@
 		} else {
 			$_MEDIAHELPER_PLUGIN_CACHE_GHOSTSCRIPT = array();
 		}
-		if (!trim($ps_path_to_ghostscript) || (preg_match("/[^\/A-Za-z0-9\.:_-]+/", $ps_path_to_ghostscript)) || !file_exists($ps_path_to_ghostscript)) { return false; }
+		if (!caIsValidFilePath($ps_path_to_ghostscript)) { return false; }
 		exec($ps_path_to_ghostscript." -v 2> /dev/null", $va_output, $vn_return);
 		if (($vn_return >= 0) && ($vn_return < 127)) {
 			return $_MEDIAHELPER_PLUGIN_CACHE_GHOSTSCRIPT[$ps_path_to_ghostscript] = true;
@@ -203,7 +203,7 @@
 	function caMediaPluginPdftotextInstalled($ps_path_to_pdf_to_text=null) {
 		if(!$ps_path_to_pdf_to_text) { $ps_path_to_pdf_to_text = caGetExternalApplicationPath('pdftotext'); }
 
-		if (!trim($ps_path_to_pdf_to_text) || (preg_match("/[^\/A-Za-z0-9\.:_-]+/", $ps_path_to_pdf_to_text))  || !file_exists($ps_path_to_pdf_to_text)) { return false; }
+		if (!caIsValidFilePath($ps_path_to_pdf_to_text)) { return false; }
 		exec($ps_path_to_pdf_to_text." -v 2> /dev/null", $va_output, $vn_return);
 		if (($vn_return >= 0) && ($vn_return < 127)) {
 			return true;
@@ -220,7 +220,7 @@
 	function caMediaPluginAbiwordInstalled($ps_path_to_abiword=null) {
 		if(!$ps_path_to_abiword) { $ps_path_to_abiword = caGetExternalApplicationPath('abiword'); }
 
-		if (!trim($ps_path_to_abiword) || (preg_match("/[^\/A-Za-z0-9\.:_-]+/", $ps_path_to_abiword)) || !file_exists($ps_path_to_abiword)) { return false; }
+		if (!caIsValidFilePath($ps_path_to_abiword)) { return false; }
 		exec($ps_path_to_abiword." --version 2> /dev/null", $va_output, $vn_return);
 		if (($vn_return >= 0) && ($vn_return < 127)) {
 			return true;
@@ -237,7 +237,7 @@
 	function caMediaPluginLibreOfficeInstalled($ps_path_to_libreoffice=null) {
 		if(!$ps_path_to_libreoffice) { $ps_path_to_libreoffice = caGetExternalApplicationPath('libreoffice'); }
 
-		if (!trim($ps_path_to_libreoffice) || (preg_match("/[^\/A-Za-z0-9\.:_-]+/", $ps_path_to_libreoffice)) || !file_exists($ps_path_to_libreoffice)) { return false; }
+		if (!caIsValidFilePath($ps_path_to_libreoffice)) { return false; }
 		exec($ps_path_to_libreoffice." --version 2> /dev/null", $va_output, $vn_return);
 		if (($vn_return >= 0) && ($vn_return < 127)) {
 			return true;
@@ -293,7 +293,7 @@
 		} else {
 			$_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO = array();
 		}
-		if (!trim($ps_mediainfo_path) || (preg_match("/[^\/A-Za-z0-9\.:_-]+/", $ps_mediainfo_path)) || !file_exists($ps_mediainfo_path)) { return false; }
+		if (!caIsValidFilePath($ps_mediainfo_path)) { return false; }
 		exec($ps_mediainfo_path." --Help > /dev/null",$va_output,$vn_return);
 		if($vn_return == 255) {
 			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_mediainfo_path] = true;
@@ -315,7 +315,7 @@
 		} else {
 			$_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO = array();
 		}
-		if (!trim($ps_pdfminer_path) || (preg_match("/[^\/A-Za-z0-9\.:_-]+/", $ps_pdfminer_path)) || !file_exists($ps_pdfminer_path)) { return false; }
+		if (!caIsValidFilePath($ps_pdfminer_path)) { return false; }
 
 		if (!file_exists($ps_pdfminer_path."/pdf2txt.py")) { return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path] = false; }
 		exec($ps_pdfminer_path."/pdf2txt.py > /dev/null",$va_output,$vn_return);
@@ -331,7 +331,7 @@
 	 * @param string $ps_filepath file path
 	 */
 	function caExtractMetadataWithMediaInfo($ps_mediainfo_path,$ps_filepath){
-		if (!trim($ps_mediainfo_path) || (preg_match("/[^\/A-Za-z0-9\.:_-]+/", $ps_mediainfo_path)) || !file_exists($ps_mediainfo_path)) { return false; }
+		if (!caIsValidFilePath($ps_mediainfo_path)) { return false; }
 		exec($ps_mediainfo_path." ".caEscapeShellArg($ps_filepath),$va_output,$vn_return);
 		$vs_cat = "GENERIC";
 		$va_return = array();
