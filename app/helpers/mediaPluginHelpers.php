@@ -509,7 +509,11 @@
 					$vs_date = 	$va_date_tmp[0].'-'.$va_date_tmp[1].'-'.$va_date_tmp[2].'T'.$va_date_tmp[3].':'.$va_date_tmp[4].':'.$va_date_tmp[5];
 					foreach($va_date_elements as $vs_element) {
 						$va_tmp = explode('.', $vs_element);
-						$po_instance->addAttribute(array($va_tmp[1] => $vs_date, 'locale_id' => $pn_locale_id), $va_tmp[1]);
+						if(strlen($po_instance->get($vs_element))>0) {
+							$po_instance->addAttribute(array($va_tmp[1] => $vs_date, 'locale_id' => $pn_locale_id), $va_tmp[1]);
+						} else {
+							$po_instance->replaceAttribute(array($va_tmp[1] => $vs_date, 'locale_id' => $pn_locale_id), $va_tmp[1]);
+						}
 					}
 					$vb_did_mapping = true;
 				}
