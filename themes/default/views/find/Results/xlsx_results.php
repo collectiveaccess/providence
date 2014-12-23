@@ -37,7 +37,7 @@
 
 	$va_a_to_z = range('A', 'Z');
 	
-	$workbook = new PHPExcel;
+	$workbook = new PHPExcel();
 
 	// more accurate (but slower) automatic cell size calculation
 	PHPExcel_Shared_Font::setAutoSizeMethod(PHPExcel_Shared_Font::AUTOSIZE_METHOD_EXACT);
@@ -137,7 +137,7 @@
 				}
 
 			} elseif ($vs_display_text = $t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request))) {
-				$o_sheet->setCellValue($vs_column.$vn_line, html_entity_decode($vs_display_text));
+				$o_sheet->setCellValue($vs_column.$vn_line, html_entity_decode(strip_tags($vs_display_text)));
 				// We trust the autosizing up to a certain point, but
 				// we want column widths to be finite :-).
 				// Since Arial is not fixed-with and font rendering
@@ -168,5 +168,3 @@
  	header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
  	header('Content-Disposition:inline;filename=Export.xlsx ');
  	$o_writer->save('php://output');
-
-?>

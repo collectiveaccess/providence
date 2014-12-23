@@ -159,7 +159,7 @@ $phpWord->addTableStyle('myOwnTableStyle', $styleTable, $styleFirstRow);
 
                 $textrun = $contentCell->createTextRun();
 				$textrun->addText($va_display_item['display'].' :', $styleBundleNameFont);
-		        $textrun->addText(" ".$vs_display_text, $styleContentFont);
+		        $textrun->addText(" ".strip_tags($vs_display_text), $styleContentFont);
 
 			}}
 		$vn_line++;
@@ -182,5 +182,3 @@ $phpWord->addTableStyle('myOwnTableStyle', $styleTable, $styleFirstRow);
 	//header('Content-Disposition:inline;filename=Export.odt ');
  	
  	$objWriter->save('php://output');
-
-?>
