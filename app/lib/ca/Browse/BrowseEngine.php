@@ -4034,6 +4034,7 @@
 							$vn_dim = (float)$vs_dim;
 							
 							$vn_normalized = (floor($vn_dim/$vn_increment_in_current_units) * $vn_increment_in_current_units);
+							if (isset($va_criteria[$vn_normalized])) { continue; }
 							$vs_normalized_range_with_units = "{$vn_normalized} {$vs_units} - ".($vn_normalized + $vn_increment_in_current_units)." {$vs_units}";
 							$va_values[$vn_normalized][$vn_normalized] = array(
 								'id' => $vn_normalized,
