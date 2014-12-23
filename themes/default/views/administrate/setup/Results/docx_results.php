@@ -159,7 +159,7 @@ $phpWord->addTableStyle('myOwnTableStyle', $styleTable, $styleFirstRow);
 
                 $textrun = $contentCell->createTextRun();
 				$textrun->addText($va_display_item['display'].' :', $styleBundleNameFont);
-		        $textrun->addText(" ".strip_tags($vs_display_text), $styleContentFont);
+		        $textrun->addText(" ".strip_tags(br2nl($vs_display_text)), $styleContentFont);
 
 			}}
 		$vn_line++;
