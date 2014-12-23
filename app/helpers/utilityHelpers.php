@@ -2307,3 +2307,13 @@ function caFileIsIncludable($ps_file) {
 		}
 	}
 	# ----------------------------------------
+	/**
+	 * Convert <br> tags to newlines
+	 * 
+	 * @param string $ps_text
+	 * @return string
+	 */
+	function br2nl($ps_text) {
+		return preg_replace('#<br\s*/?>#i', "\n", $ps_text);
+	}
+	# ----------------------------------------
