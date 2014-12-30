@@ -1,13 +1,13 @@
 <?php
-/* ----------------------------------------------------------------------
- * app/controllers/lookup/BundleMappingsController.php : 
+/** ---------------------------------------------------------------------
+ * app/lib/ca/Search/ObjectCheckoutSearchResult.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -23,16 +23,31 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
+ * @package CollectiveAccess
+ * @subpackage Search
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/ca/BaseLookupController.php");
  
- 	class BundleMappingsController extends BaseLookupController {
- 		# -------------------------------------------------------
- 		protected $opb_uses_hierarchy_browser = false;
- 		protected $ops_table_name = 'ca_bundle_mappings';		// name of "subject" table (what we're editing)
- 		protected $ops_name_singular = 'mapping';
- 		protected $ops_search_class = null;
- 		# -------------------------------------------------------
- 	}
- ?>
+ /**
+  *
+  */
+
+include_once(__CA_LIB_DIR__."/ca/Search/BaseSearchResult.php");
+
+class ObjectCheckoutSearchResult extends BaseSearchResult {
+	# -------------------------------------
+	/**
+	 * Name of table for this type of search subject
+	 */
+	protected $ops_table_name = 'ca_object_checkouts';
+	# -------------------------------------
+	/**
+	 * Constructor
+	 */
+	public function __construct($po_engine_result=null, $pa_tables=null) {
+		parent::__construct($po_engine_result=null, $pa_tables=null);
+	}
+	# -------------------------------------
+}
