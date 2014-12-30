@@ -3316,4 +3316,57 @@ class ca_users extends BaseModel {
 		return $vo_acr->userCanAccess($this->getUserID(), $pa_module_path, $ps_controller, $ps_action, $pa_fake_parameters);
 	}
 	# ----------------------------------------
+	/**
+	 * Return array of access statuses with access levels for current user. Levels are:
+	 *		0 = no access
+	 *		1 = read 
+	 * 		null = use whatever the default is
+	 *
+	 * The array is indexed on access status value (eg. 0, 1, 2...) not name; the values are level values.
+	 * 
+	 * If the $pn_access_level parameter is set to 0 or 1, then a simple list of access status values for which the user
+	 * has that access level is returned
+	 *
+	 * @return array
+	 */
+	public function getAccessStatuses($pn_access_level=null) {
+		if(!$this->getPrimaryKey()) { return null; }
+		
+		// get user roles
+		$va_roles = $this->getUserRoles();
+		foreach($this->getGroupRoles() as $vn_role_id => $va_role_info) {
+			$va_roles[$vn_role_id] = $va_role_info;
+		}	
+		
+		$va_access_by_item_id = array();
+		
+		foreach($va_roles as $vn_role_id => $va_role_info) {
+			if(is_array($va_access_status_settings = $va_role_info['vars']['access_status_settings'])) {
+				//print_R($va_access_status_settings);	
+				foreach($va_access_status_settings as $vn_item_id => $vn_access) {
+					if (!isset($va_access_by_item_id[$vn_item_id])) { $va_access_by_item_id[$vn_item_id] = $vn_access; continue; }
+					if (is_null($vn_access)) { continue; }
+					if ($vn_access >= (int)$va_access_by_item_id[$vn_item_id]) { $va_access_by_item_id[$vn_item_id] = $vn_access; }
+				}
+			}
+		}
+	
+		$va_item_values = ca_lists::itemIDsToItemValues(array_keys($va_access_by_item_id), array('transaction' => $this->getTransaction()));
+	
+		$va_ret = array();
+		foreach($va_item_values as $vn_item_id => $vn_val) {
+			$va_ret[$vn_val] = $va_access_by_item_id[$vn_item_id];
+		}
+		
+		if (!is_null($pn_access_level) && in_array($pn_access_level, array(0, 1))) {
+			$va_filtered_ret = array();
+			foreach($va_ret as $vn_val => $vn_access) {
+				if ($vn_access == $pn_access_level) { $va_filtered_ret[] = $vn_val; }
+			}
+			return $va_filtered_ret;
+		} 
+		
+		return $va_ret;
+	}
+	# ----------------------------------------
 }
