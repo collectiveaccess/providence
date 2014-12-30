@@ -45,6 +45,7 @@ var caUI = caUI || {};
 			searchURL: null,
 			getInfoURL : null,
 			saveTransactionURL: null,
+			loadWidgetURL: null,
 			
 			removeButtonIcon: '(X)',
 			
@@ -99,6 +100,10 @@ var caUI = caUI || {};
 								// 	0 = available; 1 = out; 2 = out with reservations; 3 = available with reservations
 								//
 								_disp += '<div>Status: ' + data.status_display + '</div>';
+								
+								if (data.storage_location) {
+									_disp += '<div>Location: ' + data.storage_location + '</div>';
+								}
 								
 								// Show reservation details if item is not available and reserved by user other than the current one or not out with current user
 								if (
@@ -215,6 +220,10 @@ var caUI = caUI || {};
 										jQuery('#' + that.transactionResultsContainerID + ' .transactionErrors').append("<li>" + v + "</li>");
 									});
 								}
+								
+								// reload left-hand side widget with new details for user
+								if (that.loadWidgetURL && that.user_id) { jQuery('#widgets').load(that.loadWidgetURL, {user_id: that.user_id}); }
+								
 								jQuery('#' + that.transactionResultsContainerID).fadeIn(250);
 								setTimeout(function() {
 									jQuery('#' + that.transactionResultsContainerID).fadeOut(250);

@@ -50,7 +50,7 @@
  		}
  		# -------------------------------------------------------
  		/**
- 		 * Begin checkout process with user select
+ 		 *
  		 */
  		public function Index() {
  			if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_do_library_checkin')) { 
@@ -113,7 +113,7 @@
 					$t_object = new ca_objects($vn_object_id);
 					if ($t_checkout->isOut()) { 
 						try {
-							$t_checkout->checkin($vn_object_id, $va_item['note']);
+							$t_checkout->checkin($vn_object_id, $va_item['note'], array('request' => $this->request));
 							
 							$t_user = new ca_users($t_checkout->get('user_id'));
 							$vs_user_name = $t_user->get('ca_users.fname').' '.$t_user->get('ca_users.lname');
@@ -141,7 +141,7 @@
  		 * 
  		 */
  		public function Info() {
- 			return $this->render('checkin/widget_checkin_html.php', true);
+ 			return $this->render('checkin/widget_checkin_html.php', !$this->request->isAjax());
  		}
  		# -------------------------------------------------------
  	}
