@@ -37,6 +37,7 @@ The MIT License
 	ANNOTATIONS SUPPORT ADDED April 2013 by SK
 	MORE ANNOTATIONS SUPPORT ADDED October-December 2013 by SK
 	HAPPY HAPPY IMAGE ROTATION SUPPORT ADDED April 2014 by SK
+	USER INTERFACE OVERHAUL January 2015 by SK
 	*****************
 */
 
@@ -51,16 +52,16 @@ var methods = {
             empty: "#cccccc", //color of empty (loading) tile - if no subtile is available
             width: 400, //canvas width - not image width
             height: 300, //canvas height - not image height
-            zoom_sensitivity: 16, 
+            zoomSensitivity: 16, 
             thumbnail: false,//display thumbnail
             magnifier: false,//display magnifier
             debug: false,
             pixel: true,
-            magnifier_view_size: 196, //view size
-            magnifier_view_area: 48, //pixel w/h sizes to zoom
-            graber_size: 12, //size of the grabber area
-            maximum_pixelsize: 4,//set this to >1 if you want to let user to zoom image after reaching its original resolution (also consider using magnifier..)
-            thumb_depth: 2, //level depth when thumbnail should appear
+            magnifierViewSize: 196, //view size
+            magnifierViewArea: 48, //pixel w/h sizes to zoom
+            grabberSize: 12, //size of the grabber area
+            maximumPixelsize: 4,//set this to >1 if you want to let user to zoom image after reaching its original resolution (also consider using magnifier..)
+            thumbDepth: 2, //level depth when thumbnail should appear
             
             toolbar: ['pan', 'rect', 'point', 'polygon', 'lock', 'separator',  'overview', 'expand', 'help'],
             
@@ -70,30 +71,30 @@ var methods = {
             
             deleteButtonUrl: "/admin/themes/default/graphics/buttons/x.png",
             
-            annotation_prefix_text: '',
-            default_annotation_text: '',					// initial value for newly created annotations
-			empty_annotation_label_text: "<span class='tileviewerAnnotationDefaultText'>Enter your annotation</span>", // text to display when there is no annotation text in label
-			empty_annotation_editor_text: "Type text. Drag to position.",
-			show_empty_annotation_label_text_in_text_boxes: true,
+            annotationPrefixText: '',
+            defaultAnnotationText: '',					// initial value for newly created annotations
+			emptyAnnotationLabelText: "<span class='tileviewerAnnotationDefaultText'>Enter your annotation</span>", // text to display when there is no annotation text in label
+			emptyAnnotationEditorText: "Type text. Drag to position.",
+			showEmptyAnnotationLabelTextInTextBoxes: true,
             
             /* functional options */
-            use_annotations: true,							// display annotation tools + annotations
-            display_annotations: true,						// display annotations on load
-            lock_annotations: false,						// lock annotations on load - will display but cannot add, remove or drag existing annotations
-            lock_annotation_text: false,					// lock annotation text on load - will display text but not be editable
-            show_annotation_tools: true,					// show annotation tools on load
-            annotation_text_display_mode: 'simultaneous',	// how to display annotation text: 'simultaneous' = show all annotation text all the time [DEFAULT]; 'mouseover' = show annotation text only when mouse is over the annotation or it is selected; 'selected' = show annotation text only when it is selected
-			annotation_color: "000000", //"EE7B19",
-			annotation_color_selected: "CC0000",
-			highlight_points_with_circles: true,			// draw circles around point label locations?
-			allow_draggable_text_boxes_for_rects: true,		// allow draggable text boxes for rectangular annotations?
+            useAnnotations: true,							// display annotation tools + annotations
+            displayAnnotations: true,						// display annotations on load
+            lockAnnotations: false,						// lock annotations on load - will display but cannot add, remove or drag existing annotations
+            lockAnnotationText: false,					// lock annotation text on load - will display text but not be editable
+            showAnnotationTools: true,					// show annotation tools on load
+            annotationTextDisplayMode: 'simultaneous',	// how to display annotation text: 'simultaneous' = show all annotation text all the time [DEFAULT]; 'mouseover' = show annotation text only when mouse is over the annotation or it is selected; 'selected' = show annotation text only when it is selected
+			annotationColor: "000000", //"EE7B19",
+			annotationColorSelected: "CC0000",
+			highlightPointsWithCircles: true,			// draw circles around point label locations?
+			allowDraggableTextBoxesForRects: true,		// allow draggable text boxes for rectangular annotations?
 			
-			add_point_annotation_mode: false,
-			add_rect_annotation_mode: false,
-			add_polygon_annotation_mode: false,
-			pan_mode: true,
+			addPointAnnotationMode: false,
+			addRectAnnotationMode: false,
+			addPolygonAnnotationMode: false,
+			panMode: true,
 			
-			allow_rotation: true,
+			allowRotation: true,
 			
 			annotationEditorPanel: null,					// instance of ca.panel to open full annotation editor in
 			annotationEditorUrl: null,						// url to load full annotation editor form
@@ -224,7 +225,7 @@ var methods = {
                         view.update_controls();
                         
               
-                    	if (options.use_annotations) {
+                    	if (options.useAnnotations) {
                        		view.draw_annotations();
                        	}
                         
@@ -251,7 +252,7 @@ var methods = {
                     },
                     
                     load_annotations: function() {     
-                    	if (!options.use_annotations || !options.annotationLoadUrl.trim()) { return; }
+                    	if (!options.useAnnotations || !options.annotationLoadUrl.trim()) { return; }
                     	
                     	jQuery.getJSON(options.annotationLoadUrl, function(data) {
                     		view.annotations = [];
@@ -271,10 +272,10 @@ var methods = {
                     			
                     			// create text block
                     			var textBlock = document.createElement("div");
-                    			jQuery(textBlock).attr('id', 'tileviewerAnnotationTextBlock_' + k).addClass("tileviewerAnnotationTextBlock").data("annotationIndex", k).html(options.annotation_prefix_text + (v['label'] ? v['label'] : (options.show_empty_annotation_label_text_in_text_boxes ? options.empty_annotation_label_text : '')));
+                    			jQuery(textBlock).attr('id', 'tileviewerAnnotationTextBlock_' + k).addClass("tileviewerAnnotationTextBlock").data("annotationIndex", k).html(options.annotationPrefixText + (v['label'] ? v['label'] : (options.showEmptyAnnotationLabelTextInTextBoxes ? options.emptyAnnotationLabelText : '')));
 								jQuery('#tileviewerAnnotationTextBlock_' + k).remove();
 								jQuery(view.annotationContainer).append(textBlock)
-								if (options.annotation_text_display_mode == 'simultaneous') { 
+								if (options.annotationTextDisplayMode == 'simultaneous') { 
 									view._makeAnnotationTextBlockDraggable('#tileviewerAnnotationTextBlock_' + k);
 								}
 								v['textBlock'] = textBlock;
@@ -290,7 +291,7 @@ var methods = {
                      * Record annotation changes for subsequent commit
                      */
                     save_annotations: function(toSave, toDelete) {
-                    	if (!options.use_annotations) { return; }
+                    	if (!options.useAnnotations) { return; }
                     	
                     	for(var i in toSave) {
                     		if (!jQuery.isNumeric(i)) { continue; }
@@ -309,7 +310,7 @@ var methods = {
                      * Write annotations to database
                      */
                 	commit_annotation_changes: function() {
-                    	if (!options.use_annotations) { return; }
+                    	if (!options.useAnnotations) { return; }
                     	
                     	if (view.isSavingAnnotations) { 
                     		if (options.debug) { console.log("Cannot commit now; save is pending"); }
@@ -348,7 +349,7 @@ var methods = {
                     				if (!jQuery.isNumeric(i)) { continue; }
                     				if (!jQuery.isNumeric(index)) { continue; }
                     				if (data['annotation_ids'][index]) {
-                    					jQuery("#tileviewerAnnotationTextBlock_" + index).html(options.annotation_prefix_text + (annotationsToSave[i]['label'] ? annotationsToSave[i]['label'] : (options.show_empty_annotation_label_text_in_text_boxes ? options.empty_annotation_label_text : '')));
+                    					jQuery("#tileviewerAnnotationTextBlock_" + index).html(options.annotationPrefixText + (annotationsToSave[i]['label'] ? annotationsToSave[i]['label'] : (options.showEmptyAnnotationLabelTextInTextBoxes ? options.emptyAnnotationLabelText : '')));
                     				}
                     			}
                     		}
@@ -369,7 +370,7 @@ var methods = {
 							
 						jQuery(id).show().draggable({ drag: function(e) {
 							var index = jQuery(this).data('annotationIndex');
-							if ((options.lock_annotation_text) || (parseInt(view.annotations[index]['locked']) == 1)) {
+							if ((options.lockAnnotationText) || (parseInt(view.annotations[index]['locked']) == 1)) {
 								e.preventDefault();
 								return false;
 							}
@@ -385,7 +386,7 @@ var methods = {
 									||
 									(view.annotations[index].type == 'poly')
 									||
-									((view.annotations[index].type == 'rect') && options.allow_draggable_text_boxes_for_rects)
+									((view.annotations[index].type == 'rect') && options.allowDraggableTextBoxesForRects)
 								)
 							) {
 								var pos = jQuery('#tileviewerAnnotationTextBlock_' +index).position();
@@ -425,7 +426,7 @@ var methods = {
 // Begin ANNOTATIONS: draw outlines
 //                 
                     draw_annotations: function() {
-                    	if (!options.use_annotations || !options.display_annotations) { 
+                    	if (!options.useAnnotations || !options.displayAnnotations) { 
                     		jQuery(".tileviewerAnnotationTextBlock").fadeOut(100);
                     		return; 
                     	}
@@ -455,11 +456,11 @@ var methods = {
                         	
                         	// is annotation the current selection?
                         	if (selectedAnnotation == i) {
-                        		ctx.strokeStyle = '#' + options.annotation_color_selected;
+                        		ctx.strokeStyle = '#' + options.annotationColorSelected;
                         	} else {
-                        		ctx.strokeStyle = '#' + options.annotation_color; 
+                        		ctx.strokeStyle = '#' + options.annotationColor; 
                         	}
-                        	//annotation_text_display_mode
+                        	//annotationTextDisplayMode
                         	// do drawing
                         	var areaMultiplier = 1;
                         	switch(annotation.type) {
@@ -509,7 +510,7 @@ var methods = {
 									areaMultiplier = 1.2;	// make rects easier to select
 									
 									// stick
-									if (options.allow_draggable_text_boxes_for_rects) {	
+									if (options.allowDraggableTextBoxesForRects) {	
 										var tx = ((parseFloat(annotation.tx)/100) * layerWidth * layerMag) + layer.xpos;
 										var ty = ((parseFloat(annotation.ty)/100) * layerHeight * layerMag) + layer.ypos;
 										
@@ -544,7 +545,7 @@ var methods = {
 									areaMultiplier = 3;	// make pins easier to select
 									
 									// Optionally draw circles around end of stick 
-									if (options.highlight_points_with_circles) {
+									if (options.highlightPointsWithCircles) {
 										ctx.arc(x, y, r * (areaMultiplier/2), 0,2*Math.PI);
 										
 										ctx.fillStyle = (selectedAnnotation == i)  ? "rgba(175, 0, 0, 0.30)" : "rgba(255, 160, 160, 0.15)";
@@ -733,7 +734,7 @@ var methods = {
 // Begin ANNOTATIONS: draw text
 //                     
                     update_textbox_position: function(e) {
-                    	if (!options.use_annotations || !options.display_annotations) { return; }
+                    	if (!options.useAnnotations || !options.displayAnnotations) { return; }
                     	if (view.selectedAnnotation == null) {
 							$(view.annotationTextEditor).css("display", "none").blur();
 						}
@@ -766,7 +767,7 @@ var methods = {
 								w = ((10/100) * ((layer.info.width/factor) * (layer.tilesize/256)));
 							}
 							
-							if (view.annotations[i] && (view.annotations[i].type == 'rect') && !options.allow_draggable_text_boxes_for_rects) {
+							if (view.annotations[i] && (view.annotations[i].type == 'rect') && !options.allowDraggableTextBoxesForRects) {
 								sy += 3;	// add gutter between rect annotation and its text block
 							}
 							
@@ -799,14 +800,14 @@ var methods = {
 							var mw = (w > 100) ? w :  100;
 							var showAnnotation = false;
 							if (inAnnotation['tendY'] < inAnnotation['endY']) {
-								if ((inAnnotation.index == view.selectedAnnotation) && !options.lock_annotation_text) {
+								if ((inAnnotation.index == view.selectedAnnotation) && !options.lockAnnotationText) {
 									$(view.annotationTextEditor).css("display", "block").css("left", sx + 'px').css('top', sy + 'px');
 								} else {
 									$(inAnnotation['textBlock']).css("left", sx + 'px').css('top', sy + 'px').css('max-width', mw + 'px');
 									showAnnotation = true;
 								}
 							} else {
-								if ((inAnnotation.index == view.selectedAnnotation) && !options.lock_annotation_text) {
+								if ((inAnnotation.index == view.selectedAnnotation) && !options.lockAnnotationText) {
 									$(view.annotationTextEditor).css("display", "block").css("left", sx + 'px').css('top', sy + 'px');
 								} else {
 									$(inAnnotation['textBlock']).css("left", sx + 'px').css('top', sy + 'px').css('max-width', mw + 'px');
@@ -815,7 +816,7 @@ var methods = {
 							}
 						
 							if (view.selectedAnnotation == null) {
-								if (options.annotation_text_display_mode == 'simultaneous') { 
+								if (options.annotationTextDisplayMode == 'simultaneous') { 
 									showAnnotation = true;
 								}
 							}
@@ -843,7 +844,7 @@ var methods = {
 // 
                     
                     drag_annotation: function(i, dx, dy, clickX, clickY) {
-                    	if (!options.use_annotations || !options.display_annotations || options.lock_annotations) { return; }
+                    	if (!options.useAnnotations || !options.displayAnnotations || options.lockAnnotations) { return; }
                     	if (parseInt(view.annotations[i]['locked']) == 1) { return; }
                     	
                     	var offset = jQuery(view.canvas).offset();
@@ -1073,17 +1074,17 @@ var methods = {
                     },
                     
                     add_annotation: function(type, x, y) {
-                    	if (!options.use_annotations || !options.display_annotations || options.lock_annotations) { return; }
+                    	if (!options.useAnnotations || !options.displayAnnotations || options.lockAnnotations) { return; }
                     	
                     	// create text block
 						var textBlock = document.createElement("div");
 						
 						
-						var t = options.annotation_prefix_text + (options.default_annotation_text ? options.default_annotation_text : (options.show_empty_annotation_label_text_in_text_boxes ? options.empty_annotation_label_text : ''));
+						var t = options.annotationPrefixText + (options.defaultAnnotationText ? options.defaultAnnotationText : (options.showEmptyAnnotationLabelTextInTextBoxes ? options.emptyAnnotationLabelText : ''));
 						jQuery(textBlock).attr('id', 'tileviewerAnnotationTextBlock_' + view.annotations.length).addClass("tileviewerAnnotationTextBlock").data("annotationIndex", view.annotations.length).html(t);
 						jQuery('#tileviewerAnnotationTextBlock_' + view.annotations.length).remove();
 						jQuery(view.annotationContainer).append(textBlock);
-						if (options.annotation_text_display_mode == 'simultaneous') { jQuery(textBlock).show(); }
+						if (options.annotationTextDisplayMode == 'simultaneous') { jQuery(textBlock).show(); }
 						
 						var w = jQuery($this).width();
 						var h = jQuery($this).height();
@@ -1102,7 +1103,7 @@ var methods = {
                     			view.annotations.push({
 									type: type, x: x, y: y, w: defaultWidth, h: defaultHeight, index: view.annotations.length,
 									tx: x, ty: y + defaultHeight, tw: defaultWidth, th: (120/layer.info.width) * 100,
-									label: options.default_annotation_text, textBlock: textBlock
+									label: options.defaultAnnotationText, textBlock: textBlock
 								});
 								break;
 							case 'point':
@@ -1117,7 +1118,7 @@ var methods = {
 								view.annotations.push({
 									type: type, x: x, y: y, w: defaultWidth, h: defaultHeight, index: view.annotations.length,
 									tx: x + 3, ty: y + 3, tw: 10, th: (120/layer.info.width) * 100,
-									label: options.default_annotation_text, textBlock: textBlock
+									label: options.defaultAnnotationText, textBlock: textBlock
 								});
 								break;
 							case 'poly':
@@ -1134,14 +1135,14 @@ var methods = {
 								view.annotations.push({
 									type: type, x: x, y: y, w: 0, h: 0, index: view.annotations.length,
 									tx: x + defaultTxOffset, ty: y + defaultTyOffset, tw: defaultWidth, th: (120/layer.info.width) * 100,
-									label: options.default_annotation_text, textBlock: textBlock,
+									label: options.defaultAnnotationText, textBlock: textBlock,
 									points:[{x: x, y: y}]
 								});
 								break;
 						}
 						view.save_annotations([view.annotations.length-1], []);
 						
-						if (options.annotation_text_display_mode == 'simultaneous') { 
+						if (options.annotationTextDisplayMode == 'simultaneous') { 
 							// Make just-created annotation text block draggable
 							view._makeAnnotationTextBlockDraggable('#tileviewerAnnotationTextBlock_' + (view.annotations.length-1));
 						}
@@ -1160,7 +1161,7 @@ var methods = {
                     },
                     
                     add_annotation_point: function(type, x, y) {
-                    	if (!options.use_annotations || !options.display_annotations || options.lock_annotations) { return; }
+                    	if (!options.useAnnotations || !options.displayAnnotations || options.lockAnnotations) { return; }
                     	if (view.polygon_in_progress_annotation_index === null) { return; }
                     	
 						var w = jQuery($this).width();
@@ -1184,7 +1185,7 @@ var methods = {
                     },
                     
                     insert_annotation_point: function(i, pointIndex, x, y) {
-                    	if (!options.use_annotations || !options.display_annotations || options.lock_annotations) { return; }
+                    	if (!options.useAnnotations || !options.displayAnnotations || options.lockAnnotations) { return; }
                     	if (parseInt(view.annotations[i]['locked']) == 1) { return; }
                     	if (!view.annotations[i]) return; 
                     	
@@ -1194,7 +1195,7 @@ var methods = {
                     },
                     
                     delete_annotation: function(i) {
-                    	if (!options.use_annotations || !options.display_annotations || options.lock_annotations) { return; }
+                    	if (!options.useAnnotations || !options.displayAnnotations || options.lockAnnotations) { return; }
                     	if (!view.annotations[i]) return; 
                     	if (parseInt(view.annotations[i]['locked']) == 1) { return; }
                     	
@@ -1206,7 +1207,7 @@ var methods = {
                     	if (view.selectedAnnotation == i) { view.selectedAnnotation = null; }
                     	
                     	// Hide any annotation text boxes
-                    	if (options.annotation_text_display_mode != 'simultaneous') { jQuery('.tileviewerAnnotationTextBlock').css("display", "none"); }
+                    	if (options.annotationTextDisplayMode != 'simultaneous') { jQuery('.tileviewerAnnotationTextBlock').css("display", "none"); }
                     	jQuery(view.annotationTextEditor).css("display", "none").blur();
                     	
                     	view.polygon_in_progress_annotation_index = null;
@@ -1370,7 +1371,7 @@ var methods = {
 							|| 
 							(curAnnotation.type == 'poly')
 							||
-							(options.allow_draggable_text_boxes_for_rects && (curAnnotation.type == 'rect'))
+							(options.allowDraggableTextBoxesForRects && (curAnnotation.type == 'rect'))
 						) {
 							// Allow dragging of text for point and polygon annotations
 							jQuery(view.annotationTextEditor).draggable("enable");
@@ -1381,8 +1382,8 @@ var methods = {
                     },
                     
                     openAnnotationTextEditor: function(inAnnotation) {
-                    	if (options.lock_annotation_text) { return; }
-                    	if (!inAnnotation || !options.display_annotations) { console.log("failed to open annotation text editor"); console.trace(); return; }
+                    	if (options.lockAnnotationText) { return; }
+                    	if (!inAnnotation || !options.displayAnnotations) { console.log("failed to open annotation text editor"); console.trace(); return; }
                     	
                     	var curAnnotation = view.annotations[inAnnotation['index']];
 						var sx = ((inAnnotation['tstartX']/100) * ((layer.info.width/factor) * (layer.tilesize/256))) + layer.xpos;
@@ -1391,7 +1392,7 @@ var methods = {
 						var sw = (((inAnnotation['tendX']/100) * ((layer.info.width/factor) * (layer.tilesize/256))) + layer.xpos) - sx - 10;	// 10 = 2 * 5px padding
 						
 						// Set editing form
-						var tText = (curAnnotation['label'] ?  curAnnotation['label'] : options.empty_annotation_editor_text);
+						var tText = (curAnnotation['label'] ?  curAnnotation['label'] : options.emptyAnnotationEditorText);
 						
 						t = "<form><textarea id='tileviewerAnnotationTextLabel'>" + tText + "</textarea> <div class='tileviewerAnnotationLockedButtonLabel'><input type='checkbox' id='tileviewerAnnotationLockedButton' value='1' " + ((parseInt(curAnnotation['locked']) > 0) ? "CHECKED='1'" : '') + "/> Locked</div> <a class='tileviewerFullAnnotationEditorLink' href='#' onclick='caRepresentationAnnotationEditor.showPanel(\"" + options.annotationEditorUrl + "/annotation_id/" + curAnnotation['annotation_id'] + "\"); return false;'>" + options.annotationEditorLink + "</a></form>";
 			
@@ -1459,7 +1460,7 @@ var methods = {
                    	},
                    	
                    	show_controls: function(s) {
-                   		options.display_annotations = s;
+                   		options.displayAnnotations = s;
                    		if (!s) {
                    			jQuery(view.controls).fadeOut(100);
                    			jQuery(".tileViewToolbarRotation").fadeOut(100);
@@ -1480,7 +1481,7 @@ var methods = {
 					
 					view.tools = {};
 					view.tools['pan'] = "<a href='#' id='" + options.id + "ControlPanImage' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/pan_on.png' width='25' height='25'/></a>";
-					if (options.use_annotations && options.show_annotation_tools && !options.lock_annotations) { 
+					if (options.useAnnotations && options.showAnnotationTools && !options.lockAnnotations) { 
 						view.tools['point'] = "<a href='#' id='" + options.id + "ControlAddPointAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/point.png' width='26' height='25'/></a>";		
 						view.tools['rect'] = "<a href='#' id='" + options.id + "ControlAddRectAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/rect.png' width='25' height='24'/></a>";
 						view.tools['polygon'] = "<a href='#' id='" + options.id + "ControlAddPolygonAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/polygon.png' width='28' height='25'/></a>";
@@ -1507,39 +1508,39 @@ var methods = {
 					// Tools
 					//
 					jQuery("#" + options.id + "ControlPanImage").click(function() {
-						options.add_point_annotation_mode = options.add_polygon_annotation_mode = options.add_rect_annotation_mode = false;
-						options.pan_mode = !options.pan_mode;
+						options.addPointAnnotationMode = options.addPolygonAnnotationMode = options.addRectAnnotationMode = false;
+						options.panMode = !options.panMode;
 						
 						view.completeInProgressAnnotation();
 						
 						view.draw();
-						jQuery(this).css("opacity", options.pan_mode ? 1.0 : 0.5).find('img').attr('src', options.pan_mode ? options.buttonUrlPath + '/pan_on.png' : options.buttonUrlPath + '/pan.png');
+						jQuery(this).css("opacity", options.panMode ? 1.0 : 0.5).find('img').attr('src', options.panMode ? options.buttonUrlPath + '/pan_on.png' : options.buttonUrlPath + '/pan.png');
 						jQuery("#" + options.id + "ControlAddRectAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/rect.png');
 						jQuery("#" + options.id + "ControlAddPointAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/point.png');
 						jQuery("#" + options.id + "ControlAddPolygonAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/polygon.png');
 					});	
 					
-					if (options.use_annotations && options.show_annotation_tools) { 			
+					if (options.useAnnotations && options.showAnnotationTools) { 			
 							//
 							// Rectangular annotation
 							//
 							
 							jQuery("#" + options.id + "ControlAddRectAnnotation").click(function() {
-								if (!options.display_annotations || options.lock_annotations) { return; }
+								if (!options.displayAnnotations || options.lockAnnotations) { return; }
 								
-								options.add_rect_annotation_mode = !options.add_rect_annotation_mode;
-								options.add_point_annotation_mode = options.add_polygon_annotation_mode = false;
-								options.pan_mode = false;
+								options.addRectAnnotationMode = !options.addRectAnnotationMode;
+								options.addPointAnnotationMode = options.addPolygonAnnotationMode = false;
+								options.panMode = false;
 								
 								view.completeInProgressAnnotation();
 								
 								view.draw();
-								jQuery(this).css("opacity", options.add_rect_annotation_mode ? 1.0 : 0.5).find('img').attr('src', options.add_rect_annotation_mode ? options.buttonUrlPath + '/rect_on.png' : options.buttonUrlPath + '/rect.png');
+								jQuery(this).css("opacity", options.addRectAnnotationMode ? 1.0 : 0.5).find('img').attr('src', options.addRectAnnotationMode ? options.buttonUrlPath + '/rect_on.png' : options.buttonUrlPath + '/rect.png');
 								jQuery("#" + options.id + "ControlPanImage").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/pan.png');
 								jQuery("#" + options.id + "ControlAddPointAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/point.png');
 								jQuery("#" + options.id + "ControlAddPolygonAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/polygon.png');
 								
-								if (!options.add_rect_annotation_mode) {
+								if (!options.addRectAnnotationMode) {
 									jQuery("#" + options.id + "ControlPanImage").click();
 								}
 							}).css("opacity", 0.5);
@@ -1549,21 +1550,21 @@ var methods = {
 							//
 								
 							jQuery("#" + options.id + "ControlAddPointAnnotation").click(function() {
-								if (!options.display_annotations || options.lock_annotations) { return; }
+								if (!options.displayAnnotations || options.lockAnnotations) { return; }
 								
-								options.add_point_annotation_mode = !options.add_point_annotation_mode;
-								options.add_rect_annotation_mode = options.add_polygon_annotation_mode = false;
-								options.pan_mode = false;
+								options.addPointAnnotationMode = !options.addPointAnnotationMode;
+								options.addRectAnnotationMode = options.addPolygonAnnotationMode = false;
+								options.panMode = false;
 								
 								view.completeInProgressAnnotation();
 								
 								view.draw();
-								jQuery(this).css("opacity", options.add_point_annotation_mode ? 1.0 : 0.5).find('img').attr('src', options.add_point_annotation_mode ? options.buttonUrlPath + '/point_on.png' : options.buttonUrlPath + '/point.png');
+								jQuery(this).css("opacity", options.addPointAnnotationMode ? 1.0 : 0.5).find('img').attr('src', options.addPointAnnotationMode ? options.buttonUrlPath + '/point_on.png' : options.buttonUrlPath + '/point.png');
 								jQuery("#" + options.id + "ControlPanImage").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/pan.png');
 								jQuery("#" + options.id + "ControlAddRectAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/rect.png');
 								jQuery("#" + options.id + "ControlAddPolygonAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/polygon.png');
 								
-								if (!options.add_point_annotation_mode) {
+								if (!options.addPointAnnotationMode) {
 									jQuery("#" + options.id + "ControlPanImage").click();
 								}
 							}).css("opacity", 0.5);	
@@ -1573,21 +1574,21 @@ var methods = {
 							//
 								
 							jQuery("#" + options.id + "ControlAddPolygonAnnotation").click(function() {
-								if (!options.display_annotations || options.lock_annotations) { return; }
+								if (!options.displayAnnotations || options.lockAnnotations) { return; }
 								
-								options.add_polygon_annotation_mode = !options.add_polygon_annotation_mode;
-								options.add_rect_annotation_mode = add_point_annotation_mode = false;
-								options.pan_mode = false;
+								options.addPolygonAnnotationMode = !options.addPolygonAnnotationMode;
+								options.addRectAnnotationMode = addPointAnnotationMode = false;
+								options.panMode = false;
 								
 								view.completeInProgressAnnotation();
 								
 								view.draw();
-								jQuery(this).css("opacity", options.add_polygon_annotation_mode ? 1.0 : 0.5).find('img').attr('src', options.add_polygon_annotation_mode ? options.buttonUrlPath + '/polygon_on.png' : options.buttonUrlPath + '/polygon.png');
+								jQuery(this).css("opacity", options.addPolygonAnnotationMode ? 1.0 : 0.5).find('img').attr('src', options.addPolygonAnnotationMode ? options.buttonUrlPath + '/polygon_on.png' : options.buttonUrlPath + '/polygon.png');
 								jQuery("#" + options.id + "ControlPanImage").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/pan.png');
 								jQuery("#" + options.id + "ControlAddRectAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/rect.png');
 								jQuery("#" + options.id + "ControlAddPointAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/point.png');
 								
-								if (!options.add_polygon_annotation_mode) {
+								if (!options.addPolygonAnnotationMode) {
 									jQuery("#" + options.id + "ControlPanImage").click();
 								}
 							}).css("opacity", 0.5);	
@@ -1597,12 +1598,12 @@ var methods = {
 							//
 								
 							jQuery("#" + options.id + "ControlLockAnnotations").click(function() {
-								options.lock_annotations = options.lock_annotation_text = !options.lock_annotations;
-								if (options.lock_annotations) {
+								options.lockAnnotations = options.lockAnnotationText = !options.lockAnnotations;
+								if (options.lockAnnotations) {
 									view.selectedAnnotation = null;
 								}
 								view.draw();
-								jQuery(this).css("opacity", options.lock_annotations ? 1.0 : 0.5).find('img').attr('src', options.buttonUrlPath + (options.lock_annotations ? '/locked_on.png' : '/locked.png'));
+								jQuery(this).css("opacity", options.lockAnnotations ? 1.0 : 0.5).find('img').attr('src', options.buttonUrlPath + (options.lockAnnotations ? '/locked_on.png' : '/locked.png'));
 								
 							}).css("opacity", 0.5);	
 					}
@@ -1843,7 +1844,7 @@ var methods = {
 							});
 							
 							jQuery(document).bind('keydown.d keydown.Shift_d', function() { 
-								if (!options.use_annotations || options.lock_annotations || !options.display_annotations) { return; }
+								if (!options.useAnnotations || options.lockAnnotations || !options.displayAnnotations) { return; }
 								if (view.selectedAnnotation !== null) {
 									view.delete_annotation(view.selectedAnnotation);
 									view.selectedAnnotation = null;
@@ -1863,7 +1864,7 @@ var methods = {
 							});
 							
 							jQuery(document).bind('keydown.tab', function() { 
-								view.show_controls(!options.display_annotations);
+								view.show_controls(!options.displayAnnotations);
 								return false;
 							});
 							
@@ -1952,7 +1953,7 @@ var methods = {
 									var scale = m.scale;
 									var old_tilesize = layer.tilesize;
 									if (scale < 1) { scale = -1 * (1/scale); }
-									scale = scale * (options.zoom_sensitivity/4);
+									scale = scale * (options.zoomSensitivity/4);
 									
 									view.change_zoom(scale, x, y);
 								}
@@ -2004,7 +2005,7 @@ var methods = {
                      
                      	var vOffset = jQuery($this).height() - layer.thumb.height;
                      	var hOffset = jQuery($this).width() - layer.thumb.width;
-                     	if (options.magnifier) { vOffset = options.magnifier_view_size + 5; }
+                     	if (options.magnifier) { vOffset = options.magnifierViewSize + 5; }
 
                         //draw thumbnail image
                         ctx.drawImage(layer.thumb, hOffset, vOffset, layer.thumb.width, layer.thumb.height);
@@ -2175,11 +2176,11 @@ var methods = {
                      
                         //grab magnifier image
                         var mcontext = view.magnifier_canvas.getContext("2d");
-                        var marea = ctx.getImageData(view.xnow-options.magnifier_view_area/2, view.ynow-options.magnifier_view_area/2, options.magnifier_view_area,options.magnifier_view_area);
+                        var marea = ctx.getImageData(view.xnow-options.magnifierViewArea/2, view.ynow-options.magnifierViewArea/2, options.magnifierViewArea,options.magnifierViewArea);
                         mcontext.putImageData(marea, 0,0);//draw to canvas so that I can zoom it up
 
                         //display on the bottom left corner
-                        ctx.drawImage(view.magnifier_canvas, 1, 1, layer.thumb.width, options.magnifier_view_size);
+                        ctx.drawImage(view.magnifier_canvas, 1, 1, layer.thumb.width, options.magnifierViewSize);
                     },
 
                     recalc_viewparams: function() {
@@ -2244,7 +2245,7 @@ var methods = {
                     },
 
 					zoom: function(zoom, x, y) {
-						var maxZoom = options.maximum_pixelsize;
+						var maxZoom = options.maximumPixelsize;
 						if (zoom < 0) { return; }
 						if (zoom > maxZoom) { return; }
 						
@@ -2307,7 +2308,7 @@ var methods = {
 						var cypos = layer.ypos;
                         
                         //ignore if we've reached min/max zoom
-                        if(layer.level == 0 && layer.tilesize+delta > layer.info.tilesize*options.maximum_pixelsize) { return false; }
+                        if(layer.level == 0 && layer.tilesize+delta > layer.info.tilesize*options.maximumPixelsize) { return false; }
 						
 						// Don't allow zooming smaller than window
 						var ts = ((layer.tilesize + delta) > 16) ? layer.tilesize + delta : layer.tilesize;
@@ -2460,7 +2461,7 @@ var methods = {
 							|| 
 							(view.annotations[view.selectedAnnotation].type == 'poly')
                 			||
-                			((view.annotations[view.selectedAnnotation].type == 'rect') && options.allow_draggable_text_boxes_for_rects)
+                			((view.annotations[view.selectedAnnotation].type == 'rect') && options.allowDraggableTextBoxesForRects)
                 		)
                 	) {
                 		var pos = jQuery(view.annotationTextEditor).position();
@@ -2491,7 +2492,7 @@ var methods = {
 				
                 // Add click handler for textBlocks
                 jQuery(document).on("click", "div.tileviewerAnnotationTextBlock", function(e) {
-                	if(options.lock_annotation_text) { return; }
+                	if(options.lockAnnotationText) { return; }
 					var offset = $(view.canvas).offset();
 					if (!e) { e = { pageX:0, pageY: 0 }; }
 					var x = e.pageX - offset.left;
@@ -2537,8 +2538,8 @@ var methods = {
 				view.needdraw = true;
 				
                 //setup magnifier canvas
-                view.magnifier_canvas.width = options.magnifier_view_area;
-                view.magnifier_canvas.height = options.magnifier_view_area;
+                view.magnifier_canvas.width = options.magnifierViewArea;
+                view.magnifier_canvas.height = options.magnifierViewArea;
 
                 //load thumbnail
                 layer.thumb = new Image();
@@ -2576,7 +2577,7 @@ var methods = {
                 draw_thread();
 
 				
-				if (options.use_annotations) {
+				if (options.useAnnotations) {
 					// load annotations
 					view.load_annotations();
 				}
@@ -2613,7 +2614,7 @@ var methods = {
                     var y_relative = ((y - layer.ypos)/((layer.info.height/factor) * (layer.tilesize/256))) * 100;
                     var buttonDiameter = (15/((layer.info.height/factor) * (layer.tilesize/256))) * 100;
                      
-                 	if (options.use_annotations) {                       
+                 	if (options.useAnnotations) {                       
 						//
 						// Handle annotations
 						//
@@ -2621,7 +2622,7 @@ var methods = {
 						jQuery("body").css('cursor', 'auto');
 						var curAnnotation = null;
 					
-						if (!options.lock_annotations && options.display_annotations) {
+						if (!options.lockAnnotations && options.displayAnnotations) {
 							
 							if (curAnnotation = view.mouseIsInAnnotation(
 								x_relative,
@@ -2633,15 +2634,15 @@ var methods = {
 								view.needdraw = true;
 							} else {                    	
 								// Add annotation?
-								if (options.add_rect_annotation_mode) {
+								if (options.addRectAnnotationMode) {
 									view.add_annotation('rect', x_relative, y_relative);
 									return;
 								}
-								if (options.add_point_annotation_mode) {
+								if (options.addPointAnnotationMode) {
 									view.add_annotation('point', x_relative, y_relative);
 									return;
 								}
-								if (options.add_polygon_annotation_mode) {
+								if (options.addPolygonAnnotationMode) {
 									if(view.polygon_in_progress_annotation_index === null) {
 										view.polygon_in_progress_annotation_index = view.add_annotation('poly', x_relative, y_relative);
 									} else {
@@ -2656,7 +2657,7 @@ var methods = {
 					}
                     
 					if(options.magnifier) {
-						y -= (options.magnifier_view_size + 5);
+						y -= (options.magnifierViewSize + 5);
 					}	
 
 					if (options.thumbnail) {
@@ -2677,7 +2678,7 @@ var methods = {
 //
 // Begin ANNOTATIONS: mousedown handler
 // 
-					if (options.use_annotations && !options.lock_annotation_text) {
+					if (options.useAnnotations && !options.lockAnnotationText) {
 						//
 						// Adjust annotation visibility on mousedown
 						//
@@ -2695,7 +2696,7 @@ var methods = {
 							}
 						} else {
 							if(!view.selectedAnnotation) {
-								if (options.annotation_text_display_mode != 'simultaneous') { $('.tileviewerAnnotationTextBlock').css("display", "none"); }
+								if (options.annotationTextDisplayMode != 'simultaneous') { $('.tileviewerAnnotationTextBlock').css("display", "none"); }
 							}
 						}
 					 
@@ -2778,11 +2779,11 @@ var methods = {
 //
 // Begin ANNOTATIONS: mousemove handler
 //                    
-                    if (options.use_annotations) {
+                    if (options.useAnnotations) {
                     	//
                     	// Drag annotation?
                     	//
-                    	if (!options.lock_annotations && options.display_annotations && view.dragAnnotation) {
+                    	if (!options.lockAnnotations && options.displayAnnotations && view.dragAnnotation) {
 							view.drag_annotation(view.dragAnnotation, Math.ceil(x - view.dragAnnotationLastCoords.x), Math.ceil(y - view.dragAnnotationLastCoords.y), x, y);
 							view.dragAnnotationLastCoords.x = x;
 							view.dragAnnotationLastCoords.y = y;
@@ -2793,25 +2794,25 @@ var methods = {
 						// Are we over a label?
 						//
 						var inAnnotation = null;
-						if ((options.annotation_text_display_mode != 'simultaneous') && (inAnnotation = view.mouseIsInAnnotation(x_relative, y_relative, e))) {
+						if ((options.annotationTextDisplayMode != 'simultaneous') && (inAnnotation = view.mouseIsInAnnotation(x_relative, y_relative, e))) {
 							var sx = ((inAnnotation['tstartX']/100) * ((layer.info.width/factor) * (layer.tilesize/256))) + layer.xpos;
 							var sy = ((inAnnotation['tendY']/100) * ((layer.info.height/factor) * (layer.tilesize/256))) + layer.ypos;
 						
 							var sw = (((inAnnotation['tendX']/100) * ((layer.info.width/factor) * (layer.tilesize/256))) + layer.xpos) - sx - 10;	// 10 = 2 * 5px padding
 						
 						
-							if (view.selectedAnnotation == inAnnotation['index'] && !options.lock_annotation_text) {
+							if (view.selectedAnnotation == inAnnotation['index'] && !options.lockAnnotationText) {
 								$(view.annotationTextEditor).css("display", "block");
-								if (options.annotation_text_display_mode != 'simultaneous') { $(inAnnotation['textBlock']).fadeOut(250); }
+								if (options.annotationTextDisplayMode != 'simultaneous') { $(inAnnotation['textBlock']).fadeOut(250); }
 							} else {
 								// Mouseover non-selected annotation
-								if (options.annotation_text_display_mode != 'simultaneous') { $(inAnnotation['textBlock']).fadeIn(250); }
+								if (options.annotationTextDisplayMode != 'simultaneous') { $(inAnnotation['textBlock']).fadeIn(250); }
 								if (view.selectedAnnotation == null) { $(view.annotationTextEditor).fadeOut(250); }
 							}
 						} else {
-							if (options.annotation_text_display_mode != 'simultaneous') { 
+							if (options.annotationTextDisplayMode != 'simultaneous') { 
 								$('.tileviewerAnnotationTextBlock').fadeOut(250);
-								if((view.selectedAnnotation) && !options.lock_annotation_text) {
+								if((view.selectedAnnotation) && !options.lockAnnotationText) {
 									$(view.annotationTextEditor).fadeIn(250);
 								}
 							}
@@ -2824,7 +2825,7 @@ var methods = {
                         //dragging
                         switch(view.mode) {
 							case "pan":
-								if (!options.pan_mode) { break; }		// don't allow panning if disabled
+								if (!options.panMode) { break; }		// don't allow panning if disabled
 						
 								layer.xpos = x - view.pan.xhot;
 								layer.ypos = y - view.pan.yhot;
@@ -2847,7 +2848,7 @@ var methods = {
 
                 $(view.canvas).bind("mousewheel.tileviewer", function(e, delta) {
                     view.pan.xdest =  view.pan.ydest =  view.pan.leveldest = null;//cancel pan
-                    delta = delta*options.zoom_sensitivity;
+                    delta = delta*options.zoomSensitivity;
                 	var offset = $(view.canvas).offset();
             		view.change_zoom(delta, e.pageX - offset.left, e.pageY - offset.top);
                     return false;
