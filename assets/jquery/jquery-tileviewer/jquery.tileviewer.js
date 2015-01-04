@@ -78,12 +78,12 @@ var methods = {
 			showEmptyAnnotationLabelTextInTextBoxes: true,
             
             /* functional options */
-            useAnnotations: true,							// display annotation tools + annotations
-            displayAnnotations: true,						// display annotations on load
+            useAnnotations: true,						// display annotation tools + annotations
+            displayAnnotations: true,					// display annotations on load
             lockAnnotations: false,						// lock annotations on load - will display but cannot add, remove or drag existing annotations
             lockAnnotationText: false,					// lock annotation text on load - will display text but not be editable
             showAnnotationTools: true,					// show annotation tools on load
-            annotationTextDisplayMode: 'simultaneous',	// how to display annotation text: 'simultaneous' = show all annotation text all the time [DEFAULT]; 'mouseover' = show annotation text only when mouse is over the annotation or it is selected; 'selected' = show annotation text only when it is selected
+            annotationTextDisplayMode: 'mouseover',		// how to display annotation text: 'simultaneous' = show all annotation text all the time [DEFAULT]; 'mouseover' = show annotation text only when mouse is over the annotation or it is selected; 'selected' = show annotation text only when it is selected
 			annotationColor: "000000", //"EE7B19",
 			annotationColorSelected: "CC0000",
 			highlightPointsWithCircles: true,			// draw circles around point label locations?
@@ -98,7 +98,10 @@ var methods = {
 			
 			annotationEditorPanel: null,					// instance of ca.panel to open full annotation editor in
 			annotationEditorUrl: null,						// url to load full annotation editor form
-			annotationEditorLink: 'Edit more'				// content of full annotation editor link
+			annotationEditorLink: 'Edit more',				// content of full annotation editor link
+			
+			/* New options */
+			annotationDisplayMode: 'center'				// perimeter, center 
         };
 
         return this.each(function() {
@@ -177,6 +180,7 @@ var methods = {
                     
                     dragAnnotation: null,			// index of annotation currently being dragged
                     selectedAnnotation: null,		// index of annotation currently selected
+                    mouseOverAnnotation: null,		// index of annotation mouse is currently over
                     
                     framerate: null,//current framerate (1000 msec / drawtime msec)
                     needdraw: false, //flag used to request for frameredraw 
@@ -465,12 +469,21 @@ var methods = {
                         	var areaMultiplier = 1;
                         	switch(annotation.type) {
                         		case 'rect':
-									ctx.strokeRect(
-										x= ((annotation.x/100) * layerWidth * layerMag) + layer.xpos, 
-										y= ((annotation.y/100) * layerHeight * layerMag) + layer.ypos, 
-										w= (annotation.w/100) * layerWidth * layerMag,  
-										h= (annotation.h/100) * layerHeight * layerMag
-									);
+                        			var x= ((annotation.x/100) * layerWidth * layerMag) + layer.xpos;
+									var y= ((annotation.y/100) * layerHeight * layerMag) + layer.ypos;
+									var w= (annotation.w/100) * layerWidth * layerMag;
+									var h= (annotation.h/100) * layerHeight * layerMag;
+									
+									ctx.beginPath();	
+                        			if ((options.annotationDisplayMode == 'perimeter') || (selectedAnnotation == i) || (view.mouseOverAnnotation == i)) {
+										ctx.strokeRect(x, y, w, h);
+									} else {
+										// if no outline draw dot at center
+										ctx.arc(x + (w/2), y + (h/2), w/10, 0,2*Math.PI);
+										
+										ctx.fillStyle = "rgba(175, 0, 0, 0.15)";
+      									ctx.fill();
+									}
 									
 									if (selectedAnnotation == i) {
 										// draw drag knobs
@@ -510,7 +523,7 @@ var methods = {
 									areaMultiplier = 1.2;	// make rects easier to select
 									
 									// stick
-									if (options.allowDraggableTextBoxesForRects) {	
+									if (options.allowDraggableTextBoxesForRects && ((selectedAnnotation == i) || (view.mouseOverAnnotation == i) || (options.annotationTextDisplayMode === 'simultaneous'))) {	
 										var tx = ((parseFloat(annotation.tx)/100) * layerWidth * layerMag) + layer.xpos;
 										var ty = ((parseFloat(annotation.ty)/100) * layerHeight * layerMag) + layer.ypos;
 										
@@ -599,96 +612,122 @@ var methods = {
 									
 									
 									// stick
-									ctx.beginPath();
-									var t = Math.atan((ty - y)/(tx - x));
-									
-									ctx.moveTo(x, y);
-									ctx.lineTo(tx, ty);
-									ctx.strokeStyle = '#444';
-									ctx.stroke();
-								
-									break;
-								case 'poly':
-									x = (((parseFloat(annotation.x))/100) * layerWidth * layerMag) + layer.xpos;
-									y = (((parseFloat(annotation.y))/100) * layerHeight * layerMag) + layer.ypos;
-									
-									if (annotation.points && jQuery.isArray(annotation.points)) {
-									
-										// Draw points
-										for(var pointIndex in annotation.points) {
-											if (!jQuery.isNumeric(pointIndex)) { continue; }
-											
-											var c = annotation.points[pointIndex];
-											x = (((parseFloat(c.x))/100) * layerWidth * layerMag) + layer.xpos;
-											y = (((parseFloat(c.y))/100) * layerHeight * layerMag) + layer.ypos;
-											
-											ctx.beginPath();
-											ctx.arc(x,y, 3, 0, 2*Math.PI);
-											ctx.stroke();
-										}
-										
-										// Draw lines between points
+									if ((selectedAnnotation == i) || (view.mouseOverAnnotation == i) || (options.annotationTextDisplayMode === 'simultaneous')) {	
 										ctx.beginPath();
-										var startX = x = (((parseFloat(annotation.points[0].x))/100) * layerWidth * layerMag) + layer.xpos;
-										var startY = y = (((parseFloat(annotation.points[0].y))/100) * layerHeight * layerMag) + layer.ypos;
+										var t = Math.atan((ty - y)/(tx - x));
+									
 										ctx.moveTo(x, y);
-										for(var pointIndex in annotation.points) {
-											if (!jQuery.isNumeric(pointIndex)) { continue; }
-											
-											var c = annotation.points[pointIndex];
-											x = (((parseFloat(c.x))/100) * layerWidth * layerMag) + layer.xpos;
-											y = (((parseFloat(c.y))/100) * layerHeight * layerMag) + layer.ypos;
-											ctx.lineTo(x, y);
-										}
-										if(annotation.points.length >= 3) {
-											ctx.lineTo(startX, startY);
-										}
-										ctx.stroke();
-										
-										// Stick
-										var tx = ((parseFloat(annotation.tx)/100) * layerWidth * layerMag) + layer.xpos;
-										var ty = ((parseFloat(annotation.ty)/100) * layerHeight * layerMag) + layer.ypos;
-										
-										// find boundaries
-										var minX = null, minY = null;
-										var minD = null;
-										var extents = {minX: null, minY: null, maxX: null, maxY: null};
-										for(var pointIndex in annotation.points) {
-											if (!jQuery.isNumeric(pointIndex)) { continue; }
-											
-											var c = annotation.points[pointIndex];
-											
-											var px = (((parseFloat(c.x))/100) * layerWidth * layerMag) + layer.xpos;
-											var py = (((parseFloat(c.y))/100) * layerHeight * layerMag) + layer.ypos;
-											
-											var d = Math.sqrt(Math.pow(py - ty, 2) + Math.pow(px - tx, 2));
-											if ((minD == null) || (minD > d)) { minD = d; minX = px; minY = py; }
-											
-											if ((extents.minX == null) || (c.x < extents.minX)) { extents.minX = c.x; }
-											if ((extents.maxX == null) || (c.x > extents.maxX)) { extents.maxX = c.x; }
-											if ((extents.minY == null) || (c.y < extents.minY)) { extents.minY = c.y; }
-											if ((extents.maxY == null) || (c.y > extents.maxY)) { extents.maxY = c.y; }
-											
-										}
-										view.annotations[annotation.index].x = extents.minX;
-										view.annotations[annotation.index].y = extents.minY;
-										view.annotations[annotation.index].w = extents.maxX - extents.minX;
-										view.annotations[annotation.index].h = extents.maxY - extents.minY;
-										
-										if (annotation.tx < annotation.x) {
-											tx += $(annotation['textBlock']).width();
-										}
-										
-										if (annotation.ty < annotation.y) {
-											ty += $(annotation['textBlock']).height();
-										}
-									
-										ctx.beginPath();
-									
-										ctx.moveTo(minX, minY);
 										ctx.lineTo(tx, ty);
 										ctx.strokeStyle = '#444';
 										ctx.stroke();
+									}
+								
+									break;
+								case 'poly':
+									var x = (((parseFloat(annotation.x))/100) * layerWidth * layerMag) + layer.xpos;
+									var y = (((parseFloat(annotation.y))/100) * layerHeight * layerMag) + layer.ypos;
+									
+									if (annotation.points && jQuery.isArray(annotation.points)) {
+									
+										if ((options.annotationDisplayMode == 'perimeter') || (selectedAnnotation == i) || (view.mouseOverAnnotation == i)) {
+											// Draw points
+											for(var pointIndex in annotation.points) {
+												if (!jQuery.isNumeric(pointIndex)) { continue; }
+											
+												var c = annotation.points[pointIndex];
+												x = (((parseFloat(c.x))/100) * layerWidth * layerMag) + layer.xpos;
+												y = (((parseFloat(c.y))/100) * layerHeight * layerMag) + layer.ypos;
+											
+												ctx.beginPath();
+												ctx.arc(x,y, 3, 0, 2*Math.PI);
+												ctx.stroke();
+											}
+										
+											// Draw lines between points
+											ctx.beginPath();
+											var startX = x = (((parseFloat(annotation.points[0].x))/100) * layerWidth * layerMag) + layer.xpos;
+											var startY = y = (((parseFloat(annotation.points[0].y))/100) * layerHeight * layerMag) + layer.ypos;
+											ctx.moveTo(x, y);
+											for(var pointIndex in annotation.points) {
+												if (!jQuery.isNumeric(pointIndex)) { continue; }
+											
+												var c = annotation.points[pointIndex];
+												x = (((parseFloat(c.x))/100) * layerWidth * layerMag) + layer.xpos;
+												y = (((parseFloat(c.y))/100) * layerHeight * layerMag) + layer.ypos;
+												ctx.lineTo(x, y);
+											}
+											if(annotation.points.length >= 3) {
+												ctx.lineTo(startX, startY);
+											}
+											ctx.stroke();
+										} else {
+											// if no outline draw dot at center
+											var minX = null, minY = null, maxX = null, maxY = null;
+											for(var pointIndex in annotation.points) {
+												if (!jQuery.isNumeric(pointIndex)) { continue; }
+											
+												var c = annotation.points[pointIndex];
+												x = (((parseFloat(c.x))/100) * layerWidth * layerMag) + layer.xpos;
+												y = (((parseFloat(c.y))/100) * layerHeight * layerMag) + layer.ypos;
+												
+												if ((x < minX) || (minX === null)) { minX = x; }
+												if ((x > maxX) || (maxX === null)) { maxX = x; }
+												if ((y < minY) || (minY === null)) { minY = y; }
+												if ((y > maxY) || (maxY === null)) { maxY = y; }
+											}
+											ctx.beginPath();
+											ctx.arc(minX + ((maxX-minX)/2), minY + ((maxY-minY)/2), (maxX - minX)/10, 0,2*Math.PI);
+										
+											ctx.fillStyle = "rgba(175, 0, 0, 0.15)";
+											ctx.fill();
+										}
+										
+										// Stick
+										if ((selectedAnnotation == i) || (view.mouseOverAnnotation == i) || (options.annotationTextDisplayMode === 'simultaneous')) {	
+											var tx = ((parseFloat(annotation.tx)/100) * layerWidth * layerMag) + layer.xpos;
+											var ty = ((parseFloat(annotation.ty)/100) * layerHeight * layerMag) + layer.ypos;
+										
+											// find boundaries
+											var minX = null, minY = null;
+											var minD = null;
+											var extents = {minX: null, minY: null, maxX: null, maxY: null};
+											for(var pointIndex in annotation.points) {
+												if (!jQuery.isNumeric(pointIndex)) { continue; }
+											
+												var c = annotation.points[pointIndex];
+											
+												var px = (((parseFloat(c.x))/100) * layerWidth * layerMag) + layer.xpos;
+												var py = (((parseFloat(c.y))/100) * layerHeight * layerMag) + layer.ypos;
+											
+												var d = Math.sqrt(Math.pow(py - ty, 2) + Math.pow(px - tx, 2));
+												if ((minD == null) || (minD > d)) { minD = d; minX = px; minY = py; }
+											
+												if ((extents.minX == null) || (c.x < extents.minX)) { extents.minX = c.x; }
+												if ((extents.maxX == null) || (c.x > extents.maxX)) { extents.maxX = c.x; }
+												if ((extents.minY == null) || (c.y < extents.minY)) { extents.minY = c.y; }
+												if ((extents.maxY == null) || (c.y > extents.maxY)) { extents.maxY = c.y; }
+											
+											}
+											view.annotations[annotation.index].x = extents.minX;
+											view.annotations[annotation.index].y = extents.minY;
+											view.annotations[annotation.index].w = extents.maxX - extents.minX;
+											view.annotations[annotation.index].h = extents.maxY - extents.minY;
+										
+											if (annotation.tx < annotation.x) {
+												tx += $(annotation['textBlock']).width();
+											}
+										
+											if (annotation.ty < annotation.y) {
+												ty += $(annotation['textBlock']).height();
+											}
+									
+											ctx.beginPath();
+									
+											ctx.moveTo(minX, minY);
+											ctx.lineTo(tx, ty);
+											ctx.strokeStyle = '#444';
+											ctx.stroke();
+										}
 									}
 									break;
 								case 'circle':
@@ -773,6 +812,7 @@ var methods = {
 							
 							// TODO: is it off screen?
 							
+							// TODO: FIX THIS - POSITIONING IS OFF
 							// Adjust label placement to account for image rotation 
 							if (view.rotation > 0) {
 								var a = (360-view.rotation) * (Math.PI/180);
@@ -800,25 +840,33 @@ var methods = {
 							var mw = (w > 100) ? w :  100;
 							var showAnnotation = false;
 							if (inAnnotation['tendY'] < inAnnotation['endY']) {
-								if ((inAnnotation.index == view.selectedAnnotation) && !options.lockAnnotationText) {
+								if ((inAnnotation.index == view.selectedAnnotation) && !options.lockAnnotationText) {	// in selected annotation
 									$(view.annotationTextEditor).css("display", "block").css("left", sx + 'px').css('top', sy + 'px');
 								} else {
 									$(inAnnotation['textBlock']).css("left", sx + 'px').css('top', sy + 'px').css('max-width', mw + 'px');
-									showAnnotation = true;
+									if (options.annotationTextDisplayMode === 'simultaneous') {  showAnnotation = true; }
 								}
 							} else {
 								if ((inAnnotation.index == view.selectedAnnotation) && !options.lockAnnotationText) {
 									$(view.annotationTextEditor).css("display", "block").css("left", sx + 'px').css('top', sy + 'px');
 								} else {
 									$(inAnnotation['textBlock']).css("left", sx + 'px').css('top', sy + 'px').css('max-width', mw + 'px');
-									showAnnotation = true;
+									if (options.annotationTextDisplayMode === 'simultaneous') {  showAnnotation = true; }
 								}
 							}
 						
-							if (view.selectedAnnotation == null) {
-								if (options.annotationTextDisplayMode == 'simultaneous') { 
-									showAnnotation = true;
-								}
+							//if (view.selectedAnnotation == null) {
+							if (options.annotationTextDisplayMode === 'simultaneous') { 
+								showAnnotation = true;
+							}
+							//}
+							
+							if ((options.annotationTextDisplayMode === 'selected') && (view.selectedAnnotation == i)) {
+								showAnnotation = true;
+							}
+							
+							if ((options.annotationTextDisplayMode === 'mouseover') && ((view.mouseOverAnnotation == i) && (view.selectedAnnotation != i))) {
+								showAnnotation = true;
 							}
 						
 							// Is text box off screen?
@@ -1207,7 +1255,7 @@ var methods = {
                     	if (view.selectedAnnotation == i) { view.selectedAnnotation = null; }
                     	
                     	// Hide any annotation text boxes
-                    	if (options.annotationTextDisplayMode != 'simultaneous') { jQuery('.tileviewerAnnotationTextBlock').css("display", "none"); }
+                    	if (options.annotationTextDisplayMode !== 'simultaneous') { jQuery('.tileviewerAnnotationTextBlock').css("display", "none"); }
                     	jQuery(view.annotationTextEditor).css("display", "none").blur();
                     	
                     	view.polygon_in_progress_annotation_index = null;
@@ -1240,6 +1288,8 @@ var methods = {
                     				
                     				var segments = points.slice();
                     				segments.push({x: segments[0].x, y: segments[0].y});	// add end point so auto-added final segment can be clicked-upon
+                    				
+                    				var sumOfPointAngles = 0;	// sum of angle between x,y and each pair of coordinates in the polygon; will be zero if we're outside the polygon or 2*PI (or close to it) if we're inside
                     				for(var pointIndex in segments) {
 										if (!jQuery.isNumeric(pointIndex)) { continue; }
 										
@@ -1263,23 +1313,23 @@ var methods = {
                     					) {
                     						foundAnnotation = v;
                     						
-                    						if (e && e.altKey) {
-                    						 	view.delete_annotation_point(v.index, pointIndex);
-                    						}
-                    						view.mouseClickedOnControlPoint = pointIndex;
+                    						if (e && (e.type == 'mousedown') && e.altKey) {
+												view.delete_annotation_point(v.index, pointIndex);
+											}
+											view.mouseClickedOnControlPoint = pointIndex;
 											return false;
                     					}
                     					
                     					if (
-                    						(Math.abs(mX - p2.x) < pointTolerance)
+                    						(Math.abs(mX - parseFloat(p2.x)) < pointTolerance)
                     						&&
-                    						(Math.abs(mY - p2.y) < pointTolerance)
+                    						(Math.abs(mY - parseFloat(p2.y)) < pointTolerance)
                     					) {
-                    						if (e && e.altKey) {
-                    						 	view.delete_annotation_point(v.index, pointIndex + 1);
-                    						}
-                    						
                     						foundAnnotation = v;
+                    						
+                    						if (e && (e.type == 'mousedown') && e.altKey) {
+												view.delete_annotation_point(v.index, pointIndex + 1);
+                    						}
                     						view.mouseClickedOnControlPoint = pointIndex + 1;
 											return false;
                     					}
@@ -1300,12 +1350,22 @@ var methods = {
 												(((mY >= p1.y - (lineTolerance)) && (mY <= p2.y + (lineTolerance))) || ((mY >= p2.y - (lineTolerance)) && (mY <= p1.y + (lineTolerance))))
 											)
                     					) {
-											if (e && e.altKey) {
+											foundAnnotation = v;
+                    						
+                    						if (e && (e.type == 'mousedown') && e.altKey) {
 												view.insert_annotation_point(v.index, pointIndex, mX, mY);
 											}
-											foundAnnotation = v;
 											return false;
                     					}
+                    					
+										sumOfPointAngles += view.getPointAngle(p1.x - x,p1.y - y,p2.x - x, p2.y - y);
+                    				}
+                    				
+                    				// Are we within the polygon?
+                    				// 	If we are inside the polygon this will be 2*PI (or very close to it with rounding errors)
+                    				// 	If we are outside the polygone this will be zero
+                    				if ((Math.abs(sumOfPointAngles) > 6) && ((Math.abs(sumOfPointAngles) - (2 * Math.PI)) < 0.01)) { 	// Allow for rounding errors
+                    					foundAnnotation = v; 
                     				}
                     				
                     				break;
@@ -1323,6 +1383,10 @@ var methods = {
                     		
                     	});
                     	
+                    	if (view.mouseOverAnnotation != foundAnnotation.index) {
+                    		view.mouseOverAnnotation = foundAnnotation.index;
+                    		view.needdraw = true;
+                    	}
                     	return foundAnnotation;
                     },
                     
@@ -2243,6 +2307,24 @@ var methods = {
 						
 						return p;
                     },
+                    
+                    
+					// Return the angle between two vectors on a plane
+					// The angle is from vector 1 to vector 2, positive anticlockwise
+					// The result is between -PI and PI
+					getPointAngle: function(x1, y1, x2, y2) {
+					   var dtheta, theta1, theta2;
+
+					   theta1 = Math.atan2(y1,x1);
+					   theta2 = Math.atan2(y2,x2);
+					   dtheta = theta2 - theta1;
+					   while (dtheta > Math.PI)
+						  dtheta -= (2 * Math.PI);
+					   while (dtheta < (-1 * Math.PI))
+						  dtheta += (2 * Math.PI);
+
+					   return dtheta;
+					},
 
 					zoom: function(zoom, x, y) {
 						var maxZoom = options.maximumPixelsize;
@@ -2694,10 +2776,9 @@ var methods = {
 							if (view.selectedAnnotation == inAnnotation['index']) {
 								view.openAnnotationTextEditor(inAnnotation);	
 							}
-						} else {
-							if(!view.selectedAnnotation) {
-								if (options.annotationTextDisplayMode != 'simultaneous') { $('.tileviewerAnnotationTextBlock').css("display", "none"); }
-							}
+						} 
+						if(!view.selectedAnnotation) {
+							if (options.annotationTextDisplayMode !== 'simultaneous') { $('.tileviewerAnnotationTextBlock').css("display", "none"); }
 						}
 					 
 						// Adjust text box position to reflect current view
@@ -2711,29 +2792,29 @@ var methods = {
 
                     //mode specific extra info
                     switch(view.mode) {
-                    case "pan":
-                        view.pan.xdest = null;//cancel pan
-                        view.pan.xhot = x - layer.xpos;
-                        view.pan.yhot = y - layer.ypos;
-                        document.body.style.cursor="move";
-                        break;
-                    case "zoom_in":
-                    	view.interval = setInterval(function() {
-                    		if (!view.mousedown) {
-                    			clearInterval(view.interval);
-                    		}
-                    		view.change_zoom(30, x, y);
-                    	}, 50);
-                    	break;
-                    case "zoom_out":
-                    	view.interval = setInterval(function() {
-                    		if (!view.mousedown) {
-                    			clearInterval(view.interval);
-                    		}
-                    		view.change_zoom(-30, x, y);
-                    	}, 50);
-                    	break;
-                    }
+						case "pan":
+							view.pan.xdest = null;//cancel pan
+							view.pan.xhot = x - layer.xpos;
+							view.pan.yhot = y - layer.ypos;
+							document.body.style.cursor="move";
+							break;
+						case "zoom_in":
+							view.interval = setInterval(function() {
+								if (!view.mousedown) {
+									clearInterval(view.interval);
+								}
+								view.change_zoom(30, x, y);
+							}, 50);
+							break;
+						case "zoom_out":
+							view.interval = setInterval(function() {
+								if (!view.mousedown) {
+									clearInterval(view.interval);
+								}
+								view.change_zoom(-30, x, y);
+							}, 50);
+							break;
+						}
                     
                     return false;
                 });
@@ -2794,7 +2875,7 @@ var methods = {
 						// Are we over a label?
 						//
 						var inAnnotation = null;
-						if ((options.annotationTextDisplayMode != 'simultaneous') && (inAnnotation = view.mouseIsInAnnotation(x_relative, y_relative, e))) {
+						if ((options.annotationTextDisplayMode === 'mouseover') && (inAnnotation = view.mouseIsInAnnotation(x_relative, y_relative, e))) {
 							var sx = ((inAnnotation['tstartX']/100) * ((layer.info.width/factor) * (layer.tilesize/256))) + layer.xpos;
 							var sy = ((inAnnotation['tendY']/100) * ((layer.info.height/factor) * (layer.tilesize/256))) + layer.ypos;
 						
@@ -2803,14 +2884,16 @@ var methods = {
 						
 							if (view.selectedAnnotation == inAnnotation['index'] && !options.lockAnnotationText) {
 								$(view.annotationTextEditor).css("display", "block");
-								if (options.annotationTextDisplayMode != 'simultaneous') { $(inAnnotation['textBlock']).fadeOut(250); }
+								$(inAnnotation['textBlock']).fadeOut(250);
 							} else {
 								// Mouseover non-selected annotation
-								if (options.annotationTextDisplayMode != 'simultaneous') { $(inAnnotation['textBlock']).fadeIn(250); }
+								if (options.annotationTextDisplayMode !== 'simultaneous') { 
+									$(inAnnotation['textBlock']).fadeIn(250);
+								}
 								if (view.selectedAnnotation == null) { $(view.annotationTextEditor).fadeOut(250); }
 							}
 						} else {
-							if (options.annotationTextDisplayMode != 'simultaneous') { 
+							if (options.annotationTextDisplayMode !== 'simultaneous') { 
 								$('.tileviewerAnnotationTextBlock').fadeOut(250);
 								if((view.selectedAnnotation) && !options.lockAnnotationText) {
 									$(view.annotationTextEditor).fadeIn(250);
@@ -2829,7 +2912,7 @@ var methods = {
 						
 								layer.xpos = x - view.pan.xhot;
 								layer.ypos = y - view.pan.yhot;
-								view.draw();//TODO - should I call needdraw instead?
+								view.draw();		//TODO - should I call needdraw instead?
 								break;        
                         }
                     } else {

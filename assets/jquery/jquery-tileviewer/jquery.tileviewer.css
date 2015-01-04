@@ -3,12 +3,13 @@
 	border: 0px solid black;
 	line-height: 0%; /*without this, there will be a weird bottom space..*/
 }
-.tileviewer #canvas {
-
+.tileviewer canvas {
+	display: block;
 }
 
 .tileviewer #annotationCanvas {
 	border: 1px #00cc00 solid;
+	display: block;
 }
 
 .tileviewer p.status {
