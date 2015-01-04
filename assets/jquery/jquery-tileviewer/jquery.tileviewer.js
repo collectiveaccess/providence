@@ -762,8 +762,8 @@ var methods = {
                     			a.endY += (dh/2);
                     		};
                     		view.annotationAreas[i] = a;
-                       		view.update_textbox_position();
                         }
+                       	view.update_textbox_position();
                     },
 //
 // End ANNOTATIONS: draw outlines
