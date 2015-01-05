@@ -104,9 +104,10 @@
 										if ($va_occurrence['idno']) {
 											$vs_idno_display = ' ['.$va_occurrence['idno'].']';
 										}
-										
-										print '<li class="quickSearchList">'.caNavLink($this->request, $va_occurrence['name'], null, $va_info['module'], $va_info['controller'], $this->request->user->canAccess($va_info["module"],$va_info["controller"],$va_info["action"],array($va_info["primary_key"] => $o_res->get($va_info["primary_key"]))) ? $va_info['action'] : "Summary", array('occurrence_id' => $va_occurrence['occurrence_id']))." ".$vs_idno_display."</li>\n";
-										
+
+										print '<li class="quickSearchList">' .
+											caEditorLink($this->request, $va_occurrence['name'], null, $vs_table, $va_occurrence['occurrence_id']) .
+											($vs_idno_display ? $vs_idno_display : "") . "</li>\n";
 									}
 								}
 ?>
@@ -159,7 +160,10 @@
 									$vs_type_display = ' ['.$va_type_list[$vn_type_id]['name_singular'].']';
 								}
 								
-								print '<li class="quickSearchList">'.caNavLink($this->request, $vs_label, null, $va_info['module'], $va_info['controller'], $this->request->user->canAccess($va_info["module"],$va_info["controller"],$va_info["action"],array($va_info["primary_key"] => $o_res->get($va_info["primary_key"]))) ? $va_info['action'] : 'Summary', array($va_info['primary_key'] => $o_res->get($va_info['primary_key'])))." ".($vs_idno_display ? "({$vs_idno_display})" : "")." {$vs_type_display}</li>\n";		
+								print '<li class="quickSearchList">' .
+									caEditorLink($this->request, $vs_label, null, $vs_table, $o_res->get($va_info['primary_key'])) .
+									" ".($vs_idno_display ? "({$vs_idno_display})" : "") .
+									" {$vs_type_display}</li>\n";
 							}
 						}
 	?>
