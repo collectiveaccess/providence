@@ -63,7 +63,7 @@ var methods = {
             maximumPixelsize: 4,//set this to >1 if you want to let user to zoom image after reaching its original resolution (also consider using magnifier..)
             thumbDepth: 2, //level depth when thumbnail should appear
             
-            toolbar: ['pan', 'rect', 'point', 'polygon', 'lock', 'separator',  'overview', 'expand', 'help'],
+            toolbar: ['pan', 'toggleAnnotations', 'rect', 'point', 'polygon', 'lock', 'separator',  'overview', 'rotation', 'expand', 'help', 'download'],
             
             annotationLoadUrl: null,
             annotationSaveUrl: null,
@@ -95,13 +95,15 @@ var methods = {
 			panMode: true,
 			
 			allowRotation: true,
+			rotation: false,								// show rotation slider?
 			
 			annotationEditorPanel: null,					// instance of ca.panel to open full annotation editor in
 			annotationEditorUrl: null,						// url to load full annotation editor form
 			annotationEditorLink: 'Edit more',				// content of full annotation editor link
 			
 			/* New options */
-			annotationDisplayMode: 'center'				// perimeter, center 
+			annotationDisplayMode: 'center',				// perimeter, center 
+			mediaDownloadUrl: null,							// url to download of media
         };
 
         return this.each(function() {
@@ -142,7 +144,8 @@ var methods = {
                 $this.data("layer", layer);
             
                 var view = {
-                    canvas: document.createElement("canvas"),
+                    canvas: document.createElement("canvas"),			// main canvas where image is drawn
+                    thumbCanvas: document.createElement("canvas"),		// small canvas where optional thumbnail view (aka "navigator") is drawn
                     //status: document.createElement("p"),
                     controls: document.createElement("div"),
                     annotationContainer: document.createElement("div"),
@@ -172,7 +175,7 @@ var methods = {
                     
                     isSavingAnnotations: false,	// flag indicating save is pending
                     
-                    magnifier_canvas: document.createElement("canvas"),
+                    magnifierCanvas: document.createElement("canvas"),
                     //current mouse position (client pos)
                     xnow: null,
                     ynow: null,
@@ -189,7 +192,7 @@ var methods = {
                     canvasOverscanX: null,
                     canvasOverscanY: null,
                     
-                    polygon_in_progress_annotation_index: null,		// index of polygone being built; null if no polygon is being built currently
+                    polygonInProgressAnnotationIndex: null,		// index of polygone being built; null if no polygon is being built currently
 
                     ///////////////////////////////////////////////////////////////////////////////////
                     // Internal functions
@@ -213,9 +216,18 @@ var methods = {
                         switch(view.mode) {
                         case "pan":
                             if(options.thumbnail) {
+                            	jQuery(view.thumbCanvas).show();
                         		view.draw_thumb(ctx);
+                            } else {
+                            	jQuery(view.thumbCanvas).hide();
                             }
                             break;
+                        }
+                        
+                        if (options.rotation) {
+                        	jQuery(".tileViewToolbarRotation").show();
+                        } else {
+                        	jQuery(".tileViewToolbarRotation").hide();
                         }
 
                         //calculate framerate
@@ -1210,7 +1222,7 @@ var methods = {
                     
                     add_annotation_point: function(type, x, y) {
                     	if (!options.useAnnotations || !options.displayAnnotations || options.lockAnnotations) { return; }
-                    	if (view.polygon_in_progress_annotation_index === null) { return; }
+                    	if (view.polygonInProgressAnnotationIndex === null) { return; }
                     	
 						var w = jQuery($this).width();
 						var h = jQuery($this).height();
@@ -1218,15 +1230,15 @@ var methods = {
                     	switch(type) {
                     		default:
 							case 'poly':
-								if(!view.annotations[view.polygon_in_progress_annotation_index]) { return; }
-								if (parseInt(view.annotations[view.polygon_in_progress_annotation_index]['locked']) == 1) { return; }
-								view.annotations[view.polygon_in_progress_annotation_index].points.push({x: x, y: y});
-								view.annotations[view.polygon_in_progress_annotation_index]['label'] = $('#tileviewerAnnotationTextLabel').val();	// set in-progress text in label field
+								if(!view.annotations[view.polygonInProgressAnnotationIndex]) { return; }
+								if (parseInt(view.annotations[view.polygonInProgressAnnotationIndex]['locked']) == 1) { return; }
+								view.annotations[view.polygonInProgressAnnotationIndex].points.push({x: x, y: y});
+								view.annotations[view.polygonInProgressAnnotationIndex]['label'] = $('#tileviewerAnnotationTextLabel').val();	// set in-progress text in label field
 								break;
 						}
 						
-						if (view.annotations[view.polygon_in_progress_annotation_index].points.length >= 3) {
-							view.save_annotations([view.polygon_in_progress_annotation_index], []);
+						if (view.annotations[view.polygonInProgressAnnotationIndex].points.length >= 3) {
+							view.save_annotations([view.polygonInProgressAnnotationIndex], []);
 						}
 						
 						view.draw_annotations();
@@ -1258,7 +1270,7 @@ var methods = {
                     	if (options.annotationTextDisplayMode !== 'simultaneous') { jQuery('.tileviewerAnnotationTextBlock').css("display", "none"); }
                     	jQuery(view.annotationTextEditor).css("display", "none").blur();
                     	
-                    	view.polygon_in_progress_annotation_index = null;
+                    	view.polygonInProgressAnnotationIndex = null;
                     	view.needdraw = true;
                     },
                     
@@ -1414,15 +1426,15 @@ var methods = {
                     // Wrap up any in-progress annotation (only polygons can be "in-progress" currently)
                     //
                     completeInProgressAnnotation: function() {
-                    	if (view.polygon_in_progress_annotation_index && view.annotations[view.polygon_in_progress_annotation_index]) {
-							var p = view.annotations[view.polygon_in_progress_annotation_index];
+                    	if (view.polygonInProgressAnnotationIndex && view.annotations[view.polygonInProgressAnnotationIndex]) {
+							var p = view.annotations[view.polygonInProgressAnnotationIndex];
 							
 							if (p.points.length < 3) {
 								// Annotation must have at least 3 points to be saved
-								view.delete_annotation(view.polygon_in_progress_annotation_index);
+								view.delete_annotation(view.polygonInProgressAnnotationIndex);
 							}
 						}
-						view.polygon_in_progress_annotation_index = null;
+						view.polygonInProgressAnnotationIndex = null;
                     },
                     
                     _makeAnnotationTextEditorDraggable: function(inAnnotation) {
@@ -1541,317 +1553,357 @@ var methods = {
                         	jQuery(view.controls).append("<div class='tileViewToolbarCol'> </div>");
                         	
                         	var d = $(view.controls).find(".tileViewToolbarCol");
-                     	
+                     						
+							view.tools = {};
+							view.tools['pan'] = "<a href='#' id='" + options.id + "ControlPanImage' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/pan_on.png' width='25' height='25'/></a>";
+							if (options.useAnnotations && options.showAnnotationTools && !options.lockAnnotations) { 
+								view.tools['point'] = "<a href='#' id='" + options.id + "ControlAddPointAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/point.png' width='26' height='25'/></a>";		
+								view.tools['rect'] = "<a href='#' id='" + options.id + "ControlAddRectAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/rect.png' width='25' height='24'/></a>";
+								view.tools['polygon'] = "<a href='#' id='" + options.id + "ControlAddPolygonAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/polygon.png' width='28' height='25'/></a>";
+								view.tools['lock'] = "<a href='#' id='" + options.id + "ControlLockAnnotations' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/locked.png' width='20' height='25'/></a>";
+							}
+							view.tools['overview'] = "<a href='#' id='" + options.id + "ControlOverview' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/navigator.png' width='27' height='23'/></a>";	
+							view.tools['expand'] = "<a href='#' id='" + options.id + "ControlFitToScreen' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/expand.png' width='25' height='25'/></a>";	
+							if (options.helpLoadUrl) {
+								view.tools['help'] = "<a href='#' id='" + options.id + "ControlHelp' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/viewerhelp.png' width='25' height='25'/></a>";	
+							}
 					
-					view.tools = {};
-					view.tools['pan'] = "<a href='#' id='" + options.id + "ControlPanImage' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/pan_on.png' width='25' height='25'/></a>";
-					if (options.useAnnotations && options.showAnnotationTools && !options.lockAnnotations) { 
-						view.tools['point'] = "<a href='#' id='" + options.id + "ControlAddPointAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/point.png' width='26' height='25'/></a>";		
-						view.tools['rect'] = "<a href='#' id='" + options.id + "ControlAddRectAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/rect.png' width='25' height='24'/></a>";
-						view.tools['polygon'] = "<a href='#' id='" + options.id + "ControlAddPolygonAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/polygon.png' width='28' height='25'/></a>";
-						view.tools['lock'] = "<a href='#' id='" + options.id + "ControlLockAnnotations' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/locked.png' width='20' height='25'/></a>";
-					}
-					view.tools['overview'] = "<a href='#' id='" + options.id + "ControlOverview' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/navigator.png' width='27' height='23'/></a>";	
-					view.tools['expand'] = "<a href='#' id='" + options.id + "ControlFitToScreen' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/expand.png' width='25' height='25'/></a>";	
-					if (options.helpLoadUrl) {
-						view.tools['help'] = "<a href='#' id='" + options.id + "ControlHelp' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/viewerhelp.png' width='25' height='25'/></a>";	
-					}
+							view.tools['toggleAnnotations'] = "<a href='#' id='" + options.id + "ControlToggleAnnotations' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/eye_on.png' width='30' height='19'/></a>";	
 					
-					for(var k=0; k < options.toolbar.length; k++) {
-						switch(options.toolbar[k]) {
-							case 'separator':
-								d.append("<div class='tileviewerControlDivider'> </div>");	
-								break;
-							default:
-								d.append(view.tools[options.toolbar[k]]);
-								break;
-						}
-					}
+							if (options.mediaDownloadUrl) {
+								view.tools['download'] = "<a href='#' id='" + options.id + "ControlDownload' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/viewer_media_download.png' width='27' height='25'/></a>";	
+							}
+					
+							if (options.allowRotation) {
+								view.tools['rotation'] = "<a href='#' id='" + options.id + "ControlRotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/rotate.png' width='23' height='25'/></a>";	
+							}
+					
+							for(var k=0; k < options.toolbar.length; k++) {
+								switch(options.toolbar[k]) {
+									case 'separator':
+										d.append("<div class='tileviewerControlDivider'> </div>");	
+										break;
+									default:
+										d.append(view.tools[options.toolbar[k]]);
+										break;
+								}
+							}
 								
-					//
-					// Tools
-					//
-					jQuery("#" + options.id + "ControlPanImage").click(function() {
-						options.addPointAnnotationMode = options.addPolygonAnnotationMode = options.addRectAnnotationMode = false;
-						options.panMode = !options.panMode;
-						
-						view.completeInProgressAnnotation();
-						
-						view.draw();
-						jQuery(this).css("opacity", options.panMode ? 1.0 : 0.5).find('img').attr('src', options.panMode ? options.buttonUrlPath + '/pan_on.png' : options.buttonUrlPath + '/pan.png');
-						jQuery("#" + options.id + "ControlAddRectAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/rect.png');
-						jQuery("#" + options.id + "ControlAddPointAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/point.png');
-						jQuery("#" + options.id + "ControlAddPolygonAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/polygon.png');
-					});	
-					
-					if (options.useAnnotations && options.showAnnotationTools) { 			
 							//
-							// Rectangular annotation
+							// Tools
 							//
-							
-							jQuery("#" + options.id + "ControlAddRectAnnotation").click(function() {
-								if (!options.displayAnnotations || options.lockAnnotations) { return; }
-								
-								options.addRectAnnotationMode = !options.addRectAnnotationMode;
-								options.addPointAnnotationMode = options.addPolygonAnnotationMode = false;
-								options.panMode = false;
-								
+							jQuery("#" + options.id + "ControlPanImage").click(function() {
+								options.addPointAnnotationMode = options.addPolygonAnnotationMode = options.addRectAnnotationMode = false;
+								options.panMode = !options.panMode;
+						
 								view.completeInProgressAnnotation();
-								
+						
 								view.draw();
-								jQuery(this).css("opacity", options.addRectAnnotationMode ? 1.0 : 0.5).find('img').attr('src', options.addRectAnnotationMode ? options.buttonUrlPath + '/rect_on.png' : options.buttonUrlPath + '/rect.png');
-								jQuery("#" + options.id + "ControlPanImage").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/pan.png');
+								jQuery(this).css("opacity", options.panMode ? 1.0 : 0.5).find('img').attr('src', options.panMode ? options.buttonUrlPath + '/pan_on.png' : options.buttonUrlPath + '/pan.png');
+								jQuery("#" + options.id + "ControlAddRectAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/rect.png');
 								jQuery("#" + options.id + "ControlAddPointAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/point.png');
 								jQuery("#" + options.id + "ControlAddPolygonAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/polygon.png');
+							});	
+					
+							if (options.useAnnotations && options.showAnnotationTools) { 			
+									//
+									// Rectangular annotation
+									//
+							
+									jQuery("#" + options.id + "ControlAddRectAnnotation").click(function() {
+										if (!options.displayAnnotations || options.lockAnnotations) { return; }
 								
-								if (!options.addRectAnnotationMode) {
-									jQuery("#" + options.id + "ControlPanImage").click();
-								}
+										options.addRectAnnotationMode = !options.addRectAnnotationMode;
+										options.addPointAnnotationMode = options.addPolygonAnnotationMode = false;
+										options.panMode = false;
+								
+										view.completeInProgressAnnotation();
+								
+										view.draw();
+										jQuery(this).css("opacity", options.addRectAnnotationMode ? 1.0 : 0.5).find('img').attr('src', options.addRectAnnotationMode ? options.buttonUrlPath + '/rect_on.png' : options.buttonUrlPath + '/rect.png');
+										jQuery("#" + options.id + "ControlPanImage").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/pan.png');
+										jQuery("#" + options.id + "ControlAddPointAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/point.png');
+										jQuery("#" + options.id + "ControlAddPolygonAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/polygon.png');
+								
+										if (!options.addRectAnnotationMode) {
+											jQuery("#" + options.id + "ControlPanImage").click();
+										}
+									}).css("opacity", 0.5);
+					
+									//
+									// Point annotation
+									//
+								
+									jQuery("#" + options.id + "ControlAddPointAnnotation").click(function() {
+										if (!options.displayAnnotations || options.lockAnnotations) { return; }
+								
+										options.addPointAnnotationMode = !options.addPointAnnotationMode;
+										options.addRectAnnotationMode = options.addPolygonAnnotationMode = false;
+										options.panMode = false;
+								
+										view.completeInProgressAnnotation();
+								
+										view.draw();
+										jQuery(this).css("opacity", options.addPointAnnotationMode ? 1.0 : 0.5).find('img').attr('src', options.addPointAnnotationMode ? options.buttonUrlPath + '/point_on.png' : options.buttonUrlPath + '/point.png');
+										jQuery("#" + options.id + "ControlPanImage").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/pan.png');
+										jQuery("#" + options.id + "ControlAddRectAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/rect.png');
+										jQuery("#" + options.id + "ControlAddPolygonAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/polygon.png');
+								
+										if (!options.addPointAnnotationMode) {
+											jQuery("#" + options.id + "ControlPanImage").click();
+										}
+									}).css("opacity", 0.5);	
+							
+									//
+									// Polygon annotation
+									//
+								
+									jQuery("#" + options.id + "ControlAddPolygonAnnotation").click(function() {
+										if (!options.displayAnnotations || options.lockAnnotations) { return; }
+								
+										options.addPolygonAnnotationMode = !options.addPolygonAnnotationMode;
+										options.addRectAnnotationMode = addPointAnnotationMode = false;
+										options.panMode = false;
+								
+										view.completeInProgressAnnotation();
+								
+										view.draw();
+										jQuery(this).css("opacity", options.addPolygonAnnotationMode ? 1.0 : 0.5).find('img').attr('src', options.addPolygonAnnotationMode ? options.buttonUrlPath + '/polygon_on.png' : options.buttonUrlPath + '/polygon.png');
+										jQuery("#" + options.id + "ControlPanImage").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/pan.png');
+										jQuery("#" + options.id + "ControlAddRectAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/rect.png');
+										jQuery("#" + options.id + "ControlAddPointAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/point.png');
+								
+										if (!options.addPolygonAnnotationMode) {
+											jQuery("#" + options.id + "ControlPanImage").click();
+										}
+									}).css("opacity", 0.5);	
+							
+									//
+									// Lock annotations
+									//
+								
+									jQuery("#" + options.id + "ControlLockAnnotations").click(function() {
+										options.lockAnnotations = options.lockAnnotationText = !options.lockAnnotations;
+										if (options.lockAnnotations) {
+											view.selectedAnnotation = null;
+										}
+										view.draw();
+										jQuery(this).css("opacity", options.lockAnnotations ? 1.0 : 0.5).find('img').attr('src', options.buttonUrlPath + (options.lockAnnotations ? '/locked_on.png' : '/locked.png'));
+								
+									}).css("opacity", 0.5);	
+							}
+					
+							//
+							// Overview
+							// 
+							jQuery("#" + options.id + "ControlOverview").click(function() {
+								options.thumbnail = !options.thumbnail;
+								view.draw();
+								jQuery(this).css("opacity", options.thumbnail ? 1.0 : 0.5).find('img').attr('src', options.buttonUrlPath + (options.thumbnail ? '/navigator_on.png' : '/navigator.png'));
 							}).css("opacity", 0.5);
 					
 							//
-							// Point annotation
-							//
-								
-							jQuery("#" + options.id + "ControlAddPointAnnotation").click(function() {
-								if (!options.displayAnnotations || options.lockAnnotations) { return; }
-								
-								options.addPointAnnotationMode = !options.addPointAnnotationMode;
-								options.addRectAnnotationMode = options.addPolygonAnnotationMode = false;
-								options.panMode = false;
-								
-								view.completeInProgressAnnotation();
-								
-								view.draw();
-								jQuery(this).css("opacity", options.addPointAnnotationMode ? 1.0 : 0.5).find('img').attr('src', options.addPointAnnotationMode ? options.buttonUrlPath + '/point_on.png' : options.buttonUrlPath + '/point.png');
-								jQuery("#" + options.id + "ControlPanImage").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/pan.png');
-								jQuery("#" + options.id + "ControlAddRectAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/rect.png');
-								jQuery("#" + options.id + "ControlAddPolygonAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/polygon.png');
-								
-								if (!options.addPointAnnotationMode) {
-									jQuery("#" + options.id + "ControlPanImage").click();
-								}
-							}).css("opacity", 0.5);	
-							
-							//
-							// Polygon annotation
-							//
-								
-							jQuery("#" + options.id + "ControlAddPolygonAnnotation").click(function() {
-								if (!options.displayAnnotations || options.lockAnnotations) { return; }
-								
-								options.addPolygonAnnotationMode = !options.addPolygonAnnotationMode;
-								options.addRectAnnotationMode = addPointAnnotationMode = false;
-								options.panMode = false;
-								
-								view.completeInProgressAnnotation();
-								
-								view.draw();
-								jQuery(this).css("opacity", options.addPolygonAnnotationMode ? 1.0 : 0.5).find('img').attr('src', options.addPolygonAnnotationMode ? options.buttonUrlPath + '/polygon_on.png' : options.buttonUrlPath + '/polygon.png');
-								jQuery("#" + options.id + "ControlPanImage").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/pan.png');
-								jQuery("#" + options.id + "ControlAddRectAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/rect.png');
-								jQuery("#" + options.id + "ControlAddPointAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/point.png');
-								
-								if (!options.addPolygonAnnotationMode) {
-									jQuery("#" + options.id + "ControlPanImage").click();
-								}
-							}).css("opacity", 0.5);	
-							
-							//
-							// Lock annotations
-							//
-								
-							jQuery("#" + options.id + "ControlLockAnnotations").click(function() {
-								options.lockAnnotations = options.lockAnnotationText = !options.lockAnnotations;
-								if (options.lockAnnotations) {
-									view.selectedAnnotation = null;
-								}
-								view.draw();
-								jQuery(this).css("opacity", options.lockAnnotations ? 1.0 : 0.5).find('img').attr('src', options.buttonUrlPath + (options.lockAnnotations ? '/locked_on.png' : '/locked.png'));
-								
-							}).css("opacity", 0.5);	
-					}
+							// Rotation
+							// 
+							if (options.allowRotation) {
+								jQuery("#" + options.id + "ControlRotation").click(function() {
+									options.rotation = !options.rotation;
+									view.draw();
+									jQuery(this).css("opacity", options.rotation ? 1.0 : 0.5).find('img').attr('src', options.buttonUrlPath + (options.rotation ? '/rotate_on.png' : '/rotate.png'));
+								}).css("opacity", 0.5);
+							}
 					
-					//
-					// Overview
-					// 
-					jQuery("#" + options.id + "ControlOverview").click(function() {
-						options.thumbnail = !options.thumbnail;
-						view.draw();
-						jQuery(this).css("opacity", options.thumbnail ? 1.0 : 0.5).find('img').attr('src', options.buttonUrlPath + (options.thumbnail ? '/navigator_on.png' : '/navigator.png'));
-					}).css("opacity", 0.5);
+							//
+							// Toggle annotations
+							// 
+							jQuery("#" + options.id + "ControlToggleAnnotations").click(function() {
+								options.displayAnnotations = !options.displayAnnotations;
+								view.draw();
+								jQuery(this).css("opacity", options.displayAnnotations ? 1.0 : 0.5).find('img').attr('src', options.buttonUrlPath + (options.displayAnnotations ? '/eye_on.png' : '/eye.png'));
+							}).css("opacity", 1.0);
 					
-                    //
-					// Fit to screen
-					// 
+							// Download
+							if (options.mediaDownloadUrl) {
+								jQuery("#" + options.id + "ControlDownload").click(function() {
+									window.location = options.mediaDownloadUrl;
+								}).mouseover(function() {
+									jQuery(this).css("opacity", 1.0).find('img').attr('src', options.buttonUrlPath + '/viewer_media_download_on.png');
+								}).mouseleave(function() {
+									jQuery(this).css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/viewer_media_download.png');
+								}).css("opacity", 0.5);
+							}
 					
-					jQuery("#" + options.id + "ControlFitToScreen").click(function() {
+							//
+							// Fit to screen
+							// 
+					
+							jQuery("#" + options.id + "ControlFitToScreen").click(function() {
 						
-						jQuery(this).css("opacity", 1.0);
-						var w = jQuery($this).width();
-						var h = jQuery($this).height(); 
+								jQuery(this).css("opacity", 1.0);
+								var w = jQuery($this).width();
+								var h = jQuery($this).height(); 
 				
-						//set initial level/size to fit the entire view
-						var min = Math.min(w, h)/layer.info.tilesize; //number of tiles that can fit
-						layer.level = layer.info._maxlevel - Math.floor(min) - 1;
-						if (layer.level < 1) { layer.level = 0; }	// level can't be less than zero
-						layer.tilesize = layer.info.tilesize;
+								//set initial level/size to fit the entire view
+								var min = Math.min(w, h)/layer.info.tilesize; //number of tiles that can fit
+								layer.level = layer.info._maxlevel - Math.floor(min) - 1;
+								if (layer.level < 1) { layer.level = 0; }	// level can't be less than zero
+								layer.tilesize = layer.info.tilesize;
 
-						view.recalc_viewparams();
-						layer.tilesize = Math.min((w/layer.xtilenum), (h/layer.ytilenum));
+								view.recalc_viewparams();
+								layer.tilesize = Math.min((w/layer.xtilenum), (h/layer.ytilenum));
 
-						// center image
-						var factor = Math.pow(2,layer.level) * layer.info.tilesize / layer.tilesize;
-						layer.xpos = view.canvas.clientWidth/2-layer.info.width/2/factor;
-						layer.ypos = view.canvas.clientHeight/2-layer.info.height/2/factor;
+								// center image
+								var factor = Math.pow(2,layer.level) * layer.info.tilesize / layer.tilesize;
+								layer.xpos = view.canvas.clientWidth/2-layer.info.width/2/factor;
+								layer.ypos = view.canvas.clientHeight/2-layer.info.height/2/factor;
 						
-						view.draw();
-						jQuery("#" + options.id + "ZoomSlider").slider({value: view.current_zoom() * 100});
+								view.draw();
+								jQuery("#" + options.id + "ZoomSlider").slider({value: view.current_zoom() * 100});
 						
-						jQuery(this).css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/expand.png');
-					}).mouseover(function() {
-						jQuery(this).css("opacity", 1.0).find('img').attr('src', options.buttonUrlPath + '/expand_on.png');
-					}).mouseleave(function() {
-						jQuery(this).css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/expand.png');
-					}).css("opacity", 0.5); 
+								jQuery(this).css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/expand.png');
+							}).mouseover(function() {
+								jQuery(this).css("opacity", 1.0).find('img').attr('src', options.buttonUrlPath + '/expand_on.png');
+							}).mouseleave(function() {
+								jQuery(this).css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/expand.png');
+							}).css("opacity", 0.5); 
 					
-					//
-					// Help
-					// 
-					if (options.helpLoadUrl) {
-						jQuery("#" + options.id + "ControlHelp").click(function() {
-							if (!jQuery('#tileviewerHelpPanel').length) {
-								jQuery($this).append("<div id='tileviewerHelpPanel'></div>");
-								jQuery("#tileviewerHelpPanel").css("left", ((jQuery($this).width() - jQuery("#tileviewerHelpPanel").width())/2)+"px").css("top", ((jQuery($this).height() - jQuery("#tileviewerHelpPanel").height())/2) + "px").load(
-									options.helpLoadUrl, function(e) {
-										jQuery("#tileviewerHelpPanel div.close a").on('click', function(e) {
-											jQuery("#" + options.id + "ControlHelp").click();
-										});
+							//
+							// Help
+							// 
+							if (options.helpLoadUrl) {
+								jQuery("#" + options.id + "ControlHelp").click(function() {
+									if (!jQuery('#tileviewerHelpPanel').length) {
+										jQuery($this).append("<div id='tileviewerHelpPanel'></div>");
+										jQuery("#tileviewerHelpPanel").css("left", ((jQuery($this).width() - jQuery("#tileviewerHelpPanel").width())/2)+"px").css("top", ((jQuery($this).height() - jQuery("#tileviewerHelpPanel").height())/2) + "px").load(
+											options.helpLoadUrl, function(e) {
+												jQuery("#tileviewerHelpPanel div.close a").on('click', function(e) {
+													jQuery("#" + options.id + "ControlHelp").click();
+												});
+											}
+										);
+							
+										jQuery(this).css("opacity", 1.0).find('img').attr('src', options.buttonUrlPath + '/viewerhelp_on.png');
+									} else {
+										if(!jQuery('#tileviewerHelpPanel').is(":visible")) {
+											jQuery('#tileviewerHelpPanel').fadeIn(250);
+											jQuery(this).css("opacity", 1.0).find('img').attr('src', options.buttonUrlPath + '/viewerhelp_on.png');
+										} else {
+											jQuery('#tileviewerHelpPanel').fadeOut(250);
+											jQuery(this).css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/viewerhelp.png');
+										}
 									}
-								);
-							
-								jQuery(this).css("opacity", 1.0).find('img').attr('src', options.buttonUrlPath + '/viewerhelp_on.png');
-							} else {
-								if(!jQuery('#tileviewerHelpPanel').is(":visible")) {
-									jQuery('#tileviewerHelpPanel').fadeIn(250);
-									jQuery(this).css("opacity", 1.0).find('img').attr('src', options.buttonUrlPath + '/viewerhelp_on.png');
-								} else {
-									jQuery('#tileviewerHelpPanel').fadeOut(250);
-									jQuery(this).css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/viewerhelp.png');
-								}
+						
+								}).css("opacity", 0.5);
 							}
 						
-						}).css("opacity", 0.5);
-					}
-						
-					//
-					// Magnfier (deprecated)
-					// 
-					//d.append("<a href='#' id='" + options.id + "ControlMagnify' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/magnify.png' width='33' height='24'/></a>");	
+							//
+							// Magnfier (deprecated)
+							// 
+							//d.append("<a href='#' id='" + options.id + "ControlMagnify' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/magnify.png' width='33' height='24'/></a>");	
 					
-					//jQuery("#" + options.id + "ControlMagnify").click(function() {
-					//	options.magnifier = !options.magnifier;
-					//	view.draw();
-					//	jQuery(this).css("opacity", options.magnifier ? 1.0 : 0.5);
-					//});
+							//jQuery("#" + options.id + "ControlMagnify").click(function() {
+							//	options.magnifier = !options.magnifier;
+							//	view.draw();
+							//	jQuery(this).css("opacity", options.magnifier ? 1.0 : 0.5);
+							//});
 					
 							
 					
-					//
-					// Rotation
-					//
-					jQuery($this).append("<div class='tileViewToolbarRotation'> </div>");
-					var r = jQuery($this).find(".tileViewToolbarRotation");
+							//
+							// Rotation
+							//
+							jQuery($this).append("<div class='tileViewToolbarRotation'> </div>");
+							var r = jQuery($this).find(".tileViewToolbarRotation");
 					
-					// Put it on the right
-					jQuery(r).css("right", "0px");
+							// Put it on the right
+							jQuery(r).css("right", "0px");
 					
-					r.append("<div id='" + options.id + "RotationSlider' class='tileViewToolbarRotationSlider'></div>");
+							r.append("<div id='" + options.id + "RotationSlider' class='tileViewToolbarRotationSlider'></div>");
 					
-					jQuery(view.canvas)
-						.css("-webkit-transform-origin", "50% 50%")
-						.css("-moz-transform-origin", "50% 50%")
-						.css("-o-transform-origin", "50% 50%")
-						.css("-ms-transform-origin", "50% 50%");
+							jQuery(view.canvas)
+								.css("-webkit-transform-origin", "50% 50%")
+								.css("-moz-transform-origin", "50% 50%")
+								.css("-o-transform-origin", "50% 50%")
+								.css("-ms-transform-origin", "50% 50%");
 					
-					jQuery("#" + options.id + "RotationSlider").slider({ orientation: "vertical", min: 0, max: 360, slide: function(e, ui) {
-						view.rotation = ui.value;
-						jQuery(view.canvas)
-							.css("-webkit-transform", "rotate(" + ui.value + "deg)")
-							.css("-moz-transform", "rotate(" + ui.value + "deg)")
-							.css("-o-transform", "rotate(" + ui.value + "deg)")
-							.css("-ms-transform", "rotate(" + ui.value + "deg)");
+							jQuery("#" + options.id + "RotationSlider").slider({ orientation: "vertical", min: 0, max: 360, slide: function(e, ui) {
+								view.rotation = ui.value;
+								jQuery(view.canvas)
+									.css("-webkit-transform", "rotate(" + ui.value + "deg)")
+									.css("-moz-transform", "rotate(" + ui.value + "deg)")
+									.css("-o-transform", "rotate(" + ui.value + "deg)")
+									.css("-ms-transform", "rotate(" + ui.value + "deg)");
 							
-						view.update_textbox_position();
-					}}).css("height", "300px");
+								view.update_textbox_position();
+							}}).css("height", "300px");
 							
-					//
-					// Zooming
-					//		
-					jQuery(view.controls).append("<div class='tileViewToolbarZoom'> </div>");
-					var z = $(view.controls).find(".tileViewToolbarZoom");
+							//
+							// Zooming
+							//		
+							jQuery(view.controls).append("<div class='tileViewToolbarZoom'> </div>");
+							var z = $(view.controls).find(".tileViewToolbarZoom");
 					
-					// center it
-					jQuery(z).css("left", ((jQuery($this).width() - 500)/2) + "px");
+							// center it
+							jQuery(z).css("left", ((jQuery($this).width() - 500)/2) + "px");
 					
-					z.append("<a href='#' id='" + options.id + "ControlZoomIn' class='tileviewerControlZoomIn'><img src='" + options.buttonUrlPath + "/zoom_in.png' width='20' height='20'/></a>");
-					z.append("<a href='#' id='" + options.id + "ControlZoomOut' class='tileviewerControlZoomOut'><img src='" + options.buttonUrlPath + "/zoom_out.png' width='20' height='20'/></a>");
-					z.append("<div id='" + options.id + "ZoomSlider' class='tileViewToolbarZoomSlider'></div>");
-					jQuery("#" + options.id + "ControlZoomIn").css("opacity", 0.5);
-					jQuery("#" + options.id + "ControlZoomOut").css("opacity", 0.5);
+							z.append("<a href='#' id='" + options.id + "ControlZoomIn' class='tileviewerControlZoomIn'><img src='" + options.buttonUrlPath + "/zoom_in.png' width='20' height='20'/></a>");
+							z.append("<a href='#' id='" + options.id + "ControlZoomOut' class='tileviewerControlZoomOut'><img src='" + options.buttonUrlPath + "/zoom_out.png' width='20' height='20'/></a>");
+							z.append("<div id='" + options.id + "ZoomSlider' class='tileViewToolbarZoomSlider'></div>");
+							jQuery("#" + options.id + "ControlZoomIn").css("opacity", 0.5);
+							jQuery("#" + options.id + "ControlZoomOut").css("opacity", 0.5);
 					
-					view.minZoom = (jQuery($this).width()/layer.info.width);
-					if (view.minZoom > (t = jQuery($this).height()/layer.info.height)) {
-						view.minZoom = t;
-					}
-					view.minZoom *= 0.8;
+							view.minZoom = (jQuery($this).width()/layer.info.width);
+							if (view.minZoom > (t = jQuery($this).height()/layer.info.height)) {
+								view.minZoom = t;
+							}
+							view.minZoom *= 0.8;
 					
-					jQuery("#" + options.id + "ZoomSlider").slider({ min: view.minZoom * 100, max: 100, slide: function(e, ui) {
-						var w = jQuery($this).width();
-						var h = jQuery($this).height();
-						view.zoom(ui.value/100, w/2, h/2);
-					}});
+							jQuery("#" + options.id + "ZoomSlider").slider({ min: view.minZoom * 100, max: 100, slide: function(e, ui) {
+								var w = jQuery($this).width();
+								var h = jQuery($this).height();
+								view.zoom(ui.value/100, w/2, h/2);
+							}});
 					
 					
-					jQuery("#" + options.id + "ControlZoomIn").mousedown(function() {
-						view.mousedown = true;
+							jQuery("#" + options.id + "ControlZoomIn").mousedown(function() {
+								view.mousedown = true;
 						
-						var w = jQuery($this).width();
-						var h = jQuery($this).height();
+								var w = jQuery($this).width();
+								var h = jQuery($this).height();
 						
-						jQuery('#' + options.id + "ControlZoomIn").css("opacity", 1.0);
-						jQuery('#' + options.id + "ControlZoomOut").css("opacity", 0.5);
+								jQuery('#' + options.id + "ControlZoomIn").css("opacity", 1.0);
+								jQuery('#' + options.id + "ControlZoomOut").css("opacity", 0.5);
 						
-						view.interval = setInterval(function() {
-							if (!view.mousedown) { 
-								clearInterval(view.interval);
+								view.interval = setInterval(function() {
+									if (!view.mousedown) { 
+										clearInterval(view.interval);
 								
-								jQuery('#' + options.id + "ControlZoomIn").css("opacity", 0.5);
-								jQuery('#' + options.id + "ControlZoomOut").css("opacity", 0.5);
-							}
-							view.change_zoom(20, w/2, h/2);
-						}, 50);
-					});
+										jQuery('#' + options.id + "ControlZoomIn").css("opacity", 0.5);
+										jQuery('#' + options.id + "ControlZoomOut").css("opacity", 0.5);
+									}
+									view.change_zoom(20, w/2, h/2);
+								}, 50);
+							});
 					
-					jQuery("#" + options.id + "ControlZoomOut").mousedown(function() {
-						view.mousedown = true;
+							jQuery("#" + options.id + "ControlZoomOut").mousedown(function() {
+								view.mousedown = true;
 						
-						var w = jQuery($this).width();
-						var h = jQuery($this).height();
+								var w = jQuery($this).width();
+								var h = jQuery($this).height();
 						
-						jQuery('#' + options.id + "ControlZoomIn").css("opacity", 0.5);
-						jQuery('#' + options.id + "ControlZoomOut").css("opacity", 1.0);
-						
-						view.interval = setInterval(function() {
-							if (!view.mousedown) { 
-								clearInterval(view.interval);
-																		
 								jQuery('#' + options.id + "ControlZoomIn").css("opacity", 0.5);
-								jQuery('#' + options.id + "ControlZoomOut").css("opacity", 0.5);
-							}
-							view.change_zoom(-20, w/2, h/2);
-						}, 50);
-					});
+								jQuery('#' + options.id + "ControlZoomOut").css("opacity", 1.0);
+						
+								view.interval = setInterval(function() {
+									if (!view.mousedown) { 
+										clearInterval(view.interval);
+																		
+										jQuery('#' + options.id + "ControlZoomIn").css("opacity", 0.5);
+										jQuery('#' + options.id + "ControlZoomOut").css("opacity", 0.5);
+									}
+									view.change_zoom(-20, w/2, h/2);
+								}, 50);
+							});
 							
 							
 							jQuery(document).bind('keypress.] keypress.= keypress.Shift_+', function() { 	// zoom in using keyboard "]" or "+"						
@@ -2061,39 +2113,42 @@ var methods = {
 
                     draw_thumb: function(ctx) {
                       
-                        //set shadow
-                        ctx.shadowOffsetX = 3;
-                        ctx.shadowOffsetY = 3;
-                        ctx.shadowBlur    = 4;
-                        ctx.shadowColor   = 'rgba(0,0,0,1)';
+                        var mcontext = view.thumbCanvas.getContext("2d");
+                        
+						// set shadow
+						mcontext.shadowOffsetX = 3;
+						mcontext.shadowOffsetY = 3;
+						mcontext.shadowBlur    = 4;
+						mcontext.shadowColor   = 'rgba(0,0,0,1)';
                      
                      	var vOffset = jQuery($this).height() - layer.thumb.height;
                      	var hOffset = jQuery($this).width() - layer.thumb.width;
                      	if (options.magnifier) { vOffset = options.magnifierViewSize + 5; }
+						
+						// Size and position thumbnail view
+						jQuery(view.thumbCanvas).css('position', 'absolute').css('left',  hOffset + 'px').css('top',  vOffset + 'px').attr('width', layer.thumb.width).attr('height', layer.thumb.height);
+                      
+                        // Draw thumbnail image
+                        mcontext.drawImage(layer.thumb, 0, 0, layer.thumb.width, layer.thumb.height);
 
-                        //draw thumbnail image
-                        ctx.drawImage(layer.thumb, hOffset, vOffset, layer.thumb.width, layer.thumb.height);
-
-                        //draw current view
+                        // Draw current view
                         var rect = view.get_viewpos();
                         var factor = layer.thumb.height/layer.info.height;
-                        ctx.strokeStyle = '#ff0000'; 
-                        ctx.lineWidth   = 1;
+                        mcontext.strokeStyle = '#ff0000'; 
+                        mcontext.lineWidth   = 1;
                         
                         var x = rect.x*factor;
                         var y = rect.y*factor;
                         var w = rect.width*factor;
                         var h = rect.height*factor;
-                        
+                        console.log(rect, factor, x, y, w, h);
                         // Don't let highlight rect extend past thumbnail 'cos that'd be ugly
                         if (x < 0) { w = w + x; x = 0; }
                         if (y < 0) { h = h + y; y = 0; }
                         if ((x + w) > layer.thumb.width) { w = layer.thumb.width - x; }
                         if ((y + h) > layer.thumb.height) { h = layer.thumb.height - y; }
                         
-                        y += vOffset;
-                        
-                        ctx.strokeRect(hOffset + x, y, w, h);
+                        mcontext.strokeRect(x, y, w, h);
                     },
 
                     draw_tile: function(ctx,x,y) {
@@ -2239,12 +2294,12 @@ var methods = {
                         ctx.shadowColor   = 'rgba(0,0,0,1)';
                      
                         //grab magnifier image
-                        var mcontext = view.magnifier_canvas.getContext("2d");
+                        var mcontext = view.magnifierCanvas.getContext("2d");
                         var marea = ctx.getImageData(view.xnow-options.magnifierViewArea/2, view.ynow-options.magnifierViewArea/2, options.magnifierViewArea,options.magnifierViewArea);
                         mcontext.putImageData(marea, 0,0);//draw to canvas so that I can zoom it up
 
                         //display on the bottom left corner
-                        ctx.drawImage(view.magnifier_canvas, 1, 1, layer.thumb.width, options.magnifierViewSize);
+                        ctx.drawImage(view.magnifierCanvas, 1, 1, layer.thumb.width, options.magnifierViewSize);
                     },
 
                     recalc_viewparams: function() {
@@ -2264,11 +2319,12 @@ var methods = {
                     //get current pixel coordinates of the canvas window
                     get_viewpos: function() {
                         var factor = Math.pow(2, layer.level)*layer.info.tilesize/layer.tilesize;
+                        
                         return {
-                            x: -layer.xpos*factor,
-                            y: -layer.ypos*factor,
-                            width: view.canvas.clientWidth*factor,
-                            height: view.canvas.clientHeight*factor
+                            x: ((-layer.xpos + view.canvasOverscanX)*factor),
+                            y: ((-layer.ypos + view.canvasOverscanY)*factor),
+                            width: (view.canvas.clientWidth - (view.canvasOverscanX * 2))*factor,
+                            height: (view.canvas.clientHeight - (view.canvasOverscanY * 2)) *factor
                         };
                     },
 
@@ -2500,6 +2556,8 @@ var methods = {
 
 
                 $this.append(view.canvas);
+                $this.append(view.thumbCanvas);
+                
                 $(view.status).addClass("status");
                 $this.append(view.status);
                 
@@ -2620,8 +2678,8 @@ var methods = {
 				view.needdraw = true;
 				
                 //setup magnifier canvas
-                view.magnifier_canvas.width = options.magnifierViewArea;
-                view.magnifier_canvas.height = options.magnifierViewArea;
+                view.magnifierCanvas.width = options.magnifierViewArea;
+                view.magnifierCanvas.height = options.magnifierViewArea;
 
                 //load thumbnail
                 layer.thumb = new Image();
@@ -2668,23 +2726,45 @@ var methods = {
                 // Event handlers 
             	$(view.canvas).dblclick(function(e) {
                 	if(
-                		(view.polygon_in_progress_annotation_index !== null)
+                		(view.polygonInProgressAnnotationIndex !== null)
                 		&&
-                		(view.annotations[view.polygon_in_progress_annotation_index])
+                		(view.annotations[view.polygonInProgressAnnotationIndex])
                 		&&
-                		(view.annotations[view.polygon_in_progress_annotation_index].type == 'poly')
+                		(view.annotations[view.polygonInProgressAnnotationIndex].type == 'poly')
                 		&&
-                		(view.annotations[view.polygon_in_progress_annotation_index].points.length >= 2)
+                		(view.annotations[view.polygonInProgressAnnotationIndex].points.length >= 2)
                 	) {
                 		//
                 		// Complete polygon on double-click
                 		//
                 		view.completeInProgressAnnotation();
-						view.polygon_in_progress_annotation_index = null;
+						view.polygonInProgressAnnotationIndex = null;
 						jQuery("#" + options.id + "ControlPanImage").click();
 					}
                 });
                 
+                // Mousedown on thumbnail
+                $(view.thumbCanvas).mousedown(function(e) {
+                	if (options.thumbnail) {
+                   	 	var offset = $(view.thumbCanvas).offset();
+						var x = e.pageX - offset.left;
+						var y = e.pageY - offset.top;
+						
+						// Handle scrolling due to click on the overview
+						var tw = layer.thumb.width;
+						var th = layer.thumb.height;
+						
+						if ((x >= 0) && (x <= tw) && (y >= 0) && (y <= th)) {
+							view.pan.xdest = ((x/tw) * layer.info.width);
+							view.pan.ydest = ((y/th) * layer.info.height);
+							view.pan.level = layer.level;
+							view.needdraw = true;
+							return;
+						}
+					}
+				});
+                
+                // Mousedown on primary canvas
                 $(view.canvas).mousedown(function(e) {
                     var offset = $(view.canvas).offset();
                     var x = e.pageX - offset.left;
@@ -2725,8 +2805,8 @@ var methods = {
 									return;
 								}
 								if (options.addPolygonAnnotationMode) {
-									if(view.polygon_in_progress_annotation_index === null) {
-										view.polygon_in_progress_annotation_index = view.add_annotation('poly', x_relative, y_relative);
+									if(view.polygonInProgressAnnotationIndex === null) {
+										view.polygonInProgressAnnotationIndex = view.add_annotation('poly', x_relative, y_relative);
 									} else {
 										view.add_annotation_point('poly', x_relative, y_relative);
 									}
@@ -2741,21 +2821,6 @@ var methods = {
 					if(options.magnifier) {
 						y -= (options.magnifierViewSize + 5);
 					}	
-
-					if (options.thumbnail) {
-						// Handle scrolling due to click on the overview
-						var tw = layer.thumb.width;
-						var th = layer.thumb.height;
-						var hOffset = jQuery($this).width() - tw;
-						var vOffset = jQuery($this).height() - th;
-						if ((x >= hOffset) && (x <= (hOffset + tw)) && (y >= vOffset) && (y <= vOffset + th)) {
-							view.pan.xdest = (((x - hOffset)/tw) * layer.info.width);
-							view.pan.ydest = (((y - vOffset)/th) * layer.info.height);
-							view.pan.level = layer.level;
-							view.needdraw = true;
-							return;
-						}
-					}
 
 //
 // Begin ANNOTATIONS: mousedown handler
