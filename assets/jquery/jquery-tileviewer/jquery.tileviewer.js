@@ -103,6 +103,7 @@ var methods = {
 			
 			/* New options */
 			annotationDisplayMode: 'center',				// perimeter, center 
+			annotationDisplayModeCenterColor: "rgba(175, 0, 0, 0.4)",	// when perimeter is "center", the color/opacity of the dot used to mark the center, as an rgba() string
 			mediaDownloadUrl: null,							// url to download of media
         };
 
@@ -493,7 +494,7 @@ var methods = {
 										// if no outline draw dot at center
 										ctx.arc(x + (w/2), y + (h/2), w/10, 0,2*Math.PI);
 										
-										ctx.fillStyle = "rgba(175, 0, 0, 0.15)";
+										ctx.fillStyle = options.annotationDisplayModeCenterColor;
       									ctx.fill();
 									}
 									
@@ -690,7 +691,7 @@ var methods = {
 											ctx.beginPath();
 											ctx.arc(minX + ((maxX-minX)/2), minY + ((maxY-minY)/2), (maxX - minX)/10, 0,2*Math.PI);
 										
-											ctx.fillStyle = "rgba(175, 0, 0, 0.15)";
+											ctx.fillStyle = options.annotationDisplayModeCenterColor;
 											ctx.fill();
 										}
 										
@@ -1815,8 +1816,8 @@ var methods = {
 							jQuery($this).append("<div class='tileViewToolbarRotation'> </div>");
 							var r = jQuery($this).find(".tileViewToolbarRotation");
 					
-							// Put it on the right
-							jQuery(r).css("right", "0px");
+							// Hide it by default
+							jQuery(r).css("display", "none");
 					
 							r.append("<div id='" + options.id + "RotationSlider' class='tileViewToolbarRotationSlider'></div>");
 					
@@ -1826,16 +1827,33 @@ var methods = {
 								.css("-o-transform-origin", "50% 50%")
 								.css("-ms-transform-origin", "50% 50%");
 					
-							jQuery("#" + options.id + "RotationSlider").slider({ orientation: "vertical", min: 0, max: 360, slide: function(e, ui) {
-								view.rotation = ui.value;
-								jQuery(view.canvas)
-									.css("-webkit-transform", "rotate(" + ui.value + "deg)")
-									.css("-moz-transform", "rotate(" + ui.value + "deg)")
-									.css("-o-transform", "rotate(" + ui.value + "deg)")
-									.css("-ms-transform", "rotate(" + ui.value + "deg)");
 							
-								view.update_textbox_position();
-							}}).css("height", "300px");
+							jQuery("#" + options.id + "RotationSlider").CircularSlider({ 
+								min : 0, 
+								max: 359, 
+								value : 0,
+								labelSuffix: "°",
+								slide : function(ui, value) {
+									view.rotation = value;
+									jQuery(view.canvas)
+										.css("-webkit-transform", "rotate(" + value + "deg)")
+										.css("-moz-transform", "rotate(" + value + "deg)")
+										.css("-o-transform", "rotate(" + value + "deg)")
+										.css("-ms-transform", "rotate(" + value + "deg)");
+								
+									view.update_textbox_position();
+								}
+							});
+							//jQuery("#" + options.id + "RotationSlider").slider({ orientation: "vertical", min: 0, max: 360, slide: function(e, ui) {
+							//	view.rotation = ui.value;
+							//	jQuery(view.canvas)
+							//		.css("-webkit-transform", "rotate(" + ui.value + "deg)")
+							//		.css("-moz-transform", "rotate(" + ui.value + "deg)")
+							//		.css("-o-transform", "rotate(" + ui.value + "deg)")
+							//		.css("-ms-transform", "rotate(" + ui.value + "deg)");
+							//
+							//	view.update_textbox_position();
+							//}}).css("height", "300px");
 							
 							//
 							// Zooming
@@ -2126,7 +2144,7 @@ var methods = {
                      	if (options.magnifier) { vOffset = options.magnifierViewSize + 5; }
 						
 						// Size and position thumbnail view
-						jQuery(view.thumbCanvas).css('position', 'absolute').css('left',  hOffset + 'px').css('top',  vOffset + 'px').attr('width', layer.thumb.width).attr('height', layer.thumb.height);
+						jQuery(view.thumbCanvas).css('position', 'absolute').css('left',  hOffset + 'px').css('top',  (vOffset - 40) + 'px').attr('width', layer.thumb.width).attr('height', layer.thumb.height);
                       
                         // Draw thumbnail image
                         mcontext.drawImage(layer.thumb, 0, 0, layer.thumb.width, layer.thumb.height);
