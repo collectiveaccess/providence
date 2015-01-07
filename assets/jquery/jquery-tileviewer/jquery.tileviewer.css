@@ -195,7 +195,7 @@ span.tileviewerAnnotationDefaultText {
 
 .ui-slider a {outline:none;}
 
-#tileviewerHelpPanel {
+.tileviewerHelpPanel {
 	position: absolute;
 	top: 0px; left: 0px;
 	width: 750px;
@@ -219,10 +219,10 @@ span.tileviewerAnnotationDefaultText {
 	box-shadow:         4px 4px 5px rgba(50, 50, 50, 0.75);
 }
 
-#tileviewerHelpPanel div.content {
+.tileviewerHelpPanel div.content {
 	padding: 0 10px 0 10px;
 }
-#tileviewerHelpPanel div.close {
+.tileviewerHelpPanel div.close {
 	float: right;
 }
 
@@ -287,6 +287,9 @@ pre>code {
     border: none;
     background: transparent
 }
+
+
+/* Annotation list */
 
 /* Circular slider used for rotation control */
 .tileViewToolbarRotationSlider .jcs {

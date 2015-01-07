@@ -5,10 +5,10 @@ TileViewer HTML5 client
     Version: 3.0.0
 
     This plugin is tested with following dependencies
-    * JQuery 1.7
-    * JQuery UI 1.9
+    * JQuery 1.7+
     * JQuery.HotKeys
     * Brandon Aaron's (http://brandonaaron.net) mousewheel jquery plugin 3.0.3
+    * Circular-Slider (https://github.com/princejwesley/circular-slider)
 
 The MIT License
 
@@ -63,7 +63,7 @@ var methods = {
             maximumPixelsize: 4,//set this to >1 if you want to let user to zoom image after reaching its original resolution (also consider using magnifier..)
             thumbDepth: 2, //level depth when thumbnail should appear
             
-            toolbar: ['pan', 'toggleAnnotations', 'rect', 'point', 'polygon', 'lock', 'separator',  'overview', 'rotation', 'expand', 'help', 'download'],
+            toolbar: ['pan', 'toggleAnnotations', 'rect', 'point', 'polygon', 'lock', 'separator',  'overview', 'rotation', 'expand', 'separator', 'list', 'download', 'help'],
             
             annotationLoadUrl: null,
             annotationSaveUrl: null,
@@ -105,6 +105,9 @@ var methods = {
 			annotationDisplayMode: 'center',				// perimeter, center 
 			annotationDisplayModeCenterColor: "rgba(175, 0, 0, 0.4)",	// when perimeter is "center", the color/opacity of the dot used to mark the center, as an rgba() string
 			mediaDownloadUrl: null,							// url to download of media
+			allowAnnotationList: true,						// use annotation list
+			annotationList: false,							// is annotation list currently displayed?
+			allowAnnotationSearch: true						// allow annotation search option in annotation list; only available if annotation list is allowed
         };
 
         return this.each(function() {
@@ -1578,6 +1581,10 @@ var methods = {
 							if (options.allowRotation) {
 								view.tools['rotation'] = "<a href='#' id='" + options.id + "ControlRotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/rotate.png' width='23' height='25'/></a>";	
 							}
+							
+							if (options.allowAnnotationList) {
+								view.tools['list'] = "<a href='#' id='" + options.id + "ControlAnnotationList' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/list.png' width='28' height='25'/></a>";	
+							}
 					
 							for(var k=0; k < options.toolbar.length; k++) {
 								switch(options.toolbar[k]) {
@@ -1713,6 +1720,17 @@ var methods = {
 									jQuery(this).css("opacity", options.rotation ? 1.0 : 0.5).find('img').attr('src', options.buttonUrlPath + (options.rotation ? '/rotate_on.png' : '/rotate.png'));
 								}).css("opacity", 0.5);
 							}
+							
+							//
+							// Annotation list
+							// 
+							if (options.allowAnnotationList) {
+								jQuery("#" + options.id + "ControlAnnotationList").click(function() {
+									options.annotationList = !options.annotationList;
+									//view.draw();
+									jQuery(this).css("opacity", options.annotationList ? 1.0 : 0.5).find('img').attr('src', options.buttonUrlPath + (options.annotationList ? '/list_on.png' : '/list.png'));
+								}).css("opacity", 0.5);
+							}
 					
 							//
 							// Toggle annotations
@@ -1773,11 +1791,11 @@ var methods = {
 							// 
 							if (options.helpLoadUrl) {
 								jQuery("#" + options.id + "ControlHelp").click(function() {
-									if (!jQuery('#tileviewerHelpPanel').length) {
-										jQuery($this).append("<div id='tileviewerHelpPanel'></div>");
-										jQuery("#tileviewerHelpPanel").css("left", ((jQuery($this).width() - jQuery("#tileviewerHelpPanel").width())/2)+"px").css("top", ((jQuery($this).height() - jQuery("#tileviewerHelpPanel").height())/2) + "px").load(
+									if (!jQuery($this).find('.tileviewerHelpPanel').length) {
+										jQuery($this).append("<div class='tileviewerHelpPanel'></div>");
+										jQuery($this).find(".tileviewerHelpPanel").css("left", ((jQuery($this).width() - jQuery($this).find(".tileviewerHelpPanel").width())/2)+"px").css("top", ((jQuery($this).height() - jQuery($this).find(".tileviewerHelpPanel").height())/2) + "px").load(
 											options.helpLoadUrl, function(e) {
-												jQuery("#tileviewerHelpPanel div.close a").on('click', function(e) {
+												jQuery($this).find(".tileviewerHelpPanel div.close a").on('click', function(e) {
 													jQuery("#" + options.id + "ControlHelp").click();
 												});
 											}
@@ -1785,11 +1803,11 @@ var methods = {
 							
 										jQuery(this).css("opacity", 1.0).find('img').attr('src', options.buttonUrlPath + '/viewerhelp_on.png');
 									} else {
-										if(!jQuery('#tileviewerHelpPanel').is(":visible")) {
-											jQuery('#tileviewerHelpPanel').fadeIn(250);
+										if(!jQuery($this).find('.tileviewerHelpPanel').is(":visible")) {
+											jQuery($this).find('.tileviewerHelpPanel').fadeIn(250);
 											jQuery(this).css("opacity", 1.0).find('img').attr('src', options.buttonUrlPath + '/viewerhelp_on.png');
 										} else {
-											jQuery('#tileviewerHelpPanel').fadeOut(250);
+											jQuery($this).find('.tileviewerHelpPanel').fadeOut(250);
 											jQuery(this).css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/viewerhelp.png');
 										}
 									}
@@ -1844,16 +1862,6 @@ var methods = {
 									view.update_textbox_position();
 								}
 							});
-							//jQuery("#" + options.id + "RotationSlider").slider({ orientation: "vertical", min: 0, max: 360, slide: function(e, ui) {
-							//	view.rotation = ui.value;
-							//	jQuery(view.canvas)
-							//		.css("-webkit-transform", "rotate(" + ui.value + "deg)")
-							//		.css("-moz-transform", "rotate(" + ui.value + "deg)")
-							//		.css("-o-transform", "rotate(" + ui.value + "deg)")
-							//		.css("-ms-transform", "rotate(" + ui.value + "deg)");
-							//
-							//	view.update_textbox_position();
-							//}}).css("height", "300px");
 							
 							//
 							// Zooming
@@ -2024,6 +2032,11 @@ var methods = {
 							
 							jQuery(document).bind('keydown.l keydown.Shift_l', function() { 
 								jQuery("#" + options.id + "ControlLockAnnotations").click();
+								return false;
+							});
+							
+							jQuery(document).bind('keydown.o keydown.Shift_o', function() { 
+								jQuery("#" + options.id + "ControlRotation").click();
 								return false;
 							});
 							
