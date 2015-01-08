@@ -290,6 +290,54 @@ pre>code {
 
 
 /* Annotation list */
+div.tileviewerAnnotationList {
+	position: absolute;
+	top: 0px; right: 0px;
+	width: 300px;
+	height: 100%;
+	
+	overflow: auto;
+	line-height: 12px;
+	padding: 5px;
+	border: 1px solid #999;
+	background: #f0f0f0;
+	opacity: 0.9;
+	
+	z-index: 999999;
+	
+	-webkit-border-radius: 0 0 0 5px;
+	-moz-border-radius: 0 0 0 5px;
+	border-radius: 0 0 0 5px;
+	
+	-webkit-box-shadow: 4px 4px 5px rgba(50, 50, 50, 0.75);
+	-moz-box-shadow:    4px 4px 5px rgba(50, 50, 50, 0.75);
+	box-shadow:         4px 4px 5px rgba(50, 50, 50, 0.75);
+}
+
+div.tileviewerAnnotationList div.content {
+	padding: 0 10px 0 10px;
+}
+div.tileviewerAnnotationList div.close {
+	float: right;
+}
+
+ol.tileviewerAnnotationList {
+	text-align: left;
+	line-height: 20px;	
+}
+
+li.tileviewerAnnotationListItem {
+	font-size: 14px;
+	padding: 5px;
+}
+
+li.tileviewerAnnotationListItem div {
+	font-size: 10px;
+}
+
+li.tileviewerAnnotationListItem:hover {
+	background-color: #fff;
+}
 
 /* Circular slider used for rotation control */
 .tileViewToolbarRotationSlider .jcs {
