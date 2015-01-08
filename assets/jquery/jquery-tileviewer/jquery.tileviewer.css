@@ -301,7 +301,6 @@ div.tileviewerAnnotationList {
 	height: 100%;
 	
 	overflow: auto;
-	line-height: 12px;
 	padding: 5px;
 	border: 1px solid #999;
 	background: #f0f0f0;
@@ -327,11 +326,11 @@ div.tileviewerAnnotationList div.close {
 
 ol.tileviewerAnnotationList {
 	text-align: left;
-	line-height: 20px;	
 }
 
 li.tileviewerAnnotationListItem {
-	font-size: 14px;
+	font-size: 12px;
+	line-height: 12px;	
 	padding: 5px;
 }
 
