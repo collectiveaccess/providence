@@ -484,10 +484,17 @@ var methods = {
                         	});
                         }
                     	
-                    	jQuery($this).find(".tileviewerAnnotationList .tileviewerAnnotationListContent").empty().append(annotationList);
+                    	if (jQuery(annotationList).find("li").length > 0) {
+                    		jQuery($this).find(".tileviewerAnnotationList .tileviewerAnnotationListContent").empty().append(annotationList);
+                    		var s = jQuery($this).find(".tileviewerAnnotationList div.tileviewerAnnotationListSearch input.tileviewerAnnotationListSearch").val();
+							if (s) { view.search_annotation_list(s); }
+						} else {
+							jQuery($this).find(".tileviewerAnnotationList .tileviewerAnnotationListContent").empty().append("<h3>" + "No annotations" + "</h3>");
+						}
                     },
                     
                      search_annotation_list: function(s) {
+                     	jQuery($this).find(".tileviewerAnnotationList .tileviewerAnnotationListContent .tileviewerNoAnnotationMessage").remove();
                      	if (!s) {
                      		jQuery($this).find("ol.tileviewerAnnotationList li").show();
                      		return;
@@ -497,6 +504,10 @@ var methods = {
                      		var re = new RegExp(s, "i");
                      		(t.match(re)) ? jQuery(this).show() : jQuery(this).hide();
                      	});
+                     	
+                     	if (jQuery($this).find("ol.tileviewerAnnotationList li:visible").length == 0) {
+                     		jQuery($this).find(".tileviewerAnnotationList .tileviewerAnnotationListContent").append("<h3 class='tileviewerNoAnnotationMessage'>" + "No annotations found" + "</h3>");
+                     	}
                      },
 //
 // Begin ANNOTATIONS: draw outlines
@@ -573,8 +584,15 @@ var methods = {
                         	// is annotation the current selection?
                         	if (selectedAnnotation == i) {
                         		ctx.strokeStyle = '#' + options.annotationColorSelected;
+                        		
+                        		if(options.allowAnnotationList) {
+                        			// highlight in annotation list
+                        			jQuery($this).find("li.tileviewerAnnotationListItem_" + annotation['annotation_id']).addClass('tileviewerAnnotationListItemSelected');
+                        		}
                         	} else {
                         		ctx.strokeStyle = '#' + options.annotationColor; 
+                        		
+                        		jQuery($this).find("li.tileviewerAnnotationListItem_" + annotation['annotation_id']).removeClass('tileviewerAnnotationListItemSelected');
                         	}
                         	//annotationTextDisplayMode
                         	// do drawing
@@ -1963,10 +1981,14 @@ var methods = {
 							//
 							jQuery($this).append("<div class='tileviewerAnnotationList'></div>");
 							if (options.allowAnnotationSearch) {
-								jQuery($this).find(".tileviewerAnnotationList").append("<div class='tileviewerAnnotationListSearch'><input type='text' length='10' name='search' class='tileviewerAnnotationListSearch' autocomplete='off'/></div>");
-								jQuery($this).find(".tileviewerAnnotationList div.tileviewerAnnotationListSearch input.tileviewerAnnotationListSearch").bind("keyup", function(e) {
+								jQuery($this).find(".tileviewerAnnotationList").append("<div class='tileviewerAnnotationListSearch'><input type='text' name='search' class='tileviewerAnnotationListSearch' autocomplete='off'/></div>");
+								
+								jQuery($this).find(".tileviewerAnnotationList div.tileviewerAnnotationListSearch input.tileviewerAnnotationListSearch").bind("keyup change", function(e) {
 									view.search_annotation_list(jQuery(this).val());
-								});
+								}).wrap('<span class="tileviewerAnnotationListSearch" />').after($('<span/>').click(function() {
+									$(this).prev('input').val('').focus();
+									view.search_annotation_list('');
+								}));
 							}
 							jQuery($this).find(".tileviewerAnnotationList").append("<div class='tileviewerAnnotationListContent'></div>");
 							
