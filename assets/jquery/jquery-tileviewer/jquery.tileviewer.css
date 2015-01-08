@@ -60,7 +60,8 @@
 	min-height: 10px;
 	max-width: 150px;
 	max-height: 150px;
-	overflow: auto;
+	overflow-x: hidden;
+	overflow-y: auto;
 	line-height: 12px;
 	padding: 5px;
 	border: 1px solid #999;
@@ -116,7 +117,6 @@
 	padding: 0px;
 	line-height: 12px;
 	margin: 5px 0 5px 8px;
-	width: 160px;
 }
 
 span.tileviewerAnnotationDefaultText {
@@ -125,10 +125,11 @@ span.tileviewerAnnotationDefaultText {
 	color: #999;
 }
 
-.tileviewer div.tileviewerAnnotationTextEditor div.textContentDeleteButton {
+.tileviewer div.tileviewerAnnotationTextEditor div.tileviewerAnnotationCloseButton {
 	float: right;
-	width: 16px;
-	height: 16px;
+	width: 15px;
+	height: 15px;
+	padding: 3px;
 }
 
 #tileviewerAnnotationTextLabel {
@@ -141,7 +142,7 @@ span.tileviewerAnnotationDefaultText {
 	border: none;
 }
 
-.tileViewToolbarZoom {
+.tileviewerToolbarZoom {
 	position: absolute;
 	border: 0px solid #cc0000;
 	top: 0px;
@@ -153,7 +154,6 @@ span.tileviewerAnnotationDefaultText {
 	position: absolute;
 	left: 2px;
 	top: 2px;
-
 }
 
 .tileviewerControlZoomIn {
@@ -162,7 +162,7 @@ span.tileviewerAnnotationDefaultText {
 	top: 2px;
 }
 
-.tileViewToolbarZoomSlider {
+.tileviewerToolbarZoomSlider {
 	position: absolute;
 	width: 420px;
 	
@@ -170,7 +170,7 @@ span.tileviewerAnnotationDefaultText {
 	top: 6px;
 }
 
-.tileViewToolbarRotation {
+.tileviewerToolbarRotation {
 	position: absolute;
 	bottom: 50px;
 	left: 0px;
@@ -185,15 +185,13 @@ span.tileviewerAnnotationDefaultText {
 	border-radius: 0 6px 6px 0;
 }
 
-.tileViewToolbarRotation .tileViewToolbarRotationSlider {
+.tileviewerToolbarRotation .tileviewerToolbarRotationSlider {
 	position: absolute;
 	width: 150px;
 	height: 150px;
 	left: 2.5px;
 	top: 2.5px;
 }
-
-.ui-slider a {outline:none;}
 
 .tileviewerHelpPanel {
 	position: absolute;
@@ -263,12 +261,18 @@ img.tileviewerHelpTextImage {
  
 a.tileviewerFullAnnotationEditorLink {
 	float: right;
+	padding: 5px 0px 5px 5px;
+	margin-right: 5px;
+}
+
+a.tileviewerAnnotationDeleteButton {
+	float: right;
 	padding: 5px 10px 5px 5px;
 }
 
 div.tileviewerAnnotationLockedButtonLabel {
 	float: left;
-	padding: 5px 5px 5px 10px;
+	padding: 5px 5px 5px 0px;
 }
 
 code {
@@ -371,7 +375,7 @@ span.tileviewerAnnotationListSearch input {
 }
 
 /* Circular slider used for rotation control */
-.tileViewToolbarRotationSlider .jcs {
+.tileviewerToolbarRotationSlider .jcs {
     position: relative;
     border-style: solid;
     border-radius: 100%;   
@@ -382,7 +386,7 @@ span.tileviewerAnnotationListSearch input {
     cursor: pointer;
 }
 
-.tileViewToolbarRotationSlider .jcs-value {
+.tileviewerToolbarRotationSlider .jcs-value {
     position: absolute;
     border-style: none;
     border-radius: 100%;
@@ -395,7 +399,7 @@ span.tileviewerAnnotationListSearch input {
 	outline: none;
 }
 
-.tileViewToolbarRotationSlider .jcs-indicator {
+.tileviewerToolbarRotationSlider .jcs-indicator {
     
     position: absolute;
     border-width: 5px;
@@ -408,7 +412,7 @@ span.tileviewerAnnotationListSearch input {
     pointer-events : none;
 }
 
-.tileViewToolbarRotationSlider .jcs-panel {
+.tileviewerToolbarRotationSlider .jcs-panel {
     position: relative;
     display: inline-block;
     border-style: solid;
@@ -416,14 +420,14 @@ span.tileviewerAnnotationListSearch input {
     cursor: pointer;
 }
 
-.tileViewToolbarRotationSlider .jcs-value img {
+.tileviewerToolbarRotationSlider .jcs-value img {
     border-radius: 100%;
     background: transparent;
 	width: inherit;
 	height: inherit;
 }
 
-.tileViewToolbarRotationSlider .noselect {
+.tileviewerToolbarRotationSlider .noselect {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
