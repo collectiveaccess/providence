@@ -1846,6 +1846,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			$va_bundles = explode(';', $vs_bundles);
 			
 			$t_display = new ca_bundle_displays($this->getPrimaryKey());
+			if ($this->inTransaction()) { $t_display->setTransaction($this->getTransaction()); }
 			$va_placements = $t_display->getPlacements(array('user_id' => $po_request->getUserID()));
 			
 			// remove deleted bundles
@@ -1897,6 +1898,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 					}
 				} else {
 					$t_placement = new ca_bundle_display_placements($vn_placement_id, $va_available_bundles[$vs_bundle]['settings']);
+					if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 					$t_placement->setMode(ACCESS_WRITE);
 					$t_placement->set('rank', $vn_i + 1);
 					
