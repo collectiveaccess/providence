@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2014 Whirl-i-Gig
+ * Copyright 2013-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2956,6 +2956,94 @@
 		 */
 		public static function clear_cachesHelp() {
 			return _t('CollectiveAccess stores often used values, processed configuration files, user-uploaded media and other types of data in application caches. You can clear these caches using this command.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function do_configuration_check($po_opts=null) {
+			
+			include_once(__CA_LIB_DIR__."/core/Search/SearchEngine.php");
+			include_once(__CA_LIB_DIR__."/core/Media.php");
+			include_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
+			include_once(__CA_LIB_DIR__."/ca/ConfigurationCheck.php");
+			require_once(__CA_LIB_DIR__."/core/Configuration.php");
+			
+			// Media
+			$t_media = new Media();
+			$va_plugin_names = $t_media->getPluginNames();
+			
+			
+			CLIUtils::addMessage(_t("Checking media processing plugins..."), array('color' => 'bold_blue'));
+			foreach($va_plugin_names as $vs_plugin_name) {
+				if ($va_plugin_status = $t_media->checkPluginStatus($vs_plugin_name)) {
+					CLIUtils::addMessage("\t"._t("Found %1", $vs_plugin_name));
+				}
+			}
+			CLIUtils::addMessage("\n"); 
+		
+			// Application plugins
+			CLIUtils::addMessage(_t("Checking application plugins..."), array('color' => 'bold_blue'));
+			$va_plugin_names = ApplicationPluginManager::getPluginNames();
+			$va_plugins = array();
+			foreach($va_plugin_names as $vs_plugin_name) {
+				if ($va_plugin_status = ApplicationPluginManager::checkPluginStatus($vs_plugin_name)) {
+					CLIUtils::addMessage("\t"._t("Found %1", $vs_plugin_name));
+				}
+			}
+			CLIUtils::addMessage("\n");
+		
+			// Barcode generation
+			CLIUtils::addMessage(_t("Checking for barcode dependencies..."), array('color' => 'bold_blue'));
+			$vb_gd_is_available = caMediaPluginGDInstalled(true);
+			CLIUtils::addMessage("\t("._t('GD is a graphics processing library required for all barcode generation.').")");
+			if (!$vb_gd_is_available) {
+				CLIUtils::addError("\t\t"._t('GD is not installed; barcode printing will not be possible.'));
+			} else{
+				CLIUtils::addMessage("\t\t"._t('GD is installed; barcode printing will be available.'));
+			}
+			CLIUtils::addMessage("\n");
+
+			// General system configuration issues
+			CLIUtils::addMessage(_t("Checking system configuration... this may take a while."), array('color' => 'bold_blue'));
+			ConfigurationCheck::performExpensive();
+			if(ConfigurationCheck::foundErrors()){
+				CLIUtils::addMessage("\t"._t('Errors were found:'), array('color' => 'bold_red'));
+				foreach(ConfigurationCheck::getErrors() as $vn_i => $vs_error) {
+					CLIUtils::addError("\t\t[".($vn_i + 1)."] {$vs_error}");
+				}
+			}
+
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function do_configuration_checkParamList() {
+			return array();
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function do_configuration_checkUtilityClass() {
+			return _t('Maintenance');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function do_configuration_checkShortHelp() {
+			return _t('Performs configuration check on CollectiveAccess installation.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function do_configuration_checkHelp() {
+			return _t('CollectiveAccess requires certain PHP configuration options to be set and for file permissions in several directories to be web-server writable. This command will check these settings and file permissions and return warnings if configuration appears to be incorrect.');
 		}
 		# -------------------------------------------------------
 	}
