@@ -465,9 +465,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			$vs_sql = "
 				SELECT clil.*, cli.*
 				FROM ca_list_items cli use index(i_parent_id)
-				INNER JOIN ca_list_item_labels AS clil ON clil.item_id = cli.item_id
+				LEFT JOIN ca_list_item_labels AS clil ON cli.item_id = clil.item_id
 				WHERE
-					(cli.deleted = 0) AND (clil.is_preferred = 1) AND (cli.list_id = ?) {$vs_type_sql} {$vs_direct_children_sql} {$vs_hier_sql} {$vs_enabled_sql}
+					(cli.deleted = 0) AND ((clil.is_preferred = 1) OR (clil.is_preferred IS NULL)) AND (cli.list_id = ?) {$vs_type_sql} {$vs_direct_children_sql} {$vs_hier_sql} {$vs_enabled_sql}
 				{$vs_order_by}
 				{$vs_limit_sql}
 			";
