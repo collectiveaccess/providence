@@ -195,7 +195,7 @@
 
 			$this->cleanupTemporaryResultTable();
 
-			return array_unique($va_hits);
+			return array_values(array_unique($va_hits));
 		}
 		# ------------------------------------------------------------------
 		/**

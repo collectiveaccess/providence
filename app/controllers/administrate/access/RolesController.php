@@ -121,9 +121,26 @@
 				}
 			}
 			
-			
+			$va_access_status_list = array();
+			if(is_array($va_access_statuses = $t_list->getListItemsAsHierarchy('access_statuses', array('additionalTableToJoin' => 'ca_list_item_labels')))) {
+				$va_access_status_settings = $va_role_vars['access_status_settings'];
+				foreach($va_access_statuses as $vn_i => $va_access_status_info) {
+					if(!$va_access_status_info['NODE']['parent_id']) { continue; }
+					$vn_item_id = $va_access_status_info['NODE']['item_id'];
+					$va_access_status_info['NODE']['level'] = $va_access_status_info['LEVEL'];
+						
+					$vn_access = isset($va_access_status_settings[$vn_item_id]) ? $va_access_status_settings[$vn_item_id] : null;
+					
+					$va_access_status_list[$vn_item_id] = array(
+						'access_status_info' => $va_access_status_info['NODE'],
+						'access' => $vn_access
+					);	
+				}
+			}
+						
 			$this->view->setVar('type_list', $va_type_list);
 			$this->view->setVar('source_list', $va_source_list);
+			$this->view->setVar('access_status_list', $va_access_status_list);
 			$this->view->setVar('table_display_names', $va_table_names);
 			
  			
@@ -209,7 +226,25 @@
 				}
 				
 				$va_vars['source_access_settings'] = $va_source_access_settings;
-			} 			
+			} 	
+			
+			$va_access_status_settings = array();
+			if(is_array($va_access_status_ids = $va_source_ids = $t_list->getItemsForList('access_statuses', array('idsOnly' => true)))) {
+				foreach($va_access_status_ids as $vn_i => $vn_item_id) {
+					$vs_access = $this->request->getParameter('access_status_'.$vn_item_id, pString);
+					
+					switch($vs_access) {
+						case 0:
+						case 1:
+							$va_access_status_settings[$vn_item_id] = $vs_access;
+							break;
+						default:
+							$va_access_status_settings[$vn_item_id] = null;
+							break;
+					}
+				}
+			}		
+			$va_vars['access_status_settings'] = $va_access_status_settings;
  			
  			$t_role->set('vars', $va_vars);	
 			
@@ -309,4 +344,3 @@
  		}
  		# -------------------------------------------------------
  	}
- ?>

@@ -808,7 +808,7 @@
 			$vs_cache_key = md5($pm_list_code_or_id.'/'.$ps_item_idno.'/'.$vn_parent_id.'/'.$vs_singular_label.'/'.$vs_plural_label . '/' . json_encode($pa_match_on));
 			
 			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
-			if ($o_trans) { $o_event->setTransaction($o_trans); }
+			if ($o_event && $o_trans) { $o_event->setTransaction($o_trans); }
 			
 			$vs_event_source = (isset($pa_options['importEventSource']) && $pa_options['importEventSource']) ? $pa_options['importEventSource'] : "?";
 			/** @var KLogger $o_log */

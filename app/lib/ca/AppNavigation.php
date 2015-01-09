@@ -314,7 +314,7 @@
 			}
 			
 			$vo_session = $this->opo_request->session;
-			if ((intval($this->opo_config->get('do_menu_bar_caching')) > 0) && ($vs_menu_cache = $vo_session->getVar('ca_nav_menubar_cache'))) { return $vs_menu_cache; }
+			if (((time() - $vo_session->getVar('ca_nav_menubar_cache_lasttime')) < 600) && (intval($this->opo_config->get('do_menu_bar_caching')) > 0) && ($vs_menu_cache = $vo_session->getVar('ca_nav_menubar_cache'))) { return $vs_menu_cache; }
 			
 			$vs_buf = '';
 			$vs_cur_selection = $this->getDestinationAsNavigationPath();
@@ -332,6 +332,7 @@
 				$vs_buf .= "</li>\n";
 			}
 			$vo_session->setVar('ca_nav_menubar_cache', $vs_buf); 
+			$vo_session->setVar('ca_nav_menubar_cache_lasttime', time()); 
 			return $vs_buf;
 		}
 		# -------------------------------------------------------

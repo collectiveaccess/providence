@@ -233,6 +233,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	static $s_list_item_get_cache = array();				// cache for results of getItemFromList()
 	static $s_item_id_cache = array();						// cache for ca_lists::getItemID()
 	static $s_item_id_to_code_cache = array();				// cache for ca_lists::itemIDsToIDNOs()
+	static $s_item_id_to_value_cache = array();				// cache for ca_lists::itemIDsToItemValues()
 	
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
@@ -308,7 +309,6 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		if ($this->inTransaction()) { $t_item->setTransaction($this->getTransaction()); }
 		
-		print "ADD ITEM $ps_value; ".print_r($this->getTransaction()->getDb()->getHandle(), true)."<Br>\n";
 		$t_item->set('list_id', $vn_list_id);
 		$t_item->set('item_value', $ps_value);
 		$t_item->set('is_enabled', $pb_is_enabled ? 1 : 0);
@@ -384,7 +384,6 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @return array List of items indexed first on item_id and then on locale_id of label
 	 */
 	public function getItemsForList($pm_list_name_or_id, $pa_options=null) {
-		$t = new Timer();
 		$vn_list_id = $this->_getListID($pm_list_name_or_id);
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (!isset($pa_options['returnHierarchyLevels'])) { $pa_options['returnHierarchyLevels'] = false; }
@@ -1707,10 +1706,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 * Converts a list of item_id's to a list of idno strings. The conversion is literal without hierarchical expansion.
 	 *
-	 * @param array $pa_list A list of relationship numeric type_ids
+	 * @param array $pa_list A list of relationship numeric item_ids
 	 * @param array $pa_options Options include:
 	 * 		transaction = transaction to perform database operations within. [Default is null]
-	 * @return array A list of corresponding type_codes 
+	 * @return array A list of corresponding idnos 
 	 */
 	 static public function itemIDsToIDNOs($pa_ids, $pa_options=null) {
 	 	if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
@@ -1725,7 +1724,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 		if (!is_numeric($pn_id)) {
 	 			$va_non_numerics[] = $pn_id;
 	 		} else {
-	 			$va_ids = (int)$pn_id;
+	 			$va_ids[] = (int)$pn_id;
 	 		}
 	 	}
 	 	
@@ -1747,6 +1746,51 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 		$va_item_ids_to_codes[$qr_res->get('item_id')] = $qr_res->get('idno');
 	 	}
 	 	return ca_lists::$s_item_id_to_code_cache[$vs_key] = $va_item_ids_to_codes + $va_non_numerics;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Converts a list of item_id's to a list of value strings. The conversion is literal without hierarchical expansion.
+	 *
+	 * @param array $pa_list A list of relationship numeric item_ids
+	 * @param array $pa_options Options include:
+	 * 		transaction = transaction to perform database operations within. [Default is null]
+	 * @return array A list of corresponding item values 
+	 */
+	 static public function itemIDsToItemValues($pa_ids, $pa_options=null) {
+	 	if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
+	 	
+	 	$vs_key = md5(print_r($pa_ids, true));
+	 	if (isset(ca_lists::$s_item_id_to_value_cache[$vs_key])) {
+	 		return ca_lists::$s_item_id_to_value_cache[$vs_key];
+	 	}
+	 	
+	 	$va_ids = $va_non_numerics = array();
+	 	foreach($pa_ids as $pn_id) {
+	 		if (!is_numeric($pn_id)) {
+	 			$va_non_numerics[] = $pn_id;
+	 		} else {
+	 			$va_ids[] = (int)$pn_id;
+	 		}
+	 	}
+	 	
+	 	if($o_trans = caGetOption('transaction', $pa_options, null)) {
+			$o_db = $o_trans->getDb();
+		} else {
+			$o_db = new Db();
+		}
+		
+	 	$qr_res = $o_db->query("
+	 		SELECT item_id, item_value 
+	 		FROM ca_list_items
+	 		WHERE
+	 			item_id IN (?)
+	 	", array($va_ids));
+	 	
+	 	$va_item_ids_to_values = array();
+	 	while($qr_res->nextRow()) {
+	 		$va_item_ids_to_values[$qr_res->get('item_id')] = $qr_res->get('item_value');
+	 	}
+	 	return ca_lists::$s_item_id_to_value_cache[$vs_key] = $va_item_ids_to_values + $va_non_numerics;
 	}
 	# ------------------------------------------------------
 }
