@@ -188,6 +188,26 @@ abstract class BaseDataReader {
 	}
 	# -------------------------------------------------------
 	/**
+	 * Override to return true if your format can contain more than one independent data set
+	 * (Eg. an Excel files with many free-standing worksheets)
+	 * 
+	 * @return bool
+	 */
+	public function hasMultipleDatasets() {
+		return false;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Returns number of distinct datasets in the file
+	 * Override this if it's more than 1
+	 * 
+	 * @return int
+	 */
+	public function getDatasetCount() {
+		return 1;
+	}
+	# -------------------------------------------------------
+	/**
 	 * Return reader propery
 	 * 
 	 * @param string $ps_property 
