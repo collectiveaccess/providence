@@ -903,7 +903,7 @@
 				} elseif(
 					$po_request->isLoggedIn() &&
 					$po_request->user->canAccess($vs_module,$vs_controller,"Edit",array($vs_pk => $pn_id)) &&
-					(!(bool)$po_request->config->get($vs_table.'_editor_defaults_to_summary_view') || !$pn_id) // when the id is null/0, we go to the Edit action, even when *_editor_defaults_to_summary_view is set
+					!((bool)$po_request->config->get($vs_table.'_editor_defaults_to_summary_view') && $pn_id) // when the id is null/0, we go to the Edit action, even when *_editor_defaults_to_summary_view is set
 				) {
 					$vs_action = 'Edit';
 				} else {
