@@ -608,7 +608,7 @@ var methods = {
 									} else {
 										// if no outline draw dot at center
 										var r = w/10;
-										if (r < (20 * layerMag)) { r = 20 * layerMag; }
+										if (r < 20) { r = 20; }
 										ctx.arc(x + (w/2), y + (h/2), r, 0,2*Math.PI);
 										
 										ctx.fillStyle = options.annotationDisplayModeCenterColor;
@@ -807,7 +807,7 @@ var methods = {
 											ctx.beginPath();
 																						
 											var r = (maxX - minX)/10;
-											if (r < (20 * layerMag)) { r = 20 * layerMag; }
+											if (r < 20) { r = 20; }
 											
 											ctx.arc(minX + ((maxX-minX)/2), minY + ((maxY-minY)/2), r, 0,2*Math.PI);
 										
