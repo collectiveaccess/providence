@@ -200,6 +200,35 @@ class TaskQueue extends BaseObject {
 	}
 	# ---------------------------------------------------------------------------
 	/**
+	 * Reset unfinished tasks, i.e. tasks with started_on!=null, completed_on==null and error_code=0
+	 * This is useful when the task queue script (or the whole machine) crashed.
+	 * It shouldn't interfere with any running handlers.
+	 */
+	function resetUnfinishedTasks() {
+		$o_db = new Db();
+		$qr_unfinished = $o_db->query("
+			SELECT *
+			FROM ca_task_queue
+			WHERE
+				completed_on IS NULL AND
+				started_on IS NOT NULL AND
+				error_code = 0
+		");
+
+		while($qr_unfinished->nextRow()) {
+			// don't touch rows that are being processed right now
+			if(
+				$this->rowKeyIsBeingProcessed($qr_unfinished->get('row_key')) ||
+				$this->entityKeyIsBeingProcessed($qr_unfinished->get('entity_key'))
+			) {
+				continue;
+			}
+			// reset started_on date
+			$o_db->query("UPDATE ca_task_queue SET started_on = NULL WHERE task_id = ?", $qr_unfinished->get('task_id'));
+		}
+	}
+	# ---------------------------------------------------------------------------
+	/**
 	 *
 	 */
 	function processQueue($ps_handler="") {
