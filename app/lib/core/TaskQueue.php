@@ -209,8 +209,8 @@ class TaskQueue extends BaseObject {
 		$o_appvars = new ApplicationVars();
 		$va_opo_processes = $o_appvars->getVar("taskqueue_opo_processes");
 		if (!is_array($va_opo_processes)) { $va_opo_processes = array(); }
-		$va_opo_processes = $this->verifyProcesses($va_opo_processes);
-		$o_appvars->setVar("taskqueue_opo_processes", $va_opo_processes);
+		$va_opo_verified_processes = $this->verifyProcesses($va_opo_processes);
+		$o_appvars->setVar("taskqueue_opo_processes", $va_opo_verified_processes);
 		$o_appvars->save();
 
 		$o_db = new Db();
@@ -223,7 +223,7 @@ class TaskQueue extends BaseObject {
 				error_code = 0
 		");
 
-		// reset zombie rows (that are not being processed right now)
+		// reset start datetime for zombie rows
 		while($qr_unfinished->nextRow()) {
 			// don't touch rows that are being processed right now
 			if(
@@ -232,7 +232,12 @@ class TaskQueue extends BaseObject {
 			) {
 				continue;
 			}
-			// reset started_on date
+			// reset started_on datetime
+			$this->opo_eventlog->log(array(
+				"CODE" => "QUE",
+				"SOURCE" => "TaskQueue->resetUnfinishedTasks()",
+				"MESSAGE" => "Reset start_date for unfinished task with task_id ".$qr_unfinished->get('task_id')
+			));
 			$o_db->query("UPDATE ca_task_queue SET started_on = NULL WHERE task_id = ?", $qr_unfinished->get('task_id'));
 		}
 	}
