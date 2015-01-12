@@ -464,7 +464,7 @@ var methods = {
                         	var annotation = annotationsToDraw[i];
                         	if (!annotation) { continue; }
                         	
-                        	jQuery(annotationList).append("<li class='tileviewerAnnotationListItem tileviewerAnnotationListItem_" + annotation['annotation_id'] + "'>" + annotation['label'] +  "</li>");
+                        	jQuery(annotationList).append("<li class='tileviewerAnnotationListItem tileviewerAnnotationListItem_" + annotation['annotation_id'] + "'>" + (annotation['label'] ? annotation['label'] : '&lt;Empty&gt;') +  "</li>");
                         	jQuery(annotationList).find('.tileviewerAnnotationListItem_' + annotation['annotation_id']).data('annotation', annotation).bind('click', function(e) {
                         		var offset = $(view.canvas).offset();
 								var x = e.pageX - offset.left;
@@ -607,7 +607,9 @@ var methods = {
 										ctx.strokeRect(x, y, w, h);
 									} else {
 										// if no outline draw dot at center
-										ctx.arc(x + (w/2), y + (h/2), w/10, 0,2*Math.PI);
+										var r = w/10;
+										if (r < (20 * layerMag)) { r = 20 * layerMag; }
+										ctx.arc(x + (w/2), y + (h/2), r, 0,2*Math.PI);
 										
 										ctx.fillStyle = options.annotationDisplayModeCenterColor;
       									ctx.fill();
@@ -689,7 +691,7 @@ var methods = {
 									if (options.highlightPointsWithCircles) {
 										ctx.arc(x, y, r * (areaMultiplier/2), 0,2*Math.PI);
 										
-										ctx.fillStyle = (selectedAnnotation == i)  ? "rgba(175, 0, 0, 0.30)" : "rgba(255, 160, 160, 0.15)";
+										ctx.fillStyle = (selectedAnnotation == i)  ? "rgba(175, 0, 0, 0.30)" : options.annotationDisplayModeCenterColor;
       									ctx.fill();
 									}
 																		
@@ -803,7 +805,11 @@ var methods = {
 												if ((y > maxY) || (maxY === null)) { maxY = y; }
 											}
 											ctx.beginPath();
-											ctx.arc(minX + ((maxX-minX)/2), minY + ((maxY-minY)/2), (maxX - minX)/10, 0,2*Math.PI);
+																						
+											var r = (maxX - minX)/10;
+											if (r < (20 * layerMag)) { r = 20 * layerMag; }
+											
+											ctx.arc(minX + ((maxX-minX)/2), minY + ((maxY-minY)/2), r, 0,2*Math.PI);
 										
 											ctx.fillStyle = options.annotationDisplayModeCenterColor;
 											ctx.fill();

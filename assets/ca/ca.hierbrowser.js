@@ -365,6 +365,7 @@ if (that.uiStyle == 'horizontal') {
 					for(var i in data['_sortOrder']) {
 						var item = data[data['_sortOrder'][i]];
 						if (!item) { continue; }
+						if (!item.name) { item.name = '??? ' + item['item_id']; }
 						if (item['item_id']) {
 							if ((is_init) && (level == 0) && (!that.selectedItemIDs[0])) {
 								that.selectedItemIDs[0] = item['item_id'];
