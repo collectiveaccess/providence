@@ -205,6 +205,14 @@ class TaskQueue extends BaseObject {
 	 * It shouldn't interfere with any running handlers.
 	 */
 	function resetUnfinishedTasks() {
+		// verify registered processes
+		$o_appvars = new ApplicationVars();
+		$va_opo_processes = $o_appvars->getVar("taskqueue_opo_processes");
+		if (!is_array($va_opo_processes)) { $va_opo_processes = array(); }
+		$va_opo_processes = $this->verifyProcesses($va_opo_processes);
+		$o_appvars->setVar("taskqueue_opo_processes", $va_opo_processes);
+		$o_appvars->save();
+
 		$o_db = new Db();
 		$qr_unfinished = $o_db->query("
 			SELECT *
@@ -215,6 +223,7 @@ class TaskQueue extends BaseObject {
 				error_code = 0
 		");
 
+		// reset zombie rows (that are not being processed right now)
 		while($qr_unfinished->nextRow()) {
 			// don't touch rows that are being processed right now
 			if(
