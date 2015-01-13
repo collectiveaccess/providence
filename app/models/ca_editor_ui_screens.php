@@ -1246,10 +1246,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		if (!($vn_screen_id = $this->getPrimaryKey())) { return null; }		// screen must be loaded
 		if (!is_array($pa_settings)) { $pa_settings = array(); }
 		
-		$t_ui = new ca_editor_uis($this->get('ui_id'));
-		if (!$t_ui->getPrimaryKey()) { return false; }
-		
+		$t_ui = new ca_editor_uis();
 		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->getTableNum()))) { return false; }
+		
+		if ($this->inTransaction()) { 
+			$t_instance->setTransaction($this->getTransaction()); 
+			$t_ui->setTransaction($this->getTransaction()); 
+		}
+		if (!$t_ui->load($this->get('ui_id'))) { return false; }
+		
 
 		if ($t_instance instanceof BaseRelationshipModel) { // interstitial type restriction incoming
 			$va_rel_type_list = $t_instance->getRelationshipTypes();
@@ -1260,6 +1265,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		$t_restriction = new ca_editor_ui_screen_type_restrictions();
+		if ($this->inTransaction()) {  $t_restriction->setTransaction($this->getTransaction()); }
 		$t_restriction->setMode(ACCESS_WRITE);
 		$t_restriction->set('table_num', $t_ui->get('editor_type'));
 		$t_restriction->set('type_id', $pn_type_id);
@@ -1293,10 +1299,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		
-		$t_ui = new ca_editor_uis($this->get('ui_id'));
-		if (!$t_ui->getPrimaryKey()) { return false; }
-		
+		$t_ui = new ca_editor_uis();
 		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->getTableNum()))) { return false; }
+
+		if ($this->inTransaction()) { 
+			$t_instance->setTransaction($this->getTransaction()); 
+			$t_ui->setTransaction($this->getTransaction()); 
+		}
+		
+		if (!$t_ui->load($this->get('ui_id'))) { return false; }
 		
 		if ($t_instance instanceof BaseRelationshipModel) { // interstitial type restrictions
 			$va_type_list = $t_instance->getRelationshipTypes();

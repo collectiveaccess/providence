@@ -3340,12 +3340,14 @@ class ca_users extends BaseModel {
 		
 		$va_access_by_item_id = array();
 		
-		foreach($va_roles as $vn_role_id => $va_role_info) {
-			if(is_array($va_access_status_settings = $va_role_info['vars']['access_status_settings'])) {
-				foreach($va_access_status_settings as $vn_item_id => $vn_access) {
-					if (!isset($va_access_by_item_id[$vn_item_id])) { $va_access_by_item_id[$vn_item_id] = $vn_access; continue; }
-					if (is_null($vn_access)) { continue; }
-					if ($vn_access >= (int)$va_access_by_item_id[$vn_item_id]) { $va_access_by_item_id[$vn_item_id] = $vn_access; }
+		if(is_array($va_roles)){
+			foreach($va_roles as $vn_role_id => $va_role_info) {
+				if(is_array($va_access_status_settings = $va_role_info['vars']['access_status_settings'])) {
+					foreach($va_access_status_settings as $vn_item_id => $vn_access) {
+						if (!isset($va_access_by_item_id[$vn_item_id])) { $va_access_by_item_id[$vn_item_id] = $vn_access; continue; }
+						if (is_null($vn_access)) { continue; }
+						if ($vn_access >= (int)$va_access_by_item_id[$vn_item_id]) { $va_access_by_item_id[$vn_item_id] = $vn_access; }
+					}
 				}
 			}
 		}
@@ -3355,8 +3357,10 @@ class ca_users extends BaseModel {
 	
 		if(!is_array($va_item_values) || !sizeof($va_item_values)) { return array(); }
 		$va_ret = array();
-		foreach($va_item_values as $vn_item_id => $vn_val) {
-			$va_ret[$vn_val] = $va_access_by_item_id[$vn_item_id];
+		if (is_array($va_item_values)) {
+			foreach($va_item_values as $vn_item_id => $vn_val) {
+				$va_ret[$vn_val] = $va_access_by_item_id[$vn_item_id];
+			}
 		}
 		
 		if (!is_null($pn_access_level) && in_array($pn_access_level, array(0, 1))) {
