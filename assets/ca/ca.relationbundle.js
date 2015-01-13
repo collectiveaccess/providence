@@ -87,7 +87,7 @@ var caUI = caUI || {};
 			
 			var autocompleter_id = options.itemID + id + ' #' + options.fieldNamePrefix + 'autocomplete' + id;
 
-			jQuery('#' + autocompleter_id).relationshipLookup( 
+			jQuery('#' + autocompleter_id).relationshipLookup(
 				jQuery.extend({ minLength: ((parseInt(options.minChars) > 0) ? options.minChars : 3), delay: 800, html: true,
 					source: function( request, response ) {
 						$.ajax({
