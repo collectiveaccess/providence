@@ -2644,6 +2644,7 @@
 						return array();
 					}
 					
+					$vn_element_type = $t_element->get('datatype');
 					$vn_element_id = $t_element->getPrimaryKey();
 					
 					$va_joins = array(
@@ -2732,7 +2733,6 @@
 						
 						$va_values = array();
 						
-						$vn_element_type = $t_element->get('datatype');
 						
 						$va_list_items = null;
 						
@@ -2752,11 +2752,12 @@
 								$qr_res->seek(0);
 								
 								$t_list_item = new ca_list_items();
-								$va_list_item_cache = $t_list_item->getFieldValuesForIDs($va_values, array('idno', 'item_value', 'parent_id'));
+								$va_list_item_cache = $t_list_item->getFieldValuesForIDs($va_values, array('idno', 'item_value', 'parent_id', 'access'));
 								$va_list_child_count_cache = array();
 								if (is_array($va_list_item_cache)) {
 									foreach($va_list_item_cache as $vn_id => $va_item) {
 										if (!($vn_parent_id = $va_item['parent_id'])) { continue; }
+										if (!in_array($va_item['access'], $pa_options['checkAccess'])) { continue; }
 										$va_list_child_count_cache[$vn_parent_id]++;
 									}
 								}
@@ -2769,12 +2770,13 @@
 								foreach($va_values as $vn_val) {
 									if (!$vn_val) { continue; }
 									if (is_array($va_suppress_values) && (in_array($vn_val, $va_suppress_values))) { continue; }
+									if (!in_array($va_list_item_cache[$vn_val]['access'], $pa_options['checkAccess'])) { continue; }
 									
 									if ($va_criteria[$vn_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
 									$vn_child_count = isset($va_list_child_count_cache[$vn_val]) ? $va_list_child_count_cache[$vn_val] : 0;
 									$va_facet_list[$vn_val] = array(
 										'id' => $vn_val,
-										'label' => $va_list_label_cache[$vn_val],
+										'label' => html_entity_decode($va_list_label_cache[$vn_val]),
 										'parent_id' => isset($va_list_item_cache[$vn_val]['parent_id']) ? $va_list_item_cache[$vn_val]['parent_id'] : null,
 										'child_count' => $vn_child_count
 									);
@@ -2827,7 +2829,7 @@
 									}
 									$va_values[$vs_val] = array(
 										'id' => $vs_val,
-										'label' => $va_list_items[$vs_val]['name_plural'] ? $va_list_items[$vs_val]['name_plural'] : $va_list_items[$vs_val]['item_value'],
+										'label' => html_entity_decode($va_list_items[$vs_val]['name_plural'] ? $va_list_items[$vs_val]['name_plural'] : $va_list_items[$vs_val]['item_value']),
 										'parent_id' => $va_list_items[$vs_val]['parent_id'],
 										'child_count' => $vn_child_count
 									);
@@ -2843,7 +2845,7 @@
 								case __CA_ATTRIBUTE_VALUE_OBJECTLOTS__:
 									$va_values[$vs_val] = array(
 										'id' => $vn_id,
-										'label' => $va_auth_items[$vn_id] ? $va_auth_items[$vn_id] : $vs_val
+										'label' => html_entity_decode($va_auth_items[$vn_id] ? $va_auth_items[$vn_id] : $vs_val)
 									);
 									break;
 								case __CA_ATTRIBUTE_VALUE_CURRENCY__:
@@ -3045,6 +3047,7 @@
 						
 						if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_item->hasField('access')) {
 							$va_wheres[] = "(".$vs_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
+							$va_wheres[] = "(li.access IN (".join(',', $pa_options['checkAccess'])."))";
 						}
 						
 						if ($vs_browse_type_limit_sql) {
