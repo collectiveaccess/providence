@@ -35,7 +35,7 @@
  	$va_last_settings = $this->getVar('batch_mediaimport_last_settings');
 
 	print $vs_control_box = caFormControlBox(
-		caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute media import"), 'caBatchMediaImportForm', array('onclick' => 'caShowConfirmBatchExecutionPanel(); return false;')).' '.
+		caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute media import"), 'caBatchMediaImportFormSubmit', array('onclick' => 'caShowConfirmBatchExecutionPanel(); return false;')).' '.
 		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'batch', 'MediaImport', 'Index/'.$this->request->getActionExtra(), array()),
 		'',
 		''
