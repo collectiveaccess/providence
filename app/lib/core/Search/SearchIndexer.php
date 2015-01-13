@@ -1211,8 +1211,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 			} else {
 				// incremental indexing engines delete dependent rows here
 				// delete from index where other subjects reference it 
-				$this->opo_engine->removeRowIndexing(null, null, $pn_subject_tablenum, null, $pn_subject_row_id);
-				
+			
 				foreach($this->opa_dependencies_to_update as $va_item) {
 					$this->opo_engine->removeRowIndexing($va_item['table_num'], $va_item['row_id'], $va_item['field_table_num'], null, $va_item['field_row_id']); 
 				}
@@ -1397,8 +1396,8 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 													$va_dependent_rows[$vs_key] = array(
 														'table_num' => $vn_element_table_num,
 														'row_id' => $vn_element_row_id,
-														'field_table_num' => $vn_element_table_num,
-														'field_row_id' => $vn_element_row_id,
+														'field_table_num' => $t_dep->tableNum(),
+														'field_row_id' => $vn_row_id,
 														'field_values' => $va_field_data[$vn_element_row_id],
 														'field_nums' => array(),
 														'field_names' => array()
@@ -1561,6 +1560,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 		//print $vs_sql;
 		
 		$qr_res = $this->opo_db->query($vs_sql, $pn_row_id);
+		
 		if (!$qr_res) { 
 			throw new Exception(_t("Invalid _getRelatedRows query: %1", join("; ", $this->opo_db->getErrors())));
 		}

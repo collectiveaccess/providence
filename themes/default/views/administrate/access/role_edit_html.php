@@ -32,6 +32,8 @@
 	$va_bundle_list = $this->getVar('bundle_list');
 	$va_source_list = $this->getVar('source_list');
 	$va_type_list = $this->getVar('type_list');
+	$va_access_status_list = $this->getVar('access_status_list');
+	
 	$va_table_names = $this->getVar('table_display_names');
 ?>
 <div class="sectionBox">
@@ -73,6 +75,7 @@
 <?php
 	}
 ?>
+			<li><a href="#pawtucket" class='formLabel'><?php print _t('Pawtucket'); ?></a></li>
 		</ul>
 		<div id="role_actions">
 			<table>
@@ -223,6 +226,27 @@
 <?php
 	}
 ?>
+		<div id="pawtucket">
+<?php
+	print "<p>"._t('Access values are used to control if and to whom a record should be displayed in a public-facing Pawtucket-based interface. Users logged into the Pawtucket interface will be given the levels of access specified here. If you wish to use the default Pawtucket access policy for an access value set the level to "Use Pawtucket default."')."</p>\n";
+?>
+			<table width='100%'>
+				<tr align='center' valign='middle'><th width='180' align='left'><?php print _t('Access status'); ?></th><th width='180'><?php print _t('No access'); ?></th><th width='180'><?php print _t('Read access'); ?></th><th><?php print _t('Use Pawtucket default'); ?></th></tr>
+<?php
+			foreach($va_access_status_list as $vn_id => $va_access_status) {
+				print "<tr align='center' valign='middle'>";
+				if (($vn_indent = 5*((int)$va_access_status_list['access_status_info']['level'])) < 0) { $vn_indent = 0; }
+				print "<td align='left'>".str_repeat("&nbsp;", $vn_indent).$va_access_status['access_status_info']['name_plural']."</td>";
+				
+				$vn_access = !strlen($va_access_status['access']) ? null : (int)$va_access_status['access'];
+				print "<td>".caHTMLRadioButtonInput('access_status_'.$va_access_status['access_status_info']['item_id'], array('value' => 0), array('checked' => ($vn_access === 0)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput('access_status_'.$va_access_status['access_status_info']['item_id'], array('value' => 1), array('checked' => ($vn_access === 1)))."</td>\n";
+				print "<td>".caHTMLRadioButtonInput('access_status_'.$va_access_status['access_status_info']['item_id'], array('value' => null), array('checked' => (is_null($vn_access))))."</td>\n";
+			}
+?>			
+				</tr>
+			</table>
+		</div>
 	</div>
 	</form>
 	

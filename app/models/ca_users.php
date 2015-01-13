@@ -1724,10 +1724,15 @@ class ca_users extends BaseModel {
 				case 'FT_IMPORT_EXPORT_MAPPING_GROUP_EDITOR_UI':
 					$vn_table_num = $this->_editorPrefFormatTypeToTableNum($va_pref_info["formatType"]);
 					
+					$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($vn_table_num, true);
+					
 					$va_valid_uis = $this->_getUIListByType($vn_table_num);
 					if (is_array($ps_value)) {
 						foreach($ps_value as $vn_type_id => $vn_ui_id) {
 							if (!isset($va_valid_uis[$vn_type_id][$vn_ui_id])) {
+								if ($t_instance && (bool)$t_instance->getFieldInfo($t_instance->getTypeFieldName(), 'IS_NULL') && ($vn_type_id === '_NONE_')) {
+									return true;
+								}
 								if (!isset($va_valid_uis['__all__'][$vn_ui_id])) {
 									return false;
 								}
@@ -1899,9 +1904,14 @@ class ca_users extends BaseModel {
 								$vs_output = '';
 								$va_ui_list_by_type = $this->_getUIListByType($vn_table_num);
 								
-								$va_types = $t_instance->getTypeList(array('returnHierarchyLevels' => true));
+								$va_types = array();
+								if ((bool)$t_instance->getFieldInfo($t_instance->getTypeFieldName(), 'IS_NULL')) {
+									$va_types['_NONE_'] = array('LEVEL' => 0, 'name_singular' => _t('NONE'),  'name_plural' => _t('NONE'));
+								}
+								$va_types += $t_instance->getTypeList(array('returnHierarchyLevels' => true));
 								
 								if(!is_array($va_types) || !sizeof($va_types)) { $va_types = array(1 => array()); }	// force ones with no types to get processed for __all__
+								
 								foreach($va_types as $vn_type_id => $va_type) {
 									$va_opts = array();
 									
@@ -3306,5 +3316,58 @@ class ca_users extends BaseModel {
 		return $vo_acr->userCanAccess($this->getUserID(), $pa_module_path, $ps_controller, $ps_action, $pa_fake_parameters);
 	}
 	# ----------------------------------------
+	/**
+	 * Return array of access statuses with access levels for current user. Levels are:
+	 *		0 = no access
+	 *		1 = read 
+	 * 		null = use whatever the default is
+	 *
+	 * The array is indexed on access status value (eg. 0, 1, 2...) not name; the values are level values.
+	 * 
+	 * If the $pn_access_level parameter is set to 0 or 1, then a simple list of access status values for which the user
+	 * has that access level is returned
+	 *
+	 * @return array
+	 */
+	public function getAccessStatuses($pn_access_level=null) {
+		if(!$this->getPrimaryKey()) { return null; }
+		
+		// get user roles
+		$va_roles = $this->getUserRoles();
+		foreach($this->getGroupRoles() as $vn_role_id => $va_role_info) {
+			$va_roles[$vn_role_id] = $va_role_info;
+		}	
+		
+		$va_access_by_item_id = array();
+		
+		foreach($va_roles as $vn_role_id => $va_role_info) {
+			if(is_array($va_access_status_settings = $va_role_info['vars']['access_status_settings'])) {
+				foreach($va_access_status_settings as $vn_item_id => $vn_access) {
+					if (!isset($va_access_by_item_id[$vn_item_id])) { $va_access_by_item_id[$vn_item_id] = $vn_access; continue; }
+					if (is_null($vn_access)) { continue; }
+					if ($vn_access >= (int)$va_access_by_item_id[$vn_item_id]) { $va_access_by_item_id[$vn_item_id] = $vn_access; }
+				}
+			}
+		}
+	
+		if(!sizeof($va_access_by_item_id)) { return array(); }
+		$va_item_values = ca_lists::itemIDsToItemValues(array_keys($va_access_by_item_id), array('transaction' => $this->getTransaction()));
+	
+		if(!is_array($va_item_values) || !sizeof($va_item_values)) { return array(); }
+		$va_ret = array();
+		foreach($va_item_values as $vn_item_id => $vn_val) {
+			$va_ret[$vn_val] = $va_access_by_item_id[$vn_item_id];
+		}
+		
+		if (!is_null($pn_access_level) && in_array($pn_access_level, array(0, 1))) {
+			$va_filtered_ret = array();
+			foreach($va_ret as $vn_val => $vn_access) {
+				if ($vn_access == $pn_access_level) { $va_filtered_ret[] = $vn_val; }
+			}
+			return $va_filtered_ret;
+		} 
+		
+		return $va_ret;
+	}
+	# ----------------------------------------
 }
-?>

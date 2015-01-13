@@ -7097,3 +7097,15 @@ table.caLibraryHistory, tr.caLibraryHistory, th.caLibraryHistory, td.caLibraryHi
 	border-collapse: collapse;
 	padding: 5px;
 }
+
+#leftNav div.caLibraryCheckoutList {
+	margin: 10px 0 0 0;
+}
+
+#leftNav ul.caLibraryCheckoutList { 
+	font-size: 10px;
+	list-style: circle; 
+	margin: 0 0 0 15px; 
+	padding: 3px 0px 3px 0px; 
+	display:block; 
+}

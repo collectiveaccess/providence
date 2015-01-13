@@ -7,7 +7,7 @@
 	<div class="caLibraryFindAutocompleteContainer">
 		<form>
 			<div class="caLibraryFindAutocompleteLabel"><?php print _t('Item name or number being returned'); ?></div>
-			<?php print caHTMLTextInput('user', array('id' => 'objectAutocomplete'), array('width' => '500px')); ?>
+			<?php print caHTMLTextInput('user', array('id' => 'objectAutocomplete'), array('width' => '500px', 'autocomplete' => 'off')); ?>
 		</form>
 	</div>
 
@@ -41,6 +41,7 @@
 			searchURL: '<?php print caNavUrl($this->request, 'lookup', 'ObjectCheckout', 'Get', array('max' => 100, 'inlineCreate' => 0, 'quickadd' => 0)); ?>',
 			getInfoURL : '<?php print caNavUrl($this->request, '*', '*', 'GetObjectInfo', array()); ?>',
 			saveTransactionURL: '<?php print caNavUrl($this->request, '*', '*', 'SaveTransaction', array()); ?>',
+			loadWidgetURL: '<?php print caNavUrl($this->request, '*', '*', 'Info', array()); ?>',
 			
 			removeButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/x.png" border="0" title="Remove"/>'
 		});

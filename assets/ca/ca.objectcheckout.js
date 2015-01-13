@@ -45,6 +45,7 @@ var caUI = caUI || {};
 			searchURL: null,
 			getInfoURL : null,
 			saveTransactionURL: null,
+			loadWidgetURL: null,
 			
 			removeButtonIcon: '(X)',
 			
@@ -68,6 +69,11 @@ var caUI = caUI || {};
 				select: function(event, ui) {
 					var object_id = ui.item.id;
 					if (parseInt(object_id)) {
+						if (object_id <= 0) {
+							jQuery('#' + that.autocompleteID).val('');	// reset autocomplete to blank
+							return false;
+						}
+					
 						var due_date = ui.item.due_date;
 						
 						// is it already on the list?
@@ -95,6 +101,10 @@ var caUI = caUI || {};
 								//
 								_disp += '<div>Status: ' + data.status_display + '</div>';
 								
+								if (data.storage_location) {
+									_disp += '<div>Location: ' + data.storage_location + '</div>';
+								}
+								
 								// Show reservation details if item is not available and reserved by user other than the current one or not out with current user
 								if (
 									((data.status == 1) || (data.status == 2))
@@ -108,7 +118,6 @@ var caUI = caUI || {};
 										_disp += '<div class="caLibraryTransactionListItemWillReserve">' + data.reserve_display_label + '</div>';
 									}
 								}
-								
 								
 								// Show notes and due date if item is available
 								if ((data.status == 0) || (data.status == 3)) {
@@ -211,6 +220,10 @@ var caUI = caUI || {};
 										jQuery('#' + that.transactionResultsContainerID + ' .transactionErrors').append("<li>" + v + "</li>");
 									});
 								}
+								
+								// reload left-hand side widget with new details for user
+								if (that.loadWidgetURL && that.user_id) { jQuery('#widgets').load(that.loadWidgetURL, {user_id: that.user_id}); }
+								
 								jQuery('#' + that.transactionResultsContainerID).fadeIn(250);
 								setTimeout(function() {
 									jQuery('#' + that.transactionResultsContainerID).fadeOut(250);

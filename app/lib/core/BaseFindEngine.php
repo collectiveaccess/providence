@@ -111,7 +111,11 @@
 		 * @return boolean Always return true
 		 */
 		public function cleanupTemporaryResultTable() {
-			if ($this->ops_tmp_table_name) { $this->opo_db->query("DROP TABLE {$this->ops_tmp_table_name}"); }
+			if ($this->ops_tmp_table_name) {
+				if($this->opo_db->connected()) {
+					$this->opo_db->query("DROP TABLE {$this->ops_tmp_table_name}");
+				}
+			}
 			if ($this->ops_tmp_file_path) { @unlink($this->ops_tmp_file_path); }
 			$this->ops_tmp_file_path = null;
 			$this->ops_tmp_table_name = null;
@@ -191,7 +195,7 @@
 
 			$this->cleanupTemporaryResultTable();
 
-			return array_unique($va_hits);
+			return array_values(array_unique($va_hits));
 		}
 		# ------------------------------------------------------------------
 		/**

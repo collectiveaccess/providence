@@ -152,7 +152,7 @@
 				}
 				
 				// do search
-				$qr_res = $o_search->search($ps_query.(intval($pb_exact) ? '' : '*').$vs_type_query.$vs_additional_query_params, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
+				$qr_res = $o_search->search(trim($ps_query).(intval($pb_exact) ? '' : '*').$vs_type_query.$vs_additional_query_params, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
 		
 				$qr_res->setOption('prefetch', $pn_limit);
 				$qr_res->setOption('dontPrefetchAttributes', true);

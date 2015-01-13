@@ -208,7 +208,10 @@
 					
 					if ($va_tmp[0] != $this->ops_tablename) { continue; }
 					
-					if ($t_model->hasField($va_tmp[1])) { 
+					if ($t_model->hasField($va_tmp[1])) {
+						if($t_model->getFieldInfo($va_tmp[1], 'FIELD_TYPE') == FT_MEDIA) { // sorting media fields doesn't really make sense and can lead to sql errors
+							continue;
+						}
 						$va_display_list[$vn_i]['is_sortable'] = true;
 						
 						if ($t_model->hasField($va_tmp[1].'_sort')) {
@@ -686,6 +689,7 @@
 		protected function _genExport($po_result, $ps_output_type, $ps_output_filename, $ps_title=null) {
 			$this->view->setVar('criteria_summary', $vs_criteria_summary = $this->getCriteriaForDisplay());	// add displayable description of current search/browse parameters
 			$this->view->setVar('criteria_summary_truncated', mb_substr($vs_criteria_summary, 0, 60).((mb_strlen($vs_criteria_summary) > 60) ? '...' : ''));
+			$po_result->seek(0); // reset result before exporting anything
 			
 			$this->opo_result_context->setParameter('last_export_type', $ps_output_type);
 			$this->opo_result_context->saveContext();
@@ -695,12 +699,12 @@
 					case '_xlsx':
 						require_once(__CA_LIB_DIR__."/core/Parsers/PHPExcel/PHPExcel.php");
 						require_once(__CA_LIB_DIR__."/core/Parsers/PHPExcel/PHPExcel/Writer/Excel2007.php");
-						$vs_content = $this->render('Results/xlsx_results.php');
+						$this->render('Results/xlsx_results.php');
 						return;
                     case '_docx':
                         require_once(__CA_LIB_DIR__."/core/Parsers/PHPWord/Autoloader.php");
                         \PhpOffice\PhpWord\Autoloader::register();
-                        $vs_content = $this->render('Results/docx_results.php');
+                        $this->render('Results/docx_results.php');
                         return;						
 					case '_csv':
 						$vs_delimiter = ",";
@@ -741,7 +745,8 @@
 					$va_row = array();
 					foreach($va_display_list as $vn_placement_id => $va_display_item) {
 						$vs_value = html_entity_decode($t_display->getDisplayValue($po_result, $vn_placement_id, array('convert_codes_to_display_text' => true, 'convertLineBreaks' => false)), ENT_QUOTES, 'UTF-8');
-
+						$vs_value = preg_replace("![\r\n\t]+!", " ", $vs_value);
+						
 						// quote values as required
 						if (preg_match("![^A-Za-z0-9 .;]+!", $vs_value)) {
 							$vs_value = '"'.str_replace('"', '""', $vs_value).'"';
