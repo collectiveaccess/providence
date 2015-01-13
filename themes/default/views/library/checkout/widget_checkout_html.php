@@ -37,7 +37,7 @@
 		print _t('Checkout for %1 (%2)', trim($t_user->get('fname').' '.$t_user->get('lname')),  $t_user->get('email'));
 		
 		if(
-			is_array($va_checkouts = ca_object_checkouts::getOutstandingCheckoutsForUser($pn_user_id, "<unit relativeTo='ca_objects'><l>^ca_objects.preferred_labels.name</l> (^ca_objects.idno) [Due ^ca_object_checkouts.due_date]</unit>"))
+			is_array($va_checkouts = ca_object_checkouts::getOutstandingCheckoutsForUser($pn_user_id, "<unit relativeTo='ca_objects'><l>^ca_objects.preferred_labels.name</l> (^ca_objects.idno)</unit> <em>Due ^ca_object_checkouts.due_date%timeOmit=1</em>"))
 			&&
 			(sizeof($va_checkouts) > 0)
 		) {
