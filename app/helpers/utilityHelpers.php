@@ -36,6 +36,7 @@
    
 require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
 require_once(__CA_LIB_DIR__.'/core/Configuration.php');
+require_once(__CA_LIB_DIR__.'/core/Parsers/ZipFile.php');
 require_once(__CA_LIB_DIR__.'/core/Logging/Eventlog.php');
 require_once(__CA_LIB_DIR__.'/core/Utils/Encoding.php');
 require_once(__CA_LIB_DIR__.'/core/Zend/Measure/Length.php');
@@ -447,6 +448,17 @@ function caFileIsIncludable($ps_file) {
 		$list = @scandir('phar://'.$ps_filename);
 	
 		return (bool)$list;
+	}
+	# ----------------------------------------
+	/**
+	 * Detemines if a given path is valid by validating it against a regular expression and running it through file_exists
+	 * @param $ps_path
+	 * @return bool
+	 */
+	function caIsValidFilePath($ps_path) {
+		if (!$ps_path || (preg_match("/[^\/A-Za-z0-9\.:\ _\\\-]+/", $ps_path)) || !file_exists($ps_path)) { return false; }
+
+		return true;
 	}
 	# ----------------------------------------
 	function caGetOSFamily() {
@@ -2294,5 +2306,269 @@ function caFileIsIncludable($ps_file) {
 		} else {
 			return @file_get_contents($ps_url);
 		}
+	}
+	# ----------------------------------------
+	/**
+	 * Convert <br> tags to newlines
+	 * 
+	 * @param string $ps_text
+	 * @return string
+	 */
+	function br2nl($ps_text) {
+		return preg_replace('#<br\s*/?>#i', "\n", $ps_text);
+	}
+	# ----------------------------------------
+	/**
+	 * 
+	 */
+	function caParseDimension($ps_value, $pa_options=null) {
+		global $g_ui_locale;
+		$vs_locale = caGetOption('locale', $pa_options, $g_ui_locale);
+		
+		try {
+			if ($vo_length = caParseLengthDimension($ps_value, $pa_options)) {
+				return $vo_length;
+			}
+		} catch (Exception $e) {
+			// noop
+		}
+		
+		try {
+			if ($vo_weight = caParseWeightDimension($ps_value, $pa_options)) {
+				return $vo_weight;
+			}
+		} catch (Exception $e) {
+			return null;
+		}
+		
+		return null;
+	}
+	# ----------------------------------------
+	/**
+	 * 
+	 */
+	function caGetLengthUnitType($ps_unit) {
+		switch($ps_unit) {
+			case "'":
+			case "’":
+			case 'ft':
+			case 'ft.':
+			case 'feet':
+			case 'foot':
+				return Zend_Measure_Length::FEET;
+				break;
+			case '"':
+			case "”":
+			case 'in':
+			case 'in.':
+			case 'inch':
+			case 'inches':
+				return Zend_Measure_Length::INCH;
+				break;
+			case 'm':
+			case 'm.':
+			case 'meter':
+			case 'meters':
+			case 'metre':
+			case 'metres':
+			case 'mt':
+				return Zend_Measure_Length::METER;
+				break;
+			case 'cm':
+			case 'cm.':
+			case 'centimeter':
+			case 'centimeters':
+			case 'centimetre':
+			case 'centimetres':
+				return Zend_Measure_Length::CENTIMETER;
+				break;
+			case 'mm':
+			case 'mm.':
+			case 'millimeter':
+			case 'millimeters':
+			case 'millimetre':
+			case 'millimetres':
+				return Zend_Measure_Length::MILLIMETER;
+				break;
+			case 'point':
+			case 'pt':
+			case 'pt.':
+				return Zend_Measure_Length::POINT;
+				break;
+			case 'mile':
+			case 'miles':
+				return Zend_Measure_Length::MILE;
+				break;
+			case 'km':
+			case 'k':
+			case 'kilometer':
+			case 'kilometers':
+			case 'kilometre':
+			case 'kilometres':
+				return Zend_Measure_Length::KILOMETER;
+				break;
+			default:	
+				return null;
+				break;
+		}
+	}
+	# ----------------------------------------
+	/**
+	 * 
+	 */
+	function caParseLengthDimension($ps_value, $pa_options=null) {
+		global $g_ui_locale;
+		$vs_locale = caGetOption('locale', $pa_options, $g_ui_locale);
+	
+		$pa_values = array(caConvertFractionalNumberToDecimal(trim($ps_value), $vs_locale));
+		
+		$vo_parsed_measurement = null;
+		while($vs_expression = array_shift($pa_values)) {
+			// parse units of measurement
+			if (preg_match("!^([\d\.\,/ ]+)[ ]*([^\d ]+)!", $vs_expression, $va_matches)) {
+				$vs_value = trim($va_matches[1]);
+				$va_values = explode(" ", $vs_value);
+				$vs_unit_expression = strtolower(trim($va_matches[2]));
+				if ($vs_expression = trim(str_replace($va_matches[0], '', $vs_expression))) {
+					array_unshift($pa_values, $vs_expression);
+				}
+				
+				$vs_value  = 0;
+				foreach($va_values as $vs_v) {
+					$vs_value += caConvertLocaleSpecificFloat(trim($vs_v), $vs_locale);
+				}
+
+				if (!($vs_units = caGetLengthUnitType($vs_unit_expression))) {
+					throw new Exception(_t('%1 is not a valid unit of length [%2]', $va_matches[2], $ps_value));
+				}
+			
+				try {
+					$o_tmp = new Zend_Measure_Length($vs_value, $vs_units, $vs_locale);
+				} catch (Exception $e) {
+					throw new Exception(_t('Not a valid measurement'));
+				}
+				if ($o_tmp->getValue() < 0) {
+					// length can't be negative in our universe
+					throw new Exception(_t('Must not be less than zero'));
+					return false;
+				}
+				
+				if ($vo_parsed_measurement) {
+					$vo_parsed_measurement = $vo_parsed_measurement->add($o_tmp);
+				} else {
+					$vo_parsed_measurement = $o_tmp;
+				}
+			}
+		}
+		
+		if (!$vo_parsed_measurement) { 
+			throw new Exception(_t('Not a valid measurement [%1]', $ps_value));
+		}
+		
+		return $vo_parsed_measurement;
+	}
+	# ----------------------------------------
+	/**
+	 * 
+	 */
+	function caParseWeightDimension($ps_value, $pa_options=null) {
+		global $g_ui_locale;
+		$vs_locale = caGetOption('locale', $pa_options, $g_ui_locale);
+	
+		$pa_values = array(caConvertFractionalNumberToDecimal(trim($ps_value), $vs_locale));
+		
+		$vo_parsed_measurement = null;
+		while($vs_expression = array_shift($pa_values)) {
+			// parse units of measurement
+			if (preg_match("!^([\d\.\,/ ]+)[ ]*([^\d ]+)!", $vs_expression, $va_matches)) {
+				$vs_value = trim($va_matches[1]);
+				$va_values = explode(" ", $vs_value);
+				$vs_unit_expression = strtolower(trim($va_matches[2]));
+				if ($vs_expression = trim(str_replace($va_matches[0], '', $vs_expression))) {
+					array_unshift($pa_values, $vs_expression);
+				}
+				
+				$vs_value  = 0;
+				foreach($va_values as $vs_v) {
+					$vs_value += caConvertLocaleSpecificFloat(trim($vs_v), $vs_locale);
+				}
+
+				switch(strtolower($va_matches[2])) {
+ 					case "lbs":
+ 					case 'lbs.':
+ 					case 'lb':
+ 					case 'lb.':
+ 					case 'pound':
+ 					case 'pounds':
+ 						$vs_units = Zend_Measure_Weight::POUND;
+ 						break;
+ 					case 'kg':
+ 					case 'kg.':
+ 					case 'kilo':
+ 					case 'kilos':
+ 					case 'kilogram':
+ 					case 'kilograms':
+ 						$vs_units = Zend_Measure_Weight::KILOGRAM;
+ 						break;
+ 					case 'g':
+ 					case 'g.':
+ 					case 'gr':
+ 					case 'gr.':
+ 					case 'gram':
+ 					case 'grams':
+ 						$vs_units = Zend_Measure_Weight::GRAM;
+ 						break;
+ 					case 'mg':
+ 					case 'mg.':
+ 					case 'milligram':
+ 					case 'milligrams':
+ 						$vs_units = Zend_Measure_Weight::MILLIGRAM;
+ 						break;
+ 					case 'oz':
+ 					case 'oz.':
+ 					case 'ounce':
+ 					case 'ounces':
+ 						$vs_units = Zend_Measure_Weight::OUNCE;
+ 						break;
+ 					case 'ton':
+ 					case 'tons':
+ 					case 'tonne':
+ 					case 'tonnes':
+ 					case 't':
+ 					case 't.':
+ 						$vs_units = Zend_Measure_Weight::TON;
+ 						break;
+ 					case 'stone':
+ 						$vs_units = Zend_Measure_Weight::STONE;
+ 						break;
+ 					default:
+ 						throw new Exception(_t('Not a valid unit of weight [%2]', $ps_value));
+ 						break;
+ 				}
+			
+				try {
+					$o_tmp = new Zend_Measure_Weight($vs_value, $vs_units, $vs_locale);
+				} catch (Exception $e) {
+					throw new Exception(_t('Not a valid measurement'));
+				}
+				if ($o_tmp->getValue() < 0) {
+					// length can't be negative in our universe
+					throw new Exception(_t('Must not be less than zero'));
+					return false;
+				}
+				
+				if ($vo_parsed_measurement) {
+					$vo_parsed_measurement = $vo_parsed_measurement->add($o_tmp);
+				} else {
+					$vo_parsed_measurement = $o_tmp;
+				}
+			}
+		}
+		
+		if (!$vo_parsed_measurement) { 
+			throw new Exception(_t('Not a valid measurement [%1]', $ps_value));
+		}
+		
+		return $vo_parsed_measurement;
 	}
 	# ----------------------------------------

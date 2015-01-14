@@ -107,5 +107,3 @@
 	//
 	$resp->sendResponse();
 	$req->close();
-	
-?>

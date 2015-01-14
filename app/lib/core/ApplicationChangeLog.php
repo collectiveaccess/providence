@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -527,7 +527,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 								$va_changes[] = array(
 									'label' => caUcFirstUTF8Safe($t_related_table->getProperty('NAME_SINGULAR')),
 									'idno' => ($vs_idno_field = $t_related_table->getProperty('ID_NUMBERING_ID_FIELD')) ? $t_related_table->get($vs_idno_field) : null,
-									'description' => $t_related_table->getLabelForDisplay(),
+									'description' => method_exists($t_related_table, 'getLabelForDisplay') ? $t_related_table->getLabelForDisplay() : '',
 									'table_name' => $t_related_table->tableName(),
 									'table_num' => $t_related_table->tableNum(),
 									'row_id' => $t_related_table->getPrimaryKey(),
