@@ -74,9 +74,11 @@ class ConfigurationCheckController extends ActionController {
 		$this->view->setVar('barcode_config_component_list',  $va_barcode_components);
 
 		// General system configuration issues
-		ConfigurationCheck::performExpensive();
-		if(ConfigurationCheck::foundErrors()){
-			$this->view->setVar('configuration_check_errors', ConfigurationCheck::getErrors());
+		if (!(bool)$this->request->config->get('dont_do_expensive_configuration_checks_in_web_ui')) {
+			ConfigurationCheck::performExpensive();
+			if(ConfigurationCheck::foundErrors()){
+				$this->view->setVar('configuration_check_errors', ConfigurationCheck::getErrors());
+			}
 		}
 
 		$this->render('config_check_html.php');

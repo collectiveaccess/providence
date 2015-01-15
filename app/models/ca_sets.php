@@ -605,7 +605,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				ORDER BY csl.name
 			", $va_sql_params);
 			$va_sets = array();
-			$o_dm = $this->getAppDatamodel();
 			$va_type_name_cache = array();
 			
 			$t_list = new ca_lists();
@@ -622,7 +621,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			return $va_sets;
 		} else {
 			if ($pb_set_ids_only) {
-			// get sets
+				// get sets
 				$qr_res = $o_db->query("
 					SELECT ".join(', ', $va_sql_selects)."
 					FROM ca_sets cs
@@ -631,6 +630,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 					".join("\n", $va_extra_joins)."
 					".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
 					".join(' AND ', $va_sql_wheres)."
+					ORDER BY csl.name
 				", $va_sql_params);
 				return $qr_res->getAllFieldValues("set_id");
 			} else {
@@ -643,8 +643,10 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 					".join("\n", $va_extra_joins)."
 					".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
 					".join(' AND ', $va_sql_wheres)."
+					ORDER BY csl.name
 				", $va_sql_params);
 				$t_list = new ca_lists();
+				$va_sets = array();
 				while($qr_res->nextRow()) {
 					$vn_table_num = $qr_res->get('table_num');
 					if (!isset($va_type_name_cache[$vn_table_num]) || !($vs_set_type = $va_type_name_cache[$vn_table_num])) {

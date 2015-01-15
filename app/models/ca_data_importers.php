@@ -413,7 +413,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						'description' => $o_reader->getDescription(),
 						'title' => $o_reader->getTitle(),
 						'inputType' => $o_reader->getInputType(),
-						'formats' => $va_formats
+						'formats' => $va_formats,
+						'hasMultipleDatasets' => $o_reader->hasMultipleDatasets()
 					);
 				}
 			}

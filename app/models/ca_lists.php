@@ -233,6 +233,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	static $s_list_item_get_cache = array();				// cache for results of getItemFromList()
 	static $s_item_id_cache = array();						// cache for ca_lists::getItemID()
 	static $s_item_id_to_code_cache = array();				// cache for ca_lists::itemIDsToIDNOs()
+	static $s_item_id_to_value_cache = array();				// cache for ca_lists::itemIDsToItemValues()
 	
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
@@ -383,7 +384,6 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @return array List of items indexed first on item_id and then on locale_id of label
 	 */
 	public function getItemsForList($pm_list_name_or_id, $pa_options=null) {
-		$t = new Timer();
 		$vn_list_id = $this->_getListID($pm_list_name_or_id);
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (!isset($pa_options['returnHierarchyLevels'])) { $pa_options['returnHierarchyLevels'] = false; }
@@ -465,9 +465,9 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			$vs_sql = "
 				SELECT clil.*, cli.*
 				FROM ca_list_items cli use index(i_parent_id)
-				INNER JOIN ca_list_item_labels AS clil ON clil.item_id = cli.item_id
+				LEFT JOIN ca_list_item_labels AS clil ON cli.item_id = clil.item_id
 				WHERE
-					(cli.deleted = 0) AND (clil.is_preferred = 1) AND (cli.list_id = ?) {$vs_type_sql} {$vs_direct_children_sql} {$vs_hier_sql} {$vs_enabled_sql}
+					(cli.deleted = 0) AND ((clil.is_preferred = 1) OR (clil.is_preferred IS NULL)) AND (cli.list_id = ?) {$vs_type_sql} {$vs_direct_children_sql} {$vs_hier_sql} {$vs_enabled_sql}
 				{$vs_order_by}
 				{$vs_limit_sql}
 			";
@@ -1064,7 +1064,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 */
 	private function _getListID($pm_list_name_or_id) {
-		return ca_lists::getListID($pm_list_name_or_id);
+		return ca_lists::getListID($pm_list_name_or_id, array('transaction' => $this->getTransaction()));
 	}
 	# ------------------------------------------------------
 	/**
@@ -1073,7 +1073,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @param mixed $pm_list_name_or_id List code or list_id
 	 * @return int list for the specified list, or null if the list does not exist
 	 */
-	static function getListID($pm_list_name_or_id) {
+	static function getListID($pm_list_name_or_id, $pa_options=null) {
 		if (ca_lists::$s_list_id_cache[$pm_list_name_or_id]) {
 			return ca_lists::$s_list_id_cache[$pm_list_name_or_id];
 		}
@@ -1081,6 +1081,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			$vn_list_id = intval($pm_list_name_or_id);
 		} else {
 			$t_list = new ca_lists();
+			$o_trans = caGetOption('transaction', $pa_options, null);
+			if ($o_trans) { $t_list->setTransaction($o_trans); }
 			if (!$t_list->load(array('list_code' => $pm_list_name_or_id))) {
 				return null;
 			}
@@ -1096,7 +1098,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @param mixed $pm_list_name_or_id List code or list_id
 	 * @return int list for the specified list, or null if the list does not exist
 	 */
-	static function getListCode($pm_list_name_or_id) {
+	static function getListCode($pm_list_name_or_id, $pa_options=null) {
 		if (ca_lists::$s_list_code_cache[$pm_list_name_or_id]) {
 			return ca_lists::$s_list_code_cache[$pm_list_name_or_id];
 		}
@@ -1104,6 +1106,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			return $pm_list_name_or_id;
 		} else {
 			$t_list = new ca_lists();
+			$o_trans = caGetOption('transaction', $pa_options, null);
+			if ($o_trans) { $t_list->setTransaction($o_trans); }
 			if (!$t_list->load((int)$pm_list_name_or_id)) {
 				return null;
 			}
@@ -1702,10 +1706,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 * Converts a list of item_id's to a list of idno strings. The conversion is literal without hierarchical expansion.
 	 *
-	 * @param array $pa_list A list of relationship numeric type_ids
+	 * @param array $pa_list A list of relationship numeric item_ids
 	 * @param array $pa_options Options include:
 	 * 		transaction = transaction to perform database operations within. [Default is null]
-	 * @return array A list of corresponding type_codes 
+	 * @return array A list of corresponding idnos 
 	 */
 	 static public function itemIDsToIDNOs($pa_ids, $pa_options=null) {
 	 	if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
@@ -1720,7 +1724,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 		if (!is_numeric($pn_id)) {
 	 			$va_non_numerics[] = $pn_id;
 	 		} else {
-	 			$va_ids = (int)$pn_id;
+	 			$va_ids[] = (int)$pn_id;
 	 		}
 	 	}
 	 	
@@ -1742,6 +1746,51 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 		$va_item_ids_to_codes[$qr_res->get('item_id')] = $qr_res->get('idno');
 	 	}
 	 	return ca_lists::$s_item_id_to_code_cache[$vs_key] = $va_item_ids_to_codes + $va_non_numerics;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Converts a list of item_id's to a list of value strings. The conversion is literal without hierarchical expansion.
+	 *
+	 * @param array $pa_list A list of relationship numeric item_ids
+	 * @param array $pa_options Options include:
+	 * 		transaction = transaction to perform database operations within. [Default is null]
+	 * @return array A list of corresponding item values 
+	 */
+	 static public function itemIDsToItemValues($pa_ids, $pa_options=null) {
+	 	if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
+	 	
+	 	$vs_key = md5(print_r($pa_ids, true));
+	 	if (isset(ca_lists::$s_item_id_to_value_cache[$vs_key])) {
+	 		return ca_lists::$s_item_id_to_value_cache[$vs_key];
+	 	}
+	 	
+	 	$va_ids = $va_non_numerics = array();
+	 	foreach($pa_ids as $pn_id) {
+	 		if (!is_numeric($pn_id)) {
+	 			$va_non_numerics[] = $pn_id;
+	 		} else {
+	 			$va_ids[] = (int)$pn_id;
+	 		}
+	 	}
+	 	
+	 	if($o_trans = caGetOption('transaction', $pa_options, null)) {
+			$o_db = $o_trans->getDb();
+		} else {
+			$o_db = new Db();
+		}
+		
+	 	$qr_res = $o_db->query("
+	 		SELECT item_id, item_value 
+	 		FROM ca_list_items
+	 		WHERE
+	 			item_id IN (?)
+	 	", array($va_ids));
+	 	
+	 	$va_item_ids_to_values = array();
+	 	while($qr_res->nextRow()) {
+	 		$va_item_ids_to_values[$qr_res->get('item_id')] = $qr_res->get('item_value');
+	 	}
+	 	return ca_lists::$s_item_id_to_value_cache[$vs_key] = $va_item_ids_to_values + $va_non_numerics;
 	}
 	# ------------------------------------------------------
 }

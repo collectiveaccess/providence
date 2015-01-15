@@ -283,7 +283,7 @@
 						break;
 					case 'item_id':
 					default:
-						if ($vn_id = ca_list_items::find(array('item_id' => (int)$ps_value, 'list_id' => $pa_element_info['list_id']), array('returnAs' => 'firstId'))) {
+						if ($vn_id = ca_list_items::find(array('item_id' => (int)$ps_value, 'list_id' => $pa_element_info['list_id']), array('returnAs' => 'firstId', 'transaction' => $o_trans))) {
 							break(2);
 						//} else {
 							//$this->postError(1970, _t('Value with item_id %1 does not exist in list %2', $ps_value, $pa_element_info['list_id']), 'ListAttributeValue->parseValue()');
