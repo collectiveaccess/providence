@@ -243,13 +243,13 @@ class SearchEngine extends SearchBase {
 			} 
 			
 			$vb_no_types = false;	
-			if (is_array($va_type_ids = $this->getTypeRestrictionList()) && sizeof($va_type_ids)) {
+			if (is_array($va_type_ids = $this->getTypeRestrictionList()) && (sizeof($va_type_ids) > 0)) {
 				if ($t_table->getFieldInfo('type_id', 'IS_NULL')) {
 					$va_type_ids[] = 'NULL';
 				}
 				$this->addResultFilter($this->ops_tablename.'.type_id', 'IN', join(",",$va_type_ids));
-			} else {
-				$vb_no_types = true;		
+			} elseif (is_array($va_type_ids) && (sizeof($va_type_ids) == 0)) { 
+				$vb_no_types = true; 
 			}
 			
 			if (!$vb_no_types) {
