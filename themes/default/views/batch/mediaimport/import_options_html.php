@@ -271,6 +271,14 @@
 							</tr>
 							<tr>
 								<td><?php
+									$va_attrs = array('value' => 'filename_no_ext', 'id' => 'caIdnoFilenameNoExtMode');
+									if (isset($va_last_settings['idnoMode']) && ($va_last_settings['idnoMode'] == 'filename_no_ext')) { $va_attrs['checked'] = 1; }
+									print caHTMLRadioButtonInput('idno_mode', $va_attrs);
+									?></td>
+								<td class='formLabel'><?php print _t('Set %1 identifier to file name without extension', caGetTableDisplayName($t_instance->tableName(), false)); ?></td>
+							</tr>
+							<tr>
+								<td><?php
 									$va_attrs = array('value' => 'directory_and_filename', 'id' => 'caIdnoDirectoryAndFilenameMode');
 									if (isset($va_last_settings['idnoMode']) && ($va_last_settings['idnoMode'] == 'directory_and_filename')) { $va_attrs['checked'] = 1; }
 									print caHTMLRadioButtonInput('idno_mode', $va_attrs);

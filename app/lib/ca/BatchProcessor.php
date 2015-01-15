@@ -894,6 +894,11 @@
 								// use the filename as identifier
 								$t_instance->set('idno', $f);
 								break;
+							case 'filename_no_ext';
+								// use filename without extension as identifier
+								$f_no_ext = preg_replace('/\\.[^.\\s]{3,4}$/', '', $f);
+								$t_instance->set('idno', $f_no_ext);
+								break;
 							case 'directory_and_filename':
 								// use the directory + filename as identifier
 								$t_instance->set('idno', $d.'/'.$f);
