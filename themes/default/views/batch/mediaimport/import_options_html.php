@@ -248,7 +248,7 @@
 			</div>
 		</div>
 		<div class='bundleLabel'>
-			<span class="formLabelText"><?php print _t('Identifier'); ?></span>
+			<span class="formLabelText"><?php print _t('%1 identifier', ucfirst(caGetTableDisplayName($t_instance->tableName(), false))); ?></span>
 			<div class="bundleContainer">
 				<div class="caLabelList" id="caMediaImportIdnoControls">
 					<div style='padding:10px 0px 10px 10px;'>
@@ -294,6 +294,9 @@
 								jQuery("#caIdnoFilenameMode").click(function() {
 									jQuery("#caIdnoFormModeForm input").prop('disabled', true);
 								});
+								jQuery("#caIdnoFilenameNoExtMode").click(function() {
+									jQuery("#caIdnoFormModeForm input").prop('disabled', true);
+								});
 								jQuery("#caIdnoDirectoryAndFilenameMode").click(function() {
 									jQuery("#caIdnoFormModeForm input").prop('disabled', true);
 								});
@@ -306,6 +309,69 @@
 				</div>
 			</div>
 		</div>
+		<div class='bundleLabel'>
+			<span class="formLabelText"><?php print _t('%1 identifier', ucfirst(caGetTableDisplayName('ca_object_representations', false))); ?></span>
+			<div class="bundleContainer">
+				<div class="caLabelList" id="caMediaImportRepresentationIdnoControls">
+					<div style='padding:10px 0px 10px 10px;'>
+						<table>
+							<tr>
+								<td><?php
+									$va_attrs = array('value' => 'form', 'checked' => 1, 'id' => 'caRepresentationIdnoFormMode');
+									if (isset($va_last_settings['representationIdnoMode']) && ($va_last_settings['representationIdnoMode'] == 'form')) { $va_attrs['checked'] = 1; }
+									print caHTMLRadioButtonInput('representation_idno_mode', $va_attrs);
+									?></td>
+								<td class='formLabel' id='caRepresentationIdnoFormModeForm'><?php print _t('Set %1 identifier to %2', caGetTableDisplayName('ca_object_representations', false) , $t_rep->htmlFormElement('idno', '^ELEMENT', array('request' => $this->request))); ?></td>
+							</tr>
+							<tr>
+								<td><?php
+									$va_attrs = array('value' => 'filename', 'id' => 'caRepresentationIdnoFilenameMode');
+									if (isset($va_last_settings['representationIdnoMode']) && ($va_last_settings['representationIdnoMode'] == 'filename')) { $va_attrs['checked'] = 1; }
+									print caHTMLRadioButtonInput('representation_idno_mode', $va_attrs);
+									?></td>
+								<td class='formLabel'><?php print _t('Set %1 identifier to file name', caGetTableDisplayName('ca_object_representations', false)); ?></td>
+							</tr>
+							<tr>
+								<td><?php
+									$va_attrs = array('value' => 'filename_no_ext', 'id' => 'caRepresentationIdnoFilenameNoExtMode');
+									if (isset($va_last_settings['representationIdnoMode']) && ($va_last_settings['representationIdnoMode'] == 'filename_no_ext')) { $va_attrs['checked'] = 1; }
+									print caHTMLRadioButtonInput('representation_idno_mode', $va_attrs);
+									?></td>
+								<td class='formLabel'><?php print _t('Set %1 identifier to file name without extension', caGetTableDisplayName('ca_object_representations', false)); ?></td>
+							</tr>
+							<tr>
+								<td><?php
+									$va_attrs = array('value' => 'directory_and_filename', 'id' => 'caRepresentationIdnoDirectoryAndFilenameMode');
+									if (isset($va_last_settings['representationIdnoMode']) && ($va_last_settings['representationIdnoMode'] == 'directory_and_filename')) { $va_attrs['checked'] = 1; }
+									print caHTMLRadioButtonInput('representation_idno_mode', $va_attrs);
+									?></td>
+								<td class='formLabel'><?php print _t('Set %1 identifier to directory and file name', caGetTableDisplayName('ca_object_representations', false)); ?></td>
+							</tr>
+						</table>
+						<script type="text/javascript">
+							jQuery(document).ready(function() {
+								jQuery("#caRepresentationIdnoFormMode").click(function() {
+									jQuery("#caRepresentationIdnoFormModeForm input").prop('disabled', false);
+								});
+								jQuery("#caRepresentationIdnoFilenameMode").click(function() {
+									jQuery("#caRepresentationIdnoFormModeForm input").prop('disabled', true);
+								});
+								jQuery("#caRepresentationIdnoFilenameNoExtMode").click(function() {
+									jQuery("#caRepresentationIdnoFormModeForm input").prop('disabled', true);
+								});
+								jQuery("#caRepresentationIdnoDirectoryAndFilenameMode").click(function() {
+									jQuery("#caRepresentationIdnoFormModeForm input").prop('disabled', true);
+								});
+
+								jQuery("#caMediaImportRepresentationIdnoControls").find("input:checked").click();
+							});
+
+						</script>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<div class='bundleLabel'>
 			<span class="formLabelText"><?php print (($this->getVar('ca_object_representations_mapping_list_count') > 1) || ($this->getVar($t_instance->tableName().'_mapping_list_count') > 1)) ? _t('Status, access &amp; metadata extraction') : _t('Status &amp; access'); ?></span>
 				<div class="bundleContainer">
