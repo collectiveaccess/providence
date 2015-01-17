@@ -135,7 +135,6 @@
 					}
 
 				}
-
 			} elseif ($vs_display_text = $t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request))) {
 				$o_sheet->setCellValue($vs_column.$vn_line, html_entity_decode(strip_tags(br2nl($vs_display_text))));
 				// We trust the autosizing up to a certain point, but
