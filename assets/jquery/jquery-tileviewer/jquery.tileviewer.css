@@ -3,12 +3,13 @@
 	border: 0px solid black;
 	line-height: 0%; /*without this, there will be a weird bottom space..*/
 }
-.tileviewer #canvas {
-
+.tileviewer canvas {
+	display: block;
 }
 
 .tileviewer #annotationCanvas {
 	border: 1px #00cc00 solid;
+	display: block;
 }
 
 .tileviewer p.status {
@@ -59,7 +60,8 @@
 	min-height: 10px;
 	max-width: 150px;
 	max-height: 150px;
-	overflow: auto;
+	overflow-x: hidden;
+	overflow-y: auto;
 	line-height: 12px;
 	padding: 5px;
 	border: 1px solid #999;
@@ -115,7 +117,6 @@
 	padding: 0px;
 	line-height: 12px;
 	margin: 5px 0 5px 8px;
-	width: 160px;
 }
 
 span.tileviewerAnnotationDefaultText {
@@ -124,10 +125,11 @@ span.tileviewerAnnotationDefaultText {
 	color: #999;
 }
 
-.tileviewer div.tileviewerAnnotationTextEditor div.textContentDeleteButton {
+.tileviewer div.tileviewerAnnotationTextEditor div.tileviewerAnnotationCloseButton {
 	float: right;
-	width: 16px;
-	height: 16px;
+	width: 15px;
+	height: 15px;
+	padding: 3px;
 }
 
 #tileviewerAnnotationTextLabel {
@@ -140,7 +142,7 @@ span.tileviewerAnnotationDefaultText {
 	border: none;
 }
 
-.tileViewToolbarZoom {
+.tileviewerToolbarZoom {
 	position: absolute;
 	border: 0px solid #cc0000;
 	top: 0px;
@@ -152,7 +154,6 @@ span.tileviewerAnnotationDefaultText {
 	position: absolute;
 	left: 2px;
 	top: 2px;
-
 }
 
 .tileviewerControlZoomIn {
@@ -161,7 +162,7 @@ span.tileviewerAnnotationDefaultText {
 	top: 2px;
 }
 
-.tileViewToolbarZoomSlider {
+.tileviewerToolbarZoomSlider {
 	position: absolute;
 	width: 420px;
 	
@@ -169,25 +170,30 @@ span.tileviewerAnnotationDefaultText {
 	top: 6px;
 }
 
-.tileViewToolbarRotation {
+.tileviewerToolbarRotation {
 	position: absolute;
-	top: 6px;
-	right: 0px;
-	width: 30px;
-	height: 320px;
+	bottom: 50px;
+	left: 0px;
+	width: 170px;
+	height: 170px;
+	
+	background-color: rgba(0, 0, 0, 0.5);
+	opacity: 0.85;
+	
+	-webkit-border-radius: 0 6px 6px 0;
+	-moz-border-radius: 0 6px 6px 0;
+	border-radius: 0 6px 6px 0;
 }
 
-.tileViewToolbarRotationSlider {
+.tileviewerToolbarRotation .tileviewerToolbarRotationSlider {
 	position: absolute;
-	width: 25px;
-	height: 300px;
-	right: 0px;
-	top: 30px;
+	width: 150px;
+	height: 150px;
+	left: 2.5px;
+	top: 2.5px;
 }
 
-.ui-slider a {outline:none;}
-
-#tileviewerHelpPanel {
+.tileviewerHelpPanel {
 	position: absolute;
 	top: 0px; left: 0px;
 	width: 750px;
@@ -211,10 +217,10 @@ span.tileviewerAnnotationDefaultText {
 	box-shadow:         4px 4px 5px rgba(50, 50, 50, 0.75);
 }
 
-#tileviewerHelpPanel div.content {
+.tileviewerHelpPanel div.content {
 	padding: 0 10px 0 10px;
 }
-#tileviewerHelpPanel div.close {
+.tileviewerHelpPanel div.close {
 	float: right;
 }
 
@@ -255,12 +261,18 @@ img.tileviewerHelpTextImage {
  
 a.tileviewerFullAnnotationEditorLink {
 	float: right;
+	padding: 5px 0px 5px 5px;
+	margin-right: 5px;
+}
+
+a.tileviewerAnnotationDeleteButton {
+	float: right;
 	padding: 5px 10px 5px 5px;
 }
 
 div.tileviewerAnnotationLockedButtonLabel {
 	float: left;
-	padding: 5px 5px 5px 10px;
+	padding: 5px 5px 5px 0px;
 }
 
 code {
@@ -280,11 +292,145 @@ pre>code {
     background: transparent
 }
 
-/*
-.tileviewer canvas.mode_pan:active {
-cursor: pointer;
+
+/* Annotation list */
+div.tileviewerAnnotationList {
+	position: absolute;
+	top: 0px; right: 0px;
+	width: 300px;
+	height: 100%;
+	
+	overflow: auto;
+	padding: 5px;
+	border: 1px solid #999;
+	background: #f0f0f0;
+	opacity: 0.9;
+	
+	z-index: 999999;
+	
+	-webkit-border-radius: 0 0 0 5px;
+	-moz-border-radius: 0 0 0 5px;
+	border-radius: 0 0 0 5px;
+	
+	-webkit-box-shadow: 4px 4px 5px rgba(50, 50, 50, 0.75);
+	-moz-box-shadow:    4px 4px 5px rgba(50, 50, 50, 0.75);
+	box-shadow:         4px 4px 5px rgba(50, 50, 50, 0.75);
 }
-.tileviewer canvas.mode_pan:active {
-cursor: move;
+
+div.tileviewerAnnotationList div.content {
+	padding: 0 10px 0 10px;
 }
-*/
+div.tileviewerAnnotationList div.close {
+	float: right;
+}
+
+ol.tileviewerAnnotationList {
+	text-align: left;
+}
+
+li.tileviewerAnnotationListItem {
+	font-size: 12px;
+	line-height: 12px;	
+	padding: 5px;
+}
+
+li.tileviewerAnnotationListItem div {
+	font-size: 10px;
+}
+
+li.tileviewerAnnotationListItem:hover {
+	background-color: #fff;
+}
+
+li.tileviewerAnnotationListItemSelected {
+	background-color: rgba(177, 0, 0, 0.5);
+}
+
+li.tileviewerAnnotationListItemSelected:hover {
+	background-color: rgba(177, 0, 0, 0.7);
+}
+
+input.tileviewerAnnotationListSearch {
+	width: 280px;
+	outline-width: 0;
+}
+
+span.tileviewerAnnotationListSearch {
+	position: relative;
+}
+span.tileviewerAnnotationListSearch span {
+	position: absolute;
+	display: block;
+	top: -1px;
+	right: 3px;
+	width: 15px;
+	height: 15px;
+	background: url('x.png') 0 -690px;
+	cursor: pointer;
+}
+span.tileviewerAnnotationListSearch input {
+	height: 17px;
+	padding-right: 16px;
+}
+
+/* Circular slider used for rotation control */
+.tileviewerToolbarRotationSlider .jcs {
+    position: relative;
+    border-style: solid;
+    border-radius: 100%;   
+    border-color: rgb(177, 177, 177);
+    -moz-box-sizing: border-box;
+         box-sizing: border-box;
+    border-width: 5px;
+    cursor: pointer;
+}
+
+.tileviewerToolbarRotationSlider .jcs-value {
+    position: absolute;
+    border-style: none;
+    border-radius: 100%;
+	border: 2px solid rgb(177, 177, 177);
+	text-align : center;
+	pointer-events: none;
+	line-height: 4em;
+	color: white;
+	background-color: rgba(0, 0, 0, 0.5);
+	outline: none;
+}
+
+.tileviewerToolbarRotationSlider .jcs-indicator {
+    
+    position: absolute;
+    border-width: 5px;
+    border-radius: 100%;
+    width: 15px; height: 15px;
+    background-color: rgba(0, 0, 0, 0.5);
+	border: 1px solid rgb(177, 177, 177);
+    -moz-box-sizing: border-box;
+         box-sizing: border-box;
+    pointer-events : none;
+}
+
+.tileviewerToolbarRotationSlider .jcs-panel {
+    position: relative;
+    display: inline-block;
+    border-style: solid;
+    border-color: transparent;
+    cursor: pointer;
+}
+
+.tileviewerToolbarRotationSlider .jcs-value img {
+    border-radius: 100%;
+    background: transparent;
+	width: inherit;
+	height: inherit;
+}
+
+.tileviewerToolbarRotationSlider .noselect {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
