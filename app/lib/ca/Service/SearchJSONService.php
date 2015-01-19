@@ -64,7 +64,7 @@ class SearchJSONService extends BaseJSONService {
 		switch($this->getRequestMethod()){
 			case "GET":
 			case "POST":
-				if(sizeof($va_post)==0){
+				if(sizeof($va_post)==0) {
 					$vm_return = $this->search();
 				} else {
 					if(is_array($va_post["bundles"])){
@@ -102,7 +102,7 @@ class SearchJSONService extends BaseJSONService {
 		);
 
 		$vs_template = $this->opo_request->getParameter('template', pString);		// allow user-defined template to be passed; allows flexible formatting of returned label
-		while($vo_result->nextHit()){
+		while($vo_result->nextHit()) {
 			$va_item = array();
 
 			$va_item[$t_instance->primaryKey()] = $vn_id = $vo_result->get($t_instance->primaryKey());
@@ -126,6 +126,18 @@ class SearchJSONService extends BaseJSONService {
 					}
 					if($this->_isBadBundle($vs_bundle)){
 						continue;
+					}
+
+					// special treatment for ca_object_representations.media bundle
+					// it should provide a means to get the media info array
+					if(trim($vs_bundle) == 'ca_object_representations.media') {
+						if($t_instance instanceof RepresentableBaseModel) {
+							$va_reps = $vo_result->getMediaInfo($vs_bundle);
+							if(is_array($va_reps) && sizeof($va_reps)>0) {
+								$va_item[$vs_bundle] = $va_reps;
+								continue;
+							}
+						}
 					}
 
 					$vm_return = $vo_result->get($vs_bundle,$va_options);
