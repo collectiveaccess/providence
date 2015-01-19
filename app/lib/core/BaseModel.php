@@ -10847,7 +10847,7 @@ $pa_options["display_form_field_tips"] = true;
 		if (method_exists($this, 'getTypeFieldName') && ($vs_type_field_name = $this->getTypeFieldName())) {
 			$va_type_ids = caMergeTypeRestrictionLists($this, $pa_options);
 			if (is_array($va_type_ids) && sizeof($va_type_ids)) {
-				$va_wheres[] = "(t.{$vs_type_field_name} IN (".join(',', $va_type_ids).')'.($this->getFieldInfo($vs_type_field_name, 'IS_NULL') ? " OR t.{$vs_type_field_name} IS NULL" : '').')';
+				$va_wheres[] = "({$vs_table_name}.{$vs_type_field_name} IN (".join(',', $va_type_ids).')'.($this->getFieldInfo($vs_type_field_name, 'IS_NULL') ? " OR {$vs_table_name}.{$vs_type_field_name} IS NULL" : '').')';
 			}
 		}
 		
@@ -10879,6 +10879,7 @@ $pa_options["display_form_field_tips"] = true;
 			INNER JOIN {$vs_table_name} ON {$vs_table_name}.{$vs_primary_key} = random_items.{$vs_primary_key}
 			{$vs_deleted_sql}
 		";
+		
 		$qr_res = $o_db->query($vs_sql);
 		
 		$va_random_items = array();
