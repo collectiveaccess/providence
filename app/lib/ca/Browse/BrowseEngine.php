@@ -3461,6 +3461,10 @@
 				# -----------------------------------------------------
 				case 'field':
 					$t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true);
+					if (!is_array($va_restrict_to_types = $va_facet_info['restrict_to_types'])) { $va_restrict_to_types = array(); }
+					if(!is_array($va_restrict_to_types = $this->_convertTypeCodesToIDs($va_restrict_to_types, array('instance' => $t_item, 'dontExpandHierarchically' => true)))) { $va_restrict_to_types = array(); }
+					$va_restrict_to_types_expanded = $this->_convertTypeCodesToIDs($va_restrict_to_types, array('instance' => $t_item));
+					
 					$vs_field_name = $va_facet_info['field'];
 					$va_field_info = $t_item->getFieldInfo($vs_field_name);
 					
@@ -3494,6 +3498,10 @@
 						);
 					}
 					
+					if (is_array($va_restrict_to_types) && (sizeof($va_restrict_to_types) > 0) && method_exists($t_rel_item, "getTypeList")) {
+						$va_wheres[] = "{$va_restrict_to_types_expanded}.type_id IN (".join(',', caGetOption('dont_include_subtypes', $va_facet_info, false) ? $va_restrict_to_types : $va_restrict_to_types_expanded).")";
+						$va_selects[] = "{$va_restrict_to_types_expanded}.type_id";
+					}
 					
 					if (sizeof($va_results) && ($this->numCriteria() > 0)) {
 						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
@@ -3546,16 +3554,16 @@
 					
 					if ($vb_check_availability_only) {
 						$vs_sql = "
-							SELECT 1
+							SELECT DISTINCT {$vs_browse_table_name}.{$vs_field_name}
 							FROM {$vs_browse_table_name}
 							{$vs_join_sql}
 							WHERE
 								{$vs_where_sql}
 							LIMIT 2";
 						$qr_res = $this->opo_db->query($vs_sql);
-					
-						if ($qr_res->nextRow()) {
-							return ((int)$qr_res->numRows() > 0) ? true : false;
+						
+						if ($qr_res->numRows() > 1) {
+							return true;
 						}
 						return false;
 					} else {
