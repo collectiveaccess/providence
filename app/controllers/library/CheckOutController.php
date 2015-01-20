@@ -32,10 +32,6 @@
 
  	class CheckOutController extends ActionController {
  		# -------------------------------------------------------
- 		#
- 		# -------------------------------------------------------
- 		private $opo_client_services_config;
- 		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
@@ -47,19 +43,12 @@
  			AssetLoadManager::register('objectcheckout');
  			
  			$this->opo_app_plugin_manager = new ApplicationPluginManager();
- 			
- 			
  		}
  		# -------------------------------------------------------
  		/**
  		 * Begin checkout process with user select
  		 */
  		public function Index() {
- 			if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_do_library_checkout')) { 
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
- 			
  			$this->render('checkout/find_user_html.php');
  		}
  		# -------------------------------------------------------
@@ -67,11 +56,6 @@
  		 * Checkout items screen
  		 */
  		public function Items() {
- 			if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_do_library_checkout')) { 
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
- 			
  			$pn_user_id = $this->request->getParameter('user_id', pInteger);
  			
  			$this->view->setVar('user_id', $pn_user_id);
@@ -84,11 +68,6 @@
  		 * Return info via ajax on selected object
  		 */
  		public function GetObjectInfo() {
- 			if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_do_library_checkout')) { 
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
-
  			$pn_user_id = $this->request->getParameter('user_id', pInteger);
  			$pn_object_id = $this->request->getParameter('object_id', pInteger);
  			
@@ -186,6 +165,8 @@
  			);
  			$va_info['title'] = $va_info['name']." (".$va_info['idno'].")";
  			
+ 			$va_info['storage_location'] = $t_object->getWithTemplate($va_checkout_config['show_storage_location_template']);
+ 			
  			$this->view->setVar('data', $va_info);
  			$this->render('checkout/ajax_data_json.php');
  		}
@@ -194,11 +175,6 @@
  		 * Return info via ajax on selected object
  		 */
  		public function SaveTransaction() {
- 			if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_do_library_checkout')) { 
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
- 			
  			$pn_user_id = $this->request->getParameter('user_id', pInteger);
  			$ps_item_list = $this->request->getParameter('item_list', pString);
  			
@@ -220,7 +196,7 @@
 						continue;
 					}
 					try {
-						$vb_res = $t_checkout->reserve($va_item['object_id'], $pn_user_id, $va_item['note']);
+						$vb_res = $t_checkout->reserve($va_item['object_id'], $pn_user_id, $va_item['note'], array('request' => $this->request));
 						if ($vb_res) {
 							$va_ret['checkouts'][$va_item['object_id']] = _t('Reserved <em>%1</em>', $vs_name);
 						} else {
@@ -231,7 +207,7 @@
 					}
 				} else {
 					try {
-						$vb_res = $t_checkout->checkout($va_item['object_id'], $pn_user_id, $va_item['note'], $va_item['due_date']);
+						$vb_res = $t_checkout->checkout($va_item['object_id'], $pn_user_id, $va_item['note'], $va_item['due_date'], array('request' => $this->request));
 				
 						if ($vb_res) {
 							$va_ret['checkouts'][$va_item['object_id']] = _t('Checked out <em>%1</em>; due date is %2', $vs_name, $va_item['due_date']);
@@ -252,7 +228,12 @@
  		 * 
  		 */
  		public function Info() {
- 			return $this->render('checkout/widget_checkout_html.php', true);
+ 			$t_user = new ca_users($pn_user_id = $this->request->getParameter('user_id', pInteger));
+ 			
+ 			$this->view->setVar('user_id', $pn_user_id);
+ 			$this->view->setVar('t_user', $t_user);
+ 			
+ 			return $this->render('checkout/widget_checkout_html.php', !$this->request->isAjax());
  		}
  		# -------------------------------------------------------
  	}

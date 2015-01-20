@@ -3352,8 +3352,10 @@ class ca_users extends BaseModel {
 			}
 		}
 	
+		if(!sizeof($va_access_by_item_id)) { return array(); }
 		$va_item_values = ca_lists::itemIDsToItemValues(array_keys($va_access_by_item_id), array('transaction' => $this->getTransaction()));
 	
+		if(!is_array($va_item_values) || !sizeof($va_item_values)) { return array(); }
 		$va_ret = array();
 		if (is_array($va_item_values)) {
 			foreach($va_item_values as $vn_item_id => $vn_val) {

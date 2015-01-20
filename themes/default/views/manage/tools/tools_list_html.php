@@ -54,13 +54,13 @@ if (!$this->request->isAjax()) {
 		<table id="caToolList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
 			<thead>
 			<tr>
-				<th>
+				<th class="list-header-unsorted">
 					<?php _p('Tool'); ?>
 				</th>
-				<th>
+				<th class="list-header-unsorted">
 					<?php _p('Description'); ?>
 				</th>
-				<th>
+				<th class="list-header-unsorted">
 					<?php _p('Commands'); ?>
 				</th>
 				<th class="{sorter: false} list-header-nosort" style="width: 75px">&nbsp;</th>

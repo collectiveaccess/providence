@@ -303,13 +303,27 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	 * @param int $pn_user_id
 	 * @param string $ps_note Optional checkin notes
 	 * @param string $ps_due_date A valid date time expression for the date item is due to be returned. If omitted the default date as configured will be used.
+	 * @param array $pa_options
 	 *
 	 * @return bool True on success, false on failure
 	 */
-	public function checkout($pn_object_id, $pn_user_id, $ps_note=null, $ps_due_date=null) {
-		// TODO: does user have read access to object?
+	public function checkout($pn_object_id, $pn_user_id, $ps_note=null, $ps_due_date=null, $pa_options=null) {
+		global $g_ui_locale_id;
+		
+		$vb_we_set_transaction = false;
+		if ($this->inTransaction()) { 
+			$o_trans = $this->getTransaction();
+		} else {	
+			$vb_we_set_transaction = true;
+			$this->setTransaction($o_trans = new Transaction());
+		}
+		
+		$o_request = caGetOption('request', $pa_options, null);
+		
 		$t_object = new ca_objects($pn_object_id);
+		$t_object->setTransaction($o_trans);
 		if (!$t_object->getPrimaryKey()) { throw new Exception(_t('Object_id is not valid')); }
+		if ($o_request && !$t_object->isReadable($o_request)) { throw new Exception(_t('Object_id is not accessible')); }
 		$t_user = new ca_users($pn_user_id);
 		if (!$t_user->getPrimaryKey()) { throw new Exception(_t('User_id is not valid')); }
 		
@@ -319,7 +333,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		// is there a reservation for this user?
-		$o_db = $this->getDb();
+		$o_db = $o_trans->getDb();
 		$qr_res = $o_db->query("
 			SELECT *
 			FROM ca_object_checkouts
@@ -353,16 +367,56 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			'checkout_date' => _t('today'),
 			'due_date' => $ps_due_date
 		));	
-		return $vb_update ? $this->update() : $this->insert();
+		
+		// Do we need to set values?
+		if (is_array($va_checkout_config['set_values']) && sizeof($va_checkout_config['set_values'])) {
+			$t_object->setMode(ACCESS_WRITE);
+			foreach($va_checkout_config['set_values'] as $vs_attr => $va_attr_values_by_event) {
+				if (!is_array($va_attr_values_by_event['checkout'])) {
+					if ($t_object->hasField($vs_attr)) {
+						// Intrinsic
+						$t_object->set($vs_attr, $va_attr_values_by_event['checkout']);
+					}
+				} else {
+					$va_attr_values['locale_id'] = $g_ui_locale_id;
+					$t_object->replaceAttribute($va_attr_values_by_event['checkout'], $vs_attr);
+				}
+				$t_object->update();
+				if($t_object->numErrors()) {
+					$this->errors = $t_object->errors;
+					if ($vb_we_set_transaction) { $o_trans->rollback(); }
+					return false;
+				}
+			}
+		} 
+		$vn_rc = $vb_update ? $this->update() : $this->insert();
+		
+		if ($vb_we_set_transaction) { 
+			$vn_rc ? $o_trans->commit() : $o_trans->rollback();
+		}
+		return $vn_rc;
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	public function checkin($pn_object_id, $ps_note=null) {
-		// TODO: does user have read access to object?
+	public function checkin($pn_object_id, $ps_note=null, $pa_options=null) {
+		global $g_ui_locale_id;
+		
+		$vb_we_set_transaction = false;
+		if ($this->inTransaction()) { 
+			$o_trans = $this->getTransaction();
+		} else {	
+			$vb_we_set_transaction = true;
+			$this->setTransaction($o_trans = new Transaction());
+		}
+		
+		$o_request = caGetOption('request', $pa_options, null);
+		
 		$t_object = new ca_objects($pn_object_id);
+		$t_object->setTransaction($o_trans);
 		if (!$t_object->getPrimaryKey()) { return null; }
+		if ($o_request && !$t_object->isReadable($o_request)) { return null; }
 		
 		// is object out?
 		if ($t_object->getCheckoutStatus() === __CA_OBJECTS_CHECKOUT_STATUS_AVAILABLE__) { 
@@ -374,16 +428,56 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			'return_date' => _t('now'),
 			'return_notes' => $ps_note
 		));	
-		return $this->update();
+		
+		// Do we need to set values?
+		if (is_array($va_checkout_config['set_values']) && sizeof($va_checkout_config['set_values'])) {
+			$t_object->setMode(ACCESS_WRITE);
+			foreach($va_checkout_config['set_values'] as $vs_attr => $va_attr_values_by_event) {
+				if (!is_array($va_attr_values_by_event['checkin'])) {
+					if ($t_object->hasField($vs_attr)) {
+						// Intrinsic
+						$t_object->set($vs_attr, $va_attr_values_by_event['checkin']);
+					}
+				} else {
+					$va_attr_values['locale_id'] = $g_ui_locale_id;
+					$t_object->replaceAttribute($va_attr_values_by_event['checkin'], $vs_attr);
+				}
+				$t_object->update();
+				if($t_object->numErrors()) {
+					$this->errors = $t_object->errors;
+					if ($vb_we_set_transaction) { $o_trans->rollback(); }
+					return false;
+				}
+			}
+		} 
+		$vn_rc = $this->update();
+		
+		if ($vb_we_set_transaction) { 
+			$vn_rc ? $o_trans->commit() : $o_trans->rollback();
+		}
+		return $vn_rc;
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	public function reserve($pn_object_id, $pn_user_id, $ps_note) {
-		// TODO: does user have read access to object?
+	public function reserve($pn_object_id, $pn_user_id, $ps_note, $pa_options=null) {
+		global $g_ui_locale_id;
+		
+		$vb_we_set_transaction = false;
+		if ($this->inTransaction()) { 
+			$o_trans = $this->getTransaction();
+		} else {	
+			$vb_we_set_transaction = true;
+			$this->setTransaction($o_trans = new Transaction());
+		}
+		
+		$o_request = caGetOption('request', $pa_options, null);
+		
 		$t_object = new ca_objects($pn_object_id);
+		$t_object->setTransaction($o_trans);
 		if (!$t_object->getPrimaryKey()) { return null; }
+		if ($o_request && !$t_object->isReadable($o_request)) { return null; }
 		
 		// is object out?
 		if ($t_object->getCheckoutStatus() === __CA_OBJECTS_CHECKOUT_STATUS_AVAILABLE__) { 
@@ -409,7 +503,34 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 			'user_id' => $pn_user_id,
 			'checkout_notes' => $ps_notes
 		));	
-		return $this->insert();
+		
+		// Do we need to set values?
+		if (is_array($va_checkout_config['set_values']) && sizeof($va_checkout_config['set_values'])) {
+			$t_object->setMode(ACCESS_WRITE);
+			foreach($va_checkout_config['set_values'] as $vs_attr => $va_attr_values_by_event) {
+				if (!is_array($va_attr_values_by_event['reserve'])) {
+					if ($t_object->hasField($vs_attr)) {
+						// Intrinsic
+						$t_object->set($vs_attr, $va_attr_values_by_event['reserve']);
+					}
+				} else {
+					$va_attr_values['locale_id'] = $g_ui_locale_id;
+					$t_object->replaceAttribute($va_attr_values_by_event['reserve'], $vs_attr);
+				}
+				$t_object->update();
+				if($t_object->numErrors()) {
+					$this->errors = $t_object->errors;
+					if ($vb_we_set_transaction) { $o_trans->rollback(); }
+					return false;
+				}
+			}
+		} 
+		$vn_rc = $this->insert();
+		
+		if ($vb_we_set_transaction) { 
+			$vn_rc ? $o_trans->commit() : $o_trans->rollback();
+		}
+		return $vn_rc;
 	}
 	# ------------------------------------------------------
 	/**
@@ -618,6 +739,58 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 		return null;
 	}
 	# ------------------------------------------------------
+	# By User
+	# ------------------------------------------------------
+	/**
+	 * Return list of outstanding checkouts for a user
+	 *
+	 * @param int $pn_user_id
+	 * @param string $ps_display_template Display template evaluated relative to each ca_object_checkouts records; return in array with key '_display'
+	 * @param Db $po_db A Db instance to use for database access. If omitted a new instance will be used.
+	 * @return array 
+	 */
+	static public function getOutstandingCheckoutsForUser($pn_user_id, $ps_display_template=null, $po_db=null) {
+		$o_db = $po_db ? $po_db : new Db();
+		
+		$qr_res = $o_db->query("
+			SELECT checkout_id
+			FROM ca_object_checkouts
+			WHERE
+				checkout_date IS NOT NULL
+				AND
+				return_date IS NULL
+				AND
+				user_id = ?
+				AND
+				deleted = 0
+			ORDER BY
+				checkout_date ASC
+		", array($pn_user_id));
+		
+		$va_ids = $qr_res->getAllFieldValues('checkout_id');
+		$qr_history = caMakeSearchResult('ca_object_checkouts', $va_ids);
+		
+		$va_checkouts = array();
+		if ($qr_history) {
+			while ($qr_history->nextHit()) {
+				$va_tmp = array(
+					'checkout_id' => $qr_history->get('ca_object_checkouts.checkout_id'),
+					'group_uuid' => $qr_history->get('ca_object_checkouts.group_uuid'),
+					'object_id' => $qr_history->get('ca_object_checkouts.object_id'),
+					'created_on' => $qr_history->get('ca_object_checkouts.created_on', array('timeOmit' => true)),
+					'checkout_date' => $qr_history->get('ca_object_checkouts.checkout_date', array('timeOmit' => true)),
+					'due_date' => $qr_history->get('ca_object_checkouts.due_date', array('timeOmit' => true)),
+					'checkout_notes' => $qr_history->get('ca_object_checkouts.checkout_notes')
+				);
+				if ($ps_display_template) {
+					$va_tmp['_display'] = $qr_history->getWithTemplate($ps_display_template);
+				}
+				$va_checkouts[] = $va_tmp;
+			}
+		}
+		return $va_checkouts;
+	}
+	# ------------------------------------------------------
 	# Stats
 	# ------------------------------------------------------
 	/**
@@ -645,5 +818,54 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 		return 0;
 	}
 	# ------------------------------------------------------
-		 
+	/**
+	 * Return number of outstanding reservations
+	 *
+	 * @param Db $po_db A Db instance to use for database access. If omitted a new instance will be used.
+	 * @return int 
+	 */
+	static public function numOutstandingReservations($po_db=null) {
+		$o_db = $po_db ? $po_db : new Db();
+		
+		$qr_res = $o_db->query("
+			SELECT count(*) c
+			FROM ca_object_checkouts
+			WHERE
+				checkout_date IS NULL
+				AND
+				return_date IS NULL
+				AND
+				deleted = 0
+		");
+		if ($qr_res->nextRow()) {
+			return (int)$qr_res->get('c');
+		}
+		return 0;
+	}
+	# ------------------------------------------------------
+	//	Number of times an individual copy is checked-out
+	//	Number of times an individual copy is reserved
+	//	Number of check-outs per day, week, month, year
+	//	Number of check-ins per day, week, month, year
+	//	Number of reserves per day, week, month, year
+	//	Number of check-outs and reserves by user
+	//	List of each copy a user has checked-out including due date
+	//	Total number and list of books lost per day, week, month, year
+	//	Total number of items circulated by library format type (book, CD/DVD, rare books, etc.)
+	/**
+	 *
+	 */
+	static public function getDashboardStatistics($ps_datetime=null, $po_db=null) {
+		$o_db = $po_db ? $po_db : new Db();
+		if (!$ps_datetime) { $ps_datetime = _t('today'); }
+		
+		$va_stats = array(
+			'numCheckouts' => ca_object_checkouts::numOutstandingCheckouts(),			//	Number of individual copies checked-out
+			'numReservations' => ca_object_checkouts::numOutstandingReservations(),		//	Number of individual copies reserved
+		);
+			
+		//	Number of check-outs per day, week, month, year
+		
+		return $va_stats;
+	} 
 }

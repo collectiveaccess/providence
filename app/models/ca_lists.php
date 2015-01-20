@@ -1142,6 +1142,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 *  indentForHierarchy = indicate hierarchy with indentation. [Default is true]
 	 * 	transaction = transaction to perform database operations within. [Default is null]
+	 *
+	 *  useDefaultWhenNull = if a list has a null value the default value is typically ignored and null used as the initial value; set this option to use the default in all cases [Default=false]
 	 * 
 	 * @return string - HTML code for the <select> element; empty string if the list is empty
 	 */
@@ -1253,7 +1255,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			
 			if ($va_item['is_default']) { $vn_default_val = $va_item[$pa_options['key']]; }		// get default value
 			
-			if ($va_item['is_default'] && !isset($pa_options['nullOption'])) {		// set default if needed, but only if there's not a null option set
+			if ($va_item['is_default'] && (!isset($pa_options['nullOption']) || (isset($pa_options['useDefaultWhenNull']) && (bool)$pa_options['useDefaultWhenNull']))) {		// set default if needed, but only if there's not a null option set
 				if (
 					(!is_array($pa_options['value']) && (!isset($pa_options['value']) || !strlen($pa_options['value'])))
 				) { 
