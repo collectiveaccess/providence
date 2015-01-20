@@ -32,8 +32,6 @@
 
  	class CheckOutController extends ActionController {
  		# -------------------------------------------------------
- 		#
- 		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
@@ -51,11 +49,6 @@
  		 * Begin checkout process with user select
  		 */
  		public function Index() {
- 			if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_do_library_checkout')) { 
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
- 			
  			$this->render('checkout/find_user_html.php');
  		}
  		# -------------------------------------------------------
@@ -63,11 +56,6 @@
  		 * Checkout items screen
  		 */
  		public function Items() {
- 			if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_do_library_checkout')) { 
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
- 			
  			$pn_user_id = $this->request->getParameter('user_id', pInteger);
  			
  			$this->view->setVar('user_id', $pn_user_id);
@@ -80,11 +68,6 @@
  		 * Return info via ajax on selected object
  		 */
  		public function GetObjectInfo() {
- 			if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_do_library_checkout')) { 
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
-
  			$pn_user_id = $this->request->getParameter('user_id', pInteger);
  			$pn_object_id = $this->request->getParameter('object_id', pInteger);
  			
@@ -192,11 +175,6 @@
  		 * Return info via ajax on selected object
  		 */
  		public function SaveTransaction() {
- 			if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_do_library_checkout')) { 
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
- 			
  			$pn_user_id = $this->request->getParameter('user_id', pInteger);
  			$ps_item_list = $this->request->getParameter('item_list', pString);
  			

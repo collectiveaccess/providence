@@ -818,5 +818,54 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 		return 0;
 	}
 	# ------------------------------------------------------
-		 
+	/**
+	 * Return number of outstanding reservations
+	 *
+	 * @param Db $po_db A Db instance to use for database access. If omitted a new instance will be used.
+	 * @return int 
+	 */
+	static public function numOutstandingReservations($po_db=null) {
+		$o_db = $po_db ? $po_db : new Db();
+		
+		$qr_res = $o_db->query("
+			SELECT count(*) c
+			FROM ca_object_checkouts
+			WHERE
+				checkout_date IS NULL
+				AND
+				return_date IS NULL
+				AND
+				deleted = 0
+		");
+		if ($qr_res->nextRow()) {
+			return (int)$qr_res->get('c');
+		}
+		return 0;
+	}
+	# ------------------------------------------------------
+	//	Number of times an individual copy is checked-out
+	//	Number of times an individual copy is reserved
+	//	Number of check-outs per day, week, month, year
+	//	Number of check-ins per day, week, month, year
+	//	Number of reserves per day, week, month, year
+	//	Number of check-outs and reserves by user
+	//	List of each copy a user has checked-out including due date
+	//	Total number and list of books lost per day, week, month, year
+	//	Total number of items circulated by library format type (book, CD/DVD, rare books, etc.)
+	/**
+	 *
+	 */
+	static public function getDashboardStatistics($ps_datetime=null, $po_db=null) {
+		$o_db = $po_db ? $po_db : new Db();
+		if (!$ps_datetime) { $ps_datetime = _t('today'); }
+		
+		$va_stats = array(
+			'numCheckouts' => ca_object_checkouts::numOutstandingCheckouts(),			//	Number of individual copies checked-out
+			'numReservations' => ca_object_checkouts::numOutstandingReservations(),		//	Number of individual copies reserved
+		);
+			
+		//	Number of check-outs per day, week, month, year
+		
+		return $va_stats;
+	} 
 }

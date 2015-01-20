@@ -34,8 +34,6 @@
  		# -------------------------------------------------------
  		#
  		# -------------------------------------------------------
- 		private $opo_client_services_config;
- 		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
@@ -53,10 +51,6 @@
  		 *
  		 */
  		public function Index() {
- 			if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_do_library_checkin')) { 
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
  			$this->render('checkin/items_html.php');
  		}
  		# -------------------------------------------------------
@@ -64,10 +58,6 @@
  		 * Return info via ajax on selected object
  		 */
  		public function GetObjectInfo() {
- 			if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_do_library_checkin')) { 
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
  			$pn_checkout_id = $this->request->getParameter('checkout_id', pInteger);
  			
  			$t_checkout = new ca_object_checkouts($pn_checkout_id);
@@ -97,10 +87,6 @@
  		 * 
  		 */
  		public function SaveTransaction() {
- 			if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_do_library_checkin')) { 
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
  			$ps_item_list = $this->request->getParameter('item_list', pString);
  			$pa_item_list = json_decode($ps_item_list, true);
  			
