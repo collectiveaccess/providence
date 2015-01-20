@@ -70,7 +70,7 @@ class ExcelDataReader extends BaseDataReader {
 	public function read($ps_source, $pa_options=null) {
 		try {
 			$this->opo_handle = PHPExcel_IOFactory::load($ps_source);
-			$this->opo_handle->setActiveSheet(caGetOption('dataset', $pa_options, 0));
+			$this->opo_handle->setActiveSheetIndex(caGetOption('dataset', $pa_options, 0));
 			$o_sheet = $this->opo_handle->getActiveSheet();
 			$this->opo_rows = $o_sheet->getRowIterator();
 			$this->opn_current_row = 0;

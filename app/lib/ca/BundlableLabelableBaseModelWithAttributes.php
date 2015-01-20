@@ -1911,11 +1911,20 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					# -------------------------------
 					// This bundle is only available for objects
 					case 'ca_objects_deaccession':		// object deaccession information
-						//if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$vb_batch && !$this->getPrimaryKey()) { return null; }	// not supported for new records
 						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
 					
 						$vs_element .= $this->getObjectDeaccessionHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						
+						break;
+					# -------------------------------
+					// This bundle is only available for objects
+					case 'ca_object_checkouts':		// object checkout information
+						if ($vb_batch) { return null; } // not supported in batch mode
+						if (!$vb_batch && !$this->getPrimaryKey()) { return null; }	// not supported for new records
+						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
+					
+						$vs_element .= $this->getObjectCheckoutsHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 						
 						break;
 					# -------------------------------
@@ -4228,7 +4237,6 @@ if (!$vb_batch) {
 					# -------------------------------
 					// This bundle is only available for objects
 					case 'ca_objects_deaccession':		// object deaccession information
-						//if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$vb_batch && !$this->getPrimaryKey()) { return null; }	// not supported for new records
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
 					
@@ -4240,6 +4248,16 @@ if (!$vb_batch) {
 						
 						if ($vb_is_deaccessioned && (bool)$this->getAppConfig()->get('deaccession_force_access_private')) { $this->get('access', 0); }	// set access to private for accessioned items
 						$this->update();
+						break;
+					# -------------------------------
+					// This bundle is only available for objects
+					case 'ca_object_checkouts':		// object checkout information
+						if ($vb_batch) { return null; } // not supported in batch mode
+						if (!$vb_batch && !$this->getPrimaryKey()) { return null; }	// not supported for new records
+						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
+					
+						// NOOP (for now)
+					
 						break;
 					# -------------------------------
 				}
@@ -4648,7 +4666,7 @@ if (!$vb_batch) {
 		$va_type_ids = caMergeTypeRestrictionLists($t_rel_item, $pa_options);
 		
 		if (is_array($va_type_ids) && (sizeof($va_type_ids) > 0)) {
-			$va_wheres[] = '('.$vs_related_table.'.type_id IN ('.join(',', $va_type_ids).'))';
+			$va_wheres[] = "({$vs_related_table}.type_id IN (".join(',', $va_type_ids).')'.($t_rel_item->getFieldInfo('type_id', 'IS_NULL') ? " OR ({$vs_related_table}.type_id IS NULL)" : '').')';
 		}
 		
 		$va_source_ids = caMergeSourceRestrictionLists($t_rel_item, $pa_options);
@@ -6020,7 +6038,7 @@ side. For many self-relations the direction determines the nature and display te
 	 		$va_params = array();
 	 		if (is_array($va_type_ids) && sizeof($va_type_ids)) {
 	 			$va_params[] = $va_type_ids;
-	 			$va_wheres[] = "(o.{$vs_type_fld} IN (?))";
+	 			$va_wheres[] = "(o.{$vs_type_fld} IN (?)".($this->getFieldInfo($vs_type_fld, 'IS_NULL') ? " OR o.{$vs_type_fld} IS NULL" : "").")";
 	 		}
 	 		if (is_array($va_source_ids) && sizeof($va_source_ids)) {
 	 			$va_params[] = $va_source_ids;

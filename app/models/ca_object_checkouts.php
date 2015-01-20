@@ -34,7 +34,16 @@
    *
    */
 
-require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
+require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
+require_once(__CA_MODELS_DIR__.'/ca_objects.php');
+
+/**
+ * Check out statuses
+ */
+define("__CA_OBJECTS_CHECKOUT_STATUS_AVAILABLE__", 0);
+define("__CA_OBJECTS_CHECKOUT_STATUS_OUT__", 1);
+define("__CA_OBJECTS_CHECKOUT_STATUS_OUT_WITH_RESERVATIONS__", 2);
+define("__CA_OBJECTS_CHECKOUT_STATUS_RESERVED__", 3);
 
 
 BaseModel::$s_ca_models_definitions['ca_object_checkouts'] = array(
@@ -125,7 +134,7 @@ BaseModel::$s_ca_models_definitions['ca_object_checkouts'] = array(
  	)
 );
 
-class ca_object_checkouts extends BaseModel {
+class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -217,11 +226,25 @@ class ca_object_checkouts extends BaseModel {
 	# ------------------------------------------------------
 	protected $SELF_RELATION_TABLE_NAME = null;
 	
+	
+	# ------------------------------------------------------
+	# Search
+	# ------------------------------------------------------
+	protected $SEARCH_CLASSNAME = 'ObjectCheckoutSearch';
+	protected $SEARCH_RESULT_CLASSNAME = 'ObjectCheckoutSearchResult';
+	
+	# ------------------------------------------------------
+	# ACL
+	# ------------------------------------------------------
+	protected $SUPPORTS_ACL = false;
+	
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
 	# are listed here is the order in which they will be returned using getFields()
 
 	protected $FIELDS;
+	
+	
 	
 	# ------------------------------------------------------
 	# --- Constructor
@@ -238,4 +261,389 @@ class ca_object_checkouts extends BaseModel {
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
+	/**
+	 * Creates a new ca_object_checkouts instance and initialize with a new group uuid. The returned instance
+	 * can be used to do one or more checkouts, checkins and reservations. All checkouts and reservations will be
+	 * bound together with the same uuid.
+	 *
+	 * @param string $ps_uuid A uuid to use; if omitted one will be generated
+	 * @return ca_object_checkouts 
+	 */
+	static public function newCheckoutTransaction($ps_uuid=null) {
+		$t_instance = new ca_object_checkouts();
+		$ps_uuid ? $t_instance->getTransactionUUID($ps_uuid) : $t_instance->getTransactionUUID();
+		
+		return $t_instance;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return uuid for current transaction group. Will generate a new uuid if required.
+	 *
+	 * @return string
+	 */
+	public function getTransactionUUID() {
+		if (!$this->ops_transaction_uuid) { $this->ops_transaction_uuid = caGenerateGUID(); }
+		return $this->ops_transaction_uuid;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Set uuid for current transaction group directly.
+	 *
+	 * @param string The uuid
+	 * @return string The value that was set
+	 */
+	public function setTransactionUUID($ps_uuid) {
+		return $this->ops_transaction_uuid = $ps_uuid;	
+	}
+	# ------------------------------------------------------
+	/**
+	 * Checkout an object for a user. Will throw an exception if the item is currently out or object or user_id are invalid;
+	 *
+	 * @param int $pn_object_id
+	 * @param int $pn_user_id
+	 * @param string $ps_note Optional checkin notes
+	 * @param string $ps_due_date A valid date time expression for the date item is due to be returned. If omitted the default date as configured will be used.
+	 *
+	 * @return bool True on success, false on failure
+	 */
+	public function checkout($pn_object_id, $pn_user_id, $ps_note=null, $ps_due_date=null) {
+		// TODO: does user have read access to object?
+		$t_object = new ca_objects($pn_object_id);
+		if (!$t_object->getPrimaryKey()) { throw new Exception(_t('Object_id is not valid')); }
+		$t_user = new ca_users($pn_user_id);
+		if (!$t_user->getPrimaryKey()) { throw new Exception(_t('User_id is not valid')); }
+		
+		// is object available?
+		if (!in_array($t_object->getCheckoutStatus(), array(__CA_OBJECTS_CHECKOUT_STATUS_AVAILABLE__, __CA_OBJECTS_CHECKOUT_STATUS_RESERVED__))) { 
+			throw new Exception(_t('Item is already out'));
+		}
+		
+		// is there a reservation for this user?
+		$o_db = $this->getDb();
+		$qr_res = $o_db->query("
+			SELECT *
+			FROM ca_object_checkouts
+			WHERE
+				user_id = ? AND object_id = ? AND checkout_date IS NULL AND return_date IS NULL
+			ORDER BY 
+				created_on
+		", array($pn_user_id, $pn_object_id));
+		$vb_update = false;
+		if ($qr_res->nextRow()) {
+			$vs_uuid = $qr_res->get('group_uuid');
+			if ($this->load($qr_res->get('checkout_id'))) {
+				$vb_update = true;
+			}
+		} else {
+			$vs_uuid = $this->getTransactionUUID();
+		}
+		$va_checkout_config = ca_object_checkouts::getObjectCheckoutConfigForType($t_object->getTypeCode());
+		
+		if (!($va_checkout_config['allow_override_of_due_dates'] && $ps_due_date && caDateToUnixTimestamp($ps_due_date))) {
+			// calculate default return date
+			$ps_due_date = isset($va_checkout_config['default_checkout_date']) ? $va_checkout_config['default_checkout_date'] : null;
+		}
+		
+		$this->setMode(ACCESS_WRITE);
+		$this->set(array(
+			'group_uuid' => $vs_uuid,
+			'object_id' => $pn_object_id,
+			'user_id' => $pn_user_id,
+			'checkout_notes' => $ps_note,
+			'checkout_date' => _t('today'),
+			'due_date' => $ps_due_date
+		));	
+		return $vb_update ? $this->update() : $this->insert();
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function checkin($pn_object_id, $ps_note=null) {
+		// TODO: does user have read access to object?
+		$t_object = new ca_objects($pn_object_id);
+		if (!$t_object->getPrimaryKey()) { return null; }
+		
+		// is object out?
+		if ($t_object->getCheckoutStatus() === __CA_OBJECTS_CHECKOUT_STATUS_AVAILABLE__) { 
+			throw new Exception(_t('Item is not out'));
+		}
+		
+		$this->setMode(ACCESS_WRITE);
+		$this->set(array(
+			'return_date' => _t('now'),
+			'return_notes' => $ps_note
+		));	
+		return $this->update();
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function reserve($pn_object_id, $pn_user_id, $ps_note) {
+		// TODO: does user have read access to object?
+		$t_object = new ca_objects($pn_object_id);
+		if (!$t_object->getPrimaryKey()) { return null; }
+		
+		// is object out?
+		if ($t_object->getCheckoutStatus() === __CA_OBJECTS_CHECKOUT_STATUS_AVAILABLE__) { 
+			throw new Exception(_t('Item is not out'));
+		}
+		$va_reservations = $this->objectHasReservations($pn_object_id);
+		// is object already reserved by this user?
+		if (is_array($va_reservations)) {
+			foreach($va_reservations as $va_reservation) {
+				if ($va_reservation['user_id'] == $pn_user_id) {
+					throw new Exception(_t('Item is already reserved by this user'));
+				}
+			}
+		}
+		
+		$vs_uuid = $this->getTransactionUUID();
+		$va_checkout_config = ca_object_checkouts::getObjectCheckoutConfigForType($t_object->getTypeCode());
+		
+		$this->setMode(ACCESS_WRITE);
+		$this->set(array(
+			'group_uuid' => $vs_uuid,
+			'object_id' => $pn_object_id,
+			'user_id' => $pn_user_id,
+			'checkout_notes' => $ps_notes
+		));	
+		return $this->insert();
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function getObjectCheckoutConfigForType($pm_type_id) {
+		$o_config = Configuration::load(__CA_APP_DIR__.'/conf/object_checkout.conf');
+		$t_object = new ca_objects();
+		
+		$va_type_config = $o_config->getAssoc('checkout_types');
+		$vs_type_code = is_numeric($pm_type_id) ? $t_object->getTypeCodeForID($pm_type_id) : $pm_type_id;
+		
+		if(isset($va_type_config[$vs_type_code])) {
+			if (isset($va_type_config[$vs_type_code]['default_checkout_period'])) {
+				if ($vn_due_date = strtotime($va_type_config[$vs_type_code]['default_checkout_period'])) {
+					$va_type_config[$vs_type_code]['default_checkout_date'] = date('Y-m-d', $vn_due_date);
+				}
+			}
+			
+			return $va_type_config[$vs_type_code];
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function getObjectCheckoutTypes() {
+		$o_config = Configuration::load(__CA_APP_DIR__.'/conf/object_checkout.conf');
+		$t_object = new ca_objects();
+		
+		$va_type_config = $o_config->getAssoc('checkout_types');
+		
+		return array_keys($va_type_config);
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function objectIsOut($pn_object_id) {
+		// is it out?
+		$o_db = $this->getDb();
+		$qr_res = $o_db->query("
+			SELECT *
+			FROM ca_object_checkouts
+			WHERE
+				(checkout_date <= ?)
+				AND
+				(return_date IS NULL)
+				AND
+				(object_id = ?)
+		", array(time(), $pn_object_id));
+		
+		if ($qr_res->nextRow()) {
+			return $qr_res->getRow();
+		}
+		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function objectHasReservations($pn_object_id) {
+		// is it out?
+		$o_db = $this->getDb();
+		$qr_res = $o_db->query("
+			SELECT checkout_id
+			FROM ca_object_checkouts
+			WHERE
+				(created_on <= ?)
+				AND
+				(checkout_date IS NULL)
+				AND
+				(return_date IS NULL)
+				AND
+				(object_id = ?)
+		", array(time(), $pn_object_id));
+		
+		$va_checkout_ids = $qr_res->getAllFieldValues('checkout_id');
+		if (!sizeof($va_checkout_ids)) { return array(); }
+		
+		if (!($qr_history = caMakeSearchResult('ca_object_checkouts', $va_checkout_ids))) { return array(); }
+		
+		$va_reservations = array();
+		while($qr_history->nextHit()) {
+			$va_reservations[] = array(
+				'group_uuid' => $qr_history->get('ca_object_checkouts.group_uuid'),
+				'checkout_id' => $qr_history->get('ca_object_checkouts.checkout_id'),
+				'user_id' => $qr_history->get('ca_object_checkouts.user_id'),
+				'user_name' => $qr_history->get('ca_users.fname').' '.$qr_history->get('ca_users.lname').(($vs_email = $qr_history->get('ca_users.email')) ? " ({$vs_email})" : ''),
+				'created_on' => $qr_history->get('ca_object_checkouts.created_on', array('timeOmit' => true)),
+				'checkout_notes' => $qr_history->get('ca_object_checkouts.checkout_notes')
+			);
+		}
+		return $va_reservations;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function objectHistory($pn_object_id) {
+		$o_db = $this->getDb();
+		$qr_res = $o_db->query("
+			SELECT checkout_id
+			FROM ca_object_checkouts
+			WHERE
+				(object_id = ?) AND (deleted = 0) AND (checkout_date IS NOT NULL)
+			ORDER BY 
+				created_on
+		", array($pn_object_id));
+		
+		$va_checkout_ids = $qr_res->getAllFieldValues('checkout_id');
+		if (!sizeof($va_checkout_ids)) { return array(); }
+		
+		if (!($qr_history = caMakeSearchResult('ca_object_checkouts', $va_checkout_ids))) { return array(); }
+		
+		$va_history = array();
+		
+		while($qr_history->nextHit()) {
+			$va_history[] = array(
+				'checkout_id' => $qr_history->get('ca_object_checkouts.checkout_id'),
+				'group_uuid' => $qr_history->get('ca_object_checkouts.group_uuid'),
+				'user_id' => $qr_history->get('ca_object_checkouts.user_id'),
+				'user_name' => $qr_history->get('ca_users.fname').' '.$qr_history->get('ca_users.lname').(($vs_email = $qr_history->get('ca_users.email')) ? " ({$vs_email})" : ''),
+				'created_on' => $qr_history->get('ca_object_checkouts.created_on', array('timeOmit' => true)),
+				'checkout_date' => $qr_history->get('ca_object_checkouts.checkout_date', array('timeOmit' => true)),
+				'due_date' => $qr_history->get('ca_object_checkouts.due_date', array('timeOmit' => true)),
+				'return_date' => $qr_history->get('ca_object_checkouts.return_date', array('timeOmit' => true)),
+				'return_notes' => $qr_history->get('ca_object_checkouts.return_notes'),
+				'checkout_notes' => $qr_history->get('ca_object_checkouts.checkout_notes')
+			);
+		}
+		
+		return $va_history;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function isOut() {
+		if (!$this->getPrimaryKey()) { return null; }
+		
+		if ($this->get('checkout_date') && !$this->get('return_date')) {
+			return true;
+		}
+		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function isReservation() {
+		if (!$this->getPrimaryKey()) { return null; }
+		
+		if (!$this->get('checkout_date') && !$this->get('return_date')) {
+			return true;
+		}
+		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function getCurrentCheckoutInstance($pn_object_id, $po_db=null) {
+		$o_db = ($po_db) ? $po_db : new Db();
+		
+		// is it out?
+		$qr_res = $o_db->query("
+			SELECT checkout_id
+			FROM ca_object_checkouts
+			WHERE
+				(created_on <= ?)
+				AND
+				(checkout_date IS NOT NULL)
+				AND
+				(return_date IS NULL)
+				AND
+				(object_id = ?)
+			ORDER BY
+				created_on
+		", array(time(), $pn_object_id));
+		
+		if ($qr_res->nextRow()) {
+			return new ca_object_checkouts($qr_res->get('checkout_id'));
+		}
+		
+		// is it reserved?
+		$qr_res = $o_db->query("
+			SELECT checkout_id
+			FROM ca_object_checkouts
+			WHERE
+				(created_on <= ?)
+				AND
+				(checkout_date IS NULL)
+				AND
+				(return_date IS NULL)
+				AND
+				(object_id = ?)
+			ORDER BY
+				created_on
+		", array(time(), $pn_object_id));
+		
+		if ($qr_res->nextRow()) {
+			return new ca_object_checkouts($qr_res->get('checkout_id'));
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	# Stats
+	# ------------------------------------------------------
+	/**
+	 * Return number of outstanding checkouts that need to be returned
+	 *
+	 * @param Db $po_db A Db instance to use for database access. If omitted a new instance will be used.
+	 * @return int 
+	 */
+	static public function numOutstandingCheckouts($po_db=null) {
+		$o_db = $po_db ? $po_db : new Db();
+		
+		$qr_res = $o_db->query("
+			SELECT count(*) c
+			FROM ca_object_checkouts
+			WHERE
+				checkout_date IS NOT NULL
+				AND
+				return_date IS NULL
+				AND
+				deleted = 0
+		");
+		if ($qr_res->nextRow()) {
+			return (int)$qr_res->get('c');
+		}
+		return 0;
+	}
+	# ------------------------------------------------------
+		 
 }
