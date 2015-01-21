@@ -42,6 +42,7 @@ require_once(__CA_MODELS_DIR__."/ca_loans_x_objects.php");
 require_once(__CA_MODELS_DIR__."/ca_objects_x_storage_locations.php");
 require_once(__CA_MODELS_DIR__."/ca_commerce_orders.php");
 require_once(__CA_MODELS_DIR__."/ca_commerce_order_items.php");
+require_once(__CA_MODELS_DIR__."/ca_object_checkouts.php");
 require_once(__CA_MODELS_DIR__."/ca_object_lots.php");
 require_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
@@ -513,6 +514,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$this->BUNDLES['ca_objects_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Object location'));
 		$this->BUNDLES['ca_objects_history'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Object use history'));
 		$this->BUNDLES['ca_objects_deaccession'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Deaccession status'));
+		$this->BUNDLES['ca_object_checkouts'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Object checkouts'));
 	}
 	# ------------------------------------------------------
 	/**
@@ -757,6 +759,36 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		
 		
 		return $o_view->render('ca_objects_deaccession.php');
+	}
+	# ------------------------------------------------------
+	/** 
+	 * Returns HTML form bundle for object checkout information
+	 *
+	 * @param HTTPRequest $po_request The current request
+	 * @param string $ps_form_name
+	 * @param string $ps_placement_code
+	 * @param array $pa_bundle_settings
+	 * @param array $pa_options Array of options. Supported options are 
+	 *			noCache = If set to true then label cache is bypassed; default is true
+	 *
+	 * @return string Rendered HTML bundle
+	 */
+	public function getObjectCheckoutsHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
+		global $g_ui_locale;
+		
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+		
+		if(!is_array($pa_options)) { $pa_options = array(); }
+		
+		$o_view->setVar('id_prefix', $ps_form_name);
+		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
+		
+		$o_view->setVar('settings', $pa_bundle_settings);
+		
+		$o_view->setVar('t_subject', $this);
+		
+		
+		return $o_view->render('ca_object_checkouts.php');
 	}
 	# ------------------------------------------------------
  	# Object location tracking
@@ -1869,4 +1901,103 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
  		return ca_objects::$s_current_location_type_configuration_cache[caMakeCacheKeyFromOptions($pa_options, "{$vs_table_name}/{$pm_current_loc_subclass}")] = ca_objects::$s_current_location_type_configuration_cache[$vs_cache_key] = null;
  	}
  	# ------------------------------------------------------
+ 	# Object checkout 
+ 	# ------------------------------------------------------
+ 	/**
+	 * Determine if the currently loaded object may be marked as loaned out using the library checkout system.
+	 * Only object types configured for checkout in the object_checkout.conf configuration file may be used with the checkout system
+	 *
+	 * @return bool 
+	 */
+ 	public function canBeCheckedOut() {
+ 		if (!$this->getPrimaryKey()) { return false; }
+ 		return ca_object_checkouts::getObjectCheckoutConfigForType($this->getTypeCode()) ? true : false;
+ 	}
+	# ------------------------------------------------------
+	/**
+	 * Return checkout status for currently loaded object. By default a numeric constant is returned. Possible values are:
+	 *		__CA_OBJECTS_CHECKOUT_STATUS_AVAILABLE__ (0)
+	 *		__CA_OBJECTS_CHECKOUT_STATUS_OUT__ (1)
+	 *		__CA_OBJECTS_CHECKOUT_STATUS_OUT_WITH_RESERVATIONS__ (2)	
+	 *		__CA_OBJECTS_CHECKOUT_STATUS_RESERVED__ (3)	
+	 * 
+	 * If the returnAsText option is set then a text status value suitable for display is returned. For detailed information
+	 * about the current status use the returnAsArray option, which returns an array with the following elements:
+	 *
+	 *		status = numeric status code
+	 *		status_display = status display text
+	 *		user_id = The user_id of the user who checked out the object (if status is __CA_OBJECTS_CHECKOUT_STATUS_OUT__ or __CA_OBJECTS_CHECKOUT_STATUS_OUT_WITH_RESERVATIONS__)
+	 *		user_name = Displayable user name and email 
+	 *		checkout_date = Date of checkout (if status is __CA_OBJECTS_CHECKOUT_STATUS_OUT__ or __CA_OBJECTS_CHECKOUT_STATUS_OUT_WITH_RESERVATIONS__) as printable text
+	 *
+	 * @param array $pa_options Options include:
+	 *		returnAsText = return status as displayable text [Default=false]
+	 *		returnAsText = return detailed status information in an array [Default=false]
+	 * @return mixed Will return a numeric status code by default; status text for display if returnAsText option is set; or an array with details on the checkout if the returnAsArray option is set. Will return null if not object is loaded or if the object may not be checked out.
+	 */
+	public function getCheckoutStatus($pa_options=null) {
+		if (!($vn_object_id = $this->getPrimaryKey())) { return null; }
+		
+		if (!$this->canBeCheckedOut()) { return null; }
+		
+		$vb_return_as_text = caGetOption('returnAsText', $pa_options, false);
+		$vb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
+		
+		$t_checkout = new ca_object_checkouts();
+		$va_is_out = $t_checkout->objectIsOut($vn_object_id);
+		$va_reservations = $t_checkout->objectHasReservations($vn_object_id);
+		$vn_num_reservations = sizeof($va_reservations);
+		$vb_is_reserved = is_array($va_reservations) && sizeof($va_reservations);
+		
+		$va_info = array('user_name' => null, 'checkout_date' => null, 'user_id' => null, 'due_date' => null, 'checkout_notes' => null);
+		
+		if ($va_is_out) {
+			$t_checkout->load($va_is_out['checkout_id']);
+			$va_info['status'] = $vb_is_reserved ? __CA_OBJECTS_CHECKOUT_STATUS_OUT_WITH_RESERVATIONS__ : __CA_OBJECTS_CHECKOUT_STATUS_OUT__;
+			$va_info['status_display'] = $vb_is_reserved ? ((($vn_num_reservations == 1) ? _t('Out; %1 reservation', $vn_num_reservations) : _t('Out; %1 reservations', $vn_num_reservations))) : _t('Out');
+			$va_info['user_id'] = $va_is_out['user_id'];
+			$va_info['checkout_date'] = $t_checkout->get('checkout_date', array('timeOmit' => true));
+			$va_info['checkout_notes'] = $t_checkout->get('checkout_notes');
+			$va_info['due_date'] = $t_checkout->get('checkout_date', array('timeOmit' => true));
+			$va_info['user_name'] = $t_checkout->get('ca_users.fname').' '.$t_checkout->get('ca_users.lname').(($vs_email = $t_checkout->get('ca_users.email')) ? " ({$vs_email})" : '');
+		} elseif ($vb_is_reserved) {
+			$va_info['status'] = __CA_OBJECTS_CHECKOUT_STATUS_RESERVED__;
+			$va_info['status_display'] = ($vn_num_reservations == 1) ? _t('Reserved') : _t('%1 reservations', $vn_num_reservations);
+		} else {
+			$va_info['status'] = __CA_OBJECTS_CHECKOUT_STATUS_AVAILABLE__;
+			$va_info['status_display'] = _t('Available');
+		}
+		
+		if ($vb_return_as_array) { return $va_info; }
+		if ($vb_return_as_text) { return $va_info['status_display']; }
+		return $va_info['status'];
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function getCheckoutHistory($pa_options=null) {
+		if (!($vn_object_id = $this->getPrimaryKey())) { return null; }
+		
+		$t_checkout = new ca_object_checkouts();
+		return is_array($va_history = $t_checkout->objectHistory($vn_object_id)) ? $va_history : array();
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return list of pending reservations for object. Each item in the list is an array with the following elements
+	 * 
+	 *
+	 * @param array $pa_options No options are currently supported
+	 * @return array A list of pending reservations, or null if not object is loaded
+	 */
+	public function getCheckoutReservations($pa_options=null) {
+		if (!($vn_object_id = $this->getPrimaryKey())) { return null; }
+		
+		$t_checkout = new ca_object_checkouts();
+		$va_reservations = $t_checkout->objectHasReservations($vn_object_id);
+		$vb_is_reserved = is_array($va_reservations) && sizeof($va_reservations);
+		
+		return $vb_is_reserved ? $va_reservations : array();
+	}
+	# ------------------------------------------------------
 }

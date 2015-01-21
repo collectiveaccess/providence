@@ -410,6 +410,11 @@ a.inspectorOnLoan {
     font-style: italic;
 }
 
+div.inspectorCheckedOut {
+    color: #0000cc;
+    font-style: italic;
+}
+
 .inspectorDeaccessioned {
     color: #cc0000;
     font-style: italic;
@@ -520,6 +525,8 @@ a.inspectorOnLoan {
 #leftNav #widgets .searchForms, 
 #leftNav #widgets .comments, 
 #leftNav #widgets .tags, 
+#leftNav h3.libraryCheckIn, 
+#leftNav h3.libraryCheckOut, 
 #leftNav h3.export, 
 #leftNav h3.metalist, 
 #leftNav h3.relTypes, 
@@ -6983,4 +6990,110 @@ td.caSourceFileControlRadio {
     overflow: scroll;
     width: 100%;
     border: 1px solid #e6e6e6;
+}
+
+/** Library checkout **/
+div.caLibraryUIContainer {
+	position: relative;
+}
+
+div.caLibraryFindAutocompleteContainer {
+	margin: 100px 0 25px 0;
+	text-align: center;
+}
+
+div.caLibraryFindAutocompleteLabel {
+	font-size: 18px;
+	margin: 0 0 10px 0;
+}
+
+div.caLibraryFindAutocompleteContainer form input[type=text] {
+	font-size: 18px;
+}
+
+div.caLibraryTransactionListContainer {
+	display: none;
+}
+
+div.caLibraryTransactionResultsContainer {
+	display: none;
+}
+
+div.caLibraryTransactionListLabel {
+	font-size: 14px;
+	font-weight: bold;
+}
+
+div.caLibraryTransactionListItemContainer {
+	position: relative;
+	background-color: #eee;
+	padding: 10px;
+	border-radius: 4px;
+	margin: 5px 0 0 0;
+}
+
+div.caLibraryTransactionListItemMedia {
+	float: left;
+	margin: 0 10px 0 0;
+	width: 72px;
+	height: 72px;
+}
+
+div.caLibraryTransactionListItemName {
+	font-size: 12px;
+	font-style: italic;
+}
+
+div.caLibraryTransactionListItemBorrower {
+	font-size: 10px;
+}
+
+div.caLibraryTransactionListItemNotesContainer {
+	margin: 3px;
+}
+
+div.caLibraryTransactionListItemNotesLabel {
+	font-size: 11px;
+}
+
+div.caLibraryTransactionListItemRemoveButton {
+	position: absolute;
+	top: 5px;
+	right: 5px;
+}
+
+div.caLibrarySubmitListContainer {
+	text-align: center;
+}
+
+div.caLibraryTransactionResultsContainer {
+	background-color: #eee;
+	padding: 10px;
+	border-radius: 4px;
+	margin: 25px 0 0 0;
+}
+
+div.caLibraryTransactionResultsLabel {
+	font-size: 14px;
+	font-weight: bold;
+}
+
+div.caLibraryTransactionListItemDueDateContainer {
+	margin: 0 0 0 82px;
+}
+
+div.caLibraryTransactionListItemDueDateLabel {
+	font-size: 11px;
+}
+
+div.caLibraryTransactionListItemWillReserve {
+	color: #cc000;
+	font-size: 11px;
+	font-weight: bold;
+}
+
+table.caLibraryHistory, tr.caLibraryHistory, th.caLibraryHistory, td.caLibraryHistory {
+	border: 1px solid #000;
+	border-collapse: collapse;
+	padding: 5px;
 }

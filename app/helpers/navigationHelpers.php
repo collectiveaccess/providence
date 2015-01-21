@@ -437,6 +437,7 @@
 		$vs_classname = (!$pb_no_background) ? 'form-button' : '';
 		
 		$va_attr = array();
+		if ($ps_id) { $va_attr[] = "id='{$ps_id}'"; }
 		if (is_array($pa_attributes)) {
 			foreach($pa_attributes as $vs_name => $vs_value) {
 				$va_attr[] = $vs_name."='".($vs_value)."'";
