@@ -5936,7 +5936,6 @@ a.caClientOrderOverviewButton:hover {
 .globalAccess .bundleContainer {
     border: 0px;
     padding-left:0px;
-
 }
 .globalAccess .labelInfo {
     background-color:#eee;
@@ -5967,6 +5966,15 @@ div.editLink {
     font-size: 12px;
     color: #134959;
     line-height:1.75em;
+}
+
+.inheritFromParent {
+	font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size:11px;
+    color: #333333;
+    font-weight: normal;
+    margin-bottom: 5px;
+    float: right;
 }
 
 /* -------------------------------------------------*/
