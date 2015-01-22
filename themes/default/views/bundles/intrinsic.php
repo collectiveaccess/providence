@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2010-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -70,6 +70,26 @@
 					if ($vs_media = $this->getVar('display_media')) {
 ?>
 						<div style="float: right; margin: 5px 10px 5px 0px;"><?php print $vs_media; ?></div>
+<?php
+					}
+					
+					//
+					// Generate "inherit" control for access where supported
+					//
+					if (($vs_bundle_name == 'access') && (bool)$t_instance->getAppConfig()->get($t_instance->tableName().'_allow_access_inheritance') && $t_instance->hasField('access_inherit_from_parent') && ($t_instance->get('parent_id') > 0)) {
+						print "<div class='inheritFromParent'>".caHTMLCheckboxInput($vs_id_prefix.'access_inherit_from_parent', array('value' => 1, 'id' => $vs_id_prefix.'access_inherit_from_parent'), array()).' '._t('Inherit from parent?')."</div>";
+?>
+						<script type="text/javascript">
+							jQuery(document).ready(function() {
+								jQuery('#<?php print $vs_id_prefix; ?>access_inherit_from_parent').bind('click', function(e) {
+									jQuery('#<?php print $vs_id_prefix; ?>access').prop('disabled', jQuery(this).prop('checked'));
+								}).prop('checked', <?php print (bool)$t_instance->get('access_inherit_from_parent') ? 'true' : 'false'; ?>);
+			
+								if (jQuery('#<?php print $vs_id_prefix; ?>access_inherit_from_parent').prop('checked')) { 
+									jQuery('#<?php print $vs_id_prefix; ?>access').prop('disabled', true);
+								}
+							});
+						</script>
 <?php
 					}
 ?>
