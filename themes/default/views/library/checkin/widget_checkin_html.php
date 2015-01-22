@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/controllers/lookup/BundleMappingGroupController.php : 
+ * library/checkin/widget_checkin_html.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
- * Open-source collections management software
+ * Open-source places management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,14 +25,9 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/ca/BaseLookupController.php");
- 
- 	class BundleMappingGroupController extends BaseLookupController {
- 		# -------------------------------------------------------
- 		protected $opb_uses_hierarchy_browser = false;
- 		protected $ops_table_name = 'ca_bundle_mapping_groups';		// name of "subject" table (what we're editing)
- 		protected $ops_name_singular = 'mapping group';
- 		protected $ops_search_class = null;
- 		# -------------------------------------------------------
- 	}
- ?>
+?>
+	<h3 class='libraryCheckIn'><?php print _t('Library check in'); ?>:
+	<div><?php
+		print _t('Outstanding items: %1', ca_object_checkouts::numOutstandingCheckouts())."<br/>\n";
+	?></div>
+	</h3>
