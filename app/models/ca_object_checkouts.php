@@ -882,6 +882,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 					'created_on' => $qr_history->get('ca_object_checkouts.created_on', array('timeOmit' => true)),
 					'checkout_date' => $qr_history->get('ca_object_checkouts.checkout_date', array('timeOmit' => true)),
 					'due_date' => $qr_history->get('ca_object_checkouts.due_date', array('timeOmit' => true)),
+					'return_date' => $qr_history->get('ca_object_checkouts.return_date', array('timeOmit' => true)),
 					'checkout_notes' => $qr_history->get('ca_object_checkouts.checkout_notes')
 				);
 				if ($ps_display_template) {
