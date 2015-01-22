@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2014 Whirl-i-Gig
+ * Copyright 2012-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,7 +35,7 @@
  	$va_last_settings = $this->getVar('batch_mediaimport_last_settings');
 
 	print $vs_control_box = caFormControlBox(
-		caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute media import"), 'caBatchMediaImportForm', array('onclick' => 'caShowConfirmBatchExecutionPanel(); return false;')).' '.
+		caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute media import"), 'caBatchMediaImportFormButton', array('onclick' => 'caShowConfirmBatchExecutionPanel(); return false;')).' '.
 		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'batch', 'MediaImport', 'Index/'.$this->request->getActionExtra(), array()),
 		'',
 		''
