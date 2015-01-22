@@ -83,6 +83,7 @@
  		 */
  		public function getUserDetail() {
  			$pn_user_id = $this->request->getParameter('user_id', pInteger);
+ 			$ps_daterange = $this->request->getParameter('daterange', pInteger);
  			$t_user = new ca_users($pn_user_id);
  			 
  			$this->view->setVar('t_user', $t_user);
@@ -92,13 +93,13 @@
  				$vs_item_display_template = "<unit relativeTo=\"ca_objects\"><l>^ca_objects.preferred_labels.name</l> (^ca_objects.idno)</unit>";
  			
 				// Get checkouts 
-				$this->view->setVar('checkouts', ca_object_checkouts::getOutstandingCheckoutsForUser($pn_user_id, $vs_item_display_template));
+				$this->view->setVar('checkouts', ca_object_checkouts::getOutstandingCheckoutsForUser($pn_user_id, $vs_item_display_template, $ps_daterange));
 			
 				// Get checkins 
-				$this->view->setVar('checkins', ca_object_checkouts::getCheckinsForUser($pn_user_id, $vs_item_display_template));
+				$this->view->setVar('checkins', ca_object_checkouts::getCheckinsForUser($pn_user_id, $vs_item_display_template, $ps_daterange));
 			
 				// Get overdue
-				$this->view->setVar('overdue_checkouts', ca_object_checkouts::getOverdueCheckoutsForUser($pn_user_id, $vs_item_display_template));
+				$this->view->setVar('overdue_checkouts', ca_object_checkouts::getOverdueCheckoutsForUser($pn_user_id, $vs_item_display_template, $ps_daterange));
 			
 				// Get reservations
 				$this->view->setVar('reservations', ca_object_checkouts::getOutstandingReservationsForUser($pn_user_id, $vs_item_display_template));

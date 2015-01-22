@@ -749,46 +749,43 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	 * @param Db $po_db A Db instance to use for database access. If omitted a new instance will be used.
 	 * @return array 
 	 */
-	static public function getOutstandingCheckoutsForUser($pn_user_id, $ps_display_template=null, $po_db=null) {
+	static public function getOutstandingCheckoutsForUser($pn_user_id, $ps_display_template=null, $ps_datetime=null, $po_db=null) {
 		$o_db = $po_db ? $po_db : new Db();
 		
-		$qr_res = $o_db->query("
-			SELECT checkout_id
-			FROM ca_object_checkouts
-			WHERE
-				checkout_date IS NOT NULL
-				AND
-				return_date IS NULL
-				AND
-				user_id = ?
-				AND
-				deleted = 0
-			ORDER BY
-				checkout_date ASC
-		", array($pn_user_id));
 		
-		$va_ids = $qr_res->getAllFieldValues('checkout_id');
-		$qr_history = caMakeSearchResult('ca_object_checkouts', $va_ids);
-		
-		$va_checkouts = array();
-		if ($qr_history) {
-			while ($qr_history->nextHit()) {
-				$va_tmp = array(
-					'checkout_id' => $qr_history->get('ca_object_checkouts.checkout_id'),
-					'group_uuid' => $qr_history->get('ca_object_checkouts.group_uuid'),
-					'object_id' => $qr_history->get('ca_object_checkouts.object_id'),
-					'created_on' => $qr_history->get('ca_object_checkouts.created_on', array('timeOmit' => true)),
-					'checkout_date' => $qr_history->get('ca_object_checkouts.checkout_date', array('timeOmit' => true)),
-					'due_date' => $qr_history->get('ca_object_checkouts.due_date', array('timeOmit' => true)),
-					'checkout_notes' => $qr_history->get('ca_object_checkouts.checkout_notes')
-				);
-				if ($ps_display_template) {
-					$va_tmp['_display'] = $qr_history->getWithTemplate($ps_display_template);
-				}
-				$va_checkouts[] = $va_tmp;
-			}
+		if ($ps_datetime && is_array($va_dates = caDateToUnixTimestamps($ps_datetime))) {
+			$qr_res = $o_db->query("
+				SELECT checkout_id
+				FROM ca_object_checkouts
+				WHERE
+					checkout_date BETWEEN ? AND ?
+					AND
+					return_date IS NULL
+					AND
+					user_id = ?
+					AND
+					deleted = 0
+				ORDER BY
+					checkout_date ASC
+			", array($va_dates[0], $va_dates[1], $pn_user_id));
+		} else {
+			$qr_res = $o_db->query("
+				SELECT checkout_id
+				FROM ca_object_checkouts
+				WHERE
+					checkout_date IS NOT NULL
+					AND
+					return_date IS NULL
+					AND
+					user_id = ?
+					AND
+					deleted = 0
+				ORDER BY
+					checkout_date ASC
+			", array($pn_user_id));
 		}
-		return $va_checkouts;
+		
+		return ca_object_checkouts::_collectCheckoutData(caMakeSearchResult('ca_object_checkouts', $qr_res->getAllFieldValues('checkout_id')), $ps_display_template);
 	}
 	# ------------------------------------------------------
 	/**
@@ -799,99 +796,93 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	 * @param Db $po_db A Db instance to use for database access. If omitted a new instance will be used.
 	 * @return array 
 	 */
-	static public function getOverdueCheckoutsForUser($pn_user_id, $ps_display_template=null, $po_db=null) {
+	static public function getOverdueCheckoutsForUser($pn_user_id, $ps_display_template=null, $ps_datetime=null, $po_db=null) {
 		$o_db = $po_db ? $po_db : new Db();
 		
-		$qr_res = $o_db->query("
-			SELECT checkout_id
-			FROM ca_object_checkouts
-			WHERE
-				checkout_date IS NOT NULL
-				AND
-				return_date IS NULL
-				AND
-				(due_date < ?)
-				AND
-				user_id = ?
-				AND
-				deleted = 0
-			ORDER BY
-				checkout_date ASC
-		", array($pn_user_id, time()));
-		
-		$va_ids = $qr_res->getAllFieldValues('checkout_id');
-		$qr_history = caMakeSearchResult('ca_object_checkouts', $va_ids);
-		
-		$va_checkouts = array();
-		if ($qr_history) {
-			while ($qr_history->nextHit()) {
-				$va_tmp = array(
-					'checkout_id' => $qr_history->get('ca_object_checkouts.checkout_id'),
-					'group_uuid' => $qr_history->get('ca_object_checkouts.group_uuid'),
-					'object_id' => $qr_history->get('ca_object_checkouts.object_id'),
-					'created_on' => $qr_history->get('ca_object_checkouts.created_on', array('timeOmit' => true)),
-					'checkout_date' => $qr_history->get('ca_object_checkouts.checkout_date', array('timeOmit' => true)),
-					'due_date' => $qr_history->get('ca_object_checkouts.due_date', array('timeOmit' => true)),
-					'checkout_notes' => $qr_history->get('ca_object_checkouts.checkout_notes')
-				);
-				if ($ps_display_template) {
-					$va_tmp['_display'] = $qr_history->getWithTemplate($ps_display_template);
-				}
-				$va_checkouts[] = $va_tmp;
-			}
+		if ($ps_datetime && is_array($va_dates = caDateToUnixTimestamps($ps_datetime))) {
+			$qr_res = $o_db->query("
+				SELECT checkout_id
+				FROM ca_object_checkouts
+				WHERE
+					checkout_date BETWEEN ? AND ?
+					AND
+					return_date IS NULL
+					AND
+					(due_date < ?)
+					AND
+					user_id = ?
+					AND
+					deleted = 0
+				ORDER BY
+					checkout_date ASC
+			", array($va_dates[0], $va_dates[1], $pn_user_id, time()));
+		} else {
+			$qr_res = $o_db->query("
+				SELECT checkout_id
+				FROM ca_object_checkouts
+				WHERE
+					checkout_date IS NOT NULL
+					AND
+					return_date IS NULL
+					AND
+					(due_date < ?)
+					AND
+					user_id = ?
+					AND
+					deleted = 0
+				ORDER BY
+					checkout_date ASC
+			", array($pn_user_id, time()));
 		}
-		return $va_checkouts;
+		
+		return ca_object_checkouts::_collectCheckoutData(caMakeSearchResult('ca_object_checkouts', $qr_res->getAllFieldValues('checkout_id')), $ps_display_template);
 	}
 	# ------------------------------------------------------
 	/**
-	 * Return list of outstanding checkouts for a user
+	 * Return list of checkins for a user
 	 *
 	 * @param int $pn_user_id
 	 * @param string $ps_display_template Display template evaluated relative to each ca_object_checkouts records; return in array with key '_display'
 	 * @param Db $po_db A Db instance to use for database access. If omitted a new instance will be used.
 	 * @return array 
 	 */
-	static public function getCheckinsForUser($pn_user_id, $ps_display_template=null, $po_db=null) {
+	static public function getCheckinsForUser($pn_user_id, $ps_display_template=null, $ps_datetime=null, $po_db=null) {
 		$o_db = $po_db ? $po_db : new Db();
 		
-		$qr_res = $o_db->query("
-			SELECT checkout_id
-			FROM ca_object_checkouts
-			WHERE
-				checkout_date IS NOT NULL
-				AND
-				return_date IS NOT NULL
-				AND
-				user_id = ?
-				AND
-				deleted = 0
-			ORDER BY
-				checkout_date ASC
-		", array($pn_user_id));
 		
-		$va_ids = $qr_res->getAllFieldValues('checkout_id');
-		$qr_history = caMakeSearchResult('ca_object_checkouts', $va_ids);
-		
-		$va_checkouts = array();
-		if ($qr_history) {
-			while ($qr_history->nextHit()) {
-				$va_tmp = array(
-					'checkout_id' => $qr_history->get('ca_object_checkouts.checkout_id'),
-					'group_uuid' => $qr_history->get('ca_object_checkouts.group_uuid'),
-					'object_id' => $qr_history->get('ca_object_checkouts.object_id'),
-					'created_on' => $qr_history->get('ca_object_checkouts.created_on', array('timeOmit' => true)),
-					'checkout_date' => $qr_history->get('ca_object_checkouts.checkout_date', array('timeOmit' => true)),
-					'due_date' => $qr_history->get('ca_object_checkouts.due_date', array('timeOmit' => true)),
-					'return_date' => $qr_history->get('ca_object_checkouts.return_date', array('timeOmit' => true)),
-					'checkout_notes' => $qr_history->get('ca_object_checkouts.checkout_notes')
-				);
-				if ($ps_display_template) {
-					$va_tmp['_display'] = $qr_history->getWithTemplate($ps_display_template);
-				}
-				$va_checkouts[] = $va_tmp;
-			}
+		if ($ps_datetime && is_array($va_dates = caDateToUnixTimestamps($ps_datetime))) {
+			$qr_res = $o_db->query("
+				SELECT checkout_id
+				FROM ca_object_checkouts
+				WHERE
+					checkout_date IS NOT NULL
+					AND
+					return_date BETWEEN ? AND ?
+					AND
+					user_id = ?
+					AND
+					deleted = 0
+				ORDER BY
+					checkout_date ASC
+			", array($va_dates[0], $va_dates[1], $pn_user_id));
+		} else {
+			$qr_res = $o_db->query("
+				SELECT checkout_id
+				FROM ca_object_checkouts
+				WHERE
+					checkout_date IS NOT NULL
+					AND
+					return_date IS NOT NULL
+					AND
+					user_id = ?
+					AND
+					deleted = 0
+				ORDER BY
+					checkout_date ASC
+			", array($pn_user_id));
 		}
-		return $va_checkouts;
+		
+		return ca_object_checkouts::_collectCheckoutData(caMakeSearchResult('ca_object_checkouts', $qr_res->getAllFieldValues('checkout_id')), $ps_display_template);
 	}
 	# ------------------------------------------------------
 	/**
@@ -920,21 +911,33 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 				checkout_date ASC
 		", array($pn_user_id));
 		
-		$va_ids = $qr_res->getAllFieldValues('checkout_id');
-		$qr_history = caMakeSearchResult('ca_object_checkouts', $va_ids);
-		
+		return ca_object_checkouts::_collectCheckoutData(caMakeSearchResult('ca_object_checkouts', $qr_res->getAllFieldValues('checkout_id')), $ps_display_template);
+	}
+	# ------------------------------------------------------
+	/**
+	 * Roll up by-user data for return
+	 *
+	 * @param SearchResult $qr_res A ca_object_checkouts result set
+	 * @param string $ps_display_template Optional display template; will be returned in _display key in returned array
+	 *
+	 * @return array List of events (checkins, checkouts, etc.)
+	 */
+	private static function _collectCheckoutData($qr_res, $ps_display_template=null) {
 		$va_checkouts = array();
-		if ($qr_history) {
-			while ($qr_history->nextHit()) {
+		if ($qr_res) {
+			while ($qr_res->nextHit()) {
 				$va_tmp = array(
-					'checkout_id' => $qr_history->get('ca_object_checkouts.checkout_id'),
-					'group_uuid' => $qr_history->get('ca_object_checkouts.group_uuid'),
-					'object_id' => $qr_history->get('ca_object_checkouts.object_id'),
-					'created_on' => $qr_history->get('ca_object_checkouts.created_on', array('timeOmit' => true)),
-					'checkout_notes' => $qr_history->get('ca_object_checkouts.checkout_notes')
+					'checkout_id' => $qr_res->get('ca_object_checkouts.checkout_id'),
+					'group_uuid' => $qr_res->get('ca_object_checkouts.group_uuid'),
+					'object_id' => $qr_res->get('ca_object_checkouts.object_id'),
+					'created_on' => $qr_res->get('ca_object_checkouts.created_on', array('timeOmit' => true)),
+					'checkout_date' => $qr_res->get('ca_object_checkouts.checkout_date', array('timeOmit' => true)),
+					'due_date' => $qr_res->get('ca_object_checkouts.due_date', array('timeOmit' => true)),
+					'return_date' => $qr_res->get('ca_object_checkouts.return_date', array('timeOmit' => true)),
+					'checkout_notes' => $qr_res->get('ca_object_checkouts.checkout_notes')
 				);
 				if ($ps_display_template) {
-					$va_tmp['_display'] = $qr_history->getWithTemplate($ps_display_template);
+					$va_tmp['_display'] = $qr_res->getWithTemplate($ps_display_template);
 				}
 				$va_checkouts[] = $va_tmp;
 			}

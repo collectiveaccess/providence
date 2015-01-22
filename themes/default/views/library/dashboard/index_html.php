@@ -27,6 +27,8 @@
  */
 	$va_stats = $this->getVar('stats');
 	$ps_daterange = $this->getVar('daterange');
+	$va_dates = caDateToUnixTimestamps($ps_daterange);
+	$vs_daterange_proc = caGetLocalizedDateRange($va_dates[0], $va_dates[1]);
 
 ?>
 	<h1><?php print _t('Statistics Dashboard'); ?></h1>
@@ -100,7 +102,7 @@
 		jQuery("#caLibraryDashboardDetailContainer").hide();
 		jQuery(".caLibraryUserLink").bind("click", function(e) {
 			jQuery("#caLibraryDashboardDetailContainer").slideDown(250);
-			jQuery("#caLibraryDashboardDetailContainer").load('<?php print caNavUrl($this->request, '*', '*', 'getUserDetail'); ?>', { user_id: jQuery(this).data('user_id') });
+			jQuery("#caLibraryDashboardDetailContainer").load('<?php print caNavUrl($this->request, '*', '*', 'getUserDetail'); ?>', { daterange: '<?php print addslashes($vs_daterange_proc); ?>', user_id: jQuery(this).data('user_id') });
 		});
 	});
 	
