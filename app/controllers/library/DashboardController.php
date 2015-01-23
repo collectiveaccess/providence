@@ -83,7 +83,7 @@
  		 */
  		public function getUserDetail() {
  			$pn_user_id = $this->request->getParameter('user_id', pInteger);
- 			$ps_daterange = $this->request->getParameter('daterange', pInteger);
+ 			$ps_daterange = $this->request->getParameter('daterange', pString);
  			$t_user = new ca_users($pn_user_id);
  			 
  			$this->view->setVar('t_user', $t_user);
