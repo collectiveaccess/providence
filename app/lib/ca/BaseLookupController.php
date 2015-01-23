@@ -152,7 +152,7 @@
 				$qr_res->setOption('dontPrefetchAttributes', true);
 				
 				$va_opts = array('exclude' => $va_excludes, 'limit' => $pn_limit);
-				if(!$pb_no_inline && ($pb_quickadd || (is_null($pb_quickadd) && $this->request->user && $this->request->user->canDoAction('can_quickadd_'.$this->opo_item_instance->tableName())))) {
+				if(!$pb_no_inline && ($pb_quickadd || (!strlen($pb_quickadd) && $this->request->user && $this->request->user->canDoAction('can_quickadd_'.$this->opo_item_instance->tableName())))) {
 					$va_opts['inlineCreateQuery'] = $ps_query;
 					$va_opts['inlineCreateMessageDoesNotExist'] = _t('<em>%1</em> does not exist. Create?', $ps_query);
 					$va_opts['inlineCreateMessage'] = _t('Create <em>%1</em>?', $ps_query);

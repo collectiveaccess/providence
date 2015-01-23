@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/lib/core/Plugins/IWLPlugVisualizer.php : interface for visualization classes
+ * app/lib/core/Plugins/IWLPlugPDFRenderer.php : interface for PDFRenderer classes
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -23,14 +23,10 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
- * @package CollectiveAccess
- * @subpackage Visualization
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
- *
  * ----------------------------------------------------------------------
  */
 	
-	interface IWLPlugVisualizer {
+	interface IWLPlugPDFRenderer {
 		# -------------------------------------------------------
 		# Initialization and state
 		# -------------------------------------------------------
@@ -43,19 +39,9 @@
 		public function checkStatus();
 		
 		# -------------------------------------------------------
-		# Properties
+		# Render
 		# -------------------------------------------------------
-		public function setDimensions($pn_width, $pn_height);
-		public function getDimensions();
-		
-		public function get($ps_property);
-		public function set($ps_property, $ps_value);
-		
-		# -------------------------------------------------------
-		# Data
-		# -------------------------------------------------------
-		public function setData($po_data);
-		public function getData();
-		public function clearData();
-		public function canHandle($po_data, $pa_viz_settings);
+		public function render($ps_content, $pa_options=null);
+		public function renderFile($ps_file_path, $pa_options=null);
+		public function setPage($ps_size, $ps_orientation, $ps_margin_top=0, $ps_margin_right=0, $ps_margin_bottom=0, $ps_margin_left=0);
 	}

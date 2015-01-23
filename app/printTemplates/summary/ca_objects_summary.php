@@ -32,6 +32,11 @@
  * @pageOrientation portrait
  * @tables ca_objects
  *
+ * @marginTop 0.75in
+ * @marginLeft 0.25in
+ * @marginBottom 0.5in
+ * @marginRight 0.25in
+ *
  * ----------------------------------------------------------------------
  */
  
@@ -45,8 +50,9 @@
 	print $this->render("header.php");
 	print $this->render("footer.php");	
 ?>
+	<br/>
 	<div class="title">
-		<h1 class="title"><?php print $t_item->getLabelForDisplay();?></h1>
+		<?php print $t_item->getLabelForDisplay();?>
 	</div>
 	<div class="representationList">
 		
