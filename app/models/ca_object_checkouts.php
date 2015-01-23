@@ -739,6 +739,106 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 		return null;
 	}
 	# ------------------------------------------------------
+	# Objects by type of event (checkin, checkout, reservation)
+	# ------------------------------------------------------
+	/**
+	 * Return list of object_ids for objects that are checked out
+	 *
+	 * @param string $ps_datetime 
+	 * @param Db $po_db A Db instance to use for database access. If omitted a new instance will be used.
+	 * @return array 
+	 */
+	static public function getObjectIDsForOutstandingCheckouts($ps_datetime=null, $po_db=null) {
+		$o_db = $po_db ? $po_db : new Db();
+		
+		if ($ps_datetime && is_array($va_dates = caDateToUnixTimestamps($ps_datetime))) {
+			$qr_res = $o_db->query("
+				SELECT DISTINCT object_id
+				FROM ca_object_checkouts
+				WHERE
+					checkout_date BETWEEN ? AND ?
+					AND
+					return_date IS NULL
+					AND
+					deleted = 0
+			", array($va_dates[0], $va_dates[1]));
+		} else {
+			$qr_res = $o_db->query("
+				SELECT DISTINCT object_id
+				FROM ca_object_checkouts
+				WHERE
+					checkout_date IS NOT NULL
+					AND
+					return_date IS NULL
+					AND
+					deleted = 0
+			", array());
+		}
+		
+		return $qr_res->getAllFieldValues('object_id');
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return list of object_ids for objects that have been checked in
+	 *
+	 * @param string $ps_datetime 
+	 * @param Db $po_db A Db instance to use for database access. If omitted a new instance will be used.
+	 * @return array 
+	 */
+	static public function getObjectIDsForCheckins($ps_datetime=null, $po_db=null) {
+		$o_db = $po_db ? $po_db : new Db();
+		
+		if ($ps_datetime && is_array($va_dates = caDateToUnixTimestamps($ps_datetime))) {
+			$qr_res = $o_db->query("
+				SELECT DISTINCT object_id
+				FROM ca_object_checkouts
+				WHERE
+					checkout_date BETWEEN ? AND ?
+					AND
+					return_date IS NOT NULL
+					AND
+					deleted = 0
+			", array($va_dates[0], $va_dates[1]));
+		} else {
+			$qr_res = $o_db->query("
+				SELECT DISTINCT object_id
+				FROM ca_object_checkouts
+				WHERE
+					checkout_date IS NOT NULL
+					AND
+					return_date IS NOT NULL
+					AND
+					deleted = 0
+			", array());
+		}
+		
+		return $qr_res->getAllFieldValues('object_id');
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return list of object_ids for objects that have current reservations
+	 *
+	 * @param string $ps_datetime 
+	 * @param Db $po_db A Db instance to use for database access. If omitted a new instance will be used.
+	 * @return array 
+	 */
+	static public function getObjectIDsForReservations($po_db=null) {
+		$o_db = $po_db ? $po_db : new Db();
+		
+		$qr_res = $o_db->query("
+			SELECT DISTINCT object_id
+			FROM ca_object_checkouts
+			WHERE
+				checkout_date IS NULL
+				AND
+				return_date IS NULL
+				AND
+				deleted = 0
+		", array());
+		
+		return $qr_res->getAllFieldValues('object_id');
+	}
+	# ------------------------------------------------------
 	# By User
 	# ------------------------------------------------------
 	/**

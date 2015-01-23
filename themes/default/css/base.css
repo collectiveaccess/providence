@@ -7131,6 +7131,14 @@ div.caLibraryDashboardPanel {
 .caLibraryDashboardCallout {
 	font-size: 24px;
 	font-weight: bold;
+	margin: 0;
+}
+
+.caLibraryDashboardCalloutDate {
+	font-size: 10px;
+	font-weight: normal;
+	font-style: italic;
+	margin: 0;
 }
 
 .caLibraryDashboardUserList {

@@ -34,22 +34,31 @@
  		# -------------------------------------------------------
  		#
  		# -------------------------------------------------------
- 		private $opo_client_services_config;
+ 		/**
+ 		 *
+ 		 */
+ 		private $opo_checkout_config;
  		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
+ 			
+ 			$this->opo_checkout_config = Configuration::load(__CA_APP_DIR__.'/conf/object_checkout.conf');
  			
  			if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_do_library_checkin') || !$this->request->user->canDoAction('can_do_library_checkout') ) { 
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
+ 			
  		}
  		# -------------------------------------------------------
  		/**
  		 *
  		 */
  		public function Index() {
+ 			AssetLoadManager::register("jquery", "scrollto");
  			if (!($ps_daterange = $this->request->getParameter('daterange', pString))) { $ps_daterange = _t('today'); }
+ 			
+			$va_dashboard_config = $this->opo_checkout_config->getAssoc('dashboard');
  			
  			$this->view->setVar('stats', $va_stats = ca_object_checkouts::getDashboardStatistics($ps_daterange));
  			$this->view->setVar('daterange', $ps_daterange);
@@ -74,6 +83,59 @@
 				}
 				$this->view->setVar($vs_var_name, $va_user_list);
 			}
+			
+			$this->view->setVar('panels', $va_panels = is_array($va_dashboard_config['panels']) ? $va_dashboard_config['panels'] : array());
+			
+			//
+			// Gather data for configurable stat panels. 
+			//
+			// These panels break counts of checkins, checkouts or reservations by an object metadata element.
+			// For example: # of checkouts by item format
+			//
+			foreach($va_panels as $vs_panel => $va_panel_info) {
+				if (!($va_group_bys = $va_panel_info['group_by'])) { continue;}
+				if (!is_array($va_group_bys)) { $va_group_bys = array($va_group_bys); }
+				
+				$va_group_by_elements = array();
+				foreach($va_group_bys as $vn_i => $vs_group_by) {
+					$va_tmp = explode('.', $vs_group_by);
+					$va_group_by_elements[$vn_i] = array_pop($va_tmp);
+				}
+				
+				$va_counts = array();
+				
+				switch(strtolower($va_panel_info['event'])) {
+					case 'checkin':
+						$va_object_ids = ca_object_checkouts::getObjectIDsForCheckins($ps_daterange);
+						break;
+					case 'reserve':
+						$va_object_ids = ca_object_checkouts::getObjectIDsForReservations();
+						break;
+					case 'checkout':
+					default:
+						$va_object_ids = ca_object_checkouts::getObjectIDsForOutstandingCheckouts($ps_daterange);
+						break;
+				}
+				if(sizeof($va_object_ids) == 0) { continue; }
+				
+				$qr_objects = caMakeSearchResult('ca_objects', $va_object_ids);
+				while($qr_objects->nextHit()) {
+					foreach($va_group_bys as $vn_i => $vs_group_by) {
+						if (is_array($va_vals = $qr_objects->get($vs_group_by, array('returnAsArray' => true, 'convertCodesToDisplayText' => true)))) {
+							if (!sizeof($va_vals)) { $va_count['?']++; break; }
+							foreach($va_vals as $vn_attr_id => $va_val) {
+								$va_counts[$va_val[$va_group_by_elements[$vn_i]]]++;
+							}
+							
+							break;
+						} else {
+							$va_count['?']++;
+						}
+					}
+				}
+				$this->view->setVar("panel_{$vs_panel}", $va_counts);
+			}
+			
  			
  			$this->render('dashboard/index_html.php');
  		}
