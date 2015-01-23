@@ -49,8 +49,67 @@
  		 *
  		 */
  		public function Index() {
- 			$this->view->setVar('stats', ca_object_checkouts::getDashboardStatistics());
+ 			if (!($ps_daterange = $this->request->getParameter('daterange', pString))) { $ps_daterange = _t('today'); }
+ 			
+ 			$this->view->setVar('stats', $va_stats = ca_object_checkouts::getDashboardStatistics($ps_daterange));
+ 			$this->view->setVar('daterange', $ps_daterange);
+ 			
+ 			// process user lists
+ 			
+ 			foreach(array(
+ 				'checkoutUserList' => 'checkout_user_list',
+ 				'checkinUserList' => 'checkin_user_list',
+ 				'overdueCheckoutUserList' => 'overdue_checkout_user_list',
+ 				'reservationUserList' => 'reservation_user_list',
+ 			) as $vs_stat_key => $vs_var_name) {
+ 				$va_user_list = array();
+				$vn_c = 0;
+				foreach($va_stats[$vs_stat_key] as $va_user) {
+					$va_user_list[] = "<a href='#' class='caLibraryUserLink' data-user_id='".$va_user['user_id']."'>".trim($va_user['fname'].' '.$va_user['lname'])."</a>"; //.($va_user['email'] ? ' ('.$va_user['email'].')' : '');
+					$vn_c++;
+					if ($vn_c >= 10) {
+						$va_user_list[] = _t(' and %1 more', sizeof($va_stats[$vs_stat_key]) - $vn_c);
+						break;
+					}
+				}
+				$this->view->setVar($vs_var_name, $va_user_list);
+			}
+ 			
  			$this->render('dashboard/index_html.php');
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
+ 		public function getUserDetail() {
+ 			$pn_user_id = $this->request->getParameter('user_id', pInteger);
+ 			$ps_daterange = $this->request->getParameter('daterange', pInteger);
+ 			$t_user = new ca_users($pn_user_id);
+ 			 
+ 			$this->view->setVar('t_user', $t_user);
+ 			if ($t_user->getPrimaryKey()) {	
+ 				$this->view->setVar('name', trim($t_user->get('fname').' '.$t_user->get('lname')));
+ 			
+ 				$vs_item_display_template = "<unit relativeTo=\"ca_objects\"><l>^ca_objects.preferred_labels.name</l> (^ca_objects.idno)</unit>";
+ 			
+				// Get checkouts 
+				$this->view->setVar('checkouts', ca_object_checkouts::getOutstandingCheckoutsForUser($pn_user_id, $vs_item_display_template, $ps_daterange));
+			
+				// Get checkins 
+				$this->view->setVar('checkins', ca_object_checkouts::getCheckinsForUser($pn_user_id, $vs_item_display_template, $ps_daterange));
+			
+				// Get overdue
+				$this->view->setVar('overdue_checkouts', ca_object_checkouts::getOverdueCheckoutsForUser($pn_user_id, $vs_item_display_template, $ps_daterange));
+			
+				// Get reservations
+				$this->view->setVar('reservations', ca_object_checkouts::getOutstandingReservationsForUser($pn_user_id, $vs_item_display_template));
+			
+			} else {
+				$this->view->setVar('name', "???");
+			}
+ 			
+ 			
+ 			$this->render('dashboard/user_detail_html.php');
  		}
  		# -------------------------------------------------------
  	}

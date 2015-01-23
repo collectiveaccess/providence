@@ -10879,6 +10879,7 @@ $pa_options["display_form_field_tips"] = true;
 			INNER JOIN {$vs_table_name} ON {$vs_table_name}.{$vs_primary_key} = random_items.{$vs_primary_key}
 			{$vs_deleted_sql}
 		";
+		
 		$qr_res = $o_db->query($vs_sql);
 		
 		$va_random_items = array();
