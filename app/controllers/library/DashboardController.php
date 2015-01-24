@@ -26,6 +26,7 @@
  * ----------------------------------------------------------------------
  */
 
+ 	require_once(__CA_APP_DIR__.'/helpers/libraryServicesHelpers.php');
 	require_once(__CA_LIB_DIR__.'/ca/Search/ObjectCheckoutSearch.php');
  	require_once(__CA_MODELS_DIR__.'/ca_object_checkouts.php');
 	require_once(__CA_LIB_DIR__.'/ca/ResultContext.php');
@@ -37,14 +38,14 @@
  		/**
  		 *
  		 */
- 		private $opo_checkout_config;
+ 		private $opo_library_services_config;
  		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
- 			$this->opo_checkout_config = Configuration::load(__CA_APP_DIR__.'/conf/object_checkout.conf');
+ 			$this->opo_library_services_config = caGetLibraryServicesConfiguration();
  			
- 			if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_do_library_checkin') || !$this->request->user->canDoAction('can_do_library_checkout') ) { 
+ 			if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_do_library_checkout') || !$this->request->config->get('enable_library_services')  || !$this->request->config->get('enable_object_checkout')) { 
  				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
  				return;
  			}
@@ -55,10 +56,11 @@
  		 *
  		 */
  		public function Index() {
+ 			die("meow");
  			AssetLoadManager::register("jquery", "scrollto");
  			if (!($ps_daterange = $this->request->getParameter('daterange', pString))) { $ps_daterange = _t('today'); }
  			
-			$va_dashboard_config = $this->opo_checkout_config->getAssoc('dashboard');
+			$va_dashboard_config = $this->opo_library_services_config->getAssoc('dashboard');
  			
  			$this->view->setVar('stats', $va_stats = ca_object_checkouts::getDashboardStatistics($ps_daterange));
  			$this->view->setVar('daterange', $ps_daterange);

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,6 +36,7 @@
 
 require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_MODELS_DIR__.'/ca_objects.php');
+require_once(__CA_APP_DIR__.'/helpers/libraryServicesHelpers.php');
 
 /**
  * Check out statuses
@@ -537,7 +538,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 */
 	static public function getObjectCheckoutConfigForType($pm_type_id) {
-		$o_config = Configuration::load(__CA_APP_DIR__.'/conf/object_checkout.conf');
+		$o_config = caGetLibraryServicesConfiguration();
 		$t_object = new ca_objects();
 		
 		$va_type_config = $o_config->getAssoc('checkout_types');
@@ -559,7 +560,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 */
 	static public function getObjectCheckoutTypes() {
-		$o_config = Configuration::load(__CA_APP_DIR__.'/conf/object_checkout.conf');
+		$o_config = caGetLibraryServicesConfiguration();
 		$t_object = new ca_objects();
 		
 		$va_type_config = $o_config->getAssoc('checkout_types');

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2010-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1148,7 +1148,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		
-		// get commerce order history bundle (objects only, of course)
+		// get library checkout and commerce order history bundle (objects only, of course)
 		if ($vs_table == 'ca_objects') {
 			$va_additional_settings = array(
 				'order_type' => array(
@@ -1182,6 +1182,44 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			if ($vb_show_tooltips) {
 				TooltipManager::add(
 					"#bundleDisplayEditorBundle_ca_commerce_order_history",
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
+				);
+			}
+			
+			$va_additional_settings = array(
+				'checkout_status' => array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_SELECT,
+					'width' => 35, 'height' => 1,
+					'takesLocale' => false,
+					'default' => '',
+					'options' => array(
+						_t('All') => 'all',
+						_t('Overdue') => 'overdue',
+						_t('Reserved') => 'reserved',
+						_t('Out') => 'out',
+					),
+					'label' => _t('Check out status'),
+					'description' => _t('Determines which checkouts are displayed.')
+				)		
+			);
+			
+			$vs_bundle = 'ca_object_checkouts';
+			$vs_label = _t('Library checkouts');
+			$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_table}_preferred_labels'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> "._t('Library checkouts')."</div>";
+			$vs_description = _t('List of library checkouts that include this object');
+			
+			$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+				'bundle' => $vs_bundle,
+				'display' => ($vs_format == 'simple') ? $vs_label : $vs_display,
+				'description' => $vs_description,
+				'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
+				'settings' => $va_additional_settings
+			);
+			
+			if ($vb_show_tooltips) {
+				TooltipManager::add(
+					"#bundleDisplayEditorBundle_ca_object_checkouts",
 					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 				);
 			}
@@ -1941,6 +1979,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		if (!isset($va_type_list[$pn_type_id])) { return false; }
 		
 		$t_restriction = new ca_bundle_display_type_restrictions();
+		if ($this->inTransaction()) { $t_restriction->setTransaction($this->getTransaction()); }
 		$t_restriction->setMode(ACCESS_WRITE);
 		$t_restriction->set('table_num', $this->get('table_num'));
 		$t_restriction->set('type_id', $pn_type_id);
