@@ -56,7 +56,6 @@
  		 *
  		 */
  		public function Index() {
- 			die("meow");
  			AssetLoadManager::register("jquery", "scrollto");
  			if (!($ps_daterange = $this->request->getParameter('daterange', pString))) { $ps_daterange = _t('today'); }
  			

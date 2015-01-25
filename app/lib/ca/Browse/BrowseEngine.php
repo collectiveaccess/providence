@@ -1749,6 +1749,9 @@
 											$vs_checkout_join_sql = '';
 											$vs_where = "(ca_objects.object_id NOT IN (SELECT object_id FROM ca_object_checkouts WHERE (ca_object_checkouts.checkout_date <= {$vn_current_time}) AND (ca_object_checkouts.return_date IS NULL)))"; 
 											break;
+										case 'all':
+											$vs_where = "(ca_object_checkouts.checkout_date <= {$vn_current_time})";
+											break;
 										default:
 										case 'out':
 											$vs_where = "((ca_object_checkouts.checkout_date <= {$vn_current_time}) AND (ca_object_checkouts.return_date IS NULL))";
