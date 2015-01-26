@@ -526,6 +526,9 @@ function caFileIsIncludable($ps_file) {
 		return '"'.str_replace("\"", "\"\"", $ps_text).'"';
 	}
 	# ----------------------------------------
+	/**
+	 *
+	 */
 	function caGetTempDirPath() {
 		if (function_exists('sys_get_temp_dir')) {
 			return sys_get_temp_dir();
@@ -564,6 +567,22 @@ function caFileIsIncludable($ps_file) {
 		return $vs_tmp;
 	}
 	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caMakeGetFilePath($ps_prefix=null, $ps_extension=null) {
+ 		$vs_path = caGetTempDirPath();
+
+		do {
+			$vs_file_path = $vs_path.DIRECTORY_SEPARATOR.$ps_prefix.mt_rand().getmypid().($ps_extension ? ".{$ps_extension}" : "");
+		} while (file_exists($vs_file_path));            
+
+		return $vs_file_path;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
 	function caQuoteList($pa_list) {
 		if (!is_array($pa_list)) { return array(); }
 		$va_quoted_list = array();
@@ -1596,13 +1615,13 @@ function caFileIsIncludable($ps_file) {
 		if ($pn_max_length < 1) { $pn_max_length = 30; }
 		if (mb_strlen($ps_text) > $pn_max_length) {
 			if (strtolower($ps_side == 'end')) {
-				$vs_txt = mb_substr($ps_text, mb_strlen($ps_text) - $pn_max_length + 3);
+				$vs_txt = mb_substr($ps_text, mb_strlen($ps_text) - $pn_max_length + 3, null, 'UTF-8');
 				if (preg_match("!<[^>]*$!", $vs_txt, $va_matches)) {
 					$vs_txt = preg_replace("!{$va_matches[0]}$!", '', $vs_txt);
 				}
 				$ps_text = "...{$vs_txt}";
 			} else {
-				$vs_txt = mb_substr($ps_text, 0, ($pn_max_length - 3));
+				$vs_txt = mb_substr($ps_text, 0, ($pn_max_length - 3), 'UTF-8');
 				if (preg_match("!(<[^>]*)$!", $vs_txt, $va_matches)) {
 					$vs_txt = preg_replace("!{$va_matches[0]}$!", '', $vs_txt);
 				}
@@ -2251,6 +2270,26 @@ function caFileIsIncludable($ps_file) {
 		}
 
 		return true;
+	}
+	# ----------------------------------------
+	/**
+	 * Generate a GUID 
+	 *
+	 * @return string
+	 */
+	function caGenerateGUID(){
+		if (function_exists("openssl_random_pseudo_bytes")) {
+			$vs_data = openssl_random_pseudo_bytes(16);
+		} else {
+			$vs_data = '';
+			for($i=0; $i < 16; $i++) {
+				$vs_data .= chr(mt_rand(0, 255));
+			}
+		}
+		$vs_data[6] = chr(ord($vs_data[6]) & 0x0f | 0x40); // set version to 0100
+		$vs_data[8] = chr(ord($vs_data[8]) & 0x3f | 0x80); // set bits 6-7 to 10
+
+		return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($vs_data), 4));
 	}
 	# ----------------------------------------
 	/**

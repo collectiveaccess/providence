@@ -201,7 +201,11 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 				$va_ajax_ids = array();
 				$vs_label = $vs_ajax_content_url = '';
 				foreach($va_marker_content_items as $va_marker_content_item) {
-					if (!$vs_label) { $vs_label = $va_marker_content_item['label']; }
+					if (!$vs_label) {
+						$vs_label = $va_marker_content_item['label'];
+					} else { // if there are multiple items in one location, we want to add the labels of the 2nd and all following items to the 'content' part of the overlay, while still not duplicating content (hence, md5)
+						$va_buf[md5($va_marker_content_item['label'])] = $va_marker_content_item['label'];
+					}
 					if (!$vs_ajax_content_url) { $vs_ajax_content_url = $va_marker_content_item['ajaxContentUrl']; }
 					$va_ajax_ids[] = $va_marker_content_item['ajaxContentID'];
 					$va_buf[md5($va_marker_content_item['content'])] = $va_marker_content_item['content'];	// md5 is to ensure there is no duplicate content (eg. if something is mapped to the same location twice)

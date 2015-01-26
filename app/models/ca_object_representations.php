@@ -1358,7 +1358,9 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  			
  			$va_files[$vn_caption_id]['path'] = $qr_res->getFilePath('caption_file');
  			$va_files[$vn_caption_id]['url'] = $qr_res->getFileUrl('caption_file');
- 			$va_files[$vn_caption_id]['filesize'] = caFormatFileSize(filesize($va_files[$vn_caption_id]['path']));
+			if(file_exists($va_files[$vn_caption_id]['path'])) {
+				$va_files[$vn_caption_id]['filesize'] = caFormatFileSize(filesize($va_files[$vn_caption_id]['path']));
+			}
  			$va_files[$vn_caption_id]['caption_id'] = $vn_caption_id;
  			$va_files[$vn_caption_id]['locale_id'] = $vn_locale_id;
  			$va_files[$vn_caption_id]['locale'] = $t_locale->localeIDToName($vn_locale_id);

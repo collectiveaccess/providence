@@ -3134,7 +3134,8 @@ class ca_users extends BaseModel {
 			} else {
 				$t_list = new ca_lists();
 				$t_instance = $this->getAppDatamodel()->getInstanceByTableName($ps_table_name, true);
-				$vn_type_id = (int)$t_list->getItemIDFromList($t_instance->getTypeListCode(), $pm_type_code_or_id);
+				if(!($vs_type_list_code = $t_instance->getTypeListCode())) { return __CA_BUNDLE_ACCESS_EDIT__; } // no type-level acces control for tables without type lists (like ca_lists)
+				$vn_type_id = (int)$t_list->getItemIDFromList($vs_type_list_code, $pm_type_code_or_id);
 			}
 			$vn_access = -1;
 			foreach($va_roles as $vn_role_id => $va_role_info) {
@@ -3157,7 +3158,6 @@ class ca_users extends BaseModel {
 			return $vn_access;
 		} else {
 			// no type level access control for tables not explicitly listed in $s_bundlable_tables
-			ca_users::$s_user_type_access_cache[$ps_table_name.'/'.$vn_type_id."/".$this->getPrimaryKey()] = ca_users::$s_user_type_access_cache[$vs_cache_key] = __CA_BUNDLE_ACCESS_EDIT__;
 			return __CA_BUNDLE_ACCESS_EDIT__;
 		}
 	}
@@ -3352,8 +3352,10 @@ class ca_users extends BaseModel {
 			}
 		}
 	
+		if(!sizeof($va_access_by_item_id)) { return array(); }
 		$va_item_values = ca_lists::itemIDsToItemValues(array_keys($va_access_by_item_id), array('transaction' => $this->getTransaction()));
 	
+		if(!is_array($va_item_values) || !sizeof($va_item_values)) { return array(); }
 		$va_ret = array();
 		if (is_array($va_item_values)) {
 			foreach($va_item_values as $vn_item_id => $vn_val) {
