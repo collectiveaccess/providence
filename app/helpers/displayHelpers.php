@@ -104,7 +104,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			'fallback' => $va_fallback_locales		/* the first of these that is available will display, but only if none of the preferred locales are available */
 		);
 
-		if($ps_item_locale){ $g_user_locale_rules[$ps_item_locale] = $va_rules; }
+		$g_user_locale_rules[$ps_item_locale] = $va_rules;
 		
 		return $va_rules;
 	}
@@ -127,9 +127,10 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		
 		if (!is_array($pa_values)) { return array(); }
 		$va_values = array();
+		
 		foreach($pa_values as $vm_id => $va_value_list_by_locale) {
 			if (sizeof($va_value_list_by_locale) == 1) {		// Don't bother looking if there's just a single value
-				$va_values[$vm_id] = array_shift($va_value_list_by_locale);
+				$va_values[$vm_id] = array_pop($va_value_list_by_locale);
 				continue;
 			}
 			foreach($va_value_list_by_locale as $pm_locale => $vm_value) {
@@ -155,7 +156,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			
 			if (!isset($va_values[$vm_id])) {
 				// desperation mode: pick an available locale
-				$va_values[$vm_id] = array_shift($va_value_list_by_locale);
+				$va_values[$vm_id] = array_pop($va_value_list_by_locale);
 			}
 		}
 		return ($pa_options['returnList']) ? array_values($va_values) : $va_values;
