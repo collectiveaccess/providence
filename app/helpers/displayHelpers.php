@@ -1199,7 +1199,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 				//
 				// Output checkout info for ca_objects
 				//
-				if ($t_item->canBeCheckedOut() && ($va_checkout_status = $t_item->getCheckoutStatus(array('returnAsArray' => true)))) {
+				if ((bool)$po_view->request->config->get('enable_client_services') && ((bool)$po_view->request->config->get('enable_client_services_sales') || (bool)$po_view->request->config->get('enable_client_services_library')) && $t_item->canBeCheckedOut() && ($va_checkout_status = $t_item->getCheckoutStatus(array('returnAsArray' => true)))) {
 					$vs_buf .= "<div class='inspectorCheckedOut'>".$va_checkout_status['status_display'];
 					if ($va_checkout_status['user_name']) {
 						$vs_buf .= _t("; checked out by %1", $va_checkout_status['user_name']);
