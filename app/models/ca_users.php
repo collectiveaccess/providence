@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -290,6 +290,7 @@ class ca_users extends BaseModel {
 	 * User and group role caches
 	 */
 	static $s_user_role_cache = array();
+	static $s_user_group_cache = array();
 	static $s_group_role_cache = array();
 	static $s_user_type_access_cache = array();
 	static $s_user_source_access_cache = array();
@@ -1299,6 +1300,7 @@ class ca_users extends BaseModel {
 	 */
 	public function getUserGroups() {
 		if ($pn_user_id = $this->getPrimaryKey()) {
+			if (isset(ca_users::$s_user_group_cache[$pn_user_id])) { return ca_users::$s_user_group_cache[$pn_user_id]; }
 			$o_db = $this->getDb();
 			$qr_res = $o_db->query("
 				SELECT 
@@ -1309,13 +1311,13 @@ class ca_users extends BaseModel {
 				INNER JOIN ca_users_x_groups AS wuxg ON wuxg.group_id = wug.group_id
 				WHERE wuxg.user_id = ?
 				ORDER BY wug.rank
-			", (int)$pn_user_id);
+			", array((int)$pn_user_id));
 			$va_groups = array();
 			while($qr_res->nextRow()) {
 				$va_groups[$qr_res->get("group_id")] = $qr_res->getRow();
 			}
 			
-			return $va_groups;
+			return ca_users::$s_user_group_cache[$pn_user_id] = $va_groups;
 		} else {
 			return false;
 		}
