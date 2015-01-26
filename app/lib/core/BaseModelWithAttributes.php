@@ -2489,7 +2489,7 @@
  				$va_codes[$vn_element_id] = $vs_element_code;
  			}
  			if (!is_array(BaseModelWithAttributes::$s_element_label_cache)) { BaseModelWithAttributes::$s_element_label_cache = array(); }
- 			BaseModelWithAttributes::$s_element_label_cache = array_merge(BaseModelWithAttributes::$s_element_label_cache, caExtractValuesByUserLocale($va_element_labels_by_locale));
+ 			BaseModelWithAttributes::$s_element_label_cache += caExtractValuesByUserLocale($va_element_labels_by_locale);
  			
  			if ($pb_include_sub_element_codes && sizeof($va_codes)) {
  				$qr_res = $o_db->query("
