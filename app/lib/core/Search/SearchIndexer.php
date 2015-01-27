@@ -359,7 +359,7 @@ class SearchIndexer extends SearchBase {
 		
 		// Automagically generate hierarchical paths for preferred labels passed as label table + label field
 		if (is_subclass_of($t_subject, "BaseLabel")) {
-			$pn_subject_row_id = $t_subject->get($t_subject->getSubjectKey());
+			if (!$pn_subject_row_id) { $pn_subject_row_id = $t_subject->get($t_subject->getSubjectKey()); }
 			$t_subject = $t_subject->getSubjectTableInstance();
 			$ps_field = "preferred_labels.{$ps_field}";
 		}
@@ -880,18 +880,18 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 									$vn_label_table_num = $t_label->tableNum();
 						
 									if (is_array($va_labels = $t_rel->getPreferredLabels(null, false, array('row_id' => $vn_row_id)))) {
-							
-										$va_values = array();
+						
 										foreach($va_labels as $vn_label_id => $va_labels_by_locale) {
 											foreach($va_labels_by_locale as $vn_locale_id => $va_label_list) {
 												foreach($va_label_list as $va_label) {
-													$va_values[] = $vs_label;
+												
+													foreach($va_label_info['related']['fields'] as $vs_label_field => $va_config) {
+														$this->opo_engine->indexField($vn_label_table_num, $x='I'.$this->opo_datamodel->getFieldNum($vn_label_table_num, $vs_label_field), $vn_row_id, $va_label[$vs_label_field], array_merge($va_config, array('relationship_type_id' => $vn_rel_type_id)));
+													}
 												}
 											}
 										}
-										foreach($va_label_info['related']['fields'] as $vs_label_field => $va_config) {
-											$this->opo_engine->indexField($vn_label_table_num, 'I'.$this->opo_datamodel->getFieldNum($vn_label_table_num, $vs_label_field), $qr_res->get($vs_related_pk), join(" ", $va_values), array_merge($va_config, array('relationship_type_id' => $vn_rel_type_id)));
-										}
+										
 									}
 								}
 							}	
@@ -983,7 +983,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 						$va_content = $this->_genHierarchicalPath($va_row_to_reindex['field_row_id'], $va_row_to_reindex['field_name'], $this->opo_datamodel->getInstanceByTableNum($va_row_to_reindex['field_table_num'], true), array());
 						
 						$vs_content = is_array($va_content['values']) ? join(" ", $va_content['values']) : "";
-						
+						print_R($va_row_to_reindex); print_R($va_content);
 						$this->opo_engine->updateIndexingInPlace($va_row_to_reindex['table_num'], $va_row_to_reindex['row_ids'], $va_row_to_reindex['field_table_num'], $va_row_to_reindex['field_num'], $va_row_to_reindex['field_row_id'], $vs_content, array_merge($va_row_to_reindex['indexing_info'], array('relationship_type_id' => $vn_rel_type_id, 'literalContent' => $va_content['path'])));
 					} else {
 						$vs_element_code = substr($va_row_to_reindex['field_name'], 14);
@@ -1044,6 +1044,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 										$vs_v = join(' ;  ', array_merge(array($vn_item_id), array_keys($va_new_values[$vn_item_id])));	
 									}
 				
+			
 									$this->opo_engine->updateIndexingInPlace($va_row_to_reindex['table_num'], $va_row_to_reindex['row_ids'], $va_row_to_reindex['field_table_num'], $va_row_to_reindex['field_num'], $va_row_to_reindex['field_row_id'], $vs_v, array_merge($va_row_to_reindex['indexing_info'], array('relationship_type_id' => $vn_rel_type_id)));
 
 									break;
@@ -1412,7 +1413,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 											'field_table_num' => $vn_label_table_num,
 											'field_row_id' => $vn_label_id,
 											'field_values' => $va_label,
-											'relationship_type_id' => null,
+											'relationship_type_id' => $vn_rel_type_id,
 											'field_nums' => $va_label_field_nums,
 											'field_names' => $va_label_field_names,
 											'indexing_info' => $va_label_info['related']['fields']
