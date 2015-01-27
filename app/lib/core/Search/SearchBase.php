@@ -224,7 +224,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 			if (is_numeric($pm_content_table)) {
 				$pm_content_table = $this->opo_datamodel->getTableName($pm_content_table);
 			}
-			if(!$va_info = $this->opo_search_indexing_config->get($pm_subject_table)) {
+			if(!is_array($va_info = $this->opo_search_indexing_config->get($pm_subject_table))) {
 				return null;
 			}
 			// 'tables' is optional for one-many relations but its absence would be felt upstream

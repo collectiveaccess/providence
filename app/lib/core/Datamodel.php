@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2005-2014 Whirl-i-Gig
+ * Copyright 2005-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -204,6 +204,7 @@ class Datamodel {
 	 * @return int The field number or null if the table or field are invalid
 	 */
 	public function getFieldNum($ps_table, $ps_field) {
+		if(is_numeric($ps_table)) { $ps_table = $this->getTableName($ps_table); }
 		if(!$ps_table || !$ps_field) { return null; }
 
 		if(MemoryCache::contains("{$ps_table}/{$ps_field}", 'DatamodelFieldNum')) {
@@ -229,6 +230,7 @@ class Datamodel {
 	 * @return string The field name or null if the table or field number are invalid
 	 */
 	public function getFieldName($ps_table, $pn_field_num) {
+		if(is_numeric($ps_table)) { $ps_table = $this->getTableName($ps_table); }
 		if(!$ps_table || !is_int($pn_field_num)) { return null; }
 
 		if(MemoryCache::contains("{$ps_table}/{$pn_field_num}", 'DatamodelFieldName')) {
@@ -256,6 +258,7 @@ class Datamodel {
 	 * @return mixed If $ps_key is set the specified value will be returned, which may be a string, number or array. If $ps_key is omitted the entire information array is returned.
 	 */
 	public function getFieldInfo($ps_table, $ps_field, $ps_key=null) {
+		if(is_numeric($ps_table)) { $ps_table = $this->getTableName($ps_table); }
 		if ($t_table = $this->getInstanceByTableName($ps_table, true)) {
 			$va_info = $t_table->getFieldInfo($ps_field);
 			if ($ps_key) { return $va_info[$ps_key]; }
@@ -272,6 +275,7 @@ class Datamodel {
 	 * @return bool True if it exists, false if it doesn't
 	 */
 	public function tableExists($ps_table) {
+		if(is_numeric($ps_table)) { $ps_table = $this->getTableName($ps_table); }
 		if ($this->opo_graph->hasNode($ps_table)) {
 			return true;
 		} else {
