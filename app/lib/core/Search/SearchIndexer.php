@@ -906,6 +906,16 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 									if ($vb_is_attr) {
 										$this->opo_engine->indexField($vn_related_tablenum, 'A'.$va_matches[1], $qr_res->get($vs_related_pk), $vs_fld_data, $va_rel_field_info);
 									} else {
+									
+                                        // Here we use the exclusion list to exclude items which needs to be removed from index.
+										// We check if the current related table and the current field are in the exclusion list, if yes, skip indexing. 
+                                        if(array_key_exists($vn_related_tablenum, $pa_exclusion_list)){
+                                            $exclude_fields = $pa_exclusion_list[$vn_related_tablenum];
+                                            $current_field_code = 'I'.$this->opo_datamodel->getFieldNum($vs_related_table, $vs_rel_field);
+                                            if(array_key_exists($current_field_code,$exclude_fields) && $exclude_fields[$current_field_code] === $vs_fld_data )
+                                                continue;
+                                        }
+										
 										$this->opo_engine->indexField($vn_related_tablenum, 'I'.$this->opo_datamodel->getFieldNum($vs_related_table, $vs_rel_field), $qr_res->get($vs_related_pk), $vs_fld_data, $va_rel_field_info);
 									}
 									break;	
@@ -1096,6 +1106,23 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 				foreach($this->opa_dependencies_to_update as $va_item) {
 					// trigger reindexing of related rows in dependent tables
 					$o_indexer->indexRow($va_item['field_table_num'], $va_item['field_row_id'], $va_item['field_values'], true);
+
+                    // Above indexing(indexRow) is not indexing all related rows. For example in case of removing an item from a set, index needs to be 
+					// updated for related rows in tables ca_sets and ca_objects. Above indexing only updates index of ca_sets. Following code will update index
+                    // of the remaining related row, in this example ca_objects.
+					// Here we prepare a list of exclude items (for which indexing needs to be removed), and pass this list to indexRow, where indexing will be skipped for 
+					// the items in this list.
+                    $temp_field_values = $va_item['field_values'];
+                    $temp_exclude_values = array();
+                    foreach($va_item['field_names'] as $key => $value){
+                        if(array_key_exists($value, $temp_field_values)){
+                            $temp_exclude_values[$va_item['field_table_num']][$key] = $temp_field_values[$value];
+                        }
+                    }
+                    $temp_instance = $this->opo_datamodel->getInstanceByTableNum($va_item['table_num'], true);
+                    $temp_instance->load($va_item['row_id']);
+                    $tem_field_array = $temp_instance->getFieldValuesArray();
+					$o_indexer->indexRow($va_item['table_num'], $va_item['row_id'], $tem_field_array, true, $temp_exclude_values);									
 				}
 				$o_indexer = null;
 			} else {
