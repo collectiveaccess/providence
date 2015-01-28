@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2010-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -299,6 +299,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				
 				foreach($va_items as $vn_item_id => $va_item) {
 					$t_item = new ca_bundle_display_placements();
+					if ($this->inTransaction()) { $t_item->setTransaction($this->getTransaction()); }
 					$t_item->setMode(ACCESS_WRITE);
 					$va_item['display_id'] = $t_dupe->getPrimaryKey();
 					$t_item->set($va_item);
@@ -371,6 +372,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		
 		$t_placement = new ca_bundle_display_placements(null, is_array($pa_options['additional_settings']) ? $pa_options['additional_settings'] : null);
 		$t_placement->setMode(ACCESS_WRITE);
+		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 		$t_placement->set('display_id', $vn_display_id);
 		$t_placement->set('bundle_name', $ps_bundle_name);
 		$t_placement->set('rank', $pn_rank);
@@ -409,6 +411,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		$t_placement = new ca_bundle_display_placements($pn_placement_id);
 		if ($t_placement->getPrimaryKey() && ($t_placement->get('display_id') == $vn_display_id)) {
 			$t_placement->setMode(ACCESS_WRITE);
+			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			$t_placement->delete(true);
 			
 			if ($t_placement->numErrors()) {
@@ -464,6 +467,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		$o_db = $this->getDb();
 		
 		$t_list = new ca_lists();
+		if ($this->inTransaction()) { $t_list->setTransaction($this->getTransaction()); }
 		
 		$qr_res = $o_db->query("
 			SELECT placement_id, bundle_name, settings
@@ -480,6 +484,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			$vs_subject_table = $o_dm->getTableName($this->get('table_num'));
 			$t_subject = $o_dm->getInstanceByTableNum($this->get('table_num'), true);
 			$t_placement = new ca_bundle_display_placements();
+			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			while($qr_res->nextRow()) {
 				$vs_bundle_name = $qr_res->get('bundle_name');
 				$va_bundle_name = explode(".", $vs_bundle_name);
@@ -709,8 +714,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		");
 		//print "got $vs_sql";
 		$va_displays = array();
-		
-		$t_list = new ca_lists();
+
 		$va_type_name_cache = array();
 		while($qr_res->nextRow()) {
 			$vn_table_num = $qr_res->get('table_num');
@@ -787,6 +791,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		if ($pn_display_id) {
 			$vn_display_id = $pn_display_id;
 			$t_disp = new ca_bundle_displays($vn_display_id);
+			if ($this->inTransaction()) { $t_disp->setTransaction($this->getTransaction()); }
 			$vn_display_user_id = $t_disp->get('user_id');
 		} else {
 			$vn_display_user_id = $this->get('user_id');
@@ -902,6 +907,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		$va_available_bundles = array();
 		
 		$t_placement = new ca_bundle_display_placements(null, array());
+		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 		
 		// get intrinsic fields
 		$va_additional_settings = array(
@@ -945,6 +951,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		$va_element_codes = $t_instance->getApplicableElementCodes(null, false, $pa_options['no_cache']);
 		
 		$t_md = new ca_metadata_elements();
+		if ($this->inTransaction()) { $t_md->setTransaction($this->getTransaction()); }
 		$va_all_elements = $t_md->getElementsAsList();
 		
 		$va_additional_settings = array(
@@ -989,6 +996,8 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		foreach($va_element_codes as $vn_element_id => $vs_element_code) {
 			if (!is_null($va_all_elements[$vn_element_id]['settings']['canBeUsedInDisplay'] ) && !$va_all_elements[$vn_element_id]['settings']['canBeUsedInDisplay']) { continue; }
 			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
+			
 			if (caGetBundleAccessLevel($vs_table, $vs_element_code) == __CA_BUNDLE_ACCESS_NONE__) {
 				continue;	
 			}
@@ -1053,7 +1062,8 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			//$va_even_more_settings['format']['helpText'] = $this->getTemplatePlaceholderDisplayListForBundle($vs_bundle);
 			
 			$t_placement = new ca_bundle_display_placements(null, array_merge($va_additional_settings, $va_even_more_settings));
-			
+			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
+		
 			$vs_display =  "<div id='bundleDisplayEditorBundle_{$vs_table}_{$vs_element_code}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_instance->getDisplayLabel($vs_bundle))."</div>";
 			$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
 				'bundle' => $vs_bundle,
@@ -1104,9 +1114,9 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				)
 			);
 			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
-			
+			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
+		
 			$vs_bundle = $vs_table.'.preferred_labels';
-			//$va_additional_settings['format']['helpText'] = $this->getTemplatePlaceholderDisplayListForBundle($vs_bundle);
 			
 			$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_table}_preferred_labels'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_instance->getDisplayLabel($vs_bundle))."</div>";
 			$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
@@ -1128,9 +1138,10 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		if (caGetBundleAccessLevel($vs_table, "nonpreferred_labels") != __CA_BUNDLE_ACCESS_NONE__) {
 			// get non-preferred labels for this table
 			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			
 			$vs_bundle = $vs_table.'.nonpreferred_labels';
-			//$va_additional_settings['format']['helpText'] = $this->getTemplatePlaceholderDisplayListForBundle($vs_bundle);
+			
 			$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_table}_nonpreferred_labels'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_instance->getDisplayLabel($vs_bundle))."</div>";
 			$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
 				'bundle' => $vs_bundle,
@@ -1148,7 +1159,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		
-		// get commerce order history bundle (objects only, of course)
+		// get library checkout and commerce order history bundle (objects only, of course)
 		if ($vs_table == 'ca_objects') {
 			$va_additional_settings = array(
 				'order_type' => array(
@@ -1165,6 +1176,8 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 					'description' => _t('Determines which type of order is displayed.')
 				)		
 			);
+			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			
 			$vs_bundle = 'ca_commerce_order_history';
 			$vs_label = _t('Order history');
@@ -1182,6 +1195,40 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			if ($vb_show_tooltips) {
 				TooltipManager::add(
 					"#bundleDisplayEditorBundle_ca_commerce_order_history",
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
+				);
+			}
+			
+			$va_additional_settings = array(
+				'format' => array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_FIELD,
+					'width' => 35, 'height' => 5,
+					'takesLocale' => false,
+					'default' => '',
+					'label' => _t('Display format'),
+					'description' => _t('Template used to format output.')
+				)	
+			);
+			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
+			
+			$vs_bundle = 'ca_object_checkouts';
+			$vs_label = _t('Library checkouts');
+			$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_table}_preferred_labels'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> "._t('Library checkouts')."</div>";
+			$vs_description = _t('List of library checkouts that include this object');
+			
+			$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+				'bundle' => $vs_bundle,
+				'display' => ($vs_format == 'simple') ? $vs_label : $vs_display,
+				'description' => $vs_description,
+				'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
+				'settings' => $va_additional_settings
+			);
+			
+			if ($vb_show_tooltips) {
+				TooltipManager::add(
+					"#bundleDisplayEditorBundle_ca_object_checkouts",
 					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 				);
 			}
@@ -1211,7 +1258,8 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				
 				foreach($va_versions as $vs_version => $va_version_info) {
 					$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
-					
+					if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
+		
 					$vs_bundle = 'ca_object_representations.media.'.$vs_version;
 					$vs_display = "<div id='bundleDisplayEditorBundle_ca_object_representations_media_{$vs_version}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_instance->getDisplayLabel($vs_bundle))."</div>";
 					$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
@@ -1231,6 +1279,8 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				}
 				
 				$t_rep = new ca_object_representations();
+				if ($this->inTransaction()) { $t_rep->setTransaction($this->getTransaction()); }
+				
 				foreach(array('mimetype', 'md5', 'original_filename') as $vs_rep_field) {
 					$vs_bundle = 'ca_object_representations.'.$vs_rep_field;
 					$vs_display = "<div id='bundleDisplayEditorBundle_ca_object_representations_{$vs_rep_field}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_rep->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_rep->getDisplayLabel($vs_bundle))."</div>";
@@ -1305,57 +1355,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 					'default' => '',
 					'label' => _t('Delimiter'),
 					'description' => _t('Text to place in-between repeating values.')
-				),
-				// 'show_hierarchy' => array(
-// 					'formatType' => FT_NUMBER,
-// 					'displayType' => DT_CHECKBOXES,
-// 					'width' => 10, 'height' => 1,
-// 					'hideOnSelect' => array('format'),
-// 					'takesLocale' => false,
-// 					'default' => '0',
-// 					'label' => _t('Show hierarchy?'),
-// 					'description' => _t('If checked the full hierarchical path will be shown.')
-// 				),
-// 				'remove_first_items' => array(
-// 					'formatType' => FT_NUMBER,
-// 					'displayType' => DT_FIELD,
-// 					'width' => 10, 'height' => 1,
-// 					'takesLocale' => false,
-// 					'default' => '0',
-// 					'label' => _t('Remove first items from hierarchy?'),
-// 					'description' => _t('If set to a non-zero value, the specified number of items at the top of the hierarchy will be omitted. For example, if set to 2, the root and first child of the hierarchy will be omitted.')
-// 				),
-// 				'hierarchy_order' => array(
-// 					'formatType' => FT_TEXT,
-// 					'displayType' => DT_SELECT,
-// 					'options' =>array(
-// 						_t('top first') => 'ASC',
-// 						_t('bottom first') => 'DESC'
-// 					),
-// 					'width' => 35, 'height' => 1,
-// 					'takesLocale' => false,
-// 					'default' => '',
-// 					'label' => _t('Order hierarchy'),
-// 					'description' => _t('Determines order in which hierarchy is displayed.')
-// 				),
-// 				'hierarchy_limit' => array(
-// 					'formatType' => FT_NUMBER,
-// 					'displayType' => DT_FIELD,
-// 					'width' => 10, 'height' => 1,
-// 					'takesLocale' => false,
-// 					'default' => '',
-// 					'label' => _t('Maximum length of hierarchy'),
-// 					'description' => _t('Maximum number of items to show in the hierarchy. Leave blank to show the unabridged hierarchy.')
-// 				),
-// 				'hierarchical_delimiter' => array(
-// 					'formatType' => FT_TEXT,
-// 					'displayType' => DT_FIELD,
-// 					'width' => 35, 'height' => 1,
-// 					'takesLocale' => false,
-// 					'default' => ' ➔ ',
-// 					'label' => _t('Hierarchical delimiter'),
-// 					'description' => _t('Text to place in-between elements of a hierarchical value.')
-// 				)
+				)
 			);
 			if ($t_rel_instance->isHierarchical()) {
 				$va_additional_settings += array(
@@ -1415,6 +1415,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			//$va_additional_settings['format']['helpText'] = $this->getTemplatePlaceholderDisplayListForBundle($vs_bundle);
 		
 			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 			
 			$vs_id_suffix = "bundleDisplayEditorBundle_".str_replace(".", "_", $vs_bundle);
 			$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_id_suffix}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_rel_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_rel_instance->getDisplayLabel($vs_bundle))."</div>";
@@ -1451,6 +1452,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			)
 		);
 		$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+		if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
 		
 		$vs_bundle = "{$vs_table}.created";
 		$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_table}_created'><span class='bundleDisplayEditorPlacementListItemTitle'>"._t('General')."</span> ".($vs_label = $t_instance->getDisplayLabel($vs_bundle))."</div>";
@@ -1627,6 +1629,8 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		
 		if ($va_element_codes[$vs_bundle]) {
 			$t_element = new ca_metadata_elements();
+			if ($this->inTransaction()) { $t_element->setTransaction($this->getTransaction()); }
+		
 			if ($t_element->load(array('element_code' => $vs_bundle))) {
 				// is attribute
 				
@@ -1941,6 +1945,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		if (!isset($va_type_list[$pn_type_id])) { return false; }
 		
 		$t_restriction = new ca_bundle_display_type_restrictions();
+		if ($this->inTransaction()) { $t_restriction->setTransaction($this->getTransaction()); }
 		$t_restriction->setMode(ACCESS_WRITE);
 		$t_restriction->set('table_num', $this->get('table_num'));
 		$t_restriction->set('type_id', $pn_type_id);
