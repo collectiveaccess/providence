@@ -247,10 +247,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		$t_placement->set('bundle_name', $ps_bundle_name);
 		$t_placement->set('placement_code', $ps_placement_code);
 		$t_placement->set('rank', $pn_rank);
-		
+
+		$va_available_settings = $t_placement->getAvailableSettings();
 		if (is_array($pa_settings)) {
-			foreach($pa_settings as $vs_key => $vs_value) {
-				$t_placement->setSetting($vs_key, $vs_value);
+			foreach($va_available_settings as $vs_setting => $va_info) {
+				if(isset($pa_settings[$vs_setting])) {
+					$t_placement->setSetting($vs_setting, $pa_settings[$vs_setting]);
+				} elseif(isset($va_info['default'])) {
+					$t_placement->setSetting($vs_setting, $va_info['default']);
+				}
 			}
 		}
 		
@@ -1196,7 +1201,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			$t_placement->setSettingDefinitionsForPlacement($va_additional_settings);
 			
 			$vs_display = "<div id='uiEditorBundle_{$vs_table}_{$vs_bundle_proc}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_instance->getDisplayLabel($vs_table.'.'.$vs_bundle_proc))."</div>";
-			
+
 			$va_available_bundles[$vs_display][$vs_bundle] = array(
 				'bundle' => $vs_bundle,
 				'display' => $vs_display,
