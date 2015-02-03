@@ -25,6 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
+ 
 	$vs_show_version = $this->getVar('version');
 	$vs_file_path = $this->getVar('version_path');
 	
@@ -35,8 +36,8 @@
 	header("Pragma: no-cache");
 	header("Cache-control: private");
 	header('Content-Length: ' . filesize($vs_file_path));
+	header("Content-Disposition: attachment; filename=".preg_replace('![^A-Za-z0-9\.\-]+!', '_', $this->getVar('version_download_name')));
 	
-	header("Content-Disposition: attachment; filename=".$this->getVar('version_download_name'));
 	set_time_limit(0);
 	$o_fp = @fopen($vs_file_path,"rb");
 	while(is_resource($o_fp) && !feof($o_fp)) {
