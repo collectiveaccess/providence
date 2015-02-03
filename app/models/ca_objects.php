@@ -308,12 +308,25 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => 0,
-				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'ALLOW_BUNDLE_ACCESS_CHECK' => false,
+				'BOUNDS_CHOICE_LIST' => array(
+					_t('Do not inherit item-level access control settings from parent') => 0,
+					_t('Inherit item-level access control settings from parent') => 1
+				),
+				'LABEL' => _t('Inherit item-level access control settings from parent?'), 'DESCRIPTION' => _t('Determines whether item-level access control settings set for parent object is applied to this object.')
+		),
+		'access_inherit_from_parent' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 0,
+				'ALLOW_BUNDLE_ACCESS_CHECK' => false,
+				'DONT_ALLOW_IN_UI' => true,
 				'BOUNDS_CHOICE_LIST' => array(
 					_t('Do not inherit access settings from parent') => 0,
 					_t('Inherit access settings from parent') => 1
 				),
-				'LABEL' => _t('Inherit access settings from parent?'), 'DESCRIPTION' => _t('Determines whether access settings set for parent objects are applied to this object.')
+				'LABEL' => _t('Inherit access settings from parent?'), 'DESCRIPTION' => _t('Determines whether front-end access settings set for parent object is applied to this object.')
 		)
 	)
 );
@@ -786,6 +799,11 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$o_view->setVar('settings', $pa_bundle_settings);
 		
 		$o_view->setVar('t_subject', $this);
+		
+		$o_view->setVar('checkout_history', $va_history = $this->getCheckoutHistory());
+		$o_view->setVar('checkout_count', sizeof($va_history));
+		$o_view->setVar('client_list', $va_client_list = array_unique(caExtractValuesFromArrayList($va_history, 'user_name')));
+		$o_view->setVar('client_count', sizeof($va_client_list));
 		
 		
 		return $o_view->render('ca_object_checkouts.php');

@@ -34,8 +34,6 @@
  		# -------------------------------------------------------
  		#
  		# -------------------------------------------------------
- 		private $opo_client_services_config;
- 		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
@@ -50,13 +48,9 @@
  		}
  		# -------------------------------------------------------
  		/**
- 		 * Begin checkout process with user select
+ 		 *
  		 */
  		public function Index() {
- 			if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_do_library_checkin')) { 
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
  			$this->render('checkin/items_html.php');
  		}
  		# -------------------------------------------------------
@@ -64,10 +58,6 @@
  		 * Return info via ajax on selected object
  		 */
  		public function GetObjectInfo() {
- 			if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_do_library_checkin')) { 
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
  			$pn_checkout_id = $this->request->getParameter('checkout_id', pInteger);
  			
  			$t_checkout = new ca_object_checkouts($pn_checkout_id);
@@ -97,10 +87,6 @@
  		 * 
  		 */
  		public function SaveTransaction() {
- 			if (!$this->request->isLoggedIn() || !$this->request->user->canDoAction('can_do_library_checkin')) { 
- 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2320?r='.urlencode($this->request->getFullUrlPath()));
- 				return;
- 			}
  			$ps_item_list = $this->request->getParameter('item_list', pString);
  			$pa_item_list = json_decode($ps_item_list, true);
  			
@@ -113,7 +99,7 @@
 					$t_object = new ca_objects($vn_object_id);
 					if ($t_checkout->isOut()) { 
 						try {
-							$t_checkout->checkin($vn_object_id, $va_item['note']);
+							$t_checkout->checkin($vn_object_id, $va_item['note'], array('request' => $this->request));
 							
 							$t_user = new ca_users($t_checkout->get('user_id'));
 							$vs_user_name = $t_user->get('ca_users.fname').' '.$t_user->get('ca_users.lname');
@@ -141,7 +127,7 @@
  		 * 
  		 */
  		public function Info() {
- 			return $this->render('checkin/widget_checkin_html.php', true);
+ 			return $this->render('checkin/widget_checkin_html.php', !$this->request->isAjax());
  		}
  		# -------------------------------------------------------
  	}

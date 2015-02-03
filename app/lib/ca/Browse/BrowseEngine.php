@@ -1749,6 +1749,9 @@
 											$vs_checkout_join_sql = '';
 											$vs_where = "(ca_objects.object_id NOT IN (SELECT object_id FROM ca_object_checkouts WHERE (ca_object_checkouts.checkout_date <= {$vn_current_time}) AND (ca_object_checkouts.return_date IS NULL)))"; 
 											break;
+										case 'all':
+											$vs_where = "(ca_object_checkouts.checkout_date <= {$vn_current_time})";
+											break;
 										default:
 										case 'out':
 											$vs_where = "((ca_object_checkouts.checkout_date <= {$vn_current_time}) AND (ca_object_checkouts.return_date IS NULL))";
@@ -2752,6 +2755,7 @@
 						return array();
 					}
 					
+					$vn_element_type = $t_element->get('datatype');
 					$vn_element_id = $t_element->getPrimaryKey();
 					
 					$va_joins = array(
@@ -2840,7 +2844,6 @@
 						
 						$va_values = array();
 						
-						$vn_element_type = $t_element->get('datatype');
 						
 						$va_list_items = null;
 						
@@ -2860,11 +2863,12 @@
 								$qr_res->seek(0);
 								
 								$t_list_item = new ca_list_items();
-								$va_list_item_cache = $t_list_item->getFieldValuesForIDs($va_values, array('idno', 'item_value', 'parent_id'));
+								$va_list_item_cache = $t_list_item->getFieldValuesForIDs($va_values, array('idno', 'item_value', 'parent_id', 'access'));
 								$va_list_child_count_cache = array();
 								if (is_array($va_list_item_cache)) {
 									foreach($va_list_item_cache as $vn_id => $va_item) {
 										if (!($vn_parent_id = $va_item['parent_id'])) { continue; }
+										if (is_array($pa_options['checkAccess']) && !in_array($va_item['access'], $pa_options['checkAccess'])) { continue; }
 										$va_list_child_count_cache[$vn_parent_id]++;
 									}
 								}
@@ -2877,12 +2881,13 @@
 								foreach($va_values as $vn_val) {
 									if (!$vn_val) { continue; }
 									if (is_array($va_suppress_values) && (in_array($vn_val, $va_suppress_values))) { continue; }
+									if (is_array($pa_options['checkAccess']) && !in_array($va_list_item_cache[$vn_val]['access'], $pa_options['checkAccess'])) { continue; }
 									
 									if ($va_criteria[$vn_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
 									$vn_child_count = isset($va_list_child_count_cache[$vn_val]) ? $va_list_child_count_cache[$vn_val] : 0;
 									$va_facet_list[$vn_val] = array(
 										'id' => $vn_val,
-										'label' => $va_list_label_cache[$vn_val],
+										'label' => html_entity_decode($va_list_label_cache[$vn_val]),
 										'parent_id' => isset($va_list_item_cache[$vn_val]['parent_id']) ? $va_list_item_cache[$vn_val]['parent_id'] : null,
 										'child_count' => $vn_child_count
 									);
@@ -2935,7 +2940,7 @@
 									}
 									$va_values[$vs_val] = array(
 										'id' => $vs_val,
-										'label' => $va_list_items[$vs_val]['name_plural'] ? $va_list_items[$vs_val]['name_plural'] : $va_list_items[$vs_val]['item_value'],
+										'label' => html_entity_decode($va_list_items[$vs_val]['name_plural'] ? $va_list_items[$vs_val]['name_plural'] : $va_list_items[$vs_val]['item_value']),
 										'parent_id' => $va_list_items[$vs_val]['parent_id'],
 										'child_count' => $vn_child_count
 									);
@@ -2951,7 +2956,7 @@
 								case __CA_ATTRIBUTE_VALUE_OBJECTLOTS__:
 									$va_values[$vs_val] = array(
 										'id' => $vn_id,
-										'label' => $va_auth_items[$vn_id] ? $va_auth_items[$vn_id] : $vs_val
+										'label' => html_entity_decode($va_auth_items[$vn_id] ? $va_auth_items[$vn_id] : $vs_val)
 									);
 									break;
 								case __CA_ATTRIBUTE_VALUE_CURRENCY__:
@@ -3153,6 +3158,7 @@
 						
 						if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_item->hasField('access')) {
 							$va_wheres[] = "(".$vs_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
+							$va_wheres[] = "(li.access IN (".join(',', $pa_options['checkAccess'])."))";
 						}
 						
 						if ($vs_browse_type_limit_sql) {
@@ -3458,6 +3464,10 @@
 				# -----------------------------------------------------
 				case 'field':
 					$t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true);
+					if (!is_array($va_restrict_to_types = $va_facet_info['restrict_to_types'])) { $va_restrict_to_types = array(); }
+					if(!is_array($va_restrict_to_types = $this->_convertTypeCodesToIDs($va_restrict_to_types, array('instance' => $t_item, 'dontExpandHierarchically' => true)))) { $va_restrict_to_types = array(); }
+					$va_restrict_to_types_expanded = $this->_convertTypeCodesToIDs($va_restrict_to_types, array('instance' => $t_item));
+					
 					$vs_field_name = $va_facet_info['field'];
 					$va_field_info = $t_item->getFieldInfo($vs_field_name);
 					
@@ -3491,6 +3501,10 @@
 						);
 					}
 					
+					if (is_array($va_restrict_to_types) && (sizeof($va_restrict_to_types) > 0) && method_exists($t_rel_item, "getTypeList")) {
+						$va_wheres[] = "{$va_restrict_to_types_expanded}.type_id IN (".join(',', caGetOption('dont_include_subtypes', $va_facet_info, false) ? $va_restrict_to_types : $va_restrict_to_types_expanded).")";
+						$va_selects[] = "{$va_restrict_to_types_expanded}.type_id";
+					}
 					
 					if (sizeof($va_results) && ($this->numCriteria() > 0)) {
 						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
@@ -3543,16 +3557,16 @@
 					
 					if ($vb_check_availability_only) {
 						$vs_sql = "
-							SELECT 1
+							SELECT DISTINCT {$vs_browse_table_name}.{$vs_field_name}
 							FROM {$vs_browse_table_name}
 							{$vs_join_sql}
 							WHERE
 								{$vs_where_sql}
 							LIMIT 2";
 						$qr_res = $this->opo_db->query($vs_sql);
-					
-						if ($qr_res->nextRow()) {
-							return ((int)$qr_res->numRows() > 0) ? true : false;
+						
+						if ($qr_res->numRows() > 1) {
+							return true;
 						}
 						return false;
 					} else {

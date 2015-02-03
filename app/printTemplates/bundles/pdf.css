@@ -1,16 +1,12 @@
-/* Stylesheet used by DOMPDF to format PDF report output */
-
-@page { margin: 45px 56px; }
-
 #header { position: fixed; left: 0px; top: -25px; right: 0px; height: 55px;  text-align: left; vertical-align: top; margin: 0px 5px 10px 0px; padding: 0px 5px 2px 0px; }
 #footer { position: fixed; left: 0px; bottom: -50px; right: 0px; height: 20px; text-align: center; vertical-align: bottom; margin: 0px 5px 10px 5px; padding: 3px 5px 2px 10px; }
 #header .pagingText:after { content: counter(page, decimal); }
 #body { z-index: 30000; position: relative; }
 
 img.headerImg {width:90px;height:21px;}
-.headerText { font: "DIN-Regular"; font-size: 11px; margin: 0px 0px 10px 25px; }
-.pagingText { position: absolute; top: 0px; right: 10px; font: "DIN-Regular"; font-size: 11px; text-align: right;  margin: 0px 0px 10px 25px; }
-.footerText { font: "DIN-Regular"; font-size: 11px;  margin: -5px 0px 0px 45px;  }  
+.headerText { font: "helvetica, sans-serif"; font-size: 11px; margin: 0px 0px 10px 25px; }
+.pagingText { position: absolute; top: 0px; right: 10px; font: "helvetica, sans-serif"; font-size: 11px; text-align: right;  margin: 0px 0px 10px 25px; }
+.footerText { font: "helvetica, sans-serif"; font-size: 11px;  margin: -5px 0px 0px 45px;  }  
 
 .thumbnail { font: "helvetica, sans-serif"; font-size: 11px; border: 1px solid #ccc; width: 200px; height: 220px; position: absolute; text-align: center; margin: 0px 10px 10px 0px; padding: 3px; overflow: none; border-radius:4px;}	
 .imgThumb {width:194px; height:170px;}

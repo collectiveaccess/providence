@@ -44,6 +44,7 @@ var caUI = caUI || {};
 			searchURL: null,
 			getInfoURL : null,
 			saveTransactionURL: null,
+			loadWidgetURL: null,
 			
 			removeButtonIcon: '(X)',
 			
@@ -178,6 +179,10 @@ var caUI = caUI || {};
 										jQuery('#' + that.transactionResultsContainerID + ' .transactionErrors').append("<li>" + v + "</li>");
 									});
 								}
+								
+								// reload left-hand side widget with new details
+								if (that.loadWidgetURL) { jQuery('#widgets').load(that.loadWidgetURL); }
+								
 								jQuery('#' + that.transactionResultsContainerID).fadeIn(250);
 								setTimeout(function() {
 									jQuery('#' + that.transactionResultsContainerID).fadeOut(250);

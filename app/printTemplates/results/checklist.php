@@ -32,6 +32,11 @@
  * @pageOrientation portrait
  * @tables ca_objects
  *
+ * @marginTop 0.75in
+ * @marginLeft 0.25in
+ * @marginBottom 0.5in
+ * @marginRight 0.25in
+ *
  * ----------------------------------------------------------------------
  */
 
@@ -49,7 +54,7 @@
 
 	print $this->render("pdfStart.php");
 	print $this->render("header.php");
-	print $this->render("../footer.php");
+	print $this->render("footer.php");
 ?>
 		<div id='body'>
 <?php
@@ -80,7 +85,7 @@
 					print "<div class='title'>".$vo_result->getWithTemplate('^ca_objects.preferred_labels.name (^ca_objects.idno)')."</div>"; 
 					foreach($va_display_list as $vn_placement_id => $va_display_item) {
 						$vs_display_value = $t_display->getDisplayValue($vo_result, $vn_placement_id, array('forReport' => true, 'purify' => true));
-						print "<div class='metadata'><span class='displayHeader' style='font-family:\"DIN-Regular\";'>".$va_display_item['display']."</span>: <span class='displayValue'>".(strlen($vs_display_value) > 1200 ? strip_tags(substr($vs_display_value, 0, 1197))."..." : $vs_display_value)."</span></div>";		
+						print "<div class='metadata'><span class='displayHeader'>".$va_display_item['display']."</span>: <span class='displayValue' >".(strlen($vs_display_value) > 1200 ? strip_tags(substr($vs_display_value, 0, 1197))."..." : $vs_display_value)."</span></div>";		
 					}							
 ?>
 					</div>				

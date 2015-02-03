@@ -85,6 +85,7 @@
 				
 				$vn_l = mb_strlen($vs_line);
 				for($vn_i=0; $vn_i < $vn_l; $vn_i++) {
+					if (sizeof($this->opa_current_row) > 255) { break; }
 					$c = mb_substr($vs_line, $vn_i, 1);
 					
 					switch($vn_state) {
