@@ -63,13 +63,14 @@ class ExcelDataReader extends BaseDataReader {
 	 * 
 	 * 
 	 * @param string $ps_source
-	 * @param array $pa_options
+	 * @param array $pa_options Options include
+	 *		dataset = number of worksheet to read [Default=0]
 	 * @return bool
 	 */
 	public function read($ps_source, $pa_options=null) {
 		try {
 			$this->opo_handle = PHPExcel_IOFactory::load($ps_source);
-			//$this->opo_handle->setActiveSheet(1);
+			$this->opo_handle->setActiveSheetIndex(caGetOption('dataset', $pa_options, 0));
 			$o_sheet = $this->opo_handle->getActiveSheet();
 			$this->opo_rows = $o_sheet->getRowIterator();
 			$this->opn_current_row = 0;
@@ -201,6 +202,24 @@ class ExcelDataReader extends BaseDataReader {
 	 */
 	public function getInputType() {
 		return __CA_DATA_READER_INPUT_FILE__;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Excel can contain more than one independent data set in the form of multiple worksheets
+	 * 
+	 * @return bool
+	 */
+	public function hasMultipleDatasets() {
+		return true;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Returns number of distinct datasets (aka worksheets) in the Excel file
+	 * 
+	 * @return int
+	 */
+	public function getDatasetCount() {
+		return $this->opo_handle->getSheetCount();
 	}
 	# -------------------------------------------------------
 }

@@ -361,6 +361,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$this->BUNDLES['ca_entities'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related entities'));
 		$this->BUNDLES['ca_places'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related places'));
 		$this->BUNDLES['ca_occurrences'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related occurrences'));
+		$this->BUNDLES['ca_collections'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related collections'));
+		$this->BUNDLES['ca_storage_locations'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related storage locations'));
 		$this->BUNDLES['ca_representation_annotations'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related annotations'));
 		$this->BUNDLES['ca_list_items'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related vocabulary terms'));
 		$this->BUNDLES['ca_sets'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Sets'));	
@@ -1356,7 +1358,9 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  			
  			$va_files[$vn_caption_id]['path'] = $qr_res->getFilePath('caption_file');
  			$va_files[$vn_caption_id]['url'] = $qr_res->getFileUrl('caption_file');
- 			$va_files[$vn_caption_id]['filesize'] = caFormatFileSize(filesize($va_files[$vn_caption_id]['path']));
+			if(file_exists($va_files[$vn_caption_id]['path'])) {
+				$va_files[$vn_caption_id]['filesize'] = caFormatFileSize(filesize($va_files[$vn_caption_id]['path']));
+			}
  			$va_files[$vn_caption_id]['caption_id'] = $vn_caption_id;
  			$va_files[$vn_caption_id]['locale_id'] = $vn_locale_id;
  			$va_files[$vn_caption_id]['locale'] = $t_locale->localeIDToName($vn_locale_id);

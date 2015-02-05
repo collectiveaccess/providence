@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -333,6 +333,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				WHERE
 					set_id = ?
 			", (int)$this->get('type_id'), (int)$this->getPrimaryKey());
+			
+			$this->_setUniqueSetCode();
 		}
 		return $vn_rc;
 	}
@@ -351,6 +353,60 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			}
 		}
 		return parent::set($pa_fields, $pm_value, $pa_options);
+	}
+	# ------------------------------------------------------
+	/** 
+	 * Override addLabel() to set set_code if not specifically set by user
+	 */
+	public function addLabel($pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false, $pa_options=null) {
+		if ($vn_rc = parent::addLabel($pa_label_values, $pn_locale_id, $pn_type_id, $pb_is_preferred, $pa_options)) {
+			$this->_setUniqueSetCode();
+		}
+		return $vn_rc;
+	}
+	# ------------------------------------------------------
+	/** 
+	 * 
+	 */
+	private function _setUniqueSetCode() {
+		if (!$this->getPrimaryKey()) { return null; }
+		
+		if (!strlen(trim($this->get('set_code')))) {
+			$this->setMode(ACCESS_WRITE);
+			if(!($vs_label = $this->getLabelForDisplay())) { $vs_label = 'set_'.$this->getPrimaryKey(); }
+			$vs_new_set_name = substr(preg_replace('![^A-Za-z0-9]+!', '_', $vs_label), 0, 50);
+			if (ca_sets::find(array('set_code' => $vs_new_set_name), array('returnAs' => 'firstId')) > 0) {
+				$vs_new_set_name .= '_'.$this->getPrimaryKey();
+			}
+			$this->set('set_code', $vs_new_set_name);
+			return $this->update();
+		}
+		return false;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Override delete() to scramble the set_code before we soft-delete. This is useful
+	 * because the database field has a unique key that really enforces uniqueneness
+	 * and we might wanna reuse a code of a set we previously deleted.
+	 */
+	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+		if($vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
+			if(!caGetOption('hard', $pa_options, false)) { // only applies if we don't hard-delete
+				$vb_we_set_transaction = false;
+				if (!$this->inTransaction()) {
+					$o_t = new Transaction($this->getDb());
+					$this->setTransaction($o_t);
+					$vb_we_set_transaction = true;
+				}
+
+				$this->set('set_code', $this->get('set_code') . '_' . time());
+				$this->update(array('force' => true));
+
+				if ($vb_we_set_transaction) { $this->removeTransaction(true); }
+			}
+		}
+
+		return $vn_rc;
 	}
 	# ------------------------------------------------------
 	/**
@@ -605,7 +661,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				ORDER BY csl.name
 			", $va_sql_params);
 			$va_sets = array();
-			$o_dm = $this->getAppDatamodel();
 			$va_type_name_cache = array();
 			
 			$t_list = new ca_lists();
@@ -622,7 +677,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			return $va_sets;
 		} else {
 			if ($pb_set_ids_only) {
-			// get sets
+				// get sets
 				$qr_res = $o_db->query("
 					SELECT ".join(', ', $va_sql_selects)."
 					FROM ca_sets cs
@@ -631,6 +686,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 					".join("\n", $va_extra_joins)."
 					".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
 					".join(' AND ', $va_sql_wheres)."
+					ORDER BY csl.name
 				", $va_sql_params);
 				return $qr_res->getAllFieldValues("set_id");
 			} else {
@@ -643,8 +699,10 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 					".join("\n", $va_extra_joins)."
 					".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
 					".join(' AND ', $va_sql_wheres)."
+					ORDER BY csl.name
 				", $va_sql_params);
 				$t_list = new ca_lists();
+				$va_sets = array();
 				while($qr_res->nextRow()) {
 					$vn_table_num = $qr_res->get('table_num');
 					if (!isset($va_type_name_cache[$vn_table_num]) || !($vs_set_type = $va_type_name_cache[$vn_table_num])) {

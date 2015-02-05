@@ -255,6 +255,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	public function insert($pa_options=null) {
 		$this->set('settings', MemoryCache::fetch('no_key', 'ElementSettings'));
 		if ($vn_rc =  parent::insert($pa_options)) {
+			$this->flushElementSetCache();
 			MemoryCache::save($this->getPrimaryKey(), MemoryCache::fetch('no_key', 'ElementSettings'), 'ElementSettings');
 		}
 		return $vn_rc;
@@ -262,15 +263,37 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	# ------------------------------------------------------
 	public function update($pa_options=null) {
 		$this->set('settings', MemoryCache::fetch($this->getPrimaryKey(), 'ElementSettings'));
+		$this->flushElementSetCache();
 		return parent::update($pa_options);
 	}
 	# ------------------------------------------------------
 	public function delete($pb_delete_related = false, $pa_options = NULL, $pa_fields = NULL, $pa_table_list = NULL) {
 		$vn_id = $this->getPrimaryKey();
+		$this->flushElementSetCache();
 		if ($vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
 			MemoryCache::delete($vn_id, 'ElementSettings');
 		}
 		return $vn_rc;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Flushes the element set cache for current record, its parent and the whole element set
+	 */
+	private function flushElementSetCache() {
+		if(!$this->getPrimaryKey()) { return; }
+
+		if($vn_parent_id = $this->get('parent_id')) {
+			CompositeCache::delete($vn_parent_id, 'ElementSetIds');
+			CompositeCache::delete($vn_parent_id, 'ElementSets');
+		}
+
+		if($vn_hier_element_id = $this->get('hier_element_id')) {
+			CompositeCache::delete($vn_hier_element_id, 'ElementSetIds');
+			CompositeCache::delete($vn_hier_element_id, 'ElementSets');
+		}
+
+		CompositeCache::delete($this->getPrimaryKey(), 'ElementSetIds');
+		CompositeCache::delete($this->getPrimaryKey(), 'ElementSets');
 	}
 	# ------------------------------------------------------
 	# Element set methods
