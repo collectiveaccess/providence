@@ -33641,7 +33641,7 @@ Via: <unit relativeTo="ca_movements">
         </label>
       </labels>
       <typeRestrictions>
-        <restriction type="artwork">artwork</restriction>        
+        <restriction type="artwork"></restriction>        
       </typeRestrictions>
       <groupAccess>
         <permission group="collection" access="edit"/>
@@ -33792,7 +33792,7 @@ Via: <unit relativeTo="ca_movements">
         </label>
       </labels>
       <typeRestrictions>
-        <restriction type="artwork">artwork</restriction>        
+        <restriction type="artwork"></restriction>        
       </typeRestrictions>
       <groupAccess>
         <permission group="collection" access="edit"/>
@@ -33845,7 +33845,7 @@ Via: <unit relativeTo="ca_movements">
         </label>
       </labels>
       <typeRestrictions>
-        <restriction type="artwork">artwork</restriction>        
+        <restriction type="artwork"></restriction>        
       </typeRestrictions>
       <groupAccess>
         <permission group="collection" access="edit"/>
@@ -33916,7 +33916,7 @@ Via: <unit relativeTo="ca_movements">
         </label>
       </labels>
       <typeRestrictions>
-        <restriction type="artwork">artwork</restriction>        
+        <restriction type="artwork"></restriction>        
       </typeRestrictions>
       <groupAccess>
         <permission group="collection" access="edit"/>
@@ -33993,7 +33993,7 @@ Via: <unit relativeTo="ca_movements">
         </label>
       </labels>
       <typeRestrictions>
-        <restriction type="artwork">artwork</restriction>        
+        <restriction type="artwork"></restriction>        
       </typeRestrictions>
       <groupAccess>
         <permission group="collection" access="edit"/>
@@ -34064,7 +34064,7 @@ Via: <unit relativeTo="ca_movements">
         </label>
       </labels>
       <typeRestrictions>
-        <restriction type="artwork">artwork</restriction>        
+        <restriction type="artwork"></restriction>        
       </typeRestrictions>
       <groupAccess>
         <permission group="collection" access="edit"/>
@@ -34139,7 +34139,7 @@ Via: <unit relativeTo="ca_movements">
         </label>
       </labels>
       <typeRestrictions>
-        <restriction type="artwork">artwork</restriction>        
+        <restriction type="artwork"></restriction>        
       </typeRestrictions>
       <groupAccess>
         <permission group="collection" access="edit"/>
@@ -34208,7 +34208,7 @@ Via: <unit relativeTo="ca_movements">
         </label>
       </labels>
       <typeRestrictions>
-        <restriction type="artwork">artwork</restriction>        
+        <restriction type="artwork"></restriction>        
       </typeRestrictions>
       <groupAccess>
         <permission group="collection" access="edit"/>
@@ -34428,7 +34428,7 @@ Via: <unit relativeTo="ca_movements">
         </label>
       </labels>
       <typeRestrictions>
-        <restriction type="artwork">artwork</restriction>        
+        <restriction type="artwork"></restriction>        
       </typeRestrictions>
       <groupAccess>
         <permission group="collection" access="edit"/>
@@ -34480,7 +34480,7 @@ Via: <unit relativeTo="ca_movements">
         </label>
       </labels>
       <typeRestrictions>
-        <restriction type="artwork">artwork</restriction>        
+        <restriction type="artwork"></restriction>        
       </typeRestrictions>
       <groupAccess>
         <permission group="collection" access="edit"/>
@@ -34544,7 +34544,7 @@ Via: <unit relativeTo="ca_movements">
         </label>
       </labels>
       <typeRestrictions>
-        <restriction type="artwork">artwork</restriction>        
+        <restriction type="artwork"></restriction>        
       </typeRestrictions>
       <groupAccess>
         <permission group="collection" access="edit"/>
@@ -34614,7 +34614,7 @@ Via: <unit relativeTo="ca_movements">
         </label>
       </labels>
       <typeRestrictions>
-        <restriction type="artwork">conservation</restriction>        
+        <restriction type="artwork"></restriction>        
       </typeRestrictions>
       <groupAccess>
         <permission group="collection" access="edit"/>
@@ -34685,7 +34685,7 @@ Via: <unit relativeTo="ca_movements">
         </label>
       </labels>
       <typeRestrictions>
-        <restriction type="archive">archive</restriction>        
+        <restriction type="archive"></restriction>        
       </typeRestrictions>
       <groupAccess>
         <permission group="archive" access="edit"/>
@@ -34730,7 +34730,7 @@ Via: <unit relativeTo="ca_movements">
         </label>
       </labels>
       <typeRestrictions>
-        <restriction type="archive">archive</restriction>        
+        <restriction type="archive"></restriction>        
       </typeRestrictions>
       <groupAccess>
         <permission group="archive" access="edit"/>
@@ -34760,7 +34760,7 @@ Via: <unit relativeTo="ca_movements">
         </label>
       </labels>
       <typeRestrictions>
-        <restriction type="archive">archive</restriction>        
+        <restriction type="archive"></restriction>        
       </typeRestrictions>
       <groupAccess>
         <permission group="archive" access="edit"/>
@@ -34822,11 +34822,11 @@ Via: <unit relativeTo="ca_movements">
         </label>
       </labels>
       <typeRestrictions>
-        <restriction type="image">image</restriction>
-        <restriction type="document">document</restriction>
-        <restriction type="audio">audio</restriction>   
-        <restriction type="moving_image">moving_image</restriction>
-        <restriction type="ephemera">ephemera</restriction>
+        <restriction type="image"></restriction>
+        <restriction type="document"></restriction>
+        <restriction type="audio"></restriction>   
+        <restriction type="moving_image"></restriction>
+        <restriction type="ephemera"></restriction>
       </typeRestrictions>
       <groupAccess>
         <permission group="archive" access="edit"/>
@@ -34865,11 +34865,11 @@ Via: <unit relativeTo="ca_movements">
         </label>
       </labels>
       <typeRestrictions>
-        <restriction type="image">image</restriction>
-        <restriction type="document">document</restriction>
-        <restriction type="audio">audio</restriction>   
-        <restriction type="moving_image">moving_image</restriction>
-        <restriction type="ephemera">ephemera</restriction>
+        <restriction type="image"></restriction>
+        <restriction type="document"></restriction>
+        <restriction type="audio"></restriction>   
+        <restriction type="moving_image"></restriction>
+        <restriction type="ephemera"></restriction>
       </typeRestrictions>
       <groupAccess>
         <permission group="archive" access="edit"/>
@@ -34902,11 +34902,11 @@ Via: <unit relativeTo="ca_movements">
         </label>
       </labels>
       <typeRestrictions>
-        <restriction type="image">image</restriction>
-        <restriction type="document">document</restriction>
-        <restriction type="audio">audio</restriction>   
-        <restriction type="moving_image">moving_image</restriction>
-        <restriction type="ephemera">ephemera</restriction>
+        <restriction type="image"></restriction>
+        <restriction type="document"></restriction>
+        <restriction type="audio"></restriction>   
+        <restriction type="moving_image"></restriction>
+        <restriction type="ephemera"></restriction>
       </typeRestrictions>
       <groupAccess>
         <permission group="archive" access="edit"/>
@@ -34963,11 +34963,11 @@ Via: <unit relativeTo="ca_movements">
         </label>
       </labels>
       <typeRestrictions>
-        <restriction type="image">image</restriction>
-        <restriction type="document">document</restriction>
-        <restriction type="audio">audio</restriction>   
-        <restriction type="moving_image">moving_image</restriction>
-        <restriction type="ephemera">ephemera</restriction>
+        <restriction type="image"></restriction>
+        <restriction type="document"></restriction>
+        <restriction type="audio"></restriction>   
+        <restriction type="moving_image"></restriction>
+        <restriction type="ephemera"></restriction>
       </typeRestrictions>
       <groupAccess>
         <permission group="archive" access="edit"/>
@@ -35003,7 +35003,7 @@ Via: <unit relativeTo="ca_movements">
         </label>
       </labels>
       <typeRestrictions>
-        <restriction type="image">collection</restriction>
+        <restriction type="image"></restriction>
       </typeRestrictions>
       <groupAccess>
         <permission group="archive" access="edit"/>
@@ -35102,7 +35102,7 @@ Via: <unit relativeTo="ca_movements">
         </label>
       </labels>
       <typeRestrictions>
-        <restriction type="book">book</restriction>        
+        <restriction type="book"></restriction>        
       </typeRestrictions>
       <groupAccess>
         <permission group="library" access="edit"/>
@@ -35157,7 +35157,7 @@ Is Gift?: ^ca_objects.price_copy.is_gift
         </label>
       </labels>
       <typeRestrictions>
-        <restriction type="book">book</restriction>        
+        <restriction type="book"></restriction>        
       </typeRestrictions>
       <groupAccess>
         <permission group="library" access="edit"/>
@@ -35198,7 +35198,7 @@ Is Gift?: ^ca_objects.price_copy.is_gift
         </label>
       </labels>
       <typeRestrictions>
-        <restriction type="library">library</restriction>        
+        <restriction type="library"></restriction>        
       </typeRestrictions>
       <groupAccess>
         <permission group="library" access="edit"/>
@@ -35259,7 +35259,7 @@ Is Gift?: ^ca_objects.price_copy.is_gift
         </label>
       </labels>
       <typeRestrictions>
-        <restriction type="book">book</restriction>        
+        <restriction type="book"></restriction>        
       </typeRestrictions>
       <groupAccess>
         <permission group="library" access="edit"/>
