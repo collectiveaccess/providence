@@ -417,6 +417,7 @@
 			$va_unique_within = $t_instance->getFieldInfo($ps_field, 'UNIQUE_WITHIN');
 			
 			$va_extra_wheres = array();
+			if ($t_instance->hasField('deleted')) { $va_extra_wheres[] = "(deleted = 0)"; }
 			$vs_extra_wheres = '';
 			$va_params = array((string)$ps_val, (int)$pn_id);
 			if (sizeof($va_unique_within)) {
@@ -424,9 +425,11 @@
 					$va_extra_wheres[] = "({$vs_within_field} = ?)";
 					$va_params[] = $pa_within_fields[$vs_within_field];
 				}
+			}
+			if (sizeof($va_extra_wheres) > 0) {
 				$vs_extra_wheres = ' AND '.join(' AND ', $va_extra_wheres);
 			}
-		
+			
 			$qr_res = $o_db->query("
 				SELECT {$vs_pk}
 				FROM ".$t_instance->tableName()."
@@ -434,7 +437,6 @@
 					({$ps_field} = ?) AND ({$vs_pk} <> ?)
 					{$vs_extra_wheres}
 			", $va_params);
-			
 			$va_ids = array();
 			while($qr_res->nextRow()) {
 				$va_ids[] = (int)$qr_res->get($vs_pk);
@@ -445,4 +447,3 @@
 		}
  		# -------------------------------------------------------
  	}
-?>

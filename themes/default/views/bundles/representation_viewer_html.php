@@ -529,7 +529,7 @@
 			<div class='objectInfo'>
 <?php
 				$vs_label = $t_object->getLabelForDisplay();
-				print (mb_strlen($vs_label) > 80) ? mb_substr($vs_label, 0, 80)."..." : $vs_label;
+				print caTruncateStringWithEllipsis($vs_label, 80);
 			
 				if($t_object->get("idno")){
 					print " [".$t_object->get("idno")."]";
@@ -588,7 +588,7 @@
 				<div class='objectInfo'>
 <?php
 					$vs_label = $t_object->getLabelForDisplay();
-					print (mb_strlen($vs_label) > 80) ? mb_substr($vs_label, 0, 80)."..." : $vs_label;
+					print caTruncateStringWithEllipsis($vs_label, 80);
 				
 					if($t_object->get("idno")){
 						print " [".$t_object->get("idno")."]";

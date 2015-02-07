@@ -1,0 +1,37 @@
+
+
+.bundleLabel {
+	font-size: inherit;
+	font-family: inherit;
+	color: inherit;
+
+	background-color: white;
+  border: 1px solid white;
+
+  border-radius: 3px;
+  margin-bottom: 1em;
+
+}
+
+
+
+.bundleContainer {
+	background: inherit;
+}
+
+div.roundedRel {
+	font-size: 0.9em;
+	border: 1px solid $white-dark;
+	background: $white-off;
+	float: none;
+	margin-right: 28px;
+
+	&:last-of-type{
+		border-bottom: 1px solid $white-dark !important;
+	} 
+
+	a {
+		font-size: inherit;
+
+	}
+}

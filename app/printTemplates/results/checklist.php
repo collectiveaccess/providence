@@ -65,8 +65,8 @@
 			<tr>
 				<td>
 <?php 
-					if ($vs_tag = $vo_result->get('ca_object_representations.media.thumbnail')) {
-						print "<div class=\"imageTiny\">{$vs_tag}</div>";
+					if ($vs_path = $vo_result->getMediaPath('ca_object_representations.media', 'thumbnail')) {
+						print "<div class=\"imageTiny\"><img src='{$vs_path}'/></div>";
 					} else {
 ?>
 						<div class="imageTinyPlaceholder">&nbsp;</div>

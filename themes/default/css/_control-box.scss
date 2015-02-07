@@ -1,0 +1,85 @@
+
+
+div.control-box {
+	width: 100%;
+	background-color: $black;
+	color: white;
+
+
+	a {
+		color: white;
+		font-weight: 600;
+
+		&:hover {
+			color: white;
+		}
+	}
+
+
+	a.form-button {
+		padding-bottom: 0;
+		height: auto;
+	}
+
+	a.form-button span, 
+	span.form-button button, 
+	span.form-button input, 
+	del.form-button span {
+		padding: 6px 12px 6px 12px;
+
+	line-height: 1.5
+
+	}
+	
+	img.form-button-left{
+    margin-top: 0;
+	}
+
+	input[type="text"], input[type="textarea"], textarea, input[type="password"] {
+		width: auto;
+	}
+
+	.form-header-button img,
+	.form-button img {
+		//display: none;
+	}
+
+	a.form-header-button,
+	a.button {
+		padding: 6px 12px 6px 12px;
+		border-radius: 3px;
+
+		&:hover {
+			background: $grey;
+		}
+	}
+}
+
+div.control-box-right-content {
+	font-family: inherit;
+}
+
+a.form-button span, span.form-button button, span.form-button input, del.form-button span,
+a.form-button:hover, span.form-button:hover, a.form-button:focus, a.dom-button-focus, span.form-button-behavior-hover {
+	color: inherit;
+	font-size: inherit;
+	font-family: inherit;
+	height: auto;
+}
+
+
+
+div.form-header-button {
+	background-color: transparent;
+}
+
+a.button {
+	font-family: inherit;
+	font-size: inherit;
+}
+
+
+
+div.control-box-middle-content {
+	font-size: inherit;
+}

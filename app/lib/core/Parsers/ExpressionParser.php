@@ -76,7 +76,9 @@ class ExpressionParser {
             'min'           => 'min',
             'rand'          => 'rand',
             'round'         => 'round',
-            'random'		=> 'rand'
+            'random'		=> 'rand',
+            'current'		=> 'caIsCurrentDate',
+            'future'		=> 'caDateEndsInFuture'
     );
     
     private $opa_tokens;
@@ -140,7 +142,7 @@ class ExpressionParser {
 						$vs_buf = '';
 						break;
 					} else {
-						if ($vs_s !== '/') { 
+						if ($vs_c !== '/') {
 							$vs_buf .= $vs_c;
 							break;
 						}

@@ -257,14 +257,14 @@ class BaseXMLDataReader extends BaseDataReader {
 		
 		// Recondition the spec for Xpath
 		$ps_spec = $this->_convertXPathExpression($ps_spec, array('useRootTag' => $this->ops_base_root_tag));
+
 		if (!($o_node_list = $this->opo_handle_xpath->query($ps_spec))) {
 			return null;
 		}
 		
 		$va_values = array();
 		foreach($o_node_list as $o_node) {
-			//$va_values[] = $o_node->nodeValue;
-			$va_values[] = $this->getInnerXML($o_node);
+			$va_values[] = ($vs_xml = $this->getInnerXML($o_node)) ? $vs_xml : $o_node->nodeValue;
 		}
 		
 		if ($vb_return_as_array) { return $va_values; }
@@ -279,9 +279,11 @@ class BaseXMLDataReader extends BaseDataReader {
 	private function getInnerXML($po_node) { 
 		$vs_buf = ''; 
 		$vo_children = $po_node->childNodes; 
-		foreach ($vo_children as $vo_child) { 
-			$vs_buf .= $vo_child->ownerDocument->saveXML( $vo_child ); 
-		} 
+		if($vo_children) {
+			foreach ($vo_children as $vo_child) { 
+				$vs_buf .= $vo_child->ownerDocument->saveXML( $vo_child ); 
+			} 
+		}
 
 		return $vs_buf;  
     }
@@ -347,9 +349,13 @@ class BaseXMLDataReader extends BaseDataReader {
 		foreach($va_tmp as $vn_i => $vs_spec_element) {
 			if(!$vs_spec_element) { continue; }
 			if (
-				!(preg_match("!^[A-Za-z0-9\-_]+:[A-Za-z0-9\-_]+!", $vs_spec_element))
+				!(preg_match("!^[A-Za-z0-9\-_]+:[A-Za-z0-9\-_]+!", $vs_spec_element))	// tags that are already namedspaced should not get the default namespace applied
 				&&
-				(strpos($vs_spec_element, "@") !== 0)
+				(strpos($vs_spec_element, "@") !== 0)						// attributes should not get the default namespace applied
+				&&
+				(!preg_match("!^[A-Za-z0-9\-_]+\(!", $vs_spec_element))		// functions should not get the default namespace applied
+				&&
+				(!preg_match("!^[\.]+$!", $vs_spec_element))				// . and .. should not get the default namespace applied
 			) {
 				if ($this->ops_xml_namespace_prefix) {
 					$va_tmp[$vn_i]= $this->ops_xml_namespace_prefix.":{$vs_spec_element}";
@@ -362,4 +368,3 @@ class BaseXMLDataReader extends BaseDataReader {
 	}
 	# -------------------------------------------------------
 }
-?>

@@ -278,7 +278,7 @@ class ca_users extends BaseModel {
 	protected $FIELDS;
 	
 	/**
-	 * authentication configuration
+	 * @var Configuration authentication configuration
 	 */
 	protected $opo_auth_config = null;
 	
@@ -1371,7 +1371,7 @@ class ca_users extends BaseModel {
 			}
 			return $this->getPreferenceDefault($ps_pref);
 		} else {
-			$this->postError(920, _t("%1 is not a valid user preference", $ps_pref),"User->getPreference()");
+			//$this->postError(920, _t("%1 is not a valid user preference", $ps_pref),"User->getPreference()");
 			return null;
 		}
 	}
@@ -2456,8 +2456,10 @@ class ca_users extends BaseModel {
 	 *
 	 */
 	public function close() {
-		$this->setMode(ACCESS_WRITE);
-		$this->update();
+		if($this->getPrimaryKey()) {
+			$this->setMode(ACCESS_WRITE);
+			$this->update();
+		}
 	}
 	# ----------------------------------------
 	/**
@@ -2524,11 +2526,11 @@ class ca_users extends BaseModel {
 	 * keys and values that can contain such information
 	 */
 	public function authenticate(&$ps_username, $ps_password="", $pa_options=null) {
-		if($this->opo_auth_config->get("use_ldap")){
+		if ($this->opo_auth_config->get("use_ldap") && !$this->isExplicitLocalUser($ps_username)) {
 			return $this->authenticateLDAP($ps_username,$ps_password);
 		}
 		
-		if($this->opo_auth_config->get("use_extdb")){
+		if ($this->opo_auth_config->get("use_extdb") && !$this->isExplicitLocalUser($ps_username)) {
 			if($vn_rc = $this->authenticateExtDB($ps_username,$ps_password)) {
 				return $vn_rc;
 			}
@@ -2553,101 +2555,260 @@ class ca_users extends BaseModel {
 	}
 	# ----------------------------------------
 	/**
-	 * Do LDAP authentification (creates user based on directory
-	 * information and config preferences in authentication.conf)
+	 * Determine whether the given username is listed as a local user, which bypasses LDAP or ExtDB (if configured).
+	 * @param string $ps_username
+	 * @return boolean
+	 */
+	protected function isExplicitLocalUser($ps_username) {
+		return in_array($ps_username, $this->opo_auth_config->getList("ldap_local_users"));
+	}
+	# ----------------------------------------
+	/**
+	 * Do LDAP authentification (creates user based on directory information and config preferences in
+	 * authentication.conf).
 	 * @param string $ps_username username
 	 * @param string $ps_password password
 	 * @return bool
 	 */
-	private function authenticateLDAP($ps_username="",$ps_password=""){
-		if(!function_exists("ldap_connect")){
+	private function authenticateLDAP($ps_username="", $ps_password="") {
+		if (!function_exists("ldap_connect")) {
 			die("PHP's LDAP module is required for LDAP authentication!");
 		}
-
-		$vs_ldaphost = $this->opo_auth_config->get("ldap_host");
-		$vs_ldapport = $this->opo_auth_config->get("ldap_port");
-		$vs_base_dn = $this->opo_auth_config->get("ldap_base_dn");
-		$va_group_cn = $this->opo_auth_config->getList("ldap_group_cn");
-		$vs_user_ou = $this->opo_auth_config->get("ldap_user_ou");
-		$vs_attribute_member_of = $this->opo_auth_config->get("ldap_attribute_member_of");
-		$vs_attribute_email = $this->opo_auth_config->get("ldap_attribute_email");
-		$vs_attribute_fname = $this->opo_auth_config->get("ldap_attribute_fname");
-		$vs_attribute_lname = $this->opo_auth_config->get("ldap_attribute_lname");
-		$vs_bind_rdn = $this->postProcessLDAPConfigValue("ldap_bind_rdn_format", $ps_username, $vs_user_ou, $vs_base_dn);
-		$vs_search_dn = $this->postProcessLDAPConfigValue("ldap_search_dn_format", $ps_username, $vs_user_ou, $vs_base_dn);
-		$vs_search_filter = $this->postProcessLDAPConfigValue("ldap_search_filter_format", $ps_username, $vs_user_ou, $vs_base_dn);
-
-		$vo_ldap = ldap_connect($vs_ldaphost, $vs_ldapport) or die("could not connect to LDAP server");
-		if (!$vo_ldap) {
+		$r_ldap = $this->connectAndBindLDAP($ps_username, $ps_password);
+		if (!$r_ldap) {
 			return false;
 		}
-
-		ldap_set_option($vo_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-		$vo_bind = @ldap_bind($vo_ldap, $vs_bind_rdn, $ps_password);
-		if (!$vo_bind) {
-			// wrong credentials
-			ldap_unbind($vo_ldap);
+		$va_attrs = $this->getUserAttributesLDAP($r_ldap, $ps_username);
+		if ($va_attrs === false) {
+			ldap_unbind($r_ldap);
 			return false;
 		}
-
-		$vo_results = ldap_search($vo_ldap, $vs_search_dn, $vs_search_filter);
-		if (!$vo_results) {
-			// search error
-			ldap_unbind($vo_ldap);
+		$va_groups = $this->checkUserGroupsLDAP($r_ldap, $ps_username, $va_attrs);
+		if ($va_groups === false) {
+			ldap_unbind($r_ldap);
 			return false;
 		}
-
-		$vo_entry = ldap_first_entry($vo_ldap, $vo_results);
-		if (!$vo_entry) {
-			// no results returned
-			ldap_unbind($vo_ldap);
-			return false;
+		$vb_first_login = !$this->load(array( "user_name" => $ps_username ));
+		if ($vb_first_login) {
+			$this->firstLoginUserSetupLDAP($ps_username, $ps_password, $va_attrs);
 		}
-
-		$va_attrs = ldap_get_attributes($vo_ldap, $vo_entry);
-		if (sizeof(array_intersect($va_group_cn, $va_attrs[$vs_attribute_member_of])) === 0) {
-			// user is not in any relevant groups
-			ldap_unbind($vo_ldap);
-			return false;
+		if ($vb_first_login || $this->opo_auth_config->getBoolean('ldap_acl_update_on_every_login')) {
+			$this->updateUserGroupsLDAP($va_groups);
+			$this->applyDefaultUserGroupsAndRolesLDAP();
 		}
-
-		if (!$this->load(array( "user_name" => $ps_username ))) {
-			// first user login, authentication via LDAP successful
-			$this->set("user_name",$ps_username);
-			$this->set("password",$ps_password);
-			$this->set("email",$va_attrs[$vs_attribute_email][0]);
-			$this->set("fname",$va_attrs[$vs_attribute_fname][0]);
-			$this->set("lname",$va_attrs[$vs_attribute_lname][0]);
-			$this->set("active",$this->opo_auth_config->get("ldap_users_auto_active"));
-
-			$vn_mode = $this->getMode();
-			$this->setMode(ACCESS_WRITE);
-			$this->insert();
-			if (!$this->getPrimaryKey()) {
-				return false;
-			}
-			$this->addRoles($this->opo_auth_config->get("ldap_users_default_roles"));
-			$this->addToGroups($this->opo_auth_config->get("ldap_users_default_groups"));
-			$this->setMode($vn_mode);
-		}
-
-		ldap_unbind($vo_ldap);
+		ldap_unbind($r_ldap);
 		return true;
 	}
 	# ----------------------------------------
-	private function postProcessLDAPConfigValue($key, $ps_username, $ps_user_ou, $ps_base_dn) {
-		$result = $this->opo_auth_config->get($key);
-		$result = str_replace('{username}', $ps_username, $result);
-		$result = str_replace('{user_ou}', $ps_user_ou, $result);
-		$result = str_replace('{base_dn}', $ps_base_dn, $result);
-		return $result;
+	/**
+	 * Load the given key from config, and inject the given username into it, replacing any occurrences of "{username}".
+	 * @param string $ps_key
+	 * @param string $ps_username
+	 * @return string
+	 */
+	private function injectUsernameLDAP($ps_key, $ps_username) {
+		return str_replace('{username}', $ps_username, $this->opo_auth_config->get($ps_key));
 	}
 	# ----------------------------------------
 	/**
-	 * Do authentification against an external database (creates user based on directory 
+	 * Connect to the LDAP server and authenticate using the given credentials.
+	 * @param string $ps_username
+	 * @param string $ps_password
+	 * @return bool|resource The LDAP connection resource, or false on failure.
+	 */
+	private function connectAndBindLDAP($ps_username, $ps_password) {
+		$r_ldap = ldap_connect($this->opo_auth_config->get("ldap_host"), $this->opo_auth_config->get("ldap_port"));
+		ldap_set_option($r_ldap, LDAP_OPT_PROTOCOL_VERSION, intval($this->opo_auth_config->get("ldap_protocol_version")));
+		if (!ldap_bind($r_ldap, $this->injectUsernameLDAP("ldap_bind_rdn", $ps_username), $ps_password)) {
+			$vn_errno = ldap_errno($r_ldap);
+			if ($vn_errno === 0x5b || $vn_errno < 0) {
+				// The server is down (see http://php.net/manual/en/function.ldap-errno.php#20665 for error codes)
+				die(ldap_error($r_ldap));
+			}
+			return false;
+		}
+		return $r_ldap;
+	}
+	# ----------------------------------------
+	/**
+	 * Check group membership depending on `ldap_group_match_type` setting.
+	 * @param resource $r_ldap
+	 * @param string $ps_username
+	 * @param array $pa_attrs
+	 * @return array|bool The list of CollectiveAccess groups the user should be in, or false to indicate that the user
+	 *   does not belong to any groups.
+	 */
+	private function checkUserGroupsLDAP($r_ldap, $ps_username, $pa_attrs) {
+		$va_groups = array();
+		switch ($this->opo_auth_config->get("ldap_group_match_type")) {
+			case 'list':
+				// List matching: Simple check against array of LDAP groups.
+				$va_ldap_group_dn = $this->getGroupDNListLDAP();
+				if (!$this->userHasGroupsLDAP($r_ldap, $ps_username, $pa_attrs, $va_ldap_group_dn)) {
+					return false;
+				}
+				break;
+			case 'map':
+				// Group matching: Determine the groups that the user should belong to, based on LDAP groups.
+				$va_groups = $this->getGroupsMatchingMapLDAP($r_ldap, $ps_username, $pa_attrs);
+				if (sizeof($va_groups) === 0) {
+					return false;
+				}
+				break;
+			default:
+				die('CollectiveAccess LDAP configuration is invalid: ldap_group_match_type must be either "list" or "map"');
+		}
+		return $va_groups;
+	}
+	# ----------------------------------------
+	/**
+	 * Search for the user who is logging in.
+	 * @param resource $r_ldap
+	 * @param string $ps_username
+	 * @return array|bool Associative array of user attributes, or false to indicate failure.
+	 */
+	private function getUserAttributesLDAP($r_ldap, $ps_username) {
+		$vo_results = ldap_search($r_ldap, $this->injectUsernameLDAP("ldap_user_search_dn", $ps_username), $this->injectUsernameLDAP("ldap_user_search_filter", $ps_username));
+		if (!$vo_results) {
+			return false;
+		}
+		$vo_entry = ldap_first_entry($r_ldap, $vo_results);
+		if (!$vo_entry) {
+			return false;
+		}
+		return ldap_get_attributes($r_ldap, $vo_entry);
+	}
+	# ----------------------------------------
+	/**
+	 * Get from the configuration the list of LDAP group DNs to search for.  This may be an explicitly provided list
+	 * given as `ldap_group_dn`, or a list of CNs given in `ldap_group_cn` and converted using the filter pattern given
+	 * as `ldap_group_filter_pattern`.  This only applies with "list" matching type.
+	 * @return array
+	 */
+	private function getGroupDNListLDAP() {
+		$va_ldap_group_dn = $this->opo_auth_config->getList("ldap_group_dn");
+		if (!$va_ldap_group_dn || empty($va_ldap_group_dn)) {
+			// Support legacy "ldap_group_cn" configuration in list mode only: convert CNs to filter-style DNs.
+			$vs_filter_pattern = $this->opo_auth_config->get("ldap_group_filter_pattern");
+			$va_ldap_group_dn = array_map(function ($vs_cn) use ($vs_filter_pattern) {
+				return str_replace('{group_cn}', $vs_cn, $vs_filter_pattern);
+			}, $this->opo_auth_config->getList("ldap_group_cn"));
+		}
+		return $va_ldap_group_dn;
+	}
+	# ----------------------------------------
+	/**
+	 * Get the list of groups that match the map given in the config by `ldap_group_dn`.  If this list is empty, it
+	 * means the user does not belong to any relevant groups in LDAP and login should be prevented.
+	 * @param resource $r_ldap
+	 * @param string $ps_username
+	 * @param array $pa_attrs
+	 * @return array
+	 */
+	private function getGroupsMatchingMapLDAP($r_ldap, $ps_username, $pa_attrs) {
+		$va_groups = array();
+		foreach ($this->opo_auth_config->getAssoc("ldap_group_dn") as $vs_ca_group => $va_ldap_groups) {
+			if ($this->userHasGroupsLDAP($r_ldap, $ps_username, $pa_attrs, $va_ldap_groups)) {
+				$va_groups[] = $vs_ca_group;
+			}
+		}
+		return $va_groups;
+	}
+	# ----------------------------------------
+	/**
+	 * Determine whether the user belongs to any of the given groups in LDAP.  There are two available matching
+	 * methods, "user-to-group", which is supported by ActiveDirectory (and possibly others), and "group-to-user",
+	 * which is supported by OpenLDAP (and possibly others).
+	 * @param resource $r_ldap
+	 * @param string $ps_username
+	 * @param array $pa_user_attrs
+	 * @param array $pa_group_dn
+	 * @return bool
+	 */
+	private function userHasGroupsLDAP($r_ldap, $ps_username, $pa_user_attrs, $pa_group_dn) {
+		$vb_return = false;
+		if (!is_array($pa_group_dn)) {
+			$pa_group_dn = array( $pa_group_dn );
+		}
+		switch ($this->opo_auth_config->get('ldap_group_match_method')) {
+			case 'user-to-group':
+				$vb_return = sizeof(array_intersect($pa_group_dn, $pa_user_attrs[$this->opo_auth_config->get("ldap_attribute_member_of")])) > 0;
+				break;
+			case 'group-to-user':
+				$vs_membership = $this->opo_auth_config->get("ldap_attribute_membership");
+				foreach ($pa_group_dn as $vs_group_dn) {
+					$vo_result = ldap_search($r_ldap, $this->opo_auth_config->get('ldap_group_search_dn'), $vs_group_dn, array( $vs_membership ));
+					$va_entries = ldap_get_entries($r_ldap, $vo_result);
+					if ($va_members = $va_entries[0][$vs_membership]) {
+						if (in_array($ps_username, $va_members)) {
+							$vb_return = true;
+						}
+					}
+				}
+				break;
+		}
+		return $vb_return;
+	}
+	# ----------------------------------------
+	/**
+	 * Perform first-time user setup.
+	 * @param string $ps_username
+	 * @param string $ps_password
+	 * @param array $pa_attrs
+	 * @return bool Success flag.
+	 */
+	private function firstLoginUserSetupLDAP($ps_username, $ps_password, $pa_attrs) {
+		$this->set("user_name", $ps_username);
+		$this->set("password", $ps_password);
+		$this->set("email", $pa_attrs[$this->opo_auth_config->get("ldap_attribute_email")][0]);
+		$this->set("fname", $pa_attrs[$this->opo_auth_config->get("ldap_attribute_fname")][0]);
+		$this->set("lname", $pa_attrs[$this->opo_auth_config->get("ldap_attribute_lname")][0]);
+		$this->set("active", $this->opo_auth_config->get("ldap_users_auto_active"));
+
+		$vn_mode = $this->getMode();
+		$this->setMode(ACCESS_WRITE);
+		$this->insert();
+		if (!$this->getPrimaryKey()) {
+			return false;
+		}
+		$this->setMode($vn_mode);
+
+		return true;
+	}
+	# ----------------------------------------
+	/**
+	 * Update the user's group membership in CollectiveAccess based on the previously-determined list of groups that
+	 * they should belong to, based on their LDAP group membership, plus the groups given in `ldap_users_default_groups`
+	 * and the roles given in `ldap_users_default_roles` configuration items.  This method is called on first login,
+	 * and on subsequent logins only if the `ldap_acl_update_on_every_login` configuration item is true.
+	 * @param array $pa_groups
+	 */
+	private function updateUserGroupsLDAP($pa_groups) {
+		$va_current_groups = array_values(array_map(function ($item) { return $item['code']; }, $this->getUserGroups()));
+		$va_groups_to_remove = array_diff($va_current_groups, $pa_groups);
+		if (!empty($va_groups_to_remove)) {
+			$this->removeFromGroups($va_groups_to_remove);
+		}
+		$va_groups_to_add = array_diff($pa_groups, $va_current_groups);
+		if (!empty($va_groups_to_add)) {
+			$this->addToGroups($va_groups_to_add);
+		}
+	}
+	# ----------------------------------------
+	/**
+	 * Apply the default roles and groups given in the configuration.
+	 */
+	private function applyDefaultUserGroupsAndRolesLDAP() {
+		$this->addRoles($this->opo_auth_config->get("ldap_users_default_roles"));
+		$this->addToGroups($this->opo_auth_config->get("ldap_users_default_groups"));
+	}
+	# ----------------------------------------
+	/**
+	 * Do authentification against an external database (creates user based on directory
 	 * information and config preferences in authentication.conf)
 	 * @param string $ps_username username
 	 * @param string $ps_password password
+	 * @return bool
 	 */
 	private function authenticateExtDB($ps_username="",$ps_password=""){
 		$o_log = new Eventlog();

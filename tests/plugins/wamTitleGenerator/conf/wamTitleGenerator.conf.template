@@ -8,5 +8,14 @@ title_formatters = {
 				name = generated: <unit><ifdef code="ca_collections">^ca_collections </ifdef></unit>^ca_objects.idno
 			}
 		}
+	},
+	ca_list_items = {
+		0 = {
+			types = [ %%test_list_item_type%%],
+			templates = {
+				name_singular = generated: ^ca_list_items.idno,
+				name_plural = generatedplural: ^ca_list_items.idno
+			}
+		}
 	}
 }

@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/IDNumbering/WAMultipartIDNumber.php : plugin to generate id numbers for Musées de France
+ * app/lib/ca/IDNumbering/WAMMultipartIDNumber.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -26,51 +26,31 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
+ *
  * File created by Kehan Harman (www.gaiaresources.com.au) for specific Western Australian Museum requirements
  */
- 
 
-	require_once(__CA_LIB_DIR__ . "/ca/IDNumbering/IDNumber.php");
-	require_once(__CA_LIB_DIR__ . "/ca/IDNumbering/IIDNumbering.php");
-	require_once(__CA_LIB_DIR__ . "/ca/IDNumbering/MultipartIDNumber.php");
-	require_once(__CA_APP_DIR__ . "/helpers/navigationHelpers.php");
-	
-	class WAMMultipartIDNumber extends MultipartIDNumber implements IIDNumbering {
-		# -------------------------------------------------------
-		private $opo_idnumber_config;
-		private $opa_formats;
-		
-		private $opo_db;
-		
-		# -------------------------------------------------------
-		public function __construct($ps_format=null, $pm_type=null, $ps_value=null, $po_db=null) {
-			if (!$pm_type) { $pm_type = array('__default__'); }
-			
-			parent::__construct();
-			$this->opo_idnumber_config = Configuration::load($this->opo_config->get('multipart_id_numbering_config'));
-			$this->opa_formats = $this->opo_idnumber_config->getAssoc('formats');
-			
-			if ($ps_format) { $this->setFormat($ps_format); }
-			if ($pm_type) { $this->setType($pm_type); }
-			if ($ps_value) { $this->setValue($ps_value); }
-			
-			if ((!$po_db) || !is_object($po_db)) { 
-				$this->opo_db = new Db();
-			} else {
-				$this->opo_db = $po_db;
-			}
-		}
+require_once(__CA_LIB_DIR__ . "/ca/IDNumbering/MultipartIDNumber.php");
 
-		public function getIndexValues($ps_value = null){
-			$pa_index_values = parent::getIndexValues($ps_value);
-			$vs_separator = $this->getSeparator();
-			foreach($pa_index_values as $vs_index_value){
-				if(strpos($vs_index_value, $vs_separator)){
+class WAMMultipartIDNumber extends MultipartIDNumber {
+	/**
+	 * Calls the parent method, and then for every value, adds the value again with the separators stripped.  If the
+	 * separator is empty, this method does nothing different to the parent method.
+	 *
+	 * @param string|null $ps_value
+	 *
+	 * @return array
+	 */
+	public function getIndexValues($ps_value = null){
+		$pa_index_values = parent::getIndexValues($ps_value);
+		$vs_separator = $this->getSeparator();
+		if ($vs_separator) {
+			foreach ($pa_index_values as $vs_index_value) {
+				if (strpos($vs_index_value, $vs_separator)) {
 					$pa_index_values[] = str_replace($vs_separator, '', $vs_index_value);
 				}
 			}
-			return array_unique($pa_index_values);
 		}
-				# -------------------------------------------------------
+		return array_unique($pa_index_values);
 	}
-?>
+}

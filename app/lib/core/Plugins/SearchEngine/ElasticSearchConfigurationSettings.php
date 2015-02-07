@@ -58,6 +58,9 @@ class ElasticSearchConfigurationSettings extends ASearchConfigurationSettings {
 	private $opa_setting_descriptions;
 	private $opa_setting_hints;
 	# ------------------------------------------------
+	private $ops_elasticsearch_base_url;
+	private $ops_elasticsearch_index_name;
+	# ------------------------------------------------
 	public function __construct(){
 		$this->opo_search_base = new SearchBase();
 		$this->opo_app_config = Configuration::load();
@@ -67,6 +70,21 @@ class ElasticSearchConfigurationSettings extends ASearchConfigurationSettings {
 		$this->opa_setting_names = array();
 		$this->opa_setting_hints = array();
 		$this->_initMessages();
+
+		// allow overriding settings from search.conf via constant (usually defined in bootstrap file)
+		// this is useful for multi-instance setups which have the same set of config files for multiple instances
+		if(defined('__CA_ELASTICSEARCH_BASE_URL__') && (strlen(__CA_ELASTICSEARCH_BASE_URL__)>0)) {
+			$this->ops_elasticsearch_base_url = __CA_ELASTICSEARCH_BASE_URL__;
+		} else {
+			$this->ops_elasticsearch_base_url = $this->opo_search_config->get('search_elasticsearch_base_url');
+		}
+
+		if(defined('__CA_ELASTICSEARCH_INDEX_NAME__') && (strlen(__CA_ELASTICSEARCH_INDEX_NAME__)>0)) {
+			$this->ops_elasticsearch_index_name = __CA_ELASTICSEARCH_INDEX_NAME__;
+		} else {
+			$this->ops_elasticsearch_index_name = $this->opo_search_config->get('search_elasticsearch_index_name');
+		}
+
 		parent::__construct();
 	}
 	# ------------------------------------------------
@@ -124,8 +142,8 @@ class ElasticSearchConfigurationSettings extends ASearchConfigurationSettings {
 		/* check if elasticsearch alive */
 		$vo_http_client = new Zend_Http_Client();
 		$vo_http_client->setUri(
-			$this->opo_search_config->get('search_elasticsearch_base_url')."/". /* general url */
-			$this->opo_search_config->get('search_elasticsearch_index_name')."/". /* index name */
+			$this->ops_elasticsearch_base_url."/". /* general url */
+			$this->ops_elasticsearch_index_name."/". /* index name */
 			"/_search"
 		);
 		$vo_http_client->setParameterGet('q','*');
@@ -144,8 +162,8 @@ class ElasticSearchConfigurationSettings extends ASearchConfigurationSettings {
 		$vo_http_client = new Zend_Http_Client();
 		
 		$vo_http_client->setUri(
-			$this->opo_search_config->get('search_elasticsearch_base_url')."/". /* general url */
-			$this->opo_search_config->get('search_elasticsearch_index_name')."/". /* index name */
+			$this->ops_elasticsearch_base_url."/". /* general url */
+			$this->ops_elasticsearch_index_name."/". /* index name */
 			"/_search"
 		);
 		$vo_http_client->setParameterGet('q','*');

@@ -54,9 +54,9 @@
 		if (!strlen($vs_display_value = $t_display->getDisplayValue($t_item, $vn_placement_id, array('purify' => true)))) {
 			if (!(bool)$t_display->getSetting('show_empty_values')) { continue; }
 			$vs_display_value = "&lt;"._t('not defined')."&gt;";
-		}
+		} 
 		
-		print '<div class="data"><span class="label">'."{$va_bundle_info['display']} :</span> {$vs_display_value}</div>\n";
+		print '<div class="data"><span class="label">'."{$va_bundle_info['display']} </span><span> {$vs_display_value}</span></div>\n";
 	}
 
 	print $this->render("pdfEnd.php");

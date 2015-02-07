@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -69,7 +69,7 @@ var caUI = caUI || {};
 								if(data.status != 'ok') { 
 									alert("Error getting item information");
 								} else {
-									that.addItemToSet(data.item_id, data, true, true);
+									that.addItemToSet(data.row_id, data, true, true);
 									jQuery('#' + that.setItemAutocompleteID).attr('value', '');
 								}
 							}
@@ -97,16 +97,22 @@ var caUI = caUI || {};
 				}
 			}
 			var repHTML = valueArray.representation_url || '';
-			if (repHTML && that.editSetItemsURL && valueArray['item_id']) {
+			if (repHTML && that.editSetItemsURL) {
 				repHTML = '<div style="margin-left: 25px; background-image: url(\'' +  repHTML + '\'); width: ' + valueArray.representation_width + 'px; height: ' + valueArray.representation_height + 'px;"> </div>';
 			}
 			
+			var itemID = valueArray['item_id'];
+			var rID = rowID + ((itemID > 0) ? "_" + itemID : "");
+			console.log("item=" + itemID, rowID, rID, repHTML);
+			
 			var editLinkHTML = '';
-			if (that.editSetItemButton) {
+			if ((that.editSetItemButton) && (itemID > 0)) {
 				editLinkHTML = '<div style="float: left;"><a href="' + that.editSetItemsURL + '/item_id/' + valueArray['item_id'] + '" title="' + that.editSetItemToolTip +'" class="setItemEditButton">' + that.editSetItemButton + '</a></div> ';
 			}
 			
-			var itemHTML = "<li class='setItem' id='" + that.fieldNamePrefix + "setItem" + rowID +"'><div id='" + that.fieldNamePrefix + "setItemContainer" + rowID + "' class='imagecontainer'><div class='remove'><a href='#' class='setDeleteButton' id='" + that.fieldNamePrefix + "setItemDelete" + rowID + "'>&nbsp;</a></div><div class='setItemThumbnail'>" + editLinkHTML + repHTML + "</div><div class='setItemCaption'>" + valueArray.set_item_label + " [<span class='setItemIdentifier'>" + valueArray.idno + "</span>]</div><div class='setItemIdentifierSortable'>" + valueArray.idno_sort + "</div></div><br style='clear: both;'/></li>";
+			var itemHTML = "<li class='setItem' id='" + that.fieldNamePrefix + "setItem" + rID +"'><div id='" + that.fieldNamePrefix + "setItemContainer" + rID + "' class='imagecontainer'>";
+			if (itemID > 0)  { itemHTML += "<div class='remove'><a href='#' class='setDeleteButton' id='" + that.fieldNamePrefix + "setItemDelete" + itemID + "'>&nbsp;</a></div>"; }
+			itemHTML += "<div class='setItemThumbnail'>" + editLinkHTML + repHTML + "</div><div class='setItemCaption'>" + valueArray.set_item_label + " [<span class='setItemIdentifier'>" + valueArray.idno + "</span>]</div><div class='setItemIdentifierSortable'>" + valueArray.idno_sort + "</div></div><br style='clear: both;'/></li>";
 			
 			if (prepend) {
 				jQuery('#' + that.fieldNamePrefix + that.setItemListID).prepend(itemHTML);
@@ -114,7 +120,7 @@ var caUI = caUI || {};
 				jQuery('#' + that.fieldNamePrefix + that.setItemListID).append(itemHTML);
 			}
 			
-			that.setDeleteButton(rowID);
+			if (itemID > 0) { that.setDeleteButton(rowID, itemID); }
 			
 			if (isNew) { 
 				that.refresh(); 
@@ -123,13 +129,12 @@ var caUI = caUI || {};
 			return true;
 		}
 		// ------------------------------------------------------------------------------------
-		that.setDeleteButton = function(rowID) {
-			var curRowID = rowID;
-			jQuery('#' + that.fieldNamePrefix + "setItemDelete" + rowID).click(
+		that.setDeleteButton = function(rowID, itemID) {
+			var rID = rowID + ((itemID > 0) ? "_" + itemID : "");
+			jQuery('#' + that.fieldNamePrefix + "setItemDelete" + itemID).click(
 				function() {
-					var id = curRowID;
-					jQuery('#' + that.fieldNamePrefix + "setItem" + id).fadeOut(250, function() { 
-						jQuery('#' + that.fieldNamePrefix + "setItem" + id).remove(); 
+					jQuery('#' + that.fieldNamePrefix + "setItem" + rID).fadeOut(250, function() { 
+						jQuery('#' + that.fieldNamePrefix + "setItem" + rID).remove(); 
 						that.refresh();
 					});
 					caUI.utils.showUnsavedChangesWarning(true);
@@ -194,7 +199,8 @@ var caUI = caUI || {};
 				jQuery('#' + that.fieldNamePrefix + that.setItemListID).append(v);
 				var id_string = jQuery(v).attr('id');
 				var id = id_string.replace(that.fieldNamePrefix + 'setItem', '');
-				that.setDeleteButton(id);
+				var rIDBits = id.split(/_/);
+				that.setDeleteButton(rIDBits[0], rIDBits[1]);
 			});
 			
 			caUI.utils.showUnsavedChangesWarning(true);

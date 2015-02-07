@@ -128,6 +128,8 @@
 									break;
 							}
 						}
+					} else if(ExpressionParser::hadError() && $o_log){
+						$o_log->logError(_t('[%3] Error processing rule "%1" as an error occurred. Error number was "%2"', $va_rule['trigger'], ExpressionParser::$s_last_error, $ps_refinery_name));
 					}
 				}
 			}
@@ -176,6 +178,10 @@
 					$va_attributes['preferred_labels']['name'] = $va_attributes['_preferred_labels'] = $vs_name;
 					break;
 				case 'ca_list_items':
+					if (!$vn_list_id) {
+						if ($o_log) { $o_log->logDebug(_t('[importHelpers:caProcessRefineryParents] List was not specified')); }
+						return null;
+					}
 					if(!$vn_id) {	// get place hierarchy root
 						require_once(__CA_MODELS_DIR__."/ca_lists.php");
 						$t_list = new ca_lists();
@@ -433,7 +439,10 @@
 					$vn_id = DataMigrationUtils::getMovementID($vs_name, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
 					break;
 				case 'ca_list_items':
-					$vn_list_id = caGetOption('list_id', $pa_options, null);
+					if (!($vn_list_id = caGetOption('list_id', $pa_options, null))) {
+						if ($o_log) { $o_log->logDebug(_t('[importHelpers:caProcessRefineryRelated] List was not specified')); }
+						return null;
+					}
 					$vn_id = DataMigrationUtils::getListItemID($vn_list_id, $vs_name, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
 					break;
 				case 'ca_storage_locations':
@@ -513,6 +522,8 @@
 		} elseif (is_array($va_match_on = $pa_item['settings']["{$ps_refinery_name}_matchOn"])) {
 			$pa_options['matchOn'] = $va_match_on;
 		}
+		
+		$pb_dont_create = caGetOption('dontCreate', $pa_options, (bool)$pa_item['settings']["{$ps_refinery_name}_dontCreate"]);
 		
 		$va_vals = array();
 		$vn_c = 0;
@@ -710,6 +721,10 @@
 								$vn_item_id = DataMigrationUtils::getMovementID($vs_item, $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
 								break;
 							case 'ca_list_items':
+								if (!$pa_options['list_id']) {
+									if ($o_log) { $o_log->logDebug(_t('[importHelpers:caGenericImportSplitter] List was not specified')); }
+									continue(2);
+								}
 								$va_attr_vals_with_parent['is_enabled'] = 1;
 								$vn_item_id = DataMigrationUtils::getListItemID($pa_options['list_id'], $vs_item, $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
 								break;
@@ -731,7 +746,7 @@
 							$va_vals[][$vs_terminal] = $vn_item_id;
 							continue;
 						} else {
-							if ($o_log) { $o_log->logError(_t("[{$ps_refinery_name}Refinery] Could not add %2 %1", $vs_item, $ps_item_prefix)); }
+							if ($o_log && !$pb_dont_create) { $o_log->logError(_t("[{$ps_refinery_name}Refinery] Could not add %2 %1", $vs_item, $ps_item_prefix)); }
 						}
 					} elseif ((sizeof($va_group_dest) == 1) && ($vs_terminal == $ps_table)) {
 						// Set relationship type
@@ -830,6 +845,7 @@
 						if ($o_log) { $o_log->logError(_t("[{$ps_refinery_name}Refinery] Could not add %2 %1: cannot map %3 using %1", $vs_item, $ps_item_prefix, join(".", $va_group_dest))); }
 					}
 					$va_val['_matchOn'] = $va_match_on;
+					if ($pb_dont_create) { $va_val['_dontCreate'] = 1; }
 					$va_vals[] = $va_val;
 					$vn_c++;
 				}
@@ -844,12 +860,12 @@
 # ---------------------------------------
 /**
  * Uses caProcessRefineryRelated to set a list of relationships on related records. Also takes legacy relatedEntities into account
- * @param $po_refinery_instance instanceof BaseRefinery
+ * @param $po_refinery_instance BaseRefinery
  * @param $pa_item array
  * @param $pa_source_data array
  * @param $pn_value_index int
  * @param $o_log KLogger
- * @param $o_reader instanceof BaseDataReader
+ * @param $o_reader BaseDataReader
  * @param $va_val array
  * @param $va_attr_vals array
  */
@@ -889,7 +905,7 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 			if(is_array($pa_item_settings['applyRegularExpressions'])) {
 				if (is_array($pm_value)) {
 					foreach($pm_value as $vn_i => $vs_value) {
-						foreach($pa_item_settings['applyRegularExpressions'] as $vn_i => $va_regex) {
+						foreach($pa_item_settings['applyRegularExpressions'] as $vn_c => $va_regex) {
 							if (!strlen($va_regex['match'])) { continue; }
 							$vs_value = preg_replace("!".str_replace("!", "\\!", $va_regex['match'])."!".((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i'), $va_regex['replaceWith'], $vs_value);
 						}

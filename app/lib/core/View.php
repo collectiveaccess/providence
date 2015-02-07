@@ -67,18 +67,18 @@ class View extends BaseObject {
 		
 		$vs_suffix = null;
 		if (!is_array($pm_path)) { 
+			$pm_path = array($pm_path);
+		}
+		foreach($pm_path as $ps_path) {
 			// Preserve any path suffix after "views"
 			// Eg. if path is /web/myinstall/themes/mytheme/views/bundles then we want to retain "/bundles" on the default path
 			$va_suffix_bits = array();
-			$va_tmp = array_reverse(explode("/", $pm_path));
+			$va_tmp = array_reverse(explode("/", $ps_path));
 			foreach($va_tmp as $vs_path_element) {
 				if ($vs_path_element == 'views') { break; }
 				array_push($va_suffix_bits, $vs_path_element);
 			}
-			if ($vs_suffix = join("/", $va_suffix_bits)) { $vs_suffix = '/'.$vs_suffix; }
-			
-			
-			$pm_path = array($pm_path); 
+			if ($vs_suffix = join("/", $va_suffix_bits)) { $vs_suffix = '/'.$vs_suffix; break;}
 		}
 		
 		if (caGetOption('includeDefaultThemePath', $pa_options, true)) {
@@ -244,6 +244,17 @@ class View extends BaseObject {
 	/**
 	 *
 	 */
+	public function clearViewTagsVars($ps_filename) {
+		$va_tags = $this->getTagList($ps_filename);
+		
+		foreach($va_tags as $vs_tag) {
+			unset($this->opa_view_vars[$vs_tag]);
+		}
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function render($ps_filename, $pb_dont_do_var_replacement=false, $pa_options=null) {
 		global $g_ui_locale;
 		$this->ops_last_render = null;
@@ -317,4 +328,3 @@ class View extends BaseObject {
 	}
 	# -------------------------------------------------------
 }
-?>

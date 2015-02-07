@@ -65,12 +65,25 @@ class wamDataImporterPlugin extends BaseApplicationPlugin {
 	 * @return array
 	 */
 	public function hookDataImportContentTree(&$pa_params){
+		$va_disable_plugins = array('wamTitleGenerator', 'relationshipGenerator');
+		foreach($va_disable_plugins as $vs_plugin_name){
+			unset(ApplicationPluginManager::$s_application_plugin_instances[$vs_plugin_name]);
+			unset(ApplicationPluginManager::$s_application_plugin_hooks[$vs_plugin_name]);
+		}
 		foreach ($pa_params['content_tree'] as $vs_table_name => $va_table_content_tree) {
+			// We need to _processBundles first as it replaces $pa_params['content_tree'] with values from $va_table_content
 			foreach ($va_table_content_tree as $vs_table_content_index => $va_table_content) {
 				$this->_processBundles($pa_params, $va_table_content, $vs_table_name, $vs_table_content_index);
 				if(isset($va_table_content['_interstitial'])){
 					$this->_processBundles($pa_params, $va_table_content, $vs_table_name, $vs_table_content_index, '_interstitial');
 				}
+			}
+			// We can now do custom transformations
+			switch($vs_table_name){
+				case 'ca_occurrences':
+					$this->_processConservationFields($pa_params, $va_table_content_tree, $vs_table_name);
+					$this->_processCollectingEventFields($pa_params, $va_table_content_tree, $vs_table_name);
+				break;
 			}
 		}
 		return $pa_params;
@@ -218,5 +231,94 @@ class wamDataImporterPlugin extends BaseApplicationPlugin {
 		);
 
 		$pa_table_content[$vs_name][$value_index] = DataMigrationUtils::getListItemID($vs_list_code, $vs_item_idno, $ps_type, ca_locales::getDefaultCataloguingLocaleID(), $va_attr_vals_with_parent, $pa_options);
+	}
+
+	/**
+	 *
+	 * @param $pa_params array params passed to the data importer
+	 * @param $pa_table_content_tree array the content tree
+	 * @param $ps_table_name string the name of the table
+	 */
+	protected function _processConservationFields(&$pa_params, $pa_table_content_tree, $ps_table_name){
+		/**
+		 * @var $vo_mapping ca_data_importers
+		 */
+		$vo_mapping = caGetOption('mapping', $pa_params);
+		if($vo_mapping = $pa_params['mapping']){
+
+			switch ($vo_mapping->get('importer_code')){
+				case 'conservationJobs':
+					// We are processing conservation jobs
+					foreach($pa_table_content_tree as $vn_c => $va_current_data){
+						if($va_artefact_list = $va_current_data['ArtefactList']){
+							$va_new_values = array();
+							$vs_error_policy = caGetOption('_errorPolicy', $va_artefact_list);
+							unset($va_artefact_list['_errorPolicy']);
+							foreach($va_artefact_list as $vs_attribute => $vs_values){
+								foreach(explode("|", $vs_values) as $vn_i => $vs_value){
+									$va_new_values[$vn_i]['ArtefactList'][$vs_attribute] = $vs_value;
+									if($vs_error_policy && !isset($va_new_values[$vn_i]['ArtefactList']['_errorPolicy'])){
+										// set the value for the new row
+										$va_new_values[$vn_i]['ArtefactList']['_errorPolicy'] = $vs_error_policy;
+									}
+								}
+							}
+							//Remove the old values;
+							unset($pa_params['content_tree'][$ps_table_name][$vn_c]);
+							//Append the new values
+							$pa_params['content_tree'][$ps_table_name] += $va_new_values;
+						}
+					}
+					break;
+				default;
+					//noop
+			}
+		}
+	}/**
+	 *
+	 * @param $pa_params array params passed to the data importer
+	 * @param $pa_table_content_tree array the content tree
+	 * @param $ps_table_name string the name of the table
+	 */
+	protected function _processCollectingEventFields(&$pa_params, $pa_table_content_tree, $ps_table_name){
+		/**
+		 * @var $vo_mapping ca_data_importers
+		 */
+		$vo_mapping = caGetOption('mapping', $pa_params);
+		if($vo_mapping = $pa_params['mapping']){
+
+			switch ($vo_mapping->get('importer_code')){
+				case 'zoologyCollections':
+					// We are processing zoology import
+					foreach($pa_table_content_tree as $vn_c => $va_current_data){
+						foreach($va_current_data as $vs_field => $vm_data){
+							switch ($vs_field){
+								case 'georeference':
+									if(is_array($vm_data) && !isset($vm_data['coordinates'])){
+										$va_coordinates = array();
+										foreach(array('From', 'To') as $vs_range){
+											$va_row = array();
+											foreach(array('Latitude', 'Longitude') as $vs_ordinal){
+												$vs_key = 'coordinates' . $vs_ordinal . 'Decimal' . $vs_range;
+												if(isset($vm_data[$vs_key]) && $vm_data[$vs_key] !== ''){
+													$va_row[] = $vm_data[$vs_key];
+												}
+												if($va_row){
+													$va_coordinates[$vs_range] = join(',', $va_row);
+												}
+											}
+										}
+										if($va_coordinates){
+											$pa_params['content_tree'][$ps_table_name][$vn_c][$vs_field]['coordinates'] = '['.join(';', $va_coordinates) . ']';
+										}
+									}
+							}
+						}
+					}
+					break;
+				default;
+					//noop
+			}
+		}
 	}
 }
