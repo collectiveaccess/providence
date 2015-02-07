@@ -43,5 +43,4 @@
 		ob_flush();
 		flush();
 	}
-	@unlink($vs_file_path);
 	exit();
