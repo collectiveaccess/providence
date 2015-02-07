@@ -1378,6 +1378,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 									$vn_primary_id = $va_rep['representation_id'];
 								}
 								$va_initial_values[$va_rep['representation_id']] = array(
+									'idno' => $va_rep['idno'], 
 									'status' => $va_rep['status'], 
 									'status_display' => $t_item->getChoiceListValue('status', $va_rep['status']), 
 									'access' => $va_rep['access'],

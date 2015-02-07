@@ -801,7 +801,7 @@ class Installer {
 				), array('returnAs' => 'firstModelInstance'));
 				$t_ui_screens = $t_ui_screens ? $t_ui_screens : new ca_editor_ui_screens();
 				$t_ui_screens->setMode(ACCESS_WRITE);
-				$t_ui_screens->set("idno",$vs_screen_idno);
+				$t_ui_screens->set('idno',$vs_screen_idno);
 				$t_ui_screens->set('ui_id', $vn_ui_id);
 				$t_ui_screens->set('is_default', $vn_is_default);
 				if($t_ui_screens->getPrimaryKey()){
@@ -815,8 +815,6 @@ class Installer {
 					$this->addError("Errors inserting UI screen {$vs_screen_idno} for UI {$vs_ui_code}: ".join("; ",$t_ui_screens->getErrors()));
 					return false;
 				}
-
-				$vn_screen_id = $t_ui_screens->getPrimaryKey();
 
 				self::addLabelsFromXMLElement($t_ui_screens, $vo_screen->labels, $this->opa_locales);
 

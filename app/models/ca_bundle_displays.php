@@ -335,6 +335,45 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		return parent::set($pa_fields, $pm_value, $pa_options);
 	}
 	# ------------------------------------------------------
+	/** 
+	 * Override addLabel() to set display_code if not specifically set by user
+	 */
+	public function addLabel($pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false, $pa_options=null) {
+		if ($vn_rc = parent::addLabel($pa_label_values, $pn_locale_id, $pn_type_id, $pb_is_preferred, $pa_options)) {
+			$this->_setUniqueSetCode();
+		}
+		return $vn_rc;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Override update() to set display_code if not specifically set by user
+	 */
+	public function update($pa_options=null) {
+		if ($vn_rc = parent::update($pa_options)) {
+			$this->_setUniqueSetCode();
+		}
+		return $vn_rc;
+	}
+	# ------------------------------------------------------
+	/** 
+	 * 
+	 */
+	private function _setUniqueSetCode() {
+		if (!$this->getPrimaryKey()) { return null; }
+		
+		if (!strlen(trim($this->get('display_code')))) {
+			$this->setMode(ACCESS_WRITE);
+			if(!($vs_label = $this->getLabelForDisplay())) { $vs_label = 'display_'.$this->getPrimaryKey(); }
+			$vs_new_display_name = substr(preg_replace('![^A-Za-z0-9]+!', '_', $vs_label), 0, 50);
+			if (ca_bundle_displays::find(array('display_code' => $vs_new_display_name), array('returnAs' => 'firstId')) > 0) {
+				$vs_new_display_name .= '_'.$this->getPrimaryKey();
+			}
+			$this->set('display_code', $vs_new_display_name);
+			return $this->update();
+		}
+		return false;
+	}
+	# ------------------------------------------------------
 	public function __destruct() {
 		unset($this->SETTINGS);
 	}
