@@ -88,7 +88,7 @@
 						
 					}
 				} else {
-					print _t('Cannot be checked out');
+					print "<h2>"._t('Cannot be checked out')."</h2>";
 				}
 				
 				//
