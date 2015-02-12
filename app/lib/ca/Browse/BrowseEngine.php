@@ -4393,14 +4393,15 @@
 				case 'authority':
 					$vs_rel_table_name = $va_facet_info['table'];
 					$va_params = $this->opo_ca_browse_cache->getParameters();
-					
+
 					// Make sure we honor type restrictions for the related authority
 					$va_user_type_restrictions = caGetTypeRestrictionsForUser($vs_rel_table_name);
-					if(is_array($va_user_type_restrictions)) {
-						if (!is_array($va_restrict_to_types = $va_facet_info['restrict_to_types'])) {
+					$va_restrict_to_types = $va_facet_info['restrict_to_types'];
+					if(is_array($va_user_type_restrictions)){
+						if (!is_array($va_restrict_to_types)) {
 							$va_restrict_to_types = $va_user_type_restrictions;
 						} else {
-							$va_restrict_to_types = array_merge($va_restrict_to_types, $va_user_type_restrictions);
+							$va_restrict_to_types = array_intersect($va_restrict_to_types, $va_user_type_restrictions);
 						}
 					}
 					
