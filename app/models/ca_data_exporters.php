@@ -688,6 +688,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 							$pa_errors[] = _t("Warning: options for element %1 are not in proper JSON",$vs_element);
 						}
 					}
+					
+					$va_options['_id'] = (string)$o_id->getValue();	// stash ID for future reference
 
 					$vs_key = (strlen($vs_id)>0 ? $vs_id : md5($vn_row));
 
@@ -1117,6 +1119,26 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		$vn_num_processed = 0;
+		
+		
+		if ($t_mapping->getSetting('CSV_print_field_names')) {
+			$va_header = $va_header_sources = array();
+			$va_mapping_items = $t_mapping->getItems();
+			foreach($va_mapping_items as $vn_i => $va_mapping_item) {
+				$va_settings = caUnserializeForDatabase($va_mapping_item['settings']);
+				$va_header_sources[(int)$va_mapping_item['element']] = $va_settings['_id'] ? $va_settings['_id'] : $va_mapping_item['source'];
+			}
+			ksort($va_header_sources);
+			foreach($va_header_sources as $vn_element => $vs_source) {
+				$va_tmp = explode(".", $vs_source);
+				if ($t_table = $t_mapping->getAppDatamodel()->getInstanceByTableName($va_tmp[0], true)) {
+					$va_header[] = $t_table->getDisplayLabel($vs_source);
+				} else {
+					$va_header[] = $vs_source;
+				}
+			}
+			file_put_contents($ps_filename, join(",", $va_header)."\n", FILE_APPEND);
+		}
 		while($o_result->nextHit()){
 			$vs_item_export = ca_data_exporters::exportRecord($ps_exporter_code, $o_result->get($t_instance->primaryKey()), array('logger' => $o_log));
 			file_put_contents($ps_filename, $vs_item_export."\n", FILE_APPEND);
