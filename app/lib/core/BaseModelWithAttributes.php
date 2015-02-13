@@ -644,6 +644,7 @@
 				if ($va_v = $this->get($this->tableName().'.'.$vs_code, array('returnAllLocales' => true, 'returnAsArray' => true, 'return' => 'url', 'version' => 'original'))) {
 					foreach($va_v as $vn_id => $va_v_by_locale) {
 						foreach($va_v_by_locale as $vn_locale_id => $va_v_list) {
+							if (!$vn_locale_id) { $vs_locale = 'NONE'; continue; }
 							if (!($vs_locale = $t_locale->localeIDToCode($vn_locale_id))) {
 								$vs_locale = 'NONE';
 							}
@@ -651,6 +652,7 @@
 							foreach($va_v_list as $vn_index => $va_values) {	
 								if (is_array($va_values)) {
 									foreach($va_values as $vs_sub_code => $vs_value) {
+										if(!$vs_sub_code) { continue; }
 										if (!$t_element = $this->_getElementInstance($vs_sub_code)) { continue; }
 										
 										switch((int)$t_element->get('datatype')) {
@@ -1142,6 +1144,17 @@
 			}
 			
 			return null;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns ca_list_items.idno (aka "type code") for $pn_type_id
+		 *
+		 * @param int $pn_type_id Number id for the type
+		 * @return string idno (aka "type code") for specified list item id (aka "type id")
+		 */
+		public function getTypeCodeForID($pn_type_id) {
+			$va_types = $this->getTypeList();
+			return isset($va_types[$pn_type_id]) ? $va_types[$pn_type_id]['idno'] : null;
 		}
 		# ------------------------------------------------------------------
 		/**

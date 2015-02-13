@@ -111,7 +111,7 @@
  					unset($va_searches[$vs_table]);
  					continue;
  				}
- 			 	$vo_result = $this->_doSearch($vs_table, $ps_search, $va_sorts[$ps_sort]);
+ 			 	if (!($vo_result = $this->_doSearch($vs_table, $ps_search, $va_sorts[$ps_sort]))) { unset($va_searches[$vs_table]); continue; }
  			 	$vo_result->setOption('prefetch', $this->opn_num_results_per_item_type);							// get everything we need in one pass
  			 	$vo_result->setOption('dontPrefetchAttributes', true);		// don't bother trying to prefetch attributes as we don't need them
  				$this->view->setVar($vs_table.'_results', $vo_result);
@@ -160,52 +160,53 @@
  		# -------------------------------------------------------
  		private function _doSearch($ps_type, $ps_search, $ps_sort) {
  			
+ 			$va_access_values = caGetUserAccessValues($this->request);
  			$vb_no_cache = (bool)$this->request->getParameter('no_cache', pInteger);
- 			
+ 			if (!$this->request->user->canDoAction('can_edit_'.$ps_type)) { return ''; }
  			switch($ps_type) {
  				case 'ca_objects':
  					$o_object_search = new ObjectSearch();
- 					return $o_object_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache));
+ 					return $o_object_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
 					break;
 				case 'ca_object_lots':
 					$o_object_lots_search = new ObjectLotSearch();
-					return $o_object_lots_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache));
+					return $o_object_lots_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
 					break;
 				case 'ca_entities':
 					$o_entity_search = new EntitySearch();
-					return $o_entity_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache));
+					return $o_entity_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
 					break;
 				case 'ca_places':
 					$o_place_search = new PlaceSearch();
-					return $o_place_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache));
+					return $o_place_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
 					break;
 				case 'ca_occurrences':
 					$o_occurrence_search = new OccurrenceSearch();
-					return $o_occurrence_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache));
+					return $o_occurrence_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
 					break;
 				case 'ca_collections':
 					$o_collection_search = new CollectionSearch();
-					return $o_collection_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache));
+					return $o_collection_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
 					break;
 				case 'ca_storage_locations':
 					$o_storage_location_search = new StorageLocationSearch();
-					return $o_storage_location_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache));
+					return $o_storage_location_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
 					break;
 				case 'ca_loans':
 					$o_loan_search = new LoanSearch();
-					return $o_loan_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache));
+					return $o_loan_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
 					break;
 				case 'ca_movements':
 					$o_movement_search = new MovementSearch();
-					return $o_movement_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache));
+					return $o_movement_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
 					break;
 				case 'ca_tours':
 					$o_tour_search = new TourSearch();
-					return $o_tour_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache));
+					return $o_tour_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
 					break;
 				case 'ca_tour_stops':
 					$o_tour_stop_search = new TourStopSearch();
-					return $o_tour_stop_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache));
+					return $o_tour_stop_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
 					break;
 				default:
 					return null;

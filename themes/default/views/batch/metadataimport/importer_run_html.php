@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2014 Whirl-i-Gig
+ * Copyright 2013-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,7 +30,7 @@ $t_importer 			= $this->getVar('t_importer');
 $va_last_settings 		= $this->getVar('last_settings');
 
 print $vs_control_box = caFormControlBox(
-		caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute data import"), 'caBatchMetadataImportForm', array('onclick' => 'caShowConfirmBatchExecutionPanel(); return false;')).' '.
+		caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute data import"), 'caBatchMetadataImportFormButton', array('onclick' => 'caShowConfirmBatchExecutionPanel(); return false;')).' '.
 		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'batch', 'MetadataImport', 'Index', array()),
 		'', 
 		''
@@ -59,6 +59,8 @@ print $vs_control_box = caFormControlBox(
 					<p>
 <?php
 		print ca_data_importers::getInputFormatListAsHTMLFormElement('inputFormat', array('id' => 'caInputFormatList', 'onchange' => 'caSetBatchMetadataImportFormState(true);'));
+
+		print "<span id='caImportMultipleDatasetsContainer' class='formLabelPlain'>".caHTMLCheckboxInput('importMultipleDatasets', array('id' => 'caImportMultipleDatasets', 'value' => 1), array()).' '._t('Import all data sets')."</span>\n";
 ?>	
 					</p>
 				</div>
@@ -232,6 +234,12 @@ print $vs_control_box = caFormControlBox(
 					jQuery('#caSourceTextContainer').show(dontAnimate ? 0 : 150);
 					jQuery('#caSourceText').prop('disabled', false);
 					break;
+			}
+			
+			if (info['hasMultipleDatasets']) {
+				jQuery('#caImportMultipleDatasetsContainer').show(dontAnimate ? 0 : 150);
+			} else {
+				jQuery('#caImportMultipleDatasetsContainer').hide(dontAnimate ? 0 : 150);
 			}
 		}
 			

@@ -365,6 +365,7 @@ if (that.uiStyle == 'horizontal') {
 					for(var i in data['_sortOrder']) {
 						var item = data[data['_sortOrder'][i]];
 						if (!item) { continue; }
+						if (!item.name) { item.name = '??? ' + item['item_id']; }
 						if (item['item_id']) {
 							if ((is_init) && (level == 0) && (!that.selectedItemIDs[0])) {
 								that.selectedItemIDs[0] = item['item_id'];
@@ -386,7 +387,11 @@ if (that.uiStyle == 'horizontal') {
 								moreButton += "<div style='float: right; margin-right: 5px; opacity: 0.3;' id='hierBrowser_" + that.name + "_extract_container'><a href='#' id='hierBrowser_" + that.name + "_extract'>" + that.extractFromHierarchyButtonIcon + "</a></div>";
 							}
 							
-							if ( (!((level == 0) && that.dontAllowEditForFirstLevel))) {
+							if ((item.is_enabled !== undefined) && (parseInt(item.is_enabled) === 0)) {
+								jQuery('#' + newLevelListID).append(
+									"<li class='" + that.className + "'>" + moreButton +  item.name + "</li>"
+								);
+							} else if ((!((level == 0) && that.dontAllowEditForFirstLevel))) {
 								jQuery('#' + newLevelListID).append(
 									"<li class='" + that.className + "'>" + moreButton +"<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item.name + "</a></li>"
 								);
@@ -407,7 +412,7 @@ if (that.uiStyle == 'horizontal') {
 							}
 							
 							// edit button
-							if (!((level == 0) && that.dontAllowEditForFirstLevel)) {
+							if ((!((level == 0) && that.dontAllowEditForFirstLevel)) && ((item.is_enabled === undefined) || (parseInt(item.is_enabled) === 1))) {
 								var editUrl = '';
 								var editData = 'item_id';
 								if (that.editUrlForFirstLevel && (level == 0)) {

@@ -79,7 +79,8 @@ class ExpressionParser {
             'random'		=> 'rand',
             'current'		=> 'caIsCurrentDate',
             'future'		=> 'caDateEndsInFuture',
-            'wc'			=> 'str_word_count'
+            'wc'			=> 'str_word_count',
+            'length'		=> 'strlen'
     );
     
     private $opa_tokens;

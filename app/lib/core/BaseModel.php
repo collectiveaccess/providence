@@ -707,12 +707,8 @@ class BaseModel extends BaseObject {
 				switch(sizeof($va_tmp)) {
 					case 2:
 						// support <table_name>.<field_name> syntax
-						if ($va_field_info['FIELD_TYPE'] === FT_MEDIA) {
-							$va_tmp[2] = '';
-						} else {
-							$ps_field = $va_tmp[1];
-							break;
-						}
+						$ps_field = $va_tmp[1];
+						break;
 					default: // > 2 elements
 						// media field?
 						if (($va_field_info['FIELD_TYPE'] === FT_MEDIA) && (!isset($pa_options['returnAsArray'])) && !$pa_options['returnAsArray']) {
@@ -4642,6 +4638,9 @@ class BaseModel extends BaseObject {
 					// Generate preview frames for media that support that (Eg. video)
 					// and add them as "multifiles" assuming the current model supports that (ca_object_representations does)
 					if (!sizeof($va_process_these_versions_only) && ((bool)$this->_CONFIG->get('video_preview_generate_frames') || (bool)$this->_CONFIG->get('document_preview_generate_pages')) && method_exists($this, 'addFile')) {
+						if (method_exists($this, 'removeAllFiles')) {
+							$this->removeAllFiles();                // get rid of any previously existing frames (they might be hanging ar
+						}
 						$va_preview_frame_list = $m->writePreviews(
 							array(
 								'width' => $m->get("width"), 
@@ -4658,7 +4657,6 @@ class BaseModel extends BaseObject {
 							)
 						);
 							
-						$this->removeAllFiles();		// get rid of any previously existing frames (they might be hanging around if we're editing an existing record)
 						if (is_array($va_preview_frame_list)) {
 							foreach($va_preview_frame_list as $vn_time => $vs_frame) {
 								$this->addFile($vs_frame, $vn_time, true);	// the resource path for each frame is it's time, in seconds (may be fractional) for video, or page number for documents
@@ -10527,7 +10525,7 @@ $pa_options["display_form_field_tips"] = true;
 		if (method_exists($this, 'getTypeFieldName') && ($vs_type_field_name = $this->getTypeFieldName())) {
 			$va_type_ids = caMergeTypeRestrictionLists($this, $pa_options);
 			if (is_array($va_type_ids) && sizeof($va_type_ids)) {
-				$va_wheres[] = 't.'.$vs_type_field_name.' IN ('.join(',', $va_type_ids).')';
+				$va_wheres[] = "(t.{$vs_type_field_name} IN (".join(',', $va_type_ids).')'.($this->getFieldInfo($vs_type_field_name, 'IS_NULL') ? " OR t.{$vs_type_field_name} IS NULL" : '').')';
 			}
 		}
 		if (method_exists($this, 'getSourceFieldName') && ($vs_source_id_field_name = $this->getSourceFieldName())) {
@@ -10599,7 +10597,7 @@ $pa_options["display_form_field_tips"] = true;
 		if (method_exists($this, 'getTypeFieldName') && ($vs_type_field_name = $this->getTypeFieldName())) {
 			$va_type_ids = caMergeTypeRestrictionLists($this, $pa_options);
 			if (is_array($va_type_ids) && sizeof($va_type_ids)) {
-				$va_wheres[] = 't.'.$vs_type_field_name.' IN ('.join(',', $va_type_ids).')';
+				$va_wheres[] = "(t.{$vs_type_field_name} IN (".join(',', $va_type_ids).')'.($this->getFieldInfo($vs_type_field_name, 'IS_NULL') ? " OR t.{$vs_type_field_name} IS NULL" : '').')';
 			}
 		}
 		
@@ -10688,7 +10686,7 @@ $pa_options["display_form_field_tips"] = true;
 		if (method_exists($this, 'getTypeFieldName') && ($vs_type_field_name = $this->getTypeFieldName())) {
 			$va_type_ids = caMergeTypeRestrictionLists($this, $pa_options);
 			if (is_array($va_type_ids) && sizeof($va_type_ids)) {
-				$va_wheres[] = 't.'.$vs_type_field_name.' IN ('.join(',', $va_type_ids).')';
+				$va_wheres[] = "(t.{$vs_type_field_name} IN (".join(',', $va_type_ids).')'.($this->getFieldInfo($vs_type_field_name, 'IS_NULL') ? " OR t.{$vs_type_field_name} IS NULL" : '').')';
 			}
 		}
 		
@@ -10763,7 +10761,7 @@ $pa_options["display_form_field_tips"] = true;
 		if (method_exists($this, 'getTypeFieldName') && ($vs_type_field_name = $this->getTypeFieldName())) {
 			$va_type_ids = caMergeTypeRestrictionLists($this, $pa_options);
 			if (is_array($va_type_ids) && sizeof($va_type_ids)) {
-				$va_wheres[] = 't.'.$vs_type_field_name.' IN ('.join(',', $va_type_ids).')';
+				$va_wheres[] = "(t.{$vs_type_field_name} IN (".join(',', $va_type_ids).')'.($this->getFieldInfo($vs_type_field_name, 'IS_NULL') ? " OR t.{$vs_type_field_name} IS NULL" : '').')';
 			}
 		}
 		
@@ -10849,7 +10847,7 @@ $pa_options["display_form_field_tips"] = true;
 		if (method_exists($this, 'getTypeFieldName') && ($vs_type_field_name = $this->getTypeFieldName())) {
 			$va_type_ids = caMergeTypeRestrictionLists($this, $pa_options);
 			if (is_array($va_type_ids) && sizeof($va_type_ids)) {
-				$va_wheres[] = $vs_table_name.'.'.$vs_type_field_name.' IN ('.join(',', $va_type_ids).')';
+				$va_wheres[] = "({$vs_table_name}.{$vs_type_field_name} IN (".join(',', $va_type_ids).')'.($this->getFieldInfo($vs_type_field_name, 'IS_NULL') ? " OR {$vs_table_name}.{$vs_type_field_name} IS NULL" : '').')';
 			}
 		}
 		
@@ -10881,6 +10879,7 @@ $pa_options["display_form_field_tips"] = true;
 			INNER JOIN {$vs_table_name} ON {$vs_table_name}.{$vs_primary_key} = random_items.{$vs_primary_key}
 			{$vs_deleted_sql}
 		";
+		
 		$qr_res = $o_db->query($vs_sql);
 		
 		$va_random_items = array();

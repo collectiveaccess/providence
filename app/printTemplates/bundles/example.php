@@ -33,6 +33,11 @@
  * @tables ca_objects
  * @elementCode your_element_code_here
  *
+ * @marginTop 0.75in
+ * @marginLeft 0.25in
+ * @marginBottom 0.5in
+ * @marginRight 0.25in
+ *
  * ----------------------------------------------------------------------
  */
 

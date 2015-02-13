@@ -536,8 +536,8 @@ class Installer {
 		$t_rel_types = new ca_relationship_types();
 		$t_list = new ca_lists();
 
+		$va_elements = array();
 		if($this->ops_base_name){ // "merge" profile and its base
-			$va_elements = array();
 			foreach($this->opo_base->elementSets->children() as $vo_element){
 				$va_elements[self::getAttribute($vo_element, "code")] = $vo_element;
 			}
@@ -655,6 +655,60 @@ class Installer {
 		return $vn_element_id;
 	}
 	# --------------------------------------------------
+	public function processMetadataDictionary() {
+		require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_entries.php');
+
+		if(!$this->opo_profile->metadataDictionary) { return true; } // no dict specified. it's optional, so don't barf
+
+		// dictionary entries don't have a code or any other attribute that could be used for
+		// identification so we won't support setting them in a base profile, for now ...
+
+		foreach($this->opo_profile->metadataDictionary->children() as $vo_entry) {
+			$vs_field = self::getAttribute($vo_entry, "bundle");
+
+			if(strlen($vs_field)<1) {
+				$this->addError("No bundle specified in a metadata dictionary entry. Skipping row.");
+				continue;
+			}
+
+			// insert dictionary entry
+			$t_entry = new ca_metadata_dictionary_entries();
+			$t_entry->setMode(ACCESS_WRITE);
+			$t_entry->set('bundle_name', $vs_field);
+			$this->_processSettings($t_entry, $vo_entry->settings);
+
+			$t_entry->insert();
+
+			if($t_entry->numErrors() > 0 || !($t_entry->getPrimaryKey()>0)) {
+				$this->addError("There were errors while adding dictionary entry: " . join(';', $t_entry->getErrors()));
+				return false;
+			}
+
+			if($vo_entry->rules) {
+				foreach($vo_entry->rules->children() as $vo_rule) {
+					$vs_code = self::getAttribute($vo_rule, "code");
+					$vs_level = self::getAttribute($vo_rule, "level");
+
+					$t_rule = new ca_metadata_dictionary_rules();
+					$t_rule->setMode(ACCESS_WRITE);
+					$t_rule->set('entry_id', $t_entry->getPrimaryKey());
+					$t_rule->set('rule_code', $vs_code);
+					$t_rule->set('rule_level', $vs_level);
+					$t_rule->set('expression', (string) $vo_rule->expression);
+					$this->_processSettings($t_rule, $vo_rule->settings);
+
+					$t_rule->insert();
+					if ($t_rule->numErrors()) {
+						$this->addError("There were errors while adding dictionary rule: " . join(';', $t_rule->getErrors()));
+						continue;
+					}
+				}
+			}
+		}
+
+		return true;
+	}
+	# --------------------------------------------------
 	public function processUserInterfaces(){
 		require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
 		require_once(__CA_MODELS_DIR__."/ca_editor_ui_screens.php");
@@ -747,7 +801,7 @@ class Installer {
 				), array('returnAs' => 'firstModelInstance'));
 				$t_ui_screens = $t_ui_screens ? $t_ui_screens : new ca_editor_ui_screens();
 				$t_ui_screens->setMode(ACCESS_WRITE);
-				$t_ui_screens->set("idno",$vs_screen_idno);
+				$t_ui_screens->set('idno',$vs_screen_idno);
 				$t_ui_screens->set('ui_id', $vn_ui_id);
 				$t_ui_screens->set('is_default', $vn_is_default);
 				if($t_ui_screens->getPrimaryKey()){
@@ -761,8 +815,6 @@ class Installer {
 					$this->addError("Errors inserting UI screen {$vs_screen_idno} for UI {$vs_ui_code}: ".join("; ",$t_ui_screens->getErrors()));
 					return false;
 				}
-
-				$vn_screen_id = $t_ui_screens->getPrimaryKey();
 
 				self::addLabelsFromXMLElement($t_ui_screens, $vo_screen->labels, $this->opa_locales);
 
@@ -922,9 +974,13 @@ class Installer {
 	private function processRelationshipTypesForTable($po_relationship_types, $pn_table_num, $ps_left_table, $ps_right_table, $pn_parent_id, $pa_list_item_ids){
 		$o_dm = Datamodel::load();
 
+		// nuke caches to be safe
+		ca_relationship_types::$s_relationship_type_id_cache = array();
+		ca_relationship_types::$s_relationship_type_table_cache = array();
+		ca_relationship_types::$s_relationship_type_id_to_code_cache = array();
+
 		$t_rel_type = new ca_relationship_types();
 		$t_rel_type->setMode(ACCESS_WRITE);
-
 
 		$vn_rank_default = (int)$t_rel_type->getFieldInfo('rank', 'DEFAULT');
 		foreach($po_relationship_types->children() as $vo_type) {
@@ -938,7 +994,8 @@ class Installer {
 
 			$t_rel_type->set('table_num', $pn_table_num);
 			$t_rel_type->set('type_code', $vs_type_code);
-			$t_rel_type->set("parent_id", $pn_parent_id);
+			$t_rel_type->set('parent_id', $pn_parent_id);
+			$t_rel_type->set('is_default', $vn_default ? 1 : 0);
 			
 			if ($vn_rank > 0) {
 				$t_rel_type->set("rank", $vn_rank);
@@ -946,8 +1003,11 @@ class Installer {
 				$t_rel_type->set("rank", $vn_rank_default);
 			}
 
-			$t_rel_type->set('sub_type_left_id', null);
-			$t_rel_type->set('sub_type_right_id', null);
+			if($t_rel_type->getPrimaryKey()) {
+				$t_rel_type->update();
+			} else {
+				$t_rel_type->insert();
+			}
 
 			if (trim($vs_left_subtype_code = (string) $vo_type->subTypeLeft)) {
 				$t_obj = $o_dm->getTableInstance($ps_left_table);
@@ -955,6 +1015,7 @@ class Installer {
 
 				if (isset($pa_list_item_ids[$vs_list_code][$vs_left_subtype_code])) {
 					$t_rel_type->set('sub_type_left_id', $pa_list_item_ids[$vs_list_code][$vs_left_subtype_code]);
+					$t_rel_type->update();
 				}
 			}
 			if (trim($vs_right_subtype_code = (string) $vo_type->subTypeRight)) {
@@ -962,14 +1023,8 @@ class Installer {
 				$vs_list_code = $t_obj->getFieldListCode($t_obj->getTypeFieldName());
 				if (isset($pa_list_item_ids[$vs_list_code][$vs_right_subtype_code])) {
 					$t_rel_type->set('sub_type_right_id', $pa_list_item_ids[$vs_list_code][$vs_right_subtype_code]);
+					$t_rel_type->update();
 				}
-			}
-
-			$t_rel_type->set('is_default', $vn_default ? 1 : 0);
-			if($t_rel_type->getPrimaryKey()){
-				$t_rel_type->update();
-			} else {
-				$t_rel_type->insert();
 			}
 
 			if ($t_rel_type->numErrors()) {

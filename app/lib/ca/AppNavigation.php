@@ -219,10 +219,12 @@
 					}
 					$va_node = $va_node['navigation'];
 				} else {
-					foreach($va_node as $vs_key => $va_menu) {
-						if (isset($va_menu['handler']) && isset($va_menu['type']) && $va_menu['handler'] && ($va_menu['type'] == 'dynamic')) {
-							if (is_array($va_dyn_menu = $this->getDynamicNavigation($va_menu)) ) {
-								$va_trail[] = $va_dyn_menu[$vs_part]['displayName'];
+					if (is_array($va_node)) {
+						foreach($va_node as $vs_key => $va_menu) {
+							if (isset($va_menu['handler']) && isset($va_menu['type']) && $va_menu['handler'] && ($va_menu['type'] == 'dynamic')) {
+								if (is_array($va_dyn_menu = $this->getDynamicNavigation($va_menu)) ) {
+									$va_trail[] = $va_dyn_menu[$vs_part]['displayName'];
+								}
 							}
 						}
 					}
@@ -314,7 +316,7 @@
 			}
 			
 			$vo_session = $this->opo_request->session;
-			if ((intval($this->opo_config->get('do_menu_bar_caching')) > 0) && ($vs_menu_cache = $vo_session->getVar('ca_nav_menubar_cache'))) { return $vs_menu_cache; }
+			if (((time() - $vo_session->getVar('ca_nav_menubar_cache_lasttime')) < 600) && (intval($this->opo_config->get('do_menu_bar_caching')) > 0) && ($vs_menu_cache = $vo_session->getVar('ca_nav_menubar_cache'))) { return $vs_menu_cache; }
 			
 			$vs_buf = '';
 			$vs_cur_selection = $this->getDestinationAsNavigationPath();
@@ -332,6 +334,7 @@
 				$vs_buf .= "</li>\n";
 			}
 			$vo_session->setVar('ca_nav_menubar_cache', $vs_buf); 
+			$vo_session->setVar('ca_nav_menubar_cache_lasttime', time()); 
 			return $vs_buf;
 		}
 		# -------------------------------------------------------

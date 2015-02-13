@@ -39,15 +39,15 @@ require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_rule_violations.php');
 
 global $_ca_metadata_dictionary_rules_settings;
 $_ca_metadata_dictionary_rules_settings = array(		// global
-	'rule_displayname' => array(
+	'label' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,
 		'width' => 90, 'height' => 1,
 		'takesLocale' => true,
-		'label' => _t('Rule display name'),
-		'description' => _t('Short name for this rule, used for display in issue lists.')
+		'label' => _t('Rule display label'),
+		'description' => _t('Short label for this rule, used for display in issue lists.')
 	),
-	'rule_violationMessage' => array(
+	'violationMessage' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,
 		'width' => 90, 'height' => 8,
@@ -55,7 +55,7 @@ $_ca_metadata_dictionary_rules_settings = array(		// global
 		'label' => _t('Rule violation message'),
 		'description' => _t('Message used for display to user when presenting issues.')
 	),
-	'rule_description' => array(
+	'description' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,
 		'width' => 90, 'height' => 8,
