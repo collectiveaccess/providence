@@ -3473,7 +3473,7 @@
 					
 					$vs_sort_field = null;
 					if (($t_item->getProperty('ID_NUMBERING_ID_FIELD') == $vs_field_name)) {
-						$vs_sort_field = $t_item->getProperty('ID_NUMBERING_SORT_FIELD');
+						$vs_sort_field = $vs_browse_table_name . '.' . $t_item->getProperty('ID_NUMBERING_SORT_FIELD');
 					}
 					
 					$t_list = new ca_lists();
