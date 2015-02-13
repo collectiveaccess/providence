@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -290,12 +290,47 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 		unset($this->SETTINGS);
 	}
 	# ------------------------------------------------------
+	/**
+	 * Override update() to set form_code if not specifically set by user and remove all placements if type changes
+	 */
 	public function update($pa_options=null) {
 		if ($this->changed('table_num')) {
 			$this->removeAllPlacements();
 		}
 		
-		return parent::update($pa_options);
+		if($vn_rc = parent::update($pa_options)) {
+			$this->_setUniqueSetCode();
+		}
+		return $vn_rc;
+	}
+	# ------------------------------------------------------
+	/** 
+	 * Override addLabel() to set form_code if not specifically set by user
+	 */
+	public function addLabel($pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false, $pa_options=null) {
+		if ($vn_rc = parent::addLabel($pa_label_values, $pn_locale_id, $pn_type_id, $pb_is_preferred, $pa_options)) {
+			$this->_setUniqueSetCode();
+		}
+		return $vn_rc;
+	}
+	# ------------------------------------------------------
+	/** 
+	 * 
+	 */
+	private function _setUniqueSetCode() {
+		if (!$this->getPrimaryKey()) { return null; }
+		
+		if (!strlen(trim($this->get('form_code')))) {
+			$this->setMode(ACCESS_WRITE);
+			if(!($vs_label = $this->getLabelForDisplay())) { $vs_label = 'form_'.$this->getPrimaryKey(); }
+			$vs_new_form_name = substr(preg_replace('![^A-Za-z0-9]+!', '_', $vs_label), 0, 50);
+			if (ca_search_forms::find(array('form_code' => $vs_new_form_name), array('returnAs' => 'firstId')) > 0) {
+				$vs_new_form_name .= '_'.$this->getPrimaryKey();
+			}
+			$this->set('form_code', $vs_new_form_name);
+			return $this->update();
+		}
+		return false;
 	}
 	# ------------------------------------------------------
 	/** 

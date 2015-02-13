@@ -1711,22 +1711,35 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 			$o_log->logInfo(_t("Processing mapping in attribute mode for attribute_id = %1.", $vn_attribute_id));
 
-			$t_attr = new ca_attributes($vn_attribute_id);
-			$va_values = $t_attr->getAttributeValues();
+			if($vs_source) { // trying to find the source only makes sense if the source is set
+				$t_attr = new ca_attributes($vn_attribute_id);
+				$va_values = $t_attr->getAttributeValues();
+				$o_log->logDebug(_t("Trying to find code %1 in value array for the current attribute.", $vs_source));
+				$o_log->logDebug(_t("Value array is %1.", print_r($va_values, true)));
 
-			$o_log->logDebug(_t("Trying to find code %1 in value array for the current attribute.", $vs_source));
-			$o_log->logDebug(_t("Value array is %1.", $va_values));
+				foreach($va_values as $vo_val) {
+					$vn_list_id = null;
+					if($vo_val instanceof ListAttributeValue) {
+						$t_element = ca_metadata_elements::getInstance($t_attr->get('element_id'));
+						$vn_list_id = $t_element->get('list_id');
+					}
 
-			foreach($va_values as $vo_val) {
-				if($vo_val->getElementCode() == $vs_source) {
 
-					$o_log->logDebug(_t("Found value %1.", $vo_val->getDisplayValue()));
+					$o_log->logDebug(_t("Trying to match code from array %1 and the code we're looking for %2.", $vo_val->getElementCode(), $vs_source));
+					if($vo_val->getElementCode() == $vs_source) {
 
-					$va_item_info[] = array(
-						'text' => $vo_val->getDisplayValue(),
-						'element' => $vs_element,
-					);
+						$o_log->logDebug(_t("Found value %1.", $vo_val->getDisplayValue(array('list_id' => $vn_list_id))));
+
+						$va_item_info[] = array(
+							'text' => $vo_val->getDisplayValue(array('list_id' => $vn_list_id)),
+							'element' => $vs_element,
+						);
+					}
 				}
+			} else { // no source in attribute context probably means this is some form of wrapper, e.g. a MARC field
+				$va_item_info[] = array(
+					'element' => $vs_element,
+				);
 			}
 		} else if($vs_source) {
 			$o_log->logDebug(_t("Source for current mapping is %1", $vs_source));
@@ -1762,7 +1775,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						'text' => $vs_get,
 						'element' => $vs_element,
 					);
-				} else { // if user wants current element repeated in case of multiple returned values, go ahead and do that
+				} else { // user wants current element repeated in case of multiple returned values
 					$va_get_options['delimiter'] = ';#;';
 					$vs_values = $t_instance->get($vs_source,$va_get_options);
 

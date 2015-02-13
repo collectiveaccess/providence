@@ -82,6 +82,14 @@
 			'label' => _t('No value text'),
 			'description' => _t('Text to use as label for the "no value" option when a value is not required.')
 		),
+		'useDefaultWhenNull' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Use list default when value is null?'),
+			'description' => _t('Check this option if the list default value should be used when the item value is null. (The default is disregard the default value and show the null value.)')
+		),
 		'canBeUsedInSort' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_CHECKBOXES,
@@ -283,7 +291,7 @@
 						break;
 					case 'item_id':
 					default:
-						if ($vn_id = ca_list_items::find(array('item_id' => (int)$ps_value, 'list_id' => $pa_element_info['list_id']), array('returnAs' => 'firstId'))) {
+						if ($vn_id = ca_list_items::find(array('item_id' => (int)$ps_value, 'list_id' => $pa_element_info['list_id']), array('returnAs' => 'firstId', 'transaction' => $o_trans))) {
 							break(2);
 						//} else {
 							//$this->postError(1970, _t('Value with item_id %1 does not exist in list %2', $ps_value, $pa_element_info['list_id']), 'ListAttributeValue->parseValue()');
@@ -336,6 +344,10 @@
  			
  			$vn_max_columns = $pa_element_info['settings']['maxColumns'];
  			if (!$vb_require_value) { $vn_max_columns++; }
+ 			
+ 			if(!isset($pa_options['useDefaultWhenNull'])) { 
+ 				$pa_options['useDefaultWhenNull'] = isset($pa_element_info['settings']['useDefaultWhenNull']) ? (bool)$pa_element_info['settings']['useDefaultWhenNull'] : false;
+ 			}
  			
  			return ca_lists::getListAsHTMLFormElement($pa_element_info['list_id'], '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', array('class' => $vs_class, 'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}'), array_merge($pa_options, array('render' => $vs_render, 'maxColumns' => $vn_max_columns, 'element_id' => $pa_element_info['element_id'], 'nullOption' => $vb_null_option)));
  		}

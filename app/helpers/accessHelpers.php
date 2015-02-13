@@ -50,17 +50,27 @@
 	  * @return array An array of integer values that, if present in a record, indicate that the record should be displayed to the current user
 	  */
 	function caGetUserAccessValues($po_request, $pa_options=null) {
+		if (defined("__CA_APP_TYPE__") && (__CA_APP_TYPE__ == 'PROVIDENCE')) { return null; }
 		$vb_dont_enforce_access_settings = isset($pa_options['dont_enforce_access_settings']) ? (bool)$pa_options['dont_enforce_access_settings'] : $po_request->config->get('dont_enforce_access_settings');
 		$va_privileged_access_settings = isset($pa_options['privileged_access_settings']) && is_array($pa_options['privileged_access_settings']) ? (bool)$pa_options['privileged_access_settings'] : (array)$po_request->config->getList('privileged_access_settings');
 		$va_public_access_settings = isset($pa_options['public_access_settings']) && is_array($pa_options['public_access_settings']) ? $pa_options['public_access_settings'] : (array)$po_request->config->getList('public_access_settings');
 	
 		if (!$vb_dont_enforce_access_settings) {
+			$va_access = array();
 			$vb_is_privileged = caUserIsPrivileged($po_request, $pa_options);
 			if($vb_is_privileged) {
-				return $va_privileged_access_settings;
+				$va_access = $va_privileged_access_settings;
 			} else {
-				return $va_public_access_settings;
+				$va_access = $va_public_access_settings;
 			}
+			
+			if ($po_request->isLoggedIn()) {
+				$va_user_access = $po_request->user->getAccessStatuses(1);
+				if(is_array($va_user_access)) {
+					$va_access = array_merge($va_access, $va_user_access);
+				}
+			}
+			return $va_access;
 		}
 		return array();
 	}

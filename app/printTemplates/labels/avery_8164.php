@@ -45,20 +45,20 @@
  
  	$vo_result = $this->getVar('result');	
  ?>
- <div class="titleText" style="position: absolute; left: 0.125in; top: 0.125in; width: 1.75in; height: 0.5in; overflow: hidden;">
+ <div class="titleText" style="position: absolute; left: 0.125in; top: 0.125in; width: 1.75in; height: 1.5in; overflow: hidden;">
  	{{{<ifdef code="ca_objects.idno">(^ca_objects.idno)</ifdef>}}}
  	
- 	{{{<ifdef code="ca_objects.work_description"><div class="smallText">^ca_objects.work_description</div></ifdef>}}}
+ 	{{{<ifdef code="ca_objects.description"><div class="smallText">^ca_objects.description</div></ifdef>}}}
  </div>
  
- <div class="barcode" style="position: absolute; left: 0.125in; top: 1.5in; width: 1.5in; height: 0.75in;">
+ <div class="barcode" style="position: absolute; left: 0.125in; top: 2.5in; width: 1.5in; height: 0.75in;">
  	{{{barcode:code128:5:^ca_objects.idno}}}
  </div>
  
- <div class="bodyText" style="position: absolute; left: 0.125in; top: 3in; width: 3.5in; height: 0.375in;">
- 	{{{^ca_objects.preferred_labels.name <ifdef code="ca_objects.idno">(^ca_objects.idno)</ifdef>}}}
+ <div class="thumbnail" style="position: absolute; left: 2in; top: 0.125in; width: 1.875in; overflow: hidden;">
+ 	<?php print $vo_result->get('ca_object_representations.media.thumbnail'); ?>
  </div>
  
- <div class="thumbnail" style="position: absolute; right: 0.125in; top: 0.125in; overflow: hidden;">
- 	<?php print $vo_result->get('ca_object_representations.media.thumbnail'); ?>
+ <div class="bodyText" style="position: absolute; left: 0.125in; top: 3in; width: 2.0in; height: 0.375in;">
+ 	{{{^ca_objects.preferred_labels.name <ifdef code="ca_objects.idno">(^ca_objects.idno)</ifdef>}}}
  </div>

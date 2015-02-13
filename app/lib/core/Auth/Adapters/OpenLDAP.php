@@ -42,6 +42,10 @@ class OpenLDAPAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 			throw new OpenLDAPException(_t("PHP's LDAP module is required for LDAP authentication!"));
 		}
 
+		if(!$ps_username) {
+			return false;
+		}
+
 		// ldap config
 		$vs_ldaphost = $po_auth_config->get("ldap_host");
 		$vs_ldapport = $po_auth_config->get("ldap_port");
@@ -75,8 +79,6 @@ class OpenLDAPAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		if(!$vo_bind) { // wrong credentials
 			if (ldap_get_option($vo_ldap, 0x0032, $extended_error)) {
 				caLogEvent("ERR", "LDAP ERROR (".ldap_errno($vo_ldap).") {$extended_error} [{$vs_bind_rdn}]", "OpenLDAP::Authenticate");
-			
-				print "LDAP ERROR (".ldap_errno($vo_ldap).") {$extended_error} [{$vs_bind_rdn}]\n";
 			}
 			ldap_unbind($vo_ldap);
 			return false;

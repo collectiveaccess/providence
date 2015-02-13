@@ -1301,6 +1301,34 @@ class SearchResult extends BaseObject {
 					$vs_pk = $t_original_instance->primaryKey();
 					// Handle specific intrinsic types
 					switch($va_field_info['FIELD_TYPE']) {
+						case FT_HISTORIC_DATETIME:
+						case FT_DATETIME:
+						case FT_TIMESTAMP:
+							foreach($va_value_list as $vn_id => $va_values_by_locale) {
+								foreach($va_values_by_locale as $vn_locale_id => $va_values) {
+									foreach($va_values as $vn_i => $va_value) {
+										$va_ids[] = $va_value[$vs_pk];
+					
+										if(caGetOption('getDirectDate', $pa_options, false)) {
+											$vs_prop = $va_value[$va_path_components['field_name']];
+										} else {
+											$this->opo_tep->init();
+											if ($va_field_info['FIELD_TYPE'] !== FT_HISTORIC_DATETIME) {
+												$this->opo_tep->setUnixTimestamps($va_value[$va_path_components['field_name']], $va_value[$va_path_components['field_name']]);
+											} else {
+												$this->opo_tep->setHistoricTimestamps($va_value[$va_path_components['field_name']], $va_value[$va_path_components['field_name']]);
+											}
+											$vs_prop = $this->opo_tep->getText($pa_options);
+										}
+										if ($vb_return_all_locales) {
+											$va_return_values[$vn_row_id][$vn_locale_id][] = $vs_prop;
+										} else {
+											$va_return_values[] = $vs_prop;
+										}
+									}
+								}
+							}
+							break;
 						case FT_DATERANGE:
 						case FT_HISTORIC_DATERANGE:
 							foreach($va_value_list as $vn_id => $va_values_by_locale) {
@@ -1542,6 +1570,21 @@ class SearchResult extends BaseObject {
 							case FT_BIT:
 								if ($pa_options['convertCodesToDisplayText']) {
 									$va_value[$va_path_components['field_name']] = (bool)$vs_prop ? _t('yes') : _t('no'); 
+								}
+								break;
+							case FT_HISTORIC_DATETIME:
+								if(!caGetOption('getDirectDate', $pa_options, false)) {
+									$this->opo_tep->init();
+									$this->opo_tep->setHistoricTimestamps($va_value[$va_path_components['field_name']], $va_value[$va_path_components['field_name']]);
+									$va_value[$va_path_components['field_name']] = $this->opo_tep->getText($pa_options);
+								}
+								break;
+							case FT_TIMESTAMP:
+							case FT_DATETIME:
+								if(!caGetOption('getDirectDate', $pa_options, false)) {
+									$this->opo_tep->init();
+									$this->opo_tep->setUnixTimestamps($va_value[$va_path_components['field_name']], $va_value[$va_path_components['field_name']]);
+									$va_value[$va_path_components['field_name']] = $this->opo_tep->getText($pa_options);
 								}
 								break;
 							case FT_DATERANGE:

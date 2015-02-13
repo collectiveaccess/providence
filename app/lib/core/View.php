@@ -208,7 +208,7 @@ class View extends BaseObject {
 		if($vs_tags = json_encode($va_tags)) {
 			file_put_contents($vs_compiled_path, $vs_tags);
 		} else {
-			unlink($vs_compiled_path);
+			@unlink($vs_compiled_path);
 		}
 		return $va_tags;
 	}

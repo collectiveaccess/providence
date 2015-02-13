@@ -33,13 +33,17 @@
 require_once(__CA_LIB_DIR__.'/core/Auth/BaseAuthAdapter.php');
 require_once(__CA_LIB_DIR__.'/core/Auth/PasswordHash.php');
 
-class ActiveDirectoryAdapter extends BaseAuthAdapter implements IAuthAdapter {
+class ActiveDirectoryAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	# --------------------------------------------------------------------------------
 	public static function authenticate($ps_username, $ps_password = '', $pa_options=null) {
 		$o_auth_config = Configuration::load(Configuration::load()->get('authentication_config'));
 		
 		if(!function_exists("ldap_connect")){
 			throw new ActiveDirectoryException(_t("PHP's LDAP module is required for LDAP authentication!"));
+		}
+
+		if(!$ps_username) {
+			return false;
 		}
 
 		// ldap config

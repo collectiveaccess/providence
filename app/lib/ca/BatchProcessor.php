@@ -580,6 +580,9 @@
  			$vs_idno_mode 						= $pa_options['idnoMode'];
  			$vs_idno 							= $pa_options['idno'];
 
+			$vs_representation_idno_mode		= $pa_options['representationIdnoMode'];
+			$vs_representation_idno 			= $pa_options['representation_idno'];
+
  			$vs_set_mode 						= $pa_options['setMode'];
  			$vs_set_create_name 				= $pa_options['setCreateName'];
  			$vn_set_id	 						= $pa_options['set_id'];
@@ -842,12 +845,36 @@
 					}
 				}
 
+				switch($vs_representation_idno_mode) {
+					case 'filename':
+						// use the filename as identifier
+						$vs_rep_idno = $f;
+						break;
+					case 'filename_no_ext';
+						// use filename without extension as identifier
+						$vs_rep_idno = preg_replace('/\\.[^.\\s]{3,4}$/', '', $f);
+						break;
+					case 'directory_and_filename':
+						// use the directory + filename as identifier
+						$vs_rep_idno = $d.'/'.$f;
+						break;
+					default:
+						// use idno from form
+						$vs_rep_idno = $vs_representation_idno;
+						break;
+				}
+
 				$t_new_rep = null;
-				if ($t_instance->getPrimaryKey()) {
+				if ($t_instance->getPrimaryKey() && ($t_instance instanceof RepresentableBaseModel)) {
 					// found existing object
 					$t_instance->setMode(ACCESS_WRITE);
 
-					$t_new_rep = $t_instance->addRepresentation($vs_directory.'/'.$f, $vn_rep_type_id, $vn_locale_id, $vn_object_representation_status, $vn_object_representation_access, false, array(), array('original_filename' => $f, 'returnRepresentation' => true, 'type_id' => $vn_rel_type_id));
+					$t_new_rep = $t_instance->addRepresentation(
+						$vs_directory.'/'.$f, $vn_rep_type_id, // path
+						$vn_locale_id, $vn_object_representation_status, $vn_object_representation_access, false, // locale, status, access, primary
+						array('idno' => $vs_rep_idno), // values
+						array('original_filename' => $f, 'returnRepresentation' => true, 'type_id' => $vn_rel_type_id) // options
+					);
 
 					if ($t_instance->numErrors()) {
 						$o_eventlog->log(array(
@@ -893,6 +920,11 @@
 							case 'filename':
 								// use the filename as identifier
 								$t_instance->set('idno', $f);
+								break;
+							case 'filename_no_ext';
+								// use filename without extension as identifier
+								$f_no_ext = preg_replace('/\\.[^.\\s]{3,4}$/', '', $f);
+								$t_instance->set('idno', $f_no_ext);
 								break;
 							case 'directory_and_filename':
 								// use the directory + filename as identifier
@@ -956,7 +988,12 @@
 							continue;
 						}
 
-						$t_new_rep = $t_instance->addRepresentation($vs_directory.'/'.$f, $vn_rep_type_id, $vn_locale_id, $vn_object_representation_status, $vn_object_representation_access, true, array(), array('original_filename' => $f, 'returnRepresentation' => true, 'type_id' => $vn_rel_type_id));
+						$t_new_rep = $t_instance->addRepresentation(
+							$vs_directory.'/'.$f, $vn_rep_type_id, // path, type_id
+							$vn_locale_id, $vn_object_representation_status, $vn_object_representation_access, true, // locale, status, access, primary
+							array('idno' => $vs_rep_idno), // values
+							array('original_filename' => $f, 'returnRepresentation' => true, 'type_id' => $vn_rel_type_id) // options
+						);
 
 						if ($t_instance->numErrors()) {
 							$o_eventlog->log(array(

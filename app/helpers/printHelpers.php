@@ -188,7 +188,13 @@
 	}
 	# ------------------------------------------------------------------
 	/**
+	 * Converts string quantity with units ($ps_value parameter) to a numeric quantity in
+	 * points. Units are limited to inches, centimeters, millimeters, pixels and points as
+	 * this function is primarily used to switch between units used when generating PDFs.
 	 *
+	 * @param $ps_value string The value to convert. Valid units are in, cm, mm, px and p. If units are invalid or omitted points are assumed.
+	 *
+	 * @return int Converted measurement in points.
 	 */
 	function caConvertMeasurementToPoints($ps_value) {
 		global $g_print_measurement_cache;
@@ -220,6 +226,41 @@
 		}
 
 		return $g_print_measurement_cache[$ps_value] = $ps_value_in_points;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Converts string quantity with units ($ps_value parameter) to a numeric quantity in
+	 * the units specified by the $ps_units parameter. Units are limited to inches, centimeters, millimeters, pixels and points as
+	 * this function is primarily used to switch between units used when generating PDFs.
+	 *
+	 * @param $ps_value string The value to convert. Valid units are in, cm, mm, px and p. If units are invalid or omitted points are assumed.
+	 * @param $ps_units string A valid measurement unit: in, cm, mm, px, p (inches, centimeters, millimeters, pixels, points) respectively.
+	 *
+	 * @return int Converted measurement. If the output units are omitted or otherwise not valid, pixels are assumed.
+	 */
+	function caConvertMeasurement($ps_value, $ps_units) {
+		$vn_in_points = caConvertMeasurementToPoints($ps_value);
+		
+		if (!preg_match("/^([\d\.]+)[ ]*([A-Za-z]*)$/", $ps_value, $va_matches)) {
+			return $vn_in_points;
+		}
+		
+		switch(strtolower($ps_units)) {
+			case 'in':
+				return $vn_in_points/72;
+				break;
+			case 'cm':
+				return $vn_in_points/28.346;
+				break;
+			case 'mm':
+				return $vn_in_points/2.8346;
+				break;
+			default:
+			case 'px':
+			case 'p':
+				return $vn_in_points;
+				break;
+		}
 	}
 	# ------------------------------------------------------------------
 	/**
