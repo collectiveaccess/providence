@@ -293,7 +293,7 @@
  			// Available sets
  			//
  			$t_set = new ca_sets();
- 			$this->view->setVar('available_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_SET_EDIT_ACCESS__, 'omitCounts' => true))));
+ 			$this->view->setVar('available_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null, 'access' => __CA_SET_EDIT_ACCESS__, 'omitCounts' => true))));
 
 			if(strlen($this->ops_tablename)>0){
 				if(!$this->request->user->canDoAction("can_edit_{$this->ops_tablename}")){
@@ -1071,7 +1071,7 @@
  			// Available sets
  			//
  			$t_set = new ca_sets();
- 			$this->view->setVar('available_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID()))));
+ 			$this->view->setVar('available_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null))));
 
 			$this->view->setVar('last_search', $this->opo_result_context->getSearchExpression());
  			
