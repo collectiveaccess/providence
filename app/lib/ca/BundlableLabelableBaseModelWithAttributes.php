@@ -319,7 +319,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$vb_duplicate_attributes = isset($pa_options['duplicate_attributes']) && $pa_options['duplicate_attributes'];
 		$va_duplicate_relationships = (isset($pa_options['duplicate_relationships']) && is_array($pa_options['duplicate_relationships']) && sizeof($pa_options['duplicate_relationships'])) ? $pa_options['duplicate_relationships'] : array();
 		
-		
 		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
 			$this->setTransaction($o_t = new Transaction($this->getDb()));
@@ -395,6 +394,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$vs_suffix = (int)$vs_suffix + 1;
 						$vs_idno = trim($vs_idno_stub).$vs_sep.trim($vs_suffix);	// force separator if none defined otherwise you end up with agglutinative numbers
 					} while($t_lookup->load(array($vs_idno_fld => $vs_idno)));
+				} else {
+					$vs_idno = $vs_idno_stub;
 				}
 			} else {
 				$vs_idno = "???";
@@ -422,10 +423,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			foreach($va_labels_by_locale as $vn_locale_id => $va_label_list) {
 				foreach($va_label_list as $vn_i => $va_label_info) {
 					unset($va_label_info['source_info']);
-					if (!$vb_duplicate_nonpreferred_labels && !$va_label_info['is_preferred']) { continue; }
+					if (!$vb_duplicate_nonpreferred_labels && key_exists('is_preferred', $va_label_info) && !$va_label_info['is_preferred']) { continue; }
 					$va_label_info[$vs_label_display_field] .= " ["._t('Duplicate')."]";
 					$t_dupe->addLabel(
-						$va_label_info, $va_label_info['locale_id'], $va_label_info['type_id'], $va_label_info['is_preferred']
+						$va_label_info, $va_label_info['locale_id'], $va_label_info['type_id'], isset($va_label_info['is_preferred']) ? (bool)$va_label_info['is_preferred'] : false
 					);
 					if ($t_dupe->numErrors()) {
 						$this->errors = $t_dupe->errors;
