@@ -448,7 +448,7 @@
 				}
 			}
  			
- 			$this->view->setVar('directory_list', $va_level_data);
+ 			$this->view->setVar('directory_list', caSanitizeArray($va_level_data));
  			
  			
  			$this->render('mediaimport/directory_level_json.php');
