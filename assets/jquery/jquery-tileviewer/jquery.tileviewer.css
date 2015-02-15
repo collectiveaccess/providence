@@ -350,14 +350,14 @@ li.tileviewerAnnotationListItemSelected:hover {
 	background-color: rgba(177, 0, 0, 0.7);
 }
 
-input.tileviewerAnnotationListSearch {
-	width: 280px;
-	outline-width: 0;
+div.tileviewerAnnotationListSearch {
+	position: fixed;
 }
 
 span.tileviewerAnnotationListSearch {
 	position: relative;
 }
+
 span.tileviewerAnnotationListSearch span {
 	position: absolute;
 	display: block;
@@ -368,9 +368,16 @@ span.tileviewerAnnotationListSearch span {
 	background: url('x.png') 0 -690px;
 	cursor: pointer;
 }
+
 span.tileviewerAnnotationListSearch input {
 	height: 17px;
 	padding-right: 16px;
+	width: 264px;
+	outline-width: 0;
+}
+
+div.tileviewerAnnotationListContent {
+	margin: 35px 0 75px 0;
 }
 
 /* Circular slider used for rotation control */
