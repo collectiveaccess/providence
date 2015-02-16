@@ -182,7 +182,11 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 					}
 				}
 			}
-			
+
+			// always index type id if applicable and not already indexed
+			if(method_exists($t_subject, 'getTypeFieldName') && ($vs_type_field = $t_subject->getTypeFieldName()) && !isset($va_fields_to_index[$vs_type_field])) {
+				$va_fields_to_index[$vs_type_field] = array('STORE', 'DONT_TOKENIZE');
+			}
 			
 			return SearchBase::$s_fields_to_index_cache[$pm_subject_table.'/'.$pm_content_table.'/'.$vs_key] = SearchBase::$s_fields_to_index_cache[$vs_subject_table.'/'.$vs_content_table.'/'.$vs_key] = $va_fields_to_index;
 	

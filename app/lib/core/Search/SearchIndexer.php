@@ -424,7 +424,6 @@ class SearchIndexer extends SearchBase {
 		// Prevent endless recursive reindexing
 		if (is_array($pa_exclusion_list[$pn_subject_tablenum]) && (isset($pa_exclusion_list[$pn_subject_tablenum][$pn_subject_row_id]))) { return; }
 		
-		
 		$vb_reindex_children = false;
 		
 		$vs_subject_pk = $t_subject->primaryKey();
@@ -455,6 +454,11 @@ class SearchIndexer extends SearchBase {
 						$va_fields_to_index['_ca_attribute_'.$va_matches[1]] = $va_data;
 					}
 				}
+			}
+
+			// always index type id if applicable
+			if(method_exists($t_subject, 'getTypeFieldName') && ($vs_type_field = $t_subject->getTypeFieldName()) && !isset($va_fields_to_index[$vs_type_field])) {
+				$va_fields_to_index[$vs_type_field] = array('STORE', 'DONT_TOKENIZE');
 			}
 		}
 		
@@ -538,7 +542,7 @@ class SearchIndexer extends SearchBase {
 						$this->opo_engine->indexField($pn_subject_tablenum, 'I'.$vn_fld_num, $pn_subject_row_id, join(" ", $va_values), $va_data);
 						continue;
 					}
-					
+
 					$va_field_list = $t_subject->getFieldsArray();
 					if(in_array($va_field_list[$vs_field]['FIELD_TYPE'],array(FT_DATERANGE,FT_HISTORIC_DATERANGE))) {
 						// if the field is a daterange type get content from start and end fields
