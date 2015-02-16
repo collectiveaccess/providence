@@ -128,7 +128,12 @@ $phpWord->addTableStyle('myOwnTableStyle', $styleTable, $styleFirstRow);
 		// Second column : bundles
 		$contentCell = $table->addCell(12 * $cmToTwips);
 
-		$contentCell->addText($vo_result->getWithTemplate('^ca_objects.preferred_labels.name (^ca_objects.idno)'), $styleHeaderFont);
+		$contentCell->addText(
+			html_entity_decode(strip_tags(br2nl(
+				$vo_result->get('preferred_labels')
+			))),
+			$styleHeaderFont
+		);
 
 		foreach($list as $vn_placement_id => $va_display_item) {
 
@@ -159,7 +164,10 @@ $phpWord->addTableStyle('myOwnTableStyle', $styleTable, $styleFirstRow);
 
                 $textrun = $contentCell->createTextRun();
 				$textrun->addText($va_display_item['display'].' :', $styleBundleNameFont);
-		        $textrun->addText(" ".strip_tags(br2nl($vs_display_text)), $styleContentFont);
+				$textrun->addText(
+					html_entity_decode(strip_tags(br2nl($vs_display_text))),
+					$styleContentFont
+				);
 
 			}}
 		$vn_line++;

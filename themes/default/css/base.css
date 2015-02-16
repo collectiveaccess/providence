@@ -7117,3 +7117,43 @@ table.caLibraryHistory, tr.caLibraryHistory, th.caLibraryHistory, td.caLibraryHi
 	padding: 3px 0px 3px 0px; 
 	display:block; 
 }
+
+div.caLibraryDashboardPanel {
+	float: left;
+	border: 1px solid #333;
+	padding: 10px;
+	border-radius: 4px;
+	width: 400px;
+	min-height: 100px;
+	margin: 10px 10px 10px 0;
+}
+
+.caLibraryDashboardCallout {
+	font-size: 24px;
+	font-weight: bold;
+	margin: 0;
+}
+
+.caLibraryDashboardCalloutDate {
+	font-size: 10px;
+	font-weight: normal;
+	font-style: italic;
+	margin: 0;
+}
+
+.caLibraryDashboardUserList {
+	font-size: 12px;
+	font-weight: normal;
+	line-height: 18px;
+	margin: 12px 0 0 0;
+}
+
+#caLibraryDashboardDetailContainer {
+	clear: both;
+	border: 1px solid #333;
+	padding: 10px;
+	border-radius: 4px;
+	width: 832px;
+	min-height: 100px;
+	margin: 10px 10px 10px 0;	
+}

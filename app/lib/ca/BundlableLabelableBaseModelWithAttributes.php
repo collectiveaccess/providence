@@ -319,7 +319,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$vb_duplicate_attributes = isset($pa_options['duplicate_attributes']) && $pa_options['duplicate_attributes'];
 		$va_duplicate_relationships = (isset($pa_options['duplicate_relationships']) && is_array($pa_options['duplicate_relationships']) && sizeof($pa_options['duplicate_relationships'])) ? $pa_options['duplicate_relationships'] : array();
 		
-		
 		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
 			$this->setTransaction($o_t = new Transaction($this->getDb()));
@@ -395,6 +394,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$vs_suffix = (int)$vs_suffix + 1;
 						$vs_idno = trim($vs_idno_stub).$vs_sep.trim($vs_suffix);	// force separator if none defined otherwise you end up with agglutinative numbers
 					} while($t_lookup->load(array($vs_idno_fld => $vs_idno)));
+				} else {
+					$vs_idno = $vs_idno_stub;
 				}
 			} else {
 				$vs_idno = "???";
@@ -422,10 +423,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			foreach($va_labels_by_locale as $vn_locale_id => $va_label_list) {
 				foreach($va_label_list as $vn_i => $va_label_info) {
 					unset($va_label_info['source_info']);
-					if (!$vb_duplicate_nonpreferred_labels && !$va_label_info['is_preferred']) { continue; }
+					if (!$vb_duplicate_nonpreferred_labels && key_exists('is_preferred', $va_label_info) && !$va_label_info['is_preferred']) { continue; }
 					$va_label_info[$vs_label_display_field] .= " ["._t('Duplicate')."]";
 					$t_dupe->addLabel(
-						$va_label_info, $va_label_info['locale_id'], $va_label_info['type_id'], $va_label_info['is_preferred']
+						$va_label_info, $va_label_info['locale_id'], $va_label_info['type_id'], isset($va_label_info['is_preferred']) ? (bool)$va_label_info['is_preferred'] : false
 					);
 					if ($t_dupe->numErrors()) {
 						$this->errors = $t_dupe->errors;
@@ -1378,6 +1379,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 									$vn_primary_id = $va_rep['representation_id'];
 								}
 								$va_initial_values[$va_rep['representation_id']] = array(
+									'idno' => $va_rep['idno'], 
 									'status' => $va_rep['status'], 
 									'status_display' => $t_item->getChoiceListValue('status', $va_rep['status']), 
 									'access' => $va_rep['access'],
@@ -5988,20 +5990,20 @@ side. For many self-relations the direction determines the nature and display te
 	 * @return boolean BaseRelationshipModel Loaded relationship model instance on success, false on error.
 	 */
 	public function addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
-		global $g_ui_locale_id;
 
 		$this->opo_app_plugin_manager->hookAddRelationship(array(
 			'table_name' => $this->tableName(), 
-			'instance' => $this,
-			'related_table' => $pm_rel_table_name_or_num,
-			'rel_id' => $pn_rel_id,
-			'type_id' => $pm_type_id,
-			'edate' => $ps_effective_date,
-			'source_info' => $ps_source_info,
-			'direction' => $ps_direction,
-			'rank' => $pn_rank,
-			'options' => $pa_options,
+			'instance' => &$this,
+			'related_table' => &$pm_rel_table_name_or_num,
+			'rel_id' => &$pn_rel_id,
+			'type_id' => &$pm_type_id,
+			'edate' => &$ps_effective_date,
+			'source_info' => &$ps_source_info,
+			'direction' => &$ps_direction,
+			'rank' => &$pn_rank,
+			'options' => &$pa_options,
 		));
+
 		if ($t_rel = parent::addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options)) {
 			if ($t_rel->numErrors()) {
 				$this->errors = $t_rel->errors;
