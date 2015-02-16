@@ -1187,12 +1187,23 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 </script>\n";	
 			}
 			
-			//
-			// Output loan info for ca_objects
-			//
-			if ($vs_table_name === 'ca_objects') {
+			if ($vs_table_name === 'ca_objects') {				
+				//
+				// Output loan info for ca_objects
+				//
 				if ($po_view->request->user->canDoAction('can_manage_clients') && ($va_loan_details = $t_item->isOnLoan())) {
 					$vs_buf .= "<div>".caNavLink($po_view->request, _t('On loan to %1', $va_loan_details['billing_fname'].' '.$va_loan_details['billing_lname']), 'inspectorOnLoan', 'client/library', 'OrderEditor', 'Edit', array('order_id' => $va_loan_details['order_id']))."</div>";
+				}
+								
+				//
+				// Output checkout info for ca_objects
+				//
+				if ($t_item->canBeCheckedOut() && ($va_checkout_status = $t_item->getCheckoutStatus(array('returnAsArray' => true)))) {
+					$vs_buf .= "<div class='inspectorCheckedOut'>".$va_checkout_status['status_display'];
+					if ($va_checkout_status['user_name']) {
+						$vs_buf .= _t("; checked out by %1", $va_checkout_status['user_name']);
+					}
+					$vs_buf .= "</div>";
 				}
 			}
 			
@@ -3504,7 +3515,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			$vs_text = preg_replace("![\r\n]+!", "", $vs_text);							// DomDocument removes newlines so we do the same here to the template
 			
 		
-			$o_dom->loadHTML('<?xml encoding="utf-8">'.$vs_text);		// Needs XML declaration to force it to consider the text as UTF-8. Please don't ask why. No one knows.
+			$o_dom->loadHTML('<?xml encoding="utf-8">'.mb_convert_encoding($vs_text, 'HTML-ENTITIES', 'UTF-8'));		// Needs XML declaration to force it to consider the text as UTF-8. Please don't ask why. No one knows.
+			$o_dom->encoding = 'utf-8';
 			libxml_clear_errors();
 			
 			$va_l_tags = array();
@@ -3518,7 +3530,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		
 				$va_l_tags[] = array('directive' => html_entity_decode($vs_html), 'content' => $vs_content);	//html_entity_decode
 			}
-			
+		
 			if (sizeof($va_l_tags)) {
 				$vs_content = html_entity_decode($vs_text);
 				$vs_content = preg_replace_callback("/(&#[0-9]+;)/", function($m) { return mb_convert_encoding($m[1], "UTF-8", "HTML-ENTITIES"); }, $vs_content); 

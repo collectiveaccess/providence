@@ -40,7 +40,8 @@
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
 	require_once(__CA_LIB_DIR__."/core/AccessRestrictions.php");
  	require_once(__CA_LIB_DIR__.'/ca/Visualizer.php');
- 	require_once(__CA_LIB_DIR__.'/core/Parsers/dompdf/dompdf_config.inc.php');
+ 	require_once(__CA_LIB_DIR__.'/core/Parsers/ZipFile.php');
+ 	require_once(__CA_LIB_DIR__.'/core/Print/PDFRenderer.php');
 	require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
  	
 	class BaseFindController extends ActionController {
@@ -293,7 +294,7 @@
  			// Available sets
  			//
  			$t_set = new ca_sets();
- 			$this->view->setVar('available_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_SET_EDIT_ACCESS__, 'omitCounts' => true))));
+ 			$this->view->setVar('available_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null, 'access' => __CA_SET_EDIT_ACCESS__, 'omitCounts' => true))));
 
 			if(strlen($this->ops_tablename)>0){
 				if(!$this->request->user->canDoAction("can_edit_{$this->ops_tablename}")){
@@ -317,7 +318,7 @@
 		}
 		# -------------------------------------------------------
 		/**
-		 * Generates and outputs label-formatted PDF version of search results using DOMPDF
+		 * Generates and outputs label-formatted PDF version of search results 
 		 */
 		protected function _genLabels($po_result, $ps_label_code, $ps_output_filename, $ps_title=null) {
 			if((bool)$this->request->config->get('use_legacy_print_labels_generator')) { return $this->_genLabelsLegacy($po_result, $ps_label_code, $ps_output_filename, $ps_title); }
@@ -338,37 +339,50 @@
 				$this->view->setVar('base_path', $vs_base_path = pathinfo($va_template_info['path'], PATHINFO_DIRNAME));
 				$this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
 			
-				$vs_content = $this->render("pdfStart.php");
+				$o_pdf = new PDFRenderer();
+				$this->view->setVar('PDFRenderer', $vs_renderer = $o_pdf->getCurrentRendererCode());
+			
 				
 				// render labels
-				$vn_width = 				caConvertMeasurementToPoints(caGetOption('labelWidth', $va_template_info, null));
-				$vn_height = 				caConvertMeasurementToPoints(caGetOption('labelHeight', $va_template_info, null));
+				$vn_width = 				caConvertMeasurement(caGetOption('labelWidth', $va_template_info, null), 'mm');
+				$vn_height = 				caConvertMeasurement(caGetOption('labelHeight', $va_template_info, null), 'mm');
 				
-				$vn_top_margin = 			caConvertMeasurementToPoints(caGetOption('marginTop', $va_template_info, null));
-				$vn_bottom_margin = 		caConvertMeasurementToPoints(caGetOption('marginBottom', $va_template_info, null));
-				$vn_left_margin = 			caConvertMeasurementToPoints(caGetOption('marginLeft', $va_template_info, null));
-				$vn_right_margin = 			caConvertMeasurementToPoints(caGetOption('marginRight', $va_template_info, null));
+				$vn_top_margin = 			caConvertMeasurement(caGetOption('marginTop', $va_template_info, null), 'mm');
+				$vn_bottom_margin = 		caConvertMeasurement(caGetOption('marginBottom', $va_template_info, null), 'mm');
+				$vn_left_margin = 			caConvertMeasurement(caGetOption('marginLeft', $va_template_info, null), 'mm');
+				$vn_right_margin = 			caConvertMeasurement(caGetOption('marginRight', $va_template_info, null), 'mm');
 				
-				$vn_horizontal_gutter = 	caConvertMeasurementToPoints(caGetOption('horizontalGutter', $va_template_info, null));
-				$vn_vertical_gutter = 		caConvertMeasurementToPoints(caGetOption('verticalGutter', $va_template_info, null));
+				$vn_horizontal_gutter = 	caConvertMeasurement(caGetOption('horizontalGutter', $va_template_info, null), 'mm');
+				$vn_vertical_gutter = 		caConvertMeasurement(caGetOption('verticalGutter', $va_template_info, null), 'mm');
 				
-				$va_page_size =				CPDF_Adapter::$PAPER_SIZES[caGetOption('pageSize', $va_template_info, null)];
-				$vn_page_width = 			$va_page_size[2] - $va_page_size[0];
-				$vn_page_height = 			$va_page_size[3] - $va_page_size[1];
+				$va_page_size =				PDFRenderer::getPageSize(caGetOption('pageSize', $va_template_info, 'letter'), 'mm', caGetOption('pageOrientation', $va_template_info, 'portrait'));
+				$vn_page_width = $va_page_size['width']; $vn_page_height = $va_page_size['height'];
 				
 				$vn_label_count = 0;
 				$vn_left = $vn_left_margin;
+				
 				$vn_top = $vn_top_margin;
+				
+				$this->view->setVar('pageWidth', "{$vn_page_width}mm");
+				$this->view->setVar('pageHeight', "{$vn_page_height}mm");				
+				$this->view->setVar('marginTop', caGetOption('marginTop', $va_template_info, '0mm'));
+				$this->view->setVar('marginRight', caGetOption('marginRight', $va_template_info, '0mm'));
+				$this->view->setVar('marginBottom', caGetOption('marginBottom', $va_template_info, '0mm'));
+				$this->view->setVar('marginLeft', caGetOption('marginLeft', $va_template_info, '0mm'));
+				
+				$vs_content = $this->render("pdfStart.php");
+				
 				
 				$va_defined_vars = array_keys($this->view->getAllVars());		// get list defined vars (we don't want to copy over them)
 				$va_tag_list = $this->getTagListForView($va_template_info['path']);				// get list of tags in view
 				
 				$va_barcode_files_to_delete = array();
 				
+				$vn_page_count = 0;
 				while($po_result->nextHit()) {
-					$va_barcode_files_to_delete += caDoPrintViewTagSubstitution($this->view, $po_result, $va_template_info['path'], array('checkAccess' => $this->opa_access_values));
+					$va_barcode_files_to_delete = array_merge($va_barcode_files_to_delete, caDoPrintViewTagSubstitution($this->view, $po_result, $va_template_info['path'], array('checkAccess' => $this->opa_access_values)));
 					
-					$vs_content .= "<div style=\"{$vs_border} position: absolute; width: {$vn_width}px; height: {$vn_height}px; left: {$vn_left}px; top: {$vn_top}px; overflow: hidden;\">";
+					$vs_content .= "<div style=\"{$vs_border} position: absolute; width: {$vn_width}mm; height: {$vn_height}mm; left: {$vn_left}mm; top: {$vn_top}mm; overflow: hidden; padding: 0; margin: 0;\">";
 					$vs_content .= $this->render($va_template_info['path']);
 					$vs_content .= "</div>\n";
 					
@@ -380,31 +394,43 @@
 						$vn_left = $vn_left_margin;
 						$vn_top += $vn_horizontal_gutter + $vn_height;
 					}
-					if (($vn_top + $vn_height) > $vn_page_height) {
+					if (($vn_top + $vn_height) > (($vn_page_count + 1) * $vn_page_height)) {
+						
 						// next page
 						if ($vn_label_count < $po_result->numHits()) { $vs_content .= "<div class=\"pageBreak\">&nbsp;</div>\n"; }
 						$vn_left = $vn_left_margin;
-						$vn_top = $vn_top_margin;
+							
+						switch($vs_renderer) {
+							case 'PhantomJS':
+							case 'wkhtmltopdf':
+								// WebKit based renderers (PhantomJS, wkhtmltopdf) want things numbered relative to the top of the document (Eg. the upper left hand corner of the first page is 0,0, the second page is 0,792, Etc.)
+								$vn_page_count++;
+								$vn_top = ($vn_page_count * $vn_page_height) + $vn_top_margin;
+								break;
+							case 'domPDF':
+							default:
+								// domPDF wants things positioned in a per-page coordinate space (Eg. the upper left hand corner of each page is 0,0)
+								$vn_top = $vn_top_margin;								
+								break;
+						}
 					}
-					
-					
 				}
 				
 				$vs_content .= $this->render("pdfEnd.php");
 				
-				$o_dompdf = new DOMPDF();
-				$o_dompdf->load_html($vs_content);
-				$o_dompdf->set_paper(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'));
-				$o_dompdf->set_base_path(caGetPrintTemplateDirectoryPath('labels'));
-				$o_dompdf->render();
-				$o_dompdf->stream(caGetOption('filename', $va_template_info, 'labels.pdf'));
+				$this->view->setVar('base_path', $vs_base_path = pathinfo($va_template_info['path'], PATHINFO_DIRNAME).'/');
+				$this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
+				
+				
+				$o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'));
+				$o_pdf->render($vs_content, array('stream'=> true, 'filename' => caGetOption('filename', $va_template_info, 'labels.pdf')));
 
 				$vb_printed_properly = true;
 				
-				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
+				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
 				
 			} catch (Exception $e) {
-				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
+				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
 				
 				$vb_printed_properly = false;
 				$this->postError(3100, _t("Could not generate PDF"),"BaseFindController->PrintSummary()");
@@ -768,16 +794,26 @@
 				}
 				
 				try {
-					$this->view->setVar('base_path', $vs_base_path = pathinfo($va_template_info['path'], PATHINFO_DIRNAME));
+					$this->view->setVar('base_path', $vs_base_path = pathinfo($va_template_info['path'], PATHINFO_DIRNAME).'/');
 					$this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
 					
+					$o_pdf = new PDFRenderer();
+					
+					$va_page_size =	PDFRenderer::getPageSize(caGetOption('pageSize', $va_template_info, 'letter'), 'mm', caGetOption('pageOrientation', $va_template_info, 'portrait'));
+					$vn_page_width = $va_page_size['width']; $vn_page_height = $va_page_size['height'];
+				
+					$this->view->setVar('pageWidth', "{$vn_page_width}mm");
+					$this->view->setVar('pageHeight', "{$vn_page_height}mm");
+					$this->view->setVar('marginTop', caGetOption('marginTop', $va_template_info, '0mm'));
+					$this->view->setVar('marginRight', caGetOption('marginRight', $va_template_info, '0mm'));
+					$this->view->setVar('marginBottom', caGetOption('marginBottom', $va_template_info, '0mm'));
+					$this->view->setVar('marginLeft', caGetOption('marginLeft', $va_template_info, '0mm'));
+					
+					$this->view->setVar('PDFRenderer', $o_pdf->getCurrentRendererCode());
 					$vs_content = $this->render($va_template_info['path']);
-					$o_dompdf = new DOMPDF();
-					$o_dompdf->load_html($vs_content);
-					$o_dompdf->set_paper(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'));
-					$o_dompdf->set_base_path(caGetPrintTemplateDirectoryPath('results'));
-					$o_dompdf->render();
-					$o_dompdf->stream(caGetOption('filename', $va_template_info, 'export_results.pdf'));
+					
+					$o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'), caGetOption('marginTop', $va_template_info, '0mm'), caGetOption('marginRight', $va_template_info, '0mm'), caGetOption('marginBottom', $va_template_info, '0mm'), caGetOption('marginLeft', $va_template_info, '0mm'));
+					$o_pdf->render($vs_content, array('stream'=> true, 'filename' => caGetOption('filename', $va_template_info, 'export_results.pdf')));
 				} catch (Exception $e) {
 					$this->postError(3100, _t("Could not generate PDF"),"BaseFindController->PrintSummary()");
 				}
@@ -958,12 +994,12 @@
  				if (is_array($pa_ids) && sizeof($pa_ids)) {
  					$ps_version = $this->request->getParameter('version', pString);
 					if ($qr_res = $t_subject->makeSearchResult($t_subject->tableName(), $pa_ids, array('filterNonPrimaryRepresentations' => false))) {
-						$vs_tmp_name = caGetTempFileName('DownloadRepresentations', 'zip');
-						$o_phar = new PharData($vs_tmp_name, null, null, Phar::ZIP);
-
-						if (!($vn_limit = ini_get('max_execution_time'))) { $vn_limit = 30; }
-						set_time_limit($vn_limit * 2);
-						
+						//$vs_tmp_name = caGetTempFileName('DownloadRepresentations', 'zip');
+						//$o_phar = new PharData($vs_tmp_name, null, null, Phar::ZIP);
+						$o_phar = new ZipFile();
+						//if (!($vn_limit = ini_get('max_execution_time'))) { $vn_limit = 30; }
+						//set_time_limit($vn_limit * 2);
+						set_time_limit(7200);
 						while($qr_res->nextHit()) {
 							if (!is_array($va_version_list = $qr_res->getMediaVersions('ca_object_representations.media')) || !in_array($ps_version, $va_version_list)) {
 								$vs_version = 'original';
@@ -1009,14 +1045,15 @@
 										}
 										break;
 								} 
-								if ($vs_path_with_embedding = caEmbedMetadataIntoRepresentation(new ca_objects($qr_res->get('ca_objects.object_id')), new ca_object_representations($vn_representation_id), $vs_version)) {
-									$vs_path = $vs_path_with_embedding;
-								}
-								$o_phar->addFile($vs_path, $vs_filename);
+								//if ($vs_path_with_embedding = caEmbedMetadataIntoRepresentation(new ca_objects($qr_res->get('ca_objects.object_id')), new ca_object_representations($vn_representation_id), $vs_version)) {
+								//	$vs_path = $vs_path_with_embedding;
+								//}
+								if (!file_exists($vs_path)) { continue; }
+								$o_phar->addFile($vs_path, $vs_filename, 0, array('compression' => 0));
 								$vn_file_count++;
 							}
 						}
-
+$vs_tmp_name = $o_phar->output(ZIPFILE_FILEPATH);
 						$this->view->setVar('tmp_file', $vs_tmp_name);
 						$this->view->setVar('download_name', 'media_for_'.mb_substr(preg_replace('![^A-Za-z0-9]+!u', '_', $this->getCriteriaForDisplay()), 0, 20).'.zip');
 						
@@ -1071,7 +1108,7 @@
  			// Available sets
  			//
  			$t_set = new ca_sets();
- 			$this->view->setVar('available_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID()))));
+ 			$this->view->setVar('available_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null))));
 
 			$this->view->setVar('last_search', $this->opo_result_context->getSearchExpression());
  			

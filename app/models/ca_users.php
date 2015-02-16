@@ -1489,6 +1489,7 @@ class ca_users extends BaseModel {
 						$o_currency = new Zend_Currency();
 						return ($vs_currency_specifier = $o_currency->getShortName()) ? $vs_currency_specifier : "CAD";
 					}
+					return $va_pref_info["default"] ? $va_pref_info["default"] : null;
 					break;
 				# ---------------------------------
 				default:
@@ -1780,9 +1781,8 @@ class ca_users extends BaseModel {
 			
 			$va_pref_info = $this->getPreferenceInfo($ps_pref);
 			
-			$vs_current_value = $this->getPreference($ps_pref);
+			if (is_null($vs_current_value = $this->getPreference($ps_pref))) { $vs_current_value = $this->getPreferenceDefault($ps_pref); }
 			$vs_output = "";
-			
 			$vs_class = "";
 			$vs_classname = "";
 			if(isset($pa_options['classname']) && $pa_options['classname']){
@@ -3134,7 +3134,8 @@ class ca_users extends BaseModel {
 			} else {
 				$t_list = new ca_lists();
 				$t_instance = $this->getAppDatamodel()->getInstanceByTableName($ps_table_name, true);
-				$vn_type_id = (int)$t_list->getItemIDFromList($t_instance->getTypeListCode(), $pm_type_code_or_id);
+				if(!($vs_type_list_code = $t_instance->getTypeListCode())) { return __CA_BUNDLE_ACCESS_EDIT__; } // no type-level acces control for tables without type lists (like ca_lists)
+				$vn_type_id = (int)$t_list->getItemIDFromList($vs_type_list_code, $pm_type_code_or_id);
 			}
 			$vn_access = -1;
 			foreach($va_roles as $vn_role_id => $va_role_info) {
@@ -3157,7 +3158,6 @@ class ca_users extends BaseModel {
 			return $vn_access;
 		} else {
 			// no type level access control for tables not explicitly listed in $s_bundlable_tables
-			ca_users::$s_user_type_access_cache[$ps_table_name.'/'.$vn_type_id."/".$this->getPrimaryKey()] = ca_users::$s_user_type_access_cache[$vs_cache_key] = __CA_BUNDLE_ACCESS_EDIT__;
 			return __CA_BUNDLE_ACCESS_EDIT__;
 		}
 	}
@@ -3340,22 +3340,27 @@ class ca_users extends BaseModel {
 		
 		$va_access_by_item_id = array();
 		
-		foreach($va_roles as $vn_role_id => $va_role_info) {
-			if(is_array($va_access_status_settings = $va_role_info['vars']['access_status_settings'])) {
-				//print_R($va_access_status_settings);	
-				foreach($va_access_status_settings as $vn_item_id => $vn_access) {
-					if (!isset($va_access_by_item_id[$vn_item_id])) { $va_access_by_item_id[$vn_item_id] = $vn_access; continue; }
-					if (is_null($vn_access)) { continue; }
-					if ($vn_access >= (int)$va_access_by_item_id[$vn_item_id]) { $va_access_by_item_id[$vn_item_id] = $vn_access; }
+		if(is_array($va_roles)){
+			foreach($va_roles as $vn_role_id => $va_role_info) {
+				if(is_array($va_access_status_settings = $va_role_info['vars']['access_status_settings'])) {
+					foreach($va_access_status_settings as $vn_item_id => $vn_access) {
+						if (!isset($va_access_by_item_id[$vn_item_id])) { $va_access_by_item_id[$vn_item_id] = $vn_access; continue; }
+						if (is_null($vn_access)) { continue; }
+						if ($vn_access >= (int)$va_access_by_item_id[$vn_item_id]) { $va_access_by_item_id[$vn_item_id] = $vn_access; }
+					}
 				}
 			}
 		}
 	
+		if(!sizeof($va_access_by_item_id)) { return array(); }
 		$va_item_values = ca_lists::itemIDsToItemValues(array_keys($va_access_by_item_id), array('transaction' => $this->getTransaction()));
 	
+		if(!is_array($va_item_values) || !sizeof($va_item_values)) { return array(); }
 		$va_ret = array();
-		foreach($va_item_values as $vn_item_id => $vn_val) {
-			$va_ret[$vn_val] = $va_access_by_item_id[$vn_item_id];
+		if (is_array($va_item_values)) {
+			foreach($va_item_values as $vn_item_id => $vn_val) {
+				$va_ret[$vn_val] = $va_access_by_item_id[$vn_item_id];
+			}
 		}
 		
 		if (!is_null($pn_access_level) && in_array($pn_access_level, array(0, 1))) {

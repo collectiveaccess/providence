@@ -122,7 +122,7 @@
 						$vs_label_display_field_name = $this->opo_item_instance->getLabelDisplayField();
 						
 						$va_list_items = $t_list->getItemsForList($vn_list_id, array('returnHierarchyLevels' => false, 'item_id' => $vn_id, 'extractValuesByUserLocale' => true, 'sort' => $t_list->get('sort_type'), 'directChildrenOnly' => true, 'limit' => $vn_max_items_per_page, 'start' => $vn_start));
-					
+			
 						// output
 						$va_display_values = caProcessTemplateForIDs($vs_template, 'ca_list_items', array_keys($va_list_items), array('requireLinkTags' => true, 'returnAsArray' => true));
 						
@@ -135,6 +135,7 @@
 							if (!$va_item[$vs_label_display_field_name]) { $va_item[$vs_label_display_field_name] = '???'; }
 							
 							$va_item['name'] = $va_display_values[$vn_c];
+							if (!$va_item['name']) { $va_item['name'] = '??? '.$vn_item_id; }
 							$va_item['table'] = 'ca_list_items';
 							
 							// Child count is only valid if has_children is not null

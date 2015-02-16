@@ -1543,6 +1543,7 @@ create table ca_objects
    rank                           int unsigned                   not null default 0,
    acl_inherit_from_ca_collections tinyint unsigned              not null default 0,
    acl_inherit_from_parent         tinyint unsigned              not null default 0,
+   access_inherit_from_parent      tinyint unsigned              not null default 0,
    home_location_id               int unsigned,
    accession_sdatetime            decimal(30,20),
    accession_edatetime            decimal(30,20),
@@ -6397,6 +6398,9 @@ create table ca_object_checkouts (
    return_date				int unsigned null,
    checkout_notes			text not null,
    return_notes				text not null,
+   last_sent_coming_due_email int unsigned null,
+   last_sent_overdue_email int unsigned null,
+   last_reservation_available_email int unsigned null,
    deleted					tinyint unsigned not null,
    
    primary key (checkout_id),
@@ -6407,6 +6411,8 @@ create table ca_object_checkouts (
    index i_checkout_date (checkout_date),
    index i_due_date (due_date),
    index i_return_date (return_date),
+   index i_last_sent_coming_due_email (last_sent_coming_due_email),
+   index i_last_reservation_available_email (last_reservation_available_email),
    
    constraint fk_ca_object_checkouts_object_id foreign key (object_id)
       references ca_objects (object_id) on delete restrict on update restrict,
@@ -6538,5 +6544,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 114 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (114, unix_timestamp());
+/* CURRENT MIGRATION: 116 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (116, unix_timestamp());

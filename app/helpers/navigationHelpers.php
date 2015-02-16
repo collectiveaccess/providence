@@ -437,6 +437,7 @@
 		$vs_classname = (!$pb_no_background) ? 'form-button' : '';
 		
 		$va_attr = array();
+		if ($ps_id) { $va_attr[] = "id='{$ps_id}'"; }
 		if (is_array($pa_attributes)) {
 			foreach($pa_attributes as $vs_name => $vs_value) {
 				$va_attr[] = $vs_name."='".($vs_value)."'";
@@ -892,7 +893,7 @@
 				return null;
 				break;
 		}
-		
+
 		switch($vs_table) {
 			case 'ca_relationship_types':
 				$vs_action = isset($pa_options['action']) ? $pa_options['action'] : (($po_request->isLoggedIn() && $po_request->user->canDoAction('can_configure_relationship_types')) ? 'Edit' : 'Summary'); 
@@ -900,7 +901,11 @@
 			default:
 				if(isset($pa_options['action'])){
 					$vs_action = $pa_options['action'];
-				} elseif($po_request->isLoggedIn() && $po_request->user->canAccess($vs_module,$vs_controller,"Edit",array($vs_pk => $pn_id)) && !(bool)$po_request->config->get($vs_table.'_editor_defaults_to_summary_view')) {
+				} elseif(
+					$po_request->isLoggedIn() &&
+					$po_request->user->canAccess($vs_module,$vs_controller,"Edit",array($vs_pk => $pn_id)) &&
+					!((bool)$po_request->config->get($vs_table.'_editor_defaults_to_summary_view') && $pn_id) // when the id is null/0, we go to the Edit action, even when *_editor_defaults_to_summary_view is set
+				) {
 					$vs_action = 'Edit';
 				} else {
 					$vs_action = 'Summary';

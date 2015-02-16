@@ -247,6 +247,8 @@
  				'set_id' => $this->request->getParameter('set_id', pInteger),
  				'idnoMode' => $this->request->getParameter('idno_mode', pString),
  				'idno' => $this->request->getParameter('idno', pString),
+				'representationIdnoMode' => $this->request->getParameter('representation_idno_mode', pString),
+				'representation_idno' => $this->request->getParameter('idno_representation_number', pString),
  				'logLevel' => $this->request->getParameter('log_level', pString),
  				'allowDuplicateMedia' => $this->request->getParameter('allow_duplicate_media', pInteger),
  				'locale_id' => $g_ui_locale_id,
