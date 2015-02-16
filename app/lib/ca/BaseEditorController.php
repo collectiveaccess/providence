@@ -1904,7 +1904,7 @@
  			
  			$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
  			
- 			$vs_page_cache_key = md5($vn_subject_id.'/'.$pn_representation_id.'/'.$pn_value_id);
+ 			$vs_page_cache_key = ($ps_content_mode == 'hierarchy_of_representations') ? md5($vn_subject_id) : md5($vn_subject_id.'/'.$pn_representation_id.'/'.$pn_value_id);
  			
  			$o_view->setVar('page_cache_key', $vs_page_cache_key);
  			$o_view->setVar('t_subject', $t_subject);
