@@ -60,6 +60,7 @@ var caUI = caUI || {};
 			onAddItem: null,
 			incrementLocalesForNewBundles: true,
 			defaultValues: {},
+			bundlePreview: '',
 			readonly: 0,
 			
 			// ajax loading of content
@@ -382,6 +383,14 @@ var caUI = caUI || {};
 						jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n).remove();
 					}
 				}
+			}
+
+			// Add bundle preview value text
+			if(this.bundlePreview.length > 1) {
+				if(this.bundlePreview.length > 10) {
+					this.bundlePreview = this.bundlePreview.substr(0,10) + ' ...';
+				}
+				jQuery('#' + this.fieldNamePrefix + 'BundleContentPreview').text(this.bundlePreview);
 			}
 			
 			if(this.onAddItem) {

@@ -54,6 +54,7 @@
 	// use the template to generate the initial form
 	$va_initial_values = array();
 	$va_errors = array();
+	$vs_bundle_preview = '';
 	
 	$va_template_tags = $va_element_ids;
 	
@@ -78,6 +79,9 @@
 					$vs_display_val = $va_failed_updates[$vn_attr_id][$vn_element_id];
 				} else {
 					$vs_display_val = $o_value->getDisplayValue(array('request' => $this->request, 'includeID' => true));
+					if(!strlen($vs_bundle_preview)) {
+						$vs_bundle_preview = $vs_display_val;
+					}
 				}
 				
 				$va_initial_values[$vn_attr_id][$vn_element_id] = $vs_display_val;
@@ -258,6 +262,7 @@ if (caGetOption('canMakePDFForValue', $va_element_info[$t_element->getPrimaryKey
 		hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_download_control_', '<?php print $vs_id_prefix; ?>_print_control_',],
 		showOnNewIDList: ['<?php print $vs_id_prefix; ?>_upload_control_'],
 		defaultValues: <?php print json_encode($va_element_value_defaults); ?>,
+		bundlePreview: '<?php print $vs_bundle_preview; ?>',
 		readonly: <?php print $vb_read_only ? "1" : "0"; ?>,
 		defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
 <?php

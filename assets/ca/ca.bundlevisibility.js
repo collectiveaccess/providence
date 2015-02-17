@@ -24,7 +24,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 
+
 var caUI = caUI || {};
 
 (function ($) {
@@ -37,7 +37,7 @@ var caUI = caUI || {};
 			bundleStates: {},
 			bundleDictionaryStates: {}
 		}, options);
-		
+
 		// --------------------------------------------------------------------------------
 		// Define methods
 		// --------------------------------------------------------------------------------
@@ -45,7 +45,7 @@ var caUI = caUI || {};
 			that.bundles.push(id);
 			that.bundleStates[id] = (that.cookieJar.get(id) == 'closed') ? "closed" : "open";	// default to open
 			that.bundleDictionaryStates[id] = (that.cookieJar.get(id + 'DictionaryEntry') == 'open') ? "open" : "closed";	// default to closed
-		
+
 			if (that.bundleStates[id] == "closed") {
 				that.close(id, true);
 			} else {
@@ -57,7 +57,7 @@ var caUI = caUI || {};
 				that.openDictionaryEntry(id, true);
 			}
 		}
-		
+
 		// Set initial visibility of all registered bundles
 		that.setAll = function() {
 			jQuery.each(that.bundles, function(k, id) {
@@ -68,7 +68,7 @@ var caUI = caUI || {};
 				}
 			});
 		}
-		
+
 		// Toggle bundle
 		that.toggle = function(id) {
 			if(that.bundleStates[id] == 'closed') {
@@ -78,7 +78,7 @@ var caUI = caUI || {};
 			}
 			return false;
 		}
-		
+
 		// Open bundle
 		that.open = function(id, dontAnimate) {
 			if (id === undefined) {
@@ -87,23 +87,24 @@ var caUI = caUI || {};
 				});
 			} else {
 				jQuery("#" + id).slideDown(dontAnimate ? 0 : 250);
-				
-				if (jQuery("#" + id + 'DictionaryEntry').length && (that.bundleDictionaryStates[id] == 'open')) { 
+				jQuery("#" + id + '_BundleContentPreview').hide();
+
+				if (jQuery("#" + id + 'DictionaryEntry').length && (that.bundleDictionaryStates[id] == 'open')) {
 					jQuery("#" + id + 'DictionaryEntry').slideDown(dontAnimate ? 0 : 250);
 				}
-				
+
 				that.bundleStates[id] = 'open';
 				that.cookieJar.set(id, 'open');
-				
+
 				if (dontAnimate) {
 					jQuery("#" + id + "VisToggleButton").rotate({ angle: 180 });
 				} else {
 					jQuery("#" + id + "VisToggleButton").rotate({ duration:500, angle: 0, animateTo: 180 });
 				}
-			}	
-			return false;		
+			}
+			return false;
 		}
-		
+
 		// Close bundle
 		that.close = function(id, dontAnimate) {
 			if (id === undefined) {
@@ -112,14 +113,15 @@ var caUI = caUI || {};
 				});
 			} else {
 				jQuery("#" + id).slideUp(dontAnimate ? 0 : 250);
-				
-				if (jQuery("#" + id + 'DictionaryEntry').length && (that.bundleDictionaryStates[id] == 'open')) { 
+				jQuery("#" + id + '_BundleContentPreview').show();
+
+				if (jQuery("#" + id + 'DictionaryEntry').length && (that.bundleDictionaryStates[id] == 'open')) {
 					jQuery("#" + id + 'DictionaryEntry').slideUp(dontAnimate ? 0 : 250);
 				}
-				
+
 				that.bundleStates[id] = 'closed';
 				that.cookieJar.set(id, 'closed');
-				
+
 				if (dontAnimate) {
 					jQuery("#" + id + "VisToggleButton").rotate({ angle: 0 });
 				} else {
@@ -128,7 +130,7 @@ var caUI = caUI || {};
 			}
 			return false;
 		}
-		
+
 		// Toggle dictionary entry
 		that.toggleDictionaryEntry = function(id) {
 			if(that.bundleDictionaryStates[id] == 'closed') {
@@ -138,7 +140,7 @@ var caUI = caUI || {};
 			}
 			return false;
 		}
-		
+
 		// Open dictionary entry
 		that.openDictionaryEntry = function(id, dontAnimate) {
 			if (id === undefined) {
@@ -150,21 +152,21 @@ var caUI = caUI || {};
 				jQuery("#" + id + 'DictionaryEntry').slideDown(dontAnimate ? 0 : 250);
 				that.bundleDictionaryStates[id] = 'open';
 				that.cookieJar.set(id + 'DictionaryEntry', 'open');
-				
+
 				if (that.bundleStates[id] == 'closed') {
 					that.open(id);
 				}
-				
+
 				if (dontAnimate) {
 					jQuery("#" + id + "MetadataDictionaryToggleButton").css("opacity", 1.0);
 				} else {
 					jQuery("#" + id + "MetadataDictionaryToggleButton").animate({ duration:500, opacity: 1.0, animateTo: 0.4 });
 				}
-			}	
-			
-			return false;		
+			}
+
+			return false;
 		}
-		
+
 		// Close dictionary entry
 		that.closeDictionaryEntry = function(id, dontAnimate) {
 			if (id === undefined) {
@@ -176,7 +178,7 @@ var caUI = caUI || {};
 				jQuery("#" + id + 'DictionaryEntry').slideUp(dontAnimate ? 0 : 250);
 				that.bundleDictionaryStates[id] = 'closed';
 				that.cookieJar.set(id + 'DictionaryEntry', 'closed');
-				
+
 				if (dontAnimate) {
 					jQuery("#" + id + "MetadataDictionaryToggleButton").css("opacity", 0.4);
 				} else {
@@ -185,11 +187,11 @@ var caUI = caUI || {};
 			}
 			return false;
 		}
-		
+
 		// --------------------------------------------------------------------------------
-		
+
 		return that;
 	};
-	
+
 	caBundleVisibilityManager = caUI.initBundleVisibilityManager();
 })(jQuery);
