@@ -86,8 +86,9 @@ var caUI = caUI || {};
 					that.open(id);
 				});
 			} else {
+				var preview_id = id.replace(/[0-9]+\_rel/g, '');
 				jQuery("#" + id).slideDown(dontAnimate ? 0 : 250);
-				jQuery("#" + id + '_BundleContentPreview').hide();
+				jQuery("#" + preview_id + '_BundleContentPreview').hide();
 
 				if (jQuery("#" + id + 'DictionaryEntry').length && (that.bundleDictionaryStates[id] == 'open')) {
 					jQuery("#" + id + 'DictionaryEntry').slideDown(dontAnimate ? 0 : 250);
@@ -112,8 +113,9 @@ var caUI = caUI || {};
 					that.close(id);
 				});
 			} else {
+				var preview_id = id.replace(/[0-9]+\_rel/g, '');
 				jQuery("#" + id).slideUp(dontAnimate ? 0 : 250);
-				jQuery("#" + id + '_BundleContentPreview').show();
+				jQuery("#" + preview_id + '_BundleContentPreview').show();
 
 				if (jQuery("#" + id + 'DictionaryEntry').length && (that.bundleDictionaryStates[id] == 'open')) {
 					jQuery("#" + id + 'DictionaryEntry').slideUp(dontAnimate ? 0 : 250);

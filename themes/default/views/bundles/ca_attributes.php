@@ -57,6 +57,14 @@
 	$vs_bundle_preview = '';
 	
 	$va_template_tags = $va_element_ids;
+
+	if(sizeof($va_element_info)>0) { // Container
+		$va_first = current($va_element_info);
+		$va_element_settings = $t_element->getSettings();
+		$vs_bundle_preview = $t_instance->getAttributesForDisplay($va_first['element_id'], $va_element_settings['displayTemplate']);
+	} else {
+		$vs_bundle_preview = $t_instance->getAttributesForDisplay($va_first['element_id']);
+	}
 	
 	if (sizeof($va_attribute_list)) {
 		$va_item_ids = array();
@@ -79,9 +87,6 @@
 					$vs_display_val = $va_failed_updates[$vn_attr_id][$vn_element_id];
 				} else {
 					$vs_display_val = $o_value->getDisplayValue(array('request' => $this->request, 'includeID' => true));
-					if(!strlen($vs_bundle_preview)) {
-						$vs_bundle_preview = $vs_display_val;
-					}
 				}
 				
 				$va_initial_values[$vn_attr_id][$vn_element_id] = $vs_display_val;
