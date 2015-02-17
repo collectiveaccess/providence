@@ -154,7 +154,15 @@ var caUI = caUI || {};
 				if(this.bundlePreview.length > 10) {
 					this.bundlePreview = this.bundlePreview.substr(0,20) + ' ...';
 				}
-				jQuery('#' + this.fieldNamePrefix + 'Labels_BundleContentPreview').text(this.bundlePreview);
+
+				var selector;
+				if(this.mode == 'preferred') {
+					selector = '#' + this.fieldNamePrefix + 'Labels_BundleContentPreview';
+				} else {
+					selector = '#' + this.fieldNamePrefix + 'NPLabels_BundleContentPreview';
+				}
+
+				jQuery(selector).text(this.bundlePreview);
 			}
 			
 			this.updateLabelBundleFormState();
