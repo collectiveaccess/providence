@@ -33,8 +33,9 @@
  	$vs_bundle_name 		= $this->getVar('bundle_name');
  	$vb_batch				= $this->getVar('batch');
 
-	$vs_bundle_preview 		= $t_instance->get($vs_bundle_name, array('convertCodesToDisplayText' => true));
-	if(strlen($vs_bundle_preview)>0) {
+	// fetch data for bundle preview
+	$vs_bundle_preview = $t_instance->get($vs_bundle_name, array('convertCodesToDisplayText' => true));
+	if(strlen($vs_bundle_preview)>20) {
 		$vs_bundle_preview = substr($vs_bundle_preview, 0, 20) . ' ...';
 	}
  	
