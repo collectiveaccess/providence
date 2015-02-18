@@ -189,7 +189,14 @@
 			// save where we are in session, for "Save and return" button
 			$va_save_and_return = $this->getRequest()->session->getVar('save_and_return_locations');
 			if(!is_array($va_save_and_return)) { $va_save_and_return = array(); }
-			$this->getRequest()->session->setVar('save_and_return_locations', caPushToStack($t_subject->tableName().'/'.$vn_subject_id, $va_save_and_return, 25));
+
+			$va_save = array(
+				'table' => $t_subject->tableName(),
+				'key' => $vn_subject_id,
+				'url_path' => $this->getRequest()->getFullUrlPath()
+			);
+
+			$this->getRequest()->session->setVar('save_and_return_locations', caPushToStack($va_save, $va_save_and_return, 25));
 
 			// if we came here through a rel link, show save and return button
 			$this->getView()->setVar('show_save_and_return', (bool) $this->getRequest()->getParameter('rel', pInteger));
@@ -340,16 +347,14 @@
 			// redirect back to previous item on stack if it's a valid "save and return" request
 			if((bool) $this->getRequest()->getParameter('is_save_and_return', pInteger)) {
 				$va_save_and_return = $this->getRequest()->session->getVar('save_and_return_locations');
-				// need at least 2 items on stack -> the current one and the previous one (which we're redirecting to)
 				if(is_array($va_save_and_return)) {
 					// get rid of all the navigational steps in the current item
 					do {
-						$va_tmp = explode('/', array_pop($va_save_and_return));
-					} while (($va_tmp[0] == $t_subject->tableName()) && ($va_tmp[1] == $vn_subject_id));
+						$va_pop = array_pop($va_save_and_return);
+					} while (($va_pop['table'] == $t_subject->tableName()) && ($va_pop['key'] == $vn_subject_id));
 
 					if(sizeof($va_save_and_return)>0) {
-						$va_tmp = explode('/', array_pop($va_save_and_return));
-						$this->getResponse()->setRedirect(caEditorUrl($this->getRequest(), $va_tmp[0], $va_tmp[1]));
+						$this->getResponse()->setRedirect($va_pop['url_path']);
 						return;
 					}
 				}
