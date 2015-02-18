@@ -35,8 +35,8 @@
 
 	// fetch data for bundle preview
 	$vs_bundle_preview = $t_instance->get($vs_bundle_name, array('convertCodesToDisplayText' => true));
-	if(strlen($vs_bundle_preview)>20) {
-		$vs_bundle_preview = substr($vs_bundle_preview, 0, 20) . ' ...';
+	if(strlen($vs_bundle_preview) > 30) {
+		$vs_bundle_preview = substr($vs_bundle_preview, 0, 30) . ' ...';
 	}
  	
  	$va_errors = array();
