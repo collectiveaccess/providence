@@ -1571,7 +1571,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					break;
 				default:
 					if($vn_new_table_num) {
-
 						$va_options = array(
 							'restrictToTypes' => $va_restrict_to_types,
 							'restrictToRelationshipTypes' => $va_restrict_to_rel_types,
