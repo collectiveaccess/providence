@@ -352,6 +352,7 @@ class SearchIndexer extends SearchBase {
 		if(MemoryCache::contains($vs_key, 'SearchIndexerHierPaths')) {
 			return MemoryCache::fetch($vs_key, 'SearchIndexerHierPaths');
 		}
+		
 		$pn_start = caGetOption('INDEX_ANCESTORS_START_AT_LEVEL', $pa_options, 0);
 		$pn_max_levels = caGetOption('INDEX_ANCESTORS_MAX_NUMBER_OF_LEVELS', $pa_options, null);
 		$ps_delimiter = caGetOption('INDEX_ANCESTORS_AS_PATH_WITH_DELIMITER', $pa_options, '; ');
@@ -366,7 +367,7 @@ class SearchIndexer extends SearchBase {
 		$vs_subject_tablename = $t_subject->tableName();
 		
 		if (is_array($va_ids) && sizeof($va_ids) > 0) {
-			$qr_hier_res = $t_subject->makeSearchResult($vs_subject_tablename, $va_ids);
+			$qr_hier_res = $t_subject->makeSearchResult($vs_subject_tablename, $va_ids, array('db' => $this->getDb()));
 		
 			$va_hier_values = array();
 			while($qr_hier_res->nextHit()) {
@@ -526,7 +527,7 @@ class SearchIndexer extends SearchBase {
 							if (!$pb_reindex_mode && is_array($va_children_ids) && sizeof($va_children_ids) > 0) {
 								// trigger reindexing of children
 								$o_indexer = new SearchIndexer($this->opo_db);
-								$qr_children_res = $t_subject->makeSearchResult($vs_subject_tablename, $va_children_ids);
+								$qr_children_res = $t_subject->makeSearchResult($vs_subject_tablename, $va_children_ids, array('db' => $this->getDb()));
 								while($qr_children_res->nextHit()) {
 									$o_indexer->indexRow($pn_subject_tablenum, $qr_children_res->get($vs_subject_pk), array($vs_subject_pk => $vn_id, 'parent_id' => $qr_children_res->get('parent_id'), $vs_field => $qr_children_res->get($vs_field)), false, $pa_exclusion_list, array($vs_field => true), null);
 								}
@@ -621,6 +622,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 				$vs_related_pk = $this->opo_datamodel->getTablePrimaryKeyName($vn_related_tablenum);
 				
 				$t_rel = $this->opo_datamodel->getInstanceByTableNum($vn_related_tablenum, true);
+				$t_rel->setDb($this->getDb());
 			
 				$va_params = null;
 				if ($vs_subject_tablename == $vs_related_table) {
@@ -829,6 +831,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 								if (is_subclass_of($t_hier_rel, "BaseLabel")) {
 									$t_hier_rel->load($vn_row_id);
 									$t_hier_rel = $t_hier_rel->getSubjectTableInstance();
+									$t_hier_rel->setDb($this->getDb());
 									
 									$vn_id = $t_hier_rel->getPrimaryKey();
 									$vb_is_label = true;
@@ -848,7 +851,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 									if (!$pb_reindex_mode && is_array($va_children_ids) && sizeof($va_children_ids) > 0) {
 										// trigger reindexing of children
 										$o_indexer = new SearchIndexer($this->opo_db);
-										$qr_children_res = $t_hier_rel->makeSearchResult($t_hier_rel->tableName(), $va_children_ids);
+										$qr_children_res = $t_hier_rel->makeSearchResult($t_hier_rel->tableName(), $va_children_ids, array('db' => $this->getDb()));
 										$vs_pk = $t_hier_rel->primaryKey();
 										$vn_table_num = $t_hier_rel->tableNum();
 										while($qr_children_res->nextHit()) {
@@ -889,6 +892,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 						// index label for self-relation?
 						if ($vs_subject_tablename == $vs_related_table) {
 							if ($t_label = $t_rel->getLabelTableInstance()) {
+								$t_label->setDb($this->getDb());
 								$va_label_info = $this->getTableIndexingInfo($vs_subject_tablename, $t_label->tableName());
 								if (is_array($va_label_info['related']['fields']) && sizeof($va_label_info['related']['fields'])) {
 									$vn_label_table_num = $t_label->tableNum();
@@ -972,6 +976,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 				
 				foreach($va_row_ids_to_reindex_by_table as $vn_rel_tablenum => $va_rel_row_ids) {
 					if ($t_rel = $this->opo_datamodel->getInstanceByTableNum($vn_rel_tablenum, true)) {
+						$t_rel->setDb($this->getDb());
 						if (method_exists($t_rel, "getApplicableElementCodes")) {
 							if (is_array($va_element_ids = array_keys($t_rel->getApplicableElementCodes(null, false, false))) && sizeof($va_element_ids)) {
 								ca_attributes::prefetchAttributes($this->opo_db, $vn_rel_tablenum, $va_rel_row_ids, $va_element_ids);
@@ -984,6 +989,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 				foreach($va_rows_to_reindex_by_row_id as $va_row_to_reindex) {
 					$vn_rel_type_id = $va_row_to_reindex['relationship_type_id'];
 					$t_rel = $this->opo_datamodel->getInstanceByTableNum($va_row_to_reindex['field_table_num'], true);
+					$t_rel->setDb($this->getDb());
 					
 					if (substr($va_row_to_reindex['field_name'], 0, 14) == '_ca_attribute_') {		// is attribute
 						$va_row_to_reindex['indexing_info']['datatype'] = $this->_getElementDataType(substr($va_row_to_reindex['field_name'], 14));
@@ -992,8 +998,10 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 					if (((isset($va_row_to_reindex['indexing_info']['INDEX_ANCESTORS']) && $va_row_to_reindex['indexing_info']['INDEX_ANCESTORS']) || in_array('INDEX_ANCESTORS', $va_row_to_reindex['indexing_info']))) {
 						if (!is_array($va_row_to_reindex['row_ids'])) { continue; }
 						
-						$va_content = $this->_genHierarchicalPath($va_row_to_reindex['field_row_id'], $va_row_to_reindex['field_name'], $this->opo_datamodel->getInstanceByTableNum($va_row_to_reindex['field_table_num'], true), array());
-						
+						$t_label = $this->opo_datamodel->getInstanceByTableNum($va_row_to_reindex['field_table_num'], true);
+						$t_label->setDb($this->getDb());
+						$va_content = $this->_genHierarchicalPath($va_row_to_reindex['field_row_id'], $va_row_to_reindex['field_name'], $t_label, array());
+				
 						$vs_content = is_array($va_content['values']) ? join(" ", $va_content['values']) : "";
 						
 						$this->opo_engine->updateIndexingInPlace($va_row_to_reindex['table_num'], $va_row_to_reindex['row_ids'], $va_row_to_reindex['field_table_num'], $va_row_to_reindex['field_num'], $va_row_to_reindex['field_row_id'], $vs_content, array_merge($va_row_to_reindex['indexing_info'], array('relationship_type_id' => $vn_rel_type_id, 'literalContent' => $va_content['path'])));
@@ -1124,7 +1132,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 			if (is_array($va_children_ids) && sizeof($va_children_ids) > 0) {
 				// trigger reindexing of children
 				$o_indexer = new SearchIndexer($this->opo_db);
-				$qr_children_res = $t_subject->makeSearchResult($vs_subject_tablename, $va_children_ids);
+				$qr_children_res = $t_subject->makeSearchResult($vs_subject_tablename, $va_children_ids, array('db' => $this->getDb()));
 				while($qr_children_res->nextHit()) {
 					$o_indexer->indexRow($pn_subject_tablenum, $vn_id=$qr_children_res->get($vs_subject_pk), array($vs_subject_pk => $vn_id, 'parent_id' => $qr_children_res->get('parent_id')), true, $pa_exclusion_list, array(), null);
 				}
@@ -1474,6 +1482,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 					$vn_rel_tablenum = $this->opo_datamodel->getTableNum($vs_rel_table);
 					$vn_rel_pk = $this->opo_datamodel->getTablePrimaryKeyName($vn_rel_tablenum);
 					$t_rel = $this->opo_datamodel->getInstanceByTableNum($vn_rel_tablenum, true);
+					$t_rel->setDb($this->getDb());
 					
 					if (is_array($va_indexing_info['tables']) && (sizeof($va_indexing_info['tables']))) {
 						$va_table_path = $va_indexing_info['tables'];
@@ -1514,7 +1523,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 									
 									$vn_fld_row_id = $qr_rel_rows->get($vn_rel_pk);
 									$vn_row_id = $qr_rel_rows->get($vs_dep_pk);
-									$vn_rel_type_id = $qr_rel_rows->get('type_id');
+									$vn_rel_type_id = $qr_rel_rows->get('rel_type_id');
 									$vs_key = $vn_dep_tablenum.'/'.$vn_row_id.'/'.$vn_rel_tablenum.'/'.$vn_fld_row_id;
 									
 									if (!isset($va_dependent_rows[$vs_key])) {
@@ -1706,6 +1715,10 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 							$va_flds[$va_rel['one_table'].".".$this->opo_datamodel->getTablePrimaryKeyName($va_rel['one_table'])] = true;
 						}
 					}
+				}
+				
+				if (($t_table = $this->opo_datamodel->getInstanceByTableName($vs_right_table, true)) && ($t_table->isRelationship() && $t_table->hasField('type_id'))) {
+					$va_flds["{$vs_right_table}.type_id rel_type_id"] = true;
 				}
 				$vs_left_table = $vs_right_table;
 				
