@@ -2984,7 +2984,10 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 	/**
 	 * Returns display string for relationship bundles. Used by themes/default/bundles/ca_entities.php and the like.
 	 *
+	 * @param RequestHTTP $po_request
 	 * @param string $ps_table
+	 * @param array $pa_attributes
+	 * @param array $pa_options
 	 *
 	 * @return string 
 	 */
@@ -2999,7 +3002,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		$vs_attr_str = _caHTMLMakeAttributeString(is_array($pa_attributes) ? $pa_attributes : array());
 		$vs_display = "{".((isset($pa_options['display']) && $pa_options['display']) ? $pa_options['display'] : "_display")."}";
 		if (isset($pa_options['makeLink']) && $pa_options['makeLink']) {
-			$vs_display = "<a href='".urldecode(caEditorUrl($po_request, $ps_table, '{'.$o_dm->getTablePrimaryKeyName($ps_table).'}'))."' {$vs_attr_str}>{$vs_display}</a>";
+			$vs_display = "<a href='".urldecode(caEditorUrl($po_request, $ps_table, '{'.$o_dm->getTablePrimaryKeyName($ps_table).'}', false, array('rel' => true)))."' {$vs_attr_str}>{$vs_display}</a>";
 		}
 		
 		switch($vs_relationship_type_display_position) {
@@ -3649,7 +3652,10 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 	 * @return string HTML implementing the control
 	 */
 	function caEditorBundleShowHideControl($po_request, $ps_id_prefix) {
-		$vs_buf = "<span style='position: absolute; top: 2px; right: 7px;'>";
+		$ps_preview_id_prefix = preg_replace("/[0-9]+\_rel/", "", $ps_id_prefix);
+
+		$vs_buf  = "<span class='bundleContentPreview' id='{$ps_preview_id_prefix}_BundleContentPreview'></span>";
+		$vs_buf .= "<span style='position: absolute; top: 2px; right: 7px;'>";
 		$vs_buf .= "<a href='#' onclick='caBundleVisibilityManager.toggle(\"{$ps_id_prefix}\");  return false;'><img src=\"".$po_request->getThemeUrlPath()."/graphics/arrows/expand.jpg\" border=\"0\" id=\"{$ps_id_prefix}VisToggleButton\"/></a>";
 		$vs_buf .= "</span>\n";	
 		$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$ps_id_prefix}'); }); </script>";	

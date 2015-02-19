@@ -974,9 +974,13 @@ class Installer {
 	private function processRelationshipTypesForTable($po_relationship_types, $pn_table_num, $ps_left_table, $ps_right_table, $pn_parent_id, $pa_list_item_ids){
 		$o_dm = Datamodel::load();
 
+		// nuke caches to be safe
+		ca_relationship_types::$s_relationship_type_id_cache = array();
+		ca_relationship_types::$s_relationship_type_table_cache = array();
+		ca_relationship_types::$s_relationship_type_id_to_code_cache = array();
+
 		$t_rel_type = new ca_relationship_types();
 		$t_rel_type->setMode(ACCESS_WRITE);
-
 
 		$vn_rank_default = (int)$t_rel_type->getFieldInfo('rank', 'DEFAULT');
 		foreach($po_relationship_types->children() as $vo_type) {
@@ -990,7 +994,8 @@ class Installer {
 
 			$t_rel_type->set('table_num', $pn_table_num);
 			$t_rel_type->set('type_code', $vs_type_code);
-			$t_rel_type->set("parent_id", $pn_parent_id);
+			$t_rel_type->set('parent_id', $pn_parent_id);
+			$t_rel_type->set('is_default', $vn_default ? 1 : 0);
 			
 			if ($vn_rank > 0) {
 				$t_rel_type->set("rank", $vn_rank);
@@ -998,8 +1003,11 @@ class Installer {
 				$t_rel_type->set("rank", $vn_rank_default);
 			}
 
-			$t_rel_type->set('sub_type_left_id', null);
-			$t_rel_type->set('sub_type_right_id', null);
+			if($t_rel_type->getPrimaryKey()) {
+				$t_rel_type->update();
+			} else {
+				$t_rel_type->insert();
+			}
 
 			if (trim($vs_left_subtype_code = (string) $vo_type->subTypeLeft)) {
 				$t_obj = $o_dm->getTableInstance($ps_left_table);
@@ -1007,6 +1015,7 @@ class Installer {
 
 				if (isset($pa_list_item_ids[$vs_list_code][$vs_left_subtype_code])) {
 					$t_rel_type->set('sub_type_left_id', $pa_list_item_ids[$vs_list_code][$vs_left_subtype_code]);
+					$t_rel_type->update();
 				}
 			}
 			if (trim($vs_right_subtype_code = (string) $vo_type->subTypeRight)) {
@@ -1014,14 +1023,8 @@ class Installer {
 				$vs_list_code = $t_obj->getFieldListCode($t_obj->getTypeFieldName());
 				if (isset($pa_list_item_ids[$vs_list_code][$vs_right_subtype_code])) {
 					$t_rel_type->set('sub_type_right_id', $pa_list_item_ids[$vs_list_code][$vs_right_subtype_code]);
+					$t_rel_type->update();
 				}
-			}
-
-			$t_rel_type->set('is_default', $vn_default ? 1 : 0);
-			if($t_rel_type->getPrimaryKey()){
-				$t_rel_type->update();
-			} else {
-				$t_rel_type->insert();
 			}
 
 			if ($t_rel_type->numErrors()) {

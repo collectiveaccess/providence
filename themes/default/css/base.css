@@ -1195,6 +1195,17 @@ div.hint {
 .settingsBundle {
     padding: 10px;
 }
+.bundleContentPreview {
+	position:absolute;
+	right:50px;
+	display:none;
+	font-style:italic;
+	color:#999999;
+	font-family: helvetica, sans-serif;
+	font-weight:normal;
+	font-size:11px;
+	padding-top:2px;
+}
 
 /* Style for labels on form fields where an error has occurred */
 .formLabelError {
@@ -7131,6 +7142,14 @@ div.caLibraryDashboardPanel {
 .caLibraryDashboardCallout {
 	font-size: 24px;
 	font-weight: bold;
+	margin: 0;
+}
+
+.caLibraryDashboardCalloutDate {
+	font-size: 10px;
+	font-weight: normal;
+	font-style: italic;
+	margin: 0;
 }
 
 .caLibraryDashboardUserList {

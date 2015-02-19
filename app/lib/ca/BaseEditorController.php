@@ -184,7 +184,23 @@
 			
 			if (!($vs_view = caGetOption('view', $pa_options, null))) {
 				$vs_view = 'screen_html';
-			} 
+			}
+
+			// save where we are in session, for "Save and return" button
+			$va_save_and_return = $this->getRequest()->session->getVar('save_and_return_locations');
+			if(!is_array($va_save_and_return)) { $va_save_and_return = array(); }
+
+			$va_save = array(
+				'table' => $t_subject->tableName(),
+				'key' => $vn_subject_id,
+				'url_path' => $this->getRequest()->getFullUrlPath()
+			);
+
+			$this->getRequest()->session->setVar('save_and_return_locations', caPushToStack($va_save, $va_save_and_return, 25));
+
+			// if we came here through a rel link, show save and return button
+			$this->getView()->setVar('show_save_and_return', (bool) $this->getRequest()->getParameter('rel', pInteger));
+
 			$this->render("{$vs_view}.php");
  		}
  		# -------------------------------------------------------
@@ -327,6 +343,22 @@
  			# trigger "SaveItem" hook 
  		
 			$this->opo_app_plugin_manager->hookSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => $vb_is_insert));
+
+			// redirect back to previous item on stack if it's a valid "save and return" request
+			if((bool) $this->getRequest()->getParameter('is_save_and_return', pInteger)) {
+				$va_save_and_return = $this->getRequest()->session->getVar('save_and_return_locations');
+				if(is_array($va_save_and_return)) {
+					// get rid of all the navigational steps in the current item
+					do {
+						$va_pop = array_pop($va_save_and_return);
+					} while (($va_pop['table'] == $t_subject->tableName()) && ($va_pop['key'] == $vn_subject_id));
+
+					if(sizeof($va_save_and_return)>0) {
+						$this->getResponse()->setRedirect($va_pop['url_path']);
+						return;
+					}
+				}
+			}
  			
  			if (method_exists($this, "postSave")) {
  				$this->postSave($t_subject, $vb_is_insert);
@@ -1927,7 +1959,7 @@
  			
  			$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
  			
- 			$vs_page_cache_key = md5($vn_subject_id.'/'.$pn_representation_id.'/'.$pn_value_id);
+ 			$vs_page_cache_key = ($ps_content_mode == 'hierarchy_of_representations') ? md5($vn_subject_id) : md5($vn_subject_id.'/'.$pn_representation_id.'/'.$pn_value_id);
  			
  			$o_view->setVar('page_cache_key', $vs_page_cache_key);
  			$o_view->setVar('t_subject', $t_subject);

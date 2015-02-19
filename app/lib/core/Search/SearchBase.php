@@ -182,7 +182,11 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 					}
 				}
 			}
-			
+
+			// always index type id if applicable and not already indexed
+			if(method_exists($t_subject, 'getTypeFieldName') && ($vs_type_field = $t_subject->getTypeFieldName()) && !isset($va_fields_to_index[$vs_type_field])) {
+				$va_fields_to_index[$vs_type_field] = array('STORE', 'DONT_TOKENIZE');
+			}
 			
 			return SearchBase::$s_fields_to_index_cache[$pm_subject_table.'/'.$pm_content_table.'/'.$vs_key] = SearchBase::$s_fields_to_index_cache[$vs_subject_table.'/'.$vs_content_table.'/'.$vs_key] = $va_fields_to_index;
 	
@@ -224,7 +228,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 			if (is_numeric($pm_content_table)) {
 				$pm_content_table = $this->opo_datamodel->getTableName($pm_content_table);
 			}
-			if(!$va_info = $this->opo_search_indexing_config->get($pm_subject_table)) {
+			if(!is_array($va_info = $this->opo_search_indexing_config->get($pm_subject_table))) {
 				return null;
 			}
 			// 'tables' is optional for one-many relations but its absence would be felt upstream

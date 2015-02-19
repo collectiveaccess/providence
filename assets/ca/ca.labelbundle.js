@@ -44,6 +44,7 @@ var caUI = caUI || {};
 			deleteButtonClassName: 'caDeleteLabelButton',
 			
 			defaultLocaleID: null,
+			bundlePreview: '',
 			readonly: 0,
 			
 			counter: 0
@@ -146,6 +147,22 @@ var caUI = caUI || {};
 			
 				// attach onchange function to locale_id
 				jQuery(this.container + " #" + this.fieldNamePrefix + "locale_id_" + templateValues.n).change(function() { that.updateLabelBundleFormState(); });
+			}
+
+			// Add bundle preview value text
+			if(this.bundlePreview.length > 1) {
+				if(this.bundlePreview.length > 30) {
+					this.bundlePreview = this.bundlePreview.substr(0,30) + ' ...';
+				}
+
+				var selector;
+				if(this.mode == 'preferred') {
+					selector = '#' + this.fieldNamePrefix + 'Labels_BundleContentPreview';
+				} else {
+					selector = '#' + this.fieldNamePrefix + 'NPLabels_BundleContentPreview';
+				}
+
+				jQuery(selector).text(this.bundlePreview);
 			}
 			
 			this.updateLabelBundleFormState();
