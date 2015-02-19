@@ -4533,6 +4533,8 @@ if (!$vb_batch) {
  	 *		dontIncludeSubtypesInTypeRestriction = synonym for dont_include_subtypes_in_type_restriction
  	 *		restrict_to_relationship_types = restricts returned items to those related to the current row by the specified relationship type(s). You can pass either an array of types or a single type. The types can be relationship type_code's or type_id's.
  	 *		restrictToRelationshipTypes = synonym for restrict_to_relationship_types
+	 *
+	 * 		restrictToBundleValues = restricts returned items to bundle values in related table. pass an associative array with elements like this: bundle_name => list of values
  	 *
  	 *		exclude_relationship_types = omits any items related to the current row with any of the specified types from the returned set of ids. You can pass either an array of types or a single type. The types can be relationship type_code's or type_id's.
  	 *		excludeRelationshipTypes = synonym for exclude_relationship_types
@@ -5099,6 +5101,44 @@ if (!$vb_batch) {
 			//
 			// END - non-self relation
 			//
+		}
+
+		// Apply restrictToBundleValues
+		$va_filters = caGetOption('restrictToBundleValues', $pa_options, array());
+		foreach($va_rels as $vn_pk => $va_related_item) {
+			foreach($va_filters as $vs_filter => $va_filter_vals) {
+				if(!$vs_filter) { continue; }
+				if (!is_array($va_filter_vals)) { $va_filter_vals = array($va_filter_vals); }
+
+				foreach($va_filter_vals as $vn_index => $vs_filter_val) {
+					// is value a list attribute idno?
+					$va_tmp = explode('.',$vs_filter);
+					$vs_element = array_pop($va_tmp);
+					if (!is_numeric($vs_filter_val) && (($t_element = $t_rel_item->_getElementInstance($vs_element)) && ($t_element->get('datatype') == 3))) {
+						$va_filter_vals[$vn_index] = caGetListItemID($t_element->get('list_id'), $vs_filter_val);
+					}
+				}
+
+				$t_rel_item->load($va_related_item[$t_rel_item->primaryKey()]);
+				$va_filter_values = $this->get($vs_filter, array('returnAsArray' => true, 'alwaysReturnItemID' => true));
+
+				$vb_keep = false;
+				if (is_array($va_filter_values)) {
+					foreach($va_filter_values as $vm_filtered_val) {
+						if(!is_array($vm_filtered_val)) { $vm_filtered_val = array($vm_filtered_val); }
+
+						foreach($vm_filtered_val as $vs_val) {
+							if (in_array($vs_val, $va_filter_vals)) {	// one match is enough to keep it
+								$vb_keep = true;
+							}
+						}
+					}
+				}
+
+				if(!$vb_keep) {
+					unset($va_rels[$vn_pk]);
+				}
+			}
 		}
 
 		//
