@@ -4563,48 +4563,48 @@ if (!$vb_batch) {
  	 *		returnLocaleCodes = Return locale values as codes (Ex. en_US) rather than numeric database-specific locale_ids. Default is false.
  	 * @return array - list of related items
  	 */
-	 public function getRelatedItems($pm_rel_table_name_or_num, $pa_options=null) {
+	public function getRelatedItems($pm_rel_table_name_or_num, $pa_options=null) {
 		global $AUTH_CURRENT_USER_ID;
 		$vn_user_id = (isset($pa_options['user_id']) && $pa_options['user_id']) ? $pa_options['user_id'] : (int)$AUTH_CURRENT_USER_ID;
 		$vb_show_if_no_acl = (bool)($this->getAppConfig()->get('default_item_access_level') > __CA_ACL_NO_ACCESS__);
-			
-	 	// convert options
-	 	if(isset($pa_options['restrictToType']) && (!isset($pa_options['restrict_to_type']) || !$pa_options['restrict_to_type'])) { $pa_options['restrict_to_type'] = $pa_options['restrictToType']; }
-	 	if(isset($pa_options['restrictToTypes']) && (!isset($pa_options['restrict_to_types']) || !$pa_options['restrict_to_types'])) { $pa_options['restrict_to_types'] = $pa_options['restrictToTypes']; }
-	 	if(isset($pa_options['restrictToRelationshipTypes']) && (!isset($pa_options['restrict_to_relationship_types']) || !$pa_options['restrict_to_relationship_types'])) { $pa_options['restrict_to_relationship_types'] = $pa_options['restrictToRelationshipTypes']; }
-	 	if(isset($pa_options['excludeType']) && (!isset($pa_options['exclude_type']) || !$pa_options['exclude_type'])) { $pa_options['exclude_type'] = $pa_options['excludeType']; }
-	 	if(isset($pa_options['excludeTypes']) && (!isset($pa_options['exclude_types']) || !$pa_options['exclude_types'])) { $pa_options['exclude_types'] = $pa_options['excludeTypes']; }
-	 	if(isset($pa_options['excludeRelationshipTypes']) && (!isset($pa_options['exclude_relationship_types']) || !$pa_options['exclude_relationship_types'])) { $pa_options['exclude_relationship_types'] = $pa_options['excludeRelationshipTypes']; }
-	 	if(isset($pa_options['dontIncludeSubtypesInTypeRestriction']) && (!isset($pa_options['dont_include_subtypes_in_type_restriction']) || !$pa_options['dont_include_subtypes_in_type_restriction'])) { $pa_options['dont_include_subtypes_in_type_restriction'] = $pa_options['dontIncludeSubtypesInTypeRestriction']; }
-	 	if(isset($pa_options['returnNonPreferredLabels']) && (!isset($pa_options['return_non_preferred_labels']) || !$pa_options['return_non_preferred_labels'])) { $pa_options['return_non_preferred_labels'] = $pa_options['returnNonPreferredLabels']; }
-	 	if(isset($pa_options['returnLabelsAsArray']) && (!isset($pa_options['return_labels_as_array']) || !$pa_options['return_labels_as_array'])) { $pa_options['return_labels_as_array'] = $pa_options['returnLabelsAsArray']; }
+
+		// convert options
+		if(isset($pa_options['restrictToType']) && (!isset($pa_options['restrict_to_type']) || !$pa_options['restrict_to_type'])) { $pa_options['restrict_to_type'] = $pa_options['restrictToType']; }
+		if(isset($pa_options['restrictToTypes']) && (!isset($pa_options['restrict_to_types']) || !$pa_options['restrict_to_types'])) { $pa_options['restrict_to_types'] = $pa_options['restrictToTypes']; }
+		if(isset($pa_options['restrictToRelationshipTypes']) && (!isset($pa_options['restrict_to_relationship_types']) || !$pa_options['restrict_to_relationship_types'])) { $pa_options['restrict_to_relationship_types'] = $pa_options['restrictToRelationshipTypes']; }
+		if(isset($pa_options['excludeType']) && (!isset($pa_options['exclude_type']) || !$pa_options['exclude_type'])) { $pa_options['exclude_type'] = $pa_options['excludeType']; }
+		if(isset($pa_options['excludeTypes']) && (!isset($pa_options['exclude_types']) || !$pa_options['exclude_types'])) { $pa_options['exclude_types'] = $pa_options['excludeTypes']; }
+		if(isset($pa_options['excludeRelationshipTypes']) && (!isset($pa_options['exclude_relationship_types']) || !$pa_options['exclude_relationship_types'])) { $pa_options['exclude_relationship_types'] = $pa_options['excludeRelationshipTypes']; }
+		if(isset($pa_options['dontIncludeSubtypesInTypeRestriction']) && (!isset($pa_options['dont_include_subtypes_in_type_restriction']) || !$pa_options['dont_include_subtypes_in_type_restriction'])) { $pa_options['dont_include_subtypes_in_type_restriction'] = $pa_options['dontIncludeSubtypesInTypeRestriction']; }
+		if(isset($pa_options['returnNonPreferredLabels']) && (!isset($pa_options['return_non_preferred_labels']) || !$pa_options['return_non_preferred_labels'])) { $pa_options['return_non_preferred_labels'] = $pa_options['returnNonPreferredLabels']; }
+		if(isset($pa_options['returnLabelsAsArray']) && (!isset($pa_options['return_labels_as_array']) || !$pa_options['return_labels_as_array'])) { $pa_options['return_labels_as_array'] = $pa_options['returnLabelsAsArray']; }
 		if(isset($pa_options['restrictToLists']) && (!isset($pa_options['restrict_to_lists']) || !$pa_options['restrict_to_lists'])) { $pa_options['restrict_to_lists'] = $pa_options['restrictToLists']; }
-	 	if(isset($pa_options['groupFields'])) { $pa_options['groupFields'] = (bool)$pa_options['groupFields']; } else { $pa_options['groupFields'] = false; }
-	 	
+		if(isset($pa_options['groupFields'])) { $pa_options['groupFields'] = (bool)$pa_options['groupFields']; } else { $pa_options['groupFields'] = false; }
+
 		$o_db = $this->getDb();
 		$t_locale = new ca_locales();
 		$o_tep = new TimeExpressionParser();
 		$vb_uses_effective_dates = false;
-		
+
 		$va_get_where = 			(isset($pa_options['where']) && is_array($pa_options['where']) && sizeof($pa_options['where'])) ? $pa_options['where'] : null;
-		
+
 		$va_row_ids = (isset($pa_options['row_ids']) && is_array($pa_options['row_ids'])) ? $pa_options['row_ids'] : null;
 		$vn_row_id = (isset($pa_options['row_id']) && $pa_options['row_id']) ? $pa_options['row_id'] : $this->getPrimaryKey();
-		
+
 		if(isset($pa_options['sort']) && !is_array($pa_options['sort'])) { $pa_options['sort'] = array($pa_options['sort']); }
 		$va_sort_fields = (isset($pa_options['sort']) && is_array($pa_options['sort'])) ? $pa_options['sort'] : null;
 		$vs_sort_direction = (isset($pa_options['sortDirection']) && $pa_options['sortDirection']) ? $pa_options['sortDirection'] : null;
-		
+
 		if (!$va_row_ids && ($vn_row_id > 0)) {
 			$va_row_ids = array($vn_row_id);
 		}
-		
+
 		if (!$va_row_ids || !is_array($va_row_ids) || !sizeof($va_row_ids)) { return array(); }
-		
+
 		$vb_return_labels_as_array = (isset($pa_options['return_labels_as_array']) && $pa_options['return_labels_as_array']) ? true : false;
 		$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : 1000;
 		$vn_start = (isset($pa_options['start']) && ((int)$pa_options['start'] > 0)) ? (int)$pa_options['start'] : 0;
-              
+
 		if (is_numeric($pm_rel_table_name_or_num)) {
 			if(!($vs_related_table_name = $this->getAppDatamodel()->getTableName($pm_rel_table_name_or_num))) { return null; }
 		} else {
@@ -4614,7 +4614,7 @@ if (!$vb_batch) {
 			if (!($o_instance = $this->getAppDatamodel()->getInstanceByTableName($pm_rel_table_name_or_num, true))) { return null; }
 			$vs_related_table_name = $pm_rel_table_name_or_num;
 		}
-		
+
 		if (!is_array($pa_options)) { $pa_options = array(); }
 
 		switch(sizeof($va_path = array_keys($this->getAppDatamodel()->getPath($this->tableName(), $vs_related_table_name)))) {
@@ -4633,7 +4633,7 @@ if (!$vb_batch) {
 				return null;
 				break;
 		}
-		
+
 		// check for self relationship
 		$vb_self_relationship = false;
 		if($this->tableName() == $vs_related_table_name) {
@@ -4641,50 +4641,50 @@ if (!$vb_batch) {
 			$t_rel_item = $this->getAppDatamodel()->getTableInstance($va_path[0]);
 			$t_item_rel = $this->getAppDatamodel()->getTableInstance($va_path[1]);
 		}
-		
+
 		$va_wheres = array();
 		$va_selects = array();
 		$va_joins_post_add = array();
-		
+
 		$vs_related_table = $t_rel_item->tableName();
 		if ($t_rel_item->hasField('type_id')) { $va_selects[] = $vs_related_table.'.type_id item_type_id'; }
 		if ($t_rel_item->hasField('source_id')) { $va_selects[] = $vs_related_table.'.source_id item_source_id'; }
-		
+
 		// TODO: get these field names from models
 		if ($t_item_rel) {
 			//define table names
 			$vs_linking_table = $t_item_rel->tableName();
-			
+
 			$va_selects[] = $vs_related_table.'.'.$t_rel_item->primaryKey();
-			
+
 			// include dates in returned data
 			if ($t_item_rel->hasField('effective_date')) {
 				$va_selects[] = $vs_linking_table.'.sdatetime';
 				$va_selects[] = $vs_linking_table.'.edatetime';
-				
+
 				$vb_uses_effective_dates = true;
 			}
-		
+
 			if ($t_rel_item->hasField('is_enabled')) {
 				$va_selects[] = $vs_related_table.'.is_enabled';
 			}
-			
-			
+
+
 			if ($t_item_rel->hasField('type_id')) {
 				$va_selects[] = $vs_linking_table.'.type_id relationship_type_id';
-				
+
 				require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
 				$t_rel = new ca_relationship_types();
-				
+
 				$vb_uses_relationship_types = true;
 			}
-			
+
 			// limit related items to a specific type
 			if ($vb_uses_relationship_types && isset($pa_options['restrict_to_relationship_types']) && $pa_options['restrict_to_relationship_types']) {
 				if (!is_array($pa_options['restrict_to_relationship_types'])) {
 					$pa_options['restrict_to_relationship_types'] = array($pa_options['restrict_to_relationship_types']);
 				}
-				
+
 				if (sizeof($pa_options['restrict_to_relationship_types'])) {
 					$va_rel_types = array();
 					foreach($pa_options['restrict_to_relationship_types'] as $vm_type) {
@@ -4699,18 +4699,18 @@ if (!$vb_batch) {
 							}
 						}
 					}
-					
+
 					if (sizeof($va_rel_types)) {
 						$va_wheres[] = '('.$vs_linking_table.'.type_id IN ('.join(',', $va_rel_types).'))';
 					}
 				}
 			}
-			
+
 			if ($vb_uses_relationship_types && isset($pa_options['exclude_relationship_types']) && $pa_options['exclude_relationship_types']) {
 				if (!is_array($pa_options['exclude_relationship_types'])) {
 					$pa_options['exclude_relationship_types'] = array($pa_options['exclude_relationship_types']);
 				}
-				
+
 				if (sizeof($pa_options['exclude_relationship_types'])) {
 					$va_rel_types = array();
 					foreach($pa_options['exclude_relationship_types'] as $vm_type) {
@@ -4721,14 +4721,14 @@ if (!$vb_batch) {
 							}
 						}
 					}
-					
+
 					if (sizeof($va_rel_types)) {
 						$va_wheres[] = '('.$vs_linking_table.'.type_id NOT IN ('.join(',', $va_rel_types).'))';
 					}
 				}
 			}
 		}
-		
+
 		// limit related items to a specific type
 		if (isset($pa_options['restrict_to_type']) && $pa_options['restrict_to_type']) {
 			if (!isset($pa_options['restrict_to_types']) || !is_array($pa_options['restrict_to_types'])) {
@@ -4736,18 +4736,18 @@ if (!$vb_batch) {
 			}
 			$pa_options['restrict_to_types'][] = $pa_options['restrict_to_type'];
 		}
-		
+
 		$va_type_ids = caMergeTypeRestrictionLists($t_rel_item, $pa_options);
-		
+
 		if (is_array($va_type_ids) && (sizeof($va_type_ids) > 0)) {
 			$va_wheres[] = "({$vs_related_table}.type_id IN (".join(',', $va_type_ids).')'.($t_rel_item->getFieldInfo('type_id', 'IS_NULL') ? " OR ({$vs_related_table}.type_id IS NULL)" : '').')';
 		}
-		
+
 		$va_source_ids = caMergeSourceRestrictionLists($t_rel_item, $pa_options);
 		if (method_exists($t_rel_item, "getSourceFieldName") && ($vs_source_id_fld = $t_rel_item->getSourceFieldName()) && is_array($va_source_ids) && (sizeof($va_source_ids) > 0)) {
 			$va_wheres[] = "({$vs_related_table}.{$vs_source_id_fld} IN (".join(',', $va_source_ids)."))";
 		}
-		
+
 		if (isset($pa_options['exclude_type']) && $pa_options['exclude_type']) {
 			if (!isset($pa_options['exclude_types']) || !is_array($pa_options['exclude_types'])) {
 				$pa_options['exclude_types'] = array();
@@ -4756,12 +4756,12 @@ if (!$vb_batch) {
 		}
 		if (isset($pa_options['exclude_types']) && is_array($pa_options['exclude_types'])) {
 			$va_type_ids = caMakeTypeIDList($t_rel_item->tableName(), $pa_options['exclude_types']);
-			
+
 			if (is_array($va_type_ids) && (sizeof($va_type_ids) > 0)) {
 				$va_wheres[] = '('.$vs_related_table.'.type_id NOT IN ('.join(',', $va_type_ids).'))';
 			}
 		}
-		
+
 		if ($this->getAppConfig()->get('perform_item_level_access_checking')) {
 			$t_user = new ca_users($vn_user_id, true);
 			if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {
@@ -4769,7 +4769,7 @@ if (!$vb_batch) {
 			} else {
 				$va_group_ids = array();
 			}
-			
+
 			// Join to limit what browse table items are used to generate facet
 			$va_joins_post_add[] = 'LEFT JOIN ca_acl ON '.$t_rel_item->tableName().'.'.$t_rel_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_rel_item->tableNum()."\n";
 			$va_wheres[] = "(
@@ -4783,7 +4783,7 @@ if (!$vb_batch) {
 				".(($vb_show_if_no_acl) ? "OR ca_acl.acl_id IS NULL" : "")."
 			)";
 		}
-				
+
 		if (is_array($va_get_where)) {
 			foreach($va_get_where as $vs_fld => $vm_val) {
 				if ($t_rel_item->hasField($vs_fld)) {
@@ -4791,18 +4791,18 @@ if (!$vb_batch) {
 				}
 			}
 		}
-		
+
 		if ($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) { $va_selects[] = $t_rel_item->tableName().'.'.$vs_idno_fld; }
 		if ($vs_idno_sort_fld = $t_rel_item->getProperty('ID_NUMBERING_SORT_FIELD')) { $va_selects[] = $t_rel_item->tableName().'.'.$vs_idno_sort_fld; }
 
-		$va_selects[] = $va_path[1].'.'.$vs_key;	
-		
+		$va_selects[] = $va_path[1].'.'.$vs_key;
+
 		if (isset($pa_options['fields']) && is_array($pa_options['fields'])) {
 			$va_selects = array_merge($va_selects, $pa_options['fields']);
 		}
-		
-		
-		 // if related item is labelable then include the label table in the query as well
+
+
+		// if related item is labelable then include the label table in the query as well
 		$vs_label_display_field = null;
 		if (method_exists($t_rel_item, "getLabelTableName")) {
 			if($vs_label_table_name = $t_rel_item->getLabelTableName()) {           // make sure it actually has a label table...
@@ -4815,28 +4815,28 @@ if (!$vb_batch) {
 				} else {
 					$va_selects[] = $vs_label_table_name.'.'.$vs_label_display_field;
 					$va_selects[] = $vs_label_table_name.'.locale_id';
-					
+
 					if ($t_rel_item_label->hasField('surname')) {	// hack to include fields we need to sort entity labels properly
 						$va_selects[] = $vs_label_table_name.'.surname';
 						$va_selects[] = $vs_label_table_name.'.forename';
 					}
 				}
-				
+
 				if ($t_rel_item_label->hasField('is_preferred') && (!isset($pa_options['return_non_preferred_labels']) || !$pa_options['return_non_preferred_labels'])) {
 					$va_wheres[] = "(".$vs_label_table_name.'.is_preferred = 1)';
 				}
 			}
 		}
-				
+
 		// return source info in returned data
 		if ($t_item_rel && $t_item_rel->hasField('source_info')) {
 			$va_selects[] = $vs_linking_table.'.source_info';
 		}
-		
+
 		if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_item->hasField('access')) {
 			$va_wheres[] = "(".$t_rel_item->tableName().'.access IN ('.join(',', $pa_options['checkAccess']).'))';
 		}
-		
+
 		if ((!isset($pa_options['showDeleted']) || !$pa_options['showDeleted']) && $t_rel_item->hasField('deleted')) {
 			$va_wheres[] = "(".$t_rel_item->tableName().'.deleted = 0)';
 		}
@@ -4849,23 +4849,23 @@ if (!$vb_batch) {
 			if ($vs_label_table_name) {
 				$va_label_rel_info = $this->getAppDatamodel()->getRelationships($va_path[0], $vs_label_table_name);
 			}
-			
+
 			$va_rels = array();
-			
+
 			$vn_i = 0;
 			foreach($va_rel_info[$va_path[0]][$va_path[1]] as $va_possible_keys) {
 				$va_joins = array();
 				$va_joins[] = "INNER JOIN ".$va_path[1]." ON ".$va_path[1].'.'.$va_possible_keys[1].' = '.$va_path[0].'.'.$va_possible_keys[0]."\n";
-				
+
 				if ($vs_label_table_name) {
 					$va_joins[] = "INNER JOIN ".$vs_label_table_name." ON ".$vs_label_table_name.'.'.$va_label_rel_info[$va_path[0]][$vs_label_table_name][0][1].' = '.$va_path[0].'.'.$va_label_rel_info[$va_path[0]][$vs_label_table_name][0][0]."\n";
 				}
-				
+
 				$vs_other_field = ($vn_i == 0) ? $va_rel_info[$va_path[0]][$va_path[1]][1][1] : $va_rel_info[$va_path[0]][$va_path[1]][0][1];
 				$vs_direction =  (preg_match('!left!', $vs_other_field)) ? 'ltor' : 'rtol';
-				
+
 				$va_selects['row_id'] = $va_path[1].'.'.$vs_other_field.' AS row_id';
-				
+
 				$vs_order_by = '';
 				$vs_sort_fld = '';
 				if ($t_item_rel && $t_item_rel->hasField('rank')) {
@@ -4879,7 +4879,7 @@ if (!$vb_batch) {
 						$va_selects[] = $t_rel_item->tableName().".{$vs_sort}";
 					}
 				}
-				
+
 				$vs_sql = "
 					SELECT ".join(', ', $va_selects)."
 					FROM ".$va_path[0]."
@@ -4888,9 +4888,9 @@ if (!$vb_batch) {
 						".join(' AND ', array_merge($va_wheres, array('('.$va_path[1].'.'.$vs_other_field .' IN ('.join(',', $va_row_ids).'))')))."
 					{$vs_order_by}";
 				//print "<pre>$vs_sql</pre>\n";
-		
+
 				$qr_res = $o_db->query($vs_sql);
-				
+
 				if ($vb_uses_relationship_types) { $va_rel_types = $t_rel->getRelationshipInfo($va_path[1]); }
 				$vn_c = 0;
 				if ($vn_start > 0) { $qr_res->seek($vn_start); }
@@ -4899,36 +4899,36 @@ if (!$vb_batch) {
 					$va_row = $qr_res->getRow();
 					$vn_id = $va_row[$vs_key].'/'.$va_row['row_id'];
 					$vs_sort_key = $qr_res->get($vs_sort_fld);
-					
+
 					$vs_display_label = $va_row[$vs_label_display_field];
 					//unset($va_row[$vs_label_display_field]);
-					
+
 					if (!$va_rels[$vs_sort_key][$vn_id]) {
 						$va_rels[$vs_sort_key][$vn_id] = $qr_res->getRow();
 					}
-							
+
 					if ($vb_uses_effective_dates) {	// return effective dates as display/parse-able text
 						if ($va_rels[$vs_sort_key][$vn_id]['sdatetime'] || $va_rels[$vs_sort_key][$vn_id]['edatetime']) {
-							$o_tep->setHistoricTimestamps($va_rels[$vs_sort_key][$vn_id]['sdatetime'], $va_rels[$vs_sort_key][$vn_id]['edatetime']);	
+							$o_tep->setHistoricTimestamps($va_rels[$vs_sort_key][$vn_id]['sdatetime'], $va_rels[$vs_sort_key][$vn_id]['edatetime']);
 							$va_rels[$vs_sort_key][$vn_id]['effective_date'] = $o_tep->getText();
 						}
 					}
-					
+
 					$vn_locale_id = $qr_res->get('locale_id');
 					if (isset($pa_options['returnLocaleCodes']) && $pa_options['returnLocaleCodes']) {
 						$va_rels[$vs_v]['locale_id'] = $vn_locale_id = $t_locale->localeIDToCode($vn_locale_id);
 					}
-					
+
 					$va_rels[$vs_sort_key][$vn_id]['labels'][$vn_locale_id] =  ($vb_return_labels_as_array) ? $va_row : $vs_display_label;
 					$va_rels[$vs_sort_key][$vn_id]['_key'] = $vs_key;
 					$va_rels[$vs_sort_key][$vn_id]['direction'] = $vs_direction;
-					
+
 					$vn_c++;
 					if ($vb_uses_relationship_types) {
 						$va_rels[$vs_sort_key][$vn_id]['relationship_typename'] = ($vs_direction == 'ltor') ? $va_rel_types[$va_row['relationship_type_id']]['typename'] : $va_rel_types[$va_row['relationship_type_id']]['typename_reverse'];
 						$va_rels[$vs_sort_key][$vn_id]['relationship_type_code'] = $va_rel_types[$va_row['relationship_type_id']]['type_code'];
 					}
-					
+
 					//
 					// Return data in an arrangement more convenient for the data importer 
 					//
@@ -4952,9 +4952,9 @@ if (!$vb_batch) {
 				};
 				$vn_i++;
 			}
-			
+
 			ksort($va_rels);	// sort by sort key... we'll remove the sort key in the next loop while we add the labels
-			
+
 			// Set 'label' entry - display label in current user's locale
 			$va_sorted_rels = array();
 			foreach($va_rels as $vs_sort_key => $va_rels_by_sort_key) {
@@ -4966,7 +4966,7 @@ if (!$vb_batch) {
 				}
 			}
 			$va_rels = $va_sorted_rels;
-			
+
 			//
 			// END - self relation
 			//
@@ -4974,12 +4974,12 @@ if (!$vb_batch) {
 			//
 			// BEGIN - non-self relation
 			//
-			
-			
+
+
 			$va_wheres[] = "(".$this->tableName().'.'.$this->primaryKey()." IN (".join(",", $va_row_ids)."))";
 			$vs_cur_table = array_shift($va_path);
 			$va_joins = array();
-			
+
 			// Enforce restrict_to_lists for related list items
 			if (($vs_related_table_name == 'ca_list_items') && is_array($pa_options['restrict_to_lists'])) {
 				$va_list_ids = array();
@@ -4990,15 +4990,15 @@ if (!$vb_batch) {
 					$va_wheres[] = "(ca_list_items.list_id IN (".join(",", $va_list_ids)."))";
 				}
 			}
-			
+
 			foreach($va_path as $vs_join_table) {
 				$va_rel_info = $this->getAppDatamodel()->getRelationships($vs_cur_table, $vs_join_table);
 				$va_joins[] = 'INNER JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
 				$vs_cur_table = $vs_join_table;
 			}
-			
+
 			$va_selects[] = $this->tableName().'.'.$this->primaryKey().' AS row_id';
-			
+
 			$vs_order_by = '';
 			if ($t_item_rel && $t_item_rel->hasField('rank')) {
 				$vs_order_by = ' ORDER BY '.$t_item_rel->tableName().'.rank';
@@ -5007,7 +5007,7 @@ if (!$vb_batch) {
 					$vs_order_by = " ORDER BY ".$t_rel_item->tableName().".{$vs_sort}";
 				}
 			}
-			
+
 			$vs_sql = "
 				SELECT DISTINCT ".join(', ', $va_selects)."
 				FROM ".$this->tableName()."
@@ -5016,12 +5016,12 @@ if (!$vb_batch) {
 					".join(' AND ', $va_wheres)."
 				{$vs_order_by}
 			";
-			
+
 			//print "<pre>$vs_sql</pre>\n";
 			$qr_res = $o_db->query($vs_sql);
-			
-			if ($vb_uses_relationship_types)  { 
-				$va_rel_types = $t_rel->getRelationshipInfo($t_item_rel->tableName()); 
+
+			if ($vb_uses_relationship_types)  {
+				$va_rel_types = $t_rel->getRelationshipInfo($t_item_rel->tableName());
 				$vs_left_table = $t_item_rel->getLeftTableName();
 				$vs_direction = ($vs_left_table == $this->tableName()) ? 'ltor' : 'rtol';
 			}
@@ -5034,40 +5034,40 @@ if (!$vb_batch) {
 					$va_rels[] = $qr_res->get($t_rel_item->primaryKey());
 					continue;
 				}
-				
+
 				$va_row = $qr_res->getRow();
 				$vs_v = $va_row[$vs_key];
-				
+
 				$vs_display_label = $va_row[$vs_label_display_field];
 				//unset($va_row[$vs_label_display_field]);
-				
+
 				if (!isset($va_rels[$vs_v]) || !$va_rels[$vs_v]) {
 					$va_rels[$vs_v] = $va_row;
 				}
-				
+
 				if ($vb_uses_effective_dates) {	// return effective dates as display/parse-able text
 					if ($va_rels[$vs_v]['sdatetime'] || $va_rels[$vs_v]['edatetime']) {
 						$o_tep->setHistoricTimestamps($va_rels[$vs_v]['sdatetime'], $va_rels[$vs_v]['edatetime']);
 						$va_rels[$vs_v]['effective_date'] = $o_tep->getText();
 					}
 				}
-				
+
 				$vn_locale_id = $qr_res->get('locale_id');
 				if (isset($pa_options['returnLocaleCodes']) && $pa_options['returnLocaleCodes']) {
 					$va_rels[$vs_v]['locale_id'] = $vn_locale_id = $t_locale->localeIDToCode($vn_locale_id);
 				}
-				
+
 				$va_rels[$vs_v]['labels'][$vn_locale_id] =  ($vb_return_labels_as_array) ? $va_row : $vs_display_label;
-				
+
 				$va_rels[$vs_v]['_key'] = $vs_key;
 				$va_rels[$vs_v]['direction'] = $vs_direction;
-				
+
 				$vn_c++;
 				if ($vb_uses_relationship_types) {
 					$va_rels[$vs_v]['relationship_typename'] = ($vs_direction == 'ltor') ? $va_rel_types[$va_row['relationship_type_id']]['typename'] : $va_rel_types[$va_row['relationship_type_id']]['typename_reverse'];
 					$va_rels[$vs_v]['relationship_type_code'] = $va_rel_types[$va_row['relationship_type_id']]['type_code'];
 				}
-				
+
 				if ($pa_options['groupFields']) {
 					$vs_rel_pk = $t_rel_item->primaryKey();
 					if ($t_rel_item_label) {
@@ -5086,7 +5086,7 @@ if (!$vb_batch) {
 					unset($va_rels[$vs_v]['row_id']);
 				}
 			}
-			
+
 			if (!isset($pa_options['returnAsSearchResult']) || !$pa_options['returnAsSearchResult']) {
 				// Set 'label' entry - display label in current user's locale
 				foreach($va_rels as $vs_v => $va_rel) {
@@ -5095,12 +5095,12 @@ if (!$vb_batch) {
 					$va_rels[$vs_v]['label'] = array_shift($va_tmp2);
 				}
 			}
-			
+
 			//
 			// END - non-self relation
 			//
 		}
-		
+
 		//
 		// Sort on fields if specified
 		//
@@ -5110,20 +5110,20 @@ if (!$vb_batch) {
 			foreach($va_rels as $vn_i => $va_rel) {
 				$va_ids[] = $va_rel[$vs_rel_pk];
 			}
-			
+
 			// Handle sorting on attribute values
 			$vs_rel_pk = $t_rel_item->primaryKey();
 			foreach($va_sort_fields as $vn_x => $vs_sort_field) {
 				if ($vs_sort_field == 'relation_id') { // sort by relationship primary key
-					if ($t_item_rel) { 
+					if ($t_item_rel) {
 						$va_sort_fields[$vn_x] = $vs_sort_field = $t_item_rel->tableName().'.'.$t_item_rel->primaryKey();
-					} 
+					}
 					continue;
 				}
 				$va_tmp = explode('.', $vs_sort_field);
 				if ($va_tmp[0] == $vs_related_table_name) {
 					$qr_rel = $t_rel_item->makeSearchResult($va_tmp[0], $va_ids);
-					
+
 					$vs_table = array_shift($va_tmp);
 					$vs_key = join(".", $va_tmp);
 					while($qr_rel->nextHit()) {
@@ -5137,11 +5137,11 @@ if (!$vb_batch) {
 					}
 				}
 			}
-			
+
 			// Perform sort
 			$va_rels = caSortArrayByKeyInValue($va_rels, $va_sort_fields, $vs_sort_direction);
 		}
-		
+
 		return $va_rels;
 	}
 	# --------------------------------------------------------------------------------------------
