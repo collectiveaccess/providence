@@ -1388,9 +1388,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						break;
 					case 2:
 						$vn_seek = (int)$va_env_tmp[0];
-						$o_reader->seek(($vn_seek > 0) ? $vn_seek - 1 : $vn_seek); $o_env_reader->nextRow();
+						$o_env_reader->seek(($vn_seek > 0) ? $vn_seek - 1 : $vn_seek); $o_env_reader->nextRow();
 						$vs_env_value = $o_env_reader->get($va_env_tmp[1], array('returnAsArray' => false));
-						$o_reader->seek(0);
+						$o_env_reader->seek(0);
 						break;
 					default:
 						$vs_env_value = $va_environment_item['value'];
@@ -1430,7 +1430,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//
 			
 			$va_row = array_merge($o_reader->getRow(), $va_environment);
-			
 			//
 			// Apply rules
 			//
@@ -1654,7 +1653,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				if ($o_trans) { $t_target->setTransaction($o_trans); }
 				
 				$va_group_buf = array();
-				
+			
 				foreach($va_items as $vn_item_id => $va_item) {
 					if ($vb_use_as_single_value = caGetOption('useAsSingleValue', $va_item['settings'], false)) {
 						// Force repeating values to be imported as a single value
@@ -1721,7 +1720,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							$va_row[$va_item['source']] = $va_row[mb_strtolower($va_item['source'])] = $vm_val;
 						}
 					}
-					
+						
 					// Process each value
 					$vn_c = -1;
 					foreach($va_vals as $vn_i => $vm_val) {
@@ -2576,7 +2575,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$vm_value = $pa_environment[$pa_item['source']];
 		} else {
 			$vn_cur_pos = $po_reader->currentRow();
-			if (($vn_seek_to = ($po_reader->currentRow() + $pn_lookahead)) >= 0) {
+			if ($pn_lookahead > 0) {
+				$vn_seek_to = ($po_reader->currentRow() + $pn_lookahead);
 				$po_reader->seek($vn_seek_to);
 			}
 			if ($po_reader->valuesCanRepeat()) {
@@ -2593,7 +2593,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			} else {
 				$vm_value = trim($po_reader->get($pa_item['source']));
 			}
-			$po_reader->seek($vn_cur_pos);
+			if ($pn_lookahead > 0) {
+				$po_reader->seek($vn_cur_pos);
+			}
 		}
 		
 		$vm_value = ca_data_importers::replaceValue($vm_value, $pa_item);

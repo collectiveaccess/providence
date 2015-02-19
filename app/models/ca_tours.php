@@ -288,7 +288,7 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		if ($t_dupe = parent::duplicate($pa_options)) {
-			$vb_duplicate_subitems = isset($pa_options['duplicate_subitems']) && $pa_options['duplicate_subitems'];
+			$vb_duplicate_subitems = caGetOption('duplicate_subitems', $pa_options, false);
 		
 			if ($vb_duplicate_subitems) { 
 				// Try to dupe related ca_tour_stops rows
@@ -304,8 +304,11 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 				$va_stops = array();
 				while($qr_res->nextRow()) {
 					//$va_stops[$qr_res->get('stop_id')] = $qr_res->getRow();
-					$t_stop = new ca_tour_stops($qr_res->get('stop_id'));
+					$t_stop = new ca_tour_stops();
+					$t_stop->setTransaction($o_t);
+					$t_stop->load($qr_res->get('stop_id'));
 					if ($t_dupe_stop = $t_stop->duplicate($pa_options)) {
+						$t_dupe_stop->setTransaction($o_t);
 						$t_dupe_stop->setMode(ACCESS_WRITE);
 						$t_dupe_stop->set('tour_id', $t_dupe->getPrimaryKey());
 						$t_dupe_stop->update(); 
