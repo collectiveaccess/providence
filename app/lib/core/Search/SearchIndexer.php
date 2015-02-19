@@ -1717,6 +1717,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 					}
 				}
 				
+				// Add relationship type with "rel_type_id" alias to distinguish it from record type_id fields (eg. ca_objects.type_id);
 				if (($t_table = $this->opo_datamodel->getInstanceByTableName($vs_right_table, true)) && ($t_table->isRelationship() && $t_table->hasField('type_id'))) {
 					$va_flds["{$vs_right_table}.type_id rel_type_id"] = true;
 				}
