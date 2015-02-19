@@ -2184,41 +2184,7 @@ var methods = {
 							//
 							// Touch events
 							//
-if (view.is_touch_device() && view.hammer) {
-							view.hammer.on('panleft panright panup pandown', function(e) {
-                				var offset = $(view.canvas).offset();
-								
-								if (view.pan && view.pan.xdest) {
-									view.pan.xdest = view.pan.ydest = view.pan.leveldest = null; //cancel pan
-								}
-						
-								if (view.dragAnnotation) {
-									view.drag_annotation(view.dragAnnotation, e.deltaX, e.deltaY, e.center.x, e.center.y);
-								} else {
-									var a = view.rotation * (Math.PI/180);
-									var dx = e.deltaX;
-									var dy = e.deltaY;
-				
-									dxx = dx * Math.cos(a);
-									dxy = dy * Math.sin(a);
-					
-									dyx = dy * Math.cos((2*Math.PI) - a);
-									dyy = dx * Math.sin((2*Math.PI) - a);
-					
-									dx = dxx + dxy;
-									dy = dyx + dyy;
-					
-									layer.xpos += dx;
-									layer.ypos += dy;			
-								}
-								view.draw();
-								
-								e.preventDefault();
-								return false;
-							});
-							
-							// TODO: add pinch support
-}
+
 						}
                     },
 
@@ -2634,21 +2600,21 @@ if (view.is_touch_device() && view.hammer) {
                         var factor = Math.pow(2,layer.level);
                         
                         // convert pan destination to client coordinates
-                        var xdest_client = ((view.pan.xdest/factor) * (layer.tilesize/256)) + layer.xpos;
-                        var ydest_client = ((view.pan.ydest/factor) * (layer.tilesize/256)) + layer.ypos;
+                        var xdest_client = ((view.pan.xdest) * (layer.tilesize/256)) + layer.xpos;
+                        var ydest_client = ((view.pan.ydest) * (layer.tilesize/256)) + layer.ypos;
                         
                         var dx = (view.canvas.clientWidth/2) - xdest_client;
                         var dy = (view.canvas.clientHeight/2) - ydest_client;
                         
                         var dist = Math.sqrt((dx*dx) + (dy*dy));
-
+                        
 					 	// pan to destination
-                        if(dist >= 1) {
-                    		layer.xpos += dx / factor / 10;
-                    		layer.ypos += dy / factor / 10;
+                        if(dist >= 0.1) {
+                    		layer.xpos += dx  / 10;
+                    		layer.ypos += dy  / 10;
 						}
 
-						if(dist < 1) { // && level_dist < 0.1) {
+						if(dist < 0.1) { // && level_dist < 0.1) {
 							// reached destination
 							view.pan.xdest = view.pan.ydest = null;
 						}
