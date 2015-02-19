@@ -335,6 +335,7 @@
 			hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_edit_related_'],
 			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'ObjectLot', 'Get', $va_lookup_params); ?>',
 			types: <?php print json_encode($va_settings['restrict_to_types']); ?>,
+			bundlePreview: '<?php print strip_tags($t_instance->get($t_item->tableName())); ?>',
 <?php
 	if ($t_subject->tableName() == 'ca_objects') {
 ?>

@@ -40,6 +40,7 @@
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
 	require_once(__CA_LIB_DIR__."/core/AccessRestrictions.php");
  	require_once(__CA_LIB_DIR__.'/ca/Visualizer.php');
+ 	require_once(__CA_LIB_DIR__.'/core/Parsers/ZipFile.php');
  	require_once(__CA_LIB_DIR__.'/core/Print/PDFRenderer.php');
 	require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
  	
@@ -293,7 +294,7 @@
  			// Available sets
  			//
  			$t_set = new ca_sets();
- 			$this->view->setVar('available_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID(), 'access' => __CA_SET_EDIT_ACCESS__, 'omitCounts' => true))));
+ 			$this->view->setVar('available_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null, 'access' => __CA_SET_EDIT_ACCESS__, 'omitCounts' => true))));
 
 			if(strlen($this->ops_tablename)>0){
 				if(!$this->request->user->canDoAction("can_edit_{$this->ops_tablename}")){
@@ -993,12 +994,12 @@
  				if (is_array($pa_ids) && sizeof($pa_ids)) {
  					$ps_version = $this->request->getParameter('version', pString);
 					if ($qr_res = $t_subject->makeSearchResult($t_subject->tableName(), $pa_ids, array('filterNonPrimaryRepresentations' => false))) {
-						$vs_tmp_name = caGetTempFileName('DownloadRepresentations', 'zip');
-						$o_phar = new PharData($vs_tmp_name, null, null, Phar::ZIP);
-
-						if (!($vn_limit = ini_get('max_execution_time'))) { $vn_limit = 30; }
-						set_time_limit($vn_limit * 2);
-						
+						//$vs_tmp_name = caGetTempFileName('DownloadRepresentations', 'zip');
+						//$o_phar = new PharData($vs_tmp_name, null, null, Phar::ZIP);
+						$o_phar = new ZipFile();
+						//if (!($vn_limit = ini_get('max_execution_time'))) { $vn_limit = 30; }
+						//set_time_limit($vn_limit * 2);
+						set_time_limit(7200);
 						while($qr_res->nextHit()) {
 							if (!is_array($va_version_list = $qr_res->getMediaVersions('ca_object_representations.media')) || !in_array($ps_version, $va_version_list)) {
 								$vs_version = 'original';
@@ -1044,14 +1045,15 @@
 										}
 										break;
 								} 
-								if ($vs_path_with_embedding = caEmbedMetadataIntoRepresentation(new ca_objects($qr_res->get('ca_objects.object_id')), new ca_object_representations($vn_representation_id), $vs_version)) {
-									$vs_path = $vs_path_with_embedding;
-								}
-								$o_phar->addFile($vs_path, $vs_filename);
+								//if ($vs_path_with_embedding = caEmbedMetadataIntoRepresentation(new ca_objects($qr_res->get('ca_objects.object_id')), new ca_object_representations($vn_representation_id), $vs_version)) {
+								//	$vs_path = $vs_path_with_embedding;
+								//}
+								if (!file_exists($vs_path)) { continue; }
+								$o_phar->addFile($vs_path, $vs_filename, 0, array('compression' => 0));
 								$vn_file_count++;
 							}
 						}
-
+$vs_tmp_name = $o_phar->output(ZIPFILE_FILEPATH);
 						$this->view->setVar('tmp_file', $vs_tmp_name);
 						$this->view->setVar('download_name', 'media_for_'.mb_substr(preg_replace('![^A-Za-z0-9]+!u', '_', $this->getCriteriaForDisplay()), 0, 20).'.zip');
 						
@@ -1106,7 +1108,7 @@
  			// Available sets
  			//
  			$t_set = new ca_sets();
- 			$this->view->setVar('available_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => $this->request->getUserID()))));
+ 			$this->view->setVar('available_sets', caExtractValuesByUserLocale($t_set->getSets(array('table' => $this->ops_tablename, 'user_id' => !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null))));
 
 			$this->view->setVar('last_search', $this->opo_result_context->getSearchExpression());
  			

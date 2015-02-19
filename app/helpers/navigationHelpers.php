@@ -371,13 +371,19 @@
 		$pb_prevent_duplicate_submits = (isset($pa_options['preventDuplicateSubmits']) && $pa_options['preventDuplicateSubmits']) ? true : false;
 		
 		$vs_graphics_path = (isset($pa_options['graphicsPath']) && $pa_options['graphicsPath']) ? $pa_options['graphicsPath'] : $po_request->getThemeUrlPath()."/graphics";
-		
+
 		$vs_classname = (!$pb_no_background) ? 'form-button' : '';
+		$vs_id = (string) time();
+
+		$vs_extra = '';
+		if(caGetOption('isSaveAndReturn', $pa_options)) {
+			$vs_extra = "jQuery(\"#isSaveAndReturn\").val(\"1\");";
+		}
 		
 		if ($pb_prevent_duplicate_submits) {
-			$vs_button = "<a href='#' onclick='jQuery(\".caSubmit{$ps_id}\").fadeTo(\"fast\", 0.5).attr(\"onclick\", null); jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname} caSubmit{$ps_id}'>";
+			$vs_button = "<a href='#' onclick='$vs_extra jQuery(\".caSubmit{$ps_id}\").fadeTo(\"fast\", 0.5).attr(\"onclick\", null); jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname} caSubmit{$ps_id} {$vs_id}'>";
 		} else {
-			$vs_button = "<a href='#' onclick='jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname}'>";		
+			$vs_button = "<a href='#' onclick='$vs_extra jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname} {$vs_id}'>";
 		}
 		
 		if (!$pb_no_background) { 
@@ -414,7 +420,7 @@
 		// We don't actually display this button or use it to submit the form; the form-button output above does that.
 		// Rather, this <input> tag is only included to force browsers to support submit-on-return-key
 		$vs_button .= "<div style='position: absolute; top: 0px; left:-5000px;'><input type='submit'/></div>";
-		
+
 		return $vs_button;
 	}
 	# ------------------------------------------------------------------------------------------------
