@@ -413,8 +413,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						'description' => $o_reader->getDescription(),
 						'title' => $o_reader->getTitle(),
 						'inputType' => $o_reader->getInputType(),
-						'formats' => $va_formats,
-						'hasMultipleDatasets' => $o_reader->hasMultipleDatasets()
+						'hasMultipleDatasets' => $o_reader->hasMultipleDatasets(),
+						'formats' => $va_formats
 					);
 				}
 			}
@@ -1173,6 +1173,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 *		forceImportForPrimaryKeys = list of primary key ids to force mapped source data into. The number of keys passed should equal or exceed the number of rows in the source data. [Default is empty] 
 	 *		transaction = transaction to perform import within. Will not be used if noTransaction option is set. [Default is to create a new transaction]
 	 *		noTransaction = don't wrap the import in a transaction. [Default is false]
+	 *		importAllDatasets = for data formats (such as Excel/XLSX) that support multiple data sets in a single file (worksheets in Excel), indicated that all data sets should be imported; otherwise only the default data set is imported [Default=false]
 	 */
 	static public function importDataFromSource($ps_source, $ps_mapping, $pa_options=null) {
 		ca_data_importers::$s_num_import_errors = 0;
@@ -1239,6 +1240,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		$o_dm = $t_mapping->getAppDatamodel();
 		
+		$vb_import_all_datasets = caGetOption('importAllDatasets', $pa_options, false);
 		
 		$o_progress->start(_t('Reading %1', $ps_source), array('window' => $r_progress));
 		
@@ -1253,13 +1255,21 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			if ($o_trans) { $o_trans->rollback(); }
 			return false;
 		}
-		if (!$o_reader->read($ps_source, array('basePath' => $t_mapping->getSetting('basePath')))) {
+		
+		$va_reader_opts = array('basePath' => $t_mapping->getSetting('basePath'));
+		
+		if (!$o_reader->read($ps_source, $va_reader_opts)) {
 			ca_data_importers::logImportError(_t("Could not read source %1 (format=%2)", $ps_source, $ps_format), $va_log_import_error_opts);
 			if ($o_trans) { $o_trans->rollback(); }
 			return false;
 		}
 		
 		$o_log->logDebug(_t('Finished reading input source at %1 seconds', $t->getTime(4)));
+		
+	$vn_dataset_count = $vb_import_all_datasets ? (int)$o_reader->getDatasetCount() : 1;
+
+	for($vn_dataset=0; $vn_dataset < $vn_dataset_count; $vn_dataset++) {
+		if (!$o_reader->setCurrentDataset($vn_dataset)) { continue; }
 		
 		$vn_num_items = $o_reader->numRows();
 		$o_log->logDebug(_t('Found %1 rows in input source', $vn_num_items));
@@ -1378,9 +1388,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		if (is_array($va_environment_config = $t_mapping->getEnvironment())) {
 			foreach($va_environment_config as $vn_i => $va_environment_item) {
 				$va_env_tmp = explode("|", $va_environment_item['value']);
-				
+			
 				if (!($o_env_reader = $t_mapping->getDataReader($ps_source, $ps_format))) { break; }
 				if(!$o_env_reader->read($ps_source, array('basePath' => ''))) { break; }
+				$o_env_reader->setCurrentDataset($vn_dataset);
 				$o_env_reader->nextRow();
 				switch(sizeof($va_env_tmp)) {
 					case 1:
@@ -1388,9 +1399,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						break;
 					case 2:
 						$vn_seek = (int)$va_env_tmp[0];
-						$o_reader->seek(($vn_seek > 0) ? $vn_seek - 1 : $vn_seek); $o_env_reader->nextRow();
+						$o_env_reader->seek($vn_seek); 
 						$vs_env_value = $o_env_reader->get($va_env_tmp[1], array('returnAsArray' => false));
-						$o_reader->seek(0);
+						$o_env_reader->seek(0);
 						break;
 					default:
 						$vs_env_value = $va_environment_item['value'];
@@ -1654,7 +1665,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				if ($o_trans) { $t_target->setTransaction($o_trans); }
 				
 				$va_group_buf = array();
-				
 				foreach($va_items as $vn_item_id => $va_item) {
 					if ($vb_use_as_single_value = caGetOption('useAsSingleValue', $va_item['settings'], false)) {
 						// Force repeating values to be imported as a single value
@@ -1664,7 +1674,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					}
 					
 					if (!sizeof($va_vals)) { $va_vals = array(0 => null); }	// consider missing values equivalent to blanks
-					
+				
 					// Do value conversions
 					foreach($va_vals as $vn_i => $vm_val) {
 						// Evaluate skip-if-empty options before setting default value, addings prefix/suffix or formatting with templates
@@ -1747,6 +1757,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							$o_log->logInfo(_t('[%1] Skipped row %2 because value for %3 in group %4 is not in list of values', $vs_idno, $vn_row, $vs_item_terminal, $vn_group_id, $vm_val));
 							continue(4);
 						}
+						
 						if (isset($va_item['settings']['skipGroupIfExpression']) && strlen(trim($va_item['settings']['skipGroupIfExpression']))) {
 							if($vm_ret = ExpressionParser::evaluate($va_item['settings']['skipGroupIfExpression'], $va_row)) {
 								$o_log->logInfo(_t('[%1] Skipped group %2 because expression %3 is true', $vs_idno, $vn_group_id, $va_item['settings']['skipGroupIfExpression']));
@@ -1862,7 +1873,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$vn_c++;
 								}
 						
-								$vn_row++;
 								continue;	// Don't add "regular" value below
 							}
 						}
@@ -1932,10 +1942,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$va_content_tree["related.{$vs_subject_table}"] = $va_self_related_content;
 				}
 			}
+			
 
-			$vn_row++;
-
-			$o_log->logDebug(_t('Finished building content tree for %1 at %2 seconds', $vs_idno, $t->getTime(4)));
+			$o_log->logDebug(_t('Finished building content tree for %1 at %2 seconds [%3]', $vs_idno, $t->getTime(4), $vn_row));
 			$o_log->logDebug(_t("Content tree is\n%1", print_R($va_content_tree, true)));
 			//
 			// Process data in subject record
@@ -1943,7 +1952,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//print_r($va_content_tree);
 			//die("END\n\n");
 			//continue;
-			if (!($opa_app_plugin_manager->hookDataImportContentTree(array('mapping' => $t_mapping, 'subject' => &$t_subject,  'content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'type_id' => &$vs_type, 'transaction' => &$o_trans, 'log' => &$o_log, 'reader' => $o_reader, 'environment' => $va_environment,'importEvent' => $o_event, 'importEventSource' => $vn_row)))) {
+			if (!($opa_app_plugin_manager->hookDataImportContentTree(array('mapping' => $t_mapping, 'content_tree' => &$va_content_tree, 'idno' => &$vs_idno, 'type_id' => &$vs_type, 'transaction' => &$o_trans, 'log' => &$o_log, 'reader' => $o_reader, 'environment' => $va_environment,'importEvent' => $o_event, 'importEventSource' => $vn_row)))) {
 				continue;
 			}
 			
@@ -2504,7 +2513,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_SUCCESS__, _t('Imported %1', $vs_idno));
 			ca_data_importers::$s_num_records_processed++;
 		}
-		
+	}
+	
 		$o_log->logInfo(_t('Import of %1 completed using mapping %2: %3 imported/%4 skipped/%5 errors', $ps_source, $t_mapping->get('importer_code'), ca_data_importers::$s_num_records_processed, ca_data_importers::$s_num_records_skipped, ca_data_importers::$s_num_import_errors));
 		
 		//if ($vb_show_cli_progress_bar) {
@@ -2568,7 +2578,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$pb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
 		$pa_environment = caGetOption('environment', $pa_options, array(), array('castTo' => 'array'));
 		$ps_delimiter = caGetOption('delimiter', $pa_options, ';');
-		$pn_lookahead = caGetOption('lookahead', $pa_options, 0);
+		$pn_lookahead = caGetOption('lookahead', $pa_options, 0, array('castTo' => 'int'));
 		
 		if (preg_match('!^_CONSTANT_:[^:]+:(.*)$!', $pa_item['source'], $va_matches)) {
 			$vm_value = $va_matches[1];
@@ -2576,8 +2586,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$vm_value = $pa_environment[$pa_item['source']];
 		} else {
 			$vn_cur_pos = $po_reader->currentRow();
-			if (($vn_seek_to = ($po_reader->currentRow() + $pn_lookahead)) >= 0) {
+			$vb_did_seek = false;
+			if (($pn_lookahead !== 0) && (($vn_seek_to = ($po_reader->currentRow() + $pn_lookahead)) >= 0)) {
 				$po_reader->seek($vn_seek_to);
+				$vb_did_seek = true;
 			}
 			if ($po_reader->valuesCanRepeat()) {
 				$vm_value = $po_reader->get($pa_item['source'], array('returnAsArray' => true));
@@ -2593,7 +2605,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			} else {
 				$vm_value = trim($po_reader->get($pa_item['source']));
 			}
-			$po_reader->seek($vn_cur_pos);
+			
+			if ($vb_did_seek) { $po_reader->seek($vn_cur_pos); }
 		}
 		
 		$vm_value = ca_data_importers::replaceValue($vm_value, $pa_item);
