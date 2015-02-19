@@ -95,11 +95,11 @@
 		public static function getDataReaderInstance($ps_reader, $pa_options=null) {
 			DataReaderManager::initDataReaders();
 			if (isset(DataReaderManager::$s_data_reader_instances[$ps_reader]) && DataReaderManager::$s_data_reader_instances[$ps_reader]) {
-				if (caGetOption('noCache', $pa_options, false)) {
+				//if (caGetOption('noCache', $pa_options, false)) {
 					$vs_classname = get_class(DataReaderManager::$s_data_reader_instances[$ps_reader]);
 					return new $vs_classname;
-				}
-				return DataReaderManager::$s_data_reader_instances[$ps_reader];
+				//}
+				//return DataReaderManager::$s_data_reader_instances[$ps_reader];
 			}
 			return null;
 		}
