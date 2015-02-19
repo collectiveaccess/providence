@@ -5105,38 +5105,40 @@ if (!$vb_batch) {
 
 		// Apply restrictToBundleValues
 		$va_filters = caGetOption('restrictToBundleValues', $pa_options, array());
-		foreach($va_rels as $vn_pk => $va_related_item) {
-			foreach($va_filters as $vs_filter => $va_filter_vals) {
-				if(!$vs_filter) { continue; }
-				if (!is_array($va_filter_vals)) { $va_filter_vals = array($va_filter_vals); }
+		if(is_array($va_filters) && (sizeof($va_filters)>0)) {
+			foreach($va_rels as $vn_pk => $va_related_item) {
+				foreach($va_filters as $vs_filter => $va_filter_vals) {
+					if(!$vs_filter) { continue; }
+					if (!is_array($va_filter_vals)) { $va_filter_vals = array($va_filter_vals); }
 
-				foreach($va_filter_vals as $vn_index => $vs_filter_val) {
-					// is value a list attribute idno?
-					$va_tmp = explode('.',$vs_filter);
-					$vs_element = array_pop($va_tmp);
-					if (!is_numeric($vs_filter_val) && (($t_element = $t_rel_item->_getElementInstance($vs_element)) && ($t_element->get('datatype') == 3))) {
-						$va_filter_vals[$vn_index] = caGetListItemID($t_element->get('list_id'), $vs_filter_val);
+					foreach($va_filter_vals as $vn_index => $vs_filter_val) {
+						// is value a list attribute idno?
+						$va_tmp = explode('.',$vs_filter);
+						$vs_element = array_pop($va_tmp);
+						if (!is_numeric($vs_filter_val) && (($t_element = $t_rel_item->_getElementInstance($vs_element)) && ($t_element->get('datatype') == 3))) {
+							$va_filter_vals[$vn_index] = caGetListItemID($t_element->get('list_id'), $vs_filter_val);
+						}
 					}
-				}
 
-				$t_rel_item->load($va_related_item[$t_rel_item->primaryKey()]);
-				$va_filter_values = $this->get($vs_filter, array('returnAsArray' => true, 'alwaysReturnItemID' => true));
+					$t_rel_item->load($va_related_item[$t_rel_item->primaryKey()]);
+					$va_filter_values = $this->get($vs_filter, array('returnAsArray' => true, 'alwaysReturnItemID' => true));
 
-				$vb_keep = false;
-				if (is_array($va_filter_values)) {
-					foreach($va_filter_values as $vm_filtered_val) {
-						if(!is_array($vm_filtered_val)) { $vm_filtered_val = array($vm_filtered_val); }
+					$vb_keep = false;
+					if (is_array($va_filter_values)) {
+						foreach($va_filter_values as $vm_filtered_val) {
+							if(!is_array($vm_filtered_val)) { $vm_filtered_val = array($vm_filtered_val); }
 
-						foreach($vm_filtered_val as $vs_val) {
-							if (in_array($vs_val, $va_filter_vals)) {	// one match is enough to keep it
-								$vb_keep = true;
+							foreach($vm_filtered_val as $vs_val) {
+								if (in_array($vs_val, $va_filter_vals)) {	// one match is enough to keep it
+									$vb_keep = true;
+								}
 							}
 						}
 					}
-				}
 
-				if(!$vb_keep) {
-					unset($va_rels[$vn_pk]);
+					if(!$vb_keep) {
+						unset($va_rels[$vn_pk]);
+					}
 				}
 			}
 		}
