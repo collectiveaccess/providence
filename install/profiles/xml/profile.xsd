@@ -551,6 +551,10 @@
                           maxOccurs="unbounded"/>
             </xs:sequence>
           </xs:complexType>
+          <xs:unique name="elementCodeUnique">
+            <xs:selector xpath="metadataElement"/>
+            <xs:field xpath="@code"/>
+          </xs:unique>
         </xs:element>
 
         <!-- MD DICTIONARY -->

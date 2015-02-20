@@ -1373,7 +1373,7 @@
         <setting name="doesNotTakeLocale">1</setting>
       </settings>
       <elements>
-        <metadataElement code="dates_value" datatype="DateRange">
+        <metadataElement code="description" datatype="DateRange">
           <labels>
             <label locale="en_US">
               <name>Date</name>
