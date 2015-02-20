@@ -280,7 +280,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		if ($t_dupe = parent::duplicate($pa_options)) {
-			$vb_duplicate_subitems = isset($pa_options['duplicate_subitems']) && $pa_options['duplicate_subitems'];
+			$vb_duplicate_subitems = caGetOption('duplicate_subitems', $pa_options, false);
 		
 			if ($vb_duplicate_subitems) { 
 				// Try to dupe related ca_bundle_display_placements rows
