@@ -235,6 +235,7 @@
 <?php
 	}
 ?>
+					<li><span id="<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-count" class="hierarchyBrowserCountDisplay"></span></li>
 				</ul>
 
 				<div id="<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-explore" class="hierarchyBrowseTab">	
@@ -466,7 +467,8 @@
 				
 				initItemID: '<?php print $vn_init_id; ?>',
 				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
-				displayCurrentSelectionOnLoad: false
+				displayCurrentSelectionOnLoad: false,
+				currentLevelCountDisplay: '<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-count'
 			});
 		}
 	}
@@ -515,7 +517,8 @@
 					if (caUI.utils.showUnsavedChangesWarning) { caUI.utils.showUnsavedChangesWarning(true); }
 				},
 				
-				displayCurrentSelectionOnLoad: false
+				displayCurrentSelectionOnLoad: false,
+				currentLevelCountDisplay: '<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-count'
 			});
 		}
 	}
@@ -538,7 +541,8 @@
 				
 				initItemID: '<?php print $vn_init_id; ?>',
 				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
-				displayCurrentSelectionOnLoad: true
+				displayCurrentSelectionOnLoad: true,
+				currentLevelCountDisplay: '<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-count'
 			});
 		}
 	}
@@ -561,7 +565,8 @@
 				
 				initItemID: '<?php print $vn_init_id; ?>',
 				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
-				displayCurrentSelectionOnLoad: true
+				displayCurrentSelectionOnLoad: true,
+				currentLevelCountDisplay: '<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-count'
 			});
 		}
 	}
