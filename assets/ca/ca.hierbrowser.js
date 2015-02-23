@@ -66,7 +66,6 @@ var caUI = caUI || {};
 			currentSelectionDisplayFormat: '%1',
 			currentSelectionIDID: '',
 			allowSelection: true,
-			currentLevelCountDisplay: '',
 
 			allowExtractionFromHierarchy: false,
 			extractFromHierarchyButtonIcon: null,
@@ -362,10 +361,6 @@ var caUI = caUI || {};
 
 					var foundSelected = false;
 					jQuery('#' + newLevelDivID).data('itemCount', data['_itemCount']);
-
-					if(that.currentLevelCountDisplay.length > 0) {
-						jQuery('#' + that.currentLevelCountDisplay).html(data['_itemCount']);
-					}
 
 					for(var i in data['_sortOrder']) {
 						var item = data[data['_sortOrder'][i]];
