@@ -37,11 +37,8 @@
 	$pa_ancestors 		= $this->getVar('ancestors');
 	$pn_id 				= $this->getVar('id');
 	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$vn_items_in_hier	= (
-		sizeof($t_subject->getHierarchyChildren(null, array('idsOnly' => true))) +
-		sizeof($t_subject->getHierarchyAncestors(null, array('idsOnly' => true))) +
-		sizeof($t_subject->getHierarchySiblings(null, array('idsOnly' => true)))
-	);
+	$va_hierarchy		= $t_subject->getHierarchyAsList(null, array('idsOnly' => true));
+	if(is_array($va_hierarchy)) { $vn_items_in_hier = sizeof($va_hierarchy); }
 	
 	switch($vs_priv_table) {
 		case 'ca_relationship_types':
@@ -176,7 +173,7 @@
 	
 			if ($pn_id > 0) {
 ?>
-				<div class="hierarchyCountDisplay"><?php print _t("Number of %1 in hierarchy: %2", caGetTableDisplayName($t_subject->tableName(), true), $vn_items_in_hier); ?></div>
+				<div class="hierarchyCountDisplay"><?php if($vn_items_in_hier > 0) { print _t("Number of %1 in hierarchy: %2", caGetTableDisplayName($t_subject->tableName(), true), $vn_items_in_hier); } ?></div>
 				<div class="buttonPosition">
 					<a href="#" id="<?php print $vs_id_prefix; ?>browseToggle" class="form-button"><span class="form-button"><?php print _t('Show Hierarchy'); ?></span></a>
 				</div>			
