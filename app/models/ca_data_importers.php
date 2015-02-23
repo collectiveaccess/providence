@@ -325,6 +325,15 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'label' => _t('Existing record policy'),
 			'description' => _t('Determines how existing records are checked for and handled by the import mapping.  Pending implementation.')
 		);
+		$va_settings['dontDoImport'] = array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_FIELD,
+			'width' => 4, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Do not do import'),
+			'description' => _t('If set then the mapping will be evaluated but no rows actually imported. This can be useful when you want to run a refinery over the rows of a data set but not actually perform the primary import.')
+		);
 		$va_settings['archiveMapping'] = array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_FIELD,
@@ -1958,6 +1967,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 
 			$o_log->logDebug(_t('Finished building content tree for %1 at %2 seconds', $vs_idno, $t->getTime(4)));
 			$o_log->logDebug(_t("Content tree is\n%1", print_R($va_content_tree, true)));
+			
+			if ((bool)$t_mapping->getSetting('dontDoImport')) {
+				$o_log->logDebug(_t("Skipped import of row because dontDoImport was set"));
+				continue;
+			}
+			
 			//
 			// Process data in subject record
 			//
