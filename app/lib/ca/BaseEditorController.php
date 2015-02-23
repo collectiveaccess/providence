@@ -377,9 +377,9 @@
 					'table' => $t_subject->tableName(),
 					'key' => $vn_subject_id
 				);
+				
+				$this->getRequest()->session->setVar('save_and_return_locations', caPushToStack($va_save, $va_save_and_return, 25));
 			}
-
-			$this->getRequest()->session->setVar('save_and_return_locations', caPushToStack($va_save, $va_save_and_return, 25));
 
  			$this->render('screen_html.php');
  		}
