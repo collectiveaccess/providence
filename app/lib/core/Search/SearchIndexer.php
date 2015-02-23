@@ -330,7 +330,7 @@ class SearchIndexer extends SearchBase {
 			$va_cache_data = array();
 		}
 
-		if(false && isset($va_cache_data[$ps_subject_table]) && is_array($va_cache_data[$ps_subject_table])) { /* cache hit */
+		if(isset($va_cache_data[$ps_subject_table]) && is_array($va_cache_data[$ps_subject_table])) { /* cache hit */
 			/* return data from cache */
 			//Debug::msg("Got table dependency array for table {$ps_subject_table} from external cache");
 			return $va_cache_data[$ps_subject_table];
@@ -975,6 +975,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 				}
 				
 				foreach($va_row_ids_to_reindex_by_table as $vn_rel_tablenum => $va_rel_row_ids) {
+					$va_rel_row_ids = array_unique($va_rel_row_ids);
 					if ($t_rel = $this->opo_datamodel->getInstanceByTableNum($vn_rel_tablenum, true)) {
 						$t_rel->setDb($this->getDb());
 						if (method_exists($t_rel, "getApplicableElementCodes")) {
@@ -1000,11 +1001,13 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 						
 						$t_label = $this->opo_datamodel->getInstanceByTableNum($va_row_to_reindex['field_table_num'], true);
 						$t_label->setDb($this->getDb());
-						$va_content = $this->_genHierarchicalPath($va_row_to_reindex['field_row_id'], $va_row_to_reindex['field_name'], $t_label, array());
-				
-						$vs_content = is_array($va_content['values']) ? join(" ", $va_content['values']) : "";
 						
-						$this->opo_engine->updateIndexingInPlace($va_row_to_reindex['table_num'], $va_row_to_reindex['row_ids'], $va_row_to_reindex['field_table_num'], $va_row_to_reindex['field_num'], $va_row_to_reindex['field_row_id'], $vs_content, array_merge($va_row_to_reindex['indexing_info'], array('relationship_type_id' => $vn_rel_type_id, 'literalContent' => $va_content['path'])));
+						foreach( $va_row_to_reindex['row_ids'] as $vn_row_id) {
+							$va_content = $this->_genHierarchicalPath($vn_row_id, $va_row_to_reindex['field_name'], $t_label, array());
+							$vs_content = is_array($va_content['values']) ? join(" ", $va_content['values']) : "";
+							
+							$this->opo_engine->updateIndexingInPlace($va_row_to_reindex['table_num'], array($vn_row_id), $va_row_to_reindex['field_table_num'], $va_row_to_reindex['field_num'], $va_row_to_reindex['field_row_id'], $vs_content, array_merge($va_row_to_reindex['indexing_info'], array('relationship_type_id' => $vn_rel_type_id, 'literalContent' => $va_content['path'])));
+						}
 					} else {
 						$vs_element_code = substr($va_row_to_reindex['field_name'], 14);
 						

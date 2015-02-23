@@ -5121,7 +5121,7 @@ if (!$vb_batch) {
 					}
 
 					$t_rel_item->load($va_related_item[$t_rel_item->primaryKey()]);
-					$va_filter_values = $this->get($vs_filter, array('returnAsArray' => true, 'alwaysReturnItemID' => true));
+					$va_filter_values = $t_rel_item->get($vs_filter, array('returnAsArray' => true, 'alwaysReturnItemID' => true));
 
 					$vb_keep = false;
 					if (is_array($va_filter_values)) {

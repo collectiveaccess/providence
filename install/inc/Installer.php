@@ -613,7 +613,12 @@ class Installer {
 
 		$t_lists = new ca_lists();
 
-		$t_md_element = ca_metadata_elements::getInstance($vs_element_code) ? ca_metadata_elements::getInstance($vs_element_code) : new ca_metadata_elements();
+		if($this->opb_updating) {
+			$t_md_element = ca_metadata_elements::getInstance($vs_element_code) ? ca_metadata_elements::getInstance($vs_element_code) : new ca_metadata_elements();
+		} else {
+			$t_md_element = new ca_metadata_elements();
+		}
+
 		$t_md_element->setMode(ACCESS_WRITE);
 		$t_md_element->set('element_code', $vs_element_code);
 		$t_md_element->set('parent_id', $pn_parent_id);
@@ -630,7 +635,7 @@ class Installer {
 		$t_md_element->set('list_id', $vn_list_id);
 		$this->_processSettings($t_md_element, $po_element->settings);
 
-		if($t_md_element->getPrimaryKey()){
+		if($t_md_element->getPrimaryKey()) {
 			$t_md_element->update();
 		}else{
 			$t_md_element->insert();

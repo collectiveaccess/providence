@@ -2965,6 +2965,10 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		}
 		
 		// Transform links
+		if($ps_resolve_links_using != $ps_tablename) {
+			$pa_options['addRelParameter'] = true;
+		}
+
 		$va_proc_templates = caCreateLinksFromText($va_proc_templates, $ps_resolve_links_using, ($ps_resolve_links_using != $ps_tablename) ? $va_resolve_links_using_row_ids : $pa_row_ids, null, null, $pa_options);
 		
 		// Kill any lingering tags (just in case)
@@ -3508,8 +3512,10 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 	 * @param string $ps_table_name The name of the table/record to which the links refer
 	 * @param array $pa_row_ids Array of row_ids to link to. Values must correspond by index with those in $pa_text
 	 * @param string $ps_class Optional CSS class to apply to links
+	 * @param string $ps_target
 	 * @param array $pa_options Supported options are:
 	 *		requireLinkTags = if set then links are only added when explicitly defined with <l> tags. Default is to make the entire text a link in the absence of <l> tags.
+	 * 		addRelParameter =
 	 *
 	 * @return array A list of HTML links
 	 */
@@ -3518,6 +3524,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		if (__CA_APP_TYPE__ == 'PAWTUCKET') {
 			$o_config = Configuration::load();
 		}
+
+		$pb_add_rel = caGetOption('addRelParameter', $pa_options, false);
 		
 		$vb_can_handle_target = false;
 		if ($ps_target) {
@@ -3569,7 +3577,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 					} else {
 						switch(__CA_APP_TYPE__) {
 							case 'PROVIDENCE':
-								$vs_link_text= caEditorLink($g_request, $va_l['content'], $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
+								$vs_link_text= caEditorLink($g_request, $va_l['content'], $ps_class, $ps_table_name, $pa_row_ids[$vn_i], ($pb_add_rel ? array('rel' => true) : array()));
 								break;
 							case 'PAWTUCKET':
 								$vs_link_text= caDetailLink($g_request, $va_l['content'], $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);

@@ -394,6 +394,13 @@
           <xs:attribute name="idno" type="codeType" use="required"/>
           <xs:attribute name="default" type="booleanType" use="required"/>
         </xs:complexType>
+
+        <!-- placement codes must be unique inside a screen -->
+        <xs:unique name="placementCodeUnique">
+          <xs:selector xpath=".//placement"/>
+          <xs:field xpath="@code"/>
+        </xs:unique>
+
       </xs:element>
     </xs:sequence>
   </xs:complexType>
@@ -1030,6 +1037,13 @@
       <xs:attribute name="base" type="xs:string" use="optional"/>
       <xs:attribute name="infoUrl" type="xs:anyURI" use="optional"/>
     </xs:complexType>
+
+    <!-- UNIQUENESS CONSTRAINTS ON CERTAIN ATTRIBUTES -->
+    <xs:unique name="elementCodeUnique">
+      <xs:selector xpath=".//metadataElement"/>
+      <xs:field xpath="@code"/>
+    </xs:unique>
+
   </xs:element>
 
 </xs:schema>

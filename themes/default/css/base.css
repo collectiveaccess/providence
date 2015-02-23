@@ -3449,6 +3449,10 @@ a.exploreSelected {
     font-style: italic;
 }
 
+.hierarchyBrowserCountDisplay {
+    /* @todo */
+}
+
 /*** hierarchy navigation on editor pages ***/
 .hierNav {
     padding:10px;

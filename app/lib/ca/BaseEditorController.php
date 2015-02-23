@@ -354,7 +354,11 @@
 					} while (($va_pop['table'] == $t_subject->tableName()) && ($va_pop['key'] == $vn_subject_id));
 
 					if(sizeof($va_save_and_return)>0) {
-						$this->getResponse()->setRedirect($va_pop['url_path']);
+						if(isset($va_pop['url_path']) && (strlen($va_pop['url_path']) > 0)) {
+							$this->getResponse()->setRedirect($va_pop['url_path']);
+						} else {
+							$this->getResponse()->setRedirect(caEditorUrl($this->getRequest(), $va_pop['table'], $va_pop['key']));
+						}
 						return;
 					}
 				}
@@ -363,6 +367,20 @@
  			if (method_exists($this, "postSave")) {
  				$this->postSave($t_subject, $vb_is_insert);
  			}
+
+			// if this is an insert, save where we are in session for "Save and return" button
+			if($vb_is_insert) {
+				$va_save_and_return = $this->getRequest()->session->getVar('save_and_return_locations');
+				if(!is_array($va_save_and_return)) { $va_save_and_return = array(); }
+
+				$va_save = array(
+					'table' => $t_subject->tableName(),
+					'key' => $vn_subject_id
+				);
+			}
+
+			$this->getRequest()->session->setVar('save_and_return_locations', caPushToStack($va_save, $va_save_and_return, 25));
+
  			$this->render('screen_html.php');
  		}
  		# -------------------------------------------------------

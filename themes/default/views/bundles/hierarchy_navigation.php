@@ -102,6 +102,7 @@
 			<div  id="<?php print $vs_id_prefix; ?>HierarchyBrowserTabs">
 				<ul>
 						<li><a href="#<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-explore" onclick='_init<?php print $vs_id_prefix; ?>ExploreHierarchyBrowser();'><span>Explore</span></a></li>
+						<li><span id="<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-count" class="hierarchyBrowserCountDisplay"></span></li>
 				</ul>
 		
 				<div id="<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-explore" class="<?php print (isset($pa_bundle_settings['hierarchy_browse_tab_class']) && $pa_bundle_settings['hierarchy_browse_tab_class']) ? $pa_bundle_settings['hierarchy_browse_tab_class'] : "hierarchyBrowseTab"; ?>">	
@@ -136,7 +137,8 @@
 				editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
 				disabledButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__); ?>",
 				
-				currentSelectionDisplayID: 'browseCurrentSelection'
+				currentSelectionDisplayID: 'browseCurrentSelection',
+				currentLevelCountDisplay: '<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-count'
 			});
 			
 			jQuery("#<?php print $vs_id_prefix; ?>browseToggle").click(function(e, opts) {

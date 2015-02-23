@@ -1749,13 +1749,29 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							$o_log->logInfo(_t('[%1] Skipped row %2 because of type restriction', $vs_idno, $vn_row));
 							continue(4);
 						}
+						
+						if ($va_item['settings']['skipRowIfValue'] && !is_array($va_item['settings']['skipRowIfValue'])) { $va_item['settings']['skipRowIfValue'] = array($va_item['settings']['skipRowIfValue']); }
 						if (isset($va_item['settings']['skipRowIfValue']) && is_array($va_item['settings']['skipRowIfValue']) && strlen($vm_val) && in_array($vm_val, $va_item['settings']['skipRowIfValue'])) {
-							$o_log->logInfo(_t('[%1] Skipped row %2 because value for %3 in group %4 matches value %5', $vs_idno, $vn_row, $vs_item_terminal, $vn_group_id));
+							$o_log->logInfo(_t('[%1] Skipped row %2 because value for %3 in group %4 matches value %5', $vs_idno, $vn_row, $vs_item_terminal, $vn_group_id, $vm_val));
 							continue(4);
 						}
+						
+						if ($va_item['settings']['skipRowIfNotValue'] && !is_array($va_item['settings']['skipRowIfNotValue'])) { $va_item['settings']['skipRowIfNotValue'] = array($va_item['settings']['skipRowIfNotValue']); }
 						if (isset($va_item['settings']['skipRowIfNotValue']) && is_array($va_item['settings']['skipRowIfNotValue']) && strlen($vm_val) && !in_array($vm_val, $va_item['settings']['skipRowIfNotValue'])) {
 							$o_log->logInfo(_t('[%1] Skipped row %2 because value for %3 in group %4 is not in list of values', $vs_idno, $vn_row, $vs_item_terminal, $vn_group_id, $vm_val));
 							continue(4);
+						}
+
+						if ($va_item['settings']['skipIfValue'] && !is_array($va_item['settings']['skipIfValue'])) { $va_item['settings']['skipIfValue'] = array($va_item['settings']['skipIfValue']); }
+						if (isset($va_item['settings']['skipIfValue']) && is_array($va_item['settings']['skipIfValue']) && strlen($vm_val) && in_array($vm_val, $va_item['settings']['skipIfValue'])) {
+							$o_log->logInfo(_t('[%1] Skipped mapping %2 because value for %3 matches value %4', $vs_idno, $vn_row, $vs_item_terminal, $vm_val));
+							continue(2);
+						}
+						
+						if ($va_item['settings']['skipIfNotValue'] && !is_array($va_item['settings']['skipIfNotValue'])) { $va_item['settings']['skipIfNotValue'] = array($va_item['settings']['skipIfNotValue']); }
+						if (isset($va_item['settings']['skipIfNotValue']) && is_array($va_item['settings']['skipIfNotValue']) && strlen($vm_val) && !in_array($vm_val, $va_item['settings']['skipIfNotValue'])) {
+							$o_log->logInfo(_t('[%1] Skipped mapping %2 because value %4 for %3 is not in list of values', $vs_idno, $vn_row, $vs_item_terminal, $vm_val));
+							continue(2);
 						}
 						
 						if (isset($va_item['settings']['skipGroupIfExpression']) && strlen(trim($va_item['settings']['skipGroupIfExpression']))) {
@@ -1764,14 +1780,19 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								continue(3);
 							}
 						}
+						
+						if ($va_item['settings']['skipGroupIfValue'] && !is_array($va_item['settings']['skipGroupIfValue'])) { $va_item['settings']['skipGroupIfValue'] = array($va_item['settings']['skipGroupIfValue']); }
 						if (isset($va_item['settings']['skipGroupIfValue']) && is_array($va_item['settings']['skipGroupIfValue']) && strlen($vm_val) && in_array($vm_val, $va_item['settings']['skipGroupIfValue'])) {
 							$o_log->logInfo(_t('[%1] Skipped group %2 because value for %3 matches value %4', $vs_idno, $vn_group_id, $vs_item_terminal, $vm_val));
 							continue(3);
 						}
+						
+						if ($va_item['settings']['skipGroupIfNotValue'] && !is_array($va_item['settings']['skipGroupIfNotValue'])) { $va_item['settings']['skipGroupIfNotValue'] = array($va_item['settings']['skipGroupIfNotValue']); }
 						if (isset($va_item['settings']['skipGroupIfNotValue']) && is_array($va_item['settings']['skipGroupIfNotValue']) && strlen($vm_val) && !in_array($vm_val, $va_item['settings']['skipGroupIfNotValue'])) {
 							$o_log->logInfo(_t('[%1] Skipped group %2 because value for %3 matches is not in list of values', $vs_idno, $vn_group_id, $vs_item_terminal));
 							continue(3);
 						}
+						
 						if (isset($va_item['settings']['skipIfExpression']) && strlen(trim($va_item['settings']['skipIfExpression']))) {
 							if($vm_ret = ExpressionParser::evaluate($va_item['settings']['skipIfExpression'], $va_row)) {
 								$o_log->logInfo(_t('[%1] Skipped mapping because expression %2 is true', $vs_idno, $va_item['settings']['skipIfExpression']));

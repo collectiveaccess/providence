@@ -248,6 +248,24 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Skip mapping if empty'),
 			'description' => _t('Skip mapping if value for this element is empty.')
 		);
+		$va_settings['skipIfValue'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Skip mapping if value'),
+			'description' => _t('Skip mapping if value for this element is equal to the specified value(s).')
+		);
+		$va_settings['skipIfNotValue'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Skip mapping if not value'),
+			'description' => _t('Skip mapping if value for this element is not equal to the specified value(s).')
+		);
 		$va_settings['skipGroupIfValue'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -551,4 +569,3 @@ class ca_data_importer_items extends BaseModel {
 	}
 	# ------------------------------------------------------
 }
-?>
