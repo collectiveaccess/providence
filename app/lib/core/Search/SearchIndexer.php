@@ -1182,7 +1182,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 					// we are deleting a container so cleanup existing sub-values
 					if (is_array($va_sub_elements = $this->opo_metadata_element->getElementsInSet($pm_element_code_or_id))) {
 						foreach($va_sub_elements as $vn_i => $va_element_info) {
-							$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $pn_row_id, '', $pa_data);
+							$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$va_element_info['element_id'], $pn_row_id, '', $pa_data);
 						}
 					}
 				}
@@ -1253,19 +1253,24 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 				$va_attributes = $pt_subject->getAttributesByElement($pm_element_code_or_id, array('row_id' => $pn_row_id));
 				if (!is_array($va_attributes)) { $va_attributes = array(); }
 				
-				foreach($va_attributes as $vo_attribute) {
-					foreach($vo_attribute->getValues() as $vo_value) {
-						//if the field is a daterange type get content from start and end fields
-						$va_field_list = $pt_subject->getFieldsArray();
-						if(in_array($va_field_list[$vs_field]['FIELD_TYPE'],array(FT_DATERANGE,FT_HISTORIC_DATERANGE))) {
-							$start_field = $va_field_list[$vs_field]['START'];
-							$end_field = $va_field_list[$vs_field]['END'];
-							$vs_content = $pa_field_data[$start_field] . " - " .$pa_field_data[$end_field];
-						} else {
-							$vs_content = $vo_value->getDisplayValue();
+				if(sizeof($va_attributes) > 0) {
+					foreach($va_attributes as $vo_attribute) {
+						foreach($vo_attribute->getValues() as $vo_value) {
+							//if the field is a daterange type get content from start and end fields
+							$va_field_list = $pt_subject->getFieldsArray();
+							if(in_array($va_field_list[$vs_field]['FIELD_TYPE'],array(FT_DATERANGE,FT_HISTORIC_DATERANGE))) {
+								$start_field = $va_field_list[$vs_field]['START'];
+								$end_field = $va_field_list[$vs_field]['END'];
+								$vs_content = $pa_field_data[$start_field] . " - " .$pa_field_data[$end_field];
+							} else {
+								$vs_content = $vo_value->getDisplayValue();
+							}
+							$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $pn_row_id, $vs_content, $pa_data);
 						}
-						$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $pn_row_id, $vs_content, $pa_data);
 					}
+				} else {
+					// Delete indexing
+					$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $pn_row_id, '', $pa_data);
 				}
 				
 				$vs_subject_pk = $pt_subject->primaryKey();
