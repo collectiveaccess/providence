@@ -3450,7 +3450,12 @@ a.exploreSelected {
 }
 
 .hierarchyCountDisplay {
-    /* @todo */
+    text-align:right;
+    font-style:italic;
+    color:#999999;
+    font-family:helvetica, sans-serif;
+    font-size:11px;
+    margin-top:-8px;
 }
 
 /*** hierarchy navigation on editor pages ***/
