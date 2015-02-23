@@ -34,6 +34,11 @@
 	$pn_id 				= $this->getVar('id');
 	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$va_lookup_urls 	= caJSONLookupServiceUrl($this->request, $t_subject->tableName(), array('noInline' => 1));
+	$vn_items_in_hier	= (
+		sizeof($t_subject->getHierarchyChildren(null, array('idsOnly' => true))) +
+		sizeof($t_subject->getHierarchyAncestors(null, array('idsOnly' => true))) +
+		sizeof($t_subject->getHierarchySiblings(null, array('idsOnly' => true)))
+	);
 	
 	$pa_bundle_settings = $this->getVar('settings');
 	
@@ -63,7 +68,8 @@
 <?php
 	if ($pn_id > 0) {
 ?>
-			<div class="buttonPosition" <?php print (isset($pa_bundle_settings['no_close_button']) && $pa_bundle_settings['no_close_button']) ? "style='display: none;'" : ""; ?>><a href="#" id="<?php print $vs_id_prefix; ?>browseToggle" class="form-button"><span class="form-button"><?php print _t('Show in browser'); ?></span></a></div>
+		<div class="hierarchyCountDisplay"><?php print _t("Number of %1 in hierarchy: %2", caGetTableDisplayName($t_subject->tableName(), true), $vn_items_in_hier); ?></div>
+		<div class="buttonPosition" <?php print (isset($pa_bundle_settings['no_close_button']) && $pa_bundle_settings['no_close_button']) ? "style='display: none;'" : ""; ?>><a href="#" id="<?php print $vs_id_prefix; ?>browseToggle" class="form-button"><span class="form-button"><?php print _t('Show in browser'); ?></span></a></div>
 <?php
 	}
 	
@@ -102,7 +108,6 @@
 			<div  id="<?php print $vs_id_prefix; ?>HierarchyBrowserTabs">
 				<ul>
 						<li><a href="#<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-explore" onclick='_init<?php print $vs_id_prefix; ?>ExploreHierarchyBrowser();'><span>Explore</span></a></li>
-						<li><span id="<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-count" class="hierarchyBrowserCountDisplay"></span></li>
 				</ul>
 		
 				<div id="<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-explore" class="<?php print (isset($pa_bundle_settings['hierarchy_browse_tab_class']) && $pa_bundle_settings['hierarchy_browse_tab_class']) ? $pa_bundle_settings['hierarchy_browse_tab_class'] : "hierarchyBrowseTab"; ?>">	
@@ -124,7 +129,7 @@
 ?>
 	<script type="text/javascript">
 		var o<?php print $vs_id_prefix; ?>HierarchyBrowser;
-		jQuery(document).ready(function() {		
+		jQuery(document).ready(function() {
 			o<?php print $vs_id_prefix; ?>HierarchyBrowser = caUI.initHierBrowser('<?php print $vs_id_prefix; ?>HierarchyBrowser', {
 				levelDataUrl: '<?php print $va_lookup_urls['levelList']; ?>',
 				initDataUrl: '<?php print $va_lookup_urls['ancestorList']; ?>',
@@ -137,8 +142,7 @@
 				editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
 				disabledButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__); ?>",
 				
-				currentSelectionDisplayID: 'browseCurrentSelection',
-				currentLevelCountDisplay: '<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-count'
+				currentSelectionDisplayID: 'browseCurrentSelection'
 			});
 			
 			jQuery("#<?php print $vs_id_prefix; ?>browseToggle").click(function(e, opts) {

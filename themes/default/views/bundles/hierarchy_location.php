@@ -37,6 +37,11 @@
 	$pa_ancestors 		= $this->getVar('ancestors');
 	$pn_id 				= $this->getVar('id');
 	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+	$vn_items_in_hier	= (
+		sizeof($t_subject->getHierarchyChildren(null, array('idsOnly' => true))) +
+		sizeof($t_subject->getHierarchyAncestors(null, array('idsOnly' => true))) +
+		sizeof($t_subject->getHierarchySiblings(null, array('idsOnly' => true)))
+	);
 	
 	switch($vs_priv_table) {
 		case 'ca_relationship_types':
@@ -171,6 +176,7 @@
 	
 			if ($pn_id > 0) {
 ?>
+				<div class="hierarchyCountDisplay"><?php print _t("Number of %1 in hierarchy: %2", caGetTableDisplayName($t_subject->tableName(), true), $vn_items_in_hier); ?></div>
 				<div class="buttonPosition">
 					<a href="#" id="<?php print $vs_id_prefix; ?>browseToggle" class="form-button"><span class="form-button"><?php print _t('Show Hierarchy'); ?></span></a>
 				</div>			
@@ -235,7 +241,6 @@
 <?php
 	}
 ?>
-					<li><span id="<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-count" class="hierarchyBrowserCountDisplay"></span></li>
 				</ul>
 
 				<div id="<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-explore" class="hierarchyBrowseTab">	
@@ -467,8 +472,7 @@
 				
 				initItemID: '<?php print $vn_init_id; ?>',
 				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
-				displayCurrentSelectionOnLoad: false,
-				currentLevelCountDisplay: '<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-count'
+				displayCurrentSelectionOnLoad: false
 			});
 		}
 	}
@@ -517,8 +521,7 @@
 					if (caUI.utils.showUnsavedChangesWarning) { caUI.utils.showUnsavedChangesWarning(true); }
 				},
 				
-				displayCurrentSelectionOnLoad: false,
-				currentLevelCountDisplay: '<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-count'
+				displayCurrentSelectionOnLoad: false
 			});
 		}
 	}
@@ -541,8 +544,7 @@
 				
 				initItemID: '<?php print $vn_init_id; ?>',
 				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
-				displayCurrentSelectionOnLoad: true,
-				currentLevelCountDisplay: '<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-count'
+				displayCurrentSelectionOnLoad: true
 			});
 		}
 	}
@@ -565,8 +567,7 @@
 				
 				initItemID: '<?php print $vn_init_id; ?>',
 				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
-				displayCurrentSelectionOnLoad: true,
-				currentLevelCountDisplay: '<?php print $vs_id_prefix; ?>HierarchyBrowserTabs-count'
+				displayCurrentSelectionOnLoad: true
 			});
 		}
 	}

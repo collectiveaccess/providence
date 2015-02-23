@@ -60,7 +60,7 @@ print $vs_control_box = caFormControlBox(
 <?php
 		print ca_data_importers::getInputFormatListAsHTMLFormElement('inputFormat', array('id' => 'caInputFormatList', 'onchange' => 'caSetBatchMetadataImportFormState(true);'));
 
-		print "<span id='caImportMultipleDatasetsContainer' class='formLabelPlain'>".caHTMLCheckboxInput('importMultipleDatasets', array('id' => 'caImportMultipleDatasets', 'value' => 1), array()).' '._t('Import all data sets')."</span>\n";
+		print "<span id='caImportAllDatasetsContainer' class='formLabelPlain'>".caHTMLCheckboxInput('importAllDatasets', array('id' => 'caImportAllDatasets', 'value' => 1), array()).' '._t('Import all data sets')."</span>\n";
 ?>	
 					</p>
 				</div>
@@ -237,9 +237,9 @@ print $vs_control_box = caFormControlBox(
 			}
 			
 			if (info['hasMultipleDatasets']) {
-				jQuery('#caImportMultipleDatasetsContainer').show(dontAnimate ? 0 : 150);
+				jQuery('#caImportAllDatasetsContainer').show(dontAnimate ? 0 : 150);
 			} else {
-				jQuery('#caImportMultipleDatasetsContainer').hide(dontAnimate ? 0 : 150);
+				jQuery('#caImportAllDatasetsContainer').hide(dontAnimate ? 0 : 150);
 			}
 		}
 			

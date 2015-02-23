@@ -3449,8 +3449,13 @@ a.exploreSelected {
     font-style: italic;
 }
 
-.hierarchyBrowserCountDisplay {
-    /* @todo */
+.hierarchyCountDisplay {
+    text-align:right;
+    font-style:italic;
+    color:#999999;
+    font-family:helvetica, sans-serif;
+    font-size:11px;
+    margin-top:-8px;
 }
 
 /*** hierarchy navigation on editor pages ***/
@@ -4196,7 +4201,7 @@ div.searchFormElementSettingsMessage {
     width:290px;
 }
 
-/ * SEARCH FORMS */
+/* SEARCH FORMS */
 
 .searchFormSelector {
     margin-bottom: 3px;
@@ -6057,7 +6062,7 @@ div.searchlight-results div.searchlight-selected {
     color: red;
 }
 
-/ * OpenLayers */
+/* OpenLayers */
 
 .olMap {
     background-color: #999999;
@@ -7110,7 +7115,7 @@ div.caLibraryTransactionListItemDueDateLabel {
 }
 
 div.caLibraryTransactionListItemWillReserve {
-	color: #cc000;
+	color: #cc0000;
 	font-size: 11px;
 	font-weight: bold;
 }

@@ -46,7 +46,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
  * More about bundle display templates here: http://docs.collectiveaccess.org/wiki/Bundle_Display_Templates
  */
 
-define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.\/]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/]+)!");
+define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.\/]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/]+[~]{1}[A-Za-z0-9]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/]+)!");
 	
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -1994,6 +1994,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		$va_tags = array();
 		if (preg_match_all(__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__, $ps_template, $va_matches)) {
 			foreach($va_matches[1] as $vn_i => $vs_possible_tag) {
+				if (strpos($vs_possible_tag, "~") !== false) { continue; }	// don't clip trailing characters when there's a tag directive specified
 				$va_matches[1][$vn_i] = rtrim($vs_possible_tag, "/.");	// remove trailing slashes and periods
 			}
 			$va_tags = $va_matches[1];
@@ -2043,14 +2044,25 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 					$vs_val = join(" ", $vs_val);
 				}
 				$vs_val = caProcessTemplateTagDirectives($vs_val, $va_tmp);
-				$ps_template = str_replace('^'.$vs_tag, $vs_val, $ps_template);
+				$ps_template = preg_replace("!\^(?={$vs_tag}[^A-Za-z0-9]+|{$vs_tag}$){$vs_tag}!", $vs_val, $ps_template);
 			}
 		}
 		return $ps_template;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Modified tag value based upon settings in supported tag directives
+	 * The directive syntax is <directive>:<directive parameters>
+	 * Supported directives include:
+	 *		LP = left pad value; parameters are in the format <padding>/<length>. Ex. LP:0/10 will left pad a string with zeros to a length of 10.
+	 *		RP = right pad value; parameters are in the format <padding>/<length>
+	 *		PREFIX = add prefix to value if not empty; parameter is the prefix text
+	 *		SUFFIX = add suffix to value if not empty;  parameter is the suffix text
 	 *
+	 * @param string $ps_value
+	 * @param array $pa_directives
+	 *
+	 * @return string
 	 */
 	function caProcessTemplateTagDirectives($ps_value, $pa_directives) {
 		if (!is_array($pa_directives) || !sizeof($pa_directives)) { return $ps_value; }
@@ -2071,6 +2083,18 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 					$vs_str = (string)$va_params[0];
 					if (($vn_len > 0) && strlen($vs_str)) {
 						$ps_value = str_pad($ps_value, $vn_len, $vs_str, STR_PAD_RIGHT);
+					}
+					break;
+				case 'PREFIX':
+				case 'PX':
+					if ((strlen($ps_value) > 0) && (strlen($va_tmp[1]))) {
+						$ps_value = $va_tmp[1].$ps_value;
+					}
+					break;
+				case 'SUFFIX':
+				case 'SX':
+					if ((strlen($ps_value) > 0) && (strlen($va_tmp[1]))) {
+						$ps_value = $ps_value.$va_tmp[1];
 					}
 					break;
 			}
