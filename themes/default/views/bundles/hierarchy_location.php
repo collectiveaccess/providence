@@ -38,9 +38,9 @@
 	$pn_id 				= $this->getVar('id');
 	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$vn_items_in_hier	= (
-		sizeof($t_subject->getHierarchyChildren(null, array('idsOnly' => true)))
-		+ 1 + // self
-		sizeof($t_subject->getHierarchyAncestors(null, array('idsOnly' => true)))
+		sizeof($t_subject->getHierarchyChildren(null, array('idsOnly' => true))) +
+		sizeof($t_subject->getHierarchyAncestors(null, array('idsOnly' => true))) +
+		sizeof($t_subject->getHierarchySiblings(null, array('idsOnly' => true)))
 	);
 	
 	switch($vs_priv_table) {

@@ -35,9 +35,9 @@
 	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$va_lookup_urls 	= caJSONLookupServiceUrl($this->request, $t_subject->tableName(), array('noInline' => 1));
 	$vn_items_in_hier	= (
-		sizeof($t_subject->getHierarchyChildren(null, array('idsOnly' => true)))
-		+ 1 + // self
-		sizeof($t_subject->getHierarchyAncestors(null, array('idsOnly' => true)))
+		sizeof($t_subject->getHierarchyChildren(null, array('idsOnly' => true))) +
+		sizeof($t_subject->getHierarchyAncestors(null, array('idsOnly' => true))) +
+		sizeof($t_subject->getHierarchySiblings(null, array('idsOnly' => true)))
 	);
 	
 	$pa_bundle_settings = $this->getVar('settings');
