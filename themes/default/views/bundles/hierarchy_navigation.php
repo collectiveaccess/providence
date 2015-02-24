@@ -139,7 +139,10 @@
 				editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
 				disabledButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__); ?>",
 				
-				currentSelectionDisplayID: 'browseCurrentSelection'
+				currentSelectionDisplayID: 'browseCurrentSelection',
+
+				autoShrink: <?php print (caGetOption('auto_shrink', $pa_bundle_settings, false) ? 'true' : 'false'); ?>,
+				autoShrinkAnimateID: '<?php print $vs_id_prefix; ?>HierarchyBrowser'
 			});
 			
 			jQuery("#<?php print $vs_id_prefix; ?>browseToggle").click(function(e, opts) {

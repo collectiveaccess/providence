@@ -74,6 +74,11 @@ var caUI = caUI || {};
 			selectOnLoad: false,
 			onSelection: null,		/* function to call whenever an item is selected; passed item_id, parent_id, name, formatted display string and type_id */
 
+			autoShrink: false,
+			autoShrinkMaxHeightPx: 180,
+			autoShrinkLineHeightBaseline: 30, 	// factor used to calculate height of the whole element (number of items * this factor = height of the browser)
+			autoShrinkAnimateID: '',
+
 			displayCurrentSelectionOnLoad: true,
 			typeMenuID: '',
 
@@ -87,6 +92,7 @@ var caUI = caUI || {};
 			levelLists: [],
 			selectedItemIDs: [],
 
+			_autoshrinkLevelLengths: [], 		// used to keep track of level lengths
 			_numOpenLoads: 0,					// number of AJAX loads pending
 			_openLoadsForLevel:[],				// counts of loads pending per-level
 			_pageLoadsForLevel:[],				// log of which pages per-level have been loaded already
@@ -346,10 +352,10 @@ var caUI = caUI || {};
 
 			var start = 0;
 			jQuery.getJSON(that.levelDataUrl, { id: id_list.join(';'), bundle: that.bundle, init: is_init ? 1 : '', root_item_id: that.selectedItemIDs[0] ? that.selectedItemIDs[0] : '', start: start * that.maxItemsPerHierarchyLevelPage, max: (that.uiStyle == 'vertical') ? 0 : that.maxItemsPerHierarchyLevelPage }, function(dataForLevels) {
+				var longestLevel = 0;
 				jQuery.each(dataForLevels, function(key, data) {
 					var tmp = key.split(":");
 					var item_id = tmp[0];
-					var start = tmp[1] ? tmp[1] : 0;
 
 					if (!itemIDsToLevelInfo[item_id]) { return; }
 					var level = itemIDsToLevelInfo[item_id]['level'];
@@ -358,6 +364,20 @@ var caUI = caUI || {};
 					var newLevelDivID = itemIDsToLevelInfo[item_id]['newLevelDivID'];
 					var newLevelListID = itemIDsToLevelInfo[item_id]['newLevelListID'];
 					var selected_item_id = itemIDsToLevelInfo[item_id]['selected_item_id'];
+
+					// keep track of level lengths
+					if(that.autoShrink) {
+						that._autoshrinkLevelLengths[level] = data['_itemCount'] * that.autoShrinkLineHeightBaseline;
+
+						// The idea below is that if you click on something in, say, level 0 of the browser and
+						// level 1 is loaded dynamically, the height of the browser should not be determined by level 2
+						// anymore, because it's outdated and won't be displayed either. So we wipe the height from the array.
+						if(!is_init) {
+							if(that._autoshrinkLevelLengths[level+1]) {
+								that._autoshrinkLevelLengths.splice(level+1, 1);
+							}
+						}
+					}
 
 					var foundSelected = false;
 					jQuery('#' + newLevelDivID).data('itemCount', data['_itemCount']);
@@ -549,6 +569,18 @@ var caUI = caUI || {};
 					}
 					that.hideIndicator(newLevelDivID);
 				});
+
+				// resize to fit items
+				if(that.autoShrink && that.autoShrinkAnimateID) {
+					var newHeight = Math.max.apply(Math, that._autoshrinkLevelLengths);
+
+					if(!newHeight || (newHeight > that.autoShrinkMaxHeightPx)) {
+						newHeight = that.autoShrinkMaxHeightPx;
+					}
+
+					jQuery('#' + that.autoShrinkAnimateID).animate({ height: newHeight + 'px'}, 500);
+				}
+
 				that.isLoadingLevel = false;
 
 				// try to load any outstanding level pages

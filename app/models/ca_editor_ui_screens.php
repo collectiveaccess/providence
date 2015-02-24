@@ -797,6 +797,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'label' => _t('Open hierarchy browser by default'),
 								'description' => _t('If checked hierarchy browser will be open when form loads.')
 							),
+							'auto_shrink' => array(
+								'formatType' => FT_NUMBER,
+								'displayType' => DT_CHECKBOXES,
+								'width' => "4", 'height' => "1",
+								'takesLocale' => false,
+								'default' => '0',
+								'label' => _t('Automatically shrink browser'),
+								'description' => _t('Check this option if you want the hierarchy browser to automatically shrink or expand based on the height of the column with the most data.')
+							),
 							'documentation_url' => array(
 								'formatType' => FT_TEXT,
 								'displayType' => DT_FIELD,
