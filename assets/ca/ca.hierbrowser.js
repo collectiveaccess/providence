@@ -559,23 +559,25 @@ var caUI = caUI || {};
 				});
 
 				// resize to fit items
-				if(that.autoShrink && that.autoShrinkAnimateID) {
+				if((that.uiStyle == 'horizontal') && that.autoShrink && that.autoShrinkAnimateID) {
 					var container = jQuery('#' + that.autoShrinkAnimateID);
-					var newHeight = 0; // start with 0 and make it bigger as needed
+					if(jQuery(container).is(":visible")) { // don't resize if the thing isn't visible
+						var newHeight = 0; // start with 0 and make it bigger as needed
 
-					// for each level
-					for(var k in that.levelLists) {
-						// if the level warrants making the container bigger, do it
-						var potentialHeight = jQuery('#' + that.levelLists[k]).height();
-						if(newHeight < potentialHeight) {
-							newHeight = potentialHeight;
+						// for each level
+						for(var k in that.levelLists) {
+							// if the level warrants making the container bigger, do it
+							var potentialHeight = jQuery('#' + that.levelLists[k]).height();
+							if(newHeight < potentialHeight) {
+								newHeight = potentialHeight;
+							}
 						}
-					}
 
-					if(newHeight > that.autoShrinkMaxHeightPx) {
-						newHeight = that.autoShrinkMaxHeightPx;
+						if(newHeight > that.autoShrinkMaxHeightPx) {
+							newHeight = that.autoShrinkMaxHeightPx;
+						}
+						container.animate({ height: newHeight + 'px'}, 500);
 					}
-					container.animate({ height: newHeight + 'px'}, 500);
 				}
 
 				that.isLoadingLevel = false;
