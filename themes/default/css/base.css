@@ -1196,15 +1196,14 @@ div.hint {
     padding: 10px;
 }
 .bundleContentPreview {
-	position:absolute;
-	right:50px;
+	text-align:left;
 	display:none;
-	font-style:italic;
-	color:#999999;
+	color:#888888;
 	font-family: helvetica, sans-serif;
 	font-weight:normal;
-	font-size:11px;
+	font-size:13px;
 	padding-top:2px;
+	padding-left:10px;
 }
 
 /* Style for labels on form fields where an error has occurred */
