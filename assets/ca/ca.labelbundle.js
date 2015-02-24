@@ -150,11 +150,7 @@ var caUI = caUI || {};
 			}
 
 			// Add bundle preview value text
-			if(this.bundlePreview.length > 1) {
-				if(this.bundlePreview.length > 30) {
-					this.bundlePreview = this.bundlePreview.substr(0,30) + ' ...';
-				}
-
+			if(this.bundlePreview.length > 0) {
 				var selector;
 				if(this.mode == 'preferred') {
 					selector = '#' + this.fieldNamePrefix + 'Labels_BundleContentPreview';
