@@ -14,10 +14,10 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
@@ -76,7 +76,6 @@ var caUI = caUI || {};
 
 			autoShrink: false,
 			autoShrinkMaxHeightPx: 180,
-			autoShrinkLineHeightBaseline: 30, 	// factor used to calculate height of the whole element (number of items * this factor = height of the browser)
 			autoShrinkAnimateID: '',
 
 			displayCurrentSelectionOnLoad: true,
@@ -89,10 +88,10 @@ var caUI = caUI || {};
 			hasChildrenIndicator: 'has_children',	/* name of key in data to use to determine if an item has children */
 			alwaysShowChildCount: true,
 
+			levelDivs: [],
 			levelLists: [],
 			selectedItemIDs: [],
 
-			_autoshrinkLevelLengths: [], 		// used to keep track of level lengths
 			_numOpenLoads: 0,					// number of AJAX loads pending
 			_openLoadsForLevel:[],				// counts of loads pending per-level
 			_pageLoadsForLevel:[],				// log of which pages per-level have been loaded already
@@ -131,6 +130,7 @@ var caUI = caUI || {};
 		//
 		that.setUpHierarchy = function(item_id) {
 			if (!item_id) { that.setUpHierarchyLevel(0, that.useAsRootID ? that.useAsRootID : 0, 1, null, true); return; }
+			that.levelDivs = [];
 			that.levelLists = [];
 			that.selectedItemIDs = [];
 			jQuery.getJSON(that.initDataUrl, { id: item_id, bundle: that.bundle}, function(data, e, x) {
@@ -175,6 +175,7 @@ var caUI = caUI || {};
 			// remove all level divs above the current one
 			while(jQuery('#hierBrowser_' + that.name + '_' + l).length > 0) {
 				jQuery('#hierBrowser_' + that.name + '_' + l).remove();
+				that.levelDivs[l] = undefined;
 				that.levelLists[l] = undefined;
 				l++;
 			}
@@ -276,7 +277,8 @@ var caUI = caUI || {};
 			that._pageLoadsForLevel[l] = [true];
 			that.queueHierarchyLevelDataLoad(level, item_id, is_init, newLevelDivID, newLevelListID, selected_item_id, 0, fetchData);
 
-			that.levelLists[level] = newLevelDivID;
+			that.levelDivs[level] = newLevelDivID;
+			that.levelLists[level] = newLevelListID;
 			return newLevelDiv;
 		}
 		// --------------------------------------------------------------------------------
@@ -364,20 +366,6 @@ var caUI = caUI || {};
 					var newLevelDivID = itemIDsToLevelInfo[item_id]['newLevelDivID'];
 					var newLevelListID = itemIDsToLevelInfo[item_id]['newLevelListID'];
 					var selected_item_id = itemIDsToLevelInfo[item_id]['selected_item_id'];
-
-					// keep track of level lengths
-					if(that.autoShrink) {
-						that._autoshrinkLevelLengths[level] = (data.length - 2) * that.autoShrinkLineHeightBaseline;
-
-						// The idea below is that if you click on something in, say, level 0 of the browser and
-						// level 1 is loaded dynamically, the height of the browser should not be determined by level 2
-						// anymore, because it's outdated and won't be displayed either. So we wipe the height from the array.
-						if(!is_init) {
-							if(that._autoshrinkLevelLengths[level+1]) {
-								that._autoshrinkLevelLengths.splice(level+1, 1);
-							}
-						}
-					}
 
 					var foundSelected = false;
 					jQuery('#' + newLevelDivID).data('itemCount', data['_itemCount']);
@@ -572,14 +560,22 @@ var caUI = caUI || {};
 
 				// resize to fit items
 				if(that.autoShrink && that.autoShrinkAnimateID) {
-					var newHeight = Math.max.apply(Math, that._autoshrinkLevelLengths);
-					if(!newHeight) { // we likely need just one line
-						newHeight = that.autoShrinkLineHeightBaseline;
+					var container = jQuery('#' + that.autoShrinkAnimateID);
+					var newHeight = 0; // start with 0 and make it bigger as needed
+
+					// for each level
+					for(var k in that.levelLists) {
+						// if the level warrants making the container bigger, do it
+						var potentialHeight = jQuery('#' + that.levelLists[k]).height();
+						if(newHeight < potentialHeight) {
+							newHeight = potentialHeight;
+						}
 					}
+
 					if(newHeight > that.autoShrinkMaxHeightPx) {
 						newHeight = that.autoShrinkMaxHeightPx;
 					}
-					jQuery('#' + that.autoShrinkAnimateID).animate({ height: newHeight + 'px'}, 500);
+					container.animate({ height: newHeight + 'px'}, 500);
 				}
 
 				that.isLoadingLevel = false;
@@ -589,7 +585,7 @@ var caUI = caUI || {};
 			});
 		}
 		// --------------------------------------------------------------------------------
-		// Updates type menu and "add" message associated with hierarchy browser based upon 
+		// Updates type menu and "add" message associated with hierarchy browser based upon
 		// current state of the hierarchy browser
 		//
 		that.updateTypeMenu = function() {
@@ -667,7 +663,7 @@ var caUI = caUI || {};
 			}
 		}
 		// --------------------------------------------------------------------------------
-		// Display spinning progress indicator in specified level <div> 
+		// Display spinning progress indicator in specified level <div>
 		//
 		// @param string newLevelDivID The ID of the <div> containing the level
 		//
@@ -695,7 +691,7 @@ var caUI = caUI || {};
 			}
 		}
 		// --------------------------------------------------------------------------------
-		// Remove spinning progress indicator from specified level <div> 
+		// Remove spinning progress indicator from specified level <div>
 		//
 		// @param string newLevelDivID The ID of the <div> containing the level
 		//
@@ -712,7 +708,7 @@ var caUI = caUI || {};
 		// Returns the number of levels that are currently displayed
 		//
 		that.numLevels = function() {
-			return that.levelLists.length;
+			return that.levelDivs.length;
 		}
 		// --------------------------------------------------------------------------------
 		// END method definitions
