@@ -561,11 +561,12 @@ var caUI = caUI || {};
 				// resize to fit items
 				if((that.uiStyle == 'horizontal') && that.autoShrink && that.autoShrinkAnimateID) {
 					var container = jQuery('#' + that.autoShrinkAnimateID);
-					if(jQuery(container).is(":visible")) { // don't resize if the thing isn't visible
+					if(jQuery(container).is(':visible')) { // don't resize if the thing isn't visible
 						var newHeight = 0; // start with 0 and make it bigger as needed
 
 						// for each level
 						for(var k in that.levelLists) {
+							if(!that.levelLists.hasOwnProperty(k)) { continue; }
 							// if the level warrants making the container bigger, do it
 							var potentialHeight = jQuery('#' + that.levelLists[k]).height();
 							if(newHeight < potentialHeight) {
