@@ -1197,13 +1197,17 @@ div.hint {
 }
 .bundleContentPreview {
 	text-align:left;
-	display:none;
+	display:inline-block;
 	color:#888888;
 	font-family: helvetica, sans-serif;
 	font-weight:normal;
 	font-size:13px;
 	padding-top:2px;
 	padding-left:10px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	width: 40%;
 }
 
 /* Style for labels on form fields where an error has occurred */
