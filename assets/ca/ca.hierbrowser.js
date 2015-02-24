@@ -367,7 +367,7 @@ var caUI = caUI || {};
 
 					// keep track of level lengths
 					if(that.autoShrink) {
-						that._autoshrinkLevelLengths[level] = data['_itemCount'] * that.autoShrinkLineHeightBaseline;
+						that._autoshrinkLevelLengths[level] = (data.length - 2) * that.autoShrinkLineHeightBaseline;
 
 						// The idea below is that if you click on something in, say, level 0 of the browser and
 						// level 1 is loaded dynamically, the height of the browser should not be determined by level 2
@@ -573,11 +573,12 @@ var caUI = caUI || {};
 				// resize to fit items
 				if(that.autoShrink && that.autoShrinkAnimateID) {
 					var newHeight = Math.max.apply(Math, that._autoshrinkLevelLengths);
-
-					if(!newHeight || (newHeight > that.autoShrinkMaxHeightPx)) {
+					if(!newHeight) { // we likely need just one line
+						newHeight = that.autoShrinkLineHeightBaseline;
+					}
+					if(newHeight > that.autoShrinkMaxHeightPx) {
 						newHeight = that.autoShrinkMaxHeightPx;
 					}
-
 					jQuery('#' + that.autoShrinkAnimateID).animate({ height: newHeight + 'px'}, 500);
 				}
 
