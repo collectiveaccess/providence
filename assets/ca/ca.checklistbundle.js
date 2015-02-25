@@ -43,7 +43,8 @@ var caUI = caUI || {};
 			minRepeats: 0,
 			maxRepeats: 65535,
 			defaultValues: {},
-			readonly: 0
+			readonly: 0,
+			bundlePreview: ''
 		}, options);
 		
 		that.showUnsavedChangesWarning = function(b) {
@@ -118,7 +119,7 @@ var caUI = caUI || {};
 			}
 
 			// Add bundle preview value text
-			if(this.bundlePreview.length > 0) {
+			if(this.hasOwnProperty('bundlePreview') && this.bundlePreview.length > 0) {
 				jQuery('#' + this.fieldNamePrefix + 'BundleContentPreview').text(this.bundlePreview);
 			}
 		}
