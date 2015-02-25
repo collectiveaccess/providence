@@ -1208,6 +1208,8 @@ div.hint {
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	width: 40%;
+	vertical-align:bottom;
+	padding-bottom:5px;
 }
 
 /* Style for labels on form fields where an error has occurred */
