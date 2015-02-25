@@ -163,7 +163,7 @@ $phpWord->addTableStyle('myOwnTableStyle', $styleTable, $styleFirstRow);
                 $textrun = $contentCell->createTextRun();
 				$textrun->addText($va_display_item['display'].' :', $styleBundleNameFont);
 				$textrun->addText(
-					html_entity_decode(strip_tags(br2nl($vo_result->get('preferred_labels'))), ENT_QUOTES | ENT_HTML5),
+					html_entity_decode(strip_tags(br2nl($vs_display_text)), ENT_QUOTES | ENT_HTML5),
 					$styleContentFont
 				);
 
