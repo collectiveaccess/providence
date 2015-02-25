@@ -517,7 +517,7 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	function caEscapeForBundlePreview($ps_text) {
-		return addslashes(strip_tags(html_entity_decode($ps_text)));
+		return preg_replace("![\n\r\t]+!", "", addslashes(strip_tags(html_entity_decode($ps_text))));
 	}
 	# ----------------------------------------
 	/**
