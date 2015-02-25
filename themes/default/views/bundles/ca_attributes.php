@@ -244,7 +244,7 @@ if (caGetOption('canMakePDFForValue', $va_element_info[$t_element->getPrimaryKey
 		minRepeats: <?php print ($vn_n = $this->getVar('min_num_repeats')) ? $vn_n : 0 ; ?>,
 		maxRepeats: <?php print ($vn_n = $this->getVar('max_num_repeats')) ? $vn_n : 65535; ?>,
 		defaultValues: <?php print json_encode($va_element_value_defaults); ?>,
-		bundlePreview: '<?php print caEscapeForBundlePreview($vs_bundle_preview); ?>',
+		bundlePreview: <?php print caEscapeForBundlePreview($vs_bundle_preview); ?>,
 		readonly: <?php print $vb_read_only ? "1" : "0"; ?>,
 		defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
 <?php	
@@ -268,7 +268,7 @@ if (caGetOption('canMakePDFForValue', $va_element_info[$t_element->getPrimaryKey
 		hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_download_control_', '<?php print $vs_id_prefix; ?>_print_control_',],
 		showOnNewIDList: ['<?php print $vs_id_prefix; ?>_upload_control_'],
 		defaultValues: <?php print json_encode($va_element_value_defaults); ?>,
-		bundlePreview: '<?php print caEscapeForBundlePreview($vs_bundle_preview); ?>',
+		bundlePreview: <?php print caEscapeForBundlePreview($vs_bundle_preview); ?>,
 		readonly: <?php print $vb_read_only ? "1" : "0"; ?>,
 		defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
 <?php
