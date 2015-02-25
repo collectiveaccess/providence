@@ -517,7 +517,7 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	function caEscapeForBundlePreview($ps_text) {
-		return json_encode(addslashes(strip_tags(html_entity_decode($ps_text))));
+		return json_encode(html_entity_decode(strip_tags($ps_text), ENT_QUOTES | ENT_HTML5));
 	}
 	# ----------------------------------------
 	/**

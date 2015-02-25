@@ -49,7 +49,7 @@
 ?>
 		<script type="text/javascript">
 			jQuery(document).ready(function() {
-				jQuery('#' + '<?php print $vs_id_prefix; ?>' + '_BundleContentPreview').text('<?php print caEscapeForBundlePreview($vs_bundle_preview); ?>');
+				jQuery('#' + '<?php print $vs_id_prefix; ?>' + '_BundleContentPreview').text(<?php print caEscapeForBundlePreview($vs_bundle_preview); ?>);
 			});
 		</script>
 <?php
