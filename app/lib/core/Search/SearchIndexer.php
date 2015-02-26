@@ -585,7 +585,8 @@ class SearchIndexer extends SearchBase {
 						$this->opo_engine->indexField($pn_subject_tablenum, 'I'.$vn_fld_num, $pn_subject_row_id, join(" ", $va_values), $va_data);
 						continue;
 					}
-					
+					// Set the content field to null
+					$pn_content = null;
 					$va_field_list = $t_subject->getFieldsArray();
 					if(in_array($va_field_list[$vs_field]['FIELD_TYPE'],array(FT_DATERANGE,FT_HISTORIC_DATERANGE))) {
 						// if the field is a daterange type get content from start and end fields
