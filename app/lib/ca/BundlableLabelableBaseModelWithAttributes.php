@@ -4705,14 +4705,12 @@ if (!$vb_batch) {
 				$vs_cur_table = $vs_join_table;
 			}
 
-			// If we're getting ca_set_items, we can't rename our primary key "row_id" because that table
-			// has a field called row_id and it's important and should be in the selected fields. Hence, this hack.
+			// If we're getting ca_set_items, we have to rename the intrinsic row_id field because the pk is named row_id below. Hence, this hack.
 			if($vs_related_table_name == 'ca_set_items') {
-				$va_selects[] = $this->tableName().'.'.$this->primaryKey();
-				$va_selects[] = 'ca_set_items.row_id';
-			} else {
-				$va_selects[] = $this->tableName().'.'.$this->primaryKey().' AS row_id';
+				$va_selects[] = 'ca_set_items.row_id AS record_id';
 			}
+
+			$va_selects[] = $this->tableName().'.'.$this->primaryKey().' AS row_id';
 
 			$vs_order_by = '';
 			if ($t_item_rel && $t_item_rel->hasField('rank')) {
@@ -5119,7 +5117,7 @@ $pa_options["display_form_field_tips"] = true;
 		if (!($t_instance = $this->getAppDatamodel()->getInstanceByTableNum($pn_table_num))) { return null; }
 	
 		$va_ids = array();
-		foreach($pa_ids as $vn_i => $vn_id) {
+		foreach($pa_ids as $vn_id) {
 			if (is_numeric($vn_id)) { 
 				$va_ids[] = $vn_id;
 			}
