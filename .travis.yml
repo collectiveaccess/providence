@@ -7,7 +7,7 @@ php:
   - 5.5
 
 env:
-  - PROFILE=dublincore
+  - PROFILE=testing
 
 install:
   # Initialise the database instance for the test
