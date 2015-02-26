@@ -613,7 +613,12 @@ class Installer {
 
 		$t_lists = new ca_lists();
 
-		$t_md_element = ca_metadata_elements::getInstance($vs_element_code) ? ca_metadata_elements::getInstance($vs_element_code) : new ca_metadata_elements();
+		if($this->opb_updating) {
+			$t_md_element = ca_metadata_elements::getInstance($vs_element_code) ? ca_metadata_elements::getInstance($vs_element_code) : new ca_metadata_elements();
+		} else {
+			$t_md_element = new ca_metadata_elements();
+		}
+
 		$t_md_element->setMode(ACCESS_WRITE);
 		$t_md_element->set('element_code', $vs_element_code);
 		$t_md_element->set('parent_id', $pn_parent_id);
@@ -630,7 +635,7 @@ class Installer {
 		$t_md_element->set('list_id', $vn_list_id);
 		$this->_processSettings($t_md_element, $po_element->settings);
 
-		if($t_md_element->getPrimaryKey()){
+		if($t_md_element->getPrimaryKey()) {
 			$t_md_element->update();
 		}else{
 			$t_md_element->insert();
@@ -801,7 +806,7 @@ class Installer {
 				), array('returnAs' => 'firstModelInstance'));
 				$t_ui_screens = $t_ui_screens ? $t_ui_screens : new ca_editor_ui_screens();
 				$t_ui_screens->setMode(ACCESS_WRITE);
-				$t_ui_screens->set("idno",$vs_screen_idno);
+				$t_ui_screens->set('idno',$vs_screen_idno);
 				$t_ui_screens->set('ui_id', $vn_ui_id);
 				$t_ui_screens->set('is_default', $vn_is_default);
 				if($t_ui_screens->getPrimaryKey()){
@@ -815,8 +820,6 @@ class Installer {
 					$this->addError("Errors inserting UI screen {$vs_screen_idno} for UI {$vs_ui_code}: ".join("; ",$t_ui_screens->getErrors()));
 					return false;
 				}
-
-				$vn_screen_id = $t_ui_screens->getPrimaryKey();
 
 				self::addLabelsFromXMLElement($t_ui_screens, $vo_screen->labels, $this->opa_locales);
 
@@ -976,9 +979,13 @@ class Installer {
 	private function processRelationshipTypesForTable($po_relationship_types, $pn_table_num, $ps_left_table, $ps_right_table, $pn_parent_id, $pa_list_item_ids){
 		$o_dm = Datamodel::load();
 
+		// nuke caches to be safe
+		ca_relationship_types::$s_relationship_type_id_cache = array();
+		ca_relationship_types::$s_relationship_type_table_cache = array();
+		ca_relationship_types::$s_relationship_type_id_to_code_cache = array();
+
 		$t_rel_type = new ca_relationship_types();
 		$t_rel_type->setMode(ACCESS_WRITE);
-
 
 		$vn_rank_default = (int)$t_rel_type->getFieldInfo('rank', 'DEFAULT');
 		foreach($po_relationship_types->children() as $vo_type) {
@@ -992,7 +999,8 @@ class Installer {
 
 			$t_rel_type->set('table_num', $pn_table_num);
 			$t_rel_type->set('type_code', $vs_type_code);
-			$t_rel_type->set("parent_id", $pn_parent_id);
+			$t_rel_type->set('parent_id', $pn_parent_id);
+			$t_rel_type->set('is_default', $vn_default ? 1 : 0);
 			
 			if ($vn_rank > 0) {
 				$t_rel_type->set("rank", $vn_rank);
@@ -1000,8 +1008,11 @@ class Installer {
 				$t_rel_type->set("rank", $vn_rank_default);
 			}
 
-			$t_rel_type->set('sub_type_left_id', null);
-			$t_rel_type->set('sub_type_right_id', null);
+			if($t_rel_type->getPrimaryKey()) {
+				$t_rel_type->update();
+			} else {
+				$t_rel_type->insert();
+			}
 
 			if (trim($vs_left_subtype_code = (string) $vo_type->subTypeLeft)) {
 				$t_obj = $o_dm->getTableInstance($ps_left_table);
@@ -1009,6 +1020,7 @@ class Installer {
 
 				if (isset($pa_list_item_ids[$vs_list_code][$vs_left_subtype_code])) {
 					$t_rel_type->set('sub_type_left_id', $pa_list_item_ids[$vs_list_code][$vs_left_subtype_code]);
+					$t_rel_type->update();
 				}
 			}
 			if (trim($vs_right_subtype_code = (string) $vo_type->subTypeRight)) {
@@ -1016,14 +1028,8 @@ class Installer {
 				$vs_list_code = $t_obj->getFieldListCode($t_obj->getTypeFieldName());
 				if (isset($pa_list_item_ids[$vs_list_code][$vs_right_subtype_code])) {
 					$t_rel_type->set('sub_type_right_id', $pa_list_item_ids[$vs_list_code][$vs_right_subtype_code]);
+					$t_rel_type->update();
 				}
-			}
-
-			$t_rel_type->set('is_default', $vn_default ? 1 : 0);
-			if($t_rel_type->getPrimaryKey()){
-				$t_rel_type->update();
-			} else {
-				$t_rel_type->insert();
 			}
 
 			if ($t_rel_type->numErrors()) {

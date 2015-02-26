@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2013 Whirl-i-Gig
+ * Copyright 2007-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -516,6 +516,10 @@ function caFileIsIncludable($ps_file) {
 		return str_replace("&amp;#", "&#", $ps_text);
 	}
 	# ----------------------------------------
+	function caEscapeForBundlePreview($ps_text) {
+		return json_encode(html_entity_decode(strip_tags($ps_text), ENT_QUOTES | ENT_HTML5));
+	}
+	# ----------------------------------------
 	/**
 	 * Return text with quotes escaped for use in a tab or comma-delimited file
 	 *
@@ -526,6 +530,9 @@ function caFileIsIncludable($ps_file) {
 		return '"'.str_replace("\"", "\"\"", $ps_text).'"';
 	}
 	# ----------------------------------------
+	/**
+	 *
+	 */
 	function caGetTempDirPath() {
 		if (function_exists('sys_get_temp_dir')) {
 			return sys_get_temp_dir();
@@ -564,6 +571,22 @@ function caFileIsIncludable($ps_file) {
 		return $vs_tmp;
 	}
 	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caMakeGetFilePath($ps_prefix=null, $ps_extension=null) {
+ 		$vs_path = caGetTempDirPath();
+
+		do {
+			$vs_file_path = $vs_path.DIRECTORY_SEPARATOR.$ps_prefix.mt_rand().getmypid().($ps_extension ? ".{$ps_extension}" : "");
+		} while (file_exists($vs_file_path));            
+
+		return $vs_file_path;
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
 	function caQuoteList($pa_list) {
 		if (!is_array($pa_list)) { return array(); }
 		$va_quoted_list = array();
@@ -1745,7 +1768,7 @@ function caFileIsIncludable($ps_file) {
 					continue;
 				}
 
-				if ((!preg_match("!^[\p{L}\p{N}\p{P}]+!", $vm_v)) || (!mb_detect_encoding($vm_v))) {
+				if ((!preg_match("!^[\p{L}\p{N}\p{P}]+$!", $vm_v)) || (!mb_detect_encoding($vm_v))) {
 					unset($pa_array[$vn_k]);
 				}
 			}
@@ -2590,5 +2613,20 @@ function caFileIsIncludable($ps_file) {
 		}
 		
 		return $vo_parsed_measurement;
+	}
+	# ----------------------------------------
+	/**
+	 * Push a value to a fixed length stack
+	 * @param $pm_val
+	 * @param $pa_stack
+	 * @param $pn_stack_max_len
+	 * @return array the stack
+	 */
+	function caPushToStack($pm_val, $pa_stack, $pn_stack_max_len) {
+		array_push($pa_stack, $pm_val);
+		if(sizeof($pa_stack) > $pn_stack_max_len) {
+			$pa_stack = array_slice($pa_stack, (sizeof($pa_stack) - $pn_stack_max_len));
+		}
+		return $pa_stack;
 	}
 	# ----------------------------------------

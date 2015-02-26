@@ -7,9 +7,6 @@ php:
   - 5.5
 
 env:
-  # Here we list the profiles that we want to test, each one will be tested, per version of PHP, in parallel
-  - PROFILE=default
-  - PROFILE=darwincore
   - PROFILE=dublincore
 
 install:

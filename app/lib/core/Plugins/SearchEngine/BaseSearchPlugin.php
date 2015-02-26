@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -57,14 +57,14 @@ abstract class BaseSearchPlugin extends WLPlug implements IWLPlugSearchEngine {
 	protected $opa_options;
 	
 	# -------------------------------------------------------
-	public function __construct() {
+	public function __construct($po_db=null) {
 		
 		$this->opo_config = Configuration::load();
 		$this->opo_search_config = Configuration::load($this->opo_config->get('search_config'));
 		$this->opo_datamodel = Datamodel::load();
 		$this->ops_encoding = $this->opo_config->get('character_set');
 		
-		$this->opo_db = new Db();
+		$this->opo_db = $po_db ? $po_db : new Db();
 		
 		$this->init();
 		parent::__construct();

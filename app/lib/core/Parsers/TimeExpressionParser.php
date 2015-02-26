@@ -3159,9 +3159,9 @@ class TimeExpressionParser {
 	 */
 	function gmgetdate($ts = null){ 
         $k = array('seconds','minutes','hours','mday', 
-                'wday','mon','year','yday','weekday','month',0); 
-        return(array_combine($k,split(":", 
-                date('s:i:G:j:w:n:Y:z:l:F:U',is_null($ts)?time():$ts)))); 
+                'wday','mon','year','yday','weekday','month',0);
+        return(array_combine($k,explode(":",
+                date('s:i:G:j:w:n:Y:z:l:F:U',is_null($ts)?time():intval($ts)))));
     } 
  	# -------------------------------------------------------------------
 }

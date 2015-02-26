@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -133,6 +133,14 @@ class SearchResult extends BaseObject {
 		$this->opo_subject_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name, true);
 	}
 	# ------------------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @param IWLPlugSearchEngineResult $po_engine_result
+	 * @param array $pa_tables
+	 * @param array $pa_options Options include:
+	 *		db = optional Db instance to use for database connectivity. If omitted a new database connection is used. If you need to have you result set access the database within a specific transaction you should pass the Db object used by the transaction here.
+	 */
 	public function init($po_engine_result, $pa_tables, $pa_options=null) {
 		
 		$this->opn_table_num = $this->opo_subject_instance->tableNum();
@@ -142,6 +150,10 @@ class SearchResult extends BaseObject {
 		
 		$this->opo_engine_result = $po_engine_result;
 		$this->opa_tables = $pa_tables;
+		
+		if ($o_db = caGetOption('db', $pa_options, null)) { 
+			$this->opo_db = $o_db;
+		}
 		
 		$this->errors = array();
 	}
@@ -724,7 +736,11 @@ class SearchResult extends BaseObject {
  	 *		allDescendants = 
  	 *
  	 *		sort = optional array of bundles to sort returned values on. Currently only supported when getting related values via simple related <table_name> and <table_name>.related invokations. Eg. from a ca_objects results you can use the 'sort' option got get('ca_entities'), get('ca_entities.related') or get('ca_objects.related'). The bundle specifiers are fields with or without tablename. Only those fields returned for the related tables (intrinsics and label fields) are sortable. You cannot sort on attributes.
-	 *		filter = optional array of elements to filter returned values on. The element must be part off the container being fetched from. For example, if you're get()'ing a value from a container element (Eg. ca_objects.dates.date_value) you can filter on any other subelement in that container by passing the name of the subelement and a value (Eg. "date_type" => "copyright"). Pass only the name of the subelement, not the full path that includes the table and container element. You can filter on multiple subelements by passing each subelement as a key in the array. Only values that match all filters are returned. You can filter on multiple values for a subelement by passing an array of values rather than a scalar (Eg. "date_type" => array("copyright", "patent")). Values that match *any* of the values will be returned. Only simple equivalance is supported. NOTE: Filters are only available when returnAsArray is set. They will be ignored if returnAsArray is not set.
+	 *		filters = optional array of elements to filter returned values on. The element must be part of the container being fetched from. For example, if you're get()'ing a value from a container element (Eg. ca_objects.dates.date_value) you can filter on any other subelement in that container by passing the name of the subelement and a value (Eg. "date_type" => "copyright"). Pass only the name of the subelement, not the full path that includes the table and container element. You can filter on multiple subelements by passing each subelement as a key in the array. Only values that match all filters are returned. You can filter on multiple values for a subelement by passing an array of values rather than a scalar (Eg. "date_type" => array("copyright", "patent")). Values that match *any* of the values will be returned. Only simple equivalance is supported. NOTE: Filters are only available when returnAsArray is set. They will be ignored if returnAsArray is not set.
+	 *
+	 *		maxLevelsFromTop = for hierarchical gets, restricts the number of levels returned to the top-most starting with the root.
+	 *		maxLevelsFromBottom = for hierarchical gets, restricts the number of levels returned to the bottom-most starting with the lowest leaf node.
+	 *		maxLevels = synonym for maxLevelsFromBottom
 	 */
 	public function get($ps_field, $pa_options=null) {	
 		//$t = new Timer();
@@ -751,6 +767,7 @@ class SearchResult extends BaseObject {
 			if ($t_instance) {
 				$va_keepers = array();
 				foreach($va_filters as $vs_filter => $va_filter_vals) {
+					if(!$vs_filter) { continue; }
 					if (!is_array($va_filter_vals)) { $va_filter_vals = array($va_filter_vals); }
 					
 					foreach($va_filter_vals as $vn_index => $vs_filter_val) {
@@ -762,11 +779,13 @@ class SearchResult extends BaseObject {
 				
 					$va_filter_values = $this->get(join(".", $va_tmp).".{$vs_filter}", array('returnAsArray' => true, 'alwaysReturnItemID' => true));
 			
-					foreach($va_filter_values as $vn_id => $vm_filtered_val) {
-						if ((!isset($va_keepers[$vn_id]) || $va_keepers[$vn_id]) && in_array($vm_filtered_val, $va_filter_vals)) {	// any match for the element counts
-							$va_keepers[$vn_id] = true;
-						} else {	// if no match on any criteria kill it
-							$va_keepers[$vn_id] = false;
+					if (is_array($va_filter_values)) {
+						foreach($va_filter_values as $vn_id => $vm_filtered_val) {
+							if ((!isset($va_keepers[$vn_id]) || $va_keepers[$vn_id]) && in_array($vm_filtered_val, $va_filter_vals)) {	// any match for the element counts
+								$va_keepers[$vn_id] = true;
+							} else {	// if no match on any criteria kill it
+								$va_keepers[$vn_id] = false;
+							}
 						}
 					}
 				}

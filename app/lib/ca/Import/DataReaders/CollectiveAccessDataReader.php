@@ -263,8 +263,11 @@ class CollectiveAccessDataReader extends BaseDataReader {
 			//
 			// Object representations
 			//
-			if (($va_col[0] == 'ca_object_representations') && ($this->ops_table == 'ca_objects')) {
-				
+			if (($va_col[0] == 'ca_object_representations') && ($va_col[1] == 'media') && ($this->ops_table == 'ca_objects')) {
+				foreach($va_data['representations'] as $vn_rep_id => $va_rep_data) {
+					$va_urls[] = $va_rep_data['urls']['original'];
+				}
+				return join($vs_delimiter, $va_urls);
 			}
 			
 			//

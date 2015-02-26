@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * bundles/ca_object_checkouts.php : 
+ * themes/default/views/bundles/ca_object_checkouts.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
  	$vs_id_prefix 				= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$vn_table_num 				= $this->getVar('table_num');
 	
@@ -33,6 +32,11 @@
 	$va_settings 				= $this->getVar('settings');
 
 	$vb_read_only				=	(isset($va_settings['readonly']) && $va_settings['readonly']);
+	
+	$va_history 				= $this->getVar('checkout_history');
+	$vn_checkout_count 			= $this->getVar('checkout_count');
+	$va_client_list 			= $this->getVar('client_list');
+	$vn_client_count 			= $this->getVar('client_count');
 	
 	if (!($vs_add_label 		= $this->getVar('add_label'))) { $vs_add_label = _t('Update location'); }
 
@@ -84,11 +88,19 @@
 						
 					}
 				} else {
-					print _t('Cannot be checked out');
+					print "<h2>"._t('Cannot be checked out')."</h2>";
 				}
+				
+				//
+				// Checkout history
+				//
 ?>
 					</div>
 					<div id="<?php print $vs_id_prefix; ?>Tabs-history" class="hierarchyBrowseTab caLocationHistoryTab">	
+						<h2>
+							<?php print ($vn_checkout_count != 1) ? _t('Checked out %1 times', $vn_checkout_count) : _t('Checked out %1 time', $vn_checkout_count); ?>
+							<?php print ($vn_client_count != 1) ? _t('by %1 clients', $vn_client_count) : _t('by %1 client', $vn_client_count); ?>
+						</h2>
 						<table class='caLibraryHistory'>
 							<thead class='caLibraryHistory'>
 								<th class='caLibraryHistory'><?php print _t('User'); ?></th>
@@ -100,7 +112,6 @@
 							</thead>
 							<tbody>
 <?php
-					$va_history = $t_subject->getCheckoutHistory();
 					foreach($va_history as $va_event) {
 						print "<tr class='caLibraryHistory'><td class='caLibraryHistory'>".$va_event['user_name']."</td><td class='caLibraryHistory'>".$va_event['checkout_date']."</td><td class='caLibraryHistory'>".$va_event['checkout_notes']."</td><td class='caLibraryHistory'>".$va_event['due_date']."</td><td>".$va_event['return_date']."</td><td class='caLibraryHistory'>".$va_event['return_notes']."</td></td></tr>\n";
 					}

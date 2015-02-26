@@ -38,6 +38,9 @@
 		<testsuite name="Refineries Test Suite">
 			<directory>refineries/</directory>
 		</testsuite>
+    <testsuite name="Search Test Suite">
+      <directory>search/</directory>
+    </testsuite>
 	</testsuites>
 
 </phpunit>

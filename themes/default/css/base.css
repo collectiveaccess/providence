@@ -1195,6 +1195,22 @@ div.hint {
 .settingsBundle {
     padding: 10px;
 }
+.bundleContentPreview {
+	text-align:left;
+	display:inline-block;
+	color:#888888;
+	font-family: helvetica, sans-serif;
+	font-weight:normal;
+	font-size:13px;
+	padding-top:2px;
+	padding-left:10px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	width: 40%;
+	vertical-align:bottom;
+	padding-bottom:5px;
+}
 
 /* Style for labels on form fields where an error has occurred */
 .formLabelError {
@@ -3438,6 +3454,15 @@ a.exploreSelected {
     font-style: italic;
 }
 
+.hierarchyCountDisplay {
+    text-align:right;
+    font-style:italic;
+    color:#999999;
+    font-family:helvetica, sans-serif;
+    font-size:11px;
+    margin-top:-8px;
+}
+
 /*** hierarchy navigation on editor pages ***/
 .hierNav {
     padding:10px;
@@ -4181,7 +4206,7 @@ div.searchFormElementSettingsMessage {
     width:290px;
 }
 
-/ * SEARCH FORMS */
+/* SEARCH FORMS */
 
 .searchFormSelector {
     margin-bottom: 3px;
@@ -6042,7 +6067,7 @@ div.searchlight-results div.searchlight-selected {
     color: red;
 }
 
-/ * OpenLayers */
+/* OpenLayers */
 
 .olMap {
     background-color: #999999;
@@ -7095,7 +7120,7 @@ div.caLibraryTransactionListItemDueDateLabel {
 }
 
 div.caLibraryTransactionListItemWillReserve {
-	color: #cc000;
+	color: #cc0000;
 	font-size: 11px;
 	font-weight: bold;
 }
@@ -7116,4 +7141,44 @@ table.caLibraryHistory, tr.caLibraryHistory, th.caLibraryHistory, td.caLibraryHi
 	margin: 0 0 0 15px; 
 	padding: 3px 0px 3px 0px; 
 	display:block; 
+}
+
+div.caLibraryDashboardPanel {
+	float: left;
+	border: 1px solid #333;
+	padding: 10px;
+	border-radius: 4px;
+	width: 400px;
+	min-height: 100px;
+	margin: 10px 10px 10px 0;
+}
+
+.caLibraryDashboardCallout {
+	font-size: 24px;
+	font-weight: bold;
+	margin: 0;
+}
+
+.caLibraryDashboardCalloutDate {
+	font-size: 10px;
+	font-weight: normal;
+	font-style: italic;
+	margin: 0;
+}
+
+.caLibraryDashboardUserList {
+	font-size: 12px;
+	font-weight: normal;
+	line-height: 18px;
+	margin: 12px 0 0 0;
+}
+
+#caLibraryDashboardDetailContainer {
+	clear: both;
+	border: 1px solid #333;
+	padding: 10px;
+	border-radius: 4px;
+	width: 832px;
+	min-height: 100px;
+	margin: 10px 10px 10px 0;	
 }

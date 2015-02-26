@@ -37,6 +37,8 @@
 	$pa_ancestors 		= $this->getVar('ancestors');
 	$pn_id 				= $this->getVar('id');
 	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+	$va_hierarchy		= $t_subject->getHierarchyAsList(null, array('idsOnly' => true));
+	if(is_array($va_hierarchy)) { $vn_items_in_hier = sizeof($va_hierarchy); }
 	
 	switch($vs_priv_table) {
 		case 'ca_relationship_types':
@@ -171,6 +173,7 @@
 	
 			if ($pn_id > 0) {
 ?>
+				<div class="hierarchyCountDisplay"><?php if($vn_items_in_hier > 0) { print _t("Number of %1 in hierarchy: %2", caGetTableDisplayName($t_subject->tableName(), true), $vn_items_in_hier); } ?></div>
 				<div class="buttonPosition">
 					<a href="#" id="<?php print $vs_id_prefix; ?>browseToggle" class="form-button"><span class="form-button"><?php print _t('Show Hierarchy'); ?></span></a>
 				</div>			
@@ -463,10 +466,11 @@
 				editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
 				disabledButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__); ?>",
 
-				
 				initItemID: '<?php print $vn_init_id; ?>',
 				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
-				displayCurrentSelectionOnLoad: false
+				displayCurrentSelectionOnLoad: false,
+				autoShrink: <?php print (caGetOption('auto_shrink', $pa_bundle_settings, false) ? 'true' : 'false'); ?>,
+				autoShrinkAnimateID: '<?php print $vs_id_prefix; ?>ExploreHierarchyBrowser'
 			});
 		}
 	}
@@ -515,7 +519,9 @@
 					if (caUI.utils.showUnsavedChangesWarning) { caUI.utils.showUnsavedChangesWarning(true); }
 				},
 				
-				displayCurrentSelectionOnLoad: false
+				displayCurrentSelectionOnLoad: false,
+				autoShrink: <?php print (caGetOption('auto_shrink', $pa_bundle_settings, false) ? 'true' : 'false'); ?>,
+				autoShrinkAnimateID: '<?php print $vs_id_prefix; ?>MoveHierarchyBrowser'
 			});
 		}
 	}
@@ -538,7 +544,9 @@
 				
 				initItemID: '<?php print $vn_init_id; ?>',
 				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
-				displayCurrentSelectionOnLoad: true
+				displayCurrentSelectionOnLoad: true,
+				autoShrink: <?php print (caGetOption('auto_shrink', $pa_bundle_settings, false) ? 'true' : 'false'); ?>,
+				autoShrinkAnimateID: '<?php print $vs_id_prefix; ?>AddHierarchyBrowser'
 			});
 		}
 	}
@@ -561,7 +569,9 @@
 				
 				initItemID: '<?php print $vn_init_id; ?>',
 				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
-				displayCurrentSelectionOnLoad: true
+				displayCurrentSelectionOnLoad: true,
+				autoShrink: <?php print (caGetOption('auto_shrink', $pa_bundle_settings, false) ? 'true' : 'false'); ?>,
+				autoShrinkAnimateID: '<?php print $vs_id_prefix; ?>AddObjectHierarchyBrowser'
 			});
 		}
 	}

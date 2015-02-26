@@ -800,6 +800,11 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		
 		$o_view->setVar('t_subject', $this);
 		
+		$o_view->setVar('checkout_history', $va_history = $this->getCheckoutHistory());
+		$o_view->setVar('checkout_count', sizeof($va_history));
+		$o_view->setVar('client_list', $va_client_list = array_unique(caExtractValuesFromArrayList($va_history, 'user_name')));
+		$o_view->setVar('client_count', sizeof($va_client_list));
+		
 		
 		return $o_view->render('ca_object_checkouts.php');
 	}

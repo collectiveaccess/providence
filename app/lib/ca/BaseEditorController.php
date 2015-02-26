@@ -44,7 +44,7 @@
  	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
  	require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
 	require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
- 	require_once(__CA_LIB_DIR__.'/core/Parsers/dompdf/dompdf_config.inc.php');
+ 	require_once(__CA_LIB_DIR__.'/core/Print/PDFRenderer.php');
  
  	class BaseEditorController extends ActionController {
  		# -------------------------------------------------------
@@ -184,7 +184,23 @@
 			
 			if (!($vs_view = caGetOption('view', $pa_options, null))) {
 				$vs_view = 'screen_html';
-			} 
+			}
+
+			// save where we are in session, for "Save and return" button
+			$va_save_and_return = $this->getRequest()->session->getVar('save_and_return_locations');
+			if(!is_array($va_save_and_return)) { $va_save_and_return = array(); }
+
+			$va_save = array(
+				'table' => $t_subject->tableName(),
+				'key' => $vn_subject_id,
+				'url_path' => $this->getRequest()->getFullUrlPath()
+			);
+
+			$this->getRequest()->session->setVar('save_and_return_locations', caPushToStack($va_save, $va_save_and_return, 25));
+
+			// if we came here through a rel link, show save and return button
+			$this->getView()->setVar('show_save_and_return', (bool) $this->getRequest()->getParameter('rel', pInteger));
+
 			$this->render("{$vs_view}.php");
  		}
  		# -------------------------------------------------------
@@ -327,10 +343,44 @@
  			# trigger "SaveItem" hook 
  		
 			$this->opo_app_plugin_manager->hookSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => $vb_is_insert));
+
+			// redirect back to previous item on stack if it's a valid "save and return" request
+			if((bool) $this->getRequest()->getParameter('is_save_and_return', pInteger)) {
+				$va_save_and_return = $this->getRequest()->session->getVar('save_and_return_locations');
+				if(is_array($va_save_and_return)) {
+					// get rid of all the navigational steps in the current item
+					do {
+						$va_pop = array_pop($va_save_and_return);
+					} while (($va_pop['table'] == $t_subject->tableName()) && ($va_pop['key'] == $vn_subject_id));
+
+					if(sizeof($va_save_and_return)>0) {
+						if(isset($va_pop['url_path']) && (strlen($va_pop['url_path']) > 0)) {
+							$this->getResponse()->setRedirect($va_pop['url_path']);
+						} else {
+							$this->getResponse()->setRedirect(caEditorUrl($this->getRequest(), $va_pop['table'], $va_pop['key']));
+						}
+						return;
+					}
+				}
+			}
  			
  			if (method_exists($this, "postSave")) {
  				$this->postSave($t_subject, $vb_is_insert);
  			}
+
+			// if this is an insert, save where we are in session for "Save and return" button
+			if($vb_is_insert) {
+				$va_save_and_return = $this->getRequest()->session->getVar('save_and_return_locations');
+				if(!is_array($va_save_and_return)) { $va_save_and_return = array(); }
+
+				$va_save = array(
+					'table' => $t_subject->tableName(),
+					'key' => $vn_subject_id
+				);
+				
+				$this->getRequest()->session->setVar('save_and_return_locations', caPushToStack($va_save, $va_save_and_return, 25));
+			}
+
  			$this->render('screen_html.php');
  		}
  		# -------------------------------------------------------
@@ -614,14 +664,25 @@
 				$this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
 				
 				$va_barcode_files_to_delete += caDoPrintViewTagSubstitution($this->view, $t_subject, $va_template_info['path'], array('checkAccess' => $this->opa_access_values));
+				
+				$o_pdf = new PDFRenderer();
+					
+				$this->view->setVar('PDFRenderer', $o_pdf->getCurrentRendererCode());
+				
+				$va_page_size =	PDFRenderer::getPageSize(caGetOption('pageSize', $va_template_info, 'letter'), 'mm', caGetOption('pageOrientation', $va_template_info, 'portrait'));
+				$vn_page_width = $va_page_size['width']; $vn_page_height = $va_page_size['height'];
+				$this->view->setVar('pageWidth', "{$vn_page_width}mm");
+				$this->view->setVar('pageHeight', "{$vn_page_height}mm");
+				$this->view->setVar('marginTop', caGetOption('marginTop', $va_template_info, '0mm'));
+				$this->view->setVar('marginRight', caGetOption('marginRight', $va_template_info, '0mm'));
+				$this->view->setVar('marginBottom', caGetOption('marginBottom', $va_template_info, '0mm'));
+				$this->view->setVar('marginLeft', caGetOption('marginLeft', $va_template_info, '0mm'));
+			
 				$vs_content = $this->render($va_template_info['path']);
-				$o_dompdf = new DOMPDF();
-				$o_dompdf->load_html($vs_content);
-				$o_dompdf->set_paper(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'));
-				$o_dompdf->set_base_path(caGetPrintTemplateDirectoryPath('summary'));
-				$o_dompdf->render();
-				$o_dompdf->stream(caGetOption('filename', $va_template_info, 'print_summary.pdf'));
-	
+				
+				$o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'), caGetOption('marginTop', $va_template_info, '0mm'), caGetOption('marginRight', $va_template_info, '0mm'), caGetOption('marginBottom', $va_template_info, '0mm'), caGetOption('marginLeft', $va_template_info, '0mm'));
+				$o_pdf->render($vs_content, array('stream'=> true, 'filename' => caGetOption('filename', $va_template_info, 'print_summary.pdf')));
+
 				$vb_printed_properly = true;
 				
 				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
@@ -630,6 +691,7 @@
 				$vb_printed_properly = false;
 				$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintSummary()");
 			}
+			return;
 		}
 		# -------------------------------------------------------
 		/**
@@ -690,19 +752,30 @@
 				$this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
 				
 				$va_barcode_files_to_delete += caDoPrintViewTagSubstitution($this->view, $t_subject, $va_template_info['path'], array('checkAccess' => $this->opa_access_values));
+				
+				$o_pdf = new PDFRenderer();
+					
+				$this->view->setVar('PDFRenderer', $o_pdf->getCurrentRendererCode());
+				
+				$va_page_size =	PDFRenderer::getPageSize(caGetOption('pageSize', $va_template_info, 'letter'), 'mm', caGetOption('pageOrientation', $va_template_info, 'portrait'));
+				$vn_page_width = $va_page_size['width']; $vn_page_height = $va_page_size['height'];
+				$this->view->setVar('pageWidth', "{$vn_page_width}mm");
+				$this->view->setVar('pageHeight', "{$vn_page_height}mm");
+				$this->view->setVar('marginTop', caGetOption('marginTop', $va_template_info, '0mm'));
+				$this->view->setVar('marginRight', caGetOption('marginRight', $va_template_info, '0mm'));
+				$this->view->setVar('marginBottom', caGetOption('marginBottom', $va_template_info, '0mm'));
+				$this->view->setVar('marginLeft', caGetOption('marginLeft', $va_template_info, '0mm'));
+			
 				$vs_content = $this->render($va_template_info['path']);
-				$o_dompdf = new DOMPDF();
-				$o_dompdf->load_html($vs_content);
-				$o_dompdf->set_paper(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'));
-				$o_dompdf->set_base_path(caGetPrintTemplateDirectoryPath('summary'));
-				$o_dompdf->render();
-				$o_dompdf->stream(caGetOption('filename', $va_template_info, 'print_bundles.pdf'));
+				
+				$o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'), caGetOption('marginTop', $va_template_info, '0mm'), caGetOption('marginRight', $va_template_info, '0mm'), caGetOption('marginBottom', $va_template_info, '0mm'), caGetOption('marginLeft', $va_template_info, '0mm'));
+				$o_pdf->render($vs_content, array('stream'=> true, 'filename' => caGetOption('filename', $va_template_info, 'print_bundles.pdf')));
 	
 				$vb_printed_properly = true;
 				
-				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
+				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
 			} catch (Exception $e) {
-				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp);}
+				foreach($va_barcode_files_to_delete as $vs_tmp) { @unlink($vs_tmp); @unlink("{$vs_tmp}.png");}
 				$vb_printed_properly = false;
 				$this->postError(3100, _t("Could not generate PDF"),"BaseEditorController->PrintBundle()");
 			}
@@ -1904,7 +1977,7 @@
  			
  			$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
  			
- 			$vs_page_cache_key = md5($vn_subject_id.'/'.$pn_representation_id.'/'.$pn_value_id);
+ 			$vs_page_cache_key = ($ps_content_mode == 'hierarchy_of_representations') ? md5($vn_subject_id) : md5($vn_subject_id.'/'.$pn_representation_id.'/'.$pn_value_id);
  			
  			$o_view->setVar('page_cache_key', $vs_page_cache_key);
  			$o_view->setVar('t_subject', $t_subject);

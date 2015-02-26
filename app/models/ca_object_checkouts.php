@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,9 +33,9 @@
  /**
    *
    */
-
 require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_MODELS_DIR__.'/ca_objects.php');
+require_once(__CA_APP_DIR__.'/helpers/libraryServicesHelpers.php');
 
 /**
  * Check out statuses
@@ -122,6 +122,27 @@ BaseModel::$s_ca_models_definitions['ca_object_checkouts'] = array(
 				'DEFAULT' => '',
 				'BOUNDS_LENGTH' => array(0, 65535),
 				'LABEL' => 'Return notes', 'DESCRIPTION' => 'Notes at return of object.'
+		),
+		'last_sent_coming_due_email' => array(
+				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 15, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Date of last coming due notice'), 'DESCRIPTION' => _t('Date/time a coming due notice was last sent.'),
+		),
+		'last_sent_overdue_email' => array(
+				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 15, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Date of last overdue notice'), 'DESCRIPTION' => _t('Date/time an overdue notice was last sent.'),
+		),
+		'last_reservation_available_email' => array(
+				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 15, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Date of last reservation available notice'), 'DESCRIPTION' => _t('Date/time a reservation available notice was last sent.'),
 		),
 		'deleted' => array(
 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_OMIT, 
@@ -537,7 +558,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 */
 	static public function getObjectCheckoutConfigForType($pm_type_id) {
-		$o_config = Configuration::load(__CA_APP_DIR__.'/conf/object_checkout.conf');
+		$o_config = caGetLibraryServicesConfiguration();
 		$t_object = new ca_objects();
 		
 		$va_type_config = $o_config->getAssoc('checkout_types');
@@ -559,7 +580,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 */
 	static public function getObjectCheckoutTypes() {
-		$o_config = Configuration::load(__CA_APP_DIR__.'/conf/object_checkout.conf');
+		$o_config = caGetLibraryServicesConfiguration();
 		$t_object = new ca_objects();
 		
 		$va_type_config = $o_config->getAssoc('checkout_types');
@@ -570,7 +591,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	public function objectIsOut($pn_object_id) {
+	public function objectIsOut($pn_object_id, $pa_options=null) {
 		// is it out?
 		$o_db = $this->getDb();
 		$qr_res = $o_db->query("
@@ -593,7 +614,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	public function objectHasReservations($pn_object_id) {
+	public function objectHasReservations($pn_object_id, $pa_options=null) {
 		// is it out?
 		$o_db = $this->getDb();
 		$qr_res = $o_db->query("
@@ -631,8 +652,9 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	public function objectHistory($pn_object_id) {
+	public function objectHistory($pn_object_id, $pa_options=null) {
 		$o_db = $this->getDb();
+		
 		$qr_res = $o_db->query("
 			SELECT checkout_id
 			FROM ca_object_checkouts
@@ -694,8 +716,8 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	static public function getCurrentCheckoutInstance($pn_object_id, $po_db=null) {
-		$o_db = ($po_db) ? $po_db : new Db();
+	static public function getCurrentCheckoutInstance($pn_object_id, $pa_options=null) {
+		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
 		
 		// is it out?
 		$qr_res = $o_db->query("
@@ -739,6 +761,109 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 		return null;
 	}
 	# ------------------------------------------------------
+	# Objects by type of event (checkin, checkout, reservation)
+	# ------------------------------------------------------
+	/**
+	 * Return list of object_ids for objects that are checked out
+	 *
+	 * @param string $ps_datetime 
+	 * @param array $pa_options Array of options. Options include
+	 * 		db = A Db instance to use for database operations. If omitted a new Db instance will be used. [Default=null]
+	 * @return array 
+	 */
+	static public function getObjectIDsForOutstandingCheckouts($ps_datetime=null, $pa_options=null) {
+		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
+		
+		if ($ps_datetime && is_array($va_dates = caDateToUnixTimestamps($ps_datetime))) {
+			$qr_res = $o_db->query("
+				SELECT DISTINCT object_id
+				FROM ca_object_checkouts
+				WHERE
+					checkout_date BETWEEN ? AND ?
+					AND
+					return_date IS NULL
+					AND
+					deleted = 0
+			", array($va_dates[0], $va_dates[1]));
+		} else {
+			$qr_res = $o_db->query("
+				SELECT DISTINCT object_id
+				FROM ca_object_checkouts
+				WHERE
+					checkout_date IS NOT NULL
+					AND
+					return_date IS NULL
+					AND
+					deleted = 0
+			", array());
+		}
+		
+		return $qr_res->getAllFieldValues('object_id');
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return list of object_ids for objects that have been checked in
+	 *
+	 * @param string $ps_datetime 
+	 * @param array $pa_options Array of options. Options include
+	 * 		db = A Db instance to use for database operations. If omitted a new Db instance will be used. [Default=null]
+	 * @return array 
+	 */
+	static public function getObjectIDsForCheckins($ps_datetime=null, $pa_options=null) {
+		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
+		
+		if ($ps_datetime && is_array($va_dates = caDateToUnixTimestamps($ps_datetime))) {
+			$qr_res = $o_db->query("
+				SELECT DISTINCT object_id
+				FROM ca_object_checkouts
+				WHERE
+					checkout_date BETWEEN ? AND ?
+					AND
+					return_date IS NOT NULL
+					AND
+					deleted = 0
+			", array($va_dates[0], $va_dates[1]));
+		} else {
+			$qr_res = $o_db->query("
+				SELECT DISTINCT object_id
+				FROM ca_object_checkouts
+				WHERE
+					checkout_date IS NOT NULL
+					AND
+					return_date IS NOT NULL
+					AND
+					deleted = 0
+			", array());
+		}
+		
+		return $qr_res->getAllFieldValues('object_id');
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return list of object_ids for objects that have current reservations
+	 *
+	 * @param string $ps_datetime 
+	 * @param array $pa_options Array of options. Options include
+	 * 		db = A Db instance to use for database operations. If omitted a new Db instance will be used. [Default=null]
+	 * @return array 
+	 */
+	static public function getObjectIDsForReservations($pa_options=null) {
+		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
+		
+		$qr_res = $o_db->query("
+			SELECT DISTINCT object_id
+			FROM ca_object_checkouts
+			WHERE
+				checkout_date IS NULL
+				AND
+				return_date IS NULL
+				AND
+				deleted = 0
+		", array());
+		
+		return $qr_res->getAllFieldValues('object_id');
+	}
+	# ------------------------------------------------------
 	# By User
 	# ------------------------------------------------------
 	/**
@@ -746,17 +871,164 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 * @param int $pn_user_id
 	 * @param string $ps_display_template Display template evaluated relative to each ca_object_checkouts records; return in array with key '_display'
-	 * @param Db $po_db A Db instance to use for database access. If omitted a new instance will be used.
+	 * @param array $pa_options Array of options. Options include
+	 * 		db = A Db instance to use for database operations. If omitted a new Db instance will be used. [Default=null]
 	 * @return array 
 	 */
-	static public function getOutstandingCheckoutsForUser($pn_user_id, $ps_display_template=null, $po_db=null) {
-		$o_db = $po_db ? $po_db : new Db();
+	static public function getOutstandingCheckoutsForUser($pn_user_id, $ps_display_template=null, $ps_datetime=null, $pa_options=null) {
+		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
+		
+		
+		if ($ps_datetime && is_array($va_dates = caDateToUnixTimestamps($ps_datetime))) {
+			$qr_res = $o_db->query("
+				SELECT checkout_id
+				FROM ca_object_checkouts
+				WHERE
+					checkout_date BETWEEN ? AND ?
+					AND
+					return_date IS NULL
+					AND
+					user_id = ?
+					AND
+					deleted = 0
+				ORDER BY
+					checkout_date ASC
+			", array($va_dates[0], $va_dates[1], $pn_user_id));
+		} else {
+			$qr_res = $o_db->query("
+				SELECT checkout_id
+				FROM ca_object_checkouts
+				WHERE
+					checkout_date IS NOT NULL
+					AND
+					return_date IS NULL
+					AND
+					user_id = ?
+					AND
+					deleted = 0
+				ORDER BY
+					checkout_date ASC
+			", array($pn_user_id));
+		}
+		
+		return ca_object_checkouts::_collectCheckoutData(caMakeSearchResult('ca_object_checkouts', $qr_res->getAllFieldValues('checkout_id')), $ps_display_template);
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return list of overdue checkouts for a user
+	 *
+	 * @param int $pn_user_id
+	 * @param string $ps_display_template Display template evaluated relative to each ca_object_checkouts records; return in array with key '_display'
+	 * @param array $pa_options Array of options. Options include
+	 * 		db = A Db instance to use for database operations. If omitted a new Db instance will be used. [Default=null]
+	 * @return array 
+	 */
+	static public function getOverdueCheckoutsForUser($pn_user_id, $ps_display_template=null, $ps_datetime=null, $pa_options=null) {
+		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
+		
+		if ($ps_datetime && is_array($va_dates = caDateToUnixTimestamps($ps_datetime))) {
+			$qr_res = $o_db->query("
+				SELECT checkout_id
+				FROM ca_object_checkouts
+				WHERE
+					checkout_date BETWEEN ? AND ?
+					AND
+					return_date IS NULL
+					AND
+					(due_date < ?)
+					AND
+					user_id = ?
+					AND
+					deleted = 0
+				ORDER BY
+					checkout_date ASC
+			", array($va_dates[0], $va_dates[1], $pn_user_id, time()));
+		} else {
+			$qr_res = $o_db->query("
+				SELECT checkout_id
+				FROM ca_object_checkouts
+				WHERE
+					checkout_date IS NOT NULL
+					AND
+					return_date IS NULL
+					AND
+					(due_date < ?)
+					AND
+					user_id = ?
+					AND
+					deleted = 0
+				ORDER BY
+					checkout_date ASC
+			", array($pn_user_id, time()));
+		}
+		
+		return ca_object_checkouts::_collectCheckoutData(caMakeSearchResult('ca_object_checkouts', $qr_res->getAllFieldValues('checkout_id')), $ps_display_template);
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return list of checkins for a user
+	 *
+	 * @param int $pn_user_id
+	 * @param string $ps_display_template Display template evaluated relative to each ca_object_checkouts records; return in array with key '_display'
+	 * @param array $pa_options Array of options. Options include
+	 * 		db = A Db instance to use for database operations. If omitted a new Db instance will be used. [Default=null]
+	 * @return array 
+	 */
+	static public function getCheckinsForUser($pn_user_id, $ps_display_template=null, $ps_datetime=null, $pa_options=null) {
+		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
+		
+		if ($ps_datetime && is_array($va_dates = caDateToUnixTimestamps($ps_datetime))) {
+			$qr_res = $o_db->query("
+				SELECT checkout_id
+				FROM ca_object_checkouts
+				WHERE
+					checkout_date IS NOT NULL
+					AND
+					return_date BETWEEN ? AND ?
+					AND
+					user_id = ?
+					AND
+					deleted = 0
+				ORDER BY
+					checkout_date ASC
+			", array($va_dates[0], $va_dates[1], $pn_user_id));
+		} else {
+			$qr_res = $o_db->query("
+				SELECT checkout_id
+				FROM ca_object_checkouts
+				WHERE
+					checkout_date IS NOT NULL
+					AND
+					return_date IS NOT NULL
+					AND
+					user_id = ?
+					AND
+					deleted = 0
+				ORDER BY
+					checkout_date ASC
+			", array($pn_user_id));
+		}
+		
+		return ca_object_checkouts::_collectCheckoutData(caMakeSearchResult('ca_object_checkouts', $qr_res->getAllFieldValues('checkout_id')), $ps_display_template);
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return list of outstanding checkouts for a user
+	 *
+	 * @param int $pn_user_id
+	 * @param string $ps_display_template Display template evaluated relative to each ca_object_checkouts records; return in array with key '_display'
+	 * @param array $pa_options Array of options. Options include
+	 * 		db = A Db instance to use for database operations. If omitted a new Db instance will be used. [Default=null]
+	 * @return array 
+	 */
+	static public function getOutstandingReservationsForUser($pn_user_id, $ps_display_template=null, $pa_options=null) {
+		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
 		
 		$qr_res = $o_db->query("
 			SELECT checkout_id
 			FROM ca_object_checkouts
 			WHERE
-				checkout_date IS NOT NULL
+				checkout_date IS NULL
 				AND
 				return_date IS NULL
 				AND
@@ -767,23 +1039,33 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 				checkout_date ASC
 		", array($pn_user_id));
 		
-		$va_ids = $qr_res->getAllFieldValues('checkout_id');
-		$qr_history = caMakeSearchResult('ca_object_checkouts', $va_ids);
-		
+		return ca_object_checkouts::_collectCheckoutData(caMakeSearchResult('ca_object_checkouts', $qr_res->getAllFieldValues('checkout_id')), $ps_display_template);
+	}
+	# ------------------------------------------------------
+	/**
+	 * Roll up by-user data for return
+	 *
+	 * @param SearchResult $qr_res A ca_object_checkouts result set
+	 * @param string $ps_display_template Optional display template; will be returned in _display key in returned array
+	 *
+	 * @return array List of events (checkins, checkouts, etc.)
+	 */
+	private static function _collectCheckoutData($qr_res, $ps_display_template=null) {
 		$va_checkouts = array();
-		if ($qr_history) {
-			while ($qr_history->nextHit()) {
+		if ($qr_res) {
+			while ($qr_res->nextHit()) {
 				$va_tmp = array(
-					'checkout_id' => $qr_history->get('ca_object_checkouts.checkout_id'),
-					'group_uuid' => $qr_history->get('ca_object_checkouts.group_uuid'),
-					'object_id' => $qr_history->get('ca_object_checkouts.object_id'),
-					'created_on' => $qr_history->get('ca_object_checkouts.created_on', array('timeOmit' => true)),
-					'checkout_date' => $qr_history->get('ca_object_checkouts.checkout_date', array('timeOmit' => true)),
-					'due_date' => $qr_history->get('ca_object_checkouts.due_date', array('timeOmit' => true)),
-					'checkout_notes' => $qr_history->get('ca_object_checkouts.checkout_notes')
+					'checkout_id' => $qr_res->get('ca_object_checkouts.checkout_id'),
+					'group_uuid' => $qr_res->get('ca_object_checkouts.group_uuid'),
+					'object_id' => $qr_res->get('ca_object_checkouts.object_id'),
+					'created_on' => $qr_res->get('ca_object_checkouts.created_on', array('timeOmit' => true)),
+					'checkout_date' => $qr_res->get('ca_object_checkouts.checkout_date', array('timeOmit' => true)),
+					'due_date' => $qr_res->get('ca_object_checkouts.due_date', array('timeOmit' => true)),
+					'return_date' => $qr_res->get('ca_object_checkouts.return_date', array('timeOmit' => true)),
+					'checkout_notes' => $qr_res->get('ca_object_checkouts.checkout_notes')
 				);
 				if ($ps_display_template) {
-					$va_tmp['_display'] = $qr_history->getWithTemplate($ps_display_template);
+					$va_tmp['_display'] = $qr_res->getWithTemplate($ps_display_template);
 				}
 				$va_checkouts[] = $va_tmp;
 			}
@@ -796,22 +1078,35 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 * Return number of outstanding checkouts that need to be returned
 	 *
-	 * @param Db $po_db A Db instance to use for database access. If omitted a new instance will be used.
+	 * @param string $ps_datetime Options date/time expression to return statistics for. If omitted current checkouts are considered. If provided, only checkouts out in the specified interval are counted.
+	 * @param array $pa_options Array of options. Options include
+	 * 		db = A Db instance to use for database operations. If omitted a new Db instance will be used. [Default=null]
 	 * @return int 
 	 */
-	static public function numOutstandingCheckouts($po_db=null) {
-		$o_db = $po_db ? $po_db : new Db();
+	static public function numOutstandingCheckouts($ps_datetime=null, $pa_options=null) {
+		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
 		
-		$qr_res = $o_db->query("
-			SELECT count(*) c
-			FROM ca_object_checkouts
-			WHERE
-				checkout_date IS NOT NULL
-				AND
-				return_date IS NULL
-				AND
-				deleted = 0
-		");
+		if ($ps_datetime && is_array($va_dates = caDateToUnixTimestamps($ps_datetime))) {
+			$qr_res = $o_db->query("
+				SELECT count(*) c
+				FROM ca_object_checkouts
+				WHERE
+					checkout_date BETWEEN ? AND ?
+					AND
+					deleted = 0
+			", array($va_dates[0], $va_dates[1]));
+		} else {
+			$qr_res = $o_db->query("
+				SELECT count(*) c
+				FROM ca_object_checkouts
+				WHERE
+					checkout_date IS NOT NULL
+					AND
+					return_date IS NULL
+					AND
+					deleted = 0
+			");
+		}
 		if ($qr_res->nextRow()) {
 			return (int)$qr_res->get('c');
 		}
@@ -819,13 +1114,227 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 * Return number of outstanding reservations
+	 * Return number of outstanding checkouts that need to be returned
 	 *
-	 * @param Db $po_db A Db instance to use for database access. If omitted a new instance will be used.
+	 * @param string $ps_datetime Options date/time expression to return statistics for. If omitted current checkouts are considered. If provided, only checkouts out in the specified interval are counted.
+	 * @param array $pa_options Array of options. Options include
+	 * 		db = A Db instance to use for database operations. If omitted a new Db instance will be used. [Default=null]
 	 * @return int 
 	 */
-	static public function numOutstandingReservations($po_db=null) {
-		$o_db = $po_db ? $po_db : new Db();
+	static public function outstandingCheckoutUserList($ps_datetime=null, $pa_options=null) {
+		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
+		
+		if ($ps_datetime && is_array($va_dates = caDateToUnixTimestamps($ps_datetime))) {
+			$qr_res = $o_db->query("				
+				SELECT DISTINCT u.user_id, u.user_name, u.fname, u.lname, u.email
+				FROM ca_object_checkouts c
+				INNER JOIN ca_users AS u ON u.user_id = c.user_id
+				WHERE
+					c.checkout_date BETWEEN ? AND ?
+					AND
+					c.deleted = 0
+			", array($va_dates[0], $va_dates[1]));
+		} else {
+			$qr_res = $o_db->query("				
+				SELECT DISTINCT u.user_id, u.user_name, u.fname, u.lname, u.email
+				FROM ca_object_checkouts c
+				INNER JOIN ca_users AS u ON u.user_id = c.user_id
+				WHERE
+					c.checkout_date IS NOT NULL
+					AND
+					c.return_date IS NULL
+					AND
+					c.deleted = 0
+			");
+		}
+		
+		$va_list = array();
+		while ($qr_res->nextRow()) {
+			$va_list[] = $qr_res->getRow();
+		}
+		return $va_list;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return number of checkins
+	 *
+	 * @param string $ps_datetime Options date/time expression to return statistics for. If omitted current checkouts are considered. If provided, only checkouts out in the specified interval are counted.
+	 * @param array $pa_options Array of options. Options include
+	 * 		db = A Db instance to use for database operations. If omitted a new Db instance will be used. [Default=null]
+	 * @return int 
+	 */
+	static public function numCheckins($ps_datetime=null, $pa_options=null) {
+		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
+		
+		if ($ps_datetime && is_array($va_dates = caDateToUnixTimestamps($ps_datetime))) {
+			$qr_res = $o_db->query("
+				SELECT count(*) c
+				FROM ca_object_checkouts
+				WHERE
+					return_date BETWEEN ? AND ?
+					AND
+					deleted = 0
+			", array($va_dates[0], $va_dates[1]));
+		} else {
+			$qr_res = $o_db->query("
+				SELECT count(*) c
+				FROM ca_object_checkouts
+				WHERE
+					return_date IS NOT NULL
+					AND
+					return_date IS NULL
+					AND
+					deleted = 0
+			");
+		}
+		if ($qr_res->nextRow()) {
+			return (int)$qr_res->get('c');
+		}
+		return 0;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return users who checked in items
+	 *
+	 * @param string $ps_datetime Options date/time expression to return statistics for. If omitted current checkouts are considered. If provided, only checkouts out in the specified interval are counted.
+	 * @param array $pa_options Array of options. Options include
+	 * 		db = A Db instance to use for database operations. If omitted a new Db instance will be used. [Default=null]
+	 * @return int 
+	 */
+	static public function checkinUserList($ps_datetime=null, $pa_options=null) {
+		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
+		
+		if ($ps_datetime && is_array($va_dates = caDateToUnixTimestamps($ps_datetime))) {
+			$qr_res = $o_db->query("				
+				SELECT DISTINCT u.user_id, u.user_name, u.fname, u.lname, u.email
+				FROM ca_object_checkouts c
+				INNER JOIN ca_users AS u ON u.user_id = c.user_id
+				WHERE
+					c.return_date BETWEEN ? AND ?
+					AND
+					c.deleted = 0
+			", array($va_dates[0], $va_dates[1]));
+		} else {
+			$qr_res = $o_db->query("				
+				SELECT DISTINCT u.user_id, u.user_name, u.fname, u.lname, u.email
+				FROM ca_object_checkouts c
+				INNER JOIN ca_users AS u ON u.user_id = c.user_id
+				WHERE
+					c.return_date IS NOT NULL
+					AND
+					c.deleted = 0
+			");
+		}
+		
+		$va_list = array();
+		while ($qr_res->nextRow()) {
+			$va_list[] = $qr_res->getRow();
+		}
+		return $va_list;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return number of overdue checkouts that need to be returned
+	 *
+	 * @param string $ps_datetime Options date/time expression to return statistics for. If omitted current checkouts are considered. If provided, only checkouts out in the specified interval are counted.
+	 * @param array $pa_options Array of options. Options include
+	 * 		db = A Db instance to use for database operations. If omitted a new Db instance will be used. [Default=null]
+	 * @return int 
+	 */
+	static public function numOverdueCheckouts($ps_datetime=null, $pa_options=null) {
+		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
+		
+		if ($ps_datetime && is_array($va_dates = caDateToUnixTimestamps($ps_datetime))) {
+			$qr_res = $o_db->query("
+				SELECT count(*) c
+				FROM ca_object_checkouts
+				WHERE
+					checkout_date BETWEEN ? AND ?
+					AND
+					return_date IS NULL
+					AND
+					due_date < ?
+					AND
+					deleted = 0
+			", array($va_dates[0], $va_dates[1], time()));
+		} else {
+			$qr_res = $o_db->query("
+				SELECT count(*) c
+				FROM ca_object_checkouts
+				WHERE
+					checkout_date IS NOT NULL
+					AND
+					return_date IS NULL
+					AND
+					due_date < ?
+					AND
+					deleted = 0
+			", array(time()));
+		}
+		if ($qr_res->nextRow()) {
+			return (int)$qr_res->get('c');
+		}
+		return 0;
+	}
+	
+	# ------------------------------------------------------
+	/**
+	 * Return number of overdue checkouts that need to be returned
+	 *
+	 * @param string $ps_datetime Options date/time expression to return statistics for. If omitted current checkouts are considered. If provided, only checkouts out in the specified interval are counted.
+	 * @param array $pa_options Array of options. Options include
+	 * 		db = A Db instance to use for database operations. If omitted a new Db instance will be used. [Default=null]
+	 * @return int 
+	 */
+	static public function overdueCheckoutUserList($ps_datetime=null, $pa_options=null) {
+		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
+		
+		if ($ps_datetime && is_array($va_dates = caDateToUnixTimestamps($ps_datetime))) {
+			$qr_res = $o_db->query("
+				SELECT DISTINCT u.user_id, u.user_name, u.fname, u.lname, u.email
+				FROM ca_object_checkouts c
+				INNER JOIN ca_users AS u ON u.user_id = c.user_id
+				WHERE
+					c.checkout_date BETWEEN ? AND ?
+					AND
+					c.return_date IS NULL
+					AND
+					c.due_date < ?
+					AND
+					c.deleted = 0
+			", array($va_dates[0], $va_dates[1], time()));
+		} else {
+			$qr_res = $o_db->query("
+				SELECT DISTINCT u.user_id, u.user_name, u.fname, u.lname, u.email
+				FROM ca_object_checkouts c
+				INNER JOIN ca_users AS u ON u.user_id = c.user_id
+				WHERE
+					c.checkout_date IS NOT NULL
+					AND
+					c.return_date IS NULL
+					AND
+					c.due_date < ?
+					AND
+					c.deleted = 0
+			", array(time()));
+		}
+		
+		$va_list = array();
+		while ($qr_res->nextRow()) {
+			$va_list[] = $qr_res->getRow();
+		}
+		return $va_list;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Return number of outstanding reservations
+	 *
+	 * @param array $pa_options Array of options. Options include
+	 * 		db = A Db instance to use for database operations. If omitted a new Db instance will be used. [Default=null]
+	 * @return int 
+	 */
+	static public function numOutstandingReservations($pa_options=null) {
+		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
 		
 		$qr_res = $o_db->query("
 			SELECT count(*) c
@@ -837,35 +1346,283 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 				AND
 				deleted = 0
 		");
+		
 		if ($qr_res->nextRow()) {
 			return (int)$qr_res->get('c');
 		}
 		return 0;
 	}
 	# ------------------------------------------------------
-	//	Number of times an individual copy is checked-out
-	//	Number of times an individual copy is reserved
-	//	Number of check-outs per day, week, month, year
-	//	Number of check-ins per day, week, month, year
-	//	Number of reserves per day, week, month, year
-	//	Number of check-outs and reserves by user
-	//	List of each copy a user has checked-out including due date
-	//	Total number and list of books lost per day, week, month, year
-	//	Total number of items circulated by library format type (book, CD/DVD, rare books, etc.)
+	/**
+	 * Return list of users with outstanding reservations
+	 *
+	 * @param array $pa_options Array of options. Options include
+	 * 		db = A Db instance to use for database operations. If omitted a new Db instance will be used. [Default=null]
+	 * @return int 
+	 */
+	static public function reservationUserList($pa_options=null) {
+		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
+		
+		$qr_res = $o_db->query("
+			SELECT DISTINCT u.user_id, u.user_name, u.fname, u.lname, u.email
+			FROM ca_object_checkouts c
+			INNER JOIN ca_users AS u ON u.user_id = c.user_id
+			WHERE
+				c.checkout_date IS NULL
+				AND
+				c.return_date IS NULL
+				AND
+				c.deleted = 0
+		");
+		
+		$va_list = array();
+		while($qr_res->nextRow()) {
+			$va_list[] = $qr_res->getRow();
+		}
+		return $va_list;
+	}
+	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	static public function getDashboardStatistics($ps_datetime=null, $po_db=null) {
-		$o_db = $po_db ? $po_db : new Db();
+	static public function getDashboardStatistics($ps_datetime=null, $pa_options=null) {
+		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
 		if (!$ps_datetime) { $ps_datetime = _t('today'); }
 		
 		$va_stats = array(
-			'numCheckouts' => ca_object_checkouts::numOutstandingCheckouts(),			//	Number of individual copies checked-out
-			'numReservations' => ca_object_checkouts::numOutstandingReservations(),		//	Number of individual copies reserved
+			'numOverdueCheckouts' => ca_object_checkouts::numOverdueCheckouts($ps_datetime),			//	Number of individual copies checked-out and overdue
+			'overdueCheckoutUserList' => ca_object_checkouts::overdueCheckoutUserList($ps_datetime),
+			'numCheckouts' => ca_object_checkouts::numOutstandingCheckouts($ps_datetime),				//	Number of individual copies checked-out
+			'checkoutUserList' => ca_object_checkouts::outstandingCheckoutUserList($ps_datetime),
+			'numCheckins' => ca_object_checkouts::numCheckins($ps_datetime),							//	Number of individual copies checked-in
+			'checkinUserList' => ca_object_checkouts::checkinUserList($ps_datetime),
+			'numReservations' => ca_object_checkouts::numOutstandingReservations(),						//	Number of individual copies currently reserved
+			'reservationUserList' => ca_object_checkouts::reservationUserList(),		
 		);
 			
 		//	Number of check-outs per day, week, month, year
 		
 		return $va_stats;
 	} 
+	# ------------------------------------------------------
+	# Checkout lists
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function getItemsDueWithin($ps_interval, $pa_options=null) {
+		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
+		$ps_group_by = caGetOption('groupBy', $pa_options, null); 
+		$ps_notification_interval = caGetOption('notificationInterval', $pa_options, null); 
+		
+		if (!($vn_due_date = strtotime($ps_interval))) {
+			throw new Exception(_t('Invalid interval'));
+		}
+		
+		$vn_notification_interval = 0;
+		if ($ps_notification_interval) {
+			if (($vn_notification_interval = (int)(strtotime($ps_notification_interval) - time())) < 0) { $vn_notification_interval = 0;}
+		}
+		
+		$va_items = array();
+		
+		$qr_res = $o_db->query("
+			SELECT c.*, u.user_id, u.user_name, u.fname, u.lname, u.email
+			FROM ca_object_checkouts c
+			INNER JOIN ca_users AS u ON u.user_id = c.user_id
+			WHERE
+				c.checkout_date IS NOT NULL
+				AND
+				c.return_date IS NULL
+				AND
+				c.due_date BETWEEN ? AND ?
+				AND
+				(
+					(c.last_sent_coming_due_email + {$vn_notification_interval} < ?)
+					OR 
+					c.last_sent_coming_due_email IS NULL
+				)
+				AND
+				c.deleted = 0
+			ORDER BY c.due_date
+		", array(time(), $vn_due_date, time()));
+		if ($qr_res->numRows() == 0) { return array(); }
+		
+		$va_template_values = array();
+		if ($vs_template = caGetOption('template', $pa_options, null)) {
+			$va_checkout_ids = $qr_res->getAllFieldValues('checkout_id');
+			$va_template_values = caProcessTemplateForIDs($vs_template, 'ca_object_checkouts', $va_checkout_ids, array('returnAsArray' => true));
+		}
+		$qr_res->seek(0);
+		$vn_i = 0;
+		while($qr_res->nextRow()) {
+			$va_row = $qr_res->getRow();
+			
+			if ($vs_template) {
+				$va_row['_display'] = $va_template_values[$vn_i];
+			}
+			
+			switch($ps_group_by) {
+				case 'user_id':
+					$va_items[$va_row['user_id']][] = $va_row;
+					break;
+				default:
+					$va_items[] = $va_row;
+					break;
+			}
+			
+			$vn_i++;
+		}
+		
+		return $va_items;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function getOverdueItems($pa_options=null) {
+		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
+		$ps_group_by = caGetOption('groupBy', $pa_options, null); 
+		$ps_notification_interval = caGetOption('notificationInterval', $pa_options, null); 
+		
+		$vn_notification_interval = 0;
+		if ($ps_notification_interval) {
+			if (($vn_notification_interval = (int)(strtotime($ps_notification_interval) - time())) < 0) { $vn_notification_interval = 0;}
+		}
+		
+		$va_items = array();
+		
+		$qr_res = $o_db->query("
+			SELECT c.*, u.user_id, u.user_name, u.fname, u.lname, u.email
+			FROM ca_object_checkouts c
+			INNER JOIN ca_users AS u ON u.user_id = c.user_id
+			WHERE
+				c.checkout_date IS NOT NULL
+				AND
+				c.return_date IS NULL
+				AND
+				c.due_date < ?
+				AND
+				(
+					(c.last_sent_overdue_email + {$vn_notification_interval} < ?)
+					OR 
+					c.last_sent_overdue_email IS NULL
+				)
+				AND
+				c.deleted = 0
+			ORDER BY c.due_date
+		", array(time(), time()));
+		if ($qr_res->numRows() == 0) { return array(); }
+		
+		$va_template_values = array();
+		if ($vs_template = caGetOption('template', $pa_options, null)) {
+			$va_checkout_ids = $qr_res->getAllFieldValues('checkout_id');
+			$va_template_values = caProcessTemplateForIDs($vs_template, 'ca_object_checkouts', $va_checkout_ids, array('returnAsArray' => true));
+		}
+		$qr_res->seek(0);
+		$vn_i = 0;
+		while($qr_res->nextRow()) {
+			$va_row = $qr_res->getRow();
+			
+			if ($vs_template) {
+				$va_row['_display'] = $va_template_values[$vn_i];
+			}
+			
+			switch($ps_group_by) {
+				case 'user_id':
+					$va_items[$va_row['user_id']][] = $va_row;
+					break;
+				default:
+					$va_items[] = $va_row;
+					break;
+			}
+			
+			$vn_i++;
+		}
+		
+		return $va_items;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function getReservedAvailableItems($pa_options=null) {
+		if (!($o_db = caGetOption('db', $pa_options, null))) { $o_db = new Db(); }
+		$ps_group_by = caGetOption('groupBy', $pa_options, null); 
+		$ps_notification_interval = caGetOption('notificationInterval', $pa_options, null); 
+		
+		$vn_notification_interval = 0;
+		if ($ps_notification_interval) {
+			if (($vn_notification_interval = (int)(strtotime($ps_notification_interval) - time())) < 0) { $vn_notification_interval = 0;}
+		}
+		
+		$va_items = array();
+		
+		$qr_res = $o_db->query("
+			SELECT c.*, u.user_id, u.user_name, u.fname, u.lname, u.email
+			FROM ca_object_checkouts c
+			INNER JOIN ca_users AS u ON u.user_id = c.user_id
+			WHERE
+				c.checkout_date IS NULL
+				AND
+				c.return_date IS NULL
+				AND
+				c.due_date IS NULL
+				AND
+				c.object_id NOT IN (
+					SELECT object_id 
+					FROM ca_object_checkouts
+					WHERE
+						checkout_date IS NOT NULL	
+						AND
+						return_date IS NULL
+						AND
+						deleted = 0
+				)
+				AND
+				(
+					(c.last_reservation_available_email + {$vn_notification_interval} < ?)
+					OR 
+					c.last_reservation_available_email IS NULL
+				)
+				AND
+				c.deleted = 0
+			ORDER BY c.created_on
+		", array(time()));
+		if ($qr_res->numRows() == 0) { return array(); }
+		
+		$va_template_values = array();
+		if ($vs_template = caGetOption('template', $pa_options, null)) {
+			$va_checkout_ids = $qr_res->getAllFieldValues('checkout_id');
+			$va_template_values = caProcessTemplateForIDs($vs_template, 'ca_object_checkouts', $va_checkout_ids, array('returnAsArray' => true));
+		}
+		$qr_res->seek(0);
+		$vn_i = 0;
+		$va_objects_seen = array();
+		while($qr_res->nextRow()) {
+			$va_row = $qr_res->getRow();
+			
+			// Only return first reservation for an object; others have to wait.
+			if (isset($va_objects_seen[$va_row['object_id']]) && $va_objects_seen[$va_row['object_id']]) { continue; }
+			
+			if ($vs_template) {
+				$va_row['_display'] = $va_template_values[$vn_i];
+			}
+			
+			switch($ps_group_by) {
+				case 'user_id':
+					$va_items[$va_row['user_id']][] = $va_row;
+					break;
+				default:
+					$va_items[] = $va_row;
+					break;
+			}
+			
+			$va_objects_seen[$va_row['object_id']] = true;
+			$vn_i++;
+		}
+		
+		return $va_items;
+	}
+	# ------------------------------------------------------
 }
