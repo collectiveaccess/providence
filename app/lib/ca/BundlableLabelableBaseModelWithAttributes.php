@@ -4977,7 +4977,6 @@ if (!$vb_batch) {
 			// BEGIN - non-self relation
 			//
 
-
 			$va_wheres[] = "(".$this->tableName().'.'.$this->primaryKey()." IN (".join(",", $va_row_ids)."))";
 			$vs_cur_table = array_shift($va_path);
 			$va_joins = array();
@@ -4999,7 +4998,14 @@ if (!$vb_batch) {
 				$vs_cur_table = $vs_join_table;
 			}
 
-			$va_selects[] = $this->tableName().'.'.$this->primaryKey().' AS row_id';
+			// If we're getting ca_set_items, we can't rename our primary key "row_id" because that table
+			// has a field called row_id and it's important and should be in the selected fields. Hence, this hack.
+			if($vs_related_table_name == 'ca_set_items') {
+				$va_selects[] = $this->tableName().'.'.$this->primaryKey();
+				$va_selects[] = 'ca_set_items.row_id';
+			} else {
+				$va_selects[] = $this->tableName().'.'.$this->primaryKey().' AS row_id';
+			}
 
 			$vs_order_by = '';
 			if ($t_item_rel && $t_item_rel->hasField('rank')) {
