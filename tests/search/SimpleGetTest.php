@@ -33,8 +33,8 @@
 require_once(__CA_BASE_DIR__.'/tests/search/BaseTestWithData.php');
 
 /**
- * Class SimpleSearchQueryTest
- * Note: Requires dublincore profile!
+ * Class SimpleGetTest
+ * Note: Requires testing profile!
  */
 class SimpleGetTest extends BaseTestWithData {
 	# -------------------------------------------------------
@@ -51,7 +51,6 @@ class SimpleGetTest extends BaseTestWithData {
 		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
 		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
 		 */
-
 		$vn_test_record = $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'moving_image',

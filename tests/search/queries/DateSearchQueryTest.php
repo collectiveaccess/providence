@@ -33,10 +33,10 @@
 require_once(__CA_BASE_DIR__ . '/tests/search/AbstractSearchQueryTest.php');
 
 /**
- * Class SimpleSearchQueryTest
+ * Class DateSearchQueryTest
  * Note: Requires testing profile!
  */
-class SimpleSearchQueryTest extends AbstractSearchQueryTest {
+class DateSearchQueryTest extends AbstractSearchQueryTest {
 	# -------------------------------------------------------
 	public function setUp() {
 		// don't forget to call parent so that request is set up correctly
@@ -44,6 +44,7 @@ class SimpleSearchQueryTest extends AbstractSearchQueryTest {
 
 		// search subject table
 		$this->setPrimaryTable('ca_objects');
+
 
 		/**
 		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
@@ -59,40 +60,71 @@ class SimpleSearchQueryTest extends AbstractSearchQueryTest {
 					"name" => "My test image",
 				),
 			),
+			'attributes' => array(
+				'coverageDates' => array(
+					array(
+						'coverageDates' => '01/28/1985 @ 10am'
+					)
+				)
+			)
 		)));
 
 		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
-				'type_id' => 'dataset',
+				'type_id' => 'image',
 			),
 			'preferred_labels' => array(
 				array(
 					"locale" => "en_US",
-					"name" => "My test dataset",
+					"name" => "Another test image",
 				),
 			),
-		)));
-
-		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
-			'intrinsic_fields' => array(
-				'type_id' => 'physical_object',
-			),
-			'preferred_labels' => array(
-				array(
-					"locale" => "en_US",
-					"name" => "Test physical object",
-				),
-			),
+			'attributes' => array(
+				'coverageDates' => array(
+					array(
+						'coverageDates' => '1986'
+					)
+				)
+			)
 		)));
 
 		// search queries
 		$this->setSearchQueries(array(
-			'My Test Image' => 1,
-			'test' => 3,
-			'ca_objects.type_id:image' => 1,
-			'asdf' => 0,
-			'ca_objects.type_id:image OR ca_objects.type_id:dataset' => 2,
-			'"physical" AND (ca_objects.type_id:image OR ca_objects.type_id:dataset)' => 0,
+			// full text
+			'1985' => 1, '1986' => 1,
+
+			// basic stuff
+			'ca_objects.coverageDates:"1985-1986"' => 2,
+			'ca_objects.coverageDates:"1985"' => 1,
+			'ca_objects.coverageDates:"01/1985"' => 1,
+
+			// ranges in weird 'special' notations
+			'ca_objects.coverageDates:"1980s"' => 2,
+			'ca_objects.coverageDates:"Winter 1985"' => 1,
+			'ca_objects.coverageDates:"Spring 2015"' => 0,
+			'ca_objects.coverageDates:"circa 1985"' => 1,
+			'ca_objects.coverageDates:"20th century"' => 2,
+			'ca_objects.coverageDates:"198-"' => 2,
+			'ca_objects.coverageDates:"1990\'s"' => 0,
+			'ca_objects.coverageDates:"1980\'s"' => 2,
+
+			// precise ranges in different notations
+			'ca_objects.coverageDates:"Between June 5, 2007 and June 15 2007"' => 0,
+			'ca_objects.coverageDates:"Between January 27, 1985 and January 29 1985"' => 1,
+			'ca_objects.coverageDates:"Between January 01, 1985 and December 31 1986"' => 2,
+
+			'ca_objects.coverageDates:"June 5, 2007 - June 15, 2007"' => 0,
+			'ca_objects.coverageDates:"January 27, 1985 - January 29, 1985"' => 1,
+			'ca_objects.coverageDates:"January 1, 1985 - December 31, 1986"' => 2,
+
+			'ca_objects.coverageDates:"From 6/5/2007 to 6/15/2007"' => 0,
+			'ca_objects.coverageDates:"From 1/27/1985 to 1/29/1985"' => 1,
+			'ca_objects.coverageDates:"From 1/1/1985 to 12/31/1986"' => 2,
+
+			// times
+			'ca_objects.coverageDates:"1/28/1985 @ 8am - 1/28/1985 @ 9am"' => 0,
+			'ca_objects.coverageDates:"1/28/1985 @ 9am - 1/28/1985 @ 11am"' => 1,
+			'ca_objects.coverageDates:"1/28/1986 @ 8am - 1/28/1986 @ 9am"' => 1,
 		));
 	}
 	# -------------------------------------------------------
