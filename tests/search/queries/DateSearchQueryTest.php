@@ -97,6 +97,10 @@ class DateSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.coverageDates:"1985-1986"' => 2,
 			'ca_objects.coverageDates:"1985"' => 1,
 			'ca_objects.coverageDates:"01/1985"' => 1,
+			'ca_objects.coverageDates:"01-28-1985"' => 1,
+			'ca_objects.coverageDates:"01.28.1985"' => 1,
+			'ca_objects.coverageDates:"28-JAN-1985"' => 1,
+			'ca_objects.coverageDates:"28-JAN-85"' => 1,
 
 			// ranges in weird 'special' notations
 			'ca_objects.coverageDates:"1980s"' => 2,
@@ -125,6 +129,11 @@ class DateSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.coverageDates:"1/28/1985 @ 8am - 1/28/1985 @ 9am"' => 0,
 			'ca_objects.coverageDates:"1/28/1985 @ 9am - 1/28/1985 @ 11am"' => 1,
 			'ca_objects.coverageDates:"1/28/1986 @ 8am - 1/28/1986 @ 9am"' => 1,
+
+			// these are valid dates for data entry but apparently they don't work that well in combination with the search
+			//'ca_objects.coverageDates:"01/28/1985 @ 4:43:03a.m. - 01/28/1985 @ 4:43:03p.m."' => 1,
+			//'ca_objects.coverageDates:"01/28/1985 @ 07:43:03 - 01/28/1985 @ 11:43:03"' => 1,
+			//'ca_objects.coverageDates:"01/28/1986 @ 18:43:03 - 01/28/1986 @ 19:43:03"' => 1,
 		));
 	}
 	# -------------------------------------------------------
