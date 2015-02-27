@@ -47,14 +47,26 @@ class SimpleGetTest extends BaseTestWithData {
 		// don't forget to call parent so that the request is set up
 		parent::setUp();
 
+		/**
+		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
+		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
+		 */
+
 		$vn_test_record = $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
-				'type_id' => 'image',
+				'type_id' => 'moving_image',
 			),
 			'preferred_labels' => array(
 				array(
 					"locale" => "en_US",
-					"name" => "My test image",
+					"name" => "My test moving image",
+				),
+			),
+			'attributes' => array(
+				'duration' => array(
+					array(
+						'duration' => '00:23:28'
+					)
 				),
 			),
 		));
@@ -66,9 +78,13 @@ class SimpleGetTest extends BaseTestWithData {
 	# -------------------------------------------------------
 	public function testGets() {
 		$vm_ret = $this->opt_object->get('ca_objects.type_id', array('convertCodesToDisplayText' => true));
-		$this->assertEquals('Image', $vm_ret);
+		$this->assertEquals('Moving Image', $vm_ret);
 
 		$vm_ret = $this->opt_object->get('ca_objects.preferred_labels');
-		$this->assertEquals('My test image', $vm_ret);
+		$this->assertEquals('My test moving image', $vm_ret);
+
+		$vm_ret = $this->opt_object->get('ca_objects.duration');
+		$this->assertEquals('0:23:28', $vm_ret);
 	}
+	# -------------------------------------------------------
 }
