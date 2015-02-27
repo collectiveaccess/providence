@@ -30,22 +30,24 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_BASE_DIR__ . '/tests/search/AbstractSearchQueryTest.php');
+require_once(__CA_BASE_DIR__.'/tests/search/BaseTestWithData.php');
 
 /**
  * Class SimpleSearchQueryTest
  * Note: Requires dublincore profile!
  */
-class SimpleSearchQueryTest extends AbstractSearchQueryTest {
+class SimpleGetTest extends BaseTestWithData {
+	# -------------------------------------------------------
+	/**
+	 * @var BundlableLabelableBaseModelWithAttributes
+	 */
+	private $opt_object = null;
 	# -------------------------------------------------------
 	public function setUp() {
-		// don't forget to call parent so that request is set up correctly
+		// don't forget to call parent so that the request is set up
 		parent::setUp();
 
-		// search subject table
-		$this->setPrimaryTable('ca_objects');
-
-		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
+		$vn_test_record = $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'image',
 			),
@@ -55,41 +57,18 @@ class SimpleSearchQueryTest extends AbstractSearchQueryTest {
 					"name" => "My test image",
 				),
 			),
-		)));
-
-		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
-			'intrinsic_fields' => array(
-				'type_id' => 'dataset',
-			),
-			'preferred_labels' => array(
-				array(
-					"locale" => "en_US",
-					"name" => "My test dataset",
-				),
-			),
-		)));
-
-		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
-			'intrinsic_fields' => array(
-				'type_id' => 'physical_object',
-			),
-			'preferred_labels' => array(
-				array(
-					"locale" => "en_US",
-					"name" => "Test physical object",
-				),
-			),
-		)));
-
-		// search queries
-		$this->setSearchQueries(array(
-			'My Test Image' => 1,
-			'test' => 3,
-			'ca_objects.type_id:image' => 1,
-			'asdf' => 0,
-			'ca_objects.type_id:image OR ca_objects.type_id:dataset' => 2,
-			'"physical" AND (ca_objects.type_id:image OR ca_objects.type_id:dataset)' => 0,
 		));
+
+		$this->assertGreaterThan(0, $vn_test_record);
+
+		$this->opt_object = new ca_objects($vn_test_record);
 	}
 	# -------------------------------------------------------
+	public function testGets() {
+		$vm_ret = $this->opt_object->get('ca_objects.type_id', array('convertCodesToDisplayText' => true));
+		$this->assertEquals('Image', $vm_ret);
+
+		$vm_ret = $this->opt_object->get('ca_objects.preferred_labels');
+		$this->assertEquals('My test image', $vm_ret);
+	}
 }
