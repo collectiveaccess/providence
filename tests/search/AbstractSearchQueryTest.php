@@ -121,7 +121,7 @@ abstract class AbstractSearchQueryTest extends PHPUnit_Framework_TestCase {
 		$o_search = caGetSearchInstance($this->ops_primary_table);
 		foreach($this->opa_search_queries as $vs_query => $vn_expected_num_results) {
 			$o_result = $o_search->search($vs_query);
-			$this->assertEquals($vn_expected_num_results, $o_result->numHits(), 'Must match the expected number of search results');
+			$this->assertEquals($vn_expected_num_results, $o_result->numHits(), 'Must match the expected number of search results. Query was: '.$vs_query);
 		}
 	}
 	# -------------------------------------------------------

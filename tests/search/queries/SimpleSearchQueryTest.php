@@ -45,14 +45,36 @@ class SimpleSearchQueryTest extends AbstractSearchQueryTest {
 		// test data
 		$this->setTestData(array(
 			'ca_objects' => array(
-				'test' => array(
+				'test_image' => array(
 					'intrinsic_fields' => array(
 						'type_id' => 'image',
 					),
 					'preferred_labels' => array(
 						array(
 							"locale" => "en_US",
-							"name" => "My Test Image",
+							"name" => "My test image",
+						),
+					),
+				),
+				'test_dataset' => array(
+					'intrinsic_fields' => array(
+						'type_id' => 'dataset',
+					),
+					'preferred_labels' => array(
+						array(
+							"locale" => "en_US",
+							"name" => "My test dataset",
+						),
+					),
+				),
+				'test_physical_object' => array(
+					'intrinsic_fields' => array(
+						'type_id' => 'physical_object',
+					),
+					'preferred_labels' => array(
+						array(
+							"locale" => "en_US",
+							"name" => "Test physical object",
 						),
 					),
 				),
@@ -62,9 +84,11 @@ class SimpleSearchQueryTest extends AbstractSearchQueryTest {
 		// search queries
 		$this->setSearchQueries(array(
 			'My Test Image' => 1,
-			'test' => 1,
+			'test' => 3,
 			'ca_objects.type_id:image' => 1,
 			'asdf' => 0,
+			'ca_objects.type_id:image OR ca_objects.type_id:dataset' => 2,
+			'"physical" AND (ca_objects.type_id:image OR ca_objects.type_id:dataset)' => 0,
 		));
 
 		// don't forget to call parent so that data actually is inserted
