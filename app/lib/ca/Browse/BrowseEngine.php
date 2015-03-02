@@ -945,8 +945,8 @@
 					Debug::msg("Cache hit for {$vs_cache_key}");
 				} else {
 					$va_criteria = $this->getCriteria();
-					$this->opo_ca_browse_cache->remove();
-					$this->opo_ca_browse_cache->setParameter('criteria', $va_criteria);
+					//$this->opo_ca_browse_cache->remove();
+					//$this->opo_ca_browse_cache->setParameter('criteria', $va_criteria);
 					
 					$vb_need_to_save_in_cache = true;
 					$vb_need_to_cache_facets = true;
@@ -1916,7 +1916,8 @@
 						$vb_need_to_save_in_cache = true;
 					} else {
 						// No results for some reason - we're here because we don't want to throw a SQL error
-						$va_results = array();
+						$this->opo_ca_browse_cache->setResults($va_results = array());
+						$vb_need_to_save_in_cache = true;
 					}
 				}
 			} else {
@@ -2064,16 +2065,30 @@
 		 */
 		public function getFacet($ps_facet_name, $pa_options=null) {
 			if (!is_array($this->opa_browse_settings)) { return null; }
+			
+			$pn_start = caGetOption('start', $pa_options, 0);
+			$pn_limit = caGetOption('limit', $pa_options, null);
+			
 			$va_facet_cache = $this->opo_ca_browse_cache->getFacet($ps_facet_name);
 			
 			// is facet cached?
-			if (isset($va_facet_cache) && is_array($va_facet_cache)) { 
-				return $va_facet_cache; 
+			$va_facet_content = null;
+			if (!isset($va_facet_cache) || !is_array($va_facet_cache)) { 			
+				$va_facet_content = $va_facet_cache = $this->getFacetContent($ps_facet_name, $pa_options);
+				$vb_needs_caching = true;
 			}
 			
-			$this->opo_ca_browse_cache->setFacet($ps_facet_name, $vs_facet_content = $this->getFacetContent($ps_facet_name, $pa_options));
-			$this->opo_ca_browse_cache->save();
-			return $vs_facet_content;
+			if ($pn_limit > 0) {
+				$va_facet_cache = array_slice($va_facet_cache, (int)$pn_start, $pn_limit);
+			} elseif ($pn_start > 0) {
+				$va_facet_cache = array_slice($va_facet_cache, (int)$pn_start);
+			}
+			
+			if ($va_facet_content && is_array($va_facet_content)) {
+				$this->opo_ca_browse_cache->setFacet($ps_facet_name, $va_facet_content);
+				$this->opo_ca_browse_cache->save();
+			}
+			return $va_facet_cache;
 		}
 		# ------------------------------------------------------
 		/**
@@ -4393,7 +4408,7 @@
 				case 'authority':
 					$vs_rel_table_name = $va_facet_info['table'];
 					$va_params = $this->opo_ca_browse_cache->getParameters();
-
+					
 					// Make sure we honor type restrictions for the related authority
 					$va_user_type_restrictions = caGetTypeRestrictionsForUser($vs_rel_table_name);
 					$va_restrict_to_types = $va_facet_info['restrict_to_types'];
