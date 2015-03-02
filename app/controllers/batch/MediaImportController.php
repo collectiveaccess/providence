@@ -408,6 +408,7 @@
  				$va_tmp = explode(";", $ps_id);
  				
  				$va_acc = array();
+ 				$vn_i = 0;
  				foreach($va_tmp as $vs_tmp) {
  					list($vs_directory, $vn_start) = explode(":", $vs_tmp);
  					if (!$vs_directory) { continue; }
@@ -416,16 +417,22 @@
 					$vs_k = array_pop($va_tmp);
 					if(!$vs_k) { $vs_k = '/'; }
 					
-					$va_level_data[$vs_k] = $va_file_list = $this->_getDirectoryListing($vs_root_directory.'/'.$vs_directory, false, 20, (int)$vn_start, (int)$pn_max);
-					$va_level_data[$vs_k]['_primaryKey'] = 'name';
+					$va_level_data["{$vs_k}|{$vn_i}"] = $va_file_list = $this->_getDirectoryListing($vs_root_directory.'/'.$vs_directory, false, 20, (int)$vn_start, (int)$pn_max);
+					$va_level_data["{$vs_k}|{$vn_i}"]['_primaryKey'] = 'name';
 					
 					$va_counts = caGetDirectoryContentsCount($vs_root_directory.'/'.$vs_directory, false, false);
-					$va_level_data[$vs_k]['_itemCount'] = $va_counts['files'] + $va_counts['directories'];
+					$va_level_data["{$vs_k}|{$vn_i}"]['_itemCount'] = $va_counts['files'] + $va_counts['directories'];
+					$vn_i++;
  				}
  			} else {
  				list($ps_directory, $pn_start) = explode(":", $ps_id);
+ 				
+				$va_tmp = explode('/', $ps_directory);
+				$vn_level = sizeof($va_tmp);
+				if ($ps_directory[0] == '/') { $vn_level--; }
+				
 				if (!$ps_directory) { 
-					$va_level_data[$vs_k] = array('/' => 
+					$va_level_data["{$vs_k}|{$vn_level}"] = array('/' => 
 							array(
 								'item_id' => '/',
 								'name' => 'Root',
@@ -433,22 +440,22 @@
 								'children' => 1
 							)
 					);
-					$va_level_data[$vs_k]['_primaryKey'] = 'name';
-					$va_level_data[$vs_k]['_itemCount'] = 1;
+					$va_level_data["{$vs_k}|{$vn_level}"]['_primaryKey'] = 'name';
+					$va_level_data["{$vs_k}|{$vn_level}"]['_itemCount'] = 1;
 				} else {
 					$va_tmp = explode('/', $ps_directory);
 					$vs_k = array_pop($va_tmp);
 					if(!$vs_k) { $vs_k = '/'; }
 					
-					$va_level_data[$vs_k] = $va_file_list = $this->_getDirectoryListing($vs_root_directory.'/'.$ps_directory, false, 20, (int)$pn_start, (int)$pn_max);
-					$va_level_data[$vs_k]['_primaryKey'] = 'name';
+					$va_level_data["{$vs_k}|{$vn_level}"] = $va_file_list = $this->_getDirectoryListing($vs_root_directory.'/'.$ps_directory, false, 20, (int)$pn_start, (int)$pn_max);
+					$va_level_data["{$vs_k}|{$vn_level}"]['_primaryKey'] = 'name';
 					
 					$va_counts = caGetDirectoryContentsCount($vs_root_directory.'/'.$ps_directory, false, false);
-					$va_level_data[$vs_k]['_itemCount'] = $va_counts['files'] + $va_counts['directories'];
+					$va_level_data["{$vs_k}|{$vn_level}"]['_itemCount'] = $va_counts['files'] + $va_counts['directories'];
 				}
 			}
  			
- 			$this->view->setVar('directory_list', $va_level_data);
+ 			$this->view->setVar('directory_list', caSanitizeArray($va_level_data));
  			
  			
  			$this->render('mediaimport/directory_level_json.php');
@@ -501,7 +508,7 @@
  			} else {
 				foreach($_FILES as $vs_param => $va_file) {
 					foreach($va_file['name'] as $vn_i => $vs_name) {
-						if (!in_array(pathinfo($vs_name, PATHINFO_EXTENSION), $va_extensions)) { 
+						if (!in_array(strtolower(pathinfo($vs_name, PATHINFO_EXTENSION)), $va_extensions)) { 
 							$va_response['skipped'][$vs_name] = true;
 							continue; 
 						}

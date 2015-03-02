@@ -156,7 +156,7 @@
 			if (is_array($va_type_ids = $g_request->user->getTypesWithAccess($t_instance->tableName(), $vn_min_access))) {
 				$va_type_ids = caMakeTypeIDList($pm_table_name_or_num, $va_type_ids, array_merge($pa_options, array('dont_include_subtypes_in_type_restriction' => true)));
 			}
-		} 
+		}
 		// get types from config file
 		if ($va_config_types = $t_instance->getAppConfig()->getList($vs_table_name.'_restrict_to_types')) {
 			if ((bool)$o_config->get($vs_table_name.'_restrict_to_types_dont_include_subtypes')) {

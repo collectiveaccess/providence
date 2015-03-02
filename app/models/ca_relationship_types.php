@@ -713,6 +713,8 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		} else {
 			if ($vb_we_set_transaction) { $o_trans->commit(); }
 		}
+
+		$this->loadSubtypeLists();
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
@@ -747,7 +749,8 @@ class ca_relationship_types extends BundlableLabelableBaseModelWithAttributes {
 		} else {
 			if ($vb_we_set_transaction) { $o_trans->commit(); }
 		}
-		
+
+		$this->loadSubtypeLists();
 		return $vn_rc;
 	}
 	# ------------------------------------------------------

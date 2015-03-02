@@ -1491,6 +1491,7 @@ class ca_users extends BaseModel {
 						$o_currency = new Zend_Currency();
 						return ($vs_currency_specifier = $o_currency->getShortName()) ? $vs_currency_specifier : "CAD";
 					}
+					return $va_pref_info["default"] ? $va_pref_info["default"] : null;
 					break;
 				# ---------------------------------
 				default:
@@ -1782,9 +1783,8 @@ class ca_users extends BaseModel {
 			
 			$va_pref_info = $this->getPreferenceInfo($ps_pref);
 			
-			$vs_current_value = $this->getPreference($ps_pref);
+			if (is_null($vs_current_value = $this->getPreference($ps_pref))) { $vs_current_value = $this->getPreferenceDefault($ps_pref); }
 			$vs_output = "";
-			
 			$vs_class = "";
 			$vs_classname = "";
 			if(isset($pa_options['classname']) && $pa_options['classname']){

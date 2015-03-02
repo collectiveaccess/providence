@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -324,8 +324,6 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		}
 		CompositeCache::save($pn_element_id, $va_element_ids, 'ElementSetIds');
 		
-		if (caGetOption('idsOnly', $pa_options, false)) { return $va_element_ids; }
-		
 		// Get labels
 		$va_labels = $this->getPreferredDisplayLabelsForIDs($va_element_ids);
 		
@@ -344,6 +342,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		array_unshift($va_tmp, $va_root);
 
 		CompositeCache::save($pn_element_id, $va_tmp, 'ElementSets');
+		
+		if (caGetOption('idsOnly', $pa_options, false)) { return $va_element_ids; }
 		return $va_tmp;
 	}
 	# ------------------------------------------------------

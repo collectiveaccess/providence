@@ -32,6 +32,9 @@
  	$t_instance				= $this->getVar('t_instance');
  	$vs_bundle_name 		= $this->getVar('bundle_name');
  	$vb_batch				= $this->getVar('batch');
+
+	// fetch data for bundle preview
+	$vs_bundle_preview = $t_instance->get($vs_bundle_name, array('convertCodesToDisplayText' => true));
  	
  	$va_errors = array();
  	if(is_array($va_action_errors = $this->getVar('errors'))) {
@@ -43,6 +46,13 @@
 		print caBatchEditorIntrinsicModeControl($t_instance, $vs_id_prefix);
 	} else {
 		print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+?>
+		<script type="text/javascript">
+			jQuery(document).ready(function() {
+				jQuery('#' + '<?php print $vs_id_prefix; ?>' + '_BundleContentPreview').text(<?php print caEscapeForBundlePreview($vs_bundle_preview); ?>);
+			});
+		</script>
+<?php
 	}
 	print caEditorBundleMetadataDictionary($this->request, "intrinsic_{$vs_bundle_name}", $va_settings);
 ?>

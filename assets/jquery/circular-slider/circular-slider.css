@@ -40,7 +40,7 @@ SOFTWARE.
     border-radius: 100%;
 	border: 2px solid rgb(236, 248, 212);
 	text-align : center;
-	pointer-events: none;
+	
 	line-height: 4em;
 	color: white;
 	background-color: yellowgreen;

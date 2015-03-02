@@ -307,6 +307,7 @@
 			showEmptyFormsOnLoad: 1,
 			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'Object', 'Get', $va_lookup_params); ?>',
 			types: <?php print json_encode($va_settings['restrict_to_types']); ?>,
+			bundlePreview: <?php print caEscapeForBundlePreview($t_instance->get($t_item->tableName(), array('delimiter' => '; '))); ?>,
 			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
 			isSortable: <?php print ($vb_read_only || $vs_sort) ? "false" : "true"; ?>,
 			listSortOrderID: '<?php print $vs_id_prefix; ?>BundleList',

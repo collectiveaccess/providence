@@ -1195,6 +1195,22 @@ div.hint {
 .settingsBundle {
     padding: 10px;
 }
+.bundleContentPreview {
+	text-align:left;
+	display:inline-block;
+	color:#888888;
+	font-family: helvetica, sans-serif;
+	font-weight:normal;
+	font-size:13px;
+	padding-top:2px;
+	padding-left:10px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	width: 40%;
+	vertical-align:bottom;
+	padding-bottom:5px;
+}
 
 /* Style for labels on form fields where an error has occurred */
 .formLabelError {
@@ -3438,6 +3454,15 @@ a.exploreSelected {
     font-style: italic;
 }
 
+.hierarchyCountDisplay {
+    text-align:right;
+    font-style:italic;
+    color:#999999;
+    font-family:helvetica, sans-serif;
+    font-size:11px;
+    margin-top:-8px;
+}
+
 /*** hierarchy navigation on editor pages ***/
 .hierNav {
     padding:10px;
@@ -4181,7 +4206,7 @@ div.searchFormElementSettingsMessage {
     width:290px;
 }
 
-/ * SEARCH FORMS */
+/* SEARCH FORMS */
 
 .searchFormSelector {
     margin-bottom: 3px;
@@ -5235,6 +5260,10 @@ div.listRel {
     line-height:1.5em;
 }
 
+div.listRel:first-of-type {
+    margin-top:5px;
+}
+
 .caItemList {
     /* margin-top: 10px; */
     max-height: 500px;
@@ -6042,7 +6071,7 @@ div.searchlight-results div.searchlight-selected {
     color: red;
 }
 
-/ * OpenLayers */
+/* OpenLayers */
 
 .olMap {
     background-color: #999999;
@@ -7095,7 +7124,7 @@ div.caLibraryTransactionListItemDueDateLabel {
 }
 
 div.caLibraryTransactionListItemWillReserve {
-	color: #cc000;
+	color: #cc0000;
 	font-size: 11px;
 	font-weight: bold;
 }
