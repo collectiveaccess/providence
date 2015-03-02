@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2014 Whirl-i-Gig
+ * Copyright 2007-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -188,7 +188,7 @@ class SearchEngine extends SearchBase {
 				Debug::msg('SEARCH cache hit for '.$vs_cache_key);
 				$va_hits = $o_cache->getResults();
 				if (isset($pa_options['sort']) && $pa_options['sort'] && ($pa_options['sort'] != '_natural')) {
-					$va_hits = $this->sortHits($va_hits, $this->ops_tablename, $pa_options['sort'], $ps_search, (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
+					$va_hits = $this->sortHits($va_hits, $this->ops_tablename, $pa_options['sort'], (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
 				} else {
 					if (($pa_options['sort'] == '_natural') && ($pa_options['sort_direction'] == 'desc')) {
 						$va_hits = array_reverse($va_hits);
@@ -285,7 +285,7 @@ class SearchEngine extends SearchBase {
 			}
 			
 			if (isset($pa_options['sort']) && $pa_options['sort'] && ($pa_options['sort'] != '_natural')) {
-				$va_hits = $this->sortHits($va_hits, $t_table->tableName(), $pa_options['sort'], $vs_cache_key, (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
+				$va_hits = $this->sortHits($va_hits, $t_table->tableName(), $pa_options['sort'], (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
 			} else {
 				if (($pa_options['sort'] == '_natural') && ($pa_options['sort_direction'] == 'desc')) {
 					$va_hits = array_reverse($va_hits);

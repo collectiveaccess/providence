@@ -1429,6 +1429,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			$va_mandatory_field_values = array();
 			$vs_preferred_label_for_log = null;
 			
+			$vb_use_parent_as_subject = false;
 		
 			if ($vn_row < $vn_num_initial_rows_to_skip) {	// skip over initial header rows
 				$o_log->logDebug(_t('Skipped initial row %1 of %2', $vn_row, $vn_num_initial_rows_to_skip));
@@ -1955,6 +1956,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					}
 					$va_ptr = $va_group_data;
 				}
+				
+				
+			
+				if ($va_item['settings']['useParentAsSubject']) {
+					$vb_use_parent_as_subject = true;
+				}
 			}
 			
 			//
@@ -1996,6 +2003,20 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//die("done\n");
 			
 			if (!sizeof($va_content_tree) && !str_replace("%", "", $vs_idno)) { continue; }
+	
+			if ($vb_use_parent_as_subject) { 
+				foreach($va_content_tree[$vs_subject_table] as $vn_i => $va_element_data) {
+					foreach($va_element_data as $vs_element => $va_element_value) {
+						if ($vs_element == 'parent_id') {
+							if (($vn_parent_id = (int)$va_element_value['parent_id']) > 0) {
+								if ($t_subject->load($vn_parent_id)) {
+									$va_content_tree[$vs_subject_table][$vn_i]['parent_id']['parent_id'] = $t_subject->get('parent_id');
+								}
+							}
+						}
+					}
+				}
+			}
 	
 			if (!$t_subject->getPrimaryKey()) {
 				$o_event->beginItem($vn_row, $t_subject->tableNum(), 'I') ;

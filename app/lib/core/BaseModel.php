@@ -2197,9 +2197,9 @@ class BaseModel extends BaseObject {
 							if (
 								!$va_attr["IS_NULL"]
 								&&
-								((($$this->_FIELD_VALUES[$start_field_name] == '') || is_null($this->_FIELD_VALUES[$start_field_name]))
+								((($this->_FIELD_VALUES[$start_field_name] == '') || is_null($this->_FIELD_VALUES[$start_field_name]))
 								||
-								(($$this->_FIELD_VALUES[$end_field_name] == '') || is_null($this->_FIELD_VALUES[$end_field_name])))
+								(($this->_FIELD_VALUES[$end_field_name] == '') || is_null($this->_FIELD_VALUES[$end_field_name])))
 							) {
 								$this->postError(1805, _t("Daterange is undefined but field does not support NULL values"),"BaseModel->insert()", $this->tableName().'.'.$vs_field);
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
@@ -2231,9 +2231,9 @@ class BaseModel extends BaseObject {
 							if (
 								!$va_attr["IS_NULL"]
 								&&
-								((($$this->_FIELD_VALUES[$start_field_name] == '') || is_null($this->_FIELD_VALUES[$start_field_name]))
+								((($this->_FIELD_VALUES[$start_field_name] == '') || is_null($this->_FIELD_VALUES[$start_field_name]))
 								||
-								(($$this->_FIELD_VALUES[$end_field_name] == '') || is_null($this->_FIELD_VALUES[$end_field_name])))
+								(($this->_FIELD_VALUES[$end_field_name] == '') || is_null($this->_FIELD_VALUES[$end_field_name])))
 							) {
 								$this->postError(1805,_t("Time range is undefined but field does not support NULL values"),"BaseModel->insert()", $this->tableName().'.'.$vs_field);
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
@@ -2769,9 +2769,9 @@ class BaseModel extends BaseObject {
 							if (
 								!$va_attr["IS_NULL"]
 								&&
-								((($$this->_FIELD_VALUES[$start_field_name] == '') || is_null($this->_FIELD_VALUES[$start_field_name]))
+								((($this->_FIELD_VALUES[$start_field_name] == '') || is_null($this->_FIELD_VALUES[$start_field_name]))
 								||
-								(($$this->_FIELD_VALUES[$end_field_name] == '') || is_null($this->_FIELD_VALUES[$end_field_name])))
+								(($this->_FIELD_VALUES[$end_field_name] == '') || is_null($this->_FIELD_VALUES[$end_field_name])))
 							) {
 								$this->postError(1805,_t("Daterange is undefined but field does not support NULL values"),"BaseModel->update()", $this->tableName().'.'.$vs_field);
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
@@ -2802,9 +2802,9 @@ class BaseModel extends BaseObject {
 							if (
 								!$va_attr["IS_NULL"]
 								&&
-								((($$this->_FIELD_VALUES[$start_field_name] == '') || is_null($this->_FIELD_VALUES[$start_field_name]))
+								((($this->_FIELD_VALUES[$start_field_name] == '') || is_null($this->_FIELD_VALUES[$start_field_name]))
 								||
-								(($$this->_FIELD_VALUES[$end_field_name] == '') || is_null($this->_FIELD_VALUES[$end_field_name])))
+								(($this->_FIELD_VALUES[$end_field_name] == '') || is_null($this->_FIELD_VALUES[$end_field_name])))
 							) {
 								$this->postError(1805,_t("Time range is undefined but field does not support NULL values"),"BaseModel->update()", $this->tableName().'.'.$vs_field);
 								if ($vb_we_set_transaction) { $this->removeTransaction(false); }
@@ -7519,32 +7519,89 @@ class BaseModel extends BaseObject {
 	 * 
 	 * 
 	 * @param string $ps_template 
-	 * @param array $pa_options
+	 * @param array $pa_options Any options supported by BaseModel::getHierarchyAsList() and caProcessTemplateForIDs() as well as:
+	 *		sort = An array or semicolon delimited list of elements to sort on. [Default is null]
+	 * 		sortDirection = Direction to sorting, either 'asc' (ascending) or 'desc' (descending). [Default is asc]
 	 * @return array
 	 */
 	public function hierarchyWithTemplate($ps_template, $pa_options=null) {
 		if (!$this->isHierarchical()) { return null; }
+		if(!is_array($pa_options)) { $pa_options = array(); }
+		
 		$vs_pk = $this->primaryKey();
 		$pn_id = caGetOption($vs_pk, $pa_options, null);
 		$va_hier = $this->getHierarchyAsList($pn_id, array_merge($pa_options, array('idsOnly' => false)));
 		
-		$va_levels = $va_ids = array();
-		foreach($va_hier as $vn_i => $va_item) {
-			$vn_id = $va_item['NODE'][$vs_pk];
-			$va_levels[$vn_i] = $va_item['LEVEL'];
-			$va_ids[] = $vn_id;
-		}
+		$va_levels = $va_ids = $va_parent_ids = array();
 		
-		$va_vals = caProcessTemplateForIDs($ps_template, $this->tableName(), $va_ids, array('returnAsArray'=> true));
+		foreach($va_hier as $vn_i => $va_item) {
+			$va_levels[$vn_i] = $va_item['LEVEL'];
+			$va_ids[] = $va_item['NODE'][$vs_pk];
+			$va_parent_ids[] = $va_item['NODE']['parent_id'];
+		}
 		
 		$va_hierarchy_data = array();
-		foreach($va_vals as $vn_i => $vs_val) {
-			$va_hierarchy_data[] = array(
-				'level' => $va_levels[$vn_i],
-				'display' => $vs_val
-			);
+		
+		$va_vals = caProcessTemplateForIDs($ps_template, $this->tableName(), $va_ids, array_merge($pa_options, array('returnAsArray'=> true)));
+		
+		$pa_sort = caGetOption('sort', $pa_options, null);
+		if (!is_array($pa_sort)) { $pa_sort = explode(";", $pa_sort); }
+		
+		$ps_sort_direction = strtolower(caGetOption('sortDirection', $pa_options, 'asc'));
+		if (!in_array($ps_sort_direction, array('asc', 'desc'))) { $ps_sort_direction = 'asc'; }
+		
+		if (is_array($pa_sort) && sizeof($pa_sort) && sizeof($va_ids)) {
+			$va_sort_keys = array();
+			$qr_sort_res = caMakeSearchResult($this->tableName(), $va_ids);
+			$vn_i = 0;
+			while($qr_sort_res->nextHit()) {
+				$va_key = array();
+				foreach($pa_sort as $vs_sort) {
+					$va_key[] = $qr_sort_res->get($vs_sort);
+				}
+				$va_sort_keys[$vn_i] = join("_", $va_key)."_{$vn_i}";
+				$vn_i++;
+			}
+			
+			foreach($va_vals as $vn_i => $vs_val) {
+				$va_hierarchy_data[$va_parent_ids[$vn_i]][$va_sort_keys[$vn_i]] = array(
+					'level' => $va_levels[$vn_i],
+					'id' => $va_ids[$vn_i],
+					'parent_id' => $va_parent_ids[$vn_i],
+					'display' => $vs_val
+				);
+			}
+			$va_hierarchy_flattened = array();
+			foreach($va_hierarchy_data as $vn_parent_id => $va_level_content) {
+				ksort($va_hierarchy_data[$vn_parent_id]);
+			}
+			
+			return $this->_getFlattenedHierarchyArray($va_hierarchy_data, null, $ps_sort_direction);
+		} else {		
+			foreach($va_vals as $vn_i => $vs_val) {
+				$va_hierarchy_data[] = array(
+					'level' => $va_levels[$vn_i],
+					'id' => $va_ids[$vn_i],
+					'display' => $vs_val
+				);
+			}
 		}
 		return $va_hierarchy_data;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Traverse parent_id indexed array and return flattened list
+	 */
+	private function _getFlattenedHierarchyArray($pa_hierarchy_data, $pn_id, $ps_sort_direction='asc') {
+		if (!is_array($pa_hierarchy_data[$pn_id])) { return array(); }
+		
+		$va_data = array();
+		foreach($pa_hierarchy_data[$pn_id] as $vs_sort_key => $va_item) {
+			$va_data[] = $va_item;
+			$va_data = array_merge($va_data, $this->_getFlattenedHierarchyArray($pa_hierarchy_data, $va_item['id']));
+		}
+		if ($ps_sort_direction == 'desc') { $va_data = array_reverse($va_data); }
+		return $va_data;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
