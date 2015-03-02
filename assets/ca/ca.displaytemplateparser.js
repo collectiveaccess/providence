@@ -63,22 +63,21 @@ var caUI = caUI || {};
 				
 			// get tags from template
 			var tagRegex = /\^([\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.~:\/]+)/g;
-			var tagList = template.match(tagRegex)
+			var tagList = template.match(tagRegex);
 			var unitRegex = /[\d\.\,]+(.*)$/;
 			
 			jQuery.each(tagList, function(i, tag) {
+				var tagProc = tag.replace("^", "");
 				if(tag.indexOf("~") === -1) {
-					var tagProc = tag.replace("^", "");
-					
-					if (jQuery('select' + values[tagProc] + ' option:selected').length) {
-						t=t.replace(tag, jQuery('select' + values[tagProc] + ' option:selected').text());
+					var selected = jQuery('select' + values[tagProc] + ' option:selected');
+					if (selected.length) {
+						t=t.replace(tag, selected.text());
 					} else {
 						t=t.replace(tag, jQuery(values[tagProc]).val());
 					}
 				} else {
 					var tagBits = tag.split(/\~/);
 					var tagRoot = tagBits[0].replace("^", "");
-					var tagProc = tag.replace("^", "");
 					var cmd = tagBits[1].split(/\:/);
 					switch(cmd[0].toLowerCase()) {
 						case 'units':
