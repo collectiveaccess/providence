@@ -32,7 +32,7 @@ var caUI = caUI || {};
 		// --------------------------------------------------------------------------------
 		// setup options
 		var that = jQuery.extend({
-			
+			dontUpdateIDs : []
 		}, options);
 		
 		
@@ -58,7 +58,7 @@ var caUI = caUI || {};
 		// --------------------------------------------------------------------------------
 		// Define methods
 		// --------------------------------------------------------------------------------
-		that.processTemplate = function(template, values) {
+		that.processDependentTemplate = function(template, values) {
 			var t = template;
 				
 			// get tags from template
@@ -124,7 +124,59 @@ var caUI = caUI || {};
 			});
 			return $h.html().trim();
 		};
-		
+		// --------------------------------------------------------------------------------
+		/**
+		 * Process display template and insert value into a given form element
+		 * @param id the form element (usually a text input)
+		 * @param template the display template we want to process for the current record
+		 * @param elementIDs list of code => element id mappings
+		 * @param templateProcessorServiceUrl the URL for the JSON template processor
+		 * @param isInitialLoad
+		 */
+		that.processTemplate = function(id, template, elementIDs, templateProcessorServiceUrl, isInitialLoad) {
+			if(jQuery.inArray(id, that.dontUpdateIDs) !== -1) { return; }
+
+			var t = template;
+			// get tags from template
+			var tagRegex = /\^([\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.~:\/]+)/g;
+			var tagList = template.match(tagRegex);
+
+			// replace all tags that are present in the current form with the current values
+			// (only works for attributes)
+			jQuery.each(tagList, function(i, tag) {
+				var tagProc = tag.replace("^", "");
+				var replacement = jQuery("input[id*=_" + elementIDs[tagProc] +"_]");
+				if(replacement && replacement.val()) {
+					t=t.replace(tag, replacement.val());
+				}
+			});
+
+			// run the rest through CA template processor via editor controller JSON service
+			jQuery.getJSON(templateProcessorServiceUrl + '/template/' + encodeURIComponent(t), function(data) {
+				if(isInitialLoad) {
+					var oldHtml = jQuery(id).html().trim();
+					if(oldHtml == data.trim()) {
+						jQuery(id).css('background-color', '#ededed');
+						return;
+					}
+					jQuery(id).html(data.trim());
+				}
+
+			});
+		};
+		// --------------------------------------------------------------------------------
+		// helpers
+		// --------------------------------------------------------------------------------
+		that.dontUpdateID = function(id) {
+			that.dontUpdateIDs.push(id);
+		};
+		// --------------------------------------------------------------------------------
+		that.updateID = function(id) {
+			if(that.dontUpdateIDs.indexOf(id)) {
+				that.dontUpdateIDs.splice(that.dontUpdateIDs.indexOf(id),1);
+			}
+		};
+		// --------------------------------------------------------------------------------
 		that.convertFractionalNumberToDecimal = function(fractionalExpression, locale) {
 			if(!fractionalExpression) { return ''; }
 			// convert ascii fractions (eg. 1/2) to decimal

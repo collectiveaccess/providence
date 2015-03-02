@@ -341,14 +341,14 @@
   				$this->opo_result_context->saveContext();
  			}
  			# trigger "SaveItem" hook 
- 		
+
 			$this->opo_app_plugin_manager->hookSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => $vb_is_insert));
 
 			// redirect back to previous item on stack if it's a valid "save and return" request
 			if((bool) $this->getRequest()->getParameter('is_save_and_return', pInteger)) {
 				$va_save_and_return = $this->getRequest()->session->getVar('save_and_return_locations');
 				if(is_array($va_save_and_return)) {
-					// get rid of all the navigational steps in the current item
+					// get rid of all the navigational steps in the current item&
 					do {
 						$va_pop = array_pop($va_save_and_return);
 					} while (($va_pop['table'] == $t_subject->tableName()) && ($va_pop['key'] == $vn_subject_id));
@@ -1334,6 +1334,23 @@
  			
  			$this->response->addContent(json_encode($t_subject->getBundleFormValues($ps_bundle_name, "{$pn_placement_id}", $t_placement->get('settings'), array('start' => $pn_start, 'limit' => $pn_limit, 'request' => $this->request, 'contentOnly' => true))));
  		}
+		# ------------------------------------------------------------------
+		/**
+		 * JSON service that returns a processed display template for the current record
+		 * @return bool
+		 */
+		public function processTemplate() {
+			list($vn_subject_id, $t_subject) = $this->_initView();
+
+			if (!$this->_checkAccess($t_subject)) { return false; }
+
+			// http://providence.dev/index.php/editor/objects/ObjectEditor/processTemplate/object_id/1/template/^ca_objects.idno
+			$ps_template = $this->request->getParameter("template", pString);
+			$this->view->setVar('processed_template', json_encode(caProcessTemplateForIDs($ps_template, $t_subject->tableNum(), array($vn_subject_id))));
+			$this->render("../generic/ajax_process_template.php");
+
+			return true;
+		}
 		# ------------------------------------------------------------------
  		# Sidebar info handler
  		# ------------------------------------------------------------------

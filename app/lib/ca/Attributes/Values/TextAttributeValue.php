@@ -200,6 +200,14 @@
 			'label' => _t('Dependent value template'),
 			'validForNonRootOnly' => 1,
 			'description' => _t('Template to be used to format content for dependent values. Template should reference container values using their bare element code prefixed with a caret (^). Do not include the table or container codes.')
+		),
+		'prepopulateWithTemplate' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'default' => '',
+			'width' => 90, 'height' => 4,
+			'label' => _t('Prepopulate with template'),
+			'description' => _t('Display template to be used to prepopulate field value.')
 		)
 	);
  
@@ -267,7 +275,7 @@
  		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
  			
- 			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'minChars', 'maxChars', 'suggestExistingValues', 'usewysiwygeditor', 'isDependentValue', 'dependentValueTemplate'));
+ 			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'minChars', 'maxChars', 'suggestExistingValues', 'usewysiwygeditor', 'isDependentValue', 'dependentValueTemplate', 'prepopulateWithTemplate'));
  			
  			if (isset($pa_options['usewysiwygeditor'])) {
  				$va_settings['usewysiwygeditor'] = $pa_options['usewysiwygeditor'];
@@ -280,7 +288,7 @@
  			$vs_width = trim((isset($pa_options['width']) && $pa_options['width'] > 0) ? $pa_options['width'] : $va_settings['fieldWidth']);
  			$vs_height = trim((isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight']);
  			$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : '');
- 			
+			$vs_element = '';
  			
  			if (!preg_match("!^[\d\.]+px$!i", $vs_width)) {
  				$vs_width = ((int)$vs_width * 6)."px";
@@ -332,25 +340,91 @@
  				
  				$t_element = new ca_metadata_elements($pa_element_info['element_id']);
  				$va_elements = $t_element->getElementsInSet($t_element->getHierarchyRootID());
- 				
- 				$va_element_list = array();
  				$va_element_dom_ids = array();
  				foreach($va_elements as $vn_i => $va_element) {
  					if ($va_element['datatype'] == __CA_ATTRIBUTE_VALUE_CONTAINER__) { continue; }
- 					//$va_element_list[$va_element['element_id']] = $va_element_list[$va_element['element_code']] = '{{{'.$va_element['element_id'].'}}}';
  					$va_element_dom_ids[$va_element['element_code']] = "#{fieldNamePrefix}".$va_element['element_id']."_{n}";
  				}
  				
- 				
  				$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() {
- 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').html(caDisplayTemplateParser.processTemplate('".addslashes($va_settings['dependentValueTemplate'])."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT)."));
+ 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').html(caDisplayTemplateParser.processDependentTemplate('".addslashes($va_settings['dependentValueTemplate'])."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT)."));
  				";
  				$vs_element .= "jQuery('".join(", ", $va_element_dom_ids)."').bind('keyup', function(e) { 
- 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').html(caDisplayTemplateParser.processTemplate('".addslashes($va_settings['dependentValueTemplate'])."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT)."));
+ 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').html(caDisplayTemplateParser.processDependentTemplate('".addslashes($va_settings['dependentValueTemplate'])."', ".json_encode($va_element_dom_ids, JSON_FORCE_OBJECT)."));
  				});";
  				
  				$vs_element .="});</script>";
  			}
+
+			if ($va_settings['prepopulateWithTemplate'] && $pa_options['t_subject']) {
+				$t_subject = $pa_options['t_subject'];
+				AssetLoadManager::register('displayTemplateParser');
+
+				$t_element = new ca_metadata_elements($pa_element_info['element_id']);
+				$va_all_elements = $t_element->getElementsAsList(false, $t_subject->tableNum());
+
+				$va_element_ids = array();
+				if(CompositeCache::contains('ElementIDsForPrepopulateWithTemplate')) {
+					$va_element_ids = CompositeCache::fetch('ElementIDsForPrepopulateWithTemplate');
+				} else {
+					// collect element ids
+					foreach($va_all_elements as $va_element) {
+						if ($va_element['datatype'] == __CA_ATTRIBUTE_VALUE_CONTAINER__) { continue; }
+
+						if($va_element['parent_id']) { // children get this notation: ca_objects.dimensions.dimensions_width
+							$vs_code = $t_subject->tableName().'.'.$va_all_elements[$va_element['hier_element_id']]['element_code'].'.'.$va_element['element_code'];
+						} else {
+							$vs_code = $t_subject->tableName().'.'.$va_element['element_code'];
+						}
+						$va_element_ids[$vs_code] = $va_element['element_id'];
+					}
+					CompositeCache::save('ElementIDsForPrepopulateWithTemplate', $va_element_ids);
+				}
+
+
+				// @todo remove hardcoded objects
+				$vs_lookup_url	= caNavUrl($pa_options['request'], 'editor/objects', 'ObjectEditor', 'processTemplate', array('object_id' => $t_subject->getPrimaryKey()));
+				$vs_element .= "<a id='resetPrepopulateWithTemplate".$pa_element_info['element_id']."'>"._t('Reset')."</a>";
+
+				// @todo move most of this into js lib
+				$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() {
+					var id = '#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}';
+					var element = jQuery(id);
+					caDisplayTemplateParser.processTemplate(id, '".addslashes($va_settings['prepopulateWithTemplate'])."', ".json_encode($va_element_ids, JSON_FORCE_OBJECT).", '".addslashes($vs_lookup_url)."', true);
+
+					jQuery('#resetPrepopulateWithTemplate".$pa_element_info['element_id']."').click( function() {
+						caDisplayTemplateParser.processTemplate(\"#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}\", \"".addslashes($va_settings['prepopulateWithTemplate'])."\", ".json_encode($va_element_ids, JSON_FORCE_OBJECT).", \"".addslashes($vs_lookup_url)."\");
+						caDisplayTemplateParser.updateID(\"#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}\");
+						jQuery('#resetPrepopulateWithTemplate".$pa_element_info['element_id']."').hide();
+						jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').css('background-color', '#ededed');
+						jQuery(':input').bind('keyup', function(e) {
+							caDisplayTemplateParser.processTemplate('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}', '".addslashes($va_settings['prepopulateWithTemplate'])."', ".json_encode($va_element_ids, JSON_FORCE_OBJECT).", '".addslashes($vs_lookup_url)."');
+						});
+
+						jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').bind('focus', function(e) {
+							jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').css('background-color', '#FFFFFF');
+							caDisplayTemplateParser.dontUpdateID('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}');
+							jQuery('#resetPrepopulateWithTemplate".$pa_element_info['element_id']."').show();
+							jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').unbind('focus');
+						});
+
+						return false;
+					});
+ 				";
+
+				// we don't know exactly which elements on the current form can cause changes in this element so we bind to all input elements
+				//$vs_element .= "jQuery(':input').bind('keyup', function(e) {
+ 				//	caDisplayTemplateParser.processTemplate('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}', '".addslashes($va_settings['prepopulateWithTemplate'])."', ".json_encode($va_element_ids, JSON_FORCE_OBJECT).", '".addslashes($vs_lookup_url)."');
+ 				//});";
+
+				//$vs_element .= "jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').bind('focus', function(e) {
+ 				//	caDisplayTemplateParser.dontUpdateID('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}');
+ 				//	jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').unbind('focus');
+ 				//});";
+
+				$vs_element .="});</script>";
+			}
+
  			
  			$vs_bundle_name = $vs_lookup_url = null;
  			if (isset($pa_options['t_subject']) && is_object($pa_options['t_subject'])) {
