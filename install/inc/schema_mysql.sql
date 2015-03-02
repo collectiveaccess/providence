@@ -6413,7 +6413,6 @@ create table ca_object_checkouts (
    index i_return_date (return_date),
    index i_last_sent_coming_due_email (last_sent_coming_due_email),
    index i_last_reservation_available_email (last_reservation_available_email),
-   index i_last_reservation_available_email (last_reservation_available_email),
    
    constraint fk_ca_object_checkouts_object_id foreign key (object_id)
       references ca_objects (object_id) on delete restrict on update restrict,
