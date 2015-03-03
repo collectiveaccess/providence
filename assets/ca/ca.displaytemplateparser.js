@@ -153,15 +153,14 @@ var caUI = caUI || {};
 
 			// run the rest through CA template processor via editor controller JSON service
 			jQuery.getJSON(templateProcessorServiceUrl + '/template/' + encodeURIComponent(t), function(data) {
+				// if this is the initial load, don't overwrite any data that's already in the form. and
+				// doesn't match what we got from the json service. That's probably custom user data.
 				if(isInitialLoad) {
-					var oldHtml = jQuery(id).html().trim();
-					if(oldHtml == data.trim()) {
-						jQuery(id).css('background-color', '#ededed');
-						return;
+					if(jQuery(id).html().trim().length > 0) {
+						return
 					}
-					jQuery(id).html(data.trim());
 				}
-
+				jQuery(id).html(data.trim());
 			});
 		};
 		// --------------------------------------------------------------------------------
