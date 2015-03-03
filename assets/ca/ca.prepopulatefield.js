@@ -1,12 +1,12 @@
 /* ----------------------------------------------------------------------
- * js/ca/ca.displaytemplateparser.js
+ * js/ca/ca.prepopulatefield.js
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -72,13 +72,14 @@ var caUI = caUI || {};
 			options.isFormLoad = false;
 			jQuery(options.resetButtonID).click(function() {
 				caPrepopulateField.setUpPrepopulateField(id, options);
-				jQuery(':input').bind('keyup', function(e) {
-					caPrepopulateField.setUpPrepopulateField(id, options);
-				});
-
-				domElementForID.bind('focus', function(e) {
-					domElementForID.unbind('focus');
-				});
+				// we would do something like this for live update since we can't
+				// figure out all the form elements for the dependent fields
+				//jQuery(':input').bind('keyup', function(e) {
+				//	caPrepopulateField.setUpPrepopulateField(id, options);
+				//});
+				//domElementForID.bind('focus', function(e) {
+				//	domElementForID.unbind('focus');
+				//});
 
 				return false;
 			});
