@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2013 Whirl-i-Gig
+ * Copyright 2007-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -514,6 +514,10 @@ function caFileIsIncludable($ps_file) {
 			$ps_text = htmlspecialchars(stripslashes($ps_text), ENT_QUOTES, $vs_character_set);
 		}
 		return str_replace("&amp;#", "&#", $ps_text);
+	}
+	# ----------------------------------------
+	function caEscapeForBundlePreview($ps_text) {
+		return json_encode(html_entity_decode(strip_tags($ps_text), ENT_QUOTES | ENT_HTML5));
 	}
 	# ----------------------------------------
 	/**
@@ -1764,7 +1768,7 @@ function caFileIsIncludable($ps_file) {
 					continue;
 				}
 
-				if ((!preg_match("!^[\p{L}\p{N}\p{P}]+!", $vm_v)) || (!mb_detect_encoding($vm_v))) {
+				if ((!preg_match("!^[\p{L}\p{N}\p{P}]+$!", $vm_v)) || (!mb_detect_encoding($vm_v))) {
 					unset($pa_array[$vn_k]);
 				}
 			}
@@ -2609,5 +2613,20 @@ function caFileIsIncludable($ps_file) {
 		}
 		
 		return $vo_parsed_measurement;
+	}
+	# ----------------------------------------
+	/**
+	 * Push a value to a fixed length stack
+	 * @param $pm_val
+	 * @param $pa_stack
+	 * @param $pn_stack_max_len
+	 * @return array the stack
+	 */
+	function caPushToStack($pm_val, $pa_stack, $pn_stack_max_len) {
+		array_push($pa_stack, $pm_val);
+		if(sizeof($pa_stack) > $pn_stack_max_len) {
+			$pa_stack = array_slice($pa_stack, (sizeof($pa_stack) - $pn_stack_max_len));
+		}
+		return $pa_stack;
 	}
 	# ----------------------------------------

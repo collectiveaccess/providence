@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2014 Whirl-i-Gig
+ * Copyright 2000-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -6830,22 +6830,25 @@ class BaseModel extends BaseObject {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		$vs_table_name = $this->tableName();
 		
+		$t_instance = (!$pn_id) ? $this : $this->getAppDatamodel()->getInstanceByTableNum($this->tableNum(), false);
+		if (!$pn_id && $this->inTransaction()) { $t_instance->setTransaction($this->getTransaction()); }
+		
 		if ($this->isHierarchical()) {
 			$vs_hier_left_fld 		= $this->getProperty("HIERARCHY_LEFT_INDEX_FLD");
 			$vs_hier_right_fld 		= $this->getProperty("HIERARCHY_RIGHT_INDEX_FLD");
 			$vs_hier_parent_id_fld	= $this->getProperty("HIERARCHY_PARENT_ID_FLD");
 			$vs_hier_id_fld 		= $this->getProperty("HIERARCHY_ID_FLD");
 			$vs_hier_id_table 		= $this->getProperty("HIERARCHY_DEFINITION_TABLE");
-			
+		
 			if (!$pn_id) {
-				if (!($pn_id = $this->getHierarchyRootID($this->get($vs_hier_id_fld)))) {
+				if (!($pn_id = $t_instance->getHierarchyRootID($t_instance->get($vs_hier_id_fld)))) {
 					return null;
 				}
 			}
 			
 			$vs_hier_id_sql = "";
 			if ($vs_hier_id_fld) {
-				$vn_hierarchy_id = $this->get($vs_hier_id_fld);
+				$vn_hierarchy_id = $t_instance->get($vs_hier_id_fld);
 				if ($vn_hierarchy_id) {
 					// TODO: verify hierarchy_id exists
 					$vs_hier_id_sql = " AND (".$vs_hier_id_fld." = ".$vn_hierarchy_id.")";
@@ -6867,7 +6870,7 @@ class BaseModel extends BaseObject {
 				if ($qr_root->nextRow()) {
 					
 					$va_count = array();
-					if (($this->hasField($vs_hier_id_fld)) && (!($vn_hierarchy_id = $this->get($vs_hier_id_fld))) && (!($vn_hierarchy_id = $qr_root->get($vs_hier_id_fld)))) {
+					if (($this->hasField($vs_hier_id_fld)) && (!($vn_hierarchy_id = $t_instance->get($vs_hier_id_fld))) && (!($vn_hierarchy_id = $qr_root->get($vs_hier_id_fld)))) {
 						$this->postError(2030, _t("Hierarchy ID must be specified"), "BaseModel->getHierarchy()");
 						return false;
 					}
@@ -6973,7 +6976,14 @@ class BaseModel extends BaseObject {
 		if ($pn_id && $pb_include_self) { $pb_dont_include_root = false; }
 		
 		if ($qr_hier = $this->getHierarchy($pn_id, $pa_options)) {
-			if ($pb_ids_only) { return $qr_hier; }
+			if ($pb_ids_only) { 
+				if (!$pb_include_self || $pb_dont_include_root) {
+					if(($vn_i = array_search($pn_id, $qr_hier)) !== false) {
+						unset($qr_hier[$vn_i]);
+					}
+				}
+				return $qr_hier; 
+			}
 			$vs_hier_right_fld 			= $this->getProperty("HIERARCHY_RIGHT_INDEX_FLD");
 			
 			$va_indent_stack = array();

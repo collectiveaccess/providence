@@ -57,6 +57,14 @@
  		# -------------------------------------------------------
  		public function Edit($pa_values=null, $pa_options=null) {
       		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView($pa_options);
+      		
+      		// does user have edit access to set?
+			if (!$t_subject->haveAccessToSet($this->request->getUserID(), __CA_SET_EDIT_ACCESS__, null, array('request' => $this->request))) {
+				$this->notification->addNotification(_t("You cannot edit this set"), __NOTIFICATION_TYPE_ERROR__);
+				$this->postError(2320, _t("Access denied"), "SetsEditorController->Delete()");
+				return;
+			}
+			
       		$this->view->setVar('can_delete', $this->UserCanDeleteSet($t_subject->get('user_id')));
  			parent::Edit($pa_values, $pa_options);
  		}

@@ -180,7 +180,9 @@
  				'dryRun' => $this->request->getParameter("dryRun", pInteger),
  				
  				'fileInput' => $this->request->getParameter("fileInput", pString),
- 				'fileImportPath' => $this->request->getParameter("fileImportPath", pString)
+ 				'fileImportPath' => $this->request->getParameter("fileImportPath", pString),
+ 				
+ 				'importAllDatasets' => (bool)$this->request->getParameter("importAllDatasets", pInteger)
  			);
  			
  			$va_last_settings = $va_options;

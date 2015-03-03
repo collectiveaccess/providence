@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,6 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
+ 
 	$vs_file_path = $this->getVar('tmp_file');
 
 	header("Content-type: application/zip");
@@ -34,7 +35,7 @@
 	header("Pragma: no-cache");
 	header("Cache-control: private");
 	header('Content-Length: ' . filesize($vs_file_path));
-	header("Content-Disposition: attachment; filename=".$this->getVar('download_name'));
+	header("Content-Disposition: attachment; filename=".preg_replace('![^A-Za-z0-9\.\-]+!', '_', $this->getVar('download_name')));
 
 	set_time_limit(0);
 	$o_fp = @fopen($vs_file_path,"rb");
