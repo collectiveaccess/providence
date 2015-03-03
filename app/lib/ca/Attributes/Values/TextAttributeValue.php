@@ -383,7 +383,11 @@
 
 				$vs_lookup_url = caEditorUrl($pa_options['request'], $t_subject->tableName(), $t_subject->getPrimaryKey(), false, null, array('action' => 'processTemplate'));
 
-				$vs_element .= "<a id='resetPrepopulateWithTemplate".$pa_element_info['element_id']."'>"._t('Reset')."</a>";
+				$vs_element .= "<a id='resetPrepopulateWithTemplate".$pa_element_info['element_id']."' style='cursor: pointer;'>".
+					caNavIcon($pa_options['request'], __CA_NAV_BUTTON_CHANGE__, array('alt' => _t('Prepopulate field'))).
+				"</a>";
+
+				TooltipManager::add('#resetPrepopulateWithTemplate'.$pa_element_info['element_id'], _t('Prepopulate field with template'));
 
 				// set up prepopulate field
 				$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() {

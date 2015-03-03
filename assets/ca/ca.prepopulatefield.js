@@ -72,6 +72,7 @@ var caUI = caUI || {};
 			options.isFormLoad = false;
 			jQuery(options.resetButtonID).click(function() {
 				caPrepopulateField.setUpPrepopulateField(id, options);
+
 				// we would do something like this for live update since we can't
 				// figure out all the form elements for the dependent fields
 				//jQuery(':input').bind('keyup', function(e) {
