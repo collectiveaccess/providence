@@ -14,17 +14,17 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
  */
- 
+
 var caUI = caUI || {};
 
 (function ($) {
@@ -34,8 +34,8 @@ var caUI = caUI || {};
 		var that = jQuery.extend({
 			dontUpdateIDs : []
 		}, options);
-		
-		
+
+
 		that.unitTable = {
 			// Length
 			'"': "in", "”": "in", "in.": "in", "inch": "in", "inches": "in",
@@ -46,7 +46,7 @@ var caUI = caUI || {};
 			"k": "kilometer", "km": "kilometer", "kilometers": "kilometer", "kilometre": "kilometer", "kilometres": "kilometer",
 			"pt": "point", "pt.": "point",
 			"mile": "miles", "mi" : "miles",
-			
+
 			// Weight
 			"lbs": "pounds", "lb": "pounds", "lb.": "pounds", "pound": "pounds",
 			"kg": "kilograms", "kg.": "kilograms", "kilo": "kilograms", "kilos": "kilograms", "kilogram": "kilograms",
@@ -60,12 +60,12 @@ var caUI = caUI || {};
 		// --------------------------------------------------------------------------------
 		that.processDependentTemplate = function(template, values) {
 			var t = template;
-				
+
 			// get tags from template
 			var tagRegex = /\^([\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.~:\/]+)/g;
 			var tagList = template.match(tagRegex);
 			var unitRegex = /[\d\.\,]+(.*)$/;
-			
+
 			jQuery.each(tagList, function(i, tag) {
 				var tagProc = tag.replace("^", "");
 				if(tag.indexOf("~") === -1) {
@@ -82,15 +82,15 @@ var caUI = caUI || {};
 					switch(cmd[0].toLowerCase()) {
 						case 'units':
 							var val = jQuery(values[tagRoot]).val();
-							val = that.convertFractionalNumberToDecimal(val); 
-							
+							val = that.convertFractionalNumberToDecimal(val);
+
 							var unitBits = val.match(unitRegex);
-							if (!unitBits || unitBits.length < 2) { 
+							if (!unitBits || unitBits.length < 2) {
 								t = t.replace(tag, val);
-								break; 
+								break;
 							}
 							var units = unitBits[1].trim();
-							
+
 							if (that.unitTable[units]) {
 								val = val.replace(units, that.unitTable[units]);
 							}
@@ -106,16 +106,16 @@ var caUI = caUI || {};
 					}
 				}
 			});
-			
+
 			// Process <ifdef> tags
 			var $h = jQuery("<div>" + t + "</div>");
 			jQuery.each(tagList, function(k, tag) {
 				var tagBits = tag.split(/\~/);
 				var tagRoot = tagBits[0].replace("^", "");
 				var val = jQuery(values[tagRoot]).val();
-				
-				if(val && (val.length > 0)) { 
-					jQuery.each($h.find("ifdef[code=" + tagRoot + "]"), function(k, v) { 
+
+				if(val && (val.length > 0)) {
+					jQuery.each($h.find("ifdef[code=" + tagRoot + "]"), function(k, v) {
 						jQuery(v).replaceWith(jQuery(v).html());
 					});
 				} else {
@@ -128,39 +128,49 @@ var caUI = caUI || {};
 		/**
 		 * Process display template and insert value into a given form element
 		 * @param id the form element (usually a text input)
-		 * @param template the display template we want to process for the current record
-		 * @param elementIDs list of code => element id mappings
-		 * @param templateProcessorServiceUrl the URL for the JSON template processor
-		 * @param isInitialLoad
+		 * @param options array
 		 */
-		that.processTemplate = function(id, template, elementIDs, templateProcessorServiceUrl, isInitialLoad) {
-			if(jQuery.inArray(id, that.dontUpdateIDs) !== -1) { return; }
-
-			var t = template;
+		that.setUpPrepopulateField = function(id, options) {
+			var t = options.template;
 			// get tags from template
 			var tagRegex = /\^([\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.~:\/]+)/g;
-			var tagList = template.match(tagRegex);
+			var tagList = options.template.match(tagRegex);
+			var domElementForID = jQuery(id); // to avoid duplicate j-queries
 
 			// replace all tags that are present in the current form with the current values
 			// (only works for attributes)
 			jQuery.each(tagList, function(i, tag) {
 				var tagProc = tag.replace("^", "");
-				var replacement = jQuery("input[id*=_" + elementIDs[tagProc] +"_]");
+				var replacement = jQuery("input[id*=_" + options.elementIDs[tagProc] +"_]");
 				if(replacement && replacement.val()) {
 					t=t.replace(tag, replacement.val());
 				}
 			});
 
 			// run the rest through CA template processor via editor controller JSON service
-			jQuery.getJSON(templateProcessorServiceUrl + '/template/' + encodeURIComponent(t), function(data) {
-				// if this is the initial load, don't overwrite any data that's already in the form. and
-				// doesn't match what we got from the json service. That's probably custom user data.
-				if(isInitialLoad) {
-					if(jQuery(id).html().trim().length > 0) {
-						return
-					}
+			var isFormLoad = options.isFormLoad;
+			jQuery.getJSON(options.lookupURL + '/template/' + encodeURIComponent(t), function(data) {
+				// if this is the initial load, don't overwrite any data already in the form because it's probably custom user data.
+				if(isFormLoad && (domElementForID.html().trim().length > 0)) {
+					return;
 				}
-				jQuery(id).html(data.trim());
+				domElementForID.html(data.trim());
+			});
+
+			// set up click() handler for reset button
+			// when it's clicked, we populate the field with the current state
+			options.isFormLoad = false;
+			jQuery(options.resetButtonID).click(function() {
+				caDisplayTemplateParser.setUpPrepopulateField(id, options);
+				jQuery(':input').bind('keyup', function(e) {
+					caDisplayTemplateParser.setUpPrepopulateField(id, options);
+				});
+
+				domElementForID.bind('focus', function(e) {
+					domElementForID.unbind('focus');
+				});
+
+				return false;
 			});
 		};
 		// --------------------------------------------------------------------------------
@@ -185,19 +195,19 @@ var caUI = caUI || {};
 				if (parseFloat(matches[2]) > 0) {
 					val = parseFloat(matches[2])/parseFloat(matches[3]);
 				}
-				
+
 				val += parseFloat(matches[1]);
-				
+
 				fractionalExpression = fractionalExpression.replace(matches[0], val);
-			} 
-		
+			}
+
 			return fractionalExpression;
 		};
-		
+
 		// --------------------------------------------------------------------------------
-		
+
 		return that;
 	};
-	
+
 	caDisplayTemplateParser = caUI.initDisplayTemplateParser();
 })(jQuery);

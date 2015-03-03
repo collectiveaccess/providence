@@ -386,27 +386,14 @@
 				$vs_lookup_url	= caNavUrl($pa_options['request'], 'editor/objects', 'ObjectEditor', 'processTemplate', array('object_id' => $t_subject->getPrimaryKey()));
 				$vs_element .= "<a id='resetPrepopulateWithTemplate".$pa_element_info['element_id']."'>"._t('Reset')."</a>";
 
-				// @todo move most of this into js lib
+				// set up prepopulate field
 				$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() {
-					var id = '#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}';
-					var element = jQuery(id);
-					caDisplayTemplateParser.processTemplate(id, '".addslashes($va_settings['prepopulateWithTemplate'])."', ".json_encode($va_element_ids, JSON_FORCE_OBJECT).", '".addslashes($vs_lookup_url)."', true);
-
-					jQuery('#resetPrepopulateWithTemplate".$pa_element_info['element_id']."').click( function() {
-						caDisplayTemplateParser.processTemplate(\"#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}\", \"".addslashes($va_settings['prepopulateWithTemplate'])."\", ".json_encode($va_element_ids, JSON_FORCE_OBJECT).", \"".addslashes($vs_lookup_url)."\", false);
-						caDisplayTemplateParser.updateID(\"#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}\");
-						jQuery('#resetPrepopulateWithTemplate".$pa_element_info['element_id']."').hide();
-						jQuery(':input').bind('keyup', function(e) {
-							caDisplayTemplateParser.processTemplate('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}', '".addslashes($va_settings['prepopulateWithTemplate'])."', ".json_encode($va_element_ids, JSON_FORCE_OBJECT).", '".addslashes($vs_lookup_url)."', false);
-						});
-
-						jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').bind('focus', function(e) {
-							caDisplayTemplateParser.dontUpdateID('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}');
-							jQuery('#resetPrepopulateWithTemplate".$pa_element_info['element_id']."').show();
-							jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').unbind('focus');
-						});
-
-						return false;
+					caDisplayTemplateParser.setUpPrepopulateField('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}', {
+						template : '".addslashes($va_settings['prepopulateWithTemplate'])."',
+						elementIDs : ".json_encode($va_element_ids, JSON_FORCE_OBJECT).",
+						lookupURL : '".addslashes($vs_lookup_url)."',
+						isFormLoad : true,
+						resetButtonID : '#resetPrepopulateWithTemplate".$pa_element_info['element_id']."'
 					});
  				";
 
