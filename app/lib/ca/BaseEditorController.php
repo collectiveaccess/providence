@@ -528,7 +528,8 @@
  		/**
  		 * Generates display summary of record data based upon a bundle display for screen (HTML)
  		 *
- 		 * @param array $pa_options Array of options passed through to _initView 
+ 		 * @param array $pa_options Array of options passed through to _initView
+		 * @return bool
  		 */
  		public function Summary($pa_options=null) {
  			AssetLoadManager::register('tableList');
@@ -547,6 +548,18 @@
  					$vn_display_id = $va_tmp[0];
  				}
  			}
+
+			// save where we are in session, for "Save and return" button
+			$va_save_and_return = $this->getRequest()->session->getVar('save_and_return_locations');
+			if(!is_array($va_save_and_return)) { $va_save_and_return = array(); }
+
+			$va_save = array(
+				'table' => $t_subject->tableName(),
+				'key' => $vn_subject_id,
+				'url_path' => $this->getRequest()->getFullUrlPath()
+			);
+
+			$this->getRequest()->session->setVar('save_and_return_locations', caPushToStack($va_save, $va_save_and_return, 25));
  			
 			$this->view->setVar('bundle_displays', $va_displays);
 			$this->view->setVar('t_display', $t_display);
@@ -1411,14 +1424,7 @@
 			$this->view->setVar('screen', $this->request->getActionExtra());						// name of screen
 			$this->view->setVar('result_context', $this->getResultContext());
 			
-			$this->view->setVar('t_ui', $t_ui = $this->_getUI($vn_type_id, $pa_options));
-			
-			//$va_export_options = array();
-			//foreach($va_mappings as $vn_mapping_id => $va_mapping_info) {
-			//	$va_export_options[$va_mapping_info['name']] = $va_mapping_info['mapping_id'];
-			//}
-			//$this->view->setVar('available_mappings', $va_export_options);
-			//$this->view->setVar('available_mappings_as_html_select', sizeof($va_export_options) ? caHTMLSelect('mapping_id', $va_export_options, array("style" => "width: 120px;")) : '');
+			$this->view->setVar('t_ui', $t_ui = $this->_getUI($vn_type_id));
  		}
  		# ------------------------------------------------------------------
 		/**
