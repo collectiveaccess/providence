@@ -29,5 +29,4 @@ before_script:
 
 branches:
   only:
-    - develop
     - dev/get2000
