@@ -381,9 +381,8 @@
 					CompositeCache::save('ElementIDsForPrepopulateWithTemplate', $va_element_ids);
 				}
 
+				$vs_lookup_url = caEditorUrl($pa_options['request'], $t_subject->tableName(), $t_subject->getPrimaryKey(), false, null, array('action' => 'processTemplate'));
 
-				// @todo remove hardcoded objects
-				$vs_lookup_url	= caNavUrl($pa_options['request'], 'editor/objects', 'ObjectEditor', 'processTemplate', array('object_id' => $t_subject->getPrimaryKey()));
 				$vs_element .= "<a id='resetPrepopulateWithTemplate".$pa_element_info['element_id']."'>"._t('Reset')."</a>";
 
 				// set up prepopulate field
