@@ -17,6 +17,6 @@ return array(
     'Elasticsearch\\Benchmarks' => array($vendorDir . '/elasticsearch/elasticsearch/benchmarks'),
     'Elasticsearch' => array($vendorDir . '/elasticsearch/elasticsearch/src'),
     'Doctrine\\Instantiator\\' => array($vendorDir . '/doctrine/instantiator/src'),
-    'Doctrine\\Common' => array($vendorDir . '/doctrine/common/lib'),
+    'Doctrine\\Common\\Cache\\' => array($vendorDir . '/doctrine/cache/lib'),
     'DebugBar' => array($vendorDir . '/maximebf/debugbar/src'),
 );
