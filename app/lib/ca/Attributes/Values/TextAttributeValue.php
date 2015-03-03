@@ -358,7 +358,7 @@
 
 			if ($va_settings['prepopulateWithTemplate'] && $pa_options['t_subject']) {
 				$t_subject = $pa_options['t_subject'];
-				AssetLoadManager::register('displayTemplateParser');
+				AssetLoadManager::register('prepopulateField');
 
 				$t_element = new ca_metadata_elements($pa_element_info['element_id']);
 				$va_all_elements = $t_element->getElementsAsList(false, $t_subject->tableNum());
@@ -388,7 +388,7 @@
 
 				// set up prepopulate field
 				$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() {
-					caDisplayTemplateParser.setUpPrepopulateField('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}', {
+					caPrepopulateField.setUpPrepopulateField('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}', {
 						template : '".addslashes($va_settings['prepopulateWithTemplate'])."',
 						elementIDs : ".json_encode($va_element_ids, JSON_FORCE_OBJECT).",
 						lookupURL : '".addslashes($vs_lookup_url)."',
