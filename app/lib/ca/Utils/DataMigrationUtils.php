@@ -257,12 +257,13 @@
 							$t_item->setTransaction($pa_options['transaction']);
 						}
 					}
-					
+
+					$vb_attr_errors = false;
 					if ($vb_force_update && $vb_has_attr) { 
 						$vb_attr_errors = !DataMigrationUtils::_setAttributes($t_item, $pn_locale_id, $pa_values, $pa_options);
 					}
 					if ($o_event) {
-						if ($vb_attr_errors ||  $vb_label_errors) {
+						if ($vb_attr_errors) {
 							$o_event->endItem($vn_item_id, __CA_DATA_IMPORT_ITEM_PARTIAL_SUCCESS__, _t("Errors setting field values: %1", join('; ', $t_item->getErrors())));
 						} else {
 							$o_event->endItem($vn_item_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, '');
@@ -310,7 +311,7 @@
 
 				$vb_attr_errors = !DataMigrationUtils::_setAttributes($t_item, $pn_locale_id, $pa_values, $pa_options);
 				DataMigrationUtils::_setNonPreferredLabels($t_item, $pn_locale_id, $pa_options);
-				DataMigrationUtils::_setIdno($t_item, $vs_idno, $pn_locale_id, $pa_options);
+				DataMigrationUtils::_setIdno($t_item, $ps_item_idno, $pa_options);
 
 				$vn_item_id = DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key] = $t_item->getPrimaryKey();
 
@@ -710,7 +711,7 @@
 		/**
 		 *
 		 */
-		private static function _setIdno($pt_instance, $ps_idno, $pn_locale_id, $pa_options) {
+		private static function _setIdno($pt_instance, $ps_idno, $pa_options) {
 			$o_log = (isset($pa_options['log']) && $pa_options['log'] instanceof KLogger) ? $pa_options['log'] : null;
 			
 			/** @var IIDNumbering $o_idno */
@@ -980,7 +981,7 @@
 					$vb_label_errors = true;
 				}
 				
-				DataMigrationUtils::_setIdno($t_instance, $vs_idno, $pn_locale_id, $pa_options);
+				DataMigrationUtils::_setIdno($t_instance, $vs_idno, $pa_options);
 				$vb_attr_errors = !DataMigrationUtils::_setAttributes($t_instance, $pn_locale_id, $pa_values, $pa_options);
 				DataMigrationUtils::_setNonPreferredLabels($t_instance, $pn_locale_id, $pa_options);
 				
@@ -1031,14 +1032,14 @@
 						}
 					
 						if ($o_event) {
-							if ($vb_attr_errors ||  $vb_label_errors) {
-								$o_event->endItem($vn_item_id, __CA_DATA_IMPORT_ITEM_PARTIAL_SUCCESS__, _t("Errors setting field values: %1", join('; ', $t_item->getErrors())));
+							if ($vb_attr_errors) {
+								$o_event->endItem($vn_id, __CA_DATA_IMPORT_ITEM_PARTIAL_SUCCESS__, _t("Errors setting field values: %1", join('; ', $t_instance->getErrors())));
 							} else {
-								$o_event->endItem($vn_item_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, '');
+								$o_event->endItem($vn_id, __CA_DATA_IMPORT_ITEM_SUCCESS__, '');
 							}
 						}
 						if ($vb_return_instance) {
-							return $t_item;
+							return $t_instance;
 						}
 					}
 				}
