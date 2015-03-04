@@ -4348,6 +4348,9 @@ if (!$vb_batch) {
 			
 			$va_bundle_names[] = $vs_bundle_name;
 		}
+
+		$this->prepopulateFields();
+
 		$va_violations = $this->validateUsingMetadataDictionaryRules(array('bundles' => $va_bundle_names));
 		if (sizeof($va_violations)) {
 			if ($vb_we_set_transaction && isset($va_violations['ERR']) && is_array($va_violations['ERR']) && (sizeof($va_violations['ERR']) > 0)) { 
@@ -6344,8 +6347,6 @@ side. For many self-relations the direction determines the nature and display te
 	 */
 	 public function validateUsingMetadataDictionaryRules($pa_options=null) {
 	 	if(!$this->getPrimaryKey()) { return null; }
-	 	$o_db = $this->getDb();
-	 	$o_dm = Datamodel::load();
 			
 		$t_violation = new ca_metadata_dictionary_rule_violations();
 		
@@ -6400,5 +6401,16 @@ side. For many self-relations the direction determines the nature and display te
 		
 		return $va_violations;
 	 }
-	 # --------------------------------------------------------------------------------------------
+	# --------------------------------------------------------------------------------------------
+	public function prepopulateFields() {
+		$o_prepopualte_conf = Configuration::load($this->getAppConfig()->get('prepopulate_config'));
+		foreach($o_prepopualte_conf->get('prepopulate_rules') as $va_rule) {
+			if($this->tableName() != $va_rule['table']) { continue; }
+
+			if($va_rule['restrictToTypes'] && is_array($va_rule['restrictToTypes'])) {
+				if(!in_array($this->getTypeCode(), $va_rule['restrictToTypes'])) { continue; }
+			}
+		}
+	}
+	# --------------------------------------------------------------------------------------------
 }
