@@ -13,4 +13,6 @@ titles = [
 	RSM, RQMS, Dispatcher, Lance Corporal
 ]
 
+individual_suffixes = [jr, jr., sr, sr., esq, esq., phd]
+
 corporation_suffixes = [incorporated, & co ltd, & co. ltd., co ltd, co. ltd., & co, & co., inc., inc, llc, co., co, corp., corp, ltd., ltd]
