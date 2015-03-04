@@ -80,7 +80,8 @@
 		labelListClassName: 'caLabelList',
 		addButtonClassName: 'caAddLabelButton',
 		deleteButtonClassName: 'caDeleteLabelButton',
-		readonly: <?php print $vb_read_only ? "1" : "0"; ?>,
+		bundlePreview: <?php print caEscapeForBundlePreview(current($va_initial_values)['name']); ?>,
+		readonly: <?php print $vb_read_only ? 'true' : 'false'; ?>,
 		defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
 	});
 </script>

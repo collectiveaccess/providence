@@ -2,15 +2,13 @@ language: php
 
 php:
   # Test against current PHP and previous 2 versions
-  - 5.3
   - 5.4
   - 5.5
+  - 5.6
 
 env:
   # Here we list the profiles that we want to test, each one will be tested, per version of PHP, in parallel
-  - PROFILE=default
-  - PROFILE=darwincore
-  - PROFILE=dublincore
+  - PROFILE=testing
 
 install:
   # Initialise the database instance for the test
@@ -28,3 +26,7 @@ install:
 before_script:
   # Go into the tests directory to run the tests
   - cd tests/
+
+branches:
+  only:
+    - dev/get2000

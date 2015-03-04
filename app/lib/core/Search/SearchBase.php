@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -51,21 +51,21 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 		static $s_fields_to_index_cache = array();
 		# ------------------------------------------------
 		/**
-		 * @param Db $opo_db A database client object to use rather than creating a new connection. [Default is to create a new database connection]
+		 * @param Db $po_db A database client object to use rather than creating a new connection. [Default is to create a new database connection]
 		 * @param string $ps_engine Name of the search engine to use. [Default is the engine configured using "search_engine_plugin" in app.conf]
 		 */
-		public function __construct($opo_db=null, $ps_engine=null) {			
+		public function __construct($po_db=null, $ps_engine=null) {			
 			$this->opo_datamodel = Datamodel::load();
 			$this->opo_app_config = Configuration::load();
 			$this->opo_search_config = Configuration::load($this->opo_app_config->get("search_config"));
 			$this->opo_search_indexing_config = Configuration::load($this->opo_search_config->get("search_indexing_config"));			
 
 			// load search engine plugin as configured by the 'search_engine_plugin' directive in the main app config file
-			if (!($this->opo_engine = SearchBase::newSearchEngine($ps_engine))) {
+			if (!($this->opo_engine = SearchBase::newSearchEngine($ps_engine, $po_db))) {
 				die("Couldn't load configured search engine plugin. Check your application configuration and make sure 'search_engine_plugin' directive is set properly.");
 			}
 	
-			$this->opo_db = $opo_db ? $opo_db : new Db();
+			$this->opo_db = $po_db ? $po_db : new Db();
 		}
 		# ------------------------------------------------
 		/** 
@@ -74,7 +74,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 		 * @param string $ps_plugin_name A valid plugin file name (eg. 'Solr'), not the actual class name (eg. WLPlugSearchEngineSolr)
 		 * @return WLPlugSearchEngine instance or null if engine is invalid
 		 */
-		static public function newSearchEngine($ps_plugin_name=null) {		
+		static public function newSearchEngine($ps_plugin_name=null, $po_db=null) {		
 			if (!$ps_plugin_name) {
 				$o_config = Configuration::load();
 				$ps_plugin_name = $o_config->get('search_engine_plugin');
@@ -84,7 +84,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 			require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/'.$ps_plugin_name.'.php');
 			
 			$ps_classname = 'WLPlugSearchEngine'.$ps_plugin_name;
-			return new $ps_classname;
+			return new $ps_classname($po_db);
 		}
 		# ------------------------------------------------
 		/**
@@ -182,7 +182,11 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 					}
 				}
 			}
-			
+
+			// always index type id if applicable and not already indexed
+			if(method_exists($t_subject, 'getTypeFieldName') && ($vs_type_field = $t_subject->getTypeFieldName()) && !isset($va_fields_to_index[$vs_type_field])) {
+				$va_fields_to_index[$vs_type_field] = array('STORE', 'DONT_TOKENIZE');
+			}
 			
 			return SearchBase::$s_fields_to_index_cache[$pm_subject_table.'/'.$pm_content_table.'/'.$vs_key] = SearchBase::$s_fields_to_index_cache[$vs_subject_table.'/'.$vs_content_table.'/'.$vs_key] = $va_fields_to_index;
 	

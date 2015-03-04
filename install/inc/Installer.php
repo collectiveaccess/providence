@@ -100,7 +100,7 @@ class Installer {
 	static public function getProfileInfo($ps_profile_dir, $ps_profile_name) {
 		$o_installer = new Installer($ps_profile_dir,$ps_profile_name);
 		$o_installer->loadProfile($ps_profile_dir, $ps_profile_name);
-		
+
 		return array(
 			'useForConfiguration' => $o_installer->getAttribute($o_installer->opo_profile, 'useForConfiguration'),
 			'display' => (string)$o_installer->opo_profile->{'profileName'},
@@ -113,7 +113,7 @@ class Installer {
 		// simplexml doesn't support validation -> use DOMDocument
 		$vo_profile = new DOMDocument();
 		$vo_profile->load($this->ops_profile_dir."/".$this->ops_profile_name.".xml");
-		
+
 		if($this->opo_base){
 			$vo_base = new DOMDocument();
 			$vo_base->load($this->ops_profile_dir."/".$this->ops_base_name.".xml");
@@ -142,7 +142,7 @@ class Installer {
 		$vs_file = $ps_profile_dir."/".$ps_profile_name.".xml";
 
 		if(is_readable($vs_file)){
-			$this->opo_profile = simplexml_load_file($vs_file);	
+			$this->opo_profile = simplexml_load_file($vs_file);
 			return true;
 		} else {
 			return false;
@@ -292,11 +292,11 @@ class Installer {
 	}
 	# --------------------------------------------------
 	/**
-	  * Loads CollectiveAccess schema into an empty database
-	  *
-	  * @param callable $f_callback Function to be called for each SQL statement in the schema. Function is passed four parameters: the SQL code of the statement, the table name, the number of the table being loaded and the total number of tables.
-	  * @return boolean Returns true on success, false if an error occurred
-	  */
+	 * Loads CollectiveAccess schema into an empty database
+	 *
+	 * @param callable $f_callback Function to be called for each SQL statement in the schema. Function is passed four parameters: the SQL code of the statement, the table name, the number of the table being loaded and the total number of tables.
+	 * @return boolean Returns true on success, false if an error occurred
+	 */
 	public function loadSchema($f_callback=null){
 
 		$vo_config = Configuration::load();
@@ -328,7 +328,7 @@ class Installer {
 			return false;
 		}
 		$va_schema_statements = explode(';', $vs_schema);
-		
+
 		$vn_num_tables = 0;
 		foreach($va_schema_statements as $vs_statement) {
 			if (!trim($vs_statement)) { continue; }
@@ -336,7 +336,7 @@ class Installer {
 				$vn_num_tables++;
 			}
 		}
-		
+
 		$vn_i = 0;
 		foreach($va_schema_statements as $vs_statement) {
 			if (!trim($vs_statement)) { continue; }
@@ -388,7 +388,7 @@ class Installer {
 			$vs_dialect = self::getAttribute($vo_locale, "dialect");
 			$vs_country = self::getAttribute($vo_locale, "country");
 			$vb_dont_use_for_cataloguing = self::getAttribute($vo_locale, "dontUseForCataloguing");
-			
+
 			if(isset($this->opa_locales[$vs_language."_".$vs_country])){ // don't insert duplicate locales
 				continue;
 			}
@@ -397,7 +397,7 @@ class Installer {
 			$t_locale->set('language', $vs_language);
 			if($vs_dialect) $t_locale->set('dialect', $vs_dialect);
 			$t_locale->set('dont_use_for_cataloguing', (bool)$vb_dont_use_for_cataloguing);
-			
+
 			$t_locale->insert();
 
 			if ($t_locale->numErrors()) {
@@ -437,10 +437,10 @@ class Installer {
 			$vb_system = self::getAttribute($vo_list, "system");
 			$vb_voc = self::getAttribute($vo_list, "vocabulary");
 			$vn_def_sort = self::getAttribute($vo_list, "defaultSort");
-			
+
 			if (is_callable($f_callback)) {
 				$vn_i++;
-				
+
 				$f_callback($vs_list_code, $vn_i, $vn_num_lists);
 			}
 
@@ -505,23 +505,31 @@ class Installer {
 			if (!isset($vs_access)) { $vs_access = 0; }
 			if (!isset($vs_rank)) { $vs_rank = 0; }
 
-				$t_item = $t_list->addItem($vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vn_type_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank);
+			$t_item = $t_list->addItem($vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vn_type_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank);
+
 			if ($t_list->numErrors()) {
 				$this->addError("There was an error while inserting list item {$vs_item_idno}: ".join(" ",$t_list->getErrors()));
 				return false;
 			} else {
 				$t_item->setMode(ACCESS_WRITE);
+				if($vo_item->settings) {
+					$this->_processSettings($t_item, $vo_item->settings);
+					$t_item->update();
+					if ($t_item->numErrors()) {
+						$this->addError("There was an error while adding a setting for list item with idno {$vs_item_idno}: ".join(" ",$t_item->getErrors()));
+					}
+				}
 				self::addLabelsFromXMLElement($t_item, $vo_item->labels, $this->opa_locales);
 				if ($t_item->numErrors()) {
 					$this->addError("There was an error while inserting list item label for {$vs_item_idno}: ".join(" ",$t_item->getErrors()));
 				}
-			 }
+			}
 
-			 if (isset($vo_item->items)) {
+			if (isset($vo_item->items)) {
 				if(!$this->processListItems($t_list, $vo_item->items, $t_item->getPrimaryKey())){
 					return false;
 				}
-			 }
+			}
 		}
 
 		return true;
@@ -549,9 +557,9 @@ class Installer {
 				$va_elements[self::getAttribute($vo_element, "code")] = $vo_element;
 			}
 		}
-		
+
 		foreach($va_elements as $vs_element_code => $vo_element){
-		
+
 			if($vn_element_id = $this->processMetadataElement($vo_element, null)){
 				// handle restrictions
 				foreach($vo_element->typeRestrictions->children() as $vo_restriction){
@@ -584,7 +592,7 @@ class Installer {
 					$t_restriction->set('include_subtypes', (bool)$vo_restriction->includeSubtypes ? 1 : 0);
 					$t_restriction->set('type_id', $vn_type_id);
 					$t_restriction->set('element_id', $vn_element_id);
-					
+
 					$this->_processSettings($t_restriction, $vo_restriction->settings);
 					if($t_restriction->getPrimaryKey()){
 						$t_restriction->update();
@@ -613,7 +621,12 @@ class Installer {
 
 		$t_lists = new ca_lists();
 
-		$t_md_element = ca_metadata_elements::getInstance($vs_element_code) ? ca_metadata_elements::getInstance($vs_element_code) : new ca_metadata_elements();
+		if($this->opb_updating) {
+			$t_md_element = ca_metadata_elements::getInstance($vs_element_code) ? ca_metadata_elements::getInstance($vs_element_code) : new ca_metadata_elements();
+		} else {
+			$t_md_element = new ca_metadata_elements();
+		}
+
 		$t_md_element->setMode(ACCESS_WRITE);
 		$t_md_element->set('element_code', $vs_element_code);
 		$t_md_element->set('parent_id', $pn_parent_id);
@@ -630,7 +643,7 @@ class Installer {
 		$t_md_element->set('list_id', $vn_list_id);
 		$this->_processSettings($t_md_element, $po_element->settings);
 
-		if($t_md_element->getPrimaryKey()){
+		if($t_md_element->getPrimaryKey()) {
 			$t_md_element->update();
 		}else{
 			$t_md_element->insert();
@@ -719,7 +732,6 @@ class Installer {
 		$vo_dm = Datamodel::load();
 
 		$t_list = new ca_lists();
-		$t_list_item = new ca_list_items();
 		$t_rel_types = new ca_relationship_types();
 		$va_uis = array();
 		if($this->ops_base_name){ // "merge" profile and its base
@@ -744,7 +756,7 @@ class Installer {
 
 			// model instance of UI type
 			$t_instance = $vo_dm->getInstanceByTableNum($vn_type);
-			
+
 			// create ui row
 
 			$t_ui = ca_editor_uis::find(array('editor_code' => $vs_ui_code, 'editor_type' =>  $vn_type), array('returnAs' => 'firstModelInstance'));
@@ -773,7 +785,7 @@ class Installer {
 			if($vo_ui->typeRestrictions){
 				foreach($vo_ui->typeRestrictions->children() as $vo_restriction){
 					$vs_restriction_type = self::getAttribute($vo_restriction, "type");
-					
+
 					if (strlen($vs_restriction_type)>0) {
 						// interstitial with type restriction -> code is relationship type code
 						if($t_instance instanceof BaseRelationshipModel){
@@ -824,7 +836,7 @@ class Installer {
 				foreach($vo_screen->bundlePlacements->children() as $vo_placement) {
 					$vs_placement_code = self::getAttribute($vo_placement, "code");
 					$vs_bundle = trim((string)$vo_placement->bundle);
-					
+
 					$va_settings = $this->_processSettings(null, $vo_placement->settings);
 
 					$t_ui_screens->addPlacement($vs_bundle, $vs_placement_code, $va_settings, null, array('additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
@@ -996,7 +1008,7 @@ class Installer {
 			$t_rel_type->set('type_code', $vs_type_code);
 			$t_rel_type->set('parent_id', $pn_parent_id);
 			$t_rel_type->set('is_default', $vn_default ? 1 : 0);
-			
+
 			if ($vn_rank > 0) {
 				$t_rel_type->set("rank", $vn_rank);
 			} else {
@@ -1119,7 +1131,7 @@ class Installer {
 					}
 				}
 			}
-			
+
 			// add source level ACL items
 			if($vo_role->sourceLevelAccessControl) {
 				foreach($vo_role->sourceLevelAccessControl->children() as $vo_permission) {
@@ -1142,7 +1154,7 @@ class Installer {
 		require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
 		require_once(__CA_MODELS_DIR__."/ca_bundle_display_placements.php");
 		require_once(__CA_MODELS_DIR__."/ca_bundle_display_type_restrictions.php");
-		
+
 		$o_config = Configuration::load();
 
 		$vo_dm = Datamodel::load();
@@ -1154,7 +1166,7 @@ class Installer {
 					$va_displays[self::getAttribute($vo_display, "code")] = $vo_display;
 				}
 			}
-			
+
 			if($this->opo_profile->displays) {
 				foreach($this->opo_profile->displays->children() as $vo_display){
 					$va_displays[self::getAttribute($vo_display, "code")] = $vo_display;
@@ -1167,14 +1179,14 @@ class Installer {
 				}
 			}
 		}
-		
+
 		if(!is_array($va_displays) || sizeof($va_displays) == 0) return true;
 
 		foreach($va_displays as $vo_display){
 			$vs_display_code = self::getAttribute($vo_display, "code");
 			$vb_system = self::getAttribute($vo_display, "system");
 			$vs_table = self::getAttribute($vo_display, "type");
-			
+
 			if ($o_config->get($vs_table.'_disable')) { continue; }
 
 			$t_display = $this->opb_updating ? ca_bundle_displays::find(array('code' => $vs_display_code, 'type' => $vs_table), array('returnAs' => 'firstModelInstance')) : false;
@@ -1186,7 +1198,7 @@ class Installer {
 			$t_display->set("is_system", $vb_system);
 			$t_display->set("table_num",$vo_dm->getTableNum($vs_table));
 			$t_display->set("user_id", 1);		// let administrative user own these
-			
+
 			$this->_processSettings($t_display, $vo_display->settings);
 
 			if($t_display->getPrimaryKey()){
@@ -1206,14 +1218,14 @@ class Installer {
 					return false;
 				}
 			}
-			
+
 			if ($vo_display->typeRestrictions) {
 				foreach($vo_display->typeRestrictions->children() as $vo_restriction){
 					$t_list = new ca_lists();
 					$t_list_item = new ca_list_items();
 					$vs_restriction_code = trim((string)self::getAttribute($vo_restriction, "code"));
 					$vs_type = trim((string)self::getAttribute($vo_restriction, "type"));
-					
+
 					$t_instance = $vo_dm->getInstanceByTableNum($vn_table_num = $vo_dm->getTableNum($vs_table));
 					$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
 					if ($vs_type) {
@@ -1228,7 +1240,7 @@ class Installer {
 					$t_restriction->set('include_subtypes', (bool)$vo_restriction->includeSubtypes ? 1 : 0);
 					$t_restriction->set('type_id', $vn_type_id);
 					$t_restriction->set('display_id', $t_display->getPrimaryKey());
-				
+
 					$this->_processSettings($t_restriction, $vo_restriction->settings);
 					if($t_restriction->getPrimaryKey()){
 						$t_restriction->update();
@@ -1288,7 +1300,7 @@ class Installer {
 	private function processDisplayPlacements($t_display, $po_placements){
 		$o_config = Configuration::load();
 		$va_available_bundles = $t_display->getAvailableBundles(null, array('no_cache' => true));
-		
+
 		$vn_i = 1;
 		foreach($po_placements->children() as $vo_placement){
 			$vs_code = self::getAttribute($vo_placement, "code");
@@ -1320,7 +1332,7 @@ class Installer {
 					$va_forms[self::getAttribute($vo_form, "code")] = $vo_form;
 				}
 			}
-			
+
 			if($this->opo_profile->searchForms) {
 				foreach($this->opo_profile->searchForms->children() as $vo_form){
 					$va_forms[self::getAttribute($vo_form, "code")] = $vo_form;
@@ -1333,7 +1345,7 @@ class Installer {
 				}
 			}
 		}
-		
+
 		if(!is_array($va_forms) || sizeof($va_forms) == 0) return true;
 
 		foreach($va_forms as $vo_form){
@@ -1418,7 +1430,7 @@ class Installer {
 	# --------------------------------------------------
 	private function processSearchFormPlacements($t_form, $po_placements){
 		$va_available_bundles = $t_form->getAvailableBundles();
-		
+
 		$vn_i = 0;
 		foreach($po_placements->children() as $vo_placement){
 			$vs_code = self::getAttribute($vo_placement, "code");
@@ -1451,7 +1463,7 @@ class Installer {
 			$t_user_group->set('parent_id', null);
 			$t_user_group->insert();
 		}
-		
+
 		if ($t_user_group->numErrors()) {
 			$this->addError("Errors creating root user group 'Root': ".join("; ",$t_user_group->getErrors()));
 			return false;
@@ -1490,17 +1502,17 @@ class Installer {
 					$t_group->set('parent_id', null);
 					$t_group->insert();
 				}
-	
+
 				$va_roles = array();
-	
+
 				if($vo_group->roles){
 					foreach($vo_group->roles->children() as $vo_role){
 						$va_roles[] = trim((string) $vo_role);
 					}
 				}
-	
+
 				$t_group->addRoles($va_roles);
-	
+
 				if ($t_group->numErrors()) {
 					$this->addError("Errors inserting user group {$vs_group_code}: ".join("; ",$t_group->getErrors()));
 					return false;
@@ -1532,7 +1544,7 @@ class Installer {
 				}
 			}
 		}
-		
+
 		// If no logins are defined in the profile create an admin login with random password
 		if (!sizeof($va_logins)) {
 			$vs_password = $this->createAdminAccount();
@@ -1545,7 +1557,7 @@ class Installer {
 			if (!($vs_password = trim((string) self::getAttribute($vo_login, "password")))) {
 				$vs_password = $this->getRandomPassword();
 			}
-			
+
 			$t_user = new ca_users();
 			$t_user->setMode(ACCESS_WRITE);
 			$t_user->set('user_name', $vs_user_name = trim((string) self::getAttribute($vo_login, "user_name")));
@@ -1564,8 +1576,8 @@ class Installer {
 				}
 			}
 			if (sizeof($va_roles)) { $t_user->addRoles($va_roles); }
-			
-			
+
+
 			$va_groups = array();
 			if($vo_login->group){
 				foreach($vo_login->group as $vo_group){
@@ -1578,7 +1590,7 @@ class Installer {
 				$this->addError("Errors adding login {$vs_user_name}: ".join("; ",$t_user->getErrors()));
 				return false;
 			}
-			
+
 			$va_login_info[$vs_user_name] = $vs_password;
 		}
 
@@ -1587,7 +1599,7 @@ class Installer {
 	# --------------------------------------------------
 	public function processMiscHierarchicalSetup() {
 		require_once(__CA_MODELS_DIR__."/ca_storage_locations.php");
-		
+
 		#
 		# Create roots for storage locations hierarchies
 		#
@@ -1596,7 +1608,7 @@ class Installer {
 		$t_storage_location->set('status', 0);
 		$t_storage_location->set('parent_id', null);
 		$t_storage_location->insert();
-		
+
 		if ($t_storage_location->numErrors()) {
 			$this->addError("Errors inserting the storage location root: ".join("; ",$t_storage_location->getErrors()));
 			return;
@@ -1628,7 +1640,7 @@ class Installer {
 	# --------------------------------------------------
 	private function _processSettings($pt_instance, $po_settings_node) {
 		$va_settings = array();
-		if($po_settings_node){ 
+		if($po_settings_node){
 			foreach($po_settings_node->children() as $vo_setting) {
 				// some settings like 'label' or 'add_label' have 'locale' as sub-setting
 				$vs_locale = self::getAttribute($vo_setting, "locale");
@@ -1640,7 +1652,7 @@ class Installer {
 
 				$vs_setting_name = self::getAttribute($vo_setting, "name");
 				$vs_value = (string) $vo_setting;
-				
+
 				if((strlen($vs_setting_name)>0) && (strlen($vs_value)>0)){ // settings need at least name and value
 					if ($vs_locale) { // settings with locale (those can't repeat)
 						$va_settings[$vs_setting_name][$vs_locale] = $vs_value;
@@ -1658,7 +1670,7 @@ class Installer {
 					}
 				}
 			}
-			
+
 			if (is_object($pt_instance)) {
 				foreach($va_settings as $vs_setting_name => $vm_setting_value) {
 					$pt_instance->setSetting($vs_setting_name, $vm_setting_value);

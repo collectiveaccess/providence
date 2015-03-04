@@ -172,8 +172,8 @@ span.tileviewerAnnotationDefaultText {
 
 .tileviewerToolbarRotation {
 	position: absolute;
-	bottom: 50px;
-	left: 0px;
+	top: 25px;
+	right: 0px;
 	width: 170px;
 	height: 170px;
 	
@@ -350,14 +350,14 @@ li.tileviewerAnnotationListItemSelected:hover {
 	background-color: rgba(177, 0, 0, 0.7);
 }
 
-input.tileviewerAnnotationListSearch {
-	width: 280px;
-	outline-width: 0;
+div.tileviewerAnnotationListSearch {
+	position: fixed;
 }
 
 span.tileviewerAnnotationListSearch {
 	position: relative;
 }
+
 span.tileviewerAnnotationListSearch span {
 	position: absolute;
 	display: block;
@@ -368,9 +368,16 @@ span.tileviewerAnnotationListSearch span {
 	background: url('x.png') 0 -690px;
 	cursor: pointer;
 }
+
 span.tileviewerAnnotationListSearch input {
 	height: 17px;
 	padding-right: 16px;
+	width: 264px;
+	outline-width: 0;
+}
+
+div.tileviewerAnnotationListContent {
+	margin: 35px 0 75px 0;
 }
 
 /* Circular slider used for rotation control */
@@ -391,7 +398,7 @@ span.tileviewerAnnotationListSearch input {
     border-radius: 100%;
 	border: 2px solid rgb(177, 177, 177);
 	text-align : center;
-	pointer-events: none;
+	
 	line-height: 4em;
 	color: white;
 	background-color: rgba(0, 0, 0, 0.5);
