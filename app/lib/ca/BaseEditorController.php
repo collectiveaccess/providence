@@ -370,8 +370,8 @@ class BaseEditorController extends ActionController {
 			$this->postSave($t_subject, $vb_is_insert);
 		}
 
-		// if this is an insert, save where we are in session for "Save and return" button
-		if($vb_is_insert) {
+		// save where we are in session for "Save and return" button
+		if($vn_subject_id) {
 			$va_save_and_return = $this->getRequest()->session->getVar('save_and_return_locations');
 			if(!is_array($va_save_and_return)) { $va_save_and_return = array(); }
 
@@ -382,6 +382,9 @@ class BaseEditorController extends ActionController {
 
 			$this->getRequest()->session->setVar('save_and_return_locations', caPushToStack($va_save, $va_save_and_return, __CA_SAVE_AND_RETURN_STACK_SIZE__));
 		}
+
+		// if we came here through a rel link, show save and return button
+		$this->getView()->setVar('show_save_and_return', (bool) $this->getRequest()->getParameter('rel', pInteger));
 
 		$this->render('screen_html.php');
 	}
