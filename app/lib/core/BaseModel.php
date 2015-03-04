@@ -969,7 +969,7 @@ class BaseModel extends BaseObject {
 					}
 					$vs_prop = $o_tep->getText($pa_options);
 				} elseif ((isset($pa_options['sortable']) && $pa_options['sortable'])) {
-					$vs_prop = $vn_start_date."/".$vn_timestamp;
+					$vs_prop = $vn_start_date; //."/".$vn_timestamp;
 				} else {
 					$vs_prop = $vn_start_date; //array($vn_start_date, $vn_end_date);
 				}
@@ -2450,7 +2450,7 @@ class BaseModel extends BaseObject {
 				return false;
 			}
 		} else {
-			$this->postError(400, _t("Mode was %1; must be write", $this->getMode(true)),"BaseModel->insert()", $this->tableName().'.'.$vs_field);
+			$this->postError(400, _t("Mode was %1; must be write", $this->getMode(true)),"BaseModel->insert()", $this->tableName());
 			return false;
 		}
 	}
@@ -2889,7 +2889,7 @@ class BaseModel extends BaseObject {
 										foreach($va_indices[$va_matches[1]]['fields'] as $vs_col_name) {
 											$va_tmp = $this->getFieldInfo($vs_col_name);
 											$va_field_labels[] = $va_tmp['LABEL'];
-											$this->postError($vn_err_num, $vs_err_desc, "BaseModel->insert()", $this->tableName().'.'.$vs_col_name);
+											$this->postError($vn_err_num, $o_e->getErrorDescription(), "BaseModel->insert()", $this->tableName().'.'.$vs_col_name);
 										}
 	
 										$vs_last_name = array_pop($va_field_labels);
@@ -7271,7 +7271,7 @@ class BaseModel extends BaseObject {
 		if (!$this->isHierarchical()) { return null; }
 		$pb_ids_only = (isset($pa_options['idsOnly']) && $pa_options['idsOnly']) ? true : false;
 		$pn_start = caGetOption('start', $pa_options, 0);
-		$pn_limit = caGetOption('limit', $pa_options, null);
+		$pn_limit = caGetOption('limit', $pa_options, 0);
 		
 		if (!$pn_id) { $pn_id = $this->getPrimaryKey(); }
 		if (!$pn_id) { return null; }
@@ -7291,7 +7291,7 @@ class BaseModel extends BaseObject {
 				$va_children[] = $qr_children->getRow();
 			}
 			$vn_c++;
-			if (($vn_limit > 0) && ($vn_c >= $vn_limit)) { break;}
+			if (($pn_limit > 0) && ($vn_c >= $pn_limit)) { break;}
 		}
 		
 		return $va_children;
@@ -7670,6 +7670,7 @@ class BaseModel extends BaseObject {
 				break;
 			case 'modelinstances':
 				$va_instances = array();
+				$vn_c = 0;
 				foreach($va_ancestor_row_ids as $vn_ancestor_id) {
 					$t_instance = new $vs_table;
 					if ($o_trans) { $t_instance->setTransaction($o_trans); }
@@ -7768,6 +7769,7 @@ class BaseModel extends BaseObject {
 				break;
 			case 'modelinstances':
 				$va_instances = array();
+				$vn_c = 0;
 				foreach($va_child_row_ids as $vn_child_id) {
 					$t_instance = new $vs_table;
 					if ($o_trans) { $t_instance->setTransaction($o_trans); }
@@ -8375,7 +8377,7 @@ $pa_options["display_form_field_tips"] = true;
 		
 												$vs_use_count = "";
 												if ($vs_display_use_count && $vb_display_show_count && ($vs_value != "")) {
-													$vs_use_count = "(".intval($va_option_info[2]).")";
+													//$vs_use_count = "(".intval($va_option_info[2]).")";
 												}
 		
 												if (
@@ -9455,7 +9457,7 @@ $pa_options["display_form_field_tips"] = true;
 			foreach($va_to_reindex_relations as $vn_relation_id => $va_row) {
 				$t_item_rel->clear();
 				$t_item_rel->setMode(ACCESS_WRITE);
-				unset($va_row[$vs_rel_pk]);
+				unset($va_row[$t_item_rel->primaryKey()]);
 				
 				if ($va_row[$vs_left_field_name] == $vn_row_id) {
 					$va_row[$vs_left_field_name] = $pn_to_id;
@@ -10477,7 +10479,7 @@ $pa_options["display_form_field_tips"] = true;
 	public function registerItemView($pn_user_id=null) {
 		global $g_ui_locale_id;
 		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
-		if (!$pn_locale_id) { $pn_locale_id = $g_ui_locale_id; }
+		$pn_locale_id = $g_ui_locale_id;
 		
 		$vn_table_num = $this->tableNum();
 		
@@ -10944,7 +10946,6 @@ $pa_options["display_form_field_tips"] = true;
 				{$vs_limit_sql}
 			) AS random_items 
 			INNER JOIN {$vs_table_name} ON {$vs_table_name}.{$vs_primary_key} = random_items.{$vs_primary_key}
-			{$vs_deleted_sql}
 		";
 		
 		$qr_res = $o_db->query($vs_sql);
@@ -11118,13 +11119,13 @@ $pa_options["display_form_field_tips"] = true;
 		// Convert type id
 		//
 		$vs_type_field_name = null;
-		if (method_exists($this, "getTypeFieldName")) {
-			$vs_type_field_name = $this->getTypeFieldName();
+		if (method_exists($t_instance, "getTypeFieldName")) {
+			$vs_type_field_name = $t_instance->getTypeFieldName();
 			if(!is_array($pa_values[$vs_type_field_name])) { $pa_values[$vs_type_field_name] = array($pa_values[$vs_type_field_name]); }
 			
 			foreach($pa_values[$vs_type_field_name] as $vn_i => $vm_value) {
 				if (!is_numeric($vm_value)) {
-					if ($vn_id = ca_lists::getItemID($this->getTypeListCode(), $vm_value)) {
+					if ($vn_id = ca_lists::getItemID($t_instance->getTypeListCode(), $vm_value)) {
 						$pa_values[$vs_type_field_name][$vn_i] = $vn_id;
 					}
 				}
@@ -11180,7 +11181,7 @@ $pa_options["display_form_field_tips"] = true;
 			} else {
 				if (is_array($vm_value) && sizeof($vm_value)) {
 					foreach($vm_value as $vn_i => $vm_ivalue) {
-						$vm_value[$vn_i] = $this->quote($vs_field, $vm_ivalue);
+						$vm_value[$vn_i] = $t_instance->quote($vs_field, $vm_ivalue);
 					}
 				} else {
 					$vm_value = $t_instance->quote($vs_field, is_null($vm_value) ? '' : $vm_value);
