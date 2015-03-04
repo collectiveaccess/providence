@@ -4349,8 +4349,7 @@ if (!$vb_batch) {
 			$va_bundle_names[] = $vs_bundle_name;
 		}
 
-		$this->prepopulateFields();
-
+		// validate metadata dictionary rules
 		$va_violations = $this->validateUsingMetadataDictionaryRules(array('bundles' => $va_bundle_names));
 		if (sizeof($va_violations)) {
 			if ($vb_we_set_transaction && isset($va_violations['ERR']) && is_array($va_violations['ERR']) && (sizeof($va_violations['ERR']) > 0)) { 
@@ -4371,6 +4370,9 @@ if (!$vb_batch) {
 		
 		if ($vb_dryrun) { $this->removeTransaction(false); }
 		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
+
+		// prepopulate fields
+		$this->prepopulateFields();
 		
 		return true;
 	}
@@ -6402,15 +6404,142 @@ side. For many self-relations the direction determines the nature and display te
 		return $va_violations;
 	 }
 	# --------------------------------------------------------------------------------------------
+	/**
+	 * Prepopulate record fields according to rules in prepopulate.conf
+	 *
+	 * @return bool success or not
+	 */
 	public function prepopulateFields() {
-		$o_prepopualte_conf = Configuration::load($this->getAppConfig()->get('prepopulate_config'));
-		foreach($o_prepopualte_conf->get('prepopulate_rules') as $va_rule) {
+		$o_prepopulate_conf = Configuration::load($this->getAppConfig()->get('prepopulate_config'));
+		if(!$o_prepopulate_conf->get('prepopulate_fields')) { return true; }
+
+		$va_rules = $o_prepopulate_conf->get('prepopulate_rules');
+		if(!$va_rules || (!is_array($va_rules)) || (sizeof($va_rules)<1)) { return true; }
+
+		global $g_ui_locale_id;
+		$t = new Timer();
+		$t_element = new ca_metadata_elements();
+
+		// we need to unset the form timestamp to disable the 'Changes have been made since you loaded this data' warning when we update() $this
+		// the warning makes sense because an update()/insert() is called before we arrive here but after the form_timestamp ... but we chose to ignore it
+		$vn_timestamp = $_REQUEST['form_timestamp'];
+		unset($_REQUEST['form_timestamp']);
+
+		// process rules
+		$va_expression_vars = array(); // we only process those if and when we need them
+		foreach($va_rules as $vs_rule_key => $va_rule) {
 			if($this->tableName() != $va_rule['table']) { continue; }
 
-			if($va_rule['restrictToTypes'] && is_array($va_rule['restrictToTypes'])) {
-				if(!in_array($this->getTypeCode(), $va_rule['restrictToTypes'])) { continue; }
+			// check target
+			$vs_target = $va_rule['target'];
+			if(strlen($vs_target)<1) { Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because target is not set"); continue; }
+
+			// check template
+			$vs_template = $va_rule['template'];
+			if(strlen($vs_template)<1) { Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because template is not set"); continue; }
+
+			$vb_overwrite_existing = (isset($va_rule['overwrite_existing']) ? (bool)$va_rule['overwrite_existing'] : false);
+
+			// respect restrictToTypes option
+			if($va_rule['restrictToTypes'] && is_array($va_rule['restrictToTypes']) && (sizeof($va_rule['restrictToRelationshipTypes']) > 0)) {
+				if(!in_array($this->getTypeCode(), $va_rule['restrictToTypes'])) {
+					Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because current record type ".$this->getTypeCode()." is not in restrictToTypes");
+					continue;
+				}
 			}
+
+			// skip this rule if expression is true
+			if($va_rule['skipIfExpression'] && (strlen($va_rule['skipIfExpression'])>0)) {
+				$va_tags = caGetTemplateTags($va_rule['skipIfExpression']);
+
+				foreach($va_tags as $vs_tag) {
+					if(!isset($va_expression_vars[$vs_tag])) {
+						$va_expression_vars[$vs_tag] = $this->get($vs_tag);
+					}
+				}
+
+				if(ExpressionParser::evaluate($va_rule['skipIfExpression'], $va_expression_vars)) {
+					Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because skipIfExpression evaluated to true");
+					continue;
+				}
+			}
+
+			// evaluate template
+			$vs_value = caProcessTemplateForIDs($vs_template, $this->tableNum(), array($this->getPrimaryKey()));
+			Debug::msg("[prepopulateFields()] processed template value is: ".$vs_value);
+
+			// inject into target
+			$va_parts = explode('.', $vs_target);
+			if(sizeof($va_parts) == 2) { // intrinsic or simple (non-container) attribute
+				if($this->hasField($va_parts[1])) {
+					Debug::msg("[prepopulateFields()] target is 2-part bundle and intrinsic");
+
+					$this->set($va_parts[1], $vs_value);
+				} elseif($this->hasElement($va_parts[1])) {
+					Debug::msg("[prepopulateFields()] target is 2-part bundle and valid element");
+					if($vb_overwrite_existing) {
+						$this->replaceAttribute(array(
+							$va_parts[1] => $vs_value,
+							'locale_id' => $g_ui_locale_id
+						), $va_parts[1]);
+					} else {
+						$vb_ret = $this->addAttribute(array(
+							$va_parts[1] => $vs_value,
+							'locale_id' => $g_ui_locale_id
+						), $va_parts[1]);
+
+						if(!$vb_ret) { Debug::msg("[prepopulateFields()] adding value failed and overwrite_existing is set to false"); }
+					}
+				} else {
+					Debug::msg("[prepopulateFields()] target is 2-part bundle invalid!");
+				}
+			} elseif(sizeof($va_parts)==3) { // container
+				if(!$this->hasElement($va_parts[1])) { continue; }
+				Debug::msg("[prepopulateFields()] target is 3-part bundle");
+				$va_attr = $this->getAttributesByElement($va_parts[1]);
+				switch(sizeof($va_attr)) {
+					case 1:
+						if($vb_overwrite_existing) {
+							$vo_attr = array_pop($va_attr);
+							$va_value = array($va_parts[2] => $vs_value);
+							foreach($vo_attr->getValues() as $o_val) {
+								if($o_val->getElementCode() != $va_parts[2]) {
+									$va_value[$o_val->getElementCode()] = $o_val->getDisplayValue();
+								}
+							}
+
+							$this->editAttribute($vo_attr->getAttributeID(), $va_parts[1], $va_value);
+						}
+						break;
+					case 0:
+					default:
+						$this->addAttribute(array(
+							$va_parts[2] => $vs_value,
+							'locale_id' => $g_ui_locale_id
+						), $va_parts[1]);
+						break;
+				}
+			}
+
 		}
+
+		$vn_old_mode = $this->getMode();
+		$this->setMode(ACCESS_WRITE);
+		$this->update();
+		$this->setMode($vn_old_mode);
+
+		$_REQUEST['form_timestamp'] = $vn_timestamp;
+
+		if($this->numErrors() > 0) {
+			foreach($this->getErrors() as $vs_error) {
+				Debug::msg("[prepopulateFields()] there was an error while updating the record: ".$vs_error);
+			}
+			return false;
+		}
+
+		Debug::msg("[prepopulateFields()] took ". $t->getTime());
+
+		return true;
 	}
 	# --------------------------------------------------------------------------------------------
 }

@@ -430,7 +430,7 @@ class BaseModel extends BaseObject {
 	 * Convenience method to return application datamodel object. This is the same object
 	 * you'd get if you instantiated a Datamodel() object
 	 *
-	 * @return Configuration
+	 * @return Datamodel
 	 */
 	public function getAppDatamodel() {
 		return $this->_DATAMODEL;
