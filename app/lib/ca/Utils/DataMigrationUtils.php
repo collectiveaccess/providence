@@ -310,7 +310,7 @@
 
 				$vb_attr_errors = !DataMigrationUtils::_setAttributes($t_item, $pn_locale_id, $pa_values, $pa_options);
 				DataMigrationUtils::_setNonPreferredLabels($t_item, $pn_locale_id, $pa_options);
-				DataMigrationUtils::_updateIdno($t_item, $vs_idno, $pn_locale_id, $pa_options);
+				DataMigrationUtils::_setIdno($t_item, $vs_idno, $pn_locale_id, $pa_options);
 
 				$vn_item_id = DataMigrationUtils::$s_cached_list_item_ids[$vs_cache_key] = $t_item->getPrimaryKey();
 
@@ -980,7 +980,7 @@
 					$vb_label_errors = true;
 				}
 				
-				DataMigrationUtils::_updateIdno($t_instance, $vs_idno, $pn_locale_id, $pa_options);
+				DataMigrationUtils::_setIdno($t_instance, $vs_idno, $pn_locale_id, $pa_options);
 				$vb_attr_errors = !DataMigrationUtils::_setAttributes($t_instance, $pn_locale_id, $pa_values, $pa_options);
 				DataMigrationUtils::_setNonPreferredLabels($t_instance, $pn_locale_id, $pa_options);
 				
