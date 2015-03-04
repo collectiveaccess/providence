@@ -205,7 +205,7 @@ class ExternalCache {
 		$vs_cache_dir = $vs_cache_base_dir.DIRECTORY_SEPARATOR.__CA_APP_NAME__.'Cache';
 
 		try {
-			$o_cache = new \Doctrine\Common\Cache\CAFileSystemCache($vs_cache_dir);
+			$o_cache = new \Doctrine\Common\Cache\CAFileSystemCache($vs_cache_dir, '.ca.cache');
 			return $o_cache;
 		} catch (InvalidArgumentException $e) {
 			// carry on ... but no caching :(
