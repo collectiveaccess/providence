@@ -200,14 +200,6 @@
 			'label' => _t('Dependent value template'),
 			'validForNonRootOnly' => 1,
 			'description' => _t('Template to be used to format content for dependent values. Template should reference container values using their bare element code prefixed with a caret (^). Do not include the table or container codes.')
-		),
-		'prepopulateWithTemplate' => array(
-			'formatType' => FT_TEXT,
-			'displayType' => DT_FIELD,
-			'default' => '',
-			'width' => 90, 'height' => 4,
-			'label' => _t('Prepopulate with template'),
-			'description' => _t('Display template to be used to prepopulate field value.')
 		)
 	);
  
@@ -275,7 +267,7 @@
  		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
  			
- 			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'minChars', 'maxChars', 'suggestExistingValues', 'usewysiwygeditor', 'isDependentValue', 'dependentValueTemplate', 'prepopulateWithTemplate'));
+ 			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'minChars', 'maxChars', 'suggestExistingValues', 'usewysiwygeditor', 'isDependentValue', 'dependentValueTemplate'));
  			
  			if (isset($pa_options['usewysiwygeditor'])) {
  				$va_settings['usewysiwygeditor'] = $pa_options['usewysiwygeditor'];
@@ -355,54 +347,6 @@
  				
  				$vs_element .="});</script>";
  			}
-
-			if ($va_settings['prepopulateWithTemplate'] && $pa_options['t_subject']) {
-				$t_subject = $pa_options['t_subject'];
-				AssetLoadManager::register('prepopulateField');
-
-				$t_element = new ca_metadata_elements($pa_element_info['element_id']);
-				$va_all_elements = $t_element->getElementsAsList(false, $t_subject->tableNum());
-
-				$va_element_ids = array();
-				if(CompositeCache::contains('ElementIDsForPrepopulateWithTemplate')) {
-					$va_element_ids = CompositeCache::fetch('ElementIDsForPrepopulateWithTemplate');
-				} else {
-					// collect element ids
-					foreach($va_all_elements as $va_element) {
-						if ($va_element['datatype'] == __CA_ATTRIBUTE_VALUE_CONTAINER__) { continue; }
-
-						if($va_element['parent_id']) { // children get this notation: ca_objects.dimensions.dimensions_width
-							$vs_code = $t_subject->tableName().'.'.$va_all_elements[$va_element['hier_element_id']]['element_code'].'.'.$va_element['element_code'];
-						} else {
-							$vs_code = $t_subject->tableName().'.'.$va_element['element_code'];
-						}
-						$va_element_ids[$vs_code] = $va_element['element_id'];
-					}
-					CompositeCache::save('ElementIDsForPrepopulateWithTemplate', $va_element_ids);
-				}
-
-				$vs_lookup_url = caEditorUrl($pa_options['request'], $t_subject->tableName(), $t_subject->getPrimaryKey(), false, null, array('action' => 'processTemplate'));
-
-				$vs_element .= "<a id='resetPrepopulateWithTemplate".$pa_element_info['element_id']."' style='cursor: pointer;'>".
-					caNavIcon($pa_options['request'], __CA_NAV_BUTTON_CHANGE__, array('alt' => _t('Prepopulate field'))).
-				"</a>";
-
-				TooltipManager::add('#resetPrepopulateWithTemplate'.$pa_element_info['element_id'], _t('Prepopulate field with template'));
-
-				// set up prepopulate field
-				$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() {
-					caPrepopulateField.setUpPrepopulateField('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}', {
-						template : '".addslashes($va_settings['prepopulateWithTemplate'])."',
-						elementIDs : ".json_encode($va_element_ids, JSON_FORCE_OBJECT).",
-						lookupURL : '".addslashes($vs_lookup_url)."',
-						isFormLoad : true,
-						resetButtonID : '#resetPrepopulateWithTemplate".$pa_element_info['element_id']."'
-					});
- 				";
-
-				$vs_element .="});</script>";
-			}
-
  			
  			$vs_bundle_name = $vs_lookup_url = null;
  			if (isset($pa_options['t_subject']) && is_object($pa_options['t_subject'])) {
