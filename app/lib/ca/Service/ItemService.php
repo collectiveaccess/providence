@@ -584,8 +584,6 @@ class ItemService extends BaseJSONService {
 		// yes, not all combinations between these tables have
 		// relationships but it also doesn't hurt to query
 		foreach($this->opa_valid_tables as $vs_rel_table){
-			$t_rel = $o_dm->getInstanceByTableName($vs_rel_table, true);
-
 			//
 			// set-related hacks
 			if(($this->ops_table == "ca_sets") && ($vs_rel_table=="ca_tours")){ // throw SQL error in getRelatedItems
@@ -742,9 +740,30 @@ class ItemService extends BaseJSONService {
 					$vs_pk = isset($va_relationship[$t_rel_instance->primaryKey()]) ? $va_relationship[$t_rel_instance->primaryKey()] : null;
 					$vs_type_id = isset($va_relationship["type_id"]) ? $va_relationship["type_id"] : null;
 
-					$t_instance->addRelationship($vs_table,$vs_pk,$vs_type_id,$vs_effective_date,$vs_source_info,$vs_direction);
+					$t_rel = $t_instance->addRelationship($vs_table,$vs_pk,$vs_type_id,$vs_effective_date,$vs_source_info,$vs_direction);
 
-					// @TODO add relationship attributes as soon as they're implemented
+					// deal with interstitial attributes
+					if($t_rel instanceof BaseRelationshipModel) {
+
+						$vb_have_to_update = false;
+						if(is_array($va_relationship["attributes"]) && sizeof($va_relationship["attributes"])){
+							foreach($va_relationship["attributes"] as $vs_attribute_name => $va_values){
+								foreach($va_values as $va_value){
+									if($va_value["locale"]){
+										$va_value["locale_id"] = $t_locales->localeCodeToID($va_value["locale"]);
+										unset($va_value["locale"]);
+									}
+									$t_rel->addAttribute($va_value,$vs_attribute_name);
+									$vb_have_to_update = true;
+								}
+							}
+						}
+
+						if($vb_have_to_update) {
+							$t_rel->setMode(ACCESS_WRITE);
+							$t_rel->update();
+						}
+					}
 				}
 			}
 		}
@@ -863,7 +882,30 @@ class ItemService extends BaseJSONService {
 					$vs_pk = isset($va_relationship[$t_rel_instance->primaryKey()]) ? $va_relationship[$t_rel_instance->primaryKey()] : null;
 					$vs_type_id = isset($va_relationship["type_id"]) ? $va_relationship["type_id"] : null;
 
-					$t_instance->addRelationship($vs_table,$vs_pk,$vs_type_id,$vs_effective_date,$vs_source_info,$vs_direction);
+					$t_rel = $t_instance->addRelationship($vs_table,$vs_pk,$vs_type_id,$vs_effective_date,$vs_source_info,$vs_direction);
+
+					// deal with interstitial attributes
+					if($t_rel instanceof BaseRelationshipModel) {
+
+						$vb_have_to_update = false;
+						if(is_array($va_relationship["attributes"]) && sizeof($va_relationship["attributes"])){
+							foreach($va_relationship["attributes"] as $vs_attribute_name => $va_values){
+								foreach($va_values as $va_value){
+									if($va_value["locale"]){
+										$va_value["locale_id"] = $t_locales->localeCodeToID($va_value["locale"]);
+										unset($va_value["locale"]);
+									}
+									$t_rel->addAttribute($va_value,$vs_attribute_name);
+									$vb_have_to_update = true;
+								}
+							}
+						}
+
+						if($vb_have_to_update) {
+							$t_rel->setMode(ACCESS_WRITE);
+							$t_rel->update();
+						}
+					}
 				}
 			}
 		}

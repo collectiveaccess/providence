@@ -335,8 +335,8 @@ if (!defined("__CA_THEME_URL__")) {
 # The default file-based caching should work fine in most setups
 # but if you want to use memcached or php APC instead, configure them here
 
-# Backend to use. Available options are: 'file', 'memcached' and 'apc'
-# Note that both memcached and apc require PHP extensions that are not
+# Backend to use. Available options are: 'file', 'memcached', 'redis', and 'apc'
+# Note that memcached, redis and apc require PHP extensions that are not
 # part of the standard CollectiveAccess configuration check. If you do
 # configure them here and your setup doesn't have the extension, you
 # may see critical errors.
@@ -346,12 +346,16 @@ define('__CA_CACHE_BACKEND__', 'file');
 # to the fastest available storage (in terms of random access time), like an SSD
 define('__CA_CACHE_FILEPATH__', __CA_APP_DIR__.DIRECTORY_SEPARATOR.'tmp');
 
-# Time-to-live for on-disk cache items
+# Time-to-live for cache items
 define('__CA_CACHE_TTL__', 3600);
 
 # Host and port for memcached
 define('__CA_MEMCACHED_HOST__', 'localhost');
 define('__CA_MEMCACHED_PORT__', 11211);
+
+# Host and port for redis
+define('__CA_REDIS_HOST__', 'localhost');
+define('__CA_REDIS_PORT__', 6379);
 # --------------------------------------------------------------------------------------------
 
 # include version number
