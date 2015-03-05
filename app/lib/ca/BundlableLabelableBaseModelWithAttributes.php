@@ -4370,9 +4370,6 @@ if (!$vb_batch) {
 		
 		if ($vb_dryrun) { $this->removeTransaction(false); }
 		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
-
-		// prepopulate fields
-		$this->prepopulateFields();
 		
 		return true;
 	}
@@ -6407,18 +6404,22 @@ side. For many self-relations the direction determines the nature and display te
 	/**
 	 * Prepopulate record fields according to rules in prepopulate.conf
 	 *
+	 * @param array $pa_options Options array. Available options are:
+	 * 		prepopulateConfig = override path to prepopulate.conf, e.g. for testing purposes
 	 * @return bool success or not
 	 */
-	public function prepopulateFields() {
-		$o_prepopulate_conf = Configuration::load($this->getAppConfig()->get('prepopulate_config'));
-		if(!$o_prepopulate_conf->get('prepopulate_fields')) { return true; }
+	public function prepopulateFields($pa_options=null) {
+		if(!($vs_prepopulate_cfg = caGetOption('prepopulateConfig', $pa_options, null))) {
+			$vs_prepopulate_cfg = $this->getAppConfig()->get('prepopulate_config');
+		}
+		$o_prepopulate_conf = Configuration::load($vs_prepopulate_cfg);
+		if(!$o_prepopulate_conf->get('prepopulate_fields')) { return false; }
 
 		$va_rules = $o_prepopulate_conf->get('prepopulate_rules');
-		if(!$va_rules || (!is_array($va_rules)) || (sizeof($va_rules)<1)) { return true; }
+		if(!$va_rules || (!is_array($va_rules)) || (sizeof($va_rules)<1)) { return false; }
 
 		global $g_ui_locale_id;
 		$t = new Timer();
-		$t_element = new ca_metadata_elements();
 
 		// we need to unset the form timestamp to disable the 'Changes have been made since you loaded this data' warning when we update() $this
 		// the warning makes sense because an update()/insert() is called before we arrive here but after the form_timestamp ... but we chose to ignore it
@@ -6441,7 +6442,7 @@ side. For many self-relations the direction determines the nature and display te
 			$vb_overwrite_existing = (isset($va_rule['overwrite_existing']) ? (bool)$va_rule['overwrite_existing'] : false);
 
 			// respect restrictToTypes option
-			if($va_rule['restrictToTypes'] && is_array($va_rule['restrictToTypes']) && (sizeof($va_rule['restrictToRelationshipTypes']) > 0)) {
+			if($va_rule['restrictToTypes'] && is_array($va_rule['restrictToTypes']) && (sizeof($va_rule['restrictToTypes']) > 0)) {
 				if(!in_array($this->getTypeCode(), $va_rule['restrictToTypes'])) {
 					Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because current record type ".$this->getTypeCode()." is not in restrictToTypes");
 					continue;
@@ -6520,7 +6521,6 @@ side. For many self-relations the direction determines the nature and display te
 						break;
 				}
 			}
-
 		}
 
 		$vn_old_mode = $this->getMode();
