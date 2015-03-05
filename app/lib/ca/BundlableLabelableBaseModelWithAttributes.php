@@ -6472,31 +6472,35 @@ side. For many self-relations the direction determines the nature and display te
 			// inject into target
 			$va_parts = explode('.', $vs_target);
 			if(sizeof($va_parts) == 2) { // intrinsic or simple (non-container) attribute
-				if($this->hasField($va_parts[1])) {
+				if($this->hasField($va_parts[1])) { // intrinsic
 					Debug::msg("[prepopulateFields()] target is 2-part bundle and intrinsic");
 
-					$this->set($va_parts[1], $vs_value);
-				} elseif($this->hasElement($va_parts[1])) {
-					Debug::msg("[prepopulateFields()] target is 2-part bundle and valid element");
-					if($vb_overwrite_existing) {
-						$this->replaceAttribute(array(
-							$va_parts[1] => $vs_value,
-							'locale_id' => $g_ui_locale_id
-						), $va_parts[1]);
-					} else {
-						$vb_ret = $this->addAttribute(array(
-							$va_parts[1] => $vs_value,
-							'locale_id' => $g_ui_locale_id
-						), $va_parts[1]);
-
-						if(!$vb_ret) { Debug::msg("[prepopulateFields()] adding value failed and overwrite_existing is set to false"); }
+					if(!$vb_overwrite_existing && ($this->get($va_parts[1]))) { // don't overwrite existing values
+						Debug::msg("[prepopulateFields()] intrinsic skipped because it already has value and overwrite_existing is false");
+						continue;
 					}
+
+					$this->set($va_parts[1], $vs_value);
+				} elseif($this->hasElement($va_parts[1])) { // attribute/element
+					Debug::msg("[prepopulateFields()] target is 2-part bundle and valid element");
+
+					if(!$vb_overwrite_existing && ($this->get($va_parts[1]))) { // don't overwrite existing values
+						Debug::msg("[prepopulateFields()] attribute skipped because it already has value and overwrite_existing is false");
+						continue;
+					}
+
+					$this->replaceAttribute(array(
+						$va_parts[1] => $vs_value,
+						'locale_id' => $g_ui_locale_id
+					), $va_parts[1]);
+
 				} else {
-					Debug::msg("[prepopulateFields()] target is 2-part bundle invalid!");
+					Debug::msg("[prepopulateFields()] target is 2-part bundle and invalid!");
 				}
 			} elseif(sizeof($va_parts)==3) { // container
 				if(!$this->hasElement($va_parts[1])) { continue; }
 				Debug::msg("[prepopulateFields()] target is 3-part bundle");
+
 				$va_attr = $this->getAttributesByElement($va_parts[1]);
 				switch(sizeof($va_attr)) {
 					case 1:

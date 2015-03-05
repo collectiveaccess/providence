@@ -124,8 +124,8 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 	/**
 	 * Prepopulate feature tests
 	 */
-	public function testPrepopulateFieldsSimplePositive() {
-		// load simple config
+	public function testPrepopulateFieldsSimple() {
+		// load config
 		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_simple.conf');
 
 		$t_object = new ca_objects();
@@ -143,8 +143,8 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 		$this->assertEquals('test123', $vs_get, 'description must match idno after prepopulation');
 	}
 
-	public function testPrepopulateFieldsSimpleAddValue() {
-		// load simple config
+	public function testPrepopulateFieldsSimpleOverwriteValue() {
+		// load config
 		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_simple.conf');
 
 		$t_object = new ca_objects();
@@ -164,11 +164,11 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 		$this->assertTrue($t_object->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
 
 		$vs_get = $t_object->get('ca_objects.description');
-		$this->assertEquals('a description,test123', $vs_get, 'description must have both values');
+		$this->assertEquals('test123', $vs_get, 'description should have been overwritten');
 	}
 
 	public function testPrepopulateFieldsSimpleSkipType() {
-		// load simple config
+		// load config
 		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_simple.conf');
 
 		$t_object = new ca_objects();
@@ -191,7 +191,7 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 	}
 
 	public function testPrepopulateFieldsSimpleSkipExpression() {
-		// load simple config
+		// load config
 		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_simple.conf');
 
 		$t_object = new ca_objects();
@@ -214,7 +214,7 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 	}
 
 	public function testPrepopulateFieldsDontOverwrite() {
-		// load simple config
+		// load config
 		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_dont_overwrite.conf');
 
 		$t_object = new ca_objects();
@@ -238,7 +238,7 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 	}
 
 	public function testPrepopulateFieldsIntrinsic() {
-		// load simple config
+		// load config
 		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_intrinsic.conf');
 
 		$t_object = new ca_objects();
@@ -260,6 +260,32 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 
 		$vs_get = $t_object->get('ca_objects.idno');
 		$this->assertEquals('a label', $vs_get, 'label should populate idno');
+	}
+
+	public function testPrepopulateFieldsIntrinsicDontOverwrite() {
+		// load config
+		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_intrinsic.conf');
+
+		$t_object = new ca_objects();
+		$t_object->setMode(ACCESS_WRITE);
+		$t_object->set('type_id', 'image');
+		$t_object->set('idno', 'test123');
+
+		$t_object->insert();
+
+		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
+		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
+
+		$t_object->addLabel(array(
+			'name' => 'a label'
+		), 1, null, true);
+
+		$this->assertEquals('a label', $t_object->get('ca_objects.preferred_labels'), 'label must match the one we just added');
+
+		$this->assertTrue($t_object->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
+
+		$vs_get = $t_object->get('ca_objects.idno');
+		$this->assertEquals('test123', $vs_get, 'idno should not change');
 	}
 
 	/**
