@@ -843,7 +843,7 @@
         </label>
       </labels>
       <items>
-        <item idno="yale" enabled="1" default="0">
+        <item idno="YPM" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Yale Peabody Museum of Natural History</name_singular>
@@ -851,11 +851,59 @@
             </label>
           </labels>
         </item>
-        <item idno="colorado" enabled="1" default="0">
+        <item idno="UCM" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>CU Museum of Natural History</name_singular>
-              <name_plural>CU Museum of Natural History</name_plural>
+              <name_singular>University of Colorado Museum of Paleontology</name_singular>
+              <name_plural>University of Colorado Museum of Paleontology</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="MCZ" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Harvard Museum of Comparative Zoology</name_singular>
+              <name_plural>Harvard Museum of Comparative Zoology</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="AMNH" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>American Museum of Natural History</name_singular>
+              <name_plural>American Museum of Natural History</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="VMNH" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Virginia Museum of Natural History</name_singular>
+              <name_plural>Virginia Museum of Natural History</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="KU" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>University of Kansas</name_singular>
+              <name_plural>University of Kansas</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="NMNH" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Smithsonian National Museum of Natural History</name_singular>
+              <name_plural>Smithsonian National Museum of Natural History</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="INHS" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Illinois Natural History Survey</name_singular>
+              <name_plural>Illinois Natural History Survey</name_plural>
             </label>
           </labels>
         </item>
@@ -3216,14 +3264,14 @@
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
             </placement>
-            <placement code="ca_taxa">
+            <placement code="taxonomy">
               <bundle>ca_occurrences</bundle>
               <settings>
                 <setting name="restrict_to_type">taxonomy</setting>
                 <setting name="label" locale="en_US">Related Taxonomy</setting>
               </settings>
             </placement>
-            <placement code="ca_taxa">
+            <placement code="identifications">
               <bundle>ca_occurrences</bundle>
               <settings>
                 <setting name="restrict_to_type">identifications</setting>
