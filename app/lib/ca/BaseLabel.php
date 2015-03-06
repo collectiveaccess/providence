@@ -99,6 +99,7 @@
 		public function getSubjectTableInstance($pa_options=null) {
 			if ($vs_subject_table_name = $this->getSubjectTableName()) {
 				$t_subject =  $this->_DATAMODEL->getInstanceByTableName($vs_subject_table_name, true);
+				
 				if ($t_subject->inTransaction()) { 
 					$t_subject->setTransaction($this->getTransaction()); 
 				} else {

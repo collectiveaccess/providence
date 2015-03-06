@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -75,7 +75,7 @@ var caUI = caUI || {};
 			folderIcon: '',
 			fileIcon: '',
 			
-			hasChildrenIndicator: 'has_children',	/* name of key in data to use to determine if an item has children */
+			hasChildrenIndicator: 'children',	/* name of key in data to use to determine if an item has children */
 			
 			levelLists: [],
 			selectedItemIDs: [],
@@ -276,7 +276,7 @@ var caUI = caUI || {};
 					var item_id = that._queuedLoadsForLevel[l][i]['item_id'];
 					id_list.push(p + '/' + ((item_id != '/') ? item_id : '') +':'+that._queuedLoadsForLevel[l][i]['start']);
 					
-					itemIDsToLevelInfo[that._queuedLoadsForLevel[l][i]['item_id']] = {
+					itemIDsToLevelInfo[l] = {
 						level: l,
 						newLevelDivID: that._queuedLoadsForLevel[l][i]['newLevelDivID'],
 						newLevelListID: that._queuedLoadsForLevel[l][i]['newLevelListID'],
@@ -294,16 +294,17 @@ var caUI = caUI || {};
 			
 			jQuery.getJSON(that.levelDataUrl, params, function(dataForLevels) {
 				jQuery.each(dataForLevels, function(key, data) {
-					var tmp = key.split(":");
+					var b = key.split("|");
+					var tmp = b[0].split(":");
 					var item_id = tmp[0];
 					var start = tmp[1] ? tmp[1] : 0;
+					var level = b[1] ? b[1] : 0;
 					
-					if (!itemIDsToLevelInfo[item_id]) { return; }
-					var level = itemIDsToLevelInfo[item_id]['level'];
-					var is_init = itemIDsToLevelInfo[item_id]['is_init'];
-					var newLevelDivID = itemIDsToLevelInfo[item_id]['newLevelDivID'];
-					var newLevelListID = itemIDsToLevelInfo[item_id]['newLevelListID'];
-					var selected_item_id = itemIDsToLevelInfo[item_id]['selected_item_id'];
+					if (!itemIDsToLevelInfo[level]) { return; }
+					var is_init = itemIDsToLevelInfo[level]['is_init'];
+					var newLevelDivID = itemIDsToLevelInfo[level]['newLevelDivID'];
+					var newLevelListID = itemIDsToLevelInfo[level]['newLevelListID'];
+					var selected_item_id = itemIDsToLevelInfo[level]['selected_item_id'];
 					
 					var foundSelected = false;
 					jQuery('#' + newLevelDivID).data('itemCount', data['_itemCount']);
@@ -368,6 +369,12 @@ var caUI = caUI || {};
 									var has_children = jQuery(this).data('has_children');
 									that.clearLevelsStartingAt(l+1);
 									that.selectItem(l, item_id, jQuery('#' + newLevelDivID).data('parent_id'), has_children, item);
+									
+									if (has_children) {
+										// scroll to new level
+										that.setUpHierarchyLevel(l + 1, item_id, 0, undefined, true);
+										jQuery('#' + that.container + '_scrolling_container').animate({scrollLeft: l * that.levelWidth}, 500);
+									}
 									return false;
 								});
 							}
@@ -428,7 +435,6 @@ var caUI = caUI || {};
 					if (!is_init) {
 						that.selectedItemIDs[level-1] = item_id;
 						var item_id_for_css = item_id.replace(/[^A-Za-z0-9_\-]+/g, '_');
-						//jQuery('#' + newLevelListID + ' a').removeClass(that.classNameSelected).addClass(that.className);
 						jQuery('#directoryBrowser_' + that.name + '_' + (level - 1) + ' a').removeClass(that.classNameSelected).addClass(that.className);
 						jQuery('#directoryBrowser_' + that.name + '_level_' + (level - 1) + '_item_' + item_id_for_css).addClass(that.classNameSelected);
 					} else {
@@ -443,7 +449,6 @@ var caUI = caUI || {};
 					that._openLoadsForLevel[level] = false;
 					
 					// Handle loading of long hierarchy levels via ajax on scroll
-
 					var selected_item_id_cl = selected_item_id;
 					jQuery('#' + newLevelDivID).scroll(function () { 
 						var curPage = jQuery('#' + newLevelDivID).data("page");

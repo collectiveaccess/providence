@@ -428,6 +428,16 @@ class ca_data_exporter_items extends BaseModel {
 			'description' => _t('Restricts the context of the mapping to only records related with the designated relationship type. Only valid when context is set.')
 		);
 
+		$va_settings['restrictToBundleValues'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Restrict to bundle values'),
+			'description' => _t('Restricts the context of the mapping to only records related with the designated bundle values. Only valid when context is set.')
+		);
+
 		$va_settings['checkAccess'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,

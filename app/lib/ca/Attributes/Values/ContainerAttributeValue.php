@@ -102,7 +102,7 @@
 		'displayDelimiter' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
-			'default' => ',',
+			'default' => '; ',
 			'width' => 90, 'height' => 2,
 			'label' => _t('Value delimiter'),
 			'validForRootOnly' => 1,

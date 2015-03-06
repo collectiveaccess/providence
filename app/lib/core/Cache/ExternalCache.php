@@ -190,6 +190,8 @@ class ExternalCache {
 		switch(__CA_CACHE_BACKEND__) {
 			case 'memcached':
 				return self::getMemcachedObject();
+			case 'redis':
+				return self::getRedisObject();
 			case 'apc':
 				return self::getApcObject();
 			case 'file':
@@ -203,7 +205,7 @@ class ExternalCache {
 		$vs_cache_dir = $vs_cache_base_dir.DIRECTORY_SEPARATOR.__CA_APP_NAME__.'Cache';
 
 		try {
-			$o_cache = new \Doctrine\Common\Cache\CAFileSystemCache($vs_cache_dir);
+			$o_cache = new \Doctrine\Common\Cache\CAFileSystemCache($vs_cache_dir, '.ca.cache');
 			return $o_cache;
 		} catch (InvalidArgumentException $e) {
 			// carry on ... but no caching :(
@@ -225,6 +227,23 @@ class ExternalCache {
 
 		$o_cache = new \Doctrine\Common\Cache\MemcachedCache();
 		$o_cache->setMemcached($o_memcached);
+		return $o_cache;
+	}
+	# ------------------------------------------------
+	private static function getRedisObject(){
+		if(!defined('__CA_REDIS_HOST__')) {
+			define('__CA_REDIS_HOST__', 'localhost');
+		}
+
+		if(!defined('__CA_REDIS_PORT__')) {
+			define('__CA_REDIS_PORT__', 6379);
+		}
+
+		$o_redis = new Redis();
+		$o_redis->connect(__CA_REDIS_HOST__, __CA_REDIS_PORT__);
+
+		$o_cache = new \Doctrine\Common\Cache\RedisCache();
+		$o_cache->setRedis($o_redis);
 		return $o_cache;
 	}
 	# ------------------------------------------------

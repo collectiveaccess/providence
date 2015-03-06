@@ -450,7 +450,16 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 					$va_tmp = explode(',', $va_filter['value']);
 					$va_list = array();
 					foreach($va_tmp as $vs_item) {
-						$va_list[] = $va_filter['field'].':'.$vs_item;
+						// this case specifically happens when filtering list item search results by type id
+						// (if type based access control is enabled, that is). The filter is something like
+						// type_id IN 2,3,4,NULL. So we have to allow for empty values, which is a little bit
+						// different in ElasticSearch.
+						if(strtolower($vs_item) == 'null') {
+							$va_list[] = '_missing_:' . $va_filter['field'];
+						} else {
+							$va_list[] = $va_filter['field'].':'.$vs_item;
+						}
+
 					}
 
 					$va_terms[] = '('.join(' OR ', $va_list).')';
@@ -556,7 +565,16 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$vn_field_num_proc = (int)substr($ps_content_fieldname, 1);
 			$ps_content_fieldname = $this->opo_datamodel->getFieldName($ps_content_tablename, $vn_field_num_proc);
 		}
-		$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname][] = $pm_content;
+
+		if($ps_content_fieldname == 'type_id') {
+			// don't add to index if there's an empty string value in type id. That way we can actually search for empty values
+			if($pm_content != '') {
+				$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname][] = $pm_content;
+			}
+		} else {
+			$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname][] = $pm_content;
+		}
+
 		if ($vn_rel_type_id) { // add relationship type-specific indexing
 			$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname.'/'.$vn_rel_type_id][] = $pm_content;
 		}

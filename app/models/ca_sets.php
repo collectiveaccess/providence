@@ -423,7 +423,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		}
 		
 		if ($t_dupe = parent::duplicate($pa_options)) {
-			$vb_duplicate_subitems = isset($pa_options['duplicate_subitems']) && $pa_options['duplicate_subitems'];
+			$vb_duplicate_subitems = caGetOption('duplicate_subitems', $pa_options, false);
 		
 			if ($vb_duplicate_subitems) { 
 				// Try to dupe related ca_set_items rows
@@ -442,6 +442,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				
 				foreach($va_items as $vn_item_id => $va_item) {
 					$t_item = new ca_set_items();
+					$t_item->setTransaction($o_trans);
 					$t_item->setMode(ACCESS_WRITE);
 					$va_item['set_id'] = $t_dupe->getPrimaryKey();
 					$t_item->set($va_item);

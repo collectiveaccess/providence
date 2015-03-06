@@ -46,7 +46,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
  * More about bundle display templates here: http://docs.collectiveaccess.org/wiki/Bundle_Display_Templates
  */
 
-define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.\/]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/]+)!");
+define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.\/]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/]+[~]{1}[A-Za-z0-9]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/]+)!");
 	
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -1994,6 +1994,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		$va_tags = array();
 		if (preg_match_all(__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__, $ps_template, $va_matches)) {
 			foreach($va_matches[1] as $vn_i => $vs_possible_tag) {
+				if (strpos($vs_possible_tag, "~") !== false) { continue; }	// don't clip trailing characters when there's a tag directive specified
 				$va_matches[1][$vn_i] = rtrim($vs_possible_tag, "/.");	// remove trailing slashes and periods
 			}
 			$va_tags = $va_matches[1];
@@ -2043,14 +2044,25 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 					$vs_val = join(" ", $vs_val);
 				}
 				$vs_val = caProcessTemplateTagDirectives($vs_val, $va_tmp);
-				$ps_template = str_replace('^'.$vs_tag, $vs_val, $ps_template);
+				$ps_template = preg_replace("!\^(?={$vs_tag}[^A-Za-z0-9]+|{$vs_tag}$){$vs_tag}!", $vs_val, $ps_template);
 			}
 		}
 		return $ps_template;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Modified tag value based upon settings in supported tag directives
+	 * The directive syntax is <directive>:<directive parameters>
+	 * Supported directives include:
+	 *		LP = left pad value; parameters are in the format <padding>/<length>. Ex. LP:0/10 will left pad a string with zeros to a length of 10.
+	 *		RP = right pad value; parameters are in the format <padding>/<length>
+	 *		PREFIX = add prefix to value if not empty; parameter is the prefix text
+	 *		SUFFIX = add suffix to value if not empty;  parameter is the suffix text
 	 *
+	 * @param string $ps_value
+	 * @param array $pa_directives
+	 *
+	 * @return string
 	 */
 	function caProcessTemplateTagDirectives($ps_value, $pa_directives) {
 		if (!is_array($pa_directives) || !sizeof($pa_directives)) { return $ps_value; }
@@ -2071,6 +2083,18 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 					$vs_str = (string)$va_params[0];
 					if (($vn_len > 0) && strlen($vs_str)) {
 						$ps_value = str_pad($ps_value, $vn_len, $vs_str, STR_PAD_RIGHT);
+					}
+					break;
+				case 'PREFIX':
+				case 'PX':
+					if ((strlen($ps_value) > 0) && (strlen($va_tmp[1]))) {
+						$ps_value = $va_tmp[1].$ps_value;
+					}
+					break;
+				case 'SUFFIX':
+				case 'SX':
+					if ((strlen($ps_value) > 0) && (strlen($va_tmp[1]))) {
+						$ps_value = $ps_value.$va_tmp[1];
 					}
 					break;
 			}
@@ -2183,6 +2207,9 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			$va_tags = $va_matches[1];
 		}
 		
+		$va_directive_tags = array();
+		$va_directive_tag_vals = array();
+		
 		$qr_res = caMakeSearchResult($ps_tablename, $pa_row_ids);
 		if(!$qr_res) { return ''; }
 		$va_proc_templates = array();
@@ -2211,7 +2238,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			
 			$vs_code = (string)$o_ifdef->getAttribute('code');
 			$vs_code_proc = preg_replace("!%(.*)$!", '', $vs_code);
-			if (!in_array($vs_code_proc, $va_tags)) { $va_tags += preg_split('![,\|]{1}!', $vs_code_proc); }
+			$va_directive_tags += preg_split('![,\|]{1}!', $vs_code_proc); 
 			
 			$vs_html = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_ifdef->html()));
 			$vs_content = $o_ifdef->getInnerText();
@@ -2228,7 +2255,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			
 			$vs_code = (string)$o_ifnotdef->getAttribute('code');
 			$vs_code_proc = preg_replace("!%(.*)$!", '', $vs_code);
-			if (!in_array($vs_code_proc, $va_tags)) { $va_tags += preg_split('![,\|]{1}!', $vs_code_proc); }
+		 	$va_directive_tags += preg_split('![,\|]{1}!', $vs_code_proc); 
 			
 			$vs_html = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_ifnotdef->html()));
 			$vs_content = $o_ifnotdef->getInnerText();
@@ -2281,9 +2308,92 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		$va_resolve_links_using_row_ids = array();
 		$x = 0;
 		$va_tag_val_list = $va_defined_tag_list = array();
+		
 		while($qr_res->nextHit()) {
+		
 			$vs_pk_val = $qr_res->get($vs_pk);
-			$va_proc_templates[$vn_i] = $ps_template;
+			$vs_template =  $ps_template;
+			
+			
+			// Grab values for codes used in ifdef and ifnotdef directives
+			$va_directive_tag_vals = array();		
+			foreach($va_directive_tags as $vs_directive_tag) {
+				$va_directive_tag_vals[$vs_directive_tag] = $qr_res->get($vs_directive_tag, array('convertCodesToDisplayText' => true));
+			}
+			
+			// Process <ifdef> (IF DEFined)
+			foreach($va_ifdefs as $vs_code => $va_def_con) { 
+				if (strpos($vs_code, "|") !== false) {
+					$vs_bool = 'OR';
+					$va_tag_list = explode("|", $vs_code);
+					$vb_output = false;
+				} else {
+					$vs_bool = 'AND';
+					$va_tag_list = explode(",", $vs_code);
+					$vb_output = true;
+				}
+		
+				foreach($va_tag_list as $vs_tag_to_test) {
+					$vs_tag_to_test = preg_replace("!%.*$!", "", $vs_tag_to_test);
+					$vb_value_is_set = (
+						(isset($va_directive_tag_vals[$vs_tag_to_test]) && (strlen($va_directive_tag_vals[$vs_tag_to_test]) > 1))
+					);
+					switch($vs_bool) {
+						case 'OR':
+							if ($vb_value_is_set) { $vb_output = true; break(2); }			// any must be defined; if any is defined output
+							break;
+						case 'AND':
+						default:
+							if (!$vb_value_is_set) { $vb_output = false; break(2); }		// all must be defined; if any is not defined don't output
+							break;
+					}
+				}
+	
+				foreach($va_def_con as $va_ifdef) {
+					if ($vb_output) {
+						$vs_template = str_replace($va_ifdef['directive'], $va_ifdef['content'], $vs_template);
+					} else {
+						$vs_template = str_replace($va_ifdef['directive'], '', $vs_template);
+					}
+				}
+			}
+
+			// Process <ifnotdef> (IF NOT DEFined)
+			foreach($va_ifnotdefs as $vs_code => $va_notdef_con) { 
+				if (strpos($vs_code, "|") !== false) {
+					$vs_bool = 'OR';
+					$va_tag_list = explode("|", $vs_code);
+					$vb_output = false;
+				} else {
+					$vs_bool = 'AND';
+					$va_tag_list = explode(",", $vs_code);
+					$vb_output = true;
+				}
+				$vb_output = true;
+				foreach($va_tag_list as $vs_tag_to_test) {
+					$vb_value_is_set = (bool)(isset($va_directive_tag_vals[$vs_tag_to_test]) && (strlen($va_directive_tag_vals[$vs_tag_to_test]) > 0));
+					switch($vs_bool) {
+						case 'OR':
+							if (!$vb_value_is_set) { $vb_output = true; break(2); }		// any must be not defined; if anything is not set output
+							break;
+						case 'AND':
+						default:
+							if ($vb_value_is_set) { $vb_output = false; break(2); }	// all must be not defined; if anything is set don't output
+							break;
+					}
+		
+				}
+	
+				foreach($va_notdef_con as $va_ifnotdef) {
+					if ($vb_output) {
+						$vs_template = str_replace($va_ifnotdef['directive'], $va_ifnotdef['content'], $vs_template);
+					} else {
+						$vs_template = str_replace($va_ifnotdef['directive'], '', $vs_template);
+					}
+				}
+			}
+			
+			$va_proc_templates[$vn_i] = $vs_template;
 		
 			// Process <ifcount> directives
 			foreach($va_ifcounts as $va_ifcount) {
@@ -2366,8 +2476,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 							break;
 					}
 					
-				
 					$va_tmpl_val = caProcessTemplateForIDs($va_unit['content'], $va_relative_to_tmp[0], $va_relative_ids, array_merge($pa_options, array('sort' => $va_get_options['sort'], 'sortDirection' => $va_get_options['sortDirection'], 'returnAsArray' => true, 'delimiter' => $vs_unit_delimiter, 'resolveLinksUsing' => null)));
+					$va_tmpl_val = array_pad($va_tmpl_val, sizeof($va_proc_templates), ''); // pad out to ensure replacement of unit tags
 					foreach($va_tmpl_val as $vn_tmpl_i => $vs_tmpl_v) {
 						$va_proc_templates[$vn_tmpl_i] = str_ireplace($va_unit['tag'], $vs_tmpl_v, $va_proc_templates[$vn_tmpl_i]);
 					}
@@ -2398,10 +2508,10 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 							
 							break;
 					}
+					$vs_tmpl_val = caProcessTemplateForIDs($va_unit['content'], $va_relative_to_tmp[0], $va_relative_ids, array_merge($pa_options, array('sort' => $va_unit['sort'], 'sortDirection' => $va_unit['sortDirection'], 'delimiter' => $vs_unit_delimiter, 'resolveLinksUsing' => null)));
+					$va_proc_templates[$vn_i] = str_ireplace($va_unit['tag'], $vs_tmpl_val, $va_proc_templates[$vn_i]);
 				}
 				
-				$vs_tmpl_val = caProcessTemplateForIDs($va_unit['content'], $va_relative_to_tmp[0], $va_relative_ids, array_merge($pa_options, array('sort' => $va_unit['sort'], 'sortDirection' => $va_unit['sortDirection'], 'delimiter' => $vs_unit_delimiter, 'resolveLinksUsing' => null)));
-				$va_proc_templates[$vn_i] = str_ireplace($va_unit['tag'], $vs_tmpl_val, $va_proc_templates[$vn_i]);
 			}
 			
 			if (!strlen(trim($va_proc_templates[$vn_i]))) { $va_proc_templates[$vn_i] = null; }
@@ -2684,9 +2794,9 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 									}
 								}
 							}
+							
 						}
 					}
-					
 				
 					if (is_array($va_val)) {
 						if (sizeof($va_val) > 0) {
@@ -2706,8 +2816,10 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 				}
 			}
 		
+		
 			$vn_i++;
 		}
+			
 		
 		foreach($va_tag_val_list as $vn_i => $va_tags_list) {
 			// do sorting?
@@ -2772,83 +2884,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 					}
 				}
 				
-				// Process <ifdef> (IF DEFined)
-				foreach($va_ifdefs as $vs_code => $va_def_con) { 
-					if (strpos($vs_code, "|") !== false) {
-						$vs_bool = 'OR';
-						$va_tag_list = explode("|", $vs_code);
-						$vb_output = false;
-					} else {
-						$vs_bool = 'AND';
-						$va_tag_list = explode(",", $vs_code);
-						$vb_output = true;
-					}
-			
-					foreach($va_tag_list as $vs_tag_to_test) {
-						$vs_tag_to_test = preg_replace("!%.*$!", "", $vs_tag_to_test);
-						
-						$vb_value_is_set = (
-							(isset($va_tags[$vs_tag_to_test]) && (sizeof($va_tags[$vs_tag_to_test]) > 1)) 
-							|| 
-							((sizeof($va_tags[$vs_tag_to_test]) == 1) && (strlen(trim($va_tags[$vs_tag_to_test][0])) > 0)));
-							
-						switch($vs_bool) {
-							case 'OR':
-								if ($vb_value_is_set) { $vb_output = true; break(2); }			// any must be defined; if any is defined output
-								break;
-							case 'AND':
-							default:
-								if (!$vb_value_is_set) { $vb_output = false; break(2); }		// all must be defined; if any is not defined don't output
-								break;
-						}
-					}
-		
-					foreach($va_def_con as $va_ifdef) {
-						if ($vb_output) {
-							$vs_template = str_replace($va_ifdef['directive'], $va_ifdef['content'], $vs_template);
-						} else {
-							$vs_template = str_replace($va_ifdef['directive'], '', $vs_template);
-						}
-					}
-				}
-	
-				// Process <ifnotdef> (IF NOT DEFined)
-				foreach($va_ifnotdefs as $vs_code => $va_notdef_con) { 
-					if (strpos($vs_code, "|") !== false) {
-						$vs_bool = 'OR';
-						$va_tag_list = explode("|", $vs_code);
-						$vb_output = false;
-					} else {
-						$vs_bool = 'AND';
-						$va_tag_list = explode(",", $vs_code);
-						$vb_output = true;
-					}
-					$vb_output = true;
-					foreach($va_tag_list as $vs_tag_to_test) {
-						$vb_value_is_set = (bool)(isset($va_tags[$vs_tag_to_test]) && (sizeof($va_tags[$vs_tag_to_test]) > 1) 
-						|| 
-						((sizeof($va_tags[$vs_tag_to_test]) == 1) && (strlen(trim($va_tags[$vs_tag_to_test][0])) > 0)));
-						switch($vs_bool) {
-							case 'OR':
-								if (!$vb_value_is_set) { $vb_output = true; break(2); }		// any must be not defined; if anything is not set output
-								break;
-							case 'AND':
-							default:
-								if ($vb_value_is_set) { $vb_output = false; break(2); }	// all must be not defined; if anything is set don't output
-								break;
-						}
-			
-					}
-		
-					foreach($va_notdef_con as $va_ifnotdef) {
-						if ($vb_output) {
-							$vs_template = str_replace($va_ifnotdef['directive'], $va_ifnotdef['content'], $vs_template);
-						} else {
-							$vs_template = str_replace($va_ifnotdef['directive'], '', $vs_template);
-						}
-					}
-				}
-	
+
 				// Process <more> tags
 				foreach($va_mores as $vn_more_index => $va_more) {
 					if (($vn_pos = strpos($vs_template, $va_more['directive'])) !== false) {
@@ -2935,12 +2971,21 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			$va_proc_templates[$vn_i] = join($vs_delimiter, $va_acc);
 		}
 		
-		
 		foreach($va_proc_templates as $vn_i => $vs_template) {
 			if (!strlen(trim($vs_template))) { unset($va_proc_templates[$vn_i]); }
 		}
 		
+		// pad proc_templates to length
+		for($vn_i=0; $vn_i < sizeof($pa_row_ids); $vn_i++) {
+			if(!key_exists($vn_i, $va_proc_templates)) { $va_proc_templates[$vn_i] = ''; }
+		}
+		ksort($va_proc_templates, SORT_NUMERIC);
+		
 		// Transform links
+		if($ps_resolve_links_using != $ps_tablename) {
+			$pa_options['addRelParameter'] = true;
+		}
+
 		$va_proc_templates = caCreateLinksFromText($va_proc_templates, $ps_resolve_links_using, ($ps_resolve_links_using != $ps_tablename) ? $va_resolve_links_using_row_ids : $pa_row_ids, null, null, $pa_options);
 		
 		// Kill any lingering tags (just in case)
@@ -2960,7 +3005,10 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 	/**
 	 * Returns display string for relationship bundles. Used by themes/default/bundles/ca_entities.php and the like.
 	 *
+	 * @param RequestHTTP $po_request
 	 * @param string $ps_table
+	 * @param array $pa_attributes
+	 * @param array $pa_options
 	 *
 	 * @return string 
 	 */
@@ -2975,7 +3023,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		$vs_attr_str = _caHTMLMakeAttributeString(is_array($pa_attributes) ? $pa_attributes : array());
 		$vs_display = "{".((isset($pa_options['display']) && $pa_options['display']) ? $pa_options['display'] : "_display")."}";
 		if (isset($pa_options['makeLink']) && $pa_options['makeLink']) {
-			$vs_display = "<a href='".urldecode(caEditorUrl($po_request, $ps_table, '{'.$o_dm->getTablePrimaryKeyName($ps_table).'}'))."' {$vs_attr_str}>{$vs_display}</a>";
+			$vs_display = "<a href='".urldecode(caEditorUrl($po_request, $ps_table, '{'.$o_dm->getTablePrimaryKeyName($ps_table).'}', false, array('rel' => true)))."' {$vs_attr_str}>{$vs_display}</a>";
 		}
 		
 		switch($vs_relationship_type_display_position) {
@@ -3481,8 +3529,10 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 	 * @param string $ps_table_name The name of the table/record to which the links refer
 	 * @param array $pa_row_ids Array of row_ids to link to. Values must correspond by index with those in $pa_text
 	 * @param string $ps_class Optional CSS class to apply to links
+	 * @param string $ps_target
 	 * @param array $pa_options Supported options are:
 	 *		requireLinkTags = if set then links are only added when explicitly defined with <l> tags. Default is to make the entire text a link in the absence of <l> tags.
+	 * 		addRelParameter =
 	 *
 	 * @return array A list of HTML links
 	 */
@@ -3491,6 +3541,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		if (__CA_APP_TYPE__ == 'PAWTUCKET') {
 			$o_config = Configuration::load();
 		}
+
+		$pb_add_rel = caGetOption('addRelParameter', $pa_options, false);
 		
 		$vb_can_handle_target = false;
 		if ($ps_target) {
@@ -3542,7 +3594,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 					} else {
 						switch(__CA_APP_TYPE__) {
 							case 'PROVIDENCE':
-								$vs_link_text= caEditorLink($g_request, $va_l['content'], $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
+								$vs_link_text= caEditorLink($g_request, $va_l['content'], $ps_class, $ps_table_name, $pa_row_ids[$vn_i], ($pb_add_rel ? array('rel' => true) : array()));
 								break;
 							case 'PAWTUCKET':
 								$vs_link_text= caDetailLink($g_request, $va_l['content'], $ps_class, $ps_table_name, $pa_row_ids[$vn_i]);
@@ -3625,7 +3677,10 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 	 * @return string HTML implementing the control
 	 */
 	function caEditorBundleShowHideControl($po_request, $ps_id_prefix) {
-		$vs_buf = "<span style='position: absolute; top: 2px; right: 7px;'>";
+		$ps_preview_id_prefix = preg_replace("/[0-9]+\_rel/", "", $ps_id_prefix);
+
+		$vs_buf  = "<span class='bundleContentPreview' id='{$ps_preview_id_prefix}_BundleContentPreview'>&nbsp;</span>";
+		$vs_buf .= "<span style='position: absolute; top: 2px; right: 7px;'>";
 		$vs_buf .= "<a href='#' onclick='caBundleVisibilityManager.toggle(\"{$ps_id_prefix}\");  return false;'><img src=\"".$po_request->getThemeUrlPath()."/graphics/arrows/expand.jpg\" border=\"0\" id=\"{$ps_id_prefix}VisToggleButton\"/></a>";
 		$vs_buf .= "</span>\n";	
 		$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$ps_id_prefix}'); }); </script>";	
