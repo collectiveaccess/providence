@@ -340,8 +340,10 @@
 		
 		// Save pages in cache so BaseEditorController::GetPageListAsJSON() can get them for return to the document viewer
 		$va_page_cache = $this->request->session->getVar('caDocumentViewerPageListCache');
-		$vs_page_cache_key = md5($vn_subject_id.'/'.$vn_representation_id.'/'.$vn_value_id);
+		$vs_page_cache_key = ($vs_book_viewer_content_mode == 'hierarchy_of_representations') ? md5($vn_subject_id) : md5($vn_subject_id.'/'.$vn_representation_id.'/'.$vn_value_id);
 		$va_page_cache[$vs_page_cache_key] = $va_pages;
+	
+		
 		
 		$this->request->session->setVar('caDocumentViewerPageListCache', $va_page_cache);
 		

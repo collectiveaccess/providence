@@ -1195,6 +1195,8 @@ div.hint {
 .settingsBundle {
     padding: 10px;
 }
+
+/* often times referred to as bundlePreview */
 .bundleContentPreview {
 	text-align:left;
 	display:inline-block;

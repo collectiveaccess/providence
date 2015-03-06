@@ -566,7 +566,12 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$ps_content_fieldname = $this->opo_datamodel->getFieldName($ps_content_tablename, $vn_field_num_proc);
 		}
 
-		if($pm_content != '') { // don't add to index if there's an empty string value. That way we can actually search for empty values
+		if($ps_content_fieldname == 'type_id') {
+			// don't add to index if there's an empty string value in type id. That way we can actually search for empty values
+			if($pm_content != '') {
+				$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname][] = $pm_content;
+			}
+		} else {
 			$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname][] = $pm_content;
 		}
 

@@ -609,7 +609,8 @@ class MultipartIDNumber extends IDNumber {
 				case 'CONSTANT':
 					$vn_len = mb_strlen($va_element_info['value']);
 					if ($vn_padding < $vn_len) { $vn_padding = $vn_len; }
-					$va_output[] = str_repeat(' ', $vn_padding - mb_strlen($va_element_vals[$vn_i])).$va_element_vals[$vn_i];
+					$vn_repeat_len = ($vn_padding - mb_strlen($va_element_vals[$vn_i]));
+					$va_output[] = (($vn_repeat_len > 0) ? str_repeat(' ', $vn_padding - mb_strlen($va_element_vals[$vn_i])) : '').$va_element_vals[$vn_i];
 					break;
 				case 'FREE':
 				case 'ALPHANUMERIC':
