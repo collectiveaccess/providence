@@ -11125,12 +11125,14 @@ $pa_options["display_form_field_tips"] = true;
 		$vs_type_field_name = null;
 		if (method_exists($t_instance, "getTypeFieldName")) {
 			$vs_type_field_name = $t_instance->getTypeFieldName();
-			if(!is_array($pa_values[$vs_type_field_name])) { $pa_values[$vs_type_field_name] = array($pa_values[$vs_type_field_name]); }
+			if(!is_array($pa_values[$vs_type_field_name]) && array_key_exists($vs_type_field_name, $pa_values)) { $pa_values[$vs_type_field_name] = array($pa_values[$vs_type_field_name]); }
 			
-			foreach($pa_values[$vs_type_field_name] as $vn_i => $vm_value) {
-				if (!is_numeric($vm_value)) {
-					if ($vn_id = ca_lists::getItemID($t_instance->getTypeListCode(), $vm_value)) {
-						$pa_values[$vs_type_field_name][$vn_i] = $vn_id;
+			if(is_array($pa_values[$vs_type_field_name])) {
+				foreach($pa_values[$vs_type_field_name] as $vn_i => $vm_value) {
+					if (!is_numeric($vm_value)) {
+						if ($vn_id = ca_lists::getItemID($t_instance->getTypeListCode(), $vm_value)) {
+							$pa_values[$vs_type_field_name][$vn_i] = $vn_id;
+						}
 					}
 				}
 			}
