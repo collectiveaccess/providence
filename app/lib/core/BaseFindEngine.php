@@ -539,7 +539,7 @@
 				//
 				// Use mysql memory-based table to do sorting
 				//
-				$vs_sort_tmp_table = $this->loadListIntoTemporaryResultTable($pa_hits, caGenerateGUIDV4(), array('sortableValues' => $pa_sortable_values));
+				$vs_sort_tmp_table = $this->loadListIntoTemporaryResultTable($pa_hits, caGenerateGUID(), array('sortableValues' => $pa_sortable_values));
 				$vs_sql = "
 					SELECT row_id
 					FROM {$vs_sort_tmp_table}

@@ -707,8 +707,12 @@ class BaseModel extends BaseObject {
 				switch(sizeof($va_tmp)) {
 					case 2:
 						// support <table_name>.<field_name> syntax
-						$ps_field = $va_tmp[1];
-						break;
+						if ($va_field_info['FIELD_TYPE'] === FT_MEDIA) {
+							$va_tmp[2] = '';
+						} else {
+							$ps_field = $va_tmp[1];
+							break;
+						}
 					default: // > 2 elements
 						// media field?
 						if (($va_field_info['FIELD_TYPE'] === FT_MEDIA) && (!isset($pa_options['returnAsArray'])) && !$pa_options['returnAsArray']) {
@@ -11121,12 +11125,14 @@ $pa_options["display_form_field_tips"] = true;
 		$vs_type_field_name = null;
 		if (method_exists($t_instance, "getTypeFieldName")) {
 			$vs_type_field_name = $t_instance->getTypeFieldName();
-			if(!is_array($pa_values[$vs_type_field_name])) { $pa_values[$vs_type_field_name] = array($pa_values[$vs_type_field_name]); }
+			if(!is_array($pa_values[$vs_type_field_name]) && array_key_exists($vs_type_field_name, $pa_values)) { $pa_values[$vs_type_field_name] = array($pa_values[$vs_type_field_name]); }
 			
-			foreach($pa_values[$vs_type_field_name] as $vn_i => $vm_value) {
-				if (!is_numeric($vm_value)) {
-					if ($vn_id = ca_lists::getItemID($t_instance->getTypeListCode(), $vm_value)) {
-						$pa_values[$vs_type_field_name][$vn_i] = $vn_id;
+			if(is_array($pa_values[$vs_type_field_name])) {
+				foreach($pa_values[$vs_type_field_name] as $vn_i => $vm_value) {
+					if (!is_numeric($vm_value)) {
+						if ($vn_id = ca_lists::getItemID($t_instance->getTypeListCode(), $vm_value)) {
+							$pa_values[$vs_type_field_name][$vn_i] = $vn_id;
+						}
 					}
 				}
 			}
