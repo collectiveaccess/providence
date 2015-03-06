@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2012 Whirl-i-Gig
+ * Copyright 2007-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -516,10 +516,18 @@ class MultipartIDNumber extends IDNumber {
 		$this->opo_db->dieOnError(false);
 
 		// Get the next number based upon field data
+		$vn_type_id = null;
+		
+		if ((bool)$va_element_info['sequence_by_type']) {
+			$o_dm = Datamodel::load();
+			$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
+			$vn_type_id = (int)$t_instance->getTypeIDForCode($this->getType());
+		}
+		
 		if ($qr_res = $this->opo_db->query("
 			SELECT $vs_field FROM ".$vs_table."
 			WHERE
-				$vs_field LIKE ?
+				$vs_field LIKE ? ".(($vn_type_id > 0) ? " AND type_id = {$vn_type_id}" : "")."
 			ORDER BY
 				$vs_sort_field DESC
 		", $vs_stub.(($vs_stub != '') ? $vs_separator.'%' : '%'))) {
