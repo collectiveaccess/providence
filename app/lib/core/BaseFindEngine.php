@@ -527,7 +527,7 @@
 				foreach($pa_hits as $vn_hit) {
 					$vs_key = '';
 					foreach($pa_sortable_values as $vn_i => $va_sortable_values) {
-						$vs_key .= str_pad(substr($va_sortable_values[$vn_hit],0,50), 50, ' ', is_numeric($va_sortable_values[$vn_hit]) ? STR_PAD_LEFT : STR_PAD_RIGHT);
+						$vs_key .= str_pad(substr($va_sortable_values[$vn_hit],0,150), 150, ' ', is_numeric($va_sortable_values[$vn_hit]) ? STR_PAD_LEFT : STR_PAD_RIGHT);
 					}
 					$va_sort_buffer[$vs_key.str_pad($vn_hit, 12, ' ', STR_PAD_LEFT)] = $vn_hit;
 				}
