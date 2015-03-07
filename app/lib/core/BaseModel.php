@@ -707,12 +707,8 @@ class BaseModel extends BaseObject {
 				switch(sizeof($va_tmp)) {
 					case 2:
 						// support <table_name>.<field_name> syntax
-						if ($va_field_info['FIELD_TYPE'] === FT_MEDIA) {
-							$va_tmp[2] = '';
-						} else {
-							$ps_field = $va_tmp[1];
-							break;
-						}
+						$ps_field = $va_tmp[1];
+						break;
 					default: // > 2 elements
 						// media field?
 						if (($va_field_info['FIELD_TYPE'] === FT_MEDIA) && (!isset($pa_options['returnAsArray'])) && !$pa_options['returnAsArray']) {
