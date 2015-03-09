@@ -97,7 +97,7 @@
 					// uBio
 					$vo_conf = new Configuration();
 					$vs_ubio_keycode = trim($vo_conf->get("ubio_keycode"));
-					if(strlen($vs_ubio_keycode)>0){
+					if(strlen($vs_ubio_keycode)>0) {
 
 						$vs_url = "http://www.ubio.org/webservices/service.php?function=namebank_search&searchName={$ps_query}&sci=1&vern=1&keyCode={$vs_ubio_keycode}";
 						$vs_result = caQueryExternalWebservice($vs_url);
@@ -160,10 +160,23 @@
 									}
 								}
 							} else {
-								$va_items['error_ubio'] = array(
-									'label' => _t('No results found for %1.', $ps_query),
-									'id' => null
-								);
+								if($vo_errors = $vo_doc->getElementsByTagName('error')) {
+									$vs_err = '';
+									foreach($vo_errors as $vo_result){
+										if($vo_result->textContent) {
+											$vs_err .= $vo_result->textContent;
+										}
+									}
+									$va_items['error_ubio'] = array(
+										'label' => $vs_err,
+										'id' => null
+									);
+								} else {
+									$va_items['error_ubio'] = array(
+										'label' => _t('No results found for %1.', $ps_query),
+										'id' => null
+									);
+								}
 							}
 						} else {
 							$va_items['error_ubio'] = array(
@@ -184,7 +197,7 @@
 					);
 				}
 			}
-			
+
 			$this->view->setVar('taxonomy_list', $va_items);
  			return $this->render('ajax_taxonomy_list_html.php');
 		}
