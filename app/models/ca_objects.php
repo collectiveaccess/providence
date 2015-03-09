@@ -531,6 +531,20 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Override insert() to add child records to the same lot as parent
+	 */ 
+	public function insert($pa_options=null) {
+		if ($vn_parent_id = $this->get('parent_id')) {
+			$t_parent = new ca_objects();
+			if ($this->inTransaction()) { $t_parent->setTransaction($this->getTransaction()); }
+			if ($t_parent->load($vn_parent_id) && ($vn_lot_id = $t_parent->get('lot_id'))) {
+				$this->set('lot_id', $vn_lot_id);
+			}
+		}
+		return parent::insert($pa_options);
+	}
+	# ------------------------------------------------------
+	/**
 	 * Override set() to do idno_stub lookups on lots
 	 *
 	 * @param mixed $pm_fields
