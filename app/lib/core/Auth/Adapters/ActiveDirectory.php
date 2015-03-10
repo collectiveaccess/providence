@@ -201,6 +201,7 @@ class ActiveDirectoryAuthAdapter extends BaseAuthAdapter implements IAuthAdapter
 				return false;
 			}
 		}
+		return true;
 	}
 	# --------------------------------------------------------------------------------
 	public static function supports($pn_feature) {

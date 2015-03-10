@@ -4960,9 +4960,14 @@ if (!$vb_batch) {
 			$pa_options['request']
 		) {
 			
-			if ($this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD'))) { $this->opo_idno_plugin_instance->isChild(true); }	// if it has a parent_id then set the id numbering plugin using "child_only" numbering schemes (if defined)
-			if (!$this->getPrimaryKey() && $this->opo_idno_plugin_instance->isChild()) {
-				$this->set('idno', $this->opo_idno_plugin_instance->makeTemplateFromValue($this->get('idno'), 1, true));	// chop off last serial element
+			$vs_idno_fld = $this->getProperty('ID_NUMBERING_ID_FIELD');
+			if ($vn_parent_id = $this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD'))) { $this->opo_idno_plugin_instance->isChild(true); }	// if it has a parent_id then set the id numbering plugin using "child_only" numbering schemes (if defined)
+			if (!$this->getPrimaryKey() && $vn_parent_id && $this->opo_idno_plugin_instance->isChild()) {
+				$t_parent = $this->getAppDatamodel()->getInstanceByTableName($this->tableName(), false);
+				if ($this->inTransaction()) { $t_parent->setTransaction($this->getTransaction()); }
+				if ($t_parent->load($vn_parent_id)) {
+					$this->set($vs_idno_fld, $x=$this->opo_idno_plugin_instance->makeTemplateFromValue($t_parent->get($vs_idno_fld), 1, true));	// chop off last serial element
+				}
 			}
 			$this->opo_idno_plugin_instance->setValue($this->get($ps_field));
 			if (method_exists($this, "getTypeCode")) { $this->opo_idno_plugin_instance->setType($this->getTypeCode()); }
