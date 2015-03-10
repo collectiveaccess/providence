@@ -3066,7 +3066,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 	 * @return string Localized date/time expression
 	 */
 	function caGetLocalizedHistoricDate($pn_timestamp=null, $pa_options=null) {
-		if (!$pn_timestamp) { $pn_timestamp = time(); }
+		if (!$pn_timestamp) { return ''; }
 		$o_tep = new TimeExpressionParser();
 		
 		$o_tep->setHistoricTimestamps($pn_timestamp, $pn_timestamp);
