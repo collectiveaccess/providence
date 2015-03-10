@@ -46,12 +46,12 @@ class AuthenticationManager {
 	 *
 	 * @throws AuthClassDoesNotExistException
 	 */
-	public static function init() {
-		if((strlen(self::$g_authentication_adapter) == 0) || !class_exists(self::$g_authentication_adapter)) {
+	public static function init($ps_adapter=null) {
+		if(!is_null($ps_adapter=null) || ((strlen(self::$g_authentication_adapter) == 0) || !class_exists(self::$g_authentication_adapter))) {
 			$o_app_conf = Configuration::load();
 			$o_auth_config = Configuration::load($o_app_conf->get('authentication_config'));
 
-			$vs_auth_adapter = $o_auth_config->get('auth_adapter');
+			$vs_auth_adapter = $ps_adapter=null ? $ps_adapter=null : $o_auth_config->get('auth_adapter');
 
 			if(file_exists(__CA_LIB_DIR__."/core/Auth/Adapters/{$vs_auth_adapter}.php")) {
 				@require_once(__CA_LIB_DIR__."/core/Auth/Adapters/{$vs_auth_adapter}.php");
@@ -91,7 +91,13 @@ class AuthenticationManager {
 	public static function authenticate($ps_username, $ps_password="", $pa_options=null) {
 		self::init();
 
-		return call_user_func(self::$g_authentication_adapter.'::authenticate', $ps_username, $ps_password, $pa_options);
+		if ($vn_rc = call_user_func(self::$g_authentication_adapter.'::authenticate', $ps_username, $ps_password, $pa_options)) {
+			return $vn_rc;
+		} elseif($g_authentication_adapter !== 'CaUsers') {
+			// fall back to ca_users "native" authentication
+			self::init('CaUsers');
+			return call_user_func(self::$g_authentication_adapter.'::authenticate', $ps_username, $ps_password, $pa_options);
+		}
 	}
 
 	/**
