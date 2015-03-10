@@ -2883,7 +2883,7 @@
 								if (is_array($va_list_item_cache)) {
 									foreach($va_list_item_cache as $vn_id => $va_item) {
 										if (!($vn_parent_id = $va_item['parent_id'])) { continue; }
-										if (is_array($pa_options['checkAccess']) && !in_array($va_item['access'], $pa_options['checkAccess'])) { continue; }
+										if (is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && !in_array($va_item['access'], $pa_options['checkAccess'])) { continue; }
 										$va_list_child_count_cache[$vn_parent_id]++;
 									}
 								}
@@ -2896,7 +2896,7 @@
 								foreach($va_values as $vn_val) {
 									if (!$vn_val) { continue; }
 									if (is_array($va_suppress_values) && (in_array($vn_val, $va_suppress_values))) { continue; }
-									if (is_array($pa_options['checkAccess']) && !in_array($va_list_item_cache[$vn_val]['access'], $pa_options['checkAccess'])) { continue; }
+									if (is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && !in_array($va_list_item_cache[$vn_val]['access'], $pa_options['checkAccess'])) { continue; }
 									
 									if ($va_criteria[$vn_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
 									$vn_child_count = isset($va_list_child_count_cache[$vn_val]) ? $va_list_child_count_cache[$vn_val] : 0;
