@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2010-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -92,6 +92,8 @@
 		}
 		if (!caIsValidFilePath($ps_imagemagick_path)) { return false; }
 
+		if (caGetOSFamily() == OS_WIN32) { $_MEDIAHELPER_PLUGIN_CACHE_IMAGEMAGICK[$ps_imagemagick_path] = true; }	// don't try exec test on Windows
+		
 		exec($ps_imagemagick_path.'/identify 2> /dev/null', $va_output, $vn_return);
 		if (($vn_return >= 0) && ($vn_return < 127)) {
 			return $_MEDIAHELPER_PLUGIN_CACHE_IMAGEMAGICK[$ps_imagemagick_path] = true;
@@ -116,6 +118,8 @@
 		}
 		if (!caIsValidFilePath($ps_graphicsmagick_path)) { return false; }
 
+		if (caGetOSFamily() == OS_WIN32) { $_MEDIAHELPER_PLUGIN_CACHE_GRAPHICSMAGICK[$ps_graphicsmagick_path] = true; }		// don't try exec test on Windows
+		
 		exec($ps_graphicsmagick_path.' 2> /dev/null', $va_output, $vn_return);
 		if (($vn_return >= 0) && ($vn_return < 127)) {
 			return $_MEDIAHELPER_PLUGIN_CACHE_GRAPHICSMAGICK[$ps_graphicsmagick_path] = true;
@@ -164,6 +168,8 @@
 		}
 		if (!caIsValidFilePath($ps_path_to_ffmpeg)) { return false; }
 
+		if (caGetOSFamily() == OS_WIN32) { $_MEDIAHELPER_PLUGIN_CACHE_FFMPEG[$ps_path_to_ffmpeg] = true; }		// don't try exec test on Windows
+		
 		exec($ps_path_to_ffmpeg.'> /dev/null 2>&1', $va_output, $vn_return);
 		if (($vn_return >= 0) && ($vn_return < 127)) {
 			return $_MEDIAHELPER_PLUGIN_CACHE_FFMPEG[$ps_path_to_ffmpeg] = true;
@@ -187,6 +193,9 @@
 			$_MEDIAHELPER_PLUGIN_CACHE_GHOSTSCRIPT = array();
 		}
 		if (!caIsValidFilePath($ps_path_to_ghostscript)) { return false; }
+		
+		if (caGetOSFamily() == OS_WIN32) { $_MEDIAHELPER_PLUGIN_CACHE_GHOSTSCRIPT[$ps_path_to_ghostscript] = true; }		// don't try exec test on Windows
+		
 		exec($ps_path_to_ghostscript." -v 2> /dev/null", $va_output, $vn_return);
 		if (($vn_return >= 0) && ($vn_return < 127)) {
 			return $_MEDIAHELPER_PLUGIN_CACHE_GHOSTSCRIPT[$ps_path_to_ghostscript] = true;
@@ -238,6 +247,9 @@
 		if(!$ps_path_to_libreoffice) { $ps_path_to_libreoffice = caGetExternalApplicationPath('libreoffice'); }
 
 		if (!caIsValidFilePath($ps_path_to_libreoffice)) { return false; }
+		
+		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
+		
 		exec($ps_path_to_libreoffice." --version 2> /dev/null", $va_output, $vn_return);
 		if (($vn_return >= 0) && ($vn_return < 127)) {
 			return true;
