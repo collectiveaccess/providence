@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2011 Whirl-i-Gig
+ * Copyright 2010-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -218,6 +218,7 @@
 		 * @return array List of user actions keyed by action code
 		 */
 		static public function getWidgetRoleActions() {
+			if ($va_actions = CompositeCache::fetch('role_action_list', 'WidgetManager')) { return $va_actions; }
 			$va_actions = array();
 			
 			$o_config = Configuration::load();
@@ -231,6 +232,8 @@
 			
 				$va_actions = array_merge($va_actions, call_user_func(array($vs_widget_classname, 'getRoleActionList')));
 			}
+			
+			CompositeCache::save('role_action_list', $va_actions, 'WidgetManager');
 			return $va_actions;
 		}
 		# -------------------------------------------------------
