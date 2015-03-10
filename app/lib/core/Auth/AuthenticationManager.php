@@ -96,7 +96,9 @@ class AuthenticationManager {
 		} elseif(self::$g_authentication_adapter !== 'CaUsers') {
 			// fall back to ca_users "native" authentication
 			self::init('CaUsers');
-			return call_user_func(self::$g_authentication_adapter.'::authenticate', $ps_username, $ps_password, $pa_options);
+			$vn_rc = call_user_func(self::$g_authentication_adapter.'::authenticate', $ps_username, $ps_password, $pa_options);
+			self::$g_authentication_adapter = null;
+			return $vn_rc;
 		}
 	}
 
@@ -189,7 +191,9 @@ class AuthenticationManager {
 		} elseif(self::$g_authentication_adapter !== 'CaUsers') {
 			// fall back to ca_users "native" authentication
 			self::init('CaUsers');
-			return call_user_func(self::$g_authentication_adapter.'::authenticate', $ps_username, $ps_password, $pa_options);
+			$vn_rc = call_user_func(self::$g_authentication_adapter.'::getUserInfo', $ps_username, $ps_password, $pa_options);
+			self::$g_authentication_adapter = null;
+			return $vn_rc;
 		}
 	}
 }
