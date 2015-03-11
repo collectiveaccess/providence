@@ -1094,6 +1094,13 @@ class BaseEditorController extends ActionController {
 			$vn_root_id = $t_list->getRootItemIDForList($t_subject->getTypeListCode());
 
 			foreach($va_hier as $vn_item_id => $va_item) {
+				if($va_item['settings']) {
+					$va_settings = caUnserializeForDatabase($va_item['settings']);
+					if(is_array($va_settings) && isset($va_settings['render_in_new_menu']) && !((bool) $va_settings['render_in_new_menu'])) {
+						unset($va_hier[$vn_item_id]);
+						continue;
+					}
+				}
 				if ($vn_item_id == $vn_root_id) { continue; } // skip root
 				$va_types_by_parent_id[$va_item['parent_id']][] = $va_item;
 			}
