@@ -602,7 +602,8 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 		} else {
 			$vb_use_default_icon = true;
 			if (caMediaPluginGhostscriptInstalled($this->ops_ghostscript_path)) {
-				$vn_scaling_correction = $this->get("scaling_correction");
+				$vn_scaling_correction = (float)$this->get("scaling_correction");
+				if ($vn_scaling_correction == 1) { $vn_scaling_correction = 0; }
 				$vs_res = "72x72";
 				if (ceil($this->get("resolution")) > 0) {
 					$vn_res= $this->get("resolution");
@@ -624,19 +625,17 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 				$vb_processed_preview = false;
 				switch($ps_mimetype) {
 					case 'image/jpeg':
-						exec($this->ops_ghostscript_path." -dNOPAUSE -dBATCH -sDEVICE=".($vn_scaling_correction ? "tiff24nc" : "jpeg")." $vs_antialiasing -dJPEGQ=".$vn_quality." -dFirstPage=".$vn_page." -dLastPage=".$vn_page." -sOutputFile=".caEscapeShellArg($ps_filepath.".".$vs_ext)." -r".$vs_res." ".caEscapeShellArg($this->handle["filepath"]), $va_output, $vn_return);
-						
-						if ($vn_return == 0) {
-							$vb_processed_preview = true;
-						}
+						exec($this->ops_ghostscript_path." -dNOPAUSE -dBATCH -sDEVICE=".($vn_scaling_correction ? "tiff24nc" : "jpeg")." {$vs_antialiasing} -dJPEGQ=".$vn_quality." -dFirstPage=".$vn_page." -dLastPage=".$vn_page." -sOutputFile=".caEscapeShellArg($ps_filepath.".".$vs_ext)." -r".$vs_res." ".caEscapeShellArg($this->handle["filepath"]), $va_output, $vn_return);
+						if ($vn_return == 0) { $vb_processed_preview = true; }
+						break;
+					case 'image/png':
+						exec($this->ops_ghostscript_path." -dNOPAUSE -dBATCH -sDEVICE=pngalpha {$vs_antialiasing} -dFirstPage=".$vn_page." -dLastPage=".$vn_page." -sOutputFile=".caEscapeShellArg($ps_filepath.".".$vs_ext)." -r".$vs_res." ".caEscapeShellArg($this->handle["filepath"]), $va_output, $vn_return);
+						if ($vn_return == 0) { $vb_processed_preview = true; }
 						break;
 					case 'image/tiff':
-					case 'image/png':
 					case 'image/gif':
-						exec($this->ops_ghostscript_path." -dNOPAUSE -dBATCH -sDEVICE=tiff24nc $vs_antialiasing -dFirstPage=".$vn_page." -dLastPage=".$vn_page." -sOutputFile=".caEscapeShellArg($ps_filepath.".".$vs_ext)." -r".$vs_res." ".caEscapeShellArg($this->handle["filepath"]), $va_output, $vn_return);
-						if ($vn_return == 0) {
-							$vb_processed_preview = true;
-						}
+						exec($this->ops_ghostscript_path." -dNOPAUSE -dBATCH -sDEVICE=tiff24nc {$vs_antialiasing} -dFirstPage=".$vn_page." -dLastPage=".$vn_page." -sOutputFile=".caEscapeShellArg($ps_filepath.".".$vs_ext)." -r".$vs_res." ".caEscapeShellArg($this->handle["filepath"]), $va_output, $vn_return);
+						if ($vn_return == 0) { $vb_processed_preview = true; }
 						break;
 					default:
 						//die("Unsupported output type in PDF plug-in: $ps_mimetype [this shouldn't happen]");
@@ -667,7 +666,6 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 										
 								$vn_w = ($o_media->get('width') * $vn_scaling_correction);
 								$vn_h = ($o_media->get('height') * $vn_scaling_correction);
-								
 								
 								if (($vn_w > $vn_h) || ($this->get("target_height") == 0)) {
 									$vn_r = $this->get("target_width")/$vn_w;
