@@ -4370,6 +4370,9 @@ if (!$vb_batch) {
 		
 		if ($vb_dryrun) { $this->removeTransaction(false); }
 		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
+
+		// prepopulate fields
+		$this->prepopulateFields();
 		
 		return true;
 	}
