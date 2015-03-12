@@ -1076,6 +1076,21 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		// Item-specific information
 		//
 			//
+			// Output info for related items
+			//
+			if(!$t_item->getPrimaryKey()) { // only applies to new records
+				$vs_rel_table = $po_view->request->getParameter('rel_table', pString);
+				$vn_rel_type_id = $po_view->request->getParameter('rel_type_id', pString);
+				$vn_rel_id = $po_view->request->getParameter('rel_id', pInteger);
+				if($vs_rel_table && $po_view->request->datamodel->tableExists($vs_rel_table) && $vn_rel_type_id && $vn_rel_id) {
+					$t_rel = $po_view->request->datamodel->getTableInstance($vs_rel_table);
+					if($t_rel && $t_rel->load($vn_rel_id)){
+						$vs_buf .= '<strong>'._t("Will be related to %1", $t_rel->getTypeName()).'</strong>: '.$t_rel->getLabelForDisplay();
+					}
+				}
+			}
+
+			//
 			// Output lot info for ca_objects
 			//
 			$vb_is_currently_part_of_lot = true;
@@ -1184,7 +1199,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 				
 				$vs_buf .= "<script type='text/javascript'>
 	function caAddObjectToLotForm() { 
-		window.location='".caEditorUrl($po_view->request, 'ca_objects', 0, false, array('lot_id' => $t_item->getPrimaryKey(), 'type_id' => ''))."' + jQuery('#caAddObjectToLotForm_type_id').val();
+		window.location='".caEditorUrl($po_view->request, 'ca_objects', 0, false, array('lot_id' => $t_item->getPrimaryKey(), 'rel' => 1, 'type_id' => ''))."' + jQuery('#caAddObjectToLotForm_type_id').val();
 	}
 	jQuery(document).ready(function() {
 		jQuery('#objectLotsNonConformingNumberList').hide();

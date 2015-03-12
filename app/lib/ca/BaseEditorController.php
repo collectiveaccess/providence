@@ -212,7 +212,7 @@ class BaseEditorController extends ActionController {
 	 * @param array $pa_options Array of options passed through to _initView and saveBundlesForScreen()
 	 */
 	public function Save($pa_options=null) {
-		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView($pa_options);
+		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vs_rel_table, $vn_rel_type_id, $vn_rel_id) = $this->_initView($pa_options);
 		if (!is_array($pa_options)) { $pa_options = array(); }
 
 		if (!$this->_checkAccess($t_subject)) { return false; }
@@ -226,7 +226,6 @@ class BaseEditorController extends ActionController {
 			}
 		}
 
-		$vs_auth_table_name = $this->ops_table_name;
 		if (in_array($this->ops_table_name, array('ca_representation_annotations'))) { $vs_auth_table_name = 'ca_objects'; }
 
 		if(!sizeof($_POST)) {
@@ -275,16 +274,24 @@ class BaseEditorController extends ActionController {
 		}
 		$this->view->setVar('t_ui', $t_ui);
 
-		if(!$vn_subject_id) {
+		if(!$vn_subject_id) { // this was an insert
 			$vn_subject_id = $t_subject->getPrimaryKey();
-			if (!$vb_save_rc) {
+			if (!$vb_save_rc) { // failed insert
 				$vs_message = _t("Could not save %1", $vs_type_name);
-			} else {
+			} else { // ok insert
 				$vs_message = _t("Added %1", $vs_type_name);
 				$this->request->setParameter($t_subject->primaryKey(), $vn_subject_id, 'GET');
 				$this->view->setVar($t_subject->primaryKey(), $vn_subject_id);
 				$this->view->setVar('subject_id', $vn_subject_id);
 				$this->request->session->setVar($this->ops_table_name.'_browse_last_id', $vn_subject_id);	// set last edited
+
+				// relate newly created record if requested
+				if($vs_rel_table && $vn_rel_type_id && $vn_rel_id) {
+					if($this->opo_datamodel->tableExists($vs_rel_table)) {
+						Debug::msg("[Save()] Relating new record using parameters from request: $vs_rel_table / $vn_rel_type_id / $vn_rel_id");
+						$t_subject->addRelationship($vs_rel_table, $vn_rel_id, $vn_rel_type_id);
+					}
+				}
 
 				// Set ACL for newly created record
 				if ($t_subject->getAppConfig()->get('perform_item_level_access_checking') && !$t_subject->getAppConfig()->get("{$this->ops_table_name}_dont_do_item_level_access_control")) {
@@ -1003,6 +1010,21 @@ class BaseEditorController extends ActionController {
 		$this->view->setVar('t_subject', $t_subject);
 
 		MetaTagManager::setWindowTitle(_t("Editing %1 : %2", ($vs_type = $t_subject->getTypeName()) ? $vs_type : $t_subject->getProperty('NAME_SINGULAR'), ($vn_subject_id) ? $t_subject->getLabelForDisplay(true) : _t('new %1', $t_subject->getTypeName())));
+
+		// pass relationship parameters to Save() action from Edit() so
+		// that we can create a relationship for a newly created object
+		if($vs_rel_table = $this->getRequest()->getParameter('rel_table', pString)) {
+			$vn_rel_type_id = $this->getRequest()->getParameter('rel_type_id', pString);
+			$vn_rel_id = $this->getRequest()->getParameter('rel_id', pInteger);
+
+			if($vs_rel_table && $vn_rel_type_id && $vn_rel_id) {
+				$this->view->setVar('rel_table', $vs_rel_table);
+				$this->view->setVar('rel_type_id', $vn_rel_type_id);
+				$this->view->setVar('rel_id', $vn_rel_id);
+			}
+
+			return array($vn_subject_id, $t_subject, $t_ui, null, null, $vs_rel_table, $vn_rel_type_id, $vn_rel_id);
+		}
 
 		if ($vs_parent_id_fld = $t_subject->getProperty('HIERARCHY_PARENT_ID_FLD')) {
 			$this->view->setVar('parent_id', $vn_parent_id = $this->request->getParameter($vs_parent_id_fld, pInteger));
