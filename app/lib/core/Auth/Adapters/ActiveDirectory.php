@@ -213,7 +213,7 @@ class ActiveDirectoryAuthAdapter extends BaseAuthAdapter implements IAuthAdapter
 
 		$va_attrs = ldap_get_attributes($po_ldap, $vo_entry);
 		if(is_array($va_group_cn) && sizeof($va_group_cn)>0) {
-			if (sizeof(array_intersect(array_map('strtolower', $va_group_cn), $va_attrs[$vs_attribute_member_of])) === 0) {
+			if (sizeof(array_intersect(array_map('strtolower', $va_group_cn), array_map('strtolower', $va_attrs[$vs_attribute_member_of]))) === 0) {
 				// user is not in any relevant groups
 				ldap_unbind($po_ldap);
 				return false;
