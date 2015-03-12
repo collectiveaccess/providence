@@ -806,9 +806,11 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 					$vs_buf .= "<div id='inspectorLotMediaDownload'><strong>".((($vn_num_objects = $t_item->numObjects()) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
 				}
 				if ($po_view->request->config->get("include_custom_inspector")) {
-					$vo_inspector_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
-					$vo_inspector_view->setVar('t_item', $t_item);
-					$vs_buf .= $vo_inspector_view->render('inspector_info.php');
+					if(file_exists($po_view->request->getViewsDirectoryPath()."/bundles/inspector_info.php")) {
+						$vo_inspector_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
+						$vo_inspector_view->setVar('t_item', $t_item);
+						$vs_buf .= $vo_inspector_view->render('inspector_info.php');
+					}
 				}
 			} else {
 				$vs_parent_name = '';
