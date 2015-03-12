@@ -266,7 +266,7 @@ class ca_loans extends BaseObjectLocationModel implements IBundleProvider {
 	# ------------------------------------------------------
 	# Self-relations
 	# ------------------------------------------------------
-	protected $SELF_RELATION_TABLE_NAME = null;
+	protected $SELF_RELATION_TABLE_NAME = 'ca_loans_x_loans';
 	
 	# ------------------------------------------------------
 	# ID numbering
