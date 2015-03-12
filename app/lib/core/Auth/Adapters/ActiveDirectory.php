@@ -54,6 +54,8 @@ class ActiveDirectoryAuthAdapter extends BaseAuthAdapter implements IAuthAdapter
 		$vs_bind_rdn = self::postProcessLDAPConfigValue("ldap_bind_rdn_format", $ps_username, $vs_user_ou, $vs_base_dn);
 
 		$vo_ldap = ldap_connect($vs_ldaphost,$vs_ldapport);
+		
+		ldap_set_option($vo_ldap, LDAP_OPT_REFERRALS, 0);
 		ldap_set_option($vo_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
 
 		if (!$vo_ldap) {
@@ -62,6 +64,8 @@ class ActiveDirectoryAuthAdapter extends BaseAuthAdapter implements IAuthAdapter
 		
 		$vs_bind_rdn_filter = self::postProcessLDAPConfigValue("ldap_bind_rdn_filter", $ps_username, $vs_user_ou, $vs_base_dn);
 		if(strlen($vs_bind_rdn_filter)>0) {
+			
+			$vo_filter_bind = @ldap_bind($vo_ldap, $o_auth_config->get("ldap_bind_rdn_filter_rdn"), $o_auth_config->get("ldap_bind_rdn_filter_password"));
 			$vo_dn_search_results = ldap_search($vo_ldap, $vs_base_dn, $vs_bind_rdn_filter);
 			$va_dn_search_results = ldap_get_entries($vo_ldap, $vo_dn_search_results);
 			if(isset($va_dn_search_results[0]['dn'])) {
@@ -121,8 +125,13 @@ class ActiveDirectoryAuthAdapter extends BaseAuthAdapter implements IAuthAdapter
 			throw new ActiveDirectoryException(_t("Could not connect to LDAP server."));
 		}
 		
+		ldap_set_option($vo_ldap, LDAP_OPT_REFERRALS, 0);
+		ldap_set_option($vo_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+		
 		$vs_bind_rdn_filter = self::postProcessLDAPConfigValue("ldap_bind_rdn_filter", $ps_username, $vs_user_ou, $vs_base_dn);
 		if(strlen($vs_bind_rdn_filter)>0) {
+			$vo_filter_bind = @ldap_bind($vo_ldap, $o_auth_config->get("ldap_bind_rdn_filter_rdn"), $o_auth_config->get("ldap_bind_rdn_filter_password"));
+			
 			$vo_dn_search_results = ldap_search($vo_ldap, $vs_base_dn, $vs_bind_rdn_filter);
 			$va_dn_search_results = ldap_get_entries($vo_ldap, $vo_dn_search_results);
 			if(isset($va_dn_search_results[0]['dn'])) {
