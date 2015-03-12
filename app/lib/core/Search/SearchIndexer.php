@@ -1434,10 +1434,12 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 					
 					// Index related records
 					$va_field_nums = $va_field_names = array();
-					foreach($va_info['related']['fields'] as $vs_field => $va_config) {
-						$vn_field_num = $this->_getFieldNumForIndexing($t_dep, $vn_dep_tablenum, $vs_field);
-						$va_field_nums[$vs_field] = $vn_field_num;
-						$va_field_names[$vn_field_num] = $vs_field;
+					if(isset($va_info['related']) && is_array($va_info['related']['fields'])) {
+						foreach($va_info['related']['fields'] as $vs_field => $va_config) {
+							$vn_field_num = $this->_getFieldNumForIndexing($t_dep, $vn_dep_tablenum, $vs_field);
+							$va_field_nums[$vs_field] = $vn_field_num;
+							$va_field_names[$vn_field_num] = $vs_field;
+						}
 					}
 					
 					// Index labels from related records?
