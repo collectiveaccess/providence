@@ -189,16 +189,18 @@ class BaseEditorController extends ActionController {
 		}
 
 		// save where we are in session, for "Save and return" button
-		$va_save_and_return = $this->getRequest()->session->getVar('save_and_return_locations');
-		if(!is_array($va_save_and_return)) { $va_save_and_return = array(); }
+		if($vn_subject_id) { // don't save "empty" / new record editor location. pk has to be set
+			$va_save_and_return = $this->getRequest()->session->getVar('save_and_return_locations');
+			if(!is_array($va_save_and_return)) { $va_save_and_return = array(); }
 
-		$va_save = array(
-			'table' => $t_subject->tableName(),
-			'key' => $vn_subject_id,
-			'url_path' => $this->getRequest()->getFullUrlPath()
-		);
+			$va_save = array(
+				'table' => $t_subject->tableName(),
+				'key' => $vn_subject_id,
+				'url_path' => $this->getRequest()->getFullUrlPath()
+			);
 
-		$this->getRequest()->session->setVar('save_and_return_locations', caPushToStack($va_save, $va_save_and_return, __CA_SAVE_AND_RETURN_STACK_SIZE__));
+			$this->getRequest()->session->setVar('save_and_return_locations', caPushToStack($va_save, $va_save_and_return, __CA_SAVE_AND_RETURN_STACK_SIZE__));
+		}
 
 		// if we came here through a rel link, show save and return button
 		$this->getView()->setVar('show_save_and_return', (bool) $this->getRequest()->getParameter('rel', pInteger));
@@ -353,6 +355,10 @@ class BaseEditorController extends ActionController {
 
 		$this->opo_app_plugin_manager->hookSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => $vb_is_insert));
 
+		if (method_exists($this, "postSave")) {
+			$this->postSave($t_subject, $vb_is_insert);
+		}
+
 		// redirect back to previous item on stack if it's a valid "save and return" request
 		if((bool) $this->getRequest()->getParameter('is_save_and_return', pInteger)) {
 			$va_save_and_return = $this->getRequest()->session->getVar('save_and_return_locations');
@@ -360,21 +366,24 @@ class BaseEditorController extends ActionController {
 				// get rid of all the navigational steps in the current item
 				do {
 					$va_pop = array_pop($va_save_and_return);
-				} while (($va_pop['table'] == $t_subject->tableName()) && ($va_pop['key'] == $vn_subject_id));
+				} while (
+					sizeof($va_save_and_return)>0 && // only keep going if there are more saved locations
+					(
+						!$va_pop['key'] || // keep going if key is empty (i.e. it was a "create new record" screen)
+						(($va_pop['table'] == $t_subject->tableName()) && ($va_pop['key'] == $vn_subject_id)) // keep going if the record is the current one
+					)
+				);
 
-				if(sizeof($va_save_and_return)>0) {
+				// the last pop must be from a different table or record for the redirect to kick in
+				// (which might not be the case because $va_save_and_return might have just run out of items for some reason)
+				if(($va_pop['table'] != $t_subject->tableName()) || ($va_pop['key'] != $vn_subject_id)) {
 					if(isset($va_pop['url_path']) && (strlen($va_pop['url_path']) > 0)) {
 						$this->getResponse()->setRedirect($va_pop['url_path']);
 					} else {
 						$this->getResponse()->setRedirect(caEditorUrl($this->getRequest(), $va_pop['table'], $va_pop['key']));
 					}
-					return;
 				}
 			}
-		}
-
-		if (method_exists($this, "postSave")) {
-			$this->postSave($t_subject, $vb_is_insert);
 		}
 
 		// save where we are in session for "Save and return" button
@@ -384,7 +393,9 @@ class BaseEditorController extends ActionController {
 
 			$va_save = array(
 				'table' => $t_subject->tableName(),
-				'key' => $vn_subject_id
+				'key' => $vn_subject_id,
+				// dont't direct back to Save action
+				'url_path' => str_replace('/Save/', '/Edit/', $this->getRequest()->getFullUrlPath()).$vn_subject_id
 			);
 
 			$this->getRequest()->session->setVar('save_and_return_locations', caPushToStack($va_save, $va_save_and_return, __CA_SAVE_AND_RETURN_STACK_SIZE__));
