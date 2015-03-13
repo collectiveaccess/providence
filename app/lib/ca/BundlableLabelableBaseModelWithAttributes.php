@@ -6447,7 +6447,8 @@ side. For many self-relations the direction determines the nature and display te
 			$vs_template = $va_rule['template'];
 			if(strlen($vs_template)<1) { Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because template is not set"); continue; }
 
-			$vb_overwrite_existing = (isset($va_rule['overwrite_existing']) ? (bool)$va_rule['overwrite_existing'] : false);
+			$vs_mode = caGetOption('mode', $va_rule, 'merge');
+			Debug::msg("[prepopulateFields()] mode for rule $vs_key is '$vs_mode'");
 
 			// respect restrictToTypes option
 			if($va_rule['restrictToTypes'] && is_array($va_rule['restrictToTypes']) && (sizeof($va_rule['restrictToTypes']) > 0)) {
@@ -6463,12 +6464,14 @@ side. For many self-relations the direction determines the nature and display te
 
 				foreach($va_tags as $vs_tag) {
 					if(!isset($va_expression_vars[$vs_tag])) {
-						$va_expression_vars[$vs_tag] = $this->get($vs_tag);
+						$va_expression_vars[$vs_tag] = $this->get($vs_tag, array('returnIdno' => true, 'delimiter' => ';'));
 					}
 				}
 
+				Debug::msg("[prepopulateFields()] expression vars are: ". print_r($va_expression_vars, true));
+
 				if(ExpressionParser::evaluate($va_rule['skipIfExpression'], $va_expression_vars)) {
-					Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because skipIfExpression evaluated to true");
+					Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because skipIfExpression evaluated true");
 					continue;
 				}
 			}
@@ -6479,33 +6482,58 @@ side. For many self-relations the direction determines the nature and display te
 
 			// inject into target
 			$va_parts = explode('.', $vs_target);
-			if(sizeof($va_parts) == 2) { // intrinsic or simple (non-container) attribute
-				if($this->hasField($va_parts[1])) { // intrinsic
+// intrinsic or simple (non-container) attribute
+			if(sizeof($va_parts) == 2) {
+// intrinsic
+				if($this->hasField($va_parts[1])) {
 					Debug::msg("[prepopulateFields()] target is 2-part bundle and intrinsic");
 
-					if(!$vb_overwrite_existing && ($this->get($va_parts[1]))) { // don't overwrite existing values
-						Debug::msg("[prepopulateFields()] intrinsic skipped because it already has value and overwrite_existing is false");
-						continue;
+					switch(strtolower($vs_mode)) {
+						case 'overwrite': // always set
+							$this->set($va_parts[1], $vs_value);
+							break;
+						case 'addifempty':
+						case 'merge': // merge is not really viable for intrinsics because they're not repeatable. just pass to default case
+						default:
+							if(!$this->get($va_parts[1])) {
+								$this->set($va_parts[1], $vs_value);
+							} else {
+								Debug::msg("[prepopulateFields()] intrinsic skipped because it already has value and mode is addIfEmpty or merge");
+							}
+							break;
 					}
+// attribute/element
+				} elseif($this->hasElement($va_parts[1])) {
+					Debug::msg("[prepopulateFields()] target is 2-part bundle and element");
 
-					$this->set($va_parts[1], $vs_value);
-				} elseif($this->hasElement($va_parts[1])) { // attribute/element
-					Debug::msg("[prepopulateFields()] target is 2-part bundle and valid element");
-
-					if(!$vb_overwrite_existing && ($this->get($va_parts[1]))) { // don't overwrite existing values
-						Debug::msg("[prepopulateFields()] attribute skipped because it already has value and overwrite_existing is false");
-						continue;
+					switch(strtolower($vs_mode)) {
+						case 'overwrite': // always replace first that we find
+							$this->replaceAttribute(array(
+								$va_parts[1] => $vs_value,
+								'locale_id' => $g_ui_locale_id
+							), $va_parts[1]);
+							break;
+						case 'addifempty':
+							if($this->getAttributeCountByElement($va_parts[1]) == 0) {
+								$this->addAttribute(array(
+									$va_parts[1] => $vs_value,
+									'locale_id' => $g_ui_locale_id
+								), $va_parts[1]);
+							}
+							break;
+						case 'merge':
+						default:
+							$this->addAttribute(array(
+								$va_parts[1] => $vs_value,
+								'locale_id' => $g_ui_locale_id
+							), $va_parts[1]);
+							break;
 					}
-
-					$this->replaceAttribute(array(
-						$va_parts[1] => $vs_value,
-						'locale_id' => $g_ui_locale_id
-					), $va_parts[1]);
-
 				} else {
-					Debug::msg("[prepopulateFields()] target is 2-part bundle and invalid!");
+					Debug::msg("[prepopulateFields()] target is 2-part bundle and not valid!");
 				}
-			} elseif(sizeof($va_parts)==3) { // container
+// container (@todo)
+			} elseif(sizeof($va_parts)==3) {
 				if(!$this->hasElement($va_parts[1])) { continue; }
 				Debug::msg("[prepopulateFields()] target is 3-part bundle");
 
