@@ -98,7 +98,11 @@ var caUI = caUI || {};
 
 							try {
 								var qty = new Qty(val);
-								t=t.replace(tag, qty.to(cmd[1]).toPrec(0.2).toString());
+								if(cmd[1] == units) { // do not round if unit is unchanged!
+									t=t.replace(tag, qty.to(cmd[1]).toString());
+								} else {
+									t=t.replace(tag, qty.to(cmd[1]).toPrec(0.3).toString());
+								}
 							} catch(e) {
 								// noop - replace tag with existing value
 								t=t.replace(tag, val);
