@@ -6448,7 +6448,7 @@ side. For many self-relations the direction determines the nature and display te
 			if(strlen($vs_template)<1) { Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because template is not set"); continue; }
 
 			$vs_mode = caGetOption('mode', $va_rule, 'merge');
-			Debug::msg("[prepopulateFields()] mode for rule $vs_key is '$vs_mode'");
+			Debug::msg("[prepopulateFields()] mode for rule $vs_rule_key is '$vs_mode'");
 
 			// respect restrictToTypes option
 			if($va_rule['restrictToTypes'] && is_array($va_rule['restrictToTypes']) && (sizeof($va_rule['restrictToTypes']) > 0)) {
@@ -6477,8 +6477,8 @@ side. For many self-relations the direction determines the nature and display te
 			}
 
 			// evaluate template
-			$vs_value = caProcessTemplateForIDs($vs_template, $this->tableNum(), array($this->getPrimaryKey()));
-			Debug::msg("[prepopulateFields()] processed template value is: ".$vs_value);
+			$vs_value = caProcessTemplateForIDs($vs_template, $this->tableNum(), array($this->getPrimaryKey()), array('path' => true));
+			Debug::msg("[prepopulateFields()] processed template for rule $vs_rule_key value is: ".$vs_value);
 
 			// inject into target
 			$va_parts = explode('.', $vs_target);
@@ -6486,8 +6486,6 @@ side. For many self-relations the direction determines the nature and display te
 			if(sizeof($va_parts) == 2) {
 // intrinsic
 				if($this->hasField($va_parts[1])) {
-					Debug::msg("[prepopulateFields()] target is 2-part bundle and intrinsic");
-
 					switch(strtolower($vs_mode)) {
 						case 'overwrite': // always set
 							$this->set($va_parts[1], $vs_value);
@@ -6498,22 +6496,20 @@ side. For many self-relations the direction determines the nature and display te
 							if(!$this->get($va_parts[1])) {
 								$this->set($va_parts[1], $vs_value);
 							} else {
-								Debug::msg("[prepopulateFields()] intrinsic skipped because it already has value and mode is addIfEmpty or merge");
+								Debug::msg("[prepopulateFields()] rule {$vs_rule_key}: intrinsic skipped because it already has value and mode is addIfEmpty or merge");
 							}
 							break;
 					}
 // attribute/element
 				} elseif($this->hasElement($va_parts[1])) {
-					Debug::msg("[prepopulateFields()] target is 2-part bundle and element");
-
 					switch(strtolower($vs_mode)) {
-						case 'overwrite': // always replace first that we find
+						case 'overwrite': // always replace first value we find
 							$this->replaceAttribute(array(
 								$va_parts[1] => $vs_value,
 								'locale_id' => $g_ui_locale_id
 							), $va_parts[1]);
 							break;
-						case 'addifempty':
+						case 'addifempty': // only add value if none exists
 							if($this->getAttributeCountByElement($va_parts[1]) == 0) {
 								$this->addAttribute(array(
 									$va_parts[1] => $vs_value,
@@ -6521,7 +6517,7 @@ side. For many self-relations the direction determines the nature and display te
 								), $va_parts[1]);
 							}
 							break;
-						case 'merge':
+						case 'merge': // always add new value (@todo kind of doesn't make sense)
 						default:
 							$this->addAttribute(array(
 								$va_parts[1] => $vs_value,
@@ -6529,30 +6525,50 @@ side. For many self-relations the direction determines the nature and display te
 							), $va_parts[1]);
 							break;
 					}
-				} else {
-					Debug::msg("[prepopulateFields()] target is 2-part bundle and not valid!");
 				}
-// container (@todo)
+// container
 			} elseif(sizeof($va_parts)==3) {
 				if(!$this->hasElement($va_parts[1])) { continue; }
-				Debug::msg("[prepopulateFields()] target is 3-part bundle");
 
 				$va_attr = $this->getAttributesByElement($va_parts[1]);
 				switch(sizeof($va_attr)) {
 					case 1:
-						if($vb_overwrite_existing) {
-							$vo_attr = array_pop($va_attr);
-							$va_value = array($va_parts[2] => $vs_value);
-							foreach($vo_attr->getValues() as $o_val) {
-								if($o_val->getElementCode() != $va_parts[2]) {
-									$va_value[$o_val->getElementCode()] = $o_val->getDisplayValue();
+						switch(strtolower($vs_mode)) {
+							case 'overwrite':
+								$vo_attr = array_pop($va_attr);
+								$va_value = array($va_parts[2] => $vs_value);
+								foreach($vo_attr->getValues() as $o_val) {
+									if($o_val->getElementCode() != $va_parts[2]) {
+										$va_value[$o_val->getElementCode()] = $o_val->getDisplayValue();
+									}
 								}
-							}
 
-							$this->editAttribute($vo_attr->getAttributeID(), $va_parts[1], $va_value);
+								$this->editAttribute($vo_attr->getAttributeID(), $va_parts[1], $va_value);
+								break;
+							case 'addifempty':
+								$vo_attr = array_pop($va_attr);
+								$va_value = array($va_parts[2] => $vs_value);
+								$vb_update = false;
+								foreach($vo_attr->getValues() as $o_val) {
+									if($o_val->getElementCode() != $va_parts[2]) {
+										$va_value[$o_val->getElementCode()] = $o_val->getDisplayValue();
+									} else {
+										if(!$o_val->getDisplayValue()) {
+											$vb_update = true;
+										}
+									}
+								}
+
+								if($vb_update) {
+									$this->editAttribute($vo_attr->getAttributeID(), $va_parts[1], $va_value);
+								}
+								break;
+							default:
+								Debug::msg("[prepopulateFields()] unsupported mode {$vs_mode} for target bundle");
+								break;
 						}
 						break;
-					case 0:
+					case 0: // if no container value exists, always add it (ignoring mode)
 					default:
 						$this->addAttribute(array(
 							$va_parts[2] => $vs_value,
