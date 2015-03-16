@@ -644,6 +644,7 @@
 				if(!is_int($va_metadata)){ // pass ints through for values like WhiteBalance = 0
 					if (!trim($va_metadata)) { continue(2); }
 				}
+				if(!caSeemsUTF8($va_metadata)) { $va_metadata = caEncodeUTF8Deep($va_metadata); }
 
 				$va_tmp2 = explode(".", $vs_attr);
 
