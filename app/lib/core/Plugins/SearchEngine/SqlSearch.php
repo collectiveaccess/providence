@@ -584,7 +584,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$va_parsed_value = $t_geocode->parseValue('['.$va_upper_term->text.']', $va_element['element_info']);
 									$vs_upper_lat = $va_parsed_value['value_decimal1'];
 									$vs_upper_long = $va_parsed_value['value_decimal2'];
-									// mysql BETWEEN always wants the lower value first ... BETWEEN 5 AND 3 wouldn't match 4! So we swap the values if necessary
+
+									// mysql BETWEEN always wants the lower value first ... BETWEEN 5 AND 3 wouldn't match 4 ... So we swap the values if necessary
 									if($vs_upper_lat < $vs_lower_lat) {
 										$tmp=$vs_upper_lat;
 										$vs_upper_lat=$vs_lower_lat;
@@ -977,10 +978,14 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														}
 														break;
 													case __CA_ATTRIBUTE_VALUE_GEOCODE__:
-														// If it looks like a lat/long pair that has been tokenized by Lucene
-														// into oblivion rehydrate it here.
-														// @todo: this seems broken
-														if ($va_coords = caParseGISSearch(join(' ', $va_raw_terms))) {
+														// At this point $va_raw_terms has been tokenized by Lucene into oblivion
+														// and is also dependent on the search_tokenizer_regex so we can't really do anything with it.
+														// We now build our own un-tokenized term array instead. caParseGISSearch() can handle it.
+														$va_gis_terms = array();
+														foreach($o_lucene_query_element->getQueryTerms() as $o_term) {
+															$va_gis_terms[] = trim((string)$o_term->text);
+														}
+														if ($va_coords = caParseGISSearch(join(' ', $va_gis_terms))) {
 															$vs_direct_sql_query = "
 																SELECT ca.row_id, 1
 																FROM ca_attribute_values cav
