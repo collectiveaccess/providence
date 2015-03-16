@@ -1768,7 +1768,7 @@ function caFileIsIncludable($ps_file) {
 					continue;
 				}
 
-				if ((!preg_match("!^[\p{L}\p{N}\p{P}]+$!", $vm_v)) || (!mb_detect_encoding($vm_v))) {
+				if ((!preg_match("!^[ \p{L}\p{N}\p{P}]+$!", $vm_v)) || (!mb_detect_encoding($vm_v))) {
 					unset($pa_array[$vn_k]);
 				}
 			}
