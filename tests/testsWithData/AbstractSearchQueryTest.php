@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/search/AbstractSearchQueryTest.php
+ * tests/testsWithData/AbstractSearchQueryTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -31,7 +31,7 @@
  */
 
 require_once(__CA_LIB_DIR__.'/ca/Service/ItemService.php');
-require_once(__CA_BASE_DIR__.'/tests/search/BaseTestWithData.php');
+require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 
 abstract class AbstractSearchQueryTest extends BaseTestWithData {
 

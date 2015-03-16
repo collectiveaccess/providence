@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/search/queries/PhraseSearchQueryTest.php
+ * tests/testsWithData/queries/IdnoSearchQueryTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,13 +30,13 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_BASE_DIR__ . '/tests/search/AbstractSearchQueryTest.php');
+require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php');
 
 /**
- * Class PhraseSearchQueryTest
+ * Class IdnoSearchQueryTest
  * Note: Requires testing profile!
  */
-class PhraseSearchQueryTest extends AbstractSearchQueryTest {
+class IdnoSearchQueryTest extends AbstractSearchQueryTest {
 	# -------------------------------------------------------
 	public function setUp() {
 		// don't forget to call parent so that request is set up correctly
@@ -52,53 +52,51 @@ class PhraseSearchQueryTest extends AbstractSearchQueryTest {
 		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'image',
-			),
-			'preferred_labels' => array(
-				array(
-					"locale" => "en_US",
-					"name" => "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque ullamcorper sapien nec velit porta luctus.",
-				),
+				'idno' => 'D.99/2-38',
 			),
 		)));
 
 		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'image',
+				'idno' => 'D.99/2-39',
 			),
-			'preferred_labels' => array(
-				array(
-					"locale" => "en_US",
-					"name" => "Lorem ipsum dolor sit amet, adipiscing consectetur elit: Test",
-				),
+		)));
+
+		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
+			'intrinsic_fields' => array(
+				'type_id' => 'image',
+				'idno' => 'D.99/0000001',
+			),
+		)));
+
+		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
+			'intrinsic_fields' => array(
+				'type_id' => 'image',
+				'idno' => '01 02 03 04',
 			),
 		)));
 
 		// search queries
 		$this->setSearchQueries(array(
-			// basics
-			'"Lorem ipsum"' => 2,
-			'"Lorem ipsum sit amet"' => 0,
-			'"Lorem ipsum test"' => 0,
-			'"No results here"' => 0,
+			'ca_objects.idno:"D.99/2-38"' => 1,
+			'ca_objects.idno:"D.99/2-39"' => 1,
+			'ca_objects.idno:"D.99/2-40"' => 0,
+			'ca_objects.idno:"D.99/2-"' => 0,
 
-			// word order
-			'"consectetur adipiscing elit"' => 1,
-			'"adipiscing consectetur elit"' => 1,
-			'"adipiscing elit"' => 1,
+			'D.99' => 3,
+			'D.99/2-39' => 1,
+    		'D' => 3,
+    		'D.99/2' => 2,
+			'D. 99' => 0,
 
-			// punctuation
-			'"elit. Pellentesque"' => 1,
-			'"elit Pellentesque"' => 1,
-			'"elit: Test"' => 1,
-			'"elit Test"' => 1,
+			'D.99/0000001' => 1,
+			'D.99/1' => 1,
 
-			// capitalization
-			'"lorem ipsum"' => 2,
-			'"Dolor Sit Amet"' => 2,
-			'"DOLOR SIT AMET"' => 2,
-			'"ELIT: TEST"' => 1,
-			'"DOLOR SIT TEST"' => 0,
-			'"DOLOR SIT test"' => 0,
+			'01 02 03 04' => 1,
+			'01 02' => 1,
+			'03 04' => 1,
+			'1 2 3 4' => 1,
 		));
 	}
 	# -------------------------------------------------------

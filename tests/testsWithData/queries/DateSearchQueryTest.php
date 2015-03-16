@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/search/queries/SimpleSearchQueryTest.php
+ * tests/testsWithData/queries/SimpleSearchQueryTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,7 +30,7 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_BASE_DIR__ . '/tests/search/AbstractSearchQueryTest.php');
+require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php');
 
 /**
  * Class DateSearchQueryTest

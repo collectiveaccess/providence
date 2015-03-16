@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/search/queries/IdnoSearchQueryTest.php
+ * tests/testsWithData/queries/SimpleSearchQueryTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,13 +30,13 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_BASE_DIR__ . '/tests/search/AbstractSearchQueryTest.php');
+require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php');
 
 /**
- * Class IdnoSearchQueryTest
+ * Class SimpleSearchQueryTest
  * Note: Requires testing profile!
  */
-class IdnoSearchQueryTest extends AbstractSearchQueryTest {
+class SimpleSearchQueryTest extends AbstractSearchQueryTest {
 	# -------------------------------------------------------
 	public function setUp() {
 		// don't forget to call parent so that request is set up correctly
@@ -52,51 +52,47 @@ class IdnoSearchQueryTest extends AbstractSearchQueryTest {
 		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'image',
-				'idno' => 'D.99/2-38',
+			),
+			'preferred_labels' => array(
+				array(
+					"locale" => "en_US",
+					"name" => "My test image",
+				),
 			),
 		)));
 
 		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
-				'type_id' => 'image',
-				'idno' => 'D.99/2-39',
+				'type_id' => 'dataset',
+			),
+			'preferred_labels' => array(
+				array(
+					"locale" => "en_US",
+					"name" => "My test dataset",
+				),
 			),
 		)));
 
 		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
-				'type_id' => 'image',
-				'idno' => 'D.99/0000001',
+				'type_id' => 'physical_object',
 			),
-		)));
-
-		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
-			'intrinsic_fields' => array(
-				'type_id' => 'image',
-				'idno' => '01 02 03 04',
+			'preferred_labels' => array(
+				array(
+					"locale" => "en_US",
+					"name" => "Test physical object",
+				),
 			),
 		)));
 
 		// search queries
 		$this->setSearchQueries(array(
-			'ca_objects.idno:"D.99/2-38"' => 1,
-			'ca_objects.idno:"D.99/2-39"' => 1,
-			'ca_objects.idno:"D.99/2-40"' => 0,
-			'ca_objects.idno:"D.99/2-"' => 0,
-
-			'D.99' => 3,
-			'D.99/2-39' => 1,
-    		'D' => 3,
-    		'D.99/2' => 2,
-			'D. 99' => 0,
-
-			'D.99/0000001' => 1,
-			'D.99/1' => 1,
-
-			'01 02 03 04' => 1,
-			'01 02' => 1,
-			'03 04' => 1,
-			'1 2 3 4' => 1,
+			'My Test Image' => 1,
+			'test' => 3,
+			'ca_objects.type_id:image' => 1,
+			'asdf' => 0,
+			'ca_objects.type_id:image OR ca_objects.type_id:dataset' => 2,
+			'"physical" AND (ca_objects.type_id:image OR ca_objects.type_id:dataset)' => 0,
 		));
 	}
 	# -------------------------------------------------------

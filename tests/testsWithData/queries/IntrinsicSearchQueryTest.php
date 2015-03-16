@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/search/queries/IntrinsicSearchQueryTest.php
+ * tests/testsWithData/queries/IntrinsicSearchQueryTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,7 +30,7 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_BASE_DIR__ . '/tests/search/AbstractSearchQueryTest.php');
+require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php');
 
 /**
  * Class IntrinsicSearchQueryTest

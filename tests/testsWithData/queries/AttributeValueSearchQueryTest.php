@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/search/queries/AttributeValueSearchQueryTest.php
+ * tests/testsWithData/queries/AttributeValueSearchQueryTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,7 +30,7 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_BASE_DIR__ . '/tests/search/AbstractSearchQueryTest.php');
+require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php');
 
 /**
  * Class SimpleSearchQueryTest
@@ -160,9 +160,14 @@ class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.currency_test:USD100' => 1,
 			'ca_objects.currency_test:CAD100' => 0,
 
-			// Georeference @todo (broken)
-			//'ca_objects.georeference:"[36.4,-121.9 to 38.5,-123.5]"' => 1,
-			//'ca_objects.georeference:"[37.4224879,-122.08422 ~ 5km]"' => 1,
+			// Georeference
+			'ca_objects.georeference:[36.4,-123.5 to 38.5,-121.9]' => 1, // actual lucene range search
+			'ca_objects.georeference:[36.4,-121.9 to 38.5,-123.5]' => 1, // order shouldn't matter
+			'ca_objects.georeference:[38.5,-121.9 to 36.4,-123.5]' => 1, // order shouldn't matter
+			'ca_objects.georeference:[40.0,-121.9 to 40.1,-123.5]' => 0,
+			'ca_objects.georeference:[38.5,-124.0 to 36.4,-123.5]' => 0,
+
+			//'ca_objects.georeference:"[37.4224879,-122.08422 ~ 5km]"' => 1, // special range query embedded in a lucene phrase query
 		));
 	}
 	# -------------------------------------------------------
