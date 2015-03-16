@@ -565,8 +565,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					$va_ft_terms = array();
 					$va_ft_like_terms = array();
 					$va_ft_stem_terms = array();
-					
-					$va_tmp = array();
+
 					$vs_access_point = '';
 					$va_raw_terms = array();
 					switch(get_class($o_lucene_query_element)) {
@@ -578,14 +577,26 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							switch($va_element['datatype']) {
 								case __CA_ATTRIBUTE_VALUE_GEOCODE__:
 									$t_geocode = new GeocodeAttributeValue();
-									$va_parsed_value = $t_geocode->parseValue($va_lower_term->text, $va_element['element_info']);
+									$va_parsed_value = $t_geocode->parseValue('['.$va_lower_term->text.']', $va_element['element_info']);
 									$vs_lower_lat = $va_parsed_value['value_decimal1'];
 									$vs_lower_long = $va_parsed_value['value_decimal2'];
 									
-									$va_parsed_value = $t_geocode->parseValue($va_upper_term->text, $va_element['element_info']);
+									$va_parsed_value = $t_geocode->parseValue('['.$va_upper_term->text.']', $va_element['element_info']);
 									$vs_upper_lat = $va_parsed_value['value_decimal1'];
 									$vs_upper_long = $va_parsed_value['value_decimal2'];
-									
+									// mysql BETWEEN always wants the lower value first ... BETWEEN 5 AND 3 wouldn't match 4! So we swap the values if necessary
+									if($vs_upper_lat < $vs_lower_lat) {
+										$tmp=$vs_upper_lat;
+										$vs_upper_lat=$vs_lower_lat;
+										$vs_lower_lat=$tmp;
+									}
+
+									if($vs_upper_long < $vs_lower_long) {
+										$tmp=$vs_upper_long;
+										$vs_upper_long=$vs_lower_long;
+										$vs_lower_long=$tmp;
+									}
+
 									$vs_direct_sql_query = "
 										SELECT ca.row_id, 1
 										FROM ca_attribute_values cav
@@ -966,11 +977,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														}
 														break;
 													case __CA_ATTRIBUTE_VALUE_GEOCODE__:
-														$t_geocode = new GeocodeAttributeValue();
 														// If it looks like a lat/long pair that has been tokenized by Lucene
 														// into oblivion rehydrate it here.
+														// @todo: this seems broken
 														if ($va_coords = caParseGISSearch(join(' ', $va_raw_terms))) {
-														
 															$vs_direct_sql_query = "
 																SELECT ca.row_id, 1
 																FROM ca_attribute_values cav
