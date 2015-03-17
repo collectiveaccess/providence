@@ -1717,16 +1717,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				$va_values = $t_attr->getAttributeValues();
 
 				$va_src_tmp = explode('.', $vs_source);
-				switch(sizeof($va_src_tmp)) {
-					case 1:
-						$vs_source = $va_src_tmp[0];
-						break;
-					case 2:
-						$o_dm = Datamodel::load();
-						if($t_attr->get('table_num') == $o_dm->getTableNum($va_src_tmp[0])) {
-							$vs_source = $va_src_tmp[1];
-						}
-						break;
+				if(sizeof($va_src_tmp) == 2) {
+					$o_dm = Datamodel::load();
+					if($t_attr->get('table_num') == $o_dm->getTableNum($va_src_tmp[0])) {
+						$vs_source = $va_src_tmp[1];
+					}
 				}
 
 				$o_log->logDebug(_t("Trying to find code %1 in value array for the current attribute.", $vs_source));
