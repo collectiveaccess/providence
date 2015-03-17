@@ -6491,7 +6491,6 @@ side. For many self-relations the direction determines the nature and display te
 							$this->set($va_parts[1], $vs_value);
 							break;
 						case 'addifempty':
-						case 'merge': // merge is not really viable for intrinsics because they're not repeatable. just pass to default case
 						default:
 							if(!$this->get($va_parts[1])) {
 								$this->set($va_parts[1], $vs_value);
@@ -6502,6 +6501,13 @@ side. For many self-relations the direction determines the nature and display te
 					}
 // attribute/element
 				} elseif($this->hasElement($va_parts[1])) {
+
+					$va_attributes = $this->getAttributesByElement($va_parts[1]);
+					if(sizeof($va_attributes)>1) {
+						Debug::msg("[prepopulateFields()] containers with multiple values are not supported");
+						continue;
+					}
+
 					switch(strtolower($vs_mode)) {
 						case 'overwrite': // always replace first value we find
 							$this->replaceAttribute(array(
@@ -6509,20 +6515,14 @@ side. For many self-relations the direction determines the nature and display te
 								'locale_id' => $g_ui_locale_id
 							), $va_parts[1]);
 							break;
+						default:
 						case 'addifempty': // only add value if none exists
-							if($this->getAttributeCountByElement($va_parts[1]) == 0) {
-								$this->addAttribute(array(
+							if(!$this->get($vs_target)) {
+								$this->replaceAttribute(array(
 									$va_parts[1] => $vs_value,
 									'locale_id' => $g_ui_locale_id
 								), $va_parts[1]);
 							}
-							break;
-						case 'merge': // always add new value (@todo kind of doesn't make sense)
-						default:
-							$this->addAttribute(array(
-								$va_parts[1] => $vs_value,
-								'locale_id' => $g_ui_locale_id
-							), $va_parts[1]);
 							break;
 					}
 				}
@@ -6576,7 +6576,7 @@ side. For many self-relations the direction determines the nature and display te
 						), $va_parts[1]);
 						break;
 					default:
-						Debug::msg("[prepopulateFields()] containers with multiple values are not yet supported");
+						Debug::msg("[prepopulateFields()] containers with multiple values are not supported");
 						break;
 				}
 			}
