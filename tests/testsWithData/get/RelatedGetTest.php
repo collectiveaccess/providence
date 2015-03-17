@@ -51,39 +51,150 @@ class RelatedGetTest extends BaseTestWithData {
 		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
 		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
 		 */
-		$vn_test_record = $this->addTestRecord('ca_objects', array(
+		/**
+		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
+		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
+		 */
+		$vn_object_id = $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
-				'type_id' => 'moving_image',
+				'type_id' => 'image',
 			),
 			'preferred_labels' => array(
 				array(
 					"locale" => "en_US",
-					"name" => "My test moving image",
+					"name" => "My test image",
 				),
 			),
-			'attributes' => array(
-				'duration' => array(
+		));
+		$this->assertGreaterThan(0, $vn_object_id);
+
+		$vn_entity_id = $this->addTestRecord('ca_entities', array(
+			'intrinsic_fields' => array(
+				'type_id' => 'ind',
+				'idno' => 'hjs',
+			),
+			'preferred_labels' => array(
+				array(
+					"locale" => "en_US",
+					"forename" => "Homer",
+					"middlename" => "J.",
+					"surname" => "Simpson",
+				),
+			),
+			'nonpreferred_labels' => array(
+				array(
+					"locale" => "en_US",
+					"forename" => "Max",
+					"middlename" => "",
+					"surname" => "Power",
+					"type_id" => "alt",
+				),
+			),
+			'related' => array(
+				'ca_objects' => array(
 					array(
-						'duration' => '00:23:28'
+						'object_id' => $vn_object_id,
+						'type_id' => 'creator',
+						'effective_date' => '2015',
+						'source_info' => 'Me'
 					)
 				),
 			),
 		));
 
-		$this->assertGreaterThan(0, $vn_test_record);
+		$this->assertGreaterThan(0, $vn_entity_id);
 
-		$this->opt_object = new ca_objects($vn_test_record);
+		$vn_entity_id = $this->addTestRecord('ca_entities', array(
+			'intrinsic_fields' => array(
+				'type_id' => 'ind',
+				'idno' => 'hjs',
+			),
+			'preferred_labels' => array(
+				array(
+					"locale" => "en_US",
+					"forename" => "Bart",
+					"middlename" => "",
+					"surname" => "Simpson",
+				),
+			),
+			'related' => array(
+				'ca_objects' => array(
+					array(
+						'object_id' => $vn_object_id,
+						'type_id' => 'publisher',
+						'effective_date' => '2014-2015',
+						'source_info' => 'Homer'
+					)
+				),
+			),
+		));
+
+		$this->assertGreaterThan(0, $vn_entity_id);
+
+		$vn_entity_id = $this->addTestRecord('ca_entities', array(
+			'intrinsic_fields' => array(
+				'type_id' => 'org',
+				'idno' => 'hjs',
+			),
+			'preferred_labels' => array(
+				array(
+					"locale" => "en_US",
+					"forename" => "",
+					"middlename" => "",
+					"surname" => "ACME Inc.",
+				),
+			),
+			'related' => array(
+				'ca_objects' => array(
+					array(
+						'object_id' => $vn_object_id,
+						'type_id' => 'source',
+						'effective_date' => '2013',
+						'source_info' => 'Bart'
+					)
+				),
+			),
+		));
+
+		$this->assertGreaterThan(0, $vn_entity_id);
+
+		$this->opt_object = new ca_objects($vn_object_id);
 	}
 	# -------------------------------------------------------
 	public function testGets() {
-		$vm_ret = $this->opt_object->get('ca_objects.type_id', array('convertCodesToDisplayText' => true));
-		$this->assertEquals('Moving Image', $vm_ret);
+		$vm_ret = $this->opt_object->get('ca_entities', array('delimiter' => '; '));
+		$this->assertEquals('Homer J. Simpson; Bart Simpson; ACME Inc.', $vm_ret);
 
-		$vm_ret = $this->opt_object->get('ca_objects.preferred_labels');
-		$this->assertEquals('My test moving image', $vm_ret);
+		$vm_ret = $this->opt_object->get('ca_entities.preferred_labels', array('delimiter' => '; '));
+		$this->assertEquals('Homer J. Simpson; Bart Simpson; ACME Inc.', $vm_ret);
 
-		$vm_ret = $this->opt_object->get('ca_objects.duration');
-		$this->assertEquals('0:23:28', $vm_ret);
+		$vm_ret = $this->opt_object->get('ca_entities.nonpreferred_labels');
+		$this->assertEquals('Max Power', $vm_ret);
+
+		$vm_ret = $this->opt_object->get('ca_entities', array('returnAsArray' => true));
+		$vm_ret2 = $this->opt_object->getRelatedItems('ca_entities');
+		$this->assertSame($vm_ret, $vm_ret2);
+
+		$vm_ret = $this->opt_object->get('ca_entities', array('restrictToRelationshipTypes' => array('creator')));
+		$this->assertEquals('Homer J. Simpson', $vm_ret);
+
+		$vm_ret = $this->opt_object->get('ca_entities', array('restrictToRelationshipTypes' => array('publisher')));
+		$this->assertEquals('Bart Simpson', $vm_ret);
+
+		$vm_ret = $this->opt_object->get('ca_entities', array('delimiter' => '; ', 'restrictToTypes' => array('ind')));
+		$this->assertEquals('Homer J. Simpson; Bart Simpson', $vm_ret);
+
+		$vm_ret = $this->opt_object->get('ca_entities', array('delimiter' => '; ', 'restrictToTypes' => array('org')));
+		$this->assertEquals('ACME Inc.', $vm_ret);
+
+		$vm_ret = $this->opt_object->get('ca_entities', array('delimiter' => '; ', 'restrictToTypes' => array('ind', 'org')));
+		$this->assertEquals('Homer J. Simpson; Bart Simpson; ACME Inc.', $vm_ret);
+
+		$vm_ret = $this->opt_object->get('ca_entities', array('delimiter' => '; ', 'excludeRelationshipTypes' => array('creator', 'publisher')));
+		$this->assertEquals('ACME Inc.', $vm_ret);
+
+		$vm_ret = $this->opt_object->get('ca_entities', array('delimiter' => '; ', 'excludeTypes' => array('ind')));
+		$this->assertEquals('ACME Inc.', $vm_ret);
 	}
 	# -------------------------------------------------------
 }
