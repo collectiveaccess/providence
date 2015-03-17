@@ -6537,13 +6537,14 @@ side. For many self-relations the direction determines the nature and display te
 							case 'overwrite':
 								$vo_attr = array_pop($va_attr);
 								$va_value = array($va_parts[2] => $vs_value);
+
 								foreach($vo_attr->getValues() as $o_val) {
 									if($o_val->getElementCode() != $va_parts[2]) {
 										$va_value[$o_val->getElementCode()] = $o_val->getDisplayValue();
 									}
 								}
 
-								$this->editAttribute($vo_attr->getAttributeID(), $va_parts[1], $va_value);
+								$this->_editAttribute($vo_attr->getAttributeID(), $va_value);
 								break;
 							case 'addifempty':
 								$vo_attr = array_pop($va_attr);
@@ -6569,11 +6570,13 @@ side. For many self-relations the direction determines the nature and display te
 						}
 						break;
 					case 0: // if no container value exists, always add it (ignoring mode)
-					default:
 						$this->addAttribute(array(
 							$va_parts[2] => $vs_value,
 							'locale_id' => $g_ui_locale_id
 						), $va_parts[1]);
+						break;
+					default:
+						Debug::msg("[prepopulateFields()] containers with multiple values are not yet supported");
 						break;
 				}
 			}

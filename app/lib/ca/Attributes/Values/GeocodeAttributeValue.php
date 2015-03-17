@@ -229,7 +229,7 @@
 			return $this->ops_path_value;
 		}
  		# ------------------------------------------------------------------
- 		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {	
+ 		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			$va_settings = $this->getSettingValuesFromElementArray(
  				$pa_element_info, 
  				array('mustNotBeBlank')
