@@ -1715,6 +1715,15 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			if($vs_source) { // trying to find the source only makes sense if the source is set
 				$t_attr = new ca_attributes($vn_attribute_id);
 				$va_values = $t_attr->getAttributeValues();
+
+				$va_src_tmp = explode('.', $vs_source);
+				if(sizeof($va_src_tmp) == 2) {
+					$o_dm = Datamodel::load();
+					if($t_attr->get('table_num') == $o_dm->getTableNum($va_src_tmp[0])) {
+						$vs_source = $va_src_tmp[1];
+					}
+				}
+
 				$o_log->logDebug(_t("Trying to find code %1 in value array for the current attribute.", $vs_source));
 				$o_log->logDebug(_t("Value array is %1.", print_r($va_values, true)));
 

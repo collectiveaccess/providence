@@ -35,6 +35,7 @@
 
 	// fetch data for bundle preview
 	$vs_bundle_preview = $t_instance->get($vs_bundle_name, array('convertCodesToDisplayText' => true));
+	if(is_array($vs_bundle_preview)) { $vs_bundle_preview = ''; }
  	
  	$va_errors = array();
  	if(is_array($va_action_errors = $this->getVar('errors'))) {
