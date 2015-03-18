@@ -1728,20 +1728,23 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				$o_log->logDebug(_t("Value array is %1.", print_r($va_values, true)));
 
 				foreach($va_values as $vo_val) {
-					$vn_list_id = null;
+					$va_display_val_options = array();
 					if($vo_val instanceof ListAttributeValue) {
 						$t_element = ca_metadata_elements::getInstance($t_attr->get('element_id'));
-						$vn_list_id = $t_element->get('list_id');
-					}
+						$va_display_val_options = array('list_id' => $t_element->get('list_id'));
 
+						if($t_exporter_item->getSetting('returnIdno')) {
+							$va_display_val_options['returnIdno'] = true;
+						}
+					}
 
 					$o_log->logDebug(_t("Trying to match code from array %1 and the code we're looking for %2.", $vo_val->getElementCode(), $vs_source));
 					if($vo_val->getElementCode() == $vs_source) {
 
-						$o_log->logDebug(_t("Found value %1.", $vo_val->getDisplayValue(array('list_id' => $vn_list_id))));
+						$o_log->logDebug(_t("Found value %1.", $vo_val->getDisplayValue($va_display_val_options)));
 
 						$va_item_info[] = array(
-							'text' => $vo_val->getDisplayValue(array('list_id' => $vn_list_id)),
+							'text' => $vo_val->getDisplayValue($va_display_val_options),
 							'element' => $vs_element,
 						);
 					}
