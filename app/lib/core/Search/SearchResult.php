@@ -74,8 +74,9 @@ class SearchResult extends BaseObject {
 	private $opa_cached_result_counts;
 	
 	static $s_instance_cache = array();
-	
 	static $s_parsed_field_component_cache = array();
+	static $opa_hierarchy_parent_prefetch_cache = array();
+	static $opa_hierarchy_parent_prefetch_cache_index = array();
 	
 	private $opb_use_identifiers_in_urls = false;
 	private $ops_subject_idno = false;
@@ -262,22 +263,15 @@ class SearchResult extends BaseObject {
 			$va_row_ids = $this->getRowIDsToPrefetch($pn_start, $pn_num_rows);
 		}
 		if (sizeof($va_row_ids) == 0) { return false; }
-		
-		if (!($t_instance = SearchResult::$s_instance_cache[$this->ops_table_name])) {
-			$t_instance = SearchResult::$s_instance_cache[$this->ops_table_name] = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name, true);
-		}
+
 		if (!($t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename])) {
 			$t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename] = $this->opo_datamodel->getInstanceByTableName($ps_tablename, true);
 		}
 		if (!$t_rel_instance->isHierarchical()) { return false; }
-		
-		$vb_is_related = false;
-		$va_base_row_ids = array();
+
 		if ($ps_tablename != $this->ops_table_name) {
-			$vb_is_related = true;
 			$va_row_ids = $this->_getRelatedIDsForPrefetch($ps_tablename, $pn_start, $pn_num_rows, SearchResult::$opa_hierarchy_parent_prefetch_cache_index, $t_rel_instance, $va_row_ids, $pa_options);
 		}
-		
 		
 		$vs_pk = $t_rel_instance->primaryKey();
 		$vs_parent_id_fld = $t_rel_instance->getProperty('HIERARCHY_PARENT_ID_FLD');
@@ -303,7 +297,6 @@ class SearchResult extends BaseObject {
 			while($qr_rel->nextRow()) {
 				$va_row = $qr_rel->getRow();
 				if (!$va_row[$vs_parent_id_fld]) { continue; }
-				$vn_hier_id = $vs_hier_id_fld ? $va_row[$vs_hier_id_fld] : 0;
 				
 				if ($vn_level == 0) {
 					$va_row_id_map[$va_row[$vs_parent_id_fld]] = $va_row[$vs_pk];
@@ -335,19 +328,13 @@ class SearchResult extends BaseObject {
 			$va_row_ids = $this->getRowIDsToPrefetch($pn_start, $pn_num_rows);
 		}
 		if (sizeof($va_row_ids) == 0) { return false; }
-		
-		if (!($t_instance = SearchResult::$s_instance_cache[$this->ops_table_name])) {
-			$t_instance = SearchResult::$s_instance_cache[$this->ops_table_name] = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name, true);
-		}
+
 		if (!($t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename])) {
 			$t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename] = $this->opo_datamodel->getInstanceByTableName($ps_tablename, true);
 		}
 		if (!$t_rel_instance->isHierarchical()) { return false; }
-		
-		$vb_is_related = false;
-		$va_base_row_ids = array();
+
 		if ($ps_tablename != $this->ops_table_name) {
-			$vb_is_related = true;
 			$va_row_ids = $this->_getRelatedIDsForPrefetch($ps_tablename, $pn_start, $pn_num_rows, SearchResult::$opa_hierarchy_children_prefetch_cache_index, $t_rel_instance, $va_row_ids, $pa_options);
 		}
 		
@@ -415,19 +402,13 @@ class SearchResult extends BaseObject {
 			$va_row_ids = $this->getRowIDsToPrefetch($pn_start, $pn_num_rows);
 		}
 		if (sizeof($va_row_ids) == 0) { return false; }
-		
-		if (!($t_instance = SearchResult::$s_instance_cache[$this->ops_table_name])) {
-			$t_instance = SearchResult::$s_instance_cache[$this->ops_table_name] = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name, true);
-		}
+
 		if (!($t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename])) {
 			$t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename] = $this->opo_datamodel->getInstanceByTableName($ps_tablename, true);
 		}
 		if (!$t_rel_instance->isHierarchical()) { return false; }
-		
-		$vb_is_related = false;
-		$va_base_row_ids = array();
+
 		if ($ps_tablename != $this->ops_table_name) {
-			$vb_is_related = true;
 			$va_row_ids = $this->_getRelatedIDsForPrefetch($ps_tablename, $pn_start, $pn_num_rows, SearchResult::$opa_hierarchy_siblings_prefetch_cache_index, $t_rel_instance, $va_row_ids, $pa_options);
 		}
 		
@@ -744,8 +725,7 @@ class SearchResult extends BaseObject {
 	 *		maxLevelsFromBottom = for hierarchical gets, restricts the number of levels returned to the bottom-most starting with the lowest leaf node.
 	 *		maxLevels = synonym for maxLevelsFromBottom
 	 */
-	public function get($ps_field, $pa_options=null) {	
-		//$t = new Timer();
+	public function get($ps_field, $pa_options=null) {
 		$vb_return_as_array = isset($pa_options['returnAsArray']) ? (bool)$pa_options['returnAsArray'] : false;
 		$va_filters = is_array($pa_options['filters']) ? $pa_options['filters'] : array();
 		
@@ -822,10 +802,6 @@ class SearchResult extends BaseObject {
 		
 		$vb_return_url = isset($pa_options['returnURL']) ? (bool)$pa_options['returnURL'] : false;
 		$vb_convert_codes_to_display_text = isset($pa_options['convertCodesToDisplayText']) ? (bool)$pa_options['convertCodesToDisplayText'] : false;
-		
-		
-		$vo_request = isset($pa_options['request']) ? $pa_options['request'] : null;
-		unset($pa_options['request']);
 		
 		$va_path_components = isset(SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_field]) ? SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_field] : $this->parseFieldPathComponents($ps_field);
 		

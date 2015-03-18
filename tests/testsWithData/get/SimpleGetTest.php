@@ -84,6 +84,12 @@ class SimpleGetTest extends BaseTestWithData {
 
 		$vm_ret = $this->opt_object->get('ca_objects.duration');
 		$this->assertEquals('0:23:28', $vm_ret);
+
+		$o_tep = new TimeExpressionParser(); $vn_now = time();
+		$vm_ret = $this->opt_object->get('ca_objects.lastModified');
+		$this->assertTrue($o_tep->parse($vm_ret));
+		$va_modified_unix = $o_tep->getUnixTimestamps();
+		$this->assertEquals($vn_now, $va_modified_unix['start'], 'lastModified timestamp cannot be more than 1 minute off', 60);
 	}
 	# -------------------------------------------------------
 }
