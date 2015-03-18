@@ -805,18 +805,18 @@ class SearchResult extends BaseObject {
 	}
 	# ------------------------------------------------------------------
 	/**
-	 * TODO: NEW!
-	 */ 
+	 * Actual implementation of get()
+	 * @param string $ps_field bundle specifier
+	 * @param null|array $pa_options options array
+	 * @return array|null|string
+	 */
 	private function _get($ps_field, $pa_options=null) {
-		global $g_access_helpers_bundle_access_level_cache;
 		if (!is_array($pa_options)) $pa_options = array();
 		
 		$vb_return_as_array = isset($pa_options['returnAsArray']) ? (bool)$pa_options['returnAsArray'] : false;
 		$vb_return_all_locales = isset($pa_options['returnAllLocales']) ? (bool)$pa_options['returnAllLocales'] : false;
 		if (!$vb_return_as_array) { $pa_options['returnAllLocales'] = false; }
-		
-		$vb_return_as_link = isset($pa_options['returnAsLink']) ? (bool)$pa_options['returnAsLink'] : false;
-		$vs_template = isset($pa_options['template']) ? (string)$pa_options['template'] : null;
+
 		$vs_delimiter = isset($pa_options['delimiter']) ? (string)$pa_options['delimiter'] : ';';
 		$vb_unserialize = isset($pa_options['unserialize']) ? (bool)$pa_options['unserialize'] : false;
 		
@@ -827,7 +827,7 @@ class SearchResult extends BaseObject {
 		$vo_request = isset($pa_options['request']) ? $pa_options['request'] : null;
 		unset($pa_options['request']);
 		
-		$va_original_path_components = $va_path_components = isset(SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_field]) ? SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_field] : $this->parseFieldPathComponents($ps_field);
+		$va_path_components = isset(SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_field]) ? SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_field] : $this->parseFieldPathComponents($ps_field);
 		
 		$va_val_opts = array(
 			'returnAsArray' => $vb_return_as_array, 
@@ -838,7 +838,14 @@ class SearchResult extends BaseObject {
 			'convertCodesToDisplayText' => $vb_convert_codes_to_display_text,
 			'unserialize' => $vb_unserialize
 		);
-		
+
+		if($vs_template = caGetOption('template', $pa_options)) {
+			$va_val_opts['template'] = $vs_template;
+
+			if(caGetOption('returnAsLink', $pa_options)) {
+				$va_val_opts['returnAsLink'] = true;
+			}
+		}
 		
 		if ($va_path_components['table_name'] != $this->ops_table_name) {
 			$vs_access_chk_key  = $va_path_components['table_name'].($va_path_components['field_name'] ? '.'.$va_path_components['field_name'] : '');
@@ -873,7 +880,6 @@ class SearchResult extends BaseObject {
 		if ($va_path_components['hierarchical_modifier']) {
 			switch($va_path_components['hierarchical_modifier']) {
 				case 'parent':
-					$va_ids = array();
 					if ($va_path_components['related']) {
 						// [RELATED TABLE PARENT]
 						
@@ -1123,8 +1129,7 @@ class SearchResult extends BaseObject {
 			}
 			return;
 		}
-		
-		//$t = new Timer();
+
 		if ($va_path_components['related']) {
 //
 // [RELATED TABLE] 
@@ -1142,8 +1147,8 @@ class SearchResult extends BaseObject {
 			//	$va_related_items = caSortArrayByKeyInValue($va_related_items, $va_sort_fields);
 			//}
 			
-			return $this->_getRelatedValue($va_related_items, $pt_instance, $va_val_opts);
-		} else {		
+			return $this->_getRelatedValue($va_related_items, $va_val_opts);
+		} else {
 			if (!$va_path_components['hierarchical_modifier']) {
 //
 // [PRIMARY TABLE] Created on
@@ -1234,24 +1239,35 @@ class SearchResult extends BaseObject {
 	}
 	# ------------------------------------------------------------------
 	/**
-	 *
+	 * get() value for related table
+	 * @param array $pa_value_list
+	 * @param null|array $pa_options
+	 * @return array|mixed|string
 	 */
-	private function _getRelatedValue($pa_value_list, $pt_instance, $pa_options) {
-		$va_path_components		=& $pa_options['pathComponents'];
-		
+	private function _getRelatedValue($pa_value_list, $pa_options=null) {
+		$va_path_components	=& $pa_options['pathComponents'];
+
+		$vb_return_as_link = caGetOption('returnAsLink', $pa_options, false, array('castTo' => 'bool'));
+		$vs_return_as_link_target = caGetOption('returnAsLinkTarget', $pa_options, '');
+
+		$vs_template = null;
 		// Handle table-only case...
 		if (!$va_path_components['field_name']) {
 			// ... by returning array of values from related items
 			if ($pa_options['returnAsArray']) {  return $pa_value_list; }
-			
-			// ... by returning a list of preferred label values
-			$va_path_components['field_name'] = 'preferred_labels';
+
+			// ... by processing a display template for these records
+			if(!($vs_template = caGetOption('template', $pa_options))) {
+				// ... or by returning a list of preferred label values
+				$va_path_components['field_name'] = 'preferred_labels';
+			}
 		}
 		
 		if (!($t_rel_instance = SearchResult::$s_instance_cache[$va_path_components['table_name']])) {
 			$t_rel_instance = SearchResult::$s_instance_cache[$va_path_components['table_name']] = $this->opo_datamodel->getInstanceByTableName($va_path_components['table_name'], true);
 		}
-		if (!$t_rel_instance) { return null; }
+
+		if (!($t_rel_instance instanceof BundlableLabelableBaseModelWithAttributes)) { return null; }
 		
 		$vs_pk = $t_rel_instance->primaryKey();
 		
@@ -1260,20 +1276,35 @@ class SearchResult extends BaseObject {
 			$va_ids[] = $va_rel_item[$vs_pk];
 		}
 		if (!sizeof($va_ids)) { return null; }
-		
-		
+
+		if($vs_template) {  // $vs_template is only set when the get spec is a plain table without field_name
+			if($vb_return_as_link) {
+				$va_links = array();
+				foreach($pa_value_list as $vn_relation_id => $va_relation_info) {
+					$va_template_opts = array();
+					$va_template_opts['relationshipValues'][$va_relation_info[$vs_pk]][$va_relation_info['relation_id']]['relationship_typename'] = $va_relation_info['relationship_typename'];
+					$vs_text = caProcessTemplateForIDs($vs_template, $t_rel_instance->tableName(), array($va_relation_info[$vs_pk]), $va_template_opts);
+					$va_link = caCreateLinksFromText(array($vs_text), $t_rel_instance->tableName(), array($va_relation_info[$vs_pk]));
+					$va_links[$vn_relation_id] = array_pop($va_link);
+				}
+				return join($pa_options['delimiter'], $va_links);
+			} else {
+				return caProcessTemplateForIDs($vs_template, $t_rel_instance->tableName(), $va_ids, $pa_options);
+			}
+		}
+
 		$qr_rel = $t_rel_instance->makeSearchResult($va_path_components['table_name'], $va_ids);
 		$va_return_values = array();
-		
 		$va_spec = array();
 		foreach(array('table_name', 'field_name', 'subfield_name') as $vs_f) {
-			if ($va_path_components[$vs_f]) $va_spec[] = $va_path_components[$vs_f];
+			if ($va_path_components[$vs_f]) { $va_spec[] = $va_path_components[$vs_f]; }
 		}
+
 		while($qr_rel->nextHit()) {
 			$vm_val = $qr_rel->get(join(".", $va_spec), $pa_options);
 			
 			if (!$vm_val) { continue; }
-			if ($pa_options['returnAsArray']) {
+			if (caGetOption('returnAsArray', $pa_options, false)) {
 				foreach($vm_val as $vn_i => $vs_val) {
 					$va_return_values[] = $vs_val;
 				}
@@ -1518,10 +1549,7 @@ class SearchResult extends BaseObject {
 	 */
 	public function getWithTemplateForResults($ps_template, $pa_options=null) {	
 		$pn_start = caGetOption('start', $pa_options, 0);
-		$pn_end = caGetOption('end', $pa_options, $this->numHits());
-		
 		$this->seek($pn_start);
-		$vn_c = 0;
 		
 		return caProcessTemplateForIDs($ps_template, $this->ops_table_name, array($this->get($this->ops_table_name.".".$this->ops_subject_pk)), $pa_options);
 	}
