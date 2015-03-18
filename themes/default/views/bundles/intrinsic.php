@@ -35,9 +35,6 @@
 
 	// fetch data for bundle preview
 	$vs_bundle_preview = $t_instance->get($vs_bundle_name, array('convertCodesToDisplayText' => true));
-	if(strlen($vs_bundle_preview) > 30) {
-		$vs_bundle_preview = substr($vs_bundle_preview, 0, 30) . ' ...';
-	}
  	
  	$va_errors = array();
  	if(is_array($va_action_errors = $this->getVar('errors'))) {
@@ -52,7 +49,7 @@
 ?>
 		<script type="text/javascript">
 			jQuery(document).ready(function() {
-				jQuery('#' + '<?php print $vs_id_prefix; ?>' + '_BundleContentPreview').text('<?php print strip_tags(html_entity_decode($vs_bundle_preview)); ?>');
+				jQuery('#' + '<?php print $vs_id_prefix; ?>' + '_BundleContentPreview').text(<?php print caEscapeForBundlePreview($vs_bundle_preview); ?>);
 			});
 		</script>
 <?php

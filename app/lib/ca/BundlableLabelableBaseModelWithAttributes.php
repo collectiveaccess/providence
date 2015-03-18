@@ -4977,7 +4977,6 @@ if (!$vb_batch) {
 			// BEGIN - non-self relation
 			//
 
-
 			$va_wheres[] = "(".$this->tableName().'.'.$this->primaryKey()." IN (".join(",", $va_row_ids)."))";
 			$vs_cur_table = array_shift($va_path);
 			$va_joins = array();
@@ -4999,7 +4998,14 @@ if (!$vb_batch) {
 				$vs_cur_table = $vs_join_table;
 			}
 
-			$va_selects[] = $this->tableName().'.'.$this->primaryKey().' AS row_id';
+			// If we're getting ca_set_items, we can't rename our primary key "row_id" because that table
+			// has a field called row_id and it's important and should be in the selected fields. Hence, this hack.
+			if($vs_related_table_name == 'ca_set_items') {
+				$va_selects[] = $this->tableName().'.'.$this->primaryKey();
+				$va_selects[] = 'ca_set_items.row_id';
+			} else {
+				$va_selects[] = $this->tableName().'.'.$this->primaryKey().' AS row_id';
+			}
 
 			$vs_order_by = '';
 			if ($t_item_rel && $t_item_rel->hasField('rank')) {
@@ -5249,9 +5255,14 @@ if (!$vb_batch) {
 			$pa_options['request']
 		) {
 			
-			if ($this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD'))) { $this->opo_idno_plugin_instance->isChild(true); }	// if it has a parent_id then set the id numbering plugin using "child_only" numbering schemes (if defined)
-			if (!$this->getPrimaryKey() && $this->opo_idno_plugin_instance->isChild()) {
-				$this->set('idno', $this->opo_idno_plugin_instance->makeTemplateFromValue($this->get('idno'), 1, true));	// chop off last serial element
+			$vs_idno_fld = $this->getProperty('ID_NUMBERING_ID_FIELD');
+			if ($vn_parent_id = $this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD'))) { $this->opo_idno_plugin_instance->isChild(true); }	// if it has a parent_id then set the id numbering plugin using "child_only" numbering schemes (if defined)
+			if (!$this->getPrimaryKey() && $vn_parent_id && $this->opo_idno_plugin_instance->isChild()) {
+				$t_parent = $this->getAppDatamodel()->getInstanceByTableName($this->tableName(), false);
+				if ($this->inTransaction()) { $t_parent->setTransaction($this->getTransaction()); }
+				if ($t_parent->load($vn_parent_id)) {
+					$this->set($vs_idno_fld, $x=$this->opo_idno_plugin_instance->makeTemplateFromValue($t_parent->get($vs_idno_fld), 1, true));	// chop off last serial element
+				}
 			}
 			$this->opo_idno_plugin_instance->setValue($this->get($ps_field));
 			if (method_exists($this, "getTypeCode")) { $this->opo_idno_plugin_instance->setType($this->getTypeCode()); }

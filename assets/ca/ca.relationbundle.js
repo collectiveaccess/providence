@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -87,7 +87,7 @@ var caUI = caUI || {};
 			
 			var autocompleter_id = options.itemID + id + ' #' + options.fieldNamePrefix + 'autocomplete' + id;
 
-			jQuery('#' + autocompleter_id).relationshipLookup(
+			jQuery('#' + autocompleter_id).relationshipLookup( 
 				jQuery.extend({ minLength: ((parseInt(options.minChars) > 0) ? options.minChars : 3), delay: 800, html: true,
 					source: function( request, response ) {
 						$.ajax({
@@ -162,7 +162,7 @@ var caUI = caUI || {};
 			jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id).val(item_id);
 			jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'type_id' + id).css('display', 'inline');
 			var i, typeList, types = [];
-			var default_index = 0;
+			var default_type = 0;
 			
 			if (jQuery('#' + options.itemID + id + ' select[name=' + options.fieldNamePrefix + 'type_id' + id + ']').data('item_type_id') == type_id) {
 				// noop - don't change relationship types unless you have to
@@ -171,8 +171,8 @@ var caUI = caUI || {};
 					for(i=0; i < typeList.length; i++) {
 						types.push({type_id: typeList[i].type_id, typename: typeList[i].typename, direction: typeList[i].direction, rank: typeList[i].rank });
 						
-						if (typeList[i].is_default === '1') {
-							default_index = (types.length - 1);
+						if (parseInt(typeList[i].is_default) === 1) {
+							default_type = (typeList[i].direction ? typeList[i].direction : '') + typeList[i].type_id;
 						}
 					}
 				} 
@@ -181,8 +181,8 @@ var caUI = caUI || {};
 					for(i=0; i < typeList.length; i++) {
 						types.push({type_id: typeList[i].type_id, typename: typeList[i].typename, direction: typeList[i].direction, rank: typeList[i].rank });
 						
-						if (typeList[i].is_default === '1') {
-							default_index = (types.length - 1);
+						if (parseInt(typeList[i].is_default) === 1) {
+							default_type = (typeList[i].direction ? typeList[i].direction : '') + typeList[i].type_id;
 						}
 					}
 				}
@@ -203,7 +203,7 @@ var caUI = caUI || {};
 				});
 				
 				// select default
-				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).prop('selectedIndex', default_index);
+				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id + " option[value=\"" + default_type + "\"]").prop('selected', true);
 			
 				// set current type
 				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).data('item_type_id', type_id);

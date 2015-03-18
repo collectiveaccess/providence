@@ -736,7 +736,6 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 				switch($pa_options["player"]) {
 					case 'small':
-						AssetLoadManager::register("swfobject");
 						ob_start();
 						$vn_width = ($pa_options["viewer_width"] > 0) ? $pa_options["viewer_width"] : 165;
 						$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 38;
@@ -855,33 +854,6 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 				}
 				break;
 			# ------------------------------------------------
-			case "video/x-flv":
-				$vs_name = 				$pa_options["name"] ? $pa_options["name"] : "flv_player";
-				$vs_id = 				$pa_options["id"] ? $pa_options["id"] : "flv_player";
-
-				$vs_flash_vars = 		$pa_options["viewer_parameters"];
-				$viewer_base_url =		$pa_options["viewer_base_url"];
-
-				$vn_width = ($pa_options["viewer_width"] > 0) ? $pa_options["viewer_width"] : 400;
-				$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
-				
-				$vs_data_url =			$pa_options["data_url"];
-				$vs_poster_frame_url =	$pa_options["poster_frame_url"];
-				
-				ob_start();
-?>
-
-			<div id="<?php print $vs_id; ?>" style="width: {$vn_width}px; height: {$vn_height}px;">
-				<h1><?php print _t('You must have the Flash Plug-in version 9.0.124 or better installed to play video and audio in CollectiveAccess'); ?></h1>
-				<p><a href="http://www.adobe.com/go/getflashplayer"><img src="http://www.adobe.com/images/shared/download_buttons/get_flash_player.gif" alt="Get Adobe Flash player" /></a></p>
-			</div>
-			<script type="text/javascript">
-				jQuery(document).ready(function() { swfobject.embedSWF("<?php print $viewer_base_url; ?>/viewers/apps/niftyplayer.swf ", "<?php print $vs_id; ?>", "<?php print $vn_width; ?>", "<?php print $vn_height; ?>", "9.0.124", "swf/expressInstall.swf", {'source' : '<?php print $ps_url; ?>', 'dataUrl':'<?php print $vs_data_url; ?>', 'posterFrameUrl': '<?php print $vs_poster_frame_url; ?>'}, {'allowscriptaccess': 'always', 'allowfullscreen' : 'true', 'allowNetworking' : 'all'}); });
-			</script>
-<?php
-				return ob_get_clean();
-				break;
-				# ------------------------------------------------
 			case 'image/jpeg':
 			case 'image/png':
 				if (!is_array($pa_options)) { $pa_options = array(); }

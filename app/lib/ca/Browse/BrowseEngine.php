@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -945,8 +945,8 @@
 					Debug::msg("Cache hit for {$vs_cache_key}");
 				} else {
 					$va_criteria = $this->getCriteria();
-					$this->opo_ca_browse_cache->remove();
-					$this->opo_ca_browse_cache->setParameter('criteria', $va_criteria);
+					//$this->opo_ca_browse_cache->remove();
+					//$this->opo_ca_browse_cache->setParameter('criteria', $va_criteria);
 					
 					$vb_need_to_save_in_cache = true;
 					$vb_need_to_cache_facets = true;
@@ -1193,7 +1193,7 @@
 									}
 									
 									foreach($va_row_ids as $vn_row_id) {
-										$vn_row_id = urldecode($vn_row_id);
+										$vn_row_id = urldecode(str_replace('&#47;', '/', $vn_row_id));
 										if ($vn_i == 0) {
 											$vs_sql = "
 												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
@@ -1916,7 +1916,8 @@
 						$vb_need_to_save_in_cache = true;
 					} else {
 						// No results for some reason - we're here because we don't want to throw a SQL error
-						$va_results = array();
+						$this->opo_ca_browse_cache->setResults($va_results = array());
+						$vb_need_to_save_in_cache = true;
 					}
 				}
 			} else {
@@ -2064,16 +2065,30 @@
 		 */
 		public function getFacet($ps_facet_name, $pa_options=null) {
 			if (!is_array($this->opa_browse_settings)) { return null; }
+			
+			$pn_start = caGetOption('start', $pa_options, 0);
+			$pn_limit = caGetOption('limit', $pa_options, null);
+			
 			$va_facet_cache = $this->opo_ca_browse_cache->getFacet($ps_facet_name);
 			
 			// is facet cached?
-			if (isset($va_facet_cache) && is_array($va_facet_cache)) { 
-				return $va_facet_cache; 
+			$va_facet_content = null;
+			if (!isset($va_facet_cache) || !is_array($va_facet_cache)) { 			
+				$va_facet_content = $va_facet_cache = $this->getFacetContent($ps_facet_name, $pa_options);
+				$vb_needs_caching = true;
 			}
 			
-			$this->opo_ca_browse_cache->setFacet($ps_facet_name, $vs_facet_content = $this->getFacetContent($ps_facet_name, $pa_options));
-			$this->opo_ca_browse_cache->save();
-			return $vs_facet_content;
+			if ($pn_limit > 0) {
+				$va_facet_cache = array_slice($va_facet_cache, (int)$pn_start, $pn_limit);
+			} elseif ($pn_start > 0) {
+				$va_facet_cache = array_slice($va_facet_cache, (int)$pn_start);
+			}
+			
+			if ($va_facet_content && is_array($va_facet_content)) {
+				$this->opo_ca_browse_cache->setFacet($ps_facet_name, $va_facet_content);
+				$this->opo_ca_browse_cache->save();
+			}
+			return $va_facet_cache;
 		}
 		# ------------------------------------------------------
 		/**
@@ -2868,7 +2883,7 @@
 								if (is_array($va_list_item_cache)) {
 									foreach($va_list_item_cache as $vn_id => $va_item) {
 										if (!($vn_parent_id = $va_item['parent_id'])) { continue; }
-										if (is_array($pa_options['checkAccess']) && !in_array($va_item['access'], $pa_options['checkAccess'])) { continue; }
+										if (is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && !in_array($va_item['access'], $pa_options['checkAccess'])) { continue; }
 										$va_list_child_count_cache[$vn_parent_id]++;
 									}
 								}
@@ -2881,7 +2896,7 @@
 								foreach($va_values as $vn_val) {
 									if (!$vn_val) { continue; }
 									if (is_array($va_suppress_values) && (in_array($vn_val, $va_suppress_values))) { continue; }
-									if (is_array($pa_options['checkAccess']) && !in_array($va_list_item_cache[$vn_val]['access'], $pa_options['checkAccess'])) { continue; }
+									if (is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && !in_array($va_list_item_cache[$vn_val]['access'], $pa_options['checkAccess'])) { continue; }
 									
 									if ($va_criteria[$vn_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
 									$vn_child_count = isset($va_list_child_count_cache[$vn_val]) ? $va_list_child_count_cache[$vn_val] : 0;
@@ -2939,7 +2954,7 @@
 										 $vn_child_count++;
 									}
 									$va_values[$vs_val] = array(
-										'id' => $vs_val,
+										'id' => str_replace('/', '&#47;', $vs_val),
 										'label' => html_entity_decode($va_list_items[$vs_val]['name_plural'] ? $va_list_items[$vs_val]['name_plural'] : $va_list_items[$vs_val]['item_value']),
 										'parent_id' => $va_list_items[$vs_val]['parent_id'],
 										'child_count' => $vn_child_count
@@ -3592,7 +3607,7 @@
 								$va_values[$vs_val] = $va_facet_values[$vs_val];
 							} else {
 								$va_values[$vs_val] = array(
-									'id' => $vs_val,
+									'id' => str_replace('/', '&#47;', $vs_val),
 									'label' => $vs_val
 								);
 							}
@@ -4393,7 +4408,7 @@
 				case 'authority':
 					$vs_rel_table_name = $va_facet_info['table'];
 					$va_params = $this->opo_ca_browse_cache->getParameters();
-
+					
 					// Make sure we honor type restrictions for the related authority
 					$va_user_type_restrictions = caGetTypeRestrictionsForUser($vs_rel_table_name);
 					$va_restrict_to_types = $va_facet_info['restrict_to_types'];
@@ -4868,7 +4883,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 			
 			if(sizeof($va_results =  $this->opo_ca_browse_cache->getResults())) {
 				if ($vb_will_sort) {
-					$va_results = $this->sortHits($va_results, $this->ops_browse_table_name, $pa_options['sort'], $this->opo_ca_browse_cache->getCacheKey(), (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
+					$va_results = $this->sortHits($va_results, $this->ops_browse_table_name, $pa_options['sort'], (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
 	
 					$this->opo_ca_browse_cache->setParameter('table_num', $this->opn_browse_table_num); 
 					$this->opo_ca_browse_cache->setParameter('sort', $pa_options['sort']);

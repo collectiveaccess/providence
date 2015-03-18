@@ -516,6 +516,10 @@ function caFileIsIncludable($ps_file) {
 		return str_replace("&amp;#", "&#", $ps_text);
 	}
 	# ----------------------------------------
+	function caEscapeForBundlePreview($ps_text) {
+		return json_encode(html_entity_decode(strip_tags($ps_text), ENT_QUOTES | ENT_HTML5));
+	}
+	# ----------------------------------------
 	/**
 	 * Return text with quotes escaped for use in a tab or comma-delimited file
 	 *

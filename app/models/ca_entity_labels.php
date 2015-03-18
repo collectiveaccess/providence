@@ -101,7 +101,7 @@ BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
 				'DISPLAY_WIDTH' => 15, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Middlename'), 'DESCRIPTION' => _t('Many names include one or more middle names, placed between the forename and the surname. In the Western world, a middle name is effectively a second given name. You should enter all middle names here. If there is more than one separate the names with spaces.'),
+				'LABEL' => _t('Middle Name'), 'DESCRIPTION' => _t('Many names include one or more middle names, placed between the forename and the surname. In the Western world, a middle name is effectively a second given name. You should enter all middle names here. If there is more than one separate the names with spaces.'),
 				'BOUNDS_LENGTH' => array(0,100)
 		),
 		'surname' => array(
@@ -117,7 +117,7 @@ BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Prefixes'), 'DESCRIPTION' => _t('A prefix may be added to a name to signify veneration, a social position, an official position or a professional or academic qualification.'),
+				'LABEL' => _t('Prefix'), 'DESCRIPTION' => _t('A prefix may be added to a name to signify veneration, a social position, an official position or a professional or academic qualification.'),
 				'BOUNDS_LENGTH' => array(0,100)
 		),
 		'suffix' => array(
@@ -125,7 +125,7 @@ BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Suffixes'), 'DESCRIPTION' => _t('A suffix may be added to a name to signify veneration, a social position, an official position or a professional or academic qualification.'),
+				'LABEL' => _t('Suffix'), 'DESCRIPTION' => _t('A suffix may be added to a name to signify veneration, a social position, an official position or a professional or academic qualification.'),
 				'BOUNDS_LENGTH' => array(0,100)
 		),
 		'name_sort' => array(

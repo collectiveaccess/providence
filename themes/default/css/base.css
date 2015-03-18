@@ -1195,6 +1195,8 @@ div.hint {
 .settingsBundle {
     padding: 10px;
 }
+
+/* often times referred to as bundlePreview */
 .bundleContentPreview {
 	text-align:left;
 	display:inline-block;
@@ -1208,6 +1210,8 @@ div.hint {
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	width: 40%;
+	vertical-align:bottom;
+	padding-bottom:5px;
 }
 
 /* Style for labels on form fields where an error has occurred */
@@ -5256,6 +5260,10 @@ div.listRel {
     background-color:#ffffff;
     min-height: 18px;
     line-height:1.5em;
+}
+
+div.listRel:first-of-type {
+    margin-top:5px;
 }
 
 .caItemList {

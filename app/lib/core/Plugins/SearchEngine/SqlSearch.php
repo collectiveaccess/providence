@@ -822,11 +822,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$vb_output_term = true;	
 								
 								}
-								if ($vb_output_term) {
-									$va_raw_terms[] = $vs_term;
-								} else {
-									$vn_i--;
-								}
+								if ($vb_output_term) { $va_raw_terms[] = $vs_term; }
 							}
 							
 							break;

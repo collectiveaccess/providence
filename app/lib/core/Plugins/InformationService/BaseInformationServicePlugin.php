@@ -161,4 +161,3 @@ abstract class BaseInformationServicePlugin Extends WLPlug {
 	}
 	# ------------------------------------------------
 }
-?>

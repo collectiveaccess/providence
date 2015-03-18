@@ -56,6 +56,13 @@
 ?>
 			<input type='hidden' name='representation_id' value='<?php print $vn_representation_id; ?>'/>
 			<input id='isSaveAndReturn' type='hidden' name='is_save_and_return' value='0'/>
+<?php
+			if($this->request->getParameter('rel', pInteger)) {
+?>
+				<input type='hidden' name='rel' value='1'/>
+<?php
+			}
+?>
 		</form>
 	</div>
 

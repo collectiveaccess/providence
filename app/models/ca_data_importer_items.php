@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -471,6 +471,15 @@ class ca_data_importer_items extends BaseModel {
 			'default' => '0',
 			'label' => _t('Lookahead'),
 			'description' => _t('Number of rows ahead of the current row to pull value from.')
+		);
+		$va_settings['useParentAsSubject'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Use parent as subject'),
+			'description' => _t('Import parent of subject instead of subject. This option is primarily useful when you are using a hierarchy builder refinery mapped to parent_id to create the entire hierarchy (including subject) and want the bottom-most level of the hierarchy to be the subject.')
 		);
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}

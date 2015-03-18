@@ -144,7 +144,8 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 	 * @param string $ps_search The expression with which to query the remote data service
 	 * @param array $pa_options Options are:
 	 *		count = maximum number of items to return. Default is 25.
-	 *		APIKey = WorldCat API key to use. Default is the key configured in worldcat_api_key in app.conf  
+	 *		APIKey = WorldCat API key to use. Default is the key configured in worldcat_api_key in app.conf
+	 * @return array
 	 */
 	public function lookup($pa_settings, $ps_search, $pa_options=null) {
 		if (!($vs_api_key = caGetOption('APIKey', $pa_settings, null))) {
@@ -252,4 +253,3 @@ class WLPlugInformationServiceWorldCat Extends BaseInformationServicePlugin Impl
 	}
 	# ------------------------------------------------
 }
-?>

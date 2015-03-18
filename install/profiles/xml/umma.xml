@@ -6836,23 +6836,7 @@
               <name_plural>board</name_plural>
             </label>
           </labels>
-        </item>
-        <item idno="book" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>book</name_singular>
-              <name_plural>book</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="bowl" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>bowl</name_singular>
-              <name_plural>bowl</name_plural>
-            </label>
-          </labels>
-        </item>
+        </item> 
         <item idno="box" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -6861,35 +6845,11 @@
             </label>
           </labels>
         </item>
-        <item idno="cardboard_backing" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>cardboard backing</name_singular>
-              <name_plural>cardboard backing</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="chine_coll" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>chine collé</name_singular>
-              <name_plural>chine collé</name_plural>
-            </label>
-          </labels>
-        </item>
         <item idno="circumference" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>circumference</name_singular>
               <name_plural>circumference</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="closed_book" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>closed book</name_singular>
-              <name_plural>closed book</name_plural>
             </label>
           </labels>
         </item>
@@ -6906,22 +6866,6 @@
             <label locale="en_US" preferred="1">
               <name_singular>each</name_singular>
               <name_plural>each</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="each_door" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>each door</name_singular>
-              <name_plural>each door</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="figure" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>figure</name_singular>
-              <name_plural>figure</name_plural>
             </label>
           </labels>
         </item>
@@ -6957,43 +6901,11 @@
             </label>
           </labels>
         </item>
-        <item idno="image_recto" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>image—recto</name_singular>
-              <name_plural>image—recto</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="label" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>label</name_singular>
-              <name_plural>label</name_plural>
-            </label>
-          </labels>
-        </item>
         <item idno="length" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>length</name_singular>
               <name_plural>length</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="length" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>length</name_singular>
-              <name_plural>length</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="lip" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>lip</name_singular>
-              <name_plural>lip</name_plural>
             </label>
           </labels>
         </item>
@@ -7013,35 +6925,11 @@
             </label>
           </labels>
         </item>
-        <item idno="mounting" enabled="1" default="0">
+        <item idno="object_base" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>mounting</name_singular>
-              <name_plural>mounting</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="not_complete" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>not complete</name_singular>
-              <name_plural>not complete</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="object" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>object</name_singular>
-              <name_plural>object</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="object_overall" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>object (overall)</name_singular>
-              <name_plural>object (overall)</name_plural>
+              <name_singular>object with base</name_singular>
+              <name_plural>object with base</name_plural>
             </label>
           </labels>
         </item>
@@ -7053,11 +6941,11 @@
             </label>
           </labels>
         </item>
-        <item idno="open_book" enabled="1" default="0">
+        <item idno="object_mount" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>open book</name_singular>
-              <name_plural>open book</name_plural>
+              <name_singular>object with mount</name_singular>
+              <name_plural>object with mount</name_plural>
             </label>
           </labels>
         </item>
@@ -7069,14 +6957,6 @@
             </label>
           </labels>
         </item>
-        <item idno="painting" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>painting</name_singular>
-              <name_plural>painting</name_plural>
-            </label>
-          </labels>
-        </item>
         <item idno="panel" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -7084,36 +6964,12 @@
               <name_plural>panel</name_plural>
             </label>
           </labels>
-        </item>
-        <item idno="paper" enabled="1" default="0">
+        </item> 
+        <item idno="plate" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>paper</name_singular>
-              <name_plural>paper</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="plate_mark" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>plate mark</name_singular>
-              <name_plural>plate mark</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="PMH_PMW" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>PMH - PMW</name_singular>
-              <name_plural>PMH - PMW</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="print" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>print</name_singular>
-              <name_plural>print</name_plural>
+              <name_singular>plate</name_singular>
+              <name_plural>plate</name_plural>
             </label>
           </labels>
         </item>
@@ -7140,60 +6996,12 @@
               <name_plural>roller bar</name_plural>
             </label>
           </labels>
-        </item>
-        <item idno="SH_SW" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>SH - SW</name_singular>
-              <name_plural>SH - SW</name_plural>
-            </label>
-          </labels>
-        </item>
+        </item>     
         <item idno="sheet" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>sheet</name_singular>
               <name_plural>sheet</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="sheet_each" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>sheet (each)</name_singular>
-              <name_plural>sheet (each)</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="sight" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>sight</name_singular>
-              <name_plural>sight</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="slipcase" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>slipcase</name_singular>
-              <name_plural>slipcase</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="stretcher_size" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>stretcher size</name_singular>
-              <name_plural>stretcher size</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="support_sheet" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>support sheet</name_singular>
-              <name_plural>support sheet</name_plural>
             </label>
           </labels>
         </item>
@@ -7204,15 +7012,7 @@
               <name_plural>travel board</name_plural>
             </label>
           </labels>
-        </item>
-        <item idno="unframed" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>unframed</name_singular>
-              <name_plural>unframed</name_plural>
-            </label>
-          </labels>
-        </item>
+        </item> 
         <item idno="unmounted" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -7229,123 +7029,19 @@
             </label>
           </labels>
         </item>
-        <item idno="vessel_with_lid" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>vessel with lid</name_singular>
-              <name_plural>vessel with lid</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="with_base" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>with base</name_singular>
-              <name_plural>with base</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="with_cord" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>with cord</name_singular>
-              <name_plural>with cord</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="work" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>work</name_singular>
-              <name_plural>work</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="work_approx" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>work (approx)</name_singular>
-              <name_plural>work (approx)</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="work_length" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>work (length)</name_singular>
-              <name_plural>work (length)</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="work_overall_approx" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>work (overall, approx)</name_singular>
-              <name_plural>work (overall, approx)</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="work_overall" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>work (overall)</name_singular>
-              <name_plural>work (overall)</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="work_sight" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>work (sight)</name_singular>
-              <name_plural>work (sight)</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="work_with_base" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>work with base</name_singular>
-              <name_plural>work with base</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="work_with_frame" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>work with frame</name_singular>
-              <name_plural>work with frame</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="work_with_lid" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>work with lid</name_singular>
-              <name_plural>work with lid</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="work_with_mount" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>work with mount</name_singular>
-              <name_plural>work with mount</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="work_with_scabbard" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>work with scabbard</name_singular>
-              <name_plural>work with scabbard</name_plural>
-            </label>
-          </labels>
-        </item>
         <item idno="irregular" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>irregular</name_singular>
               <name_plural>irregular</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="other" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>other</name_singular>
+              <name_plural>other</name_plural>
             </label>
           </labels>
         </item>
@@ -17003,6 +16699,7 @@
               <bundle>hierarchy_location</bundle>
               <settings>
                 <setting name="label" locale="en_US">Artwork Elements</setting>
+                 <setting name="auto_shrink">1</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -17889,6 +17586,9 @@
           <bundlePlacements>
             <placement code="hierarchy_location">
               <bundle>hierarchy_location</bundle>
+              <settings>
+                <setting name="auto_shrink">1</setting>
+              </settings>
             </placement>
           </bundlePlacements>
         </screen>
