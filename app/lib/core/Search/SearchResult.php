@@ -1245,20 +1245,18 @@ class SearchResult extends BaseObject {
 	 * @return array|mixed|string
 	 */
 	private function _getRelatedValue($pa_value_list, $pa_options=null) {
-		$va_path_components	=& $pa_options['pathComponents'];
-
 		$vb_return_as_link = caGetOption('returnAsLink', $pa_options, false, array('castTo' => 'bool'));
-		$vs_return_as_link_target = caGetOption('returnAsLinkTarget', $pa_options, '');
+		$va_path_components	=& $pa_options['pathComponents'];
+		$vs_template = caGetOption('template', $pa_options);
 
-		$vs_template = null;
 		// Handle table-only case...
 		if (!$va_path_components['field_name']) {
 			// ... by returning array of values from related items
 			if ($pa_options['returnAsArray']) {  return $pa_value_list; }
 
 			// ... by processing a display template for these records
-			if(!($vs_template = caGetOption('template', $pa_options))) {
-				// ... or by returning a list of preferred label values
+			if(!($vs_template)) {
+				// ... or by returning a list of preferred label values if no template is set
 				$va_path_components['field_name'] = 'preferred_labels';
 			}
 		}
@@ -1277,7 +1275,7 @@ class SearchResult extends BaseObject {
 		}
 		if (!sizeof($va_ids)) { return null; }
 
-		if($vs_template) {  // $vs_template is only set when the get spec is a plain table without field_name
+		if(!$va_path_components['field_name']) {  // get spec is a plain table without field_name -> there is a template
 			if($vb_return_as_link) {
 				$va_links = array();
 				foreach($pa_value_list as $vn_relation_id => $va_relation_info) {
