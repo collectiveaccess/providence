@@ -551,8 +551,16 @@ class BaseModel extends BaseObject {
 	 * @see BaseModel::getChangedFieldValuesArray()
 	 * @return array associative array: field name => field value
 	 */
-	public function getFieldValuesArray() {
-		return $this->_FIELD_VALUES;
+	public function getFieldValuesArray($pb_include_unset_fields=false) {
+		$va_field_values = $this->_FIELD_VALUES;
+		if ($pb_include_unset_fields) {
+			foreach($this->getFormFields(true) as $vs_field => $va_info) {
+				if (!array_key_exists($vs_field, $va_field_values)) {
+					$va_field_values[$vs_field] = caGetOption('DEFAULT', $va_info, null);
+				}
+			}
+		}
+		return $va_field_values;
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -2395,7 +2403,7 @@ class BaseModel extends BaseObject {
 					$vn_id = $this->getPrimaryKey();
 					
 					if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) && !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
-						$this->doSearchIndexing(null, false);
+						$this->doSearchIndexing($this->getFieldValuesArray(true), false);
 					}
 
 					if ($vb_we_set_transaction) { $this->removeTransaction(true); }
@@ -3011,7 +3019,7 @@ class BaseModel extends BaseObject {
 		}
 		
 		$o_indexer = $this->getSearchIndexer($ps_engine);
-		return $o_indexer->indexRow($this->tableNum(), $this->getPrimaryKey(), $this->getFieldValuesArray(), $pb_reindex_mode, null, $pa_changed_field_values_array, $this->_FIELD_VALUES_OLD);
+		return $o_indexer->indexRow($this->tableNum(), $this->getPrimaryKey(), $this->getFieldValuesArray(true), $pb_reindex_mode, null, $pa_changed_field_values_array, $this->_FIELD_VALUES_OLD);
 	}
 	
 	/**
