@@ -144,6 +144,13 @@ class RelatedGetTest extends BaseTestWithData {
 					"surname" => "ACME Inc.",
 				),
 			),
+			'attributes' => array(
+				'internal_notes' => array(
+					array(
+						'internal_notes' => 'Test notes'
+					)
+				),
+			),
 			'related' => array(
 				'ca_objects' => array(
 					array(
@@ -157,6 +164,28 @@ class RelatedGetTest extends BaseTestWithData {
 		));
 
 		$this->assertGreaterThan(0, $vn_entity_id);
+
+		$vn_related_object_id = $this->addTestRecord('ca_objects', array(
+			'intrinsic_fields' => array(
+				'type_id' => 'dataset',
+			),
+			'preferred_labels' => array(
+				array(
+					"locale" => "en_US",
+					"name" => "My test dataset",
+				),
+			),
+			'related' => array(
+				'ca_objects' => array(
+					array(
+						'object_id' => $vn_object_id,
+						'type_id' => 'related',
+					)
+				),
+			),
+		));
+
+		$this->assertGreaterThan(0, $vn_related_object_id);
 
 		$this->opt_object = new ca_objects($vn_object_id);
 	}
@@ -195,6 +224,18 @@ class RelatedGetTest extends BaseTestWithData {
 
 		$vm_ret = $this->opt_object->get('ca_entities', array('delimiter' => '; ', 'excludeTypes' => array('ind')));
 		$this->assertEquals('ACME Inc.', $vm_ret);
+
+		$vm_ret = $this->opt_object->get('ca_objects_x_entities.source_info', array('delimiter' => '; '));
+		$this->assertEquals('Me; Homer; Bart', $vm_ret);
+
+		$vm_ret = $this->opt_object->get('ca_objects_x_entities.effective_date', array('delimiter' => '; '));
+		$this->assertEquals('2015; 2014 - 2015; 2013', $vm_ret);
+
+		$vm_ret = $this->opt_object->get('ca_entities.internal_notes');
+		$this->assertEquals('Test notes', $vm_ret);
+
+		$vm_ret = $this->opt_object->get('ca_objects.related.preferred_labels');
+		$this->assertEquals('My test dataset', $vm_ret);
 	}
 	# -------------------------------------------------------
 }
