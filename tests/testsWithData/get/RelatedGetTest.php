@@ -236,6 +236,14 @@ class RelatedGetTest extends BaseTestWithData {
 
 		$vm_ret = $this->opt_object->get('ca_objects.related.preferred_labels');
 		$this->assertEquals('My test dataset', $vm_ret);
+
+		$vm_ret = $this->opt_object->get('ca_entities', array('template' => '^ca_entities.preferred_labels (^ca_entities.internal_notes)', 'delimiter' => '; '));
+		$this->assertEquals('Homer J. Simpson (); Bart Simpson (); ACME Inc. (Test notes)', $vm_ret);
+
+		$vm_ret = $this->opt_object->get('ca_entities', array('template' => '^ca_entities.preferred_labels', 'delimiter' => '; ', 'returnAsLink' => true));
+		$this->assertRegExp("/\<a href=\'(.)+\'>Homer J. Simpson\<\/a\>/", $vm_ret);
+		$this->assertRegExp("/\<a href=\'(.)+\'>Bart Simpson\<\/a\>/", $vm_ret);
+		$this->assertRegExp("/\<a href=\'(.)+\'>ACME Inc.\<\/a\>/", $vm_ret);
 	}
 	# -------------------------------------------------------
 }

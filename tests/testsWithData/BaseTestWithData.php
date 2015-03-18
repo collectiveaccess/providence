@@ -44,8 +44,11 @@ abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
 	 * Inserts test data set by implementation
 	 */
 	public function setUp() {
+		global $g_request;
 		$vo_response = new ResponseHTTP();
-		$this->opo_request = new RequestHTTP($vo_response);
+		$g_request = $this->opo_request = new RequestHTTP($vo_response);
+
+		define('__CA_APP_TYPE__', 'PROVIDENCE');
 	}
 	# -------------------------------------------------------
 	/**
