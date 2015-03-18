@@ -16699,6 +16699,7 @@
               <bundle>hierarchy_location</bundle>
               <settings>
                 <setting name="label" locale="en_US">Artwork Elements</setting>
+                 <setting name="auto_shrink">1</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -17585,6 +17586,9 @@
           <bundlePlacements>
             <placement code="hierarchy_location">
               <bundle>hierarchy_location</bundle>
+              <settings>
+                <setting name="auto_shrink">1</setting>
+              </settings>
             </placement>
           </bundlePlacements>
         </screen>
