@@ -3908,7 +3908,7 @@ div.quickSearchNoResults {
 #browseCriteria .criteriaHeading, #searchRefineParameters .criteriaHeading{
     font-weight:bold;
     color:#333;
-    font-size:12px
+    font-size:12px;
     line-height: 27px;
 }
 /*#browseCriteria a.close{
