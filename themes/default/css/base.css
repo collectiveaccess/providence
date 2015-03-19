@@ -3199,6 +3199,7 @@ input[type="text"], input[type="textarea"], textarea,  input[type="password"] {
 }
 
 input[type="text"]:disabled, input[type="textarea"]:disabled, textarea:disabled {
+    background-color: #F0F0F0;
     color: #808080;
     -webkit-text-fill-color:#808080;
 }
