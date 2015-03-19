@@ -179,7 +179,17 @@ class BaseEditorController extends ActionController {
 		}
 		$this->view->setVar('t_ui', $t_ui);
 
-		if ($vn_subject_id) { $this->request->session->setVar($this->ops_table_name.'_browse_last_id', $vn_subject_id); } 	// set last edited
+		if ($vn_subject_id) {
+			// set last edited
+			$this->request->session->setVar($this->ops_table_name.'_browse_last_id', $vn_subject_id);
+
+			// prepopulate fields
+			$vs_prepopulate_cfg = $t_subject->getAppConfig()->get('prepopulate_config');
+			$o_prepopulate_conf = Configuration::load($vs_prepopulate_cfg);
+			if($o_prepopulate_conf->get('prepopulate_fields_on_edit')) {
+				$this->prepopulateFields(array('prepopulateConfig' => $vs_prepopulate_cfg));
+			}
+		}
 
 		# trigger "EditItem" hook
 		$this->opo_app_plugin_manager->hookEditItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject));

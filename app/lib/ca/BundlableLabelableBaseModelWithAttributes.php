@@ -4366,13 +4366,16 @@ if (!$vb_batch) {
 				return false; 
 			}		
 		}
-		
-		
-		if ($vb_dryrun) { $this->removeTransaction(false); }
-		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 
 		// prepopulate fields
-		$this->prepopulateFields();
+		$vs_prepopulate_cfg = $this->getAppConfig()->get('prepopulate_config');
+		$o_prepopulate_conf = Configuration::load($vs_prepopulate_cfg);
+		if($o_prepopulate_conf->get('prepopulate_fields_on_save')) {
+			$this->prepopulateFields(array('prepopulateConfig' => $vs_prepopulate_cfg));
+		}
+
+		if ($vb_dryrun) { $this->removeTransaction(false); }
+		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 		
 		return true;
 	}
@@ -6421,7 +6424,9 @@ side. For many self-relations the direction determines the nature and display te
 			$vs_prepopulate_cfg = $this->getAppConfig()->get('prepopulate_config');
 		}
 		$o_prepopulate_conf = Configuration::load($vs_prepopulate_cfg);
-		if(!$o_prepopulate_conf->get('prepopulate_fields')) { return false; }
+		if(!($o_prepopulate_conf->get('prepopulate_fields_on_save') || $o_prepopulate_conf->get('prepopulate_fields_on_load'))) {
+			return false;
+		}
 
 		$va_rules = $o_prepopulate_conf->get('prepopulate_rules');
 		if(!$va_rules || (!is_array($va_rules)) || (sizeof($va_rules)<1)) { return false; }
