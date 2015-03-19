@@ -79,6 +79,10 @@ class IntrinsicSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.access:"1"' => 1,
 			'ca_objects.access:0' => 0,
 			'ca_objects.access:"0"' => 0,
+
+			// Search for something that was not explicitly set in the model, but has a default value
+			'ca_objects.is_deaccessioned:"0"' => 1,
+			'ca_objects.is_deaccessioned:0' => 1,
 		));
 	}
 	# -------------------------------------------------------
