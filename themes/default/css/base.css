@@ -3936,6 +3936,7 @@ div.quickSearchNoResults {
     text-transform:uppercase;
     font-size:11px;
     line-height: 27px;
+    white-space: nowrap;
 }
 #browseCriteria a.startOver:hover{
     color:#1ab3c8;
