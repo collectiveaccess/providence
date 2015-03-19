@@ -1511,12 +1511,31 @@
  			return $va_labels;
  		}
  		# ------------------------------------------------------------------
-		/** 
+		/**
 		 * Returns number of preferred labels for the current row
 		 *
 		 * @return int Number of labels
 		 */
- 		public function getPreferredLabelCount() {
+		public function getPreferredLabelCount() {
+			return $this->getLabelCount(true);
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns number of nonpreferred labels for the current row
+		 *
+		 * @return int Number of labels
+		 */
+		public function getNonPreferredLabelCount() {
+			return $this->getLabelCount(false);
+		}
+		# ------------------------------------------------------------------
+		/** 
+		 * Returns number of preferred or nonpreferred labels for the current row
+		 *
+		 * @param bool $pb_preferred
+		 * @return int Number of labels
+		 */
+ 		public function getLabelCount($pb_preferred=true) {
  			if (!$this->getPrimaryKey()) { return null; }
 			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
 			if ($this->inTransaction()) {
@@ -1533,12 +1552,13 @@
 						(l.".$this->primaryKey()." = ?)
 				", $this->getPrimaryKey());
  			} else {
+				$vn_is_preferred = ($pb_preferred ? 1 : 0);
 				$qr_res = $o_db->query("
 					SELECT l.label_id 
 					FROM ".$this->getLabelTableName()." l
 					WHERE 
-						(l.is_preferred = 1) AND (l.".$this->primaryKey()." = ?)
-				", $this->getPrimaryKey());
+						(l.is_preferred = ?) AND (l.".$this->primaryKey()." = ?)
+				", $vn_is_preferred, $this->getPrimaryKey());
 			}
  			
  			return $qr_res->numRows();

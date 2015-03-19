@@ -288,6 +288,175 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 		$this->assertEquals('test123', $vs_get, 'idno should not change');
 	}
 
+	public function testPrepopulateFieldsLabels() {
+		// load config
+		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_labels.conf');
+
+		$t_object = new ca_objects();
+		$t_object->setMode(ACCESS_WRITE);
+		$t_object->set('type_id', 'image');
+
+		$t_object->addAttribute(array(
+			'description' => 'Description'
+		), 'description');
+
+		$t_object->insert();
+
+		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
+		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
+		$this->assertTrue($t_object->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
+
+		$this->assertEquals('Description', $t_object->get('ca_objects.preferred_labels'), 'label must prepopulate with description');
+	}
+
+	public function testPrepopulateFieldsLabelsDontOverwrite() {
+		// load config
+		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_labels.conf');
+
+		$t_object = new ca_objects();
+		$t_object->setMode(ACCESS_WRITE);
+		$t_object->set('type_id', 'image');
+
+		$t_object->addAttribute(array(
+			'description' => 'Description'
+		), 'description');
+
+		$t_object->insert();
+
+		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
+		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
+
+		$t_object->addLabel(array(
+			'name' => 'a label'
+		), 1, null, true);
+
+		$this->assertEquals('a label', $t_object->get('ca_objects.preferred_labels'), 'label must match the one we just added');
+
+		$this->assertTrue($t_object->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
+		$this->assertEquals('a label', $t_object->get('ca_objects.preferred_labels'), 'label must not prepopulate because mode is addifempty');
+	}
+
+	public function testPrepopulateFieldsLabelsOverwrite() {
+		// load config
+		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_labels_overwrite.conf');
+
+		$t_object = new ca_objects();
+		$t_object->setMode(ACCESS_WRITE);
+		$t_object->set('type_id', 'image');
+
+		$t_object->addAttribute(array(
+			'description' => 'Description'
+		), 'description');
+
+		$t_object->insert();
+
+		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
+		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
+
+		$t_object->addLabel(array(
+			'name' => 'a label'
+		), 1, null, true);
+
+		$this->assertEquals('a label', $t_object->get('ca_objects.preferred_labels'), 'label must match the one we just added');
+
+		$this->assertTrue($t_object->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
+		$this->assertEquals('Description', $t_object->get('ca_objects.preferred_labels'), 'label must overwrite');
+	}
+
+	public function testPrepopulateFieldsContainers() {
+		// load config
+		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_container.conf');
+
+		$t_object = new ca_objects();
+		$t_object->setMode(ACCESS_WRITE);
+		$t_object->set('type_id', 'image');
+		$t_object->set('idno', 'test123');
+
+		$t_object->insert();
+
+		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
+		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
+		$this->assertTrue($t_object->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
+
+		$this->assertEquals('test123', $t_object->get('ca_objects.external_link.url_source'), 'url source must prepopulate with idno');
+	}
+
+	public function testPrepopulateFieldsDontOverwriteContainers() {
+		// load config
+		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_container.conf');
+
+		$t_object = new ca_objects();
+		$t_object->setMode(ACCESS_WRITE);
+		$t_object->set('type_id', 'image');
+		$t_object->set('idno', 'test123');
+
+		$t_object->addAttribute(array(
+			'url_source' => 'Wikipedia',
+			'url_entry' => "http://en.wikipedia.org"
+		), 'external_link');
+
+		$t_object->insert();
+
+		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
+		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
+		$this->assertTrue($t_object->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
+
+		$this->assertEquals('Wikipedia', $t_object->get('ca_objects.external_link.url_source'), 'url source must not change');
+		$this->assertEquals("http://en.wikipedia.org", $t_object->get('ca_objects.external_link.url_entry'), 'url entry must not change');
+	}
+
+	public function testPrepopulateFieldsOverwritePartOfContainer() {
+		// load config
+		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_container.conf');
+
+		$t_object = new ca_objects();
+		$t_object->setMode(ACCESS_WRITE);
+		$t_object->set('type_id', 'image');
+		$t_object->set('idno', 'test123');
+
+		$t_object->addAttribute(array(
+			'url_entry' => "http://en.wikipedia.org"
+		), 'external_link');
+
+		$t_object->insert();
+
+		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
+		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
+		$this->assertTrue($t_object->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
+
+		$this->assertEquals('test123', $t_object->get('ca_objects.external_link.url_source'), 'url source must prepopulate');
+		$this->assertEquals("http://en.wikipedia.org", $t_object->get('ca_objects.external_link.url_entry'), 'url entry must not change');
+	}
+
+	public function testPrepopulateFieldsOverwriteContainer() {
+		// load config
+		$va_prepopulate_options = array('prepopulateConfig' => dirname(__FILE__).DIRECTORY_SEPARATOR.'conf'.DIRECTORY_SEPARATOR.'prepopulate_container_overwrite.conf');
+
+		$t_object = new ca_objects();
+		$t_object->setMode(ACCESS_WRITE);
+		$t_object->set('type_id', 'image');
+		$t_object->set('idno', 'test123');
+
+		$t_object->addAttribute(array(
+			'url_entry' => "http://en.wikipedia.org",
+			'url_source' => 'Wikipedia',
+		), 'external_link');
+
+		$t_object->insert();
+
+		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Primary key for new object must be greater than 0');
+		$this->opa_test_record_ids['ca_objects'][] = $t_object->getPrimaryKey();
+		$this->assertTrue($t_object->prepopulateFields($va_prepopulate_options), 'Prepopulate should return true');
+
+		$this->assertEquals('test123', $t_object->get('ca_objects.external_link.url_source'), 'url source must prepopulate');
+		$this->assertEquals("http://en.wikipedia.org", $t_object->get('ca_objects.external_link.url_entry'), 'url entry must not change');
+	}
+
+	public function setUp() {
+		global $g_ui_locale_id;
+		$g_ui_locale_id = 1;
+	}
+
 	/**
 	 * (hard) delete all test records we created, to avoid side effects on other tests (like searching)
 	 */
