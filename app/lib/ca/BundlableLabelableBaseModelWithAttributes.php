@@ -6432,7 +6432,6 @@ side. For many self-relations the direction determines the nature and display te
 		if(!$va_rules || (!is_array($va_rules)) || (sizeof($va_rules)<1)) { return false; }
 
 		global $g_ui_locale_id;
-		$t = new Timer();
 
 		// we need to unset the form timestamp to disable the 'Changes have been made since you loaded this data' warning when we update() $this
 		// the warning makes sense because an update()/insert() is called before we arrive here but after the form_timestamp ... but we chose to ignore it
@@ -6600,8 +6599,6 @@ side. For many self-relations the direction determines the nature and display te
 			}
 			return false;
 		}
-
-		Debug::msg("[prepopulateFields()] took ". $t->getTime());
 
 		return true;
 	}
