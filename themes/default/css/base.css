@@ -3908,7 +3908,8 @@ div.quickSearchNoResults {
 #browseCriteria .criteriaHeading, #searchRefineParameters .criteriaHeading{
     font-weight:bold;
     color:#333;
-    font-size:12px;
+    font-size:12px
+    line-height: 27px;
 }
 /*#browseCriteria a.close{
     text-transform:uppercase;
@@ -3936,6 +3937,7 @@ div.quickSearchNoResults {
     text-transform:uppercase;
     font-size:11px;
     margin-left:10px;
+    line-height: 27px;
 }
 #browseCriteria a.startOver:hover{
     color:#1ab3c8;
@@ -3952,6 +3954,7 @@ div.quickSearchNoResults {
 	display:inline;
 	font-size:11px;
 	margin-right: 5px;
+	line-height: 27px;
 }
 .criteriaLink a{
 	background-color:#eee;
