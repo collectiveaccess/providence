@@ -187,7 +187,7 @@ class BaseEditorController extends ActionController {
 			$vs_prepopulate_cfg = $t_subject->getAppConfig()->get('prepopulate_config');
 			$o_prepopulate_conf = Configuration::load($vs_prepopulate_cfg);
 			if($o_prepopulate_conf->get('prepopulate_fields_on_edit')) {
-				$this->prepopulateFields(array('prepopulateConfig' => $vs_prepopulate_cfg));
+				$t_subject->prepopulateFields(array('prepopulateConfig' => $vs_prepopulate_cfg));
 			}
 		}
 
