@@ -6438,6 +6438,12 @@ side. For many self-relations the direction determines the nature and display te
 		$vn_timestamp = $_REQUEST['form_timestamp'];
 		unset($_REQUEST['form_timestamp']);
 
+		$vb_we_set_transaction = true;
+		if (!$this->inTransaction()) {
+			$this->setTransaction(new Transaction($this->getDb()));
+			$vb_we_set_transaction = true;
+		}
+
 		// process rules
 		$va_expression_vars = array(); // we only process those if and when we need them
 		foreach($va_rules as $vs_rule_key => $va_rule) {
@@ -6452,7 +6458,6 @@ side. For many self-relations the direction determines the nature and display te
 			if(strlen($vs_template)<1) { Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because template is not set"); continue; }
 
 			$vs_mode = caGetOption('mode', $va_rule, 'merge');
-			Debug::msg("[prepopulateFields()] mode for rule $vs_rule_key is '$vs_mode'");
 
 			// respect restrictToTypes option
 			if($va_rule['restrictToTypes'] && is_array($va_rule['restrictToTypes']) && (sizeof($va_rule['restrictToTypes']) > 0)) {
@@ -6471,8 +6476,6 @@ side. For many self-relations the direction determines the nature and display te
 						$va_expression_vars[$vs_tag] = $this->get($vs_tag, array('returnIdno' => true, 'delimiter' => ';'));
 					}
 				}
-
-				Debug::msg("[prepopulateFields()] expression vars are: ". print_r($va_expression_vars, true));
 
 				if(ExpressionParser::evaluate($va_rule['skipIfExpression'], $va_expression_vars)) {
 					Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because skipIfExpression evaluated true");
@@ -6597,9 +6600,11 @@ side. For many self-relations the direction determines the nature and display te
 			foreach($this->getErrors() as $vs_error) {
 				Debug::msg("[prepopulateFields()] there was an error while updating the record: ".$vs_error);
 			}
+			if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 			return false;
 		}
 
+		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 		return true;
 	}
 	# --------------------------------------------------------------------------------------------
