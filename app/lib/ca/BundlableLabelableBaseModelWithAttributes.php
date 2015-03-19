@@ -6420,6 +6420,7 @@ side. For many self-relations the direction determines the nature and display te
 	 * @return bool success or not
 	 */
 	public function prepopulateFields($pa_options=null) {
+		if(!$this->getPrimaryKey()) { return false; }
 		if(!($vs_prepopulate_cfg = caGetOption('prepopulateConfig', $pa_options, null))) {
 			$vs_prepopulate_cfg = $this->getAppConfig()->get('prepopulate_config');
 		}
@@ -6533,58 +6534,113 @@ side. For many self-relations the direction determines the nature and display te
 							break;
 					}
 				}
-// container
+// "container"
 			} elseif(sizeof($va_parts)==3) {
-				if(!$this->hasElement($va_parts[1])) { continue; }
+// actual container
+				if($this->hasElement($va_parts[1])) {
+					$va_attr = $this->getAttributesByElement($va_parts[1]);
+					switch (sizeof($va_attr)) {
+						case 1:
+							switch (strtolower($vs_mode)) {
+								case 'overwrite':
+									$vo_attr = array_pop($va_attr);
+									$va_value = array($va_parts[2] => $vs_value);
 
-				$va_attr = $this->getAttributesByElement($va_parts[1]);
-				switch(sizeof($va_attr)) {
-					case 1:
-						switch(strtolower($vs_mode)) {
-							case 'overwrite':
-								$vo_attr = array_pop($va_attr);
-								$va_value = array($va_parts[2] => $vs_value);
-
-								foreach($vo_attr->getValues() as $o_val) {
-									if($o_val->getElementCode() != $va_parts[2]) {
-										$va_value[$o_val->getElementCode()] = $o_val->getDisplayValue();
-									}
-								}
-
-								$this->_editAttribute($vo_attr->getAttributeID(), $va_value);
-								break;
-							case 'addifempty':
-								$vo_attr = array_pop($va_attr);
-								$va_value = array($va_parts[2] => $vs_value);
-								$vb_update = false;
-								foreach($vo_attr->getValues() as $o_val) {
-									if($o_val->getElementCode() != $va_parts[2]) {
-										$va_value[$o_val->getElementCode()] = $o_val->getDisplayValue();
-									} else {
-										if(!$o_val->getDisplayValue()) {
-											$vb_update = true;
+									foreach ($vo_attr->getValues() as $o_val) {
+										if ($o_val->getElementCode() != $va_parts[2]) {
+											$va_value[$o_val->getElementCode()] = $o_val->getDisplayValue();
 										}
 									}
-								}
 
-								if($vb_update) {
-									$this->editAttribute($vo_attr->getAttributeID(), $va_parts[1], $va_value);
-								}
-								break;
-							default:
-								Debug::msg("[prepopulateFields()] unsupported mode {$vs_mode} for target bundle");
-								break;
-						}
-						break;
-					case 0: // if no container value exists, always add it (ignoring mode)
-						$this->addAttribute(array(
-							$va_parts[2] => $vs_value,
-							'locale_id' => $g_ui_locale_id
-						), $va_parts[1]);
-						break;
-					default:
-						Debug::msg("[prepopulateFields()] containers with multiple values are not supported");
-						break;
+									$this->_editAttribute($vo_attr->getAttributeID(), $va_value);
+									break;
+								case 'addifempty':
+									$vo_attr = array_pop($va_attr);
+									$va_value = array($va_parts[2] => $vs_value);
+									$vb_update = false;
+									foreach ($vo_attr->getValues() as $o_val) {
+										if ($o_val->getElementCode() != $va_parts[2]) {
+											$va_value[$o_val->getElementCode()] = $o_val->getDisplayValue();
+										} else {
+											if (!$o_val->getDisplayValue()) {
+												$vb_update = true;
+											}
+										}
+									}
+
+									if ($vb_update) {
+										$this->editAttribute($vo_attr->getAttributeID(), $va_parts[1], $va_value);
+									}
+									break;
+								default:
+									Debug::msg("[prepopulateFields()] unsupported mode {$vs_mode} for target bundle");
+									break;
+							}
+							break;
+						case 0: // if no container value exists, always add it (ignoring mode)
+							$this->addAttribute(array(
+								$va_parts[2] => $vs_value,
+								'locale_id' => $g_ui_locale_id
+							), $va_parts[1]);
+							break;
+						default:
+							Debug::msg("[prepopulateFields()] containers with multiple values are not supported");
+							break;
+					}
+// labels
+				} elseif($va_parts[1] == 'preferred_labels' || $va_parts[1] == 'nonpreferred_labels') {
+					$vb_preferred = ($va_parts[1] == 'preferred_labels');
+					if (!($t_label = $this->getAppDatamodel()->getInstanceByTableName($this->getLabelTableName(), true))) { continue; }
+					if(!$t_label->hasField($va_parts[2])) { continue; }
+
+					switch($this->getLabelCount($vb_preferred)) {
+						case 0: // if no value exists, always add it (ignoring mode)
+							$this->addLabel(array(
+								$va_parts[2] => $vs_value,
+							), $g_ui_locale_id, null, $vb_preferred);
+							break;
+						case 1:
+							switch (strtolower($vs_mode)) {
+								case 'overwrite':
+								case 'addifempty':
+									$va_labels = $this->getLabels(null, $vb_preferred ? __CA_LABEL_TYPE_PREFERRED__ : __CA_LABEL_TYPE_NONPREFERRED__);
+									if (sizeof($va_labels)) {
+										$va_labels = caExtractValuesByUserLocale($va_labels);
+										$va_label = array_shift($va_labels);
+										$va_label = $va_label[0];
+										$va_label[$va_parts[2]] = $vs_value;
+
+										$vb_update = false;
+										if(strtolower($vs_mode) == 'overwrite') {
+											$va_label[$va_parts[2]] = $vs_value;
+											$vb_update = true;
+										} else {
+											if(strlen(trim($va_label[$va_parts[2]])) == 0) { // in addifempty mode only edit label when field is not set
+												$va_label[$va_parts[2]] = $vs_value;
+												$vb_update = true;
+											}
+										}
+
+										if($vb_update) {
+											$this->editLabel(
+												$va_label['label_id'], $va_label, $g_ui_locale_id, null, $vb_preferred
+											);
+										}
+									} else {
+										$this->addLabel(array(
+											$va_parts[2] => $vs_value,
+										), $g_ui_locale_id, null, $vb_preferred);
+									}
+									break;
+								default:
+									Debug::msg("[prepopulateFields()] unsupported mode {$vs_mode} for target bundle");
+									break;
+							}
+							break;
+						default:
+							Debug::msg("[prepopulateFields()] records with multiple labels are not supported");
+							break;
+					}
 				}
 			}
 		}
