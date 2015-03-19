@@ -16526,23 +16526,22 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="storage_date" datatype="DateRange">
+    <metadataElement code="match" datatype="List" list="yn">
       <labels>
         <label locale="en_US">
-          <name>Storage Date</name>
-          <description/>
+          <name>Match?</name>
         </label>
       </labels>
       <settings>
-        <setting name="useDatePicker">1</setting>
-        <setting name="fieldWidth">40</setting>
-        <setting name="fieldHeight">1</setting>
+        <setting name="listWidth">40</setting>
+        <setting name="listHeight">1</setting>
+        <setting name="render">radio_buttons</setting>
       </settings>
       <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_objects_x_storage_locations</table>
+        <restriction code="ca_storage_locations">
+          <table>ca_storage_locations</table>
           <settings>
-            <setting name="minAttributesPerRow">0</setting>
+            <setting name="minAttributesPerRow">1</setting>
             <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
@@ -18005,6 +18004,9 @@
             <placement code="ca_attribute_storage_address">
               <bundle>ca_attribute_storage_address</bundle>
             </placement>
+            <placement code="ca_attribute_match">
+              <bundle>ca_attribute_match</bundle>
+            </placement>
           </bundlePlacements>
         </screen>
         <screen idno="contents" default="0">
@@ -18038,8 +18040,8 @@
             </label>
           </labels>
           <bundlePlacements>
-            <placement code="ca_attribute_storage_date">
-              <bundle>ca_attribute_storage_date</bundle>
+            <placement code="effective_date">
+              <bundle>effective_date</bundle>
             </placement>
           </bundlePlacements>
         </screen>
