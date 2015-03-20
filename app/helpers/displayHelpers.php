@@ -2220,7 +2220,6 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		$o_ifnotdefs = $o_doc("ifnotdef");			// if not defined
 		$o_mores = $o_doc("more");					// more tags - content suppressed if there are no defined values following the tag pair
 		$o_betweens = $o_doc("between");			// between tags - content suppressed if there are not defined values on both sides of the tag pair
-		$o_ifcounts = $o_doc("ifcount");			// if count - conditionally return template if # of items is in-bounds
 		
 		$va_if = array();
 		foreach($o_ifs as $o_if) {
@@ -2232,38 +2231,20 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			$va_if[] = array('directive' => $vs_html, 'content' => $vs_content, 'rule' => $vs_rule = (string)$o_if->getAttribute('rule'));
 		}
 		
-		$va_ifdefs = array();
 		foreach($o_ifdefs as $o_ifdef) {
 			if (!$o_ifdef) { continue; }
 			
 			$vs_code = (string)$o_ifdef->getAttribute('code');
 			$vs_code_proc = preg_replace("!%(.*)$!", '', $vs_code);
-			$va_directive_tags += preg_split('![,\|]{1}!', $vs_code_proc); 
-			
-			$vs_html = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_ifdef->html()));
-			$vs_content = $o_ifdef->getInnerText();
-			
-			$vs_content = str_replace($vs_code, $vs_code_proc, $vs_content);
-			$vs_html = str_replace($vs_code, $vs_code_proc, $vs_html);
-			
-			$va_ifdefs[$vs_code][] = array('directive' => $vs_html, 'content' => $vs_content);
+			$va_directive_tags = array_merge($va_directive_tags, preg_split('![,\|]{1}!', $vs_code_proc)); 
 		}
 		
-		$va_ifnotdefs = array();
 		foreach($o_ifnotdefs as $o_ifnotdef) {
 			if (!$o_ifnotdef) { continue; }
 			
 			$vs_code = (string)$o_ifnotdef->getAttribute('code');
 			$vs_code_proc = preg_replace("!%(.*)$!", '', $vs_code);
-		 	$va_directive_tags += preg_split('![,\|]{1}!', $vs_code_proc); 
-			
-			$vs_html = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_ifnotdef->html()));
-			$vs_content = $o_ifnotdef->getInnerText();
-			
-			$vs_content = str_replace($vs_code, $vs_code_proc, $vs_content);
-			$vs_html = str_replace($vs_code, $vs_code_proc, $vs_html);
-			
-			$va_ifnotdefs[$vs_code][] = array('directive' => $vs_html, 'content' => $vs_content);
+		 	$va_directive_tags = array_merge($va_directive_tags, preg_split('![,\|]{1}!', $vs_code_proc)); 
 		}
 		
 		$va_mores = array();
@@ -2285,155 +2266,141 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			$va_betweens[] = array('directive' => $vs_html, 'content' => $vs_content);
 		}
 		
-		$va_ifcounts = array();
-		foreach($o_ifcounts as $o_ifcount) {
-			if (!$o_ifcount) { continue; }
-			
-			$vs_code = (string)$o_ifcount->getAttribute('code');
-			
-			$vs_html = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_ifcount->html()));
-			$vs_content = $o_ifcount->getInnerText();
-			
-			
-			$vn_min = (int)$o_ifcount->getAttribute('min');
-			$vn_max = (int)$o_ifcount->getAttribute('max');
-			if (!strlen($o_ifcount->getAttribute('max'))) { $vn_max = null; } 
-			
-			$va_restrict_to_types = preg_split("![,; ]+!", $o_ifcount->getAttribute('restrictToTypes')); 
-			$va_restrict_to_relationship_types = preg_split("![,; ]+!", $o_ifcount->getAttribute('restrictToRelationshipTypes')); 
-			
-			$va_ifcounts[] = array('directive' => $vs_html, 'content' => $vs_content, 'min' => $vn_min, 'max' => $vn_max, 'code' => $vs_code, 'restrictToTypes' => $va_restrict_to_types, 'restrictToRelationshipTypes' => $va_restrict_to_relationship_types);
-		}
-		
 		$va_resolve_links_using_row_ids = array();
-		$x = 0;
+
 		$va_tag_val_list = $va_defined_tag_list = array();
-		
+	
 		while($qr_res->nextHit()) {
 		
 			$vs_pk_val = $qr_res->get($vs_pk);
 			$vs_template =  $ps_template;
 			
-			
 			// Grab values for codes used in ifdef and ifnotdef directives
-			$va_directive_tag_vals = array();		
+			$va_directive_tag_vals = array();	
 			foreach($va_directive_tags as $vs_directive_tag) {
 				$va_directive_tag_vals[$vs_directive_tag] = $qr_res->get($vs_directive_tag, array('convertCodesToDisplayText' => true));
 			}
 			
-			// Process <ifdef> (IF DEFined)
-			foreach($va_ifdefs as $vs_code => $va_def_con) { 
-				if (strpos($vs_code, "|") !== false) {
-					$vs_bool = 'OR';
-					$va_tag_list = explode("|", $vs_code);
-					$vb_output = false;
-				} else {
-					$vs_bool = 'AND';
-					$va_tag_list = explode(",", $vs_code);
-					$vb_output = true;
-				}
+			
+			$o_parsed_template = str_get_dom($vs_template);
+			while(sizeof($vo_templates = $o_parsed_template('ifcount:not(:has(ifdef,ifndef,ifcount)),ifdef:not(:has(ifdef,ifndef,ifcount)),ifndef:not(:has(ifdef,ifndef,ifcount))')) > 0) {
+				foreach($vo_templates as $vn_index => $vo_element) {
+					$vs_code = $vo_element->code;
+					
+					switch($vo_element->tag) {
+						case 'ifdef':
+							if (strpos($vs_code, "|") !== false) {
+								$vs_bool = 'OR';
+								$va_tag_list = explode("|", $vs_code);
+								$vb_output = false;
+							} else {
+								$vs_bool = 'AND';
+								$va_tag_list = explode(",", $vs_code);
+								$vb_output = true;
+							}
 		
-				foreach($va_tag_list as $vs_tag_to_test) {
-					$vs_tag_to_test = preg_replace("!%.*$!", "", $vs_tag_to_test);
-					$vb_value_is_set = (
-						(isset($va_directive_tag_vals[$vs_tag_to_test]) && (strlen($va_directive_tag_vals[$vs_tag_to_test]) > 1))
-					);
-					switch($vs_bool) {
-						case 'OR':
-							if ($vb_value_is_set) { $vb_output = true; break(2); }			// any must be defined; if any is defined output
-							break;
-						case 'AND':
-						default:
-							if (!$vb_value_is_set) { $vb_output = false; break(2); }		// all must be defined; if any is not defined don't output
-							break;
-					}
-				}
+							foreach($va_tag_list as $vs_tag_to_test) {
+								$vs_tag_to_test = preg_replace("!%.*$!", "", $vs_tag_to_test);
+								$vb_value_is_set = (
+									(isset($va_directive_tag_vals[$vs_tag_to_test]) && (strlen($va_directive_tag_vals[$vs_tag_to_test]) > 1))
+								);
+								switch($vs_bool) {
+									case 'OR':
+										if ($vb_value_is_set) { $vb_output = true; break(2); }			// any must be defined; if any is defined output
+										break;
+									case 'AND':
+									default:
+										if (!$vb_value_is_set) { $vb_output = false; break(2); }		// all must be defined; if any is not defined don't output
+										break;
+								}
+							}
 	
-				foreach($va_def_con as $va_ifdef) {
-					if ($vb_output) {
-						$vs_template = str_replace($va_ifdef['directive'], $va_ifdef['content'], $vs_template);
-					} else {
-						$vs_template = str_replace($va_ifdef['directive'], '', $vs_template);
-					}
-				}
-			}
-
-			// Process <ifnotdef> (IF NOT DEFined)
-			foreach($va_ifnotdefs as $vs_code => $va_notdef_con) { 
-				if (strpos($vs_code, "|") !== false) {
-					$vs_bool = 'OR';
-					$va_tag_list = explode("|", $vs_code);
-					$vb_output = false;
-				} else {
-					$vs_bool = 'AND';
-					$va_tag_list = explode(",", $vs_code);
-					$vb_output = true;
-				}
-				$vb_output = true;
-				foreach($va_tag_list as $vs_tag_to_test) {
-					$vb_value_is_set = (bool)(isset($va_directive_tag_vals[$vs_tag_to_test]) && (strlen($va_directive_tag_vals[$vs_tag_to_test]) > 0));
-					switch($vs_bool) {
-						case 'OR':
-							if (!$vb_value_is_set) { $vb_output = true; break(2); }		// any must be not defined; if anything is not set output
+							if ($vb_output) {
+								$vs_template = str_replace($vo_element->html(), $vo_element->getInnerText(), $vs_template);
+							} else {
+								$vs_template = str_replace($vo_element->html(), '', $vs_template);
+							}
 							break;
-						case 'AND':
-						default:
-							if ($vb_value_is_set) { $vb_output = false; break(2); }	// all must be not defined; if anything is set don't output
-							break;
-					}
+						case 'ifndef':
+							if (strpos($vs_code, "|") !== false) {
+								$vs_bool = 'OR';
+								$va_tag_list = explode("|", $vs_code);
+								$vb_output = false;
+							} else {
+								$vs_bool = 'AND';
+								$va_tag_list = explode(",", $vs_code);
+								$vb_output = true;
+							}
+							$vb_output = true;
+							foreach($va_tag_list as $vs_tag_to_test) {
+								$vb_value_is_set = (bool)(isset($va_directive_tag_vals[$vs_tag_to_test]) && (strlen($va_directive_tag_vals[$vs_tag_to_test]) > 0));
+								switch($vs_bool) {
+									case 'OR':
+										if (!$vb_value_is_set) { $vb_output = true; break(2); }		// any must be not defined; if anything is not set output
+										break;
+									case 'AND':
+									default:
+										if ($vb_value_is_set) { $vb_output = false; break(2); }	// all must be not defined; if anything is set don't output
+										break;
+								}
 		
-				}
+							}
 	
-				foreach($va_notdef_con as $va_ifnotdef) {
-					if ($vb_output) {
-						$vs_template = str_replace($va_ifnotdef['directive'], $va_ifnotdef['content'], $vs_template);
-					} else {
-						$vs_template = str_replace($va_ifnotdef['directive'], '', $vs_template);
+							if ($vb_output) {
+								$vs_template = str_replace($vo_element->html(), $vo_element->getInnerText(), $vs_template);
+							} else {
+								$vs_template = str_replace($vo_element->html(), '', $vs_template);
+							}
+							break;
+						case 'ifcount':
+							if (is_array($va_if_codes = preg_split("![\|,;]+!", $vs_code))) {
+								$vn_min = (int)$vo_element->min;
+								$vn_max = (int)$vo_element->max;
+								
+								$va_restrict_to_types = preg_split("![,; ]+!", $vo_element->restrictToTypes); 
+								$va_restrict_to_relationship_types = preg_split("![,; ]+!", $vo_element->restrictToRelationshipTypes); 
+			
+								$vn_count = 0;
+								foreach($va_if_codes as $vs_if_code) {
+									if($t_table = $o_dm->getInstanceByTableName($vs_if_code, true)) {
+										$va_count_vals = $qr_res->get($vs_if_code.".".$t_table->primaryKey(), array('restrictToTypes' => $va_restrict_to_types, 'restrictToRelationshipTypes' => $va_restrict_to_relationship_types, 'returnAsArray' => true, 'checkAccess' => $pa_check_access));
+									} else {
+										$va_count_vals = $qr_res->get($vs_if_code, array('returnAsArray' => true, 'restrictToTypes' => $va_restrict_to_types, 'restrictToRelationshipTypes' => $va_restrict_to_relationship_types, 'checkAccess' => $pa_check_access));
+									}	
+									if (is_array($va_count_vals)) {
+										$va_bits = explode(".", $vs_if_code);
+										$vs_fld = array_pop($va_bits);
+										foreach($va_count_vals as $vs_count_val) {
+											if (is_array($vs_count_val)) {
+												if (isset($vs_count_val[$vs_fld]) && !trim($vs_count_val[$vs_fld])) { continue; }
+								
+												$vb_is_set = false;
+												foreach($vs_count_val as $vs_f => $vs_v) {
+													if (trim($vs_v)) { $vb_is_set = true; break; }
+												}
+												if (!$vb_is_set) { continue; }
+											} else {
+												if (!trim($vs_count_val)) { continue; }
+											}
+											$vn_count++;
+										}
+									}
+								}
+				
+								if (($vn_min <= $vn_count) && (($vn_max >= $vn_count) || !$vn_max)) {
+									$vs_template  = str_replace($vo_element->html(), $vo_element->getInnerText(), $vs_template);
+								} else {
+									$vs_template  = str_replace($vo_element->html(), '', $vs_template);
+								}
+							}
+							break;
 					}
 				}
+				$o_parsed_template = str_get_dom($vs_template);	 // reparse
 			}
 			
 			$va_proc_templates[$vn_i] = $vs_template;
-		
-			// Process <ifcount> directives
-			foreach($va_ifcounts as $va_ifcount) {
-				if (is_array($va_if_codes = preg_split("![\|,;]+!", $va_ifcount['code']))) {
-					$vn_count = 0;
-					foreach($va_if_codes as $vs_if_code) {
-						if($t_table = $o_dm->getInstanceByTableName($vs_if_code, true)) {
-							$va_count_vals = $qr_res->get($vs_if_code.".".$t_table->primaryKey(), array('restrictToTypes' => $va_ifcount['restrictToTypes'], 'restrictToRelationshipTypes' => $va_ifcount['restrictToRelationshipTypes'], 'returnAsArray' => true, 'checkAccess' => $pa_check_access));
-						} else {
-							$va_count_vals = $qr_res->get($vs_if_code, array('returnAsArray' => true, 'restrictToTypes' => $va_ifcount['restrictToTypes'], 'restrictToRelationshipTypes' => $va_ifcount['restrictToRelationshipTypes'], 'checkAccess' => $pa_check_access));
-						}	
-						if (is_array($va_count_vals)) {
-							$va_bits = explode(".", $vs_if_code);
-							$vs_fld = array_pop($va_bits);
-							foreach($va_count_vals as $vs_count_val) {
-								if (is_array($vs_count_val)) {
-									if (isset($vs_count_val[$vs_fld]) && !trim($vs_count_val[$vs_fld])) { continue; }
-									
-									$vb_is_set = false;
-									foreach($vs_count_val as $vs_f => $vs_v) {
-										if (trim($vs_v)) { $vb_is_set = true; break; }
-									}
-									if (!$vb_is_set) { continue; }
-								} else {
-									if (!trim($vs_count_val)) { continue; }
-								}
-								$vn_count++;
-							}
-						}
-					}
-					
-					if (($va_ifcount['min'] <= $vn_count) && (($va_ifcount['max'] >= $vn_count) || !$va_ifcount['max'])) {
-						$va_proc_templates[$vn_i]  = str_replace($va_ifcount['directive'], $va_ifcount['content'], $va_proc_templates[$vn_i] );
-					} else {
-						$va_proc_templates[$vn_i]  = str_replace($va_ifcount['directive'], '', $va_proc_templates[$vn_i] );
-					}
-				}
-			}
-			
-			foreach($va_units as $va_unit) {
+			foreach($va_units as $k=> $va_unit) {
 				if (!$va_unit['content']) { continue; }
 				$va_relative_to_tmp = $va_unit['relativeTo'] ? explode(".", $va_unit['relativeTo']) : array($ps_tablename);
 				if (!($t_rel_instance = $o_dm->getInstanceByTableName($va_relative_to_tmp[0], true))) { continue; }
@@ -2472,15 +2439,12 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 							$va_relative_ids = array_values($va_relative_ids);
 							break;
 						default:
-							$va_relative_ids = $pa_row_ids;
+							$va_relative_ids = array($vs_pk_val);
 							break;
 					}
 					
 					$va_tmpl_val = caProcessTemplateForIDs($va_unit['content'], $va_relative_to_tmp[0], $va_relative_ids, array_merge($pa_options, array('sort' => $va_get_options['sort'], 'sortDirection' => $va_get_options['sortDirection'], 'returnAsArray' => true, 'delimiter' => $vs_unit_delimiter, 'resolveLinksUsing' => null)));
-					$va_tmpl_val = array_pad($va_tmpl_val, sizeof($va_proc_templates), ''); // pad out to ensure replacement of unit tags
-					foreach($va_tmpl_val as $vn_tmpl_i => $vs_tmpl_v) {
-						$va_proc_templates[$vn_tmpl_i] = str_ireplace($va_unit['tag'], $vs_tmpl_v, $va_proc_templates[$vn_tmpl_i]);
-					}
+					$va_proc_templates[$vn_i] = str_ireplace($va_unit['tag'], join($vs_unit_delimiter,$va_tmpl_val), $va_proc_templates[$vn_i]);
 				} else { 
 					switch(strtolower($va_relative_to_tmp[1])) {
 						case 'hierarchy':
@@ -2509,6 +2473,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 							break;
 					}
 					$vs_tmpl_val = caProcessTemplateForIDs($va_unit['content'], $va_relative_to_tmp[0], $va_relative_ids, array_merge($pa_options, array('sort' => $va_unit['sort'], 'sortDirection' => $va_unit['sortDirection'], 'delimiter' => $vs_unit_delimiter, 'resolveLinksUsing' => null)));
+				
 					$va_proc_templates[$vn_i] = str_ireplace($va_unit['tag'], $vs_tmpl_val, $va_proc_templates[$vn_i]);
 				}
 				
@@ -2674,12 +2639,13 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 										break;
 									case 'hierarchy':
 										if (is_array($va_val) && (sizeof($va_val) > 0)) {
+											$va_val = array_reverse($va_val);
 											if ($vs_hierarchy_name) { array_unshift($va_val, $vs_hierarchy_name); }
 											foreach($va_val as $va_hier) {
 												if (!is_array($va_hier)) { $va_hier = array($va_hier); }
-												$va_val_proc[] = join(caGetOption("delimiter", $va_tag_opts, "; "), $va_hier);
+												$va_val_proc[] = join(caGetOption("delimiter", $va_tag_opts, $vs_delimiter), $va_hier);
 											}
-											$va_val_proc = array(join(caGetOption("delimiter", $va_tag_opts, "; "), $va_val_proc));
+											$va_val_proc = array(join(caGetOption("delimiter", $va_tag_opts, $vs_delimiter), $va_val_proc));
 										} 
 										break;
 									case 'parent':
@@ -2763,23 +2729,27 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 									$va_val = array();
 								
 									if (is_array($va_val_tmp)) {
+										$va_val_tmp = array_reverse($va_val_tmp);
+										if($va_tmp[0] == 'hierarchy') {
+											if ($vs_hierarchy_name) { 
+												array_shift($va_val_tmp); 							// remove root
+												array_unshift($va_val_tmp, $vs_hierarchy_name);	// replace with hierarchy name
+											}
+											if ($vs_delimiter_tmp = caGetOption('hierarchicalDelimiter', $va_tag_opts)) {
+												$vs_tag_val_delimiter = $vs_delimiter_tmp;
+											} elseif ($vs_delimiter_tmp = caGetOption('hierarchicalDelimiter', $pa_options)) {
+												$vs_tag_val_delimiter = $vs_delimiter_tmp;
+											} elseif ($vs_delimiter_tmp = caGetOption('delimiter', $va_tag_opts, $vs_delimiter)) {
+												$vs_tag_val_delimiter = $vs_delimiter_tmp;
+											} else {
+												$vs_tag_val_delimiter = $vs_delimiter;
+											}
+										} else {
+											$vs_tag_val_delimiter = caGetOption('delimiter', $va_tag_opts, $vs_delimiter);
+										}
 										foreach($va_val_tmp as $vn_attr_id => $vm_attr_val) {
 											if(is_array($vm_attr_val)) {
-												if($va_tmp[0] == 'hierarchy') {
-													if ($vs_hierarchy_name) { 
-														array_shift($vm_attr_val); 							// remove root
-														array_unshift($vm_attr_val, $vs_hierarchy_name);	// replace with hierarchy name
-													}
-													if ($vs_delimiter_tmp = caGetOption('hierarchicalDelimiter', $va_tag_opts)) {
-														$vs_tag_val_delimiter = $vs_delimiter_tmp;
-													} elseif ($vs_delimiter_tmp = caGetOption('hierarchicalDelimiter', $pa_options)) {
-														$vs_tag_val_delimiter = $vs_delimiter_tmp;
-													} else {
-														$vs_tag_val_delimiter = caGetOption('delimiter', $va_tag_opts, $vs_delimiter);
-													}
-												} else {
-													$vs_tag_val_delimiter = caGetOption('delimiter', $va_tag_opts, $vs_delimiter);
-												}
+												
 												
 												$va_val[] = join($vs_tag_val_delimiter, $vm_attr_val);
 											} else {
@@ -2971,21 +2941,12 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			$va_proc_templates[$vn_i] = join($vs_delimiter, $va_acc);
 		}
 		
+		
 		foreach($va_proc_templates as $vn_i => $vs_template) {
 			if (!strlen(trim($vs_template))) { unset($va_proc_templates[$vn_i]); }
 		}
 		
-		// pad proc_templates to length
-		for($vn_i=0; $vn_i < sizeof($pa_row_ids); $vn_i++) {
-			if(!key_exists($vn_i, $va_proc_templates)) { $va_proc_templates[$vn_i] = ''; }
-		}
-		ksort($va_proc_templates, SORT_NUMERIC);
-		
 		// Transform links
-		if($ps_resolve_links_using != $ps_tablename) {
-			$pa_options['addRelParameter'] = true;
-		}
-
 		$va_proc_templates = caCreateLinksFromText($va_proc_templates, $ps_resolve_links_using, ($ps_resolve_links_using != $ps_tablename) ? $va_resolve_links_using_row_ids : $pa_row_ids, null, null, $pa_options);
 		
 		// Kill any lingering tags (just in case)
