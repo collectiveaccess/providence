@@ -1302,6 +1302,7 @@ class ca_commerce_orders extends BaseModel {
 	 	", $va_sql_values);
 		//print $vs_sql."; ".print_r($va_sql_values, true);
 		$va_orders = array();
+		if(!$qr_res) { return array(); }
 
 		while($qr_res->nextRow()) {
 			$va_order = $qr_res->getRow();
