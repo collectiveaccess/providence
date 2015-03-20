@@ -949,6 +949,22 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 		if(MemoryCache::contains($ps_xlsx, 'CAPHPExcel')) {
 			return MemoryCache::fetch($ps_xlsx, 'CAPHPExcel');
 		} else {
+			if(!file_exists($ps_xlsx)) { return false; }
+
+			// check mimetype
+			if(function_exists('mime_content_type')) { // function is deprecated
+				$vs_mimetype = mime_content_type($ps_xlsx);
+				if(!in_array($vs_mimetype, array(
+					'application/vnd.ms-office',
+					'application/octet-stream',
+					'application/vnd.oasis.opendocument.spreadsheet',
+					'application/zip',
+					'application/vnd.ms-excel'
+				))){
+					return false;
+				}
+			}
+
 			/**  Identify the type  **/
 			$vs_input_filetype = PHPExcel_IOFactory::identify($ps_xlsx);
 			/**  Create a new Reader of that very type  **/
@@ -965,15 +981,15 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	 * Counts non-empty rows in PHPExcel spreadsheet
 	 *
 	 * @param string $ps_xlsx absolute path to spreadsheet
-	 * @param string $ps_sheet optional sheet to use for counting
+	 * @param null|string $ps_sheet optional sheet name to use for counting
 	 * @return int row count
 	 */
-	function caPhpExcelCountNonEmptyRows($ps_xlsx,$ps_sheet="") {
+	function caPhpExcelCountNonEmptyRows($ps_xlsx,$ps_sheet=null) {
 		if(MemoryCache::contains($ps_xlsx, 'CAPHPExcelRowCounts')) {
 			return MemoryCache::fetch($ps_xlsx, 'CAPHPExcelRowCounts');
 		} else {
 			$o_excel = caPhpExcelLoadFile($ps_xlsx);
-			if(strlen($ps_sheet)>0){
+			if($ps_sheet){
 				$o_sheet = $o_excel->getSheetByName($ps_sheet);
 			} else {
 				$o_sheet = $o_excel->getActiveSheet();
