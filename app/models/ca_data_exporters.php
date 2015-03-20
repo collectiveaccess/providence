@@ -1715,24 +1715,36 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			if($vs_source) { // trying to find the source only makes sense if the source is set
 				$t_attr = new ca_attributes($vn_attribute_id);
 				$va_values = $t_attr->getAttributeValues();
+
+				$va_src_tmp = explode('.', $vs_source);
+				if(sizeof($va_src_tmp) == 2) {
+					$o_dm = Datamodel::load();
+					if($t_attr->get('table_num') == $o_dm->getTableNum($va_src_tmp[0])) {
+						$vs_source = $va_src_tmp[1];
+					}
+				}
+
 				$o_log->logDebug(_t("Trying to find code %1 in value array for the current attribute.", $vs_source));
 				$o_log->logDebug(_t("Value array is %1.", print_r($va_values, true)));
 
 				foreach($va_values as $vo_val) {
-					$vn_list_id = null;
+					$va_display_val_options = array();
 					if($vo_val instanceof ListAttributeValue) {
 						$t_element = ca_metadata_elements::getInstance($t_attr->get('element_id'));
-						$vn_list_id = $t_element->get('list_id');
-					}
+						$va_display_val_options = array('list_id' => $t_element->get('list_id'));
 
+						if($t_exporter_item->getSetting('returnIdno')) {
+							$va_display_val_options['returnIdno'] = true;
+						}
+					}
 
 					$o_log->logDebug(_t("Trying to match code from array %1 and the code we're looking for %2.", $vo_val->getElementCode(), $vs_source));
 					if($vo_val->getElementCode() == $vs_source) {
 
-						$o_log->logDebug(_t("Found value %1.", $vo_val->getDisplayValue(array('list_id' => $vn_list_id))));
+						$o_log->logDebug(_t("Found value %1.", $vo_val->getDisplayValue($va_display_val_options)));
 
 						$va_item_info[] = array(
-							'text' => $vo_val->getDisplayValue(array('list_id' => $vn_list_id)),
+							'text' => $vo_val->getDisplayValue($va_display_val_options),
 							'element' => $vs_element,
 						);
 					}
