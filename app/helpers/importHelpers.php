@@ -30,11 +30,10 @@
  * ----------------------------------------------------------------------
  */
 
- /**
-   *
-   */
-   require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
-   require_once(__CA_LIB_DIR__.'/ca/Import/BaseDataReader.php');
+	require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
+	require_once(__CA_LIB_DIR__.'/ca/Import/BaseDataReader.php');
+	require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
+	require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
 
 	# ---------------------------------------
 	/**
@@ -941,4 +940,48 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 		);
 	}
 	# ---------------------------------------
-?>
+	/**
+	 * Loads the given file into a PHPExcel object using common settings for preserving memory and performance
+	 * @param string $ps_xlsx file name
+	 * @return PHPExcel
+	 */
+	function caPhpExcelLoadFile($ps_xlsx){
+		if(MemoryCache::contains($ps_xlsx, 'CAPHPExcel')) {
+			return MemoryCache::fetch($ps_xlsx, 'CAPHPExcel');
+		} else {
+			/**  Identify the type  **/
+			$vs_input_filetype = PHPExcel_IOFactory::identify($ps_xlsx);
+			/**  Create a new Reader of that very type  **/
+			$o_reader = PHPExcel_IOFactory::createReader($vs_input_filetype);
+			$o_reader->setReadDataOnly(true);
+			$o_excel = $o_reader->load($ps_xlsx);
+
+			MemoryCache::save($ps_xlsx, $o_excel, 'CAPHPExcel');
+			return $o_excel;
+		}
+	}
+	# ---------------------------------------------------------------------
+	/**
+	 * Counts non-empty rows in PHPExcel spreadsheet
+	 *
+	 * @param string $ps_xlsx absolute path to spreadsheet
+	 * @param string $ps_sheet optional sheet to use for counting
+	 * @return int row count
+	 */
+	function caPhpExcelCountNonEmptyRows($ps_xlsx,$ps_sheet="") {
+		if(MemoryCache::contains($ps_xlsx, 'CAPHPExcelRowCounts')) {
+			return MemoryCache::fetch($ps_xlsx, 'CAPHPExcelRowCounts');
+		} else {
+			$o_excel = caPhpExcelLoadFile($ps_xlsx);
+			if(strlen($ps_sheet)>0){
+				$o_sheet = $o_excel->getSheetByName($ps_sheet);
+			} else {
+				$o_sheet = $o_excel->getActiveSheet();
+			}
+
+			$vn_highest_row = intval($o_sheet->getHighestRow());
+			MemoryCache::save($ps_xlsx, $vn_highest_row, 'CAPHPExcelRowCounts');
+			return $vn_highest_row;
+		}
+	}
+	# ---------------------------------------------------------------------
