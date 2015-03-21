@@ -778,11 +778,11 @@
 			
 			$pb_output_errors 				= caGetOption('outputErrors', $pa_options, false);
 			$pb_match_on_displayname 		= caGetOption('matchOnDisplayName', $pa_options, false);
-			$pa_match_on 					= caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));	
+			$pa_match_on 					= caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
 			$ps_event_source 				= caGetOption('importEventSource', $pa_options, '?'); 
 			$pb_match_media_without_ext 	= caGetOption('matchMediaFilesWithoutExtension', $pa_options, false);
 			
-			$vn_parent_id 					= caGetOption('parent_id', $pa_values, null); 
+			$vn_parent_id 					= ($pn_parent_id ? $pn_parent_id : caGetOption('parent_id', $pa_values, null));
 			
 			$vs_idno_fld					= $t_instance->getProperty('ID_NUMBERING_ID_FIELD');
 			$vs_idno 						= caGetOption($vs_idno_fld, $pa_values, null); 
@@ -889,7 +889,7 @@
 							// entities only
 							$vn_id = $vs_table_class::find(array('preferred_labels' => array('forename' => $pa_label['forename'], 'middlename' => $pa_label['middlename'], 'surname' => $pa_label['surname']), 'type_id' => $pn_type_id, 'parent_id' => $vn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
 						} else {
-							$vn_id = ($vs_table_class::find(array('preferred_labels' => array($vs_label_display_fld => $pa_label[$vs_label_display_fld]), 'parent_id' => caGetOption('parent_id', $pa_values, null), 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
+							$vn_id = ($vs_table_class::find(array('preferred_labels' => array($vs_label_display_fld => $pa_label[$vs_label_display_fld]), 'parent_id' => $vn_parent_id, 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
 						}
 						if ($vn_id) { break(2); }
 						break;
@@ -923,7 +923,7 @@
 				$t_instance->set('type_id', $pn_type_id);
 				
 				$va_intrinsics = array(
-					'source_id' => null, 'access' => 0, 'status' => 0, 'lifespan' => null, 'parent_id' => null, 'lot_status_id' => null, '_interstitial' => null
+					'source_id' => null, 'access' => 0, 'status' => 0, 'lifespan' => null, 'parent_id' => $vn_parent_id, 'lot_status_id' => null, '_interstitial' => null
 				);
 				if ($vs_hier_id_fld = $t_instance->getProperty('HIERARCHY_ID_FLD')) { $va_intrinsics[$vs_hier_id_fld] = null;}
 				if ($vs_idno_fld) {$va_intrinsics[$vs_idno_fld] = null; }

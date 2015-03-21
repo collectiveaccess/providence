@@ -959,7 +959,8 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 					'application/octet-stream',
 					'application/vnd.oasis.opendocument.spreadsheet',
 					'application/zip',
-					'application/vnd.ms-excel'
+					'application/vnd.ms-excel',
+					'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 				))){
 					return false;
 				}
@@ -998,6 +999,30 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 			$vn_highest_row = intval($o_sheet->getHighestRow());
 			MemoryCache::save($ps_xlsx, $vn_highest_row, 'CAPHPExcelRowCounts');
 			return $vn_highest_row;
+		}
+	}
+	# ---------------------------------------------------------------------
+	/**
+	 * Get content from cell as trimmed string
+	 * @param PHPExcel_Worksheet $po_sheet
+	 * @param int $pn_row_num row number (zero indexed)
+	 * @param string|int $pm_col either column number (zero indexed) or column letter ('A', 'BC')
+	 * @throws PHPExcel_Exception
+	 * @return string the trimmed cell content
+	 */
+	function caPhpExcelGetCellContentAsString($po_sheet, $pn_row_num, $pm_col) {
+		if(!is_numeric($pm_col)) {
+			$pm_col = PHPExcel_Cell::columnIndexFromString($pm_col)-1;
+		}
+
+		$vs_cache_key = spl_object_hash($po_sheet)."/{$pm_col}/{$pn_row_num}";
+
+		if(MemoryCache::contains($vs_cache_key, 'PHPExcelCellContents')) {
+			return MemoryCache::fetch($vs_cache_key, 'PHPExcelCellContents');
+		} else {
+			$vs_return = trim((string)$po_sheet->getCellByColumnAndRow($pm_col, $pn_row_num));
+			MemoryCache::save($vs_cache_key, $vs_return, 'PHPExcelCellContents');
+			return $vs_return;
 		}
 	}
 	# ---------------------------------------------------------------------
