@@ -486,7 +486,7 @@
 				// set the field values array for this instance
 				//$this->setFieldValuesArray($va_field_values_with_updated_attributes);
 				
-				$this->doSearchIndexing($va_fields_changed_array);	// TODO: SHOULD SECOND PARAM (REINDEX) BE "TRUE"?
+				$this->doSearchIndexing(array_merge($this->getFieldValuesArray(true), $va_fields_changed_array));	// TODO: SHOULD SECOND PARAM (REINDEX) BE "TRUE"?
 				
 				
 				if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
@@ -644,7 +644,6 @@
 				if ($va_v = $this->get($this->tableName().'.'.$vs_code, array('returnAllLocales' => true, 'returnAsArray' => true, 'return' => 'url', 'version' => 'original'))) {
 					foreach($va_v as $vn_id => $va_v_by_locale) {
 						foreach($va_v_by_locale as $vn_locale_id => $va_v_list) {
-							if (!$vn_locale_id) { $vs_locale = 'NONE'; continue; }
 							if (!($vs_locale = $t_locale->localeIDToCode($vn_locale_id))) {
 								$vs_locale = 'NONE';
 							}
@@ -2016,7 +2015,7 @@
 			foreach($va_attributes as $o_attr) {
 				if ($o_attr->getElementID() == $vn_element_id) { 
 					$va_values = $o_attr->getDisplayValues(true, $pa_options);
-					$va_ret_values[0][(int)$o_attr->getLocaleID()] = $va_values[$vn_sub_element_id ? $vn_sub_element_id : $vn_element_id];
+					$va_ret_values[][(int)$o_attr->getLocaleID()] = $va_values[$vn_sub_element_id ? $vn_sub_element_id : $vn_element_id];
 				}
 			}
 			

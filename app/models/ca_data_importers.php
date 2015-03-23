@@ -2011,6 +2011,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							if (($vn_parent_id = (int)$va_element_value['parent_id']) > 0) {
 								if ($t_subject->load($vn_parent_id)) {
 									$va_content_tree[$vs_subject_table][$vn_i]['parent_id']['parent_id'] = $t_subject->get('parent_id');
+									$va_content_tree[$vs_subject_table][$vn_i]['idno']['idno'] = $t_subject->get('idno');
 								}
 							}
 						}
