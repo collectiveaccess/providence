@@ -190,14 +190,13 @@ h5 {
     color: #333;
     padding: 0;
     font-size: 12px;
-    border-bottom: dotted 1px #fff;
     text-transform:none; width:100%;
     font-weight:normal;
     font-family:"din-regular", arial, sans-serif;
     text-transform:uppercase;
 }
 
-#leftNav h2 a, #leftNav h2 span { display: block; padding-left: 15px; padding-top: 7px; padding-bottom: 4px; text-decoration: none; color: #666666; }
+#leftNav h2 a, #leftNav h2 span { display: block; padding-left: 15px; padding-top: 7px; padding-bottom: 4px; text-decoration: none; color: #666666; border-right:1px solid #dddddd;} 
 #leftNav h2 a:hover{
     color: #1ab3c8;
 }
