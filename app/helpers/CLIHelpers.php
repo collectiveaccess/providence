@@ -145,19 +145,19 @@ function caSetupCLIScript($pa_additional_parameters) {
 			$o_writer->setFormatter(new Zend_Log_Formatter_Simple('%timestamp% %priorityName%: %message%'.PHP_EOL));
 		} catch (Zend_Log_Exception $e) { // error while opening the file (usually permissions)
 			$o_writer = null;
-			print CLIUtils::textWithColor("Logdatei konnte nicht geöffnet werden. Protokoll erfolgt jetzt via Systemlog. Dort werden keine DEBUG Nachrichten ausgegeben, auch wenn das Level auf DEBUG gesetzt ist.", "bold_red").PHP_EOL.PHP_EOL;
+			print CLIUtils::textWithColor("Couldn't open log file. Now logging via system log.", "bold_red").PHP_EOL.PHP_EOL;
 		}
 	}
 
 	// default: log everything to syslog
 	if(!$o_writer) {
-		$o_writer = new Zend_Log_Writer_Syslog(array('application' => 'Arsenal_Archive_Import', 'facility' => LOG_USER));
+		$o_writer = new Zend_Log_Writer_Syslog(array('application' => 'CollectiveAccess CLI', 'facility' => LOG_USER));
 		// no need for timespamps in syslog ... the syslog itsself provides that
 		$o_writer->setFormatter(new Zend_Log_Formatter_Simple('%priorityName%: %message%'.PHP_EOL));
 	}
 
 	// was a loglevel set via command line? -> add filter to Zend logger, otherwise use WARN
-	$vs_level = $o_opts->getOption('loglevel');
+	$vs_level = $o_opts->getOption('log-level');
 	switch($vs_level) {
 		case 'ERR':
 			$o_filter = new Zend_Log_Filter_Priority(Zend_Log::ERR);
