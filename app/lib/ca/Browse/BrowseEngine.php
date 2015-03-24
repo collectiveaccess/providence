@@ -4875,19 +4875,23 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 		 */
 		protected function doGetResults($po_result=null, $pa_options=null) {
 			if (!is_array($this->opa_browse_settings)) { return null; }
+						
+			$vs_sort = caGetOption('sort', $pa_options, null);
+			$vs_sort_direction = strtolower(caGetOption('sortDirection', $pa_options, caGetOption('sort_direction', $pa_options, null)));
+			
 			$t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true);
-			$vb_will_sort = (isset($pa_options['sort']) && $pa_options['sort'] && (($this->getCachedSortSetting() != $pa_options['sort']) || ($this->getCachedSortDirectionSetting() != $pa_options['sort_direction'])));
+			$vb_will_sort = ($vs_sort && (($this->getCachedSortSetting() != $vs_sort) || ($this->getCachedSortDirectionSetting() != $vs_sort_direction)));
 			
 			$vs_pk = $t_item->primaryKey();
 			$vs_label_display_field = null;
 			
 			if(sizeof($va_results =  $this->opo_ca_browse_cache->getResults())) {
 				if ($vb_will_sort) {
-					$va_results = $this->sortHits($va_results, $this->ops_browse_table_name, $pa_options['sort'], (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
+					$va_results = $this->sortHits($va_results, $this->ops_browse_table_name, $vs_sort, $vs_sort_direction);
 	
 					$this->opo_ca_browse_cache->setParameter('table_num', $this->opn_browse_table_num); 
-					$this->opo_ca_browse_cache->setParameter('sort', $pa_options['sort']);
-					$this->opo_ca_browse_cache->setParameter('sort_direction', $pa_options['sort_direction']);
+					$this->opo_ca_browse_cache->setParameter('sort', $vs_sort);
+					$this->opo_ca_browse_cache->setParameter('sort_direction', $vs_sort_direction);
 					
 					$this->opo_ca_browse_cache->setResults($va_results);
 					$this->opo_ca_browse_cache->save();

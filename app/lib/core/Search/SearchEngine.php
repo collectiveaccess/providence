@@ -112,10 +112,10 @@ class SearchEngine extends SearchBase {
 	 *
 	 * @param string $ps_search The search to perform; engine takes Lucene syntax query
 	 * @param SearchResult $po_result  A newly instantiated sub-class of SearchResult to place search results into and return. If this is not set, then a generic SearchResults object will be returned.
-	 * @param array $pa_options Optional array of options for the search. Options include
-	 *:
+	 * @param array $pa_options Optional array of options for the search. Options include:
+	 *
 	 *		sort = field or attribute to sort on in <table name>.<field or attribute name> format (eg. ca_objects.idno); default is to sort on relevance (aka. sort='_natural')
-	 *		sort_direction = direction to sort results by, either 'asc' for ascending order or 'desc' for descending order; default is 'asc'
+	 *		sortDirection = direction to sort results by, either 'asc' for ascending order or 'desc' for descending order; default is 'asc'
 	 *		no_cache = if true, search is performed regardless of whether results for the search are already cached; default is false
 	 *		limit = if set then search results will be limited to the quantity specified. If not set then all results are returned.
 	 *		form_id = optional form identifier string to record in log for search
@@ -144,8 +144,10 @@ class SearchEngine extends SearchBase {
 		
 		$ps_search = str_replace("[BLANK]", '"[BLANK]"', $ps_search);	// the special [BLANK] search term, which returns records that have *no* content in a specific fields, has to be quoted in order to protect the square brackets from the parser.
 		
-		if (!is_array($pa_options)) { $pa_options = array(); }
-		$vn_limit = (isset($pa_options['limit']) && ($pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
+		if(!is_array($pa_options)) { $pa_options = array(); }
+		if(($vn_limit = caGetOption('limit', $pa_options, null, array('castTo' => 'int'))) < 0) { $vn_limit = null; }
+		$vs_sort = caGetOption('sort', $pa_options, null);
+		$vs_sort_direction = strtolower(caGetOption('sortDirection', $pa_options, caGetOption('sort_direction', $pa_options, null)));
 		
 		//print "QUERY=$ps_search<br>";
 		//
@@ -187,12 +189,12 @@ class SearchEngine extends SearchBase {
 			if((time() - $vn_created_on) < $vn_cache_timeout) {
 				Debug::msg('SEARCH cache hit for '.$vs_cache_key);
 				$va_hits = $o_cache->getResults();
-				if (isset($pa_options['sort']) && $pa_options['sort'] && ($pa_options['sort'] != '_natural')) {
-					$va_hits = $this->sortHits($va_hits, $this->ops_tablename, $pa_options['sort'], (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
-				} else {
-					if (($pa_options['sort'] == '_natural') && ($pa_options['sort_direction'] == 'desc')) {
-						$va_hits = array_reverse($va_hits);
-					}
+				
+				
+				if ($vs_sort != '_natural') {
+					$va_hits = $this->sortHits($va_hits, $this->ops_tablename, $vs_sort, $vs_sort_direction);
+				} elseif (($vs_sort == '_natural') && ($vs_sort_direction == 'desc')) {
+					$va_hits = array_reverse($va_hits);
 				}
 				$o_res = new WLPlugSearchEngineCachedResult($va_hits, $this->opn_tablenum);
 				$vb_from_cache = true;
@@ -284,12 +286,10 @@ class SearchEngine extends SearchBase {
 				$va_hits = $this->filterHitsByACL($va_hits, $this->opn_tablenum, $vn_user_id, __CA_ACL_READONLY_ACCESS__);
 			}
 			
-			if (isset($pa_options['sort']) && $pa_options['sort'] && ($pa_options['sort'] != '_natural')) {
+			if ($vs_sort != '_natural') {
 				$va_hits = $this->sortHits($va_hits, $t_table->tableName(), $pa_options['sort'], (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
-			} else {
-				if (($pa_options['sort'] == '_natural') && ($pa_options['sort_direction'] == 'desc')) {
-					$va_hits = array_reverse($va_hits);
-				}
+			} elseif (($vs_sort == '_natural') && ($vs_sort_direction == 'desc')) {
+				$va_hits = array_reverse($va_hits);
 			}
 			
 			$o_res = new WLPlugSearchEngineCachedResult($va_hits, $this->opn_tablenum);

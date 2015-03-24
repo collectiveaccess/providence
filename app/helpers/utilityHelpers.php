@@ -1942,10 +1942,10 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 *
 	 */
-	function caMakeSearchResult($ps_table, $pa_ids) {
+	function caMakeSearchResult($ps_table, $pa_ids, $pa_options=null) {
 		$o_dm = Datamodel::load();
 		if ($t_instance = $o_dm->getInstanceByTableName('ca_objects', true)) {	// get an instance of a model inherits from BundlableLabelableBaseModelWithAttributes; doesn't matter which one
-			return $t_instance->makeSearchResult($ps_table, $pa_ids);
+			return $t_instance->makeSearchResult($ps_table, $pa_ids, $pa_options);
 		}
 		return null;
 	}
