@@ -743,6 +743,7 @@
 		 *
 		 * @param string $ps_table The table to match and/or create rows in
 		 * @param array $pa_label Array with values for row label
+		 * @param int $pn_parent_id
 		 * @param int $pn_type_id The type_id or code of the type to use if the row needs to be created
 		 * @param int $pn_locale_id The locale_id to use if the row needs to be created (will be used for both the row locale as well as the label locale)
 		 * @param array $pa_values An optional array of additional values to populate newly created rows with. These values are *only* used for newly created rows; they will not be applied if the row named already exists unless the forceUpdate option is set, in which case attributes (but not intrinsics) will be updated. The array keys should be names of fields or valid attributes. Values should be either a scalar (for single-value attributes) or an array of values for (multi-valued attributes)
@@ -917,6 +918,13 @@
 				//
 				if (caGetOption('dontCreate', $pa_options, false)) { return false; }
 				if ($o_event) { $o_event->beginItem($ps_event_source, $vs_table_class, 'I'); }
+
+				// If we're creating a new item, it's probably a good idea to *NOT* use a
+				// BaseModel instance from cache, because those cannot change their type_id
+				if (!$t_instance = $o_dm->getInstanceByTableName($ps_table, false))  { return null; }
+				if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
+					$t_instance->setTransaction($pa_options['transaction']);
+				}
 
 				$t_instance->setMode(ACCESS_WRITE);
 				$t_instance->set('locale_id', $pn_locale_id);
