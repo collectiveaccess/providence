@@ -371,10 +371,15 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	private function _setUniqueSetCode() {
 		if (!$this->getPrimaryKey()) { return null; }
 		
-		if (!strlen(trim($this->get('set_code')))) {
+		$vs_set_code = trim($this->get('set_code'));
+		
+		if ((($vs_set_code_proc = preg_replace("![ ]+!", "_", $vs_set_code)) !== $vs_set_code) || !strlen($vs_set_code)) {
 			$this->setMode(ACCESS_WRITE);
-			if(!($vs_label = $this->getLabelForDisplay())) { $vs_label = 'set_'.$this->getPrimaryKey(); }
-			$vs_new_set_name = substr(preg_replace('![^A-Za-z0-9]+!', '_', $vs_label), 0, 50);
+			
+			if (!strlen($vs_set_code)) {
+				if(!($vs_set_code = $this->getLabelForDisplay())) { $vs_set_code = 'set_'.$this->getPrimaryKey(); }
+			}
+			$vs_new_set_name = substr(preg_replace('![^A-Za-z0-9]+!', '_', $vs_set_code), 0, 50);
 			if (ca_sets::find(array('set_code' => $vs_new_set_name), array('returnAs' => 'firstId')) > 0) {
 				$vs_new_set_name .= '_'.$this->getPrimaryKey();
 			}
