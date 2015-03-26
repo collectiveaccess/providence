@@ -3024,11 +3024,10 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
-	 * Returns date/time as a localized string for display, subject to the settings in the app/conf/datetime.conf configuration 
+	 * Returns date/time as a localized string for display, subject to the settings in the app/conf/datetime.conf configuration
 	 *
-	 * @param int $pn_timestamp Unix timestamp for date/time to localize; if omitted defaults to current date and time.
-	 * @param array $pa_options All options supported by TimeExpressionParser::getText() are supported
-	 *
+	 * @param null|int $pn_timestamp Unix timestamp for date/time to localize; if omitted defaults to current date and time.
+	 * @param null|array $pa_options All options supported by TimeExpressionParser::getText() are supported
 	 * @return string Localized date/time expression
 	 */
 	function caGetLocalizedDate($pn_timestamp=null, $pa_options=null) {

@@ -1031,9 +1031,12 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	 * @param PHPExcel_Worksheet $po_sheet The work sheet
 	 * @param int $pn_row_num row number (zero indexed)
 	 * @param string|int $pm_col either column number (zero indexed) or column letter ('A', 'BC')
+	 * @param int $pn_offset Offset to adf to the timestamp (can be used to fix timezone issues or simple to move dates around a little bit)
 	 * @return string|null the date, if a value exists
 	 */
-	function caPhpExcelGetDateCellContent($po_sheet, $pn_row_num, $pm_col) {
+	function caPhpExcelGetDateCellContent($po_sheet, $pn_row_num, $pm_col, $pn_offset=0) {
+		if(!is_int($pn_offset)) { $pn_offset = 0; }
+
 		if(!is_numeric($pm_col)) {
 			$pm_col = PHPExcel_Cell::columnIndexFromString($pm_col)-1;
 		}
@@ -1042,8 +1045,10 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 		$vs_val = trim((string)$o_val);
 
 		if(strlen($vs_val)>0) {
-			$vs_timestamp = (int) PHPExcel_Shared_Date::ExcelToPHP($vs_val);
-			$vs_return = date('m/d/Y', $vs_timestamp);
+			$vn_timestamp = PHPExcel_Shared_Date::ExcelToPHP(trim((string)$o_val->getValue())) + $pn_offset;
+			if (!($vs_return = caGetLocalizedDate((int)$vn_timestamp, null))) {
+				$vs_return = $vs_val;
+			}
 		} else {
 			$vs_return = null;
 		}
