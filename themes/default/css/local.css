@@ -84,6 +84,7 @@ div.editorBottomPadding {
 div.control-box {
   width: 100%;
   background-color: #0a0905;
+  float: none;
   color: white; }
   div.control-box a {
     color: white;
