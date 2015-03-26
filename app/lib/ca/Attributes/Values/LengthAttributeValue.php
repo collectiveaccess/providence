@@ -148,7 +148,7 @@
  			global $g_ui_locale;
  			global $g_ui_units_pref;
  			
- 			if ($pa_value_array['value_decimal1'] === '') {
+ 			if ($pa_value_array['value_decimal1'] === '' || is_null($pa_value_array['value_decimal1'])) {
  				$this->ops_text_value = '';
  				return;
  			}
@@ -162,8 +162,13 @@
  					$vo_measurement = new Zend_Measure_Length((float)$pa_value_array['value_decimal1'], 'METER', $g_ui_locale);
  					$this->ops_text_value = $vo_measurement->convertTo(Zend_Measure_Length::FEET, 4);
  					break;
- 				default:		// show as-is
- 					$this->ops_text_value = $pa_value_array['value_longtext1'];
+ 				default: // show value in unit entered, but adjusted for the UI locale
+					try {
+						$vo_measurement = new Zend_Measure_Length((float)$pa_value_array['value_decimal1'], 'METER', $g_ui_locale);
+						$this->ops_text_value = $vo_measurement->convertTo($pa_value_array['value_longtext2']);
+					} catch (Exception $e) { // derp
+						$this->ops_text_value = $pa_value_array['value_longtext1'];
+					}
  					break;
  			}	
  			$this->opn_decimal_value = $pa_value_array['value_decimal1'];
@@ -196,115 +201,17 @@
 					'value_decimal1'  => ''	// measurement in metric (for searching)
 				);
  			}
- 			
- 			$vo_parsed_measurement = null;
- 			$pa_values = array($ps_value);
- 			while($vs_expression = array_shift($pa_values)) {
-					// parse units of measurement
- 				if (preg_match("!^([\d\.\,/ ]+)[ ]*([^\d ]+)!", $vs_expression, $va_matches)) {
- 					$vs_value = trim($va_matches[1]);
- 					$va_values = explode(" ", $vs_value);
- 					$vs_unit_expression = strtolower(trim($va_matches[2]));
- 					if ($vs_expression = trim(str_replace($va_matches[0], '', $vs_expression))) {
- 						array_unshift($pa_values, $vs_expression);
- 					}
-					
-					$vs_value  = 0;
- 					foreach($va_values as $vs_v) {
- 						$vs_value += caConvertLocaleSpecificFloat(trim($vs_v), $g_ui_locale);
- 					}
 
-					switch($vs_unit_expression) {
-						case "'":
-						case "’":
-						case 'ft':
-						case 'ft.':
-						case 'feet':
-						case 'foot':
-							$vs_units = Zend_Measure_Length::FEET;
-							break;
-						case '"':
-						case "”":
-						case 'in':
-						case 'in.':
-						case 'inch':
-						case 'inches':
-							$vs_units = Zend_Measure_Length::INCH;
-							break;
-						case 'm':
-						case 'm.':
-						case 'meter':
-						case 'meters':
-						case 'metre':
-						case 'metres':
-						case 'mt':
-							$vs_units = Zend_Measure_Length::METER;
-							break;
-						case 'cm':
-						case 'cm.':
-						case 'centimeter':
-						case 'centimeters':
-						case 'centimetre':
-						case 'centimetres':
-							$vs_units = Zend_Measure_Length::CENTIMETER;
-							break;
-						case 'mm':
-						case 'mm.':
-						case 'millimeter':
-						case 'millimeters':
-						case 'millimetre':
-						case 'millimetres':
-							$vs_units = Zend_Measure_Length::MILLIMETER;
-							break;
-						case 'point':
-						case 'pt':
-						case 'pt.':
-							$vs_units = Zend_Measure_Length::POINT;
-							break;
-						case 'mile':
-						case 'miles':
-							$vs_units = Zend_Measure_Length::MILE;
-							break;
-						case 'km':
-						case 'k':
-						case 'kilometer':
-						case 'kilometers':
-						case 'kilometre':
-						case 'kilometres':
-							$vs_units = Zend_Measure_Length::KILOMETER;
-							break;
-						default:	
-							$this->postError(1970, _t('%1 is not a valid unit of length [%2]', $va_matches[2], $ps_value), 'LengthAttributeValue->parseValue()');
-							return false;
-							break;
-					}
-				
-					try {
-						$o_tmp = new Zend_Measure_Length($vs_value, $vs_units, $g_ui_locale);
-					} catch (Exception $e) {
-						$this->postError(1970, _t('%1 is not a valid measurement', $pa_element_info['displayLabel']), 'LengthAttributeValue->parseValue()');
-						return false;
-					}
-					if ($o_tmp->getValue() < 0) {
-						// length can't be negative in our universe
-						$this->postError(1970, _t('%1 must not be less than zero', $pa_element_info['displayLabel']), 'LengthAttributeValue->parseValue()');
-						return false;
-					}
-					
-					if ($vo_parsed_measurement) {
-						$vo_parsed_measurement = $vo_parsed_measurement->add($o_tmp);
-					} else {
-						$vo_parsed_measurement = $o_tmp;
-					}
-				}
+			try {
+				$vo_parsed_measurement = caParseLengthDimension($ps_value);
+			} catch (Exception $e) {
+				$this->postError(1970, _t('%1 is not a valid measurement', $pa_element_info['displayLabel']), 'WeightAttributeValue->parseValue()');
+				return false;
 			}
- 			if (!$vo_parsed_measurement) { 
- 				$this->postError(1970, _t('%1 is not a valid measurement [%2]', $pa_element_info['displayLabel'], $ps_value), 'LengthAttributeValue->parseValue()');
-				return false; 
- 			}
+
  			return array(
- 				'value_longtext1' => $vo_parsed_measurement->toString(4),			// parsed measurement with units
- 				'value_longtext2' => $vs_units,										// units constant
+ 				'value_longtext1' => $vo_parsed_measurement->toString(4),					// parsed measurement with units
+ 				'value_longtext2' => $vo_parsed_measurement->getType(),						// units constant
  				'value_decimal1'  => $vo_parsed_measurement->convertTo('METER',6, 'en_US')	// measurement in metric (for searching)
  			);
  		}
@@ -353,4 +260,3 @@
 		}
  		# ------------------------------------------------------------------
 	}
- ?>
