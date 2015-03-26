@@ -1436,31 +1436,40 @@ a.browseSelectPanelLink {
     background: #646464; }
     .facetHeadingLink .active a {
       color: white; }
-  .facetHeadingLink div.listRel {
-    font-size: 0.9em; }
-  .facetHeadingLink div.roundedRel {
-    background: #fde9f5 !important; }
-  .facetHeadingLink .table-bordered {
-    width: 100%;
-    border-collapse: collapse;
-    border-spacing: 0;
-    margin-bottom: 3px; }
-    .facetHeadingLink .table-bordered th,
-    .facetHeadingLink .table-bordered td {
-      border: 1px solid #c8c8c8;
-      padding: 0.25em 0.5em; }
-  .facetHeadingLink div.caObjectRepresentationDetailEditorElement {
-    font-size: inherit; }
-  .facetHeadingLink a.caDeleteItemButton {
-    float: right; }
-  .facetHeadingLink table {
-    clear: both; }
-  .facetHeadingLink img {
-    max-width: 100%;
-    height: auto; }
-  .facetHeadingLink .mapholder img {
-    max-width: auto; }
-  .facetHeadingLink div.delete_warning_box {
-    height: 32px; }
+
+div.listRel {
+  font-size: 0.9em; }
+
+div.roundedRel {
+  background: #fde9f5 !important; }
+
+.table-bordered {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  margin-bottom: 3px; }
+  .table-bordered th,
+  .table-bordered td {
+    border: 1px solid #c8c8c8;
+    padding: 0.25em 0.5em; }
+
+div.caObjectRepresentationDetailEditorElement {
+  font-size: inherit; }
+
+a.caDeleteItemButton {
+  float: right; }
+
+table {
+  clear: both; }
+
+img {
+  max-width: 100%;
+  height: auto; }
+
+.mapholder img {
+  max-width: auto; }
+
+div.delete_warning_box {
+  height: 32px; }
 
 /*# sourceMappingURL=local.css.map */
