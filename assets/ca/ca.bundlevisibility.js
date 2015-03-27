@@ -41,9 +41,17 @@ var caUI = caUI || {};
 		// --------------------------------------------------------------------------------
 		// Define methods
 		// --------------------------------------------------------------------------------
-		that.registerBundle = function(id) {
+		that.registerBundle = function(id, force) {
 			that.bundles.push(id);
-			that.bundleStates[id] = (that.cookieJar.get(id) == 'closed') ? "closed" : "open";	// default to open
+			var bundleState;
+
+			if(force) { // if override is set, use it
+				bundleState = force;
+			} else { // otherwise use cookiejar or default to open
+				bundleState = (that.cookieJar.get(id) == 'closed') ? "closed" : "open";
+			}
+
+			that.bundleStates[id] = bundleState;
 			that.bundleDictionaryStates[id] = (that.cookieJar.get(id + 'DictionaryEntry') == 'open') ? "open" : "closed";	// default to closed
 
 			if (that.bundleStates[id] == "closed") {
@@ -61,10 +69,12 @@ var caUI = caUI || {};
 		// Set initial visibility of all registered bundles
 		that.setAll = function() {
 			jQuery.each(that.bundles, function(k, id) {
+				var container = jQuery("#" + id);
+
 				if(that.bundleStates[id] == 'closed') {
-					jQuery("#" + id).hide();
+					container.hide();
 				} else {
-					jQuery("#" + id).show();
+					container.show();
 				}
 			});
 		};

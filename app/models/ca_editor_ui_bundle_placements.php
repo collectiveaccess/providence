@@ -89,6 +89,36 @@ $_ca_editor_ui_bundle_placement_settings = array(		// global
 		'label' => _t('Read only?'),
 		'description' => _t('If checked, field will not be editable.')
 	),
+	'expand_collapse_value' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'options' => array(
+			_t("Don't force (default)") => 'dont_force', // current default mode
+			_t('Collapse') => 'collapse',
+			_t('Expand') => 'expand',
+
+		),
+		'takesLocale' => false,
+		'default' => 'bubbles',
+		'width' => "200px", 'height' => 1,
+		'label' => _t('Expand/collapse if value exists'),
+		'description' => _t('Controls the expand/collapse behavior when there is at least one value present.')
+	),
+	'expand_collapse_no_value' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_SELECT,
+		'options' => array(
+			_t("Don't force (default)") => 'dont_force', // current default mode
+			_t('Collapse') => 'collapse',
+			_t('Expand') => 'expand',
+
+		),
+		'takesLocale' => false,
+		'default' => 'bubbles',
+		'width' => "200px", 'height' => 1,
+		'label' => _t('Expand/collapse if no value is present'),
+		'description' => _t('Controls the expand/collapse behavior when there is no value present.')
+	),
 );
 
 BaseModel::$s_ca_models_definitions['ca_editor_ui_bundle_placements'] = array(

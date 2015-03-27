@@ -135,7 +135,9 @@
 	if ($vb_batch) {
 		print caBatchEditorAttributeModeControl($vs_id_prefix);
 	} else {
-		print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+		// @todo add helper to determine if a value is present in $va_initial_values or not
+		// and add the result of that helper as 4th parameter here.
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, true);
 	}
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 ?>
