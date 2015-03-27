@@ -15,7 +15,7 @@
         </label>
       </labels>
       <items>
-        <item idno="Curatorial" enabled="1" default="0" value="2">
+        <item idno="Curatorial" enabled="1" default="0" value="1">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Curatorial</name_singular>
@@ -23,7 +23,7 @@
             </label>
           </labels>
         </item>
-        <item idno="All_staff" enabled="1" default="0" value="3">
+        <item idno="All_staff" enabled="1" default="0" value="2">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>All staff</name_singular>
@@ -31,7 +31,7 @@
             </label>
           </labels>
         </item>
-        <item idno="Registration_only" enabled="1" default="1" value="1">
+        <item idno="Registration_only" enabled="1" default="1" value="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Registration Only</name_singular>
@@ -16526,23 +16526,22 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="storage_date" datatype="DateRange">
+    <metadataElement code="match" datatype="List" list="yn">
       <labels>
         <label locale="en_US">
-          <name>Storage Date</name>
-          <description/>
+          <name>Match?</name>
         </label>
       </labels>
       <settings>
-        <setting name="useDatePicker">1</setting>
-        <setting name="fieldWidth">40</setting>
-        <setting name="fieldHeight">1</setting>
+        <setting name="listWidth">40</setting>
+        <setting name="listHeight">1</setting>
+        <setting name="render">radio_buttons</setting>
       </settings>
       <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_objects_x_storage_locations</table>
+        <restriction code="ca_storage_locations">
+          <table>ca_storage_locations</table>
           <settings>
-            <setting name="minAttributesPerRow">0</setting>
+            <setting name="minAttributesPerRow">1</setting>
             <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
@@ -16605,6 +16604,126 @@
         </label>
       </labels>
       <screens>
+        <screen idno="summary" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Summary</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction code="artwork" type="artwork"/>
+          </typeRestrictions>
+          <bundlePlacements>
+            <placement code="idno">
+              <bundle>idno</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Object ID</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_collection_area">
+              <bundle>ca_attribute_collection_area</bundle>
+            </placement>
+            <placement code="ca_attribute_primary_classification">
+              <bundle>ca_attribute_primary_classification</bundle>
+            </placement>
+            <placement code="ca_entities">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Artist/maker</setting>
+                <setting name="add_label" locale="en_US">Add artist/maker</setting>
+                <setting name="restrict_to_relationship_types">artist</setting>
+                <setting name="restrict_to_relationship_types">attributed</setting>
+                <setting name="restrict_to_relationship_types">maker</setting>
+                <setting name="restrict_to_relationship_types">printer</setting>
+                <setting name="restrict_to_relationship_types">painter</setting>
+                <setting name="restrict_to_relationship_types">photographer</setting>
+                <setting name="restrict_to_relationship_types">manufacturer</setting>
+                <setting name="restrict_to_relationship_types">publisher</setting>
+                <setting name="restrict_to_relationship_types">contributor</setting>
+                <setting name="restrict_to_relationship_types">for</setting>
+                <setting name="restrict_to_relationship_types">manner</setting>
+                <setting name="display_template"><![CDATA[<l>^ca_entities.preferred_labels</l> <ifdef code="ca_entities.nationality">,</ifdef> ^ca_entities.nationality<ifdef code="ca_entities.lifespan">,(</ifdef>^ca_entities.lifespan<ifdef code="ca_entities.lifespan">)</ifdef>]]></setting>
+              </settings>
+            </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Full Title</setting>
+              </settings>
+            </placement>
+            <placement code="nonpreferred_labels">
+              <bundle>nonpreferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Alternate titles</setting>
+                <setting name="add_label" locale="en_US">Add name</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_creation_date">
+              <bundle>ca_attribute_creation_date</bundle>
+            </placement>
+            <placement code="ca_attribute_medium_container">
+              <bundle>ca_attribute_medium_container</bundle>
+            </placement>
+            <placement code="ca_attribute_dimensions">
+              <bundle>ca_attribute_dimensions</bundle>
+            </placement>
+            <placement code="ca_attribute_credit_line">
+              <bundle>ca_attribute_credit_line</bundle>
+            </placement>            
+           <placement code="ca_attribute_label_copy">
+              <bundle>ca_attribute_label_copy</bundle>
+               <settings>
+                <setting name="sort">label_date_authored</setting>
+                <setting name="sortDirection">DESC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_objects_history">
+              <bundle>ca_objects_history</bundle>
+               <settings>
+                 <setting name="label" locale="en_US">Object Location History</setting>
+                 <setting name="ca_loans_showTypes">venue</setting>
+                 <setting name="ca_loans_showTypes">in</setting>
+                 <setting name="ca_loans_venue_color">F0EFB1</setting>
+                 <setting name="ca_loans_venue_dateElement">loan_period</setting>
+                 <setting name="ca_loans_venue_displayTemplate"><![CDATA[<l>^ca_loans.preferred_labels</l><br>
+                   Borrower: <unit relativeTo="ca_loans">
+                   <unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="borrower">^ca_entities.preferred_labels</unit></unit><br>
+                    Loan Dates: ^ca_loans.loan_period<br>
+                    ^ca_loans.loan_note
+                    ]]></setting>
+                 <setting name="ca_loans_in_color">D0A9F5</setting>
+                 <setting name="ca_loans_in_dateElement">loan_period</setting>
+                 <setting name="ca_loans_in_displayTemplate"><![CDATA[<l>^ca_loans.preferred_labels</l><br>
+                   Lender: <unit relativeTo="ca_loans">
+                   <unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="lender">^ca_entities.preferred_labels</unit></unit><br>
+                    Loan Dates: ^ca_loans.loan_period<br>
+                    ^ca_loans.loan_note<br>
+                    ^ca_loans.loan_in_type
+                    ]]></setting>
+                 <setting name="ca_storage_locations_dateElement">storage_date</setting>
+                 <setting name="ca_storage_locations_color">C8C8CC</setting>
+                 <setting name="ca_storage_locations_displayTemplate"><![CDATA[<l>^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➔_</l>]]></setting>
+                 <setting name="ca_storage_locations_showRelationshipTypes">location</setting>
+                 <setting name="ca_storage_locations_showRelationshipTypes">previous_location</setting>
+                 <setting name="deaccession_color">FF123D</setting>
+                 <setting name="showDeaccessionInformation">1</setting>
+                 <setting name="deaccession_displayTemplate"><![CDATA[Deaccessioned <ifdef code="ca_objects.deaccession_date">on</ifdef> ^ca_objects.deaccession_date <ifdef code="ca_objects.deaccession_type_id">(</ifdef>^ca_objects.deaccession_type_id<ifdef code="ca_objects.deaccession_type_id">)</ifdef>]]></setting>
+                 <setting name="ca_movements_showTypes">movement</setting>
+                 <setting name="ca_movements_movement_color">F6CECE</setting>
+                 <setting name="ca_movements_movement_dateElement">pickup_date</setting>
+                 <setting name="ca_movements_movement_displayTemplate"><![CDATA[<l>^ca_movements.preferred_labels<br> Pick Up Date: ^ca_occurrences.pickup_date</l>]]></setting>
+                 <setting name="ca_movements_showTypes">condition</setting>
+                 <setting name="ca_movements_condition_color">ebd0ae</setting>
+                 <setting name="ca_movements_condition_dateElement">pickup_date</setting>
+                 <setting name="ca_movements_condition_displayTemplate"><![CDATA[<l>^ca_movements.preferred_labels<br> Pick Up Date: ^ca_occurrences.pickup_date</l>]]></setting>
+                 <setting name="ca_occurrences_showTypes">exhibition</setting>
+                 <setting name="ca_occurrences_exhibition_color">6699FF</setting>
+                 <setting name="ca_occurrences_exhibition_dateElement">exh_dates</setting>
+                 <setting name="ca_occurrences_exhibition_displayTemplate"><![CDATA[<l>^ca_occurrences.preferred_labels</l><br>^ca_objects.exh_dates]]></setting>
+               </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
         <screen idno="basic" default="1">
           <labels>
             <label locale="en_US">
@@ -18005,6 +18124,9 @@
             <placement code="ca_attribute_storage_address">
               <bundle>ca_attribute_storage_address</bundle>
             </placement>
+            <placement code="ca_attribute_match">
+              <bundle>ca_attribute_match</bundle>
+            </placement>
           </bundlePlacements>
         </screen>
         <screen idno="contents" default="0">
@@ -18038,8 +18160,8 @@
             </label>
           </labels>
           <bundlePlacements>
-            <placement code="ca_attribute_storage_date">
-              <bundle>ca_attribute_storage_date</bundle>
+            <placement code="effective_date">
+              <bundle>effective_date</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -18889,21 +19011,21 @@
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
         </type>
-        <type code="contributor" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>contributor</typename>
-              <typename_reverse>contributor</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
         <type code="artist" default="0">
           <labels>
             <label locale="en_US">
               <typename>artist</typename>
               <typename_reverse>created</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="after" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>after</typename>
+              <typename_reverse>after</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -18919,6 +19041,96 @@
           <subTypeLeft>artwork</subTypeLeft>
           <subTypeRight/>
         </type>
+        <type code="contributor" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>contributor</typename>
+              <typename_reverse>contributor</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="co_creator" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>co-creator</typename>
+              <typename_reverse>co-creator</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>artwork</subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="circle" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>circle of</typename>
+              <typename_reverse>circle of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>artwork</subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="copy" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>copy of</typename>
+              <typename_reverse>copy of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>artwork</subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="distributer" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>distributer</typename>
+              <typename_reverse>distributer</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>artwork</subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="engraver" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>engraver</typename>
+              <typename_reverse>engraver</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>artwork</subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="executer" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>executer</typename>
+              <typename_reverse>executer</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>artwork</subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="follower" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>follower of</typename>
+              <typename_reverse>follower of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>artwork</subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="for" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>for</typename>
+              <typename_reverse>for</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>artwork</subTypeLeft>
+          <subTypeRight/>
+        </type>
         <type code="maker" default="0">
           <labels>
             <label locale="en_US">
@@ -18929,11 +19141,21 @@
           <subTypeLeft>artwork</subTypeLeft>
           <subTypeRight/>
         </type>
-        <type code="printer" default="0">
+        <type code="manner" default="0">
           <labels>
             <label locale="en_US">
-              <typename>printer</typename>
-              <typename_reverse>printed</typename_reverse>
+              <typename>manner of</typename>
+              <typename_reverse>manner of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>artwork</subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="manufacturer" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>manufacturer</typename>
+              <typename_reverse>manufactured</typename_reverse>
             </label>
           </labels>
           <subTypeLeft>artwork</subTypeLeft>
@@ -18959,41 +19181,41 @@
           <subTypeLeft>artwork</subTypeLeft>
           <subTypeRight/>
         </type>
-        <type code="manufacturer" default="0">
+        <type code="printer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>manufacturer</typename>
-              <typename_reverse>manufactured</typename_reverse>
+              <typename>printer</typename>
+              <typename_reverse>printed</typename_reverse>
             </label>
           </labels>
           <subTypeLeft>artwork</subTypeLeft>
           <subTypeRight/>
         </type>
-        <type code="after" default="0">
+        <type code="school" default="0">
           <labels>
             <label locale="en_US">
-              <typename>after</typename>
-              <typename_reverse>after</typename_reverse>
+              <typename>school of</typename>
+              <typename_reverse>school of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft>artwork</subTypeLeft>
           <subTypeRight/>
         </type>
-        <type code="for" default="0">
+        <type code="style" default="0">
           <labels>
             <label locale="en_US">
-              <typename>for</typename>
-              <typename_reverse>for</typename_reverse>
+              <typename>style of</typename>
+              <typename_reverse>style of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft>artwork</subTypeLeft>
           <subTypeRight/>
-        </type>
-        <type code="manner" default="0">
+        </type> 
+        <type code="studio" default="0">
           <labels>
             <label locale="en_US">
-              <typename>manner/school/style of</typename>
-              <typename_reverse>manner/school/style of</typename_reverse>
+              <typename>studio of</typename>
+              <typename_reverse>studio of</typename_reverse>
             </label>
           </labels>
           <subTypeLeft>artwork</subTypeLeft>
