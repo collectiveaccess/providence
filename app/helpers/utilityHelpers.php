@@ -878,14 +878,12 @@ function caFileIsIncludable($ps_file) {
 	 * format needed for calculations (eg 54.33)
 	 *
 	 * @param string $ps_value The value to convert
-	 * @param string $locale The locale of the value
+	 * @param string $ps_locale The locale of the value
 	 * @return float The converted value
 	 */
-	function caConvertLocaleSpecificFloat($ps_value, $locale = "en_US") {
-		$vo_locale = new Zend_Locale($locale);
-
+	function caConvertLocaleSpecificFloat($ps_value, $ps_locale = "en_US") {
 		try {
-			return Zend_Locale_Format::getNumber($ps_value, array('locale' => $locale));
+			return Zend_Locale_Format::getNumber($ps_value, array('locale' => $ps_locale));
 		} catch (Zend_Locale_Exception $e) { // happens when you enter 54.33 but 54,33 is expected in the current locale
 			return floatval($ps_value);
 		}
@@ -900,8 +898,6 @@ function caFileIsIncludable($ps_file) {
 	 * @return float The converted value
 	 */
 	function caConvertFloatToLocale($pn_value, $locale = "en_US") {
-		$vo_locale = new Zend_Locale($locale);
-
 		try {
 			return Zend_Locale_Format::toNumber($pn_value, array('locale' => $locale));
 		} catch (Zend_Locale_Exception $e) {
@@ -2362,12 +2358,12 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
-	 * 
+	 * Parse generic dimension (weight or length)
+	 * @param string $ps_value value to parse
+	 * @param null|array $pa_options options array
+	 * @return bool|null|Zend_Measure_Length|Zend_Measure_Weight
 	 */
 	function caParseDimension($ps_value, $pa_options=null) {
-		global $g_ui_locale;
-		$vs_locale = caGetOption('locale', $pa_options, $g_ui_locale);
-		
 		try {
 			if ($vo_length = caParseLengthDimension($ps_value, $pa_options)) {
 				return $vo_length;
@@ -2388,7 +2384,9 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
-	 * 
+	 * Get length unit type as Zend constant, e.g. 'ft.' = Zend_Measure_Length::FEET
+	 * @param string $ps_unit
+	 * @return null|string
 	 */
 	function caGetLengthUnitType($ps_unit) {
 		switch($ps_unit) {
@@ -2457,7 +2455,11 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
-	 * 
+	 * Parse length dimension
+	 * @param string $ps_value
+	 * @param null|array $pa_options
+	 * @return bool|null|Zend_Measure_Length
+	 * @throws Exception
 	 */
 	function caParseLengthDimension($ps_value, $pa_options=null) {
 		global $g_ui_locale;
@@ -2512,7 +2514,11 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
-	 * 
+	 * Parse weight dimension
+	 * @param string $ps_value value to parse
+	 * @param null|array $pa_options options array
+	 * @return bool|null|Zend_Measure_Weight
+	 * @throws Exception
 	 */
 	function caParseWeightDimension($ps_value, $pa_options=null) {
 		global $g_ui_locale;
@@ -2526,7 +2532,6 @@ function caFileIsIncludable($ps_file) {
 			if (preg_match("!^([\d\.\,/ ]+)[ ]*([^\d ]+)!", $vs_expression, $va_matches)) {
 				$vs_value = trim($va_matches[1]);
 				$va_values = explode(" ", $vs_value);
-				$vs_unit_expression = strtolower(trim($va_matches[2]));
 				if ($vs_expression = trim(str_replace($va_matches[0], '', $vs_expression))) {
 					array_unshift($pa_values, $vs_expression);
 				}
@@ -2595,9 +2600,8 @@ function caFileIsIncludable($ps_file) {
 					throw new Exception(_t('Not a valid measurement'));
 				}
 				if ($o_tmp->getValue() < 0) {
-					// length can't be negative in our universe
+					// weight can't be negative in our universe
 					throw new Exception(_t('Must not be less than zero'));
-					return false;
 				}
 				
 				if ($vo_parsed_measurement) {
