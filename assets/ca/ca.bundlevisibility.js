@@ -56,7 +56,7 @@ var caUI = caUI || {};
 			} else {
 				that.openDictionaryEntry(id, true);
 			}
-		}
+		};
 
 		// Set initial visibility of all registered bundles
 		that.setAll = function() {
@@ -67,7 +67,7 @@ var caUI = caUI || {};
 					jQuery("#" + id).show();
 				}
 			});
-		}
+		};
 
 		// Toggle bundle
 		that.toggle = function(id) {
@@ -77,7 +77,7 @@ var caUI = caUI || {};
 				that.close(id);
 			}
 			return false;
-		}
+		};
 
 		// Open bundle
 		that.open = function(id, dontAnimate) {
@@ -104,7 +104,7 @@ var caUI = caUI || {};
 				}
 			}
 			return false;
-		}
+		};
 
 		// Close bundle
 		that.close = function(id, dontAnimate) {
@@ -131,7 +131,7 @@ var caUI = caUI || {};
 				}
 			}
 			return false;
-		}
+		};
 
 		// Toggle dictionary entry
 		that.toggleDictionaryEntry = function(id) {
@@ -141,7 +141,7 @@ var caUI = caUI || {};
 				that.closeDictionaryEntry(id);
 			}
 			return false;
-		}
+		};
 
 		// Open dictionary entry
 		that.openDictionaryEntry = function(id, dontAnimate) {
@@ -167,7 +167,7 @@ var caUI = caUI || {};
 			}
 
 			return false;
-		}
+		};
 
 		// Close dictionary entry
 		that.closeDictionaryEntry = function(id, dontAnimate) {
@@ -188,7 +188,7 @@ var caUI = caUI || {};
 				}
 			}
 			return false;
-		}
+		};
 
 		// --------------------------------------------------------------------------------
 
