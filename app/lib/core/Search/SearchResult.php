@@ -1000,7 +1000,7 @@ class SearchResult extends BaseObject {
 					return $t_instance->getAttributesForDisplay($va_path_components['field_name'], $vs_template, array_merge($pa_options, array('row_id' => $vn_row_id)));
 				} else {
 					if(!$vs_template) {
-						return $t_instance->getRawValue($vn_row_id, $va_path_components['field_name'], $va_path_components['subfield_name'], ',', $pa_options);
+						return $t_instance->getRawValue($vn_row_id, $va_path_components['field_name'], $va_path_components['subfield_name'], caGetOption('delimiter', $pa_options, ','), $pa_options);
 					} else {
 						return caProcessTemplateForIDs($vs_template, $va_path_components['table_name'], array($vn_row_id), array());
 					}
