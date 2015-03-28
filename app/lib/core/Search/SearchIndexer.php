@@ -1148,7 +1148,13 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 	}
 	# ------------------------------------------------
 	/**
-	 * 
+	 * Index attribute
+	 *
+	 * @param BaseModel $pt_subject
+	 * @param int $pn_row_id
+	 * @param mixed $pm_element_code_or_id
+	 * @param array $pa_data
+	 * @return bool
 	 */
 	private function _indexAttribute($pt_subject, $pn_row_id, $pm_element_code_or_id, $pa_data) {
 		$va_attributes = $pt_subject->getAttributesByElement($pm_element_code_or_id, array('row_id' => $pn_row_id));
@@ -1256,15 +1262,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 				if(sizeof($va_attributes) > 0) {
 					foreach($va_attributes as $vo_attribute) {
 						foreach($vo_attribute->getValues() as $vo_value) {
-							//if the field is a daterange type get content from start and end fields
-							$va_field_list = $pt_subject->getFieldsArray();
-							if(in_array($va_field_list[$vs_field]['FIELD_TYPE'],array(FT_DATERANGE,FT_HISTORIC_DATERANGE))) {
-								$start_field = $va_field_list[$vs_field]['START'];
-								$end_field = $va_field_list[$vs_field]['END'];
-								$vs_content = $pa_field_data[$start_field] . " - " .$pa_field_data[$end_field];
-							} else {
-								$vs_content = $vo_value->getDisplayValue();
-							}
+							$vs_content = $vo_value->getDisplayValue();
 							$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $pn_row_id, $vs_content, $pa_data);
 						}
 					}

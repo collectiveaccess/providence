@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/BaseFindEngine.php : base controller for all "find" operations (search & browse)
+ * app/lib/core/BaseFindEngine.php : base controller for all "find" operations (search & browse)
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -47,6 +47,19 @@
 		 *
 		 */
 		private $ops_tmp_table_name;
+		# ------------------------------------------------
+		protected $opo_datamodel;
+		protected $opo_db;
+		
+		# ------------------------------------------------
+		/**
+		 * @param Db $po_db A database client object to use rather than creating a new connection. [Default is to create a new database connection]
+		 */
+		public function __construct($po_db=null) {			
+			$this->opo_datamodel = Datamodel::load();
+	
+			$this->opo_db = $po_db ? $po_db : new Db();
+		}
 		# ------------------------------------------------------------------
 		/**
 		 * Quickly loads list of row_ids in $pa_hits into a temporary database table uniquely identified by $ps_key

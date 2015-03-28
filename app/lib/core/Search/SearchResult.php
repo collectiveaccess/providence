@@ -1016,7 +1016,6 @@ class SearchResult extends BaseObject {
 						}
 						
 						$va_ids = SearchResult::$opa_hierarchy_children_prefetch_cache_index[$this->ops_table_name][$vn_row_id];
-						
 					} else {
 						// [PRIMARY TABLE CHILDREN]
 						

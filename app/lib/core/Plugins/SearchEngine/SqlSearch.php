@@ -471,7 +471,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	# -------------------------------------------------------
 	private function _doQueriesForSqlSearch($po_rewritten_query, $pn_subject_tablenum, $ps_dest_table, $pn_level=0, $pa_options=null) {		// query is always of type Zend_Search_Lucene_Search_Query_Boolean
 		$vn_i = 0;
-		
 		switch(get_class($po_rewritten_query)){
 			case 'Zend_Search_Lucene_Search_Query_MultiTerm':
 				$va_elements = $po_rewritten_query->getTerms();
@@ -1280,12 +1279,13 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$t = new Timer();
 								$qr_res = $this->opo_db->query($vs_sql, is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum));
 								
-								if ($this->debug) { Debug::msg('AND: '.$vs_sql. ' '.$t->GetTime(4)); }
-								
+								if ($this->debug) { Debug::msg('AND: '.$vs_sql. ' '.$t->GetTime(4). ' '.$qr_res->numRows()); }
 								if (is_array($va_ids = $qr_res->getAllFieldValues('row_id')) && sizeof($va_ids)) {
 									$vs_sql = "DELETE FROM {$ps_dest_table} WHERE row_id NOT IN (?)";
 									$qr_res = $this->opo_db->query($vs_sql, array($va_ids));
 									if ($this->debug) { Debug::msg('AND DELETE: '.$vs_sql. ' '.$t->GetTime(4)); }
+								} else { // we don't have any results left, ie. our AND query should yield an empty result
+									$this->opo_db->query("DELETE FROM {$ps_dest_table}");
 								}
 								break;
 							case 'NOT':
