@@ -1579,7 +1579,7 @@
         <metadataElement code="meas_line1" datatype="Container">
           <labels>
             <label locale="en_US">
-              <name/>
+              <name>Line1</name>
             </label>
           </labels>
           <elements>
