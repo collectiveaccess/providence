@@ -61,11 +61,9 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 		parent::Index($pa_options);
 		AssetLoadManager::register('browsable');	// need this to support browse panel when filtering/refining search results
 
-		$t_model = $this->opo_datamodel->getTableInstance($this->ops_tablename, true);
-
 		// Get elements of result context
 		$vn_page_num 			= $this->opo_result_context->getCurrentResultsPageNumber();
-		$vs_search 				= $this->opo_result_context->getSearchExpression();
+		//$vs_search 				= $this->opo_result_context->getSearchExpression();
 		if (!$vn_items_per_page = $this->opo_result_context->getItemsPerPage()) { $vn_items_per_page = $this->opa_items_per_page[0]; }
 		if (!$vs_view 			= $this->opo_result_context->getCurrentView()) {
 			$va_tmp = array_keys($this->opa_views);
@@ -98,8 +96,9 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 		$this->view->setVar('t_form', $t_form);
 		$this->view->setVar('form_id', $vn_form_id);
 
+		$vs_append_to_search = '';
 		if ($pa_options['appendToSearch']) {
-			$vs_append_to_search .= " AND (".$pa_options['appendToSearch'].")";
+			$vs_append_to_search = " AND (".$pa_options['appendToSearch'].")";
 		}
 
 		//
