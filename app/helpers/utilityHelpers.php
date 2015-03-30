@@ -2657,6 +2657,8 @@ function caFileIsIncludable($ps_file) {
 			}
 		} elseif(preg_match("/Labels$/", $ps_id_prefix)) { // labels
 			return (sizeof($pa_initial_values) > 0);
+		} elseif(preg_match("/\_rel$/", $ps_id_prefix)) {
+			return (sizeof($pa_initial_values) > 0);
 		}
 
 		return false;
