@@ -267,14 +267,14 @@ class SearchEngine extends SearchBase {
 				if (is_array($va_restrict_to_fields = caGetOption('restrictSearchToFields', $pa_options, null)) && $this->opo_engine->can('restrict_to_fields')) {
 					$this->opo_engine->setOption('restrictSearchToFields', $va_restrict_to_fields);
 				}
-			
+
 				$o_res =  $this->opo_engine->search($this->opn_tablenum, $vs_search, $this->opa_result_filters, $o_rewritten_query);
 			
 				// cache the results
 				$va_hits = $o_res->getPrimaryKeyValues($vn_limit);
 				$o_res->seek(0);
 			} else {
-				$va_hits = array();			
+				$va_hits = array();
 			}
 
 			if (isset($pa_options['sets']) && $pa_options['sets']) {
@@ -456,7 +456,13 @@ class SearchEngine extends SearchBase {
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Boolean':
 					$va_tmp = $this->_rewriteQuery($o_term);
-					$va_terms[] = new Zend_Search_Lucene_Search_Query_Boolean($va_tmp['terms'], $va_tmp['signs']);
+					// don't wrap 1-term query in unnecessary extra boolean subquery. apparently the engines can't handle the extra parentheses
+					if(sizeof($va_tmp['terms']) == 1) {
+						$va_terms[] = array_shift($va_tmp['terms']);
+					} else {
+						$va_terms[] = new Zend_Search_Lucene_Search_Query_Boolean($va_tmp['terms'], $va_tmp['signs']);
+					}
+
 					$va_signs[] = $va_old_signs[$vn_i];
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Range':
@@ -470,7 +476,6 @@ class SearchEngine extends SearchBase {
 			
 			$vn_i++;
 		}
-		
 		return array(
 			'terms' => $va_terms,
 			'signs' => $va_signs
@@ -484,7 +489,6 @@ class SearchEngine extends SearchBase {
 	 */
 	private function _rewriteTerm($po_term, $pb_sign) {
 		$vs_fld = $po_term->getTerm()->field;
-			
 		if (sizeof($va_access_points = $this->getAccessPoints($this->opn_tablenum))) {
 			// if field is access point then do rewrite
 			if (

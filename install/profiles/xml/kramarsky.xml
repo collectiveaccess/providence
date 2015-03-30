@@ -8809,9 +8809,6 @@
             <placement code="ca_attribute_legacy_comments">
               <bundle>ca_attribute_legacy_comments</bundle>
             </placement>
-            <placement code="ca_attribute_legacy_comments">
-              <bundle>ca_attribute_legacy_comments</bundle>
-            </placement>
              <placement code="ca_attribute_current_location">
               <bundle>ca_attribute_current_location</bundle>
             </placement>
@@ -11826,7 +11823,7 @@
         </label>
       </labels>
       <typeRestrictions>
-        <restriction type="exhibition">exhibition</restriction>        
+        <restriction type="exhibition"/>
       </typeRestrictions>
       <bundlePlacements>
         <placement code="preferred_labels">
@@ -11936,7 +11933,7 @@
         </label>
       </labels>
       <typeRestrictions>
-        <restriction type="publication">publication</restriction>        
+        <restriction type="publication" />
       </typeRestrictions>
       <bundlePlacements>
         <placement code="preferred_labels">

@@ -2427,30 +2427,6 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="running_time" datatype="TimeCode">
-      <labels>
-        <label locale="en_US">
-          <name>Running time</name>
-          <description>The running time of the production. Enter durations in any of the following formats: hh:mm:ss (hours/minutes/seconds), Xh Xm Xs (hours/minutes/seconds) or XXXs (seconds).</description>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">70</setting>
-        <setting name="fieldHeight">1</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_occurrences</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
     <metadataElement code="photoFile" datatype="List" list="photo_file">
       <labels>
         <label locale="en_US">
