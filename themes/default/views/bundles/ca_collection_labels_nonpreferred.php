@@ -42,7 +42,7 @@
 	if ($vb_batch) {
 		print caBatchEditorNonPreferredLabelsModeControl($t_label, $vs_id_prefix);
 	} else {
-		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'NPLabels');
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'NPLabels', $va_settings, caInitialValuesArrayHasValue($vs_id_prefix.'NPLabels', $va_initial_values));
 	}
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'NPLabels', $va_settings);
 ?>

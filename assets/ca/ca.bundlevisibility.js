@@ -41,25 +41,31 @@ var caUI = caUI || {};
 		// --------------------------------------------------------------------------------
 		// Define methods
 		// --------------------------------------------------------------------------------
+		/**
+		 * Register a bundle
+		 * @param id
+		 * @param force
+		 */
 		that.registerBundle = function(id, force) {
 			that.bundles.push(id);
 			var bundleState;
 
 			if(force) { // if override is set, use it
 				bundleState = force;
-			} else { // otherwise use cookiejar or default to open
-				bundleState = (that.cookieJar.get(id) == 'closed') ? "closed" : "open";
+			} else { // otherwise use cookiejar and default to open
+				bundleState = (that.cookieJar.get(id) == 'closed') ? 'closed' : 'open';
 			}
 
 			that.bundleStates[id] = bundleState;
-			that.bundleDictionaryStates[id] = (that.cookieJar.get(id + 'DictionaryEntry') == 'open') ? "open" : "closed";	// default to closed
+			that.bundleDictionaryStates[id] = (that.cookieJar.get(id + 'DictionaryEntry') == 'open') ? 'closed' : 'open';	// default to closed
 
-			if (that.bundleStates[id] == "closed") {
+			// actually open/close elements
+			if (that.bundleStates[id] == 'closed') {
 				that.close(id, true);
 			} else {
 				that.open(id, true);
 			}
-			if (that.bundleDictionaryStates[id] == "closed") {
+			if (that.bundleDictionaryStates[id] == 'closed') {
 				that.closeDictionaryEntry(id, true);
 			} else {
 				that.openDictionaryEntry(id, true);

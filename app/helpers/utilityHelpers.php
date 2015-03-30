@@ -2634,3 +2634,31 @@ function caFileIsIncludable($ps_file) {
 		return $pa_stack;
 	}
 	# ----------------------------------------
+	/**
+	 * Simple helper to figure out if there is a value in the initial values array
+	 * (the one that we feed to the initialize bundle javascript)
+	 * @param string $ps_id_prefix the id prefix for the field in question, used to figure out what format the array has
+	 * @param array|string $pa_initial_values
+	 * @return bool
+	 */
+	function caInitialValuesArrayHasValue($ps_id_prefix, $pa_initial_values=array()) {
+		// intrinsic
+		if(is_string($pa_initial_values)) {
+			return (strlen($pa_initial_values) > 0);
+		}
+
+		// attributes
+		if(preg_match("/attribute/", $ps_id_prefix)) {
+			foreach($pa_initial_values as $va_val) {
+				foreach($va_val as $vs_subfield => $vs_subfield_val) {
+					if($vs_subfield === 'locale_id') { continue; }
+					if($vs_subfield_val) { return true; }
+				}
+			}
+		} elseif(preg_match("/Labels$/", $ps_id_prefix)) { // labels
+			return (sizeof($pa_initial_values) > 0);
+		}
+
+		return false;
+	}
+	# ----------------------------------------
