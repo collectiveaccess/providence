@@ -788,6 +788,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				case 'special':
 					if (in_array($vs_bundle, array('hierarchy_location', 'hierarchy_navigation'))) {
 						$va_additional_settings = array(
+							// no expand/collapse for these bundles
+							'expand_collapse_value' => false,
+							'expand_collapse_no_value' => false,
 							'open_hierarchy' => array(
 								'formatType' => FT_NUMBER,
 								'displayType' => DT_CHECKBOXES,
