@@ -18,29 +18,29 @@
          bootstrap="./setup-tests.php"
          verbose="false">
 
-	<testsuites>
-		<testsuite name="Helpers Test Suite">
-			<directory>helpers/</directory>
-		</testsuite>
-		<testsuite name="Lib Test Suite">
-			<directory>lib/</directory>
-			<!-- files below require coney island data, which is not on GitHub anymore -->
-			<exclude>lib/core/Models/ModelTest.php</exclude>
-			<exclude>lib/core/SearchResult/SearchResultTest.php</exclude>
-			<exclude>lib/ca/Service/ItemServiceTest.php</exclude>
-		</testsuite>
-		<testsuite name="Models Test Suite">
-			<directory>models/</directory>
-		</testsuite>
-		<testsuite name="Plugins Test Suite">
-			<directory>plugins/</directory>
-		</testsuite>
-		<testsuite name="Refineries Test Suite">
-			<directory>refineries/</directory>
-		</testsuite>
+  <testsuites>
+    <testsuite name="Helpers Test Suite">
+      <directory>helpers/</directory>
+    </testsuite>
+    <testsuite name="Lib Test Suite">
+      <directory>lib/</directory>
+      <!-- files below require coney island data, which is not on GitHub anymore -->
+      <exclude>lib/core/Models/ModelTest.php</exclude>
+      <exclude>lib/core/SearchResult/SearchResultTest.php</exclude>
+      <exclude>lib/ca/Service/ItemServiceTest.php</exclude>
+    </testsuite>
+    <testsuite name="Models Test Suite">
+      <directory>models/</directory>
+    </testsuite>
+    <testsuite name="Plugins Test Suite">
+      <directory>plugins/</directory>
+    </testsuite>
+    <testsuite name="Install Test Suite">
+      <directory>install/</directory>
+    </testsuite>
     <testsuite name="Tests With Data Suite">
       <directory>testsWithData/</directory>
     </testsuite>
-	</testsuites>
+  </testsuites>
 
 </phpunit>
