@@ -7553,7 +7553,7 @@ class BaseModel extends BaseObject {
 		$va_vals = caProcessTemplateForIDs($ps_template, $this->tableName(), $va_ids, array_merge($pa_options, array('returnAsArray'=> true)));
 		
 		$pa_sort = caGetOption('sort', $pa_options, null);
-		if (!is_array($pa_sort)) { $pa_sort = explode(";", $pa_sort); }
+		if (!is_array($pa_sort) && $pa_sort) { $pa_sort = explode(";", $pa_sort); }
 		
 		$ps_sort_direction = strtolower(caGetOption('sortDirection', $pa_options, 'asc'));
 		if (!in_array($ps_sort_direction, array('asc', 'desc'))) { $ps_sort_direction = 'asc'; }
@@ -7584,7 +7584,7 @@ class BaseModel extends BaseObject {
 				ksort($va_hierarchy_data[$vn_parent_id]);
 			}
 			
-			return $this->_getFlattenedHierarchyArray($va_hierarchy_data, null, $ps_sort_direction);
+			return $this->_getFlattenedHierarchyArray($va_hierarchy_data, $pn_id ? $pn_id : null, $ps_sort_direction);
 		} else {		
 			foreach($va_vals as $vn_i => $vs_val) {
 				$va_hierarchy_data[] = array(
