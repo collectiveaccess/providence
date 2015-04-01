@@ -2663,7 +2663,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 										break;
 									case 'hierarchy':
 										if (is_array($va_val) && (sizeof($va_val) > 0)) {
-											$va_val = array_reverse($va_val);
+											//$va_val = array_reverse($va_val);
 											if ($vs_hierarchy_name) { array_unshift($va_val, $vs_hierarchy_name); }
 											foreach($va_val as $va_hier) {
 												if (!is_array($va_hier)) { $va_hier = array($va_hier); }
