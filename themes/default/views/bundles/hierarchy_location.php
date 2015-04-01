@@ -38,7 +38,9 @@
 	$pn_id 				= $this->getVar('id');
 	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$va_hierarchy		= $t_subject->getHierarchyAsList(null, array('idsOnly' => true));
-	if(is_array($va_hierarchy)) { $vn_items_in_hier = sizeof($va_hierarchy); }
+
+	//@todo maybe don't hardcode the template?
+	$vs_bundle_preview	= caProcessTemplateForIDs("^_hierarchy ➔ ^_parent ➔ ^preferred_labels", $t_subject->tableName(), array($t_subject->getPrimaryKey()));
 	
 	switch($vs_priv_table) {
 		case 'ca_relationship_types':
@@ -160,7 +162,7 @@
 	});
 </script>
 <?php
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $pa_bundle_settings, false, $vs_bundle_preview);
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 ?>
 <div id="<?php print $vs_id_prefix; ?>">

@@ -284,7 +284,15 @@ class ca_editor_ui_bundle_placements extends BaseModel {
 	public function setSettingDefinitionsForPlacement($pa_additional_settings) {
 		if (!is_array($pa_additional_settings)) { $pa_additional_settings = array(); }
 		global $_ca_editor_ui_bundle_placement_settings;
-		$this->SETTINGS = new ModelSettings($this, 'settings', array_merge($_ca_editor_ui_bundle_placement_settings, $pa_additional_settings));
+
+		$va_settings = array_merge($_ca_editor_ui_bundle_placement_settings, $pa_additional_settings);
+		// don't add settings that are set to false - they would be rendered anyway :-(
+		foreach($va_settings as $vs_setting => $va_val) {
+			if(!$va_val) {
+				unset($va_settings[$vs_setting]);
+			}
+		}
+		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 		
 		return true;
 	}

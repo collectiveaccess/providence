@@ -36,6 +36,9 @@
 	$va_lookup_urls 	= caJSONLookupServiceUrl($this->request, $t_subject->tableName(), array('noInline' => 1));
 	$va_hierarchy		= $t_subject->getHierarchyAsList(null, array('idsOnly' => true));
 	if(is_array($va_hierarchy)) { $vn_items_in_hier = sizeof($va_hierarchy); }
+
+	//@todo maybe don't hardcode the template?
+	$vs_bundle_preview	= caProcessTemplateForIDs("^_hierarchy ➔ ^_parent ➔ ^preferred_labels", $t_subject->tableName(), array($t_subject->getPrimaryKey()));
 	
 	$pa_bundle_settings = $this->getVar('settings');
 	
@@ -56,7 +59,7 @@
 		$vn_init_id = $pn_id;
 	}
 	
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $pa_bundle_settings, false, $vs_bundle_preview);
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 ?>	
 	<div id="<?php print $vs_id_prefix; ?>">

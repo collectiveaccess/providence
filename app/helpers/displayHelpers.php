@@ -3659,44 +3659,35 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 	 * @param string $ps_id_prefix
 	 * @param array $pa_settings bundle placement option array
 	 * @param bool $pb_has_value
+	 * @param string $ps_preview_init string to initialize bundle preview content section with
 	 * 
 	 * @return string HTML implementing the control
 	 */
-	function caEditorBundleShowHideControl($po_request, $ps_id_prefix, $pa_settings=null, $pb_has_value=false) {
+	function caEditorBundleShowHideControl($po_request, $ps_id_prefix, $pa_settings=null, $pb_has_value=false, $ps_preview_init="&nbsp;") {
 		$vs_expand_collapse_value = caGetOption('expand_collapse_value', $pa_settings, 'dont_force');
 		$vs_expand_collapse_no_value = caGetOption('expand_collapse_no_value', $pa_settings, 'dont_force');
+		$vs_expand_collapse = caGetOption('expand_collapse', $pa_settings, false);
 
-		if($pb_has_value) {
-			switch(strtolower($vs_expand_collapse_value)) {
-				case 'collapse':
-					$vs_force = 'closed';
-					break;
-				case 'expand':
-					$vs_force = 'open';
-					break;
-				case 'dont_force':
-				default:
-					$vs_force = '';
-					break;
-			}
-		} else {
-			switch(strtolower($vs_expand_collapse_no_value)) {
-				case 'collapse':
-					$vs_force = 'closed';
-					break;
-				case 'expand':
-					$vs_force = 'open';
-					break;
-				case 'dont_force':
-				default:
-					$vs_force = '';
-					break;
-			}
+		if(!$vs_expand_collapse) {
+			$vs_expand_collapse = ($pb_has_value ? $vs_expand_collapse_value : $vs_expand_collapse_no_value);
+		}
+
+		switch(strtolower($vs_expand_collapse)) {
+			case 'collapse':
+				$vs_force = 'closed';
+				break;
+			case 'expand':
+				$vs_force = 'open';
+				break;
+			case 'dont_force':
+			default:
+				$vs_force = '';
+				break;
 		}
 
 		$ps_preview_id_prefix = preg_replace("/[0-9]+\_rel/", "", $ps_id_prefix);
 
-		$vs_buf  = "<span class='bundleContentPreview' id='{$ps_preview_id_prefix}_BundleContentPreview'>&nbsp;</span>";
+		$vs_buf  = "<span class='bundleContentPreview' id='{$ps_preview_id_prefix}_BundleContentPreview'>{$ps_preview_init}</span>";
 		$vs_buf .= "<span style='position: absolute; top: 2px; right: 7px;'>";
 		$vs_buf .= "<a href='#' onclick='caBundleVisibilityManager.toggle(\"{$ps_id_prefix}\");  return false;'><img src=\"".$po_request->getThemeUrlPath()."/graphics/arrows/expand.jpg\" border=\"0\" id=\"{$ps_id_prefix}VisToggleButton\"/></a>";
 		$vs_buf .= "</span>\n";	

@@ -788,9 +788,25 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				case 'special':
 					if (in_array($vs_bundle, array('hierarchy_location', 'hierarchy_navigation'))) {
 						$va_additional_settings = array(
-							// no expand/collapse for these bundles
+							// no 'classic' expand/collapse for these bundles
 							'expand_collapse_value' => false,
 							'expand_collapse_no_value' => false,
+							// the concept 'value' doesn't really make sense in this context, so we just add one option
+							'expand_collapse' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_SELECT,
+								'options' => array(
+									_t("Don't force (default)") => 'dont_force', // current default mode
+									_t('Collapse') => 'collapse',
+									_t('Expand') => 'expand',
+
+								),
+								'takesLocale' => false,
+								'default' => 'bubbles',
+								'width' => "200px", 'height' => 1,
+								'label' => _t('Always Expand/collapse'),
+								'description' => _t('Controls the expand/collapse behavior')
+							),
 							'open_hierarchy' => array(
 								'formatType' => FT_NUMBER,
 								'displayType' => DT_CHECKBOXES,
@@ -972,7 +988,25 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('Show lots'),
 										'description' => _t('')
-									)
+									),
+									// no 'classic' expand/collapse for this bundle
+									'expand_collapse_value' => false,
+									'expand_collapse_no_value' => false,
+									// the concept 'value' doesn't really make sense in this context, so we just add one option
+									'expand_collapse' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'options' => array(
+											_t("Don't force (default)") => 'dont_force', // current default mode
+											_t('Collapse') => 'collapse',
+											_t('Expand') => 'expand',
+										),
+										'takesLocale' => false,
+										'default' => 'bubbles',
+										'width' => "200px", 'height' => 1,
+										'label' => _t('Always Expand/collapse'),
+										'description' => _t('Controls the expand/collapse behavior')
+									),
 								);
 								
 								$va_types = caGetTypeList("ca_object_lots");
