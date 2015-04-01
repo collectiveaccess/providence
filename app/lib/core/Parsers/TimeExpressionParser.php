@@ -3004,6 +3004,9 @@ class TimeExpressionParser {
 				
 				$vn_s = intval($vn_s/10) * 10;
 				$vn_e = intval($vn_e/10) * 10;
+
+				if($vn_s < 1000 || $vn_s > 9999) { break; }
+				if($vn_e < 1000 || $vn_e > 9999) { break; }
 				
 				$va_decade_indicators = $this->opo_language_settings->getList("decadeIndicator");
 				$vs_bc_indicator = $this->opo_language_settings->get("dateBCIndicator");
@@ -3150,7 +3153,7 @@ class TimeExpressionParser {
 				}
 				break;
 		}
-		
+
 		return $va_values;
 	}
 	# -------------------------------------------------------------------
