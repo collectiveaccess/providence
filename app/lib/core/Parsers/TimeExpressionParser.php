@@ -1419,7 +1419,7 @@ class TimeExpressionParser {
 				);
 			}
 		}
-		caDebug($va_dates);
+
 		return $va_dates;
 	}
 	# -------------------------------------------------------------------
