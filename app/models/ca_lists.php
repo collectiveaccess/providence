@@ -1464,7 +1464,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
 				</div><!-- end hierarchyBrowser -->	</div>";
 				
-				$vs_buf .= "	<script type='text/javascript'>
+				$vs_buf .= "
+	<script type='text/javascript'>
 		jQuery(document).ready(function() { 
 			var oHierBrowser = caUI.initHierBrowser('{$ps_name}_hierarchyBrowser{n}', {
 				uiStyle: '".(($vs_render_as == 'vert_hierbrowser') ? 'vertical' : 'horizontal')."',
@@ -1491,7 +1492,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				onSelection: function(item_id, parent_id, name, display) {
 					jQuery('#{$ps_name}').val(item_id);
 				}
-			});";
+			});
+";
 			
 		if ($vs_render_as == 'horiz_hierbrowser_with_search') {
 			$vs_buf .= "jQuery('#{$ps_name}_hierarchyBrowserSearch{n}').autocomplete(
