@@ -31,13 +31,9 @@
  */
 class wamMenuPlugin extends BaseApplicationPlugin {
 
-	/** @var Configuration */
-	private $opo_config;
-
 	public function __construct($ps_plugin_path) {
 		parent::__construct();
 		$this->description = _t('Manipulates the navigation menu to the to the Museum\'s use case' );
-		$this->opo_config = Configuration::load($ps_plugin_path.'/conf/wamMenu.conf');
 	}
 
 	public function checkStatus() {
@@ -45,7 +41,7 @@ class wamMenuPlugin extends BaseApplicationPlugin {
 			'description' => $this->getDescription(),
 			'errors' => array(),
 			'warnings' => array(),
-			'available' => ((bool)$this->opo_config->get('enabled'))
+			'available' => true
 		);
 	}
 
