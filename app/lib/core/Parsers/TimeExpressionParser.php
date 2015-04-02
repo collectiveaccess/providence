@@ -1377,9 +1377,9 @@ class TimeExpressionParser {
 		$va_dates = array();
 		if (sizeof($va_decade_indicators)) {
 			if (
-				(preg_match("/^([\d]{4})[\']{0,1}(".join("|", $va_decade_indicators)."){1}$/i", $va_token['value'], $va_matches))
+				(preg_match("/^([\d]{2,4})[\']{0,1}(".join("|", $va_decade_indicators)."){1}$/i", $va_token['value'], $va_matches))
 				||
-				(preg_match("/^([\d]{3})\_$/", $va_token['value'], $va_matches))
+				(preg_match("/^([\d]{3})(\_)$/", $va_token['value'], $va_matches))
 			) {
 				$vn_is_circa = $vb_circa_is_set ? 1 : 0;
 				
@@ -1402,20 +1402,24 @@ class TimeExpressionParser {
 							break(2);
 					}
 				}
-				if (strlen($va_matches[1]) == 3) { $va_matches[1].='0'; }
+
+				// decade expression with trailing underscore: 191_
+				if (isset($va_matches[2]) && ($va_matches[2] == '_') && (strlen($va_matches[1]) == 3)) {
+					$va_matches[1].='0';
+				}
 			
-				$vn_start_year = $va_matches[1] - ($va_matches[1] % 10);
+				$vn_start_year = (int) ($va_matches[1] - ($va_matches[1] % 10));
 				$va_dates['start'] = array(
 					'month' => 1, 'day' => 1, 'year' => $vn_start_year,
 					'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa
 				);
 				$va_dates['end'] = array(
-					'month' => 12, 'day' => 31, 'year' => $vn_start_year + 9,
+					'month' => 12, 'day' => 31, 'year' => ($vn_start_year + 9),
 					'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa
 				);
 			}
 		}
-		
+
 		return $va_dates;
 	}
 	# -------------------------------------------------------------------
@@ -3150,7 +3154,7 @@ class TimeExpressionParser {
 				}
 				break;
 		}
-		
+
 		return $va_values;
 	}
 	# -------------------------------------------------------------------
