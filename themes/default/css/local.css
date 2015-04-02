@@ -84,6 +84,7 @@ div.editorBottomPadding {
 div.control-box {
   width: 100%;
   background-color: #0a0905;
+  float: none;
   color: white; }
   div.control-box a {
     color: white;
@@ -137,6 +138,7 @@ div.control-box-middle-content {
   color: inherit;
   background-color: white;
   border: 1px solid white;
+  box-shadow: 0 0 3px 1px gainsboro;
   border-radius: 3px;
   margin-bottom: 1em; }
 
@@ -1178,20 +1180,11 @@ input[type="text"],
 input[type="textarea"],
 textarea,
 input[type="password"] {
-  width: 100%;
-  height: 1.8em;
   font-family: inherit;
   font-size: inherit; }
-  .formLabel input[type="text"], .formLabel
-  input[type="textarea"], .formLabel
-  textarea, .formLabel
-  input[type="password"] {
-    width: 100% !important;
-    height: 1.8em !important; }
 
 .labelInfo {
   background-color: transparent;
-  /*border-top: 1px solid #e9e9e9;*/
   margin-left: 0px;
   padding: 7px 28px 3px 5px;
   border-bottom: 1px solid #e6e6e6; }
@@ -1199,6 +1192,9 @@ input[type="password"] {
     border-bottom: 0; }
   .labelInfo.button {
     border-top: 1px solid #e6e6e6; }
+    .labelInfo.button img {
+      max-height: 1.2em;
+      vertical-align: middle; }
 
 a.form-button,
 span.form-button,
@@ -1249,7 +1245,6 @@ a.caNodecLabelButton {
 .formLabel {
   font-family: inherit;
   font-weight: 600;
-  font-size: inherit;
   color: inherit; }
 
 .labelDisplay {
@@ -1262,7 +1257,7 @@ a.caNodecLabelButton {
   font-weight: 400;
   text-transform: uppercase;
   color: #282828;
-  font-size: 1.2em; }
+  font-size: 0.8em; }
 
 div.button {
   font-size: inherit; }
@@ -1398,6 +1393,10 @@ h2 {
   background: rgba(255, 255, 255, 0.3);
   color: #282828; }
 
+div.browseSelectPanelList {
+  clear: both;
+  width: 100%; }
+
 div.browseSelectPanelListGroupHeading {
   background: mediumvioletred; }
 
@@ -1427,15 +1426,18 @@ a.button:hover {
 .facetHeadingLink a {
   font-size: 0.8em;
   font-weight: normal;
-  color: mediumvioletred; }
+  color: mediumvioletred;
+  clear: none !important; }
 
 a.browseSelectPanelLink {
   font-size: 0.9em; }
 
-.facetHeadingLink.active {
-  background: #646464; }
-  .facetHeadingLink.active a {
-    color: white; }
+.facetHeadingLink {
+  clear: none !important; }
+  .facetHeadingLink .active {
+    background: #646464; }
+    .facetHeadingLink .active a {
+      color: white; }
 
 div.listRel {
   font-size: 0.9em; }

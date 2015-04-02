@@ -72,7 +72,10 @@ h2 {
 	background: rgba(255,255,255,0.3);
 	color: $grey-dark;
 }
-
+div.browseSelectPanelList{
+	clear: both;
+	width: 100%;
+}
 div.browseSelectPanelListGroupHeading {
 	background: $link;
 }
@@ -111,17 +114,21 @@ a.button:hover {
 	font-size: 0.8em;
 	font-weight: normal;
 	color: $link;
+	clear: none !important;
 }
 
 a.browseSelectPanelLink {
 	font-size: 0.9em;
 }
 
-.facetHeadingLink.active {
-	background: $grey-mid;
+.facetHeadingLink {
+	clear: none !important;
+	.active {
+		background: $grey-mid;
 
-	a {
-		color: white;
+		a {
+			color: white;
+		}
 	}
 }
 
@@ -159,7 +166,7 @@ table {
 	clear: both;
 }
 
-img { 
+img {
 	max-width: 100%;
 	height: auto;
 }
