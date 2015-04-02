@@ -50,7 +50,7 @@ class wamMenuPlugin extends BaseApplicationPlugin {
 	}
 
 	/**
-	 * Give everybody access to this
+	 * Give everybody access to this plugin
 	 *
 	 * @return array of actions that can be assigned to roles
 	 */
@@ -61,7 +61,8 @@ class wamMenuPlugin extends BaseApplicationPlugin {
 
 	/**
 	 * Manipulate the menu bar
-	 * @see Applica
+	 *
+	 * implementation of hookRenderMenuBar
 	 */
 	public function hookRenderMenuBar( $pa_menu_bar ) {
 		$this->_reinstateFindAllObjectTypes( $pa_menu_bar );
