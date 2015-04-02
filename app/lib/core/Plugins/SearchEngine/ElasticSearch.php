@@ -224,6 +224,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 								if (!$vs_fld_num) { // probably attribute
 									$t_element = new ca_metadata_elements();
 									if ($t_element->load(array('element_code' => ($vs_sub_field ? $vs_sub_field : $vs_field)))) {
+										// query only subfield in containers, i.e. ca_objects.date_range instead of
+										// ca_objects.dates.date_range because that's how we index these fields ...
+										if($vs_sub_field) { $vs_access_point = $vs_table . '.' . $vs_sub_field; }
 										//
 										// For certain types of attributes we can directly query the
 										// attributes in the database rather than using the full text index
@@ -286,6 +289,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 											case 12:	// decimal
 												$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term((float)$vs_term, $vs_access_point));
 												break;
+											default:	// everything else
+												$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('"'.$vs_term.'"', $vs_access_point));
+												break;
 										}
 									}
 								}
@@ -294,7 +300,6 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 					}					
 					break;
 			}
-				
 			$va_terms[] = $o_lucene_query_element;
 			$va_signs[] = is_array($va_old_signs) ? (array_key_exists($vn_i, $va_old_signs) ? $va_old_signs[$vn_i] : true) : true;
 
@@ -302,7 +307,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$vn_i++;
 		}
 		
-		$o_rewritten_query = new Zend_Search_Lucene_Search_Query_Boolean($va_terms, $va_signs);	
+		$o_rewritten_query = new Zend_Search_Lucene_Search_Query_Boolean($va_terms, $va_signs);
 		$ps_search_expression = $this->_queryToString($o_rewritten_query);
 		if ($vs_filter_query = $this->_filterValueToQueryValue($pa_filters)) {
 			$ps_search_expression = "({$ps_search_expression}) AND ({$vs_filter_query})";
