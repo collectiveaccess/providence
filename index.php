@@ -56,6 +56,9 @@
 		}
 		exit();
 	}
+
+	// run garbage collector
+	GarbageCollection::gc();
 	
 	$app = AppController::getInstance();
 	
