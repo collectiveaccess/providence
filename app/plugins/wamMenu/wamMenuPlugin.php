@@ -36,7 +36,7 @@ class wamMenuPlugin extends BaseApplicationPlugin {
 
 	public function __construct($ps_plugin_path) {
 		parent::__construct();
-		$this->description = _t('Maipulates the navigation menu to the to the Museum\'s use case' );
+		$this->description = _t('Manipulates the navigation menu to the to the Museum\'s use case' );
 		$this->opo_config = Configuration::load($ps_plugin_path.'/conf/wamMenu.conf');
 	}
 
