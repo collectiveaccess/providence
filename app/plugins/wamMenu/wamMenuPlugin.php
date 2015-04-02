@@ -88,13 +88,17 @@ class wamMenuPlugin extends BaseApplicationPlugin {
 			if ($this->getRequest()->isLoggedIn()) {
 				$vs_persistent_search = $this->getRequest()->user->getPreference( 'persistent_search' );
 			}
-			$va_parameters = array(
-				'type_id' => array($vn_root_id),
-				'reset' => array($vs_persistent_search),
+			// parent level items require the 'string:' prefix as they get parsed by AppNavigation::_parseParameterValue()
+			$pa_menu_bar['find']['navigation']['objects']['parameters'] = array(
+				'type_id' => 'string:' . $vn_root_id,
+				'reset' => 'string:' . $vs_persistent_search,
 			);
-			$pa_menu_bar['find']['navigation']['objects']['parameters'] = $va_parameters;
+			$va_parameters = array(
+				'type_id' => $vn_root_id,
+				'reset' => $vs_persistent_search,
+			);
 			foreach($pa_menu_bar['find']['navigation']['objects']['submenu']['navigation'] as $vs_menu_key => $va_menu_item){
-				$pa_menu_bar['find']['navigation']['objects']['submenu']['navigation'][$vs_menu_key]['parameters'] = $va_parameters;
+				$pa_menu_bar['find']['navigation']['objects']['submenu']['navigation'][$vs_menu_key]['parameters'] =  $va_parameters;
 			}
 		}
 	}
