@@ -170,7 +170,14 @@ BaseModel::$s_ca_models_definitions['ca_storage_locations'] = array(
 				'DEFAULT' => '',
 				"MEDIA_PROCESSING_SETTING" => 'ca_icons',
 				'LABEL' => _t('Icon'), 'DESCRIPTION' => _t('Optional icon to identify the editor UI with')
-		)
+		),
+		'is_enabled' => array(
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT,
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false,
+				'DEFAULT' => '1',
+				'LABEL' => _t('Is enabled?'), 'DESCRIPTION' => _t("If unchecked this item is disabled and can't be edited or used in new relationships")
+		),
  	)
 );
 
