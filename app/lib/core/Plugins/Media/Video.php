@@ -1384,7 +1384,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				<p><a href="http://www.adobe.com/go/getflashplayer"><img src="http://www.adobe.com/images/shared/download_buttons/get_flash_player.gif" alt="Get Adobe Flash player" /></a></p>
 			</div>
 			<script type="text/javascript">
-				jQuery(document).ready(function() { swfobject.embedSWF("<?php print $ps_url; ?>", "<?php print $vs_name; ?>", "<?php print isset($pa_options["width"]) ? $pa_options["width"] : $pa_properties["width"]; ?>", "<?php print isset($pa_options["height"]) ? $pa_options["height"] : $pa_properties["height"]; ?>", "9.0.124", "swf/expressInstall.swf", {}, {'allowscriptaccess': 'always', 'allowfullscreen' : 'true', 'allowNetworking' : 'all'}); });
+				//jQuery(document).ready(function() { swfobject.embedSWF("<?php print $ps_url; ?>", "<?php print $vs_name; ?>", "<?php print isset($pa_options["width"]) ? $pa_options["width"] : $pa_properties["width"]; ?>", "<?php print isset($pa_options["height"]) ? $pa_options["height"] : $pa_properties["height"]; ?>", "9.0.124", "swf/expressInstall.swf", {}, {'allowscriptaccess': 'always', 'allowfullscreen' : 'true', 'allowNetworking' : 'all'}); });
 			</script>
 <?php
 					return ob_get_clean();

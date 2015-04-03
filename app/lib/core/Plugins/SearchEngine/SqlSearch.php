@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -471,7 +471,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	# -------------------------------------------------------
 	private function _doQueriesForSqlSearch($po_rewritten_query, $pn_subject_tablenum, $ps_dest_table, $pn_level=0, $pa_options=null) {		// query is always of type Zend_Search_Lucene_Search_Query_Boolean
 		$vn_i = 0;
-		
 		switch(get_class($po_rewritten_query)){
 			case 'Zend_Search_Lucene_Search_Query_MultiTerm':
 				$va_elements = $po_rewritten_query->getTerms();
@@ -684,17 +683,24 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							break;
 						case 'Zend_Search_Lucene_Search_Query_Phrase':
 	if ($this->getOption('strictPhraseSearching')) {
+							
+							$vs_search_tokenizer_regex = $this->opo_search_config->get('search_tokenizer_regex');
+							
 						 	$va_words = array();
 						 	foreach($o_lucene_query_element->getQueryTerms() as $o_term) {
 								if (!$vs_access_point && ($vs_field = $o_term->field)) { $vs_access_point = $vs_field; }
 								
-								$va_raw_terms[] = $vs_text = (string)$o_term->text;
-								if (strlen($vs_escaped_text = $this->opo_db->escape($vs_text))) {
-									$va_words[] = $vs_escaped_text;
+								$va_terms = preg_split("![{$vs_search_tokenizer_regex}]+!u", (string)$o_term->text);
+						
+								foreach($va_terms as $vs_term) {
+									$va_raw_terms[] = $vs_term;
+									if (strlen($vs_escaped_text = $this->opo_db->escape($vs_term))) {
+										$va_words[] = $vs_escaped_text;
+									}
 								}
 							}
 							if (!sizeof($va_words)) { continue(3); }
-							
+						
 							$va_ap_tmp = explode(".", $vs_access_point);
 							$vn_fld_table = $vn_fld_num = null;
 							if(sizeof($va_ap_tmp) >= 2) {
@@ -815,11 +821,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$vb_output_term = true;	
 								
 								}
-								if ($vb_output_term) {
-									$va_raw_terms[] = $vs_term;
-								} else {
-									$vn_i--;
-								}
+								if ($vb_output_term) { $va_raw_terms[] = $vs_term; }
 							}
 							
 							break;
@@ -1262,12 +1264,13 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$t = new Timer();
 								$qr_res = $this->opo_db->query($vs_sql, is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum));
 								
-								if ($this->debug) { Debug::msg('AND: '.$vs_sql. ' '.$t->GetTime(4)); }
-								
+								if ($this->debug) { Debug::msg('AND: '.$vs_sql. ' '.$t->GetTime(4). ' '.$qr_res->numRows()); }
 								if (is_array($va_ids = $qr_res->getAllFieldValues('row_id')) && sizeof($va_ids)) {
 									$vs_sql = "DELETE FROM {$ps_dest_table} WHERE row_id NOT IN (?)";
 									$qr_res = $this->opo_db->query($vs_sql, array($va_ids));
 									if ($this->debug) { Debug::msg('AND DELETE: '.$vs_sql. ' '.$t->GetTime(4)); }
+								} else { // we don't have any results left, ie. our AND query should yield an empty result
+									$this->opo_db->query("DELETE FROM {$ps_dest_table}");
 								}
 								break;
 							case 'NOT':

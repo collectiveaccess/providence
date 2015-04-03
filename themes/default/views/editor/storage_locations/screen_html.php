@@ -38,6 +38,7 @@
 			$va_cancel_parameters = ($vn_location_id ? array('location_id' => $vn_location_id) : array('type_id' => $t_location->getTypeID()));
 			print $vs_control_box = caFormControlBox(
 				caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'StorageLocationEditorForm').' '.
+				($this->getVar('show_save_and_return') ? caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save and return"), 'StorageLocationEditorForm', array('isSaveAndReturn' => true)) : '').' '.
 				caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'editor/storage_locations', 'StorageLocationEditor', 'Edit/'.$this->request->getActionExtra(), $va_cancel_parameters),
 				'', 
 				((intval($vn_location_id) > 0) && $vb_can_delete) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'editor/storage_locations', 'StorageLocationEditor', 'Delete/'.$this->request->getActionExtra(), array('location_id' => $vn_location_id)) : ''
@@ -57,6 +58,14 @@
 ?>
 			<input type='hidden' name='location_id' value='<?php print $vn_location_id; ?>'/>
 			<input type='hidden' name='above_id' value='<?php print $vn_above_id; ?>'/>
+			<input id='isSaveAndReturn' type='hidden' name='is_save_and_return' value='0'/>
+<?php
+			if($this->request->getParameter('rel', pInteger)) {
+?>
+				<input type='hidden' name='rel' value='1'/>
+<?php
+			}
+?>
 		</form>
 	</div>
 

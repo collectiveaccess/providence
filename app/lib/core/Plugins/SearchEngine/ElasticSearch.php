@@ -224,6 +224,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 								if (!$vs_fld_num) { // probably attribute
 									$t_element = new ca_metadata_elements();
 									if ($t_element->load(array('element_code' => ($vs_sub_field ? $vs_sub_field : $vs_field)))) {
+										// query only subfield in containers, i.e. ca_objects.date_range instead of
+										// ca_objects.dates.date_range because that's how we index these fields ...
+										if($vs_sub_field) { $vs_access_point = $vs_table . '.' . $vs_sub_field; }
 										//
 										// For certain types of attributes we can directly query the
 										// attributes in the database rather than using the full text index
@@ -286,6 +289,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 											case 12:	// decimal
 												$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term((float)$vs_term, $vs_access_point));
 												break;
+											default:	// everything else
+												$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('"'.$vs_term.'"', $vs_access_point));
+												break;
 										}
 									}
 								}
@@ -294,7 +300,6 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 					}					
 					break;
 			}
-				
 			$va_terms[] = $o_lucene_query_element;
 			$va_signs[] = is_array($va_old_signs) ? (array_key_exists($vn_i, $va_old_signs) ? $va_old_signs[$vn_i] : true) : true;
 
@@ -302,7 +307,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$vn_i++;
 		}
 		
-		$o_rewritten_query = new Zend_Search_Lucene_Search_Query_Boolean($va_terms, $va_signs);	
+		$o_rewritten_query = new Zend_Search_Lucene_Search_Query_Boolean($va_terms, $va_signs);
 		$ps_search_expression = $this->_queryToString($o_rewritten_query);
 		if ($vs_filter_query = $this->_filterValueToQueryValue($pa_filters)) {
 			$ps_search_expression = "({$ps_search_expression}) AND ({$vs_filter_query})";
@@ -450,7 +455,16 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 					$va_tmp = explode(',', $va_filter['value']);
 					$va_list = array();
 					foreach($va_tmp as $vs_item) {
-						$va_list[] = $va_filter['field'].':'.$vs_item;
+						// this case specifically happens when filtering list item search results by type id
+						// (if type based access control is enabled, that is). The filter is something like
+						// type_id IN 2,3,4,NULL. So we have to allow for empty values, which is a little bit
+						// different in ElasticSearch.
+						if(strtolower($vs_item) == 'null') {
+							$va_list[] = '_missing_:' . $va_filter['field'];
+						} else {
+							$va_list[] = $va_filter['field'].':'.$vs_item;
+						}
+
 					}
 
 					$va_terms[] = '('.join(' OR ', $va_list).')';
@@ -556,7 +570,16 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$vn_field_num_proc = (int)substr($ps_content_fieldname, 1);
 			$ps_content_fieldname = $this->opo_datamodel->getFieldName($ps_content_tablename, $vn_field_num_proc);
 		}
-		$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname][] = $pm_content;
+
+		if($ps_content_fieldname == 'type_id') {
+			// don't add to index if there's an empty string value in type id. That way we can actually search for empty values
+			if($pm_content != '') {
+				$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname][] = $pm_content;
+			}
+		} else {
+			$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname][] = $pm_content;
+		}
+
 		if ($vn_rel_type_id) { // add relationship type-specific indexing
 			$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname.'/'.$vn_rel_type_id][] = $pm_content;
 		}

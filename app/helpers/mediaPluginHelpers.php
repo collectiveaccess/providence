@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2010-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -92,6 +92,8 @@
 		}
 		if (!caIsValidFilePath($ps_imagemagick_path)) { return false; }
 
+		if (caGetOSFamily() == OS_WIN32) { $_MEDIAHELPER_PLUGIN_CACHE_IMAGEMAGICK[$ps_imagemagick_path] = true; }	// don't try exec test on Windows
+		
 		exec($ps_imagemagick_path.'/identify 2> /dev/null', $va_output, $vn_return);
 		if (($vn_return >= 0) && ($vn_return < 127)) {
 			return $_MEDIAHELPER_PLUGIN_CACHE_IMAGEMAGICK[$ps_imagemagick_path] = true;
@@ -116,6 +118,8 @@
 		}
 		if (!caIsValidFilePath($ps_graphicsmagick_path)) { return false; }
 
+		if (caGetOSFamily() == OS_WIN32) { $_MEDIAHELPER_PLUGIN_CACHE_GRAPHICSMAGICK[$ps_graphicsmagick_path] = true; }		// don't try exec test on Windows
+		
 		exec($ps_graphicsmagick_path.' 2> /dev/null', $va_output, $vn_return);
 		if (($vn_return >= 0) && ($vn_return < 127)) {
 			return $_MEDIAHELPER_PLUGIN_CACHE_GRAPHICSMAGICK[$ps_graphicsmagick_path] = true;
@@ -164,6 +168,8 @@
 		}
 		if (!caIsValidFilePath($ps_path_to_ffmpeg)) { return false; }
 
+		if (caGetOSFamily() == OS_WIN32) { $_MEDIAHELPER_PLUGIN_CACHE_FFMPEG[$ps_path_to_ffmpeg] = true; }		// don't try exec test on Windows
+		
 		exec($ps_path_to_ffmpeg.'> /dev/null 2>&1', $va_output, $vn_return);
 		if (($vn_return >= 0) && ($vn_return < 127)) {
 			return $_MEDIAHELPER_PLUGIN_CACHE_FFMPEG[$ps_path_to_ffmpeg] = true;
@@ -187,6 +193,9 @@
 			$_MEDIAHELPER_PLUGIN_CACHE_GHOSTSCRIPT = array();
 		}
 		if (!caIsValidFilePath($ps_path_to_ghostscript)) { return false; }
+		
+		if (caGetOSFamily() == OS_WIN32) { $_MEDIAHELPER_PLUGIN_CACHE_GHOSTSCRIPT[$ps_path_to_ghostscript] = true; }		// don't try exec test on Windows
+		
 		exec($ps_path_to_ghostscript." -v 2> /dev/null", $va_output, $vn_return);
 		if (($vn_return >= 0) && ($vn_return < 127)) {
 			return $_MEDIAHELPER_PLUGIN_CACHE_GHOSTSCRIPT[$ps_path_to_ghostscript] = true;
@@ -238,6 +247,9 @@
 		if(!$ps_path_to_libreoffice) { $ps_path_to_libreoffice = caGetExternalApplicationPath('libreoffice'); }
 
 		if (!caIsValidFilePath($ps_path_to_libreoffice)) { return false; }
+		
+		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
+		
 		exec($ps_path_to_libreoffice." --version 2> /dev/null", $va_output, $vn_return);
 		if (($vn_return >= 0) && ($vn_return < 127)) {
 			return true;
@@ -323,6 +335,54 @@
 			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path] = true;
 		}
 		return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path] = false;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Detects if PhantomJS (http://www.phantomjs.org) is installed in the given path.
+	 * @param string $ps_phantomjs_path path to PhantomJS executable
+	 * @return boolean 
+	 */
+	function caPhantomJSInstalled($ps_phantomjs_path=null) {
+		if(!$ps_phantomjs_path) { $ps_phantomjs_path = caGetExternalApplicationPath('phantomjs'); }
+		
+		global $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO;
+		if (isset($_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_phantomjs_path])) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_phantomjs_path];
+		} else {
+			$_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO = array();
+		}
+		if (!trim($ps_phantomjs_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_phantomjs_path)) || !file_exists($ps_phantomjs_path)) { return false; }
+		
+		if (!file_exists($ps_phantomjs_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_phantomjs_path] = false; }
+		exec($ps_phantomjs_path." > /dev/null",$va_output,$vn_return);
+		if($vn_return == 0) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_phantomjs_path] = true;
+		}
+		return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_phantomjs_path] = false;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Detects if wkhtmltopdf (http://www.wkhtmltopdf.org) is installed in the given path.
+	 * @param string $ps_wkhtmltopdf_path path to wkhtmltopdf executable
+	 * @return boolean 
+	 */
+	function caWkhtmltopdfInstalled($ps_wkhtmltopdf_path=null) {
+		if(!$ps_wkhtmltopdf_path) { $ps_wkhtmltopdf_path = caGetExternalApplicationPath('wkhtmltopdf'); }
+		
+		global $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO;
+		if (isset($_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_wkhtmltopdf_path])) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_wkhtmltopdf_path];
+		} else {
+			$_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO = array();
+		}
+		if (!trim($ps_wkhtmltopdf_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_wkhtmltopdf_path)) || !file_exists($ps_wkhtmltopdf_path)) { return false; }
+		
+		if (!file_exists($ps_wkhtmltopdf_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_wkhtmltopdf_path] = false; }
+		exec($ps_wkhtmltopdf_path." > /dev/null",$va_output,$vn_return);
+		if(($vn_return == 0) || ($vn_return == 1)) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_wkhtmltopdf_path] = true;
+		}
+		return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_wkhtmltopdf_path] = false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -584,6 +644,7 @@
 				if(!is_int($va_metadata)){ // pass ints through for values like WhiteBalance = 0
 					if (!trim($va_metadata)) { continue(2); }
 				}
+				if(!caSeemsUTF8($va_metadata)) { $va_metadata = caEncodeUTF8Deep($va_metadata); }
 
 				$va_tmp2 = explode(".", $vs_attr);
 

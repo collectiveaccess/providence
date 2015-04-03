@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -551,6 +551,45 @@
 					return urldecode($pn_row_id);
 					break;
 				# -----------------------------------------------------
+				case 'checkouts':
+					$vs_status_text = null;
+					$vs_status_code = (isset($va_facet_info['status']) && $va_facet_info['status']) ? $va_facet_info['status'] : $pn_row_id;
+					switch($vs_status_code) {
+						case 'overdue':	
+							$vs_status_text = _t('Overdue');
+							break;
+						case 'reserved':	
+							$vs_status_text = _t('Reserved');
+							break;
+						case 'available':	
+							$vs_status_text = _t('Available');
+							break;
+						default:
+						case 'out':
+							$vs_status_text = _t('Out');
+							break;
+					}
+					
+					
+					$va_params = array();
+					switch($va_facet_info['mode']) {
+						case 'user':
+							$vs_name = null;
+							$t_user = new ca_users($pn_row_id);
+							if ($t_user->getPrimaryKey()) {
+								$vs_name = $t_user->get('fname').' '.$t_user->get('lname').(($vs_email = $t_user->get('email')) ? " ({$vs_email})" : "");
+								
+								return _t('%1 for %2', $vs_status_text, $vs_name);
+							}
+							break;
+						default:
+						case 'all':
+							return $vs_status_text;
+							break;
+					}
+					return urldecode($pn_row_id);
+					break;
+				# -----------------------------------------------------
 				case 'location':
 					$va_tmp = explode(":", urldecode($pn_row_id));
 					$vs_loc_table_name = $this->opo_datamodel->getTableName($va_tmp[0]);
@@ -906,8 +945,8 @@
 					Debug::msg("Cache hit for {$vs_cache_key}");
 				} else {
 					$va_criteria = $this->getCriteria();
-					$this->opo_ca_browse_cache->remove();
-					$this->opo_ca_browse_cache->setParameter('criteria', $va_criteria);
+					//$this->opo_ca_browse_cache->remove();
+					//$this->opo_ca_browse_cache->setParameter('criteria', $va_criteria);
 					
 					$vb_need_to_save_in_cache = true;
 					$vb_need_to_cache_facets = true;
@@ -1154,7 +1193,7 @@
 									}
 									
 									foreach($va_row_ids as $vn_row_id) {
-										$vn_row_id = urldecode($vn_row_id);
+										$vn_row_id = urldecode(str_replace('&#47;', '/', $vn_row_id));
 										if ($vn_i == 0) {
 											$vs_sql = "
 												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
@@ -1678,6 +1717,78 @@
 								}
 								break;
 							# -----------------------------------------------------
+							case 'checkouts':
+								$vs_field_name = $va_facet_info['field'];
+								$vs_table_name = $this->ops_browse_table_name;
+								
+								if ($va_facet_info['relative_to']) {
+									if ($va_relative_execute_sql_data = $this->_getRelativeExecuteSQLData($va_facet_info['relative_to'], $pa_options)) {
+										$va_relative_to_join = $va_relative_execute_sql_data['relative_joins'];	
+										$vs_relative_to_join = join("\n", $va_relative_to_join);
+										$vs_table_name = $vs_target_browse_table_name = $va_relative_execute_sql_data['target_table_name'];
+										$vs_target_browse_table_num = $va_relative_execute_sql_data['target_table_num'];
+										$vs_target_browse_table_pk = $va_relative_execute_sql_data['target_table_pk'];
+									}
+								}
+								
+								$vs_where = null;
+								$vn_current_time = time();
+								
+								foreach($va_row_ids as $vn_row_id) {
+									$vs_checkout_join_sql = "INNER JOIN ca_object_checkouts ON ca_object_checkouts.object_id = ca_objects.object_id";
+								
+									$vs_status_code = (isset($va_facet_info['status']) && $va_facet_info['status']) ? $va_facet_info['status'] : $vn_row_id;
+									switch($vs_status_code) {
+										case 'overdue':	
+											$vs_where = "((ca_object_checkouts.checkout_date <= {$vn_current_time}) AND (ca_object_checkouts.return_date IS NULL) AND (ca_object_checkouts.due_date <= {$vn_current_time}))";
+											break;
+										case 'reserved':	
+											$vs_where = "((ca_object_checkouts.checkout_date IS NULL) AND (ca_object_checkouts.return_date IS NULL))";
+											break;
+										case 'available':	
+											$vs_checkout_join_sql = '';
+											$vs_where = "(ca_objects.object_id NOT IN (SELECT object_id FROM ca_object_checkouts WHERE (ca_object_checkouts.checkout_date <= {$vn_current_time}) AND (ca_object_checkouts.return_date IS NULL)))"; 
+											break;
+										case 'all':
+											$vs_where = "(ca_object_checkouts.checkout_date <= {$vn_current_time})";
+											break;
+										default:
+										case 'out':
+											$vs_where = "((ca_object_checkouts.checkout_date <= {$vn_current_time}) AND (ca_object_checkouts.return_date IS NULL))";
+											break;
+									}
+								
+									$vs_sql = "
+										SELECT ca_objects.object_id
+										FROM ca_objects
+										{$vs_checkout_join_sql}
+										WHERE
+											{$vs_where}
+									";
+								
+									$vs_user_sql = null;
+									$va_params = array();
+									switch($va_facet_info['mode']) {
+										case 'user':
+											foreach($va_row_ids as $vn_index => $vn_row_id) {
+												$va_row_ids[$vn_index] = (int)$vn_row_id;
+											}
+											$va_params[] = $va_row_ids;
+											$vs_user_sql .= " AND (ca_object_checkouts.user_id IN (?))";
+											break;
+										case 'all':
+										default:
+											// noop
+											break;
+									}
+									
+									$qr_res = $this->opo_db->query($vs_sql.$vs_user_sql, $va_params);
+									$va_acc[$vn_i] = $qr_res->getAllFieldValues('ca_objects.object_id');
+								
+									$vn_i++;
+								}
+								break;
+							# -----------------------------------------------------
 							default:
 								// handle "search" criteria - search engine queries that can be browsed
 								if ($vs_facet_name === '_search') {
@@ -1805,7 +1916,8 @@
 						$vb_need_to_save_in_cache = true;
 					} else {
 						// No results for some reason - we're here because we don't want to throw a SQL error
-						$va_results = array();
+						$this->opo_ca_browse_cache->setResults($va_results = array());
+						$vb_need_to_save_in_cache = true;
 					}
 				}
 			} else {
@@ -1953,16 +2065,30 @@
 		 */
 		public function getFacet($ps_facet_name, $pa_options=null) {
 			if (!is_array($this->opa_browse_settings)) { return null; }
+			
+			$pn_start = caGetOption('start', $pa_options, 0);
+			$pn_limit = caGetOption('limit', $pa_options, null);
+			
 			$va_facet_cache = $this->opo_ca_browse_cache->getFacet($ps_facet_name);
 			
 			// is facet cached?
-			if (isset($va_facet_cache) && is_array($va_facet_cache)) { 
-				return $va_facet_cache; 
+			$va_facet_content = null;
+			if (!isset($va_facet_cache) || !is_array($va_facet_cache)) { 			
+				$va_facet_content = $va_facet_cache = $this->getFacetContent($ps_facet_name, $pa_options);
+				$vb_needs_caching = true;
 			}
 			
-			$this->opo_ca_browse_cache->setFacet($ps_facet_name, $vs_facet_content = $this->getFacetContent($ps_facet_name, $pa_options));
-			$this->opo_ca_browse_cache->save();
-			return $vs_facet_content;
+			if ($pn_limit > 0) {
+				$va_facet_cache = array_slice($va_facet_cache, (int)$pn_start, $pn_limit);
+			} elseif ($pn_start > 0) {
+				$va_facet_cache = array_slice($va_facet_cache, (int)$pn_start);
+			}
+			
+			if ($va_facet_content && is_array($va_facet_content)) {
+				$this->opo_ca_browse_cache->setFacet($ps_facet_name, $va_facet_content);
+				$this->opo_ca_browse_cache->save();
+			}
+			return $va_facet_cache;
 		}
 		# ------------------------------------------------------
 		/**
@@ -2644,6 +2770,7 @@
 						return array();
 					}
 					
+					$vn_element_type = $t_element->get('datatype');
 					$vn_element_id = $t_element->getPrimaryKey();
 					
 					$va_joins = array(
@@ -2732,7 +2859,6 @@
 						
 						$va_values = array();
 						
-						$vn_element_type = $t_element->get('datatype');
 						
 						$va_list_items = null;
 						
@@ -2752,11 +2878,12 @@
 								$qr_res->seek(0);
 								
 								$t_list_item = new ca_list_items();
-								$va_list_item_cache = $t_list_item->getFieldValuesForIDs($va_values, array('idno', 'item_value', 'parent_id'));
+								$va_list_item_cache = $t_list_item->getFieldValuesForIDs($va_values, array('idno', 'item_value', 'parent_id', 'access'));
 								$va_list_child_count_cache = array();
 								if (is_array($va_list_item_cache)) {
 									foreach($va_list_item_cache as $vn_id => $va_item) {
 										if (!($vn_parent_id = $va_item['parent_id'])) { continue; }
+										if (is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && !in_array($va_item['access'], $pa_options['checkAccess'])) { continue; }
 										$va_list_child_count_cache[$vn_parent_id]++;
 									}
 								}
@@ -2769,12 +2896,13 @@
 								foreach($va_values as $vn_val) {
 									if (!$vn_val) { continue; }
 									if (is_array($va_suppress_values) && (in_array($vn_val, $va_suppress_values))) { continue; }
+									if (is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && !in_array($va_list_item_cache[$vn_val]['access'], $pa_options['checkAccess'])) { continue; }
 									
 									if ($va_criteria[$vn_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
 									$vn_child_count = isset($va_list_child_count_cache[$vn_val]) ? $va_list_child_count_cache[$vn_val] : 0;
 									$va_facet_list[$vn_val] = array(
 										'id' => $vn_val,
-										'label' => $va_list_label_cache[$vn_val],
+										'label' => html_entity_decode($va_list_label_cache[$vn_val]),
 										'parent_id' => isset($va_list_item_cache[$vn_val]['parent_id']) ? $va_list_item_cache[$vn_val]['parent_id'] : null,
 										'child_count' => $vn_child_count
 									);
@@ -2826,8 +2954,8 @@
 										 $vn_child_count++;
 									}
 									$va_values[$vs_val] = array(
-										'id' => $vs_val,
-										'label' => $va_list_items[$vs_val]['name_plural'] ? $va_list_items[$vs_val]['name_plural'] : $va_list_items[$vs_val]['item_value'],
+										'id' => str_replace('/', '&#47;', $vs_val),
+										'label' => html_entity_decode($va_list_items[$vs_val]['name_plural'] ? $va_list_items[$vs_val]['name_plural'] : $va_list_items[$vs_val]['item_value']),
 										'parent_id' => $va_list_items[$vs_val]['parent_id'],
 										'child_count' => $vn_child_count
 									);
@@ -2843,7 +2971,7 @@
 								case __CA_ATTRIBUTE_VALUE_OBJECTLOTS__:
 									$va_values[$vs_val] = array(
 										'id' => $vn_id,
-										'label' => $va_auth_items[$vn_id] ? $va_auth_items[$vn_id] : $vs_val
+										'label' => html_entity_decode($va_auth_items[$vn_id] ? $va_auth_items[$vn_id] : $vs_val)
 									);
 									break;
 								case __CA_ATTRIBUTE_VALUE_CURRENCY__:
@@ -3045,6 +3173,7 @@
 						
 						if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_item->hasField('access')) {
 							$va_wheres[] = "(".$vs_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
+							$va_wheres[] = "(li.access IN (".join(',', $pa_options['checkAccess'])."))";
 						}
 						
 						if ($vs_browse_type_limit_sql) {
@@ -3350,12 +3479,16 @@
 				# -----------------------------------------------------
 				case 'field':
 					$t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true);
+					if (!is_array($va_restrict_to_types = $va_facet_info['restrict_to_types'])) { $va_restrict_to_types = array(); }
+					if(!is_array($va_restrict_to_types = $this->_convertTypeCodesToIDs($va_restrict_to_types, array('instance' => $t_item, 'dontExpandHierarchically' => true)))) { $va_restrict_to_types = array(); }
+					$va_restrict_to_types_expanded = $this->_convertTypeCodesToIDs($va_restrict_to_types, array('instance' => $t_item));
+					
 					$vs_field_name = $va_facet_info['field'];
 					$va_field_info = $t_item->getFieldInfo($vs_field_name);
 					
 					$vs_sort_field = null;
 					if (($t_item->getProperty('ID_NUMBERING_ID_FIELD') == $vs_field_name)) {
-						$vs_sort_field = $t_item->getProperty('ID_NUMBERING_SORT_FIELD');
+						$vs_sort_field = $vs_browse_table_name . '.' . $t_item->getProperty('ID_NUMBERING_SORT_FIELD');
 					}
 					
 					$t_list = new ca_lists();
@@ -3383,6 +3516,10 @@
 						);
 					}
 					
+					if (is_array($va_restrict_to_types) && (sizeof($va_restrict_to_types) > 0) && method_exists($t_rel_item, "getTypeList")) {
+						$va_wheres[] = "{$va_restrict_to_types_expanded}.type_id IN (".join(',', caGetOption('dont_include_subtypes', $va_facet_info, false) ? $va_restrict_to_types : $va_restrict_to_types_expanded).")";
+						$va_selects[] = "{$va_restrict_to_types_expanded}.type_id";
+					}
 					
 					if (sizeof($va_results) && ($this->numCriteria() > 0)) {
 						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
@@ -3435,16 +3572,16 @@
 					
 					if ($vb_check_availability_only) {
 						$vs_sql = "
-							SELECT 1
+							SELECT DISTINCT {$vs_browse_table_name}.{$vs_field_name}
 							FROM {$vs_browse_table_name}
 							{$vs_join_sql}
 							WHERE
 								{$vs_where_sql}
 							LIMIT 2";
 						$qr_res = $this->opo_db->query($vs_sql);
-					
-						if ($qr_res->nextRow()) {
-							return ((int)$qr_res->numRows() > 0) ? true : false;
+						
+						if ($qr_res->numRows() > 1) {
+							return true;
 						}
 						return false;
 					} else {
@@ -3470,7 +3607,7 @@
 								$va_values[$vs_val] = $va_facet_values[$vs_val];
 							} else {
 								$va_values[$vs_val] = array(
-									'id' => $vs_val,
+									'id' => str_replace('/', '&#47;', $vs_val),
 									'label' => $vs_val
 								);
 							}
@@ -3600,6 +3737,213 @@
 							}
 						}
 						
+						if (!is_null($vs_single_value) && !$vb_single_value_is_present) {
+							return array();
+						}
+						return $va_values;
+					}
+					
+				
+					return array();
+					break;
+				# -----------------------------------------------------
+				case 'checkouts':
+					if ($vs_browse_table_name != 'ca_objects') { return array(); }
+					$t_item = new ca_objects();
+					
+					$va_joins = array();
+					$va_wheres = array();
+					$vs_where_sql = '';
+					
+					$va_facet_values = null;
+					
+					if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+						$va_wheres[] = "(".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
+					}
+					
+					if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_item->hasField('access')) {
+						$va_wheres[] = "(".$vs_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
+					}
+					
+					if ($vs_browse_type_limit_sql) {
+						$va_wheres[] = $vs_browse_type_limit_sql;
+					}
+										
+					if ($t_item->hasField('deleted')) {
+						$va_wheres[] = "(".$vs_browse_table_name.".deleted = 0)";
+					}
+					
+					if ($va_facet_info['relative_to']) {
+						if ($t_subject->hasField('deleted')) {
+							$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
+						}
+						if ($va_relative_sql_data = $this->_getRelativeFacetSQLData($va_facet_info['relative_to'], $pa_options)) {
+							$va_joins = array_merge($va_joins, $va_relative_sql_data['joins']);
+							$va_wheres = array_merge($va_wheres, $va_relative_sql_data['wheres']);
+						}
+					}
+					
+					$vs_checkout_join_sql = "INNER JOIN ca_object_checkouts ON ca_object_checkouts.object_id = ca_objects.object_id";
+					$vn_current_time = time();
+					switch($va_facet_info['status']) {
+						case 'overdue':	
+							$va_wheres[] = "((ca_object_checkouts.checkout_date <= {$vn_current_time}) AND (ca_object_checkouts.return_date IS NULL) AND (ca_object_checkouts.due_date <= {$vn_current_time}))";
+							break;
+						case 'reserved':	
+							$va_wheres[] = "((ca_object_checkouts.checkout_date IS NULL) AND (ca_object_checkouts.return_date IS NULL))";
+							break;
+						case 'available':	
+							$vs_checkout_join_sql = '';
+							$va_wheres[] = "(ca_objects.object_id NOT IN (SELECT object_id FROM ca_object_checkouts WHERE (ca_object_checkouts.checkout_date <= {$vn_current_time}) AND (ca_object_checkouts.return_date IS NULL)))"; 
+							break;
+						default:
+						case 'out':
+							$va_wheres[] = "((ca_object_checkouts.checkout_date <= {$vn_current_time}) AND (ca_object_checkouts.return_date IS NULL))";
+							break;
+					}
+					if ($vs_checkout_join_sql) {
+						$va_joins[] = $vs_checkout_join_sql;
+						$va_joins[] = "INNER JOIN ca_users ON ca_object_checkouts.user_id = ca_users.user_id";
+					}
+	
+					if ($this->opo_config->get('perform_item_level_access_checking')) {
+						if ($t_item = $this->opo_datamodel->getInstanceByTableName($vs_browse_table_name, true)) {
+							// Join to limit what browse table items are used to generate facet
+							$va_joins[] = 'LEFT JOIN ca_acl ON '.$vs_browse_table_name.'.'.$t_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_item->tableNum()."\n";
+							$va_wheres[] = "(
+								((
+									(ca_acl.user_id = ".(int)$vn_user_id.")
+									".((sizeof($va_group_ids) > 0) ? "OR
+									(ca_acl.group_id IN (".join(",", $va_group_ids)."))" : "")."
+									OR
+									(ca_acl.user_id IS NULL and ca_acl.group_id IS NULL)
+								) AND ca_acl.access >= ".__CA_ACL_READONLY_ACCESS__.")
+								".(($vb_show_if_no_acl) ? "OR ca_acl.acl_id IS NULL" : "")."
+							)";
+						}
+					}
+					
+					$vs_join_sql = join("\n", $va_joins);
+					
+					if (is_array($va_wheres) && sizeof($va_wheres) && ($vs_where_sql = join(' AND ', $va_wheres))) {
+						$vs_where_sql = '('.$vs_where_sql.')';
+					}
+					
+					if ($vb_check_availability_only) {
+						switch($va_facet_info['mode']) {
+							case 'user':
+								$vs_sql = "
+									SELECT 1
+									FROM ca_objects
+									{$vs_join_sql}
+									WHERE
+										{$vs_where_sql} AND ca_objects.deleted = 0
+									LIMIT 2";
+								break;
+							default:
+							case 'all':
+								$vs_sql = "
+									SELECT 1
+									FROM ca_objects
+									{$vs_join_sql}
+									WHERE
+										ca_objects.deleted = 0 ".(sizeof($va_results) ? "AND (".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))" : "")."
+									LIMIT 2";
+								break;
+						}
+							
+						$qr_res = $this->opo_db->query($vs_sql);
+					
+						if ($qr_res->nextRow()) {
+							return ((int)$qr_res->numRows() > 0) ? true : false;
+						}
+						return false;
+					} else {
+						$va_values = array();
+						
+						$vs_pk = $t_item->primaryKey();
+						switch($va_facet_info['mode']) {
+							case 'user':
+								$vs_sql = "
+									SELECT DISTINCT ca_object_checkouts.user_id, ca_users.fname, ca_users.lname, ca_users.email
+									FROM ca_objects
+									{$vs_join_sql}
+									WHERE
+										{$vs_where_sql} ".(sizeof($va_results) ? " AND (".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))" : "");
+					
+								$qr_res = $this->opo_db->query($vs_sql);
+								
+								while($qr_res->nextRow()) {	
+									$vn_user_id = $qr_res->get('user_id');
+									$vs_val = $qr_res->get('fname').' '.$qr_res->get('lname').(($vs_email = $qr_res->get('email')) ? "({$vs_email})" : '');
+									if ($va_criteria[$vs_val]) { continue; }		// skip items that are used as browse critera - don't want to browse on something you're already browsing on
+					
+									if (isset($va_facet_values[$vn_user_id])) {
+										$va_values[$vn_user_id] = $va_facet_values[$vn_user_id];
+									} else {
+										$va_values[$vn_user_id] = array(
+											'id' => $vn_user_id,
+											'label' => $vs_val
+										);
+									}
+									if (!is_null($vs_single_value) && ($vn_user_id == $vs_single_value)) {
+										$vb_single_value_is_present = true;
+									}
+								}
+								break;
+							case 'all':
+							default:
+								foreach(array(
+									_t('Available') => 'available',
+									_t('Out') => 'out',
+									_t('Reserved') => 'reserved',
+									_t('Overdue') => 'overdue'
+								) as $vs_status_text => $vs_status) {
+									$vs_join_sql = "INNER JOIN ca_object_checkouts ON ca_object_checkouts.object_id = ca_objects.object_id";
+									switch($vs_status) {
+										case 'overdue':	
+											$vs_where = "((ca_object_checkouts.checkout_date <= {$vn_current_time}) AND (ca_object_checkouts.return_date IS NULL) AND (ca_object_checkouts.due_date <= {$vn_current_time}))";
+											break;
+										case 'reserved':	
+											$vs_where = "((ca_object_checkouts.checkout_date IS NULL) AND (ca_object_checkouts.return_date IS NULL))";
+											break;
+										case 'available':	
+											$vs_join_sql = '';
+											$vs_where = "(ca_objects.object_id NOT IN (SELECT object_id FROM ca_object_checkouts WHERE (ca_object_checkouts.checkout_date <= {$vn_current_time}) AND (ca_object_checkouts.return_date IS NULL)))"; 
+											break;
+										default:
+										case 'out':
+											$vs_where = "((ca_object_checkouts.checkout_date <= {$vn_current_time}) AND (ca_object_checkouts.return_date IS NULL))";
+											break;
+									}
+									
+									if (sizeof($va_results) && ($this->numCriteria() > 0)) {
+										$vs_where .= " AND (".$t_subject->tableName().'.'.$t_subject->primaryKey()." IN (".join(',', $va_results)."))";
+									}
+									
+									$vs_sql = "
+										SELECT count(*) c
+										FROM ca_objects
+										{$vs_join_sql}
+										WHERE
+											{$vs_where}
+									";
+									$qr_res = $this->opo_db->query($vs_sql);
+							
+									$qr_res->nextRow();
+									if (!$qr_res->get('c')) { continue; }
+									$va_values[$vs_status] = array(
+										'id' => $vs_status,
+										'label' => $vs_status_text
+									);
+									
+									if (!is_null($vs_single_value) && ($vs_status == $vs_single_value)) {
+										$vb_single_value_is_present = true;
+									}
+								}
+								break;
+						}
+					
 						if (!is_null($vs_single_value) && !$vb_single_value_is_present) {
 							return array();
 						}
@@ -4064,7 +4408,18 @@
 				case 'authority':
 					$vs_rel_table_name = $va_facet_info['table'];
 					$va_params = $this->opo_ca_browse_cache->getParameters();
-					if (!is_array($va_restrict_to_types = $va_facet_info['restrict_to_types'])) { $va_restrict_to_types = array(); }
+					
+					// Make sure we honor type restrictions for the related authority
+					$va_user_type_restrictions = caGetTypeRestrictionsForUser($vs_rel_table_name);
+					$va_restrict_to_types = $va_facet_info['restrict_to_types'];
+					if(is_array($va_user_type_restrictions)){
+						if (!is_array($va_restrict_to_types)) {
+							$va_restrict_to_types = $va_user_type_restrictions;
+						} else {
+							$va_restrict_to_types = array_intersect($va_restrict_to_types, $va_user_type_restrictions);
+						}
+					}
+					
 					if (!is_array($va_exclude_types = $va_facet_info['exclude_types'])) { $va_exclude_types = array(); }
 					if (!is_array($va_restrict_to_relationship_types = $va_facet_info['restrict_to_relationship_types'])) { $va_restrict_to_relationship_types = array(); }
 					if (!is_array($va_exclude_relationship_types = $va_facet_info['exclude_relationship_types'])) { $va_exclude_relationship_types = array(); }
@@ -4154,7 +4509,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 					}
 					
 					if (is_array($va_restrict_to_types) && (sizeof($va_restrict_to_types) > 0) && method_exists($t_rel_item, "getTypeList")) {
-						$va_wheres[] = "{$vs_rel_table_name}.type_id IN (".join(',', caGetOption('dont_include_subtypes', $va_facet_info, false) ? $va_restrict_to_types : $va_restrict_to_types_expanded).")";
+						$va_wheres[] = "{$vs_rel_table_name}.type_id IN (".join(',', caGetOption('dont_include_subtypes', $va_facet_info, false) ? $va_restrict_to_types : $va_restrict_to_types_expanded).")".($t_rel_item->getFieldInfo('type_id', 'IS_NULL') ? " OR ({$vs_rel_table_name}.type_id IS NULL)" : '');
 						$va_selects[] = "{$vs_rel_table_name}.type_id";
 					}
 					
@@ -4520,19 +4875,23 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 		 */
 		protected function doGetResults($po_result=null, $pa_options=null) {
 			if (!is_array($this->opa_browse_settings)) { return null; }
+						
+			$vs_sort = caGetOption('sort', $pa_options, null);
+			$vs_sort_direction = strtolower(caGetOption('sortDirection', $pa_options, caGetOption('sort_direction', $pa_options, null)));
+			
 			$t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true);
-			$vb_will_sort = (isset($pa_options['sort']) && $pa_options['sort'] && (($this->getCachedSortSetting() != $pa_options['sort']) || ($this->getCachedSortDirectionSetting() != $pa_options['sort_direction'])));
+			$vb_will_sort = ($vs_sort && (($this->getCachedSortSetting() != $vs_sort) || ($this->getCachedSortDirectionSetting() != $vs_sort_direction)));
 			
 			$vs_pk = $t_item->primaryKey();
 			$vs_label_display_field = null;
 			
 			if(sizeof($va_results =  $this->opo_ca_browse_cache->getResults())) {
 				if ($vb_will_sort) {
-					$va_results = $this->sortHits($va_results, $this->ops_browse_table_name, $pa_options['sort'], $this->opo_ca_browse_cache->getCacheKey(), (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
+					$va_results = $this->sortHits($va_results, $this->ops_browse_table_name, $vs_sort, $vs_sort_direction);
 	
 					$this->opo_ca_browse_cache->setParameter('table_num', $this->opn_browse_table_num); 
-					$this->opo_ca_browse_cache->setParameter('sort', $pa_options['sort']);
-					$this->opo_ca_browse_cache->setParameter('sort_direction', $pa_options['sort_direction']);
+					$this->opo_ca_browse_cache->setParameter('sort', $vs_sort);
+					$this->opo_ca_browse_cache->setParameter('sort_direction', $vs_sort_direction);
 					
 					$this->opo_ca_browse_cache->setResults($va_results);
 					$this->opo_ca_browse_cache->save();

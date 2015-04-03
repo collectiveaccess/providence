@@ -191,7 +191,6 @@ class RequestDispatcher extends BaseObject {
 								}
 								$this->ops_action = $vs_default_method;
 							} else {
-								die("!!!");
 								// Invalid controller path
 								$this->postError(2300, _t("Invalid controller path"), "RequestDispatcher->dispatch()");
 								return false;
@@ -224,35 +223,37 @@ class RequestDispatcher extends BaseObject {
 
 				$this->opo_request->setIsDispatched(true);
 				
-				$vb_plugin_cancelled_dispatch = false;
-				foreach($pa_plugins as $vo_plugin) {
-					$va_ret = $vo_plugin->preDispatch();
-					if (is_array($va_ret) && isset($va_ret['dont_dispatch']) && $va_ret['dont_dispatch']) {
-						$vb_plugin_cancelled_dispatch = true;
+				if (!$this->opo_response->isRedirect()) {
+					$vb_plugin_cancelled_dispatch = false;
+					foreach($pa_plugins as $vo_plugin) {
+						$va_ret = $vo_plugin->preDispatch();
+						if (is_array($va_ret) && isset($va_ret['dont_dispatch']) && $va_ret['dont_dispatch']) {
+							$vb_plugin_cancelled_dispatch = true;
+						}
 					}
-				}
 				
-				if (!$vb_plugin_cancelled_dispatch) {
-					if (!$this->ops_action || !(method_exists($o_action_controller, $this->ops_action) || method_exists($o_action_controller, '__call'))) { 
-						$this->postError(2310, _t("Not dispatchable"), "RequestDispatcher->dispatch()");
-						return false;
+					if (!$vb_plugin_cancelled_dispatch) {
+						if (!$this->ops_action || !(method_exists($o_action_controller, $this->ops_action) || method_exists($o_action_controller, '__call'))) { 
+							$this->postError(2310, _t("Not dispatchable"), "RequestDispatcher->dispatch()");
+							return false;
+						}
+						$o_action_controller->{$this->ops_action}($va_params);
+						if ($o_action_controller->numErrors()) {
+							$this->errors = $o_action_controller->errors();
+							return false;
+						}
 					}
-					$o_action_controller->{$this->ops_action}($va_params);
-					if ($o_action_controller->numErrors()) {
-						$this->errors = $o_action_controller->errors();
-						return false;
+				
+					// reload plugins in case controller we dispatched to has changed them
+					$pa_plugins = $this->getPlugins($pa_plugins);
+				
+					foreach($pa_plugins as $vo_plugin) {
+						$vo_plugin->postDispatch();
 					}
-				}
-				
-				// reload plugins in case controller we dispatched to has changed them
-				$pa_plugins = $this->getPlugins($pa_plugins);
-				
-				foreach($pa_plugins as $vo_plugin) {
-					$vo_plugin->postDispatch();
-				}
 
-				if (!$this->opo_request->isDispatched()) {
-					$this->parseRequest();
+					if (!$this->opo_request->isDispatched()) {
+						$this->parseRequest();
+					}
 				}
 			} while($this->opo_request->isDispatched() == false);
 			

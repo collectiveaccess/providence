@@ -486,7 +486,7 @@
 				// set the field values array for this instance
 				//$this->setFieldValuesArray($va_field_values_with_updated_attributes);
 				
-				$this->doSearchIndexing($va_fields_changed_array);	// TODO: SHOULD SECOND PARAM (REINDEX) BE "TRUE"?
+				$this->doSearchIndexing(array_merge($this->getFieldValuesArray(true), $va_fields_changed_array));	// TODO: SHOULD SECOND PARAM (REINDEX) BE "TRUE"?
 				
 				
 				if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
@@ -644,7 +644,6 @@
 				if ($va_v = $this->get($this->tableName().'.'.$vs_code, array('returnAllLocales' => true, 'returnAsArray' => true, 'return' => 'url', 'version' => 'original'))) {
 					foreach($va_v as $vn_id => $va_v_by_locale) {
 						foreach($va_v_by_locale as $vn_locale_id => $va_v_list) {
-							if (!$vn_locale_id) { $vs_locale = 'NONE'; continue; }
 							if (!($vs_locale = $t_locale->localeIDToCode($vn_locale_id))) {
 								$vs_locale = 'NONE';
 							}
@@ -1147,6 +1146,17 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Returns ca_list_items.idno (aka "type code") for $pn_type_id
+		 *
+		 * @param int $pn_type_id Number id for the type
+		 * @return string idno (aka "type code") for specified list item id (aka "type id")
+		 */
+		public function getTypeCodeForID($pn_type_id) {
+			$va_types = $this->getTypeList();
+			return isset($va_types[$pn_type_id]) ? $va_types[$pn_type_id]['idno'] : null;
+		}
+		# ------------------------------------------------------------------
+		/**
 		 * Returns default ca_list_items.item_id (aka "type_id") for this model
 		 *
 		 * @return int - item_id (aka "type_id") for default type
@@ -1279,10 +1289,11 @@
 			
 			if (!in_array($va_tmp[0], array('created', 'modified'))) {		// let change log searches filter down to BaseModel
 				if ($va_tmp[0] != $this->tableName()) { return null; }
-				if (!$this->hasField($va_tmp[1])) {
-					$va_tmp[1] = preg_replace('!^ca_attribute_!', '', $va_tmp[1]);	// if field space is a bundle placement-style bundlename (eg. ca_attribute_<element_code>) then strip it before trying to pull label
+				$vs_fld = array_pop($va_tmp);
+				if (!$this->hasField($vs_fld)) {
+					$vs_fld = preg_replace('!^ca_attribute_!', '', $vs_fld);	// if field space is a bundle placement-style bundlename (eg. ca_attribute_<element_code>) then strip it before trying to pull label
 					
-					return $this->htmlFormElementForAttributeSearch($po_request, $va_tmp[1], array_merge($pa_options, array(
+					return $this->htmlFormElementForAttributeSearch($po_request, $vs_fld, array_merge($pa_options, array(
 								'values' => (isset($pa_options['values']) && is_array($pa_options['values'])) ? $pa_options['values'] : array(),
 								'width' => (isset($pa_options['width']) && ($pa_options['width'] > 0)) ? $pa_options['width'] : 20, 
 								'height' => (isset($pa_options['height']) && ($pa_options['height'] > 0)) ? $pa_options['height'] : 1, 
@@ -2004,7 +2015,7 @@
 			foreach($va_attributes as $o_attr) {
 				if ($o_attr->getElementID() == $vn_element_id) { 
 					$va_values = $o_attr->getDisplayValues(true, $pa_options);
-					$va_ret_values[0][(int)$o_attr->getLocaleID()] = $va_values[$vn_sub_element_id ? $vn_sub_element_id : $vn_element_id];
+					$va_ret_values[][(int)$o_attr->getLocaleID()] = $va_values[$vn_sub_element_id ? $vn_sub_element_id : $vn_element_id];
 				}
 			}
 			

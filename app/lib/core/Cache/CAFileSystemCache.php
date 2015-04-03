@@ -34,8 +34,6 @@ namespace Doctrine\Common\Cache;
 
 class CAFileSystemCache extends FilesystemCache {
 
-	protected $extension = '.ca.cache';
-
 	/**
 	 * Override file name logic in Doctrine\Common\Cache\FileCache
 	 * @param string $ps_key cache key
@@ -46,6 +44,6 @@ class CAFileSystemCache extends FilesystemCache {
 		$vs_path = implode(str_split($vs_hash, 12), DIRECTORY_SEPARATOR);
 		$vs_path = $this->directory . DIRECTORY_SEPARATOR . $vs_path;
 
-		return $vs_path . DIRECTORY_SEPARATOR . $vs_hash . $this->extension;
+		return $vs_path . DIRECTORY_SEPARATOR . $vs_hash . $this->getExtension();
 	}
 }

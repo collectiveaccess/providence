@@ -9150,13 +9150,6 @@ Canadian Pacific Railway Company</name_plural>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
             </placement>
-            <placement code="ca_vessels">
-              <bundle>ca_occurrences</bundle>
-              <settings>
-                <setting name="restrict_to_types">vessel</setting>
-                <setting name="label" locale="en_CA">Related vessels</setting>
-              </settings>
-            </placement>
             <placement code="ca_collections">
               <bundle>ca_collections</bundle>
               <settings>

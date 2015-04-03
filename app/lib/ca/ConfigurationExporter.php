@@ -575,6 +575,7 @@ final class ConfigurationExporter {
 	# -------------------------------------------------------
 	public function getUIsAsDOM(){
 		$t_list = new ca_lists();
+		$t_rel_type = new ca_relationship_types();
 		
 		$vo_uis = $this->opo_dom->createElement("userInterfaces");
 		
@@ -626,9 +627,14 @@ final class ConfigurationExporter {
 					$vo_ui_type_restrictions->appendChild($vo_restriction);
 					/** @var BaseModelWithAttributes $t_instance */
 					$t_instance = $this->opo_dm->getInstanceByTableNum($va_restriction["table_num"]);
-					$vs_type_code = $t_instance->getTypeListCode();
-					$va_item = $t_list->getItemFromListByItemID($vs_type_code, $va_restriction["type_id"]);
-					$vo_restriction->setAttribute("type", $va_item["idno"]);
+					if($t_instance instanceof BaseRelationshipModel) {
+						$t_rel_type->load($va_restriction["type_id"]);
+						$vo_restriction->setAttribute("type", $t_rel_type->get('type_code'));
+					} else {
+						$vs_type_code = $t_instance->getTypeListCode();
+						$va_item = $t_list->getItemFromListByItemID($vs_type_code, $va_restriction["type_id"]);
+						$vo_restriction->setAttribute("type", $va_item["idno"]);
+					}
 				}
 			}
 
@@ -701,14 +707,18 @@ final class ConfigurationExporter {
 				if(is_array($t_screen->getTypeRestrictions()) && sizeof($t_screen->getTypeRestrictions())>0){
 					$vo_type_restrictions = $this->opo_dom->createElement("typeRestrictions");
 
-					foreach($t_screen->getTypeRestrictions() as $va_restriction){
+					foreach($t_screen->getTypeRestrictions() as $va_restriction) {
 						$vo_type_restriction = $this->opo_dom->createElement("restriction");
 
 						$t_instance = $this->opo_dm->getInstanceByTableNum($va_restriction["table_num"]);
-						$vs_type_code = $t_instance->getTypeListCode();
-						$va_item = $t_list->getItemFromListByItemID($vs_type_code, $va_restriction["type_id"]);
-
-						$vo_type_restriction->setAttribute("type", $va_item["idno"]);
+						if($t_instance instanceof BaseRelationshipModel) {
+							$t_rel_type->load($va_restriction["type_id"]);
+							$vo_type_restriction->setAttribute("type", $t_rel_type->get('type_code'));
+						} else {
+							$vs_type_code = $t_instance->getTypeListCode();
+							$va_item = $t_list->getItemFromListByItemID($vs_type_code, $va_restriction["type_id"]);
+							$vo_type_restriction->setAttribute("type", $va_item["idno"]);
+						}
 
 						$vo_type_restrictions->appendChild($vo_type_restriction);
 					}

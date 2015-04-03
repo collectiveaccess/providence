@@ -1377,9 +1377,9 @@ class TimeExpressionParser {
 		$va_dates = array();
 		if (sizeof($va_decade_indicators)) {
 			if (
-				(preg_match("/^([\d]{4})[\']{0,1}(".join("|", $va_decade_indicators)."){1}$/i", $va_token['value'], $va_matches))
+				(preg_match("/^([\d]{2,4})[\']{0,1}(".join("|", $va_decade_indicators)."){1}$/i", $va_token['value'], $va_matches))
 				||
-				(preg_match("/^([\d]{3})\_$/", $va_token['value'], $va_matches))
+				(preg_match("/^([\d]{3})(\_)$/", $va_token['value'], $va_matches))
 			) {
 				$vn_is_circa = $vb_circa_is_set ? 1 : 0;
 				
@@ -1402,20 +1402,24 @@ class TimeExpressionParser {
 							break(2);
 					}
 				}
-				if (strlen($va_matches[1]) == 3) { $va_matches[1].='0'; }
+
+				// decade expression with trailing underscore: 191_
+				if (isset($va_matches[2]) && ($va_matches[2] == '_') && (strlen($va_matches[1]) == 3)) {
+					$va_matches[1].='0';
+				}
 			
-				$vn_start_year = $va_matches[1] - ($va_matches[1] % 10);
+				$vn_start_year = (int) ($va_matches[1] - ($va_matches[1] % 10));
 				$va_dates['start'] = array(
 					'month' => 1, 'day' => 1, 'year' => $vn_start_year,
 					'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa
 				);
 				$va_dates['end'] = array(
-					'month' => 12, 'day' => 31, 'year' => $vn_start_year + 9,
+					'month' => 12, 'day' => 31, 'year' => ($vn_start_year + 9),
 					'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa
 				);
 			}
 		}
-		
+
 		return $va_dates;
 	}
 	# -------------------------------------------------------------------
@@ -3137,20 +3141,20 @@ class TimeExpressionParser {
 				
 				if (!$vn_s || !$vn_e) { break; }
 				
-				$vs_bc_indicator = 			$this->opo_language_settings->get("dateBCIndicator");
+				$vs_bc_indicator = $this->opo_language_settings->get("dateBCIndicator");
 				if ($vn_s <= $vn_e) {
-					for($vn_y=$vn_s; $vn_y <= $vn_e; $vn_y++) {
-						if ($vn_y == 0) { continue; }
-						if ($vn_y < 0) {
-							$va_values[(int)$vn_y] = abs($vn_y).' '.$vs_bc_indicator;
+					for($y=$vn_s; $y <= $vn_e; $y++) {
+						if ($y == 0) { continue; }
+						if ($y < 0) {
+							$va_values[(int)$y] = abs($y).' '.$vs_bc_indicator;
 						} else {
-							$va_values[(int)$vn_y] = $vn_y;
+							$va_values[(int)$y] = $y;
 						}
 					}
 				}
 				break;
 		}
-		
+
 		return $va_values;
 	}
 	# -------------------------------------------------------------------
@@ -3159,9 +3163,9 @@ class TimeExpressionParser {
 	 */
 	function gmgetdate($ts = null){ 
         $k = array('seconds','minutes','hours','mday', 
-                'wday','mon','year','yday','weekday','month',0); 
-        return(array_combine($k,split(":", 
-                date('s:i:G:j:w:n:Y:z:l:F:U',is_null($ts)?time():$ts)))); 
+                'wday','mon','year','yday','weekday','month',0);
+        return(array_combine($k,explode(":",
+                date('s:i:G:j:w:n:Y:z:l:F:U',is_null($ts)?time():intval($ts)))));
     } 
  	# -------------------------------------------------------------------
 }
