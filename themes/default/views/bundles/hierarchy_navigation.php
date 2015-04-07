@@ -35,10 +35,8 @@
 	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$va_lookup_urls 	= caJSONLookupServiceUrl($this->request, $t_subject->tableName(), array('noInline' => 1));
 	$va_hierarchy		= $t_subject->getHierarchyAsList(null, array('idsOnly' => true));
-	if(is_array($va_hierarchy)) { $vn_items_in_hier = sizeof($va_hierarchy); }
-
-	//@todo maybe don't hardcode the template?
-	$vs_bundle_preview	= caProcessTemplateForIDs("^_hierarchy ➔ ^_parent ➔ ^preferred_labels", $t_subject->tableName(), array($t_subject->getPrimaryKey()));
+	$vn_items_in_hier	= (is_array($va_hierarchy) ? sizeof($va_hierarchy) : 1);
+	$vs_bundle_preview	= '('.$vn_items_in_hier. ') '. caProcessTemplateForIDs("^preferred_labels", $t_subject->tableName(), array($t_subject->getPrimaryKey()));
 	
 	$pa_bundle_settings = $this->getVar('settings');
 	
