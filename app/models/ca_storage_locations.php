@@ -175,7 +175,7 @@ BaseModel::$s_ca_models_definitions['ca_storage_locations'] = array(
 				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT,
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false,
-				'DEFAULT' => '1',
+				'DEFAULT' => 1,
 				'LABEL' => _t('Is enabled?'), 'DESCRIPTION' => _t("If unchecked this item is disabled and can't be edited or used in new relationships")
 		),
  	)
