@@ -34,5 +34,7 @@
  		protected $ops_name_singular = 'storage_location';
  		protected $ops_search_class = 'StorageLocationSearch';
  		# -------------------------------------------------------
+		public function Get($pa_additional_query_params=null, $pa_options=null) {
+			parent::Get(array_merge(array('ca_storage_locations.is_enabled:1'), $pa_additional_query_params), $pa_options);
+		}
  	}
- ?>
