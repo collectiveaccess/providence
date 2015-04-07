@@ -241,7 +241,7 @@
 				// do we need to get the hierarchy?
 				if ($pa_options['showHierarchy']) {
 					$t_item->load($this->ops_text_value);
-					return $t_item->get('ca_list_items.hierarchy.'.$vs_get_spec, $pa_options);
+					return $t_item->get('ca_list_items.hierarchy.'.$vs_get_spec, array_merge(array('removeFirstItems' => 1, 'delimiter' => ' ➔ ', $pa_options)));
 				} 
 				
 				return $t_list->getItemFromListForDisplayByItemID($vn_list_id, $this->ops_text_value, (isset($pa_options['useSingular']) && $pa_options['useSingular']) ? false : true);
