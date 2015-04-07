@@ -683,7 +683,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							break;
 						case 'Zend_Search_Lucene_Search_Query_Phrase':
 	if ($this->getOption('strictPhraseSearching')) {
-							
 							$vs_search_tokenizer_regex = $this->opo_search_config->get('search_tokenizer_regex');
 							
 						 	$va_words = array();
@@ -1006,9 +1005,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														";
 														break;
 													case __CA_ATTRIBUTE_VALUE_LENGTH__:
-														$t_len = new LengthAttributeValue();
-														$va_parsed_value = $t_len->parseValue(array_shift($va_raw_terms), $t_element->getFieldValuesArray());
-														$vn_len = $va_parsed_value['value_decimal1'];	// this is always in meters so we can compare this value to the one in the database
+														// If it looks like a dimension that has been tokenized by Lucene
+														// into oblivion rehydrate it here.
+														$vo_parsed_measurement = caParseLengthDimension(join(' ', $va_raw_terms));
+														$vn_len = $vo_parsed_measurement->convertTo('METER',6, 'en_US');
 													
 														$vs_direct_sql_query = "
 															SELECT ca.row_id, 1
@@ -1023,9 +1023,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														";
 														break;
 													case __CA_ATTRIBUTE_VALUE_WEIGHT__:
-														$t_weight = new WeightAttributeValue();
-														$va_parsed_value = $t_weight->parseValue(array_shift($va_raw_terms), $t_element->getFieldValuesArray());
-														$vn_weight = $va_parsed_value['value_decimal1'];	// this is always in kilograms so we can compare this value to the one in the database
+														// If it looks like a weight that has been tokenized by Lucene
+														// into oblivion rehydrate it here.
+														$vo_parsed_measurement = caParseWeightDimension(join(' ', $va_raw_terms));
+														$vn_weight = $vo_parsed_measurement->convertTo('KILOGRAM',6, 'en_US');
 													
 														$vs_direct_sql_query = "
 															SELECT ca.row_id, 1
@@ -1744,7 +1745,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				INNER JOIN ca_sql_search_words AS sw ON sw.word_id = ng.word_id
 				WHERE
 					ng.ngram IN (?)
-				GROUP BY ng.word_id
+				GROUP BY ng.word_id, ng.word
 				ORDER BY (length(sw.word) - (count(*) * {$vn_ngram_len})), (".($vn_ngram_len * $vn_num_ngrams).") - ((count(*) * {$vn_ngram_len}))
 				LIMIT 250
 			", $va_params);
