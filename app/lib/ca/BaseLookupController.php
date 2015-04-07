@@ -263,7 +263,11 @@
 								
 								// Child count is only valid if has_children is not null
 								$va_tmp['children'] = isset($va_child_counts[$vn_id]) ? (int)$va_child_counts[$vn_id] : 0;
-							
+
+								if(strlen($vs_enabled = $qr_children->get('is_enabled')) > 0) {
+									$va_tmp['is_enabled'] = $vs_enabled;
+								}
+
 								if (is_array($va_sorts)) {
 									$vs_sort_acc = array();
 									foreach($va_sorts as $vs_sort) {
