@@ -672,10 +672,12 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			$vs_buf .= "<br style='clear: both;'/></div></h4>\n";
 		} else {	
 			if ($vn_item_id) {
-				if($po_view->request->user->canDoAction("can_edit_".$vs_priv_table_name) && (sizeof($t_item->getTypeList()) > 1)){		
-					$vs_buf .= "<strong>"._t("Editing %1", $vs_type_name).": </strong>\n";
-				}else{
-					$vs_buf .= "<strong>"._t("Viewing %1", $vs_type_name).": </strong>\n";
+				if(!$po_view->request->config->get("{$vs_priv_table_name}_inspector_disable_headline")) {
+					if($po_view->request->user->canDoAction("can_edit_".$vs_priv_table_name) && (sizeof($t_item->getTypeList()) > 1)){		
+						$vs_buf .= "<strong>"._t("Editing %1", $vs_type_name).": </strong>\n";
+					}else{
+						$vs_buf .= "<strong>"._t("Viewing %1", $vs_type_name).": </strong>\n";
+					}
 				}
 				
 				if ($t_item->hasField('is_deaccessioned') && $t_item->get('is_deaccessioned') && ($t_item->get('deaccession_date', array('getDirectDate' => true)) <= caDateToHistoricTimestamp(_t('now')))) {
