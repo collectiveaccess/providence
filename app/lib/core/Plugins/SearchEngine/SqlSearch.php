@@ -1041,7 +1041,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														// If it looks like a weight that has been tokenized by Lucene
 														// into oblivion rehydrate it here.
 														$vo_parsed_measurement = caParseWeightDimension(join(' ', $va_raw_terms));
-														$vn_weight = $vo_parsed_measurement->convertTo('METER',6, 'en_US');
+														$vn_weight = $vo_parsed_measurement->convertTo('KILOGRAM',6, 'en_US');
 													
 														$vs_direct_sql_query = "
 															SELECT ca.row_id, 1
