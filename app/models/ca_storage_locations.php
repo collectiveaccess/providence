@@ -338,6 +338,29 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
 	}
 	# ------------------------------------------------------
+	public function insert($pa_options=null) {
+		$vb_web_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$this->setTransaction(new Transaction($this->getDb()));
+			$vb_web_set_transaction = true;
+		}
+
+		$o_trans = $this->getTransaction();
+
+		if (!strlen($this->get('is_enabled'))) {
+			$this->set('is_enabled', 1);
+		}
+		$vn_rc = parent::insert($pa_options);
+
+		if ($this->numErrors()) {
+			if ($vb_web_set_transaction) { $o_trans->rollback(); }
+		} else {
+			if ($vb_web_set_transaction) { $o_trans->commit(); }
+		}
+
+		return $vn_rc;
+	}
+	# ------------------------------------------------------
 	/**
 	 * Return array containing information about all storage location hierarchies, including their root_id's
 	 */

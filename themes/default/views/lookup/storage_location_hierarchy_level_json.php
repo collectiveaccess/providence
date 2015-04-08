@@ -27,7 +27,6 @@
  */
 
 	$va_list = $this->getVar('storage_location_list');
-	file_put_contents('/tmp/fuck', print_r($va_list, true), FILE_APPEND);
 	foreach($va_list as $vs_level => $va_level_content) {
 		foreach($va_level_content as $vs_key => $va_info) {
 			if (!is_array($va_info)) { continue; }
