@@ -607,6 +607,9 @@ class SearchIndexer extends SearchBase {
 		// We also do this indexing if we're in "reindexing" mode. When reindexing is indicated it means that we need to act as if
 		// we're indexing this row for the first time, and all indexing should be performed.
 if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
+		$this->opo_engine->removeRowIndexing($pn_subject_tablenum, $pn_subject_row_id);
+		$this->opo_engine->removeRowIndexing(null, null, $pn_subject_tablenum, null, $pn_subject_row_id);
+		
 		if (is_array($va_related_tables = $this->getRelatedIndexingTables($pn_subject_tablenum))) {
 			if (!$vb_started_indexing) {
 				$this->opo_engine->startRowIndexing($pn_subject_tablenum, $pn_subject_row_id);
@@ -630,6 +633,7 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 				$t_rel->setDb($this->getDb());
 			
 				$va_params = null;
+				
 				if ($vs_subject_tablename == $vs_related_table) {
 					// self-relation
 					if (!($vs_self_rel_table_name = $t_rel->getSelfRelationTableName())) { continue; }
@@ -843,26 +847,12 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 								}
 								
 								if ($t_hier_rel && $t_hier_rel->isHierarchical()) {
+									$this->opo_engine->removeRowIndexing(null, null, $vn_related_tablenum, null, $vn_id);	// remove existing hierarchical indexing
 									// get hierarchy
 									if ($va_hier_values = $this->_genHierarchicalPath($vn_id, ($vb_is_label ? "preferred_labels.".$vs_rel_field : $vs_rel_field), $t_hier_rel, $va_rel_field_info)) {
 										$this->opo_engine->indexField($vn_related_tablenum, 'I'.$vn_fld_num, $vn_id, $vs_fld_data.' '.join(" ", $va_hier_values['values']), array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id)));
 										if(caGetOption('INDEX_ANCESTORS_AS_PATH_WITH_DELIMITER', $va_rel_field_info, false) !== false) {
 											$this->opo_engine->indexField($vn_related_tablenum, 'I'.$vn_fld_num, $vn_id, $va_hier_values['path'], array_merge($va_rel_field_info, array('DONT_TOKENIZE' => 1, 'relationship_type_id' => $vn_rel_type_id)));
-										}
-									}
-									
-									$va_children_ids = $t_hier_rel->getHierarchyAsList($vn_row_id, array('idsOnly' => true));
-								
-									if (!$pb_reindex_mode && is_array($va_children_ids) && sizeof($va_children_ids) > 0) {
-										// trigger reindexing of children
-										$o_indexer = new SearchIndexer($this->opo_db);
-										$qr_children_res = $t_hier_rel->makeSearchResult($t_hier_rel->tableName(), $va_children_ids, array('db' => $this->getDb()));
-										$vs_pk = $t_hier_rel->primaryKey();
-										$vn_table_num = $t_hier_rel->tableNum();
-										while($qr_children_res->nextHit()) {
-											$vn_id=$qr_children_res->get($vs_pk);
-											if ($vn_id == $vn_row_id) { continue; }
-											$o_indexer->indexRow($vn_table_num, $vn_id, array($vs_pk => $vn_id, 'parent_id' => $qr_children_res->get('parent_id'), $vs_rel_field => $qr_children_res->get($vs_rel_field)), false, $pa_exclusion_list, array($vs_rel_field => true), null);
 										}
 									}
 									continue;

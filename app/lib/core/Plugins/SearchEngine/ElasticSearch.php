@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2014 Whirl-i-Gig
+ * Copyright 2012-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -61,8 +61,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	static $s_doc_content_buffer = array();			// content buffer used when indexing
 	static $s_element_code_cache = array();
 	# -------------------------------------------------------
-	public function __construct(){
-		parent::__construct();
+	public function __construct($po_db=null){
+		parent::__construct($po_db);
 		
 		$this->opo_db = new Db();
 		$this->opo_tep = new TimeExpressionParser();	

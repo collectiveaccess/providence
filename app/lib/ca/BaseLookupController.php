@@ -146,6 +146,7 @@
 				}
 				
 				// do search
+				file_put_contents('/tmp/lookup_debug', trim($ps_query).(intval($pb_exact) ? '' : '*').$vs_type_query.$vs_additional_query_params . "\n", FILE_APPEND);
 				$qr_res = $o_search->search(trim($ps_query).(intval($pb_exact) ? '' : '*').$vs_type_query.$vs_additional_query_params, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
 		
 				$qr_res->setOption('prefetch', $pn_limit);
@@ -264,7 +265,11 @@
 								
 								// Child count is only valid if has_children is not null
 								$va_tmp['children'] = isset($va_child_counts[$vn_id]) ? (int)$va_child_counts[$vn_id] : 0;
-							
+
+								if(strlen($vs_enabled = $qr_children->get('is_enabled')) > 0) {
+									$va_tmp['is_enabled'] = $vs_enabled;
+								}
+
 								if (is_array($va_sorts)) {
 									$vs_sort_acc = array();
 									foreach($va_sorts as $vs_sort) {

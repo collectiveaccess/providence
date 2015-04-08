@@ -180,6 +180,7 @@
 						browserWidth: "<?php print $va_settings['hierarchicalBrowserWidth']; ?>",
 						
 						dontAllowEditForFirstLevel: false,
+						disabledItems: 'hide',
 						
 						className: 'hierarchyBrowserLevel',
 						classNameContainer: 'hierarchyBrowserContainer',
