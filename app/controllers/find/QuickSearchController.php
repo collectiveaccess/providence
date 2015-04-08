@@ -162,7 +162,7 @@
  			
  			$va_access_values = caGetUserAccessValues($this->request);
  			$vb_no_cache = (bool)$this->request->getParameter('no_cache', pInteger);
- 			if (!$this->request->user->canDoAction('can_search_'.$ps_type)) { return ''; }
+ 			if (!$this->request->user->canDoAction('can_search_'.(($ps_type == 'ca_tour_stops') ? 'ca_tours' : $ps_type))) { return ''; }
  			switch($ps_type) {
  				case 'ca_objects':
  					$o_object_search = new ObjectSearch();
