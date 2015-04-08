@@ -1745,7 +1745,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				INNER JOIN ca_sql_search_words AS sw ON sw.word_id = ng.word_id
 				WHERE
 					ng.ngram IN (?)
-				GROUP BY ng.word_id, ng.word
+				GROUP BY ng.word_id, sw.word
 				ORDER BY (length(sw.word) - (count(*) * {$vn_ngram_len})), (".($vn_ngram_len * $vn_num_ngrams).") - ((count(*) * {$vn_ngram_len}))
 				LIMIT 250
 			", $va_params);
