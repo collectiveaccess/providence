@@ -72,7 +72,7 @@
 			$va_excludes = explode(";", $ps_exclude);
 			$ps_type = $this->request->getParameter('type', pString);
 			$ps_types = $this->request->getParameter('types', pString);
-			$ps_restrict_to_search = $this->request->getParameter('restrictToSearch', pString);
+			$ps_restrict_to_search = trim($this->request->getParameter('restrictToSearch', pString));
 			$pb_no_subtypes = (bool)$this->request->getParameter('noSubtypes', pInteger);
 			$pb_quickadd = (bool)$this->request->getParameter('quickadd', pInteger);
 			$pb_no_inline = (bool)$this->request->getParameter('noInline', pInteger);

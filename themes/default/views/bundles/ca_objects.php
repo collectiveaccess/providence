@@ -307,6 +307,7 @@
 			showEmptyFormsOnLoad: 1,
 			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'Object', 'Get', $va_lookup_params); ?>',
 			types: <?php print json_encode($va_settings['restrict_to_types']); ?>,
+			restrictToSearch: <?php print json_encode($va_settings['restrict_to_search']); ?>,
 			bundlePreview: <?php print caEscapeForBundlePreview($t_instance->get($t_item->tableName(), array('delimiter' => '; ', 'restrict_to_types' => $va_settings['restrict_to_types'], 'restrict_to_relationship_types' => $va_settings['restrict_to_relationship_types'], 'template' => $va_settings['display_template']))); ?>,
 			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
 			isSortable: <?php print ($vb_read_only || $vs_sort) ? "false" : "true"; ?>,
