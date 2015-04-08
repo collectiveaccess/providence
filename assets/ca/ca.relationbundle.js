@@ -66,6 +66,12 @@ var caUI = caUI || {};
 				if(typeof options.lists != 'object') { options.lists = [options.lists]; }
 				options.extraParams.lists = options.lists.join(";");
 			}
+
+			// restrict to search expression
+			if (options && options.restrictToSearch && options.restrictToSearch.length) {
+				if (!options.extraParams) { options.extraParams = {}; }
+				options.extraParams.restrictToSearch = options.restrictToSearch;
+			}
 			
 			// restrict to types (for all lookups) - limits lookup to specific types of items (NOT relationship types)
 			if (options && options.types && options.types.length) {

@@ -532,6 +532,14 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'label' => _t('Restrict to types'),
 							'description' => _t('Restricts display to items of the specified type(s). Leave all unselected for no restriction.')
 						),
+						'restrict_to_search' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_FIELD,
+							'default' => '',
+							'width' => "275px", 'height' => 4,
+							'label' => _t('Restrict to search expression'),
+							'description' => _t('Restricts display to items matching the given search expression. Leave empty for no restriction.')
+						),
 						'dont_include_subtypes_in_type_restriction' => array(
 							'formatType' => FT_TEXT,
 							'displayType' => DT_CHECKBOXES,
