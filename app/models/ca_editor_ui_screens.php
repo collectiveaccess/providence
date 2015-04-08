@@ -536,7 +536,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'formatType' => FT_TEXT,
 							'displayType' => DT_FIELD,
 							'default' => '',
-							'width' => "275px", 'height' => 4,
+							'width' => "275px", 'height' => 1,
 							'label' => _t('Restrict to search expression'),
 							'description' => _t('Restricts display to items matching the given search expression. Leave empty for no restriction.')
 						),

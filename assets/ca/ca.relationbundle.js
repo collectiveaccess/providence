@@ -70,6 +70,7 @@ var caUI = caUI || {};
 			// restrict to search expression
 			if (options && options.restrictToSearch && options.restrictToSearch.length) {
 				if (!options.extraParams) { options.extraParams = {}; }
+				if (typeof options.restrictToSearch != 'string') { options.restrictToSearch = ''; }
 				options.extraParams.restrictToSearch = options.restrictToSearch;
 			}
 			

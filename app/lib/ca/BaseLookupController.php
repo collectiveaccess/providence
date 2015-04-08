@@ -72,6 +72,7 @@
 			$va_excludes = explode(";", $ps_exclude);
 			$ps_type = $this->request->getParameter('type', pString);
 			$ps_types = $this->request->getParameter('types', pString);
+			$ps_restrict_to_search = $this->request->getParameter('restrictToSearch', pString);
 			$pb_no_subtypes = (bool)$this->request->getParameter('noSubtypes', pInteger);
 			$pb_quickadd = (bool)$this->request->getParameter('quickadd', pInteger);
 			$pb_no_inline = (bool)$this->request->getParameter('noInline', pInteger);
@@ -127,6 +128,10 @@
 				if (is_array($pa_additional_query_params) && sizeof($pa_additional_query_params)) {
 					$vs_additional_query_params = ' AND ('.join(' AND ', $pa_additional_query_params).')';
 				}
+
+				if(strlen($ps_restrict_to_search) > 0) {
+					$vs_additional_query_params .= ' AND ('.$ps_restrict_to_search.')';
+				}
 				
 				// get sort field
 				$vs_sort = $this->request->getAppConfig()->get($this->opo_item_instance->tableName().'_lookup_sort');
@@ -146,7 +151,6 @@
 				}
 				
 				// do search
-				file_put_contents('/tmp/lookup_debug', trim($ps_query).(intval($pb_exact) ? '' : '*').$vs_type_query.$vs_additional_query_params . "\n", FILE_APPEND);
 				$qr_res = $o_search->search(trim($ps_query).(intval($pb_exact) ? '' : '*').$vs_type_query.$vs_additional_query_params, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
 		
 				$qr_res->setOption('prefetch', $pn_limit);
