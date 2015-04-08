@@ -265,6 +265,8 @@
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			$vb_treat_value_as_idno = caGetOption('alwaysTreatValueAsIdno', $pa_options, false);
  			
+ 			if (is_array($ps_value)) { $ps_value = array_pop($ps_value); }
+ 			
  			$va_match_on = caGetOption('matchOn', $pa_options, null);
  			if ($va_match_on && !is_array($va_match_on)){ $va_match_on = array($va_match_on); }
  			if (!is_array($va_match_on) && $vb_treat_value_as_idno) { $va_match_on = array('idno', 'item_id'); }
