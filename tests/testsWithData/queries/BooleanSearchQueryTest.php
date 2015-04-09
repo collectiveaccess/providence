@@ -64,6 +64,10 @@ class BooleanSearchQueryTest extends AbstractSearchQueryTest {
 
 		// search queries
 		$this->setSearchQueries(array(
+			// establish that data was set correctly
+			'ca_objects.type_id:image' => 1,
+			'ca_object_labels.name:test' => 1,
+
 			// AND
 			'ca_objects.type_id:image AND ca_object_labels.name:test' => 1, // 1 and 1 = 1
 			'ca_objects.type_id:image AND ca_object_labels.name:doesntexist' => 0, // 1 and 0 = 0
