@@ -769,7 +769,11 @@ class BaseModel extends BaseObject {
 						} else {
 							if (($va_tmp[1] == 'children') && ($this->isHierarchical())) {
 								$vb_check_access = is_array($pa_options['checkAccess']) && $this->hasField('access');
-								$vs_sort = isset($pa_options['sort']) ? $pa_options['sort'] : null;
+								
+								$va_sort = isset($pa_options['sort']) ? $pa_options['sort'] : null;
+								if (!is_array($va_sort) && $va_sort) { $va_sort = array($va_sort); }
+								if (!is_array($va_sort)) { $va_sort = array(); }
+							
 								$vs_sort_direction = (isset($pa_options['sort_direction']) && in_array(strtolower($pa_options['sort_direction']), array('asc', 'desc'))) ? strtolower($pa_options['sort_direction']) : 'asc';
 							
 								unset($va_tmp[1]);					// remove 'children' from field path
@@ -796,7 +800,12 @@ class BaseModel extends BaseObject {
 												if ($vb_check_access && !in_array($qr_children->get("{$vs_table}.access"), $pa_options['checkAccess'])) { continue; }
 									
 												$vn_child_id = $qr_children->get($vs_pk);
-												$vs_sort_key = ($vs_sort) ? $qr_children->get($vs_sort) : 0;
+												
+												$vs_sort_key = '';
+												foreach($va_sort as $vs_sort){ 
+													$vs_sort_key .= ($vs_sort) ? $qr_children->get($vs_sort) : 0;
+												}
+									
 												if(!is_array($va_data[$vs_sort_key])) { $va_data[$vs_sort_key] = array(); }
 												if ($vb_return_as_array) {
 													$va_data[$vs_sort_key][$vn_child_id]  = array_shift($qr_children->get($vs_childless_path, array_merge($pa_options, array('returnAsArray' => $vb_return_as_array, 'returnAllLocales' => $vb_return_all_locales))));
@@ -3150,29 +3159,11 @@ class BaseModel extends BaseObject {
 
 
 			#
-			# --- delete search index entries
+			# --- begin delete search index entries
 			#
-			
-			// TODO: FIX THIS ISSUE!
-			// NOTE: we delete the indexing here, before we actually do the 
-			// SQL delete because the search indexer relies upon the relevant
-			// relationships to be intact (ie. exist) in order to properly remove the indexing for them.
-			//
-			// In particular, the incremental indexing used by the MySQL Fulltext plugin fails to properly
-			// update if it can't traverse the relationships it is to remove.
-			//
-			// By removing the search indexing here we run the risk of corrupting the search index if the SQL
-			// delete subsequently fails. Specifically, the indexing for rows that still exist in the database
-			// will be removed. Wrapping everything in a MySQL transaction deals with it for MySQL Fulltext, but
-			// other non-SQL engines (Lucene, SOLR, etc.) are still affected. 
-			//
-			// At some point we need to come up with something clever to handle this. Most likely it means moving all of the actual
-			// analysis to startRowUnindexing() and only executing commands in commitRowUnIndexing(). For now we blithely assume that 
-			// SQL deletes always succeed. If they don't we can always reindex. Only the indexing is affected, not the underlying data.
 			if(!defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
 				$o_indexer = $this->getSearchIndexer();
-				$o_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
-				$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
+				$o_indexer->startRowUnIndexing($this->tableNum(), $vn_id); // records dependencies but does not actually delete indexing
 			}
 
 			# --- Check ->many and many<->many relations
@@ -3235,6 +3226,13 @@ class BaseModel extends BaseObject {
 				$this->errors = $o_db->errors();
 				if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 				return false;
+			}
+			
+			#
+			# --- complete delete of search index entries
+			#
+			if(!defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
+				$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
 			}
 			
 			# cancel and pending queued tasks against this record
@@ -7584,7 +7582,7 @@ class BaseModel extends BaseObject {
 				ksort($va_hierarchy_data[$vn_parent_id]);
 			}
 			
-			return $this->_getFlattenedHierarchyArray($va_hierarchy_data, $pn_id ? $pn_id : null, $ps_sort_direction);
+			return $this->_getFlattenedHierarchyArray($va_hierarchy_data, $va_parent_ids[$pn_id] ? $va_parent_ids[$pn_id] : null, $ps_sort_direction);
 		} else {		
 			foreach($va_vals as $vn_i => $vs_val) {
 				$va_hierarchy_data[] = array(
