@@ -6546,4 +6546,4 @@ create table ca_schema_updates (
 
 /* Indicate up to what migration this schema definition covers */
 /* CURRENT MIGRATION: 116 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (117, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (118, unix_timestamp());
