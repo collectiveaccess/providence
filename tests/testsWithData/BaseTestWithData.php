@@ -78,7 +78,7 @@ abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
 	}
 	# -------------------------------------------------------
 	/**
-	 * Delete all records we created. Not really needed in a Travis CI setting but whatever ...
+	 * Delete all records we created for this test to avoid side effects with other tests
 	 */
 	public function tearDown() {
 		foreach($this->opa_record_map as $vs_table => $va_records) {

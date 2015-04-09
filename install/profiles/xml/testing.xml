@@ -4,6 +4,7 @@
   <profileDescription/>
   <locales>
     <locale lang="en" country="US">English</locale>
+    <locale lang="de" country="DE">Deutsch</locale>
   </locales>
   <lists>
     <list code="object_sources" hierarchical="1" system="0" vocabulary="0">
