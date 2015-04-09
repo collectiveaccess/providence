@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/testsWithData/get/SimpleGetTest.php
+ * tests/testsWithData/get/AttributeGetTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -33,13 +33,13 @@
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 
 /**
- * Class SimpleGetTest
+ * Class AttributeGetTest
  * Note: Requires testing profile!
  */
-class SimpleGetTest extends BaseTestWithData {
+class AttributeGetTest extends BaseTestWithData {
 	# -------------------------------------------------------
 	/**
-	 * @var BundlableLabelableBaseModelWithAttributes
+	 * @var ca_objects
 	 */
 	private $opt_object = null;
 	# -------------------------------------------------------
@@ -53,21 +53,58 @@ class SimpleGetTest extends BaseTestWithData {
 		 */
 		$vn_test_record = $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
-				'type_id' => 'moving_image',
-			),
-			'preferred_labels' => array(
-				array(
-					"locale" => "en_US",
-					"name" => "My test moving image",
-				),
+				'type_id' => 'image',
 			),
 			'attributes' => array(
-				'duration' => array(
+				// simple text
+				'internal_notes' => array(
 					array(
-						'duration' => '00:23:28'
+						'internal_notes' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque ullamcorper sapien nec velit porta luctus.'
 					)
 				),
-			),
+
+				// text in a container
+				'external_link' => array(
+					array(
+						'url_source' => 'My URL source'
+					),
+					array(
+						'url_source' => 'Another URL source'
+					),
+				),
+
+				// Length
+				'dimensions' => array(
+					array(
+						'dimensions_length' => '10 in',
+						'dimensions_weight' => '2 lbs'
+					),
+				),
+
+				// Integer
+				'integer_test' => array(
+					array(
+						'integer_test' => 23,
+					),
+					array(
+						'integer_test' => 1984,
+					)
+				),
+
+				// Currency
+				'currency_test' => array(
+					array(
+						'currency_test' => '$100',
+					),
+				),
+
+				// Georeference
+				'georeference' => array(
+					array(
+						'georeference' => '1600 Amphitheatre Parkway, Mountain View, CA',
+					),
+				),
+			)
 		));
 
 		$this->assertGreaterThan(0, $vn_test_record);
@@ -77,19 +114,30 @@ class SimpleGetTest extends BaseTestWithData {
 	# -------------------------------------------------------
 	public function testGets() {
 		$vm_ret = $this->opt_object->get('ca_objects.type_id', array('convertCodesToDisplayText' => true));
-		$this->assertEquals('Moving Image', $vm_ret);
+		$this->assertEquals('Image', $vm_ret);
 
-		$vm_ret = $this->opt_object->get('ca_objects.preferred_labels');
-		$this->assertEquals('My test moving image', $vm_ret);
+		$vm_ret = $this->opt_object->get('ca_objects.internal_notes');
+		$this->assertRegExp("/^Lorem ipsum/", $vm_ret);
 
-		$vm_ret = $this->opt_object->get('ca_objects.duration');
-		$this->assertEquals('0:23:28', $vm_ret);
+		$vm_ret = $this->opt_object->get('internal_notes');
+		$this->assertRegExp("/^Lorem ipsum/", $vm_ret);
 
-		$o_tep = new TimeExpressionParser(); $vn_now = time();
-		$vm_ret = $this->opt_object->get('ca_objects.lastModified');
-		$this->assertTrue($o_tep->parse($vm_ret));
-		$va_modified_unix = $o_tep->getUnixTimestamps();
-		//$this->assertEquals($vn_now, $va_modified_unix['start'], 'lastModified timestamp cannot be more than 1 minute off', 60);
+		$vm_ret = $this->opt_object->get('ca_objects.external_link.url_source');
+		$this->assertEquals("My URL source;Another URL source", $vm_ret);
+
+		$vm_ret = $this->opt_object->get('ca_objects.dimensions.dimensions_length');
+		$this->assertEquals("10.0 in", $vm_ret);
+		$vm_ret = $this->opt_object->get('ca_objects.dimensions.dimensions_weight');
+		$this->assertEquals("2.00 lb", $vm_ret);
+
+		$vm_ret = $this->opt_object->get('ca_objects.integer_test', array('delimiter' => ' / '));
+		$this->assertEquals("23 / 1984", $vm_ret);
+
+		$vm_ret = $this->opt_object->get('ca_objects.currency_test');
+		$this->assertEquals("USD 100.00", $vm_ret);
+
+		$vm_ret = $this->opt_object->get('ca_objects.georeference');
+		$this->assertEquals("1600 Amphitheatre Parkway, Mountain View, CA [37.4224764,-122.0842499]", $vm_ret);
 	}
 	# -------------------------------------------------------
 }
