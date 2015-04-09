@@ -1093,6 +1093,7 @@ class BaseModel extends BaseObject {
 	public function getFieldValuesForIDs($pa_ids, $pa_fields=null, $pa_options=null) {
 		if ((!is_array($pa_ids) && (int)$pa_ids > 0)) { $pa_ids = array($pa_ids); }
 		if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
+		if(!is_array($pa_fields)) { $pa_fields = $this->getFormFields(true, true, true); }
 		
 		$vb_dont_use_cache = caGetOption('noCache', $pa_options, false);
 		
@@ -5970,12 +5971,15 @@ class BaseModel extends BaseObject {
 	 * Returns a hash with field names as keys and attributes hashes as values
 	 * If $names_only is set, only the field names are returned in an indexed array (NOT a hash)
 	 * Only returns fields that belong in public forms - it omits those fields with a display type of 7 ("PRIVATE")
+	 *
+	 * If $sql_fields all virtual fields (Eg. date ranges) are returned as their underlying SQL fields. A date range will thus be two fields for the start and end of the range.
 	 * 
 	 * @param bool $return_all
 	 * @param bool $names_only
+	 * @param bool $sql_fields
 	 * @return array  
 	 */
-	public function getFormFields ($return_all = 0, $names_only = 0) {
+	public function getFormFields ($return_all = 0, $names_only = 0, $sql_fields=0) {
 		if (($return_all) && (!$names_only)) {
 			return $this->FIELDS;
 		}
@@ -5985,13 +5989,23 @@ class BaseModel extends BaseObject {
 		if (!$names_only) {
 			foreach($this->FIELDS as $field => $attr) {
 				if ($return_all || ($attr["DISPLAY_TYPE"] != DT_OMIT)) {
-					$form_fields[$field] = $attr;
+					if ($sql_fields && $attr["START"]) {
+						$form_fields[$attr["START"]] = $attr;
+						$form_fields[$attr["END"]] = $attr;
+					} else {
+						$form_fields[$field] = $attr;
+					}
 				}
 			}
 		} else {
 			foreach($this->FIELDS as $field => $attr) {
 				if ($return_all || ($attr["DISPLAY_TYPE"] != DT_OMIT)) {
-					$form_fields[] = $field;
+					if ($sql_fields && $attr["START"]) {
+						$form_fields[] = $attr["START"];
+						$form_fields[] = $attr["END"];
+					} else {
+						$form_fields[] = $field;
+					}
 				}
 			}
 		}
