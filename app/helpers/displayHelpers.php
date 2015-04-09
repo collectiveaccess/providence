@@ -3310,8 +3310,9 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		
 		if (is_object($qr_rel_items)) {
 			if (!$qr_rel_items->numHits()) {
-				if ($ps_inline_create_message) { 
-					$vb_include_inline_add_does_not_exist_message = true;	
+				if ($ps_inline_create_does_not_exist_message) {
+					$vb_include_inline_add_does_not_exist_message = true;
+					$vb_include_inline_add_message = false;
 				} else {
 					if ($ps_empty_result_message) { 
 						$vb_include_empty_result_message = true;	
