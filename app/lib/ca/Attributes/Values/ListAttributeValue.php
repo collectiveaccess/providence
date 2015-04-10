@@ -116,6 +116,15 @@
 				_t('Vertical hierarchy browser') => 'vert_hierbrowser',
 			)
 		),
+		'auto_shrink' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'width' => "4", 'height' => "1",
+			'takesLocale' => false,
+			'default' => '0',
+			'label' => _t('Automatically shrink horizontal hierarchy browser'),
+			'description' => _t('Check this option if you want the hierarchy browser to automatically shrink or expand based on the height of the column with the most data. Only affects the horizontal browser!')
+		),
 		'maxColumns' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_FIELD,
@@ -256,6 +265,8 @@
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			$vb_treat_value_as_idno = caGetOption('alwaysTreatValueAsIdno', $pa_options, false);
  			
+ 			if (is_array($ps_value)) { $ps_value = array_pop($ps_value); }
+ 			
  			$va_match_on = caGetOption('matchOn', $pa_options, null);
  			if ($va_match_on && !is_array($va_match_on)){ $va_match_on = array($va_match_on); }
  			if (!is_array($va_match_on) && $vb_treat_value_as_idno) { $va_match_on = array('idno', 'item_id'); }
@@ -320,7 +331,7 @@
  		# ------------------------------------------------------------------
  		/**
  		  * Generates HTML form widget for attribute value
- 		  * 
+ 		  *
  		  * @param $pa_element_info array Array with information about the metadata element with which this value is associated. Keys taken to be ca_metadata_elements field names and the 'settings' field must be deserialized into an array.
  		  * @param $pa_options array Array of options. Supported options are:
  		  *			width - The width of the list drop-down in characters unless suffixed with 'px' in which case width will be set in pixels.
@@ -341,6 +352,7 @@
  			}
  			
  			$vs_render = caGetOption('render', $pa_options, caGetOption('render', $pa_element_info['settings'], ''));
+			$vb_auto_shrink = (bool) caGetOption('auto_shrink', $pa_options, caGetOption('auto_shrink', $pa_element_info['settings'], false));
  			
  			$vn_max_columns = $pa_element_info['settings']['maxColumns'];
  			if (!$vb_require_value) { $vn_max_columns++; }
@@ -349,7 +361,18 @@
  				$pa_options['useDefaultWhenNull'] = isset($pa_element_info['settings']['useDefaultWhenNull']) ? (bool)$pa_element_info['settings']['useDefaultWhenNull'] : false;
  			}
  			
- 			return ca_lists::getListAsHTMLFormElement($pa_element_info['list_id'], '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', array('class' => $vs_class, 'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}'), array_merge($pa_options, array('render' => $vs_render, 'maxColumns' => $vn_max_columns, 'element_id' => $pa_element_info['element_id'], 'nullOption' => $vb_null_option)));
+ 			return ca_lists::getListAsHTMLFormElement(
+				$pa_element_info['list_id'],
+				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
+				array(
+					'class' => $vs_class,
+					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}'
+				),
+				array_merge(
+					$pa_options,
+					array('render' => $vs_render, 'maxColumns' => $vn_max_columns, 'element_id' => $pa_element_info['element_id'], 'nullOption' => $vb_null_option, 'auto_shrink' => $vb_auto_shrink)
+				)
+			);
  		}
  		# ------------------------------------------------------------------
  		public function getAvailableSettings($pa_element_info=null) {

@@ -375,8 +375,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function getScreens($po_request=null, $pn_type_id=null, $pa_options=null) {
 		if (!$this->getPrimaryKey()) { return false; }
-		
-		$vs_opts_md5 = caMakeCacheKeyFromOptions($pa_options);
+
 		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->get('editor_type')))) { return null; }
 		
 		if($t_instance instanceof BaseRelationshipModel) {
