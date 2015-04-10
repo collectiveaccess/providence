@@ -94,7 +94,6 @@
 				}
 				
 				// Get type_ids
-				$vs_type_query = '';
 				$va_ids = array();
 				if (sizeof($pa_types)) {
 					$va_types = $this->opo_item_instance->getTypeList();
@@ -152,7 +151,13 @@
 				}
 				
 				// do search
-				$qr_res = $o_search->search(trim($ps_query).(intval($pb_exact) ? '' : '*').$vs_type_query.$vs_additional_query_params.$vs_restrict_to_search, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
+				if($vs_additional_query_params || $vs_restrict_to_search) {
+					$vs_search = '('.trim($ps_query).(intval($pb_exact) ? '' : '*').')'.$vs_additional_query_params.$vs_restrict_to_search;
+				} else {
+					$vs_search = trim($ps_query).(intval($pb_exact) ? '' : '*');
+				}
+				//file_put_contents('/tmp/lookup_debug', $vs_search . "\n", FILE_APPEND);
+				$qr_res = $o_search->search($vs_search, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
 		
 				$qr_res->setOption('prefetch', $pn_limit);
 				$qr_res->setOption('dontPrefetchAttributes', true);
