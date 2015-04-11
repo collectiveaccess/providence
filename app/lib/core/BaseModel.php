@@ -7556,8 +7556,8 @@ class BaseModel extends BaseObject {
 		
 		foreach($va_hier as $vn_i => $va_item) {
 			$va_levels[$vn_i] = $va_item['LEVEL'];
-			$va_ids[] = $va_item['NODE'][$vs_pk];
-			$va_parent_ids[] = $va_item['NODE']['parent_id'];
+			$va_ids[] = $vn_id = $va_item['NODE'][$vs_pk];
+			$va_parent_ids[$vn_id] = $va_item['NODE']['parent_id'];
 		}
 		
 		$va_hierarchy_data = array();
@@ -7584,13 +7584,14 @@ class BaseModel extends BaseObject {
 			}
 			
 			foreach($va_vals as $vn_i => $vs_val) {
-				$va_hierarchy_data[$va_parent_ids[$vn_i]][$va_sort_keys[$vn_i]] = array(
+				$va_hierarchy_data[$va_parent_ids[$va_ids[$vn_i]]][$va_sort_keys[$vn_i]] = array(
 					'level' => $va_levels[$vn_i],
 					'id' => $va_ids[$vn_i],
-					'parent_id' => $va_parent_ids[$vn_i],
+					'parent_id' => $va_parent_ids[$va_ids[$vn_i]],
 					'display' => $vs_val
 				);
 			}
+		
 			$va_hierarchy_flattened = array();
 			foreach($va_hierarchy_data as $vn_parent_id => $va_level_content) {
 				ksort($va_hierarchy_data[$vn_parent_id]);
