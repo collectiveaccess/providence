@@ -207,8 +207,8 @@
         <item idno="null" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -232,8 +232,8 @@
         <item idno="null" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -550,8 +550,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -639,8 +639,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -721,8 +721,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -4539,8 +4539,8 @@
         <item idno="null" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -4628,8 +4628,8 @@
         <item idno="null" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -4653,8 +4653,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -6808,8 +6808,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -7065,8 +7065,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -7162,8 +7162,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -7291,8 +7291,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -7332,8 +7332,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -7517,8 +7517,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -7566,8 +7566,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -7679,8 +7679,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -7720,8 +7720,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -7746,6 +7746,30 @@
             <label locale="en_US" preferred="1">
               <name_singular>curator’s estimate</name_singular>
               <name_plural>curator’s estimates</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="numeric" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>numeric card</name_singular>
+              <name_plural>numeric card</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="sale" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>sale/purchase price</name_singular>
+              <name_plural>sale/purchase price</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="market" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>market price</name_singular>
+              <name_plural>market price</name_plural>
             </label>
           </labels>
         </item>
@@ -8800,8 +8824,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -8914,8 +8938,8 @@
         <item idno="null" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -8987,8 +9011,8 @@
         <item idno="null" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -9049,35 +9073,27 @@
         </label>
       </labels>
       <items>
+        <item idno="agent" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Agent</name_singular>
+              <name_plural>Agents</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="auction" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Auction House</name_singular>
+              <name_plural>Auction Houses</name_plural>
+            </label>
+          </labels>
+        </item>
         <item idno="artist" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Artist / Maker</name_singular>
-              <name_plural>Artist / Maker</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="donor" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Donor</name_singular>
-              <name_plural>Donor</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="staff" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>UMMA Staffer</name_singular>
-              <name_plural>UMMA Staffer</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="contact" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Contact</name_singular>
-              <name_plural>Contact</name_plural>
+              <name_plural>Artists / Makers</name_plural>
             </label>
           </labels>
         </item>
@@ -9085,15 +9101,47 @@
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Appraiser</name_singular>
-              <name_plural>Appraiser</name_plural>
+              <name_plural>Appraisers</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="museum" enabled="1" default="0">
+        <item idno="contact" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Museum</name_singular>
-              <name_plural>Museum</name_plural>
+              <name_singular>Contact</name_singular>
+              <name_plural>Contacts</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="conservator" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Conservator</name_singular>
+              <name_plural>Conservators</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="contractor" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Contractor</name_singular>
+              <name_plural>Contractors</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="donor" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Donor</name_singular>
+              <name_plural>Donors</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="estate" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Estate</name_singular>
+              <name_plural>Estates</name_plural>
             </label>
           </labels>
         </item>
@@ -9101,15 +9149,87 @@
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Gallery</name_singular>
-              <name_plural>Gallery</name_plural>
+              <name_plural>Galleries</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="bequestor" enabled="1" default="0">
+        <item idno="museum" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Bequestor</name_singular>
-              <name_plural>Bequestor</name_plural>
+              <name_singular>Museum</name_singular>
+              <name_plural>Museums</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="staff" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>UMMA Staffer</name_singular>
+              <name_plural>UMMA Staffers</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="researcher_UMMA" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Researcher - UM Affiliate</name_singular>
+              <name_plural>Researchers - UM Affiliate</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="researcher" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Researcher</name_singular>
+              <name_plural>Researchers</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="volunteer" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Volunteer/Docent</name_singular>
+              <name_plural>Volunteers/Docents</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="client" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Client (RBJ Asian Art Lab)</name_singular>
+              <name_plural>Client (RBJ Asian Art Lab)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="borrower" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Borrower</name_singular>
+              <name_plural>Borrower</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="copyright_agent" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Copyright Agent</name_singular>
+              <name_plural>Copyright Agent</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="lender" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Lender</name_singular>
+              <name_plural>Lender</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="organizer" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Organizer</name_singular>
+              <name_plural>Organizer</name_plural>
             </label>
           </labels>
         </item>
@@ -9118,22 +9238,6 @@
             <label locale="en_US" preferred="1">
               <name_singular>Seller</name_singular>
               <name_plural>Seller</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="agent" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Agent</name_singular>
-              <name_plural>Agent</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="auction" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Auction House</name_singular>
-              <name_plural>Auction House</name_plural>
             </label>
           </labels>
         </item>
@@ -9416,8 +9520,8 @@
         <item idno="null" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -9699,6 +9803,47 @@
         </item>
       </items>
     </list>
+    <list code="deed_type" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Deadline Types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="null" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="declaration" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Declaration of Gift</name_singular>
+              <name_plural>Declaration of Gift</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="purchase" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Purchase Agreement</name_singular>
+              <name_plural>Purchase Agreement</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="will" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Will / Bequest Documentation</name_singular>
+              <name_plural>Will / Bequest Documentation</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
     <!--GF Movement Lists  -->
     <list code="movement_purpose" hierarchical="0" system="0" vocabulary="0">
       <labels>
@@ -9916,8 +10061,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -10117,8 +10262,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -10150,8 +10295,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -10199,8 +10344,8 @@
         <item idno="null" rank="1" value="1" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -10336,8 +10481,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -10369,8 +10514,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -10766,7 +10911,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="display_template">^ca_objects.credit_line.credit_text</setting>
+        <setting name="display_template"><![CDATA[^ca_objects.credit_line.credit_text<ifdef code="ca_objects.credit_line.credit_approved">, </ifdef>^ca_objects.credit_line.credit_approved<ifdef code="ca_objects.credit_line.credit_type">, </ifdef>^ca_objects.credit_line.credit_type]]></setting>
       </settings>
       <elements>
         <metadataElement code="credit_line1" datatype="Container">
@@ -10836,7 +10981,7 @@
             <metadataElement code="credit_author" datatype="Entities">
               <labels>
                 <label locale="en_US">
-                  <name>Author</name>
+                  <name>Source</name>
                 </label>
               </labels>
               <settings>
@@ -10980,16 +11125,6 @@
                 <setting name="maxChars">65535</setting>
               </settings>
             </metadataElement>
-          </elements>
-        </metadataElement>
-        <metadataElement code="provenance_line5" datatype="Container">
-          <labels>
-            <label locale="en_US">
-              <name>Provenance Line 5</name>
-            </label>
-          </labels>
-          <settings/>
-          <elements>
             <metadataElement code="provenance_source" datatype="Entities">
               <labels>
                 <label locale="en_US">
@@ -11001,6 +11136,27 @@
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="provenance_line5" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Provenance Line 5</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="provenance_legacy_place" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Legacy Place</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">50</setting>
+                <setting name="fieldHeight">1</setting>
               </settings>
             </metadataElement>
             <metadataElement code="provenance_place" datatype="Places">
@@ -11022,8 +11178,8 @@
           <table>ca_objects</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">10</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
           </settings>
         </restriction>
       </typeRestrictions>
@@ -13584,6 +13740,51 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <!-- inventory elements -->
+    <metadataElement code="2015_inventory_yn" datatype="List" list="yn">
+      <labels>
+        <label locale="en_US">
+          <name>Found in 2015 Inventory?</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="listWidth">40</setting>
+        <setting name="listHeight">1</setting>
+        <setting name="render">radio_buttons</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="2015_inventory_date" datatype="DateRange">
+      <labels>
+        <label locale="en_US">
+          <name>2015 Object View Date</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="useDatePicker">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
     <!-- occurrence elements -->
     <metadataElement code="exh_dates" datatype="DateRange">
       <labels>
@@ -14425,7 +14626,7 @@
         <setting name="listWidth">100</setting>
         <setting name="listHeight">1</setting>
         <setting name="render">checklist</setting>
-        <setting name="maxColumns">6</setting>
+        <setting name="maxColumns">4</setting>
       </settings>
       <typeRestrictions>
         <restriction code="r1">
@@ -14802,7 +15003,7 @@
             <metadataElement code="deed_date" datatype="DateRange">
               <labels>
                 <label locale="en_US">
-                  <name>Deed Date</name>
+                  <name>Date</name>
                 </label>
               </labels>
               <settings>
@@ -14811,16 +15012,14 @@
                 <setting name="fieldHeight">1</setting>
               </settings>
             </metadataElement>
-            <metadataElement code="declaration_date" datatype="DateRange">
+            <metadataElement code="deed_type" datatype="List" list="deed_type">
               <labels>
                 <label locale="en_US">
-                  <name>Declaration of Gift Date</name>
+                  <name>Type</name>
                 </label>
               </labels>
               <settings>
-                <setting name="useDatePicker">1</setting>
-                <setting name="fieldWidth">35</setting>
-                <setting name="fieldHeight">1</setting>
+                <setting name="listWidth">40</setting>
               </settings>
             </metadataElement>
           </elements>
@@ -14833,16 +15032,13 @@
           </labels>
           <settings/>
           <elements>
-            <metadataElement code="deed_notes" datatype="Text">
+            <metadataElement code="deed_upload" datatype="Media">
               <labels>
                 <label locale="en_US">
-                  <name>Notes</name>
+                  <name>-</name>
                 </label>
               </labels>
-              <settings>
-                <setting name="fieldWidth">90</setting>
-                <setting name="fieldHeight">2</setting>
-              </settings>
+              <settings/>
             </metadataElement>
           </elements>
         </metadataElement>
@@ -14852,7 +15048,7 @@
           <table>ca_object_lots</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">10</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -15037,13 +15233,24 @@
         </label>
       </labels>
       <settings>
-        <setting name="lineBreakAfterNumberOfElements">2</setting>
+        <setting name="lineBreakAfterNumberOfElements">3</setting>
       </settings>
       <elements>
         <metadataElement code="delivery_number" datatype="Text">
           <labels>
             <label locale="en_US">
               <name>Tracking Number</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="delivery_carrier" datatype="Text">
+          <labels>
+            <label locale="en_US">
+              <name>Carrier</name>
             </label>
           </labels>
           <settings>
@@ -15059,17 +15266,6 @@
           </labels>
           <settings>
             <setting name="render">yes_no_checkboxes</setting>
-          </settings>
-        </metadataElement>
-        <metadataElement code="delivery_carrier" datatype="Text">
-          <labels>
-            <label locale="en_US">
-              <name>Carrier</name>
-            </label>
-          </labels>
-          <settings>
-            <setting name="fieldWidth">40</setting>
-            <setting name="fieldHeight">1</setting>
           </settings>
         </metadataElement>
       </elements>
@@ -15117,14 +15313,13 @@
       <settings>
         <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">1</setting>
-        <setting name="usewysiwygeditor">1</setting>
       </settings>
       <typeRestrictions>
         <restriction code="ca_object_lots">
           <table>ca_object_lots</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="maxAttributesPerRow">50</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -15139,7 +15334,27 @@
       <settings>
         <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">1</setting>
-        <setting name="usewysiwygeditor">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_object_lots">
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="legacy_price" datatype="Currency">
+      <labels>
+        <label locale="en_US">
+          <name>Leacy Price [Cost]</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">1</setting>
       </settings>
       <typeRestrictions>
         <restriction code="ca_object_lots">
@@ -17215,80 +17430,6 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="inventory" datatype="Container">
-      <labels>
-        <label locale="en_US">
-          <name>Inventory</name>
-        </label>
-      </labels>
-      <settings>
-        <setting name="lineBreakAfterNumberOfElements">2</setting>
-      </settings>
-      <elements>
-        <metadataElement code="inventory_name" datatype="Text">
-          <labels>
-            <label locale="en_US">
-              <name>Name</name>
-            </label>
-          </labels>
-          <settings>
-            <setting name="fieldWidth">50</setting>
-            <setting name="fieldHeight">1</setting>
-            <setting name="minChars">0</setting>
-            <setting name="maxChars">65535</setting>
-          </settings>
-        </metadataElement>
-        <metadataElement code="inventory_date" datatype="DateRange">
-          <labels>
-            <label locale="en_US">
-              <name>Date</name>
-            </label>
-          </labels>
-          <settings>
-            <setting name="fieldWidth">50</setting>
-            <setting name="fieldHeight">1</setting>
-            <setting name="minChars">0</setting>
-            <setting name="maxChars">65535</setting>
-          </settings>
-        </metadataElement>
-        <metadataElement code="inventory_location" datatype="StorageLocations">
-          <labels>
-            <label locale="en_US">
-              <name>Location</name>
-            </label>
-          </labels>
-          <settings>
-            <setting name="fieldWidth">50</setting>
-            <setting name="fieldHeight">1</setting>
-            <setting name="minChars">0</setting>
-            <setting name="maxChars">65535</setting>
-          </settings>
-        </metadataElement>
-        <metadataElement code="performed_by" datatype="Entities">
-          <labels>
-            <label locale="en_US">
-              <name>Inventory performed by</name>
-            </label>
-          </labels>
-          <settings>
-            <setting name="fieldWidth">50</setting>
-            <setting name="fieldHeight">1</setting>
-            <setting name="minChars">0</setting>
-            <setting name="maxChars">65535</setting>
-          </settings>
-        </metadataElement>
-      </elements>
-      <typeRestrictions>
-        <restriction>
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">255</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
     <metadataElement code="file_attachements" datatype="Media">
       <labels>
         <label locale="en_US">
@@ -17984,6 +18125,8 @@
               <settings>
                 <setting name="expand_collapse_value">collapse</setting>
                 <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="sort">credit_date</setting>
+                <setting name="sortDirection">DESC</setting>
               </settings>
             </placement>            
            <placement code="ca_attribute_label_copy">
@@ -18319,11 +18462,9 @@
                 <setting name="dontShowDeleteButton">0</setting>
                 <setting name="minRelationshipsPerRow">1</setting>
                 <setting name="display_template"><![CDATA[<unit relativeTo="ca_object_lots">
-
 <unit><l>^ca_object_lots.preferred_labels</l><br/></unit>
 <unit relativeTo="ca_entities" delimiter=";" >^ca_entities.preferred_labels<br>
 <unit relativeTo="ca_entities.address" delimiter=", ">^ca_entities.address.address1<ifdef code="ca_entities.address.address2">, </ifdef>^ca_entities.address.address2<ifdef code="ca_entities.address.city">, </ifdef>^ca_entities.address.city<ifdef code="ca_entities.address.stateprovince">, </ifdef>^ca_entities.address.stateprovince<ifdef code="ca_entities.address.postalcode">, </ifdef>^ca_entities.address.postalcode<ifdef code="ca_entities.address.country">, </ifdef>^ca_entities.address.country</unit>
-
 </unit>
                   </unit>]]></setting>
               </settings>
@@ -18377,6 +18518,8 @@
                  <setting name="useHierarchicalBrowser">1</setting>
                 <setting name="expand_collapse_no_value">collapse</setting>
                 <setting name="expand_collapse_value">collapse</setting>
+                 <setting name="label" locale="en_US">Getty AAT Keywords</setting>
+                 <setting name="display_template"><![CDATA[<unit relativeTo="ca_objects">^ca_list_items.hierarchy.preferred_labels.name_singular%delimiter=_➔_</unit>]]></setting>
                </settings>
             </placement>
             <placement code="ca_attribute_label_copy">
@@ -18469,9 +18612,10 @@
                 <setting name="dontShowDeleteButton">0</setting>
                 <setting name="minRelationshipsPerRow">1</setting>
                 <setting name="display_template"><![CDATA[<unit relativeTo="ca_object_lots">
+                  <unit><l>^ca_object_lots.preferred_labels</l><br/></unit>
 <unit relativeTo="ca_entities" delimiter=";" >^ca_entities.preferred_labels<br></unit>
 <unit><l>^ca_object_lots.idno_stub</l><br/></unit>
-<unit>^ca_object_lots.onsite_date<br/></unit>
+Onsite date: <unit>^ca_object_lots.onsite_date<br/></unit>
 <unit>^ca_object_lots.credit_line.credit_text<br/></unit>
                   </unit>]]></setting>
               </settings>
@@ -18637,13 +18781,37 @@
             <restriction code="artwork" type="artwork"/>
           </typeRestrictions>
           <bundlePlacements>
-            <placement code="ca_attribute_inventory">
-              <bundle>ca_attribute_inventory</bundle>
+            <placement code="ca_attribute_2015_inventory_yn">
+              <bundle>ca_attribute_2015_inventory_yn</bundle>
               <settings>
                 <setting name="expand_collapse_no_value">expand</setting>
                 <setting name="expand_collapse_value">collapse</setting>
-                <setting name="sort">inventory_date</setting>
-                <setting name="sortDirection">DESC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_agent">
+              <bundle>ca_entities</bundle>
+             <settings>
+               <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">expand</setting>
+               <setting name="label" locale="en_US">2015 Inventory Agent</setting>
+               <setting name="restrict_to_relationship_types">inventory</setting>
+              </settings>
+             </placement>
+            <placement code="ca_attribute_2015_inventory_date">
+              <bundle>ca_attribute_2015_inventory_date</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
+            </placement>
+            <placement code="ca_storage_locations">
+              <bundle>ca_storage_locations</bundle>
+              <settings>
+               <setting name="label" locale="en_US">Location</setting>
+                <setting name="useHierarchicalBrowser">1</setting>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+                <setting name="add_label" locale="en_US">Update Location</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -19334,6 +19502,9 @@
                 <setting name="restrict_to_type">movement</setting>
                 <setting name="label" locale="en_US">Artwork Movement</setting>
               </settings>
+            </placement>
+            <placement code="ca_sets">
+              <bundle>ca_sets</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -20864,6 +21035,16 @@
     </relationshipTable>
     <relationshipTable name="ca_objects_x_entities">
       <types>
+        <type code="inventory" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>inventory agent</typename>
+              <typename_reverse>inventory agent</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
         <type code="curator" default="0">
           <labels>
             <label locale="en_US">
@@ -21195,6 +21376,20 @@
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_movements_x_objects">
+      <types>
+        <type code="related" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>related</typename>
+              <typename_reverse>related</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -21623,6 +21818,26 @@
             <label locale="en_US">
               <typename>was provided by</typename>
               <typename_reverse>is provider of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="proposer" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>proposer</typename>
+              <typename_reverse>proposer</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="agent" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>agent</typename>
+              <typename_reverse>agent</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
