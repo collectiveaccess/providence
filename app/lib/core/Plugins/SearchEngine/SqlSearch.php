@@ -1007,9 +1007,14 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 													case __CA_ATTRIBUTE_VALUE_LENGTH__:
 														// If it looks like a dimension that has been tokenized by Lucene
 														// into oblivion rehydrate it here.
-														$vo_parsed_measurement = caParseLengthDimension(join(' ', $va_raw_terms));
-														$vn_len = $vo_parsed_measurement->convertTo('METER',6, 'en_US');
-													
+														try {
+															$vo_parsed_measurement = caParseLengthDimension(join(' ', $va_raw_terms));
+															$vn_len = $vo_parsed_measurement->convertTo('METER',6, 'en_US');
+														} catch(Exception $e) {
+															$vs_direct_sql_query = null;
+															break;
+														}
+
 														$vs_direct_sql_query = "
 															SELECT ca.row_id, 1
 															FROM ca_attribute_values cav
@@ -1025,9 +1030,14 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 													case __CA_ATTRIBUTE_VALUE_WEIGHT__:
 														// If it looks like a weight that has been tokenized by Lucene
 														// into oblivion rehydrate it here.
-														$vo_parsed_measurement = caParseWeightDimension(join(' ', $va_raw_terms));
-														$vn_weight = $vo_parsed_measurement->convertTo('KILOGRAM',6, 'en_US');
-													
+														try {
+															$vo_parsed_measurement = caParseWeightDimension(join(' ', $va_raw_terms));
+															$vn_weight = $vo_parsed_measurement->convertTo('KILOGRAM',6, 'en_US');
+														} catch(Exception $e) {
+															$vs_direct_sql_query = null;
+															break;
+														}
+
 														$vs_direct_sql_query = "
 															SELECT ca.row_id, 1
 															FROM ca_attribute_values cav
