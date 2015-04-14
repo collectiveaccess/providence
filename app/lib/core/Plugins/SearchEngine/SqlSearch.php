@@ -437,7 +437,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	# -------------------------------------------------------
 	private function _getElementIDForAccessPoint($pn_subject_tablenum, $ps_access_point) {
 		$va_tmp = explode('/', $ps_access_point);
-		list($vs_table, $vs_field) = explode('.', $va_tmp[0]);
+		list($vs_table, $vs_field, $vs_subfield) = explode('.', $va_tmp[0]);
 		
 		$vs_rel_table = caGetRelationshipTableName($pn_subject_tablenum, $vs_table);
 		$va_rel_type_ids = ($va_tmp[1] && $vs_rel_table) ? caMakeRelationshipTypeIDList($vs_rel_table, array($va_tmp[1])) : null;
@@ -455,7 +455,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		if (!strlen($vs_fld_num)) {
 			$t_element = new ca_metadata_elements();
-			if ($t_element->load(array('element_code' => $vs_field))) {
+			if ($t_element->load(array('element_code' => ($vs_subfield ? $vs_subfield : $vs_field)))) {
 				switch ($t_element->get('datatype')) {
 					default:
 						return array('access_point' => $va_tmp[0], 'relationship_type' => $va_tmp[1], 'table_num' => $vs_table_num, 'element_id' => $t_element->getPrimaryKey(), 'field_num' => 'A'.$t_element->getPrimaryKey(), 'datatype' => $t_element->get('datatype'), 'element_info' => $t_element->getFieldValuesArray(), 'relationship_type_ids' => $va_rel_type_ids);
@@ -1007,9 +1007,14 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 													case __CA_ATTRIBUTE_VALUE_LENGTH__:
 														// If it looks like a dimension that has been tokenized by Lucene
 														// into oblivion rehydrate it here.
-														$vo_parsed_measurement = caParseLengthDimension(join(' ', $va_raw_terms));
-														$vn_len = $vo_parsed_measurement->convertTo('METER',6, 'en_US');
-													
+														try {
+															$vo_parsed_measurement = caParseLengthDimension(join(' ', $va_raw_terms));
+															$vn_len = $vo_parsed_measurement->convertTo('METER',6, 'en_US');
+														} catch(Exception $e) {
+															$vs_direct_sql_query = null;
+															break;
+														}
+
 														$vs_direct_sql_query = "
 															SELECT ca.row_id, 1
 															FROM ca_attribute_values cav
@@ -1025,9 +1030,14 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 													case __CA_ATTRIBUTE_VALUE_WEIGHT__:
 														// If it looks like a weight that has been tokenized by Lucene
 														// into oblivion rehydrate it here.
-														$vo_parsed_measurement = caParseWeightDimension(join(' ', $va_raw_terms));
-														$vn_weight = $vo_parsed_measurement->convertTo('KILOGRAM',6, 'en_US');
-													
+														try {
+															$vo_parsed_measurement = caParseWeightDimension(join(' ', $va_raw_terms));
+															$vn_weight = $vo_parsed_measurement->convertTo('KILOGRAM',6, 'en_US');
+														} catch(Exception $e) {
+															$vs_direct_sql_query = null;
+															break;
+														}
+
 														$vs_direct_sql_query = "
 															SELECT ca.row_id, 1
 															FROM ca_attribute_values cav

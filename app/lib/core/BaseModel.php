@@ -3042,12 +3042,12 @@ class BaseModel extends BaseObject {
 	 * @return SearchIndexer
 	 */
 	public function getSearchIndexer($ps_engine=null) {
-		if (!BaseModel::$search_indexer) {
-			BaseModel::$search_indexer = new SearchIndexer($this->getDb(), $ps_engine);
+		if (!$this->search_indexer) {
+			$this->search_indexer = new SearchIndexer($this->getDb(), $ps_engine);
 		} else {
-			BaseModel::$search_indexer->setDb($this->getDb());
+			$this->search_indexer->setDb($this->getDb());
 		}
-		return BaseModel::$search_indexer;
+		return $this->search_indexer;
 	}
 
 	/**
@@ -9424,11 +9424,11 @@ $pa_options["display_form_field_tips"] = true;
 		$vn_rel_table_num = $t_item_rel->tableNum();
 		
 		// Reindex modified relationships
-		if (!BaseModel::$search_indexer) {
-			BaseModel::$search_indexer = new SearchIndexer($this->getDb());
+		if (!$this->search_indexer) {
+			$this->search_indexer = new SearchIndexer($this->getDb());
 		}
 		foreach($va_to_reindex_relations as $vn_relation_id => $va_row) {
-			BaseModel::$search_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
+			$this->search_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
 		}
 		
 		return sizeof($va_to_reindex_relations);
@@ -9529,11 +9529,11 @@ $pa_options["display_form_field_tips"] = true;
 		$vn_rel_table_num = $t_item_rel->tableNum();
 		
 		// Reindex modified relationships
-		if (!BaseModel::$search_indexer) {
-			BaseModel::$search_indexer = new SearchIndexer($this->getDb());
+		if (!$this->search_indexer) {
+			$this->search_indexer = new SearchIndexer($this->getDb());
 		}
 		foreach($va_new_relations as $vn_relation_id => $va_row) {
-			BaseModel::$search_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
+			$this->search_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
 		}
 		
 		return sizeof($va_new_relations);
