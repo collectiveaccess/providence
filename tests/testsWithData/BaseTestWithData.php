@@ -81,12 +81,20 @@ abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
 	 * Delete all records we created for this test to avoid side effects with other tests
 	 */
 	public function tearDown() {
-		foreach($this->opa_record_map as $vs_table => $va_records) {
+		foreach($this->opa_record_map as $vs_table => &$va_records) {
 			$o_dm = Datamodel::load();
 			$t_instance = $o_dm->getInstance($vs_table);
+			rsort($va_records);
 			foreach($va_records as $vn_id) {
 				if($t_instance->load($vn_id)) {
 					$t_instance->setMode(ACCESS_WRITE);
+
+					// avoid foreign key checks
+					if($t_instance->hasField('parent_id') && $t_instance->get('parent_id')) {
+						$t_instance->set('parent_id', null);
+						$t_instance->update();
+					}
+
 					$t_instance->delete(true, array('hard' => true));
 				}
 			}

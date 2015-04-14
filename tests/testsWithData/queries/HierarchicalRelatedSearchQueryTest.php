@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/testsWithData/queries/HierarchicalSearchQueryTest.php
+ * tests/testsWithData/queries/HierarchicalRelatedSearchQueryTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -33,17 +33,17 @@
 require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php');
 
 /**
- * Class HierarchicalSearchQueryTest
+ * Class HierarchicalRelatedSearchQueryTest
  * Note: Requires testing profile!
  */
-class HierarchicalSearchQueryTest extends AbstractSearchQueryTest {
+class HierarchicalRelatedSearchQueryTest extends AbstractSearchQueryTest {
 	# -------------------------------------------------------
 	public function setUp() {
 		// don't forget to call parent so that request is set up correctly
 		parent::setUp();
 
 		// search subject table
-		$this->setPrimaryTable('ca_storage_locations');
+		$this->setPrimaryTable('ca_objects');
 
 		/**
 		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
@@ -92,12 +92,36 @@ class HierarchicalSearchQueryTest extends AbstractSearchQueryTest {
 		$this->assertGreaterThan(0, $vn_floor);
 		$this->assertGreaterThan(0, $vn_room);
 
+		$vn_object_id = $this->addTestRecord('ca_objects', array(
+			'intrinsic_fields' => array(
+				'type_id' => 'image',
+			),
+			'preferred_labels' => array(
+				array(
+					"locale" => "en_US",
+					"name" => "Object",
+				),
+			),
+			'related' => array(
+				'ca_storage_locations' => array(
+					array(
+						'location_id' => $vn_room,
+						'type_id' => 'related',
+					)
+				),
+			),
+		));
+
+		$this->assertGreaterThan(0, $vn_object_id);
+
 		// search queries
 		$this->setSearchQueries(array(
-			'Test' => 3,
-			'ca_storage_location_labels.name:"Test"' => 3,
-			'ca_storage_location_labels.name:"Building"' => 3, // hierarchical indexing in default indexing conf kicks in
-			'ca_storage_location_labels.name:"Room"' => 1,
+			'Object' => 1,
+			'ca_storage_location_labels.name:"Nope"' => 0,
+			'ca_storage_location_labels.name:"Test"' => 1,		// could be either one of the locations
+			'ca_storage_location_labels.name:"Building"' => 1,	// 2nd parent of related location -> works
+			'ca_storage_location_labels.name:"Floor"' => 1,		// direct parent of related location -> fails
+			'ca_storage_location_labels.name:"Room"' => 1,		// related location -> fails
 		));
 	}
 	# -------------------------------------------------------
