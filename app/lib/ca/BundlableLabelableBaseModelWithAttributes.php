@@ -3127,7 +3127,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$vb_batch = caGetOption('batch', $pa_options, false); 
 		
 		if (!$this->inTransaction()) {
-			$this->setTransaction(new Transaction());
+			$this->setTransaction(new Transaction($this->getDb()));
 			$vb_we_set_transaction = true;
 		} else {
 			if ($vb_dryrun) {
