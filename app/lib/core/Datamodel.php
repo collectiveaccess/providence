@@ -321,7 +321,7 @@ class Datamodel {
 				require_once(__CA_MODELS_DIR__.'/'.$ps_table.'.php'); # class file name has trailing '.php'
 			}
 			$t_instance = new $ps_table;
-			MemoryCache::save($ps_table, $t_instance, 'DatamodelModelInstance');
+			if($pb_use_cache) { MemoryCache::save($ps_table, $t_instance, 'DatamodelModelInstance'); }
 			return $t_instance;
 		} else {
 			MemoryCache::save($ps_table, null, 'DatamodelModelInstance');
@@ -346,7 +346,7 @@ class Datamodel {
 				require_once(__CA_MODELS_DIR__.'/'.$vs_class_name.'.php'); # class file name has trailing '.php'
 			}
 			$t_instance = new $vs_class_name;
-			MemoryCache::save($vs_class_name, $t_instance, 'DatamodelModelInstance');
+			if($pb_use_cache) { MemoryCache::save($vs_class_name, $t_instance, 'DatamodelModelInstance'); }
 			return $t_instance;
 		} else {
 			return null;
