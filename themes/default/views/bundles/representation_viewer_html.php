@@ -358,7 +358,7 @@
 	<div class="caMediaOverlayControls">
 			<div class='close'><a href="#" onclick="caMediaPanel.hidePanel(); return false;" title="close">&nbsp;&nbsp;&nbsp;</a></div>
 <?php
-		if ($this->request->user->canDoAction('can_download_media')) {
+		if ($this->request->user->canDoAction('can_download_media') || $this->request->user->canDoAction('can_download_ca_object_representations')) {
 ?>
 				<div class='download'>
 <?php 
@@ -418,7 +418,7 @@
 	<div class="caMediaOverlayControls">
 			<div class='close'><a href="#" onclick="caMediaPanel.hidePanel(); return false;" title="close">&nbsp;&nbsp;&nbsp;</a></div>
 <?php
-	if ($this->request->user->canDoAction('can_download_media')) {
+	if ($this->request->user->canDoAction('can_download_media') || $this->request->user->canDoAction('can_download_ca_object_representations')) {
 ?>
 				<div class='download'>
 <?php 

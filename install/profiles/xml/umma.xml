@@ -207,8 +207,8 @@
         <item idno="null" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -232,8 +232,8 @@
         <item idno="null" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -530,11 +530,11 @@
             </label>
           </labels>
         </item>
-        <item idno="tlh" enabled="0" default="0">
+        <item idno="dutch" enabled="0" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Klingon</name_singular>
-              <name_plural>Klingon</name_plural>
+              <name_singular>Dutch</name_singular>
+              <name_plural>Dutch</name_plural>
             </label>
           </labels>
         </item>
@@ -550,8 +550,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -639,8 +639,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -721,8 +721,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -4539,8 +4539,8 @@
         <item idno="null" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -4557,6 +4557,14 @@
             <label locale="en_US" preferred="1">
               <name_singular>portfolio</name_singular>
               <name_plural>portfolio</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="variant" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>variant</name_singular>
+              <name_plural>variant</name_plural>
             </label>
           </labels>
         </item>
@@ -4620,8 +4628,8 @@
         <item idno="null" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -4645,8 +4653,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -6800,8 +6808,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -7057,8 +7065,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -7078,6 +7086,199 @@
             </label>
           </labels>
         </item>
+        <item idno="caption" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>caption</name_singular>
+              <name_plural>caption</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="description" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>description</name_singular>
+              <name_plural>description</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="label" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>label</name_singular>
+              <name_plural>label</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="monogram" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>monogram</name_singular>
+              <name_plural>monogram</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="seal" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>seal</name_singular>
+              <name_plural>seal</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="stamp" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>stamp</name_singular>
+              <name_plural>stamp</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="statement" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>statement</name_singular>
+              <name_plural>statement</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="watermark" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>watermark</name_singular>
+              <name_plural>watermark</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="marks_location" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Mark Location</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="null" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="bottom" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>bottom</name_singular>
+              <name_plural>bottom</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="center" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>center</name_singular>
+              <name_plural>center</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="center_left" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>center left</name_singular>
+              <name_plural>center left</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="center_right" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>center right</name_singular>
+              <name_plural>center right</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="left" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>left</name_singular>
+              <name_plural>left</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="lower_center" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>lower center</name_singular>
+              <name_plural>lower center</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="lower_left" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>lower left</name_singular>
+              <name_plural>lower left</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="lower_right" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>lower right</name_singular>
+              <name_plural>lower right</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="right" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>right</name_singular>
+              <name_plural>right</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="top" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>top</name_singular>
+              <name_plural>top</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="upper_center" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>upper center</name_singular>
+              <name_plural>upper center</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="upper_left" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>upper left</name_singular>
+              <name_plural>upper left</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="upper_right" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>upper right</name_singular>
+              <name_plural>upper right</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="verso" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>verso</name_singular>
+              <name_plural>verso</name_plural>
+            </label>
+          </labels>
+        </item>
       </items>
     </list>
     <list code="label_copy_type" hierarchical="0" system="0" vocabulary="0">
@@ -7090,8 +7291,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -7131,8 +7332,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -7316,8 +7517,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -7365,8 +7566,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -7478,8 +7679,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -7519,8 +7720,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -7548,12 +7749,36 @@
             </label>
           </labels>
         </item>
+        <item idno="numeric" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>numeric card</name_singular>
+              <name_plural>numeric card</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="sale" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>sale/purchase price</name_singular>
+              <name_plural>sale/purchase price</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="market" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>market price</name_singular>
+              <name_plural>market price</name_plural>
+            </label>
+          </labels>
+        </item>
       </items>
     </list>
-    <list code="keywords" hierarchical="0" system="0" vocabulary="0">
+    <list code="aat" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
-          <name>Keywords</name>
+          <name>Getty AAT Keywords</name>
         </label>
       </labels>
       <items>
@@ -8599,8 +8824,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -8713,8 +8938,8 @@
         <item idno="null" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -8786,8 +9011,8 @@
         <item idno="null" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -8848,35 +9073,27 @@
         </label>
       </labels>
       <items>
+        <item idno="agent" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Agent</name_singular>
+              <name_plural>Agents</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="auction" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Auction House</name_singular>
+              <name_plural>Auction Houses</name_plural>
+            </label>
+          </labels>
+        </item>
         <item idno="artist" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Artist / Maker</name_singular>
-              <name_plural>Artist / Maker</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="donor" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Donor</name_singular>
-              <name_plural>Donor</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="staff" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>UMMA Staffer</name_singular>
-              <name_plural>UMMA Staffer</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="contact" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Contact</name_singular>
-              <name_plural>Contact</name_plural>
+              <name_plural>Artists / Makers</name_plural>
             </label>
           </labels>
         </item>
@@ -8884,15 +9101,47 @@
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Appraiser</name_singular>
-              <name_plural>Appraiser</name_plural>
+              <name_plural>Appraisers</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="museum" enabled="1" default="0">
+        <item idno="contact" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Museum</name_singular>
-              <name_plural>Museum</name_plural>
+              <name_singular>Contact</name_singular>
+              <name_plural>Contacts</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="conservator" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Conservator</name_singular>
+              <name_plural>Conservators</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="contractor" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Contractor</name_singular>
+              <name_plural>Contractors</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="donor" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Donor</name_singular>
+              <name_plural>Donors</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="estate" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Estate</name_singular>
+              <name_plural>Estates</name_plural>
             </label>
           </labels>
         </item>
@@ -8900,15 +9149,87 @@
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Gallery</name_singular>
-              <name_plural>Gallery</name_plural>
+              <name_plural>Galleries</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="bequestor" enabled="1" default="0">
+        <item idno="museum" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Bequestor</name_singular>
-              <name_plural>Bequestor</name_plural>
+              <name_singular>Museum</name_singular>
+              <name_plural>Museums</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="staff" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>UMMA Staffer</name_singular>
+              <name_plural>UMMA Staffers</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="researcher_UMMA" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Researcher - UM Affiliate</name_singular>
+              <name_plural>Researchers - UM Affiliate</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="researcher" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Researcher</name_singular>
+              <name_plural>Researchers</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="volunteer" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Volunteer/Docent</name_singular>
+              <name_plural>Volunteers/Docents</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="client" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Client (RBJ Asian Art Lab)</name_singular>
+              <name_plural>Client (RBJ Asian Art Lab)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="borrower" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Borrower</name_singular>
+              <name_plural>Borrower</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="copyright_agent" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Copyright Agent</name_singular>
+              <name_plural>Copyright Agent</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="lender" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Lender</name_singular>
+              <name_plural>Lender</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="organizer" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Organizer</name_singular>
+              <name_plural>Organizer</name_plural>
             </label>
           </labels>
         </item>
@@ -8917,22 +9238,6 @@
             <label locale="en_US" preferred="1">
               <name_singular>Seller</name_singular>
               <name_plural>Seller</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="agent" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Agent</name_singular>
-              <name_plural>Agent</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="auction" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Auction House</name_singular>
-              <name_plural>Auction House</name_plural>
             </label>
           </labels>
         </item>
@@ -9003,11 +9308,43 @@
             </label>
           </labels>
         </item>
+        <item idno="auction_catalog" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>auction catalog</name_singular>
+              <name_plural>auction catalog</name_plural>
+            </label>
+          </labels>
+        </item>
         <item idno="book" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>book</name_singular>
               <name_plural>book</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="brochure_pamphlet" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>brochure/pamphlet</name_singular>
+              <name_plural>brochure/pamphlet</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="calendar" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>calendar</name_singular>
+              <name_plural>calendar</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="catalogue_raisonne" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>catalogue raisonne</name_singular>
+              <name_plural>catalogue raisonne</name_plural>
             </label>
           </labels>
         </item>
@@ -9027,11 +9364,147 @@
             </label>
           </labels>
         </item>
-        <item idno="catalogue" enabled="1" default="0">
+        <item idno="exh_catalogue" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>catalogue</name_singular>
-              <name_plural>catalogue</name_plural>
+              <name_singular>exhibition catalogue</name_singular>
+              <name_plural>exhibition catalogue</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="dissertation" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>dissertation/thesis</name_singular>
+              <name_plural>dissertation/thesis</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="e_book" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>e-book</name_singular>
+              <name_plural>e-book</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="documentary" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>documentary</name_singular>
+              <name_plural>documentary</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="exh_graphic" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>exhibition graphic</name_singular>
+              <name_plural>exhibition graphic</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="gallery_guide" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>gallery guide</name_singular>
+              <name_plural>gallery guide</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="movie_video" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>movie/video</name_singular>
+              <name_plural>movie/video</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="newsletter" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>newsletter</name_singular>
+              <name_plural>newsletter</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="newspaper" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>newspaper</name_singular>
+              <name_plural>newspaper</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="presentation" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>presentation/education purpose</name_singular>
+              <name_plural>presentation/education purpose</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="research" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>research only</name_singular>
+              <name_plural>research only</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="textbook" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>textbook</name_singular>
+              <name_plural>textbook</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="website" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>website</name_singular>
+              <name_plural>website</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="bibliography" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>bibliography</name_singular>
+              <name_plural>bibliography</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="journal_article" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>journal article</name_singular>
+              <name_plural>journal article</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="digital_media" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>digital media</name_singular>
+              <name_plural>digital media</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="encyclopedia" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>encyclopedia</name_singular>
+              <name_plural>encyclopedia</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="dictionary" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>dictionary</name_singular>
+              <name_plural>dictionary</name_plural>
             </label>
           </labels>
         </item>
@@ -9047,8 +9520,8 @@
         <item idno="null" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -9115,6 +9588,257 @@
             <label locale="en_US" preferred="1">
               <name_singular>ULAN</name_singular>
               <name_plural>ULAN</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="provenance_type" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Provenance Type</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="null" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="artist" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>artist</name_singular>
+              <name_plural>artist</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="auction" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>auction</name_singular>
+              <name_plural>auction</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="bequest" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>bequest</name_singular>
+              <name_plural>bequest</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="commissioned" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>commissioned</name_singular>
+              <name_plural>commissioned</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="consignment" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>consignment</name_singular>
+              <name_plural>consignment</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="descent" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>descent</name_singular>
+              <name_plural>descent</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="donation" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>donation</name_singular>
+              <name_plural>donation</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="exchange" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>exchange</name_singular>
+              <name_plural>exchange</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="gift" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>gift</name_singular>
+              <name_plural>gift</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="heir" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>heir</name_singular>
+              <name_plural>heir</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="inheritance" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>inheritance</name_singular>
+              <name_plural>inheritance</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="purchase" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>purchase</name_singular>
+              <name_plural>purchase</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="provenance_disposal" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Provenance Disposal</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="null" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="auction" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>auction</name_singular>
+              <name_plural>auction</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="bequest" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>bequest</name_singular>
+              <name_plural>bequest</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="consignment" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>consignment</name_singular>
+              <name_plural>consignment</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="deaccession" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>deaccession</name_singular>
+              <name_plural>deaccession</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="descent" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>descent</name_singular>
+              <name_plural>descent</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="donation" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>donation</name_singular>
+              <name_plural>donation</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="exchange" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>exchange</name_singular>
+              <name_plural>exchange</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="gift" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>gift</name_singular>
+              <name_plural>gift</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="sale" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>sale</name_singular>
+              <name_plural>sale</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="transfer" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>transfer</name_singular>
+              <name_plural>transfer</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="deed_type" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Deadline Types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="null" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="declaration" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Declaration of Gift</name_singular>
+              <name_plural>Declaration of Gift</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="purchase" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Purchase Agreement</name_singular>
+              <name_plural>Purchase Agreement</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="will" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Will / Bequest Documentation</name_singular>
+              <name_plural>Will / Bequest Documentation</name_plural>
             </label>
           </labels>
         </item>
@@ -9337,8 +10061,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -9538,8 +10262,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -9571,8 +10295,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -9620,8 +10344,8 @@
         <item idno="null" rank="1" value="1" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -9757,8 +10481,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -9790,8 +10514,8 @@
         <item idno="null" enabled="1" default="1">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular> </name_singular>
-              <name_plural> </name_plural>
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
             </label>
           </labels>
         </item>
@@ -9955,6 +10679,14 @@
             <label locale="en_US" preferred="1">
               <name_singular>Partial Gift/Promised Gift</name_singular>
               <name_plural>Partial Gift/Promised Gift</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Other" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Other</name_singular>
+              <name_plural>Other</name_plural>
             </label>
           </labels>
         </item>
@@ -10178,6 +10910,9 @@
           <name>Credit line</name>
         </label>
       </labels>
+      <settings>
+        <setting name="display_template"><![CDATA[^ca_objects.credit_line.credit_text<ifdef code="ca_objects.credit_line.credit_approved">, </ifdef>^ca_objects.credit_line.credit_approved<ifdef code="ca_objects.credit_line.credit_type">, </ifdef>^ca_objects.credit_line.credit_type]]></setting>
+      </settings>
       <elements>
         <metadataElement code="credit_line1" datatype="Container">
           <labels>
@@ -10203,7 +10938,7 @@
             <metadataElement code="credit_approved" datatype="List" list="yn">
               <labels>
                 <label locale="en_US">
-                  <name>Approved?</name>
+                  <name>Approved</name>
                 </label>
               </labels>
               <settings>
@@ -10246,7 +10981,7 @@
             <metadataElement code="credit_author" datatype="Entities">
               <labels>
                 <label locale="en_US">
-                  <name>Author</name>
+                  <name>Source</name>
                 </label>
               </labels>
               <settings>
@@ -10288,7 +11023,7 @@
         <metadataElement code="provenance_line1" datatype="Container">
           <labels>
             <label locale="en_US">
-              <name>Provenance Line 3</name>
+              <name>Provenance Line 1</name>
             </label>
           </labels>
           <settings/>
@@ -10296,11 +11031,11 @@
             <metadataElement code="provenance_text" datatype="Text">
               <labels>
                 <label locale="en_US">
-                  <name>Text</name>
+                  <name>Remarks</name>
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">90</setting>
+                <setting name="fieldWidth">100</setting>
                 <setting name="fieldHeight">4</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
@@ -10317,23 +11052,70 @@
           </labels>
           <settings/>
           <elements>
-            <metadataElement code="provenance_source" datatype="Entities">
+            <metadataElement code="provenance_type" datatype="List" list="provenance_type">
               <labels>
                 <label locale="en_US">
-                  <name>Source</name>
+                  <name>Acquisition Method</name>
+                </label>
+              </labels>
+              <settings/>
+            </metadataElement>
+            <metadataElement code="provenance_disposal" datatype="List" list="provenance_disposal">
+            <labels>
+              <label locale="en_US">
+                <name>Disposal Method</name>
+              </label>
+            </labels>
+            <settings/>
+        </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="provenance_line3" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Provenance Line 3</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="provenance_start" datatype="DateRange">
+            <labels>
+              <label locale="en_US">
+                <name>Ownership Starts</name>
+              </label>
+            </labels>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="useDatePicker">1</setting>
+              </settings>
+          </metadataElement>
+            <metadataElement code="provenance_end" datatype="DateRange">
+              <labels>
+                <label locale="en_US">
+                  <name>End Date</name>
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">50</setting>
+                <setting name="fieldWidth">40</setting>
                 <setting name="fieldHeight">1</setting>
-                <setting name="minChars">0</setting>
-                <setting name="maxChars">65535</setting>
+                <setting name="useDatePicker">1</setting>
               </settings>
             </metadataElement>
-            <metadataElement code="provenance_date" datatype="DateRange">
+          </elements>
+        </metadataElement>
+        <metadataElement code="provenance_line4" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Provenance Line 4</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="provenance_owner" datatype="Entities">
               <labels>
                 <label locale="en_US">
-                  <name>Date</name>
+                  <name>Owner's Name</name>
                 </label>
               </labels>
               <settings>
@@ -10341,7 +11123,51 @@
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
-                <setting name="useDatePicker">1</setting>
+              </settings>
+            </metadataElement>
+            <metadataElement code="provenance_source" datatype="Entities">
+              <labels>
+                <label locale="en_US">
+                  <name>Source</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="provenance_line5" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Provenance Line 5</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="provenance_legacy_place" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Legacy Place</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">50</setting>
+                <setting name="fieldHeight">1</setting>
+              </settings>
+            </metadataElement>
+            <metadataElement code="provenance_place" datatype="Places">
+              <labels>
+                <label locale="en_US">
+                  <name>Place</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
               </settings>
             </metadataElement>
           </elements>
@@ -10351,9 +11177,9 @@
         <restriction code="r1">
           <table>ca_objects</table>
           <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">10</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
           </settings>
         </restriction>
       </typeRestrictions>
@@ -10545,7 +11371,7 @@
     <metadataElement code="primary_classification" datatype="List" list="classification">
       <labels>
         <label locale="en_US">
-          <name>Classification and object type</name>
+          <name>Classification / Object Type</name>
         </label>
       </labels>
       <settings>
@@ -10568,7 +11394,7 @@
     <metadataElement code="secondary_classification" datatype="List" list="classification">
       <labels>
         <label locale="en_US">
-          <name>Secondary classification and object type</name>
+          <name>Addl. Classification / Object Type</name>
         </label>
       </labels>
       <settings>
@@ -10877,10 +11703,15 @@
           <name>Marks/inscription</name>
         </label>
       </labels>
-      <settings>
-        <setting name="lineBreakAfterNumberOfElements">1</setting>
-      </settings>
       <elements>
+        <metadataElement code="marks_line1" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Marks Line 1</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
         <metadataElement code="marks_type" datatype="List" list="marks">
           <labels>
             <label locale="en_US">
@@ -10889,18 +11720,70 @@
           </labels>
           <settings/>
         </metadataElement>
-        <metadataElement code="marks_text" datatype="Text">
+        <metadataElement code="marks_location" datatype="List" list="marks_location">
           <labels>
             <label locale="en_US">
-              <name>Text</name>
+              <name>Location</name>
+            </label>
+          </labels>
+          <settings/>
+        </metadataElement>
+            <metadataElement code="marks_language" datatype="List" list="languages">
+              <labels>
+                <label locale="en_US">
+                  <name>Language</name>
+                </label>
+              </labels>
+              <settings/>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="marks_line2" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Marks Line 2</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="marks_material" datatype="Text">
+          <labels>
+            <label locale="en_US">
+              <name>Material</name>
             </label>
           </labels>
           <settings>
             <setting name="fieldWidth">100</setting>
-            <setting name="fieldHeight">2</setting>
+            <setting name="fieldHeight">1</setting>
             <setting name="minChars">0</setting>
             <setting name="maxChars">65535</setting>
           </settings>
+        </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="marks_line3" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Marks Line 3</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="marks_text" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Text</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="usewysiwygeditor">1</setting>
+                <setting name="fieldWidth">100</setting>
+                <setting name="fieldHeight">8</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+              </settings>
+            </metadataElement>
+          </elements>
         </metadataElement>
       </elements>
       <typeRestrictions>
@@ -10921,7 +11804,8 @@
         </label>
       </labels>
       <settings>
-        <setting name="lineBreakAfterNumberOfElements">1</setting>
+        <setting name="lineBreakAfterNumberOfElements">2</setting>
+        <setting name="displayTemplate">^ca_objects.alternate_ID.old_id</setting>
       </settings>
       <elements>
         <metadataElement code="old_id" datatype="Text">
@@ -10931,7 +11815,7 @@
             </label>
           </labels>
           <settings>
-            <setting name="fieldWidth">90</setting>
+            <setting name="fieldWidth">40</setting>
             <setting name="fieldHeight">1</setting>
             <setting name="minChars">0</setting>
             <setting name="maxChars">65535</setting>
@@ -10944,8 +11828,8 @@
             </label>
           </labels>
           <settings>
-            <setting name="fieldWidth">90</setting>
-            <setting name="fieldHeight">2</setting>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
             <setting name="minChars">0</setting>
             <setting name="maxChars">65535</setting>
           </settings>
@@ -11294,10 +12178,10 @@
             </metadataElement>
           </elements>
         </metadataElement>
-        <metadataElement code="dimensions_line5" datatype="Container">
+        <metadataElement code="dimensions_line3" datatype="Container">
           <labels>
             <label locale="en_US">
-              <name>Dimensions Line 5</name>
+              <name>Dimensions Line 3</name>
             </label>
           </labels>
           <settings/>
@@ -11328,10 +12212,10 @@
             </metadataElement>
           </elements>
         </metadataElement>
-        <metadataElement code="dimensions_line6" datatype="Container">
+        <metadataElement code="dimensions_line4" datatype="Container">
           <labels>
             <label locale="en_US">
-              <name>Dimensions Line 6</name>
+              <name>Dimensions Line 4</name>
             </label>
           </labels>
           <settings/>
@@ -11359,7 +12243,7 @@
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">10</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">0</setting>
           </settings>
         </restriction>
       </typeRestrictions>
@@ -11372,6 +12256,7 @@
       </labels>
       <settings>
         <setting name="lineBreakAfterNumberOfElements">1</setting>
+        <setting name="display_template">^ca_objects.medium_container.display_medium_support</setting>
       </settings>
       <elements>
         <metadataElement code="medium" datatype="Text">
@@ -11605,6 +12490,9 @@
           <name>Label Copy</name>
         </label>
       </labels>
+      <settings>
+        <setting name="display_template">^ca_objects.label_copy.label_copy_text</setting>
+      </settings>
       <elements>
         <metadataElement code="label_line1" datatype="Container">
           <labels>
@@ -11817,6 +12705,29 @@
           </labels>
           <settings/>
           <elements>
+            <metadataElement code="citation_legacy" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Legacy Author/Editor</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">90</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="bibliographic_line4" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Bib Line 4</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
             <metadataElement code="citation_author" datatype="Entities">
               <labels>
                 <label locale="en_US">
@@ -11845,10 +12756,10 @@
             </metadataElement>
           </elements>
         </metadataElement>
-        <metadataElement code="bibliographic_line4" datatype="Container">
+        <metadataElement code="bibliographic_line5" datatype="Container">
           <labels>
             <label locale="en_US">
-              <name>Bib Line 4</name>
+              <name>Bib Line 5</name>
             </label>
           </labels>
           <settings/>
@@ -11866,6 +12777,29 @@
                 <setting name="maxChars">65535</setting>
               </settings>
             </metadataElement>
+            <metadataElement code="citation_author4" datatype="Entities">
+              <labels>
+                <label locale="en_US">
+                  <name>Author/Editor</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="bibliographic_line6" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Bib Line 6</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
             <metadataElement code="citation_publisher" datatype="Entities">
               <labels>
                 <label locale="en_US">
@@ -11879,12 +12813,25 @@
                 <setting name="maxChars">65535</setting>
               </settings>
             </metadataElement>
+            <metadataElement code="citation_city" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>City</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+              </settings>
+            </metadataElement>
           </elements>
         </metadataElement>
-        <metadataElement code="bibliographic_line5" datatype="Container">
+        <metadataElement code="bibliographic_line7" datatype="Container">
           <labels>
             <label locale="en_US">
-              <name>Bib Line 5</name>
+              <name>Bib Line 7</name>
             </label>
           </labels>
           <settings/>
@@ -11910,12 +12857,25 @@
                 <setting name="maxChars">65535</setting>
               </settings>
             </metadataElement>
+            <metadataElement code="citation_volume" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Volume No.</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">30</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+              </settings>
+            </metadataElement>
           </elements>
         </metadataElement>
-        <metadataElement code="bibliographic_line6" datatype="Container">
+        <metadataElement code="bibliographic_line8" datatype="Container">
           <labels>
             <label locale="en_US">
-              <name>Bib Line 6</name>
+              <name>Bib Line 8</name>
             </label>
           </labels>
           <settings/>
@@ -11923,7 +12883,7 @@
             <metadataElement code="citation_date" datatype="DateRange">
               <labels>
                 <label locale="en_US">
-                  <name>Date</name>
+                  <name>Release Date</name>
                 </label>
               </labels>
               <settings>
@@ -11948,10 +12908,144 @@
             </metadataElement>
           </elements>
         </metadataElement>
-        <metadataElement code="bibliographic_line7" datatype="Container">
+        <metadataElement code="bibliographic_line9" datatype="Container">
           <labels>
             <label locale="en_US">
-              <name>Bib Line 7</name>
+              <name>Bib Line 9</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="citation_legacy_location" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Legacy Location</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+              </settings>
+            </metadataElement>
+            <metadataElement code="citation_current_location" datatype="StorageLocations">
+              <labels>
+                <label locale="en_US">
+                  <name>Location</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="bibliographic_line10" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Bib Line 10</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="citation_catalog_no" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>No. in Catalogue</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">20</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+              </settings>
+            </metadataElement>
+            <metadataElement code="citation_copy_no" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Number of Copies</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">20</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+              </settings>
+            </metadataElement>
+            <metadataElement code="citation_page_no" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Page No.</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">20</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+              </settings>
+            </metadataElement>
+            <metadataElement code="citation_public_no" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Public No.</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">20</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="bibliographic_line11" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Bib Line 11</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="citation_copyright" datatype="Entities">
+              <labels>
+                <label locale="en_US">
+                  <name>Copyright Holder</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+              </settings>
+            </metadataElement>
+            <metadataElement code="citation_photo" datatype="Entities">
+              <labels>
+                <label locale="en_US">
+                  <name>Photo Credit</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">20</setting>
+                <setting name="fieldHeight">1</setting>
+                <setting name="minChars">0</setting>
+                <setting name="maxChars">65535</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="bibliographic_line12" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Bib Line 12</name>
             </label>
           </labels>
           <settings/>
@@ -11963,18 +13057,19 @@
                 </label>
               </labels>
               <settings>
+                <setting name="usewysiwygeditor">1</setting>
                 <setting name="fieldWidth">100</setting>
-                <setting name="fieldHeight">1</setting>
+                <setting name="fieldHeight">3</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
               </settings>
             </metadataElement>
           </elements>
         </metadataElement>
-        <metadataElement code="bibliographic_line8" datatype="Container">
+        <metadataElement code="bibliographic_line13" datatype="Container">
           <labels>
             <label locale="en_US">
-              <name>Bib Line 8</name>
+              <name>Bib Line 13</name>
             </label>
           </labels>
           <settings/>
@@ -12000,7 +13095,7 @@
           <table>ca_objects</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">50</setting>
+            <setting name="maxAttributesPerRow">1000</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -12008,7 +13103,7 @@
           <table>ca_occurrences</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">50</setting>
+            <setting name="maxAttributesPerRow">1000</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -12537,6 +13632,147 @@
       <settings>
         <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="place_notes" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Related Places Notes</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">4</setting>
+        <setting name="usewysiwygeditor">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="object_notes" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Related Object Notes</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">4</setting>
+        <setting name="usewysiwygeditor">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="valuation_legacy_notes" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Valuation Notes</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">4</setting>
+        <setting name="usewysiwygeditor">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="citation_screen_notes" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Citation Notes</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">4</setting>
+        <setting name="usewysiwygeditor">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="ca_occurrences">
+          <table>ca_occurrences</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <!-- inventory elements -->
+    <metadataElement code="2015_inventory_yn" datatype="List" list="yn">
+      <labels>
+        <label locale="en_US">
+          <name>Found in 2015 Inventory?</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="listWidth">40</setting>
+        <setting name="listHeight">1</setting>
+        <setting name="render">radio_buttons</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="2015_inventory_date" datatype="DateRange">
+      <labels>
+        <label locale="en_US">
+          <name>2015 Object View Date</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="useDatePicker">1</setting>
       </settings>
       <typeRestrictions>
         <restriction code="ca_objects">
@@ -13390,7 +14626,7 @@
         <setting name="listWidth">100</setting>
         <setting name="listHeight">1</setting>
         <setting name="render">checklist</setting>
-        <setting name="maxColumns">6</setting>
+        <setting name="maxColumns">4</setting>
       </settings>
       <typeRestrictions>
         <restriction code="r1">
@@ -13767,7 +15003,7 @@
             <metadataElement code="deed_date" datatype="DateRange">
               <labels>
                 <label locale="en_US">
-                  <name>Deed Date</name>
+                  <name>Date</name>
                 </label>
               </labels>
               <settings>
@@ -13776,16 +15012,14 @@
                 <setting name="fieldHeight">1</setting>
               </settings>
             </metadataElement>
-            <metadataElement code="declaration_date" datatype="DateRange">
+            <metadataElement code="deed_type" datatype="List" list="deed_type">
               <labels>
                 <label locale="en_US">
-                  <name>Declaration of Gift Date</name>
+                  <name>Type</name>
                 </label>
               </labels>
               <settings>
-                <setting name="useDatePicker">1</setting>
-                <setting name="fieldWidth">35</setting>
-                <setting name="fieldHeight">1</setting>
+                <setting name="listWidth">40</setting>
               </settings>
             </metadataElement>
           </elements>
@@ -13798,16 +15032,13 @@
           </labels>
           <settings/>
           <elements>
-            <metadataElement code="deed_notes" datatype="Text">
+            <metadataElement code="deed_upload" datatype="Media">
               <labels>
                 <label locale="en_US">
-                  <name>Notes</name>
+                  <name>-</name>
                 </label>
               </labels>
-              <settings>
-                <setting name="fieldWidth">90</setting>
-                <setting name="fieldHeight">2</setting>
-              </settings>
+              <settings/>
             </metadataElement>
           </elements>
         </metadataElement>
@@ -13817,7 +15048,7 @@
           <table>ca_object_lots</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">10</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -13917,6 +15148,213 @@
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
         <setting name="useDatePicker">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_object_lots">
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="code_allocation" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>Short Code and Allocation</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="lineBreakAfterNumberOfElements">2</setting>
+      </settings>
+      <elements>
+        <metadataElement code="short_code" datatype="Text">
+          <labels>
+            <label locale="en_US">
+              <name>Identifier</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="allocation" datatype="Text">
+          <labels>
+            <label locale="en_US">
+              <name>Notes</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+          </settings>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="lot_notes" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Notes</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">4</setting>
+        <setting name="usewysiwygeditor">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_object_lots">
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="delivery_method" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>Delivery Method</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="lineBreakAfterNumberOfElements">3</setting>
+      </settings>
+      <elements>
+        <metadataElement code="delivery_number" datatype="Text">
+          <labels>
+            <label locale="en_US">
+              <name>Tracking Number</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="delivery_carrier" datatype="Text">
+          <labels>
+            <label locale="en_US">
+              <name>Carrier</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="delivery_received" datatype="List" list="yn">
+          <labels>
+            <label locale="en_US">
+              <name>Received</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="render">yes_no_checkboxes</setting>
+          </settings>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="exec_com" datatype="DateRange">
+      <labels>
+        <label locale="en_US">
+          <name>Executive Committee Approval Date</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+        <setting name="useDatePicker">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_object_lots">
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="fund_source" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Funding Sources</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_object_lots">
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">50</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="requisition_number" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Requisition Number</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_object_lots">
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="legacy_price" datatype="Currency">
+      <labels>
+        <label locale="en_US">
+          <name>Leacy Price [Cost]</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">1</setting>
       </settings>
       <typeRestrictions>
         <restriction code="ca_object_lots">
@@ -14492,7 +15930,7 @@
       </labels>
       <settings>
         <setting name="fieldWidth">100</setting>
-        <setting name="fieldHeight">1</setting>
+        <setting name="fieldHeight">3</setting>
       </settings>
       <typeRestrictions>
         <restriction code="ca_objects">
@@ -14541,7 +15979,7 @@
           <table>ca_objects</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">10</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -14661,6 +16099,27 @@
       <settings>
         <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">3</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="misc_notes" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Misc. Notes</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">1</setting>
       </settings>
       <typeRestrictions>
         <restriction code="ca_objects">
@@ -15679,6 +17138,27 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="source_location" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Source Location</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
     <!-- Loan Fields -->
     <metadataElement code="curator_instruction_notes" datatype="Text">
       <labels>
@@ -15950,84 +17430,10 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="inventory" datatype="Container">
-      <labels>
-        <label locale="en_US">
-          <name>Inventory</name>
-        </label>
-      </labels>
-      <settings>
-        <setting name="lineBreakAfterNumberOfElements">2</setting>
-      </settings>
-      <elements>
-        <metadataElement code="inventory_name" datatype="Text">
-          <labels>
-            <label locale="en_US">
-              <name>Name</name>
-            </label>
-          </labels>
-          <settings>
-            <setting name="fieldWidth">50</setting>
-            <setting name="fieldHeight">1</setting>
-            <setting name="minChars">0</setting>
-            <setting name="maxChars">65535</setting>
-          </settings>
-        </metadataElement>
-        <metadataElement code="inventory_date" datatype="DateRange">
-          <labels>
-            <label locale="en_US">
-              <name>Date</name>
-            </label>
-          </labels>
-          <settings>
-            <setting name="fieldWidth">50</setting>
-            <setting name="fieldHeight">1</setting>
-            <setting name="minChars">0</setting>
-            <setting name="maxChars">65535</setting>
-          </settings>
-        </metadataElement>
-        <metadataElement code="inventory_location" datatype="StorageLocations">
-          <labels>
-            <label locale="en_US">
-              <name>Location</name>
-            </label>
-          </labels>
-          <settings>
-            <setting name="fieldWidth">50</setting>
-            <setting name="fieldHeight">1</setting>
-            <setting name="minChars">0</setting>
-            <setting name="maxChars">65535</setting>
-          </settings>
-        </metadataElement>
-        <metadataElement code="performed_by" datatype="Entities">
-          <labels>
-            <label locale="en_US">
-              <name>Inventory performed by</name>
-            </label>
-          </labels>
-          <settings>
-            <setting name="fieldWidth">50</setting>
-            <setting name="fieldHeight">1</setting>
-            <setting name="minChars">0</setting>
-            <setting name="maxChars">65535</setting>
-          </settings>
-        </metadataElement>
-      </elements>
-      <typeRestrictions>
-        <restriction>
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">255</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
     <metadataElement code="file_attachements" datatype="Media">
       <labels>
         <label locale="en_US">
-          <name>File Attachment</name>
+          <name>File Attachments</name>
         </label>
       </labels>
       <typeRestrictions>
@@ -16617,38 +18023,70 @@
             <placement code="idno">
               <bundle>idno</bundle>
               <settings>
+                <setting name="expand_collapse_value">collapse</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
                 <setting name="label" locale="en_US">Object ID</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_collection_area">
               <bundle>ca_attribute_collection_area</bundle>
+              <settings>
+                <setting name="expand_collapse_value">collapse</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_primary_classification">
               <bundle>ca_attribute_primary_classification</bundle>
+              <settings>
+                <setting name="expand_collapse_value">collapse</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
               <settings>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">collapse</setting>
                 <setting name="label" locale="en_US">Artist/maker</setting>
                 <setting name="add_label" locale="en_US">Add artist/maker</setting>
                 <setting name="restrict_to_relationship_types">artist</setting>
+                <setting name="restrict_to_relationship_types">after</setting>
                 <setting name="restrict_to_relationship_types">attributed</setting>
+                <setting name="restrict_to_relationship_types">circle</setting>
+                <setting name="restrict_to_relationship_types">contributor</setting>
+                <setting name="restrict_to_relationship_types">co_creator</setting>
+                <setting name="restrict_to_relationship_types">copy</setting>
+                <setting name="restrict_to_relationship_types">copyright</setting>
+                <setting name="restrict_to_relationship_types">designer</setting>
+                <setting name="restrict_to_relationship_types">distributer</setting>
+                <setting name="restrict_to_relationship_types">engraver</setting>
+                <setting name="restrict_to_relationship_types">follower</setting>
+                <setting name="restrict_to_relationship_types">for</setting>
                 <setting name="restrict_to_relationship_types">maker</setting>
+                <setting name="restrict_to_relationship_types">manner</setting>
+                <setting name="restrict_to_relationship_types">manufacturer</setting>
                 <setting name="restrict_to_relationship_types">printer</setting>
                 <setting name="restrict_to_relationship_types">painter</setting>
                 <setting name="restrict_to_relationship_types">photographer</setting>
-                <setting name="restrict_to_relationship_types">manufacturer</setting>
+                <setting name="restrict_to_relationship_types">printer</setting>
                 <setting name="restrict_to_relationship_types">publisher</setting>
-                <setting name="restrict_to_relationship_types">contributor</setting>
-                <setting name="restrict_to_relationship_types">for</setting>
-                <setting name="restrict_to_relationship_types">manner</setting>
-                <setting name="display_template"><![CDATA[<l>^ca_entities.preferred_labels</l> <ifdef code="ca_entities.nationality">,</ifdef> ^ca_entities.nationality<ifdef code="ca_entities.lifespan">,(</ifdef>^ca_entities.lifespan<ifdef code="ca_entities.lifespan">)</ifdef>]]></setting>
+                <setting name="restrict_to_relationship_types">school</setting>
+                <setting name="restrict_to_relationship_types">studio</setting>
+                <setting name="restrict_to_relationship_types">style</setting>
+                <setting name="display_template"><![CDATA[<unit relativeTo="ca_entities">
+<unit><l>^ca_entities.preferred_labels</l><ifdef code="ca_entities.nationality">,</ifdef> </unit>
+<unit relativeTo="ca_entities.nationality" delimiter="-">^ca_entities.nationality</unit>
+<ifdef code="ca_entities.entity_date.entity_value">, (</ifdef>^ca_entities.entity_date.entity_value<ifdef code="ca_entities.entity_date.entity_value">)</ifdef>
+</unit>]]></setting>
               </settings>
             </placement>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Full Title</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="width">90</setting>
               </settings>
             </placement>
             <placement code="nonpreferred_labels">
@@ -16656,30 +18094,54 @@
               <settings>
                 <setting name="label" locale="en_US">Alternate titles</setting>
                 <setting name="add_label" locale="en_US">Add name</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="width">90</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_creation_date">
-              <bundle>ca_attribute_creation_date</bundle>
+           <placement code="ca_attribute_creation_date_display">
+              <bundle>ca_attribute_creation_date_display</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_medium_container">
               <bundle>ca_attribute_medium_container</bundle>
+              <settings>
+                <setting name="expand_collapse_value">collapse</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_dimensions">
               <bundle>ca_attribute_dimensions</bundle>
+              <settings>
+                <setting name="expand_collapse_value">collapse</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_credit_line">
               <bundle>ca_attribute_credit_line</bundle>
+              <settings>
+                <setting name="expand_collapse_value">collapse</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="sort">credit_date</setting>
+                <setting name="sortDirection">DESC</setting>
+              </settings>
             </placement>            
            <placement code="ca_attribute_label_copy">
               <bundle>ca_attribute_label_copy</bundle>
                <settings>
                 <setting name="sort">label_date_authored</setting>
                 <setting name="sortDirection">DESC</setting>
+                 <setting name="expand_collapse_value">collapse</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
               </settings>
             </placement>
             <placement code="ca_objects_history">
               <bundle>ca_objects_history</bundle>
                <settings>
+                 <setting name="expand_collapse">collapse</setting>
                  <setting name="label" locale="en_US">Object Location History</setting>
                  <setting name="ca_loans_showTypes">venue</setting>
                  <setting name="ca_loans_showTypes">in</setting>
@@ -16724,7 +18186,7 @@
             </placement>
           </bundlePlacements>
         </screen>
-        <screen idno="basic" default="1">
+        <screen idno="basic" default="0">
           <labels>
             <label locale="en_US">
               <name>Basic Info</name>
@@ -16738,40 +18200,84 @@
               <bundle>idno</bundle>
               <settings>
                 <setting name="label" locale="en_US">Object ID</setting>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_alternate_ID">
+              <bundle>ca_attribute_alternate_ID</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+                <setting name="label" locale="en_US">Alternate ID</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_collection_area">
               <bundle>ca_attribute_collection_area</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_primary_classification">
               <bundle>ca_attribute_primary_classification</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_secondary_classification">
               <bundle>ca_attribute_secondary_classification</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
               <settings>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">collapse</setting>
                 <setting name="label" locale="en_US">Artist/maker</setting>
                 <setting name="add_label" locale="en_US">Add artist/maker</setting>
                 <setting name="restrict_to_relationship_types">artist</setting>
+                <setting name="restrict_to_relationship_types">after</setting>
                 <setting name="restrict_to_relationship_types">attributed</setting>
+                <setting name="restrict_to_relationship_types">circle</setting>
+                <setting name="restrict_to_relationship_types">contributor</setting>
+                <setting name="restrict_to_relationship_types">co_creator</setting>
+                <setting name="restrict_to_relationship_types">copy</setting>
+                <setting name="restrict_to_relationship_types">copyright</setting>
+                <setting name="restrict_to_relationship_types">designer</setting>
+                <setting name="restrict_to_relationship_types">distributer</setting>
+                <setting name="restrict_to_relationship_types">engraver</setting>
+                <setting name="restrict_to_relationship_types">follower</setting>
+                <setting name="restrict_to_relationship_types">for</setting>
                 <setting name="restrict_to_relationship_types">maker</setting>
+                <setting name="restrict_to_relationship_types">manner</setting>
+                <setting name="restrict_to_relationship_types">manufacturer</setting>
                 <setting name="restrict_to_relationship_types">printer</setting>
                 <setting name="restrict_to_relationship_types">painter</setting>
                 <setting name="restrict_to_relationship_types">photographer</setting>
-                <setting name="restrict_to_relationship_types">manufacturer</setting>
+                <setting name="restrict_to_relationship_types">printer</setting>
                 <setting name="restrict_to_relationship_types">publisher</setting>
-                <setting name="restrict_to_relationship_types">contributor</setting>
-                <setting name="restrict_to_relationship_types">for</setting>
-                <setting name="restrict_to_relationship_types">manner</setting>
-                <setting name="display_template"><![CDATA[<l>^ca_entities.preferred_labels</l> <ifdef code="ca_entities.nationality">,</ifdef> ^ca_entities.nationality<ifdef code="ca_entities.lifespan">,(</ifdef>^ca_entities.lifespan<ifdef code="ca_entities.lifespan">)</ifdef>]]></setting>
+                <setting name="restrict_to_relationship_types">school</setting>
+                <setting name="restrict_to_relationship_types">studio</setting>
+                <setting name="restrict_to_relationship_types">style</setting>
+                <setting name="display_template"><![CDATA[<unit relativeTo="ca_entities">
+<unit><l>^ca_entities.preferred_labels</l><ifdef code="ca_entities.nationality">,</ifdef> </unit>
+<unit relativeTo="ca_entities.nationality" delimiter="-">^ca_entities.nationality</unit>
+<ifdef code="ca_entities.entity_date.entity_value">, (</ifdef>^ca_entities.entity_date.entity_value<ifdef code="ca_entities.entity_date.entity_value">)</ifdef>
+</unit>]]></setting>
               </settings>
             </placement>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
                 <setting name="label" locale="en_US">Full Title</setting>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+                <setting name="width">90</setting>
               </settings>
             </placement>
             <placement code="nonpreferred_labels">
@@ -16779,51 +18285,114 @@
               <settings>
                 <setting name="label" locale="en_US">Alternate titles</setting>
                 <setting name="add_label" locale="en_US">Add name</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+                <setting name="width">90</setting>
               </settings>
             </placement>
              <placement code="ca_attribute_title_notes">
               <bundle>ca_attribute_title_notes</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">expand</setting>
+               </settings>
             </placement>
             <placement code="ca_attribute_creation_date">
               <bundle>ca_attribute_creation_date</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_creation_date_display">
               <bundle>ca_attribute_creation_date_display</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_century">
+              <bundle>ca_attribute_century</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_other_object_date">
               <bundle>ca_attribute_other_object_date</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">expand</setting>
+              </settings>
             </placement> 
             <placement code="ca_attribute_medium_container">
               <bundle>ca_attribute_medium_container</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_technique">
               <bundle>ca_attribute_technique</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_dimensions">
               <bundle>ca_attribute_dimensions</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
+            </placement>
+             <placement code="ca_attribute_duration">
+              <bundle>ca_attribute_duration</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_credit_line">
               <bundle>ca_attribute_credit_line</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>            
             <placement code="ca_attribute_marks_inscription">
               <bundle>ca_attribute_marks_inscription</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_embark_edition">
               <bundle>ca_attribute_embark_edition</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_physical_description">
               <bundle>ca_attribute_physical_description</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="hierarchy_location">
               <bundle>hierarchy_location</bundle>
               <settings>
                 <setting name="label" locale="en_US">Artwork Elements</setting>
                  <setting name="auto_shrink">1</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
               </settings>
             </placement>
           </bundlePlacements>
         </screen>
-        <screen idno="basic_elements" default="1">
+        <screen idno="basic_elements" default="0">
           <labels>
             <label locale="en_US">
               <name>Basic Info</name>
@@ -16833,6 +18402,13 @@
             <restriction code="artwork_element" type="artwork_element"/>
           </typeRestrictions>
           <bundlePlacements>
+            <placement code="hierarchy_location">
+              <bundle>hierarchy_location</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Artwork Hierarchy</setting>
+                 <setting name="auto_shrink">1</setting>
+              </settings>
+            </placement>
             <placement code="idno">
               <bundle>idno</bundle>
               <settings>
@@ -16879,41 +18455,71 @@
             <placement code="ca_object_lots2">
               <bundle>ca_object_lots</bundle>
               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
                <setting name="label" locale="en_US">Related Lot &amp; Donor</setting>
                 <setting name="list_format">list</setting>
                 <setting name="dontShowDeleteButton">0</setting>
                 <setting name="minRelationshipsPerRow">1</setting>
                 <setting name="display_template"><![CDATA[<unit relativeTo="ca_object_lots">
-
 <unit><l>^ca_object_lots.preferred_labels</l><br/></unit>
 <unit relativeTo="ca_entities" delimiter=";" >^ca_entities.preferred_labels<br>
 <unit relativeTo="ca_entities.address" delimiter=", ">^ca_entities.address.address1<ifdef code="ca_entities.address.address2">, </ifdef>^ca_entities.address.address2<ifdef code="ca_entities.address.city">, </ifdef>^ca_entities.address.city<ifdef code="ca_entities.address.stateprovince">, </ifdef>^ca_entities.address.stateprovince<ifdef code="ca_entities.address.postalcode">, </ifdef>^ca_entities.address.postalcode<ifdef code="ca_entities.address.country">, </ifdef>^ca_entities.address.country</unit>
-
 </unit>
                   </unit>]]></setting>
               </settings>
             </placement>
             <placement code="ca_attribute_provenance">
               <bundle>ca_attribute_provenance</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_style_movement">
               <bundle>ca_attribute_style_movement</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_period">
               <bundle>ca_attribute_period</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_places">
               <bundle>ca_places</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_legacy_place">
               <bundle>ca_attribute_legacy_place</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_place_notes">
+              <bundle>ca_attribute_place_notes</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
              <placement code="ca_list_items">
               <bundle>ca_list_items</bundle>
                <settings>
-                 <setting name="restrict_to_lists">keywords</setting>
+                 <setting name="restrict_to_lists">aat</setting>
                  <setting name="useHierarchicalBrowser">1</setting>
-                 <setting name="label" locale="en_US">Keywords</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+                 <setting name="label" locale="en_US">Getty AAT Keywords</setting>
+                 <setting name="display_template"><![CDATA[<unit relativeTo="ca_objects">^ca_list_items.hierarchy.preferred_labels.name_singular%delimiter=_➔_</unit>]]></setting>
                </settings>
             </placement>
             <placement code="ca_attribute_label_copy">
@@ -16921,27 +18527,51 @@
                <settings>
                 <setting name="sort">label_date_authored</setting>
                 <setting name="sortDirection">DESC</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_subject_matter">
               <bundle>ca_attribute_subject_matter</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_curatorial_note">
               <bundle>ca_attribute_curatorial_note</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
              <placement code="ca_attribute_artist_notes">
               <bundle>ca_attribute_artist_notes</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_visiting_scholar">
               <bundle>ca_attribute_visiting_scholar</bundle>
-            </placement>
-            <placement code="ca_attribute_attribution">
-              <bundle>ca_attribute_attribution</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
              <placement code="ca_objects">
               <bundle>ca_objects</bundle>
               <settings>
                <setting name="label" locale="en_US">Related Objects</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">expand</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_object_notes">
+              <bundle>ca_attribute_object_notes</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -16956,17 +18586,36 @@
             <restriction code="artwork" type="artwork"/>
           </typeRestrictions>
           <bundlePlacements>
+            <placement code="access">
+              <bundle>access</bundle>
+              <settings>
+                <setting name="label" locale="en_US">User Access</setting>
+               <setting name="expand_collapse_no_value">expand</setting>
+               <setting name="expand_collapse_value">collapse</setting>
+               </settings>
+            </placement>
+             <placement code="ca_attribute_access_specific">
+              <bundle>ca_attribute_access_specific</bundle>
+               <settings>
+                <setting name="label" locale="en_US">System Access</setting>
+               <setting name="expand_collapse_no_value">expand</setting>
+               <setting name="expand_collapse_value">collapse</setting>
+               </settings>
+            </placement>
            <placement code="ca_object_lots2">
               <bundle>ca_object_lots</bundle>
               <settings>
-               <setting name="label" locale="en_US">Related Lot &amp; Donor</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+                <setting name="label" locale="en_US">Related Lot &amp; Donor</setting>
                 <setting name="list_format">list</setting>
                 <setting name="dontShowDeleteButton">0</setting>
                 <setting name="minRelationshipsPerRow">1</setting>
                 <setting name="display_template"><![CDATA[<unit relativeTo="ca_object_lots">
+                  <unit><l>^ca_object_lots.preferred_labels</l><br/></unit>
 <unit relativeTo="ca_entities" delimiter=";" >^ca_entities.preferred_labels<br></unit>
 <unit><l>^ca_object_lots.idno_stub</l><br/></unit>
-<unit>^ca_object_lots.onsite_date<br/></unit>
+Onsite date: <unit>^ca_object_lots.onsite_date<br/></unit>
 <unit>^ca_object_lots.credit_line.credit_text<br/></unit>
                   </unit>]]></setting>
               </settings>
@@ -16974,33 +18623,54 @@
             <placement code="ca_attribute_alternate_ID">
               <bundle>ca_attribute_alternate_ID</bundle>
               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
                 <setting name="label" locale="en_US">Alternate ID</setting>
               </settings>
             </placement>
             <placement code="ca_attribute_object_status_new">
               <bundle>ca_attribute_object_status_new</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">expand</setting>
+              </settings>
+            </placement>
+             <placement code="ca_objects_deaccession">
+              <bundle>ca_objects_deaccession</bundle>
+               <settings>
+               <setting name="expand_collapse_no_value">collapse</setting>
+               <setting name="expand_collapse_value">collapse</setting>
+               </settings>
             </placement>
             <placement code="ca_attribute_object_restrictions">
               <bundle>ca_attribute_object_restrictions</bundle>
+              <settings>
+               <setting name="expand_collapse_no_value">collapse</setting>
+               <setting name="expand_collapse_value">collapse</setting>
+               </settings>
             </placement>
             <placement code="ca_attribute_registration_notes">
               <bundle>ca_attribute_registration_notes</bundle>
-            </placement>
-            <placement code="access">
-              <bundle>access</bundle>
-            </placement>
-             <placement code="ca_attribute_access_specific">
-              <bundle>ca_attribute_access_specific</bundle>
-            </placement>
-             <placement code="ca_attribute_registrar">
-              <bundle>ca_attribute_registrar</bundle>
+              <settings>
+               <setting name="expand_collapse_no_value">collapse</setting>
+               <setting name="expand_collapse_value">collapse</setting>
+               </settings>
             </placement>
            <placement code="ca_attribute_valuation">
               <bundle>ca_attribute_valuation</bundle>
               <settings>
                 <setting name="sort">valuation_date</setting>
                 <setting name="sortDirection">DESC</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
               </settings>
+            </placement>
+             <placement code="ca_attribute_valuation_legacy_notes">
+              <bundle>ca_attribute_valuation_legacy_notes</bundle>
+              <settings>
+               <setting name="expand_collapse_no_value">collapse</setting>
+               <setting name="expand_collapse_value">collapse</setting>
+               </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -17019,6 +18689,15 @@
           <settings>
             <setting name="sort">citation_date</setting>
             <setting name="sortDirection">DESC</setting>
+            <setting name="expand_collapse_no_value">expand</setting>
+            <setting name="expand_collapse_value">collapse</setting>
+          </settings>
+           </placement>
+           <placement code="ca_attribute_citation_screen_notes">
+          <bundle>ca_attribute_citation_screen_notes</bundle>
+          <settings>
+            <setting name="expand_collapse_no_value">collapse</setting>
+            <setting name="expand_collapse_value">collapse</setting>
           </settings>
         </placement>
           </bundlePlacements>
@@ -17038,11 +18717,16 @@
               <settings>
                <setting name="label" locale="en_US">Location</setting>
                 <setting name="useHierarchicalBrowser">1</setting>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+                <setting name="add_label" locale="en_US">Update Location</setting>
               </settings>
             </placement>
             <placement code="ca_objects_history">
               <bundle>ca_objects_history</bundle>
                <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">expand</setting>
                  <setting name="label" locale="en_US">Object Location History</setting>
                  <setting name="ca_loans_showTypes">venue</setting>
                  <setting name="ca_loans_showTypes">in</setting>
@@ -17085,9 +18769,6 @@
                  <setting name="ca_occurrences_exhibition_displayTemplate"><![CDATA[<l>^ca_occurrences.preferred_labels</l><br>^ca_objects.exh_dates]]></setting>
                </settings>
             </placement>
-            <placement code="ca_objects_deaccession">
-              <bundle>ca_objects_deaccession</bundle>
-            </placement>
           </bundlePlacements>
         </screen>
         <screen idno="inventory" default="0">
@@ -17100,11 +18781,37 @@
             <restriction code="artwork" type="artwork"/>
           </typeRestrictions>
           <bundlePlacements>
-            <placement code="ca_attribute_inventory">
-              <bundle>ca_attribute_inventory</bundle>
+            <placement code="ca_attribute_2015_inventory_yn">
+              <bundle>ca_attribute_2015_inventory_yn</bundle>
               <settings>
-                <setting name="sort">inventory_date</setting>
-                <setting name="sortDirection">DESC</setting>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
+            </placement>
+            <placement code="ca_agent">
+              <bundle>ca_entities</bundle>
+             <settings>
+               <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">expand</setting>
+               <setting name="label" locale="en_US">2015 Inventory Agent</setting>
+               <setting name="restrict_to_relationship_types">inventory</setting>
+              </settings>
+             </placement>
+            <placement code="ca_attribute_2015_inventory_date">
+              <bundle>ca_attribute_2015_inventory_date</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
+            </placement>
+            <placement code="ca_storage_locations">
+              <bundle>ca_storage_locations</bundle>
+              <settings>
+               <setting name="label" locale="en_US">Location</setting>
+                <setting name="useHierarchicalBrowser">1</setting>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+                <setting name="add_label" locale="en_US">Update Location</setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -17121,27 +18828,52 @@
           <bundlePlacements>
             <placement code="ca_attribute_dimensions">
               <bundle>ca_attribute_dimensions</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_installation_instruction">
               <bundle>ca_attribute_installation_instruction</bundle>
-            </placement>
-            <placement code="ca_attribute_framing_status">
-              <bundle>ca_attribute_framing_status</bundle>
-            </placement>
-            <placement code="ca_attribute_vitrine">
-              <bundle>ca_attribute_vitrine</bundle>
-            </placement>
-            <placement code="ca_attribute_crating">
-              <bundle>ca_attribute_crating</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">expand</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_accessories">
               <bundle>ca_attribute_accessories</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
-             <placement code="ca_attribute_duration">
-              <bundle>ca_attribute_duration</bundle>
+            <placement code="ca_attribute_framing_status">
+              <bundle>ca_attribute_framing_status</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_vitrine">
+              <bundle>ca_attribute_vitrine</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_crating">
+              <bundle>ca_attribute_crating</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_install_attachements">
               <bundle>ca_attribute_install_attachements</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -17157,207 +18889,486 @@
           <bundlePlacements>
              <placement code="ca_attribute_2D">
               <bundle>ca_attribute_2D</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_alt_storage_id">
               <bundle>ca_attribute_alt_storage_id</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_artist_proofs">
               <bundle>ca_attribute_artist_proofs</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
              <placement code="ca_attribute_approval_date">
               <bundle>ca_attribute_approval_date</bundle>
+                <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_arabic_numeral">
               <bundle>ca_attribute_arabic_numeral</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_book_title">
               <bundle>ca_attribute_book_title</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
              <placement code="ca_attribute_cancel_date">
               <bundle>ca_attribute_cancel_date</bundle>
+                <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
              <placement code="ca_attribute_canceled_plate">
               <bundle>ca_attribute_canceled_plate</bundle>
+                <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_case_id">
               <bundle>ca_attribute_case_id</bundle>
-            </placement>
-            <placement code="ca_attribute_century">
-              <bundle>ca_attribute_century</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_collection">
               <bundle>ca_attribute_collection</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_color">
               <bundle>ca_attribute_color</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_color_question">
               <bundle>ca_attribute_color_question</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_comments">
               <bundle>ca_attribute_comments</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_current_location">
               <bundle>ca_attribute_current_location</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
              <placement code="ca_attribute_custodian_id">
               <bundle>ca_attribute_custodian_id</bundle>
+                <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
              <placement code="ca_attribute_department">
               <bundle>ca_attribute_department</bundle>
+                <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_display_dimensions_embark">
               <bundle>ca_attribute_display_dimensions_embark</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_embark_edition">
               <bundle>ca_attribute_embark_edition</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_edition_count">
               <bundle>ca_attribute_edition_count</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_edition_no">
               <bundle>ca_attribute_edition_no</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_edition_size">
               <bundle>ca_attribute_edition_size</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_edition_text">
               <bundle>ca_attribute_edition_text</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_gallery">
               <bundle>ca_attribute_gallery</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_historic">
               <bundle>ca_attribute_historic</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_image_web">
               <bundle>ca_attribute_image_web</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
              <placement code="ca_attribute_in_active">
               <bundle>ca_attribute_in_active</bundle>
+                <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
              <placement code="ca_attribute_licensed">
               <bundle>ca_attribute_licensed</bundle>
+                <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_location_agent">
               <bundle>ca_attribute_location_agent</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_location_notes">
               <bundle>ca_attribute_location_notes</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_marks">
               <bundle>ca_attribute_marks</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_medium_support">
               <bundle>ca_attribute_medium_support</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_medium2">
               <bundle>ca_attribute_medium2</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_misc_notes">
+              <bundle>ca_attribute_misc_notes</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_multiple_artists">
               <bundle>ca_attribute_multiple_artists</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_new_data_structure">
               <bundle>ca_attribute_new_data_structure</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_next_review">
               <bundle>ca_attribute_next_review</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement> 
             <placement code="ca_attribute_no_components">
               <bundle>ca_attribute_no_components</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
              <placement code="ca_attribute_no_hand">
               <bundle>ca_attribute_no_hand</bundle>
+                <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
              <placement code="ca_attribute_ok_print">
               <bundle>ca_attribute_ok_print</bundle>
+                <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_orientation">
               <bundle>ca_attribute_orientation</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_photography">
               <bundle>ca_attribute_photography</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_photo_location">
               <bundle>ca_attribute_photo_location</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_plate_number">
               <bundle>ca_attribute_plate_number</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_portfolio_broken">
               <bundle>ca_attribute_portfolio_broken</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_portfolio_name">
               <bundle>ca_attribute_portfolio_name</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_portfolio">
               <bundle>ca_attribute_portfolio</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_printers_proofs">
               <bundle>ca_attribute_printers_proofs</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_publisher">
               <bundle>ca_attribute_publisher</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_reg_number">
               <bundle>ca_attribute_reg_number</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
              <placement code="ca_attribute_roman_num">
               <bundle>ca_attribute_roman_num</bundle>
+                <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_search_title">
               <bundle>ca_attribute_search_title</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_series_title">
               <bundle>ca_attribute_series_title</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_source">
               <bundle>ca_attribute_source</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_state">
               <bundle>ca_attribute_state</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_style_group">
               <bundle>ca_attribute_style_group</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_suite_broken">
               <bundle>ca_attribute_suite_broken</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_suite_name">
               <bundle>ca_attribute_suite_name</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_support_2">
               <bundle>ca_attribute_support_2</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_surrogate_exists">
               <bundle>ca_attribute_surrogate_exists</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_surrogate_source">
               <bundle>ca_attribute_surrogate_source</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_technique">
               <bundle>ca_attribute_technique</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_trial_proofs">
               <bundle>ca_attribute_trial_proofs</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_user_def">
               <bundle>ca_attribute_user_def</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_view">
               <bundle>ca_attribute_view</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_viewing_sequence">
               <bundle>ca_attribute_viewing_sequence</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_visual_surrogate">
               <bundle>ca_attribute_visual_surrogate</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
              <placement code="ca_attribute_web_kiosk">
               <bundle>ca_attribute_web_kiosk</bundle>
+                <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_whole">
               <bundle>ca_attribute_whole</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_source_location">
+              <bundle>ca_attribute_source_location</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
             </placement>
           </bundlePlacements>
         </screen>
@@ -17370,6 +19381,11 @@
           <bundlePlacements>
             <placement code="ca_object_representations">
               <bundle>ca_object_representations</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+                 <setting name="label" locale="en_US">Object Images</setting>
+              </settings>
             </placement>
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
@@ -17377,16 +19393,30 @@
                 <setting name="label" locale="en_US">Copyright Holder</setting>
                 <setting name="add_label" locale="en_US">Add copyright holder</setting>
                 <setting name="restrict_to_relationship_types">copyright</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
               </settings>
             </placement>
              <placement code="ca_attribute_copyright_type">
               <bundle>ca_attribute_copyright_type</bundle>
+               <settings>
+                 <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+               </settings>
             </placement>
              <placement code="ca_attribute_copyright_text">
               <bundle>ca_attribute_copyright_text</bundle>
+               <settings>
+                 <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">expand</setting>
+               </settings>
             </placement>
              <placement code="ca_attribute_file_attachements">
               <bundle>ca_attribute_file_attachements</bundle>
+                <settings>
+                 <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">expand</setting>
+               </settings>
             </placement>                       
           </bundlePlacements>
         </screen>
@@ -17404,11 +19434,15 @@
               <bundle>ca_objects</bundle>
               <settings>
                <setting name="label" locale="en_US">Objects</setting>
+                 <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">expand</setting>
               </settings>
             </placement>
            <placement code="ca_entities">
               <bundle>ca_entities</bundle>
               <settings>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">expand</setting>
                 <setting name="label" locale="en_US">Makers</setting>
                 <setting name="add_label" locale="en_US">Add artist/maker</setting>
                 <setting name="restrict_to_relationship_types">artist</setting>
@@ -17418,12 +19452,18 @@
                 <setting name="restrict_to_relationship_types">painter</setting>
                 <setting name="restrict_to_relationship_types">photographer</setting>
                 <setting name="restrict_to_relationship_types">manufacturer</setting>
-                <setting name="display_template"><![CDATA[<l>^ca_entities.preferred_labels</l> <ifdef code="ca_entities.nationality">,</ifdef> ^ca_entities.nationality<ifdef code="ca_entities.lifespan">,(</ifdef>^ca_entities.lifespan<ifdef code="ca_entities.lifespan">)</ifdef>]]></setting>
+                <setting name="display_template"><![CDATA[<unit relativeTo="ca_entities">
+<unit><l>^ca_entities.preferred_labels</l><ifdef code="ca_entities.nationality">,</ifdef> </unit>
+<unit relativeTo="ca_entities.nationality" delimiter="-">^ca_entities.nationality</unit>
+<ifdef code="ca_entities.entity_date.entity_value">, (</ifdef>^ca_entities.entity_date.entity_value<ifdef code="ca_entities.entity_date.entity_value">)</ifdef>
+</unit>]]></setting>
               </settings>
             </placement>
              <placement code="ca_donors">
               <bundle>ca_entities</bundle>
              <settings>
+               <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">expand</setting>
                <setting name="label" locale="en_US">Donors</setting>
                <setting name="restrict_to_relationship_types">donor</setting>
               </settings>
@@ -17431,6 +19471,8 @@
             <placement code="ca_loans">
               <bundle>ca_loans</bundle>
               <settings>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">expand</setting>
                 <setting name="label" locale="en_US">Venues</setting>
                 <setting name="restrict_to_types">venue</setting>
               </settings>
@@ -17438,12 +19480,16 @@
             <placement code="ca_events">
               <bundle>ca_occurrences</bundle>
               <settings>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">expand</setting>
                 <setting name="label" locale="en_US">Exhibitions</setting>
               </settings>
             </placement>
             <placement code="ca_condition">
               <bundle>ca_movements</bundle>
               <settings>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">expand</setting>
                 <setting name="restrict_to_type">condition</setting>
                 <setting name="label" locale="en_US">Condition Event</setting>
               </settings>
@@ -17451,9 +19497,14 @@
             <placement code="ca_movements">
               <bundle>ca_movements</bundle>
               <settings>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">expand</setting>
                 <setting name="restrict_to_type">movement</setting>
                 <setting name="label" locale="en_US">Artwork Movement</setting>
               </settings>
+            </placement>
+            <placement code="ca_sets">
+              <bundle>ca_sets</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -17951,6 +20002,13 @@
             <placement code="ca_attribute_bibliographic_citations">
               <bundle>ca_attribute_bibliographic_citations</bundle>
             </placement>
+            <placement code="ca_attribute_citation_screen_notes">
+          <bundle>ca_attribute_citation_screen_notes</bundle>
+          <settings>
+            <setting name="expand_collapse_no_value">collapse</setting>
+            <setting name="expand_collapse_value">collapse</setting>
+          </settings>
+        </placement>
           </bundlePlacements>
         </screen>
         <screen idno="media" default="0">
@@ -18209,6 +20267,9 @@
             <placement code="ca_attribute_onsite_date">
               <bundle>ca_attribute_onsite_date</bundle>
             </placement>
+             <placement code="ca_attribute_code_allocation">
+              <bundle>ca_attribute_code_allocation</bundle>
+            </placement>
             <placement code="ca_attribute_lot_deed">
               <bundle>ca_attribute_lot_deed</bundle>
             </placement>
@@ -18221,12 +20282,27 @@
             <placement code="ca_attribute_credit_line">
               <bundle>ca_attribute_credit_line</bundle>
             </placement>
+            <placement code="ca_attribute_delivery_method">
+              <bundle>ca_attribute_delivery_method</bundle>
+            </placement>
+            <placement code="ca_attribute_exec_com">
+              <bundle>ca_attribute_exec_com</bundle>
+            </placement>
+            <placement code="ca_attribute_fund_source">
+              <bundle>ca_attribute_fund_source</bundle>
+            </placement>
+            <placement code="ca_attribute_requisition_number">
+              <bundle>ca_attribute_requisition_number</bundle>
+            </placement>
             <placement code="access">
               <bundle>access</bundle>
             </placement>
             <placement code="ca_attribute_file_attachements">
               <bundle>ca_attribute_file_attachements</bundle>
-            </placement>            
+            </placement>    
+            <placement code="ca_attribute_lot_notes">
+              <bundle>ca_attribute_lot_notes</bundle>
+            </placement>
           </bundlePlacements>
         </screen>
         <screen idno="objects" default="0">
@@ -18432,18 +20508,6 @@
             </placement>
             <placement code="ca_attribute_description">
               <bundle>ca_attribute_description</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="keywords" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Keywords</name>
-            </label>
-          </labels>
-          <bundlePlacements>
-            <placement code="ca_list_items">
-              <bundle>ca_list_items</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -18971,6 +21035,16 @@
     </relationshipTable>
     <relationshipTable name="ca_objects_x_entities">
       <types>
+        <type code="inventory" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>inventory agent</typename>
+              <typename_reverse>inventory agent</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
         <type code="curator" default="0">
           <labels>
             <label locale="en_US">
@@ -19081,6 +21155,16 @@
           <subTypeLeft>artwork</subTypeLeft>
           <subTypeRight/>
         </type>
+        <type code="designer" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>designer</typename>
+              <typename_reverse>designer</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft>artwork</subTypeLeft>
+          <subTypeRight/>
+        </type>
         <type code="distributer" default="0">
           <labels>
             <label locale="en_US">
@@ -19101,31 +21185,11 @@
           <subTypeLeft>artwork</subTypeLeft>
           <subTypeRight/>
         </type>
-        <type code="executer" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>executer</typename>
-              <typename_reverse>executer</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft>artwork</subTypeLeft>
-          <subTypeRight/>
-        </type>
         <type code="follower" default="0">
           <labels>
             <label locale="en_US">
               <typename>follower of</typename>
               <typename_reverse>follower of</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft>artwork</subTypeLeft>
-          <subTypeRight/>
-        </type>
-        <type code="for" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>for</typename>
-              <typename_reverse>for</typename_reverse>
             </label>
           </labels>
           <subTypeLeft>artwork</subTypeLeft>
@@ -19312,6 +21376,20 @@
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
+        </type>
+      </types>
+    </relationshipTable>
+    <relationshipTable name="ca_movements_x_objects">
+      <types>
+        <type code="related" default="1">
+          <labels>
+            <label locale="en_US">
+              <typename>related</typename>
+              <typename_reverse>related</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight></subTypeRight>
         </type>
       </types>
     </relationshipTable>
@@ -19740,6 +21818,26 @@
             <label locale="en_US">
               <typename>was provided by</typename>
               <typename_reverse>is provider of</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="proposer" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>proposer</typename>
+              <typename_reverse>proposer</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="agent" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>agent</typename>
+              <typename_reverse>agent</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -20350,19 +22448,17 @@
         </placement>
         <placement code="primary_classification">
           <bundle>ca_objects.primary_classification</bundle>
-          <settings>
-            <setting name="label" locale="en_US">Primary Classification</setting>
-          </settings>
         </placement>
         <placement code="artist">
           <bundle>ca_entities</bundle>
           <settings>
             <setting name="label" locale="en_US">Artist</setting>
             <setting name="restrict_to_relationship_types">artist</setting>
-            <setting name="format"><![CDATA[<unit relativeTo="ca_entities" delimiter="; ">
- <l>^ca_entities.preferred_labels</l><ifdef code="ca_entities.nationality">, </ifdef>
- ^ca_entities.nationality<ifdef code="ca_entities.entity_date.entity_value">, </ifdef>
- ^ca_entities.entity_date.entity_value ^ca_entities.relationshipType]]></setting>
+            <setting name="format"><![CDATA[<unit relativeTo="ca_entities">
+<unit><l>^ca_entities.preferred_labels</l><ifdef code="ca_entities.nationality">,</ifdef> </unit>
+<unit relativeTo="ca_entities.nationality" delimiter="-">^ca_entities.nationality</unit>
+<ifdef code="ca_entities.entity_date.entity_value">, (</ifdef>^ca_entities.entity_date.entity_value<ifdef code="ca_entities.entity_date.entity_value">)</ifdef>
+</unit>]]></setting>
           </settings>
         </placement>
         <placement code="preferred_labels">

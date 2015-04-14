@@ -3042,12 +3042,12 @@ class BaseModel extends BaseObject {
 	 * @return SearchIndexer
 	 */
 	public function getSearchIndexer($ps_engine=null) {
-		if (!BaseModel::$search_indexer) {
-			BaseModel::$search_indexer = new SearchIndexer($this->getDb(), $ps_engine);
+		if (!$this->search_indexer) {
+			$this->search_indexer = new SearchIndexer($this->getDb(), $ps_engine);
 		} else {
-			BaseModel::$search_indexer->setDb($this->getDb());
+			$this->search_indexer->setDb($this->getDb());
 		}
-		return BaseModel::$search_indexer;
+		return $this->search_indexer;
 	}
 
 	/**
@@ -7556,8 +7556,8 @@ class BaseModel extends BaseObject {
 		
 		foreach($va_hier as $vn_i => $va_item) {
 			$va_levels[$vn_i] = $va_item['LEVEL'];
-			$va_ids[] = $va_item['NODE'][$vs_pk];
-			$va_parent_ids[] = $va_item['NODE']['parent_id'];
+			$va_ids[] = $vn_id = $va_item['NODE'][$vs_pk];
+			$va_parent_ids[$vn_id] = $va_item['NODE']['parent_id'];
 		}
 		
 		$va_hierarchy_data = array();
@@ -7584,13 +7584,14 @@ class BaseModel extends BaseObject {
 			}
 			
 			foreach($va_vals as $vn_i => $vs_val) {
-				$va_hierarchy_data[$va_parent_ids[$vn_i]][$va_sort_keys[$vn_i]] = array(
+				$va_hierarchy_data[$va_parent_ids[$va_ids[$vn_i]]][$va_sort_keys[$vn_i]] = array(
 					'level' => $va_levels[$vn_i],
 					'id' => $va_ids[$vn_i],
-					'parent_id' => $va_parent_ids[$vn_i],
+					'parent_id' => $va_parent_ids[$va_ids[$vn_i]],
 					'display' => $vs_val
 				);
 			}
+		
 			$va_hierarchy_flattened = array();
 			foreach($va_hierarchy_data as $vn_parent_id => $va_level_content) {
 				ksort($va_hierarchy_data[$vn_parent_id]);
@@ -9421,11 +9422,11 @@ $pa_options["display_form_field_tips"] = true;
 		$vn_rel_table_num = $t_item_rel->tableNum();
 		
 		// Reindex modified relationships
-		if (!BaseModel::$search_indexer) {
-			BaseModel::$search_indexer = new SearchIndexer($this->getDb());
+		if (!$this->search_indexer) {
+			$this->search_indexer = new SearchIndexer($this->getDb());
 		}
 		foreach($va_to_reindex_relations as $vn_relation_id => $va_row) {
-			BaseModel::$search_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
+			$this->search_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
 		}
 		
 		return sizeof($va_to_reindex_relations);
@@ -9526,11 +9527,11 @@ $pa_options["display_form_field_tips"] = true;
 		$vn_rel_table_num = $t_item_rel->tableNum();
 		
 		// Reindex modified relationships
-		if (!BaseModel::$search_indexer) {
-			BaseModel::$search_indexer = new SearchIndexer($this->getDb());
+		if (!$this->search_indexer) {
+			$this->search_indexer = new SearchIndexer($this->getDb());
 		}
 		foreach($va_new_relations as $vn_relation_id => $va_row) {
-			BaseModel::$search_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
+			$this->search_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
 		}
 		
 		return sizeof($va_new_relations);
