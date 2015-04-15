@@ -1023,7 +1023,17 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														// If it looks like a dimension that has been tokenized by Lucene
 														// into oblivion rehydrate it here.
 														try {
-															$vo_parsed_measurement = caParseLengthDimension(join(' ', $va_raw_terms));
+															switch(sizeof($va_raw_terms)) {
+																case 2:
+																	$vs_dimension = $va_raw_terms[0] . caGetDecimalSeparator() . $va_raw_terms[1];
+																	break;
+																case 3:
+																	$vs_dimension = $va_raw_terms[0] . caGetDecimalSeparator() . $va_raw_terms[1] . " " . $va_raw_terms[2];
+																	break;
+																default:
+																	$vs_dimension = join(' ', $va_raw_terms);
+															}
+															$vo_parsed_measurement = caParseLengthDimension($vs_dimension);
 															$vn_len = $vo_parsed_measurement->convertTo('METER',6, 'en_US');
 														} catch(Exception $e) {
 															$vs_direct_sql_query = null;
@@ -1046,7 +1056,18 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														// If it looks like a weight that has been tokenized by Lucene
 														// into oblivion rehydrate it here.
 														try {
-															$vo_parsed_measurement = caParseWeightDimension(join(' ', $va_raw_terms));
+															switch(sizeof($va_raw_terms)) {
+																case 2:
+																	$vs_dimension = $va_raw_terms[0] . caGetDecimalSeparator() . $va_raw_terms[1];
+																	break;
+																case 3:
+																	$vs_dimension = $va_raw_terms[0] . caGetDecimalSeparator() . $va_raw_terms[1] . " " . $va_raw_terms[2];
+																	break;
+																default:
+																	$vs_dimension = join(' ', $va_raw_terms);
+															}
+
+															$vo_parsed_measurement = caParseWeightDimension($vs_dimension);
 															$vn_weight = $vo_parsed_measurement->convertTo('KILOGRAM',6, 'en_US');
 														} catch(Exception $e) {
 															$vs_direct_sql_query = null;
@@ -1261,7 +1282,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							$vs_sql .= " HAVING count(distinct sw.word_id) = {$vn_num_terms}";
 						}
 						$t=new Timer();
-						$qr_res = $this->opo_db->query($vs_sql, is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum));
+						$qr_res = $this->opo_db->query($vs_sql, (is_array($pa_direct_sql_query_params) && (sizeof($pa_direct_sql_query_params) > 0)) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum));
 						
 						if ($this->debug) { Debug::msg('FIRST: '.$vs_sql." [$pn_subject_tablenum] ".$t->GetTime(4)); }
 					} else {
