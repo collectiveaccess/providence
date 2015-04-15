@@ -1268,7 +1268,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						if($vs_direct_sql_query) {
 							$vs_sql = "INSERT IGNORE INTO {$ps_dest_table} {$vs_direct_sql_query}";
 
-							if((strpos($vs_sql, '?') !== false) && !is_array($pa_direct_sql_query_params)) {
+							if((strpos($vs_sql, '?') !== false) && (!is_array($pa_direct_sql_query_params) || sizeof($pa_direct_sql_query_params) == 0)) {
 								$pa_direct_sql_query_params = array((int)$pn_subject_tablenum);
 							}
 						} else {
