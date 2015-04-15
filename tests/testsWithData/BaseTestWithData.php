@@ -84,7 +84,6 @@ abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
 		foreach($this->opa_record_map as $vs_table => &$va_records) {
 			$o_dm = Datamodel::load();
 			$t_instance = $o_dm->getInstance($vs_table);
-			rsort($va_records);
 			foreach($va_records as $vn_id) {
 				if($t_instance->load($vn_id)) {
 					$t_instance->setMode(ACCESS_WRITE);
