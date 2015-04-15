@@ -908,10 +908,17 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Get the decimal separator
 	 *
-	 * @param string $locale Which locale is to be used to determine the value
+	 * @param string $locale Which locale is to be used to determine the value.
+	 * 		If not set, fall back to UI locale. If UI locale is not set, fall back to "en_US"
 	 * @return string The separator
 	 */
-	function caGetDecimalSeparator($locale = "en_US") {
+	function caGetDecimalSeparator($locale = null) {
+		if(!$locale) {
+			global $g_ui_locale;
+			$locale = $g_ui_locale;
+			if(!$locale) { $locale = 'en_US'; }
+		}
+
 		$va_symbols = Zend_Locale_Data::getList($locale,'symbols');
 		if(isset($va_symbols['decimal'])){
 			return $va_symbols['decimal'];
@@ -2464,7 +2471,7 @@ function caFileIsIncludable($ps_file) {
 	function caParseLengthDimension($ps_value, $pa_options=null) {
 		global $g_ui_locale;
 		$vs_locale = caGetOption('locale', $pa_options, $g_ui_locale);
-	
+
 		$pa_values = array(caConvertFractionalNumberToDecimal(trim($ps_value), $vs_locale));
 		
 		$vo_parsed_measurement = null;
