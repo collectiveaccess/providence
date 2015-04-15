@@ -744,7 +744,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 				cli.parent_id IS NULL and cli.list_id IN (".join(',', $va_hierarchy_ids).") ".($pb_vocabularies ? " AND (l.use_as_vocabulary = 1)" : "")." AND
 				l.deleted = 0
 			GROUP BY
-				cli.item_id
+				cli.item_id, cli.list_id
 		");
 		
 		$vs_template = $this->getAppConfig()->get('ca_list_hierarchy_browser_display_settings');

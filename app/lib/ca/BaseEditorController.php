@@ -1016,7 +1016,9 @@ class BaseEditorController extends ActionController {
 			}
 
 			// then set the empty row's type_id
-			$t_subject->set($t_subject->getTypeFieldName(), $vn_type_id);
+			if($t_subject->hasField($t_subject->getTypeFieldName())) {
+				$t_subject->set($t_subject->getTypeFieldName(), $vn_type_id);
+			}
 
 			// then reload the definitions (which includes bundle specs)
 			$t_subject->reloadLabelDefinitions();
@@ -1490,7 +1492,9 @@ class BaseEditorController extends ActionController {
 				$this->view->setVar('children', $va_children);
 			}
 		} else {
-			$t_item->set('type_id', $vn_type_id);
+			if($t_item->hasField('type_id')) {
+				$t_item->set('type_id', $vn_type_id);
+			}
 		}
 		$this->view->setVar('t_item', $t_item);
 		$this->view->setVar('screen', $this->request->getActionExtra());						// name of screen
