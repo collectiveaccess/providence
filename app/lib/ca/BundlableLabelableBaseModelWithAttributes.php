@@ -501,7 +501,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 			}
 		}
-		
+
 		if ($vn_rc = parent::set($pa_fields, "", $pa_options)) {
 			// Set type for idno purposes
 			if (in_array($vs_type_field_name = $this->getTypeFieldName(), $pa_fields) && $this->opo_idno_plugin_instance) {
