@@ -487,7 +487,7 @@ class SearchResult extends BaseObject {
 		$vb_return_as_array = caGetOption('returnAsArray', $pa_options, false, array('castTo' => 'bool'));
 		$va_filters = caGetOption('filters', $pa_options, array(), array('castTo' => 'array'));
 		$vm_val = self::_get($ps_field, $pa_options);
-		
+
 		if ($vb_return_as_array && sizeof($va_filters)) {
 			$va_tmp = explode(".", $ps_field);
 			if (sizeof($va_tmp) > 1) { array_pop($va_tmp); }
@@ -590,7 +590,7 @@ class SearchResult extends BaseObject {
 				if(!trim($vs_sort_fld)) { unset($va_sort_fields[$vn_i]); }
 			}
 		}
-		$vn_row_id = $this->opo_engine_result->get($this->ops_table_pk);	
+		$vn_row_id = $this->opo_engine_result->get($this->ops_table_pk);
 		
 		
 		// try to lazy load (slower)...
@@ -1220,34 +1220,35 @@ class SearchResult extends BaseObject {
 			}
 			
 			// Restrict to types (related)
-			$va_type_ids = $vs_type_fld = null;
-			if (method_exists($t_instance, "getTypeFieldName")) {
-				$va_type_ids = caMergeTypeRestrictionLists($t_instance, $pa_options);
-				$vs_type_fld = $t_instance->getTypeFieldName();
-			} else {
-				if (method_exists($t_instance, "getSubjectTableInstance")) {
-					$t_label_subj_instance = $t_instance->getSubjectTableInstance();
-					if (method_exists($t_label_subj_instance, "getTypeFieldName")) {
-						$va_type_ids = caMergeTypeRestrictionLists($t_label_subj_instance, $pa_options);
-						$vs_type_fld = 'item_type_id';
-					}
-				}
-			}
-			
-			if (is_array($va_type_ids) && sizeof($va_type_ids)) {
-				$va_tmp = array(); 
-				foreach($va_value_list as $vn_id => $va_by_locale) {
-					foreach($va_by_locale as $vn_locale_id => $va_values) {
-						foreach($va_values as $vn_i => $va_value) {
-							if (!$va_value[$vs_type_fld ? $vs_type_fld : 'item_type_id'] || in_array($va_value[$vs_type_fld ? $vs_type_fld : 'item_type_id'], $va_type_ids)) {
-								$va_tmp[$vn_id][$vn_locale_id][$vn_i] = $va_value;
-							}
+			if($va_path_components['table_name'] != $this->ops_table_name) {
+				$va_type_ids = $vs_type_fld = null;
+				if (method_exists($t_instance, "getTypeFieldName")) {
+					$va_type_ids = caMergeTypeRestrictionLists($t_instance, $pa_options);
+					$vs_type_fld = $t_instance->getTypeFieldName();
+				} else {
+					if (method_exists($t_instance, "getSubjectTableInstance")) {
+						$t_label_subj_instance = $t_instance->getSubjectTableInstance();
+						if (method_exists($t_label_subj_instance, "getTypeFieldName")) {
+							$va_type_ids = caMergeTypeRestrictionLists($t_label_subj_instance, $pa_options);
+							$vs_type_fld = 'item_type_id';
 						}
 					}
 				}
-				$va_value_list = $va_tmp;
+
+				if (is_array($va_type_ids) && sizeof($va_type_ids)) {
+					$va_tmp = array();
+					foreach($va_value_list as $vn_id => $va_by_locale) {
+						foreach($va_by_locale as $vn_locale_id => $va_values) {
+							foreach($va_values as $vn_i => $va_value) {
+								if (!$va_value[$vs_type_fld ? $vs_type_fld : 'item_type_id'] || in_array($va_value[$vs_type_fld ? $vs_type_fld : 'item_type_id'], $va_type_ids)) {
+									$va_tmp[$vn_id][$vn_locale_id][$vn_i] = $va_value;
+								}
+							}
+						}
+					}
+					$va_value_list = $va_tmp;
+				}
 			}
-			
 			
 			// Restrict to sources (related)
 			$va_source_ids = $vs_source_id_fld = null;
