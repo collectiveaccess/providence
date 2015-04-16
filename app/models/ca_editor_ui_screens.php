@@ -1015,6 +1015,24 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Always Expand/collapse'),
 										'description' => _t('Controls the expand/collapse behavior')
 									),
+									'hide_add_to_loan_controls' => array(
+										'formatType' => FT_NUMBER,
+										'displayType' => DT_CHECKBOXES,
+										'width' => "10", 'height' => "1",
+										'takesLocale' => false,
+										'default' => '0',
+										'label' => _t('Hide "Add to loan" controls'),
+										'description' => _t('Check this option if you want to to hide the "Add to loan" controls in this bundle placement.')
+									),
+									'hide_update_location_controls' => array(
+										'formatType' => FT_NUMBER,
+										'displayType' => DT_CHECKBOXES,
+										'width' => "10", 'height' => "1",
+										'takesLocale' => false,
+										'default' => '0',
+										'label' => _t('Hide "Update Location" controls'),
+										'description' => _t('Check this option if you want to to hide the "Update Location" controls in this bundle placement.')
+									),
 								);
 								
 								$va_types = caGetTypeList("ca_object_lots");
