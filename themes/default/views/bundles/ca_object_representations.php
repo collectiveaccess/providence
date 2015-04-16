@@ -38,6 +38,11 @@
 
 	$vb_read_only		=	(isset($va_settings['readonly']) && $va_settings['readonly']);
 	$vb_batch			=	$this->getVar('batch');
+
+	// don't allow editing if user doesn't have access to any of the representation types
+	if(sizeof(caGetTypeListForUser('ca_object_representations', array('access' => __CA_BUNDLE_ACCESS_EDIT__)))  < 1) {
+		$vb_read_only = true;
+	}
 	
 	if (!in_array($vs_default_upload_type = $this->getVar('defaultRepresentationUploadType'), array('upload', 'url', 'search'))) {
 		$vs_default_upload_type = 'upload';
