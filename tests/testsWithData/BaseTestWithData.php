@@ -31,6 +31,7 @@
  */
 
 require_once(__CA_LIB_DIR__.'/ca/Service/ItemService.php');
+require_once(__CA_LIB_DIR__."/core/Search/SearchIndexer.php");
 
 abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
 	/**
@@ -49,6 +50,23 @@ abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
 		$g_request = $this->opo_request = new RequestHTTP($vo_response);
 
 		define('__CA_APP_TYPE__', 'PROVIDENCE');
+
+		// ensure there are no lingering records
+		$va_tables = array('ca_objects', 'ca_entities', 'ca_occurrences', 'ca_movements', 'ca_loans', 'ca_object_lots', 'ca_storage_locations', 'ca_places');
+		$o_db = new Db();
+		foreach($va_tables as $vs_table) {
+			$qr_rows = $o_db->query("SELECT count(*) AS c FROM {$vs_table}");
+			$qr_rows->nextRow();
+
+			// these two are allowed to have hierarchy roots
+			if(in_array($vs_table, array('ca_storage_locations', 'ca_places'))) {
+				$vn_allowed_records = 1;
+			} else {
+				$vn_allowed_records = 0;
+			}
+
+			$this->assertEquals($vn_allowed_records, $qr_rows->get('c'), "Table {$vs_table} should be empty to avoid side effects between tests");
+		}
 	}
 	# -------------------------------------------------------
 	/**
@@ -81,22 +99,26 @@ abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
 	 * Delete all records we created for this test to avoid side effects with other tests
 	 */
 	public function tearDown() {
+		$o_dm = Datamodel::load();
 		foreach($this->opa_record_map as $vs_table => &$va_records) {
-			$o_dm = Datamodel::load();
 			$t_instance = $o_dm->getInstance($vs_table);
 			foreach($va_records as $vn_id) {
 				if($t_instance->load($vn_id)) {
 					$t_instance->setMode(ACCESS_WRITE);
-
-					// avoid foreign key checks
-					if($t_instance->hasField('parent_id') && $t_instance->get('parent_id')) {
-						$t_instance->set('parent_id', null);
-						$t_instance->update();
-					}
-
 					$t_instance->delete(true, array('hard' => true));
 				}
 			}
+
+			// hack to get around storage loation delete weirdness (which is probably worth a separate test)
+			if($vs_table == 'ca_storage_locations') {
+				$o_db = new Db();
+				$o_db->query("DELETE FROM ca_objects_x_storage_locations");
+				$o_db->query("DELETE FROM ca_storage_location_labels");
+				$o_db->query("DELETE FROM ca_storage_locations WHERE location_id>1 ORDER BY location_id DESC");
+			}
+
+			$o_si = new SearchIndexer();
+			$o_si->reindex(array($vs_table), array('showProgress' => false, 'interactiveProgressDisplay' => false));
 		}
 	}
 	# -------------------------------------------------------
