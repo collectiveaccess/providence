@@ -501,7 +501,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 			}
 		}
-		
+
 		if ($vn_rc = parent::set($pa_fields, "", $pa_options)) {
 			// Set type for idno purposes
 			if (in_array($vs_type_field_name = $this->getTypeFieldName(), $pa_fields) && $this->opo_idno_plugin_instance) {
@@ -3127,7 +3127,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$vb_batch = caGetOption('batch', $pa_options, false); 
 		
 		if (!$this->inTransaction()) {
-			$this->setTransaction(new Transaction());
+			$this->setTransaction(new Transaction($this->getDb()));
 			$vb_we_set_transaction = true;
 		} else {
 			if ($vb_dryrun) {

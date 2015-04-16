@@ -1199,6 +1199,7 @@ var methods = {
   		view.annotations[i].points[view.mouseClickedOnControlPoint].y += dy;
   		view.make_annotation_dirty(i);
   		view.isAnnotationResize = true;
+  		view.draw();
   	}
  }
                    	
@@ -1246,13 +1247,13 @@ var methods = {
 								}
 								view.annotations[i].tx += (view.annotations[i].x - origX);
 								view.annotations[i].ty += (view.annotations[i].y - origY);
-								
 								break;
 						}
 						
 						
 						view.make_annotation_dirty(i);
 						view.isAnnotationTranslation = true;
+						view.draw();
  }
 						return;
                     },

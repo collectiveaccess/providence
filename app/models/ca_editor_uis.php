@@ -713,7 +713,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			SELECT cauis.screen_id, cauis.rank
 			FROM ca_editor_ui_screens cauis
 			WHERE
-				cauis.ui_id = ?
+				cauis.ui_id = ? AND cauis.parent_id IS NOT NULL
 			ORDER BY 
 				cauis.rank ASC
 		", (int)$vn_ui_id);

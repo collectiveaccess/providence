@@ -437,7 +437,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	# -------------------------------------------------------
 	private function _getElementIDForAccessPoint($pn_subject_tablenum, $ps_access_point) {
 		$va_tmp = explode('/', $ps_access_point);
-		list($vs_table, $vs_field) = explode('.', $va_tmp[0]);
+		list($vs_table, $vs_field, $vs_subfield) = explode('.', $va_tmp[0]);
 		
 		$vs_rel_table = caGetRelationshipTableName($pn_subject_tablenum, $vs_table);
 		$va_rel_type_ids = ($va_tmp[1] && $vs_rel_table) ? caMakeRelationshipTypeIDList($vs_rel_table, array($va_tmp[1])) : null;
@@ -455,7 +455,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		if (!strlen($vs_fld_num)) {
 			$t_element = new ca_metadata_elements();
-			if ($t_element->load(array('element_code' => $vs_field))) {
+			if ($t_element->load(array('element_code' => ($vs_subfield ? $vs_subfield : $vs_field)))) {
 				switch ($t_element->get('datatype')) {
 					default:
 						return array('access_point' => $va_tmp[0], 'relationship_type' => $va_tmp[1], 'table_num' => $vs_table_num, 'element_id' => $t_element->getPrimaryKey(), 'field_num' => 'A'.$t_element->getPrimaryKey(), 'datatype' => $t_element->get('datatype'), 'element_info' => $t_element->getFieldValuesArray(), 'relationship_type_ids' => $va_rel_type_ids);
@@ -564,8 +564,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					$va_ft_terms = array();
 					$va_ft_like_terms = array();
 					$va_ft_stem_terms = array();
-					
-					$va_tmp = array();
+
 					$vs_access_point = '';
 					$va_raw_terms = array();
 					switch(get_class($o_lucene_query_element)) {
@@ -577,14 +576,27 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							switch($va_element['datatype']) {
 								case __CA_ATTRIBUTE_VALUE_GEOCODE__:
 									$t_geocode = new GeocodeAttributeValue();
-									$va_parsed_value = $t_geocode->parseValue($va_lower_term->text, $va_element['element_info']);
+									$va_parsed_value = $t_geocode->parseValue('['.$va_lower_term->text.']', $va_element['element_info']);
 									$vs_lower_lat = $va_parsed_value['value_decimal1'];
 									$vs_lower_long = $va_parsed_value['value_decimal2'];
 									
-									$va_parsed_value = $t_geocode->parseValue($va_upper_term->text, $va_element['element_info']);
+									$va_parsed_value = $t_geocode->parseValue('['.$va_upper_term->text.']', $va_element['element_info']);
 									$vs_upper_lat = $va_parsed_value['value_decimal1'];
 									$vs_upper_long = $va_parsed_value['value_decimal2'];
-									
+
+									// mysql BETWEEN always wants the lower value first ... BETWEEN 5 AND 3 wouldn't match 4 ... So we swap the values if necessary
+									if($vs_upper_lat < $vs_lower_lat) {
+										$tmp=$vs_upper_lat;
+										$vs_upper_lat=$vs_lower_lat;
+										$vs_lower_lat=$tmp;
+									}
+
+									if($vs_upper_long < $vs_lower_long) {
+										$tmp=$vs_upper_long;
+										$vs_upper_long=$vs_lower_long;
+										$vs_lower_long=$tmp;
+									}
+
 									$vs_direct_sql_query = "
 										SELECT ca.row_id, 1
 										FROM ca_attribute_values cav
@@ -964,11 +976,14 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 														}
 														break;
 													case __CA_ATTRIBUTE_VALUE_GEOCODE__:
-														$t_geocode = new GeocodeAttributeValue();
-														// If it looks like a lat/long pair that has been tokenized by Lucene
-														// into oblivion rehydrate it here.
-														if ($va_coords = caParseGISSearch(join(' ', $va_raw_terms))) {
-														
+														// At this point $va_raw_terms has been tokenized by Lucene into oblivion
+														// and is also dependent on the search_tokenizer_regex so we can't really do anything with it.
+														// We now build our own un-tokenized term array instead. caParseGISSearch() can handle it.
+														$va_gis_terms = array();
+														foreach($o_lucene_query_element->getQueryTerms() as $o_term) {
+															$va_gis_terms[] = trim((string)$o_term->text);
+														}
+														if ($va_coords = caParseGISSearch(join(' ', $va_gis_terms))) {
 															$vs_direct_sql_query = "
 																SELECT ca.row_id, 1
 																FROM ca_attribute_values cav
@@ -1007,9 +1022,24 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 													case __CA_ATTRIBUTE_VALUE_LENGTH__:
 														// If it looks like a dimension that has been tokenized by Lucene
 														// into oblivion rehydrate it here.
-														$vo_parsed_measurement = caParseLengthDimension(join(' ', $va_raw_terms));
-														$vn_len = $vo_parsed_measurement->convertTo('METER',6, 'en_US');
-													
+														try {
+															switch(sizeof($va_raw_terms)) {
+																case 2:
+																	$vs_dimension = $va_raw_terms[0] . caGetDecimalSeparator() . $va_raw_terms[1];
+																	break;
+																case 3:
+																	$vs_dimension = $va_raw_terms[0] . caGetDecimalSeparator() . $va_raw_terms[1] . " " . $va_raw_terms[2];
+																	break;
+																default:
+																	$vs_dimension = join(' ', $va_raw_terms);
+															}
+															$vo_parsed_measurement = caParseLengthDimension($vs_dimension);
+															$vn_len = $vo_parsed_measurement->convertTo('METER',6, 'en_US');
+														} catch(Exception $e) {
+															$vs_direct_sql_query = null;
+															break;
+														}
+
 														$vs_direct_sql_query = "
 															SELECT ca.row_id, 1
 															FROM ca_attribute_values cav
@@ -1025,9 +1055,25 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 													case __CA_ATTRIBUTE_VALUE_WEIGHT__:
 														// If it looks like a weight that has been tokenized by Lucene
 														// into oblivion rehydrate it here.
-														$vo_parsed_measurement = caParseWeightDimension(join(' ', $va_raw_terms));
-														$vn_weight = $vo_parsed_measurement->convertTo('KILOGRAM',6, 'en_US');
-													
+														try {
+															switch(sizeof($va_raw_terms)) {
+																case 2:
+																	$vs_dimension = $va_raw_terms[0] . caGetDecimalSeparator() . $va_raw_terms[1];
+																	break;
+																case 3:
+																	$vs_dimension = $va_raw_terms[0] . caGetDecimalSeparator() . $va_raw_terms[1] . " " . $va_raw_terms[2];
+																	break;
+																default:
+																	$vs_dimension = join(' ', $va_raw_terms);
+															}
+
+															$vo_parsed_measurement = caParseWeightDimension($vs_dimension);
+															$vn_weight = $vo_parsed_measurement->convertTo('KILOGRAM',6, 'en_US');
+														} catch(Exception $e) {
+															$vs_direct_sql_query = null;
+															break;
+														}
+
 														$vs_direct_sql_query = "
 															SELECT ca.row_id, 1
 															FROM ca_attribute_values cav
@@ -1218,26 +1264,36 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						if ($vs_direct_sql_query) {
 							$vs_direct_sql_query = str_replace('^JOIN', "", $vs_direct_sql_query);
 						}
-						$vs_sql = ($vs_direct_sql_query) ? "INSERT IGNORE INTO {$ps_dest_table} {$vs_direct_sql_query}" : "
-							INSERT IGNORE INTO {$ps_dest_table}
-							SELECT swi.row_id, SUM(swi.boost)
-							FROM ca_sql_search_word_index swi
-							".((!$vb_is_blank_search) ? "INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id" : '')."
-							WHERE
-								{$vs_sql_where}
-								AND
-								swi.table_num = ?
-								{$vs_rel_type_id_sql}
-								".($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '')."
-							GROUP BY swi.row_id 
-						";
+
+						if($vs_direct_sql_query) {
+							$vs_sql = "INSERT IGNORE INTO {$ps_dest_table} {$vs_direct_sql_query}";
+							if((strpos($vs_sql, '?') !== false) && (!is_array($pa_direct_sql_query_params) || sizeof($pa_direct_sql_query_params) == 0)) {
+								$pa_direct_sql_query_params = array((int)$pn_subject_tablenum);
+							}
+						} else {
+							$vs_sql = "
+								INSERT IGNORE INTO {$ps_dest_table}
+								SELECT swi.row_id, SUM(swi.boost)
+								FROM ca_sql_search_word_index swi
+								".((!$vb_is_blank_search) ? "INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id" : '')."
+								WHERE
+									{$vs_sql_where}
+									AND
+									swi.table_num = ?
+									{$vs_rel_type_id_sql}
+									".($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '')."
+								GROUP BY swi.row_id
+							";
+							$pa_direct_sql_query_params = array((int)$pn_subject_tablenum);
+						}
+
 						
 						if ((($vn_num_terms = (sizeof($va_ft_terms) + sizeof($va_ft_like_terms) + sizeof($va_ft_stem_terms))) > 1) && (!$vs_direct_sql_query)){
 							$vs_sql .= " HAVING count(distinct sw.word_id) = {$vn_num_terms}";
 						}
 						$t=new Timer();
-						$qr_res = $this->opo_db->query($vs_sql, is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum));
-						
+						$this->opo_db->query($vs_sql, is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array());
+
 						if ($this->debug) { Debug::msg('FIRST: '.$vs_sql." [$pn_subject_tablenum] ".$t->GetTime(4)); }
 					} else {
 						switch($vs_op) {
