@@ -8190,15 +8190,28 @@ $pa_options["display_form_field_tips"] = true;
 							$t_list = new ca_lists();
 							$va_list_attrs = array( 'id' => $pa_options['id']);
 							//if ($vn_max_pixel_width) { $va_list_attrs['style'] = $vs_width_style; }
-							
+
+							if(method_exists($this, 'getTypeFieldName') && ($ps_field == $this->getTypeFieldName())) {
+								$va_limit_list = caGetTypeListForUser($this->tableName(), array('access' => __CA_BUNDLE_ACCESS_EDIT__));
+							}
 							
 							// NOTE: "raw" field value (value passed into method, before the model default value is applied) is used so as to allow the list default to be used if needed
-							$vs_element = $t_list->getListAsHTMLFormElement($vs_list_code, $pa_options["name"].$vs_multiple_name_extension, $va_list_attrs, array('value' => $vm_raw_field_value, 'key' => $vs_key, 'nullOption' => $vs_null_option, 'readonly' => $pa_options['readonly']));
+							$vs_element = $t_list->getListAsHTMLFormElement(
+								$vs_list_code, $pa_options["name"].$vs_multiple_name_extension, $va_list_attrs,
+								array(
+									'value' => $vm_raw_field_value,
+									'key' => $vs_key,
+									'nullOption' => $vs_null_option,
+									'readonly' => $pa_options['readonly'],
+									'restrictTypeListForTable' => $this->tableName(),
+									'limitToItemsWithID' => $va_limit_list ? $va_limit_list : null,
+								)
+							);
 							
 							if (isset($pa_options['hide_select_if_no_options']) && $pa_options['hide_select_if_no_options'] && (!$vs_element)) {
 								$vs_element = "";
 								$ps_format = '^ERRORS^ELEMENT';
-							} 
+							}
 						} else {
 							// -----
 							// from related table
