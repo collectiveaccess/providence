@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2014 Whirl-i-Gig
+ * Copyright 2012-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -391,7 +391,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
  		
 		$po_request = isset($pa_options['request']) ? $pa_options['request'] : null;
 		
-		$vs_id = $pa_element_info['element_id'];
+		$vs_id = $pa_element_info['element_id']."_{n}";
 		
 		$vs_custom_tile_layer = '';
 		if ($vs_tileserver_url = caGetOption('tileServerURL', $pa_element_info['settings'], null)) {
@@ -600,6 +600,8 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 			var t = jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search').val();
 			jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search_button').attr('src', '".$po_request->getThemeUrlPath()."/graphics/icons/indicator.gif');
 			var geocoder = new google.maps.Geocoder();
+			console.log('got', t, '#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search');
+			console.trace();
 			geocoder.geocode( { 'address': t}, function(results, status) {
 				jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search_button').attr('src', '".$po_request->getThemeUrlPath()."/graphics/buttons/glass.png');
 				if (status == google.maps.GeocoderStatus.OK) {
