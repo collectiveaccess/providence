@@ -113,6 +113,10 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 				require_once(__CA_LIB_DIR__.'/ca/Search/SetSearch.php');
 				return new SetSearch();
 				break;
+			case 'ca_set_items':
+				require_once(__CA_LIB_DIR__.'/ca/Search/SetItemSearch.php');
+				return new SetItemSearch();
+				break;
 			case 'ca_tours':
 				require_once(__CA_LIB_DIR__.'/ca/Search/TourSearch.php');
 				return new TourSearch();

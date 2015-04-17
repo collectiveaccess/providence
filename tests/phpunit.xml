@@ -38,6 +38,9 @@
     <testsuite name="Install Test Suite">
       <directory>install/</directory>
     </testsuite>
+    <testsuite name="Tests With Data Suite">
+      <directory>testsWithData/</directory>
+    </testsuite>
   </testsuites>
 
 </phpunit>

@@ -303,7 +303,7 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	 * @return string
 	 */
 	public function getTransactionUUID() {
-		if (!$this->ops_transaction_uuid) { $this->ops_transaction_uuid = caGenerateGUID(); }
+		if (!$this->ops_transaction_uuid) { $this->ops_transaction_uuid = caGenerateGUIDV4(); }
 		return $this->ops_transaction_uuid;
 	}
 	# ------------------------------------------------------
