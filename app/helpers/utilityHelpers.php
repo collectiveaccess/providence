@@ -2609,7 +2609,7 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Generate a GUID 
 	 */
-	function caGenerateGUIDV4(){
+	function caGenerateGUID(){
 		if (function_exists("openssl_random_pseudo_bytes")) {
 			$vs_data = openssl_random_pseudo_bytes(16);
 		} else {
