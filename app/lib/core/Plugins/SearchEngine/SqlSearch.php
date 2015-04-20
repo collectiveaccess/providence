@@ -83,6 +83,77 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		$this->opo_tep = new TimeExpressionParser();
 		
+		
+		$this->opo_stemmer = new SnoballStemmer();
+		$this->opb_do_stemming = (int)trim($this->opo_search_config->get('search_sql_search_do_stemming')) ? true : false;
+		
+		$this->initDbStatements();
+		
+		if (!($this->ops_indexing_tokenizer_regex = trim($this->opo_search_config->get('indexing_tokenizer_regex')))) {
+			$this-> ops_indexing_tokenizer_regex = "^\pL\pN\pNd/_#\@\&\.";
+		}
+		if (!($this->ops_search_tokenizer_regex = trim($this->opo_search_config->get('search_tokenizer_regex')))) {
+			$this->ops_search_tokenizer_regex = "^\pL\pN\pNd/_#\@\&";
+		}
+		
+		if (!is_array($this->opa_asis_regexes = $this->opo_search_config->getList('asis_regexes'))) {
+			$this->opa_asis_regexes = array();
+		}
+		
+		//
+		// Load info about metadata elements into static var cache if it hasn't already be fetched
+		//
+		if (!is_array(WLPlugSearchEngineSqlSearch::$s_metadata_elements)) {
+			WLPlugSearchEngineSqlSearch::$s_metadata_elements = ca_metadata_elements::getRootElementsAsList();
+		}
+		$this->debug = false;
+	}
+	# -------------------------------------------------------
+	# Initialization and capabilities
+	# -------------------------------------------------------
+	public function init() {
+		if(($vn_max_indexing_buffer_size = (int)$this->opo_search_config->get('max_indexing_buffer_size')) < 1) {
+			$vn_max_indexing_buffer_size = 5000;
+		}
+		
+		$this->opa_options = array(
+				'limit' => 2000,											// maximum number of hits to return [default=2000]  ** NOT CURRENTLY ENFORCED -- MAY BE DROPPED **
+				'maxIndexingBufferSize' => $vn_max_indexing_buffer_size,	// maximum number of indexed content items to accumulate before writing to the database
+				'maxWordIndexInsertSegmentSize' => ceil($vn_max_indexing_buffer_size / 2), // maximum number of word index rows to put into a single insert
+				'maxWordCacheSize' => 4096,								// maximum number of words to cache while indexing before purging
+				'cacheCleanFactor' => 0.50,									// percentage of words retained when cleaning the cache
+				
+				'omitPrivateIndexing' => false,								//
+				'restrictSearchToFields' => null,
+				'strictPhraseSearching' => true							// strict phrase searching finds only records with the precise phrase; non-strict will find fields with all of the words, in any order
+		);
+		
+		// Defines specific capabilities of this engine and plug-in
+		// The indexer and engine can use this information to optimize how they call the plug-in
+		$this->opa_capabilities = array(
+			'incremental_reindexing' => true,		// can update indexing using only changed fields, rather than having to reindex the entire row (and related stuff) every time
+			'restrict_to_fields' => true
+		);
+		
+		if (defined('__CA_SEARCH_IS_FOR_PUBLIC_DISPLAY__')) {
+			$this->setOption('omitPrivateIndexing', true); 
+		}
+	}
+	# -------------------------------------------------------
+	/**
+	 * Set database connection
+	 *
+	 * @param Db $po_db A database connection to use in place of current one
+	 */
+	public function setDb($po_db) {
+		parent::setDb($po_db);
+		$this->initDbStatements();
+	}
+	# -------------------------------------------------------
+	/**
+	 * Initialize database SQL and prepared statements
+	 */
+	private function initDbStatements() {
 		$this->ops_lookup_word_sql = "
 			SELECT word_id 
 			FROM ca_sql_search_words
@@ -128,66 +199,13 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		$this->ops_delete_dependent_sql = "DELETE FROM ca_sql_search_word_index WHERE (field_table_num = ?) AND (field_row_id = ?)";
 		$this->opqr_delete_dependent_sql = $this->opo_db->prepare($this->ops_delete_dependent_sql);
 		
-		$this->opo_stemmer = new SnoballStemmer();
-		$this->opb_do_stemming = (int)trim($this->opo_search_config->get('search_sql_search_do_stemming')) ? true : false;
-		
-		
-		if (!($this->ops_indexing_tokenizer_regex = trim($this->opo_search_config->get('indexing_tokenizer_regex')))) {
-			$this-> ops_indexing_tokenizer_regex = "^\pL\pN\pNd/_#\@\&\.";
-		}
-		if (!($this->ops_search_tokenizer_regex = trim($this->opo_search_config->get('search_tokenizer_regex')))) {
-			$this->ops_search_tokenizer_regex = "^\pL\pN\pNd/_#\@\&";
-		}
-		
-		if (!is_array($this->opa_asis_regexes = $this->opo_search_config->getList('asis_regexes'))) {
-			$this->opa_asis_regexes = array();
-		}
-		
-		
-		//$this->opqr_insert_ngram = $this->opo_db->prepare($this->ops_insert_ngram_sql);
-		
-		//
-		// Load info about metadata elements into static var cache if it hasn't already be fetched
-		//
-		if (!is_array(WLPlugSearchEngineSqlSearch::$s_metadata_elements)) {
-			WLPlugSearchEngineSqlSearch::$s_metadata_elements = ca_metadata_elements::getRootElementsAsList();
-		}
-		$this->debug = false;
-	}
-	# -------------------------------------------------------
-	# Initialization and capabilities
-	# -------------------------------------------------------
-	public function init() {
-		if(($vn_max_indexing_buffer_size = (int)$this->opo_search_config->get('max_indexing_buffer_size')) < 1) {
-			$vn_max_indexing_buffer_size = 5000;
-		}
-		
-		$this->opa_options = array(
-				'limit' => 2000,											// maximum number of hits to return [default=2000]  ** NOT CURRENTLY ENFORCED -- MAY BE DROPPED **
-				'maxIndexingBufferSize' => $vn_max_indexing_buffer_size,	// maximum number of indexed content items to accumulate before writing to the database
-				'maxWordIndexInsertSegmentSize' => ceil($vn_max_indexing_buffer_size / 2), // maximum number of word index rows to put into a single insert
-				'maxWordCacheSize' => 4096,								// maximum number of words to cache while indexing before purging
-				'cacheCleanFactor' => 0.50,									// percentage of words retained when cleaning the cache
-				
-				'omitPrivateIndexing' => false,								//
-				'restrictSearchToFields' => null,
-				'strictPhraseSearching' => true							// strict phrase searching finds only records with the precise phrase; non-strict will find fields with all of the words, in any order
-		);
-		
-		// Defines specific capabilities of this engine and plug-in
-		// The indexer and engine can use this information to optimize how they call the plug-in
-		$this->opa_capabilities = array(
-			'incremental_reindexing' => true,		// can update indexing using only changed fields, rather than having to reindex the entire row (and related stuff) every time
-			'restrict_to_fields' => true
-		);
-		
-		if (defined('__CA_SEARCH_IS_FOR_PUBLIC_DISPLAY__')) {
-			$this->setOption('omitPrivateIndexing', true); 
-		}
 	}
 	# -------------------------------------------------------
 	/**
 	 * Completely clear index (usually in preparation for a full reindex)
+	 *
+	 * @param int $pn_table_num Table_num of table to truncate from index; if omitted index for all tables is truncated.
+	 * @return bool Returns true
 	 */
 	public function truncateIndex($pn_table_num=null) {
 		if ($pn_table_num > 0) {
@@ -200,6 +218,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		return true;
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	private function _setMode($ps_mode) {
 		switch ($ps_mode) {
 			case 'search':
@@ -214,6 +235,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 	}
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function __destruct() {	
 		if (is_array(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer) && sizeof(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer)) {
 			if($this->opo_db && !$this->opo_db->connected()) {
@@ -230,6 +254,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	# -------------------------------------------------------
 	# Search
 	# -------------------------------------------------------
+	/**
+	 *
+	 */
 	public function search($pn_subject_tablenum, $ps_search_expression, $pa_filters=array(), $po_rewritten_query=null) {
 		$t = new Timer();
 		$this->_setMode('search');

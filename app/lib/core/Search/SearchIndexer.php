@@ -64,6 +64,15 @@ class SearchIndexer extends SearchBase {
 	}
 	# -------------------------------------------------------
 	/**
+	 *
+	 */
+	public function setDb($po_db) {
+		if (($this->opo_engine) && (method_exists($this->opo_engine, "setDb"))) {
+			 $this->opo_engine->setDb($po_db);
+		}
+	}
+	# -------------------------------------------------------
+	/**
 	 * Returns a list of tables the require indexing
 	 */
 	public function getIndexedTables() {
