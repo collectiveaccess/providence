@@ -315,6 +315,41 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Returns the current secondary sort order for the context. This is a bit of text that indicates
+		 * which field (or fields) to use for sorting when displaying the result set. The returned 
+		 * value will be either  the value set for the current context, the value set via the 'sort'
+		 * parameter in the current request or null if no value has been set. The value of the
+		 * request parameter 'sort' takes precedence over any existing context value and will be 
+		 * set as the current context value when present.
+		 *
+		 * @return string - the field (or fields in a comma separated list) to refine the primary sort by
+		 */
+		public function getCurrentSecondarySort() {
+			if (!($ps_secondary_sort = $this->opo_request->getParameter('secondarySort', pString))) {
+ 				if ($va_context = $this->getContext()) {
+					return $va_context['secondarySort'] ? $va_context['secondarySort'] : null;
+				}
+			} else {
+				$this->setContextValue('secondarySort', $ps_secondary_sort);
+				return $ps_secondary_sort;
+			}
+			return null;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Sets the secondary sort order to use for this context. While you can
+		 * call this directly, usually the view is set by getCurrentSecondarySort()
+		 * using a value passed in the request.
+		 *
+		 * @param $ps_secondary_sort - the field (in table.field format) for the desired secondary sort
+		 * 
+		 * @return string - sort as set
+		 */
+		public function setCurrentSecondarySort($ps_secondary_sort) {
+			return $this->setContextValue('secondarySort', $ps_secondary_sort);
+		}
+		# ------------------------------------------------------------------
+		/**
 		 * Returns the current sort order direction for the context. This is a bit of text that indicates
 		 * whether the sort is ascending or descending. The returned 
 		 * value will be either  the value set for the current context, the value set via the 'direction'
