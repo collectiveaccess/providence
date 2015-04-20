@@ -137,7 +137,7 @@ class AttributeGetTest extends BaseTestWithData {
 		$this->assertEquals("USD 100.00", $vm_ret);
 
 		$vm_ret = $this->opt_object->get('ca_objects.georeference');
-		$this->assertEquals("1600 Amphitheatre Parkway, Mountain View, CA [37.4224764,-122.0842499]", $vm_ret);
+		$this->assertEquals("1600 Amphitheatre Parkway, Mountain View, CA [37.4225456,-122.0842498]", $vm_ret);
 	}
 	# -------------------------------------------------------
 }
