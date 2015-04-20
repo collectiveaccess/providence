@@ -1827,7 +1827,7 @@ class BaseModel extends BaseObject {
 					$va_sql_wheres[] = "($vs_field = $vm_value)";
 				}
 			}
-			$vs_sql = "SELECT * FROM ".$this->tableName()." WHERE ".join(" AND ", $va_sql_wheres);
+			$vs_sql = "SELECT * FROM ".$this->tableName()." WHERE ".join(" AND ", $va_sql_wheres). " LIMIT 1";
 		}
 
 		$qr_res = $o_db->query($vs_sql);
@@ -7081,6 +7081,58 @@ class BaseModel extends BaseObject {
 		if (!$this->isHierarchical()) { return null; }
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		return $this->getHierarchyAsList($pn_id, array_merge($pa_options, array('idsOnly' => true)));
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Returns number of rows in the hierarchy
+	 * 
+	 * @param int $pn_id node to start from - default is the hierarchy root
+	 * @param array $pa_options
+	 * @return int count
+	 */
+	public function getHierarchySize($pn_id=null, $pa_options=null) {
+		if (!$this->isHierarchical()) { return null; }
+		
+		$vs_hier_left_fld 		= $this->getProperty("HIERARCHY_LEFT_INDEX_FLD");
+		$vs_hier_right_fld 		= $this->getProperty("HIERARCHY_RIGHT_INDEX_FLD");
+		$vs_hier_id_fld 		= $this->getProperty("HIERARCHY_ID_FLD");
+		$vs_hier_id_table 		= $this->getProperty("HIERARCHY_DEFINITION_TABLE");
+		$vs_hier_parent_id_fld 	= $this->getProperty("HIERARCHY_PARENT_ID_FLD");
+		
+		$o_db = $this->getDb();
+		
+		$va_params = array();
+		
+		$t_instance = null;
+		if ($pn_id && ($pn_id != $this->getPrimaryKey())) {
+			$t_instance = $this->getAppDatamodel()->getInstanceByTableName($this->tableName());
+			if (!$t_instance->load($pn_id)) { return null; }
+		} else {
+			$t_instance = $this;
+		}
+	
+		if ($pn_id > 0) {
+			$va_params[] = (float)$t_instance->get($vs_hier_left_fld);
+			$va_params[] = (float)$t_instance->get($vs_hier_right_fld);
+		}
+		if($vs_hier_id_fld) {
+			$va_params[] = (int)$t_instance->get($vs_hier_id_fld);
+		}
+		
+		$qr_res = $o_db->query("
+			SELECT count(*) c 
+			FROM ".$this->tableName()."
+			WHERE
+				".(($pn_id > 0) ? "({$vs_hier_left_fld} >= ?) AND ({$vs_hier_right_fld} <= ?) " : '').
+				($vs_hier_id_fld ? ' '.(($pn_id > 0) ? ' AND ' : '')."({$vs_hier_id_fld} = ?)" : '').
+				($this->hasField('deleted') ? ' '.(($vs_hier_id_fld) ? ' AND ' : '')."(deleted = 0)" : '')
+				."
+		", $va_params);
+	
+		if ($qr_res->nextRow()) {
+			return (int)$qr_res->get('c');
+		}
+		return null;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
