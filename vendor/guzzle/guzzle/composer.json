@@ -1,7 +1,7 @@
 {
     "name": "guzzle/guzzle",
     "type": "library",
-    "description": "Guzzle is a PHP HTTP client library and framework for building RESTful web service clients",
+    "description": "PHP HTTP client. This library is deprecated in favor of https://packagist.org/packages/guzzlehttp/guzzle",
     "keywords": ["framework", "http", "rest", "web service", "curl", "client", "HTTP client"],
     "homepage": "http://guzzlephp.org/",
     "license": "MIT",
@@ -54,6 +54,14 @@
             "Guzzle": "src/",
             "Guzzle\\Tests": "tests/"
         }
+    },
+
+    "suggest": {
+        "guzzlehttp/guzzle": "Guzzle 5 has moved to a new package name. The package you have installed, Guzzle 3, is deprecated."
+    },
+
+    "scripts": {
+        "test": "phpunit"
     },
 
     "require-dev": {

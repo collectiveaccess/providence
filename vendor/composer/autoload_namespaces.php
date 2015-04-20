@@ -7,15 +7,13 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Symfony\\Component\\Yaml\\' => array($vendorDir . '/symfony/yaml'),
+    'Symfony\\Component\\VarDumper\\' => array($vendorDir . '/symfony/var-dumper'),
     'Symfony\\Component\\EventDispatcher\\' => array($vendorDir . '/symfony/event-dispatcher'),
     'Psr\\Log\\' => array($vendorDir . '/psr/log'),
     'Pimple' => array($vendorDir . '/pimple/pimple/src'),
     'Guzzle\\Tests' => array($vendorDir . '/guzzle/guzzle/tests'),
     'Guzzle' => array($vendorDir . '/guzzle/guzzle/src'),
     'Github\\' => array($vendorDir . '/knplabs/github-api/lib'),
-    'Elasticsearch\\Tests' => array($vendorDir . '/elasticsearch/elasticsearch/tests'),
-    'Elasticsearch\\Benchmarks' => array($vendorDir . '/elasticsearch/elasticsearch/benchmarks'),
-    'Elasticsearch' => array($vendorDir . '/elasticsearch/elasticsearch/src'),
     'Doctrine\\Instantiator\\' => array($vendorDir . '/doctrine/instantiator/src'),
     'Doctrine\\Common\\Cache\\' => array($vendorDir . '/doctrine/cache/lib'),
     'DebugBar' => array($vendorDir . '/maximebf/debugbar/src'),

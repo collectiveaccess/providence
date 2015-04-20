@@ -68,6 +68,10 @@
 		
 		$pa_parents = array_reverse($pa_parents);
 		foreach($pa_parents as $vn_i => $va_parent) {
+			if (!is_array($va_parent)) {
+				$o_log->logWarn(_t('[%2] Parents options invalid. Did you forget to pass a list? Parents list passed was: %1', print_r($pa_parents, true), $ps_refinery_name));
+				break;
+			}
 			$vs_name = BaseRefinery::parsePlaceholder($va_parent['name'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 			$vs_idno = BaseRefinery::parsePlaceholder($va_parent['idno'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 			$vs_type = BaseRefinery::parsePlaceholder($va_parent['type'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));

@@ -20,6 +20,8 @@ Internally Monolog still uses its own level scheme since it predates PSR-3.
 Usage
 -----
 
+Install the latest version with `composer require monolog/monolog`
+
 ```php
 <?php
 
@@ -40,7 +42,7 @@ Core Concepts
 
 Every `Logger` instance has a channel (name) and a stack of handlers. Whenever
 you add a record to the logger, it traverses the handler stack. Each handler
-decides whether it handled fully the record, and if so, the propagation of the
+decides whether it fully handled the record, and if so, the propagation of the
 record ends there.
 
 This allows for flexible logging setups, for example having a `StreamHandler` at
@@ -173,8 +175,10 @@ Handlers
   when it happens you will have the full information, including debug and info
   records. This provides you with all the information you need, but only when
   you need it.
-- _NullHandler_: Any record it can handle will be thrown away. This can be used
-  to put on top of an existing handler stack to disable it temporarily.
+- _WhatFailureGroupHandler_: This handler extends the _GroupHandler_ ignoring
+   exceptions raised by each child handler. This allows you to ignore issues
+   where a remote tcp connection may have died but you do not want your entire
+   application to crash and may wish to continue to log to other handlers.
 - _BufferHandler_: This handler will buffer all the log records it receives
   until `close()` is called at which point it will call `handleBatch()` on the
   handler it wraps with all the log messages at once. This is very useful to
@@ -184,12 +188,13 @@ Handlers
   sent to all the handlers it is configured with.
 - _FilterHandler_: This handler only lets records of the given levels through
    to the wrapped handler.
+- _SamplingHandler_: Wraps around another handler and lets you sample records
+   if you only want to store some of them.
+- _NullHandler_: Any record it can handle will be thrown away. This can be used
+  to put on top of an existing handler stack to disable it temporarily.
+- _PsrHandler_: Can be used to forward log records to an existing PSR-3 logger
 - _TestHandler_: Used for testing, it records everything that is sent to it and
   has accessors to read out the information.
-- _WhatFailureGroupHandler_: This handle extends the _GroupHandler_ ignoring
-   exceptions raised by each child handler. This allows you to ignore issues
-   where a remote tcp connection may have died but you do not want your entire
-   application to crash and may wish to continue to log to other handlers.
 
 Formatters
 ----------
@@ -206,6 +211,7 @@ Formatters
 - _ElasticaFormatter_: Used to format log records into an Elastica\Document object, only useful for the ElasticSearchHandler.
 - _LogglyFormatter_: Used to format log records into Loggly messages, only useful for the LogglyHandler.
 - _FlowdockFormatter_: Used to format log records into Flowdock messages, only useful for the FlowdockHandler.
+- _MongoDBFormatter_: Converts \DateTime instances to \MongoDate and objects recursively to arrays, only useful with the MongoDBHandler.
 
 Processors
 ----------
@@ -232,6 +238,13 @@ Utilities
 - _ChannelLevelActivationStrategy_: Activates a FingersCrossedHandler when a certain
   log level is reached, depending on which channel received the log record.
 
+Third Party Packages
+--------------------
+
+Third party handlers, formatters and processors are
+[listed in the wiki](https://github.com/Seldaek/monolog/wiki/Third-Party-Packages). You
+can also add your own there if you publish one.
+
 About
 =====
 
@@ -252,12 +265,14 @@ Frameworks Integration
   can be used very easily with Monolog since it implements the interface.
 - [Symfony2](http://symfony.com) comes out of the box with Monolog.
 - [Silex](http://silex.sensiolabs.org/) comes out of the box with Monolog.
-- [Laravel 4](http://laravel.com/) comes out of the box with Monolog.
+- [Laravel 4 & 5](http://laravel.com/) come out of the box with Monolog.
 - [PPI](http://www.ppi.io/) comes out of the box with Monolog.
 - [CakePHP](http://cakephp.org/) is usable with Monolog via the [cakephp-monolog](https://github.com/jadb/cakephp-monolog) plugin.
 - [Slim](http://www.slimframework.com/) is usable with Monolog via the [Slim-Monolog](https://github.com/Flynsarmy/Slim-Monolog) log writer.
 - [XOOPS 2.6](http://xoops.org/) comes out of the box with Monolog.
 - [Aura.Web_Project](https://github.com/auraphp/Aura.Web_Project) comes out of the box with Monolog.
+- [Nette Framework](http://nette.org/en/) can be used with Monolog via [Kdyby/Monolog](https://github.com/Kdyby/Monolog) extension.
+- [Proton Micro Framework](https://github.com/alexbilbie/Proton) comes out of the box with Monolog. 
 
 Author
 ------
