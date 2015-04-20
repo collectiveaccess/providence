@@ -316,7 +316,7 @@ class BaseModel extends BaseObject {
 	 *
 	 * @access private
 	 */
-	private $search_indexer
+	private $search_indexer;
 	
 	/**
 	 * Single instance of HTML Purifier used by all models
