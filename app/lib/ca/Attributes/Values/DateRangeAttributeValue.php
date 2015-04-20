@@ -354,7 +354,11 @@
  			}
  			
  			if ((bool)$va_settings['useDatePicker']) {
-				global $g_ui_locale;
+ 				global $g_ui_locale;
+
+ 				// nothing terrible happens if this fails. If no package is registered for the current 
+ 				// locale, the LoadManager simply ignores it and the default settings (en_US) apply
+ 				AssetLoadManager::register("datepicker_i18n_{$g_ui_locale}"); 
 
  				$vs_element .= "<script type='text/javascript'>
  					jQuery(document).ready(function() {

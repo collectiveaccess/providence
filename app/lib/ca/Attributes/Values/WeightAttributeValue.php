@@ -190,6 +190,7 @@
  		# ------------------------------------------------------------------
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			$ps_value = trim($ps_value);
+ 			global $g_ui_locale;
  			
  			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('requireValue'));
  			if (!$va_settings['requireValue'] && !trim($ps_value)) {
