@@ -1102,7 +1102,7 @@
 			$va_path = $o_dm->getPath($this->tableName(), 'ca_object_representations');
 			if (!is_array($va_path) || (sizeof($va_path) != 3)) { return null; }
 			$va_path = array_keys($va_path);
-			return $o_dm->getInstanceByTableName($va_path[1], true);
+			return $o_dm->getInstanceByTableName($va_path[1]);
 		}
 		# ------------------------------------------------------
 	}
