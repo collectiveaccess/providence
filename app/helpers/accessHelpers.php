@@ -67,7 +67,7 @@
 			if ($po_request->isLoggedIn()) {
 				$va_user_access = $po_request->user->getAccessStatuses(1);
 				if(is_array($va_user_access)) {
-					$va_access = array_merge($va_access, $va_user_access);
+					$va_access = array_unique(array_merge($va_access, $va_user_access));
 				}
 			}
 			return $va_access;
