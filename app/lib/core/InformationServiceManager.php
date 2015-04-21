@@ -68,6 +68,7 @@
 				if (!file_exists("{$vs_base_service_dir}/{$vs_service}.php")) { continue; }
 				require_once("{$vs_base_service_dir}/{$vs_service}.php");
 				$vs_service_classname = "WLPlugInformationService{$vs_service}";
+				if(!class_exists($vs_service_classname)) { continue; }
 				$o_instance = new $vs_service_classname();
 				
 				$va_status = $o_instance->checkStatus();
