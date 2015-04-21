@@ -117,7 +117,6 @@ require_once(__CA_LIB_DIR__."/core/Media/MediaProcessingSettings.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/gisHelpers.php");
 require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
-require_once(__CA_LIB_DIR__."/core/Parsers/htmlpurifier/HTMLPurifier.standalone.php");
 require_once(__CA_LIB_DIR__."/ca/MediaContentLocationIndexer.php");
 require_once(__CA_LIB_DIR__.'/ca/MediaReplicator.php');
 
