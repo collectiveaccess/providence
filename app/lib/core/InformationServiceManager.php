@@ -103,7 +103,7 @@
 			$va_services = array();
 			if (is_resource($r_dir = opendir($vs_base_service_dir))) {
 				while (($vs_service = readdir($r_dir)) !== false) {
-					if ($vs_service == 'BaseInformationServicePlugin.php') { continue; }
+					if (substr($vs_service,0,4) == 'Base') { continue; }
 					if (file_exists($vs_base_service_dir.'/'.$vs_service) && preg_match("/^([A-Za-z_]+[A-Za-z0-9_]*)\.php$/", $vs_service, $va_matches)) {
 						$va_services[] = $va_matches[1];
 					}
