@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/lib/ca/AttributeValues/BaseGettyLODServiceTest.php
+ * tests/lib/ca/AttributeValues/TGNInformationServiceAttributeValueTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -31,13 +31,13 @@
  */
 require_once(__CA_LIB_DIR__."/core/Plugins/InformationService/TGN.php");
 
-class BaseGettyLODServiceTest extends PHPUnit_Framework_TestCase {
+class TGNInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase {
 
 	public function testBasicQuery() {
 		$o_service = new WLPlugInformationServiceTGN();
 
-		$va_return = $o_service->lookup(array(), "Brooklyn");
-		$this->assertEquals(50, sizeof($va_return['results']), 'Should return 30 results');
+		$va_return = $o_service->lookup(array(), 'Williamsburg Brooklyn');
+		$this->assertEquals(25, sizeof($va_return['results']));
 	}
 
 }

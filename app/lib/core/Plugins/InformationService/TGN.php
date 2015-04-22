@@ -74,7 +74,14 @@ class WLPlugInformationServiceTGN extends BaseGettyLODServicePlugin implements I
 	 */
 	public function lookup($pa_settings, $ps_search, $pa_options=null) {
 		if(!is_array($pa_options)) { $pa_options = array(); }
-		return parent::lookup($pa_settings, $ps_search, array_merge($pa_options, array('beta' => false, 'skosScheme' => 'tgn')));
+		$va_return = parent::lookup($ps_search, array_merge($pa_options, array('beta' => false, 'skosScheme' => 'tgn')));
+		if(isset($va_return['results']) && is_array($va_return['results'])) {
+			foreach($va_return['results'] as &$va_result) {
+				$va_result['label'] = str_replace(', ... World', '', $va_result['label']);
+			}
+		}
+
+		return $va_return;
 	}
 	# ------------------------------------------------
 }

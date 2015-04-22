@@ -45,7 +45,6 @@ class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	/** 
 	 * Perform lookup on Getty linked open data service
 	 *
-	 * @param array $pa_settings Plugin settings values
 	 * @param string $ps_search The expression with which to query the remote data service
 	 * @param array $pa_options Lookup options (none defined yet)
 	 * 		skosScheme - skos:inSchema query filter for SPARQL query. This essentially defines the vocabulary you're looking up.
@@ -53,23 +52,18 @@ class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	 * 		beta - query getty "beta" service instead. It sometimes has a preview into upcoming features. true or false, defaults to false.
 	 * @return array
 	 */
-	public function lookup($pa_settings = array(), $ps_search, $pa_options=null) {
+	public function lookup($ps_search, $pa_options=null) {
 		$vs_skos_scheme = caGetOption('skosScheme', $pa_options, '', array('validValues' => array('', 'tgn', 'aat', 'ulan')));
 		$vb_beta = caGetOption('beta', $pa_options, false);
 
 		$vs_query = urlencode('
-PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-PREFIX luc: <http://www.ontotext.com/owlim/lucene#>
-PREFIX tgn: <http://vocab.getty.edu/tgn/>
-PREFIX gvp: <http://vocab.getty.edu/ontology#>
-PREFIX xl: <http://www.w3.org/2008/05/skos-xl#>
 SELECT ?ID ?TermPrefLabel ?Parents {
   ?ID a skos:Concept; luc:term "'.$ps_search.'"; skos:inScheme '.$vs_skos_scheme.': ;
     gvp:prefLabelGVP [xl:literalForm ?TermPrefLabel].
-    optional {?ID gvp:parentString ?Parents}
+    optional {?ID gvp:parentStringAbbrev ?Parents}
     {?ID gvp:displayOrder ?Order}
 } ORDER BY ASC(?Order)
-LIMIT 50
+LIMIT 25
 		');
 
 		if(!$vb_beta) {
