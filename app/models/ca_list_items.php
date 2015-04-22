@@ -229,6 +229,7 @@ $_ca_list_items_settings = array(
 			'options' => array(
 				_t('Individual person') => 'IND',
 				_t('Organization') => 'ORG',
+				_t('Individual person without additional forenames') => 'IND_SM',
 			),
 			'width' => 40, 'height' => 1,
 			'takesLocale' => false,
