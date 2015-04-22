@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2043,6 +2043,7 @@
 	     * Supported options
 	     *	delimiter = text to use between attribute values; default is a single space
 	     *	convertLineBreaks = if true will convert line breaks to HTML <br/> tags for display in a web browser; default is false
+	     *	dontUseElementTemplate = By default any display template set in the metadata element is used if the $ps_template parameter is blank or null. Set this option to prevent the metadata element template from being used in any event. [Default is false]
 		 */
 		public function getAttributesForDisplay($pm_element_code_or_id, $ps_template=null, $pa_options=null) {
 			if (!($vn_row_id = $this->getPrimaryKey())) { 
@@ -2056,7 +2057,7 @@
 			
 			$va_tmp = $this->getAttributeDisplayValues($pm_element_code_or_id, $vn_row_id, array_merge($pa_options, array('returnAllLocales' => false)));
 		
-			if (!$ps_template && ($vs_template_tmp = $t_element->getSetting('displayTemplate', true))) {	// grab template from metadata element if none is passed in $ps_template
+			if (!$ps_template && ($vs_template_tmp = $t_element->getSetting('displayTemplate', true))&& !caGetOption('dontUseElementTemplate', $pa_options, false)) {	// grab template from metadata element if none is passed in $ps_template
 				$ps_template = $vs_template_tmp;
 			}
 			$vs_delimiter = $t_element->getSetting('displayDelimiter', true);

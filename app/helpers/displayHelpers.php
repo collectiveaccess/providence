@@ -2301,7 +2301,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			// Grab values for codes used in ifdef and ifnotdef directives
 			$va_directive_tag_vals = array();	
 			foreach($va_directive_tags as $vs_directive_tag) {
-				$va_directive_tag_vals[$vs_directive_tag] = $qr_res->get($vs_directive_tag, array('convertCodesToDisplayText' => true));
+				$va_directive_tag_vals[$vs_directive_tag] = $qr_res->get($vs_directive_tag, array('convertCodesToDisplayText' => true, 'dontUseElementTemplate' => true));
 			}
 			
 			
