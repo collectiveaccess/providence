@@ -370,7 +370,8 @@ class BaseEditorController extends ActionController {
 		}
 
 		// redirect back to previous item on stack if it's a valid "save and return" request
-		if((bool) $this->getRequest()->getParameter('is_save_and_return', pInteger)) {
+		$vb_has_errors = (is_array($va_errors) && (sizeof($va_errors) > 0)); // don't redirect back when there were form errors
+		if(((bool) $this->getRequest()->getParameter('is_save_and_return', pInteger)) && !$vb_has_errors) {
 			$va_save_and_return = $this->getRequest()->session->getVar('save_and_return_locations');
 			if(is_array($va_save_and_return)) {
 				// get rid of all the navigational steps in the current item
