@@ -361,14 +361,25 @@ class Datamodel {
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
-	 * Returns field name of primary key for table
+	 * Compatibility alias for Datamodel::primaryKey()
 	 *
 	 * @param mixed $pn_tablenum An integer table number or string table name
 	 * @return string The name of the primary key
 	 */
 	public function getTablePrimaryKeyName($pn_tablenum) {
+		return $this->primaryKey($pn_tablenum);
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Returns field name of primary key for table
+	 *
+	 * @param mixed $pn_tablenum An integer table number or string table name
+	 * @param bool $pb_include_tablename Return primary key field name prepended with table name (Eg. ca_objects.object_id) [Default is false]
+	 * @return string The name of the primary key
+	 */
+	public function primaryKey($pn_tablenum, $pb_include_tablename=false) {
 		if ($t_instance = is_numeric($pn_tablenum) ? $this->getInstanceByTableNum($pn_tablenum, true) : $this->getInstanceByTableName($pn_tablenum, true)) {
-			return $t_instance->primaryKey();
+			return $pb_include_tablename ? $t_instance->tableName().'.'.$t_instance->primaryKey() : $t_instance->primaryKey();
 		}
 		return null;
 	}
