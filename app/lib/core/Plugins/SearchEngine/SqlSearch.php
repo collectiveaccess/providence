@@ -952,7 +952,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 											$vn_fld_num = $t_element->getPrimaryKey();
 											$vn_root_element_id = $t_element->get('hier_element_id');
 											
-											if (!isset($va_indexed_fields['_ca_attribute_'.$vn_fld_num]) && (!$vn_parent_element_id || ($vn_root_element_id && !isset($va_indexed_fields['_ca_attribute_'.$vn_root_element_id])))) { break(2); } // skip if not indexed
+											if (!isset($va_indexed_fields['_ca_attribute_'.$vn_fld_num]) && (!$vn_root_element_id || ($vn_root_element_id && !isset($va_indexed_fields['_ca_attribute_'.$vn_root_element_id])))) { break(2); } // skip if not indexed
 											$vs_fld_num = 'A'.$vn_fld_num;
 										
 											if (!$vb_is_blank_search) {
