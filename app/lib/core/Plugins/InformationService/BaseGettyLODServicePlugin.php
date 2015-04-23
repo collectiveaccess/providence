@@ -114,17 +114,9 @@ LIMIT 25
 	 * @return array An array of data from the data server defining the item.
 	 */
 	public function getExtendedInformation($pa_settings, $ps_url) {
-		$o_curl=curl_init();
-		curl_setopt($o_curl, CURLOPT_URL, "http://vocab.getty.edu/download/rdf?uri={$ps_url}.rdf");
-		curl_setopt($o_curl, CURLOPT_CONNECTTIMEOUT, 2);
-		curl_setopt($o_curl, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($o_curl, CURLOPT_USERAGENT, 'CollectiveAccess web service lookup');
-		$vs_result = curl_exec($o_curl);
-		curl_close($o_curl);
-
-		if(!$vs_result) { return array('display' => ''); }
-
-		
+		$o_graph = new EasyRdf_Graph("http://vocab.getty.edu/download/rdf?uri={$ps_url}.rdf");
+		$o_graph->load();
+		//var_dump($o_graph->get('http://vocab.getty.edu/ontology#parentString'));
 
 		return array('display' => '');
 	}
