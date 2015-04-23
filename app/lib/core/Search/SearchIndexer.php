@@ -1016,7 +1016,16 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 											foreach($va_attributes as $vo_attribute) {
 												foreach($vo_attribute->getValues() as $vo_value) {
 													$vn_list_id = $this->_getElementListID($vo_value->getElementID());
-													$this->opo_engine->indexField($va_row_to_reindex['table_num'], 'A'.$vo_value->getElementID(), $va_row_to_reindex['field_row_id'], $vo_value->getDisplayValue($vn_list_id), array_merge($va_row_to_reindex['indexing_info'], array('relationship_type_id' => $vn_rel_type_id)));
+													$vs_value_to_index = $vo_value->getDisplayValue($vn_list_id);
+
+													$va_additional_indexing = $vo_value->getExtraValuesForSearchIndexing();
+													if(is_array($va_additional_indexing) && (sizeof($va_additional_indexing) > 0)) {
+														foreach($va_additional_indexing as $vs_additional_value) {
+															$vs_value_to_index .= " ; ".$vs_additional_value;
+														}
+													}
+
+													$this->opo_engine->indexField($va_row_to_reindex['table_num'], 'A'.$vo_value->getElementID(), $va_row_to_reindex['field_row_id'], $vs_value_to_index, array_merge($va_row_to_reindex['indexing_info'], array('relationship_type_id' => $vn_rel_type_id)));
 												}
 											}
 										} else {
@@ -1068,7 +1077,16 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 									if (is_array($va_attributes = $t_rel->getAttributesByElement($vs_element_code, array('row_id' => $va_row_to_reindex['field_row_id'])))) {
 										foreach($va_attributes as $vo_attribute) {
 											foreach($vo_attribute->getValues() as $vo_value) {
-												$va_tmp[$vo_attribute->getAttributeID()] = $vo_value->getDisplayValue();
+												$vs_value_to_index = $vo_value->getDisplayValue($vn_list_id);
+
+												$va_additional_indexing = $vo_value->getExtraValuesForSearchIndexing();
+												if(is_array($va_additional_indexing) && (sizeof($va_additional_indexing) > 0)) {
+													foreach($va_additional_indexing as $vs_additional_value) {
+														$vs_value_to_index .= " ; ".$vs_additional_value;
+													}
+												}
+
+												$va_tmp[$vo_attribute->getAttributeID()] = $vs_value_to_index;
 											}
 										}
 									}
@@ -1165,8 +1183,17 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 						if (is_array($va_sub_element_ids) && sizeof($va_sub_element_ids)) {
 							$va_sub_element_ids = array_flip($va_sub_element_ids);
 							foreach($vo_attribute->getValues() as $vo_value) {
-								$vn_list_id = $this->_getElementListID($vo_value->getElementID());											
-								$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vo_value->getElementID(), $pn_row_id, $vo_value->getDisplayValue($vn_list_id), $pa_data);		
+								$vn_list_id = $this->_getElementListID($vo_value->getElementID());
+								$vs_value_to_index = $vo_value->getDisplayValue($vn_list_id);
+
+								$va_additional_indexing = $vo_value->getExtraValuesForSearchIndexing();
+								if(is_array($va_additional_indexing) && (sizeof($va_additional_indexing) > 0)) {
+									foreach($va_additional_indexing as $vs_additional_value) {
+										$vs_value_to_index .= " ; ".$vs_additional_value;
+									}
+								}
+
+								$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vo_value->getElementID(), $pn_row_id, $vs_value_to_index, $pa_data);
 								unset($va_sub_element_ids[$vo_value->getElementID()]);																																							
 							}
 						
@@ -1207,7 +1234,16 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 				if (is_array($va_attributes) && sizeof($va_attributes)) {
 					foreach($va_attributes as $vo_attribute) {
 						foreach($vo_attribute->getValues() as $vo_value) {
-							$va_tmp[$vo_attribute->getAttributeID()] = $vo_value->getDisplayValue(array('idsOnly' => true));
+							$vs_value_to_index = $vo_value->getDisplayValue(array('idsOnly' => true));
+
+							$va_additional_indexing = $vo_value->getExtraValuesForSearchIndexing();
+							if(is_array($va_additional_indexing) && (sizeof($va_additional_indexing) > 0)) {
+								foreach($va_additional_indexing as $vs_additional_value) {
+									$vs_value_to_index .= " ; ".$vs_additional_value;
+								}
+							}
+
+							$va_tmp[$vo_attribute->getAttributeID()] = $vs_value_to_index;
 						}
 					}
 				} else {
@@ -1254,8 +1290,16 @@ if (!$vb_can_do_incremental_indexing || $pb_reindex_mode) {
 				if(sizeof($va_attributes) > 0) {
 					foreach($va_attributes as $vo_attribute) {
 						foreach($vo_attribute->getValues() as $vo_value) {
-							$vs_content = $vo_value->getDisplayValue();
-							$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $pn_row_id, $vs_content, $pa_data);
+							$vs_value_to_index = $vo_value->getDisplayValue();
+
+							$va_additional_indexing = $vo_value->getExtraValuesForSearchIndexing();
+							if(is_array($va_additional_indexing) && (sizeof($va_additional_indexing) > 0)) {
+								foreach($va_additional_indexing as $vs_additional_value) {
+									$vs_value_to_index .= " ; ".$vs_additional_value;
+								}
+							}
+
+							$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $pn_row_id, $vs_value_to_index, $pa_data);
 						}
 					}
 				} else {
