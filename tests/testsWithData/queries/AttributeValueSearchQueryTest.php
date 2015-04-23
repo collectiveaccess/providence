@@ -175,14 +175,14 @@ class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.georeference:"[38.5,-124.0 to 36.4,-123.5]"' => 0,
 
 			// Blank values
-			//'ca_objects.coverageNotes:[BLANK]' => 1, @todo broken
-			'ca_objects.georeference:[BLANK]' => 0,
-			'ca_objects.currency_test:[BLANK]' => 0,
-			'ca_objects.integer_test:[BLANK]' => 0,
-			'ca_objects.dimensions_weight:[BLANK]' => 0,
-			'ca_objects.dimensions_length:[BLANK]' => 0,
-			'ca_objects.url_source:[BLANK]' => 0,
-			'ca_objects.internal_notes:[BLANK]' => 0
+			'ca_objects.coverageNotes:"[BLANK]"' => 1,
+			'ca_objects.georeference:"[BLANK]"' => 0,
+			'ca_objects.currency_test:"[BLANK]"' => 0,
+			'ca_objects.integer_test:"[BLANK]"' => 0,
+			'ca_objects.dimensions_weight:"[BLANK]"' => 0,
+			'ca_objects.dimensions_length:"[BLANK]"' => 0,
+			'ca_objects.url_source:"[BLANK]"' => 0,
+			'ca_objects.internal_notes:"[BLANK]"' => 0
 		));
 	}
 	# -------------------------------------------------------
