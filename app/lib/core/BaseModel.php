@@ -1581,12 +1581,13 @@ class BaseModel extends BaseObject {
 	}
 	# --------------------------------------------------------------------------------
 	/**
-	 * Returns name of primary key
+	 * Returns name of primary key field (Eg. object_id)
 	 *
+	 * @param bool $pb_include_tablename Return primary key field name prepended with table name (Eg. ca_objects.object_id) [Default is false]
 	 * @return string the primary key of the table
 	 */
-	public function primaryKey() {
-		return $this->PRIMARY_KEY;
+	public function primaryKey($pb_include_tablename=false) {
+		return $pb_include_tablename ? $this->TABLE.'.'.$this->PRIMARY_KEY : $this->PRIMARY_KEY;
 	}
 	# --------------------------------------------------------------------------------
 	/**
