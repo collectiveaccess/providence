@@ -1291,43 +1291,41 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						$vs_sql_where .= " AND (".join(" OR ", $va_field_restrict_sql).")";
 					}
 					
+					$va_join = array();
+					if ($vn_direct_sql_target_table_num != $pn_subject_tablenum) {
+						// We're doing direct queries on metadata in a related table, fun!
+						// Now let's rewrite the direct query to work...
+						
+						if ($t_target = $this->opo_datamodel->getInstanceByTableNum($vn_direct_sql_target_table_num, true)) {
+							// First we create the join from the related table to our subject
+							$vs_target_table_name = $t_target->tableName();
+							
+							$va_path = array_keys($this->opo_datamodel->getPath($vn_direct_sql_target_table_num, $pn_subject_tablenum));
+							
+							$vs_left_table = array_shift($va_path);
+							
+							$vn_cj = 0;
+							foreach($va_path as $vs_right_table) {
+								if (sizeof($va_rels = $this->opo_datamodel->getRelationships($vs_left_table, $vs_right_table)) > 0) {
+									$va_join[] = "INNER JOIN {$vs_right_table} ON {$vs_right_table}.".$va_rels[$vs_left_table][$vs_right_table][0][1]." = ".(($vn_cj == 0) ? 'ca.row_id' : "{$vs_left_table}.".$va_rels[$vs_left_table][$vs_right_table][0][0]);
+								}
+								$vs_left_table = $vs_right_table;
+								$vn_cj++;
+							}
+						
+							// Next we rewrite the key we're pulling to be from our subject
+							$vs_direct_sql_query = str_replace("SELECT ca.row_id", "SELECT ".$this->opo_datamodel->primaryKey($pn_subject_tablenum, true), $vs_direct_sql_query);
+						
+							// Finally we pray
+						}
+					}
 					if ($vn_i == 0) {
 						if($vs_direct_sql_query) {
-							if ($vn_direct_sql_target_table_num > 0) {
-								// We're doing direct queries on metadata in a related table, fun!
-								// Now let's rewrite the direct query to work...
-								
-								if ($t_target = $this->opo_datamodel->getInstanceByTableNum($vn_direct_sql_target_table_num, true)) {
-									// First we create the join from the related table to our subject
-									$vs_target_table_name = $t_target->tableName();
-									
-									$va_path = array_keys($this->opo_datamodel->getPath($vn_direct_sql_target_table_num, $pn_subject_tablenum));
-									
-									$va_join = array();
-									$vs_left_table = array_shift($va_path);
-									
-									$vn_cj = 0;
-									foreach($va_path as $vs_right_table) {
-										if (sizeof($va_rels = $this->opo_datamodel->getRelationships($vs_left_table, $vs_right_table)) > 0) {
-											$va_join[] = "INNER JOIN {$vs_right_table} ON {$vs_right_table}.".$va_rels[$vs_left_table][$vs_right_table][0][1]." = ".(($vn_cj == 0) ? 'ca.row_id' : "{$vs_left_table}.".$va_rels[$vs_left_table][$vs_right_table][0][0]);
-										}
-										$vs_left_table = $vs_right_table;
-										$vn_cj++;
-									}
-									$vs_direct_sql_query = str_replace('^JOIN', join("\n", $va_join), $vs_direct_sql_query);
-								
-									// Next we rewrite the key we're pulling to be from our subject
-									$vs_direct_sql_query = str_replace("SELECT ca.row_id", "SELECT ".$this->opo_datamodel->primaryKey($pn_subject_tablenum, true), $vs_direct_sql_query);
-								
-									// Finally we pray
-								}
-							} else {
-								$vs_direct_sql_query = str_replace('^JOIN', "", $vs_direct_sql_query);
-							}
+							$vs_direct_sql_query = str_replace('^JOIN', join("\n", $va_join), $vs_direct_sql_query);
 							$vs_sql = "INSERT IGNORE INTO {$ps_dest_table} {$vs_direct_sql_query}";
 							
 							if((strpos($vs_sql, '?') !== false) && (!is_array($pa_direct_sql_query_params) || sizeof($pa_direct_sql_query_params) == 0)) {
-								$pa_direct_sql_query_params = array($vn_direct_sql_target_table_num ? $vn_direct_sql_target_table_num : (int)$pn_subject_tablenum);
+								$pa_direct_sql_query_params = array(($vn_direct_sql_target_table_num != $pn_subject_tablenum) ? $vn_direct_sql_target_table_num : (int)$pn_subject_tablenum);
 							}
 						} else {
 							$vs_sql = "
@@ -1358,7 +1356,13 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						switch($vs_op) {
 							case 'AND':
 								if ($vs_direct_sql_query) {
-									$vs_direct_sql_query = str_replace('^JOIN', "INNER JOIN {$ps_dest_table} AS ftmp1 ON ftmp1.row_id = ca.row_id", $vs_direct_sql_query);
+									if ($vn_direct_sql_target_table_num != $pn_subject_tablenum) {
+										array_push($va_join, "INNER JOIN {$ps_dest_table} AS ftmp1 ON ftmp1.row_id = ".$this->opo_datamodel->primaryKey($pn_subject_tablenum, true));
+									} else {
+										array_unshift($va_join, "INNER JOIN {$ps_dest_table} AS ftmp1 ON ftmp1.row_id = ca.row_id");
+									}
+									$vs_direct_sql_query = str_replace('^JOIN', join("\n", $va_join), $vs_direct_sql_query);
+									$pa_direct_sql_query_params = array(($vn_direct_sql_target_table_num != $pn_subject_tablenum) ? $vn_direct_sql_target_table_num : (int)$pn_subject_tablenum);
 								}
 								$vs_sql = ($vs_direct_sql_query) ? "{$vs_direct_sql_query}" : "
 									SELECT swi.row_id
@@ -1377,11 +1381,13 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								if (($vn_num_terms = (sizeof($va_ft_terms) + sizeof($va_ft_like_terms) + sizeof($va_ft_stem_terms))) > 1) {
 									$vs_sql .= " HAVING count(distinct sw.word_id) = {$vn_num_terms}";
 								}
+							
 								$t = new Timer();
 								$qr_res = $this->opo_db->query($vs_sql, is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum));
 								
 								if ($this->debug) { Debug::msg('AND: '.$vs_sql. ' '.$t->GetTime(4). ' '.$qr_res->numRows()); }
-								if (is_array($va_ids = $qr_res->getAllFieldValues('row_id')) && sizeof($va_ids)) {
+						
+								if (is_array($va_ids = $qr_res->getAllFieldValues(($vn_direct_sql_target_table_num != $pn_subject_tablenum) ? $this->opo_datamodel->primaryKey($pn_subject_tablenum) : 'row_id')) && sizeof($va_ids)) {
 									$vs_sql = "DELETE FROM {$ps_dest_table} WHERE row_id NOT IN (?)";
 									$qr_res = $this->opo_db->query($vs_sql, array($va_ids));
 									if ($this->debug) { Debug::msg('AND DELETE: '.$vs_sql. ' '.$t->GetTime(4)); }
@@ -1391,7 +1397,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								break;
 							case 'NOT':
 								if ($vs_direct_sql_query) {
-									$vs_direct_sql_query = str_replace('^JOIN', "", $vs_direct_sql_query);
+									$vs_direct_sql_query = str_replace('^JOIN', join("\n", $va_join), $vs_direct_sql_query);
+									$pa_direct_sql_query_params = array(($vn_direct_sql_target_table_num != $pn_subject_tablenum) ? $vn_direct_sql_target_table_num : (int)$pn_subject_tablenum);
 								}
 								
 								$vs_sql = "
@@ -1404,7 +1411,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										".($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '');
 								
 								$qr_res = $this->opo_db->query($vs_sql, is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum));
-								$va_ids = $qr_res->getAllFieldValues("row_id");
+								$va_ids = $qr_res->getAllFieldValues(($vn_direct_sql_target_table_num != $pn_subject_tablenum) ? $this->opo_datamodel->primaryKey($pn_subject_tablenum) : 'row_id');
 								
 								if (sizeof($va_ids) > 0) {
 									$vs_sql = "
@@ -1419,7 +1426,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							default:
 							case 'OR':
 								if ($vs_direct_sql_query) {
-									$vs_direct_sql_query = str_replace('^JOIN', "", $vs_direct_sql_query);
+									$vs_direct_sql_query = str_replace('^JOIN', join("\n", $va_join), $vs_direct_sql_query);
+									$pa_direct_sql_query_params = array(($vn_direct_sql_target_table_num != $pn_subject_tablenum) ? $vn_direct_sql_target_table_num : (int)$pn_subject_tablenum);
 								}
 								$vs_sql = ($vs_direct_sql_query) ? "INSERT IGNORE INTO {$ps_dest_table} {$vs_direct_sql_query}" : "
 									INSERT IGNORE INTO {$ps_dest_table}
