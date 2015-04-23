@@ -44,9 +44,9 @@ class TGNInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase
 			$va_labels[] = $va_record['label'];
 		}
 
-		$this->assertContains('Brooklyn (Poweshiek, Iowa) [tgn:2034406]', $va_labels);
-		$this->assertContains('Brooklyn (New York, New York) [tgn:7015822]', $va_labels);
-		$this->assertContains('Brooklyn (Green, Wisconsin) [tgn:2120816]', $va_labels);
+		$this->assertContains('Brooklyn (Poweshiek, Iowa)', $va_labels);
+		$this->assertContains('Brooklyn (New York, New York)', $va_labels);
+		$this->assertContains('Brooklyn (Green, Wisconsin)', $va_labels);
 	}
 
 	public function testRubbishQuery() {
@@ -54,5 +54,11 @@ class TGNInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase
 
 		$va_return = $o_service->lookup(array(), 'thisshouldnotgiveusanyresultsfromgetty');
 		$this->assertEmpty($va_return);
+	}
+
+	public function testGetExtendedInfo() {
+		$o_service = new WLPlugInformationServiceTGN();
+
+		$o_service->getExtendedInformation(array(), 'http://vocab.getty.edu/tgn/7015822');
 	}
 }

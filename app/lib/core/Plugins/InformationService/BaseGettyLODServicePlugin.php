@@ -46,7 +46,7 @@ class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	 * Perform lookup on Getty linked open data service
 	 *
 	 * @param string $ps_search The expression with which to query the remote data service
-	 * @param array $pa_options Lookup options (none defined yet)
+	 * @param array $pa_options Lookup options
 	 * 		skosScheme - skos:inSchema query filter for SPARQL query. This essentially defines the vocabulary you're looking up.
 	 * 				Can be empty if you want to search the whole linked data service (TGN + AAT as of April 2015, ULAN coming soon)
 	 * 		beta - query getty "beta" service instead. It sometimes has a preview into upcoming features. true or false, defaults to false.
@@ -97,7 +97,7 @@ LIMIT 25
 			}
 
 			$va_return['results'][] = array(
-				'label' => $va_values['TermPrefLabel']['value'] . " (".$va_values['Parents']['value'].") [{$vs_id}]",
+				'label' => $va_values['TermPrefLabel']['value'] . " (".$va_values['Parents']['value'].")",
 				'url' => $va_values['ID']['value'],
 				'id' => $vs_id,
 			);
@@ -114,6 +114,18 @@ LIMIT 25
 	 * @return array An array of data from the data server defining the item.
 	 */
 	public function getExtendedInformation($pa_settings, $ps_url) {
+		$o_curl=curl_init();
+		curl_setopt($o_curl, CURLOPT_URL, "http://vocab.getty.edu/download/rdf?uri={$ps_url}.rdf");
+		curl_setopt($o_curl, CURLOPT_CONNECTTIMEOUT, 2);
+		curl_setopt($o_curl, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($o_curl, CURLOPT_USERAGENT, 'CollectiveAccess web service lookup');
+		$vs_result = curl_exec($o_curl);
+		curl_close($o_curl);
+
+		if(!$vs_result) { return array('display' => ''); }
+
+		
+
 		return array('display' => '');
 	}
 	# ------------------------------------------------
