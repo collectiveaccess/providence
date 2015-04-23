@@ -64,11 +64,41 @@ class BrowseCache {
 	# ------------------------------------------------------
 	/**
 	 *
+	 *
+	 * @param string $ps_cache_key
+	 * @param array $pa_options Options include:
+	 *		removeDeletedItems = remove any items in the cache that are currently marked as deleted [Default=true]
+	 *
+	 * @return bool
 	 */
-	public function load($ps_cache_key) {
+	public function load($ps_cache_key, $pa_options=null) {
 		if (ExternalCache::contains($ps_cache_key, 'Browse')) {
 			$this->opa_browse = ExternalCache::fetch($ps_cache_key, 'Browse');
 			$this->ops_cache_key = $ps_cache_key;
+			
+			if (caGetOption('removeDeletedItems', $pa_options, true)) {
+				$o_dm = Datamodel::load();
+				if (($t_instance = $o_dm->getInstanceByTableNum($this->opa_browse['params']['table_num'], true)) && ($t_instance->hasField('deleted'))) {
+					// check if there are any deleted items in the cache
+					if (is_array($va_ids = $this->opa_browse['results']) && sizeof($va_ids)) {
+						$vs_pk = $t_instance->primaryKey();
+						$qr_deleted = $t_instance->getDb()->query($x="
+							SELECT {$vs_pk} FROM ".$t_instance->tableName()." WHERE {$vs_pk} IN (?) AND deleted = 1
+						", array($va_ids));	
+						if ($qr_deleted->numRows() > 0) {
+							$va_deleted_ids = $qr_deleted->getAllFieldValues($vs_pk);
+							foreach($va_deleted_ids as $vn_deleted_id) {
+								if (($vn_i = array_search($vn_deleted_id, $va_ids)) !== false) {
+									unset($va_ids[$vn_i]);
+								}
+							}
+							$this->opa_browse['results'] = array_values($va_ids);
+						}
+						
+					}
+				}
+			}
+			
 			return true;
 		}
 

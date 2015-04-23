@@ -82,6 +82,21 @@ class GelfMessageFormatterTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers Monolog\Formatter\GelfMessageFormatter::format
+     * @expectedException InvalidArgumentException
+     */
+    public function testFormatInvalidFails()
+    {
+        $formatter = new GelfMessageFormatter();
+        $record = array(
+            'level' => Logger::ERROR,
+            'level_name' => 'ERROR',
+        );
+
+        $formatter->format($record);
+    }
+
+    /**
+     * @covers Monolog\Formatter\GelfMessageFormatter::format
      */
     public function testFormatWithContext()
     {
@@ -115,7 +130,6 @@ class GelfMessageFormatterTest extends \PHPUnit_Framework_TestCase
 
         $this->assertArrayHasKey('_CTXfrom', $message_array);
         $this->assertEquals('logger', $message_array['_CTXfrom']);
-
     }
 
     /**
@@ -144,7 +158,6 @@ class GelfMessageFormatterTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals("/some/file/in/dir.php", $message->getFile());
         $this->assertEquals("56", $message->getLine());
-
     }
 
     /**

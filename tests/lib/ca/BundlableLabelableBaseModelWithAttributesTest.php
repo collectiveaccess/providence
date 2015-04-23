@@ -106,7 +106,7 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 		$this->assertTrue($vb_found_object, 'ca_object was not in returned search results for ca_object by label');
 
 		// try delete
-		$t_object->delete(true);
+		$t_object->delete(true, array('hard' => true));
 		$this->assertEquals($t_object->numErrors(), 0, "Errors on delete: ".join('; ', $t_object->getErrors()));
 
 	}

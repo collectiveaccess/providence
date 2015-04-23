@@ -64,6 +64,15 @@ class SearchIndexer extends SearchBase {
 	}
 	# -------------------------------------------------------
 	/**
+	 *
+	 */
+	public function setDb($po_db) {
+		if (($this->opo_engine) && (method_exists($this->opo_engine, "setDb"))) {
+			 $this->opo_engine->setDb($po_db);
+		}
+	}
+	# -------------------------------------------------------
+	/**
 	 * Returns a list of tables the require indexing
 	 */
 	public function getIndexedTables() {
@@ -359,7 +368,7 @@ class SearchIndexer extends SearchBase {
 		
 		// Automagically generate hierarchical paths for preferred labels passed as label table + label field
 		if (is_subclass_of($t_subject, "BaseLabel")) {
-			if (!$t_subject->getPrimaryKey() == $pn_subject_row_id) { $t_subject->load($pn_subject_row_id); }
+			if (!($t_subject->getPrimaryKey() == $pn_subject_row_id)) { $t_subject->load($pn_subject_row_id); }
 			$pn_subject_row_id = $t_subject->get($t_subject->getSubjectKey());
 			$t_subject = $t_subject->getSubjectTableInstance();
 			$ps_field = "preferred_labels.{$ps_field}";

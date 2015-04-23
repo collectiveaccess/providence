@@ -9,7 +9,7 @@ use Github\HttpClient\HttpClient;
 use Github\HttpClient\HttpClientInterface;
 
 /**
- * Simple yet very cool PHP GitHub client
+ * Simple yet very cool PHP GitHub client.
  *
  * @method Api\CurrentUser currentUser()
  * @method Api\CurrentUser me()
@@ -22,6 +22,8 @@ use Github\HttpClient\HttpClientInterface;
  * @method Api\Issue issue()
  * @method Api\Issue issues()
  * @method Api\Markdown markdown()
+ * @method Api\Notification notification()
+ * @method Api\Notification notifications()
  * @method Api\Organization organization()
  * @method Api\Organization organizations()
  * @method Api\PullRequest pr()
@@ -31,6 +33,7 @@ use Github\HttpClient\HttpClientInterface;
  * @method Api\Repo repos()
  * @method Api\Repo repository()
  * @method Api\Repo repositories()
+ * @method Api\Search search()
  * @method Api\Organization team()
  * @method Api\Organization teams()
  * @method Api\User user()
@@ -53,7 +56,7 @@ class Client
 
     /**
      * Constant for authentication method. Not indicates the new login, but allows
-     * usage of unauthenticated rate limited requests for given client_id + client_secret
+     * usage of unauthenticated rate limited requests for given client_id + client_secret.
      */
     const AUTH_URL_CLIENT_ID = 'url_client_id';
 
@@ -85,14 +88,14 @@ class Client
     );
 
     /**
-     * The Buzz instance used to communicate with GitHub
+     * The Buzz instance used to communicate with GitHub.
      *
      * @var HttpClient
      */
     private $httpClient;
 
     /**
-     * Instantiate a new GitHub client
+     * Instantiate a new GitHub client.
      *
      * @param null|HttpClientInterface $httpClient Github http client
      */
@@ -104,9 +107,9 @@ class Client
     /**
      * @param string $name
      *
-     * @return ApiInterface
-     *
      * @throws InvalidArgumentException
+     *
+     * @return ApiInterface
      */
     public function api($name)
     {
@@ -115,6 +118,11 @@ class Client
             case 'current_user':
             case 'currentUser':
                 $api = new Api\CurrentUser($this);
+                break;
+
+            case 'deployment':
+            case 'deployments':
+                $api = new Api\Deployment($this);
                 break;
 
             case 'ent':
@@ -142,6 +150,11 @@ class Client
                 $api = new Api\Markdown($this);
                 break;
 
+            case 'notification':
+            case 'notifications':
+                $api = new Api\Notification($this);
+                break;
+
             case 'organization':
             case 'organizations':
                 $api = new Api\Organization($this);
@@ -160,6 +173,10 @@ class Client
             case 'repository':
             case 'repositories':
                 $api = new Api\Repo($this);
+                break;
+
+            case 'search':
+                $api = new Api\Search($this);
                 break;
 
             case 'team':
@@ -189,7 +206,7 @@ class Client
     }
 
     /**
-     * Authenticate a user for all next requests
+     * Authenticate a user for all next requests.
      *
      * @param string      $tokenOrLogin GitHub private token/username/client ID
      * @param null|string $password     GitHub password/secret (optionally can contain $authMethod)
@@ -247,7 +264,7 @@ class Client
     }
 
     /**
-     * Clears used headers
+     * Clears used headers.
      */
     public function clearHeaders()
     {
@@ -265,9 +282,9 @@ class Client
     /**
      * @param string $name
      *
-     * @return mixed
-     *
      * @throws InvalidArgumentException
+     *
+     * @return mixed
      */
     public function getOption($name)
     {
@@ -310,12 +327,13 @@ class Client
 
     /**
      * @param string $name
-     * 
-     * @return ApiInterface
      *
      * @throws InvalidArgumentException
+     *
+     * @return ApiInterface
      */
-    public function __call($name, $args) {
+    public function __call($name, $args)
+    {
         try {
             return $this->api($name);
         } catch (InvalidArgumentException $e) {

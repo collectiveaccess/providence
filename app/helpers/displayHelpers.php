@@ -129,7 +129,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		$va_values = array();
 		foreach($pa_values as $vm_id => $va_value_list_by_locale) {
 			if (sizeof($va_value_list_by_locale) == 1) {		// Don't bother looking if there's just a single value
-				$va_values[$vm_id] = array_shift($va_value_list_by_locale);
+				$va_values[$vm_id] = array_pop($va_value_list_by_locale);
 				continue;
 			}
 			foreach($va_value_list_by_locale as $pm_locale => $vm_value) {
@@ -155,7 +155,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			
 			if (!isset($va_values[$vm_id])) {
 				// desperation mode: pick an available locale
-				$va_values[$vm_id] = array_shift($va_value_list_by_locale);
+				$va_values[$vm_id] = array_pop($va_value_list_by_locale);
 			}
 		}
 		return ($pa_options['returnList']) ? array_values($va_values) : $va_values;
@@ -1217,7 +1217,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 				//
 				// Output checkout info for ca_objects
 				//
-				if ($t_item->canBeCheckedOut() && ($va_checkout_status = $t_item->getCheckoutStatus(array('returnAsArray' => true)))) {
+				if ((bool)$po_view->request->config->get('enable_client_services') && ((bool)$po_view->request->config->get('enable_client_services_sales') || (bool)$po_view->request->config->get('enable_client_services_library')) && $t_item->canBeCheckedOut() && ($va_checkout_status = $t_item->getCheckoutStatus(array('returnAsArray' => true)))) {
 					$vs_buf .= "<div class='inspectorCheckedOut'>".$va_checkout_status['status_display'];
 					if ($va_checkout_status['user_name']) {
 						$vs_buf .= _t("; checked out by %1", $va_checkout_status['user_name']);
@@ -2320,7 +2320,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			// Grab values for codes used in ifdef and ifnotdef directives
 			$va_directive_tag_vals = array();	
 			foreach($va_directive_tags as $vs_directive_tag) {
-				$va_directive_tag_vals[$vs_directive_tag] = $qr_res->get($vs_directive_tag, array('convertCodesToDisplayText' => true));
+				$va_directive_tag_vals[$vs_directive_tag] = $qr_res->get($vs_directive_tag, array('convertCodesToDisplayText' => true, 'dontUseElementTemplate' => true));
 			}
 			
 			

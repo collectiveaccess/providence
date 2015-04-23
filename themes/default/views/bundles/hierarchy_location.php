@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,8 +37,7 @@
 	$pa_ancestors 		= $this->getVar('ancestors');
 	$pn_id 				= $this->getVar('id');
 	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$va_hierarchy		= $t_subject->getHierarchyAsList(null, array('idsOnly' => true));
-	$vn_items_in_hier	= (is_array($va_hierarchy) ? sizeof($va_hierarchy) : 1);
+	$vn_items_in_hier 	= $t_subject->getHierarchySize();
 	$vs_bundle_preview	= '('.$vn_items_in_hier. ') '. caProcessTemplateForIDs("^preferred_labels", $t_subject->tableName(), array($t_subject->getPrimaryKey()));
 	
 	switch($vs_priv_table) {

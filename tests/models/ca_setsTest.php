@@ -95,8 +95,8 @@ class ca_setsTest extends PHPUnit_Framework_TestCase {
 
 		$this->assertArrayHasKey('caption', $va_item, 'Set item must have empty/blank label');
 		$this->assertEquals('[BLANK]', $va_item['caption'], 'Set item must have empty/blank label');
-		$this->assertArrayHasKey('row_id', $va_item, 'Set item must be related to object');
-		$this->assertEquals($this->opn_object_id, $va_item['row_id'], 'Set item must be related to object');
+		$this->assertArrayHasKey('record_id', $va_item, 'Set item must be related to object');
+		$this->assertEquals($this->opn_object_id, $va_item['record_id'], 'Set item must be related to object');
 
 		// try text (no return as array)
 		$vs_ret = $t_set->get('ca_set_items.item_id'); // what comes out is a string with the primary key
@@ -139,8 +139,8 @@ class ca_setsTest extends PHPUnit_Framework_TestCase {
 
 		$this->assertArrayHasKey('caption', $va_item, 'Set item must have empty/blank label');
 		$this->assertEquals('[BLANK]', $va_item['caption'], 'Set item must have empty/blank label');
-		$this->assertArrayHasKey('row_id', $va_item, 'Set item must be related to object');
-		$this->assertEquals($this->opn_object_id, $va_item['row_id'], 'Set item must be related to object');
+		$this->assertArrayHasKey('record_id', $va_item, 'Set item must be related to object');
+		$this->assertEquals($this->opn_object_id, $va_item['record_id'], 'Set item must be related to object');
 	}
 
 	public function tearDown() {

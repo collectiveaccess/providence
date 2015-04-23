@@ -1771,7 +1771,7 @@ function caFileIsIncludable($ps_file) {
 					continue;
 				}
 
-				if ((!preg_match("!^[ \p{L}\p{N}\p{P}]+$!", $vm_v)) || (!mb_detect_encoding($vm_v))) {
+				if ((!preg_match("!^\X+$!", $vm_v)) || (!mb_detect_encoding($vm_v))) {
 					unset($pa_array[$vn_k]);
 				}
 			}
@@ -2280,26 +2280,6 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
-	 * Generate a GUID 
-	 *
-	 * @return string
-	 */
-	function caGenerateGUID(){
-		if (function_exists("openssl_random_pseudo_bytes")) {
-			$vs_data = openssl_random_pseudo_bytes(16);
-		} else {
-			$vs_data = '';
-			for($i=0; $i < 16; $i++) {
-				$vs_data .= chr(mt_rand(0, 255));
-			}
-		}
-		$vs_data[6] = chr(ord($vs_data[6]) & 0x0f | 0x40); // set version to 0100
-		$vs_data[8] = chr(ord($vs_data[8]) & 0x3f | 0x80); // set bits 6-7 to 10
-
-		return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($vs_data), 4));
-	}
-	# ----------------------------------------
-	/**
  	 * Query external web service and return whatever body it returns as string
  	 * @param string $ps_url URL of the web service to query
 	 * @return string
@@ -2624,6 +2604,24 @@ function caFileIsIncludable($ps_file) {
 		}
 		
 		return $vo_parsed_measurement;
+	}
+	# ----------------------------------------
+	/**
+	 * Generate a GUID 
+	 */
+	function caGenerateGUID(){
+		if (function_exists("openssl_random_pseudo_bytes")) {
+			$vs_data = openssl_random_pseudo_bytes(16);
+		} else {
+			$vs_data = '';
+			for($i=0; $i < 16; $i++) {
+				$vs_data .= chr(mt_rand(0, 255));
+			}
+		}
+		$vs_data[6] = chr(ord($vs_data[6]) & 0x0f | 0x40); // set version to 0100
+		$vs_data[8] = chr(ord($vs_data[8]) & 0x3f | 0x80); // set bits 6-7 to 10
+
+		return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($vs_data), 4));
 	}
 	# ----------------------------------------
 	/**

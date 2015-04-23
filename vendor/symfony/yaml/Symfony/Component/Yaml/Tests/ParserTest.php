@@ -136,6 +136,14 @@ EOF;
         $tests['Literal block chomping strip with multiple trailing newlines'] = array($expected, $yaml);
 
         $yaml = <<<'EOF'
+{}
+
+
+EOF;
+        $expected = array();
+        $tests['Literal block chomping strip with multiple trailing newlines after a 1-liner'] = array($expected, $yaml);
+
+        $yaml = <<<'EOF'
 foo: |-
     one
     two
@@ -251,8 +259,8 @@ bar: >-
 
 EOF;
         $expected = array(
-            'foo' => "one two",
-            'bar' => "one two",
+            'foo' => 'one two',
+            'bar' => 'one two',
         );
         $tests['Folded block chomping strip with single trailing newline'] = array($expected, $yaml);
 
@@ -268,8 +276,8 @@ bar: >-
 
 EOF;
         $expected = array(
-            'foo' => "one two",
-            'bar' => "one two",
+            'foo' => 'one two',
+            'bar' => 'one two',
         );
         $tests['Folded block chomping strip with multiple trailing newlines'] = array($expected, $yaml);
 
@@ -282,8 +290,8 @@ bar: >-
     two
 EOF;
         $expected = array(
-            'foo' => "one two",
-            'bar' => "one two",
+            'foo' => 'one two',
+            'bar' => 'one two',
         );
         $tests['Folded block chomping strip without trailing newline'] = array($expected, $yaml);
 
@@ -329,7 +337,7 @@ bar: >
 EOF;
         $expected = array(
             'foo' => "one two\n",
-            'bar' => "one two",
+            'bar' => 'one two',
         );
         $tests['Folded block chomping clip without trailing newline'] = array($expected, $yaml);
 
@@ -375,7 +383,7 @@ bar: >+
 EOF;
         $expected = array(
             'foo' => "one two\n",
-            'bar' => "one two",
+            'bar' => 'one two',
         );
         $tests['Folded block chomping keep without trailing newline'] = array($expected, $yaml);
 
@@ -447,9 +455,9 @@ EOF;
         }
 
         $yamls = array(
-            iconv("UTF-8", "ISO-8859-1", "foo: 'äöüß'"),
-            iconv("UTF-8", "ISO-8859-15", "euro: '€'"),
-            iconv("UTF-8", "CP1252", "cp1252: '©ÉÇáñ'"),
+            iconv('UTF-8', 'ISO-8859-1', "foo: 'äöüß'"),
+            iconv('UTF-8', 'ISO-8859-15', "euro: '€'"),
+            iconv('UTF-8', 'CP1252', "cp1252: '©ÉÇáñ'"),
         );
 
         foreach ($yamls as $yaml) {
@@ -464,9 +472,7 @@ EOF;
     }
 
     /**
-     *
      * @expectedException \Symfony\Component\Yaml\Exception\ParseException
-     *
      */
     public function testUnindentedCollectionException()
     {
@@ -480,6 +486,43 @@ collection:
 EOF;
 
         $this->parser->parse($yaml);
+    }
+
+    /**
+     * @expectedException \Symfony\Component\Yaml\Exception\ParseException
+     */
+    public function testShortcutKeyUnindentedCollectionException()
+    {
+        $yaml = <<<EOF
+
+collection:
+-  key: foo
+  foo: bar
+
+EOF;
+
+        $this->parser->parse($yaml);
+    }
+
+    /**
+     * @expectedException \Symfony\Component\Yaml\Exception\ParseException
+     * @expectedExceptionMessage Multiple documents are not supported.
+     */
+    public function testMultipleDocumentsNotSupportedException()
+    {
+        Yaml::parse(<<<EOL
+# Ranking of 1998 home runs
+---
+- Mark McGwire
+- Sammy Sosa
+- Ken Griffey
+
+# Team ranking
+---
+- Chicago Cubs
+- St Louis Cardinals
+EOL
+        );
     }
 
     /**
@@ -624,7 +667,7 @@ EOF
     public function testNestedFoldedStringBlockWithComments()
     {
         $this->assertEquals(array(array(
-            'title'   => 'some title',
+            'title' => 'some title',
             'content' => <<<EOT
 # comment 1
 header
@@ -677,6 +720,17 @@ list_in_map: { key: [*var] }
 map_in_map: { foo: { bar: *var } }
 EOF
         ));
+    }
+
+    public function testYamlDirective()
+    {
+        $yaml = <<<EOF
+%YAML 1.2
+---
+foo: 1
+bar: 2
+EOF;
+        $this->assertEquals(array('foo' => 1, 'bar' => 2), $this->parser->parse($yaml));
     }
 }
 

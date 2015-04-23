@@ -870,4 +870,3 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 }
-?>

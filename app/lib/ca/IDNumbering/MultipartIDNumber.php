@@ -901,20 +901,37 @@ class MultipartIDNumber extends IDNumber {
 		$vn_i = 0;
 		$vn_num_serial_elements_seen = 0;
 		foreach ($va_elements as $va_element_info) {
-			if ($vn_i >= sizeof($va_values)) { break; }
+			//if ($vn_i >= sizeof($va_values)) { break; }
 
-			if ($va_element_info['type'] == 'SERIAL') {
-				$vn_num_serial_elements_seen++;
+			switch($va_element_info['type']) {
+				case 'SERIAL':
+					$vn_num_serial_elements_seen++;
 
-				if ($pn_max_num_replacements <= 0) {	// replace all
-					if ($pb_no_placeholders) { unset($va_values[$vn_i]); $vn_i++; continue; }
-					$va_values[$vn_i] = '%';
-				} else {
-					if (($vn_num_serial_elements - $vn_num_serial_elements_seen) < $pn_max_num_replacements) {
+					if ($pn_max_num_replacements <= 0) {	// replace all
 						if ($pb_no_placeholders) { unset($va_values[$vn_i]); $vn_i++; continue; }
 						$va_values[$vn_i] = '%';
+					} else {
+						if (($vn_num_serial_elements - $vn_num_serial_elements_seen) < $pn_max_num_replacements) {
+							if ($pb_no_placeholders) { unset($va_values[$vn_i]); $vn_i++; continue; }
+							$va_values[$vn_i] = '%';
+						}
 					}
-				}
+					break;
+				case 'CONSTANT':
+					$va_values[$vn_i] = $va_element_info['value'];
+					break;
+				case 'YEAR':
+					$va_tmp = getdate();
+					$va_values[$vn_i] = $va_tmp['year'];
+					break;
+				case 'MONTH':
+					$va_tmp = getdate();
+					$va_values[$vn_i] = $va_tmp['mon'];
+					break;
+				case 'DAY':
+					$va_tmp = getdate();
+					$va_values[$vn_i] = $va_tmp['mday'];
+					break;
 			}
 
 			$vn_i++;

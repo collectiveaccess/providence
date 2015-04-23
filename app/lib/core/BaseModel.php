@@ -117,7 +117,6 @@ require_once(__CA_LIB_DIR__."/core/Media/MediaProcessingSettings.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/gisHelpers.php");
 require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
-require_once(__CA_LIB_DIR__."/core/Parsers/htmlpurifier/HTMLPurifier.standalone.php");
 require_once(__CA_LIB_DIR__."/ca/MediaContentLocationIndexer.php");
 require_once(__CA_LIB_DIR__.'/ca/MediaReplicator.php');
 
@@ -309,12 +308,14 @@ class BaseModel extends BaseObject {
 	 * @access private
 	 */
 	private $field_conflicts;
-
-
-	/** 
-	 * Single instance of search indexer used by all models
+	
+	
+	/**
+	 * Search indexer instance (one per model instance)
+	 *
+	 * @access private
 	 */
-	static public $search_indexer;
+	private $search_indexer;
 	
 	/**
 	 * Single instance of HTML Purifier used by all models
@@ -379,6 +380,8 @@ class BaseModel extends BaseObject {
 		if ($vs_locale = $this->_CONFIG->get("locale")) {
 			$this->ops_locale = $vs_locale;
 		}
+		
+		$this->opb_purify_input = (bool)$this->_CONFIG->get("purify_all_text_input");
 		
  		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 
@@ -1417,7 +1420,7 @@ class BaseModel extends BaseObject {
 							$vm_value = stripSlashes($vm_value);
 						}
 						
-						if ((isset($pa_options['purify']) && ($pa_options['purify'])) || ((bool)$this->opb_purify_input) || ($this->getFieldInfo($vs_field, "PURIFY")) || ((bool)$this->getAppConfig()->get('useHTMLPurifier'))) {
+						if ((isset($pa_options['purify']) && ($pa_options['purify'])) || ((bool)$this->opb_purify_input) || ($this->getFieldInfo($vs_field, "PURIFY"))) {
 							if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
     						$vm_value = BaseModel::$html_purifier->purify((string)$vm_value);
 						}
@@ -1457,6 +1460,10 @@ class BaseModel extends BaseObject {
 						}
 						break;
 					case (FT_PASSWORD):
+						if ((isset($pa_options['purify']) && ($pa_options['purify'])) || ((bool)$this->opb_purify_input) || ($this->getFieldInfo($vs_field, "PURIFY"))) {
+							if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
+    						$vm_value = BaseModel::$html_purifier->purify((string)$vm_value);
+						}
 						if (!$vm_value) { // store blank passwords as blank,
 							$this->_FIELD_VALUES[$vs_field] = "";
 							$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
@@ -1483,6 +1490,12 @@ class BaseModel extends BaseObject {
 						
 						if (caGetOSFamily() == OS_WIN32) {	// fix for paths using backslashes on Windows failing in processing
 							$vm_value = str_replace('\\', '/', $vm_value);
+						}
+						
+						if ((isset($pa_options['purify']) && ($pa_options['purify'])) || ((bool)$this->opb_purify_input) || ($this->getFieldInfo($vs_field, "PURIFY"))) {
+							if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
+    						$pa_options["original_filename"] = BaseModel::$html_purifier->purify((string)$pa_options["original_filename"]);
+    						$vm_value = BaseModel::$html_purifier->purify((string)$vm_value);
 						}
 						
 						$va_matches = null;
@@ -1568,12 +1581,13 @@ class BaseModel extends BaseObject {
 	}
 	# --------------------------------------------------------------------------------
 	/**
-	 * Returns name of primary key
+	 * Returns name of primary key field (Eg. object_id)
 	 *
+	 * @param bool $pb_include_tablename Return primary key field name prepended with table name (Eg. ca_objects.object_id) [Default is false]
 	 * @return string the primary key of the table
 	 */
-	public function primaryKey() {
-		return $this->PRIMARY_KEY;
+	public function primaryKey($pb_include_tablename=false) {
+		return $pb_include_tablename ? $this->TABLE.'.'.$this->PRIMARY_KEY : $this->PRIMARY_KEY;
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -1813,7 +1827,7 @@ class BaseModel extends BaseObject {
 					$va_sql_wheres[] = "($vs_field = $vm_value)";
 				}
 			}
-			$vs_sql = "SELECT * FROM ".$this->tableName()." WHERE ".join(" AND ", $va_sql_wheres);
+			$vs_sql = "SELECT * FROM ".$this->tableName()." WHERE ".join(" AND ", $va_sql_wheres). " LIMIT 1";
 		}
 
 		$qr_res = $o_db->query($vs_sql);
@@ -7070,6 +7084,58 @@ class BaseModel extends BaseObject {
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Returns number of rows in the hierarchy
+	 * 
+	 * @param int $pn_id node to start from - default is the hierarchy root
+	 * @param array $pa_options
+	 * @return int count
+	 */
+	public function getHierarchySize($pn_id=null, $pa_options=null) {
+		if (!$this->isHierarchical()) { return null; }
+		
+		$vs_hier_left_fld 		= $this->getProperty("HIERARCHY_LEFT_INDEX_FLD");
+		$vs_hier_right_fld 		= $this->getProperty("HIERARCHY_RIGHT_INDEX_FLD");
+		$vs_hier_id_fld 		= $this->getProperty("HIERARCHY_ID_FLD");
+		$vs_hier_id_table 		= $this->getProperty("HIERARCHY_DEFINITION_TABLE");
+		$vs_hier_parent_id_fld 	= $this->getProperty("HIERARCHY_PARENT_ID_FLD");
+		
+		$o_db = $this->getDb();
+		
+		$va_params = array();
+		
+		$t_instance = null;
+		if ($pn_id && ($pn_id != $this->getPrimaryKey())) {
+			$t_instance = $this->getAppDatamodel()->getInstanceByTableName($this->tableName());
+			if (!$t_instance->load($pn_id)) { return null; }
+		} else {
+			$t_instance = $this;
+		}
+	
+		if ($pn_id > 0) {
+			$va_params[] = (float)$t_instance->get($vs_hier_left_fld);
+			$va_params[] = (float)$t_instance->get($vs_hier_right_fld);
+		}
+		if($vs_hier_id_fld) {
+			$va_params[] = (int)$t_instance->get($vs_hier_id_fld);
+		}
+		
+		$qr_res = $o_db->query("
+			SELECT count(*) c 
+			FROM ".$this->tableName()."
+			WHERE
+				".(($pn_id > 0) ? "({$vs_hier_left_fld} >= ?) AND ({$vs_hier_right_fld} <= ?) " : '').
+				($vs_hier_id_fld ? ' '.(($pn_id > 0) ? ' AND ' : '')."({$vs_hier_id_fld} = ?)" : '').
+				($this->hasField('deleted') ? ' '.(($vs_hier_id_fld) ? ' AND ' : '')."(deleted = 0)" : '')
+				."
+		", $va_params);
+	
+		if ($qr_res->nextRow()) {
+			return (int)$qr_res->get('c');
+		}
+		return null;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
 	 * Count child rows for specified parent rows
 	 *
 	 * @param array list of primary keys for which to fetch child counts
@@ -9437,11 +9503,10 @@ $pa_options["display_form_field_tips"] = true;
 		$vn_rel_table_num = $t_item_rel->tableNum();
 		
 		// Reindex modified relationships
-		if (!$this->search_indexer) {
-			$this->search_indexer = new SearchIndexer($this->getDb());
-		}
+		
+		$o_indexer = $this->getSearchIndexer();
 		foreach($va_to_reindex_relations as $vn_relation_id => $va_row) {
-			$this->search_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
+			$o_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
 		}
 		
 		return sizeof($va_to_reindex_relations);
@@ -9542,11 +9607,9 @@ $pa_options["display_form_field_tips"] = true;
 		$vn_rel_table_num = $t_item_rel->tableNum();
 		
 		// Reindex modified relationships
-		if (!$this->search_indexer) {
-			$this->search_indexer = new SearchIndexer($this->getDb());
-		}
+		$o_indexer = $this->getSearchIndexer();
 		foreach($va_new_relations as $vn_relation_id => $va_row) {
-			$this->search_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
+			$o_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
 		}
 		
 		return sizeof($va_new_relations);
@@ -9875,12 +9938,13 @@ $pa_options["display_form_field_tips"] = true;
 		
 		if(!isset($pa_options['purify'])) { $pa_options['purify'] = true; }
 		
-		if ((bool)$pa_options['purify']) {
-			$o_purifier = new HTMLPurifier();
-    		$ps_tag = $o_purifier->purify($ps_tag);
+		if ($this->purify() || (bool)$pa_options['purify']) {
+			if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
+    		$ps_tag = BaseMode::$html_purifier->purify($ps_tag);
 		}
 		
 		$t_tag = new ca_item_tags();
+		$t_tag->purify($this->purify() || $pa_options['purify']);
 		
 		if (!$t_tag->load(array('tag' => $ps_tag, 'locale_id' => $pn_locale_id))) {
 			// create new new
@@ -9907,9 +9971,9 @@ $pa_options["display_form_field_tips"] = true;
 		
 		if (!is_null($pn_moderator)) {
 			$t_ixt->set('moderated_by_user_id', $pn_moderator);
-			$t_ixt->set('moderated_on', 'now');
+			$t_ixt->set('moderated_on', _t('now'));
 		}elseif($this->_CONFIG->get("dont_moderate_comments")){
-			$t_ixt->set('moderated_on', 'now');
+			$t_ixt->set('moderated_on', _t('now'));
 		}
 		
 		$t_ixt->insert();
@@ -10113,13 +10177,14 @@ $pa_options["display_form_field_tips"] = true;
 		if(!isset($pa_options['purify'])) { $pa_options['purify'] = true; }
 		
 		if ((bool)$pa_options['purify']) {
-			$o_purifier = new HTMLPurifier();
-    		$ps_comment = $o_purifier->purify($ps_comment);
-    		$ps_name = $o_purifier->purify($ps_name);
-    		$ps_email = $o_purifier->purify($ps_email);
+			if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
+    		$ps_comment = BaseModel::$html_purifier->purify($ps_comment);
+    		$ps_name = BaseModel::$html_purifier->purify($ps_name);
+    		$ps_email = BaseModel::$html_purifier->purify($ps_email);
 		}
 		
 		$t_comment = new ca_item_comments();
+		$t_comment->purify($this->purify() || $pa_options['purify']);
 		$t_comment->setMode(ACCESS_WRITE);
 		$t_comment->set('table_num', $this->tableNum());
 		$t_comment->set('row_id', $vn_row_id);
@@ -10198,12 +10263,13 @@ $pa_options["display_form_field_tips"] = true;
 		
 		
 		if(!isset($pa_options['purify'])) { $pa_options['purify'] = true; }
+		$t_comment->purify($this->purify() || $pa_options['purify']);
 		
 		if ((bool)$pa_options['purify']) {
-			$o_purifier = new HTMLPurifier();
-    		$ps_comment = $o_purifier->purify($ps_comment);
-    		$ps_name = $o_purifier->purify($ps_name);
-    		$ps_email = $o_purifier->purify($ps_email);
+			if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
+    		$ps_comment = BaseModel::$html_purifier->purify($ps_comment);
+    		$ps_name = BaseModel::$html_purifier->purify($ps_name);
+    		$ps_email = BaseModel::$html_purifier->purify($ps_email);
 		}
 		
 		

@@ -4,6 +4,7 @@
         "maximebf/debugbar": ">=1.0.0",
         "doctrine/cache": "1.4.*",
         "elasticsearch/elasticsearch": "~1.0",
-        "knplabs/github-api": "~1.2"
+        "knplabs/github-api": "~1.2",
+        "ezyang/htmlpurifier": "~4.6"
     }
 }
