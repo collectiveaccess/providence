@@ -43,7 +43,7 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 	 * @param string $pm_table_name_or_num Table name or number
 	 * @return BaseSearch
 	 */
-	function caGetSearchInstance($pm_table_name_or_num) {
+	function caGetSearchInstance($pm_table_name_or_num, $pa_options=null) {
 		$o_dm = Datamodel::load();
 		
 		$vs_table = (is_numeric($pm_table_name_or_num)) ? $o_dm->getTableName((int)$pm_table_name_or_num) : $pm_table_name_or_num;

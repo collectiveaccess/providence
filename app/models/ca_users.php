@@ -1511,6 +1511,10 @@ class ca_users extends BaseModel {
 	 */	
 	public function setPreference($ps_pref, $ps_val) {
 		if ($this->isValidPreference($ps_pref)) {
+			if ($this->purify()) {
+				if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
+				$ps_val = BaseModel::$html_purifier->purify($ps_val);
+			}
 			if ($this->isValidPreferenceValue($ps_pref, $ps_val, 1)) {
 				$va_prefs = $this->getVar("_user_preferences");
 				$va_prefs[$ps_pref] = $ps_val;
@@ -3160,6 +3164,7 @@ class ca_users extends BaseModel {
 			return $vn_access;
 		} else {
 			// no type level access control for tables not explicitly listed in $s_bundlable_tables
+			ca_users::$s_user_type_access_cache[$ps_table_name.'/'.$vn_type_id."/".$this->getPrimaryKey()] = ca_users::$s_user_type_access_cache[$vs_cache_key] = __CA_BUNDLE_ACCESS_EDIT__;
 			return __CA_BUNDLE_ACCESS_EDIT__;
 		}
 	}

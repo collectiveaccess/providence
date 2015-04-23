@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -295,7 +295,7 @@ jQuery(document).ready(function() {
 					$vn_lon_offset = $vn_radius/111302.61697430261;
 					$va_extents = array("north" => number_format(($va_extents['north'] + $vn_lat_offset), 7, ".", ""), "south" => number_format(($va_extents['south'] - $vn_lat_offset), 7, ".", ""), "east" => number_format(($va_extents['east'] + $vn_lon_offset), 7, ".", ""), "west" => number_format(($va_extents['west'] - $vn_lon_offset), 7, ".", ""));
 				}else{
-					$vs_buf .= "	caMap_{$vs_id}_markers.push(caMap_{$vs_id}.makeMarker(".$vn_latitude.", ".$vn_longitude.", '".preg_replace("![\n\r]+!", " ", addslashes($vs_label))."', '".preg_replace("![\n\r]+!", " ", addslashes($vs_balloon_content))."', '".preg_replace("![\n\r]+!", " ", ($vs_ajax_content_url ? addslashes($vs_ajax_content_url."/_ajax/1/id/".join(';', $va_ajax_ids)) : ''))."', {icon: '".$o_config->get("themes_url")."/".(defined("__CA_THEME__") ? __CA_THEME__ : $o_config->get('theme'))."/graphics/icons/blu-pointer.png'} ));\n";
+					$vs_buf .= "	caMap_{$vs_id}_markers.push(caMap_{$vs_id}.makeMarker(".$vn_latitude.", ".$vn_longitude.", '".preg_replace("![\n\r]+!", " ", addslashes($vs_label))."', '".preg_replace("![\n\r]+!", " ", addslashes($vs_balloon_content))."', '".preg_replace("![\n\r]+!", " ", ($vs_ajax_content_url ? addslashes($vs_ajax_content_url."/_ajax/1/id/".join(';', $va_ajax_ids)) : ''))."', {} ));\n";
 				}
 			}
 		}

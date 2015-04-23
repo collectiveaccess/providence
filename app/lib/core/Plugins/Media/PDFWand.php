@@ -770,6 +770,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 			if ($vs_filename = $this->write($vs_output_file_prefix.sprintf("%05d", $vn_i), 'image/jpeg', array('dontUseDefaultIcons' => true))) {
 				$va_files[$vn_i] = $vs_filename;
 			}
+			if ($vn_i >= $vn_max_number_of_pages) { break; }
 		}
 		$this->set("page", 1);
 		$this->set('resolution', $vn_old_res);
