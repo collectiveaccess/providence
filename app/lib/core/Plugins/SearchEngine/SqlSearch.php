@@ -950,8 +950,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										if ($t_element->load(array('element_code' => ($vs_sub_field ? $vs_sub_field : $vs_field)))) {
 											$va_indexed_fields = $o_base->getFieldsToIndex($pn_subject_tablenum, $vn_direct_sql_target_table_num);
 											$vn_fld_num = $t_element->getPrimaryKey();
+											$vn_root_element_id = $t_element->get('hier_element_id');
 											
-											if (!isset($va_indexed_fields['_ca_attribute_'.$vn_fld_num])) { break(2); } // skip if not indexed
+											if (!isset($va_indexed_fields['_ca_attribute_'.$vn_fld_num]) && (!$vn_parent_element_id || ($vn_root_element_id && !isset($va_indexed_fields['_ca_attribute_'.$vn_root_element_id])))) { break(2); } // skip if not indexed
 											$vs_fld_num = 'A'.$vn_fld_num;
 										
 											if (!$vb_is_blank_search) {
@@ -1357,7 +1358,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						if ((($vn_num_terms = (sizeof($va_ft_terms) + sizeof($va_ft_like_terms) + sizeof($va_ft_stem_terms))) > 1) && (!$vs_direct_sql_query)){
 							$vs_sql .= " HAVING count(distinct sw.word_id) = {$vn_num_terms}";
 						}
-						$t=new Timer();
+						
+						$t = new Timer();
 						$this->opo_db->query($vs_sql, is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array());
 
 						if ($this->debug) { Debug::msg('FIRST: '.$vs_sql." [$pn_subject_tablenum] ".$t->GetTime(4)); }
@@ -1383,8 +1385,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										swi.table_num = ?
 										{$vs_rel_type_id_sql}
 										".($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '')."
-									GROUP BY
-										swi.row_id
+									GROUP BY swi.row_id
 								";
 								
 								if (($vn_num_terms = (sizeof($va_ft_terms) + sizeof($va_ft_like_terms) + sizeof($va_ft_stem_terms))) > 1) {
@@ -1396,7 +1397,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								
 								if ($this->debug) { Debug::msg('AND: '.$vs_sql. ' '.$t->GetTime(4). ' '.$qr_res->numRows()); }
 						
-								if (is_array($va_ids = $qr_res->getAllFieldValues(($vn_direct_sql_target_table_num != $pn_subject_tablenum) ? $this->opo_datamodel->primaryKey($pn_subject_tablenum) : 'row_id')) && sizeof($va_ids)) {
+								if (is_array($va_ids = $qr_res->getAllFieldValues(($vs_direct_sql_query && ($vn_direct_sql_target_table_num != $pn_subject_tablenum)) ? $this->opo_datamodel->primaryKey($pn_subject_tablenum) : 'row_id')) && sizeof($va_ids)) {
+									
 									$vs_sql = "DELETE FROM {$ps_dest_table} WHERE row_id NOT IN (?)";
 									$qr_res = $this->opo_db->query($vs_sql, array($va_ids));
 									if ($this->debug) { Debug::msg('AND DELETE: '.$vs_sql. ' '.$t->GetTime(4)); }
@@ -1420,7 +1422,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										".($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '');
 								
 								$qr_res = $this->opo_db->query($vs_sql, is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum));
-								$va_ids = $qr_res->getAllFieldValues(($vn_direct_sql_target_table_num != $pn_subject_tablenum) ? $this->opo_datamodel->primaryKey($pn_subject_tablenum) : 'row_id');
+								$va_ids = $qr_res->getAllFieldValues(($vs_direct_sql_query && ($vn_direct_sql_target_table_num != $pn_subject_tablenum)) ? $this->opo_datamodel->primaryKey($pn_subject_tablenum) : 'row_id');
 								
 								if (sizeof($va_ids) > 0) {
 									$vs_sql = "
