@@ -526,6 +526,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			$va_direct_query_temp_tables = array();	// List of temporary tables created by direct search queries; tables listed here are dropped at the end of processing for the query element		
 			$pa_direct_sql_query_params = null; // set to array with values to use with direct SQL query placeholders or null to pass single standard table_num value as param (most queries just need this single value)
 			$vs_direct_sql_query = null;
+			$vn_direct_sql_target_table_num = $pn_subject_tablenum;
 			
 			switch($vs_class = get_class($o_lucene_query_element)) {
 				case 'Zend_Search_Lucene_Search_Query_Boolean':
@@ -600,6 +601,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							$va_upper_term = $o_lucene_query_element->getUpperTerm();
 							$va_element = $this->_getElementIDForAccessPoint($pn_subject_tablenum, $va_lower_term->field);
 							
+							$vn_direct_sql_target_table_num = $va_element['table_num'];
 							switch($va_element['datatype']) {
 								case __CA_ATTRIBUTE_VALUE_GEOCODE__:
 									$t_geocode = new GeocodeAttributeValue();
@@ -935,6 +937,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$vn_fld_num = $this->getFieldNum($vs_table, $vs_field);
 									$vs_fld_num = 'I'.$vn_fld_num;
 								
+									$vn_direct_sql_target_table_num = $vs_table_num; 
+									
 									if (!strlen($vn_fld_num)) {
 										$t_element = new ca_metadata_elements();
 										if ($t_element->load(array('element_code' => ($vs_sub_field ? $vs_sub_field : $vs_field)))) {
@@ -1288,15 +1292,43 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					}
 					
 					if ($vn_i == 0) {
-						if ($vs_direct_sql_query) {
-							$vs_direct_sql_query = str_replace('^JOIN', "", $vs_direct_sql_query);
-						}
-
 						if($vs_direct_sql_query) {
+							if ($vn_direct_sql_target_table_num > 0) {
+								// We're doing direct queries on metadata in a related table, fun!
+								// Now let's rewrite the direct query to work...
+								
+								if ($t_target = $this->opo_datamodel->getInstanceByTableNum($vn_direct_sql_target_table_num, true)) {
+									// First we create the join from the related table to our subject
+									$vs_target_table_name = $t_target->tableName();
+									
+									$va_path = array_keys($this->opo_datamodel->getPath($vn_direct_sql_target_table_num, $pn_subject_tablenum));
+									
+									$va_join = array();
+									$vs_left_table = array_shift($va_path);
+									
+									$vn_cj = 0;
+									foreach($va_path as $vs_right_table) {
+										if (sizeof($va_rels = $this->opo_datamodel->getRelationships($vs_left_table, $vs_right_table)) > 0) {
+											//print_R($va_rels);
+											$va_join[] = "INNER JOIN {$vs_right_table} ON {$vs_right_table}.".$va_rels[$vs_left_table][$vs_right_table][0][1]." = ".(($vn_cj == 0) ? 'ca.row_id' : "{$vs_left_table}.".$va_rels[$vs_left_table][$vs_right_table][0][0]);
+										}
+										$vs_left_table = $vs_right_table;
+										$vn_cj++;
+									}
+									$vs_direct_sql_query = str_replace('^JOIN', join("\n", $va_join), $vs_direct_sql_query);
+								
+									// Next we rewrite the key we're pulled to be from our subject
+									$vs_direct_sql_query = str_replace("SELECT ca.row_id", "SELECT ".$this->opo_datamodel->primaryKey($pn_subject_tablenum, true), $vs_direct_sql_query);
+								
+									// Finally we pray
+								}
+							} else {
+								$vs_direct_sql_query = str_replace('^JOIN', "", $vs_direct_sql_query);
+							}
 							$vs_sql = "INSERT IGNORE INTO {$ps_dest_table} {$vs_direct_sql_query}";
-
+							
 							if((strpos($vs_sql, '?') !== false) && (!is_array($pa_direct_sql_query_params) || sizeof($pa_direct_sql_query_params) == 0)) {
-								$pa_direct_sql_query_params = array((int)$pn_subject_tablenum);
+								$pa_direct_sql_query_params = array($vn_direct_sql_target_table_num ? $vn_direct_sql_target_table_num : (int)$pn_subject_tablenum);
 							}
 						} else {
 							$vs_sql = "
