@@ -58,9 +58,9 @@ class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 
 		$vs_query = urlencode('
 SELECT ?ID ?TermPrefLabel ?Parents {
-  ?ID a skos:Concept; luc:term "'.$ps_search.'"; skos:inScheme '.$vs_skos_scheme.': ;
+  ?ID a skos:Concept; luc:text "'.$ps_search.'"; skos:inScheme '.$vs_skos_scheme.': ;
     gvp:prefLabelGVP [xl:literalForm ?TermPrefLabel].
-    optional {?ID gvp:parentStringAbbrev ?Parents}
+    {?ID gvp:parentStringAbbrev ?Parents}
     {?ID gvp:displayOrder ?Order}
 } ORDER BY ASC(?Order)
 LIMIT 25
@@ -91,10 +91,15 @@ LIMIT 25
 		}
 
 		foreach($va_result['results']['bindings'] as $va_values) {
+			$vs_id = '';
+			if(preg_match("/[a-z]{3,4}\/[0-9]+$/", $va_values['ID']['value'], $va_matches)) {
+				$vs_id = str_replace('/', ':', $va_matches[0]);
+			}
+
 			$va_return['results'][] = array(
-				'label' => $va_values['TermPrefLabel']['value'] . " (".$va_values['Parents']['value'].")",
+				'label' => $va_values['TermPrefLabel']['value'] . " (".$va_values['Parents']['value'].") [{$vs_id}]",
 				'url' => $va_values['ID']['value'],
-				'id' => $va_values['ID']['value'],
+				'id' => $vs_id,
 			);
 		}
 

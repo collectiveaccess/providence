@@ -2092,6 +2092,26 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="tgn" datatype="InformationService">
+      <labels>
+        <label locale="en_US">
+          <name>TGN</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="service">TGN</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
   </elementSets>
   <userInterfaces>
     <userInterface code="standard_object_ui" type="ca_objects">
@@ -2124,6 +2144,9 @@
                 <setting name="label" locale="en_US">Alternate titles</setting>
                 <setting name="add_label" locale="en_US">Add name</setting>
               </settings>
+            </placement>
+            <placement code="ca_attribute_tgn">
+              <bundle>ca_attribute_tgn</bundle>
             </placement>
             <placement code="ca_attribute_date">
               <bundle>ca_attribute_date</bundle>

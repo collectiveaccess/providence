@@ -33,11 +33,26 @@ require_once(__CA_LIB_DIR__."/core/Plugins/InformationService/TGN.php");
 
 class TGNInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase {
 
-	public function testBasicQuery() {
+	public function testBrooklynQuery() {
 		$o_service = new WLPlugInformationServiceTGN();
 
-		$va_return = $o_service->lookup(array(), 'Williamsburg Brooklyn');
+		$va_return = $o_service->lookup(array(), 'Brooklyn');
 		$this->assertEquals(25, sizeof($va_return['results']));
+
+		$va_labels = array();
+		foreach($va_return['results'] as $va_record) {
+			$va_labels[] = $va_record['label'];
+		}
+
+		$this->assertContains('Brooklyn (Poweshiek, Iowa) [tgn:2034406]', $va_labels);
+		$this->assertContains('Brooklyn (New York, New York) [tgn:7015822]', $va_labels);
+		$this->assertContains('Brooklyn (Green, Wisconsin) [tgn:2120816]', $va_labels);
 	}
 
+	public function testRubbishQuery() {
+		$o_service = new WLPlugInformationServiceTGN();
+
+		$va_return = $o_service->lookup(array(), 'thisshouldnotgiveusanyresultsfromgetty');
+		$this->assertEmpty($va_return);
+	}
 }
