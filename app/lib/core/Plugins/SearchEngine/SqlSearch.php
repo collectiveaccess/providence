@@ -606,7 +606,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							$vn_direct_sql_target_table_num = $va_element['table_num'];
 							
 							$va_indexed_fields = $o_base->getFieldsToIndex($pn_subject_tablenum, $vn_direct_sql_target_table_num);
-							if (!isset($va_indexed_fields['_ca_attribute_'.$va_element['element_id']])) { break(2); } // skip if not indexed
+							$vn_root_element_id = $va_element['element_info']['hier_element_id'];
+							if (!isset($va_indexed_fields['_ca_attribute_'.$va_element['element_id']]) && (!$vn_root_element_id || ($vn_root_element_id && !isset($va_indexed_fields['_ca_attribute_'.$vn_root_element_id])))) { break(2); } // skip if not indexed
+											
 							
 							switch($va_element['datatype']) {
 								case __CA_ATTRIBUTE_VALUE_GEOCODE__:
