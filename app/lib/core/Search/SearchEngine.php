@@ -142,7 +142,7 @@ class SearchEngine extends SearchBase {
 			$ps_search .= $vs_append_to_search;
 		}
 		
-		$ps_search = str_replace("[BLANK]", '"[BLANK]"', $ps_search);	// the special [BLANK] search term, which returns records that have *no* content in a specific fields, has to be quoted in order to protect the square brackets from the parser.
+		$ps_search = preg_replace("!([^\"]{0,1})\[BLANK\]([^\"]{0,1})!i", '\1"[BLANK]"\2', $ps_search); // the special [BLANK] search term, which returns records that have *no* content in a specific fields, has to be quoted in order to protect the square brackets from the parser.
 		
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		if(($vn_limit = caGetOption('limit', $pa_options, null, array('castTo' => 'int'))) < 0) { $vn_limit = null; }
