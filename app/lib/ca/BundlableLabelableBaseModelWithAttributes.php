@@ -6071,7 +6071,7 @@ side. For many self-relations the direction determines the nature and display te
 			
 		$t_violation = new ca_metadata_dictionary_rule_violations();
 		
-		$va_rules = ca_metadata_dictionary_rules::getRules(array('bundles' => caGetOption('bundles', $pa_options, null)));
+		$va_rules = ca_metadata_dictionary_rules::getRules(array('db' => $o_db, 'bundles' => caGetOption('bundles', $pa_options, null)));
 		
 		$vn_violation_count = 0;
 		$va_violations = array();
