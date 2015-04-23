@@ -105,6 +105,13 @@ class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 						'georeference' => '1600 Amphitheatre Parkway, Mountain View, CA',
 					),
 				),
+
+				// coverageNotes
+				'coverageNotes' => array(
+					array(
+						'coverageNotes' => '', // add blank value for [BLANK] search test
+					),
+				),
 			)
 		)));
 
