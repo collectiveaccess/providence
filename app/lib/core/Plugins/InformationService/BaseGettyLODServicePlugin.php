@@ -56,21 +56,25 @@ class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 		$vs_skos_scheme = caGetOption('skosScheme', $pa_options, '', array('validValues' => array('', 'tgn', 'aat', 'ulan')));
 		$vb_beta = caGetOption('beta', $pa_options, false);
 
+		/**
+		 * Contrary to what the Getty documentation says the terms seem to get combined by OR, not AND, so if you pass
+		 * "Coney Island" you get all kinds of Islands, just not the one you're looking for. It's in there somewhere but
+		 * the order field might prevent it from showing up within the limit. So we do our own little piece of "query rewriting" here.
+		 */
+		$va_search = preg_split('/[\s]+/', $ps_search);
+		$vs_search = join(' AND ', $va_search);
+
 		$vs_query = urlencode('
-SELECT ?ID ?TermPrefLabel ?Parents {
-  ?ID a skos:Concept; luc:text "'.$ps_search.'"; skos:inScheme '.$vs_skos_scheme.': ;
-    gvp:prefLabelGVP [xl:literalForm ?TermPrefLabel].
-    {?ID gvp:parentStringAbbrev ?Parents}
-    {?ID gvp:displayOrder ?Order}
-} ORDER BY ASC(?Order)
-LIMIT 25
+			SELECT ?ID ?TermPrefLabel ?Parents {
+				?ID a skos:Concept; luc:text "'.$vs_search.'"; skos:inScheme '.$vs_skos_scheme.': ;
+				gvp:prefLabelGVP [xl:literalForm ?TermPrefLabel].
+				{?ID gvp:parentStringAbbrev ?Parents}
+				{?ID gvp:displayOrder ?Order}
+			} ORDER BY ASC(?Order)
+			LIMIT 25
 		');
 
-		if(!$vb_beta) {
-			$vs_getty_query_url = 'http://vocab.getty.edu/sparql.json';
-		} else {
-			$vs_getty_query_url = 'http://vocab-beta.getty.edu/sparql.json';
-		}
+		$vs_getty_query_url = $vb_beta ? 'http://vocab-beta.getty.edu/sparql.json' : 'http://vocab.getty.edu/sparql.json';
 
 		$o_curl=curl_init();
 		curl_setopt($o_curl, CURLOPT_URL, "{$vs_getty_query_url}?query={$vs_query}");
@@ -116,7 +120,11 @@ LIMIT 25
 	public function getExtendedInformation($pa_settings, $ps_url) {
 		$o_graph = new EasyRdf_Graph("http://vocab.getty.edu/download/rdf?uri={$ps_url}.rdf");
 		$o_graph->load();
-		//var_dump($o_graph->get('http://vocab.getty.edu/ontology#parentString'));
+
+		//var_dump($o_graph->dump('text'));
+		//var_dump($o_graph->propertyUris($ps_url));
+		var_dump($o_graph->get($ps_url, '<http://vocab.getty.edu/ontology#parentString>'));
+		//var_dump($o_graph->label($ps_url));
 
 		return array('display' => '');
 	}

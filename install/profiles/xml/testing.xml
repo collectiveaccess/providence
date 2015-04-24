@@ -2100,6 +2100,7 @@
       </labels>
       <settings>
         <setting name="service">TGN</setting>
+        <setting name="fieldWidth">90</setting>
       </settings>
       <typeRestrictions>
         <restriction code="r1">
