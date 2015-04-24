@@ -1419,13 +1419,13 @@ class SearchResult extends BaseObject {
 				}
 				foreach($pa_value_list as $vn_locale_id => $va_values) {
 					foreach($va_values as $vn_i => $va_value) {
-						$va_ids[] = $va_value[$vs_pk];
+						$va_ids[] = $vn_row_id = $va_value[$vs_pk];
 						
 						if ($pa_options['unserialize']) {
 							$va_props = caUnserializeForDatabase($va_value[$va_path_components['field_name']]);
 			
 							if ($pa_options['returnAllLocales']) {
-								$va_return_values[$pn_row_id][$vn_locale_id][] = $va_props;
+								$va_return_values[$vn_row_id][$vn_locale_id][] = $va_props;
 							} else {
 								$va_return_values[] = $va_props;
 							}
@@ -1444,11 +1444,11 @@ class SearchResult extends BaseObject {
 				
 							if ($pa_options['returnAllLocales']) {
 								if ($vs_info_element) {
-									$va_return_values[$pn_row_id][$vn_locale_id][] = $this->getMediaInfo($va_path_components['table_name'].'.'.$va_path_components['field_name'], $vs_version, $vs_info_element, $pa_options);
+									$va_return_values[$vn_row_id][$vn_locale_id][] = $this->getMediaInfo($va_path_components['table_name'].'.'.$va_path_components['field_name'], $vs_version, $vs_info_element, $pa_options);
 								} elseif (isset($pa_options['returnURL']) && ($pa_options['returnURL'])) {
-									$va_return_values[$pn_row_id][$vn_locale_id][] = $this->getMediaUrl($va_path_components['table_name'].'.'.$va_path_components['field_name'], $vs_version, $pa_options);
+									$va_return_values[$vn_row_id][$vn_locale_id][] = $this->getMediaUrl($va_path_components['table_name'].'.'.$va_path_components['field_name'], $vs_version, $pa_options);
 								} else {
-									$va_return_values[$pn_row_id][$vn_locale_id][] = $this->getMediaTag($va_path_components['table_name'].'.'.$va_path_components['field_name'], $vs_version, $pa_options);
+									$va_return_values[$vn_row_id][$vn_locale_id][] = $this->getMediaTag($va_path_components['table_name'].'.'.$va_path_components['field_name'], $vs_version, $pa_options);
 								}
 							} else {
 								if ($vs_info_element) {
