@@ -1942,8 +1942,11 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
-	 *
-	 *
+	 * Return search result instance for given table and id list
+	 * @param string $ps_table the table name
+	 * @param array $pa_ids a list of primary key values
+	 * @param null|array $pa_options @see BundlableLabelableBaseModelWithAttributes::makeSearchResult
+	 * @return null|SearchResult
 	 */
 	function caMakeSearchResult($ps_table, $pa_ids, $pa_options=null) {
 		$o_dm = Datamodel::load();
@@ -2648,24 +2651,39 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caInitialValuesArrayHasValue($ps_id_prefix, $pa_initial_values=array()) {
 		// intrinsic
-		if(is_string($pa_initial_values)) {
+		if (is_string($pa_initial_values)) {
 			return (strlen($pa_initial_values) > 0);
 		}
 
 		// attributes
-		if(preg_match("/attribute/", $ps_id_prefix)) {
-			foreach($pa_initial_values as $va_val) {
-				foreach($va_val as $vs_subfield => $vs_subfield_val) {
-					if($vs_subfield === 'locale_id') { continue; }
-					if($vs_subfield_val) { return true; }
+		if (preg_match("/attribute/", $ps_id_prefix)) {
+			foreach ($pa_initial_values as $va_val) {
+				foreach ($va_val as $vs_subfield => $vs_subfield_val) {
+					if ($vs_subfield === 'locale_id') {
+						continue;
+					}
+					if ($vs_subfield_val) {
+						return true;
+					}
 				}
 			}
-		} elseif(preg_match("/Labels$/", $ps_id_prefix)) { // labels
+		} elseif (preg_match("/Labels$/", $ps_id_prefix)) { // labels
 			return (sizeof($pa_initial_values) > 0);
-		} elseif(preg_match("/\_rel$/", $ps_id_prefix)) {
+		} elseif (preg_match("/\_rel$/", $ps_id_prefix)) {
 			return (sizeof($pa_initial_values) > 0);
 		}
 
 		return false;
+	}
+	# ----------------------------------------
+	/** 
+	 * Determine if CURL functions are available
+	 *
+	 * @return bool
+	 */
+	function caCurlIsAvailable() {
+		if ((bool)ini_get('safe_mode')) { return false; }
+
+		return function_exists('curl_init');
 	}
 	# ----------------------------------------
