@@ -2639,3 +2639,14 @@ function caFileIsIncludable($ps_file) {
 		return $pa_stack;
 	}
 	# ----------------------------------------
+	/** 
+	 * Determine if CURL functions are available
+	 *
+	 * @return bool
+	 */
+	function caCurlIsAvailable() {
+		if ((bool)ini_get('safe_mode')) { return false; }
+
+		return function_exists('curl_init');
+	}
+	# ----------------------------------------
