@@ -830,8 +830,14 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$vs_term = $o_term->text;
 					
 								if ($vs_access_point && (mb_strtoupper($vs_term) == _t('[BLANK]'))) {
-									$vb_is_blank_search = true; 
-									break;
+									$t_ap = $this->opo_datamodel->getInstanceByTableNum($va_access_point_info['table_num'], true);
+									if (is_a($t_ap, 'BaseLabel')) {	// labels have the literal text "[Blank]" indexed to "blank" to indicate blank-ness 
+										$vb_is_blank_search = false;
+										$vs_term = _t('blank');
+									} else {
+										$vb_is_blank_search = true;
+										break;
+									} 
 								}
 								
 								$va_terms = array($vs_term); //$this->_tokenize($vs_term, true, $vn_i);

@@ -242,6 +242,7 @@ class BaseModel extends BaseObject {
 	/**
 	 * prepared change log statement (primary log entry)
 	 *
+	 * @private DbStatement
 	 * @access private
 	 */
 	private $opqs_change_log;
@@ -249,9 +250,18 @@ class BaseModel extends BaseObject {
 	/**
 	 * prepared change log statement (log subject entries)
 	 *
+	 * @private DbStatement
 	 * @access private
 	 */
 	private $opqs_change_log_subjects;
+
+	/**
+	 * prepared change log statement (log snapshots)
+	 *
+	 * @private DbStatement
+	 * @access private
+	 */
+	private $opqs_change_log_snapshot;
 
 	/**
 	 * prepared statement to get change log
@@ -2427,7 +2437,7 @@ class BaseModel extends BaseObject {
 					$vn_id = $this->getPrimaryKey();
 					
 					if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) && !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
-						$this->doSearchIndexing($this->getFieldValuesArray(true), false);
+						$this->doSearchIndexing($this->getFieldValuesArray(true), false, array('isNewRow' => true));
 					}
 
 					if ($vb_we_set_transaction) { $this->removeTransaction(true); }
@@ -3032,18 +3042,20 @@ class BaseModel extends BaseObject {
 	 *
 	 * @param array $pa_changed_field_values_array List of changed field values. [Default is to load list from model]
 	 * @param bool $pb_reindex_mode If set indexing is done in "reindex mode"; that is the row is reindexed from scratch as if the entire database is being reindexed. [Default is false]
-	 * @param string $ps_engine Name of the search engine to use. [Default is the engine configured using "search_engine_plugin" in app.conf] 
+	 * @param array $pa_options Options include 
+	 * 		engine = Name of the search engine to use. [Default is the engine configured using "search_engine_plugin" in app.conf] 
+	 *		isNewRow = Set to true if row is being indexed for the first time. BaseModel::insert() should set this. [Default is false]
 	 *
 	 * @return bool true on success, false on failure of indexing
 	 */
-	public function doSearchIndexing($pa_changed_field_values_array=null, $pb_reindex_mode=false, $ps_engine=null) {
+	public function doSearchIndexing($pa_changed_field_values_array=null, $pb_reindex_mode=false, $pa_options=null) {
 		if (defined("__CA_DONT_DO_SEARCH_INDEXING__")) { return; }
 		if (is_null($pa_changed_field_values_array)) { 
 			$pa_changed_field_values_array = $this->getChangedFieldValuesArray();
 		}
 		
-		$o_indexer = $this->getSearchIndexer($ps_engine);
-		return $o_indexer->indexRow($this->tableNum(), $this->getPrimaryKey(), $this->getFieldValuesArray(true), $pb_reindex_mode, null, $pa_changed_field_values_array, $this->_FIELD_VALUES_OLD);
+		$o_indexer = $this->getSearchIndexer(caGetOption('engine', $pa_options, null));
+		return $o_indexer->indexRow($this->tableNum(), $this->getPrimaryKey(), $this->getFieldValuesArray(true), $pb_reindex_mode, null, $pa_changed_field_values_array, $this->_FIELD_VALUES_OLD, $pa_options);
 	}
 	
 	/**

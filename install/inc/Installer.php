@@ -507,7 +507,7 @@ class Installer {
 
 			$t_item = $t_list->addItem($vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vn_type_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank);
 
-			if ($t_list->numErrors()) {
+			if (($t_list->numErrors() > 0) || !is_object($t_item)) {
 				$this->addError("There was an error while inserting list item {$vs_item_idno}: ".join(" ",$t_list->getErrors()));
 				return false;
 			} else {
@@ -923,20 +923,20 @@ class Installer {
 			}
 		}
 
-		$ca_db = new Db('',null, false);
-		$lists_result = $ca_db->query(" SELECT * FROM ca_lists");
+		$o_db = new Db();
+		$qr_lists = $o_db->query("SELECT * FROM ca_lists");
 
-		$list_names = array();
+		$va_list_names = array();
 		$va_list_item_ids = array();
-		while($lists_result->nextRow()) {
-			$list_names[$lists_result->get('list_id')] = $lists_result->get('list_code');
+		while($qr_lists->nextRow()) {
+			$va_list_names[$qr_lists->get('list_id')] = $qr_lists->get('list_code');
 		}
 
 		// get list items
-		$list_items_result = $ca_db->query(" SELECT * FROM ca_list_items cli INNER JOIN ca_list_item_labels AS clil ON clil.item_id = cli.item_id ");
-		while($list_items_result->nextRow()) {
-			$list_type_code = $list_names[$list_items_result->get('list_id')];
-			$va_list_item_ids[$list_type_code][$list_items_result->get('item_value')] = $list_items_result->get('item_id');
+		$qr_list_item_result = $o_db->query("SELECT * FROM ca_list_items cli INNER JOIN ca_list_item_labels AS clil ON clil.item_id = cli.item_id");
+		while($qr_list_item_result->nextRow()) {
+			$vs_type_code = $va_list_names[$qr_list_item_result->get('list_id')];
+			$va_list_item_ids[$vs_type_code][$qr_list_item_result->get('item_value')] = $qr_list_item_result->get('item_id');
 		}
 
 		$vo_dm = Datamodel::load();

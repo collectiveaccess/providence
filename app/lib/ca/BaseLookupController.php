@@ -213,6 +213,7 @@
 				$vn_id = $va_tmp[0];
 				$vn_start = (int)$va_tmp[1];
 				if($vn_start < 0) { $vn_start = 0; }
+				if(sizeof($va_tmp) < 2) { $pn_id = '0:0'; }
 				
 				$va_items_for_locale = array();
 				if ((!($vn_id)) && method_exists($t_item, "getHierarchyList")) { 
@@ -220,6 +221,12 @@
 					$t_item->load($vn_id);
 					// no id so by default return list of available hierarchies
 					$va_items_for_locale = $t_item->getHierarchyList();
+
+					if(sizeof($va_items_for_locale) == 1 && $this->request->getAppConfig()->get($t_item->tableName().'_hierarchy_browser_hide_root')) {
+						$va_item = array_shift($va_items_for_locale);
+						$this->opo_request->setParameter('id', $va_item['item_id']);
+						return $this->GetHierarchyLevel();
+					}
 				} else {
 					if ($t_item->load($vn_id)) {		// id is the id of the parent for the level we're going to return
 						$vs_table_name = $t_item->tableName();
@@ -351,7 +358,6 @@
  				// is part of a browser initialization
  				$this->request->session->setVar($this->ops_table_name.'_'.$ps_bundle.'_browse_last_id', array_pop($pa_ids));
  			}
- 			
  			
  			$this->view->setVar(str_replace(' ', '_', $this->ops_name_singular).'_list', $va_level_data);
  			
