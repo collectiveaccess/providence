@@ -77,7 +77,8 @@ class AttributeGetTest extends BaseTestWithData {
 				'dimensions' => array(
 					array(
 						'dimensions_length' => '10 in',
-						'dimensions_weight' => '2 lbs'
+						'dimensions_weight' => '2 lbs',
+						'measurement_notes' => 'foo',
 					),
 				),
 
@@ -138,6 +139,16 @@ class AttributeGetTest extends BaseTestWithData {
 
 		$vm_ret = $this->opt_object->get('ca_objects.georeference');
 		$this->assertEquals("1600 Amphitheatre Parkway, Mountain View, CA [37.4225456,-122.0842498]", $vm_ret);
+
+		// This is how we fetch the bundle preview for containers:
+		$vs_template = "<unit relativeTo='ca_objects.dimensions'><if rule='^measurement_notes =~ /foo/'>^ca_objects.dimensions.dimensions_length</if></unit>";
+		$vm_ret = $this->opt_object->getAttributesForDisplay('dimensions', $vs_template);
+		$this->assertEquals('10.0 in', $vm_ret);
+
+		// shouldn't return anything because the expression is false
+		$vs_template = "<unit relativeTo='ca_objects.dimensions'><if rule='^measurement_notes =~ /bar/'>^ca_objects.dimensions.dimensions_length</if></unit>";
+		$vm_ret = $this->opt_object->getAttributesForDisplay('dimensions', $vs_template);
+		$this->assertEmpty($vm_ret);
 	}
 	# -------------------------------------------------------
 }

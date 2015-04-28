@@ -1942,8 +1942,11 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
-	 *
-	 *
+	 * Return search result instance for given table and id list
+	 * @param string $ps_table the table name
+	 * @param array $pa_ids a list of primary key values
+	 * @param null|array $pa_options @see BundlableLabelableBaseModelWithAttributes::makeSearchResult
+	 * @return null|SearchResult
 	 */
 	function caMakeSearchResult($ps_table, $pa_ids, $pa_options=null) {
 		$o_dm = Datamodel::load();
@@ -2667,5 +2670,15 @@ function caFileIsIncludable($ps_file) {
 		}
 
 		return false;
+	# ----------------------------------------
+	/** 
+	 * Determine if CURL functions are available
+	 *
+	 * @return bool
+	 */
+	function caCurlIsAvailable() {
+		if ((bool)ini_get('safe_mode')) { return false; }
+
+		return function_exists('curl_init');
 	}
 	# ----------------------------------------
