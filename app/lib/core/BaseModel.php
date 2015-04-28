@@ -242,6 +242,7 @@ class BaseModel extends BaseObject {
 	/**
 	 * prepared change log statement (primary log entry)
 	 *
+	 * @private DbStatement
 	 * @access private
 	 */
 	private $opqs_change_log;
@@ -249,9 +250,18 @@ class BaseModel extends BaseObject {
 	/**
 	 * prepared change log statement (log subject entries)
 	 *
+	 * @private DbStatement
 	 * @access private
 	 */
 	private $opqs_change_log_subjects;
+
+	/**
+	 * prepared change log statement (log snapshots)
+	 *
+	 * @private DbStatement
+	 * @access private
+	 */
+	private $opqs_change_log_snapshot;
 
 	/**
 	 * prepared statement to get change log
@@ -433,7 +443,7 @@ class BaseModel extends BaseObject {
 	 * Convenience method to return application datamodel object. This is the same object
 	 * you'd get if you instantiated a Datamodel() object
 	 *
-	 * @return Configuration
+	 * @return Datamodel
 	 */
 	public function getAppDatamodel() {
 		return $this->_DATAMODEL;
@@ -8999,6 +9009,9 @@ $pa_options["display_form_field_tips"] = true;
 			$t_rel_type = new ca_relationship_types();
 			if ($vs_linking_table = $t_rel_type->getRelationshipTypeTable($this->tableName(), $t_item_rel->tableName())) {
 				$pn_type_id = $t_rel_type->getRelationshipTypeID($vs_linking_table, $pm_type_id);
+			} else {
+				$this->postError(2510, _t('Type id "%1" is not valid', $pm_type_id), 'BaseModel->addRelationship()');
+				return false;
 			}
 		} else {
 			$pn_type_id = $pm_type_id;
@@ -9038,8 +9051,8 @@ $pa_options["display_form_field_tips"] = true;
 			if(!is_null($ps_source_info)){ $t_item_rel->set("source_info",$ps_source_info); }
 			$t_item_rel->insert();
 			
-			if ($t_item_rel->numErrors()) {
-				$this->errors = $t_item_rel->errors;
+			if ($t_item_rel->numErrors() > 0) {
+				$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
 				return false;
 			}
 			return $t_item_rel;
@@ -9049,7 +9062,6 @@ $pa_options["display_form_field_tips"] = true;
 					$t_item_rel->setMode(ACCESS_WRITE);
 					
 					$vs_left_table = $t_item_rel->getLeftTableName();
-					$vs_right_table = $t_item_rel->getRightTableName();
 
 					if ($this->tableName() == $vs_left_table) {
 						// is lefty
@@ -9067,8 +9079,8 @@ $pa_options["display_form_field_tips"] = true;
 					if(!is_null($ps_source_info)){ $t_item_rel->set("source_info",$ps_source_info); }
 					$t_item_rel->insert();
 					
-					if ($t_item_rel->numErrors()) {
-						$this->errors = $t_item_rel->errors;
+					if ($t_item_rel->numErrors() > 0) {
+						$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
 						return false;
 					}
 					
@@ -9081,8 +9093,8 @@ $pa_options["display_form_field_tips"] = true;
 							$t_item_rel->set($va_rel_info['rel_keys']['many_table_field'], $this->getPrimaryKey());
 							$t_item_rel->update();
 							
-							if ($t_item_rel->numErrors()) {
-								$this->errors = $t_item_rel->errors;
+							if ($t_item_rel->numErrors() > 0) {
+								$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
 								return false;
 							}
 						} else {
@@ -9092,8 +9104,8 @@ $pa_options["display_form_field_tips"] = true;
 							$t_item_rel->set($t_item_rel->getTypeFieldName(), $pn_type_id);	
 							$t_item_rel->insert();
 							
-							if ($t_item_rel->numErrors()) {
-								$this->errors = $t_item_rel->errors;
+							if ($t_item_rel->numErrors() > 0) {
+								$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
 								return false;
 							}
 						}
@@ -9103,18 +9115,18 @@ $pa_options["display_form_field_tips"] = true;
 						$this->set($va_rel_info['rel_keys']['many_table_field'], $pn_rel_id);
 						$this->update();
 					
-						if ($this->numErrors()) {
+						if ($this->numErrors() > 0) {
+							$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
 							return false;
 						}
 						return $this;
 					}
 					break;
 				default:
+					$this->postError(280, _t('Could not find a path to the specified related table'), 'BaseModel->addRelationship', $t_rel_item->tableName());
 					return false;
-					break;
 			}
-		}		
-		return false;
+		}
 	}
 	# --------------------------------------------------------------------------------------------
 	/**

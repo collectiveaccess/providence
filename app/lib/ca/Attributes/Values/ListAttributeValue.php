@@ -177,7 +177,7 @@
 		'displayDelimiter' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
-			'default' => ',',
+			'default' => '; ',
 			'width' => 10, 'height' => 1,
 			'label' => _t('Value delimiter'),
 			'validForRootOnly' => 1,
@@ -236,12 +236,12 @@
 					if ($o_trans) { $t_item->setTransaction($o_trans); }
 				}
 				
-				$vs_get_spec = ((isset($pa_options['useSingular']) && $pa_options['useSingular']) ? 'name_singular' : 'name_plural');
+				$vs_get_spec = ((isset($pa_options['useSingular']) && $pa_options['useSingular']) ? 'preferred_labels.name_singular' : 'preferred_labels.name_plural');
 
 				// do we need to get the hierarchy?
 				if ($pa_options['showHierarchy']) {
-					$t_item->load($this->ops_text_value);
-					return $t_item->get('ca_list_items.hierarchy.'.$vs_get_spec, $pa_options);
+					$t_item->load((int)$this->opn_item_id);
+					return $t_item->get('ca_list_items.hierarchy.'.$vs_get_spec, array_merge(array('removeFirstItems' => 1, 'delimiter' => ' ➔ ', $pa_options)));
 				} 
 				
 				return $t_list->getItemFromListForDisplayByItemID($vn_list_id, $this->ops_text_value, (isset($pa_options['useSingular']) && $pa_options['useSingular']) ? false : true);

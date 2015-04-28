@@ -46,7 +46,7 @@
  	if ($vb_batch) {
 		print caBatchEditorIntrinsicModeControl($t_instance, $vs_id_prefix);
 	} else {
-		print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $vs_bundle_preview));
 ?>
 		<script type="text/javascript">
 			jQuery(document).ready(function() {
