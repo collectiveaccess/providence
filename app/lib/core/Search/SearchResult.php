@@ -1277,7 +1277,7 @@ class SearchResult extends BaseObject {
 					$va_link = caCreateLinksFromText(array($vs_text), $t_rel_instance->tableName(), array($va_relation_info[$vs_pk]));
 					$va_links[$vn_relation_id] = array_pop($va_link);
 				}
-				return join($pa_options['delimiter'], $va_links);
+				return (sizeof($va_links) > 0) ? join($pa_options['delimiter'], $va_links) : null;
 			} else {
 				return caProcessTemplateForIDs($vs_template, $t_rel_instance->tableName(), $va_ids, $pa_options);
 			}
@@ -1296,9 +1296,10 @@ class SearchResult extends BaseObject {
 				continue;
 			}
 			
-			//if (is_null($vm_val)) { continue; } // Probably not a good idea to skip nulls in case caller expects values for different spec's in the same table to line up
+			if (is_null($vm_val)) { continue; } // Skip null values; indicates that there was no related value
 			if (caGetOption('returnAsArray', $pa_options, false)) {
 				foreach($vm_val as $vn_i => $vs_val) {
+					// We include blanks in arrays so various get() calls on different fields in the same record set align
 					$va_return_values[] = $vs_val;
 				}
 			} else {
@@ -1313,7 +1314,7 @@ class SearchResult extends BaseObject {
 			$va_return_values = caCreateLinksFromText($va_return_values, $t_rel_instance->tableName(), array($va_relation_info[$vs_pk]));
 		}
 	
-		return join($pa_options['delimiter'], $va_return_values);
+		return (sizeof($va_return_values) > 0) ? join($pa_options['delimiter'], $va_return_values) : null;
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -1373,7 +1374,7 @@ class SearchResult extends BaseObject {
 		$va_return_values = array_values(caExtractValuesByUserLocale($va_return_values));
 		if ($pa_options['returnAsArray']) { return $va_return_values; }
 		
-		return join($pa_options['delimiter'], $va_return_values);
+		return (sizeof($va_return_values) > 0) ? join($pa_options['delimiter'], $va_return_values) : null;
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -1448,7 +1449,7 @@ class SearchResult extends BaseObject {
 		if ($pa_options['returnAllLocales']) { return $va_return_values; } 	
 		if ($pa_options['returnAsArray']) { return array_values(caExtractValuesByUserLocale($va_return_values)); }
 		
-		return join($pa_options['delimiter'], $va_return_values);
+		return (sizeof($va_return_values) > 0) ? join($pa_options['delimiter'], $va_return_values) : null;
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -1598,7 +1599,7 @@ class SearchResult extends BaseObject {
 		}
 						
 		if ($pa_options['returnAllLocales'] || $pa_options['returnAsArray']) { return $va_return_values; } 
-		return join($pa_options['delimiter'], $va_return_values);
+		return (sizeof($va_return_values) > 0) ? join($pa_options['delimiter'], $va_return_values) : null;
 	}
 	# ------------------------------------------------------------------
 	/**
