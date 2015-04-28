@@ -77,13 +77,16 @@ final class ConfigurationExporter {
 	# -------------------------------------------------------
 	/**
 	 * Export current configuration as XML profile
+	 *
 	 * @param string $ps_name Name of the profile, used for "profileName" element
 	 * @param string $ps_description Description of the profile, used for "profileDescription" element
 	 * @param string $ps_base Base profile
 	 * @param string $ps_info_url Info URL for the profile
+	 * @param int $pn_fast_list_size The maximum number of list items a list must have to export the items in the list.
+	 *
 	 * @return string profile as XML string
 	 */
-	public static function exportConfigurationAsXML($ps_name="",$ps_description="",$ps_base="",$ps_info_url="") {
+	public static function exportConfigurationAsXML($ps_name="",$ps_description="",$ps_base="",$ps_info_url="", $pn_fast_list_size = 0) {
 		$o_exporter = new ConfigurationExporter();
 		
 		$vo_root = $o_exporter->getDOM()->createElement('profile');
@@ -114,7 +117,7 @@ final class ConfigurationExporter {
 		}
 		
 		$vo_root->appendChild($o_exporter->getLocalesAsDOM());
-		$vo_root->appendChild($o_exporter->getListsAsDOM());
+		$vo_root->appendChild($o_exporter->getListsAsDOM($pn_fast_list_size));
 		$vo_root->appendChild($o_exporter->getElementsAsDOM());
 		$vo_root->appendChild($o_exporter->getUIsAsDOM());
 		$vo_root->appendChild($o_exporter->getRelationshipTypesAsDOM());
@@ -169,7 +172,7 @@ final class ConfigurationExporter {
 		return $vo_locales;
 	}
 	# -------------------------------------------------------
-	public function getListsAsDOM(){
+	public function getListsAsDOM($pn_fast_list_size = 0){
 		$qr_lists = $this->opo_db->query("SELECT * FROM ca_lists ORDER BY list_id");
 
 		$vo_lists = $this->opo_dom->createElement("lists");
@@ -203,8 +206,14 @@ final class ConfigurationExporter {
 			}
 
 			$vo_list->appendChild($vo_labels);
-
-			$vo_items = $this->getListItemsAsDOM($t_list->getRootItemIDForList($qr_lists->get("list_code")));
+			$vb_skip_items = false;
+			if($pn_fast_list_size){
+				$qr_count = $this->opo_db->query("SELECT count(*) c from ca_list_items i JOIN ca_lists l USING (list_id) WHERE i.deleted=0 and list_code=?", $qr_lists->get("list_code"));
+				if ($qr_count->nextRow() && $vn_num_items = (int)$qr_count->get('c')) {
+					$vb_skip_items = $vn_num_items > $pn_fast_list_size;
+				}
+			}
+			$vo_items = !$vb_skip_items ? $this->getListItemsAsDOM($t_list->getRootItemIDForList($qr_lists->get("list_code")), $pn_fast_list_size) : null;
 			if($vo_items){
 				$vo_list->appendChild($vo_items);
 			}
