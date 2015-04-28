@@ -170,7 +170,15 @@ BaseModel::$s_ca_models_definitions['ca_storage_locations'] = array(
 				'DEFAULT' => '',
 				"MEDIA_PROCESSING_SETTING" => 'ca_icons',
 				'LABEL' => _t('Icon'), 'DESCRIPTION' => _t('Optional icon to identify the editor UI with')
-		)
+		),
+		'is_enabled' => array(
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT,
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false,
+				'DEFAULT' => '1',
+				'LABEL' => _t('Is enabled?'), 'DESCRIPTION' => _t("If unchecked this item is disabled and can't be edited or used in new relationships"),
+				'BOUNDS_VALUE' => array(0,1)
+		),
  	)
 );
 
@@ -328,6 +336,29 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 		
 		$this->BUNDLES['hierarchy_navigation'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Hierarchy navigation'));
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
+	}
+	# ------------------------------------------------------
+	public function insert($pa_options=null) {
+		$vb_web_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$this->setTransaction(new Transaction($this->getDb()));
+			$vb_web_set_transaction = true;
+		}
+
+		$o_trans = $this->getTransaction();
+
+		if (!strlen($this->get('is_enabled'))) {
+			$this->set('is_enabled', 1);
+		}
+		$vn_rc = parent::insert($pa_options);
+
+		if ($this->numErrors()) {
+			if ($vb_web_set_transaction) { $o_trans->rollback(); }
+		} else {
+			if ($vb_web_set_transaction) { $o_trans->commit(); }
+		}
+
+		return $vn_rc;
 	}
 	# ------------------------------------------------------
 	/**
