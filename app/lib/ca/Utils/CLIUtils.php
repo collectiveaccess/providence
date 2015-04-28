@@ -502,7 +502,7 @@
 				return false;
 			}
 			
-			$vs_profile = ConfigurationExporter::exportConfigurationAsXML($po_opts->getOption("name"), $po_opts->getOption("description"), $po_opts->getOption("base"), $po_opts->getOption("infoURL"));
+			$vs_profile = ConfigurationExporter::exportConfigurationAsXML($po_opts->getOption("name"), $po_opts->getOption("description"), $po_opts->getOption("base"), $po_opts->getOption("infoURL"), $po_opts->getOption("fast-lists"));
 			
 			if ($vs_output) {
 				file_put_contents($vs_output, $vs_profile);
@@ -521,7 +521,8 @@
 				"name|n=s" => _t('Name of the profile, used for "profileName" element.'),
 				"infoURL|u-s" => _t('URL pointing to more information about the profile. (Optional)'),
 				"description|d-s" => _t('Description of the profile, used for "profileDescription" element. (Optional)'),
-				"output|o-s" => _t('File to output profile to. If omitted profile is printed to standard output. (Optional)')
+				"output|o-s" => _t('File to output profile to. If omitted profile is printed to standard output. (Optional)'),
+				"fast-lists|f-n" => _t('Skip list items for lists with more than this many items. The list still gets put in the profile, just not the list items that are part of it. Use this option where the list items in large lists are generally imported from a different source. (Optional)')
 			);
 		}
 		# -------------------------------------------------------
