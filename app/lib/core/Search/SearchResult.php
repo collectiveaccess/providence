@@ -1292,12 +1292,11 @@ class SearchResult extends BaseObject {
 
 		while($qr_rel->nextHit()) {
 			$vm_val = $qr_rel->get(join(".", $va_spec), $pa_options);
-			
 			if (is_array($pa_check_access) && sizeof($pa_check_access) && !in_array($qr_rel->get($va_path_components['table_name'].".access"), $pa_check_access)) {
 				continue;
 			}
 			
-			if (!$vm_val) { continue; }
+			//if (is_null($vm_val)) { continue; } // Probably not a good idea to skip nulls in case caller expects values for different spec's in the same table to line up
 			if (caGetOption('returnAsArray', $pa_options, false)) {
 				foreach($vm_val as $vn_i => $vs_val) {
 					$va_return_values[] = $vs_val;
