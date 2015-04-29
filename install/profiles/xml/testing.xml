@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="http://dublincore.org/documents/dces/">
-  <profileName>[Testing] Automated testing purposes only</profileName>
+  <profileName>[Testing] Profile for test cases</profileName>
   <profileDescription/>
   <locales>
     <locale lang="en" country="US">English</locale>
