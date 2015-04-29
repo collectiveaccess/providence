@@ -74,11 +74,44 @@ class WLPlugInformationServiceTGN extends BaseGettyLODServicePlugin implements I
 	 */
 	public function lookup($pa_settings, $ps_search, $pa_options=null) {
 		if(!is_array($pa_options)) { $pa_options = array(); }
-		$va_return = parent::lookup($ps_search, array_merge($pa_options, array('beta' => false, 'skosScheme' => 'tgn')));
-		if(isset($va_return['results']) && is_array($va_return['results'])) {
-			foreach($va_return['results'] as &$va_result) {
-				$va_result['label'] = str_replace(', ... World', '', $va_result['label']);
+
+		$va_service_conf = $this->opo_linked_data_conf->get('tgn');
+		$vs_search_field = (isset($va_service_conf['search_text']) && $va_service_conf['search_text']) ? 'luc:text' : 'luc:term';
+
+		/**
+		 * Contrary to what the Getty documentation says the terms seem to get combined by OR, not AND, so if you pass
+		 * "Coney Island" you get all kinds of Islands, just not the one you're looking for. It's in there somewhere but
+		 * the order field might prevent it from showing up within the limit. So we do our own little piece of "query rewriting" here.
+		 */
+		$va_search = preg_split('/[\s]+/', $ps_search);
+		$vs_search = join(' AND ', $va_search);
+
+		$vs_query = urlencode('SELECT ?ID ?TermPrefLabel ?Parents ?Type {
+			?ID a skos:Concept; '.$vs_search_field.' "'.$vs_search.'"; skos:inScheme tgn: ;
+			gvp:prefLabelGVP [xl:literalForm ?TermPrefLabel].
+  			{?ID gvp:parentStringAbbrev ?Parents}
+  			{?ID gvp:displayOrder ?Order}
+  			{?ID gvp:placeTypePreferred [gvp:prefLabelGVP [xl:literalForm ?Type]]}
+		} ORDER BY ASC(?Order)
+		LIMIT 25');
+
+		$va_results = $this->queryGetty($vs_query);
+		if(!is_array($va_results)) { return false; }
+
+		$va_return = array();
+		foreach($va_results as $va_values) {
+			$vs_id = '';
+			if(preg_match("/[a-z]{3,4}\/[0-9]+$/", $va_values['ID']['value'], $va_matches)) {
+				$vs_id = str_replace('/', ':', $va_matches[0]);
 			}
+
+			$vs_label = $va_values['TermPrefLabel']['value'] . ", " . $va_values['Parents']['value'] . " (" . $va_values['Type']['value'] . ")";
+
+			$va_return['results'][] = array(
+				'label' => str_replace(', ... World', '', $vs_label),
+				'url' => $va_values['ID']['value'],
+				'id' => $vs_id,
+			);
 		}
 
 		return $va_return;

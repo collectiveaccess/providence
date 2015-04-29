@@ -44,9 +44,9 @@ class TGNInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase
 			$va_labels[] = $va_record['label'];
 		}
 
-		$this->assertContains('Brooklyn (Poweshiek, Iowa)', $va_labels);
-		$this->assertContains('Brooklyn (New York, New York)', $va_labels);
-		$this->assertContains('Brooklyn (Green, Wisconsin)', $va_labels);
+		$this->assertContains('Brooklyn, Poweshiek, Iowa (inhabited places)', $va_labels);
+		$this->assertContains('Brooklyn, New York, New York (boroughs)', $va_labels);
+		$this->assertContains('Brooklyn, Green, Wisconsin (inhabited places)', $va_labels);
 	}
 
 	public function testConeyIsland() {
@@ -60,9 +60,9 @@ class TGNInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase
 			$va_labels[] = $va_record['label'];
 		}
 
-		$this->assertContains('Coney Island (Brooklyn, New York)', $va_labels);
-		$this->assertContains('Coney Island Creek (Kings, New York)', $va_labels);
-		$this->assertContains('Coney Island (Armagh, Northern Ireland)', $va_labels);
+		$this->assertContains('Coney Island, Brooklyn, New York (neighborhoods)', $va_labels);
+		$this->assertContains('Coney Island Creek, Kings, New York (creeks (bodies of water))', $va_labels);
+		$this->assertContains('Coney Island, Armagh, Northern Ireland (islands (landforms))', $va_labels);
 	}
 
 	public function testRubbishQuery() {

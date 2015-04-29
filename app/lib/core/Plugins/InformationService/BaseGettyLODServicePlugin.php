@@ -40,7 +40,7 @@ require_once(__CA_LIB_DIR__."/core/Plugins/InformationService/BaseInformationSer
 
 class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	# ------------------------------------------------
-	private $opo_linked_data_conf = null;
+	protected $opo_linked_data_conf = null;
 	# ------------------------------------------------
 	public function __construct() {
 		parent::__construct(); // sets app.conf
@@ -51,35 +51,12 @@ class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	/** 
 	 * Perform lookup on Getty linked open data service
 	 *
-	 * @param string $ps_search The expression with which to query the remote data service
-	 * @param array $pa_options Lookup options
-	 * 		skosScheme - skos:inSchema query filter for SPARQL query. This essentially defines the vocabulary you're looking up.
-	 * 				Can be empty if you want to search the whole linked data service (TGN, AAT, ULAN as of April 2015)
-	 * @return array
+	 * @param string $ps_query The sparql query
+	 * @return array The decoded JSON result
 	 */
-	public function lookup($ps_search, $pa_options=null) {
-		$vs_skos_scheme = caGetOption('skosScheme', $pa_options, '', array('validValues' => array('', 'tgn', 'aat', 'ulan')));
-		$va_service_conf = $this->opo_linked_data_conf->get('tgn'); // @todo make configurable
-		$vs_search_field = (isset($va_service_conf['search_text']) && $va_service_conf['search_text']) ? 'luc:text' : 'luc:term';
-
-		/**
-		 * Contrary to what the Getty documentation says the terms seem to get combined by OR, not AND, so if you pass
-		 * "Coney Island" you get all kinds of Islands, just not the one you're looking for. It's in there somewhere but
-		 * the order field might prevent it from showing up within the limit. So we do our own little piece of "query rewriting" here.
-		 */
-		$va_search = preg_split('/[\s]+/', $ps_search);
-		$vs_search = join(' AND ', $va_search);
-
-		$vs_query = urlencode('SELECT ?ID ?TermPrefLabel ?Parents {
-				?ID a skos:Concept; '.$vs_search_field.' "'.$vs_search.'"; skos:inScheme '.$vs_skos_scheme.': ;
-				gvp:prefLabelGVP [xl:literalForm ?TermPrefLabel].
-				{?ID gvp:parentStringAbbrev ?Parents}
-				{?ID gvp:displayOrder ?Order}
-			} ORDER BY ASC(?Order)
-			LIMIT 25');
-
+	public function queryGetty($ps_query) {
 		$o_curl=curl_init();
-		curl_setopt($o_curl, CURLOPT_URL, "http://vocab.getty.edu/sparql.json?query={$vs_query}");
+		curl_setopt($o_curl, CURLOPT_URL, "http://vocab.getty.edu/sparql.json?query={$ps_query}");
 		curl_setopt($o_curl, CURLOPT_CONNECTTIMEOUT, 2);
 		curl_setopt($o_curl, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($o_curl, CURLOPT_USERAGENT, 'CollectiveAccess web service lookup');
@@ -90,26 +67,12 @@ class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 			return false;
 		}
 
-		$va_return = array();
 		$va_result = json_decode($vs_result, true);
 		if(!isset($va_result['results']['bindings']) || !is_array($va_result['results']['bindings'])) {
 			return false;
 		}
 
-		foreach($va_result['results']['bindings'] as $va_values) {
-			$vs_id = '';
-			if(preg_match("/[a-z]{3,4}\/[0-9]+$/", $va_values['ID']['value'], $va_matches)) {
-				$vs_id = str_replace('/', ':', $va_matches[0]);
-			}
-
-			$va_return['results'][] = array(
-				'label' => $va_values['TermPrefLabel']['value'] . " (".$va_values['Parents']['value'].")",
-				'url' => $va_values['ID']['value'],
-				'id' => $vs_id,
-			);
-		}
-
-		return $va_return;
+		return $va_result['results']['bindings'];
 	}
 	# ------------------------------------------------
 	/** 
@@ -146,7 +109,19 @@ class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	 * @return array
 	 */
 	public function getExtraValuesForSearchIndexing($pa_settings, $ps_url) {
-		return array('cumberland'); // @todo implement
+		$va_service_conf = $this->opo_linked_data_conf->get('tgn'); // @todo make configurable
+		if(!$va_service_conf || !is_array($va_service_conf)) { return array(); }
+		if(!isset($va_service_conf['additional_indexing_info']) || !is_array($va_service_conf['additional_indexing_info'])) { return array(); }
+
+		$va_return = array();
+		foreach($va_service_conf['additional_indexing_info'] as $va_node) {
+			if(!isset($va_node['literal'])) { continue; }
+
+			$vs_uri_for_pull = isset($va_node['uri']) ? $va_node['uri'] : null;
+			$va_return[] = self::getLiteralFromRDFNode($ps_url, $va_node['literal'], $vs_uri_for_pull);
+		}
+
+		return $va_return;
 	}
 	# ------------------------------------------------
 	// HELPERS
