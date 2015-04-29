@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/InformationService/TGN.php :
+ * app/lib/core/Plugins/InformationService/AAT.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -33,10 +33,10 @@
 require_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugInformationService.php");
 require_once(__CA_LIB_DIR__."/core/Plugins/InformationService/BaseGettyLODServicePlugin.php");
 
-global $g_information_service_settings_TGN;
-$g_information_service_settings_TGN = array();
+global $g_information_service_settings_AAT;
+$g_information_service_settings_AAT = array();
 
-class WLPlugInformationServiceTGN extends BaseGettyLODServicePlugin implements IWLPlugInformationService {
+class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements IWLPlugInformationService {
 	# ------------------------------------------------
 	static $s_settings;
 	# ------------------------------------------------
@@ -44,17 +44,17 @@ class WLPlugInformationServiceTGN extends BaseGettyLODServicePlugin implements I
 	 *
 	 */
 	public function __construct() {
-		global $g_information_service_settings_TGN;
+		global $g_information_service_settings_AAT;
 
-		WLPlugInformationServiceTGN::$s_settings = $g_information_service_settings_TGN;
+		WLPlugInformationServiceAAT::$s_settings = $g_information_service_settings_AAT;
 		parent::__construct();
-		$this->info['NAME'] = 'TGN';
+		$this->info['NAME'] = 'AAT';
 		
-		$this->description = _t('Provides access to Getty Linked Open Data TGN service');
+		$this->description = _t('Provides access to Getty Linked Open Data AAT service');
 	}
 	# ------------------------------------------------
 	protected function getConfigName() {
-		return 'tgn';
+		return 'aat';
 	}
 	# ------------------------------------------------
 	/** 
@@ -63,13 +63,13 @@ class WLPlugInformationServiceTGN extends BaseGettyLODServicePlugin implements I
 	 * @return array
 	 */
 	public function getAvailableSettings() {
-		return WLPlugInformationServiceTGN::$s_settings;
+		return WLPlugInformationServiceAAT::$s_settings;
 	}
 	# ------------------------------------------------
 	# Data
 	# ------------------------------------------------
 	/** 
-	 * Perform lookup on TGN-based data service
+	 * Perform lookup on AAT-based data service
 	 *
 	 * @param array $pa_settings Plugin settings values
 	 * @param string $ps_search The expression with which to query the remote data service
@@ -77,9 +77,7 @@ class WLPlugInformationServiceTGN extends BaseGettyLODServicePlugin implements I
 	 * @return array
 	 */
 	public function lookup($pa_settings, $ps_search, $pa_options=null) {
-		if(!is_array($pa_options)) { $pa_options = array(); }
-
-		$va_service_conf = $this->opo_linked_data_conf->get('tgn');
+		$va_service_conf = $this->opo_linked_data_conf->get('aat');
 		$vs_search_field = (isset($va_service_conf['search_text']) && $va_service_conf['search_text']) ? 'luc:text' : 'luc:term';
 
 		/**
@@ -90,14 +88,12 @@ class WLPlugInformationServiceTGN extends BaseGettyLODServicePlugin implements I
 		$va_search = preg_split('/[\s]+/', $ps_search);
 		$vs_search = join(' AND ', $va_search);
 
-		$vs_query = urlencode('SELECT ?ID ?TermPrefLabel ?Parents ?Type {
-			?ID a skos:Concept; '.$vs_search_field.' "'.$vs_search.'"; skos:inScheme tgn: ;
-			gvp:prefLabelGVP [xl:literalForm ?TermPrefLabel].
-  			{?ID gvp:parentStringAbbrev ?Parents}
-  			{?ID gvp:displayOrder ?Order}
-  			{?ID gvp:placeTypePreferred [gvp:prefLabelGVP [xl:literalForm ?Type]]}
-		} ORDER BY ASC(?Order)
-		LIMIT 25');
+		$vs_query = urlencode('SELECT ?ID ?TermPrefLabel ?Parents {
+	?ID a skos:Concept; '.$vs_search_field.' "'.$vs_search.'"; skos:inScheme aat: ;
+	gvp:prefLabelGVP [xl:literalForm ?TermPrefLabel].
+	{?ID gvp:parentStringAbbrev ?Parents}
+} ORDER BY ASC(?Order)
+LIMIT 25');
 
 		$va_results = $this->queryGetty($vs_query);
 		if(!is_array($va_results)) { return false; }
@@ -109,10 +105,10 @@ class WLPlugInformationServiceTGN extends BaseGettyLODServicePlugin implements I
 				$vs_id = str_replace('/', ':', $va_matches[0]);
 			}
 
-			$vs_label = $va_values['TermPrefLabel']['value'] . "; " . $va_values['Parents']['value'] . " (" . $va_values['Type']['value'] . ")";
+			$vs_label = $va_values['TermPrefLabel']['value'] . " (" . $va_values['Parents']['value'] . ")";
 
 			$va_return['results'][] = array(
-				'label' => str_replace(', ... World', '', $vs_label),
+				'label' => $vs_label,
 				'url' => $va_values['ID']['value'],
 				'id' => $vs_id,
 			);

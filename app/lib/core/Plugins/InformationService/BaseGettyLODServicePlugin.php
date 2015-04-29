@@ -38,7 +38,7 @@
 require_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugInformationService.php");
 require_once(__CA_LIB_DIR__."/core/Plugins/InformationService/BaseInformationServicePlugin.php");
 
-class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
+abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	# ------------------------------------------------
 	protected $opo_linked_data_conf = null;
 	# ------------------------------------------------
@@ -47,6 +47,8 @@ class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 
 		$this->opo_linked_data_conf = Configuration::load($this->opo_config->get('linked_data_config'));
 	}
+	# ------------------------------------------------
+	abstract protected function getConfigName();
 	# ------------------------------------------------
 	/** 
 	 * Perform lookup on Getty linked open data service
@@ -83,7 +85,7 @@ class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	 * @return array An array of data from the data server defining the item.
 	 */
 	public function getExtendedInformation($pa_settings, $ps_url) {
-		$va_service_conf = $this->opo_linked_data_conf->get('tgn'); // @todo make configurable
+		$va_service_conf = $this->opo_linked_data_conf->get($this->getConfigName());
 		if(!$va_service_conf || !is_array($va_service_conf)) { return array('display' => ''); }
 		if(!isset($va_service_conf['detail_view_info']) || !is_array($va_service_conf['detail_view_info'])) { return array('display' => ''); }
 
@@ -109,7 +111,7 @@ class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	 * @return array
 	 */
 	public function getExtraValuesForSearchIndexing($pa_settings, $ps_url) {
-		$va_service_conf = $this->opo_linked_data_conf->get('tgn'); // @todo make configurable
+		$va_service_conf = $this->opo_linked_data_conf->get($this->getConfigName());
 		if(!$va_service_conf || !is_array($va_service_conf)) { return array(); }
 		if(!isset($va_service_conf['additional_indexing_info']) || !is_array($va_service_conf['additional_indexing_info'])) { return array(); }
 
@@ -158,6 +160,8 @@ class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	 * @return bool|EasyRdf_Graph
 	 */
 	static function getURIAsRDFGraph($ps_uri) {
+		if(!$ps_uri) { return false; }
+
 		if(MemoryCache::contains($ps_uri, 'GettyLinkedDataRDFGraphs')) {
 			return MemoryCache::fetch($ps_uri, 'GettyLinkedDataRDFGraphs');
 		}
