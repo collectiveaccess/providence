@@ -118,7 +118,7 @@
 					$va_path[] = $va_node['key'];
 				} else {
 					// no
-					$this->opa_reverse_nav_table[$vs_controller_path] = join('/', array_merge($va_path, array($va_node['key'])));
+					$this->opa_reverse_nav_table[$vs_controller_path] = join('/', array_merge(is_array($va_path) ? $va_path : array(), array($va_node['key'])));
 				}
 				if (isset($va_node['navnode']['aliased_actions'])) {
 					$vs_tmp = '/'.join('/', array($va_action_info['module'], $va_action_info['controller']));
