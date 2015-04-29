@@ -174,6 +174,7 @@ abstract class AttributeValue extends BaseObject {
 	/**
 	 * Get extra values to add to search index.
 	 * Allows implementations to add extra data to the search index, not just whatever happens to be in their display value. Must return an array.
+
 	 * @return array
 	 */
 	public function getExtraValuesForSearchIndexing() {

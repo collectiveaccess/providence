@@ -84,7 +84,7 @@
 		}
 		# -------------------------------------------------------
 		/**
-		 * Returns names of all readers
+		 * @return IWLPlugInformationService
 		 */
 		public static function getInformationServiceInstance($ps_service) {
 			InformationServiceManager::initInformationServices();

@@ -54,11 +54,13 @@ class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	 * @param string $ps_search The expression with which to query the remote data service
 	 * @param array $pa_options Lookup options
 	 * 		skosScheme - skos:inSchema query filter for SPARQL query. This essentially defines the vocabulary you're looking up.
-	 * 				Can be empty if you want to search the whole linked data service (TGN + AAT as of April 2015, ULAN coming soon)
+	 * 				Can be empty if you want to search the whole linked data service (TGN, AAT, ULAN as of April 2015)
 	 * @return array
 	 */
 	public function lookup($ps_search, $pa_options=null) {
 		$vs_skos_scheme = caGetOption('skosScheme', $pa_options, '', array('validValues' => array('', 'tgn', 'aat', 'ulan')));
+		$va_service_conf = $this->opo_linked_data_conf->get('tgn'); // @todo make configurable
+		$vs_search_field = (isset($va_service_conf['search_text']) && $va_service_conf['search_text']) ? 'luc:text' : 'luc:term';
 
 		/**
 		 * Contrary to what the Getty documentation says the terms seem to get combined by OR, not AND, so if you pass
@@ -69,7 +71,7 @@ class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 		$vs_search = join(' AND ', $va_search);
 
 		$vs_query = urlencode('SELECT ?ID ?TermPrefLabel ?Parents {
-				?ID a skos:Concept; luc:term "'.$vs_search.'"; skos:inScheme '.$vs_skos_scheme.': ;
+				?ID a skos:Concept; '.$vs_search_field.' "'.$vs_search.'"; skos:inScheme '.$vs_skos_scheme.': ;
 				gvp:prefLabelGVP [xl:literalForm ?TermPrefLabel].
 				{?ID gvp:parentStringAbbrev ?Parents}
 				{?ID gvp:displayOrder ?Order}
@@ -135,6 +137,16 @@ class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 		}
 
 		return array('display' => $vs_display);
+	}
+
+	/**
+	 * Get extra values for search indexing. This is called once when the attribute is saved.
+	 * @param array $pa_settings
+	 * @param string $ps_url
+	 * @return array
+	 */
+	public function getExtraValuesForSearchIndexing($pa_settings, $ps_url) {
+		return array('cumberland'); // @todo implement
 	}
 	# ------------------------------------------------
 	// HELPERS
