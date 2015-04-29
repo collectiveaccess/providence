@@ -1685,7 +1685,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		// AttributeValue settings that are simply passed through by the exporter
 		if($t_exporter_item->getSetting('convertCodesToDisplayText')){
-			$va_get_options['convertCodesToDisplayText'] = true;
+			$va_get_options['convertCodesToDisplayText'] = true;		// try to return text suitable for display for system lists stored in intrinsics (ex. ca_objects.access, ca_objects.status, ca_objects.source_id)
+																		// this does not affect list attributes
+		} else {
+			$va_get_options['convertCodesToIdno'] = true;				// if display text is not requested try to return list item idno's... since underlying integer ca_list_items.item_id values are unlikely to be useful in an export context
 		}
 
 		if($t_exporter_item->getSetting('returnIdno')){
@@ -1836,7 +1839,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vs_default = $t_exporter_item->getSetting('default');
 		$vs_prefix = $t_exporter_item->getSetting('prefix');
 		$vs_suffix = $t_exporter_item->getSetting('suffix');
-		$vs_regexp = $t_exporter_item->getSetting('filterByRegExp');
+		//$vs_regexp = $t_exporter_item->getSetting('filterByRegExp');		// Deprecated -- remove?
 		$vn_max_length = $t_exporter_item->getSetting('maxLength');
 		$vs_skip_if_expr = $t_exporter_item->getSetting('skipIfExpression');
 
@@ -1858,19 +1861,20 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			// handle skipIfExpression setting
 			if($vs_skip_if_expr){
 				// Add current value as variable "value", accessible in expressions as ^value
-				if(ExpressionParser::evaluate($vs_skip_if_expr, array_merge(array('value' => $va_item['text']),ca_data_exporters::$s_variables))){
+				$va_vars = array_merge(array('value' => $va_item['text']), ca_data_exporters::$s_variables);
+				if(ExpressionParser::evaluate($vs_skip_if_expr, $va_vars)){
 					unset($va_item_info[$vn_key]);
 					continue;
 				}
 			}
 
-			// filter by regex (deprecated since you can do the same thing and more with skipIfExpression)
-			if((strlen($va_item['text'])>0) && $vs_regexp){
-				if(!preg_match("!".$vs_regexp."!", $va_item['text'])) {
- 					unset($va_item_info[$vn_key]);
- 					continue;
- 				}
-			}
+			// filter by regex (deprecated since you can do the same thing and more with skipIfExpression) -- remove?
+			//if((strlen($va_item['text'])>0) && $vs_regexp){
+			//	if(!preg_match("!".$vs_regexp."!i", $va_item['text'])) {
+ 			//		unset($va_item_info[$vn_key]);
+ 			//		continue;
+ 			//	}
+			//}
 
 			// do replacements
 			$va_item['text'] = ca_data_exporter_items::replaceText($va_item['text'],$va_replacements);

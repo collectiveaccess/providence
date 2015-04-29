@@ -700,9 +700,10 @@ class SearchResult extends BaseObject {
 	 *
 	 *		returnAsArray = if true, return an array, otherwise return a string (default is false)
 	 *		template = formats attribute values; precede element codes with a caret ("^"). Eg. "^address1<br/>^city, ^state ^postalcode ^country"; only used when returnAsArray is false and a scalar is therefore to be returned.
-	 *		delimiter = 
-	 *		returnAllLocales = 
-	 *		convertCodesToDisplayText = if true then item_ids are automatically converted to display text in the current locale; default is false (return item_ids raw)
+	 *		delimiter = Characters to place in between repeating values when returning a string
+	 *		returnAllLocales = Return array of all available values in all locales. Array is indexed by id and then by locale. Implies returnAsArray. [Default is false]
+	 *		convertCodesToDisplayText = if true then item_ids are automatically converted to display text in the current locale [Default is false (return item_ids raw)]
+	 *		convertCodesToIdno = if true then item_ids are automatically converted to list item idno's (ca_list_items.idno); if convertCodesToDisplayText is also set then it takes precedence  [Default is false (return item_ids raw)]
 	 *
 	 * 		restrict_to_type = restricts returned items to those of the specified type; only supports a single type which can be specified as a list item_code or item_id
  	 *		restrictToType = synonym for restrict_to_type
@@ -721,8 +722,8 @@ class SearchResult extends BaseObject {
  	 *		returnAsLinkAttributes = array of attributes to include in link <a> tag. Use this to set class, alt and any other link attributes.
  	 * 		returnAsLinkTarget = Optional link target. If any plugin implementing hookGetAsLink() responds to the specified target then the plugin will be used to generate the links rather than CA's default link generator.
  	 *
- 	 *		hierarchyDirection = asc|desc
- 	 *		allDescendants = 
+ 	 *		hierarchyDirection = asc|desc Order in which to return levels when get()'ing a hierarchical path. "Asc"ending  begins with the root; "desc"ending begins with the child furthest from the root [Default is asc]
+ 	 *		allDescendants = Return all items from the full depth of the hierarchy when get()'ing children rather than only immediate children. [Default is false]
  	 *
  	 *		sort = optional array of bundles to sort returned values on. Currently only supported when getting related values via simple related <table_name> and <table_name>.related invokations. Eg. from a ca_objects results you can use the 'sort' option got get('ca_entities'), get('ca_entities.related') or get('ca_objects.related'). The bundle specifiers are fields with or without tablename. Only those fields returned for the related tables (intrinsics and label fields) are sortable. You cannot sort on attributes.
 	 *		filters = optional array of elements to filter returned values on. The element must be part of the container being fetched from. For example, if you're get()'ing a value from a container element (Eg. ca_objects.dates.date_value) you can filter on any other subelement in that container by passing the name of the subelement and a value (Eg. "date_type" => "copyright"). Pass only the name of the subelement, not the full path that includes the table and container element. You can filter on multiple subelements by passing each subelement as a key in the array. Only values that match all filters are returned. You can filter on multiple values for a subelement by passing an array of values rather than a scalar (Eg. "date_type" => array("copyright", "patent")). Values that match *any* of the values will be returned. Only simple equivalance is supported. NOTE: Filters are only available when returnAsArray is set. They will be ignored if returnAsArray is not set.
@@ -731,7 +732,9 @@ class SearchResult extends BaseObject {
 	 *		maxLevelsFromBottom = for hierarchical gets, restricts the number of levels returned to the bottom-most starting with the lowest leaf node.
 	 *		maxLevels = synonym for maxLevelsFromBottom
 	 *		
-	 *		checkAccess = 
+	 *		checkAccess = Array of access values to filter returned values on. Available for any table with an "access" field (ca_objects, ca_entities, etc.). If omitted no filtering is performed. [Default is null]
+	 *
+	 * 	@return mixed String or array
 	 */
 	public function get($ps_field, $pa_options=null) {
 		$vb_return_as_array = isset($pa_options['returnAsArray']) ? (bool)$pa_options['returnAsArray'] : false;
@@ -801,33 +804,26 @@ class SearchResult extends BaseObject {
 	private function _get($ps_field, $pa_options=null) {
 		if (!is_array($pa_options)) $pa_options = array();
 		
-		$vb_return_as_array = isset($pa_options['returnAsArray']) ? (bool)$pa_options['returnAsArray'] : false;
-		$vb_return_all_locales = isset($pa_options['returnAllLocales']) ? (bool)$pa_options['returnAllLocales'] : false;
-		if (!$vb_return_as_array) { $pa_options['returnAllLocales'] = false; }
+		$vb_return_as_array 				= caGetOption('returnAsArray', $pa_options, false); 
+		$vb_return_all_locales 				= $vb_return_as_array ? caGetOption('returnAllLocales', $pa_options, false) : false; 
 
-		$vs_delimiter = isset($pa_options['delimiter']) ? (string)$pa_options['delimiter'] : ';';
-		$vb_unserialize = isset($pa_options['unserialize']) ? (bool)$pa_options['unserialize'] : false;
+		$vs_delimiter 						= caGetOption('delimiter', $pa_options, '; '); 
+		$vb_unserialize 					= caGetOption('unserialize', $pa_options, false); 
 		
-		$vb_return_url = isset($pa_options['returnURL']) ? (bool)$pa_options['returnURL'] : false;
-		$vb_convert_codes_to_display_text = isset($pa_options['convertCodesToDisplayText']) ? (bool)$pa_options['convertCodesToDisplayText'] : false;
+		$vb_return_url 						= caGetOption('returnURL', $pa_options, false); 
+		$vb_convert_codes_to_display_text 	= caGetOption('convertCodesToDisplayText', $pa_options, false); 
+		$vb_convert_codes_to_idno 			= caGetOption('convertCodesToIdno', $pa_options, false); 
+		
+		$va_check_access 					= caGetOption('checkAccess', $pa_options, null); 
+		$vs_template 						= caGetOption('template', $pa_options, null);
+		
 		
 		$va_path_components = isset(SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_field]) ? SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_field] : $this->parseFieldPathComponents($ps_field);
 		
-		$va_check_access = isset($pa_options['checkAccess']) ? $pa_options['checkAccess'] : null;
-		
 		$va_val_opts = array_merge($pa_options, array(
-			'returnAsArray' => $vb_return_as_array, 
-			'returnAllLocales' => $vb_return_all_locales, 
-			'delimiter' => $vs_delimiter, 
-			'pathComponents' => $va_path_components,
-			'returnURL' => $vb_return_url,
-			'convertCodesToDisplayText' => $vb_convert_codes_to_display_text,
-			'unserialize' => $vb_unserialize,
-			'checkAccess' => $va_check_access
+			'pathComponents' => $va_path_components
 		));
-
-		if(caGetOption('returnAsLink', $pa_options)) { $va_val_opts['returnAsLink'] = true; }
-		if($vs_template = caGetOption('template', $pa_options)) { $va_val_opts['template'] = $vs_template; }
+		
 		
 		if ($va_path_components['table_name'] != $this->ops_table_name) {
 			$vs_access_chk_key  = $va_path_components['table_name'].($va_path_components['field_name'] ? '.'.$va_path_components['field_name'] : '');
@@ -1328,14 +1324,21 @@ class SearchResult extends BaseObject {
 	 *		returnAllLocales =
 	 *		returnAsLink = 
 	 *		delimiter =
+	 *		convertCodesToDisplayText =
+	 *		convertCodesToIdno =
 	 *
 	 * @return array|string
 	 */
 	private function _getLabelValue($pa_value_list, $pt_instance, $pa_options) {
+		$vb_return_as_array 	= caGetOption('returnAsArray', $pa_options, false, array('castTo' => 'bool'));
+		$vb_return_all_locales 	= caGetOption('returnAllLocales', $pa_options, false, array('castTo' => 'bool'));
 		$vb_return_as_link 	= caGetOption('returnAsLink', $pa_options, false, array('castTo' => 'bool'));
+		$vs_template 		= caGetOption('template', $pa_options, null, array('castTo' => 'string'));
 		$va_path_components	=& $pa_options['pathComponents'];
 		
-		if (!$va_path_components['subfield_name']) { $va_path_components['subfield_name'] = $pt_instance->getLabelDisplayField(); }
+		// Set subfield to display field if not specified and *NOT* returning as array
+		// (when returning as array without a specified subfield we return an array with entire label record)
+		if (!$vb_return_as_array && !$va_path_components['subfield_name']) { $va_path_components['subfield_name'] = $pt_instance->getLabelDisplayField(); }
 		
 		$vs_table_name = $pt_instance->tableName();
 		$vs_pk = $pt_instance->primaryKey();
@@ -1355,24 +1358,35 @@ class SearchResult extends BaseObject {
 							continue;
 						}
 					}
+
+					if ($vs_template) {
+						$vs_val_proc = caProcessTemplateForIDs($vs_template, $vs_table_name, array($vn_id), $pa_options);
+					} else {
+						$vs_val_proc = $va_label[$va_path_components['subfield_name']];
+					}
 					
-					$vs_val_proc = $va_label[$va_path_components['subfield_name']];
+					if (caGetOption('convertCodesToDisplayText', $pa_options, false)) {
+						$vs_val_proc = $this->_convertCodeToDisplayText($vs_val_proc, $va_path_components, $pt_instance->getLabelTableInstance(), $pa_options);
+					} elseif(caGetOption('convertCodesToIdno', $pa_options, false)) {
+						$vs_val_proc = $this->_convertCodeToIdno($vs_val_proc, $va_path_components, $pt_instance->getLabelTableInstance(), $pa_options);
+					}
+					
 					if ($vb_return_as_link) {
 						$vs_val_proc = caCreateLinksFromText($vs_val_proc, $vs_table_name, $vn_id);
 					}
 					
-					if ($pa_options['returnAllLocales']) {
-						$va_return_values[0][$vn_locale_id][] = $vs_val_proc;
+					if ($vb_return_all_locales) {
+						$va_return_values[0][$vn_locale_id][] = !$va_path_components['subfield_name'] ? $va_label : $vs_val_proc;
 					} else {
-						$va_return_values[0][$vn_locale_id] = $vs_val_proc;
+						$va_return_values[0][$vn_locale_id] = !$va_path_components['subfield_name'] ? $va_label : $vs_val_proc;
 					}
 				}
 			}
 		}
 		
-		if ($pa_options['returnAllLocales']) { return $va_return_values; } 
+		if ($vb_return_all_locales) { return $va_return_values; } 
 		$va_return_values = array_values(caExtractValuesByUserLocale($va_return_values));
-		if ($pa_options['returnAsArray']) { return $va_return_values; }
+		if ($vb_return_as_array) { return $va_return_values; }
 		
 		return (sizeof($va_return_values) > 0) ? join($pa_options['delimiter'], $va_return_values) : null;
 	}
@@ -1392,6 +1406,8 @@ class SearchResult extends BaseObject {
 	 * @return array|string
 	 */
 	private function _getAttributeValue($pa_value_list, $pt_instance, $pa_options) {
+		$vb_return_as_array 	= caGetOption('returnAsArray', $pa_options, false, array('castTo' => 'bool'));
+		$vb_return_all_locales 	= caGetOption('returnAllLocales', $pa_options, false, array('castTo' => 'bool'));
 		$vb_return_as_link 		= caGetOption('returnAsLink', $pa_options, false, array('castTo' => 'bool'));
 		$va_path_components		=& $pa_options['pathComponents'];
 		$va_return_values = array();
@@ -1403,7 +1419,7 @@ class SearchResult extends BaseObject {
 			$vn_c = 0;
 			foreach($pa_value_list as $o_attribute) {
 				$va_values = $o_attribute->getValues();
-				$vn_locale_id = $o_attribute->getLocaleID();
+				if (!($vn_locale_id = $o_attribute->getLocaleID())) { $vn_locale_id = 1; };
 			
 				foreach($va_values as $o_value) {
 					$vs_element_code = $o_value->getElementCode();
@@ -1412,34 +1428,25 @@ class SearchResult extends BaseObject {
 						$vs_element_code = is_array($va_return_values[$vn_c][$vn_locale_id]) ? sizeof($va_return_values[$vn_c][$vn_locale_id]) : 0;
 					}
 					
-					
 					switch($o_value->getType()) {
 						case __CA_ATTRIBUTE_VALUE_LIST__:
 							$t_element = $pt_instance->_getElementInstance($o_value->getElementID());
 							$vn_list_id = $t_element->get('list_id');
 							
 							$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('list_id' => $vn_list_id)));
-							if ($vb_return_as_link) { $vs_val_proc = caCreateLinksFromText($vs_val_proc, $vs_table_name, $vn_id); }
-							
-							if (!$pa_options['returnAllLocales'] && !$pa_options['returnAsArray']) {
-								$va_return_values[$vn_c] = $vs_val_proc;
-							} elseif(!$pa_options['returnAllLocales']) {
-								$va_return_values[$vn_c][$vn_locale_id] = $vs_val_proc;
-							} else {
-								$va_return_values[$vn_c][$vn_locale_id][$vs_element_code] = $vs_val_proc;
-							}
 							break;
 						default:
 							$vs_val_proc = $o_value->getDisplayValue($pa_options);
-							if ($vb_return_as_link) { $vs_val_proc = caCreateLinksFromText($vs_val_proc, $vs_table_name, $vn_id); }
-							if (!$pa_options['returnAllLocales'] && !$pa_options['returnAsArray']) {
-								$va_return_values[$vn_c] = $vs_val_proc;
-							} elseif(!$pa_options['returnAllLocales']) {
-								$va_return_values[$vn_c][$vn_locale_id] = $vs_val_proc;
-							} else {
-								$va_return_values[$vn_c][$vn_locale_id][$vs_element_code] = $vs_val_proc;
-							}
 							break;
+					}
+					
+					if ($vb_return_as_link) { $vs_val_proc = caCreateLinksFromText($vs_val_proc, $vs_table_name, $vn_id); }
+					if (!$vb_return_all_locales && !$vb_return_as_array) {
+						$va_return_values[$vn_c] = $vs_val_proc;
+					} elseif(!$vb_return_all_locales) {
+						$va_return_values[$vn_c][$vn_locale_id] = $vs_val_proc;
+					} else {
+						$va_return_values[$vn_c][$vn_locale_id][$vs_element_code] = $vs_val_proc;
 					}
 				}
 				$vn_c++;
@@ -1465,6 +1472,7 @@ class SearchResult extends BaseObject {
 	 *		delimiter =
 	 *		unserialize =
 	 *		convertCodesToDisplayText = 
+	 *		convertCodesToIdno = 
 	 *		fieldInfo =
 	 *		primaryKey = 
 	 *
@@ -1561,28 +1569,15 @@ class SearchResult extends BaseObject {
 					foreach($va_values as $vn_i => $va_value) {
 						$va_ids[] = $vn_id = $va_value[$vs_pk];
 	
-						$vs_prop = $va_value[$va_path_components['field_name']];
-						if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && ($vs_list_code = $pt_instance->getFieldInfo($va_path_components['field_name'],"LIST_CODE"))) {
-							$vs_prop = $this->opt_list->getItemFromListForDisplayByItemID($vs_list_code, $vs_prop);
+						
+						if (caGetOption('convertCodesToDisplayText', $pa_options, false)) {
+							$vs_prop = $this->_convertCodeToDisplayText($va_value[$va_path_components['field_name']], $va_path_components, $pt_instance, $pa_options);
+						} elseif(caGetOption('convertCodesToIdno', $pa_options, false)) {
+							$vs_prop = $this->_convertCodeToIdno($va_value[$va_path_components['field_name']], $va_path_components, $pt_instance, $pa_options);
 						} else {
-							if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && ($vs_list_code = $pt_instance->getFieldInfo($va_path_components['field_name'],"LIST"))) {
-								$vs_prop = $this->opt_list->getItemFromListForDisplayByItemValue($vs_list_code, $vs_prop);
-							} else {
-								if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && ($va_path_components['field_name'] === 'locale_id') && ((int)$vs_prop > 0)) {
-									$t_locale = new ca_locales($vs_prop);
-									$vs_prop = $t_locale->getName();
-								} else {
-									if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && (is_array($va_list = $pt_instance->getFieldInfo($va_path_components['field_name'],"BOUNDS_CHOICE_LIST")))) {
-										foreach($va_list as $vs_option => $vs_value) {
-											if ($vs_value == $vs_prop) {
-												$vs_prop = $vs_option;
-												break;
-											}
-										}
-									}
-								}
-							}
-						}
+							$vs_prop = $va_value[$va_path_components['field_name']];
+						}	
+						
 						
 						if ($pa_options['returnAllLocales']) {
 							$va_return_values[$vn_id][$vn_locale_id][] = $vs_prop;
@@ -1695,6 +1690,64 @@ class SearchResult extends BaseObject {
 			return $va_vals;
 		} 
 		return null;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _convertCodeToIdno($ps_prop, $pa_path_components, $pt_instance, $pa_options=null) {
+		$vs_prop = $ps_prop;
+		
+		$vs_field_name = $pa_path_components['subfield_name'] ? $pa_path_components['subfield_name'] : $pa_path_components['field_name'];
+		
+		$vs_table_name = $pa_path_components['table_name'];
+		if (method_exists($pt_instance, 'setLabelTypeList')) {
+			$pt_instance->setLabelTypeList($this->opo_subject_instance->getAppConfig()->get(($pa_path_components['field_name'] == 'nonpreferred_labels') ? "{$vs_table_name}_nonpreferred_label_type_list" : "{$vs_table_name}_preferred_label_type_list"));
+		}
+		if (isset($pa_options['convertCodesToIdno']) && $pa_options['convertCodesToIdno'] && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST_CODE"))) {
+			$vs_prop = caGetListItemIdno($vs_prop); 
+		} else {
+			if (isset($pa_options['convertCodesToIdno']) && $pa_options['convertCodesToIdno'] && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST"))) {
+				$vs_prop = $this->opt_list->caGetListItemIDForValue($vs_list_code, $vs_prop);
+			} 
+		}
+		return $vs_prop;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _convertCodeToDisplayText($ps_prop, $pa_path_components, $pt_instance, $pa_options=null) {
+		$vs_prop = $ps_prop;
+		
+		$vs_field_name = $pa_path_components['subfield_name'] ? $pa_path_components['subfield_name'] : $pa_path_components['field_name'];
+		
+		$vs_table_name = $pa_path_components['table_name'];
+		if (method_exists($pt_instance, 'setLabelTypeList')) {
+			$pt_instance->setLabelTypeList($this->opo_subject_instance->getAppConfig()->get(($pa_path_components['field_name'] == 'nonpreferred_labels') ? "{$vs_table_name}_nonpreferred_label_type_list" : "{$vs_table_name}_preferred_label_type_list"));
+		}
+		if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST_CODE"))) {
+			$vs_prop = $this->opt_list->getItemFromListForDisplayByItemID($vs_list_code, $vs_prop);
+		} else {
+			if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST"))) {
+				$vs_prop = $this->opt_list->getItemFromListForDisplayByItemValue($vs_list_code, $vs_prop);
+			} else {
+				if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && ($vs_field_name === 'locale_id') && ((int)$vs_prop > 0)) {
+					$t_locale = new ca_locales($vs_prop);
+					$vs_prop = $t_locale->getName();
+				} else {
+					if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && (is_array($va_list = $pt_instance->getFieldInfo($vs_field_name,"BOUNDS_CHOICE_LIST")))) {
+						foreach($va_list as $vs_option => $vs_value) {
+							if ($vs_value == $vs_prop) {
+								$vs_prop = $vs_option;
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+		return $vs_prop;
 	}
 	# ------------------------------------------------------------------
 	#  Field value accessors (allow you to get specialized values out of encoded fields such as uploaded media and files, dates/date ranges, timecode, etc.) 
