@@ -1330,11 +1330,15 @@ class SearchResult extends BaseObject {
 	 * @return array|string
 	 */
 	private function _getLabelValue($pa_value_list, $pt_instance, $pa_options) {
+		$vb_return_as_array 	= caGetOption('returnAsArray', $pa_options, false, array('castTo' => 'bool'));
+		$vb_return_all_locales 	= caGetOption('returnAllLocales', $pa_options, false, array('castTo' => 'bool'));
 		$vb_return_as_link 	= caGetOption('returnAsLink', $pa_options, false, array('castTo' => 'bool'));
 		$vs_template 		= caGetOption('template', $pa_options, null, array('castTo' => 'string'));
 		$va_path_components	=& $pa_options['pathComponents'];
 		
-		if (!$va_path_components['subfield_name']) { $va_path_components['subfield_name'] = $pt_instance->getLabelDisplayField(); }
+		// Set subfield to display field if not specified and *NOT* returning as array
+		// (when returning as array without a specified subfield we return an array with entire label record)
+		if (!$vb_return_as_array && !$va_path_components['subfield_name']) { $va_path_components['subfield_name'] = $pt_instance->getLabelDisplayField(); }
 		
 		$vs_table_name = $pt_instance->tableName();
 		$vs_pk = $pt_instance->primaryKey();
@@ -1371,18 +1375,18 @@ class SearchResult extends BaseObject {
 						$vs_val_proc = caCreateLinksFromText($vs_val_proc, $vs_table_name, $vn_id);
 					}
 					
-					if ($pa_options['returnAllLocales']) {
-						$va_return_values[0][$vn_locale_id][] = $vs_val_proc;
+					if ($vb_return_all_locales) {
+						$va_return_values[0][$vn_locale_id][] = !$va_path_components['subfield_name'] ? $va_label : $vs_val_proc;
 					} else {
-						$va_return_values[0][$vn_locale_id] = $vs_val_proc;
+						$va_return_values[0][$vn_locale_id] = !$va_path_components['subfield_name'] ? $va_label : $vs_val_proc;
 					}
 				}
 			}
 		}
 		
-		if ($pa_options['returnAllLocales']) { return $va_return_values; } 
+		if ($vb_return_all_locales) { return $va_return_values; } 
 		$va_return_values = array_values(caExtractValuesByUserLocale($va_return_values));
-		if ($pa_options['returnAsArray']) { return $va_return_values; }
+		if ($vb_return_as_array) { return $va_return_values; }
 		
 		return (sizeof($va_return_values) > 0) ? join($pa_options['delimiter'], $va_return_values) : null;
 	}
@@ -1402,6 +1406,8 @@ class SearchResult extends BaseObject {
 	 * @return array|string
 	 */
 	private function _getAttributeValue($pa_value_list, $pt_instance, $pa_options) {
+		$vb_return_as_array 	= caGetOption('returnAsArray', $pa_options, false, array('castTo' => 'bool'));
+		$vb_return_all_locales 	= caGetOption('returnAllLocales', $pa_options, false, array('castTo' => 'bool'));
 		$vb_return_as_link 		= caGetOption('returnAsLink', $pa_options, false, array('castTo' => 'bool'));
 		$va_path_components		=& $pa_options['pathComponents'];
 		$va_return_values = array();
@@ -1413,7 +1419,7 @@ class SearchResult extends BaseObject {
 			$vn_c = 0;
 			foreach($pa_value_list as $o_attribute) {
 				$va_values = $o_attribute->getValues();
-				$vn_locale_id = $o_attribute->getLocaleID();
+				if (!($vn_locale_id = $o_attribute->getLocaleID())) { $vn_locale_id = 1; };
 			
 				foreach($va_values as $o_value) {
 					$vs_element_code = $o_value->getElementCode();
@@ -1435,9 +1441,9 @@ class SearchResult extends BaseObject {
 					}
 					
 					if ($vb_return_as_link) { $vs_val_proc = caCreateLinksFromText($vs_val_proc, $vs_table_name, $vn_id); }
-					if (!$pa_options['returnAllLocales'] && !$pa_options['returnAsArray']) {
+					if (!$vb_return_all_locales && !$vb_return_as_array) {
 						$va_return_values[$vn_c] = $vs_val_proc;
-					} elseif(!$pa_options['returnAllLocales']) {
+					} elseif(!$vb_return_all_locales) {
 						$va_return_values[$vn_c][$vn_locale_id] = $vs_val_proc;
 					} else {
 						$va_return_values[$vn_c][$vn_locale_id][$vs_element_code] = $vs_val_proc;
