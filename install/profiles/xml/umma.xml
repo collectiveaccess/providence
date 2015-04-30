@@ -99,6 +99,9 @@
               <name_plural>Entity</name_plural>
             </label>
           </labels>
+          <settings>
+            <setting name="entity_class">IND_SM</setting>
+          </settings>
         </item>
       </items>
     </list>
@@ -9894,6 +9897,64 @@
         </item>
       </items>
     </list>
+    <list code="object_deaccession_types" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Object deaccession types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="Deaccession" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Deaccession</name_singular>
+              <name_plural>Deaccession</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Sold" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Sold</name_singular>
+              <name_plural>Sold</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Transfer" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Transfer</name_singular>
+              <name_plural>Transfer</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="loan_file_types" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Loan File Types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="loan_agreement" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>loan agreement</name_singular>
+              <name_plural>loan agreement</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="installation_instructions" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>installation instructions</name_singular>
+              <name_plural>installation instructions</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
     <!--GF Movement Lists  -->
     <list code="movement_purpose" hierarchical="0" system="0" vocabulary="0">
       <labels>
@@ -10984,7 +11045,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="display_template"><![CDATA[^ca_objects.credit_line.credit_text<ifdef code="ca_objects.credit_line.credit_approved">, </ifdef>^ca_objects.credit_line.credit_approved<ifdef code="ca_objects.credit_line.credit_type">, </ifdef>^ca_objects.credit_line.credit_type]]></setting>
+        <setting name="displayTemplate"><![CDATA[<unit relativeTo="ca_objects.credit_line"><if rule="^credit_type =~ /current/">^ca_objects.credit_line.credit_text (^ca_objects.credit_line.credit_type)</if></unit>]]></setting>
       </settings>
       <elements>
         <metadataElement code="credit_line1" datatype="Container">
@@ -11093,6 +11154,9 @@
           <name>Provenance</name>
         </label>
       </labels>
+      <settings>
+        <setting name="displayTemplate"><![CDATA[^ca_objects.provenance.provenance_owner]]></setting>
+      </settings>
       <elements>
         <metadataElement code="provenance_line1" datatype="Container">
           <labels>
@@ -11777,6 +11841,9 @@
           <name>Marks/inscription</name>
         </label>
       </labels>
+      <settings>
+        <setting name="displayTemplate"><![CDATA[<unit relativeTo="ca_objects.marks_inscription"><if rule="^marks_type =~ /inscription/">^ca_objects.marks_inscription.marks_text (^ca_objects.marks_inscription.marks_type)</if></unit>]]></setting>
+      </settings>
       <elements>
         <metadataElement code="marks_line1" datatype="Container">
           <labels>
@@ -12138,6 +12205,7 @@
       <documentationUrl/>
       <settings>
         <setting name="doesNotTakeLocale">1</setting>
+        <setting name="displayTemplate"><![CDATA[<unit relativeTo="ca_objects.dimensions"><if rule="^Type =~ /overall/">^ca_objects.dimensions.display_dimensions ^ca_objects.dimensions.Type</if></unit>]]></setting>
       </settings>
       <elements>
         <metadataElement code="dimensions_line1" datatype="Container">
@@ -12312,12 +12380,21 @@
         </metadataElement>
       </elements>
       <typeRestrictions>
-        <restriction code="r2">
+        <restriction code="r1">
           <table>ca_objects</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">10</setting>
             <setting name="minimumAttributeBundlesToDisplay">0</setting>
+          </settings>
+        </restriction>
+        <restriction code="ca_loans">
+          <table>ca_loans</table>
+          <type>loan_object</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
       </typeRestrictions>
@@ -12330,7 +12407,7 @@
       </labels>
       <settings>
         <setting name="lineBreakAfterNumberOfElements">1</setting>
-        <setting name="display_template">^ca_objects.medium_container.display_medium_support</setting>
+        <setting name="displayTemplate"><![CDATA[^ca_objects.medium_container.display_medium_support]]></setting>
       </settings>
       <elements>
         <metadataElement code="medium" datatype="Text">
@@ -12391,6 +12468,15 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+        <restriction code="ca_loans">
+          <table>ca_loans</table>
+          <type>loan_object</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="creation_date" datatype="DateRange">
@@ -12409,6 +12495,15 @@
       <typeRestrictions>
         <restriction code="ca_objects">
           <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="ca_loans">
+          <table>ca_loans</table>
+          <type>loan_object</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -12449,6 +12544,9 @@
           <description/>
         </label>
       </labels>
+      <settings>
+        <setting name="displayTemplate"><![CDATA[<unit relativeTo="ca_objects.valuation">^ca_objects.valuation.value_price ^ca_objects.valuation.valuation_date</unit>]]></setting>
+      </settings>
       <elements>
         <metadataElement code="valuation_line1" datatype="Container">
           <labels>
@@ -12565,7 +12663,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="display_template">^ca_objects.label_copy.label_copy_text</setting>
+        <setting name="displayTemplate"><![CDATA[<unit relativeTo="ca_objects.label_copy"><if rule="^label_copy_type =~ /current/">^ca_objects.label_copy.label_copy_text (^ca_objects.label_copy.label_copy_type)</if></unit>]]></setting>
       </settings>
       <elements>
         <metadataElement code="label_line1" datatype="Container">
@@ -12934,7 +13032,7 @@
             <metadataElement code="citation_volume" datatype="Text">
               <labels>
                 <label locale="en_US">
-                  <name>Volume No.</name>
+                  <name>Volume/Edition</name>
                 </label>
               </labels>
               <settings>
@@ -13068,7 +13166,7 @@
             <metadataElement code="citation_public_no" datatype="Text">
               <labels>
                 <label locale="en_US">
-                  <name>Public No.</name>
+                  <name>Public No. / Control No.</name>
                 </label>
               </labels>
               <settings>
@@ -13261,6 +13359,9 @@
           <name>Visiting Scholar Notes</name>
         </label>
       </labels>
+      <settings>
+        <setting name="displayTemplate"><![CDATA[^ca_objects.visiting_scholar.scholar_text]]></setting>
+      </settings>
       <elements>
         <metadataElement code="visiting_line1" datatype="Container">
           <labels>
@@ -13339,6 +13440,9 @@
           <name>Curatorial Notes</name>
         </label>
       </labels>
+      <settings>
+        <setting name="displayTemplate"><![CDATA[^ca_objects.curatorial_notes.curatorial_text]]></setting>
+      </settings>
       <elements>
         <metadataElement code="curatorial_line1" datatype="Container">
           <labels>
@@ -14331,7 +14435,7 @@
         <metadataElement code="geo_date_1" datatype="DateRange">
           <labels>
             <label locale="en_US">
-              <name>Date(s)</name>
+              <name>Dates</name>
             </label>
           </labels>
           <settings>
@@ -15302,6 +15406,99 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="approved_line" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Approved Credit Line</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">3</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_loans">
+          <table>ca_loans</table>
+          <type>loan_object</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="loan_files" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>File Attachment</name>
+        </label>
+      </labels>
+      <elements>
+        <metadataElement code="loan_files_line1" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Loan File Attachment Line 1</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="loan_files_upload" datatype="Media">
+              <labels>
+                <label locale="en_US">
+                  <name>Upload</name>
+                </label>
+              </labels>
+              <settings/>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+        <metadataElement code="loan_files_line2" datatype="Container">
+          <labels>
+            <label locale="en_US">
+              <name>Loan File Attachment Line 2</name>
+            </label>
+          </labels>
+          <settings/>
+          <elements>
+            <metadataElement code="loan_files_title" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>File Title</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+              </settings>
+            </metadataElement>
+            <metadataElement code="loan_files_types" datatype="List" list="loan_file_types">
+              <labels>
+                <label locale="en_US">
+                  <name>File Type</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+              </settings>
+            </metadataElement>
+          </elements>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_loans</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
     <!-- Lot elements -->
     <metadataElement code="lot_deed" datatype="Container">
       <labels>
@@ -15457,7 +15654,7 @@
     <metadataElement code="onsite_date" datatype="DateRange">
       <labels>
         <label locale="en_US">
-          <name>Object(s) On Site Date</name>
+          <name>Objects On Site Date</name>
         </label>
       </labels>
       <settings>
@@ -17503,7 +17700,7 @@
     <metadataElement code="tech_instruction_notes" datatype="Text">
       <labels>
         <label locale="en_US">
-          <name>Technician Instruction Notes</name>
+          <name>Installation Notes</name>
         </label>
       </labels>
       <settings>
@@ -17525,7 +17722,51 @@
     <metadataElement code="registrar_notes" datatype="Text">
       <labels>
         <label locale="en_US">
-          <name>Registrar Notes</name>
+          <name>Registration Notes</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">6</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_loans">
+          <table>ca_loans</table>
+          <type>loan_object</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="shipping_notes" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Shipping Notes</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">100</setting>
+        <setting name="fieldHeight">6</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_loans">
+          <table>ca_loans</table>
+          <type>loan_object</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="crating_notes" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Crating Notes</name>
         </label>
       </labels>
       <settings>
@@ -17877,7 +18118,7 @@
     <metadataElement code="exhibition_credit_line" datatype="Container">
       <labels>
         <label locale="en_US">
-          <name>Exhibition Credit Line(s)</name>
+          <name>Exhibition Credit Lines</name>
         </label>
       </labels>
       <settings>
@@ -18281,7 +18522,7 @@
       <settings>
         <setting name="listWidth">40</setting>
         <setting name="listHeight">1</setting>
-        <setting name="maxColumns">4</setting>
+        <setting name="maxColumns">6</setting>
         <setting name="render">radio_buttons</setting>
       </settings>
       <typeRestrictions>
@@ -19068,6 +19309,8 @@ Onsite date: <unit>^ca_object_lots.onsite_date<br/></unit>
                <settings>
                 <setting name="expand_collapse_no_value">collapse</setting>
                 <setting name="expand_collapse_value">expand</setting>
+                 <setting name="hide_add_to_loan_controls">1</setting>
+                 <setting name="hide_update_location_controls">1</setting>
                  <setting name="label" locale="en_US">Object Location History</setting>
                  <setting name="ca_loans_showTypes">venue</setting>
                  <setting name="ca_loans_showTypes">in</setting>
@@ -19831,7 +20074,7 @@ Onsite date: <unit>^ca_object_lots.onsite_date<br/></unit>
               <settings>
                 <setting name="expand_collapse_no_value">expand</setting>
                 <setting name="expand_collapse_value">expand</setting>
-                <setting name="restrict_to_type">condition</setting>
+                <setting name="restrict_to_types">condition</setting>
                 <setting name="label" locale="en_US">Condition Event</setting>
               </settings>
             </placement>
@@ -19840,7 +20083,7 @@ Onsite date: <unit>^ca_object_lots.onsite_date<br/></unit>
               <settings>
                 <setting name="expand_collapse_no_value">expand</setting>
                 <setting name="expand_collapse_value">expand</setting>
-                <setting name="restrict_to_type">movement</setting>
+                <setting name="restrict_to_types">movement</setting>
                 <setting name="label" locale="en_US">Artwork Movement</setting>
               </settings>
             </placement>
@@ -20070,6 +20313,168 @@ Onsite date: <unit>^ca_object_lots.onsite_date<br/></unit>
         </screen>
       </screens>
     </userInterface>
+    <userInterface code="quick_entity_ui" type="ca_entities">
+      <labels>
+        <label locale="en_US">
+          <name>Quick Add Entity editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic Info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="idno">
+              <bundle>idno</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Entity ID</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_ind_org">
+              <bundle>ca_attribute_ind_org</bundle>
+            </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+               <settings>
+                <setting name="label" locale="en_US">Entity Name</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_entity_category">
+              <bundle>ca_attribute_entity_category</bundle>
+            </placement>
+             <placement code="ca_attribute_gender">
+              <bundle>ca_attribute_gender</bundle>
+            </placement>
+             <placement code="ca_attribute_authority">
+              <bundle>ca_attribute_authority</bundle>
+            </placement>
+            <placement code="ca_attribute_entity_date">
+              <bundle>ca_attribute_entity_date</bundle>
+            </placement>
+            <placement code="ca_attribute_nationality">
+              <bundle>ca_attribute_nationality</bundle>
+            </placement>
+            <placement code="ca_attribute_ethnicities">
+              <bundle>ca_attribute_ethnicities</bundle>
+            </placement>
+             <placement code="ca_attribute_biography">
+              <bundle>ca_attribute_biography</bundle>
+            </placement>
+             <placement code="ca_attribute_birth_place">
+              <bundle>ca_attribute_birth_place</bundle>
+            </placement>
+             <placement code="ca_attribute_death_place">
+              <bundle>ca_attribute_death_place</bundle>
+            </placement>
+            <placement code="ca_attribute_internal_artist">
+              <bundle>ca_attribute_internal_artist</bundle>
+            </placement>
+             <placement code="ca_attribute_public_artist">
+              <bundle>ca_attribute_public_artist</bundle>
+            </placement>
+             <placement code="ca_attribute_georeference_artist">
+              <bundle>ca_attribute_georeference_artist</bundle>
+            </placement>  
+             <placement code="ca_attribute_file_attachements">
+              <bundle>ca_attribute_file_attachements</bundle>
+            </placement> 
+            <placement code="nonpreferred_labels">
+              <bundle>nonpreferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Alternate names</setting>
+                <setting name="add_label" locale="en_US">Add name</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_primary_address">
+              <bundle>ca_attribute_primary_address</bundle>
+            </placement>
+            <placement code="ca_attribute_address">
+              <bundle>ca_attribute_address</bundle>
+            </placement>
+            <placement code="ca_attribute_primary_telephone">
+              <bundle>ca_attribute_primary_telephone</bundle>
+            </placement>
+            <placement code="ca_attribute_telephone">
+              <bundle>ca_attribute_telephone</bundle>
+            </placement>
+            <placement code="ca_attribute_primary_email">
+              <bundle>ca_attribute_primary_email</bundle>
+            </placement>
+            <placement code="ca_attribute_email">
+              <bundle>ca_attribute_email</bundle>
+            </placement>
+            <placement code="ca_object_representations">
+              <bundle>ca_object_representations</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+                 <setting name="label" locale="en_US">Entity Images</setting>
+              </settings>
+            </placement>
+            <placement code="ca_copyright">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Copyright Holder</setting>
+                <setting name="add_label" locale="en_US">Add copyright holder</setting>
+                <setting name="restrict_to_relationship_types">copyright</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
+            </placement>
+             <placement code="ca_attribute_copyright_type">
+              <bundle>ca_attribute_copyright_type</bundle>
+               <settings>
+                 <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+               </settings>
+            </placement>
+             <placement code="ca_attribute_copyright_text">
+              <bundle>ca_attribute_copyright_text</bundle>
+               <settings>
+                 <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">expand</setting>
+               </settings>
+            </placement>    
+            <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
+              <settings>
+                <setting name="display_template"><![CDATA[<unit relativeTo='ca_objects'>^ca_object_representations.media.icon (^ca_objects.idno) ^ca_objects.preferred_labels</unit>]]></setting>
+                <setting name="list_format">list</setting>
+              </settings>
+            </placement>
+            <placement code="ca_entities">
+              <bundle>ca_entities</bundle>
+            </placement>
+            <placement code="ca_exh">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="restrict_to_type">exhibition</setting>
+                <setting name="label" locale="en_US">Related exhibitions</setting>
+              </settings>
+            </placement>
+            <placement code="ca_venue">
+              <bundle>ca_occurrences</bundle>
+              <settings>
+                <setting name="restrict_to_type">venue</setting>
+                <setting name="label" locale="en_US">Related venues</setting>
+              </settings>
+            </placement>
+           <placement code="ca_attribute_external_link">
+              <bundle>ca_attribute_external_link</bundle>
+            </placement>
+            <placement code="ca_attribute_nationality_legacy">
+              <bundle>ca_attribute_nationality_legacy</bundle>
+            </placement>
+            <placement code="ca_attribute_ethnicities_legacy">
+              <bundle>ca_attribute_ethnicities_legacy</bundle>
+            </placement> 
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
     <userInterface code="places_ui" type="ca_places">
       <labels>
         <label locale="en_US">
@@ -20207,7 +20612,7 @@ Onsite date: <unit>^ca_object_lots.onsite_date<br/></unit>
             <placement code="ca_storage_locations">
               <bundle>ca_storage_locations</bundle>
                <settings>
-                <setting name="label" locale="en_US">Gallery Location(s)</setting>
+                <setting name="label" locale="en_US">Gallery Locations</setting>
                 <setting name="useHierarchicalBrowser">1</setting>
               </settings>
             </placement>
@@ -20362,7 +20767,7 @@ Onsite date: <unit>^ca_object_lots.onsite_date<br/></unit>
         <screen idno="deadline" default="0">
           <labels>
             <label locale="en_US">
-              <name>Deadline(s)</name>
+              <name>Deadlines</name>
             </label>
           </labels>
           <bundlePlacements>
@@ -20582,6 +20987,7 @@ Onsite date: <unit>^ca_object_lots.onsite_date<br/></unit>
               <settings>
                 <setting name="label" locale="en_US">Name</setting>
                 <setting name="add_label" locale="en_US">Add name</setting>
+                <setting name="width">90</setting>
               </settings>
             </placement>
             <placement code="idno">
@@ -20595,6 +21001,9 @@ Onsite date: <unit>^ca_object_lots.onsite_date<br/></unit>
             </placement>
             <placement code="is_enabled">
               <bundle>is_enabled</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Is Active?</setting>
+              </settings>
             </placement>
             <placement code="ca_attribute_storage_address">
               <bundle>ca_attribute_storage_address</bundle>
@@ -20615,7 +21024,8 @@ Onsite date: <unit>^ca_object_lots.onsite_date<br/></unit>
               <bundle>ca_objects</bundle>
               <settings>
                 <setting name="label" locale="en_US">Objects In This Location</setting>
-                <setting name="display_template">^ca_objects.preferred_labels (^ca_objects.idno)</setting>
+                <setting name="list_format">list</setting>
+                <setting name="display_template"><![CDATA[^ca_objects.preferred_labels (^ca_objects.idno)]]></setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -20662,6 +21072,7 @@ Onsite date: <unit>^ca_object_lots.onsite_date<br/></unit>
               <settings>
                 <setting name="label" locale="en_US">Lot title</setting>
                 <setting name="add_label" locale="en_US">Add lot title</setting>
+                <setting name="width">90</setting>
               </settings>
             </placement>
             <placement code="idno_stub">
@@ -20739,7 +21150,7 @@ Onsite date: <unit>^ca_object_lots.onsite_date<br/></unit>
               <settings>
                 <setting name="label" locale="en_US">Objects</setting>
                 <setting name="add_label" locale="en_US">Add objects</setting>
-                <setting name="display_template">^ca_objects.preferred_labels (^ca_objects.idno)</setting>
+                <setting name="display_template"><![CDATA[^ca_objects.preferred_labels (^ca_objects.idno)]]></setting>
               </settings>
             </placement>
           </bundlePlacements>
@@ -20995,7 +21406,7 @@ Onsite date: <unit>^ca_object_lots.onsite_date<br/></unit>
         </label>
       </labels>
       <screens>
-        <screen idno="basic_out" default="1">
+        <screen idno="basic_venue" default="1">
           <labels>
             <label locale="en_US">
               <name>Basic info</name>
@@ -21180,33 +21591,85 @@ Onsite date: <unit>^ca_object_lots.onsite_date<br/></unit>
             <restriction code="loan_object" type="loan_object"/>
           </typeRestrictions>
           <bundlePlacements>
-            <placement code="preferred_labels">
-              <bundle>preferred_labels</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Concise Title</setting>
-              </settings>
-            </placement>
             <placement code="idno">
               <bundle>idno</bundle>
               <settings>
-                <setting name="label" locale="en_US">Accession Number</setting>
+                <setting name="label" locale="en_US">EL Number</setting>
               </settings>
             </placement>
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
-               <settings>
-                <setting name="label" locale="en_US">Artist</setting>
-                 <setting name="restrict_to_relationship_types">artist</setting>
+              <settings>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+                <setting name="label" locale="en_US">Artist/maker</setting>
+                <setting name="add_label" locale="en_US">Add artist/maker</setting>
+                <setting name="restrict_to_relationship_types">artist</setting>
+                <setting name="display_template"><![CDATA[<unit relativeTo="ca_entities">
+<unit><l>^ca_entities.preferred_labels</l><ifdef code="ca_entities.nationality">,</ifdef> </unit>
+<unit relativeTo="ca_entities.nationality" delimiter="-">^ca_entities.nationality</unit>
+<ifdef code="ca_entities.entity_date.entity_value">, (</ifdef>^ca_entities.entity_date.entity_value<ifdef code="ca_entities.entity_date.entity_value">)</ifdef>
+</unit>]]></setting>
               </settings>
-            </placement>    
-            <placement code="ca_attribute_curator_instruction_notes">
-              <bundle>ca_attribute_curator_instruction_notes</bundle>
+            </placement>  
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Full Title</setting>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+                <setting name="width">90</setting>
+              </settings>
             </placement>
+            <placement code="nonpreferred_labels">
+              <bundle>nonpreferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Alternate titles</setting>
+                <setting name="add_label" locale="en_US">Add name</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+                <setting name="width">90</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_creation_date">
+              <bundle>ca_attribute_creation_date</bundle>
+              <settings>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_medium_container">
+              <bundle>ca_attribute_medium_container</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+              </settings>
+            </placement>
+             <placement code="ca_attribute_dimensions">
+              <bundle>ca_attribute_dimensions</bundle>
+              <settings>
+                <setting name="expand_collapse_value">collapse</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_approved_line">
+              <bundle>ca_attribute_approved_line</bundle>
+              <settings>
+                <setting name="expand_collapse_value">collapse</setting>
+                <setting name="expand_collapse_no_value">collapse</setting>
+              </settings>
+            </placement>   
             <placement code="ca_attribute_tech_instruction_notes">
               <bundle>ca_attribute_tech_instruction_notes</bundle>
             </placement>
              <placement code="ca_attribute_registrar_notes">
               <bundle>ca_attribute_registrar_notes</bundle>
+            </placement>
+            <placement code="ca_attribute_shipping_notes">
+              <bundle>ca_attribute_shipping_notes</bundle>
+            </placement>
+            <placement code="ca_attribute_crating_notes">
+              <bundle>ca_attribute_crating_notes</bundle>
             </placement>
             <placement code="ca_attribute_final_copy">
               <bundle>ca_attribute_final_copy</bundle>
@@ -21220,14 +21683,26 @@ Onsite date: <unit>^ca_object_lots.onsite_date<br/></unit>
                 <setting name="label" locale="en_US">Related Loans</setting>
                 <setting name="restrict_to_types">loan_in</setting>
                 <setting name="restrict_to_types">venue</setting>
+                <setting name="display_template"><![CDATA[<l>Related Loan: ^ca_loans.preferred_labels</l><br>
+Related Exhibition: <unit relativeTo="ca_loans">
+<unit relativeTo="ca_occurrences" delimiter="; ">^ca_occurrences.preferred_labels</unit>
+                    ]]></setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_file_attachements">
-              <bundle>ca_attribute_file_attachements</bundle>
+            <placement code="ca_attribute_loan_files">
+              <bundle>ca_attribute_loan_files</bundle>
             </placement> 
-             <placement code="ca_attribute_georeference_exhibitions_loans">
-              <bundle>ca_attribute_georeference_exhibitions_loans</bundle>
-            </placement>               
+            <placement code="ca_object_representations">
+              <bundle>ca_object_representations</bundle>
+               <settings>
+                <setting name="expand_collapse_no_value">expand</setting>
+                <setting name="expand_collapse_value">collapse</setting>
+                 <setting name="label" locale="en_US">Object Images</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_curator_instruction_notes">
+              <bundle>ca_attribute_curator_instruction_notes</bundle>
+            </placement>
           </bundlePlacements>
         </screen>
       </screens>
@@ -21249,13 +21724,6 @@ Onsite date: <unit>^ca_object_lots.onsite_date<br/></unit>
             <restriction code="movement" type="movement"/>
           </typeRestrictions>
           <bundlePlacements>
-            <placement code="ca_objects">
-              <bundle>ca_objects</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Related Objects</setting>
-                <setting name="add_label" locale="en_US">Add objects</setting>
-              </settings>
-            </placement>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
               <settings>
@@ -21266,6 +21734,13 @@ Onsite date: <unit>^ca_object_lots.onsite_date<br/></unit>
               <bundle>idno</bundle>
               <settings>
                 <setting name="label" locale="en_US">Identifier</setting>
+              </settings>
+            </placement>
+            <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Objects</setting>
+                <setting name="add_label" locale="en_US">Add objects</setting>
               </settings>
             </placement>
             <placement code="ca_entities">
@@ -21478,7 +21953,7 @@ Onsite date: <unit>^ca_object_lots.onsite_date<br/></unit>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
         </type>
-        <type code="donor" default="1">
+        <type code="donor" default="0">
           <labels>
             <label locale="en_US">
               <typename>donor</typename>
@@ -21488,7 +21963,7 @@ Onsite date: <unit>^ca_object_lots.onsite_date<br/></unit>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
         </type>
-        <type code="seller" default="1">
+        <type code="seller" default="0">
           <labels>
             <label locale="en_US">
               <typename>seller</typename>
@@ -21508,7 +21983,7 @@ Onsite date: <unit>^ca_object_lots.onsite_date<br/></unit>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
         </type>
-        <type code="artist" default="0">
+        <type code="artist" default="1">
           <labels>
             <label locale="en_US">
               <typename>artist</typename>
@@ -22246,7 +22721,7 @@ Onsite date: <unit>^ca_object_lots.onsite_date<br/></unit>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
         </type>
-        <type code="seller" default="1">
+        <type code="seller" default="0">
           <labels>
             <label locale="en_US">
               <typename>was sold by</typename>
@@ -22630,16 +23105,6 @@ Onsite date: <unit>^ca_object_lots.onsite_date<br/></unit>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
         </type>
-        <type code="previous_location" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>previously located at</typename>
-              <typename_reverse>previous location</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
       </types>
     </relationshipTable>
     <relationshipTable name="ca_loans_x_entities">
@@ -22681,7 +23146,7 @@ Onsite date: <unit>^ca_object_lots.onsite_date<br/></unit>
               <typename_reverse>artist</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft> </subTypeLeft>
+          <subTypeLeft>loan_object</subTypeLeft>
           <subTypeRight/>
         </type>
         <type code="contact" default="1">
@@ -22878,6 +23343,8 @@ Onsite date: <unit>^ca_object_lots.onsite_date<br/></unit>
           <bundle>ca_objects</bundle>
           <settings>
             <setting name="label" locale="en_US">Objects</setting>
+            <setting name="format"><![CDATA[<unit relativeTo="ca_objects" delimiter="<br>"><l>^ca_objects.preferred_labels (^ca_objects.idno)</l></unit>]]></setting>
+            <setting name="delimiter"><![CDATA[<br>]]>!</setting>
           </settings>
         </placement>
       </bundlePlacements>
@@ -22977,6 +23444,65 @@ Onsite date: <unit>^ca_object_lots.onsite_date<br/></unit>
           <settings>
             <setting name="label" locale="en_US">Subject Matter</setting>
           </settings>
+        </placement>
+      </bundlePlacements>
+    </display>
+    <display code="loan_object_summary" type="ca_loans" system="0">
+      <labels>
+        <label locale="en_US">
+          <name>Basic Summary</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="show_empty_values">0</setting>
+      </settings>
+      <bundlePlacements>
+        <placement code="idno">
+          <bundle>ca_loans.idno</bundle>
+          <settings>
+            <setting name="label" locale="en_US">EL Number</setting>
+          </settings>
+        </placement>
+        <placement code="artist">
+          <bundle>ca_entities</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Artist</setting>
+            <setting name="restrict_to_relationship_types">artist</setting>
+            <setting name="format"><![CDATA[<unit relativeTo="ca_entities">
+<unit><l>^ca_entities.preferred_labels</l><ifdef code="ca_entities.nationality">,</ifdef> </unit>
+<unit relativeTo="ca_entities.nationality" delimiter="-">^ca_entities.nationality</unit>
+<ifdef code="ca_entities.entity_date.entity_value">, (</ifdef>^ca_entities.entity_date.entity_value<ifdef code="ca_entities.entity_date.entity_value">)</ifdef>
+</unit>]]></setting>
+          </settings>
+        </placement>
+        <placement code="preferred_labels">
+          <bundle>ca_loans.preferred_labels</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Title</setting>
+          </settings>
+        </placement>
+        <placement code="date">
+          <bundle>ca_loans.creation_date</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Date</setting>
+          </settings>
+        </placement>
+        <placement code="medium_container">
+          <bundle>ca_loans.medium_container</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Medium</setting>
+            <setting name="format"><![CDATA[^ca_objects.medium_container.medium]]></setting>
+          </settings>
+        </placement>
+        <placement code="dimensions">
+          <bundle>ca_loans.dimensions</bundle>
+          <settings>
+            <setting name="label" locale="en_US">Dimensions</setting>
+            <setting name="format"><![CDATA[<unit relativeTo="ca_objects.dimensions" delimiter="; ">^ca_objects.dimensions.display_dimensions</unit>]]></setting>
+          </settings>
+        </placement>
+        <placement code="approved_line">
+          <bundle>ca_loans.approved_line</bundle>
         </placement>
       </bundlePlacements>
     </display>
