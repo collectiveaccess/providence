@@ -499,7 +499,7 @@
 							
 							$vn_rel_count = 0;
 							$vn_limit = ($va_element_info['limit'] > 0) ? $va_element_info['limit'] : 0;
-							foreach($va_rel_items as $vn_id => $va_rel_item) {
+							foreach($va_rel_items as $vs_key => $va_rel_item) {
 								$va_values[$vs_element_name] = array();
 								if ($t_rel_table->load($va_rel_item[$t_rel_table->primaryKey()])) {
 									foreach($va_fields as $vs_field) {

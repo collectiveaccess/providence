@@ -46,6 +46,7 @@ class ItemService extends BaseJSONService {
 	public function dispatch(){
 		switch($this->getRequestMethod()){
 			case "GET":
+			default:
 				if($this->opn_id){	// we allow that this might be a string here for idno-based fetching
 					if(sizeof($this->getRequestBodyArray())==0){
 						// allow different format specifications

@@ -2308,7 +2308,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 
 				foreach($va_expression_tags as $vs_expression_tag) {
 					if(!isset($va_expression_vars[$vs_expression_tag])) {
-						$va_expression_vars[$vs_expression_tag] = $qr_res->get($vs_expression_tag, array('returnIdno' => true, 'delimiter' => ';'));
+						$va_expression_vars[$vs_expression_tag] = $qr_res->get($vs_expression_tag, array('assumeDisplayField' => true,'returnIdno' => true, 'delimiter' => ';'));
 					}
 				}
 
@@ -2320,7 +2320,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 			// Grab values for codes used in ifdef and ifnotdef directives
 			$va_directive_tag_vals = array();	
 			foreach($va_directive_tags as $vs_directive_tag) {
-				$va_directive_tag_vals[$vs_directive_tag] = $qr_res->get($vs_directive_tag, array('convertCodesToDisplayText' => true, 'dontUseElementTemplate' => true));
+				$va_directive_tag_vals[$vs_directive_tag] = $qr_res->get($vs_directive_tag, array('assumeDisplayField' => true, 'convertCodesToDisplayText' => true, 'dontUseElementTemplate' => true));
 			}
 			
 			
@@ -2681,7 +2681,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 								}
 								
 								if ($va_spec_bits[1] != '_hierarchyName') {
-									$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_additional_options, array("returnAsArray" => true, "returnAllLocales" => true, 'filters' => $va_tag_filters, 'primaryIDs' => $va_primary_ids)));
+									$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_additional_options, array("returnAsArray" => true, "returnAllLocales" => true, 'assumeDisplayField' => true, 'filters' => $va_tag_filters, 'primaryIDs' => $va_primary_ids)));
 								} else {
 									$va_val = array();
 								}
@@ -2793,7 +2793,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 								} elseif ($va_tmp[0] == '_hierarchyName') {
 									$va_val[] = $vs_hierarchy_name;
 								} else {
-									$va_val_tmp = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_tag_opts, array('returnAsArray' => true, 'filters' => $va_tag_filters, 'checkAccess' => $pa_check_access)));
+									$va_val_tmp = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_tag_opts, array('returnAsArray' => true, 'assumeDisplayField' => true, 'filters' => $va_tag_filters, 'checkAccess' => $pa_check_access)));
 									
 									$va_val = array();
 								

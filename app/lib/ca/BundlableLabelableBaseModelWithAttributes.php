@@ -627,7 +627,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			if(is_array($va_related_items) && sizeof($va_related_items)) {
 				$va_related_for_export = array();
 				$vn_i = 0;
-				foreach($va_related_items as $vn_id => $va_related_item) {
+				foreach($va_related_items as $vs_key => $va_related_item) {
 					$va_related_for_export['related_'.$vn_i] = $va_related_item;
 					$vn_i++;
 				}
@@ -2433,7 +2433,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 			if(is_array($va_collections = $t_object->getRelatedItems('ca_collections', array('restrictToRelationshipTypes' => array($vs_object_collection_rel_type))))) {
 				$va_related_collections_by_level = array();
-				foreach($va_collections as $vn_relation_id => $va_collection) {
+				foreach($va_collections as $vs_key => $va_collection) {
 					$va_related_collections_by_level[$va_collection['collection_id']] = array(
 						'item_id' => $va_collection['collection_id'],
 						'parent_id' => $va_collection['parent_id'],
@@ -4228,7 +4228,7 @@ if (!$vb_batch) {
  			$vs_pk = $this->getAppDatamodel()->getTablePrimaryKeyName($pm_rel_table_name_or_num);
  			
  			$va_ids = array();
- 			foreach($va_related_items as $vn_relation_id => $va_item) {
+ 			foreach($va_related_items as $vs_key => $va_item) {
  				$va_ids[] = $va_item[$vs_pk];
  			}
  			
@@ -4694,7 +4694,6 @@ if (!$vb_batch) {
 			//
 			// BEGIN - non-self relation
 			//
-
 			$va_wheres[] = "(".$this->tableName().'.'.$this->primaryKey()." IN (".join(",", $va_row_ids)."))";
 			$vs_cur_table = array_shift($va_path);
 			$va_joins = array();
@@ -4743,7 +4742,7 @@ if (!$vb_batch) {
 
 			//print "<pre>$vs_sql</pre>\n";
 			$qr_res = $o_db->query($vs_sql);
-
+			
 			if ($vb_uses_relationship_types)  {
 				$va_rel_types = $t_rel->getRelationshipInfo($t_item_rel->tableName());
 				$vs_left_table = $t_item_rel->getLeftTableName();
@@ -4760,7 +4759,7 @@ if (!$vb_batch) {
 				}
 
 				$va_row = $qr_res->getRow();
-				$vs_v = $va_row[$vs_key];
+				$vs_v = (sizeof($va_path) <= 2) ? $va_row['row_id'].'/'.$va_row[$vs_key] : $va_row[$vs_key];
 
 				$vs_display_label = $va_row[$vs_label_display_field];
 				//unset($va_row[$vs_label_display_field]);
@@ -4819,7 +4818,7 @@ if (!$vb_batch) {
 					$va_rels[$vs_v]['label'] = array_shift($va_tmp2);
 				}
 			}
-
+			
 			//
 			// END - non-self relation
 			//
