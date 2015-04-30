@@ -61,6 +61,8 @@
 		# -------------------------------------------------------
 		/**
 		 * Perform client services-related periodic tasks
+		 *
+		 * @return boolean true because otherwise it disables subsequent plugins
 		 */
 		public function hookPeriodicTask(&$pa_params) {
 			global $AUTH_CURRENT_USER_ID;
@@ -77,8 +79,8 @@
 				$vs_password = $this->opo_config->get('password');
 				$vs_ssl = $this->opo_config->get('ssl');
 				
-				if (!$vs_server) { return; }
-				if (!$vs_username) { return; }
+				if (!$vs_server) { return true; }
+				if (!$vs_username) { return true; }
 				
 				try {
 					$o_mail = new Zend_Mail_Storage_Imap(array(
@@ -88,7 +90,7 @@
 						'ssl'      => $vs_ssl)
 					);
 				} catch (Exception $e) {
-					return null;
+					return true;
 				}
 				
 				$va_mimetypes = $this->opo_config->getList('mimetypes');
@@ -172,7 +174,7 @@
 				foreach(array_reverse(array_keys($va_mail_to_delete)) as $vn_message_num) {
 					$o_mail->removeMessage($vn_message_num);
 				}
-				
+			return true;
 		}
 		# -------------------------------------------------------
 		/**
