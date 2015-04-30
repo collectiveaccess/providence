@@ -150,7 +150,7 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 
 		$o_literal = $o_graph->get($vs_pull_uri, $ps_literal_propery);
 
-		if(!($o_literal instanceof EasyRdf_Literal)) { return false; }
+		if(!($o_literal instanceof EasyRdf_Literal)) { return (string) $o_literal; }
 		return htmlentities($o_literal->getValue());
 	}
 	# ------------------------------------------------
