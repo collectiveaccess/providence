@@ -11,6 +11,11 @@ if (!defined("__CA_LOCAL_CONFIG_DIRECTORY__")) {
 	define("__CA_LOCAL_CONFIG_DIRECTORY__", __DIR__ . "/conf");
 }
 
+// Let's see if Travis builds work better with the mysql driver
+if (!defined("__CA_DB_TYPE__")) {
+	define("__CA_DB_TYPE__", 'mysql');
+}
+
 // If you require any overrides in setup.php that are specific to running unit tests, put them here.
 
 // Use remaining settings from main config.
