@@ -115,7 +115,7 @@ class wamMaterialisedTaxonomyPlugin extends BaseApplicationPlugin {
 							caDebug($va_new_values, 'new_values', true);
 							$t_table->setMode(ACCESS_WRITE);
 							foreach($va_new_values as $vs_field => $vs_value){
-								$t_table->replaceAttribute(array( $vs_value), $vs_field);
+								$t_table->replaceAttribute(array($vs_field=>  $vs_value), $vs_field);
 							}
 							$t_table->update();
 						}
