@@ -36,6 +36,7 @@ class wamMaterialisedTaxonomyPlugin extends BaseApplicationPlugin {
 	public function __construct($ps_plugin_path) {
 		parent::__construct();
 		$this->description = _t('Keeps copies of ancestral taxonomy ranks in child level names for easy access' );
+		$this->opo_config = Configuration::load($ps_plugin_path . DIRECTORY_SEPARATOR . 'conf' . DIRECTORY_SEPARATOR . 'materialisedTaxonomy.conf');
 	}
 
 	public function checkStatus() {
@@ -57,5 +58,13 @@ class wamMaterialisedTaxonomyPlugin extends BaseApplicationPlugin {
 		);
 	}
 
-
+	/**
+	 * Implementation of the periodic task hook
+	 *
+	 *
+	 */
+	public function hookPeriodicTask(&$pa_params) {
+		caDebug($this->opo_config, 'config', true);
+		return true;
+	}
 }
