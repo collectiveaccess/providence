@@ -126,7 +126,7 @@
 		'displayDelimiter' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
-			'default' => ',',
+			'default' => '; ',
 			'width' => 10, 'height' => 1,
 			'label' => _t('Value delimiter'),
 			'validForRootOnly' => 1,
@@ -190,6 +190,7 @@
  		# ------------------------------------------------------------------
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			$ps_value = trim($ps_value);
+ 			global $g_ui_locale;
  			
  			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('requireValue'));
  			if (!$va_settings['requireValue'] && !trim($ps_value)) {

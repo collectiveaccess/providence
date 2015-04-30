@@ -35,7 +35,8 @@
   */
  
  	require_once(__CA_LIB_DIR__.'/core/ApplicationVars.php'); 	
- 	require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php'); 	
+ 	require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
+	require_once(__CA_APP_DIR__.'/helpers/importHelpers.php');
  
 	abstract class BaseRefinery {
 		# -------------------------------------------------------

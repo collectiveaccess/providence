@@ -117,7 +117,6 @@ require_once(__CA_LIB_DIR__."/core/Media/MediaProcessingSettings.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/gisHelpers.php");
 require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
-require_once(__CA_LIB_DIR__."/core/Parsers/htmlpurifier/HTMLPurifier.standalone.php");
 require_once(__CA_LIB_DIR__."/ca/MediaContentLocationIndexer.php");
 require_once(__CA_LIB_DIR__.'/ca/MediaReplicator.php');
 
@@ -243,6 +242,7 @@ class BaseModel extends BaseObject {
 	/**
 	 * prepared change log statement (primary log entry)
 	 *
+	 * @private DbStatement
 	 * @access private
 	 */
 	private $opqs_change_log;
@@ -250,9 +250,18 @@ class BaseModel extends BaseObject {
 	/**
 	 * prepared change log statement (log subject entries)
 	 *
+	 * @private DbStatement
 	 * @access private
 	 */
 	private $opqs_change_log_subjects;
+
+	/**
+	 * prepared change log statement (log snapshots)
+	 *
+	 * @private DbStatement
+	 * @access private
+	 */
+	private $opqs_change_log_snapshot;
 
 	/**
 	 * prepared statement to get change log
@@ -434,7 +443,7 @@ class BaseModel extends BaseObject {
 	 * Convenience method to return application datamodel object. This is the same object
 	 * you'd get if you instantiated a Datamodel() object
 	 *
-	 * @return Configuration
+	 * @return Datamodel
 	 */
 	public function getAppDatamodel() {
 		return $this->_DATAMODEL;
@@ -1582,12 +1591,13 @@ class BaseModel extends BaseObject {
 	}
 	# --------------------------------------------------------------------------------
 	/**
-	 * Returns name of primary key
+	 * Returns name of primary key field (Eg. object_id)
 	 *
+	 * @param bool $pb_include_tablename Return primary key field name prepended with table name (Eg. ca_objects.object_id) [Default is false]
 	 * @return string the primary key of the table
 	 */
-	public function primaryKey() {
-		return $this->PRIMARY_KEY;
+	public function primaryKey($pb_include_tablename=false) {
+		return $pb_include_tablename ? $this->TABLE.'.'.$this->PRIMARY_KEY : $this->PRIMARY_KEY;
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -1827,7 +1837,7 @@ class BaseModel extends BaseObject {
 					$va_sql_wheres[] = "($vs_field = $vm_value)";
 				}
 			}
-			$vs_sql = "SELECT * FROM ".$this->tableName()." WHERE ".join(" AND ", $va_sql_wheres);
+			$vs_sql = "SELECT * FROM ".$this->tableName()." WHERE ".join(" AND ", $va_sql_wheres). " LIMIT 1";
 		}
 
 		$qr_res = $o_db->query($vs_sql);
@@ -2427,7 +2437,7 @@ class BaseModel extends BaseObject {
 					$vn_id = $this->getPrimaryKey();
 					
 					if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) && !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
-						$this->doSearchIndexing($this->getFieldValuesArray(true), false);
+						$this->doSearchIndexing($this->getFieldValuesArray(true), false, array('isNewRow' => true));
 					}
 
 					if ($vb_we_set_transaction) { $this->removeTransaction(true); }
@@ -3032,18 +3042,20 @@ class BaseModel extends BaseObject {
 	 *
 	 * @param array $pa_changed_field_values_array List of changed field values. [Default is to load list from model]
 	 * @param bool $pb_reindex_mode If set indexing is done in "reindex mode"; that is the row is reindexed from scratch as if the entire database is being reindexed. [Default is false]
-	 * @param string $ps_engine Name of the search engine to use. [Default is the engine configured using "search_engine_plugin" in app.conf] 
+	 * @param array $pa_options Options include 
+	 * 		engine = Name of the search engine to use. [Default is the engine configured using "search_engine_plugin" in app.conf] 
+	 *		isNewRow = Set to true if row is being indexed for the first time. BaseModel::insert() should set this. [Default is false]
 	 *
 	 * @return bool true on success, false on failure of indexing
 	 */
-	public function doSearchIndexing($pa_changed_field_values_array=null, $pb_reindex_mode=false, $ps_engine=null) {
+	public function doSearchIndexing($pa_changed_field_values_array=null, $pb_reindex_mode=false, $pa_options=null) {
 		if (defined("__CA_DONT_DO_SEARCH_INDEXING__")) { return; }
 		if (is_null($pa_changed_field_values_array)) { 
 			$pa_changed_field_values_array = $this->getChangedFieldValuesArray();
 		}
 		
-		$o_indexer = $this->getSearchIndexer($ps_engine);
-		return $o_indexer->indexRow($this->tableNum(), $this->getPrimaryKey(), $this->getFieldValuesArray(true), $pb_reindex_mode, null, $pa_changed_field_values_array, $this->_FIELD_VALUES_OLD);
+		$o_indexer = $this->getSearchIndexer(caGetOption('engine', $pa_options, null));
+		return $o_indexer->indexRow($this->tableNum(), $this->getPrimaryKey(), $this->getFieldValuesArray(true), $pb_reindex_mode, null, $pa_changed_field_values_array, $this->_FIELD_VALUES_OLD, $pa_options);
 	}
 	
 	/**
@@ -7084,6 +7096,58 @@ class BaseModel extends BaseObject {
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Returns number of rows in the hierarchy
+	 * 
+	 * @param int $pn_id node to start from - default is the hierarchy root
+	 * @param array $pa_options
+	 * @return int count
+	 */
+	public function getHierarchySize($pn_id=null, $pa_options=null) {
+		if (!$this->isHierarchical()) { return null; }
+		
+		$vs_hier_left_fld 		= $this->getProperty("HIERARCHY_LEFT_INDEX_FLD");
+		$vs_hier_right_fld 		= $this->getProperty("HIERARCHY_RIGHT_INDEX_FLD");
+		$vs_hier_id_fld 		= $this->getProperty("HIERARCHY_ID_FLD");
+		$vs_hier_id_table 		= $this->getProperty("HIERARCHY_DEFINITION_TABLE");
+		$vs_hier_parent_id_fld 	= $this->getProperty("HIERARCHY_PARENT_ID_FLD");
+		
+		$o_db = $this->getDb();
+		
+		$va_params = array();
+		
+		$t_instance = null;
+		if ($pn_id && ($pn_id != $this->getPrimaryKey())) {
+			$t_instance = $this->getAppDatamodel()->getInstanceByTableName($this->tableName());
+			if (!$t_instance->load($pn_id)) { return null; }
+		} else {
+			$t_instance = $this;
+		}
+	
+		if ($pn_id > 0) {
+			$va_params[] = (float)$t_instance->get($vs_hier_left_fld);
+			$va_params[] = (float)$t_instance->get($vs_hier_right_fld);
+		}
+		if($vs_hier_id_fld) {
+			$va_params[] = (int)$t_instance->get($vs_hier_id_fld);
+		}
+		
+		$qr_res = $o_db->query("
+			SELECT count(*) c 
+			FROM ".$this->tableName()."
+			WHERE
+				".(($pn_id > 0) ? "({$vs_hier_left_fld} >= ?) AND ({$vs_hier_right_fld} <= ?) " : '').
+				($vs_hier_id_fld ? ' '.(($pn_id > 0) ? ' AND ' : '')."({$vs_hier_id_fld} = ?)" : '').
+				($this->hasField('deleted') ? ' '.(($vs_hier_id_fld) ? ' AND ' : '')."(deleted = 0)" : '')
+				."
+		", $va_params);
+	
+		if ($qr_res->nextRow()) {
+			return (int)$qr_res->get('c');
+		}
+		return null;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
 	 * Count child rows for specified parent rows
 	 *
 	 * @param array list of primary keys for which to fetch child counts
@@ -8945,6 +9009,9 @@ $pa_options["display_form_field_tips"] = true;
 			$t_rel_type = new ca_relationship_types();
 			if ($vs_linking_table = $t_rel_type->getRelationshipTypeTable($this->tableName(), $t_item_rel->tableName())) {
 				$pn_type_id = $t_rel_type->getRelationshipTypeID($vs_linking_table, $pm_type_id);
+			} else {
+				$this->postError(2510, _t('Type id "%1" is not valid', $pm_type_id), 'BaseModel->addRelationship()');
+				return false;
 			}
 		} else {
 			$pn_type_id = $pm_type_id;
@@ -8984,8 +9051,8 @@ $pa_options["display_form_field_tips"] = true;
 			if(!is_null($ps_source_info)){ $t_item_rel->set("source_info",$ps_source_info); }
 			$t_item_rel->insert();
 			
-			if ($t_item_rel->numErrors()) {
-				$this->errors = $t_item_rel->errors;
+			if ($t_item_rel->numErrors() > 0) {
+				$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
 				return false;
 			}
 			return $t_item_rel;
@@ -8995,7 +9062,6 @@ $pa_options["display_form_field_tips"] = true;
 					$t_item_rel->setMode(ACCESS_WRITE);
 					
 					$vs_left_table = $t_item_rel->getLeftTableName();
-					$vs_right_table = $t_item_rel->getRightTableName();
 
 					if ($this->tableName() == $vs_left_table) {
 						// is lefty
@@ -9013,8 +9079,8 @@ $pa_options["display_form_field_tips"] = true;
 					if(!is_null($ps_source_info)){ $t_item_rel->set("source_info",$ps_source_info); }
 					$t_item_rel->insert();
 					
-					if ($t_item_rel->numErrors()) {
-						$this->errors = $t_item_rel->errors;
+					if ($t_item_rel->numErrors() > 0) {
+						$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
 						return false;
 					}
 					
@@ -9027,8 +9093,8 @@ $pa_options["display_form_field_tips"] = true;
 							$t_item_rel->set($va_rel_info['rel_keys']['many_table_field'], $this->getPrimaryKey());
 							$t_item_rel->update();
 							
-							if ($t_item_rel->numErrors()) {
-								$this->errors = $t_item_rel->errors;
+							if ($t_item_rel->numErrors() > 0) {
+								$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
 								return false;
 							}
 						} else {
@@ -9038,8 +9104,8 @@ $pa_options["display_form_field_tips"] = true;
 							$t_item_rel->set($t_item_rel->getTypeFieldName(), $pn_type_id);	
 							$t_item_rel->insert();
 							
-							if ($t_item_rel->numErrors()) {
-								$this->errors = $t_item_rel->errors;
+							if ($t_item_rel->numErrors() > 0) {
+								$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
 								return false;
 							}
 						}
@@ -9049,18 +9115,18 @@ $pa_options["display_form_field_tips"] = true;
 						$this->set($va_rel_info['rel_keys']['many_table_field'], $pn_rel_id);
 						$this->update();
 					
-						if ($this->numErrors()) {
+						if ($this->numErrors() > 0) {
+							$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
 							return false;
 						}
 						return $this;
 					}
 					break;
 				default:
+					$this->postError(280, _t('Could not find a path to the specified related table'), 'BaseModel->addRelationship', $t_rel_item->tableName());
 					return false;
-					break;
 			}
-		}		
-		return false;
+		}
 	}
 	# --------------------------------------------------------------------------------------------
 	/**

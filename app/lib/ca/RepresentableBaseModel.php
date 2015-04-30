@@ -530,6 +530,9 @@
 				$t_rep->set('access', $pn_access);
 				$t_rep->set('media', $ps_media_path, $pa_options);
 		
+				$o_idno = $t_rep->getIDNoPlugInInstance();
+				$t_rep->setIdnoWithTemplate($o_idno->makeTemplateFromValue(''));
+		
 				if (is_array($pa_values)) {
 					if (isset($pa_values['idno'])) {
 						$t_rep->set('idno', $pa_values['idno']);

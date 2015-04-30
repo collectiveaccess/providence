@@ -525,7 +525,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		map_{$vs_id}_delete_button.activate();
 		
 		// Grab current map coordinates from input
-		var map_{$vs_id}_loc_str = '{".$pa_element_info['element_id']."}';
+		var map_{$vs_id}_loc_str = '{{".$pa_element_info['element_id']."}}';
 		var map_{$vs_id}_loc_features = map_{$vs_id}_loc_str.match(/\[([\d\,\-\.\:\;]+)\]/)
 		if (map_{$vs_id}_loc_features && (map_{$vs_id}_loc_features.length > 1)) {
 			map_{$vs_id}_loc_features = map_{$vs_id}_loc_features[1].split(/:/);
@@ -600,8 +600,6 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 			var t = jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search').val();
 			jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search_button').attr('src', '".$po_request->getThemeUrlPath()."/graphics/icons/indicator.gif');
 			var geocoder = new google.maps.Geocoder();
-			console.log('got', t, '#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search');
-			console.trace();
 			geocoder.geocode( { 'address': t}, function(results, status) {
 				jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search_button').attr('src', '".$po_request->getThemeUrlPath()."/graphics/buttons/glass.png');
 				if (status == google.maps.GeocoderStatus.OK) {

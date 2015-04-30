@@ -460,6 +460,7 @@ class Client
      *        ['preference']       = (string) Specify the node or shard the operation should be performed on (default: random) .Applies to all returned documents unless otherwise specified in body \"params\" or \"docs\".
      *        ['routing']          = (string) Specific routing value. Applies to all returned documents unless otherwise specified in body \"params\" or \"docs\".
      *        ['parent']           = (string) Parent id of documents. Applies to all returned documents unless otherwise specified in body \"params\" or \"docs\".
+     *        ['realtime']         = (boolean) Specifies if request is real-time as opposed to near-real-time (default: true).
      *
      * @param $params array Associative array of parameters
      *
@@ -500,6 +501,7 @@ class Client
      *        ['preference']       = (string) Specify the node or shard the operation should be performed on (default: random) .Applies to all returned documents unless otherwise specified in body \"params\" or \"docs\".
      *        ['routing']          = (string) Specific routing value. Applies to all returned documents unless otherwise specified in body \"params\" or \"docs\".
      *        ['parent']           = (string) Parent id of documents. Applies to all returned documents unless otherwise specified in body \"params\" or \"docs\".
+     *        ['realtime']         = (boolean) Specifies if request is real-time as opposed to near-real-time (default: true).
      *
      * @param $params array Associative array of parameters
      *
@@ -1454,7 +1456,9 @@ class Client
         $log       = new Logger('log');
         $handler   = new StreamHandler(
             $this->params['logPath'],
-            $this->params['logLevel']
+            $this->params['logLevel'],
+            $this->params['logBubble'],
+            $this->params['logPermission']
         );
         $processor = new IntrospectionProcessor();
 
@@ -1469,7 +1473,9 @@ class Client
         $trace        = new Logger('trace');
         $traceHandler = new StreamHandler(
             $this->params['tracePath'],
-            $this->params['traceLevel']
+            $this->params['traceLevel'],
+            $this->params['traceBubble'],
+            $this->params['tracePermission']
         );
 
         $trace->pushHandler($traceHandler);

@@ -3464,6 +3464,7 @@ if (!$vb_batch) {
 									
 									$vn_is_primary = ($po_request->getParameter($vs_prefix_stub.'is_primary_'.$va_rep['representation_id'], pString) != '') ? $po_request->getParameter($vs_prefix_stub.'is_primary_'.$va_rep['representation_id'], pInteger) : null;
 									$vn_locale_id = $po_request->getParameter($vs_prefix_stub.'locale_id_'.$va_rep['representation_id'], pInteger);
+									$vs_idno = $po_request->getParameter($vs_prefix_stub.'idno_'.$va_rep['representation_id'], pString);
 									$vn_access = $po_request->getParameter($vs_prefix_stub.'access_'.$va_rep['representation_id'], pInteger);
 									$vn_status = $po_request->getParameter($vs_prefix_stub.'status_'.$va_rep['representation_id'], pInteger);
 									$vs_rep_label = trim($po_request->getParameter($vs_prefix_stub.'rep_label_'.$va_rep['representation_id'], pString));
@@ -3478,7 +3479,7 @@ if (!$vb_batch) {
 										$vn_rank = $va_rep_ids_sorted[$vn_rank_index];
 									}
 									
-									$this->editRepresentation($va_rep['representation_id'], $vs_path, $vn_locale_id, $vn_status, $vn_access, $vn_is_primary, array(), array('original_filename' => $vs_original_name, 'rank' => $vn_rank, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y));
+									$this->editRepresentation($va_rep['representation_id'], $vs_path, $vn_locale_id, $vn_status, $vn_access, $vn_is_primary, array('idno' => $vs_idno), array('original_filename' => $vs_original_name, 'rank' => $vn_rank, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y));
 									if ($this->numErrors()) {
 										//$po_request->addActionErrors($this->errors(), $vs_f, $va_rep['representation_id']);
 										foreach($this->errors() as $o_e) {
@@ -3570,6 +3571,7 @@ if (!$vb_batch) {
 							
 								$vs_rep_label = trim($po_request->getParameter($vs_prefix_stub.'rep_label_new_'.$va_matches[1], pString));	
 								$vn_locale_id = $po_request->getParameter($vs_prefix_stub.'locale_id_new_'.$va_matches[1], pInteger);
+								$vs_idno = $po_request->getParameter($vs_prefix_stub.'idno_new_'.$va_matches[1], pString);
 								$vn_status = $po_request->getParameter($vs_prefix_stub.'status_new_'.$va_matches[1], pInteger);
 								$vn_access = $po_request->getParameter($vs_prefix_stub.'access_new_'.$va_matches[1], pInteger);
 								$vn_is_primary = $po_request->getParameter($vs_prefix_stub.'is_primary_new_'.$va_matches[1], pInteger);
@@ -3578,7 +3580,7 @@ if (!$vb_batch) {
 								$vn_center_x = $po_request->getParameter($vs_prefix_stub.'center_x_new_'.$va_matches[1], pString);
 								$vn_center_y = $po_request->getParameter($vs_prefix_stub.'center_y_new_'.$va_matches[1], pString);
 						
-								$t_rep = $this->addRepresentation($vs_path, $vn_rep_type_id, $vn_locale_id, $vn_status, $vn_access, $vn_is_primary, array('name' => $vs_rep_label), array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
+								$t_rep = $this->addRepresentation($vs_path, $vn_rep_type_id, $vn_locale_id, $vn_status, $vn_access, $vn_is_primary, array('name' => $vs_rep_label, 'idno' => $vs_idno), array('original_filename' => $vs_original_name, 'returnRepresentation' => true, 'centerX' => $vn_center_x, 'centerY' => $vn_center_y, 'type_id' => $vn_type_id));	// $vn_type_id = *relationship* type_id (as opposed to representation type)
 								if ($this->numErrors()) {
 									$po_request->addActionErrors($this->errors(), $vs_f, 'new_'.$va_matches[1]);
 								} else {
@@ -4056,6 +4058,8 @@ if (!$vb_batch) {
 			
 			$va_bundle_names[] = $vs_bundle_name;
 		}
+
+		// validate metadata dictionary rules
 		$va_violations = $this->validateUsingMetadataDictionaryRules(array('bundles' => $va_bundle_names));
 		if (sizeof($va_violations)) {
 			if ($vb_we_set_transaction && isset($va_violations['ERR']) && is_array($va_violations['ERR']) && (sizeof($va_violations['ERR']) > 0)) { 
@@ -4072,8 +4076,14 @@ if (!$vb_batch) {
 				return false; 
 			}		
 		}
-		
-		
+
+		// prepopulate fields
+		$vs_prepopulate_cfg = $this->getAppConfig()->get('prepopulate_config');
+		$o_prepopulate_conf = Configuration::load($vs_prepopulate_cfg);
+		if($o_prepopulate_conf->get('prepopulate_fields_on_save')) {
+			$this->prepopulateFields(array('prepopulateConfig' => $vs_prepopulate_cfg));
+		}
+
 		if ($vb_dryrun) { $this->removeTransaction(false); }
 		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 		
@@ -5785,7 +5795,7 @@ side. For many self-relations the direction determines the nature and display te
 	 * @param array $pa_options Array of additional options:
 	 *		allowDuplicates = if set to true, attempts to add a relationship that already exists will succeed. Default is false – duplicate relationships will not be created
 	 *		setErrorOnDuplicate = if set to true, an error will be set if an attempt is made to add a duplicate relationship. Default is false – don't set error. addRelationship() will always return false when creation of a duplicate relationship fails, no matter how the setErrorOnDuplicate option is set.
-	 * @return boolean BaseRelationshipModel Loaded relationship model instance on success, false on error.
+	 * @return bool|BaseRelationshipModel Loaded relationship model instance on success, false on error.
 	 */
 	public function addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
 
@@ -6066,12 +6076,10 @@ side. For many self-relations the direction determines the nature and display te
 	 */
 	 public function validateUsingMetadataDictionaryRules($pa_options=null) {
 	 	if(!$this->getPrimaryKey()) { return null; }
-	 	$o_db = $this->getDb();
-	 	$o_dm = Datamodel::load();
 			
 		$t_violation = new ca_metadata_dictionary_rule_violations();
 		
-		$va_rules = ca_metadata_dictionary_rules::getRules(array('bundles' => caGetOption('bundles', $pa_options, null)));
+		$va_rules = ca_metadata_dictionary_rules::getRules(array('db' => $o_db, 'bundles' => caGetOption('bundles', $pa_options, null)));
 		
 		$vn_violation_count = 0;
 		$va_violations = array();
@@ -6122,5 +6130,257 @@ side. For many self-relations the direction determines the nature and display te
 		
 		return $va_violations;
 	 }
-	 # --------------------------------------------------------------------------------------------
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Prepopulate record fields according to rules in prepopulate.conf
+	 *
+	 * @param array $pa_options Options array. Available options are:
+	 * 		prepopulateConfig = override path to prepopulate.conf, e.g. for testing purposes
+	 * @return bool success or not
+	 */
+	public function prepopulateFields($pa_options=null) {
+		if(!$this->getPrimaryKey()) { return false; }
+		if(!($vs_prepopulate_cfg = caGetOption('prepopulateConfig', $pa_options, null))) {
+			$vs_prepopulate_cfg = $this->getAppConfig()->get('prepopulate_config');
+		}
+		$o_prepopulate_conf = Configuration::load($vs_prepopulate_cfg);
+		if(!($o_prepopulate_conf->get('prepopulate_fields_on_save') || $o_prepopulate_conf->get('prepopulate_fields_on_load'))) {
+			return false;
+		}
+
+		$va_rules = $o_prepopulate_conf->get('prepopulate_rules');
+		if(!$va_rules || (!is_array($va_rules)) || (sizeof($va_rules)<1)) { return false; }
+
+		global $g_ui_locale_id;
+
+		// we need to unset the form timestamp to disable the 'Changes have been made since you loaded this data' warning when we update() $this
+		// the warning makes sense because an update()/insert() is called before we arrive here but after the form_timestamp ... but we chose to ignore it
+		$vn_timestamp = $_REQUEST['form_timestamp'];
+		unset($_REQUEST['form_timestamp']);
+
+		$vb_we_set_transaction = true;
+		if (!$this->inTransaction()) {
+			$this->setTransaction(new Transaction($this->getDb()));
+			$vb_we_set_transaction = true;
+		}
+
+		// process rules
+		$va_expression_vars = array(); // we only process those if and when we need them
+		foreach($va_rules as $vs_rule_key => $va_rule) {
+			if($this->tableName() != $va_rule['table']) { continue; }
+
+			// check target
+			$vs_target = $va_rule['target'];
+			if(strlen($vs_target)<1) { Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because target is not set"); continue; }
+
+			// check template
+			$vs_template = $va_rule['template'];
+			if(strlen($vs_template)<1) { Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because template is not set"); continue; }
+
+			$vs_mode = caGetOption('mode', $va_rule, 'merge');
+
+			// respect restrictToTypes option
+			if($va_rule['restrictToTypes'] && is_array($va_rule['restrictToTypes']) && (sizeof($va_rule['restrictToTypes']) > 0)) {
+				if(!in_array($this->getTypeCode(), $va_rule['restrictToTypes'])) {
+					Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because current record type ".$this->getTypeCode()." is not in restrictToTypes");
+					continue;
+				}
+			}
+
+			// skip this rule if expression is true
+			if($va_rule['skipIfExpression'] && (strlen($va_rule['skipIfExpression'])>0)) {
+				$va_tags = caGetTemplateTags($va_rule['skipIfExpression']);
+
+				foreach($va_tags as $vs_tag) {
+					if(!isset($va_expression_vars[$vs_tag])) {
+						$va_expression_vars[$vs_tag] = $this->get($vs_tag, array('returnIdno' => true, 'delimiter' => ';'));
+					}
+				}
+
+				if(ExpressionParser::evaluate($va_rule['skipIfExpression'], $va_expression_vars)) {
+					Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because skipIfExpression evaluated true");
+					continue;
+				}
+			}
+
+			// evaluate template
+			$vs_value = caProcessTemplateForIDs($vs_template, $this->tableNum(), array($this->getPrimaryKey()), array('path' => true));
+			Debug::msg("[prepopulateFields()] processed template for rule $vs_rule_key value is: ".$vs_value);
+
+			// inject into target
+			$va_parts = explode('.', $vs_target);
+// intrinsic or simple (non-container) attribute
+			if(sizeof($va_parts) == 2) {
+// intrinsic
+				if($this->hasField($va_parts[1])) {
+					switch(strtolower($vs_mode)) {
+						case 'overwrite': // always set
+							$this->set($va_parts[1], $vs_value);
+							break;
+						case 'addifempty':
+						default:
+							if(!$this->get($va_parts[1])) {
+								$this->set($va_parts[1], $vs_value);
+							} else {
+								Debug::msg("[prepopulateFields()] rule {$vs_rule_key}: intrinsic skipped because it already has value and mode is addIfEmpty or merge");
+							}
+							break;
+					}
+// attribute/element
+				} elseif($this->hasElement($va_parts[1])) {
+
+					$va_attributes = $this->getAttributesByElement($va_parts[1]);
+					if(sizeof($va_attributes)>1) {
+						Debug::msg("[prepopulateFields()] containers with multiple values are not supported");
+						continue;
+					}
+
+					switch(strtolower($vs_mode)) {
+						case 'overwrite': // always replace first value we find
+							$this->replaceAttribute(array(
+								$va_parts[1] => $vs_value,
+								'locale_id' => $g_ui_locale_id
+							), $va_parts[1]);
+							break;
+						default:
+						case 'addifempty': // only add value if none exists
+							if(!$this->get($vs_target)) {
+								$this->replaceAttribute(array(
+									$va_parts[1] => $vs_value,
+									'locale_id' => $g_ui_locale_id
+								), $va_parts[1]);
+							}
+							break;
+					}
+				}
+// "container"
+			} elseif(sizeof($va_parts)==3) {
+// actual container
+				if($this->hasElement($va_parts[1])) {
+					$va_attr = $this->getAttributesByElement($va_parts[1]);
+					switch (sizeof($va_attr)) {
+						case 1:
+							switch (strtolower($vs_mode)) {
+								case 'overwrite':
+									$vo_attr = array_pop($va_attr);
+									$va_value = array($va_parts[2] => $vs_value);
+
+									foreach ($vo_attr->getValues() as $o_val) {
+										if ($o_val->getElementCode() != $va_parts[2]) {
+											$va_value[$o_val->getElementCode()] = $o_val->getDisplayValue();
+										}
+									}
+
+									$this->_editAttribute($vo_attr->getAttributeID(), $va_value);
+									break;
+								case 'addifempty':
+									$vo_attr = array_pop($va_attr);
+									$va_value = array($va_parts[2] => $vs_value);
+									$vb_update = false;
+									foreach ($vo_attr->getValues() as $o_val) {
+										if ($o_val->getElementCode() != $va_parts[2]) {
+											$va_value[$o_val->getElementCode()] = $o_val->getDisplayValue();
+										} else {
+											if (!$o_val->getDisplayValue()) {
+												$vb_update = true;
+											}
+										}
+									}
+
+									if ($vb_update) {
+										$this->editAttribute($vo_attr->getAttributeID(), $va_parts[1], $va_value);
+									}
+									break;
+								default:
+									Debug::msg("[prepopulateFields()] unsupported mode {$vs_mode} for target bundle");
+									break;
+							}
+							break;
+						case 0: // if no container value exists, always add it (ignoring mode)
+							$this->addAttribute(array(
+								$va_parts[2] => $vs_value,
+								'locale_id' => $g_ui_locale_id
+							), $va_parts[1]);
+							break;
+						default:
+							Debug::msg("[prepopulateFields()] containers with multiple values are not supported");
+							break;
+					}
+// labels
+				} elseif($va_parts[1] == 'preferred_labels' || $va_parts[1] == 'nonpreferred_labels') {
+					$vb_preferred = ($va_parts[1] == 'preferred_labels');
+					if (!($t_label = $this->getAppDatamodel()->getInstanceByTableName($this->getLabelTableName(), true))) { continue; }
+					if(!$t_label->hasField($va_parts[2])) { continue; }
+
+					switch($this->getLabelCount($vb_preferred)) {
+						case 0: // if no value exists, always add it (ignoring mode)
+							$this->addLabel(array(
+								$va_parts[2] => $vs_value,
+							), $g_ui_locale_id, null, $vb_preferred);
+							break;
+						case 1:
+							switch (strtolower($vs_mode)) {
+								case 'overwrite':
+								case 'addifempty':
+									$va_labels = $this->getLabels(null, $vb_preferred ? __CA_LABEL_TYPE_PREFERRED__ : __CA_LABEL_TYPE_NONPREFERRED__);
+									if (sizeof($va_labels)) {
+										$va_labels = caExtractValuesByUserLocale($va_labels);
+										$va_label = array_shift($va_labels);
+										$va_label = $va_label[0];
+										$va_label[$va_parts[2]] = $vs_value;
+
+										$vb_update = false;
+										if(strtolower($vs_mode) == 'overwrite') {
+											$va_label[$va_parts[2]] = $vs_value;
+											$vb_update = true;
+										} else {
+											if(strlen(trim($va_label[$va_parts[2]])) == 0) { // in addifempty mode only edit label when field is not set
+												$va_label[$va_parts[2]] = $vs_value;
+												$vb_update = true;
+											}
+										}
+
+										if($vb_update) {
+											$this->editLabel(
+												$va_label['label_id'], $va_label, $g_ui_locale_id, null, $vb_preferred
+											);
+										}
+									} else {
+										$this->addLabel(array(
+											$va_parts[2] => $vs_value,
+										), $g_ui_locale_id, null, $vb_preferred);
+									}
+									break;
+								default:
+									Debug::msg("[prepopulateFields()] unsupported mode {$vs_mode} for target bundle");
+									break;
+							}
+							break;
+						default:
+							Debug::msg("[prepopulateFields()] records with multiple labels are not supported");
+							break;
+					}
+				}
+			}
+		}
+
+		$vn_old_mode = $this->getMode();
+		$this->setMode(ACCESS_WRITE);
+		$this->update();
+		$this->setMode($vn_old_mode);
+
+		$_REQUEST['form_timestamp'] = $vn_timestamp;
+
+		if($this->numErrors() > 0) {
+			foreach($this->getErrors() as $vs_error) {
+				Debug::msg("[prepopulateFields()] there was an error while updating the record: ".$vs_error);
+			}
+			if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+			return false;
+		}
+
+		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
+		return true;
+	}
+	# --------------------------------------------------------------------------------------------
 }

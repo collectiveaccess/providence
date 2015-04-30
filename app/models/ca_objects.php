@@ -1687,9 +1687,9 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
  	 * @param string $ps_source_info
  	 * @param string $ps_direction
  	 * @param int $pn_rank
- 	 * @param array $pa_array
+ 	 * @param array $pa_options
  	 *
- 	 * @return int
+ 	 * @return BaseRelationshipModel
  	 */
  	public function addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
  		if ($vn_rc = parent::addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options)) {

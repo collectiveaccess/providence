@@ -244,6 +244,17 @@ class RelatedGetTest extends BaseTestWithData {
 		$this->assertRegExp("/\<a href=\'(.)+\'>Homer J. Simpson\<\/a\>/", $vm_ret);
 		$this->assertRegExp("/\<a href=\'(.)+\'>Bart Simpson\<\/a\>/", $vm_ret);
 		$this->assertRegExp("/\<a href=\'(.)+\'>ACME Inc.\<\/a\>/", $vm_ret);
+
+
+		$va_entity_relationships = $this->opt_object->get('ca_objects_x_entities.relation_id', array('returnAsArray' => true));
+		$qr_entity_relationships = caMakeSearchResult('ca_objects_x_entities', $va_entity_relationships);
+
+		$this->assertEquals(3, $qr_entity_relationships->numHits());
+
+		while($qr_entity_relationships->nextHit()) {
+			$this->assertEquals('0', $qr_entity_relationships->get('ca_objects.deleted'));
+			$this->assertEquals('0', $qr_entity_relationships->get('ca_entities.deleted'));
+		}
 	}
 	# -------------------------------------------------------
 }
