@@ -63,24 +63,24 @@ class SearchResult extends BaseObject {
 	protected $opa_tables;
 	
 	protected $opo_subject_instance;
-	
-	private $opa_prefetch_cache;
-	private $opa_rel_prefetch_cache;
-	private $opa_timestamp_cache;
+
 	private $opa_row_ids_to_prefetch_cache;
 	
 	private $opo_tep; // time expression parser
 	
 	private $opa_cached_result_counts;
-	
+
+	static $s_prefetch_cache = array();
 	static $s_instance_cache = array();
+	static $s_timestamp_cache = array();
+	static $s_rel_prefetch_cache = array();
 	static $s_parsed_field_component_cache = array();
 	static $opa_hierarchy_parent_prefetch_cache = array();
 	static $opa_hierarchy_parent_prefetch_cache_index = array();
 	
 	private $opb_use_identifiers_in_urls = false;
 	private $ops_subject_idno = false;
-	
+
 	private $t_list = null;
 	
 	# ------------------------------------------------------------------
@@ -92,11 +92,11 @@ class SearchResult extends BaseObject {
 		$this->ops_subject_pk = $this->opo_subject_instance->primaryKey();
 		$this->ops_subject_idno = $this->opo_subject_instance->getProperty('ID_NUMBERING_ID_FIELD');
 		$this->opb_use_identifiers_in_urls = (bool)$this->opo_subject_instance->getAppConfig()->get('use_identifiers_in_urls');
-		
-		$this->opa_prefetch_cache = array();
-		$this->opa_rel_prefetch_cache = array();
-		$this->opa_timestamp_cache = array();
 		$this->opa_row_ids_to_prefetch_cache = array();
+
+		self::$s_prefetch_cache = array();
+		self::$s_rel_prefetch_cache = array();
+		self::$s_timestamp_cache = array();
 		
 		if ($po_engine_result) {
 			$this->init($po_engine_result, $pa_tables);
@@ -448,7 +448,7 @@ class SearchResult extends BaseObject {
 		$vs_opt_md5 = caMakeCacheKeyFromOptions($pa_options);
 		$va_related_ids = array();
 		foreach($va_row_ids as $vn_row_id) {
-			if(is_array($va_related_items = $this->opa_rel_prefetch_cache[$this->ops_table_name][$vn_row_id][$ps_tablename][$vs_opt_md5])) {
+			if(is_array($va_related_items = self::$s_rel_prefetch_cache[$this->ops_table_name][$vn_row_id][$ps_tablename][$vs_opt_md5])) {
 				$va_base_row_ids[$vn_row_id] = caExtractValuesFromArrayList($va_related_items, $t_rel_instance->primaryKey());
 				$va_related_ids += $va_base_row_ids[$vn_row_id];
 				$pa_cache[$this->ops_table_name][$vn_row_id] = $va_base_row_ids[$vn_row_id];
@@ -593,14 +593,14 @@ class SearchResult extends BaseObject {
 			$vn_row_id = $va_row[$this->ops_table_pk];
 			
 			$vn_locale_id = $vb_has_locale_id ? $va_row['locale_id'] : null;
-			$this->opa_prefetch_cache[$ps_tablename][$vn_row_id][$vn_locale_id][] = $va_row;
+			self::$s_prefetch_cache[$ps_tablename][$vn_row_id][$vn_locale_id][] = $va_row;
 		}
 		
 		// Fill row_id values for which there is nothing to prefetch with an empty lists
 		// otherwise we'll try and prefetch these again later wasting time.
 		foreach($va_row_ids as $vn_row_id) {
-			if (!isset($this->opa_prefetch_cache[$ps_tablename][$vn_row_id])) {
-				$this->opa_prefetch_cache[$ps_tablename][$vn_row_id] = array();
+			if (!isset(self::$s_prefetch_cache[$ps_tablename][$vn_row_id])) {
+				self::$s_prefetch_cache[$ps_tablename][$vn_row_id] = array();
 			}
 		}
 	}
@@ -618,9 +618,8 @@ class SearchResult extends BaseObject {
 	
 		$va_criteria = is_array($this->opa_tables[$ps_tablename]) ? $this->opa_tables[$ps_tablename]['criteria'] : null;
 		$va_rel_items = $this->opo_subject_instance->getRelatedItems($ps_tablename, array_merge($pa_options, array('row_ids' => $va_row_ids, 'limit' => 100000, 'criteria' => $va_criteria)));		// if there are more than 100,000 then we have a problem
-		if (!is_array($va_rel_items) || !sizeof($va_rel_items)) { return; }
 		
-		//$vs_pk = $this->opo_subject_instance->primaryKey();
+		if (!is_array($va_rel_items) || !sizeof($va_rel_items)) { return; }
 		
 		if (!isset($this->opa_tables[$ps_tablename])) {
 			$va_join_tables = $this->opo_datamodel->getPath($this->ops_table_name, $ps_tablename);
@@ -635,17 +634,18 @@ class SearchResult extends BaseObject {
 		}
 		
 		// TODO: why is the repeatedly called?
-		foreach($va_rel_items as $vn_relation_id => $va_rel_item) {
-			$this->opa_rel_prefetch_cache[$this->ops_table_name][$va_rel_item['row_id']][$ps_tablename][$vs_md5][$vn_relation_id] = $va_rel_item;
+		
+		foreach($va_rel_items as $vs_key => $va_rel_item) {
+			self::$s_rel_prefetch_cache[$this->ops_table_name][(int)$va_rel_item['row_id']][$ps_tablename][$vs_md5][$va_rel_item[$va_rel_item['_key']]] = $va_rel_item;
 		}
 		
-		$this->prefetch($ps_tablename, $pn_start, $pn_num_rows);
+		//$this->prefetch($ps_tablename, $pn_start, $pn_num_rows);
 		
 		// Fill row_id values for which there is nothing to prefetch with an empty lists
 		// otherwise we'll try and prefetch these again later wasting time.
 		foreach($va_row_ids as $vn_row_id) {
-			if (!isset($this->opa_rel_prefetch_cache[$this->ops_table_name][$vn_row_id][$ps_tablename][$vs_md5])) {
-				$this->opa_rel_prefetch_cache[$this->ops_table_name][$vn_row_id][$ps_tablename][$vs_md5] = array();
+			if (!isset(self::$s_rel_prefetch_cache[$this->ops_table_name][(int)$vn_row_id][$ps_tablename][$vs_md5])) {
+				self::$s_rel_prefetch_cache[$this->ops_table_name][(int)$vn_row_id][$ps_tablename][$vs_md5] = array();
 			}
 		}
 		
@@ -658,16 +658,16 @@ class SearchResult extends BaseObject {
 	public function prefetchChangeLogData($ps_tablename, $pn_start, $pn_num_rows) {
 		if (sizeof($va_row_ids = $this->getRowIDsToPrefetch($pn_start, $pn_num_rows)) == 0) { return false; }
 		$vs_key = caMakeCacheKeyFromOptions(array_merge($va_row_ids, array('_table' => $ps_tablename)));
-		if ($this->opa_timestamp_cache['fetched'][$vs_key]) { return true; }
+		if (self::$s_timestamp_cache['fetched'][$vs_key]) { return true; }
 		
 		$o_log = new ApplicationChangeLog();
 	
-		if (!is_array($this->opa_timestamp_cache['created_on'][$ps_tablename])) { $this->opa_timestamp_cache['created_on'][$ps_tablename] = array(); }
-		$this->opa_timestamp_cache['created_on'][$ps_tablename] += $o_log->getCreatedOnTimestampsForIDs($ps_tablename, $va_row_ids);
-		if (!is_array($this->opa_timestamp_cache['last_changed'][$ps_tablename])) { $this->opa_timestamp_cache['last_changed'][$ps_tablename] = array(); }
-		$this->opa_timestamp_cache['last_changed'][$ps_tablename] += $o_log->getLastChangeTimestampsForIDs($ps_tablename, $va_row_ids);
+		if (!is_array(self::$s_timestamp_cache['created_on'][$ps_tablename])) { self::$s_timestamp_cache['created_on'][$ps_tablename] = array(); }
+		self::$s_timestamp_cache['created_on'][$ps_tablename] += $o_log->getCreatedOnTimestampsForIDs($ps_tablename, $va_row_ids);
+		if (!is_array(self::$s_timestamp_cache['last_changed'][$ps_tablename])) { self::$s_timestamp_cache['last_changed'][$ps_tablename] = array(); }
+		self::$s_timestamp_cache['last_changed'][$ps_tablename] += $o_log->getLastChangeTimestampsForIDs($ps_tablename, $va_row_ids);
 
-		$this->opa_timestamp_cache['fetched'][$vs_key] = true;
+		self::$s_timestamp_cache['fetched'][$vs_key] = true;
 		return true;
 	}
 	# ------------------------------------------------------------------
@@ -731,6 +731,8 @@ class SearchResult extends BaseObject {
 	 *		maxLevelsFromTop = for hierarchical gets, restricts the number of levels returned to the top-most starting with the root.
 	 *		maxLevelsFromBottom = for hierarchical gets, restricts the number of levels returned to the bottom-most starting with the lowest leaf node.
 	 *		maxLevels = synonym for maxLevelsFromBottom
+	 *
+	 *		assumeDisplayField = Return display field for ambiguous preferred label specifiers (Ex. ca_entities.preferred_labels => ca_entities.preferred_labels.displayname), otherwise  an array with all label fields is returned [Default is true]
 	 *		
 	 *		checkAccess = Array of access values to filter returned values on. Available for any table with an "access" field (ca_objects, ca_entities, etc.). If omitted no filtering is performed. [Default is null]
 	 *
@@ -795,6 +797,10 @@ class SearchResult extends BaseObject {
 		return $vm_val;
 	}
 	# ------------------------------------------------------------------
+	public static function clearResultCacheForRow($ps_table, $pn_row_id) {
+		unset(self::$s_prefetch_cache[$ps_table][$pn_row_id]);
+	}
+	# ------------------------------------------------------------------
 	/**
 	 * Actual implementation of get()
 	 * @param string $ps_field bundle specifier
@@ -805,9 +811,10 @@ class SearchResult extends BaseObject {
 		if (!is_array($pa_options)) $pa_options = array();
 		
 		$vb_return_as_array 				= caGetOption('returnAsArray', $pa_options, false); 
-		$vb_return_all_locales 				= $vb_return_as_array ? caGetOption('returnAllLocales', $pa_options, false) : false; 
+		$vb_return_all_locales 				= caGetOption('returnAllLocales', $pa_options, false);
+		if ($vb_return_all_locales) { $vb_return_as_array = true; } // returnAllLocales implies returnAsArray
 
-		$vs_delimiter 						= caGetOption('delimiter', $pa_options, '; '); 
+		$vs_delimiter 						= caGetOption('delimiter', $pa_options, ';'); 
 		$vb_unserialize 					= caGetOption('unserialize', $pa_options, false); 
 		
 		$vb_return_url 						= caGetOption('returnURL', $pa_options, false); 
@@ -821,7 +828,15 @@ class SearchResult extends BaseObject {
 		$va_path_components = isset(SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_field]) ? SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_field] : $this->parseFieldPathComponents($ps_field);
 		
 		$va_val_opts = array_merge($pa_options, array(
-			'pathComponents' => $va_path_components
+			'returnAsArray' => $vb_return_as_array,
+			'returnAllLocales' => $vb_return_all_locales,
+			'pathComponents' => $va_path_components,
+			'delimiter' => $vs_delimiter,
+			'returnURL' => $vb_return_url,
+			'convertCodesToDisplayText' => $vb_convert_codes_to_display_text,
+			'convertCodesToIdno' => $vb_convert_codes_to_idno,
+			'checkAccess' => $va_check_access,
+			'template' => $vs_template
 		));
 		
 		
@@ -1113,11 +1128,11 @@ class SearchResult extends BaseObject {
 //
 			$vs_opt_md5 = caMakeCacheKeyFromOptions(array_merge($pa_options, array('dontReturnLabels' => true)));
 			
-			if (!isset($this->opa_rel_prefetch_cache[$this->ops_table_name][$vn_row_id][$va_path_components['table_name']][$vs_opt_md5])) {
+			if (!isset(self::$s_rel_prefetch_cache[$this->ops_table_name][$vn_row_id][$va_path_components['table_name']][$vs_opt_md5])) {
 				$this->prefetchRelated($va_path_components['table_name'], $this->opo_engine_result->currentRow(), $this->getOption('prefetch'), array_merge($pa_options, array('dontReturnLabels' => true)));
 			}
 			
-			$va_related_items = $this->opa_rel_prefetch_cache[$this->ops_table_name][$vn_row_id][$va_path_components['table_name']][$vs_opt_md5];
+			$va_related_items = self::$s_rel_prefetch_cache[$this->ops_table_name][$vn_row_id][$va_path_components['table_name']][$vs_opt_md5];
 
 			if (!is_array($va_related_items)) { return $pa_options['returnAsArray'] ? array() : null; }
 		
@@ -1132,15 +1147,15 @@ class SearchResult extends BaseObject {
 // [PRIMARY TABLE] Created on
 //
 				if ($va_path_components['field_name'] == 'created') {
-					if (!isset($this->opa_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id])) {
+					if (!isset(self::$s_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id])) {
 						$this->prefetchChangeLogData($this->ops_table_name, $this->opo_engine_result->currentRow(), $this->getOption('prefetch'));
 					}
 			
 					if ($vb_return_as_array) {
-						return $this->opa_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id];
+						return self::$s_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id];
 					} else {
 						$vs_subfield = $va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : 'timestamp';
-						$vm_val = $this->opa_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id][$vs_subfield];
+						$vm_val = self::$s_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id][$vs_subfield];
 				
 						if ($vs_subfield == 'timestamp') {
 							$this->opo_tep->setUnixTimestamps($vm_val, $vm_val);
@@ -1154,15 +1169,15 @@ class SearchResult extends BaseObject {
 // [PRIMARY TABLE] Last modified on
 //		
 				if ($va_path_components['field_name'] == 'lastModified') {
-					if (!isset($this->opa_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id])) {
+					if (!isset(self::$s_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id])) {
 						$this->prefetchChangeLogData($this->ops_table_name, $this->opo_engine_result->currentRow(), $this->getOption('prefetch'));
 					}
 			
 					if ($vb_return_as_array) {
-						return $this->opa_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id];
+						return self::$s_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id];
 					} else {
 						$vs_subfield = $va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : 'timestamp';
-						$vm_val = $this->opa_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id][$vs_subfield];
+						$vm_val = self::$s_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id][$vs_subfield];
 				
 						if ($vs_subfield == 'timestamp') {
 							$this->opo_tep->setUnixTimestamps($vm_val, $vm_val);
@@ -1177,10 +1192,10 @@ class SearchResult extends BaseObject {
 //
 				if (in_array($va_path_components['field_name'], array('preferred_labels', 'nonpreferred_labels'))) {
 					$vs_label_table_name = $t_instance->getLabelTableName();
-					if (!isset($this->opa_prefetch_cache[$vs_label_table_name][$vn_row_id])) {
+					if (!isset(self::$s_prefetch_cache[$vs_label_table_name][$vn_row_id])) {
 						$this->prefetchLabels($va_path_components['table_name'], $this->opo_engine_result->currentRow(), $this->getOption('prefetch'), $pa_options);
 					}
-					return $this->_getLabelValue($this->opa_prefetch_cache[$vs_label_table_name][$vn_row_id], $t_instance, $va_val_opts);
+					return $this->_getLabelValue(self::$s_prefetch_cache[$vs_label_table_name][$vn_row_id], $t_instance, $va_val_opts);
 				}
 					
 				if ($t_instance->hasField($va_path_components['field_name'])) {
@@ -1188,10 +1203,10 @@ class SearchResult extends BaseObject {
 //
 // [PRIMARY TABLE] Plain old intrinsic
 //
-					if (!isset($this->opa_prefetch_cache[$va_path_components['table_name']][$vn_row_id])) {
+					if (!isset(self::$s_prefetch_cache[$va_path_components['table_name']][$vn_row_id])) {
 						$this->prefetch($va_path_components['table_name'], $this->opo_engine_result->currentRow(), $this->getOption('prefetch'), $pa_options);	
 					}
-					return $this->_getIntrinsicValue($this->opa_prefetch_cache[$va_path_components['table_name']][$vn_row_id], $t_instance, $va_val_opts);
+					return $this->_getIntrinsicValue(self::$s_prefetch_cache[$va_path_components['table_name']][$vn_row_id], $t_instance, $va_val_opts);
 					
 				} else {
 //
@@ -1266,12 +1281,12 @@ class SearchResult extends BaseObject {
 		if(!$va_path_components['field_name']) {  // get spec is a plain table without field_name -> there is a template
 			if($vb_return_as_link) {
 				$va_links = array();
-				foreach($pa_value_list as $vn_relation_id => $va_relation_info) {
+				foreach($pa_value_list as $vs_key => $va_relation_info) {
 					$va_template_opts = array();
 					$va_template_opts['relationshipValues'][$va_relation_info[$vs_pk]][$va_relation_info['relation_id']]['relationship_typename'] = $va_relation_info['relationship_typename'];
 					$vs_text = caProcessTemplateForIDs($vs_template, $t_rel_instance->tableName(), array($va_relation_info[$vs_pk]), $va_template_opts);
 					$va_link = caCreateLinksFromText(array($vs_text), $t_rel_instance->tableName(), array($va_relation_info[$vs_pk]));
-					$va_links[$vn_relation_id] = array_pop($va_link);
+					$va_links[$vs_key] = array_pop($va_link);
 				}
 				return (sizeof($va_links) > 0) ? join($pa_options['delimiter'], $va_links) : null;
 			} else {
@@ -1326,19 +1341,22 @@ class SearchResult extends BaseObject {
 	 *		delimiter =
 	 *		convertCodesToDisplayText =
 	 *		convertCodesToIdno =
+	 *		assumeDisplayField = Return display field for ambiguous preferred label specifiers (Ex. ca_entities.preferred_labels => ca_entities.preferred_labels.displayname), otherwise  an array with all label fields is returned [Default is true]
 	 *
 	 * @return array|string
 	 */
 	private function _getLabelValue($pa_value_list, $pt_instance, $pa_options) {
-		$vb_return_as_array 	= caGetOption('returnAsArray', $pa_options, false, array('castTo' => 'bool'));
-		$vb_return_all_locales 	= caGetOption('returnAllLocales', $pa_options, false, array('castTo' => 'bool'));
-		$vb_return_as_link 	= caGetOption('returnAsLink', $pa_options, false, array('castTo' => 'bool'));
-		$vs_template 		= caGetOption('template', $pa_options, null, array('castTo' => 'string'));
-		$va_path_components	=& $pa_options['pathComponents'];
+		$vb_return_as_array 		= caGetOption('returnAsArray', $pa_options, false, array('castTo' => 'bool'));
+		$vb_return_all_locales 		= caGetOption('returnAllLocales', $pa_options, false, array('castTo' => 'bool'));
+		$vb_return_as_link 			= caGetOption('returnAsLink', $pa_options, false, array('castTo' => 'bool'));
+		$vb_assume_display_field 	= caGetOption('assumeDisplayField', $pa_options, true, array('castTo' => 'bool'));
+		$vs_template 				= caGetOption('template', $pa_options, null, array('castTo' => 'string'));
+		
+		$va_path_components			=& $pa_options['pathComponents'];
 		
 		// Set subfield to display field if not specified and *NOT* returning as array
 		// (when returning as array without a specified subfield we return an array with entire label record)
-		if (!$vb_return_as_array && !$va_path_components['subfield_name']) { $va_path_components['subfield_name'] = $pt_instance->getLabelDisplayField(); }
+		if ((!$vb_return_as_array || $vb_assume_display_field) && !$va_path_components['subfield_name']) { $va_path_components['subfield_name'] = $pt_instance->getLabelDisplayField(); }
 		
 		$vs_table_name = $pt_instance->tableName();
 		$vs_pk = $pt_instance->primaryKey();
