@@ -42,6 +42,10 @@ class LoansXLoans extends BaseTestWithData {
 	 * @var BundlableLabelableBaseModelWithAttributes
 	 */
 	private $opt_loan_in = null;
+	/**
+	 * @var BundlableLabelableBaseModelWithAttributes
+	 */
+	private $opt_loan_out = null;
 	# -------------------------------------------------------
 	public function setUp() {
 		// don't forget to call parent so that the request is set up
@@ -88,14 +92,39 @@ class LoansXLoans extends BaseTestWithData {
 		$this->assertGreaterThan(0, $vn_loan_out);
 
 		$this->opt_loan_in = new ca_loans($vn_loan_in);
+		$this->opt_loan_out = new ca_loans($vn_loan_out);
 	}
 	# -------------------------------------------------------
 	public function testGets() {
 		$vm_ret = $this->opt_loan_in->get('ca_loans.related');
 		$this->assertEquals('New Loan Out', $vm_ret);
 
-		//$va_items = $this->opt_loan_in->getRelatedItems('ca_loans');
-		//$vn_relation_id = array_shift(caExtractArrayValuesFromArrayOfArrays($va_items, 'relation_id'));
+		$va_items = $this->opt_loan_in->getRelatedItems('ca_loans');
+		$vn_relation_id = array_shift(caExtractArrayValuesFromArrayOfArrays($va_items, 'relation_id'));
+
+		// The relationship we created is Loan Out <-> Loan In, so evaluating with loan in as primary ID should give us the loan out
+		$va_opts = array(
+			'resolveLinksUsing' => 'ca_loans',
+			'primaryIDs' =>
+				array (
+					'ca_loans' => array ($this->opt_loan_in->getPrimaryKey()),
+  				),
+		);
+
+		$vm_ret = caProcessTemplateForIDs("^ca_loans.preferred_labels", 'ca_loans_x_loans', array($vn_relation_id), $va_opts);
+		$this->assertEquals('New Loan Out', $vm_ret);
+
+		// Now for the other side ...
+		$va_opts = array(
+			'resolveLinksUsing' => 'ca_loans',
+			'primaryIDs' =>
+				array (
+					'ca_loans' => array ($this->opt_loan_out->getPrimaryKey()),
+				),
+		);
+
+		$vm_ret = caProcessTemplateForIDs("^ca_loans.preferred_labels", 'ca_loans_x_loans', array($vn_relation_id), $va_opts);
+		$this->assertEquals('New Loan In', $vm_ret);
 	}
 	# -------------------------------------------------------
 }
