@@ -1207,7 +1207,6 @@ class SearchResult extends BaseObject {
 						$this->prefetch($va_path_components['table_name'], $this->opo_engine_result->currentRow(), $this->getOption('prefetch'), $pa_options);	
 					}
 					return $this->_getIntrinsicValue(self::$s_prefetch_cache[$va_path_components['table_name']][$vn_row_id], $t_instance, $va_val_opts);
-					
 				} else {
 //
 // [PRIMARY TABLE] Metadata attribute
@@ -1531,7 +1530,7 @@ class SearchResult extends BaseObject {
 				}
 				break;
 			case FT_MEDIA:
-				if(!$vs_version = $va_path_components['subfield_name']) {
+				if(!($vs_version = $va_path_components['subfield_name'])) {
 					$vs_version = "largeicon";
 				}
 				
@@ -1587,15 +1586,16 @@ class SearchResult extends BaseObject {
 					foreach($va_values as $vn_i => $va_value) {
 						$va_ids[] = $vn_id = $va_value[$vs_pk];
 	
+						$vs_prop = $va_value[$va_path_components['field_name']];
+						if ($pa_options['unserialize']) {
+							$vs_prop = caUnserializeForDatabase($vs_prop);
+						}
 						
 						if (caGetOption('convertCodesToDisplayText', $pa_options, false)) {
-							$vs_prop = $this->_convertCodeToDisplayText($va_value[$va_path_components['field_name']], $va_path_components, $pt_instance, $pa_options);
+							$vs_prop = $this->_convertCodeToDisplayText($vs_prop, $va_path_components, $pt_instance, $pa_options);
 						} elseif(caGetOption('convertCodesToIdno', $pa_options, false)) {
-							$vs_prop = $this->_convertCodeToIdno($va_value[$va_path_components['field_name']], $va_path_components, $pt_instance, $pa_options);
-						} else {
-							$vs_prop = $va_value[$va_path_components['field_name']];
+							$vs_prop = $this->_convertCodeToIdno($vs_prop, $va_path_components, $pt_instance, $pa_options);
 						}	
-						
 						
 						if ($pa_options['returnAllLocales']) {
 							$va_return_values[$vn_id][$vn_locale_id][] = $vs_prop;
