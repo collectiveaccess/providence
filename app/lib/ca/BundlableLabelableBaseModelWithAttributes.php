@@ -302,6 +302,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 		
 		if ($vb_we_set_transaction) { $this->removeTransaction($vn_rc); }
+
+		SearchResult::clearResultCacheForRow($this->tableName(), $this->getPrimaryKey());
 		return $vn_rc;
 	}	
 	# ------------------------------------------------------------------
@@ -317,6 +319,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				return false;
 			}
 		}
+		SearchResult::clearResultCacheForRow($this->tableName(), $this->getPrimaryKey());
 		return parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 	}
 	# ------------------------------------------------------------------

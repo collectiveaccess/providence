@@ -63,24 +63,24 @@ class SearchResult extends BaseObject {
 	protected $opa_tables;
 	
 	protected $opo_subject_instance;
-	
-	private $opa_prefetch_cache;
-	private $opa_rel_prefetch_cache;
-	private $opa_timestamp_cache;
+
 	private $opa_row_ids_to_prefetch_cache;
 	
 	private $opo_tep; // time expression parser
 	
 	private $opa_cached_result_counts;
-	
+
+	static $s_prefetch_cache = array();
 	static $s_instance_cache = array();
+	static $s_timestamp_cache = array();
+	static $s_rel_prefetch_cache = array();
 	static $s_parsed_field_component_cache = array();
 	static $opa_hierarchy_parent_prefetch_cache = array();
 	static $opa_hierarchy_parent_prefetch_cache_index = array();
 	
 	private $opb_use_identifiers_in_urls = false;
 	private $ops_subject_idno = false;
-	
+
 	private $t_list = null;
 	
 	# ------------------------------------------------------------------
@@ -92,11 +92,11 @@ class SearchResult extends BaseObject {
 		$this->ops_subject_pk = $this->opo_subject_instance->primaryKey();
 		$this->ops_subject_idno = $this->opo_subject_instance->getProperty('ID_NUMBERING_ID_FIELD');
 		$this->opb_use_identifiers_in_urls = (bool)$this->opo_subject_instance->getAppConfig()->get('use_identifiers_in_urls');
-		
-		$this->opa_prefetch_cache = array();
-		$this->opa_rel_prefetch_cache = array();
-		$this->opa_timestamp_cache = array();
 		$this->opa_row_ids_to_prefetch_cache = array();
+
+		self::$s_prefetch_cache = array();
+		self::$s_rel_prefetch_cache = array();
+		self::$s_timestamp_cache = array();
 		
 		if ($po_engine_result) {
 			$this->init($po_engine_result, $pa_tables);
@@ -448,7 +448,7 @@ class SearchResult extends BaseObject {
 		$vs_opt_md5 = caMakeCacheKeyFromOptions($pa_options);
 		$va_related_ids = array();
 		foreach($va_row_ids as $vn_row_id) {
-			if(is_array($va_related_items = $this->opa_rel_prefetch_cache[$this->ops_table_name][$vn_row_id][$ps_tablename][$vs_opt_md5])) {
+			if(is_array($va_related_items = self::$s_rel_prefetch_cache[$this->ops_table_name][$vn_row_id][$ps_tablename][$vs_opt_md5])) {
 				$va_base_row_ids[$vn_row_id] = caExtractValuesFromArrayList($va_related_items, $t_rel_instance->primaryKey());
 				$va_related_ids += $va_base_row_ids[$vn_row_id];
 				$pa_cache[$this->ops_table_name][$vn_row_id] = $va_base_row_ids[$vn_row_id];
@@ -593,14 +593,14 @@ class SearchResult extends BaseObject {
 			$vn_row_id = $va_row[$this->ops_table_pk];
 			
 			$vn_locale_id = $vb_has_locale_id ? $va_row['locale_id'] : null;
-			$this->opa_prefetch_cache[$ps_tablename][$vn_row_id][$vn_locale_id][] = $va_row;
+			self::$s_prefetch_cache[$ps_tablename][$vn_row_id][$vn_locale_id][] = $va_row;
 		}
 		
 		// Fill row_id values for which there is nothing to prefetch with an empty lists
 		// otherwise we'll try and prefetch these again later wasting time.
 		foreach($va_row_ids as $vn_row_id) {
-			if (!isset($this->opa_prefetch_cache[$ps_tablename][$vn_row_id])) {
-				$this->opa_prefetch_cache[$ps_tablename][$vn_row_id] = array();
+			if (!isset(self::$s_prefetch_cache[$ps_tablename][$vn_row_id])) {
+				self::$s_prefetch_cache[$ps_tablename][$vn_row_id] = array();
 			}
 		}
 	}
@@ -636,7 +636,7 @@ class SearchResult extends BaseObject {
 		// TODO: why is the repeatedly called?
 		
 		foreach($va_rel_items as $vs_key => $va_rel_item) {
-			$this->opa_rel_prefetch_cache[$this->ops_table_name][(int)$va_rel_item['row_id']][$ps_tablename][$vs_md5][$va_rel_item[$va_rel_item['_key']]] = $va_rel_item;
+			self::$s_rel_prefetch_cache[$this->ops_table_name][(int)$va_rel_item['row_id']][$ps_tablename][$vs_md5][$va_rel_item[$va_rel_item['_key']]] = $va_rel_item;
 		}
 		
 		//$this->prefetch($ps_tablename, $pn_start, $pn_num_rows);
@@ -644,8 +644,8 @@ class SearchResult extends BaseObject {
 		// Fill row_id values for which there is nothing to prefetch with an empty lists
 		// otherwise we'll try and prefetch these again later wasting time.
 		foreach($va_row_ids as $vn_row_id) {
-			if (!isset($this->opa_rel_prefetch_cache[$this->ops_table_name][(int)$vn_row_id][$ps_tablename][$vs_md5])) {
-				$this->opa_rel_prefetch_cache[$this->ops_table_name][(int)$vn_row_id][$ps_tablename][$vs_md5] = array();
+			if (!isset(self::$s_rel_prefetch_cache[$this->ops_table_name][(int)$vn_row_id][$ps_tablename][$vs_md5])) {
+				self::$s_rel_prefetch_cache[$this->ops_table_name][(int)$vn_row_id][$ps_tablename][$vs_md5] = array();
 			}
 		}
 		
@@ -658,16 +658,16 @@ class SearchResult extends BaseObject {
 	public function prefetchChangeLogData($ps_tablename, $pn_start, $pn_num_rows) {
 		if (sizeof($va_row_ids = $this->getRowIDsToPrefetch($pn_start, $pn_num_rows)) == 0) { return false; }
 		$vs_key = caMakeCacheKeyFromOptions(array_merge($va_row_ids, array('_table' => $ps_tablename)));
-		if ($this->opa_timestamp_cache['fetched'][$vs_key]) { return true; }
+		if (self::$s_timestamp_cache['fetched'][$vs_key]) { return true; }
 		
 		$o_log = new ApplicationChangeLog();
 	
-		if (!is_array($this->opa_timestamp_cache['created_on'][$ps_tablename])) { $this->opa_timestamp_cache['created_on'][$ps_tablename] = array(); }
-		$this->opa_timestamp_cache['created_on'][$ps_tablename] += $o_log->getCreatedOnTimestampsForIDs($ps_tablename, $va_row_ids);
-		if (!is_array($this->opa_timestamp_cache['last_changed'][$ps_tablename])) { $this->opa_timestamp_cache['last_changed'][$ps_tablename] = array(); }
-		$this->opa_timestamp_cache['last_changed'][$ps_tablename] += $o_log->getLastChangeTimestampsForIDs($ps_tablename, $va_row_ids);
+		if (!is_array(self::$s_timestamp_cache['created_on'][$ps_tablename])) { self::$s_timestamp_cache['created_on'][$ps_tablename] = array(); }
+		self::$s_timestamp_cache['created_on'][$ps_tablename] += $o_log->getCreatedOnTimestampsForIDs($ps_tablename, $va_row_ids);
+		if (!is_array(self::$s_timestamp_cache['last_changed'][$ps_tablename])) { self::$s_timestamp_cache['last_changed'][$ps_tablename] = array(); }
+		self::$s_timestamp_cache['last_changed'][$ps_tablename] += $o_log->getLastChangeTimestampsForIDs($ps_tablename, $va_row_ids);
 
-		$this->opa_timestamp_cache['fetched'][$vs_key] = true;
+		self::$s_timestamp_cache['fetched'][$vs_key] = true;
 		return true;
 	}
 	# ------------------------------------------------------------------
@@ -795,6 +795,10 @@ class SearchResult extends BaseObject {
 		}
 		
 		return $vm_val;
+	}
+	# ------------------------------------------------------------------
+	public static function clearResultCacheForRow($ps_table, $pn_row_id) {
+		unset(self::$s_prefetch_cache[$ps_table][$pn_row_id]);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -1124,11 +1128,11 @@ class SearchResult extends BaseObject {
 //
 			$vs_opt_md5 = caMakeCacheKeyFromOptions(array_merge($pa_options, array('dontReturnLabels' => true)));
 			
-			if (!isset($this->opa_rel_prefetch_cache[$this->ops_table_name][$vn_row_id][$va_path_components['table_name']][$vs_opt_md5])) {
+			if (!isset(self::$s_rel_prefetch_cache[$this->ops_table_name][$vn_row_id][$va_path_components['table_name']][$vs_opt_md5])) {
 				$this->prefetchRelated($va_path_components['table_name'], $this->opo_engine_result->currentRow(), $this->getOption('prefetch'), array_merge($pa_options, array('dontReturnLabels' => true)));
 			}
 			
-			$va_related_items = $this->opa_rel_prefetch_cache[$this->ops_table_name][$vn_row_id][$va_path_components['table_name']][$vs_opt_md5];
+			$va_related_items = self::$s_rel_prefetch_cache[$this->ops_table_name][$vn_row_id][$va_path_components['table_name']][$vs_opt_md5];
 
 			if (!is_array($va_related_items)) { return $pa_options['returnAsArray'] ? array() : null; }
 		
@@ -1143,15 +1147,15 @@ class SearchResult extends BaseObject {
 // [PRIMARY TABLE] Created on
 //
 				if ($va_path_components['field_name'] == 'created') {
-					if (!isset($this->opa_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id])) {
+					if (!isset(self::$s_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id])) {
 						$this->prefetchChangeLogData($this->ops_table_name, $this->opo_engine_result->currentRow(), $this->getOption('prefetch'));
 					}
 			
 					if ($vb_return_as_array) {
-						return $this->opa_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id];
+						return self::$s_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id];
 					} else {
 						$vs_subfield = $va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : 'timestamp';
-						$vm_val = $this->opa_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id][$vs_subfield];
+						$vm_val = self::$s_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id][$vs_subfield];
 				
 						if ($vs_subfield == 'timestamp') {
 							$this->opo_tep->setUnixTimestamps($vm_val, $vm_val);
@@ -1165,15 +1169,15 @@ class SearchResult extends BaseObject {
 // [PRIMARY TABLE] Last modified on
 //		
 				if ($va_path_components['field_name'] == 'lastModified') {
-					if (!isset($this->opa_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id])) {
+					if (!isset(self::$s_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id])) {
 						$this->prefetchChangeLogData($this->ops_table_name, $this->opo_engine_result->currentRow(), $this->getOption('prefetch'));
 					}
 			
 					if ($vb_return_as_array) {
-						return $this->opa_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id];
+						return self::$s_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id];
 					} else {
 						$vs_subfield = $va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : 'timestamp';
-						$vm_val = $this->opa_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id][$vs_subfield];
+						$vm_val = self::$s_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id][$vs_subfield];
 				
 						if ($vs_subfield == 'timestamp') {
 							$this->opo_tep->setUnixTimestamps($vm_val, $vm_val);
@@ -1188,10 +1192,10 @@ class SearchResult extends BaseObject {
 //
 				if (in_array($va_path_components['field_name'], array('preferred_labels', 'nonpreferred_labels'))) {
 					$vs_label_table_name = $t_instance->getLabelTableName();
-					if (!isset($this->opa_prefetch_cache[$vs_label_table_name][$vn_row_id])) {
+					if (!isset(self::$s_prefetch_cache[$vs_label_table_name][$vn_row_id])) {
 						$this->prefetchLabels($va_path_components['table_name'], $this->opo_engine_result->currentRow(), $this->getOption('prefetch'), $pa_options);
 					}
-					return $this->_getLabelValue($this->opa_prefetch_cache[$vs_label_table_name][$vn_row_id], $t_instance, $va_val_opts);
+					return $this->_getLabelValue(self::$s_prefetch_cache[$vs_label_table_name][$vn_row_id], $t_instance, $va_val_opts);
 				}
 					
 				if ($t_instance->hasField($va_path_components['field_name'])) {
@@ -1199,10 +1203,10 @@ class SearchResult extends BaseObject {
 //
 // [PRIMARY TABLE] Plain old intrinsic
 //
-					if (!isset($this->opa_prefetch_cache[$va_path_components['table_name']][$vn_row_id])) {
+					if (!isset(self::$s_prefetch_cache[$va_path_components['table_name']][$vn_row_id])) {
 						$this->prefetch($va_path_components['table_name'], $this->opo_engine_result->currentRow(), $this->getOption('prefetch'), $pa_options);	
 					}
-					return $this->_getIntrinsicValue($this->opa_prefetch_cache[$va_path_components['table_name']][$vn_row_id], $t_instance, $va_val_opts);
+					return $this->_getIntrinsicValue(self::$s_prefetch_cache[$va_path_components['table_name']][$vn_row_id], $t_instance, $va_val_opts);
 					
 				} else {
 //
