@@ -36,7 +36,6 @@ class AATInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase
 	public function testFoo() {
 		$o_service = new WLPlugInformationServiceAAT();
 
-		$va_return = $o_service->lookup(array(), 'landfills');
-		var_dump($va_return);
+		$o_service->lookup(array(), 'landfills');
 	}
 }

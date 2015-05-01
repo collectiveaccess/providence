@@ -34,7 +34,6 @@ require_once(__CA_LIB_DIR__."/core/Plugins/InformationService/ULAN.php");
 class ULANInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase {
 
 	public function testBasic() {
-		return;
 		$o_service = new WLPlugInformationServiceULAN();
 
 		$va_return = $o_service->lookup(array(), 'Keith Haring');
