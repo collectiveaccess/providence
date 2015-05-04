@@ -66,36 +66,23 @@ class wamMaterialisedTaxonomyPlugin extends BaseApplicationPlugin {
 	 *
 	 *
 	 */
-	public function hookPeriodicTask(&$pa_params) {
-//		caDebug($this->opo_config->getAssoc('tables'), 'config', true);
-
+	public function hookPeriodicTask() {
 		if ($va_table_config = $this->opo_config->getAssoc('tables')){
-			$t_log = new Eventlog();
-			$o_db = new Db();
 			$o_dm = Datamodel::load();
-			$t_types = new ca_list_items();
-
 			foreach($va_table_config as $vs_table_name => $va_type_info){
-//				caDebug($va_type_info, $vs_table_name, true);
 				/** @var BundlableLabelableBaseModelWithAttributes $t_table */
 				$t_table = $o_dm->getTableInstance($vs_table_name);
 				$vs_type_field = $t_table->getTypeFieldName();
-				$vo_type_list = $t_table->getTypeList();
-
 				foreach($va_type_info as $vs_type => $va_type_to_attribute_map){
 					$vn_type_id = $t_table->getTypeIDForCode($vs_type);
 					/** @var ca_list_items $vo_type_l */
 					$vo_type_l = new ca_list_items($vn_type_id);
 					$vo_child_types = $vo_type_l->getHierarchy(null, array('idsOnly' => true));
-
 					$t_table->getTypeList();
-					$vo_type_instance = $t_table->getTypeList();
-//					caDebug($vo_type_instance->getHierarchyChildrenAsQuery(), 'types', true);
 					/** @var BaseSearchResult $vo_result */
 					$va_ids = $t_table->find(array($vs_type_field => $vo_child_types, 'deleted' => false), array('returnAs' => 'ids'));
 					foreach($va_ids as $vn_id){
 						$t_table->load($vn_id);
-						caDebug($t_table->getLabelForDisplay(false), 'name');
 						$va_new_values = array();
 						$va_ancestors = $t_table->getHierarchyAncestors($vn_id, array('idsOnly' => true));
 						/**
@@ -113,10 +100,7 @@ class wamMaterialisedTaxonomyPlugin extends BaseApplicationPlugin {
 						}
 						if($va_new_values){
 							$vs_taxonomy_checksum = md5(serialize($va_new_values));
-							caDebug($va_new_values, 'new_values', true);
-							caDebug($vs_taxonomy_checksum, 'taxonomyChecksum');
 							$vs_stored_taxonomy_checksum = $t_table->getSimpleAttributeValue('taxonomyChecksum');
-							caDebug($vs_stored_taxonomy_checksum, 'storedTaxonomyChecksum');
 							if($vs_stored_taxonomy_checksum !== $vs_taxonomy_checksum){
 								$t_table->setMode(ACCESS_WRITE);
 								$va_new_values['taxonomyChecksum'] = $vs_taxonomy_checksum;
@@ -128,8 +112,6 @@ class wamMaterialisedTaxonomyPlugin extends BaseApplicationPlugin {
 						}
 					}
 				}
-
-
 			}
 		}
 		return true;
