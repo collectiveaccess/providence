@@ -4499,7 +4499,7 @@ if (!$vb_batch) {
 			}
 
 			// Join to limit what browse table items are used to generate facet
-			$va_joins_post_add[] = 'LEFT JOIN ca_acl ON '.$va_related_table.'.'.$t_rel_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_rel_item->tableNum()."\n";
+			$va_joins_post_add[] = 'LEFT JOIN ca_acl ON '.$vs_related_table_name.'.'.$t_rel_item->primaryKey().' = ca_acl.row_id AND ca_acl.table_num = '.$t_rel_item->tableNum()."\n";
 			$va_wheres[] = "(
 				((
 					(ca_acl.user_id = ".(int)$vn_user_id.")
